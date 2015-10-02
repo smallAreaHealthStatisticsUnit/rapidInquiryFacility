@@ -28,7 +28,7 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
  	  * *v4_0_alter_6.sql*: R support [optional script if PL/R integration is enabled with *USE_PLR=Y*].
  	  * *v4_0_alter_7.sql*: Support for taxonomies/ontologies (e.g. ICD9, 10); removed previous table based support.
                             Modify t_rif40_inv_conditions to remove SQL injection risk.
- 	  * *v4_0_alter_8.sql*: Database test harness; see [test harness README](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/test_harness/db_test_harness/README.md)
+ 	  * *v4_0_alter_8.sql*: Database test harness; see [test harness README](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/TestHarness/db_test_harness/README.md)
 	  
 	  Under development [not run by *db_setup*; use *make dev* to build]:
 	  
@@ -40,16 +40,16 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
 	  
 	* Run test scripts (in directory *test_scripts*) make targets: *clean all*; parameters: *DEBUG_LEVEL=1 ECHO=all*
 	  Test scripts that **do not** require alter scripts to be run (*no_alter* target above): 
-	  * *test_1_sahsuland_geography.sql*:
-	  * *test_2_ddl_checks.sql*:
-	  * *test_3_user_setup.sql*:
+	  * *test_1_sahsuland_geography.sql*: Test sahsuland geography is setup correctly.
+	  * *test_2_ddl_checks.sql*: Check all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted
+	  * *test_3_user_setup.sql*:Check &lt;test user&gt; is setup correctly.
 	  
 	  Test scripts that **do** require alter scripts to be run:
-	  * *test_8_triggers.sql*:
+	  * *test_8_triggers.sql*: Test trest harness, load and run trigger tests.
 	  * *test_6_middleware_1.sql*: Middleware tests 1 for *v4_0_alter_1.sql*.
 	  * *test_4_study_id_1.sql*: This creates the standard study_id 1.
-	  * *test_5_clone_delete_test.sql*:
-	  * *test_7_middleware_2.sql*:
+	  * *test_5_clone_delete_test.sql*: Clone delete test for standard study_id 1.
+	  * *test_7_middleware_2.sql*: Test 7: Middleware tests 2 for *v4_0_alter_2.sql*
 	  
 	  Completed alter script logs are named *&lt;script&gt;.&lt;database&gt;_rpt*; and renamed to *&lt;script&gt;.&lt;database&gt;_rpt.err* on error.
 	  This gives make a dependency so it can re-run.
@@ -62,7 +62,7 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
     * Run psql script to *VACUUM ANALYZE* the *sahsuland_dev* database *v4_0_vacuum_analyse.sql*; log: *v4_0_vacuum_analyse.rpt*  
 * Run local make target: *sahsuland_dev_dump*; parameters: *PGDATABASE=sahsuland_dev*
   * Dump *sahsuland_dev* database using *pg_dump* in custom format, excluding UK geography tables, 
-    parameters: -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../install/sahsuland_dev.dump
+    parameters: -U postgres -w -F custom -T '\*x_uk\*' -T '\*.x_ew01\*' -v sahsuland_dev > ../install/sahsuland_dev.dump
     **This is used to create the *sahsuland* database**.	
 * Run in *../install* *pg_restore*; log; *pg_restore.rpt*; parameters: *-d sahsuland -U postgres -v ../install/sahsuland_dev.dump* 
 * Run alter scripts (in directory alter_scripts) make targets: *clean all*; parameters: *PGDATABASE=sahsuland*		
@@ -73,7 +73,7 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
 * Run test scripts (in directory *test_scripts*) make targets: *test_scripts clean all*; parameters: *PGDATABASE=sahsuland*	
 * Run local make target: *sahsuland_dump*
   * Dump *sahsuland* database using *pg_dump* in custom format, excluding UK geography tables, 
-    parameters: *-U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../install/sahsuland.dump*
+    parameters: *-U postgres -w -F custom -T '\*x_uk\*' -T '\*.x_ew01\*' -v sahsuland > ../install/sahsuland.dump*
     **This is used as the *sahsuland* database* installer.**	
 * Run Entity Relationship Diagrams build (in directory *../../ERD*) make target: *dbms_tools*
   <ADD>
@@ -96,11 +96,14 @@ SAHSULAND and SAHSULAND_DEV setup completed OK
 
 ### Lack of networking with cause Node.js makefiles to fail:
 
-* Node.js program (in directory ../Node) topojson_convert.js. This will be replaced by a 
+* Node.js program (in directory *../Node*) *topojson_convert.js*. This will be replaced by a 
   web service. This causes a web service testing error later in the build:
 ```
 <DETECT FAILURE EARLIER; caused by psql not exiting on shell errors>
 ```
-* Node.js program (in directory ../../test_harness/db_test_harness): db_test_harness.js
+* Node.js program (in directory *../../TestHarness/db_test_harness*): *db_test_harness.js*
 
-<IMPROVE TEST 8 ERROR MESSAGE>
+**IMPROVE TEST 8 ERROR MESSAGE**
+```
+ADD
+```
