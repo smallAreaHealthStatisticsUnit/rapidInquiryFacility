@@ -107,6 +107,12 @@ The Makefile will building the requiored Node.js modules
 
 ## Use of Async
 
+## Success and fsailure in tests
+
+The test ran ok: :+1:
+
+The test failed: :-1:
+ 
 ## RIF40_TEST_HARNESS Table
 
 Column | Type | Modifiers | Description
@@ -130,13 +136,13 @@ time_taken | numeric | | Time taken for test (seconds)
 pg_debug_functions | text[] | | Array of Postgres functions for test harness to enable debug on
 
 Indexes:
-    "rif40_test_harness_pk" PRIMARY KEY, btree (test_id)
-    "rif40_test_harness_uk" UNIQUE, btree (parent_test_id)
+* "rif40_test_harness_pk" PRIMARY KEY, btree (test_id)
+* "rif40_test_harness_uk" UNIQUE, btree (parent_test_id)
 Foreign-key constraints:
-    "rif40_test_harness_parent_test_id_fk" FOREIGN KEY (parent_test_id) REFERENCES rif40_test_harness(test_id)
-    "rif40_test_harness_test_run_id_fk" FOREIGN KEY (test_run_id) REFERENCES rif40_test_runs(test_run_id)
+* "rif40_test_harness_parent_test_id_fk" FOREIGN KEY (parent_test_id) REFERENCES rif40_test_harness(test_id)
+* "rif40_test_harness_test_run_id_fk" FOREIGN KEY (test_run_id) REFERENCES rif40_test_runs(test_run_id)
 Referenced by:
-    TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_parent_test_id_fk" FOREIGN KEY (parent_test_id) REFERENCES rif40_test_harness( test_id)
+* TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_parent_test_id_fk" FOREIGN KEY (parent_test_id) REFERENCES rif40_test_harness( test_id)
 
 ## RIF40_TEST_RUNS Table
 Column | Type | Modifiers | Description 
@@ -153,9 +159,9 @@ number_test_cases_registered | integer | not null default 0 | Number of test cas
 number_messages_registered | integer | not null default 0 | Number of error and informational messages registered
  
 Indexes:
-    "rif40_test_runs_pk" PRIMARY KEY, btree (test_run_id)
+* "rif40_test_runs_pk" PRIMARY KEY, btree (test_run_id)
 Referenced by:
-    TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_test_run_id_fk" FOREIGN KEY (test_run_id) REFERENCES rif40_test_runs(test_run_ id)
+* TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_test_run_id_fk" FOREIGN KEY (test_run_id) REFERENCES rif40_test_runs(test_run_ id)
 
 ## To do
 	
