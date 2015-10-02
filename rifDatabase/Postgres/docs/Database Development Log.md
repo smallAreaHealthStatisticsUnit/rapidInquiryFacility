@@ -508,6 +508,8 @@ Use Slony replication (logical standby) in preference physical standby
 
 ### Alter 1
 
+Misc schema design changes:
+
 a) gid_rowindex (i.e 0000000001_0000000001). Where gid corresponds to gid in geometry table
    row_index is an incremental serial aggregated by gid ( starts from one for each gid). 
    GID is unique for the geolevel
@@ -517,6 +519,8 @@ c) Add middleware support functions
 Completed 1/7/2014
 
 ### Alter 2
+
+Misc data viewer changes:
 
 a) Add covariates to comparision area extract
 b) GID, GID_ROWINDEX support in extracts/maps
