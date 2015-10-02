@@ -105,7 +105,27 @@ The Makefile will building the requiored Node.js modules
 
 # Test Harness Design
 
+The dsatabase layer test harness is driven by two tables:
+
+* RIF40_TEST_RUNS: Test runs
+* RIF40_TEST_HARNESS: Tests
+
+## Test Functions
+
+* rif40_sql_pkg.rif40_sql_test()
+* rif40_sql_pkg._rif40_sql_test()
+
+## Transactions
+
+## Linked Tests
+
+## Inheritance
+
 ## Use of Async
+
+## Code Portablility
+
+## Test Examples
 
 ## Success and failure in tests
 
@@ -133,7 +153,7 @@ expected_result | boolean | not null default true | Expected result; tests are a
 register_date | timestamp with time zone | not null default statement_timestamp() | Date registered
 results | text[] | | Results array
 results_xml | xml | | Results array in portable XML
-pass | boolean | | Was the test passed? Pass means the test passed with no exzception if the exception is null or if the exoected exception was cau ght. Note that some tests do fail deliberately to test the harness
+pass | boolean | | Was the test passed? Pass means the test passed with no exception if the exception is null or if the exoected exception was cau ght. Note that some tests do fail deliberately to test the harness
 test_run_id | integer | | Test run id for test. Foreign key to rif40_test_runs table.
 test_date | timestamp with time zone | | Test date
 time_taken | numeric | | Time taken for test (seconds)
