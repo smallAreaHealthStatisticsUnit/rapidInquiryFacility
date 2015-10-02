@@ -35,7 +35,7 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
 	  * *v4_0_alter_3.sql*: Range partitioning (e.g. by year).
  	  * *v4_0_alter_4.sql*: Hash partitioning (e.g. by study_id).
 	  
-	  Completed alter script logs are named *v4_0_alter_N.<database>_rpt*; and renamed to *v4_0_alter_N.<database>_rpt.err* on error.
+	  Completed alter script logs are named *v4_0_alter_N.&lt;database&gt;_rpt*; and renamed to *v4_0_alter_N.&lt;database&gt;_rpt.err* on error.
 	  This gives make a dependency so it can re-run.
 	  
 	* Run test scripts (in directory *test_scripts*) make targets: *clean all*; parameters: *DEBUG_LEVEL=1 ECHO=all*
@@ -51,7 +51,7 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
 	  * *test_5_clone_delete_test.sql*:
 	  * *test_7_middleware_2.sql*:
 	  
-	  Completed alter script logs are named *<script>.<database>_rpt*; and renamed to *<script>.<database>_rpt.err* on error.
+	  Completed alter script logs are named *&lt;script&gt;.&lt;database&gt;_rpt*; and renamed to *&lt;script&gt;.&lt;database&gt;_rpt.err* on error.
 	  This gives make a dependency so it can re-run.
 	  
 	  There is no concept of test scripts for alter scripts under development.
