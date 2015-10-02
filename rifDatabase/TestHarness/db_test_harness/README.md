@@ -109,49 +109,25 @@ The Makefile will building the requiored Node.js modules
 
 ## RIF40_TEST_HARNESS Table
 
-           Column           |           Type           |                             Modifiers                              | Storage  | Sta
-ts target |                                                                                            Description
-
-----------------------------+--------------------------+--------------------------------------------------------------------+----------+----
-----------+---------------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------
- test_id                    | integer                  | not null default (nextval('rif40_test_id_seq'::regclass))::integer | plain    |
-          | Unique investigation index: test_id. Created by SEQUENCE rif40_test_id_seq
- parent_test_id             | integer                  |                                                                    | plain    |
-          | Parent test ID; NULL means first (test statement). Allows for a string of connected test cases. Multiple inheritance of test cas
-es is not permitted!
- test_run_class             | character varying        | not null                                                           | extended |
-          | Test run class; usually the name of the SQL script that originally ran it
- test_stmt                  | character varying        | not null                                                           | extended |
-          | SQL statement for test
- test_case_title            | character varying        | not null                                                           | extended |
-          | Test case title. Must be unique
- pg_error_code_expected     | character varying        |                                                                    | extended |
-          | [negative] Postgres error SQLSTATE expected [as part of an exception]; passed as PG_EXCEPTION_DETAIL
- mssql_error_code_expected  | character varying        |                                                                    | extended |
-          | Microsoft SQL server error code expected [as part of an exception].
- raise_exception_on_failure | boolean                  | not null default true                                              | plain    |
-          | Raise exception on failure. NULL means it is expected to NOT raise an exception, raise exception on failure
- expected_result            | boolean                  | not null default true                                              | plain    |
-          | Expected result; tests are allowed to deliberately fail! If the test raises the expection pg_error_code_expected it would normal
-ly be expected to pass.
- register_date              | timestamp with time zone | not null default statement_timestamp()                             | plain    |
-          | Date registered
- results                    | text[]                   |                                                                    | extended |
-          | Results array
- results_xml                | xml                      |                                                                    | extended |
-          | Results array in portable XML
- pass                       | boolean                  |                                                                    | plain    |
-          | Was the test passed? Pass means the test passed with no exzception if the exception is null or if the exoected exception was cau
-ght. Note that some tests do fail deliberately to test the harness
- test_run_id                | integer                  |                                                                    | plain    |
-          | Test run id for test. Foreign key to rif40_test_runs table.
- test_date                  | timestamp with time zone |                                                                    | plain    |
-          | Test date
- time_taken                 | numeric                  |                                                                    | main     |
-          | Time taken for test (seconds)
- pg_debug_functions         | text[]                   |                                                                    | extended |
-          | Array of Postgres functions for test harness to enable debug on
+           Column           |           Type           |                             Modifiers                              | Storage  | Sta ts target |                                                                                            Description 
+----------------------------+--------------------------+--------------------------------------------------------------------+----------+---- ----------+--------------------------------------------------------------------------------------------------------------------------------- -------------------------------------------------------------------
+ test_id                    | integer                  | not null default (nextval('rif40_test_id_seq'::regclass))::integer | plain    |           | Unique investigation index: test_id. Created by SEQUENCE rif40_test_id_seq
+ parent_test_id             | integer                  |                                                                    | plain    |           | Parent test ID; NULL means first (test statement). Allows for a string of connected test cases. Multiple inheritance of test cas es is not permitted!
+ test_run_class             | character varying        | not null                                                           | extended |           | Test run class; usually the name of the SQL script that originally ran it
+ test_stmt                  | character varying        | not null                                                           | extended |           | SQL statement for test
+ test_case_title            | character varying        | not null                                                           | extended |           | Test case title. Must be unique
+ pg_error_code_expected     | character varying        |                                                                    | extended |           | [negative] Postgres error SQLSTATE expected [as part of an exception]; passed as PG_EXCEPTION_DETAIL
+ mssql_error_code_expected  | character varying        |                                                                    | extended |           | Microsoft SQL server error code expected [as part of an exception].
+ raise_exception_on_failure | boolean                  | not null default true                                              | plain    |           | Raise exception on failure. NULL means it is expected to NOT raise an exception, raise exception on failure
+ expected_result            | boolean                  | not null default true                                              | plain    |           | Expected result; tests are allowed to deliberately fail! If the test raises the expection pg_error_code_expected it would normal ly be expected to pass.
+ register_date              | timestamp with time zone | not null default statement_timestamp()                             | plain    |           | Date registered
+ results                    | text[]                   |                                                                    | extended |           | Results array
+ results_xml                | xml                      |                                                                    | extended |           | Results array in portable XML
+ pass                       | boolean                  |                                                                    | plain    |           | Was the test passed? Pass means the test passed with no exzception if the exception is null or if the exoected exception was cau ght. Note that some tests do fail deliberately to test the harness
+ test_run_id                | integer                  |                                                                    | plain    |           | Test run id for test. Foreign key to rif40_test_runs table.
+ test_date                  | timestamp with time zone |                                                                    | plain    |           | Test date
+ time_taken                 | numeric                  |                                                                    | main     |           | Time taken for test (seconds)
+ pg_debug_functions         | text[]                   |                                                                    | extended |           | Array of Postgres functions for test harness to enable debug on
 
 Indexes:
     "rif40_test_harness_pk" PRIMARY KEY, btree (test_id)
@@ -160,41 +136,37 @@ Foreign-key constraints:
     "rif40_test_harness_parent_test_id_fk" FOREIGN KEY (parent_test_id) REFERENCES rif40_test_harness(test_id)
     "rif40_test_harness_test_run_id_fk" FOREIGN KEY (test_run_id) REFERENCES rif40_test_runs(test_run_id)
 Referenced by:
-    TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_parent_test_id_fk" FOREIGN KEY (parent_test_id) REFERENCES rif40_test_harness(
-test_id)
+    TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_parent_test_id_fk" FOREIGN KEY (parent_test_id) REFERENCES rif40_test_harness( test_id)
 
 ## RIF40_TEST_RUNS Table
 
-            Column            |           Type           |                               Modifiers                                | Storage
- | Stats target |                                    Description
-------------------------------+--------------------------+------------------------------------------------------------------------+---------
--+--------------+------------------------------------------------------------------------------------
- test_run_id                  | integer                  | not null default (nextval('rif40_test_run_id_seq'::regclass))::integer | plain
- |              | Unique investigation index: test_run_id. Created by SEQUENCE rif40_test_run_id_seq
- test_run_title               | character varying        | not null                                                               | extended
- |              | Test run title
- test_date                    | timestamp with time zone | not null default statement_timestamp()                                 | plain
- |              | Test date
- time_taken                   | numeric                  | not null default 0                                                     | main
- |              | Time taken for test run (seconds)
- username                     | character varying(90)    | not null default "current_user"()                                      | extended
- |              | user name running test run
- tests_run                    | integer                  | not null default 0                                                     | plain
- |              | Number of tests run (should equal passed+failed!)
- number_passed                | integer                  | not null default 0                                                     | plain
- |              | Number of tests passed
- number_failed                | integer                  | not null default 0                                                     | plain
- |              | Number of tests failed
- number_test_cases_registered | integer                  | not null default 0                                                     | plain
- |              | Number of test cases registered [OBSOLETE]
- number_messages_registered   | integer                  | not null default 0                                                     | plain
- |              | Number of error and informational messages registered
+            Column            |           Type           |                               Modifiers                                | Storage  | Stats target |                                    Description
+------------------------------+--------------------------+------------------------------------------------------------------------+--------- -+--------------+------------------------------------------------------------------------------------
+ test_run_id                  | integer                  | not null default (nextval('rif40_test_run_id_seq'::regclass))::integer | plain  |              | Unique investigation index: test_run_id. Created by SEQUENCE rif40_test_run_id_seq
+ test_run_title               | character varying        | not null                                                               | extended  |              | Test run title
+ test_date                    | timestamp with time zone | not null default statement_timestamp()                                 | plain  |              | Test date
+ time_taken                   | numeric                  | not null default 0                                                     | main  |              | Time taken for test run (seconds)
+ username                     | character varying(90)    | not null default "current_user"()                                      | extended  |              | user name running test run
+ tests_run                    | integer                  | not null default 0                                                     | plain  |              | Number of tests run (should equal passed+failed!)
+ number_passed                | integer                  | not null default 0                                                     | plain  |              | Number of tests passed
+ number_failed                | integer                  | not null default 0                                                     | plain  |              | Number of tests failed
+ number_test_cases_registered | integer                  | not null default 0                                                     | plain  |              | Number of test cases registered [OBSOLETE]
+ number_messages_registered   | integer                  | not null default 0                                                     | plain  |              | Number of error and informational messages registered
  
 Indexes:
     "rif40_test_runs_pk" PRIMARY KEY, btree (test_run_id)
 Referenced by:
-    TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_test_run_id_fk" FOREIGN KEY (test_run_id) REFERENCES rif40_test_runs(test_run_
-id)
+    TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_test_run_id_fk" FOREIGN KEY (test_run_id) REFERENCES rif40_test_runs(test_run_ id)
+
+## To do
+	
+* Per test logging to file
+* Remove rif40_test_runs_.number_test_cases_registered
+* Add rif40_test_harness.port_specific_test; either: P (Postgres only) or: S (SQL Server only)
+
+## Potential future enhancements
+
+* Support for multiple users and user types; e.g. *notarifuser*
 
 # Usage
 
