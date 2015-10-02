@@ -111,7 +111,7 @@ The Makefile will building the requiored Node.js modules
 
 Column | Type | Modifiers | Description
 -------|------|-----------|------------
-test_id | integer | not null default (nextval('rif40_test_id_seq'::regclass))::integer | Unique investigation index: test_id. Created by SEQUENCE rif40_test_id_seq
+test_id | integer | not null default (nextval( 'rif40_test_id_seq'::regclass ))::integer | Unique investigation index: test_id. Created by SEQUENCE rif40_test_id_seq
 parent_test_id | integer | | Parent test ID; NULL means first (test statement). Allows for a string of connected test cases. Multiple inheritance of test cas es is not permitted!
 test_run_class | character varying | not null | Test run class; usually the name of the SQL script that originally ran it
 test_stmt | character varying | not null | SQL statement for test
@@ -141,7 +141,7 @@ Referenced by:
 ## RIF40_TEST_RUNS Table
 Column | Type | Modifiers | Description 
 -------|------|-----------|------------
-test_run_id | integer | not null default (nextval('rif40_test_run_id_seq'::regclass))::integer | Unique investigation index: test_run_id. Created by SEQUENCE rif40_test_run_id_seq
+test_run_id | integer | not null default (nextval( 'rif40_test_run_id_seq'::regclass ))::integer | Unique investigation index: test_run_id. Created by SEQUENCE rif40_test_run_id_seq
 test_run_title | character varying | not null | Test run title
 test_date | timestamp with time zone | not null default statement_timestamp() | Test date
 time_taken | numeric | not null default 0 | Time taken for test run (seconds)
