@@ -1,5 +1,23 @@
 # RIF40 Postgres database build from Github
 
+WARNING: The RIF requires Postgres 9.3 or 9.4 to work. 9.1 and 9.2 will not work. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which 
+is a post 9.2 option. 
+
+The new V4.0 RIF uses either Postgres or Microsoft SQL server as a database backend.
+
+## Postgres Setup
+
+Postgres is usually setup in one of three ways:
+ 
+* Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
+* Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS 
+  connectivity) for psql and secure LDAP for Java connectivity.
+* Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
+  psql and secure LDAP for Java connectivity.
+
+Postgres can proxy users (see ident.conf examples in the [build notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/build.md)). 
+Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
+
 ## Database development environment
 
 Current two databases are used: *sahsuland* and *sahsuland_dev*. The installer database *sahsuland* is kept stable for long periods, 
