@@ -107,12 +107,16 @@ The Makefile will building the requiored Node.js modules
 
 ## Use of Async
 
-## Success and fsailure in tests
+## Success and failure in tests
 
-The test ran ok: :+1:
+Success or failure is determined by *rif40_test_harness.pass*; the expected result:
 
-The test failed: :-1:
- 
+* TRUE - The test ran ok: :+1: or *rif40_test_harness.pg_error_code_expected* [negative] matches the Postgres 
+          error SQLSTATE expected [as part of an exception]; passed as PG_EXCEPTION_DETAIL in Postgres.
+* FALSE - The test failed: :-1: either the test ran OK when it was expected to raise an exception or it
+          it raised a different exception to that expected. **Tests are allowed to deliberately fail!**. This
+		  is used to test the test harness.
+
 ## RIF40_TEST_HARNESS Table
 
 Column | Type | Modifiers | Description
@@ -125,7 +129,7 @@ test_case_title | character varying | not null | Test case title. Must be unique
 pg_error_code_expected | character varying | | [negative] Postgres error SQLSTATE expected [as part of an exception]; passed as PG_EXCEPTION_DETAIL
 mssql_error_code_expected | character varying | | Microsoft SQL server error code expected [as part of an exception].
 raise_exception_on_failure | boolean | not null default true | Raise exception on failure. NULL means it is expected to NOT raise an exception, raise exception on failure
-expected_result | boolean | not null default true | Expected result; tests are allowed to deliberately fail! If the test raises the expection pg_error_code_expected it would normal ly be expected to pass.
+expected_result | boolean | not null default true | Expected result; tests are allowed to deliberately fail! If the test raises the expection pg_error_code_expected it would normally be expected to pass.
 register_date | timestamp with time zone | not null default statement_timestamp() | Date registered
 results | text[] | | Results array
 results_xml | xml | | Results array in portable XML
@@ -138,9 +142,11 @@ pg_debug_functions | text[] | | Array of Postgres functions for test harness to 
 Indexes:
 * "rif40_test_harness_pk" PRIMARY KEY, btree (test_id)
 * "rif40_test_harness_uk" UNIQUE, btree (parent_test_id)
+
 Foreign-key constraints:
 * "rif40_test_harness_parent_test_id_fk" FOREIGN KEY (parent_test_id) REFERENCES rif40_test_harness(test_id)
 * "rif40_test_harness_test_run_id_fk" FOREIGN KEY (test_run_id) REFERENCES rif40_test_runs(test_run_id)
+
 Referenced by:
 * TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_parent_test_id_fk" FOREIGN KEY (parent_test_id) REFERENCES rif40_test_harness( test_id)
 
@@ -160,6 +166,7 @@ number_messages_registered | integer | not null default 0 | Number of error and 
  
 Indexes:
 * "rif40_test_runs_pk" PRIMARY KEY, btree (test_run_id)
+
 Referenced by:
 * TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_test_run_id_fk" FOREIGN KEY (test_run_id) REFERENCES rif40_test_runs(test_run_ id)
 
