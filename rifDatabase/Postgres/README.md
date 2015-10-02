@@ -94,7 +94,7 @@ SAHSULAND and SAHSULAND_DEV setup completed OK
 
 ## Issues with the build
 
-### Lack of networking with cause Node.js makefiles to fail:
+### 1. Lack of networking with cause Node.js makefiles to fail:
 
 * Node.js program (in directory *../Node*) *topojson_convert.js*. This will be replaced by a 
   web service. This causes a web service testing error later in the build:
