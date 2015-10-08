@@ -117,7 +117,7 @@ SECURITY INVOKER
 AS $func$
 /*
 Function: 	rif40_sql_test()
-Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+Parameters:	SQL test (SELECT or INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title, 
 			results 3d text array,
 			results as XML,
@@ -415,7 +415,7 @@ $func$ LANGUAGE plpgsql;
 			
 COMMENT ON FUNCTION rif40_sql_pkg.rif40_sql_test(VARCHAR, VARCHAR, ANYARRAY, XML,
 	VARCHAR, BOOLEAN, INTEGER, Text[], BOOLEAN) IS 'Function: 	rif40_sql_test()
-Parameters:	SQL test (SELECT of INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+Parameters:	SQL test (SELECT or INSERT/UPDATE/DELETE with RETURNING clause) statement, 
             test case title, 
 			results 3d text array,
 			results as XML,

@@ -29,6 +29,7 @@ prune: retained 160 / 160 arcs (100%)
 
 Checks: 
 
+* Postgres must be installed. 
 * Type: pg_config to test if Postgres extensibility is installed, pg-native requires MS Visual Studio.
 * check you can connect to psql without a password (i.e. using pgass/Kerberos). pg-native must be able to connect to the database to install!
 
@@ -110,32 +111,9 @@ The dsatabase layer test harness is driven by two tables:
 * RIF40_TEST_RUNS: Test runs
 * RIF40_TEST_HARNESS: Tests
 
-## Test Functions
-
-* rif40_sql_pkg.rif40_sql_test()
-* rif40_sql_pkg._rif40_sql_test()
-
-## Transactions
-
-## Linked Tests
-
-## Inheritance
-
-## Use of Async
-
-## Code Portablility
-
-## Test Examples
-
-## Success and failure in tests
-
-Success or failure is determined by *rif40_test_harness.pass*; the expected result:
-
-* TRUE - The test ran ok: :+1: or *rif40_test_harness.pg_error_code_expected* [negative] matches the Postgres 
-          error SQLSTATE expected [as part of an exception]; passed as PG_EXCEPTION_DETAIL in Postgres.
-* FALSE - The test failed: :-1: either the test ran OK when it was expected to raise an exception or it
-          it raised a different exception to that expected. **Tests are allowed to deliberately fail!**. This
-		  is used to test the test harness.
+The *rif40_test_harness.parent_test_id* column is used to create a series of chained tests within a single transaction. 
+Tests cannot be shared by multiple transactions; this would require the *rif40_test_harness* to be split into a further 
+*rif40_test_harness_runs*.
 
 ## RIF40_TEST_HARNESS Table
 
@@ -190,11 +168,449 @@ Indexes:
 Referenced by:
 * TABLE "rif40_test_harness" CONSTRAINT "rif40_test_harness_test_run_id_fk" FOREIGN KEY (test_run_id) REFERENCES rif40_test_runs(test_run_ id)
 
+## Test Functions
+
+### Function: rif40_sql_pkg.rif40_sql_test()
+
+Parameters:	
+
+* SQL test (SELECT or INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+* Test case title, 
+* Results 3d text array,
+* Results as XML,
+* [negative] error SQLSTATE expected [as part of an exception]; the first negative 
+  number in the message is assumed to be the number; 
+  NULL means it is expected to NOT raise an exception, 
+* Raise exception on failure (true/false),
+* Test id,
+* Array of Postgres functions for test harness to enable debug on,
+* Expected result (true/false); pass is true 
+
+Returns:	
+
+Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
+
+Description:	
+
+Calls _rif40_sql_test() to log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement 
+or INSERT/UPDATE/DELETE with RETURNING clause
+
+Checks expected results against actual; pass if they match, fail if they do not.
+			
+Exception behaviour controlled by _rif40_sql_test()
+			
+### Function: rif40_sql_pkg._rif40_sql_test()
+
+Parameters:	
+
+* SQL test (SELECT or INSERT/UPDATE/DELETE with RETURNING clause) statement, 
+* test case title,
+* Results 3d text array,
+* Results as XML,
+* [negative] error SQLSTATE expected [as part of an exception]; the first 
+  negative number in the message is assumed to be the number; 
+  NULL means it is expected to NOT raise an exception, raise exception on failure,
+* Test id,
+* Array of Postgres functions for test harness to enable debug on
+
+Returns:	
+
+Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE.
+Note that this is the result of the test and is not influenced by the expected result:
+
+* To pass:
+  * No exception, results as expected;
+  * Exception as expected
+
+* Everything else is a fail.
+			
+Description:	
+
+Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause.
+Used to check test SQL statements and triggers
+
+## Transactions
+
+The test harness runs with two connections with independent transactions:
+
+* Connection 1: query up the test list; updates list with results, creates run summary.
+* Connection 2: Runs each tests, or set of linked tests as a single transaction and rolls 
+  back the transaction at the end. Does NOT effect the database.
+
+## Linked Tests, Inheritance
+
+The *rif40_test_harness.parent_test_id* column is used to create a series of chained tests within a single transaction. 
+Tests cannot be shared by multiple transactions; this would require the *rif40_test_harness* to be split into a further 
+*rif40_test_harness_runs*.
+
+Inheritance is therefore not permitted.
+
+## Use of Async
+
+Node.js is highly asynchronous; as is the Postgres driver (pg). Executing SQL statements results in the 
+statement becoming queued up and not necessarily running in the same order as submitted to the queue. For loops
+have the same effect. This obviously is not good for tranactionaal control. Originally the SQL statements were chained
+using the the *cursor.on('end', function(result) {}* functionality; this results in a large stack that grows linearly 
+per test. To avoid stack issues a Mtux was used so that the for loop could execute in a synchronous manner:
+
+```
+//
+// This is no longer recursive, replaced with a for loop and a Mutex lock
+//						
+
+var k = 1;
+for (; k <= row_count; k++) { 	
+	(function(p_k) {
+		process.nextTick(function() {						
+			try {
+				if (p_k > row_count) {
+					console.error('1: run_test_harness_tests() p_k (' + p_k + ') > row_count (' + row_count + ')');				
+					process.exit(1);
+				}
+				var p_mutex_id;
+				var mutex_name = 'db_test_harness.js-test';								
+				p_mutexjs.lock(mutex_name, function(id) {
+					p_mutex_id=id;
+					rif40_sql_test(p_conString, p_mutexjs, p_client1, p_client2, p_k, p_tests, 
+						p_passed_or_failed, p_failed_flag, p_rif40_test_harness, start_time, p_mutex_id,
+						p_rif40_test_harness_results); 
+				});
+			}
+			catch(err) {
+				console.error('1: _rif40_sql_test_end() Could not acquire Mutex: ' + mutex_name, err);				
+				process.exit(1);
+			}					
+		});	
+	})(k);							
+}	
+``` 
+Note:
+
+* Use of process.nextTick() to slow big loops and reduce stack stress
+* This code is from run_test_harness_tests()
+* The mutex is released in _rif40_sql_test_end() when the test case is rolled back.
+
+## Code Portablility
+
+The following are issues with code portability to Microsoft SQL Server:
+
+* Use of unnest() and array type functionality in the standard SAHSULAND test exmaple
+* No support for SQL server debugging functions
+* Use of RETURNING in _end_test_harness() INSERT INTO rif40_tests_runs SQL.
+* Potential fix (use of RETURNING) to rif40_sql_pkg._rif40_sql_test() so the SQL runs once (i.e. use capture the results). This avoids issues with functions 
+  (e.g. rif40_run)_study() that errors if run more than once.
+* Node.js drivers (Azure/Tedious) and Postgres have differing interface. There is no common DB abstraction 
+  (apart from any-db for Postgres, MySQL and SQLLite3) as in Perl, PGP etc.
+  
+## Test Examples
+
+These are all Postgres examples.
+
+a) SELECT statements:
+
+Actual test INSERT code:
+```
+	PERFORM rif40_sql_pkg._rif40_sql_test_register(
+                 'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+				 'test_8_triggers.sql',	
+                 'T8--07: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+ '{{01,01.015,01.015.016200,01.015.016200.2}
+ ,{01,01.015,01.015.016200,01.015.016200.3}
+ ,{01,01.015,01.015.016200,01.015.016200.4}
+ ,{01,01.015,01.015.016900,01.015.016900.1}
+ ,{01,01.015,01.015.016900,01.015.016900.2}
+ ,{01,01.015,01.015.016900,01.015.016900.3}
+ }'::Text[][],
+ '<row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.2</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.3</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016200</level3>
+   <level4>01.015.016200.4</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.1</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.2</level4>
+ </row>
+ <row xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <level1>01</level1>
+   <level2>01.015</level2>
+   <level3>01.015.016900</level3>
+   <level4>01.015.016900.3</level4>
+ </row>'::XML);
+```
+
+Example runtime code:
+```			
+IF NOT (rif40_sql_pkg.rif40_sql_test(
+	'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+	'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+	'{{01,01.015,01.015.016200,01.015.016200.2}
+	,{01,01.015,01.015.016200,01.015.016200.3} 
+	,{01,01.015,01.015.016200,01.015.016200.4} 
+	,{01,01.015,01.015.016900,01.015.016900.1} 
+	,{01,01.015,01.015.016900,01.015.016900.2} 
+	,{01,01.015,01.015.016900,01.015.016900.3} 
+	}'::Text[][]
+	/* Use defaults */)) THEN
+	errors:=errors+1;
+END IF;				
+```
+
+Example output:
+```
+psql:test_scripts/test_8_triggers.sql:276: INFO:  rif40_method4():
+Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200
+---------------------------------------------------------------------
+psql:test_scripts/test_8_triggers.sql:276: INFO:  rif40_method4():
+level1                                   | level2                                   | level3                                   | level4
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+01                                       | 01.015                                   | 01.015.016200                            | 01.015.016200.2
+01                                       | 01.015                                   | 01.015.016200                            | 01.015.016200.3
+01                                       | 01.015                                   | 01.015.016200                            | 01.015.016200.4
+01                                       | 01.015                                   | 01.015.016900                            | 01.015.016900.1
+01                                       | 01.015                                   | 01.015.016900                            | 01.015.016900.2
+01                                       | 01.015                                   | 01.015.016900                            | 01.015.016900.3
+(6 rows)
+psql:test_scripts/test_8_triggers.sql:276: INFO:  rif40_sql_test(): [71152] PASSED: no extra rows for test: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200
+psql:test_scripts/test_8_triggers.sql:276: INFO:  rif40_sql_test(): [71155] PASSED: no missing rows for test: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200
+psql:test_scripts/test_8_triggers.sql:276: INFO:  rif40_sql_test(): [71158] PASSED: Test case: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 no exceptions, no errors, no missing or extra data
+```
+				
+i)   Original SQL statement:
+	SELECT * FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200');
+ii)  Add ORDER BY clause, expand * (This becomes the test case SQL)
+	SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4;			   
+iii) Convert results to array form (Cast to text, string ) 
+	[the function rif40_sql_pkg._rif40_test_sql_template() will automate this]
+
+```
+	SELECT ''''||
+		   REPLACE(ARRAY_AGG(
+				(ARRAY[level1::Text, level2::Text, level3::Text, level4::Text]::Text||E'\n')::Text ORDER BY level4)::Text, 
+				'"'::Text, ''::Text)||'''::Text[][]' AS res 
+	  FROM sahsuland_geography
+	 WHERE level3 IN ('01.015.016900', '01.015.016200');
+
+						 res
+	---------------------------------------------
+	 '{{01,01.015,01.015.016200,01.015.016200.2}+
+	 ,{01,01.015,01.015.016200,01.015.016200.3} +
+	 ,{01,01.015,01.015.016200,01.015.016200.4} +
+	 ,{01,01.015,01.015.016900,01.015.016900.1} +
+	 ,{01,01.015,01.015.016900,01.015.016900.2} +
+	 ,{01,01.015,01.015.016900,01.015.016900.3} +
+	 }'::Text[][]
+	(1 row)
+```
+	
+Example call:
+	
+```	
+	PERFORM rif40_sql_pkg.rif40_sql_test(
+		'SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN (''01.015.016900'', ''01.015.016200'') ORDER BY level4',
+		'Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200',
+		'{{01,01.015,01.015.016200,01.015.016200.2}
+		,{01,01.015,01.015.016200,01.015.016200.3} 
+		,{01,01.015,01.015.016200,01.015.016200.4} 
+		,{01,01.015,01.015.016900,01.015.016900.1} 
+		,{01,01.015,01.015.016900,01.015.016900.2} 
+		,{01,01.015,01.015.016900,01.015.016900.3} 
+		}'::Text[][]);
+```
+
+Example expand of array to setof record
+	
+```	
+		WITH a AS (
+			SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
+		,{01,01.015,01.015.016200,01.015.016200.3} 
+		,{01,01.015,01.015.016200,01.015.016200.4} 
+		,{01,01.015,01.015.016900,01.015.016900.1} 
+		,{01,01.015,01.015.016900,01.015.016900.2} 
+		,{01,01.015,01.015.016900,01.015.016900.3} 
+		}'::Text[][] AS res
+		), row AS (
+			SELECT generate_series(1,array_upper(a.res, 1)) AS series
+			  FROM a
+		)
+		SELECT  row.series, 
+				(a.res)[row.series][1] AS level1, 
+				(a.res)[row.series][2] AS level2, 
+				(a.res)[row.series][3] AS level3, 
+				(a.res)[row.series][4] AS level4
+		  FROM row, a;
+		
+	WITH a AS ( /* Test data */ 
+		SELECT '{{01,01.015,01.015.016200,01.015.016200.2}
+			,{01,01.015,01.015.016200,01.015.016200.3} 
+			,{01,01.015,01.015.016200,01.015.016200.4} 
+			,{01,01.015,01.015.016900,01.015.016900.1} 
+			,{01,01.015,01.015.016900,01.015.016900.2} 
+			,{01,01.015,01.015.016900,01.015.016900.3} 
+			}'::Text[][] AS res
+	), b AS ( /* Test SQL */
+		SELECT level1, level2, level3, level4 
+		  FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') 
+		 ORDER BY level4
+	), c AS ( /* Convert to 2D array via record */
+		SELECT REPLACE(
+					REPLACE(
+						REPLACE(
+								ARRAY_AGG(b.*)::Text, 
+								'"'::Text, ''::Text), 
+							'('::Text, '{'::Text), 
+						')'::Text, '}'::Text)::Text[][] AS res
+		FROM b
+	)
+	SELECT rif40_sql_pkg._rif40_reduce_dim(c.res) AS missing_data
+	  FROM c
+	EXCEPT 
+	SELECT rif40_sql_pkg._rif40_reduce_dim(a.res)
+	  FROM a;
+```
+
+b) TRIGGERS
+			
+These use INSERT/UPDATE OR DELETE statements. RETURNING is supported, but it must be a single 
+text value (test_value). The results array should should also be  single value. Beware that the 
+INSERTed data from the table is not in scope, so you can return a sequence, an input value, but not trigger modified data 
+
+Example code:
+```
+	IF NOT (rif40_sql_pkg.rif40_sql_test(	
+		'INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES (''SAHSU'', ''TEST'', ''TRIGGER TEST #1'', ''EXTRACT_TRIGGER_TEST_1'', ''MAP_TRIGGER_TEST_1'', 1 /* Disease mapping */, ''LEVEL1'', ''LEVEL4'', NULL /* FAIL HERE */, 0)',
+		'TRIGGER TEST #1: rif40_studies.denom_tab IS NULL',
+		NULL::Text[][] 	/* No results for trigger */,
+		'P0001' 		/* Expected SQLCODE (P0001 - PGpsql raise_exception (from rif40_error) */, 
+		FALSE 			/* Do not RAISE EXCEPTION on failure */)) THEN
+		errors:=errors+1;
+    END IF;	 
+```
+
+Example output:
+```
+psql:test_scripts/test_8_triggers.sql:276: WARNING:  rif40_ddl(): SQL in error (P0001)> INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST_1', 'MAP_TRIGGER_TEST_1', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', NULL /* FAIL HERE */, 0);
+psql:test_scripts/test_8_triggers.sql:276: WARNING:  71167: rif40_sql_test('TRIGGER TEST #1: rif40_studies.denom_tab IS NULL') caught:
+rif40_trg_pkg.trigger_fct_t_rif40_studies_checks(): T_RIF40_STUDIES study 140 denominator:  not found in RIF40_TABLES in SQL >>>
+INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST_1', 'MAP_TRIGGER_TEST_1', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', NULL /* FAIL HERE */, 0);
+<<<
+Error context and message >>>
+Message:  rif40_trg_pkg.trigger_fct_t_rif40_studies_checks(): T_RIF40_STUDIES study 140 denominator:  not found in RIF40_TABLES
+Hint:     Consult message text
+Detail:   -20211
+Context:  SQL statement "SELECT rif40_log_pkg.rif40_error(-20211, 'trigger_fct_t_rif40_studies_checks',
+                        'T_RIF40_STUDIES study % denominator: % not found in RIF40_TABLES',
+                        NEW.study_id::VARCHAR           /* Study id */,
+                        NEW.denom_tab::VARCHAR          /* Denominator */)"
+PL/pgSQL function rif40_trg_pkg.trigger_fct_t_rif40_studies_checks() line 460 at PERFORM
+SQL statement "INSERT INTO t_rif40_studies (
+                                username,
+                                study_id,
+                                extract_table,
+                                study_name,
+                                summary,
+                                description,
+                                other_notes,
+                                study_date,
+                                geography,
+                                study_type,
+                                study_state,
+                                comparison_geolevel_name,
+                                denom_tab,
+                                direct_stand_tab,
+                                study_geolevel_name,
+                                map_table,
+                                suppression_value,
+                                extract_permitted,
+                                transfer_permitted,
+                                authorised_by,
+                                authorised_on,
+                                authorised_notes,
+                                audsid,
+                                project)
+                        VALUES(
+                                coalesce(NEW.username, "current_user"()),
+                                coalesce(NEW.study_id, (nextval('rif40_study_id_seq'::regclass))::integer),
+                                NEW.extract_table /* no default value */,
+                                NEW.study_name /* no default value */,
+                                NEW.summary /* no default value */,
+                                NEW.description /* no default value */,
+                                NEW.other_notes /* no default value */,
+                                coalesce(NEW.study_date, ('now'::text)::timestamp without time zone),
+                                NEW.geography /* no default value */,
+                                NEW.study_type /* no default value */,
+                                coalesce(NEW.study_state, 'C'::character varying),
+                                NEW.comparison_geolevel_name /* no default value */,
+                                NEW.denom_tab /* no default value */,
+                                NEW.direct_stand_tab /* no default value */,
+                                NEW.study_geolevel_name /* no default value */,
+                                NEW.map_table /* no default value */,
+                                NEW.suppression_value /* no default value */,
+                                coalesce(NEW.extract_permitted, 0),
+                                coalesce(NEW.transfer_permitted, 0),
+                                NEW.authorised_by /* no default value */,
+                                NEW.authorised_on /* no default value */,
+                                NEW.authorised_notes /* no default value */,
+                                coalesce(NEW.audsid, sys_context('USERENV'::character varying, 'SESSIONID'::character varying)),
+                                NEW.project /* no default value */)"
+PL/pgSQL function rif40_trg_pkg.trgf_rif40_studies() line 8 at SQL statement
+SQL statement "INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST_1', 'MAP_TRIGGER_TEST_1', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', NULL /* FAIL HERE */, 0)"
+PL/pgSQL function rif40_ddl(character varying) line 51 at EXECUTE statement
+SQL statement "SELECT rif40_sql_pkg.rif40_ddl(test_stmt)"
+PL/pgSQL function rif40_sql_test(character varying,character varying,anyarray,character varying,boolean) line 253 at PERFORM
+PL/pgSQL function inline_code_block line 157 at IF
+SQLSTATE: P0001
+<<< End of trace.
+
+psql:test_scripts/test_8_triggers.sql:276: WARNING:  rif40_sql_test(): [71169] Test case: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL PASSED, caught expecting SQLSTATE P0001;
+Message:  rif40_trg_pkg.trigger_fct_t_rif40_studies_checks(): T_RIF40_STUDIES study 140 denominator:  not found in RIF40_TABLES
+Detail:   -20211
+```
+
+## Success and failure in tests
+
+Success or failure is determined by *rif40_test_harness.pass*; the expected result:
+
+* TRUE - The test ran ok: :+1: or *rif40_test_harness.pg_error_code_expected* [negative] matches the Postgres 
+          error SQLSTATE expected [as part of an exception]; passed as PG_EXCEPTION_DETAIL in Postgres.
+* FALSE - The test failed: :-1: either the test ran OK when it was expected to raise an exception or it
+          it raised a different exception to that expected. **Tests are allowed to deliberately fail!**. This
+		  is used to test the test harness.
+
 ## To do
 	
 * Per test logging to sepafile files.
 * Remove rif40_test_runs_.number_test_cases_registered.
 * Add rif40_test_harness.port_specific_test; either: P (Postgres only) or: S (SQL Server only).
+
+## Bugs
+
+* Fix rif40_sql_pkg._rif40_sql_test() so the SQL runs once (i.e. use capture the results). This avoids issues with functions 
+  (e.g. rif40_run)_study() that errors if run more than once.
 
 ## Potential future enhancements
 
