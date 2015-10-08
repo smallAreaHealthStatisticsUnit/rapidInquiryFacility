@@ -17,6 +17,10 @@ The following are not documented:
 * Partitioning (rif40_partitions schema). This will be a separate series of WIKIs.
 * PL/pgsql code in rif40_&lt;code area/type, e.g. R, sql, sm - for statemachine, geo&gt;_pkgs. Again this will be documented separately.
 
+## Building the ERD
+
+** Building the RIF ERD must be done on Linux as it uses the Linux commands *wget* and *unzip* to download the required files.**
+
 A Makefile is provided to build the doucmentation. Make has four targets:
 
 * clean - clean all (i.e. docs)
