@@ -181,7 +181,7 @@ ifeq ($(OS),Windows_NT)
 #
 # This makefile will not work on Windows
 # 
-	$(error SORRY - NEEDS LINUX	: Unsupported OS: $(OS); uname -s: $(UNAME_S))
+#	$(error SORRY - NEEDS LINUX	: Unsupported OS: $(OS); uname -s: $(UNAME_S))
 else
 #
 # Linux macos support
@@ -244,9 +244,16 @@ veryclean:
 #- dbmstools ERD documenter; rubbish, old, unsupported, unmaintainer but the best yet found
 dbms_tools: dbmstools-0.4.5rc1.zip
 dbmstools-0.4.5rc1.zip:
+#
+# This makefile will not work on Windows
+# 
+ifeq ($(OS),Windows_NT)
+	$(error SORRY - NEEDS LINUX	: Unsupported OS: $(OS);)
+
 	wget http://sourceforge.net/projects/dbmstools/files/dbmstools/0.4.5rc1/dbmstools-0.4.5rc1.zip
 	unzip dbmstools-0.4.5rc1.zip
 	(cd dbmstools-0.4.5rc1/jdbc-drivers; wget https://jdbc.postgresql.org/download/postgresql-9.4-1201.jdbc41.jar)
+endif
 	
 #- sahusland.xml: ERD model of database
 #- Note use of sed to fix the output into valid XML; there is a lot of specific cleaning, specifically:
