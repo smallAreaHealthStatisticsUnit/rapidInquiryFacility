@@ -188,6 +188,25 @@ Test harness refactor; Node.js version working
 * Debug functions
 * Instrumnetation
 * Conversion to Mutex locked version to prevent stack overload with waterfall of cascading callback functions
+
+#### 14th to 18th September
+
+#### 21st to 25th September
+
+* Regression test build
+* User setup documentation
+* Support in test harness for anonymous PL/pgSQL
+* State machine verification tests
+* Timestamps in test machine output connection trace
+
+#### 28th September to 2nd October
+
+* Build documentation
+* Small fixes to build (e.g. ::1 localhost fix, Node make fixes), regression tests complete opn Windows and Linux
+
+#### 5th to 9th October
+
+* Test harness documentation
  
 Remove old dblink version
  

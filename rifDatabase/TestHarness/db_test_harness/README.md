@@ -192,7 +192,7 @@ Pass (true)/Fail (false) unless raise_exception_on_failure is TRUE
 
 Description:	
 
-Calls _rif40_sql_test() to log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement 
+Calls _rif40_sql_test() to log and execute dynamic SQL SELECT statement 
 or INSERT/UPDATE/DELETE with RETURNING clause
 
 Checks expected results against actual; pass if they match, fail if they do not.
@@ -226,7 +226,7 @@ Note that this is the result of the test and is not influenced by the expected r
 			
 Description:	
 
-Log and execute SQL Dynamic SQL method 4 (Oracle name) SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause.
+Log and execute dynamic SQL SELECT statement or INSERT/UPDATE/DELETE with RETURNING clause.
 Used to check test SQL statements and triggers
 
 ## Transactions
@@ -251,7 +251,7 @@ Node.js is highly asynchronous; as is the Postgres driver (pg). Executing SQL st
 statement becoming queued up and not necessarily running in the same order as submitted to the queue. For loops
 have the same effect. This obviously is not good for tranactionaal control. Originally the SQL statements were chained
 using the the *cursor.on('end', function(result) {}* functionality; this results in a recursive large stack that grows linearly 
-per test. To avoid stack issues a Mtux was used so that the for loop could execute in a synchronous manner:
+per test. To avoid stack issues a Mutux was used so that the for loop could execute in a synchronous manner:
 
 ```
 //
