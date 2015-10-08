@@ -26,6 +26,12 @@
     <sequence dbms="postgres8" name="rif40_study_id_seq" >
     </sequence>
 
+    <sequence dbms="postgres8" name="rif40_test_id_seq" >
+    </sequence>
+
+    <sequence dbms="postgres8" name="rif40_test_run_id_seq" >
+    </sequence>
+
     <!--
     ======================================================================
         Tables
@@ -237,6 +243,33 @@
             <grant role="rif_manager" actions="select" />
             <grant role="rif_user" actions="select" />
             <grant role="rif40" actions="select, references, insert, delete, update" />
+        </grants>
+    </table>
+
+    <table name="rif40_test_runs" description="Test harness test run information"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="test_run_id" description="Unique investigation index: test_run_id. Created by SEQUENCE rif40_test_run_id_seq" type="int" allows-null="false" auto-increment="true" />
+            <column name="test_run_title" description="Test run title" type="varchar" length="2147483647" allows-null="false" />
+            <column name="test_date" description="Test date" type="datetime" allows-null="false" default-value="statement_timestamp()" />
+            <column name="time_taken" description="Time taken for test run (seconds)" type="numeric" length="131089" allows-null="false" default-value="0" />
+            <column name="username" description="user name running test run" type="varchar" length="90" allows-null="false" default-value="current_user()" />
+            <column name="tests_run" description="Number of tests run (should equal passed+failed!)" type="int" allows-null="false" default-value="0" />
+            <column name="number_passed" description="Number of tests passed" type="int" allows-null="false" default-value="0" />
+            <column name="number_failed" description="Number of tests failed" type="int" allows-null="false" default-value="0" />
+            <column name="number_test_cases_registered" description="Number of test cases registered [OBSOLETE]" type="int" allows-null="false" default-value="0" />
+            <column name="number_messages_registered" description="Number of error and informational messages registered" type="int" allows-null="false" default-value="0" />
+        </columns>
+        <constraints>
+            <primary-key name="rif40_test_runs_pk">
+                <column-ref name="test_run_id" />
+            </primary-key>
+        </constraints>
+        <grants>
+            <grant role="rif_user" actions="select" />
+            <grant role="rif_manager" actions="select, insert, delete, update" />
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="notarifuser" actions="select, insert, delete, update" />
         </grants>
     </table>
 
@@ -463,9 +496,9 @@
     <table name="rif40_triggers" description="RIF40 Triggers"
             size="medium" update-frequency="medium" select-frequency="medium">
         <columns>
-            <column name="table_name" description="Table name" type="varchar" length="30" allows-null="false" />
+            <column name="table_name" description="Table name" type="varchar" length="40" allows-null="false" />
             <column name="column_name" description="Column name" type="varchar" length="4000" allows-null="true" />
-            <column name="trigger_name" description="Trigger name" type="varchar" length="30" allows-null="false" />
+            <column name="trigger_name" description="Trigger name" type="varchar" length="40" allows-null="false" />
             <column name="trigger_type" description="Type type" type="varchar" length="16" allows-null="true" />
             <column name="triggering_event" description="Triggering event" type="varchar" length="227" allows-null="true" />
             <column name="when_clause" description="When clause" type="varchar" length="4000" allows-null="true" />
@@ -1146,6 +1179,63 @@
             <grant role="rif_manager" actions="select, insert, delete, update" />
             <grant role="rif_user" actions="select, insert, delete, update" />
             <grant role="rif40" actions="select, references, insert, delete, update" />
+        </grants>
+    </table>
+
+    <table name="rif40_test_harness" description="Test harness test cases and last run information"
+            size="medium" update-frequency="medium" select-frequency="medium">
+        <columns>
+            <column name="test_id" description="Unique investigation index: test_id. Created by SEQUENCE rif40_test_id_seq" type="int" allows-null="false" auto-increment="true" />
+            <column name="parent_test_id" description="Parent test ID; NULL means first (test statement). Allows for a string of connected test cases. Multiple inheritance of test cases is not permitted!" type="int" allows-null="true" />
+            <column name="test_run_class" description="Test run class; usually the name of the SQL script that originally ran it" type="varchar" length="2147483647" allows-null="false" />
+            <column name="test_stmt" description="SQL statement for test" type="varchar" length="2147483647" allows-null="false" />
+            <column name="test_case_title" description="Test case title. Must be unique" type="varchar" length="2147483647" allows-null="false" />
+            <column name="pg_error_code_expected" description="[negative] Postgres error SQLSTATE expected [as part of an exception]; passed as PG_EXCEPTION_DETAIL" type="varchar" length="2147483647" allows-null="true" />
+            <column name="mssql_error_code_expected" description="Microsoft SQL server error code expected [as part of an exception]." type="varchar" length="2147483647" allows-null="true" />
+            <column name="raise_exception_on_failure" description="Raise exception on failure. NULL means it is expected to NOT raise an exception, raise exception on failure" length="1" allows-null="false" default-value="true" >
+                <column-override dbms="postgres8" raw-type="bool" />
+            </column>
+            <column name="expected_result" description="Expected result; tests are allowed to deliberately fail! If the test raises the expection pg_error_code_expected it would normally be expected to pass." length="1" allows-null="false" default-value="true" >
+                <column-override dbms="postgres8" raw-type="bool" />
+            </column>
+            <column name="register_date" description="Date registered" type="datetime" allows-null="false" default-value="statement_timestamp()" />
+            <column name="results" description="Results array" length="2147483647" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="_text" />
+            </column>
+            <column name="results_xml" description="Results array in portable XML" length="2147483647" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="xml" />
+            </column>
+            <column name="pass" description="Was the test passed? Pass means the test passed with no exzception if the exception is null or if the exoected exception was caught. Note that some tests do fail deliberately to test the harness" length="1" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="bool" />
+            </column>
+            <column name="test_run_id" description="Test run id for test. Foreign key to rif40_test_runs table." type="int" allows-null="true" />
+            <column name="test_date" description="Test date" type="datetime" allows-null="true" />
+            <column name="time_taken" description="Time taken for test (seconds)" type="numeric" length="131089" allows-null="true" />
+            <column name="pg_debug_functions" description="Array of Postgres functions for test harness to enable debug on" length="2147483647" allows-null="true" >
+                <column-override dbms="postgres8" raw-type="_text" />
+            </column>
+        </columns>
+        <constraints>
+            <primary-key name="rif40_test_harness_pk">
+                <column-ref name="test_id" />
+            </primary-key>
+            <foreign-key name="rif40_test_harness_parent_test_id_fk" references="rif40_test_harness">
+                <column-ref name="parent_test_id" />
+            </foreign-key>
+            <foreign-key name="rif40_test_harness_test_run_id_fk" references="rif40_test_runs">
+                <column-ref name="test_run_id" />
+            </foreign-key>
+        </constraints>
+        <indexes>
+            <index name="rif40_test_harness_uk" unique="true">
+                <column-ref name="parent_test_id" />
+            </index>
+        </indexes>
+        <grants>
+            <grant role="rif_user" actions="select" />
+            <grant role="rif_manager" actions="select, insert, delete, update" />
+            <grant role="rif40" actions="select, references, insert, delete, update" />
+            <grant role="notarifuser" actions="select, insert, delete, update" />
         </grants>
     </table>
 
