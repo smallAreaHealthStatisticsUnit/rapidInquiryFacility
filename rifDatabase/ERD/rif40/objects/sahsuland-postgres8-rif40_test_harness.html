@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+<title>Table: rif40_test_harness</title>
+<link href="../schema.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<table class="item-table">
+<tr class="item-header"><td class="item-header" colspan="4"><a name="Tab-rif40_test_harness">Table: rif40.rif40_test_harness</a></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4"><span class="description">Test harness test cases and last run information</span></td></tr>
+<tr class="item-element"><td class="item-element" colspan="4">Size: medium, Select frequency: medium, Update frequency: medium</td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Columns</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Type</td><td class="item-header-3">Constraints</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-test_id"><span class="pk-col">test_id</span></a></td><td class="item-element">INTEGER</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Unique investigation index: test_id. Created by SEQUENCE rif40_test_id_seq</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-parent_test_id"><span class="fk-col">parent_test_id</span></a></td><td class="item-element">INTEGER</td><td class="item-element"></td><td class="item-element"><span class="description">Parent test ID; NULL means first (test statement). Allows for a string of connected test cases. Multiple inheritance of test cases is not permitted!</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-test_run_class">test_run_class</a></td><td class="item-element">VARCHAR (2147483647)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Test run class; usually the name of the SQL script that originally ran it</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-test_stmt">test_stmt</a></td><td class="item-element">VARCHAR (2147483647)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">SQL statement for test</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-test_case_title">test_case_title</a></td><td class="item-element">VARCHAR (2147483647)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Test case title. Must be unique</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-pg_error_code_expected">pg_error_code_expected</a></td><td class="item-element">VARCHAR (2147483647)</td><td class="item-element"></td><td class="item-element"><span class="description">[negative] Postgres error SQLSTATE expected [as part of an exception]; passed as PG_EXCEPTION_DETAIL</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-mssql_error_code_expected">mssql_error_code_expected</a></td><td class="item-element">VARCHAR (2147483647)</td><td class="item-element"></td><td class="item-element"><span class="description">Microsoft SQL server error code expected [as part of an exception].</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-raise_exception_on_failure">raise_exception_on_failure</a></td><td class="item-element">bool (1)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Raise exception on failure. NULL means it is expected to NOT raise an exception, raise exception on failure</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-expected_result">expected_result</a></td><td class="item-element">bool (1)</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Expected result; tests are allowed to deliberately fail! If the test raises the expection pg_error_code_expected it would normally be expected to pass.</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-register_date">register_date</a></td><td class="item-element">TIMESTAMP</td><td class="item-element">NOT NULL</td><td class="item-element"><span class="description">Date registered</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-results">results</a></td><td class="item-element">_text (2147483647)</td><td class="item-element"></td><td class="item-element"><span class="description">Results array</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-results_xml">results_xml</a></td><td class="item-element">xml (2147483647)</td><td class="item-element"></td><td class="item-element"><span class="description">Results array in portable XML</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-pass">pass</a></td><td class="item-element">bool (1)</td><td class="item-element"></td><td class="item-element"><span class="description">Was the test passed? Pass means the test passed with no exzception if the exception is null or if the exoected exception was caught. Note that some tests do fail deliberately to test the harness</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-test_run_id"><span class="fk-col">test_run_id</span></a></td><td class="item-element">INTEGER</td><td class="item-element"></td><td class="item-element"><span class="description">Test run id for test. Foreign key to rif40_test_runs table.</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-test_date">test_date</a></td><td class="item-element">TIMESTAMP</td><td class="item-element"></td><td class="item-element"><span class="description">Test date</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-time_taken">time_taken</a></td><td class="item-element">NUMERIC (131089)</td><td class="item-element"></td><td class="item-element"><span class="description">Time taken for test (seconds)</span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="Col-rif40_test_harness-pg_debug_functions">pg_debug_functions</a></td><td class="item-element">_text (2147483647)</td><td class="item-element"></td><td class="item-element"><span class="description">Array of Postgres functions for test harness to enable debug on</span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Primary key</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3" colspan="2">Columns</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element">rif40_test_harness_pk</td><td colspan="2" class="item-element"><a href="../objects/sahsuland-postgres8-rif40_test_harness.html#Col-rif40_test_harness-test_id">test_id</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Foreign keys</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Columns</td><td class="item-header-3">Referenced table</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element"><a name="FK-rif40_test_harness-rif40_test_harness_parent_test_id_fk">rif40_test_harness_parent_test_id_fk</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-rif40_test_harness.html#Col-rif40_test_harness-parent_test_id">parent_test_id</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-rif40_test_harness.html#Tab-rif40_test_harness">rif40_test_harness</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-element"><td class="item-element"><a name="FK-rif40_test_harness-rif40_test_harness_test_run_id_fk">rif40_test_harness_test_run_id_fk</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-rif40_test_harness.html#Col-rif40_test_harness-test_run_id">test_run_id</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-rif40_test_runs.html#Tab-rif40_test_runs">rif40_test_runs</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Incoming foreign keys</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3">Columns</td><td class="item-header-3">Referencing table</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element"><a href="../objects/sahsuland-postgres8-rif40_test_harness.html#FK-rif40_test_harness-rif40_test_harness_parent_test_id_fk">rif40_test_harness_parent_test_id_fk</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-rif40_test_harness.html#Col-rif40_test_harness-parent_test_id">parent_test_id</a></td><td class="item-element"><a href="../objects/sahsuland-postgres8-rif40_test_harness.html#Tab-rif40_test_harness">rif40_test_harness</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Indexes</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Name</td><td class="item-header-3" colspan="2">Columns</td><td class="item-header-3">Description</td></tr>
+<tr class="item-element"><td class="item-element">rif40_test_harness_uk</td><td colspan="2" class="item-element"><a href="../objects/sahsuland-postgres8-rif40_test_harness.html#Col-rif40_test_harness-parent_test_id">parent_test_id</a></td><td class="item-element"><span class="description"></span></td></tr>
+<tr class="item-header-2"><td class="item-header-2" colspan="4">Grants</td></tr>
+<tr class="item-header-3"><td class="item-header-3">Role</td><td class="item-header-3" colspan="2">Actions</td><td class="item-header-3">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif_user</td><td colspan="2" class="item-element">select</td><td class="item-element">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif_manager</td><td colspan="2" class="item-element">select, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">rif40</td><td colspan="2" class="item-element">select, references, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+<tr class="item-element"><td class="item-element">notarifuser</td><td colspan="2" class="item-element">select, insert, delete, update</td><td class="item-element">&nbsp;</td></tr>
+</table><p>
+<img src="../images/sahsuland-postgres8-rif40_test_harness.png" usemap="#TableGraph" align="middle" alt="Schema diagram" border="0">
+<map id="TableGraph" name="TableGraph">
+<area shape="rect" id="node1" href="../objects/sahsuland-postgres8-rif40_test_harness.html" target="detailFrame" title="rif40_test_harness" alt="" coords="225,29,409,363"/>
+<area shape="rect" id="node2" href="../objects/sahsuland-postgres8-rif40_test_runs.html" target="detailFrame" title="rif40_test_runs" alt="" coords="5,89,205,303"/>
+</map>
+
+</body></html>
