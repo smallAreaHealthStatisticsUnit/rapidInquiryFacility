@@ -210,28 +210,22 @@ Test harness refactor; Node.js version working
  
 Remove old dblink version
  
-From August: 
+From October: 
 
-1. Test harness
+  1. Test harness
 
-To do:
-
-* Test regime; for all rif40 schema tables
-
-  * Constraints:
-
-    a) NOT null
-    b) Check i) correct; ii) incorrect
-    c) Primary key i) correct; ii) duplicate iii) missing parent
-
-  * Access control:
-  
-    d) notarifuser access
-
-  * Business logic:
-
-    e) Triggers
+  To do
 	
+  * Per test logging to separate files.
+  * Remove *rif40_test_runs_.number_test_cases_registered*.
+  * Add *rif40_test_harness.port_specific_test*; either: P (Postgres only) or: S (SQL Server only).
+
+  Bugs
+
+  * Fix rif40_sql_pkg._rif40_sql_test() so the SQL runs once (i.e. use capture the results). This avoids issues with functions 
+    (e.g. rif40_run)_study() that errors if run more than once.
+  *	Failures in psql are not detected when they occur (this appears to be a psql "feature") and cause failures some time later. 
+    These need to be explictly test for (effects topoJSON covnversion more than db_test_hanress.js).
 2. RIF batch integration
 3. Complete webserver integration
 	* Fix pernicious mixed content issues in JS frontend

@@ -603,19 +603,28 @@ Success or failure is determined by *rif40_test_harness.pass*; the expected resu
 
 ## To do
 	
-* Per test logging to sepafile files.
-* Remove rif40_test_runs_.number_test_cases_registered.
-* Add rif40_test_harness.port_specific_test; either: P (Postgres only) or: S (SQL Server only).
+* Per test logging to separate files.
+* Remove *rif40_test_runs_.number_test_cases_registered*.
+* Add *rif40_test_harness.port_specific_test*; either: P (Postgres only) or: S (SQL Server only).
 
 ## Bugs
 
 * Fix rif40_sql_pkg._rif40_sql_test() so the SQL runs once (i.e. use capture the results). This avoids issues with functions 
   (e.g. rif40_run)_study() that errors if run more than once.
 
-## Potential future enhancements
+## Potential future enhancements; lowest priority
 
 * Support for multiple users and user types; e.g. *notarifuser*.
+* Constraints:
 
+    a) NOT null
+    b) Check i) correct; ii) incorrect
+    c) Primary key i) correct; ii) duplicate iii) missing parent
+
+* Access control:
+  
+    d) notarifuser access
+  
 # Usage
 
 ``` node

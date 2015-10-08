@@ -62,7 +62,7 @@ On Windows:
   under an Academic licence. The dependency on Node.js will be reduced by replacing the current 
   program with Node.js web services available for use by the wider RIF community.
 
-For more information see: [Windows installer notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows.md)
+For more information see: [Windows install notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows.md)
 
 On Windows, Linux and MacOS
 
