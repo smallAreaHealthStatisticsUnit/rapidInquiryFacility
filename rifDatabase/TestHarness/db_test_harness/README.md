@@ -211,7 +211,7 @@ Parameters:
   negative number in the message is assumed to be the number; 
   NULL means it is expected to NOT raise an exception, raise exception on failure,
 * Test id,
-* Array of Postgres functions for test harness to enable debug on
+* Array of Postgres functions for test harness to enable debug on [default NULL]
 
 Returns:	
 
@@ -234,7 +234,7 @@ Used to check test SQL statements and triggers
 The test harness runs with two connections with independent transactions:
 
 * Connection 1: query up the test list; updates list with results, creates run summary.
-* Connection 2: Runs each tests, or set of linked tests as a single transaction and rolls 
+* Connection 2: runs each tests, or set of linked tests as a single transaction and rolls 
   back the transaction at the end. Does NOT effect the database.
 
 ## Linked Tests, Inheritance
