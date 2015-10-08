@@ -250,7 +250,7 @@ Inheritance is therefore not permitted.
 Node.js is highly asynchronous; as is the Postgres driver (pg). Executing SQL statements results in the 
 statement becoming queued up and not necessarily running in the same order as submitted to the queue. For loops
 have the same effect. This obviously is not good for tranactionaal control. Originally the SQL statements were chained
-using the the *cursor.on('end', function(result) {}* functionality; this results in a large stack that grows linearly 
+using the the *cursor.on('end', function(result) {}* functionality; this results in a recursive large stack that grows linearly 
 per test. To avoid stack issues a Mtux was used so that the for loop could execute in a synchronous manner:
 
 ```
