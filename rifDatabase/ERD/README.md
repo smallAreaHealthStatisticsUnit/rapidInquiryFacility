@@ -12,7 +12,6 @@ Requirements:
 
 * **You will need a Windows version of the github client installed to view these schemas or point your browser to 
   the rapidInquiryFacility/rifDatabase/ERD/rif40 or sahsuland or rif_studies directory.**
-* The *README* links use Windows github to access the
 
 TODO:
 
