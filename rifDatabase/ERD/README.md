@@ -10,9 +10,9 @@ The ERDs have been split into two:
 
 * [Example test case data; also show structure of the output tables - the rif_studies schema](github-windows://openRepo/https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility?branch=master&filepath=rifDatabase%2FERD%2Frif_studies%2Findex-sahsuland-postgres8.html)
 
-* [SAHSUland core rif40 schema] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/rif40/index-sahsuland-postgres8.html
-* [SAHSUland example data - the rif_data schema] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/sahsuland/index-sahsuland-postgres8.html
-* [Example test case data; also show structure of the output tables - the rif_studies schema] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/rif_studies/index-sahsuland-postgres8.html
+* [SAHSUland core rif40 schema] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/rif40/index-sahsuland-postgres8.html)
+* [SAHSUland example data - the rif_data schema] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/sahsuland/index-sahsuland-postgres8.html)
+* [Example test case data; also show structure of the output tables - the rif_studies schema] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/rif_studies/index-sahsuland-postgres8.html)
 
 [TEST] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/rif40/index-sahsuland-postgres8.html)
 
