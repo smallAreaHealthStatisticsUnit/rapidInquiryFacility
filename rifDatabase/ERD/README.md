@@ -10,12 +10,24 @@ The ERDs have been split into two:
 
 * [Example test case data; also show structure of the output tables - the rif_studies schema](github-windows://openRepo/https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility?branch=master&filepath=rifDatabase%2FERD%2Frif_studies%2Findex-sahsuland-postgres8.html)
 
-**You will need a Windows version of the github client installed to view these schemas or point your browser to the rapidInquiryFacility/rifDatabase/ERD/rif40 or sahsuland or rif_studies directory.**
+* [TEST] (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/tree/master/rifDatabase/ERD/rif_studies/index-sahsuland-postgres8.html?raw=true
+
+Requirements:
+
+* **You will need a Windows version of the github client installed to view these schemas or point your browser to 
+  the rapidInquiryFacility/rifDatabase/ERD/rif40 or sahsuland or rif_studies directory.**
+* The *README* links use Windows github to access the
+
+TODO:
+
+* Make the build fully portable
+* Copy complete models to  
 
 The following are not documented:
 
 * Partitioning (rif40_partitions schema). This will be a separate series of WIKIs.
-* PL/pgsql code in rif40_&lt;code area/type, e.g. R, sql, sm - for statemachine, geo&gt;_pkgs. Again this will be documented separately.
+* PL/pgsql code in rif40_&lt;code area/type, e.g. R, sql, sm - for statemachine, geo&gt;_pkgs. Again this will
+  be documented separately.
 
 ## Building the ERD
 
