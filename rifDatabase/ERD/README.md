@@ -2,19 +2,11 @@
 
 The ERD was created by reverse engineering SAHSUland using pgmodeler (https://github.com/pgmodeler/pgmodeler). This was unsatisfactory, so the ERDs were generated using dbmstools (http://dbmstools.sourceforge.net/). This is an old unloved tool; with faults; but it does generate simple HTML based documentatino with a per object ERD; avoid the need for the tidying phase with pgmodeller.
 
-The ERDs have been split into two:
+The ERDs have been split into three:
 
-* [SAHSUland core rif40 schema](github-windows://openRepo/https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility?branch=master&filepath=rifDatabase%2FERD%2Frif40%2Findex-sahsuland-postgres8.html)
-
-* [SAHSUland example data - the rif_data schema](github-windows://openRepo/https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility?branch=master&filepath=rifDatabase%2FERD%2Fsahsuland%2Findex-sahsuland-postgres8.html)
-
-* [Example test case data; also show structure of the output tables - the rif_studies schema](github-windows://openRepo/https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility?branch=master&filepath=rifDatabase%2FERD%2Frif_studies%2Findex-sahsuland-postgres8.html)
-
-* [SAHSUland core rif40 schema] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/rif40/index-sahsuland-postgres8.html)
-* [SAHSUland example data - the rif_data schema] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/sahsuland/index-sahsuland-postgres8.html)
-* [Example test case data; also show structure of the output tables - the rif_studies schema] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/rif_studies/index-sahsuland-postgres8.html)
-
-[TEST] (https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/rif40/index-sahsuland-postgres8.html)
+* [SAHSUland core rif40 schema](https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/rif40/index-sahsuland-postgres8.html)
+* [SAHSUland example data - the rif_data schema](https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/sahsuland/index-sahsuland-postgres8.html)
+* [Example test case data; also show structure of the output tables - the rif_studies schema](https://rawgit.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/rifDatabase/ERD/rif_studies/index-sahsuland-postgres8.html)
 
 Requirements:
 
@@ -26,6 +18,7 @@ TODO:
 
 * Make the build fully portable
 * Copy complete models to Sourceforge 
+* Find a better modeller or fix this one (see **Issues** below)
 
 The following are not documented:
 
@@ -54,7 +47,9 @@ Unlike the other RIF database Makefiles this is Linux only bacause it
 
 Requires python and graphviz
 
-XML styntac errors E.g. 
+### XML syntax errors
+
+XML syntax errors E.g. 
 
 ```
 Traceback (most recent call last):
@@ -76,11 +71,13 @@ xml.parsers.expat.ExpatError: not well-formed (invalid token): line 504, column 
 Exit 1
 ```
 
+### Issues
+
 Specifically the following are handled:
 
-* View definitions needs CDATA
-* current_user() is not handled correctly
-* The usual description substitutions (& => &amp; etc). These get very specific in the sahusland example data and you cannot use CDATA in a description field
-* Functional indexes blow the program and are removed
+* View definitions needs to be the CDATA type.
+* The postgres function current_user() is not handled correctly.
+* The usual description substitutions (& => &amp;amp; etc). These get very specific in the sahusland example data and you cannot use CDATA in a description field
+* Functional indexes blow the program and have been removed.
 
-Beware that unhandled &lt; and &gt; in the description field will cause parse failure.
+**Beware that unhandled *&lt;* and *&gt;* in the description field will cause parse failure.**
