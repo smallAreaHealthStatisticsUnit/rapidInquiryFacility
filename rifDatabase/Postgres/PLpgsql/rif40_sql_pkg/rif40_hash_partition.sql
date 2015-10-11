@@ -132,7 +132,13 @@ BEGIN
 --
 -- Call: _rif40_common_partition_create_setup()
 --
-	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(l_schema, p_schema, l_table, l_column, l_table_list, l_num_partitions);
+	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(
+		l_schema, 			/* Schema of source data (rif_data usually) */
+		p_schema, 			/* partition schema */
+		l_table, 			/* Table name */
+		l_column, 			/* Column name */
+		l_table_list, 		/* list of tables in current partition build */	
+		l_num_partitions 	/* if hash partition: number of partitions that will be created */);
 --
 -- Force creation - tables are mainly empty in dev.
 --

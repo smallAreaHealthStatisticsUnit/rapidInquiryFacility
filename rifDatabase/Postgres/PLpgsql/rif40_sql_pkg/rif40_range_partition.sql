@@ -61,13 +61,18 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_range_partition(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR)
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VARCHAR, VARCHAR[]);
+-- Old
+DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VARCHAR);
+
+CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_range_partition(
+	l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, l_table_list VARCHAR[])
 RETURNS void
 SECURITY INVOKER
 AS $func$
 /*
 Function: 	rif40_range_partition()
-Parameters:	Schema, table, column
+Parameters:	Schema, table, column, list of tables in current partition build
 Returns:	Nothing
 Description:	Automatic range partition schema.table on column
 
@@ -284,7 +289,13 @@ BEGIN
 --
 -- Call: _rif40_common_partition_create_setup()
 --
-	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(l_schema, l_table, l_column, NULL /* Not a hash partition */);
+	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(
+		l_schema, 			/* Schema of source data (rif_data usually) */
+		p_schema, 			/* partition schema */
+		l_table, 			/* Table name */
+		l_column, 			/* Column name */
+		l_table_list,		/* list of tables in current partition build */
+		NULL 				/* Not a hash partition */);
 	IF create_setup.ddl_stmt IS NULL THEN /* Un partitionable */
 		RETURN;
 	END IF;
@@ -497,8 +508,8 @@ END;
 $func$ 
 LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VARCHAR) IS 'Function: 	rif40_range_partition()
-Parameters:	Schema, table, column
+COMMENT ON FUNCTION rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VARCHAR, VARCHAR[]) IS 'Function: 	rif40_range_partition()
+Parameters:	Schema, table, column, list of tables in current partition build
 Returns:	Nothing
 Description:	Automatic range partition schema.table on column
 

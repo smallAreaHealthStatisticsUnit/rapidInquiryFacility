@@ -247,13 +247,31 @@ WITH y AS (
 		       AND b.attname    = 'study_id'
 		       AND a.schemaname = 'rif40'	
 )
-SELECT *
+SELECT object_name, sub_object_name, object_type, sub_type /*, comment */
  FROM hash_partition_test_old
  WHERE object_name IN (SELECT UNNEST(y.table_list) FROM y)
 EXCEPT
-SELECT *
+SELECT object_name, sub_object_name, object_type, sub_type /*, comment */
   FROM hash_partition_test_new
-ORDER BY 5, 2, 3;
+ORDER BY 1, 2, 3;
+WITH y AS (
+			SELECT ARRAY_AGG(a.tablename) AS table_list
+			  FROM pg_tables a, pg_attribute b, pg_class c
+	 		 WHERE c.oid        = b.attrelid
+			   AND c.relname    = a.tablename
+  		       AND c.relkind    = 'r' /* Relational table */
+		       AND c.relpersistence IN ('p', 'u') /* Persistence: permanent/unlogged */ 
+		       AND b.attname    = 'study_id'
+		       AND a.schemaname = 'rif40'	
+)
+SELECT object_name, sub_object_name, object_type, /* sub_type, */ comment
+ FROM hash_partition_test_old
+ WHERE object_name IN (SELECT UNNEST(y.table_list) FROM y)
+EXCEPT
+SELECT object_name, sub_object_name, object_type, /* sub_type, */ comment
+  FROM hash_partition_test_new
+ORDER BY 1, 2, 3;
+
 \pset title 'Extra objects'
 WITH y AS (
 			SELECT ARRAY_AGG(a.tablename) AS table_list
@@ -265,15 +283,34 @@ WITH y AS (
 		       AND b.attname    = 'study_id'
 		       AND a.schemaname = 'rif40'	
 )
-SELECT *
+SELECT object_name, sub_object_name, object_type, sub_type /*, comment */
   FROM hash_partition_test_new
  WHERE object_name IN (SELECT UNNEST(y.table_list) FROM y)
    AND NOT (sub_object_name = 'hash_partition_number' AND object_type = 'column')  /* Exclude hash column */
    AND NOT (object_name||'_insert' = sub_object_name  AND object_type = 'trigger') /* Exclude partition insert trigger */  
 EXCEPT
-SELECT *
+SELECT object_name, sub_object_name, object_type, sub_type /*, comment */
   FROM hash_partition_test_old
-ORDER BY 5, 2, 3;
+ORDER BY 1, 2, 3;
+WITH y AS (
+			SELECT ARRAY_AGG(a.tablename) AS table_list
+			  FROM pg_tables a, pg_attribute b, pg_class c
+	 		 WHERE c.oid        = b.attrelid
+			   AND c.relname    = a.tablename
+  		       AND c.relkind    = 'r' /* Relational table */
+		       AND c.relpersistence IN ('p', 'u') /* Persistence: permanent/unlogged */ 
+		       AND b.attname    = 'study_id'
+		       AND a.schemaname = 'rif40'	
+)
+SELECT object_name, sub_object_name, object_type, /* sub_type, */ comment
+  FROM hash_partition_test_new
+ WHERE object_name IN (SELECT UNNEST(y.table_list) FROM y)
+   AND NOT (sub_object_name = 'hash_partition_number' AND object_type = 'column')  /* Exclude hash column */
+   AND NOT (object_name||'_insert' = sub_object_name  AND object_type = 'trigger') /* Exclude partition insert trigger */  
+EXCEPT
+SELECT object_name, sub_object_name, object_type, /* sub_type, */ comment
+  FROM hash_partition_test_old
+ORDER BY 1, 2, 3;
 
 --
 -- Then compare parent with children

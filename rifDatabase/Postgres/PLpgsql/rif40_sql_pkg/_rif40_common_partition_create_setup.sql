@@ -66,9 +66,13 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCH
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[], INTEGER, 
 	OUT VARCHAR[], OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER);
 	
-CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(master_schema VARCHAR, partition_schema VARCHAR, 
-		l_table VARCHAR, l_column VARCHAR,
-		l_table_list VARCHAR[], hash_partition_count INTEGER,
+CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create_setup(
+		master_schema VARCHAR, 
+		partition_schema VARCHAR, 
+		l_table VARCHAR, 
+		l_column VARCHAR,
+		l_table_list VARCHAR[], 
+		hash_partition_count INTEGER,
        	OUT ddl_stmt VARCHAR[], OUT fk_stmt VARCHAR[], OUT num_partitions INTEGER, 
 		OUT min_value VARCHAR, OUT total_rows INTEGER, OUT warnings INTEGER)
 RETURNS RECORD
