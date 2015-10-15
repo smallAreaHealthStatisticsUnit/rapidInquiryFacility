@@ -324,10 +324,130 @@ WITH c AS (
 SELECT * FROM b
  ORDER BY 1, 2;
 
+WITH c AS (   
+	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
+	FROM pg_attribute b, pg_inherits 
+			LEFT OUTER JOIN pg_class AS c ON (inhrelid=c.oid)
+			LEFT OUTER JOIN pg_class as p ON (inhparent=p.oid)
+			LEFT OUTER JOIN pg_namespace pn ON pn.oid = p.relnamespace
+			LEFT OUTER JOIN pg_namespace cn ON cn.oid = c.relnamespace
+	WHERE cn.nspname = 'rif40_partitions'
+	  AND p.relkind  = 'r' 
+	  AND p.relpersistence IN ('p', 'u') 
+	  AND p.oid      = b.attrelid
+	  AND b.attname  = 'gid'
+), b AS (
+	SELECT 'C' parent_or_child, child AS table_name
+	FROM c
+	UNION
+	SELECT 'P', parent
+	FROM c
+)
+SELECT parent_or_child, table_name, REGEXP_REPLACE(table_name, '_zoom_([0-9]){1,}', '') AS ntable
+ FROM b
+ WHERE table_name SIMILAR TO '%zoom_[1-9]%' 
+ ORDER BY 1, 2 LIMIT 4;
 --
 -- Then compare parent with children (i.e. check all partitions are set up correctly)
 --
-
+-- Ingnore object_type: TABLE, COLUMN; you are just testing INHERITS
+-- 
+\pset title 'Extra partition indexes'
+SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+	   schema, object_type, object_order, 
+	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+ FROM hash_partition_test_new
+ WHERE object_type LIKE '%index'
+   AND REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') NOT LIKE '%USING btree (_rif40_hash(%' /* Ignore hash index */
+   AND object_name SIMILAR TO '%_p[1-9]%'
+EXCEPT
+SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
+ FROM hash_partition_test_new
+ WHERE object_type LIKE '%index'
+   AND object_name NOT SIMILAR TO '%_p[1-9]%'   
+ ORDER BY 5, 1, 2, 3;
+\pset title 'Missing partition indexes'
+SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
+ FROM hash_partition_test_new
+ WHERE object_type LIKE '%index'
+   AND object_name NOT SIMILAR TO '%_p[1-9]%'   
+EXCEPT
+SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+	   schema, object_type, object_order, 
+	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+ FROM hash_partition_test_new
+ WHERE object_type LIKE '%index'
+   AND object_name SIMILAR TO '%_p[1-9]%'
+ ORDER BY 5, 1, 2, 3;
+ 
+-- Missing partition check constraints: not relevant
+ 
+\pset title 'Extra partition foreign key constraints' 
+SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+	   schema, object_type, object_order, 
+	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+ FROM hash_partition_test_new
+ WHERE object_type = 'foreign key constraint'
+   AND object_name SIMILAR TO '%_p[1-9]%'
+EXCEPT
+SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
+ FROM hash_partition_test_new
+ WHERE object_type = 'foreign key constraint'
+   AND object_name NOT SIMILAR TO '%_p[1-9]%'   
+ ORDER BY 5, 1, 2, 3;
+\pset title 'Missing partition foreign key constraints' 
+SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
+ FROM hash_partition_test_new
+ WHERE object_type = 'foreign key constraint'
+   AND object_name NOT SIMILAR TO '%_p[1-9]%'
+EXCEPT
+SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+	   schema, object_type, object_order, 
+	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+ FROM hash_partition_test_new
+ WHERE object_type = 'foreign key constraint'
+   AND object_name SIMILAR TO '%_p[1-9]%'
+ ORDER BY 5, 1, 2, 3;
+ 
+\pset title 'Extra partition triggers' 
+SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+	   schema, object_type, object_order, 
+	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+ FROM hash_partition_test_new
+ WHERE object_type = 'trigger'
+   AND object_name SIMILAR TO '%_p[1-9]%'
+EXCEPT
+SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
+ FROM hash_partition_test_new
+ WHERE object_type = 'trigger'
+   AND object_name NOT SIMILAR TO '%_p[1-9]%'   
+ ORDER BY 5, 1, 2, 3;
+\pset title 'Missing partition triggers' 
+SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
+ FROM hash_partition_test_new
+ WHERE object_type = 'trigger'
+   AND object_name NOT SIMILAR TO '%_p[1-9]%' 
+EXCEPT
+SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+	   schema, object_type, object_order, 
+	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+ FROM hash_partition_test_new
+ WHERE object_type = 'trigger'
+   AND object_name SIMILAR TO '%_p[1-9]%'
+  
+ ORDER BY 5, 1, 2, 3; 
 --
 -- Stop if errors
 --
@@ -355,7 +475,8 @@ DECLARE
 		)
 		SELECT object_type, COUNT(sub_object_name) AS total
 		  FROM z
-		 GROUP BY object_type;
+		 GROUP BY object_type
+		 ORDER BY object_type;
 	missing CURSOR FOR
 		WITH y AS (
 			SELECT ARRAY_AGG(a.tablename) AS table_list
@@ -376,7 +497,49 @@ DECLARE
   		)
 		SELECT object_type, COUNT(sub_object_name) AS total
 		  FROM z
-		 GROUP BY object_type;
+		 GROUP BY object_type
+		 ORDER BY object_type;
+	p_extra CURSOR FOR
+		WITH a AS (
+			SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
+				   REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+				   schema, object_type, object_order, 
+				   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
+				   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+			 FROM hash_partition_test_new
+			 WHERE object_type NOT IN ('table', 'column', 'check constraint')
+			   AND REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') NOT LIKE '%USING btree (_rif40_hash(%' /* Ignore hash index */		 
+			   AND object_name SIMILAR TO '%_p[1-9]%'	
+			EXCEPT	
+			SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
+			 FROM hash_partition_test_new
+			 WHERE object_type NOT IN ('table', 'column', 'check constraint')
+			   AND object_name NOT SIMILAR TO '%_p[1-9]%' 
+		)
+		SELECT object_type, COUNT(sub_object_name) AS total
+		  FROM a
+		 GROUP BY object_type
+		 ORDER BY object_type;   
+	p_missing CURSOR FOR
+		WITH a AS (
+			SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
+			 FROM hash_partition_test_new
+			 WHERE object_type NOT IN ('table', 'column', 'check constraint')
+			   AND object_name NOT SIMILAR TO '%_p[1-9]%' 
+			EXCEPT
+			SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
+				   REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+				   schema, object_type, object_order, 
+				   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
+				   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+			 FROM hash_partition_test_new
+			 WHERE object_type NOT IN ('table', 'column', 'check constraint')
+			   AND object_name SIMILAR TO '%_p[1-9]%'	
+		)
+		SELECT object_type, COUNT(sub_object_name) AS total
+		  FROM a
+		 GROUP BY object_type
+		 ORDER BY object_type;  		 
 --
 	extra_rec RECORD;
 	missing_rec RECORD;
@@ -385,13 +548,25 @@ DECLARE
 --
 BEGIN
 	FOR extra_rec IN extra LOOP
-		RAISE WARNING 'Extra hash partition %: %', extra_rec.object_type, extra_rec.total;
+		RAISE WARNING 'Extra hash partition master object %: %', extra_rec.object_type, extra_rec.total;
 		errors:=errors+extra_rec.total;
 	END LOOP;
 	FOR missing_rec IN missing LOOP
-		RAISE WARNING 'Missing hash partition %: %', missing_rec.object_type, missing_rec.total;
+		RAISE WARNING 'Missing hash partition master object %: %', missing_rec.object_type, missing_rec.total;
 		errors:=errors+missing_rec.total;
 	END LOOP;
+	FOR extra_rec IN p_extra LOOP
+		IF extra_rec.total > 0 THEN
+			RAISE WARNING 'Extra hash partition partition object %: %', extra_rec.object_type, extra_rec.total;
+			errors:=errors+extra_rec.total;
+		END IF;
+	END LOOP;
+	FOR missing_rec IN p_missing LOOP
+		IF missing_rec.total > 0 THEN
+			RAISE WARNING 'Missing hash partition partition object %: %', missing_rec.object_type, missing_rec.total;
+			errors:=errors+missing_rec.total;
+		END IF;
+	END LOOP;	
 --	
 	IF errors > 0 THEN
 		RAISE EXCEPTION 'C20999: % hash partition errors', errors; 

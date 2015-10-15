@@ -159,6 +159,8 @@ DECLARE
 	fk_stmt	VARCHAR[];	
 	table_list VARCHAR[];
 --
+	number_of_partitions CONSTANT INTEGER:=2;
+--
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';
 BEGIN
@@ -192,7 +194,7 @@ BEGIN
 			E'\n', E'\n', E'\n', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename, E'\n', E'\n';
 		l_fk_stmt:=NULL;
 		l_fk_stmt:=rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, 
-			c1_rec.tablename::VARCHAR, 'study_id', c1_rec.table_list::VARCHAR[], 2);
+			c1_rec.tablename::VARCHAR, 'study_id', c1_rec.table_list::VARCHAR[], number_of_partitions);
 		IF fk_stmt IS NULL AND l_fk_stmt IS NOT NULL THEN	
 			table_list:=c1_rec.table_list;
 			num_fks:=num_fks+array_length(l_fk_stmt, 1);	
