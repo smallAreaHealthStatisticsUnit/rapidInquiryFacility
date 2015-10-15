@@ -479,9 +479,13 @@ SELECT year AS value,
 							IF fk_stmt IS NULL THEN
 								fk_stmt[1]:=sql_stmt||' /* Deferred  */';
 							ELSE
-								fk_stmt[array_length(fk_stmt, 1)+1]:=sql_stmt||' /* Deferred */';
+								fk_stmt[array_length(fk_stmt, 1)+1]:=sql_stmt||' /* Not deferred */';
 							END IF;
 						END LOOP;
+--
+-- Now add back FK on master table
+--
+						fk_stmt[array_length(fk_stmt, 1)+1]:=c2_rec.add_constraint_def||' /* NOT deferred */';
 					ELSE 
 						PERFORM rif40_log_pkg.rif40_error(-71067, '_rif40_common_partition_create_setup', 
 							'Automatic range/hash partition by %: %.%; table name has % partitions,%referencing foreign key table: %.% has no partitions; part of partition build: % ; ignored;', 
