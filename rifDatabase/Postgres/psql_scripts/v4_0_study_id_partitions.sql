@@ -117,8 +117,39 @@ DECLARE
 		   AND b.attname    = 'study_id'
 		   AND a.schemaname = 'rif40'
 		 ORDER BY 1;
+	c2 CURSOR FOR
+		WITH c AS (   
+			SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
+			FROM pg_attribute b, pg_inherits 
+					LEFT OUTER JOIN pg_class AS c ON (inhrelid=c.oid)
+					LEFT OUTER JOIN pg_class as p ON (inhparent=p.oid)
+					LEFT OUTER JOIN pg_namespace pn ON pn.oid = p.relnamespace
+					LEFT OUTER JOIN pg_namespace cn ON cn.oid = c.relnamespace
+			WHERE cn.nspname = 'rif40_partitions'
+			  AND p.relkind  = 'r' /* Relational table */
+			  AND p.relpersistence IN ('p', 'u') /* Persistence: permanent/unlogged */  
+			  AND p.oid      = b.attrelid
+			  AND b.attname  = 'study_id'
+		), b AS (
+			SELECT child AS table_name
+			FROM c
+			UNION
+			SELECT parent
+			FROM c
+		), y AS (
+			SELECT ARRAY_AGG(table_name) AS table_list
+			  FROM b
+		)
+		SELECT 'ALTER TABLE '||z.relname||' ENABLE TRIGGER '||t.tgname AS sql_stmt
+		  FROM pg_catalog.pg_trigger t, pg_class z
+		 WHERE t.tgrelid = z.oid
+		   AND z.relname IN (SELECT UNNEST(y.table_list) FROM y)
+		   AND NOT t.tgisinternal
+		   AND t.tgenabled = 'D'
+		ORDER BY 1; 
 --
 	c1_rec 		RECORD;
+	c2_rec 		RECORD;	
 --
 	sql_stmt 	VARCHAR[];
 	num_fks 	INTEGER:=0;
@@ -217,13 +248,28 @@ CREATE TRIGGER t_rif40_investigations_p16_checks BEFORE INSERT OR UPDATE OF user
 				error_message:='v4_0_study_id_partitions.sql: caught in rif40_ddl(fk_stmt): '::VARCHAR||E'\n'::VARCHAR||
 					SQLERRM::VARCHAR||' in SQL> '::VARCHAR||sql_stmt::VARCHAR||E'\n'::VARCHAR||'Detail: '::VARCHAR||v_detail::VARCHAR;
 				RAISE INFO '2: %', error_message;
---				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_study_shares_p10', 'rif40_study_shares_p10');
---				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM rif40_study_shares', 'rif40_study_shares');
---				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM t_rif40_studies_p10', 't_rif40_studies_p10');
---				PERFORM rif40_sql_pkg.rif40_method4('SELECT * FROM t_rif40_studies', 't_rif40_studies');
 --
 				RAISE;
 		END;
+		
+--
+-- Enable all DISABLED triggers
+--
+		FOR c2_rec IN c2 LOOP
+			BEGIN
+				PERFORM rif40_sql_pkg.rif40_ddl(c2_rec.sql_stmt);
+			EXCEPTION
+				WHEN others THEN
+	--
+					GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+					error_message:='v4_0_study_id_partitions.sql: caught in rif40_ddl(ENABLE triggers): '::VARCHAR||E'\n'::VARCHAR||
+						SQLERRM::VARCHAR||' in SQL> '::VARCHAR||sql_stmt::VARCHAR||E'\n'::VARCHAR||'Detail: '::VARCHAR||v_detail::VARCHAR;
+					RAISE INFO '2: %', error_message;
+	--
+					RAISE;			
+			END;
+		END LOOP;	
+		
 	END IF;	
 	RAISE INFO '% hash partitions created % foreign keys', i::VARCHAR, num_fks::VARCHAR;
 --	RAISE EXCEPTION 'Stop 3';

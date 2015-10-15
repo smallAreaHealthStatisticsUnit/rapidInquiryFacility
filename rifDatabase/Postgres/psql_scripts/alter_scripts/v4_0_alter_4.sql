@@ -301,7 +301,7 @@ SELECT object_name, sub_object_name, object_type, sub_type, comment
   FROM hash_partition_test_old
 ORDER BY 1, 2, 3;
 
-\pset title 'Tsble list'
+\pset title 'Table list'
 WITH c AS (   
 	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
 	FROM pg_attribute b, pg_inherits 
@@ -323,7 +323,7 @@ WITH c AS (
 )
 SELECT * FROM b
  ORDER BY 1, 2;
- 
+
 --
 -- Then compare parent with children (i.e. check all partitions are set up correctly)
 --
