@@ -84,6 +84,28 @@ $$;
 
 --\df+ rif40_sql_pkg._rif40_common_partition_triggers
 
+WITH c AS (   
+	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
+	FROM pg_attribute b, pg_inherits 
+			LEFT OUTER JOIN pg_class AS c ON (inhrelid=c.oid)
+			LEFT OUTER JOIN pg_class as p ON (inhparent=p.oid)
+			LEFT OUTER JOIN pg_namespace pn ON pn.oid = p.relnamespace
+			LEFT OUTER JOIN pg_namespace cn ON cn.oid = c.relnamespace
+	WHERE cn.nspname = 'rif40_partitions'
+	  AND p.relkind  = 'r' 
+	  AND p.relpersistence IN ('p', 'u') 
+	  AND p.oid      = b.attrelid
+	  AND b.attname  = 'study_id'
+), b AS (
+	SELECT 'C' parent_or_child, child AS table_name
+	FROM c
+	UNION
+	SELECT 'P', parent
+	FROM c
+)
+SELECT * FROM b
+ ORDER BY 1, 2;
+ 
 CREATE LOCAL TEMPORARY TABLE hash_partition_test_old
 AS
 WITH y AS (
@@ -145,9 +167,13 @@ SELECT z.relname AS object_name, t.tgname AS sub_object_name, NULL AS schema, 't
    AND z.relname IN (SELECT UNNEST(y.table_list) FROM y)
    AND NOT t.tgisinternal
 ORDER BY 5, 2, 3;
-\copy (SELECT * FROM hash_partition_test_old ORDER BY 5, 2, 3) TO test_scripts/data/hash_partition_test_old.csv
-
-
+\copy (SELECT * FROM hash_partition_test_old ORDER BY 5, 2, 3) TO test_scripts/data/hash_partition_test_old.csv WITH CSV HEADER
+--SELECT z.relname AS object_name, t.tgname AS sub_object_name, NULL AS schema, 'trigger' AS object_type, 6 AS object_order,
+--    pg_catalog.pg_get_triggerdef(t.oid, true) AS subtype, t.tgenabled  AS comment
+--  FROM pg_catalog.pg_trigger t, pg_class z
+-- WHERE t.tgrelid = z.oid
+--   AND z.relname IN (SELECT UNNEST(y.table_list) FROM y)
+--   AND NOT t.tgisinternal
 --
 -- Hash partition all tables with study_id as a column
 -- This will cope with data already present in the table
@@ -159,7 +185,6 @@ ORDER BY 5, 2, 3;
 
 CREATE LOCAL TEMPORARY TABLE hash_partition_test_new
 AS
-
 WITH c AS (   
 	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
 	FROM pg_attribute b, pg_inherits 
@@ -231,7 +256,7 @@ SELECT z.relname AS object_name, t.tgname AS sub_object_name, NULL AS schema, 't
    AND z.relname IN (SELECT UNNEST(y.table_list) FROM y)
    AND NOT t.tgisinternal
 ORDER BY 5, 2, 3;
-\copy (SELECT * FROM hash_partition_test_new ORDER BY 5, 2, 3) TO test_scripts/data/hash_partition_test_new.csv
+\copy (SELECT * FROM hash_partition_test_new ORDER BY 5, 2, 3) TO test_scripts/data/hash_partition_test_new.csv WITH CSV HEADER
 
 --
 -- First compare old with new parent tables
@@ -247,28 +272,11 @@ WITH y AS (
 		       AND b.attname    = 'study_id'
 		       AND a.schemaname = 'rif40'	
 )
-SELECT object_name, sub_object_name, object_type, sub_type /*, comment */
+SELECT object_name, sub_object_name, object_type, sub_type, comment
  FROM hash_partition_test_old
  WHERE object_name IN (SELECT UNNEST(y.table_list) FROM y)
 EXCEPT
-SELECT object_name, sub_object_name, object_type, sub_type /*, comment */
-  FROM hash_partition_test_new
-ORDER BY 1, 2, 3;
-WITH y AS (
-			SELECT ARRAY_AGG(a.tablename) AS table_list
-			  FROM pg_tables a, pg_attribute b, pg_class c
-	 		 WHERE c.oid        = b.attrelid
-			   AND c.relname    = a.tablename
-  		       AND c.relkind    = 'r' /* Relational table */
-		       AND c.relpersistence IN ('p', 'u') /* Persistence: permanent/unlogged */ 
-		       AND b.attname    = 'study_id'
-		       AND a.schemaname = 'rif40'	
-)
-SELECT object_name, sub_object_name, object_type, /* sub_type, */ comment
- FROM hash_partition_test_old
- WHERE object_name IN (SELECT UNNEST(y.table_list) FROM y)
-EXCEPT
-SELECT object_name, sub_object_name, object_type, /* sub_type, */ comment
+SELECT object_name, sub_object_name, object_type, sub_type, comment
   FROM hash_partition_test_new
 ORDER BY 1, 2, 3;
 
@@ -283,37 +291,41 @@ WITH y AS (
 		       AND b.attname    = 'study_id'
 		       AND a.schemaname = 'rif40'	
 )
-SELECT object_name, sub_object_name, object_type, sub_type /*, comment */
+SELECT object_name, sub_object_name, object_type, sub_type, comment
   FROM hash_partition_test_new
  WHERE object_name IN (SELECT UNNEST(y.table_list) FROM y)
    AND NOT (sub_object_name = 'hash_partition_number' AND object_type = 'column')  /* Exclude hash column */
    AND NOT (object_name||'_insert' = sub_object_name  AND object_type = 'trigger') /* Exclude partition insert trigger */  
 EXCEPT
-SELECT object_name, sub_object_name, object_type, sub_type /*, comment */
-  FROM hash_partition_test_old
-ORDER BY 1, 2, 3;
-WITH y AS (
-			SELECT ARRAY_AGG(a.tablename) AS table_list
-			  FROM pg_tables a, pg_attribute b, pg_class c
-	 		 WHERE c.oid        = b.attrelid
-			   AND c.relname    = a.tablename
-  		       AND c.relkind    = 'r' /* Relational table */
-		       AND c.relpersistence IN ('p', 'u') /* Persistence: permanent/unlogged */ 
-		       AND b.attname    = 'study_id'
-		       AND a.schemaname = 'rif40'	
-)
-SELECT object_name, sub_object_name, object_type, /* sub_type, */ comment
-  FROM hash_partition_test_new
- WHERE object_name IN (SELECT UNNEST(y.table_list) FROM y)
-   AND NOT (sub_object_name = 'hash_partition_number' AND object_type = 'column')  /* Exclude hash column */
-   AND NOT (object_name||'_insert' = sub_object_name  AND object_type = 'trigger') /* Exclude partition insert trigger */  
-EXCEPT
-SELECT object_name, sub_object_name, object_type, /* sub_type, */ comment
+SELECT object_name, sub_object_name, object_type, sub_type, comment
   FROM hash_partition_test_old
 ORDER BY 1, 2, 3;
 
+\pset title 'Tsble list'
+WITH c AS (   
+	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
+	FROM pg_attribute b, pg_inherits 
+			LEFT OUTER JOIN pg_class AS c ON (inhrelid=c.oid)
+			LEFT OUTER JOIN pg_class as p ON (inhparent=p.oid)
+			LEFT OUTER JOIN pg_namespace pn ON pn.oid = p.relnamespace
+			LEFT OUTER JOIN pg_namespace cn ON cn.oid = c.relnamespace
+	WHERE cn.nspname = 'rif40_partitions'
+	  AND p.relkind  = 'r' 
+	  AND p.relpersistence IN ('p', 'u') 
+	  AND p.oid      = b.attrelid
+	  AND b.attname  = 'study_id'
+), b AS (
+	SELECT 'C' parent_or_child, child AS table_name
+	FROM c
+	UNION
+	SELECT 'P', parent
+	FROM c
+)
+SELECT * FROM b
+ ORDER BY 1, 2;
+ 
 --
--- Then compare parent with children
+-- Then compare parent with children (i.e. check all partitions are set up correctly)
 --
 
 --
