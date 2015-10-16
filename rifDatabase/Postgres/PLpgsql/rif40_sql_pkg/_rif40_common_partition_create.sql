@@ -258,12 +258,51 @@ DECLARE
 		 WHERE table_name   = l_table
 		   AND table_schema = l_schema
 		 GROUP BY table_name, grantee, grantor, table_schema, is_grantable;
+	c9rpcr CURSOR(l_table VARCHAR) FOR /* Get Foreign keys for table */		 
+		WITH a AS (  
+			SELECT con.conname, 
+			       con.oid AS constraint_oid,
+			       c1.oid AS this_table_oid,			   
+			       NULL AS ref_fk_part_oid,
+			       ns1.nspname AS con_schema_name,
+			       c1.relname AS this_table_name,
+			       c2.relname AS ref_fk_table_name,
+			       c1.relnamespace AS schema_oid,
+			       c2.relnamespace AS ref_fk_schema_oid,
+			       c1.relhassubclass AS is_partitioned,
+			       c2.relhassubclass AS is_ref_fk_partitioned
+			  FROM pg_constraint con
+			        LEFT OUTER JOIN pg_namespace ns1 ON (con.connamespace = ns1.oid)
+			        LEFT OUTER JOIN pg_class c1 ON (con.conrelid = c1.oid) /* Foreign keys for this table */
+			        LEFT OUTER JOIN pg_class c2 ON (con.confrelid = c2.oid) /* Foreign key: referenced table */	
+			 WHERE c1.relname    = l_table 	/* This table */
+			   AND con.contype   = 'f'     	/* Foreign key constraints */
+		)
+		SELECT conname, constraint_oid, this_table_oid, ref_fk_part_oid, 
+	               con_schema_name, ref_fk_table_name, this_table_name,
+	               ns2.nspname AS schema_name, ns3.nspname AS ref_fk_schema_name,
+		       is_partitioned, is_ref_fk_partitioned, 
+		       CASE 
+				WHEN constraint_oid IS NOT NULL THEN 'ALTER TABLE '||con_schema_name||'.'||this_table_name||E'\n'||
+					'       ADD CONSTRAINT /* Add support for local partitions */ '||conname||E'\n'||
+					pg_get_constraintdef(constraint_oid)||E'\n'||
+					'/* Referenced foreign key table: '||ns3.nspname||'.'||ref_fk_table_name||' has partitions: '||
+					is_ref_fk_partitioned::VARCHAR||' */'
+				ELSE NULL 
+		       END AS add_constraint_def,
+		       pg_get_constraintdef(constraint_oid) AS constraintdef
+		  FROM a
+		        LEFT OUTER JOIN pg_namespace ns2 ON (a.schema_oid = ns2.oid)
+		        LEFT OUTER JOIN pg_namespace ns3 ON (a.ref_fk_schema_oid = ns3.oid)
+		 ORDER BY con_schema_name, conname;		  	 
+--		 
 	c1_rec 		RECORD;
 	c4_rec 		RECORD;
 	c5_rec 		RECORD;
 	c6_rec 		RECORD;
 	c7_rec 		RECORD;
 	c8_rec 		RECORD;
+	c9_rec 		RECORD;
 --
 	ddl_stmt	VARCHAR[];
 --
@@ -378,7 +417,7 @@ BEGIN
 														'rif40.', 
 														l_schema||'.');
 		ELSE
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Defferred FK Constraint[%] % on: %.%(%)', 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Deferred FK Constraint[%] % on: %.%(%)', 
 				i::VARCHAR,
 				c5_rec.conname::VARCHAR, 
 				l_schema::VARCHAR, 
@@ -387,16 +426,51 @@ BEGIN
 		END IF;
 	END LOOP;
 	IF i > 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added % foreign keys to partition: %.%', 
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added % referenced foreign keys to partition: %.%', 
 			i::VARCHAR,
 			l_schema::VARCHAR, 
 			partition_table::VARCHAR);
 	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added no foreign keys to partition: %.%', 
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Added no referenced foreign keys to partition: %.%', 
 			l_schema::VARCHAR, 
 			partition_table::VARCHAR);
 	END IF;
-
+--
+-- Foreign keys to tables not in the psrtition list
+-- 	
+	i:=0;
+	FOR c9_rec IN c9rpcr(master_table) LOOP
+		i:=i+1;
+		IF NOT ARRAY[c9_rec.ref_fk_table_name]::VARCHAR[] <@ l_table_list THEN /* List does not contain c2_rec.ref_fk_table_name */
+			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
+														REPLACE(c9_rec.add_constraint_def, 
+																c9_rec.con_schema_name||'.'||c9_rec.this_table_name, 
+																l_schema||'.'||c9_rec.this_table_name||'_p'||l_value),
+														c9_rec.conname,
+														c9_rec.conname||'_p'||l_value);	
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'FK Constraint[%] % to: %;'||E'\n'||'SQL> %', 
+				i::VARCHAR,
+				c9_rec.conname::VARCHAR, 
+				c9_rec.ref_fk_table_name::VARCHAR,
+				ddl_stmt[array_length(ddl_stmt, 1)]::VARCHAR);																
+--			RAISE INFO 'Aborting (script being tested)';
+--			RAISE EXCEPTION 'C20999: Abort';																
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 'Deferred FK Constraint[%] % to: %', 
+				i::VARCHAR,
+				c9_rec.conname::VARCHAR, 
+				c9_rec.ref_fk_table_name::VARCHAR	 /* Should be created by _rif40_common_partition_create_setup() */);		
+		END IF;				
+	END LOOP;
+	IF i > 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 
+			'Added % foreign keys to tables not in the psrtition list', 
+			i::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create', 
+			'Added no foreign keys to tables not in the psrtition list');
+	END IF;
+	
 --
 -- Add trigger, unique, check and exclusion constraints
 --

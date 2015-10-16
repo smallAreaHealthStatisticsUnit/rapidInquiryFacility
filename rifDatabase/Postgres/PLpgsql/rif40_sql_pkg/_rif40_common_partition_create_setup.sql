@@ -125,18 +125,18 @@ DECLARE
 		WITH a AS (
 			SELECT con.conname, 
 			       con.oid AS constraint_oid,
-			       c1.oid AS this_table_oid,
-			       c2.oid AS ref_fk_part_oid,
+			       c1.oid AS this_table_oid,			   
+			       c2.oid AS ref_fk_part_oid,			   
 			       ns1.nspname AS con_schema_name,
 			       c1.relname AS this_table_name,
-			       c2.relname AS ref_fk_table_name,
+			       c2.relname AS ref_fk_table_name,			   
 			       c1.relnamespace AS schema_oid,
 			       c2.relnamespace AS ref_fk_schema_oid,
 			       c1.relhassubclass AS is_partitioned,
-			       c2.relhassubclass AS is_ref_fk_partitioned,
-		               CASE WHEN ih2.inhrelid IS NOT NULL THEN TRUE ELSE FALSE END is_a_ref_fk_partition,
+			       c2.relhassubclass AS is_ref_fk_partitioned,				   
+		           CASE WHEN ih2.inhrelid IS NOT NULL THEN TRUE ELSE FALSE END is_a_ref_fk_partition,
 			       ih2.inhseqno AS inhseqno_ref_fk,
-			       ih2.inhparent AS ref_fk_master_oid
+			       ih2.inhparent AS ref_fk_master_oid				   
 			  FROM pg_constraint con
 			        LEFT OUTER JOIN pg_namespace ns1 ON (con.connamespace = ns1.oid)
 			        LEFT OUTER JOIN pg_class c1 ON (con.confrelid = c1.oid) /* Foreign keys referencing this table */
@@ -477,9 +477,9 @@ SELECT year AS value,
 									fks::VARCHAR,
 									sql_stmt::VARCHAR);
 							IF fk_stmt IS NULL THEN
-								fk_stmt[1]:=sql_stmt||' /* Deferred  */';
+								fk_stmt[1]:=sql_stmt||' /* Deffered until all tables in set partitioned  */';
 							ELSE
-								fk_stmt[array_length(fk_stmt, 1)+1]:=sql_stmt||' /* Not deferred */';
+								fk_stmt[array_length(fk_stmt, 1)+1]:=sql_stmt||' /* Deffered until all tables in set partitioned */';
 							END IF;
 						END LOOP;
 --

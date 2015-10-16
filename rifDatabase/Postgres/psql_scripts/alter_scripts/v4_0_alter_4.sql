@@ -301,7 +301,7 @@ SELECT object_name, sub_object_name, object_type, sub_type, comment
   FROM hash_partition_test_old
 ORDER BY 1, 2, 3;
 
-\pset title 'Table list'
+\pset title 'Table list with comments'
 WITH c AS (   
 	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
 	FROM pg_attribute b, pg_inherits 
@@ -321,32 +321,12 @@ WITH c AS (
 	SELECT 'P', parent
 	FROM c
 )
-SELECT * FROM b
+SELECT b.parent_or_child, b.table_name, d.description
+  FROM b, pg_class c
+		LEFT OUTER JOIN pg_description d ON (d.objoid = c.oid)
+ WHERE b.table_name = c.relname
  ORDER BY 1, 2;
 
-WITH c AS (   
-	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
-	FROM pg_attribute b, pg_inherits 
-			LEFT OUTER JOIN pg_class AS c ON (inhrelid=c.oid)
-			LEFT OUTER JOIN pg_class as p ON (inhparent=p.oid)
-			LEFT OUTER JOIN pg_namespace pn ON pn.oid = p.relnamespace
-			LEFT OUTER JOIN pg_namespace cn ON cn.oid = c.relnamespace
-	WHERE cn.nspname = 'rif40_partitions'
-	  AND p.relkind  = 'r' 
-	  AND p.relpersistence IN ('p', 'u') 
-	  AND p.oid      = b.attrelid
-	  AND b.attname  = 'gid'
-), b AS (
-	SELECT 'C' parent_or_child, child AS table_name
-	FROM c
-	UNION
-	SELECT 'P', parent
-	FROM c
-)
-SELECT parent_or_child, table_name, REGEXP_REPLACE(table_name, '_zoom_([0-9]){1,}', '') AS ntable
- FROM b
- WHERE table_name SIMILAR TO '%zoom_[1-9]%' 
- ORDER BY 1, 2 LIMIT 4;
 --
 -- Then compare parent with children (i.e. check all partitions are set up correctly)
 --
@@ -437,6 +417,7 @@ SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type
  FROM hash_partition_test_new
  WHERE object_type = 'trigger'
    AND object_name NOT SIMILAR TO '%_p[1-9]%' 
+   AND sub_object_name != (object_name||'_insert')::Text
 EXCEPT
 SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
        REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
@@ -446,8 +427,12 @@ SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name,
  FROM hash_partition_test_new
  WHERE object_type = 'trigger'
    AND object_name SIMILAR TO '%_p[1-9]%'
-  
  ORDER BY 5, 1, 2, 3; 
+ 
+--
+-- Check for missing comments
+--
+
 --
 -- Stop if errors
 --
@@ -526,6 +511,7 @@ DECLARE
 			 FROM hash_partition_test_new
 			 WHERE object_type NOT IN ('table', 'column', 'check constraint')
 			   AND object_name NOT SIMILAR TO '%_p[1-9]%' 
+			   AND sub_object_name != (object_name||'_insert')::Text
 			EXCEPT
 			SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
 				   REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
