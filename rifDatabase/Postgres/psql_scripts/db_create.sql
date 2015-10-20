@@ -917,7 +917,15 @@ DECLARE
 	c1 CURSOR(l_schema VARCHAR) FOR
 		SELECT * FROM information_schema.schemata
 		 WHERE LOWER(schema_name) = LOWER(l_schema);
+	c2 CURSOR FOR
+		 SELECT usename
+		   FROM pg_user
+		 WHERE pg_has_role(usename, 'rif_manager', 'MEMBER')
+		    OR pg_has_role(usename, 'rif_user', 'MEMBER')
+		    OR pg_has_role(usename, 'rif_student', 'MEMBER')
+		  ORDER BY 1;
 	c1_rec RECORD;
+	c2_rec RECORD;
 --
 	schemalist VARCHAR[]:=ARRAY['rif40_dmp_pkg', 'rif40_sql_pkg', 'rif40_sm_pkg', 'rif40_log_pkg', 'rif40_trg_pkg',
 			'rif40_geo_pkg', 'rif40_xml_pkg', 'rif40_R_pkg', 
@@ -971,10 +979,28 @@ BEGIN
 		sql_stmt:='CREATE SCHEMA '||u_name||' AUTHORIZATION '||u_name;
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
-		sql_stmt:='GRANT ALL ON SCHEMA '||u_name||' TO '||u_name;
+		sql_stmt:='GRANT ALL 
+		ON SCHEMA '||u_name||' TO '||u_name;
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
 	END IF;
+--
+-- Re-create user schemas
+--
+	FOR c2_rec IN c2 LOOP
+		OPEN c1(c2_rec.usename);
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+		IF c1_rec.schema_name IS NULL THEN
+			sql_stmt:='CREATE SCHEMA '||c2_rec.usename||' AUTHORIZATION '||c2_rec.usename;
+			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+			EXECUTE sql_stmt;
+			sql_stmt:='GRANT ALL 
+			ON SCHEMA '||c2_rec.usename||' TO '||c2_rec.usename;
+			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+			EXECUTE sql_stmt;
+		END IF;	
+	END LOOP;
 --
 	FOREACH x IN ARRAY schemalist LOOP
 		OPEN c1(x);
