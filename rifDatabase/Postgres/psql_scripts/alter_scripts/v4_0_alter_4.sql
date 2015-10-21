@@ -82,6 +82,12 @@ $$;
 --
 \i ../PLpgsql/v4_0_rif40_sql_pkg.sql
 
+--
+-- Partition enabled DDL checks
+--
+\i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_b.sql
+\i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_k.sql
+
 --\df+ rif40_sql_pkg._rif40_common_partition_triggers
 
 WITH c AS (   
@@ -301,32 +307,6 @@ SELECT object_name, sub_object_name, object_type, sub_type, comment
   FROM hash_partition_test_old
 ORDER BY 1, 2, 3;
 
-\pset title 'Table list with comments'
-WITH c AS (   
-	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
-	FROM pg_attribute b, pg_inherits 
-			LEFT OUTER JOIN pg_class AS c ON (inhrelid=c.oid)
-			LEFT OUTER JOIN pg_class as p ON (inhparent=p.oid)
-			LEFT OUTER JOIN pg_namespace pn ON pn.oid = p.relnamespace
-			LEFT OUTER JOIN pg_namespace cn ON cn.oid = c.relnamespace
-	WHERE cn.nspname = 'rif40_partitions'
-	  AND p.relkind  = 'r' 
-	  AND p.relpersistence IN ('p', 'u') 
-	  AND p.oid      = b.attrelid
-	  AND b.attname  = 'study_id'
-), b AS (
-	SELECT 'C' parent_or_child, child AS table_name
-	FROM c
-	UNION
-	SELECT 'P', parent
-	FROM c
-)
-SELECT b.parent_or_child, b.table_name, d.description
-  FROM b, pg_class c
-		LEFT OUTER JOIN pg_description d ON (d.objoid = c.oid)
- WHERE b.table_name = c.relname
- ORDER BY 1, 2;
-
 --
 -- Then compare parent with children (i.e. check all partitions are set up correctly)
 --
@@ -433,6 +413,34 @@ SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name,
 -- Check for missing comments
 --
 
+\pset title 'Table list with comments'
+WITH a AS (   
+	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
+	FROM pg_attribute b, pg_inherits 
+			LEFT OUTER JOIN pg_class AS c ON (inhrelid=c.oid)
+			LEFT OUTER JOIN pg_class as p ON (inhparent=p.oid)
+			LEFT OUTER JOIN pg_namespace pn ON pn.oid = p.relnamespace
+			LEFT OUTER JOIN pg_namespace cn ON cn.oid = c.relnamespace
+	WHERE cn.nspname = 'rif40_partitions'
+	  AND p.relkind  = 'r' 
+	  AND p.relpersistence IN ('p', 'u') 
+	  AND p.oid      = b.attrelid
+	  AND b.attname  = 'study_id'
+), c AS (
+	SELECT 'C' parent_or_child, child AS table_name
+	FROM a
+	UNION
+	SELECT 'P', parent
+	FROM a
+)
+SELECT c.parent_or_child, n.nspname AS schema_owner, c.table_name, b.description
+  FROM c, pg_class a
+		LEFT OUTER JOIN pg_description b ON (b.objoid = a.oid AND b.objsubid = 0)
+		LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
+ WHERE b.description IS NULL
+   AND c.table_name = a.relname
+ ORDER BY 1, 2;
+		
 --
 -- Stop if errors
 --
@@ -462,6 +470,7 @@ DECLARE
 		  FROM z
 		 GROUP BY object_type
 		 ORDER BY object_type;
+--
 	missing CURSOR FOR
 		WITH y AS (
 			SELECT ARRAY_AGG(a.tablename) AS table_list
@@ -484,6 +493,7 @@ DECLARE
 		  FROM z
 		 GROUP BY object_type
 		 ORDER BY object_type;
+--
 	p_extra CURSOR FOR
 		WITH a AS (
 			SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
@@ -505,6 +515,7 @@ DECLARE
 		  FROM a
 		 GROUP BY object_type
 		 ORDER BY object_type;   
+--
 	p_missing CURSOR FOR
 		WITH a AS (
 			SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
@@ -525,10 +536,40 @@ DECLARE
 		SELECT object_type, COUNT(sub_object_name) AS total
 		  FROM a
 		 GROUP BY object_type
-		 ORDER BY object_type;  		 
+		 ORDER BY object_type;  
+--
+	no_table_comments CURSOR FOR
+		WITH a AS (   
+			SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
+			FROM pg_attribute b, pg_inherits 
+					LEFT OUTER JOIN pg_class AS c ON (inhrelid=c.oid)
+					LEFT OUTER JOIN pg_class as p ON (inhparent=p.oid)
+					LEFT OUTER JOIN pg_namespace pn ON pn.oid = p.relnamespace
+					LEFT OUTER JOIN pg_namespace cn ON cn.oid = c.relnamespace
+			WHERE cn.nspname = 'rif40_partitions'
+			  AND p.relkind  = 'r' 
+			  AND p.relpersistence IN ('p', 'u') 
+			  AND p.oid      = b.attrelid
+			  AND b.attname  = 'study_id'
+		), c AS (
+			SELECT 'C' parent_or_child, child AS table_name
+			FROM a
+			UNION
+			SELECT 'P', parent
+			FROM a
+		)
+		SELECT c.parent_or_child, COUNT(c.table_name) AS total
+		  FROM c, pg_class a
+				LEFT OUTER JOIN pg_description b ON (b.objoid = a.oid AND b.objsubid = 0)
+				LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
+		 WHERE b.description IS NULL
+		   AND c.table_name = a.relname
+		 GROUP BY c.parent_or_child
+		 ORDER BY 1, 2;				
 --
 	extra_rec RECORD;
 	missing_rec RECORD;
+	no_table_comments_rec RECORD;
 --
 	errors INTEGER:=0;
 --
@@ -553,7 +594,25 @@ BEGIN
 			errors:=errors+missing_rec.total;
 		END IF;
 	END LOOP;	
---	
+	FOR no_table_comments_rec IN no_table_comments LOOP
+		IF no_table_comments_rec.total > 0 THEN
+			RAISE WARNING 'Missing hash partition partition comment %: %', 
+				no_table_comments_rec.parent_or_child, no_table_comments_rec.total;
+			errors:=errors+no_table_comments_rec.total;
+		END IF;
+	END LOOP;
+--
+-- DDL Check b) Missing table/view comments
+--
+	errors:=errors+rif40_sql_pkg.rif40_ddl_check_b();		
+--
+-- DDL Check k) Missing comments
+--
+	errors:=errors+rif40_sql_pkg.rif40_ddl_check_k();
+	
+--
+-- Stop on errors
+--
 	IF errors > 0 THEN
 		RAISE EXCEPTION 'C20999: % hash partition errors', errors; 
 	END IF;
