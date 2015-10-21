@@ -4,14 +4,30 @@ Principal Work Area: **Microsoft SQL server database port**
 
 ##2015
 
+###October
+Setting up the standard test harness to enable systematic testing and comparison with the Postgres build.
+
+######21 October
+* Creating new database objects necessary to run the test harness
+
+###September
+I will perfom more testing of the table and view triggers.
+
+######21 September
+* Quick edit to my script to convert Postgres data files into SQL Server data files to use | as the field delimiter, remove all double quotes (plus line breaks in multi-line comments).  This format works well with bulk import.
+* More (informal/unstructured) testing of queries.
+
+######18 September
+* I finished writing a Perl script to convert data files with quotes around only a few fields + mult-line text in a single cell into something that can be loaded into SQL Server so I can continue loading test data into SQL Server
+
 ###August
-I will finish the view triggers this month and please hopefully test.
+I plan to finish the view triggers this month and start to test.
 
 ######21 August
 * Continuing to insert data into tables
 * New data loading issue: rif40_triggers.csv need to be preprocessed (comments field needs to have its line breaks removed, also need to remove double quotes/use a different delimiter more consistently)
-* More data loading issues: rif40_triggers.csv also needs to be preprocessed for quote/multi-line text issues
 * The test data for rif40_error_messages is Postgres codes, not the SQL Server custom error codes
+* rif40_tables_and_views.csv file still not right format
 
 ######20 August
 * Back to checking and revising trigger code.  Checked t_rif40_user_projects

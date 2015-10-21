@@ -6,6 +6,9 @@ rif_user
 Optional:
 rif_student
 rif_no_suppression (?)
+
+Testing:
+notarifuser
 */
 USE [sahsuland_dev];
 
@@ -21,6 +24,6 @@ IF DATABASE_PRINCIPAL_ID('rif_student') IS NULL
 IF DATABASE_PRINCIPAL_ID('rif_no_suppression') IS NULL
 	CREATE ROLE [rif_no_suppression];
 
-
-
+IF DATABASE_PRINCIPAL_ID('notarifuser') IS NULL
+	CREATE ROLE [notarifuser];
 
