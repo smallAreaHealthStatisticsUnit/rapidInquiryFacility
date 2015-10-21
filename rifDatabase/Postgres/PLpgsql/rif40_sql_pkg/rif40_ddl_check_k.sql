@@ -233,10 +233,9 @@ DECLARE
 			   AND b.objsubid = c.ordinal_position
 			   AND a.relname  = c.table_or_view
 		)
-		SELECT object_type, object_schema, object_name
+		SELECT object_type, object_schema, object_name, description
 		  FROM a
 		 WHERE NOT (object_schema = 'pg_toast' OR object_type IN ('INDEX'))
-		   AND description IS NULL
 		   AND l_object_schema = object_schema
 		   AND l_object_type   = object_type
 		 ORDER BY 1, 2, 3;
@@ -263,7 +262,12 @@ BEGIN
 					c11_rec.object_schema::VARCHAR, 
 					c11_rec.object_type::VARCHAR); 
 				FOR c12_rec IN c12(c11_rec.object_type, c11_rec.object_schema) LOOP
-					IF c11_rec.object_schema LIKE 'rif40%' OR c11_rec.object_schema = 'rif_studies' THEN
+					IF c12_rec.description IS NOT NULL THEN
+						PERFORM rif40_log_pkg.rif40_log(tag::rif40_log_pkg.rif40_log_debug_level, 'rif40_ddl_check_k', '[70552]: Found comment for % %.%', 
+							c12_rec.object_type::VARCHAR,
+							c12_rec.object_schema::VARCHAR, 
+							c12_rec.object_name::VARCHAR);					
+					ELSIF c11_rec.object_schema LIKE 'rif40%' OR c11_rec.object_schema = 'rif_studies' THEN
 						i:=i+1;
 						PERFORM rif40_log_pkg.rif40_log(tag::rif40_log_pkg.rif40_log_debug_level, 'rif40_ddl_check_k', '[70552]: Missing comment for % %.%', 
 							c12_rec.object_type::VARCHAR,

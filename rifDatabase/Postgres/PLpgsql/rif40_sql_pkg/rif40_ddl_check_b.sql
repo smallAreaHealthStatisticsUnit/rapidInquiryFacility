@@ -81,13 +81,25 @@ Check b) Missing table/view comments for all tables in RIF40_TABLES_AND_VIEWS
  */
 DECLARE
 	c2 CURSOR(l_schema VARCHAR) FOR /* Missing table/view comment */	
-		SELECT DISTINCT relname table_or_view, n.nspname AS schema_owner, b.description, comments
-		  FROM rif40_tables_and_views c, pg_class a
-			LEFT OUTER JOIN pg_description b ON (b.objoid = a.oid AND b.objsubid = 0)
-			LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
-		 WHERE a.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN (USER, l_schema))
-		   AND b.description IS NULL
-		   AND LOWER(table_or_view_name_hide) = a.relname
+
+		WITH a AS (
+				SELECT DISTINCT a.relname table_or_view, n.nspname AS schema_owner, i.inhrelid, i.inhseqno, b.description, c.comments
+				  FROM rif40_tables_and_views c, pg_class a
+					LEFT OUTER JOIN pg_description b ON (b.objoid = a.oid AND b.objsubid = 0)
+					LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
+					LEFT OUTER JOIN pg_inherits i ON (a.oid = i.inhparent)
+				 WHERE a.relowner IN (SELECT oid FROM pg_roles WHERE rolname IN (USER, l_schema))
+				   AND LOWER(c.table_or_view_name_hide) = a.relname
+		), d AS (
+			SELECT a.table_or_view, a.schema_owner, a.description, a.inhseqno, a.inhrelid, a1.relname AS partition_name, a.comments
+			  FROM a
+					LEFT OUTER JOIN pg_class a1 ON (a1.oid = a.inhrelid)
+		)
+		SELECT d.table_or_view, d.schema_owner, d.inhseqno, d.partition_name, d.comments
+		  FROM d
+				LEFT OUTER JOIN pg_description b2 ON (b2.objoid = d.inhrelid AND b2.objsubid = 0) 
+		 WHERE d.description IS NULL /* No comments on master table */ 
+		    OR (d.inhseqno IS NOT NULL AND b2.description IS NULL) /* No comments on partition */
 		 ORDER BY 1;
 --
 	c2_rec RECORD;
