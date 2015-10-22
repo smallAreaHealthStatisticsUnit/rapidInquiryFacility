@@ -339,8 +339,10 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VAR
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VARCHAR, VARCHAR[]);
 -- Old
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VARCHAR);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]);
+-- Old
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_a();
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_ddl_check_b();

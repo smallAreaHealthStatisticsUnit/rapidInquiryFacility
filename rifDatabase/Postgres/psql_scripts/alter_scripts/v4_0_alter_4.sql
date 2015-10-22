@@ -88,8 +88,6 @@ $$;
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_b.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_k.sql
 
---\df+ rif40_sql_pkg._rif40_common_partition_triggers
-
 WITH c AS (   
 	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
 	FROM pg_attribute b, pg_inherits 
@@ -412,7 +410,6 @@ SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name,
 --
 -- Check for missing comments
 --
-
 \pset title 'Table list with comments'
 WITH a AS (   
 	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
@@ -622,12 +619,12 @@ $$;
 DROP TABLE hash_partition_test_old;
 DROP TABLE hash_partition_test_new;
 
-DO LANGUAGE plpgsql $$
-BEGIN
-	RAISE INFO 'Aborting (script being tested)';
-	RAISE EXCEPTION 'C20999: Abort';
-END;
-$$;
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE INFO 'Aborting (script being tested)';
+--	RAISE EXCEPTION 'C20999: Abort';
+--END;
+--$$;
 
 END;
 

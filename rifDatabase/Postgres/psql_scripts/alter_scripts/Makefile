@@ -128,10 +128,10 @@ endif
 #
 # List of source code; v4_0_alter_7 is both DEV and PRODUCTION!
 #
-SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_5.sql $(PLR_SOURCES) v4_0_alter_7.sql v4_0_alter_8.sql
-# DEV_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql 
-# DEV_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql $(PLR_DEV_SOURCES) 
-DEV_SOURCES=v4_0_alter_4.sql
+SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_4.sql v4_0_alter_5.sql $(PLR_SOURCES) v4_0_alter_7.sql v4_0_alter_8.sql
+# DEV_SOURCES=v4_0_alter_3.sql 
+# DEV_SOURCES=v4_0_alter_3.sql $(PLR_DEV_SOURCES) 
+DEV_SOURCES=v4_0_alter_3.sql
 #
 # Derive targets from sources
 # Target extension depends on source, build rule

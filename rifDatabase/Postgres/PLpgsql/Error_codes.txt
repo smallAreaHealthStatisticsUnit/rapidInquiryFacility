@@ -60,5 +60,6 @@ _rif40_sql_test:									71250 to 71299
 _rif40_sql_test_register:							71300 to 71349
 _rif40_sql_test_dblink:								71350 to 71399
 _rif40_sql_test_log_setup.sql:						71400 to 71449
+rif40_range_partition:								71450 to 71499
 
 Eof

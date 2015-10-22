@@ -77,7 +77,7 @@ SECURITY DEFINER
 AS $func$
 /*
 Function: 	_rif40_common_partition_create()
-Parameters:	Schema, master table, partition table, column, value, list of tables in current partition build
+Parameters:	Partition schema, master table, partition table, column, value, list of tables in current partition build
 Returns:	Nothing
 Description:	Clones master table primary and foreign keys; trigger, unique, check and exclusion 
 		constraints; validation triggers, grants; table and column comments to partition 

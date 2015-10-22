@@ -159,7 +159,7 @@ DECLARE
 	fk_stmt	VARCHAR[];	
 	table_list VARCHAR[];
 --
-	number_of_partitions CONSTANT INTEGER:=2;
+	number_of_partitions CONSTANT INTEGER:=16;
 --
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';

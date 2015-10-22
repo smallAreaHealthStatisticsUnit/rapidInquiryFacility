@@ -116,8 +116,18 @@ DECLARE
 	l_function 			VARCHAR;
 --
 	c1 CURSOR FOR
-		SELECT a.tablename AS tablename, b.attname AS columnname, schemaname AS schemaname	/* Tables */
-		  FROM pg_tables a, pg_attribute b, pg_class c
+		WITH d AS (
+			SELECT ARRAY_AGG(a.tablename) AS table_list
+			  FROM pg_tables a, pg_attribute b, pg_class c
+	 		 WHERE c.oid        = b.attrelid
+			   AND c.relname    = a.tablename
+  		       AND c.relkind    = 'r' /* Relational table */
+		       AND c.relpersistence IN ('p', 'u') /* Persistence: permanent/unlogged */ 
+		       AND b.attname    = 'study_id'
+		       AND a.schemaname = 'rif40'	
+		)	
+		SELECT a.tablename AS tablename, b.attname AS columnname, schemaname AS schemaname	/* Tables */, d.table_list	/* Tables */
+		  FROM pg_tables a, pg_attribute b, pg_class c, d
 		 WHERE c.oid        = b.attrelid
 		   AND c.relname    = a.tablename
 		   AND c.relkind    = 'r' /* Relational table */
@@ -152,7 +162,8 @@ BEGIN
 	END LOOP;
 --
 	FOR c1_rec IN c1 LOOP
-		PERFORM rif40_sql_pkg.rif40_range_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'year'::VARCHAR);
+		PERFORM rif40_sql_pkg.rif40_range_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'year'::VARCHAR, 
+			c1_rec.table_list::VARCHAR[]);
 	END LOOP;
 --	RAISE EXCEPTION 'Stop';
 END;

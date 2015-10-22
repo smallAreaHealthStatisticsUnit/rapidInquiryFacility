@@ -65,6 +65,13 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VAR
 -- Old
 DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_range_partition(VARCHAR,VARCHAR, VARCHAR);
 
+--
+-- Error code:
+--
+--
+-- rif40_range_partition:								71450 to 71499
+--
+
 CREATE OR REPLACE FUNCTION rif40_sql_pkg.rif40_range_partition(
 	l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, l_table_list VARCHAR[])
 RETURNS void
@@ -131,7 +138,7 @@ al;
 --
 -- Add partition
 --
-                       PERFORM rif40_sql_pkg._rif40_range_partition_create('rif40', 'sahsuland_cancer', p_table, 'year', p_value);
+                       PERFORM rif40_sql_pkg._rif40_range_partition_create('rif40', 'sahsuland_cancer', p_table, 'year', p_value, NULL::VACHAR[]);
 --
 -- Re-insert failed row
 --
@@ -273,7 +280,7 @@ BEGIN
 -- Must be rif40 or have rif_user or rif_manager role
 --
 	IF USER != 'rif40' AND NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_range_partition', 'User % must be rif40 or have rif_user or rif_manager role', 
+		PERFORM rif40_log_pkg.rif40_error(-71450, 'rif40_range_partition', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;
 --
@@ -282,20 +289,20 @@ BEGIN
 	total_partitions:=rif40_sql_pkg._rif40_partition_count(l_schema, l_table);
 	IF total_partitions >= 1 THEN
 		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_range_partition', 
-			'Automatic range partition by %: %.%; table name is already partitioned into: % partitions', 
+			'[71451] Automatic range partition by %: %.%; table name is already partitioned into: % partitions', 
 			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, total_partitions::VARCHAR);
 	END IF;
 
 --
 -- Call: _rif40_common_partition_create_setup()
---
+--	
 	create_setup:=rif40_sql_pkg._rif40_common_partition_create_setup(
 		l_schema, 			/* Schema of source data (rif_data usually) */
 		p_schema, 			/* partition schema */
-		l_table, 			/* Table name */
+		l_table, 			/* Master table name */
 		l_column, 			/* Column name */
 		l_table_list,		/* list of tables in current partition build */
-		NULL 				/* Not a hash partition */);
+		NULL::INTEGER		/* Not a hash partition */);
 	IF create_setup.ddl_stmt IS NULL THEN /* Un partitionable */
 		RETURN;
 	END IF;
@@ -308,11 +315,21 @@ BEGIN
 	min_value:=create_setup.min_value;
 	warnings:=create_setup.warnings;
 	total_rows:=create_setup.total_rows;
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 
-		'Automatic range partitioning setup %: %.%;  rows: %; partitions: %; warnings: %', 
-		l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, 
-		total_rows::VARCHAR, num_partitions::VARCHAR, warnings::VARCHAR);
 
+--
+-- Foriegn key constrsints are not supported by the called scripts - it is an error if there are any
+--
+	IF create_setup.fk_stmt IS NOT NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-71452, 'rif40_range_partition', 
+			'Automatic range partitioning setup %: %.%;  rows: %; partitions: %; warnings: %', 
+			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, 
+			total_rows::VARCHAR, num_partitions::VARCHAR, warnings::VARCHAR);	
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_range_partition', 
+			'[71453] Automatic range partitioning setup %: %.%;  rows: %; partitions: %; warnings: %', 
+			l_column::VARCHAR, l_schema::VARCHAR, l_table::VARCHAR, 
+			total_rows::VARCHAR, num_partitions::VARCHAR, warnings::VARCHAR);	
+	END IF;
 --
 -- Create auto range trigger function
 --
@@ -364,7 +381,7 @@ BEGIN
 '--'||E'\n'||
 '-- Add partition'||E'\n'||
 '--'||E'\n'||
-'                       PERFORM rif40_sql_pkg._rif40_range_partition_create(p_schema, '''||l_table||''', p_table, '''||l_column||''', p_value);'||E'\n'||
+'                       PERFORM rif40_sql_pkg._rif40_range_partition_create(p_schema, '''||l_table||''', p_table, '''||l_column||''', p_value, NULL::VARCHAR[] /* table list being created */);'||E'\n'||
 '--'||E'\n'||
 '-- Re-insert failed first row'||E'\n'||
 '--'||E'\n'||

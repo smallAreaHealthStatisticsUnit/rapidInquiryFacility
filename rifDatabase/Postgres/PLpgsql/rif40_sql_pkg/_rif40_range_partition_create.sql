@@ -61,18 +61,23 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]);
+-- Old
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
+
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_range_partition_create(
-	l_schema 	VARCHAR, 
+	l_schema 		VARCHAR, 
 	master_table 	VARCHAR, 
 	partition_table VARCHAR, 
-	l_column	VARCHAR, 
-	l_value		VARCHAR)
+	l_column		VARCHAR, 
+	l_value			VARCHAR,
+	l_table_list	VARCHAR[])
 RETURNS void
 SECURITY DEFINER
 AS $func$
 /*
 Function: 	_rif40_range_partition_create()
-Parameters:	Schema, master table, partition table, column, value
+Parameters:	Partition schema, master table, partition table, column, value, list of tables being processed
 Returns:	Nothing
 Description:	Create range partition schema.table_<value> on column <column> value <value>, inheriting from <mnaster table>.
 		Comment columns
@@ -112,7 +117,7 @@ BEGIN
 		partition_table::VARCHAR	/* Partition table */,
 		l_value::VARCHAR		/* Partition range value */,
 		l_column::VARCHAR		/* Partition column */,
-		l_schema::VARCHAR		/* Schema */, 
+		l_schema::VARCHAR		/* Partition schema */, 
 		master_table::VARCHAR		/* Master table inheriting from */);
 
 --
@@ -140,15 +145,15 @@ BEGIN
 -- * Validation triggers
 -- * Add grants
 -- * Table and column comments
---
-	PERFORM rif40_sql_pkg._rif40_common_partition_create(l_schema, master_table, partition_table, l_column, l_value);
+--	
+	PERFORM rif40_sql_pkg._rif40_common_partition_create(l_schema, master_table, partition_table, l_column, l_value, l_table_list);
 
 END;
 $func$ 
 LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR) IS 'Function: 	_rif40_range_partition_create()
-Parameters:	Schema, master table, partition table, column, value
+COMMENT ON FUNCTION rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) IS 'Function: 	_rif40_range_partition_create()
+Parameters:	Schema, master table, partition table, column, value, list of tables being processed
 Returns:	Nothing
 Description:	Create range partition schema.table_<value> on column <column> value <value>, inheriting from <mnaster table>.
 		Comment columns
