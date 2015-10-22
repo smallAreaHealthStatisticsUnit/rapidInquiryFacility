@@ -197,7 +197,7 @@ DECLARE
 					' ADD CONSTRAINT '||con.conname||' '||pg_get_constraintdef(con.oid) 
 				ELSE NULL 
 		       END;
-	c6rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get trigger, unique, check and exclusion constraints */
+	c6rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get trigger, unique, [check removed: inherited]  and exclusion constraints */
 		SELECT CASE
 				WHEN con.contype = 'x' THEN 'Exclusion'
 				WHEN con.contype = 'c' THEN 'Check'
@@ -219,7 +219,7 @@ DECLARE
 		        LEFT OUTER JOIN pg_class cl ON (con.conrelid = cl.oid)
 		 WHERE ns.nspname   = l_schema
 		   AND cl.relname   = l_table
-		   AND con.contype IN ('x', 'c', 't', 'u') /* trigger, unique, check and exclusion constraints */;
+		   AND con.contype IN ('x', /* 'c', */ 't', 'u') /* trigger, unique, [check removed: inherited] and exclusion constraints */;
 	c7rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get triggers */
 		SELECT tg.tgname,
 		       ns.nspname AS schema_name,
