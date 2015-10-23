@@ -304,99 +304,116 @@ ORDER BY 1, 2, 3;
 -- Ingnore object_type: TABLE, COLUMN; you are just testing INHERITS
 -- 
 \pset title 'Extra partition indexes'
-SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
-       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+SELECT REGEXP_REPLACE(REPLACE(object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(REPLACE(sub_object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_object_name, 
 	   schema, object_type, object_order, 
-	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
-	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+	   REGEXP_REPLACE(REPLACE(sub_type, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(REPLACE(comment, 'p_', ''), '_([0-9]){1,}', '', 'g') AS comment 
  FROM range_partition_test_new
  WHERE object_type LIKE '%index'
-   AND object_name SIMILAR TO '%_p[1-9]%'
+   AND object_name SIMILAR TO 'p%[1-2]([0-9]){3}%'
 EXCEPT
 SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
  FROM range_partition_test_new
  WHERE object_type LIKE '%index'
-   AND object_name NOT SIMILAR TO '%_p[1-9]%'   
+   AND object_name NOT SIMILAR TO 'p%[1-2]([0-9]){3}%'   
  ORDER BY 5, 1, 2, 3;
 \pset title 'Missing partition indexes'
 SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
  FROM range_partition_test_new
  WHERE object_type LIKE '%index'
-   AND object_name NOT SIMILAR TO '%_p[1-9]%'   
+   AND object_name NOT SIMILAR TO 'p%[1-2]([0-9]){3}%'   
 EXCEPT
-SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
-       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+SELECT REGEXP_REPLACE(REPLACE(object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(REPLACE(sub_object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_object_name, 
 	   schema, object_type, object_order, 
-	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
-	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+	   REGEXP_REPLACE(REPLACE(sub_type, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(REPLACE(comment, 'p_', ''), '_([0-9]){1,}', '', 'g') AS comment 
  FROM range_partition_test_new
  WHERE object_type LIKE '%index'
-   AND object_name SIMILAR TO '%_p[1-9]%'
+   AND object_name SIMILAR TO 'p%[1-2]([0-9]){3}%'
  ORDER BY 5, 1, 2, 3;
- 
+ -- p_sahsuland_cancer_1989 => sahsuland_cancer
+ -- p_sahsuland_cancer_1989_age_sex_group => sahsuland_cancer_age_group
+\pset title 'Actual partition indexes - convert paritions to old form for comparision' 
+SELECT DISTINCT REGEXP_REPLACE(REPLACE(object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(REPLACE(sub_object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_object_name, 
+	   schema, object_type, object_order, 
+	   REGEXP_REPLACE(REPLACE(sub_type, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(REPLACE(comment, 'p_', ''), '_([0-9]){1,}', '', 'g') AS comment 
+ FROM range_partition_test_new
+ WHERE object_type LIKE '%index'
+   AND object_name SIMILAR TO 'p%[1-2]([0-9]){3}%'
+ ORDER BY 5, 1, 2, 3;
+\pset title 'Actual partition indexes'  
+SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
+ FROM range_partition_test_new
+ WHERE object_type LIKE '%index'
+   AND object_name NOT SIMILAR TO 'p%[1-2]([0-9]){3}%'  
+ ORDER BY 5, 1, 2, 3;
 -- Missing partition check constraints: not relevant
  
 \pset title 'Extra partition foreign key constraints' 
-SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
-       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+SELECT REGEXP_REPLACE(REPLACE(object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(REPLACE(sub_object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_object_name, 
 	   schema, object_type, object_order, 
-	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
-	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+	   REGEXP_REPLACE(REPLACE(sub_type, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(REPLACE(comment, 'p_', ''), '_([0-9]){1,}', '', 'g') AS comment 
  FROM range_partition_test_new
  WHERE object_type = 'foreign key constraint'
-   AND object_name SIMILAR TO '%_p[1-9]%'
+   AND object_name SIMILAR TO 'p%[1-2]([0-9]){3}%'
 EXCEPT
 SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
  FROM range_partition_test_new
  WHERE object_type = 'foreign key constraint'
-   AND object_name NOT SIMILAR TO '%_p[1-9]%'   
+   AND object_name NOT SIMILAR TO 'p%[1-2]([0-9]){3}%'   
  ORDER BY 5, 1, 2, 3;
 \pset title 'Missing partition foreign key constraints' 
 SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
  FROM range_partition_test_new
  WHERE object_type = 'foreign key constraint'
-   AND object_name NOT SIMILAR TO '%_p[1-9]%'
+   AND object_name NOT SIMILAR TO 'p%[1-2]([0-9]){3}%'
 EXCEPT
-SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
-       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+SELECT REGEXP_REPLACE(REPLACE(object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(REPLACE(sub_object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_object_name, 
 	   schema, object_type, object_order, 
-	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
-	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+	   REGEXP_REPLACE(REPLACE(sub_type, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(REPLACE(comment, 'p_', ''), '_([0-9]){1,}', '', 'g') AS comment 
  FROM range_partition_test_new
  WHERE object_type = 'foreign key constraint'
-   AND object_name SIMILAR TO '%_p[1-9]%'
+   AND object_name SIMILAR TO 'p%[1-2]([0-9]){3}%'
  ORDER BY 5, 1, 2, 3;
  
 \pset title 'Extra partition triggers' 
-SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
-       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+SELECT REGEXP_REPLACE(REPLACE(object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(REPLACE(sub_object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_object_name, 
 	   schema, object_type, object_order, 
-	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
-	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+	   REGEXP_REPLACE(REPLACE(sub_type, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(REPLACE(comment, 'p_', ''), '_([0-9]){1,}', '', 'g') AS comment 
  FROM range_partition_test_new
  WHERE object_type = 'trigger'
-   AND object_name SIMILAR TO '%_p[1-9]%'
+   AND object_name SIMILAR TO 'p%[1-2]([0-9]){3}%'
 EXCEPT
 SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
  FROM range_partition_test_new
  WHERE object_type = 'trigger'
-   AND object_name NOT SIMILAR TO '%_p[1-9]%'   
+   AND object_name NOT SIMILAR TO 'p%[1-2]([0-9]){3}%'   
  ORDER BY 5, 1, 2, 3;
 \pset title 'Missing partition triggers' 
 SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
  FROM range_partition_test_new
  WHERE object_type = 'trigger'
-   AND object_name NOT SIMILAR TO '%_p[1-9]%' 
+   AND object_name NOT SIMILAR TO 'p%[1-2]([0-9]){3}%' 
    AND sub_object_name != (object_name||'_insert')::Text
 EXCEPT
-SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
-       REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+SELECT REGEXP_REPLACE(REPLACE(object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS object_name, 
+       REGEXP_REPLACE(REPLACE(sub_object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_object_name, 
 	   schema, object_type, object_order, 
-	   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
-	   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+	   REGEXP_REPLACE(REPLACE(sub_type, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_type,
+	   REGEXP_REPLACE(REPLACE(comment, 'p_', ''), '_([0-9]){1,}', '', 'g') AS comment 
  FROM range_partition_test_new
  WHERE object_type = 'trigger'
-   AND object_name SIMILAR TO '%_p[1-9]%'
+   AND object_name SIMILAR TO 'p%[1-2]([0-9]){3}%'
  ORDER BY 5, 1, 2, 3; 
  
 --
@@ -484,19 +501,19 @@ DECLARE
 --
 	p_extra CURSOR FOR
 		WITH a AS (
-			SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
-				   REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+			SELECT REGEXP_REPLACE(REPLACE(object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS object_name, 
+				   REGEXP_REPLACE(REPLACE(sub_object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_object_name, 
 				   schema, object_type, object_order, 
-				   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
-				   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+				   REGEXP_REPLACE(REPLACE(sub_type, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_type,
+				   REGEXP_REPLACE(REPLACE(comment, 'p_', ''), '_([0-9]){1,}', '', 'g') AS comment 
 			 FROM range_partition_test_new
 			 WHERE object_type NOT IN ('table', 'column', 'check constraint')	 
-			   AND object_name SIMILAR TO '%_p[1-9]%'	
+			   AND object_name SIMILAR TO 'p%[1-2]([0-9]){3}%'	
 			EXCEPT	
 			SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
 			 FROM range_partition_test_new
 			 WHERE object_type NOT IN ('table', 'column', 'check constraint')
-			   AND object_name NOT SIMILAR TO '%_p[1-9]%' 
+			   AND object_name NOT SIMILAR TO 'p%[1-2]([0-9]){3}%' 
 		)
 		SELECT object_type, COUNT(sub_object_name) AS total
 		  FROM a
@@ -508,17 +525,17 @@ DECLARE
 			SELECT object_name, sub_object_name, schema, object_type, object_order, sub_type, comment
 			 FROM range_partition_test_new
 			 WHERE object_type NOT IN ('table', 'column', 'check constraint')
-			   AND object_name NOT SIMILAR TO '%_p[1-9]%' 
+			   AND object_name NOT SIMILAR TO 'p%[1-2]([0-9]){3}%' 
 			   AND sub_object_name != (object_name||'_insert')::Text
 			EXCEPT
-			SELECT REGEXP_REPLACE(object_name, '_p([0-9]){1,}', '', 'g') AS object_name, 
-				   REGEXP_REPLACE(sub_object_name, '_p([0-9]){1,}', '', 'g') AS sub_object_name, 
+			SELECT REGEXP_REPLACE(REPLACE(object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS object_name, 
+				   REGEXP_REPLACE(REPLACE(sub_object_name, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_object_name, 
 				   schema, object_type, object_order, 
-				   REGEXP_REPLACE(sub_type, '_p([0-9]){1,}', '', 'g') AS sub_type,
-				   REGEXP_REPLACE(comment, '_p([0-9]){1,}', '', 'g') AS comment 
+				   REGEXP_REPLACE(REPLACE(sub_type, 'p_', ''), '_([0-9]){1,}', '', 'g') AS sub_type,
+				   REGEXP_REPLACE(REPLACE(comment, 'p_', ''), '_([0-9]){1,}', '', 'g') AS comment 
 			 FROM range_partition_test_new
 			 WHERE object_type NOT IN ('table', 'column', 'check constraint')
-			   AND object_name SIMILAR TO '%_p[1-9]%'	
+			   AND object_name SIMILAR TO 'p%[1-2]([0-9]){3}%'	
 		)
 		SELECT object_type, COUNT(sub_object_name) AS total
 		  FROM a

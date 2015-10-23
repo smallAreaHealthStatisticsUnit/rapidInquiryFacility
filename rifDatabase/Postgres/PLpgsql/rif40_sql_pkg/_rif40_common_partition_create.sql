@@ -131,7 +131,7 @@ DECLARE
 --
 -- Use pg_get ... def() functions so DDL is valid
 --
-	c4rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR) FOR /* GET PK/unique index columns */
+	c4rpcr CURSOR(l_table VARCHAR, l_column VARCHAR) FOR /* GET PK/unique index columns */
 		SELECT n.nspname AS schema_name, 
 		       t.relname AS table_name, 
 		       i.relname AS index_name, 
@@ -150,7 +150,7 @@ DECLARE
 		   AND a.attnum       = ANY(ix.indkey)
 		   AND t.relkind      = 'r'
 		   AND t.relnamespace = n.oid 
-		   AND n.nspname      = l_schema
+		   AND n.nspname      IN ('rif40', 'rif_data')
 		   AND t.relname      = l_table
 		 /*  AND a.attname      != l_column -- removed - disabling PKs on partition column */
 		 GROUP BY n.nspname, t.relname, i.relname, ix.indisprimary, ix.indisunique, i.oid, con.oid
@@ -336,8 +336,8 @@ BEGIN
 		partition_table::VARCHAR, 
 		l_schema::VARCHAR, 
 		master_table::VARCHAR);
-	FOR c4_rec IN c4rpcr('rif40', master_table, l_column) LOOP
-		I:=i+1;
+	FOR c4_rec IN c4rpcr(master_table, l_column) LOOP
+		i:=i+1;
 		IF c4_rec.indisunique AND c4_rec.indisprimary AND c4_rec.constraint_def IS NOT NULL THEN
 			ddl_stmt[array_length(ddl_stmt, 1)+1]:=REPLACE(
 														REPLACE(
