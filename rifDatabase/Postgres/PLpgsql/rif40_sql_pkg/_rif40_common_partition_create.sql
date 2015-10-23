@@ -132,29 +132,34 @@ DECLARE
 -- Use pg_get ... def() functions so DDL is valid
 --
 	c4rpcr CURSOR(l_table VARCHAR, l_column VARCHAR) FOR /* GET PK/unique index columns */
-		SELECT n.nspname AS schema_name, 
-		       t.relname AS table_name, 
-		       i.relname AS index_name, 
-		       array_to_string(array_agg(a.attname), ', ') AS column_names, 
-		       pg_get_indexdef(i.oid) AS index_def,
-		       CASE WHEN ix.indisprimary THEN 'ALTER TABLE '||n.nspname||'.'||t.relname||
-					' ADD CONSTRAINT '||t.relname||'_pk '||pg_get_constraintdef(con.oid) 
-		       ELSE NULL END AS constraint_def,
-		       ix.indisprimary,
-		       ix.indisunique
-		 FROM pg_index ix, pg_attribute a, pg_namespace n, pg_class t, pg_class i
-		        LEFT OUTER JOIN pg_constraint con ON (con.conindid = i.oid AND con.contype = 'p')
-		 WHERE t.oid          = ix.indrelid
-		   AND i.oid          = ix.indexrelid
-		   AND a.attrelid     = t.oid
-		   AND a.attnum       = ANY(ix.indkey)
-		   AND t.relkind      = 'r'
-		   AND t.relnamespace = n.oid 
-		   AND n.nspname      IN ('rif40', 'rif_data')
-		   AND t.relname      = l_table
-		 /*  AND a.attname      != l_column -- removed - disabling PKs on partition column */
-		 GROUP BY n.nspname, t.relname, i.relname, ix.indisprimary, ix.indisunique, i.oid, con.oid
-		 ORDER BY n.nspname, t.relname, i.relname, ix.indisprimary DESC, ix.indisunique DESC, i.oid;
+			WITH a AS (	 
+				SELECT n.nspname AS schema_name, 
+					   t.relname AS table_name, 
+					   i.relname AS index_name, 
+					   pg_get_indexdef(i.oid) AS index_def,
+					   CASE WHEN ix.indisprimary THEN 'ALTER TABLE '||n.nspname||'.'||t.relname||
+							' ADD CONSTRAINT '||t.relname||'_pk '||pg_get_constraintdef(con.oid) 
+					   ELSE NULL END AS constraint_def,
+					   ix.indisprimary,
+					   ix.indisunique,
+					   ix.indrelid AS table_name_oid,
+					   ix.indkey
+				 FROM pg_index ix, pg_namespace n, pg_class t, pg_class i
+						LEFT OUTER JOIN pg_constraint con ON (con.conindid = i.oid AND con.contype = 'p')		 
+				 WHERE t.oid          = ix.indrelid
+				   AND i.oid          = ix.indexrelid
+				   AND t.relkind      = 'r'
+				   AND t.relnamespace = n.oid 
+				   AND n.nspname      IN ('rif40', 'rif_data')
+				   AND t.relname      = l_table
+			)
+			SELECT a.schema_name, a.table_name, a.index_name, 
+				   array_to_string(array_agg(b.attname ORDER BY b.attnum), ', ') AS column_names, 
+				   a.index_def, a.constraint_def, a.indisprimary, a.indisunique
+			  FROM a /* Add columns - not for functional indexes */
+					LEFT OUTER JOIN pg_attribute b ON (b.attnum = ANY(a.indkey) AND b.attrelid = a.table_name_oid)		
+				 GROUP BY a.schema_name, a.table_name, a.index_name, a.index_def, a.constraint_def, a.indisprimary, a.indisunique
+				 ORDER BY schema_name, table_name, index_name;
 	c5rpcr CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR /* Get foreign keys */
 		SELECT con.contype,
 		       con.conname,
