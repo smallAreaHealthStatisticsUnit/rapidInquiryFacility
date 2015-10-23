@@ -626,12 +626,12 @@ $$;
 DROP TABLE range_partition_test_old;
 DROP TABLE range_partition_test_new;
 
-DO LANGUAGE plpgsql $$
-BEGIN
-	RAISE INFO 'Aborting (script being tested)';
-	RAISE EXCEPTION 'C20999: Abort';
-END;
-$$;
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE INFO 'Aborting (script being tested)';
+--	RAISE EXCEPTION 'C20999: Abort';
+--END;
+--$$;
 
 END;
 
