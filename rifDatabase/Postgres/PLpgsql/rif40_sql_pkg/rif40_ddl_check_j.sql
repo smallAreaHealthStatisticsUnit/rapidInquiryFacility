@@ -54,6 +54,8 @@
 \set ON_ERROR_STOP ON
 \timing
 
+-- Fix partitioning problem
+
 --
 -- Check user is rif40
 --
