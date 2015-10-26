@@ -86,6 +86,7 @@ $$;
 -- Partition enabled DDL checks
 --
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_b.sql
+\i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_j.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_k.sql
 
 WITH c AS (   
@@ -602,6 +603,10 @@ BEGIN
 -- DDL Check b) Missing table/view comments
 --
 	errors:=errors+rif40_sql_pkg.rif40_ddl_check_b();		
+--
+-- DDL Check j) Extra table/view columns
+--
+	errors:=errors+rif40_sql_pkg.rif40_ddl_check_j(); 	
 --
 -- DDL Check k) Missing comments
 --

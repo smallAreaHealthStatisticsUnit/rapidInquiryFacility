@@ -99,23 +99,23 @@ Check j) Extra table/view columns in INFORMATION_SCHEMA.COLUMS:
 DECLARE
 	c10 CURSOR(l_schema VARCHAR) FOR /* Extra table/view columns */
 		WITH a AS (
-		SELECT table_name table_or_view, column_name
-		  FROM information_schema.columns a
-			LEFT OUTER JOIN pg_tables b1 ON (b1.schemaname = a.table_schema AND a.table_name = b1.tablename) 
-			LEFT OUTER JOIN pg_views b2 ON (b2.schemaname = a.table_schema AND a.table_name = b2.viewname) 
-			LEFT OUTER JOIN (
-				SELECT c.relname fdw_table, r.rolname fdw_tableowner
-				  FROM pg_foreign_table t, pg_roles r, pg_class c
-					LEFT OUTER JOIN pg_namespace n ON (n.oid = c.relnamespace)			
-				 WHERE t.ftrelid  = c.oid 
-  				   AND n.nspname IN (USER, l_schema, 'rif_data', 'pop', 'gis', 'data_load')
-				   AND c.relowner IN (SELECT oid FROM pg_roles 
-									  WHERE rolname IN (USER, 'pop', 'gis', 'data_load'))
-				) b3 ON (b3.fdw_table = a.table_name)
+			SELECT table_name table_or_view, column_name
+			  FROM information_schema.columns a
+				LEFT OUTER JOIN pg_tables b1 ON (b1.schemaname = a.table_schema AND a.table_name = b1.tablename) 
+				LEFT OUTER JOIN pg_views b2 ON (b2.schemaname = a.table_schema AND a.table_name = b2.viewname) 
+				LEFT OUTER JOIN (
+					SELECT c.relname fdw_table, r.rolname fdw_tableowner
+					  FROM pg_foreign_table t, pg_roles r, pg_class c
+						LEFT OUTER JOIN pg_namespace n ON (n.oid = c.relnamespace)			
+					 WHERE t.ftrelid  = c.oid 
+					   AND n.nspname IN (USER, l_schema, 'rif_data', 'pop', 'gis', 'data_load')
+					   AND c.relowner IN (SELECT oid FROM pg_roles 
+										  WHERE rolname IN (USER, 'pop', 'gis', 'data_load'))
+					) b3 ON (b3.fdw_table = a.table_name)
 		 WHERE (tableowner IN (USER, l_schema, 'pop', 'gis', 'data_load') 
 		    OR viewowner IN (USER, l_schema, 'pop', 'gis', 'data_load') 
 			OR fdw_tableowner = USER)
-                   AND a.table_schema  != 'rif_studies'			/* Exclude map/extract tables */
+           AND a.table_schema NOT IN ('rif_studies', 'rif_partitions')			/* Exclude map/extract, partitioned tables */
 		   AND NOT (a.table_name IN ('g_rif40_comparison_areas', 'g_rif40_study_areas', 'user_role_privs', 
 									 'sahsuland_geography_test')
     		       OR   a.table_name IN (
