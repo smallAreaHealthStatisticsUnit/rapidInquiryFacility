@@ -113,8 +113,8 @@ DECLARE
 										  WHERE rolname IN (USER, 'pop', 'gis', 'data_load'))
 					) b3 ON (b3.fdw_table = a.table_name)
 		 WHERE (tableowner IN (USER, l_schema, 'pop', 'gis', 'data_load') 
-		    OR viewowner IN (USER, l_schema, 'pop', 'gis', 'data_load') 
-			OR fdw_tableowner = USER)
+				OR viewowner IN (USER, l_schema, 'pop', 'gis', 'data_load') 
+				OR fdw_tableowner = USER)
            AND a.table_schema NOT IN ('rif_studies', 'rif_partitions')			/* Exclude map/extract, partitioned tables */
 		   AND NOT (a.table_name IN ('g_rif40_comparison_areas', 'g_rif40_study_areas', 'user_role_privs', 
 									 'sahsuland_geography_test')
@@ -235,6 +235,7 @@ DECLARE
 		  FROM a, information_schema.columns b
 		 WHERE a.table_or_view = b.table_name
 		   AND a.column_name   = b.column_name
+		   AND b.table_schema NOT IN ('rif_partitions')			/* Exclude partitioned tables */
 		 ORDER BY 1, 2;
 --
 	c10_rec RECORD;
