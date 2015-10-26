@@ -115,7 +115,7 @@ DECLARE
 		 WHERE (tableowner IN (USER, l_schema, 'pop', 'gis', 'data_load') 
 				OR viewowner IN (USER, l_schema, 'pop', 'gis', 'data_load') 
 				OR fdw_tableowner = USER)
-           AND a.table_schema NOT IN ('rif_studies', 'rif_partitions')			/* Exclude map/extract, partitioned tables */
+           AND a.table_schema NOT IN ('rif_studies', 'rif40_partitions')			/* Exclude map/extract, partitioned tables */
 		   AND NOT (a.table_name IN ('g_rif40_comparison_areas', 'g_rif40_study_areas', 'user_role_privs', 
 									 'sahsuland_geography_test')
     		       OR   a.table_name IN (
@@ -235,14 +235,14 @@ DECLARE
 		  FROM a, information_schema.columns b
 		 WHERE a.table_or_view = b.table_name
 		   AND a.column_name   = b.column_name
-		   AND b.table_schema NOT IN ('rif_partitions')			/* Exclude partitioned tables */
+		   AND b.table_schema NOT IN ('rif40_partitions')			/* Exclude partitioned tables */
 		 ORDER BY 1, 2;
 --
 	c10_rec RECORD;
 --
 	schema_owner VARCHAR:='rif40';
 	i INTEGER:=0;
-BEGIN	
+BEGIN	 
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_j', '[70500]: Checking for extra table/view columns');
 		FOR c10_rec IN c10(schema_owner) LOOP
 			IF USER NOT IN ('rif40', 'rifupg34') AND c10_rec.table_or_view IN ( /* Ordinary users - ignore  */
@@ -251,8 +251,11 @@ BEGIN
 			ELSIF c10_rec.table_schema IN ('gis', 'peterh') THEN
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_j', '[70501]: Extra table/view column: %.%.% [IGNORED]', 
 					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR, c10_rec.column_name::VARCHAR);
+			ELSIF c10_rec.column_name IN ('hash_partition_number') THEN
+				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_j', '[70502]: Extra partition related table/view column: %.%.% [IGNORED]', 
+					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR, c10_rec.column_name::VARCHAR);								
 			ELSE
-				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_j', '[70502]: Extra table/view column: %.%.%', 
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_j', '[70503]: Extra table/view column: %.%.%', 
 					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR, c10_rec.column_name::VARCHAR);
 				i:=i+1;
 			END IF;
