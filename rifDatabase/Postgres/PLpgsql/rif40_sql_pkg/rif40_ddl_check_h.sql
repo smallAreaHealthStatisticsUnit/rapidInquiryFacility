@@ -186,7 +186,7 @@ DECLARE
 	schema_owner VARCHAR:='rif40';
 	i INTEGER:=0;
 BEGIN	
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_h', '[70400]: Checking for missing tables, views and sequences GRANT SELECT to rif_user and rif_manager');
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_h', '[70400]: Checking for missing tables, views and sequences: GRANT SELECT to rif_user and rif_manager [This takes some time with partitioning enabled]');
 		FOR c8_rec IN c8(schema_owner) LOOP
 			IF (c8_rec.has_user_select = FALSE OR c8_rec.has_rif_user_select = FALSE OR c8_rec.has_rif_manager_select = FALSE) AND c8_rec.has_public_select = FALSE THEN
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_h', '[70401]: Missing grant SELECT on % to rif_user(%) and rif_manager(%); user(%); public(%)', 
