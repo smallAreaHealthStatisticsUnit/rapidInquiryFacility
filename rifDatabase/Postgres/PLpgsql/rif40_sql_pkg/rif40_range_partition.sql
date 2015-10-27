@@ -352,6 +352,9 @@ BEGIN
 '		PERFORM rif40_log_pkg.rif40_error(-19001, '''||quote_ident(l_table||'_insert')||''','||E'\n'||
 '		       	''NULL value for partition column '||quote_ident(l_column)||''');'||E'\n'||
 '	END IF;'||E'\n'||
+--
+-- NOT Fix for 42P01 error
+--
 '	p_table:=quote_ident(''p_'||l_table||'_''||NEW.'||l_column||'::Text'||');'||E'\n'||
 '	p_value:=NEW.'||l_column||'::Text;'||E'\n'||
 '	BEGIN'||E'\n'||

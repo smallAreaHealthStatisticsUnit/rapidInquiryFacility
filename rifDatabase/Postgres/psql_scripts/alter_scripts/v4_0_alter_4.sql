@@ -631,6 +631,28 @@ DROP TABLE hash_partition_test_new;
 --END;
 --$$;
 
+	SAVEPOINT rif40_studies_insert_test;
+	INSERT /* 1 */ INTO rif40_studies (
+                geography, project, study_name, study_type,
+                comparison_geolevel_name, study_geolevel_name, denom_tab,
+                year_start, year_stop, max_age_group, min_age_group,
+                suppression_value, extract_permitted, transfer_permitted)
+        VALUES (
+                 'SAHSU'                                        /* geography */,
+                 'TEST'                                                 /* project */,
+                 'SAHSULAND test 4 study_id 1 example'                                  /* study_name */,
+                 1                                                                      /* study_type [disease mapping] */,
+                 'LEVEL2'       /* comparison_geolevel_name */,
+                 'LEVEL4'                               /* study_geolevel_name */,
+                 'SAHSULAND_POP'                                        /* denom_tab */,
+                 1989                                   /* year_start */,
+                 1996                                   /* year_stop */,
+                 21     /* max_age_group */,
+                 0      /* min_age_group */,
+                 5 /* suppression_value */,
+                 1              /* extract_permitted */,
+                 1              /* transfer_permitted */);
+	ROLLBACK TO SAVEPOINT rif40_studies_insert_test;			 
 END;
 
 --

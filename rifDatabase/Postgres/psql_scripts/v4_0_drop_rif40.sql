@@ -140,6 +140,27 @@ EXCEPTION
 END;
 $$;
 
+--
+-- Drop any remaimning partitions
+--
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT table_schema, table_name, table_type 
+		  FROM information_schema.tables
+		 WHERE table_schema = 'rif40_partitions';
+	c1_rec RECORD;
+--
+	sql_stmt VARCHAR;
+BEGIN
+	FOR c1_rec IN c1 LOOP
+		sql_stmt:='DROP TABLE '||c1_rec.table_schema||'.'||c1_rec.table_name||' CASCADE';
+		RAISE INFO 'Drop: %; SQL> %;', c1_rec.table_type, sql_stmt;
+		EXECUTE sql_stmt;
+	END LOOP;
+END;
+$$;	
+
 DROP TABLE IF EXISTS sahsuland_pop;
 DROP TABLE IF EXISTS sahsuland_cancer;
 DROP TABLE IF EXISTS sahsuland_geography;
@@ -693,6 +714,24 @@ DROP TYPE IF EXISTS rif40_goejson_type;
 
 DROP FUNCTION IF EXISTS rif_data.t_rif40_sahsu_geometry_insert();
 DROP FUNCTION IF EXISTS rif_data.t_rif40_sahsu_maptiles_insert();
+
+--
+-- Partitioning functions (could be cleverer here)
+--
+DROP FUNCTION IF EXISTS rif_data.sahsuland_cancer_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif_data.sahsuland_covariates_level3_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif_data.sahsuland_covariates_level4_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.rif40_study_shares_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.t_rif40_comparison_areas_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.t_rif40_contextual_stats_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.t_rif40_inv_conditions_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.t_rif40_inv_covariates_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.t_rif40_investigations_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.t_rif40_results_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.t_rif40_studies_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.t_rif40_study_areas_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.t_rif40_study_sql_insert() CASCADE;
+DROP FUNCTION IF EXISTS rif40.t_rif40_study_sql_log_insert() CASCADE;
 
 \echo Dropped all objects.
 

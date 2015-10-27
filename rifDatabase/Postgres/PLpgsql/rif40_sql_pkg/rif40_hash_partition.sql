@@ -184,7 +184,14 @@ BEGIN
 '		       	''NULL value for partition column '||quote_ident(l_column)||''');'||E'\n'||
 '	END IF;'||E'\n'||
 '	p_hash:=rif40_sql_pkg._rif40_hash(NEW.'||l_column||'::text, '||l_num_partitions::Text||')::Text;'||E'\n'||
-'	p_table:=quote_ident(''p_'||l_table||'_p''||p_hash);'||E'\n'||
+--
+-- Fix for 42P01 error
+--
+-- p_table:=quote_ident('p_t_rif40_studies_p'||p_hash);
+-- Should be:
+-- p_table:=quote_ident('t_rif40_studies_p'||p_hash);
+--
+'	p_table:=quote_ident('''||l_table||'_p''||p_hash);'||E'\n'||
 '	BEGIN'||E'\n'||
 '--'||E'\n'||
 '-- Copy columns from NEW'||E'\n'||
