@@ -26,7 +26,7 @@
   "dependencies": {
     "mutexjs": "^1.2.0",
     "optimist": "^0.6.1",
-    "pg": "^4.4.2",
+    "pg": "^4.4.3",
     "pg-native": "^1.9.0"
   }
 }
