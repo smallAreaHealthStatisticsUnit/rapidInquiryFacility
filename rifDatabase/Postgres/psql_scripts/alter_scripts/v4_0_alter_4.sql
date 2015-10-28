@@ -17,6 +17,11 @@
 --
 -- Rapid Enquiry Facility (RIF) - RIF alter script 4 - Hash partitioning
 --
+-- Alter script 4 must go after 7 - Support for ontologies (e.g. ICD9, 10); removed previous table based support.
+--								    Modify t_rif40_inv_conditions to remove SQL injection risk
+--
+-- This is because 7 was written before the partitioning was enabled and does not support it
+--
 -- Copyright:
 --
 -- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -73,7 +78,7 @@ END;
 $$;
 
 --
--- Run common code on al pre-existing partitions (i.e. geolevel partitions)
+-- Run common code on all pre-existing partitions (i.e. geolevel partitions)
 -- to add indexes, grants etc
 --
 

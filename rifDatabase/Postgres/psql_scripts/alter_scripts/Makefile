@@ -126,9 +126,13 @@ else
 endif
 
 #
-# List of source code; v4_0_alter_7 is both DEV and PRODUCTION!
+# Alter script 4 must go after 7 - Support for ontologies (e.g. ICD9, 10); removed previous table based support.
+#								    Modify t_rif40_inv_conditions to remove SQL injection risk
 #
-SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_3.sql v4_0_alter_4.sql v4_0_alter_5.sql $(PLR_SOURCES) v4_0_alter_7.sql v4_0_alter_8.sql
+# This is because 7 was written before the partitioning was enabled and does not support it
+#
+SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_5.sql $(PLR_SOURCES) v4_0_alter_7.sql v4_0_alter_8.sql \
+			v4_0_alter_3.sql v4_0_alter_4.sql 
  
 # DEV_SOURCES=$(PLR_DEV_SOURCES) 
 DEV_SOURCES=$(PLR_DEV_SOURCES)
