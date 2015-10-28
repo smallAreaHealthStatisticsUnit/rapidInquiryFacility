@@ -130,7 +130,17 @@ This may be added to extract creation later.
 		 WHERE a.relowner IN (SELECT oid FROM pg_roles WHERE rolname = 'rif40')
 		   AND a.relname = 't_rif40_results'
 		   AND a.relname = c.table_name
+		   AND  c.column_name != 'hash_partition_number' /* Exclude inherited columns */
 		 ORDER BY 1;
+--
+-- Inherited columns failure:
+--
+-- [11:27:30 AM 635] notice: rif40_ddl(): SQL in error (42703)> COMMENT ON COLUMN rif_studies.s11_map.hash_partition_number IS 'Hash partition number (for partition elimination)';
+-- [11:27:30 AM 646] notice: rif40_study_ddl_definer(): [56408] Study 11: statement 51 error: 42703 "column "hash_partition_number" of relation "rif_studies.s11_map" does not exist" raised by
+-- SQL> COMMENT ON COLUMN rif_studies.s11_map.hash_partition_number IS 'Hash partition number (for partition elimination)';
+--  after: 00:00:03.877
+-- [11:27:30 AM 658] notice: rif40_study_ddl_definer(): [56409] Study 11: error prevents further processing
+--		 		 
 	c5comp REFCURSOR;
 --
 	c1_rec RECORD;
