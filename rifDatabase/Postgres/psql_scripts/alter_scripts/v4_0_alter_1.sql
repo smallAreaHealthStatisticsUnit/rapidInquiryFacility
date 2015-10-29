@@ -182,7 +182,6 @@ BEGIN
 		RAISE EXCEPTION 'C20900: t_rif40_investigations does not exist';	
 	ELSIF c1_rec.relhassubclass THEN
 		RAISE NOTICE 'C20900: t_rif40_investigations is partitioned, alter_3.sql has been run';	
-		SELECT c1_rec.relhassubclass INTO relhassubclass;
 	ELSE
 -- Drop constraint
 		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE t_rif40_investigations DROP CONSTRAINT IF EXISTS t_rif40_inv_geography_fk');
