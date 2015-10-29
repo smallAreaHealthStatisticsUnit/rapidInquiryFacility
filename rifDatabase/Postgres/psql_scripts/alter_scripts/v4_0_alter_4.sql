@@ -636,6 +636,9 @@ DROP TABLE hash_partition_test_new;
 --END;
 --$$;
 
+--
+-- Check imsert
+--
 	SAVEPOINT rif40_studies_insert_test;
 	INSERT /* 1 */ INTO rif40_studies (
                 geography, project, study_name, study_type,
@@ -657,6 +660,169 @@ DROP TABLE hash_partition_test_new;
                  5 /* suppression_value */,
                  1              /* extract_permitted */,
                  1              /* transfer_permitted */);
+				 
+--
+-- Check rename PK (test 4)
+--				 
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR 
+		SELECT * FROM rif40_studies
+		 WHERE study_id = 1;
+	c2 CURSOR FOR 
+		SELECT COUNT(study_id) AS total FROM rif40_studies;
+--
+	c1_rec RECORD;
+    c2_rec RECORD;
+--
+-- RIF40_STUDY_SQL
+-- RIF40_STUDY_SQL_LOG
+-- RIF40_RESULTS
+-- RIF40_CONTEXTUAL_STATS
+-- RIF40_INV_CONDITIONS 
+-- RIF40_INV_COVARIATES 
+-- RIF40_INVESTIGATIONS 
+-- RIF40_STUDY_AREAS 
+-- RIF40_COMPARISON_AREAS 
+-- RIF40_STUDY_SHARES
+-- RIF40_STUDIES 
+--
+	rows 		INTEGER;
+	sql_stmt 	VARCHAR[];
+	debug_level	INTEGER;
+BEGIN
+	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_ddl:DEBUG1'::Text);
+	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_rename_map_and_extract_tables:DEBUG1'::Text);
+--
+-- Fetch study 1
+--
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	OPEN c2;
+	FETCH c2 INTO c2_rec;
+	CLOSE c2;                                                                   
+--
+-- Check study name
+--
+	IF c1_rec.study_name IS NULL AND c2_rec.total = 1 THEN
+-- Make EXCEPTION                                                                                
+        RAISE NOTICE 'v4_0_alter_4.sql: A4--32: no study 1';
+        RETURN;
+    ELSIF c1_rec.study_name IS NULL THEN
+		RAISE EXCEPTION	'v4_0_alter_4.sql: A4--33: Test 4.8 no study 1 found; total = %', c2_rec.total::Text;
+	ELSIF c1_rec.study_name != 'SAHSULAND test 4 study_id 1 example' THEN
+		RAISE EXCEPTION	'v4_0_alter_4.sql: A4--34: Test 4.9; Study: 1 name (%) is not test 4 example', 
+			c1_rec.study_name;
+	END IF;
+--
+-- Check NOT study 1 - i.e. first run
+--
+	IF currval('rif40_study_id_seq'::regclass) = 1 THEN
+        RAISE INFO 'v4_0_alter_4.sql: A4--35: Only study 1 present';                                                                          
+		RETURN;
+	END IF;
+--
+	sql_stmt[1]:='DELETE FROM rif40_inv_conditions'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_inv_covariates'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+--
+-- Do full INSERT for study and comparison areas
+-- This is to cope with expected geo-spatial changes
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_areas'||E'\n'||
+'	 WHERE study_id = 1';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='INSERT INTO rif40_study_areas'||E'\n'||
+'SELECT username, 1 study_id, area_id, band_id'||E'\n'||
+'  FROM rif40_study_areas'||E'\n'||
+' WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_areas'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_comparison_areas'||E'\n'||
+'	 WHERE study_id = 1';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='INSERT INTO rif40_comparison_areas'||E'\n'||
+'SELECT username, 1 study_id, area_id'||E'\n'||
+'  FROM rif40_comparison_areas'||E'\n'||
+' WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_comparison_areas'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_sql'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_sql_log'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+--
+-- Do full INSERT for results
+--
+-- This will need to become more sophisticated if T_RIF40_RESULTS is modified
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_results'||E'\n'||
+'	 WHERE study_id = 1';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='INSERT INTO rif40_results'||E'\n'||
+'SELECT  username, 1 AS study_id, 1 AS inv_id, band_id, genders, direct_standardisation, adjusted, observed, expected, lower95,'||E'\n'||
+'        upper95, relative_risk, smoothed_relative_risk, posterior_probability, posterior_probability_upper95,'||E'\n'||
+'        posterior_probability_lower95, residual_relative_risk, residual_rr_lower95, residual_rr_upper95,'||E'\n'||
+'        smoothed_smr, smoothed_smr_lower95, smoothed_smr_upper95 '||E'\n'||
+'  FROM rif40_results'||E'\n'||
+' WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_results'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_contextual_stats'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+--
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_shares'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+
+--
+-- Run
+--
+	rows:=rif40_sql_pkg.rif40_ddl(sql_stmt);
+--
+-- Delete extract and map tables for <new study id>; 
+-- rename <old study id> extract and map tables to <new study id> extract and map tables
+--
+	PERFORM rif40_sm_pkg.rif40_rename_map_and_extract_tables(currval('rif40_study_id_seq'::regclass)::INTEGER /* Old */, 1::INTEGER	/* New */);
+--
+-- Now delete study N
+--
+	sql_stmt:=NULL;
+--
+	sql_stmt[1]:='DELETE FROM rif40_investigations'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_studies'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+--
+-- Run
+--
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+--
+	RAISE INFO 'v4_0_alter_4.sql: A4--36: Study: % renamed to study 1; rows processed: %', 
+			currval('rif40_study_id_seq'::regclass)::VARCHAR, 
+			rows::VARCHAR;
+--
+-- Fetch study 1
+--
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+-- Check study name again
+--
+	IF c1_rec.study_name IS NULL THEN
+		RAISE EXCEPTION	'v4_0_alter_4.sql: A4--37: Test 4.10 study 1 no longer found';
+	ELSIF c1_rec.study_name != 'SAHSULAND test 4 study_id 1 example' THEN
+		RAISE EXCEPTION	'v4_0_alter_4.sql: A4--38: Test 4.11; Study: 1 name (%) is no longer the test 4 example', 
+			c1_rec.study_name;
+	END IF;
+END;
+$$;
+
 	ROLLBACK TO SAVEPOINT rif40_studies_insert_test;			 
 END;
 
