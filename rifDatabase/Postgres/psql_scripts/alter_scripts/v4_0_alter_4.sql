@@ -629,13 +629,6 @@ $$;
 DROP TABLE hash_partition_test_old;
 DROP TABLE hash_partition_test_new;
 
---DO LANGUAGE plpgsql $$
---BEGIN
---	RAISE INFO 'Aborting (script being tested)';
---	RAISE EXCEPTION 'C20999: Abort';
---END;
---$$;
-
 --
 -- Check imsert
 --
@@ -823,7 +816,11 @@ BEGIN
 END;
 $$;
 
-	ROLLBACK TO SAVEPOINT rif40_studies_insert_test;			 
+	ROLLBACK TO SAVEPOINT rif40_studies_insert_test;	
+
+--	RAISE INFO 'v4_0_alter_4.sql: Aborting (script being tested)';
+--	RAISE EXCEPTION 'v4_0_alter_4.sql: C20999: Abort';
+
 END;
 
 --
