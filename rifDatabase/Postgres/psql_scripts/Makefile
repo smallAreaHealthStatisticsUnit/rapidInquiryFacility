@@ -273,13 +273,15 @@ patch:
 	$(MAKE) -C test_scripts clean all
 	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland
-
+	$(MAKE) v4_0_vacuum_analyse_dev
+	
 #- repatch: Re-run all in-complete alter scripts on both sahsuland_dev and sahusland	
 repatch:
 	$(MAKE) -C alter_scripts all
 	$(MAKE) -C test_scripts all
 	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts all PGDATABASE=sahsuland
+	$(MAKE) v4_0_vacuum_analyse_dev
 	
 #- dev: Run all alter scripts in development
 dev: $(PLR_DIRS)

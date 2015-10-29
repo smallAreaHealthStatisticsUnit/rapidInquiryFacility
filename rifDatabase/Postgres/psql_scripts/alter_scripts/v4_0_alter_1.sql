@@ -162,6 +162,17 @@ DECLARE
 		  FROM pg_class t, pg_namespace n
 		 WHERE t.relname = 't_rif40_investigations' AND t.relkind = 'r' /* Table */ AND n.nspname = 'rif40'  AND t.relnamespace = n.oid ;
 	c1_rec RECORD;
+--
+-- Functions to enable debug for
+--
+	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl'];
+--
+	c2alter2 CURSOR FOR
+		SELECT column_name 
+		  FROM information_schema.columns 
+		 WHERE table_name = 't_rif40_investigations' AND column_name = 'geography' AND table_schema = 'rif40';
+	c2_rec RECORD;	
+	l_function 			VARCHAR;
 BEGIN
 	OPEN c1alter2;
 	FETCH c1alter2 INTO c1_rec;
@@ -170,50 +181,34 @@ BEGIN
 	IF c1_rec.relhassubclass IS NULL THEN
 		RAISE EXCEPTION 'C20900: t_rif40_investigations does not exist';	
 	ELSIF c1_rec.relhassubclass THEN
-		RAISE EXCEPTION 'C20900: t_rif40_investigations is partitioned, alter_3.sql has been run';	
-	END IF;
-END;
-$$;
-
+		RAISE NOTICE 'C20900: t_rif40_investigations is partitioned, alter_3.sql has been run';	
+		SELECT c1_rec.relhassubclass INTO relhassubclass;
+	ELSE
 -- Drop constraint
-ALTER TABLE t_rif40_investigations DROP CONSTRAINT IF EXISTS t_rif40_inv_geography_fk;
+		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE t_rif40_investigations DROP CONSTRAINT IF EXISTS t_rif40_inv_geography_fk');
 -- Drop trigger
-DROP TRIGGER t_rif40_investigations_checks ON t_rif40_investigations;
-
-DO LANGUAGE plpgsql $$
-DECLARE
---
--- Functions to enable debug for
---
-	rif40_sql_pkg_functions 	VARCHAR[] := ARRAY['rif40_ddl'];
---
-	c1alter2 CURSOR FOR
-		SELECT column_name 
-		  FROM information_schema.columns 
-		 WHERE table_name = 't_rif40_investigations' AND column_name = 'geography' AND table_schema = 'rif40';
-	c1_rec RECORD;
-	l_function 			VARCHAR;
-BEGIN
-	OPEN c1alter2;
-	FETCH c1alter2 INTO c1_rec;
-	CLOSE c1alter2;
+		PERFORM rif40_sql_pkg.rif40_ddl('DROP TRIGGER t_rif40_investigations_checks ON t_rif40_investigations');
+		OPEN c2alter2;
+		FETCH c2alter2 INTO c2_rec;
+		CLOSE c2alter2;
 --
 -- Turn on some debug
 --
-        PERFORM rif40_log_pkg.rif40_log_setup();
-        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+			PERFORM rif40_log_pkg.rif40_log_setup();
+			PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 --
 -- Enabled debug on select rif40_sm_pkg functions
 --
-	FOREACH l_function IN ARRAY rif40_sql_pkg_functions LOOP
-		RAISE INFO 'Enable debug for function: %', l_function;
-		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
-	END LOOP;
-	IF c1_rec.column_name = 'geography' THEN
+		FOREACH l_function IN ARRAY rif40_sql_pkg_functions LOOP
+			RAISE INFO 'Enable debug for function: %', l_function;
+			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
+		END LOOP;
+		IF c2_rec.column_name = 'geography' THEN
 -- Make not NULL
-		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE t_rif40_investigations ALTER COLUMN geography DROP NOT NULL');
+			PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE t_rif40_investigations ALTER COLUMN geography DROP NOT NULL');
 -- NULL column
-		PERFORM rif40_sql_pkg.rif40_ddl('UPDATE t_rif40_investigations SET geography = NULL');
+			PERFORM rif40_sql_pkg.rif40_ddl('UPDATE t_rif40_investigations SET geography = NULL');
+		END IF;		
 	END IF;
 END;
 $$;
