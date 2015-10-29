@@ -108,7 +108,8 @@ DECLARE
 		       AND b.attname    = 'study_id'
 		       AND a.schemaname = 'rif40'	
 		)
-		SELECT a.tablename AS tablename, b.attname AS columnname, schemaname AS schemaname, d.table_list	/* Tables */
+		SELECT a.tablename AS tablename, b.attname AS columnname, schemaname AS schemaname, 
+			   d.table_list	/* Tables */, c.relhassubclass
 		  FROM pg_tables a, pg_attribute b, pg_class c, d
 		 WHERE c.oid        = b.attrelid
 		   AND c.relname    = a.tablename
@@ -168,9 +169,9 @@ BEGIN
 -- Check user is rif40
 --
 	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'v4_0_study_id_partitions.sql: User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'C209xx: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'v4_0_study_id_partitions.sql: C209xx: User check failed: % is not rif40', user;	
 	END IF;
 --
 -- Turn on some debug
@@ -181,30 +182,38 @@ BEGIN
 -- Enabled debug on select rif40_sm_pkg functions
 --
 	FOREACH l_function IN ARRAY rif40_sql_pkg_functions LOOP
-		RAISE INFO 'Enable debug for function: %', l_function;
+		RAISE INFO 'v4_0_study_id_partitions.sql: Enable debug for function: %', l_function;
 		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 	END LOOP;
 --
 -- Enable hash partitioning on each table in turn
 --
 	FOR c1_rec IN c1 LOOP
-		i:=i+1;
 --
-		RAISE INFO '%********************************************************************************%*%* Hash partitioning[%]: %.% %*%********************************************************************************', 
-			E'\n', E'\n', E'\n', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename, E'\n', E'\n';
-		l_fk_stmt:=NULL;
-		l_fk_stmt:=rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, 
-			c1_rec.tablename::VARCHAR, 'study_id', c1_rec.table_list::VARCHAR[], number_of_partitions);
-		IF fk_stmt IS NULL AND l_fk_stmt IS NOT NULL THEN	
-			table_list:=c1_rec.table_list;
-			num_fks:=num_fks+array_length(l_fk_stmt, 1);	
-			fk_stmt:=l_fk_stmt;
-		ELSIF fk_stmt IS NOT NULL AND l_fk_stmt IS NOT NULL THEN
-			num_fks:=num_fks+array_length(l_fk_stmt, 1);
-			fk_stmt:=array_cat(fk_stmt, l_fk_stmt);
+-- Check if partitioned already
+--
+		IF c1_rec.relhassubclass THEN
+			RAISE NOTICE 'v4_0_study_id_partitions.sql: Table %.% is already partitioned', 
+				c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR;
+		ELSE	
+			i:=i+1;
+--
+			RAISE INFO '%********************************************************************************%*%* Hash partitioning[%]: %.% %*%********************************************************************************', 
+				E'\n', E'\n', E'\n', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename, E'\n', E'\n';
+			l_fk_stmt:=NULL;
+			l_fk_stmt:=rif40_sql_pkg.rif40_hash_partition(c1_rec.schemaname::VARCHAR, 
+				c1_rec.tablename::VARCHAR, 'study_id', c1_rec.table_list::VARCHAR[], number_of_partitions);
+			IF fk_stmt IS NULL AND l_fk_stmt IS NOT NULL THEN	
+				table_list:=c1_rec.table_list;
+				num_fks:=num_fks+array_length(l_fk_stmt, 1);	
+				fk_stmt:=l_fk_stmt;
+			ELSIF fk_stmt IS NOT NULL AND l_fk_stmt IS NOT NULL THEN
+				num_fks:=num_fks+array_length(l_fk_stmt, 1);
+				fk_stmt:=array_cat(fk_stmt, l_fk_stmt);
+			END IF;
+			RAISE INFO '%********************************************************************************%*%* Hash partitioning[%] complete: %.% %*%********************************************************************************', 
+				E'\n', E'\n', E'\n', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename, E'\n', E'\n';
 		END IF;
-		RAISE INFO '%********************************************************************************%*%* Hash partitioning[%] complete: %.% %*%********************************************************************************', 
-			E'\n', E'\n', E'\n', i::VARCHAR, c1_rec.schemaname, c1_rec.tablename, E'\n', E'\n';		
 	END LOOP;
 	
 --
@@ -273,7 +282,7 @@ CREATE TRIGGER t_rif40_investigations_p16_checks BEFORE INSERT OR UPDATE OF user
 		END LOOP;	
 		
 	END IF;	
-	RAISE INFO '% hash partitions created % foreign keys', i::VARCHAR, num_fks::VARCHAR;
+	RAISE INFO 'v4_0_study_id_partitions.sql: % hash partitions created % foreign keys', i::VARCHAR, num_fks::VARCHAR;
 --	RAISE EXCEPTION 'Stop 3';
 END;
 $$;

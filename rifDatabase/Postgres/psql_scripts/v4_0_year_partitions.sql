@@ -126,7 +126,8 @@ DECLARE
 		       AND b.attname    = 'study_id'
 		       AND a.schemaname = 'rif40'	
 		)	
-		SELECT a.tablename AS tablename, b.attname AS columnname, schemaname AS schemaname	/* Tables */, d.table_list	/* Tables */
+		SELECT a.tablename AS tablename, b.attname AS columnname, schemaname AS schemaname	/* Tables */, 
+		       d.table_list	/* Tables */, c.relhassubclass
 		  FROM pg_tables a, pg_attribute b, pg_class c, d
 		 WHERE c.oid        = b.attrelid
 		   AND c.relname    = a.tablename
@@ -144,15 +145,16 @@ BEGIN
 -- Check user is rif40
 --
 	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'v4_0_year_partitions.sql: User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'C209xx: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'v4_0_year_partitions.sql: C209xx: User check failed: % is not rif40', user;	
 	END IF;
+
 --
 -- Turn on some debug
 --
-        PERFORM rif40_log_pkg.rif40_log_setup();
-        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+	PERFORM rif40_log_pkg.rif40_log_setup();
+	PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 --
 -- Enabled debug on select rif40_sm_pkg functions
 --
@@ -162,10 +164,18 @@ BEGIN
 	END LOOP;
 --
 	FOR c1_rec IN c1 LOOP
-		PERFORM rif40_sql_pkg.rif40_range_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'year'::VARCHAR, 
-			c1_rec.table_list::VARCHAR[]);
+--
+-- Check if partitioned already
+--
+		IF c1_rec.relhassubclass THEN
+			RAISE NOTICE 'v4_0_year_partitions.sql: Table %.% is already partitioned', 
+				c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR;
+		ELSE
+			PERFORM rif40_sql_pkg.rif40_range_partition(c1_rec.schemaname::VARCHAR, c1_rec.tablename::VARCHAR, 'year'::VARCHAR, 
+				c1_rec.table_list::VARCHAR[]);
+		END IF;		
 	END LOOP;
---	RAISE EXCEPTION 'Stop';
+--	RAISE EXCEPTION 'v4_0_year_partitions.sql: Stop';
 END;
 $$;
 

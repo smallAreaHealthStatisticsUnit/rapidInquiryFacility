@@ -177,19 +177,20 @@ BEGIN
 	OPEN c1alter2;
 	FETCH c1alter2 INTO c1_rec;
 	CLOSE c1alter2;
+	OPEN c2alter2;
+	FETCH c2alter2 INTO c2_rec;
+	CLOSE c2alter2;	
 --
 	IF c1_rec.relhassubclass IS NULL THEN
 		RAISE EXCEPTION 'C20900: t_rif40_investigations does not exist';	
 	ELSIF c1_rec.relhassubclass THEN
-		RAISE NOTICE 'C20900: t_rif40_investigations is partitioned, alter_3.sql has been run';	
+		IF c2_rec.column_name = 'geography' THEN
+			RAISE EXCEPTION 'C20900: t_rif40_investigations is partitioned, but the geography column still exists';	
+		ELSE
+			RAISE NOTICE 'C20900: t_rif40_investigations is partitioned, alter_3.sql has been run';	
+		END IF;
 	ELSE
--- Drop constraint
-		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE t_rif40_investigations DROP CONSTRAINT IF EXISTS t_rif40_inv_geography_fk');
--- Drop trigger
-		PERFORM rif40_sql_pkg.rif40_ddl('DROP TRIGGER t_rif40_investigations_checks ON t_rif40_investigations');
-		OPEN c2alter2;
-		FETCH c2alter2 INTO c2_rec;
-		CLOSE c2alter2;
+
 --
 -- Turn on some debug
 --
@@ -202,7 +203,13 @@ BEGIN
 			RAISE INFO 'Enable debug for function: %', l_function;
 			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 		END LOOP;
+-- Drop constraint
+		PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE t_rif40_investigations DROP CONSTRAINT IF EXISTS t_rif40_inv_geography_fk');
+-- Drop trigger
+		PERFORM rif40_sql_pkg.rif40_ddl('DROP TRIGGER t_rif40_investigations_checks ON t_rif40_investigations');
+		
 		IF c2_rec.column_name = 'geography' THEN
+		
 -- Make not NULL
 			PERFORM rif40_sql_pkg.rif40_ddl('ALTER TABLE t_rif40_investigations ALTER COLUMN geography DROP NOT NULL');
 -- NULL column
