@@ -162,9 +162,9 @@ DECLARE
 	table_list VARCHAR[];
 --
 -- 16 takes too long (~40 mins!). This needs to be parameterisable
--- 2=11, 4=14, 8=2?
+-- 2=11, 4=14, 8=26
 --
-	number_of_partitions CONSTANT INTEGER:=2;
+	number_of_partitions CONSTANT INTEGER:=8;
 --
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';

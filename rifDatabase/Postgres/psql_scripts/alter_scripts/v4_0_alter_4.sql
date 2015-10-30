@@ -102,6 +102,8 @@ $$;
 \i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_inv_conditions_checks.sql
 \i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_study_areas_checks.sql
 \i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_comparison_areas_checks.sql
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_inv_covariates_checks.sql
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_rif40_study_shares_checks.sql
 
 WITH c AS (   
 	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
@@ -807,7 +809,38 @@ BEGIN
 					v_sqlstate, v_detail, v_message_text;
 			END IF;
 	END;	
-		
+	BEGIN	
+		UPDATE /* 1.6: -20280 expected  */ t_rif40_inv_covariates
+		   SET study_id = study_id + 1;	
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
+			GET STACKED DIAGNOSTICS v_sqlstate          = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context           = PG_EXCEPTION_CONTEXT;
+			GET STACKED DIAGNOSTICS v_message_text      = MESSAGE_TEXT;
+			IF v_sqlstate = 'P0001' /* PL/pgSQL raise_exception */ AND '-20280' = v_detail THEN
+				RAISE INFO 'v4_0_alter_4.sql: t_rif40_inv_covariates UPDATE caught: -20280 error as expected: %', v_message_text; 
+			ELSE				
+				RAISE EXCEPTION 'v4_0_alter_4.sql: t_rif40_inv_covariates UPDATE expected: -20280 error; got: sqlstate: %, detail: %, message: %', 
+					v_sqlstate, v_detail, v_message_text;
+			END IF;
+	END;
+	BEGIN	
+		UPDATE /* 1.7: -20324 expected  */ rif40_study_shares
+		   SET study_id = study_id + 1;	
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
+			GET STACKED DIAGNOSTICS v_sqlstate          = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context           = PG_EXCEPTION_CONTEXT;
+			GET STACKED DIAGNOSTICS v_message_text      = MESSAGE_TEXT;
+			IF v_sqlstate = 'P0001' /* PL/pgSQL raise_exception */ AND '-20324' = v_detail THEN
+				RAISE INFO 'v4_0_alter_4.sql: rif40_study_shares UPDATE caught: -20324 error as expected: %', v_message_text; 
+			ELSE				
+				RAISE EXCEPTION 'v4_0_alter_4.sql: rif40_study_shares UPDATE expected: -20324 error; got: sqlstate: %, detail: %, message: %', 
+					v_sqlstate, v_detail, v_message_text;
+			END IF;
+	END;	
 END;
 $$;
 
@@ -816,12 +849,12 @@ ROLLBACK TO SAVEPOINT rif40_studies_insert_test;
 SELECT study_id FROM rif40_studies;
 SELECT study_id FROM rif40_studies WHERE study_id = currval('rif40_study_id_seq'::regclass) + 1;
 
-DO LANGUAGE plpgsql $$
-BEGIN
-	RAISE INFO 'v4_0_alter_4.sql: Aborting (script being tested)';
-	RAISE EXCEPTION 'v4_0_alter_4.sql: C20999: Abort';
-END;
-$$;
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE INFO 'v4_0_alter_4.sql: Aborting (script being tested)';
+--	RAISE EXCEPTION 'v4_0_alter_4.sql: C20999: Abort';
+--END;
+--$$;
 
 END;
 
