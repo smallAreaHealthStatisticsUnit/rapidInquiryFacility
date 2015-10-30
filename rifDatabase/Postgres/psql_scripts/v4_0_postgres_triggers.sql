@@ -1395,7 +1395,7 @@ BEGIN
 		OPEN c4_cksa2;
 		FETCH c4_cksa2 INTO c4_rec;
 		CLOSE c4_cksa2;
-		IF c4_rec.total = 0 OR strpos(OLD.username, '@PRIVATE.NET') > 0 THEN  
+		IF c4_rec.total = 0 THEN  
 			/* Allowed during build before first result is added to system or before Kerberos update */
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_study_areas_checks2',
 				'[20300] T_RIF40_STUDY_AREAS username: % allowed during build before first result is added to system [CHECK DISABLED]',
@@ -1734,7 +1734,7 @@ BEGIN
 		OPEN c4_cack2;
 		FETCH c4_cack2 INTO c4_rec;
 		CLOSE c4_cack2;
-		IF c4_rec.total = 0 OR strpos(OLD.username, '@PRIVATE.NET') > 0 THEN  
+		IF c4_rec.total = 0 THEN  
 			/* Allowed during build before first result is added to system or before Kerberos update */
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_comp_areas_checks2',
 				'[20300] T_RIF40_COMPARISON_AREAS username: % allowed during build before first result is added to system [CHECK DISABLED]',
