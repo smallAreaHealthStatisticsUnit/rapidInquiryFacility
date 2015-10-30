@@ -138,6 +138,9 @@ Check - AGE_GROUP_ID, AGE_SEX_GROUP/AGE_GROUP/SEX_FIELD_NAMES are the same betwe
 	owner		varchar(30);
 --
 	investigation_state_only_flag 	boolean:=FALSE;
+--
+	stp		TIMESTAMP WITH TIME ZONE := clock_timestamp();
+	etp		TIMESTAMP WITH TIME ZONE;	
 BEGIN
 --
 -- T_RIF40_INVESTIGATIONS: Check - USERNAME is Kerberos USER on INSERT
@@ -161,6 +164,15 @@ BEGIN
  	   NEW.mh_test_type = OLD.mh_test_type  AND
  	   NEW.investigation_state != OLD.investigation_state THEN
 		investigation_state_only_flag:=TRUE;
+	END IF;
+--
+-- Check for update of study_id
+--
+	IF TG_OP = 'UPDATE' AND COALESCE(NEW.study_id::Text, '') != COALESCE(OLD.study_id::Text, '') THEN
+		PERFORM rif40_log_pkg.rif40_error(-20727, 'trigger_fct_t_rif40_investigations_checks', 
+			'T_RIF40_INVESTIGATIONS study id may not be changed: %=>%',
+			OLD.study_id::VARCHAR	/* Study id */,	
+			NEW.study_id::VARCHAR	/* Study id */);
 	END IF;
 --
 	OPEN c4_ick;
@@ -567,12 +579,25 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 		c1a_rec.age_group_id::VARCHAR	/* Numerator age group ID */);
 
 --
--- Error message end: -20759, last message: -20725
+-- Error message end: -20759, last message: -20727
 --
---
+
+	etp:=clock_timestamp();
 	IF TG_OP = 'DELETE' THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 
+			'trigger_fct_t_rif40_investigations_checks', 
+			'[20726] T_RIF40_INVESTIGATIONS study: % checks complete; time taken %',
+			OLD.study_id::VARCHAR				/* Study */,
+			age(etp, stp)::VARCHAR);
+--	
 		RETURN OLD;
 	ELSE  	
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 
+			'trigger_fct_t_rif40_investigations_checks', 
+			'[20726] T_RIF40_INVESTIGATIONS study: % checks complete; time taken %',
+			NEW.study_id::VARCHAR				/* Study */,
+			age(etp, stp)::VARCHAR);
+--
 		RETURN NEW;
 	END IF;
 END;

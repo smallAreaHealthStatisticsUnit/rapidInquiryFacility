@@ -141,11 +141,24 @@ Check - DELETE only allowed on own records.
 		  FROM t_rif40_results
 		 LIMIT 1) a;
 	c4_rec RECORD;
+--
+	stp		TIMESTAMP WITH TIME ZONE := clock_timestamp();
+	etp		TIMESTAMP WITH TIME ZONE;	
 BEGIN
 --
 	OPEN c4_icck;
 	FETCH c4_icck INTO c4_rec;
 	CLOSE c4_icck;
+--
+-- Check for update of study_id
+--
+	IF TG_OP = 'UPDATE' AND COALESCE(NEW.study_id::Text, '') != COALESCE(OLD.study_id::Text, '') THEN
+		PERFORM rif40_log_pkg.rif40_error(-20504, 'trigger_fct_t_rif40_inv_conditions_checks', 
+			'T_RIF40_INV_CONDITIONS study id may not be changed: %=>%',
+			OLD.study_id::VARCHAR	/* Study id */,	
+			NEW.study_id::VARCHAR	/* Study id */);
+	END IF;
+	
 	IF TG_OP = 'INSERT' AND NEW.username != USER THEN
 		IF USER = 'rif40' AND c4_rec.total = 0 THEN 
 			/* Allowed during build before first result is added to system or before Kerberos update */
@@ -198,20 +211,24 @@ BEGIN
 			OLD.username::VARCHAR	/* Record username */);
 	END IF;
 --
+
+	etp:=clock_timestamp();
 	IF TG_OP = 'DELETE' THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_inv_conditions_checks',
-       	 		'[20500-3] T_RIF40_INV_CONDITIONS study: % investigation: % line: % CRUD checks OK',
- 	      	 	OLD.study_id::VARCHAR		/* Study id */,
-       	 		OLD.inv_id::VARCHAR		/* Investigation */,
-			OLD.line_number::VARCHAR 	/* Line */);
+			'[20500-3] T_RIF40_INV_CONDITIONS study: % investigation: % line: % CRUD checks OK; time taken %',
+			OLD.study_id::VARCHAR		/* Study id */,
+			OLD.inv_id::VARCHAR		/* Investigation */,
+			OLD.line_number::VARCHAR 	/* Line */,
+			age(etp, stp)::VARCHAR);
 		RETURN OLD;
 	ELSE  	
 --
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_inv_conditions_checks',
-       	 		'[20500-3] T_RIF40_INV_CONDITIONS study: % investigation: % line: % CRUD checks OK',
- 	      	 	NEW.study_id::VARCHAR		/* Study id */,
-       	 		NEW.inv_id::VARCHAR		/* Investigation */,
-			NEW.line_number::VARCHAR 	/* Line */);
+			'[20500-3] T_RIF40_INV_CONDITIONS study: % investigation: % line: % CRUD checks OK; time taken %',
+			NEW.study_id::VARCHAR		/* Study id */,
+			NEW.inv_id::VARCHAR		/* Investigation */,
+			NEW.line_number::VARCHAR 	/* Line */,
+			age(etp, stp)::VARCHAR);
 --
 		RETURN NEW;
 	END IF;

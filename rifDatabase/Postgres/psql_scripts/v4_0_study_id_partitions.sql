@@ -83,6 +83,7 @@ $$;
 \echo Partition all tables with study_id as a column...
 
 \set VERBOSITY terse
+--\set VERBOSITY verbose
 DO LANGUAGE plpgsql $$
 DECLARE
 --
@@ -160,7 +161,10 @@ DECLARE
 	fk_stmt	VARCHAR[];	
 	table_list VARCHAR[];
 --
-	number_of_partitions CONSTANT INTEGER:=16;
+-- 16 takes too long (~40 mins!). This needs to be parameterisable
+-- 2=11, 4=14, 8=2?
+--
+	number_of_partitions CONSTANT INTEGER:=2;
 --
 	error_message 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';

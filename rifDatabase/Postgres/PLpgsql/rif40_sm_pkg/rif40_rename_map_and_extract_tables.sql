@@ -72,6 +72,9 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 				rename <old study id> extract and map tables to <new study id> extract and map tables
 				
 				Check USER is owner of both studies
+				
+				This function is now obsolete because of partitioning (partition movement is not supported)
+				so study_id update is not allowed
  */
  	c1_renst			CURSOR(l_study_id INTEGER) FOR
 		SELECT *
@@ -90,6 +93,10 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 	new_extract_table	VARCHAR;
 	new_map_table		VARCHAR;
  BEGIN
+ 	PERFORM rif40_log_pkg.rif40_error(-57609, 'rif40_rename_map_and_extract_tables', 
+		'rename study % extract and map tables is now obsolete because of partitioning (partition movement is not supported) so study_id update is not allowed',
+		old_study_id::VARCHAR		/* Old study ID */);
+		
  --
  -- Check studies exist
  --
@@ -97,9 +104,7 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 	FETCH c1_renst INTO c1a_rec;
 	IF NOT FOUND THEN
 		CLOSE c1_renst;
-		PERFORM rif40_log_pkg.rif40_error(-57600, 'rif40_rename_map_and_extract_tables', 
-			'Old study ID % not found',
-			old_study_id::VARCHAR		/* Old study ID */);
+
 	END IF;
 	CLOSE c1_renst;
 
@@ -229,6 +234,9 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 				rename <old study id> extract and map tables to <new study id> extract and map tables
 				
 				Check USER is owner of both studies
+				
+				This function is now obsolete because of partitioning (partition movement is not supported)
+				so study_id update is not allowe				
 ';
 
 --

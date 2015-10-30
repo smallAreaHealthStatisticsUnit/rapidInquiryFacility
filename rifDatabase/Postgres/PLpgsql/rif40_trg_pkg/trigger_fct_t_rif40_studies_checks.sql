@@ -197,6 +197,9 @@ IF USER = NEW.username (i.e. not initial RIF40 INSERT) THEN
 	ig_state_only_flag 	BOOLEAN:=FALSE;
 --
 	kerberos_update BOOLEAN:=FALSE;
+--
+	stp		TIMESTAMP WITH TIME ZONE := clock_timestamp();
+	etp		TIMESTAMP WITH TIME ZONE;	
 BEGIN
 --
 -- T_RIF40_STUDIES:	Check - USERNAME is Kerberos USER on INSERT
@@ -215,7 +218,7 @@ BEGIN
     END IF;
 	
 --
--- Set kerberos_update falg is needed
+-- Set kerberos_update flag is needed
 --	
 	IF TG_OP = 'UPDATE' THEN
 		IF (strpos(OLD.username, '@PRIVATE.NET') > 0) THEN	
@@ -344,6 +347,15 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 	   	coalesce(NEW.authorised_notes::text, '') != coalesce(OLD.authorised_notes::text, '') ) THEN  
 
 		ig_state_only_flag:=TRUE;
+	END IF;
+--
+-- Check for update of study_id
+--
+	IF TG_OP = 'UPDATE' AND COALESCE(NEW.study_id::Text, '') != COALESCE(OLD.study_id::Text, '') THEN
+		PERFORM rif40_log_pkg.rif40_error(-20239, 'trigger_fct_t_rif40_studies_checks', 
+			'T_RIF40_STUDIES study id may not be changed: %=>%',
+			OLD.study_id::VARCHAR	/* Study id */,	
+			NEW.study_id::VARCHAR	/* Study id */);
 	END IF;
 --
 	IF TG_OP = 'INSERT' AND NEW.username != USER THEN
@@ -1097,12 +1109,24 @@ Year_stop/start, min/max_age_group removed from t_rif40_studies. Still in view
 	END IF;
 
 --
--- Error message end: -20259, last message: -20237
+-- Error message end: -20259, last message: -20239
 --
---
+	etp:=clock_timestamp();
 	IF TG_OP = 'DELETE' THEN
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 
+			'trigger_fct_t_rif40_studies_checks', 
+			'[20238] T_RIF40_STUDIES study: % checks complete; time taken %',
+			OLD.study_id::VARCHAR				/* Study */,
+			age(etp, stp)::VARCHAR);
+--		
 		RETURN OLD;
-	ELSE  	
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 
+			'trigger_fct_t_rif40_studies_checks', 
+			'[20238] T_RIF40_STUDIES study: % checks complete; time taken %',
+			NEW.study_id::VARCHAR				/* Study */,
+			age(etp, stp)::VARCHAR);
+--		
 		RETURN NEW;
 	END IF;
 END;

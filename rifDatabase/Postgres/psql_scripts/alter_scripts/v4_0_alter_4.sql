@@ -70,9 +70,9 @@ BEGIN;
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'v4_0_alter_4.sql: User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'v4_0_alter_4.sql: C20900: User check failed: % is not rif40', user;	
 	END IF;
 END;
 $$;
@@ -93,6 +93,15 @@ $$;
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_b.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_j.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl_check_k.sql
+
+--
+-- Reload triggers (including fixes for test harness)
+--
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_studies_checks.sql
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_investigations_checks.sql
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_inv_conditions_checks.sql
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_study_areas_checks.sql
+\i ../PLpgsql/rif40_trg_pkg/trigger_fct_t_rif40_comparison_areas_checks.sql
 
 WITH c AS (   
 	SELECT cn.nspname AS schema_child, c.relname AS child, pn.nspname AS schema_parent, p.relname AS parent
@@ -578,28 +587,28 @@ DECLARE
 --
 BEGIN
 	FOR extra_rec IN extra LOOP
-		RAISE WARNING 'Extra hash partition master object %: %', extra_rec.object_type, extra_rec.total;
+		RAISE WARNING 'v4_0_alter_4.sql: Extra hash partition master object %: %', extra_rec.object_type, extra_rec.total;
 		errors:=errors+extra_rec.total;
 	END LOOP;
 	FOR missing_rec IN missing LOOP
-		RAISE WARNING 'Missing hash partition master object %: %', missing_rec.object_type, missing_rec.total;
+		RAISE WARNING 'v4_0_alter_4.sql: Missing hash partition master object %: %', missing_rec.object_type, missing_rec.total;
 		errors:=errors+missing_rec.total;
 	END LOOP;
 	FOR extra_rec IN p_extra LOOP
 		IF extra_rec.total > 0 THEN
-			RAISE WARNING 'Extra hash partition partition object %: %', extra_rec.object_type, extra_rec.total;
+			RAISE WARNING 'v4_0_alter_4.sql: Extra hash partition partition object %: %', extra_rec.object_type, extra_rec.total;
 			errors:=errors+extra_rec.total;
 		END IF;
 	END LOOP;
 	FOR missing_rec IN p_missing LOOP
 		IF missing_rec.total > 0 THEN
-			RAISE WARNING 'Missing hash partition partition object %: %', missing_rec.object_type, missing_rec.total;
+			RAISE WARNING 'v4_0_alter_4.sql: Missing hash partition partition object %: %', missing_rec.object_type, missing_rec.total;
 			errors:=errors+missing_rec.total;
 		END IF;
 	END LOOP;	
 	FOR no_table_comments_rec IN no_table_comments LOOP
 		IF no_table_comments_rec.total > 0 THEN
-			RAISE WARNING 'Missing hash partition partition comment %: %', 
+			RAISE WARNING 'v4_0_alter_4.sql: Missing hash partition partition comment %: %', 
 				no_table_comments_rec.parent_or_child, no_table_comments_rec.total;
 			errors:=errors+no_table_comments_rec.total;
 		END IF;
@@ -621,7 +630,7 @@ BEGIN
 -- Stop on errors
 --
 	IF errors > 0 THEN
-		RAISE EXCEPTION 'C20999: % hash partition errors', errors; 
+		RAISE EXCEPTION 'v4_0_alter_4.sql: C20999: % hash partition errors', errors; 
 	END IF;
 END;
 $$;
@@ -632,194 +641,187 @@ DROP TABLE hash_partition_test_new;
 --
 -- Check imsert
 --
-	SAVEPOINT rif40_studies_insert_test;
-	INSERT /* 1 */ INTO rif40_studies (
-                geography, project, study_name, study_type,
-                comparison_geolevel_name, study_geolevel_name, denom_tab,
-                year_start, year_stop, max_age_group, min_age_group,
-                suppression_value, extract_permitted, transfer_permitted)
-        VALUES (
-                 'SAHSU'                                        /* geography */,
-                 'TEST'                                                 /* project */,
-                 'SAHSULAND test 4 study_id 1 example'                                  /* study_name */,
-                 1                                                                      /* study_type [disease mapping] */,
-                 'LEVEL2'       /* comparison_geolevel_name */,
-                 'LEVEL4'                               /* study_geolevel_name */,
-                 'SAHSULAND_POP'                                        /* denom_tab */,
-                 1989                                   /* year_start */,
-                 1996                                   /* year_stop */,
-                 21     /* max_age_group */,
-                 0      /* min_age_group */,
-                 5 /* suppression_value */,
-                 1              /* extract_permitted */,
-                 1              /* transfer_permitted */);
-				 
+SAVEPOINT rif40_studies_insert_test;
 --
--- Check rename PK (test 4)
---				 
+-- Test insert
+--
+--\set VERBOSITY verbose
 DO LANGUAGE plpgsql $$
-DECLARE
-	c1 CURSOR FOR 
-		SELECT * FROM rif40_studies
-		 WHERE study_id = 1;
-	c2 CURSOR FOR 
-		SELECT COUNT(study_id) AS total FROM rif40_studies;
+DECLARE	
+	c1sm CURSOR FOR /* Get list of study_id tables with trigger functions */
+		WITH a AS (
+			SELECT DISTINCT table_name
+			  FROM information_schema.columns
+			 WHERE column_name = 'study_id'
+			   AND table_name NOT LIKE 'g_rif40%'
+			   AND table_name IN (
+				SELECT table_name
+				  FROM information_schema.tables
+			 	 WHERE table_schema = 'rif40'
+				   AND table_type = 'BASE TABLE')
+		)
+		SELECT TRANSLATE(SUBSTR(action_statement, STRPOS(action_statement, '.')+1), '()', '') AS function,
+		       a.table_name, action_timing, COUNT(trigger_name) AS t
+		  FROM a 
+			LEFT OUTER JOIN information_schema.triggers b ON (
+		  		trigger_schema = 'rif40'
+		  	    AND action_timing IN ('BEFORE', 'AFTER') 
+			    AND event_object_table = a.table_name)
+		 GROUP BY TRANSLATE(SUBSTR(action_statement, STRPOS(action_statement, '.')+1), '()', ''),
+		       a.table_name, action_timing
+		 ORDER BY 1 DESC, 3;	
+	c2sm CURSOR FOR 
+		SELECT array_agg(level3) AS level3_array FROM sahsuland_level3;		 
+	c1sm_rec RECORD;	
+	c2sm_rec RECORD;	
 --
-	c1_rec RECORD;
-    c2_rec RECORD;
+	condition_array				VARCHAR[4][2]:='{{"SAHSULAND_ICD", "C34", NULL, NULL}, {"SAHSULAND_ICD", "162", "1629", NULL}}';	
+										 /* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+											outcome_group_name, min_condition, max_condition, predefined_group_name */
+	investigation_desc_array	VARCHAR[]:=array['Lung cancer'];
+	covariate_array				VARCHAR[]:=array['SES'];	
 --
--- RIF40_STUDY_SQL
--- RIF40_STUDY_SQL_LOG
--- RIF40_RESULTS
--- RIF40_CONTEXTUAL_STATS
--- RIF40_INV_CONDITIONS 
--- RIF40_INV_COVARIATES 
--- RIF40_INVESTIGATIONS 
--- RIF40_STUDY_AREAS 
--- RIF40_COMPARISON_AREAS 
--- RIF40_STUDY_SHARES
--- RIF40_STUDIES 
+	debug_level INTEGER:=1;
 --
-	rows 		INTEGER;
-	sql_stmt 	VARCHAR[];
-	debug_level	INTEGER;
+	v_sqlstate 			VARCHAR;
+	v_context			VARCHAR;	
+	v_detail 			VARCHAR;
+	v_message_text		VARCHAR;
 BEGIN
-	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_ddl:DEBUG1'::Text);
-	PERFORM rif40_log_pkg.rif40_add_to_debug('rif40_rename_map_and_extract_tables:DEBUG1'::Text);
+	PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+	FOR c1sm_rec IN c1sm LOOP
+		IF c1sm_rec.function IS NOT NULL THEN
+			RAISE INFO 'v4_0_alter_4.sql: Enable debug for % trigger function: % on table: %',
+				c1sm_rec.action_timing, c1sm_rec.function, c1sm_rec.table_name;
+				PERFORM rif40_log_pkg.rif40_add_to_debug(c1sm_rec.function||':DEBUG'||debug_level::Text);
+		ELSE
+			RAISE WARNING 'v4_0_alter_4.sql: No trigger function found for table: %', c1sm_rec.table_name;
+		END IF;
+	END LOOP;
 --
--- Fetch study 1
+-- Get "SELECTED" study geolevels
 --
-	OPEN c1;
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
+	OPEN c2sm;
+	FETCH c2sm INTO c2sm_rec;
+	CLOSE c2sm;	
 --
-	OPEN c2;
-	FETCH c2 INTO c2_rec;
-	CLOSE c2;                                                                   
+	RAISE INFO 'v4_0_alter_4.sql: Create new test study';
+	PERFORM rif40_sm_pkg.rif40_create_disease_mapping_example(
+		'SAHSU'::VARCHAR 			/* Geography */,
+		'LEVEL1'::VARCHAR			/* Geolevel view */,
+		'01'::VARCHAR				/* Geolevel area */,
+		'LEVEL4'::VARCHAR			/* Geolevel map */,
+		'LEVEL3'::VARCHAR			/* Geolevel select */,
+		c2sm_rec.level3_array 		/* Geolevel selection array */,
+		'TEST'::VARCHAR 			/* project */, 
+		'SAHSULAND test 4 study_id 1 example'::VARCHAR /* study name */, 
+		'SAHSULAND_POP'::VARCHAR 	/* denominator table */, 
+		'SAHSULAND_CANCER'::VARCHAR /* numerator table */,
+ 		1989						/* year_start */, 
+		1996						/* year_stop */,
+		condition_array 			/* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+											outcome_group_name, min_condition, max_condition, predefined_group_name */,
+		investigation_desc_array 	/* investigation description array */,
+		covariate_array				/* covariate array */);	
 --
--- Check study name
+-- Test partition movement is disallowed; or you will get a record in the wrong partition 
+-- (there is no code to move the record)
 --
-	IF c1_rec.study_name IS NULL AND c2_rec.total = 1 THEN
--- Make EXCEPTION                                                                                
-        RAISE NOTICE 'v4_0_alter_4.sql: A4--32: no study 1';
-        RETURN;
-    ELSIF c1_rec.study_name IS NULL THEN
-		RAISE EXCEPTION	'v4_0_alter_4.sql: A4--33: Test 4.8 no study 1 found; total = %', c2_rec.total::Text;
-	ELSIF c1_rec.study_name != 'SAHSULAND test 4 study_id 1 example' THEN
-		RAISE EXCEPTION	'v4_0_alter_4.sql: A4--34: Test 4.9; Study: 1 name (%) is not test 4 example', 
-			c1_rec.study_name;
-	END IF;
---
--- Check NOT study 1 - i.e. first run
---
-	IF currval('rif40_study_id_seq'::regclass) = 1 THEN
-        RAISE INFO 'v4_0_alter_4.sql: A4--35: Only study 1 present';                                                                          
-		RETURN;
-	END IF;
---
-	sql_stmt[1]:='DELETE FROM rif40_inv_conditions'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_inv_covariates'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
--- Do full INSERT for study and comparison areas
--- This is to cope with expected geo-spatial changes
---
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_areas'||E'\n'||
-'	 WHERE study_id = 1';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='INSERT INTO rif40_study_areas'||E'\n'||
-'SELECT username, 1 study_id, area_id, band_id'||E'\n'||
-'  FROM rif40_study_areas'||E'\n'||
-' WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_areas'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_comparison_areas'||E'\n'||
-'	 WHERE study_id = 1';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='INSERT INTO rif40_comparison_areas'||E'\n'||
-'SELECT username, 1 study_id, area_id'||E'\n'||
-'  FROM rif40_comparison_areas'||E'\n'||
-' WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_comparison_areas'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_sql'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_sql_log'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
--- Do full INSERT for results
---
--- This will need to become more sophisticated if T_RIF40_RESULTS is modified
---
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_results'||E'\n'||
-'	 WHERE study_id = 1';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='INSERT INTO rif40_results'||E'\n'||
-'SELECT  username, 1 AS study_id, 1 AS inv_id, band_id, genders, direct_standardisation, adjusted, observed, expected, lower95,'||E'\n'||
-'        upper95, relative_risk, smoothed_relative_risk, posterior_probability, posterior_probability_upper95,'||E'\n'||
-'        posterior_probability_lower95, residual_relative_risk, residual_rr_lower95, residual_rr_upper95,'||E'\n'||
-'        smoothed_smr, smoothed_smr_lower95, smoothed_smr_upper95 '||E'\n'||
-'  FROM rif40_results'||E'\n'||
-' WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_results'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_contextual_stats'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_shares'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
-
---
--- Run
---
-	rows:=rif40_sql_pkg.rif40_ddl(sql_stmt);
---
--- Delete extract and map tables for <new study id>; 
--- rename <old study id> extract and map tables to <new study id> extract and map tables
---
-	PERFORM rif40_sm_pkg.rif40_rename_map_and_extract_tables(currval('rif40_study_id_seq'::regclass)::INTEGER /* Old */, 1::INTEGER	/* New */);
---
--- Now delete study N
---
-	sql_stmt:=NULL;
---
-	sql_stmt[1]:='DELETE FROM rif40_investigations'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_studies'||E'\n'||
-'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
---
--- Run
---
-	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
---
-	RAISE INFO 'v4_0_alter_4.sql: A4--36: Study: % renamed to study 1; rows processed: %', 
-			currval('rif40_study_id_seq'::regclass)::VARCHAR, 
-			rows::VARCHAR;
---
--- Fetch study 1
---
-	OPEN c1;
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
---
--- Check study name again
---
-	IF c1_rec.study_name IS NULL THEN
-		RAISE EXCEPTION	'v4_0_alter_4.sql: A4--37: Test 4.10 study 1 no longer found';
-	ELSIF c1_rec.study_name != 'SAHSULAND test 4 study_id 1 example' THEN
-		RAISE EXCEPTION	'v4_0_alter_4.sql: A4--38: Test 4.11; Study: 1 name (%) is no longer the test 4 example', 
-			c1_rec.study_name;
-	END IF;
+	BEGIN
+		UPDATE /* 1.1: -20239 expected  */ t_rif40_studies
+		   SET study_id = study_id + 1;
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
+			GET STACKED DIAGNOSTICS v_sqlstate          = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context           = PG_EXCEPTION_CONTEXT;
+			GET STACKED DIAGNOSTICS v_message_text      = MESSAGE_TEXT;
+			IF v_sqlstate = 'P0001' /* PL/pgSQL raise_exception */ AND '-20239' = v_detail THEN
+				RAISE INFO 'v4_0_alter_4.sql: t_rif40_studies UPDATE caught: -20239 error as expected: %', v_message_text; 
+			ELSE				 
+				RAISE EXCEPTION 'v4_0_alter_4.sql: t_rif40_studies UPDATE expected: -20239 error; got: sqlstate: %, detail: %, message: %', 
+					v_sqlstate, v_detail, v_message_text;
+			END IF;
+	END;	
+	BEGIN
+		UPDATE /* 1.2: -20727 expected */ t_rif40_investigations
+		   SET study_id = study_id + 1;
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
+			GET STACKED DIAGNOSTICS v_sqlstate          = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context           = PG_EXCEPTION_CONTEXT;
+			GET STACKED DIAGNOSTICS v_message_text      = MESSAGE_TEXT;
+			IF v_sqlstate = 'P0001' /* PL/pgSQL raise_exception */ AND '-20727' = v_detail THEN
+				RAISE INFO 'v4_0_alter_4.sql: t_rif40_investigations UPDATE caught: -20727 error as expected: %', v_message_text; 
+			ELSE				
+				RAISE EXCEPTION 'v4_0_alter_4.sql: t_rif40_investigations UPDATE expected: -20727 error; got: sqlstate: %, detail: %, message: %', 
+					v_sqlstate, v_detail, v_message_text;
+			END IF;
+	END;	
+	BEGIN	
+		UPDATE /* 1.3: -20504 expected  */ t_rif40_inv_conditions
+		   SET study_id = study_id + 1;	
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
+			GET STACKED DIAGNOSTICS v_sqlstate          = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context           = PG_EXCEPTION_CONTEXT;
+			GET STACKED DIAGNOSTICS v_message_text      = MESSAGE_TEXT;
+			IF v_sqlstate = 'P0001' /* PL/pgSQL raise_exception */ AND '-20504' = v_detail THEN
+				RAISE INFO 'v4_0_alter_4.sql: t_rif40_inv_conditions UPDATE caught: -20504 error as expected: %', v_message_text; 
+			ELSE				
+				RAISE EXCEPTION 'v4_0_alter_4.sql: t_rif40_inv_conditions UPDATE expected: -20504 error; got: sqlstate: %, detail: %, message: %', 
+					v_sqlstate, v_detail, v_message_text;
+			END IF;
+	END;
+	BEGIN	
+		UPDATE /* 1.4: -20304 expected  */ t_rif40_comparison_areas
+		   SET study_id = study_id + 1;	
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
+			GET STACKED DIAGNOSTICS v_sqlstate          = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context           = PG_EXCEPTION_CONTEXT;
+			GET STACKED DIAGNOSTICS v_message_text      = MESSAGE_TEXT;
+			IF v_sqlstate = 'P0001' /* PL/pgSQL raise_exception */ AND '-20304' = v_detail THEN
+				RAISE INFO 'v4_0_alter_4.sql: t_rif40_comparison_areas UPDATE caught: -20304 error as expected: %', v_message_text; 
+			ELSE				
+				RAISE EXCEPTION 'v4_0_alter_4.sql: t_rif40_comparison_areas UPDATE expected: -20304 error; got: sqlstate: %, detail: %, message: %', 
+					v_sqlstate, v_detail, v_message_text;
+			END IF;
+	END;
+	BEGIN	
+		UPDATE /* 1.5: -20284 expected  */ t_rif40_study_areas
+		   SET study_id = study_id + 1;	
+	EXCEPTION
+		WHEN others THEN
+			GET STACKED DIAGNOSTICS v_detail            = PG_EXCEPTION_DETAIL;
+			GET STACKED DIAGNOSTICS v_sqlstate          = RETURNED_SQLSTATE;
+			GET STACKED DIAGNOSTICS v_context           = PG_EXCEPTION_CONTEXT;
+			GET STACKED DIAGNOSTICS v_message_text      = MESSAGE_TEXT;
+			IF v_sqlstate = 'P0001' /* PL/pgSQL raise_exception */ AND '-20284' = v_detail THEN
+				RAISE INFO 'v4_0_alter_4.sql: t_rif40_study_areas UPDATE caught: -20284 error as expected: %', v_message_text; 
+			ELSE				
+				RAISE EXCEPTION 'v4_0_alter_4.sql: t_rif40_study_areas UPDATE expected: -20284 error; got: sqlstate: %, detail: %, message: %', 
+					v_sqlstate, v_detail, v_message_text;
+			END IF;
+	END;	
+		
 END;
 $$;
 
-	ROLLBACK TO SAVEPOINT rif40_studies_insert_test;	
+ROLLBACK TO SAVEPOINT rif40_studies_insert_test;	
 
---	RAISE INFO 'v4_0_alter_4.sql: Aborting (script being tested)';
---	RAISE EXCEPTION 'v4_0_alter_4.sql: C20999: Abort';
+SELECT study_id FROM rif40_studies;
+SELECT study_id FROM rif40_studies WHERE study_id = currval('rif40_study_id_seq'::regclass) + 1;
+
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE INFO 'v4_0_alter_4.sql: Aborting (script being tested)';
+	RAISE EXCEPTION 'v4_0_alter_4.sql: C20999: Abort';
+END;
+$$;
 
 END;
 
