@@ -1,5 +1,5 @@
 test_id,parent_test_id,test_run_class,test_stmt,test_case_title,pg_error_code_expected,mssql_error_code_expected,raise_exception_on_failure,expected_result,register_date,results,results_xml,pass,test_run_id,test_date,time_taken,pg_debug_functions
-1,,rif40_create_disease_mapping_example,"INSERT /* 1 */ INTO rif40_studies (
+8,,rif40_create_disease_mapping_example,"INSERT /* 1 */ INTO rif40_studies (
  		geography, project, study_name, study_type,
  		comparison_geolevel_name, study_geolevel_name, denom_tab,
  		year_start, year_stop, max_age_group, min_age_group,
@@ -18,8 +18,8 @@ test_id,parent_test_id,test_run_class,test_stmt,test_case_title,pg_error_code_ex
 		 0 	/* min_age_group */,
 		 5 /* suppression_value */,
 		 1 		/* extract_permitted */,
-		 1		/* transfer_permitted */)",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-29 15:11:53.349+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
-2,1,rif40_create_disease_mapping_example,"INSERT /* 2 */ INTO rif40_investigations(
+		 1		/* transfer_permitted */)",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-31 08:55:35.312+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
+9,8,rif40_create_disease_mapping_example,"INSERT /* 2 */ INTO rif40_investigations(
 	inv_name,
 	inv_description,
 	genders,
@@ -37,8 +37,8 @@ VALUES (
 	1989		/* year_start */,
 	1996 		/* year_stop */,
 	21 /* max_age_group */,
-	0 /* min_age_group */)",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-29 15:11:53.349+00,,,,,,,{trigger_fct_t_rif40_investigations_checks}
-3,2,rif40_create_disease_mapping_example,"INSERT /* 3 */ INTO rif40_inv_conditions(
+	0 /* min_age_group */)",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-31 08:55:35.312+00,,,,,,,{trigger_fct_t_rif40_investigations_checks}
+10,9,rif40_create_disease_mapping_example,"INSERT /* 3 */ INTO rif40_inv_conditions(
 			outcome_group_name, min_condition, max_condition, predefined_group_name, line_number)
 WITH data AS (
 				SELECT '{{SAHSULAND_ICD,C34,NULL,NULL},{SAHSULAND_ICD,162,1629,NULL}}'::Text[][] AS arr
@@ -52,17 +52,17 @@ WITH data AS (
 			)
 		SELECT outcome_group_name, min_condition, max_condition, predefined_group_name, line_number
 		  FROM b
-		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-29 15:11:53.349+00,,,,,,,{trigger_fct_t_rif40_inv_conditions_checks}
-4,3,rif40_create_disease_mapping_example,"INSERT /* 4 */ INTO rif40_study_areas(area_id, band_id)
+		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-31 08:55:35.312+00,,,,,,,{trigger_fct_t_rif40_inv_conditions_checks}
+11,10,rif40_create_disease_mapping_example,"INSERT /* 4 */ INTO rif40_study_areas(area_id, band_id)
 SELECT DISTINCT level4, ROW_NUMBER() OVER() AS band_id
 	  FROM sahsuland_geography
 	 WHERE level3 IN (
 	SELECT unnest(
-'{01.001.000100,01.001.000200,01.001.000300,01.002.000300,01.002.000400,01.002.000500,01.002.000600,01.002.000700,01.002.000800,01.002.000900,01.002.001000,01.002.001100,01.002.001200,01.002.001300,01.002.001400,01.002.001500,01.002.001600,01.002.001700,01.002.001800,01.002.001900,01.002.002000,01.002.002100,01.002.002200,01.002.002300,01.003.003300,01.003.003400,01.004.011100,01.004.011200,01.004.011300,01.004.011400,01.004.011500,01.004.011600,01.004.011700,01.004.011800,01.004.011900,01.005.002400,01.006.002500,01.006.002600,01.006.002700,01.007.012000,01.007.012100,01.007.012200,01.007.012300,01.007.012400,01.007.012500,01.008.001000,01.008.002900,01.008.003500,01.008.003600,01.008.003700,01.008.003800,01.008.003900,01.008.004000,01.008.004100,01.008.004200,01.008.004300,01.008.004400,01.008.004500,01.008.004600,01.008.004700,01.008.004800,01.008.004900,01.008.005000,01.008.005100,01.008.005200,01.008.005300,01.008.005400,01.008.005500,01.008.005600,01.008.005700,01.008.005800,01.008.005900,01.008.006000,01.008.006100,01.008.006200,01.008.006300,01.008.006400,01.008.006500,01.008.006600,01.008.006700,01.008.006800,01.008.006900,01.008.007000,01.008.007100,01.008.007200,01.008.007300,01.008.007400,01.008.007500,01.008.007600,01.008.007700,01.008.007800,01.008.007900,01.008.008000,01.008.008100,01.008.008200,01.008.008300,01.008.008400,01.008.008500,01.008.008600,01.008.008700,01.008.008800,01.008.008900,01.008.009000,01.008.009100,01.008.009200,01.008.009300,01.008.009400,01.008.009500,01.008.009600,01.008.009700,01.008.009800,01.008.009900,01.008.010100,01.008.010200,01.008.010300,01.008.010400,01.008.010500,01.008.010600,01.008.010700,01.008.010800,01.008.010900,01.008.011000,01.009.002700,01.009.002800,01.009.002900,01.009.003000,01.009.003100,01.009.003200,01.011.012600,01.011.012700,01.011.012800,01.011.012900,01.011.013000,01.011.013100,01.011.013200,01.011.013300,01.011.013400,01.011.013500,01.011.013600,01.011.013700,01.011.013800,01.011.013900,01.011.014000,01.011.014100,01.011.014200,01.011.014300,01.011.014400,01.011.014500,01.011.014600,01.011.014700,01.011.014800,01.011.014900,01.011.015000,01.011.015100,01.011.015200,01.011.015300,01.011.015400,01.011.015500,01.011.015600,01.011.015700,01.011.015800,01.012.003000,01.012.015900,01.012.016000,01.013.016000,01.013.016100,01.013.016200,01.013.016300,01.013.016400,01.013.016500,01.013.016600,01.013.016700,01.013.016800,01.014.017200,01.014.017300,01.014.017500,01.014.017600,01.014.017700,01.014.017800,01.014.017900,01.014.018000,01.014.018100,01.014.018200,01.014.018300,01.014.018400,01.014.018500,01.014.018600,01.014.018700,01.014.018800,01.015.016200,01.015.016900,01.016.017000,01.016.017100,01.017.018900,01.017.019000,01.018.019100,01.018.019200,01.018.019300,01.018.019400,01.018.019500}'::Text[]) /* at Geolevel select */ AS study_area)",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-29 15:11:53.349+00,,,,,,,"{trigger_fct_t_rif40_study_areas_checks,trigger_fct_t_rif40_study_areas_checks2}"
-5,4,rif40_create_disease_mapping_example,"INSERT /* 5 */ INTO rif40_comparison_areas(area_id)
+'{01.001.000100,01.001.000200,01.001.000300,01.002.000300,01.002.000400,01.002.000500,01.002.000600,01.002.000700,01.002.000800,01.002.000900,01.002.001000,01.002.001100,01.002.001200,01.002.001300,01.002.001400,01.002.001500,01.002.001600,01.002.001700,01.002.001800,01.002.001900,01.002.002000,01.002.002100,01.002.002200,01.002.002300,01.003.003300,01.003.003400,01.004.011100,01.004.011200,01.004.011300,01.004.011400,01.004.011500,01.004.011600,01.004.011700,01.004.011800,01.004.011900,01.005.002400,01.006.002500,01.006.002600,01.006.002700,01.007.012000,01.007.012100,01.007.012200,01.007.012300,01.007.012400,01.007.012500,01.008.001000,01.008.002900,01.008.003500,01.008.003600,01.008.003700,01.008.003800,01.008.003900,01.008.004000,01.008.004100,01.008.004200,01.008.004300,01.008.004400,01.008.004500,01.008.004600,01.008.004700,01.008.004800,01.008.004900,01.008.005000,01.008.005100,01.008.005200,01.008.005300,01.008.005400,01.008.005500,01.008.005600,01.008.005700,01.008.005800,01.008.005900,01.008.006000,01.008.006100,01.008.006200,01.008.006300,01.008.006400,01.008.006500,01.008.006600,01.008.006700,01.008.006800,01.008.006900,01.008.007000,01.008.007100,01.008.007200,01.008.007300,01.008.007400,01.008.007500,01.008.007600,01.008.007700,01.008.007800,01.008.007900,01.008.008000,01.008.008100,01.008.008200,01.008.008300,01.008.008400,01.008.008500,01.008.008600,01.008.008700,01.008.008800,01.008.008900,01.008.009000,01.008.009100,01.008.009200,01.008.009300,01.008.009400,01.008.009500,01.008.009600,01.008.009700,01.008.009800,01.008.009900,01.008.010100,01.008.010200,01.008.010300,01.008.010400,01.008.010500,01.008.010600,01.008.010700,01.008.010800,01.008.010900,01.008.011000,01.009.002700,01.009.002800,01.009.002900,01.009.003000,01.009.003100,01.009.003200,01.011.012600,01.011.012700,01.011.012800,01.011.012900,01.011.013000,01.011.013100,01.011.013200,01.011.013300,01.011.013400,01.011.013500,01.011.013600,01.011.013700,01.011.013800,01.011.013900,01.011.014000,01.011.014100,01.011.014200,01.011.014300,01.011.014400,01.011.014500,01.011.014600,01.011.014700,01.011.014800,01.011.014900,01.011.015000,01.011.015100,01.011.015200,01.011.015300,01.011.015400,01.011.015500,01.011.015600,01.011.015700,01.011.015800,01.012.003000,01.012.015900,01.012.016000,01.013.016000,01.013.016100,01.013.016200,01.013.016300,01.013.016400,01.013.016500,01.013.016600,01.013.016700,01.013.016800,01.014.017200,01.014.017300,01.014.017500,01.014.017600,01.014.017700,01.014.017800,01.014.017900,01.014.018000,01.014.018100,01.014.018200,01.014.018300,01.014.018400,01.014.018500,01.014.018600,01.014.018700,01.014.018800,01.015.016200,01.015.016900,01.016.017000,01.016.017100,01.017.018900,01.017.019000,01.018.019100,01.018.019200,01.018.019300,01.018.019400,01.018.019500}'::Text[]) /* at Geolevel select */ AS study_area)",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-31 08:55:35.312+00,,,,,,,"{trigger_fct_t_rif40_study_areas_checks,trigger_fct_t_rif40_study_areas_checks2}"
+12,11,rif40_create_disease_mapping_example,"INSERT /* 5 */ INTO rif40_comparison_areas(area_id)
 SELECT unnest(
-'{01.001,01.002,01.003,01.004,01.005,01.006,01.007,01.008,01.009,01.011,01.012,01.013,01.014,01.015,01.016,01.017,01.018}'::Text[]) AS comparision_area",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-29 15:11:53.349+00,,,,,,,"{trigger_fct_t_rif40_comp_areas_checks,trigger_fct_t_rif40_comp_areas_checks2}"
-6,5,rif40_create_disease_mapping_example,"INSERT /* 6 */ INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)
+'{01.001,01.002,01.003,01.004,01.005,01.006,01.007,01.008,01.009,01.011,01.012,01.013,01.014,01.015,01.016,01.017,01.018}'::Text[]) AS comparision_area",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-31 08:55:35.312+00,,,,,,,"{trigger_fct_t_rif40_comp_areas_checks,trigger_fct_t_rif40_comp_areas_checks2}"
+13,12,rif40_create_disease_mapping_example,"INSERT /* 6 */ INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)
 WITH a AS (
 	SELECT unnest(
          '{SES}'::Text[])::Text AS covariate_name,
@@ -72,9 +72,9 @@ WITH a AS (
 SELECT a.geography, a.covariate_name, a.study_geolevel_name, b.min, b.max
   FROM a
 	LEFT OUTER JOIN rif40_covariates b ON
-		(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography)",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-29 15:11:53.349+00,,,,,,,{trigger_fct_t_rif40_inv_covariates_checks}
-7,6,rif40_create_disease_mapping_example,INSERT /* 7 */ INTO rif40_study_shares(grantee_username) VALUES ('pch'),SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-29 15:11:53.349+00,,,,,,,{trigger_fct_rif40_study_shares_checks}
-8,,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4","T8--07: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200",,,f,t,2015-10-29 15:11:53.349+00,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+		(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography)",SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-31 08:55:35.312+00,,,,,,,{trigger_fct_t_rif40_inv_covariates_checks}
+14,13,rif40_create_disease_mapping_example,INSERT /* 7 */ INTO rif40_study_shares(grantee_username) VALUES ('pch'),SAHSULAND test 4 study_id 1 example,,,f,t,2015-10-31 08:55:35.312+00,,,,,,,{trigger_fct_rif40_study_shares_checks}
+15,,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4","T8--07: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200",,,f,t,2015-10-31 08:55:35.312+00,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
    <level1>01</level1>
    <level2>01.015</level2>
    <level3>01.015.016200</level3>
@@ -110,7 +110,7 @@ SELECT a.geography, a.covariate_name, a.study_geolevel_name, b.min, b.max
    <level3>01.015.016900</level3>
    <level4>01.015.016900.3</level4>
  </row>",,,,,
-9,,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016200') ORDER BY level4","T8--08: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 [DELIBERATE FAIL TEST]",,,f,f,2015-10-29 15:11:53.349+00,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+16,,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016200') ORDER BY level4","T8--08: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200 [DELIBERATE FAIL TEST]",,,f,f,2015-10-31 08:55:35.312+00,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
    <level1>01</level1>
    <level2>01.015</level2>
    <level3>01.015.016200</level3>
@@ -146,15 +146,15 @@ SELECT a.geography, a.covariate_name, a.study_geolevel_name, b.min, b.max
    <level3>01.015.016900</level3>
    <level4>01.015.016900.3</level4>
  </row>",,,,,
-10,,test_8_triggers.sql,"SELECT rif40_log_pkg.rif40_error(-90125, 'rif40_error', 'Dummy error: %', 'rif40_error test'::VARCHAR) AS x",T8--09: test_8_triggers.sql: rif40_log_pkg.rif40_error() test,-90125,,f,t,2015-10-29 15:11:53.349+00,,,,,,,
-11,,test_8_triggers.sql,"INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
-VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST_1', 'MAP_TRIGGER_TEST_1', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', NULL /* FAIL HERE */, 0)",T8--10: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL,-20211,,f,t,2015-10-29 15:11:53.349+00,,,,,,,
-12,,test_8_triggers.sql,"INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+17,,test_8_triggers.sql,"SELECT rif40_log_pkg.rif40_error(-90125, 'rif40_error', 'Dummy error: %', 'rif40_error test'::VARCHAR) AS x",T8--09: test_8_triggers.sql: rif40_log_pkg.rif40_error() test,-90125,,f,t,2015-10-31 08:55:35.312+00,,,,,,,
+18,,test_8_triggers.sql,"INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
+VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #1', 'EXTRACT_TRIGGER_TEST_1', 'MAP_TRIGGER_TEST_1', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', NULL /* FAIL HERE */, 0)",T8--10: test_8_triggers.sql: TRIGGER TEST #1: rif40_studies.denom_tab IS NULL,-20211,,f,t,2015-10-31 08:55:35.312+00,,,,,,,
+19,,test_8_triggers.sql,"INSERT INTO rif40_studies(geography, project, study_name, extract_table, map_table, study_type, comparison_geolevel_name, study_geolevel_name, denom_tab, suppression_value)
 VALUES ('SAHSU', 'TEST', 'TRIGGER TEST #2', 'EXTRACT_TRIGGER_TEST_2', 'MAP_TRIGGER_TEST_2', 1 /* Diease mapping */, 'LEVEL1', 'LEVEL4', 'SAHSULAND_POP', NULL /* FAIL HERE */)
-RETURNING 1::Text AS test_value",T8--11: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL,,,f,t,2015-10-29 15:11:53.349+00,{1},"<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+RETURNING 1::Text AS test_value",T8--11: test_8_triggers.sql: TRIGGER TEST #2: rif40_studies.suppression_value IS NULL,,,f,t,2015-10-31 08:55:35.312+00,{1},"<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
    <test_value>1</test_value>
  </row>",,,,,
-13,,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4","T8--12: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200",,,f,t,2015-10-29 15:11:53.349+00,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+20,,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4","T8--12: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200",,,f,t,2015-10-31 08:55:35.312+00,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
    <level1>01</level1>
    <level2>01.015</level2>
    <level3>01.015.016200</level3>
@@ -190,7 +190,7 @@ RETURNING 1::Text AS test_value",T8--11: test_8_triggers.sql: TRIGGER TEST #2: r
    <level3>01.015.016900</level3>
    <level4>01.015.016900.3</level4>
  </row>",,,,,
-14,,test_8_triggers.sql,"INSERT INTO rif40_test_harness
+21,,test_8_triggers.sql,"INSERT INTO rif40_test_harness
 WITH a AS (
 	SELECT test_id, parent_test_id, test_case_title
 	  FROM rif40_test_harness
@@ -199,8 +199,8 @@ WITH a AS (
 )
 SELECT b.*
   FROM a, rif40_test_harness b
- WHERE a.test_id = b.parent_test_id",T8--12: test_8_triggers.sql: Check that multiple inheritance of test cases is not permitted,23505,,f,t,2015-10-29 15:11:53.349+00,,,,,,,
-15,,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4","T8--16: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200",,,f,t,2015-10-29 15:12:11.09+00,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+ WHERE a.test_id = b.parent_test_id",T8--12: test_8_triggers.sql: Check that multiple inheritance of test cases is not permitted,23505,,f,t,2015-10-31 08:55:35.312+00,,,,,,,
+22,,test_8_triggers.sql,"SELECT level1, level2, level3, level4 FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200') ORDER BY level4","T8--16: test_8_triggers.sql: Display SAHSULAND hierarchy for level 3: 01.015.016900, 01.015.016200",,,f,t,2015-10-31 08:56:13.494+00,"{{01,01.015,01.015.016200,01.015.016200.2},{01,01.015,01.015.016200,01.015.016200.3},{01,01.015,01.015.016200,01.015.016200.4},{01,01.015,01.015.016900,01.015.016900.1},{01,01.015,01.015.016900,01.015.016900.2},{01,01.015,01.015.016900,01.015.016900.3}}","<row xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
   <level1>01</level1>
   <level2>01.015</level2>
   <level3>01.015.016200</level3>
@@ -237,7 +237,7 @@ SELECT b.*
   <level4>01.015.016900.3</level4>
 </row>
 ",,,,,
-68,,trgf_rif40_studies,"INSERT /* 1 */ INTO t_rif40_studies ( /* Testing test harness handles wrong error codes OK */
+23,,trgf_rif40_studies,"INSERT /* 1 */ INTO t_rif40_studies ( /* Testing test harness handles wrong error codes OK */
 				username,
 				geography, project, study_name, study_type,
 				year_start,
@@ -255,8 +255,8 @@ SELECT b.*
 				 'SAHSULAND_POP'                       /* denom_tab */,
 				 5                                       /* suppression_value */,
 				 1                                       /* extract_permitted */,
-				 1                                       /* transfer_permitted */)",01: Testing test harness handles wrong error codes OK - 20200 T_RIF40_STUDIES study <var> username: <var> is not USER: <var> INSERT,-20200,,f,f,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
-69,,trgf_rif40_studies,"INSERT /* 1 */ INTO t_rif40_studies (
+				 1                                       /* transfer_permitted */)",01: Testing test harness handles wrong error codes OK - 20200 T_RIF40_STUDIES study <var> username: <var> is not USER: <var> INSERT,-20200,,f,f,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
+24,,trgf_rif40_studies,"INSERT /* 1 */ INTO t_rif40_studies (
 				username,
 				geography, project, study_name, study_type,
 				comparison_geolevel_name, study_geolevel_name, denom_tab,
@@ -272,8 +272,8 @@ SELECT b.*
 				 'SAHSULAND_POP'                       /* denom_tab */,
 				 5                                       /* suppression_value */,
 				 1                                       /* extract_permitted */,
-				 1                                       /* transfer_permitted */)",02: 20200 T_RIF40_STUDIES study <var> username: <var> is not USER: <var> INSERT,-20200,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
-70,,trgf_rif40_studies,"INSERT /* 1 */ INTO t_rif40_studies (
+				 1                                       /* transfer_permitted */)",02: 20200 T_RIF40_STUDIES study <var> username: <var> is not USER: <var> INSERT,-20200,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
+25,,trgf_rif40_studies,"INSERT /* 1 */ INTO t_rif40_studies (
 				geography, project, study_name, study_type,
 				comparison_geolevel_name, study_geolevel_name, denom_tab,
 				suppression_value, extract_permitted, transfer_permitted)
@@ -287,14 +287,14 @@ SELECT b.*
 				 'SAHSULAND_POP'                       /* denom_tab */,
 				 5                                       /* suppression_value */,
 				 1                                       /* extract_permitted */,
-				 1                                       /* transfer_permitted */)",03: 20200 T_RIF40_STUDIES study <var> username: <var> is not USER: <var> INSERT #1,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
-71,70,trgf_rif40_studies,"UPDATE t_rif40_studies /* Testing test harness handles wrong error codes OK */
+				 1                                       /* transfer_permitted */)",03: 20200 T_RIF40_STUDIES study <var> username: <var> is not USER: <var> INSERT #1,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
+26,25,trgf_rif40_studies,"UPDATE t_rif40_studies /* Testing test harness handles wrong error codes OK */
 			SET extract_permitted = 0                    /* extract_permitted */
-		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",04: Testing test harness handles wrong error codes OK - 20202 T_RIF40_STUDIES study <var> UPDATE state changes allowed on T_RIF40_STUDIES by user: <var>,-20200,,f,f,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
-72,71,trgf_rif40_studies,"UPDATE t_rif40_studies 
+		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",04: Testing test harness handles wrong error codes OK - 20202 T_RIF40_STUDIES study <var> UPDATE state changes allowed on T_RIF40_STUDIES by user: <var>,-20200,,f,f,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
+27,26,trgf_rif40_studies,"UPDATE t_rif40_studies 
 			SET extract_permitted = 0                    /* extract_permitted */
-		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",03: 20202 T_RIF40_STUDIES study <var> UPDATE state changes allowed on T_RIF40_STUDIES by user: <var> UPDATE #2,-20202,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
-73,,trgf_rif40_studies,"INSERT /* 1 */ INTO rif40_studies (
+		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",03: 20202 T_RIF40_STUDIES study <var> UPDATE state changes allowed on T_RIF40_STUDIES by user: <var> UPDATE #2,-20202,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
+28,,trgf_rif40_studies,"INSERT /* 1 */ INTO rif40_studies (
  		geography, project, study_name, study_type,
  		comparison_geolevel_name, study_geolevel_name, denom_tab,
  		year_start, year_stop, max_age_group, min_age_group,
@@ -313,8 +313,8 @@ SELECT b.*
 		 0 	/* min_age_group */,
 		 5 /* suppression_value */,
 		 1 		/* extract_permitted */,
-		 1		/* transfer_permitted */)",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
-74,73,trgf_rif40_studies,"INSERT /* 2 */ INTO rif40_investigations(
+		 1		/* transfer_permitted */)",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
+29,28,trgf_rif40_studies,"INSERT /* 2 */ INTO rif40_investigations(
 	inv_name,
 	inv_description,
 	genders,
@@ -332,8 +332,8 @@ VALUES (
 	1989		/* year_start */,
 	1996 		/* year_stop */,
 	21 /* max_age_group */,
-	0 /* min_age_group */)",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_investigations_checks}
-75,74,trgf_rif40_studies,"INSERT /* 3 */ INTO rif40_inv_conditions(
+	0 /* min_age_group */)",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_investigations_checks}
+30,29,trgf_rif40_studies,"INSERT /* 3 */ INTO rif40_inv_conditions(
 			outcome_group_name, min_condition, max_condition, predefined_group_name, line_number)
 WITH data AS (
 				SELECT '{{SAHSULAND_ICD,C34,NULL,NULL},{SAHSULAND_ICD,162,1629,NULL}}'::Text[][] AS arr
@@ -347,17 +347,17 @@ WITH data AS (
 			)
 		SELECT outcome_group_name, min_condition, max_condition, predefined_group_name, line_number
 		  FROM b
-		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_inv_conditions_checks}
-76,75,trgf_rif40_studies,"INSERT /* 4 */ INTO rif40_study_areas(area_id, band_id)
+		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_inv_conditions_checks}
+31,30,trgf_rif40_studies,"INSERT /* 4 */ INTO rif40_study_areas(area_id, band_id)
 SELECT DISTINCT level4, ROW_NUMBER() OVER() AS band_id
 	  FROM sahsuland_geography
 	 WHERE level3 IN (
 	SELECT unnest(
-'{01.001.000100,01.001.000200,01.001.000300,01.002.000300,01.002.000400,01.002.000500,01.002.000600,01.002.000700,01.002.000800,01.002.000900,01.002.001000,01.002.001100,01.002.001200,01.002.001300,01.002.001400,01.002.001500,01.002.001600,01.002.001700,01.002.001800,01.002.001900,01.002.002000,01.002.002100,01.002.002200,01.002.002300,01.003.003300,01.003.003400,01.004.011100,01.004.011200,01.004.011300,01.004.011400,01.004.011500,01.004.011600,01.004.011700,01.004.011800,01.004.011900,01.005.002400,01.006.002500,01.006.002600,01.006.002700,01.007.012000,01.007.012100,01.007.012200,01.007.012300,01.007.012400,01.007.012500,01.008.001000,01.008.002900,01.008.003500,01.008.003600,01.008.003700,01.008.003800,01.008.003900,01.008.004000,01.008.004100,01.008.004200,01.008.004300,01.008.004400,01.008.004500,01.008.004600,01.008.004700,01.008.004800,01.008.004900,01.008.005000,01.008.005100,01.008.005200,01.008.005300,01.008.005400,01.008.005500,01.008.005600,01.008.005700,01.008.005800,01.008.005900,01.008.006000,01.008.006100,01.008.006200,01.008.006300,01.008.006400,01.008.006500,01.008.006600,01.008.006700,01.008.006800,01.008.006900,01.008.007000,01.008.007100,01.008.007200,01.008.007300,01.008.007400,01.008.007500,01.008.007600,01.008.007700,01.008.007800,01.008.007900,01.008.008000,01.008.008100,01.008.008200,01.008.008300,01.008.008400,01.008.008500,01.008.008600,01.008.008700,01.008.008800,01.008.008900,01.008.009000,01.008.009100,01.008.009200,01.008.009300,01.008.009400,01.008.009500,01.008.009600,01.008.009700,01.008.009800,01.008.009900,01.008.010100,01.008.010200,01.008.010300,01.008.010400,01.008.010500,01.008.010600,01.008.010700,01.008.010800,01.008.010900,01.008.011000,01.009.002700,01.009.002800,01.009.002900,01.009.003000,01.009.003100,01.009.003200,01.011.012600,01.011.012700,01.011.012800,01.011.012900,01.011.013000,01.011.013100,01.011.013200,01.011.013300,01.011.013400,01.011.013500,01.011.013600,01.011.013700,01.011.013800,01.011.013900,01.011.014000,01.011.014100,01.011.014200,01.011.014300,01.011.014400,01.011.014500,01.011.014600,01.011.014700,01.011.014800,01.011.014900,01.011.015000,01.011.015100,01.011.015200,01.011.015300,01.011.015400,01.011.015500,01.011.015600,01.011.015700,01.011.015800,01.012.003000,01.012.015900,01.012.016000,01.013.016000,01.013.016100,01.013.016200,01.013.016300,01.013.016400,01.013.016500,01.013.016600,01.013.016700,01.013.016800,01.014.017200,01.014.017300,01.014.017500,01.014.017600,01.014.017700,01.014.017800,01.014.017900,01.014.018000,01.014.018100,01.014.018200,01.014.018300,01.014.018400,01.014.018500,01.014.018600,01.014.018700,01.014.018800,01.015.016200,01.015.016900,01.016.017000,01.016.017100,01.017.018900,01.017.019000,01.018.019100,01.018.019200,01.018.019300,01.018.019400,01.018.019500}'::Text[]) /* at Geolevel select */ AS study_area)",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_study_areas_checks,trigger_fct_t_rif40_study_areas_checks2}"
-77,76,trgf_rif40_studies,"INSERT /* 5 */ INTO rif40_comparison_areas(area_id)
+'{01.001.000100,01.001.000200,01.001.000300,01.002.000300,01.002.000400,01.002.000500,01.002.000600,01.002.000700,01.002.000800,01.002.000900,01.002.001000,01.002.001100,01.002.001200,01.002.001300,01.002.001400,01.002.001500,01.002.001600,01.002.001700,01.002.001800,01.002.001900,01.002.002000,01.002.002100,01.002.002200,01.002.002300,01.003.003300,01.003.003400,01.004.011100,01.004.011200,01.004.011300,01.004.011400,01.004.011500,01.004.011600,01.004.011700,01.004.011800,01.004.011900,01.005.002400,01.006.002500,01.006.002600,01.006.002700,01.007.012000,01.007.012100,01.007.012200,01.007.012300,01.007.012400,01.007.012500,01.008.001000,01.008.002900,01.008.003500,01.008.003600,01.008.003700,01.008.003800,01.008.003900,01.008.004000,01.008.004100,01.008.004200,01.008.004300,01.008.004400,01.008.004500,01.008.004600,01.008.004700,01.008.004800,01.008.004900,01.008.005000,01.008.005100,01.008.005200,01.008.005300,01.008.005400,01.008.005500,01.008.005600,01.008.005700,01.008.005800,01.008.005900,01.008.006000,01.008.006100,01.008.006200,01.008.006300,01.008.006400,01.008.006500,01.008.006600,01.008.006700,01.008.006800,01.008.006900,01.008.007000,01.008.007100,01.008.007200,01.008.007300,01.008.007400,01.008.007500,01.008.007600,01.008.007700,01.008.007800,01.008.007900,01.008.008000,01.008.008100,01.008.008200,01.008.008300,01.008.008400,01.008.008500,01.008.008600,01.008.008700,01.008.008800,01.008.008900,01.008.009000,01.008.009100,01.008.009200,01.008.009300,01.008.009400,01.008.009500,01.008.009600,01.008.009700,01.008.009800,01.008.009900,01.008.010100,01.008.010200,01.008.010300,01.008.010400,01.008.010500,01.008.010600,01.008.010700,01.008.010800,01.008.010900,01.008.011000,01.009.002700,01.009.002800,01.009.002900,01.009.003000,01.009.003100,01.009.003200,01.011.012600,01.011.012700,01.011.012800,01.011.012900,01.011.013000,01.011.013100,01.011.013200,01.011.013300,01.011.013400,01.011.013500,01.011.013600,01.011.013700,01.011.013800,01.011.013900,01.011.014000,01.011.014100,01.011.014200,01.011.014300,01.011.014400,01.011.014500,01.011.014600,01.011.014700,01.011.014800,01.011.014900,01.011.015000,01.011.015100,01.011.015200,01.011.015300,01.011.015400,01.011.015500,01.011.015600,01.011.015700,01.011.015800,01.012.003000,01.012.015900,01.012.016000,01.013.016000,01.013.016100,01.013.016200,01.013.016300,01.013.016400,01.013.016500,01.013.016600,01.013.016700,01.013.016800,01.014.017200,01.014.017300,01.014.017500,01.014.017600,01.014.017700,01.014.017800,01.014.017900,01.014.018000,01.014.018100,01.014.018200,01.014.018300,01.014.018400,01.014.018500,01.014.018600,01.014.018700,01.014.018800,01.015.016200,01.015.016900,01.016.017000,01.016.017100,01.017.018900,01.017.019000,01.018.019100,01.018.019200,01.018.019300,01.018.019400,01.018.019500}'::Text[]) /* at Geolevel select */ AS study_area)",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_study_areas_checks,trigger_fct_t_rif40_study_areas_checks2}"
+32,31,trgf_rif40_studies,"INSERT /* 5 */ INTO rif40_comparison_areas(area_id)
 SELECT unnest(
-'{01.001,01.002,01.003,01.004,01.005,01.006,01.007,01.008,01.009,01.011,01.012,01.013,01.014,01.015,01.016,01.017,01.018}'::Text[]) AS comparision_area",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_comp_areas_checks,trigger_fct_t_rif40_comp_areas_checks2}"
-78,77,trgf_rif40_studies,"INSERT /* 6 */ INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)
+'{01.001,01.002,01.003,01.004,01.005,01.006,01.007,01.008,01.009,01.011,01.012,01.013,01.014,01.015,01.016,01.017,01.018}'::Text[]) AS comparision_area",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_comp_areas_checks,trigger_fct_t_rif40_comp_areas_checks2}"
+33,32,trgf_rif40_studies,"INSERT /* 6 */ INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)
 WITH a AS (
 	SELECT unnest(
          '{SES}'::Text[])::Text AS covariate_name,
@@ -367,12 +367,12 @@ WITH a AS (
 SELECT a.geography, a.covariate_name, a.study_geolevel_name, b.min, b.max
   FROM a
 	LEFT OUTER JOIN rif40_covariates b ON
-		(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography)",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_inv_covariates_checks}
-79,78,trgf_rif40_studies,INSERT /* 7 */ INTO rif40_study_shares(grantee_username) VALUES ('pch'),05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_rif40_study_shares_checks}
-80,79,trgf_rif40_studies,"UPDATE t_rif40_studies /* Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone */
+		(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography)",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_inv_covariates_checks}
+34,33,trgf_rif40_studies,INSERT /* 7 */ INTO rif40_study_shares(grantee_username) VALUES ('pch'),05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_rif40_study_shares_checks}
+35,34,trgf_rif40_studies,"UPDATE t_rif40_studies /* Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone */
 			SET study_state = 'V'                    /* verified */
-		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone UPDATE #6,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
-81,,trgf_rif40_studies,"INSERT /* 1 */ INTO rif40_studies (
+		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",05: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone UPDATE #6,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
+36,,trgf_rif40_studies,"INSERT /* 1 */ INTO rif40_studies (
  		geography, project, study_name, study_type,
  		comparison_geolevel_name, study_geolevel_name, denom_tab,
  		year_start, year_stop, max_age_group, min_age_group,
@@ -391,8 +391,8 @@ SELECT a.geography, a.covariate_name, a.study_geolevel_name, b.min, b.max
 		 0 	/* min_age_group */,
 		 5 /* suppression_value */,
 		 1 		/* extract_permitted */,
-		 1		/* transfer_permitted */)",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
-82,81,trgf_rif40_studies,"INSERT /* 2 */ INTO rif40_investigations(
+		 1		/* transfer_permitted */)",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_studies_checks}
+37,36,trgf_rif40_studies,"INSERT /* 2 */ INTO rif40_investigations(
 	inv_name,
 	inv_description,
 	genders,
@@ -410,8 +410,8 @@ VALUES (
 	1989		/* year_start */,
 	1996 		/* year_stop */,
 	21 /* max_age_group */,
-	0 /* min_age_group */)",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_investigations_checks}
-83,82,trgf_rif40_studies,"INSERT /* 3 */ INTO rif40_inv_conditions(
+	0 /* min_age_group */)",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_investigations_checks}
+38,37,trgf_rif40_studies,"INSERT /* 3 */ INTO rif40_inv_conditions(
 			outcome_group_name, min_condition, max_condition, predefined_group_name, line_number)
 WITH data AS (
 				SELECT '{{SAHSULAND_ICD,C34,NULL,NULL},{SAHSULAND_ICD,162,1629,NULL}}'::Text[][] AS arr
@@ -425,17 +425,17 @@ WITH data AS (
 			)
 		SELECT outcome_group_name, min_condition, max_condition, predefined_group_name, line_number
 		  FROM b
-		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_inv_conditions_checks}
-84,83,trgf_rif40_studies,"INSERT /* 4 */ INTO rif40_study_areas(area_id, band_id)
+		RETURNING outcome_group_name, min_condition, max_condition, predefined_group_name",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_inv_conditions_checks}
+39,38,trgf_rif40_studies,"INSERT /* 4 */ INTO rif40_study_areas(area_id, band_id)
 SELECT DISTINCT level4, ROW_NUMBER() OVER() AS band_id
 	  FROM sahsuland_geography
 	 WHERE level3 IN (
 	SELECT unnest(
-'{01.001.000100,01.001.000200,01.001.000300,01.002.000300,01.002.000400,01.002.000500,01.002.000600,01.002.000700,01.002.000800,01.002.000900,01.002.001000,01.002.001100,01.002.001200,01.002.001300,01.002.001400,01.002.001500,01.002.001600,01.002.001700,01.002.001800,01.002.001900,01.002.002000,01.002.002100,01.002.002200,01.002.002300,01.003.003300,01.003.003400,01.004.011100,01.004.011200,01.004.011300,01.004.011400,01.004.011500,01.004.011600,01.004.011700,01.004.011800,01.004.011900,01.005.002400,01.006.002500,01.006.002600,01.006.002700,01.007.012000,01.007.012100,01.007.012200,01.007.012300,01.007.012400,01.007.012500,01.008.001000,01.008.002900,01.008.003500,01.008.003600,01.008.003700,01.008.003800,01.008.003900,01.008.004000,01.008.004100,01.008.004200,01.008.004300,01.008.004400,01.008.004500,01.008.004600,01.008.004700,01.008.004800,01.008.004900,01.008.005000,01.008.005100,01.008.005200,01.008.005300,01.008.005400,01.008.005500,01.008.005600,01.008.005700,01.008.005800,01.008.005900,01.008.006000,01.008.006100,01.008.006200,01.008.006300,01.008.006400,01.008.006500,01.008.006600,01.008.006700,01.008.006800,01.008.006900,01.008.007000,01.008.007100,01.008.007200,01.008.007300,01.008.007400,01.008.007500,01.008.007600,01.008.007700,01.008.007800,01.008.007900,01.008.008000,01.008.008100,01.008.008200,01.008.008300,01.008.008400,01.008.008500,01.008.008600,01.008.008700,01.008.008800,01.008.008900,01.008.009000,01.008.009100,01.008.009200,01.008.009300,01.008.009400,01.008.009500,01.008.009600,01.008.009700,01.008.009800,01.008.009900,01.008.010100,01.008.010200,01.008.010300,01.008.010400,01.008.010500,01.008.010600,01.008.010700,01.008.010800,01.008.010900,01.008.011000,01.009.002700,01.009.002800,01.009.002900,01.009.003000,01.009.003100,01.009.003200,01.011.012600,01.011.012700,01.011.012800,01.011.012900,01.011.013000,01.011.013100,01.011.013200,01.011.013300,01.011.013400,01.011.013500,01.011.013600,01.011.013700,01.011.013800,01.011.013900,01.011.014000,01.011.014100,01.011.014200,01.011.014300,01.011.014400,01.011.014500,01.011.014600,01.011.014700,01.011.014800,01.011.014900,01.011.015000,01.011.015100,01.011.015200,01.011.015300,01.011.015400,01.011.015500,01.011.015600,01.011.015700,01.011.015800,01.012.003000,01.012.015900,01.012.016000,01.013.016000,01.013.016100,01.013.016200,01.013.016300,01.013.016400,01.013.016500,01.013.016600,01.013.016700,01.013.016800,01.014.017200,01.014.017300,01.014.017500,01.014.017600,01.014.017700,01.014.017800,01.014.017900,01.014.018000,01.014.018100,01.014.018200,01.014.018300,01.014.018400,01.014.018500,01.014.018600,01.014.018700,01.014.018800,01.015.016200,01.015.016900,01.016.017000,01.016.017100,01.017.018900,01.017.019000,01.018.019100,01.018.019200,01.018.019300,01.018.019400,01.018.019500}'::Text[]) /* at Geolevel select */ AS study_area)",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_study_areas_checks,trigger_fct_t_rif40_study_areas_checks2}"
-85,84,trgf_rif40_studies,"INSERT /* 5 */ INTO rif40_comparison_areas(area_id)
+'{01.001.000100,01.001.000200,01.001.000300,01.002.000300,01.002.000400,01.002.000500,01.002.000600,01.002.000700,01.002.000800,01.002.000900,01.002.001000,01.002.001100,01.002.001200,01.002.001300,01.002.001400,01.002.001500,01.002.001600,01.002.001700,01.002.001800,01.002.001900,01.002.002000,01.002.002100,01.002.002200,01.002.002300,01.003.003300,01.003.003400,01.004.011100,01.004.011200,01.004.011300,01.004.011400,01.004.011500,01.004.011600,01.004.011700,01.004.011800,01.004.011900,01.005.002400,01.006.002500,01.006.002600,01.006.002700,01.007.012000,01.007.012100,01.007.012200,01.007.012300,01.007.012400,01.007.012500,01.008.001000,01.008.002900,01.008.003500,01.008.003600,01.008.003700,01.008.003800,01.008.003900,01.008.004000,01.008.004100,01.008.004200,01.008.004300,01.008.004400,01.008.004500,01.008.004600,01.008.004700,01.008.004800,01.008.004900,01.008.005000,01.008.005100,01.008.005200,01.008.005300,01.008.005400,01.008.005500,01.008.005600,01.008.005700,01.008.005800,01.008.005900,01.008.006000,01.008.006100,01.008.006200,01.008.006300,01.008.006400,01.008.006500,01.008.006600,01.008.006700,01.008.006800,01.008.006900,01.008.007000,01.008.007100,01.008.007200,01.008.007300,01.008.007400,01.008.007500,01.008.007600,01.008.007700,01.008.007800,01.008.007900,01.008.008000,01.008.008100,01.008.008200,01.008.008300,01.008.008400,01.008.008500,01.008.008600,01.008.008700,01.008.008800,01.008.008900,01.008.009000,01.008.009100,01.008.009200,01.008.009300,01.008.009400,01.008.009500,01.008.009600,01.008.009700,01.008.009800,01.008.009900,01.008.010100,01.008.010200,01.008.010300,01.008.010400,01.008.010500,01.008.010600,01.008.010700,01.008.010800,01.008.010900,01.008.011000,01.009.002700,01.009.002800,01.009.002900,01.009.003000,01.009.003100,01.009.003200,01.011.012600,01.011.012700,01.011.012800,01.011.012900,01.011.013000,01.011.013100,01.011.013200,01.011.013300,01.011.013400,01.011.013500,01.011.013600,01.011.013700,01.011.013800,01.011.013900,01.011.014000,01.011.014100,01.011.014200,01.011.014300,01.011.014400,01.011.014500,01.011.014600,01.011.014700,01.011.014800,01.011.014900,01.011.015000,01.011.015100,01.011.015200,01.011.015300,01.011.015400,01.011.015500,01.011.015600,01.011.015700,01.011.015800,01.012.003000,01.012.015900,01.012.016000,01.013.016000,01.013.016100,01.013.016200,01.013.016300,01.013.016400,01.013.016500,01.013.016600,01.013.016700,01.013.016800,01.014.017200,01.014.017300,01.014.017500,01.014.017600,01.014.017700,01.014.017800,01.014.017900,01.014.018000,01.014.018100,01.014.018200,01.014.018300,01.014.018400,01.014.018500,01.014.018600,01.014.018700,01.014.018800,01.015.016200,01.015.016900,01.016.017000,01.016.017100,01.017.018900,01.017.019000,01.018.019100,01.018.019200,01.018.019300,01.018.019400,01.018.019500}'::Text[]) /* at Geolevel select */ AS study_area)",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_study_areas_checks,trigger_fct_t_rif40_study_areas_checks2}"
+40,39,trgf_rif40_studies,"INSERT /* 5 */ INTO rif40_comparison_areas(area_id)
 SELECT unnest(
-'{01.001,01.002,01.003,01.004,01.005,01.006,01.007,01.008,01.009,01.011,01.012,01.013,01.014,01.015,01.016,01.017,01.018}'::Text[]) AS comparision_area",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_comp_areas_checks,trigger_fct_t_rif40_comp_areas_checks2}"
-86,85,trgf_rif40_studies,"INSERT /* 6 */ INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)
+'{01.001,01.002,01.003,01.004,01.005,01.006,01.007,01.008,01.009,01.011,01.012,01.013,01.014,01.015,01.016,01.017,01.018}'::Text[]) AS comparision_area",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_comp_areas_checks,trigger_fct_t_rif40_comp_areas_checks2}"
+41,40,trgf_rif40_studies,"INSERT /* 6 */ INTO rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)
 WITH a AS (
 	SELECT unnest(
          '{SES}'::Text[])::Text AS covariate_name,
@@ -445,18 +445,18 @@ WITH a AS (
 SELECT a.geography, a.covariate_name, a.study_geolevel_name, b.min, b.max
   FROM a
 	LEFT OUTER JOIN rif40_covariates b ON
-		(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography)",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_t_rif40_inv_covariates_checks}
-87,86,trgf_rif40_studies,INSERT /* 7 */ INTO rif40_study_shares(grantee_username) VALUES ('pch'),06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,{trigger_fct_rif40_study_shares_checks}
-88,87,trgf_rif40_studies,"UPDATE t_rif40_studies /* Attempting to change the state (%=>%) of upgraded RIF30 study %. Please clone */
+		(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography)",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_t_rif40_inv_covariates_checks}
+42,41,trgf_rif40_studies,INSERT /* 7 */ INTO rif40_study_shares(grantee_username) VALUES ('pch'),06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,{trigger_fct_rif40_study_shares_checks}
+43,42,trgf_rif40_studies,"UPDATE t_rif40_studies /* Attempting to change the state (%=>%) of upgraded RIF30 study %. Please clone */
 			SET study_state = 'U'                    /* upgraded */
-		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone #UPDATE,-55002,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
-89,88,trgf_rif40_studies,"UPDATE t_rif40_studies /* Attempting to change the state (C=>V) of a completed study %. Please clone */
+		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",06: Attempting to change the state (<var>=><var>) of upgraded RIF30 study <var>. Please clone #UPDATE,-55002,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
+44,43,trgf_rif40_studies,"UPDATE t_rif40_studies /* Attempting to change the state (C=>V) of a completed study %. Please clone */
 			SET study_state = 'V'                    /* verified */
-		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",08: Verify study,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
-90,89,trgf_rif40_studies,"UPDATE t_rif40_studies /* Test rif40_sm_pkg.rif40_verify_state_change C=>R */
+		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",08: Verify study,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
+45,44,trgf_rif40_studies,"UPDATE t_rif40_studies /* Test rif40_sm_pkg.rif40_verify_state_change C=>R */
 			SET study_state = 'E'                    /* extract */
-		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",08: Test rif40_sm_pkg.rif40_verify_state_change V=>E (extract study) [needs to be run properly using rif40_run_study()],-55006,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
-91,90,trgf_rif40_studies,"DO LANGUAGE plpgsql $$ /* $ x2 */
+		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",08: Test rif40_sm_pkg.rif40_verify_state_change V=>E (extract study) [needs to be run properly using rif40_run_study()],-55006,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
+46,45,trgf_rif40_studies,"DO LANGUAGE plpgsql $$ /* $ x2 */
 DECLARE 
 	c9_trgf_stud CURSOR FOR
 		WITH a AS ( /* RIF40 run study returns TRUE/FALSE as to whether a study runs OK or not.
@@ -475,10 +475,10 @@ BEGIN
 	FETCH c9_trgf_stud INTO c9_rec;
 	CLOSE c9_trgf_stud;
 END;
-$$;",09: Run study,,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change,rif40_run_study,rif40_ddl,rif40_study_ddl_definer,rif40_create_insert_statement,rif40_execute_insert_statement,rif40_compute_results}"
-92,91,trgf_rif40_studies,"UPDATE t_rif40_studies /* Test rif40_sm_pkg.rif40_verify_state_change R=>R */
+$$;",09: Run study,,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change,rif40_run_study,rif40_ddl,rif40_study_ddl_definer,rif40_create_insert_statement,rif40_execute_insert_statement,rif40_compute_results}"
+47,46,trgf_rif40_studies,"UPDATE t_rif40_studies /* Test rif40_sm_pkg.rif40_verify_state_change R=>R */
 			SET study_state = 'R'                    /* run */
-		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",10: Test rif40_sm_pkg.rif40_verify_state_change R=>R (run study),-20202,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
-93,92,trgf_rif40_studies,"UPDATE t_rif40_studies /* Attempting to change the state (%=>%) of a completed study %. Please clone */
+		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",10: Test rif40_sm_pkg.rif40_verify_state_change R=>R (run study),-20202,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
+48,47,trgf_rif40_studies,"UPDATE t_rif40_studies /* Attempting to change the state (%=>%) of a completed study %. Please clone */
 			SET study_state = 'V'                    /* verified */
-		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",11: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,-55001,,f,t,2015-10-30 19:31:45.251+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"
+		  WHERE study_id = currval('rif40_study_id_seq'::regclass)",11: Attempting to change the state (<var>=><var>) of a completed study <var>. Please clone,-55001,,f,t,2015-10-31 08:56:16.929+00,,,,,,,"{trigger_fct_t_rif40_studies_checks,rif40_verify_state_change}"

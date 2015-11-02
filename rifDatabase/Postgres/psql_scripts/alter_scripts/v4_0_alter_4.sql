@@ -673,9 +673,13 @@ DECLARE
 		       a.table_name, action_timing
 		 ORDER BY 1 DESC, 3;	
 	c2sm CURSOR FOR 
-		SELECT array_agg(level3) AS level3_array FROM sahsuland_level3;		 
+		SELECT array_agg(level3) AS level3_array FROM sahsuland_level3;	
+	c3sm CURSOR FOR
+		SELECT COUNT(study_id) AS total 
+		  FROM t_rif40_studies;
 	c1sm_rec RECORD;	
 	c2sm_rec RECORD;	
+	c3sm_rec RECORD;	
 --
 	condition_array				VARCHAR[4][2]:='{{"SAHSULAND_ICD", "C34", NULL, NULL}, {"SAHSULAND_ICD", "162", "1629", NULL}}';	
 										 /* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
@@ -690,6 +694,20 @@ DECLARE
 	v_detail 			VARCHAR;
 	v_message_text		VARCHAR;
 BEGIN
+--
+-- Check if any studies exist; only run this section of code if study_id 1 has already been created. This occurs 
+-- when this partitioning alter script (4) is in development ONLY
+--
+-- If you don't do this then study id 1 is never created (because of the SAVEPOINT/ROLLBACK) and test script 4 fails.
+--
+	OPEN c3sm;
+	FETCH c3sm INTO c3sm_rec;
+	CLOSE c3sm;	
+	IF c3sm_rec.total > 0 THEN
+		RAISE INFO 'v4_0_alter_4.sql: total studies: %; not running study test code', c3sm_rec.total;
+		RETURN;
+	END IF;
+--
 	PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
 	FOR c1sm_rec IN c1sm LOOP
 		IF c1sm_rec.function IS NOT NULL THEN
@@ -845,9 +863,6 @@ END;
 $$;
 
 ROLLBACK TO SAVEPOINT rif40_studies_insert_test;	
-
-SELECT study_id FROM rif40_studies;
-SELECT study_id FROM rif40_studies WHERE study_id = currval('rif40_study_id_seq'::regclass) + 1;
 
 --DO LANGUAGE plpgsql $$
 --BEGIN

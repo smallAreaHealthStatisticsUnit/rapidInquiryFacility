@@ -827,6 +827,11 @@ DECLARE
 		 WHERE study_id = 1;
 	c2 CURSOR FOR 
 		SELECT COUNT(study_id) AS total FROM rif40_studies;
+	c3sm CURSOR FOR
+		SELECT c.relhassubclass, a.tablename
+		  FROM pg_class c, pg_tables a		 
+		 WHERE c.relname   = a.tablename
+		   AND a.tablename = 't_rif40_studies';			
 	c4sm CURSOR FOR 
 		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;
 	c4sm_rec RECORD;
@@ -849,6 +854,16 @@ DECLARE
 	sql_stmt 	VARCHAR[];
 	debug_level	INTEGER;
 BEGIN
+--
+-- Check if we are already partitioned
+--
+	OPEN c3sm;
+	FETCH c3sm INTO c3sm_rec;
+	CLOSE c3sm;	
+	IF c3sm_rec.relhassubclass THEN /* Only run rest of script if we are NOT already partitioned*/
+		RAISE INFO 'test_4_study_id_1.sql: T4--31: t_rif40_studies is partitioned';
+	END IF;		
+--
 	OPEN c4sm;
 	FETCH c4sm INTO c4sm_rec;
 	CLOSE c4sm;
@@ -890,7 +905,7 @@ BEGIN
 --
 	IF currval('rif40_study_id_seq'::regclass) = 1 THEN
         RAISE INFO 'test_4_study_id_1.sql: T4--35: Only study 1 present';                                                                          
-		RETURN;
+		RETURN;	
 	END IF;
 --
 	sql_stmt[1]:='DELETE FROM rif40_inv_conditions'||E'\n'||
