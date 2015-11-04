@@ -93,13 +93,14 @@ Description:	Check if <new study id> exists; delete extract and map tables for <
 	new_extract_table	VARCHAR;
 	new_map_table		VARCHAR;
  BEGIN
- 	PERFORM rif40_log_pkg.rif40_error(-57609, 'rif40_rename_map_and_extract_tables', 
-		'rename study % extract and map tables is now obsolete because of partitioning (partition movement is not supported) so study_id update is not allowed',
-		old_study_id::VARCHAR		/* Old study ID */);
-		
- --
- -- Check studies exist
- --
+--
+-- 	PERFORM rif40_log_pkg.rif40_error(-57609, 'rif40_rename_map_and_extract_tables', 
+--		'rename study % extract and map tables is now obsolete because of partitioning (partition movement is not supported) so study_id update is not allowed',
+--		old_study_id::VARCHAR		/* Old study ID */);
+--		
+--
+-- Check studies exist
+--
  	OPEN c1_renst(old_study_id);
 	FETCH c1_renst INTO c1a_rec;
 	IF NOT FOUND THEN

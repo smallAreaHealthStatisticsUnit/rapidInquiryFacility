@@ -837,6 +837,7 @@ DECLARE
 	c4sm_rec RECORD;
 	c1_rec RECORD;
     c2_rec RECORD;
+	c3sm_rec RECORD;
 --
 -- RIF40_STUDY_SQL
 -- RIF40_STUDY_SQL_LOG
