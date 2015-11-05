@@ -207,10 +207,20 @@ Test harness refactor; Node.js version working
 #### 5th to 9th October
 
 * Test harness documentation
+
+#### 12th to 16th October
+
+* Remove old dblink Test harness
+
+#### 19th to 23rd October
+
+* Complete build instructions 
+
+#### 26th October to 6th November
+
+* Complete and test partitioning
  
-Remove old dblink version
- 
-From October: 
+From January 2016: 
 
   1. Test harness
 
@@ -234,8 +244,7 @@ From October:
 	  secure logons are integrated into the middleware and the JS frontend
 4. Complete R integration
 5. Integrate and test Java run study
-6. Complete build instructions
-7. Build and integrate node middleware server:
+6. Build and integrate node middleware server:
 	* GeoJSON to TopoJSON conversion; converted node program to using HTTP POST methods
 	* Secure logons using session_ids, time stamps and eliptic curve cryptography (public/private keys)
 	* Shapefile conversion to WKT (Well known test) format later 

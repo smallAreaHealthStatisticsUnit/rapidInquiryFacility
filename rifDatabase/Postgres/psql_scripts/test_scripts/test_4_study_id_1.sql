@@ -826,7 +826,9 @@ DECLARE
 		SELECT * FROM rif40_studies
 		 WHERE study_id = 1;
 	c2 CURSOR FOR 
-		SELECT COUNT(study_id) AS total FROM rif40_studies;
+		SELECT COUNT(study_id) AS total,
+		       ARRAY_AGG(study_id ORDER BY study_id) AS study_list
+  	 	  FROM rif40_studies;
 	c3sm CURSOR FOR
 		SELECT c.relhassubclass, a.tablename
 		  FROM pg_class c, pg_tables a		 
@@ -893,10 +895,11 @@ BEGIN
 --
 	IF c1_rec.study_name IS NULL AND c2_rec.total = 1 THEN
 -- Make EXCEPTION                                                                                
-        RAISE NOTICE 'test_4_study_id_1.sql: T4--32: no study 1';
+        RAISE NOTICE 'test_4_study_id_1.sql: T4--32: no study 1; study list: %', c2_rec.study_list::Text;
         RETURN;
     ELSIF c1_rec.study_name IS NULL THEN
-		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--33: Test 4.8 no study 1 found; total = %', c2_rec.total::Text;
+		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--33: Test 4.8 no study 1 found; total = %; study list: %', 
+			c2_rec.total::Text, c2_rec.study_list::Text;
 	ELSIF c1_rec.study_name != 'SAHSULAND test 4 study_id 1 example' THEN
 		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--34: Test 4.9; Study: 1 name (%) is not test 4 example', 
 			c1_rec.study_name;
