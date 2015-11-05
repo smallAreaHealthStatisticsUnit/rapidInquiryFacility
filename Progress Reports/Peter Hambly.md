@@ -247,4 +247,4 @@ From January 2016:
 6. Build and integrate node middleware server:
 	* GeoJSON to TopoJSON conversion; converted node program to using HTTP POST methods
 	* Secure logons using session_ids, time stamps and eliptic curve cryptography (public/private keys)
-	* Shapefile conversion to WKT (Well known test) format later 
+	* Shapefile conversion to WKT (Well known text) format later 

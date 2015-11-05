@@ -864,6 +864,9 @@ $$;
 
 ROLLBACK TO SAVEPOINT rif40_studies_insert_test;	
 
+--
+-- Reset sequences
+--
 DO LANGUAGE plpgsql $$
 DECLARE	
 	c5sm CURSOR FOR /* Old studies to delete - not study 1 */

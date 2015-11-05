@@ -172,7 +172,7 @@ BEGIN
 --
 -- Delete old test studies
 --
-	RAISE INFO 'test_4_study_id_1.sql: T4--08: Delete old test studies';
+	RAISE INFO 'test_4_study_id_1.sql: T4--08: Delete old test studies (NOT study 1)';
 	FOR c3sm_rec IN c3sm LOOP
 		i:=i+1;
 		RAISE INFO 'test_4_study_id_1.sql: T4--09: Delete of SAHSULAND test example study: %', c3sm_rec.study_id::VARCHAR;
