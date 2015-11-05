@@ -864,6 +864,35 @@ $$;
 
 ROLLBACK TO SAVEPOINT rif40_studies_insert_test;	
 
+DO LANGUAGE plpgsql $$
+DECLARE	
+	c5sm CURSOR FOR /* Old studies to delete - not study 1 */
+		SELECT COUNT(study_id) AS total,
+		       ARRAY_AGG(study_id ORDER BY study_id) AS study_list
+		  FROM t_rif40_studies;	
+--		  
+	c5sm_rec RECORD;
+--
+	sql_stmt VARCHAR[];
+BEGIN
+--
+-- Check if no studies - reset study_id and inv_id sequences to 1
+--
+	OPEN c5sm;
+	FETCH c5sm INTO c5sm_rec;
+	CLOSE c5sm;
+	IF c5sm_rec.total = 0 THEN
+		sql_stmt[1]:='ALTER SEQUENCE rif40_study_id_seq MINVALUE 1';
+		sql_stmt[array_length(sql_stmt, 1)+1]:='ALTER SEQUENCE rif40_inv_id_seq MINVALUE 1';
+		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
+		RAISE INFO 'v4_0_alter_4.sql: No studies, resetting sequences';
+	ELSE
+		RAISE EXCEPTION 'v4_0_alter_4.sql: % studies: %; unable to reset sequence numbers', 
+			c5sm_rec.total::Text, c5sm_rec.study_list::Text;
+	END IF;
+END;
+$$;	
+
 --DO LANGUAGE plpgsql $$
 --BEGIN
 --	RAISE INFO 'v4_0_alter_4.sql: Aborting (script being tested)';

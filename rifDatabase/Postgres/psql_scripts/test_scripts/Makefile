@@ -130,7 +130,6 @@ PSQL_FLAGS=-U rif40 -d $(DBNAME) -h $(PGHOST) -w -P pager=off \
 	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO) \
 	-v pghost=$(PGHOST) -v pgdatabase=$(PGDATABASE) -v ON_ERROR_STOP=1
 	
-
 #
 # List of source code
 #
