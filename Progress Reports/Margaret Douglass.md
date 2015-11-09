@@ -4,14 +4,17 @@ Principal Work Area: **Microsoft SQL server database port**
 
 ##2015
 
+###November
+Focus is still on testing (when there is time to work on the RIF).
+
 ###October
-Setting up the standard test harness to enable systematic testing and comparison with the Postgres build.
+Not much time spent on the RIF this month.  I started to set up the standard test harness to enable systematic testing and comparison with the Postgres build.
 
 ######21 October
 * Creating new database objects necessary to run the test harness
 
 ###September
-I will perfom more testing of the table and view triggers.
+Mostly working on other projects.  I perfomed more testing of the table and view triggers.
 
 ######21 September
 * Quick edit to my script to convert Postgres data files into SQL Server data files to use | as the field delimiter, remove all double quotes (plus line breaks in multi-line comments).  This format works well with bulk import.
