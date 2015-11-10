@@ -220,6 +220,12 @@ Test harness refactor; Node.js version working
 
 * Complete and test partitioning
  
+#### 9th November to 21st November
+
+* Testing confirmed susecpted double execution of triggers. Triggers to be disabled at the master level
+* Sequence NEXTVAL is only calling once for master and partition; the lack of test 1 is caused by a logic fault in alter 4
+* Add check constraints for partition value
+
 From January 2016: 
 
   1. Test harness
@@ -233,7 +239,7 @@ From January 2016:
   Bugs
 
   * Fix rif40_sql_pkg._rif40_sql_test() so the SQL runs once (i.e. use capture the results). This avoids issues with functions 
-    (e.g. rif40_run)_study() that errors if run more than once.
+    (e.g. rif40_run_study() that errors if run more than once.
   *	Failures in psql are not detected when they occur (this appears to be a psql "feature") and cause failures some time later. 
     These need to be explictly test for (effects topoJSON covnversion more than db_test_hanress.js).
 2. RIF batch integration
