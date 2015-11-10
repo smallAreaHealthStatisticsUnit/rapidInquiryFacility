@@ -58,6 +58,8 @@ A full report is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInqui
 
 ### Microsoft SQL server - Margaret
 
+Complete INSERT/UPDATE/DELETE table triggers and VIEW INSERT triggers. The views all users to only see studies they a) have created or b) have had shared with them.
+
 A full report is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Margaret%20Douglass.md
 
 

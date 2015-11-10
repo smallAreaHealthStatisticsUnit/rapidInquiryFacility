@@ -41,6 +41,10 @@ A full report is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInqui
 
 ### Microsoft SQL server - Margaret
 
+Not much time spent on the RIF this month.  I started to set up the standard test harness to enable systematic testing and comparison with the Postgres build.
+
+* Creating new database objects necessary to run the test harness
+
 A full report is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Margaret%20Douglass.md
 
 

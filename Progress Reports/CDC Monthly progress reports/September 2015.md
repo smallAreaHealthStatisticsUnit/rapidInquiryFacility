@@ -57,6 +57,13 @@ A full report is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInqui
 
 ### Microsoft SQL server - Margaret
 
+Mostly working on other projects.  I perfomed more testing of the table and view triggers, and I spent some time getting comfortable using Node.js.
+
+* I finished writing a Perl script to convert data files with quotes around only a few fields + mult-line text in a single cell into something that can be loaded into SQL Server so I can continue loading test data into SQL Server
+* Quick edit to my script to convert Postgres data files into SQL Server data files to use | as the field delimiter, remove all double quotes (plus line breaks in multi-line comments).  This format works well with bulk import.
+* More (informal/unstructured) testing of queries.
+* Lots of struggles to get Node.js working on my computer with all the extra modules for connecting to the different databases.  Also playing around with basic Node scripts to understand how the technology works.
+
 A full report is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Margaret%20Douglass.md
 
 

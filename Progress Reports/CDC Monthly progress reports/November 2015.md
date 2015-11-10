@@ -36,6 +36,12 @@ A full report is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInqui
 
 ### Microsoft SQL server - Margaret
 
+* (Finally) starting to work on porting Peter's super-complicated test harness code from pgsql to T-SQL.
+* Returning to the automated testing issue.  I compared what Peter has set up for Postgres with the existing SQL Server automated testing tools.  
+  I don't see any SQL Server tools that would not require explicitly hard-coding every test case, and we don't want that.
+
+Focus is still on testing (when there is time to work on the RIF).
+
 A full report is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Margaret%20Douglass.md
 
 
