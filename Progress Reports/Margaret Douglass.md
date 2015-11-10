@@ -7,6 +7,12 @@ Principal Work Area: **Microsoft SQL server database port**
 ###November
 Focus is still on testing (when there is time to work on the RIF).
 
+######10 November
+* (Finally) starting to work on porting Peter's super-complicated test harness code from pgsql to T-SQL.
+
+######9 November
+* Returning to the automated testing issue.  I compared what Peter has set up for Postgres with the existing SQL Server automated testing tools.  I don't see any SQLS Server tools that would not require explicitly hard-coding every test case, and we don't want that.
+
 ###October
 Not much time spent on the RIF this month.  I started to set up the standard test harness to enable systematic testing and comparison with the Postgres build.
 
@@ -14,7 +20,10 @@ Not much time spent on the RIF this month.  I started to set up the standard tes
 * Creating new database objects necessary to run the test harness
 
 ###September
-Mostly working on other projects.  I perfomed more testing of the table and view triggers.
+Mostly working on other projects.  I perfomed more testing of the table and view triggers, and I spent some time getting comfortable using Node.js.
+
+######23-30 September
+* Lots of struggles to get Node.js working on my computer with all the extra modules for connecting to the different databases.  Also playing around with basic Node scripts to understand how the technology works.
 
 ######21 September
 * Quick edit to my script to convert Postgres data files into SQL Server data files to use | as the field delimiter, remove all double quotes (plus line breaks in multi-line comments).  This format works well with bulk import.
