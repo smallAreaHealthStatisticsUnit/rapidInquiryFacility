@@ -93,6 +93,7 @@ DECLARE
 		   AND study_id > 1;
 	c4sm CURSOR FOR 
 		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;
+--
 	c1sm_rec RECORD;
 	c2sm_rec RECORD;
 	c3sm_rec RECORD;
@@ -171,12 +172,13 @@ BEGIN
 --
 -- Delete old test studies
 --
-	RAISE INFO 'test_4_study_id_1.sql: T4--08: Delete old test studies';
+	RAISE INFO 'test_4_study_id_1.sql: T4--08: Delete old test studies (NOT study 1)';
 	FOR c3sm_rec IN c3sm LOOP
 		i:=i+1;
 		RAISE INFO 'test_4_study_id_1.sql: T4--09: Delete of SAHSULAND test example study: %', c3sm_rec.study_id::VARCHAR;
 		PERFORM rif40_sm_pkg.rif40_delete_study(c3sm_rec.study_id);
 	END LOOP;
+
 --
 -- Create new test study
 --
@@ -826,7 +828,9 @@ DECLARE
 		SELECT * FROM rif40_studies
 		 WHERE study_id = 1;
 	c2 CURSOR FOR 
-		SELECT COUNT(study_id) AS total FROM rif40_studies;
+		SELECT COUNT(study_id) AS total,
+		       ARRAY_AGG(study_id ORDER BY study_id) AS study_list
+  	 	  FROM rif40_studies;
 	c3sm CURSOR FOR
 		SELECT c.relhassubclass, a.tablename
 		  FROM pg_class c, pg_tables a		 
@@ -893,10 +897,10 @@ BEGIN
 --
 	IF c1_rec.study_name IS NULL AND c2_rec.total = 1 THEN
 -- Make EXCEPTION                                                                                
-        RAISE NOTICE 'test_4_study_id_1.sql: T4--32: no study 1';
-        RETURN;
+        RAISE EXCEPTION 'test_4_study_id_1.sql: T4--32: no study 1; study list: %', c2_rec.study_list::Text;
     ELSIF c1_rec.study_name IS NULL THEN
-		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--33: Test 4.8 no study 1 found; total = %', c2_rec.total::Text;
+		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--33: Test 4.8 no study 1 found; total = %; study list: %', 
+			c2_rec.total::Text, c2_rec.study_list::Text;
 	ELSIF c1_rec.study_name != 'SAHSULAND test 4 study_id 1 example' THEN
 		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--34: Test 4.9; Study: 1 name (%) is not test 4 example', 
 			c1_rec.study_name;
@@ -1099,7 +1103,7 @@ BEGIN
 --
 	PERFORM rif40_sql_pkg.rif40_table_diff('T4--43(s1_extract)' /* Test tag */, 's1_extract', 'v_test_4_study_id_1_extract');
 	PERFORM rif40_sql_pkg.rif40_table_diff('T4--44(s1_map)' /* Test tag */, 's1_map', 'v_test_4_study_id_1_map', 
-                    c1sm_rec. s1_map_columns, c1sm_rec. s1_map_columns);
+                    c1sm_rec.s1_map_columns, c1sm_rec.s1_map_columns);
 --
 --	RAISE EXCEPTION 'TEST Abort';
 END;

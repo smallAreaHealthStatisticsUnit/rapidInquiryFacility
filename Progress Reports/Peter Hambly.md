@@ -207,10 +207,26 @@ Test harness refactor; Node.js version working
 #### 5th to 9th October
 
 * Test harness documentation
+
+#### 12th to 16th October
+
+* Remove old dblink Test harness
+
+#### 19th to 23rd October
+
+* Complete build instructions 
+
+#### 26th October to 6th November
+
+* Complete and test partitioning
  
-Remove old dblink version
- 
-From October: 
+#### 9th November to 21st November
+
+* Testing confirmed susecpted double execution of triggers. Triggers to be disabled at the master level
+* Sequence NEXTVAL is only calling once for master and partition; the lack of test 1 is caused by a logic fault in alter 4
+* Add check constraints for partition value
+
+From January 2016: 
 
   1. Test harness
 
@@ -223,7 +239,7 @@ From October:
   Bugs
 
   * Fix rif40_sql_pkg._rif40_sql_test() so the SQL runs once (i.e. use capture the results). This avoids issues with functions 
-    (e.g. rif40_run)_study() that errors if run more than once.
+    (e.g. rif40_run_study() that errors if run more than once.
   *	Failures in psql are not detected when they occur (this appears to be a psql "feature") and cause failures some time later. 
     These need to be explictly test for (effects topoJSON covnversion more than db_test_hanress.js).
 2. RIF batch integration
@@ -234,8 +250,7 @@ From October:
 	  secure logons are integrated into the middleware and the JS frontend
 4. Complete R integration
 5. Integrate and test Java run study
-6. Complete build instructions
-7. Build and integrate node middleware server:
+6. Build and integrate node middleware server:
 	* GeoJSON to TopoJSON conversion; converted node program to using HTTP POST methods
 	* Secure logons using session_ids, time stamps and eliptic curve cryptography (public/private keys)
-	* Shapefile conversion to WKT (Well known test) format later 
+	* Shapefile conversion to WKT (Well known text) format later 
