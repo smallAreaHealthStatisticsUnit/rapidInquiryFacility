@@ -230,43 +230,45 @@ From January 2016:
 
 To do
 
-1.	Build and integrate Node.js middleware server:
-*	GeoJSON to TopoJSON conversion; by converting existing Node.js program to using HTTP POST methods to integrate  with the middleware
-*	Test and demonstrate secure logons using session_ids, time stamps and elliptic curve cryptography (public/private keys). Assist with integration into middleware and JavaScript frontends.
-*	Assist with Node.js service integration into middleware, data loader and JavaScript frontends.
-*	Shapefile simplification
-*	Shapefile conversion to WKT (Well known text) format
+1. Build and integrate Node.js middleware server:
 
-2.	Assist as required in the coding, integration and testing of: 
+  * GeoJSON to TopoJSON conversion; by converting existing Node.js program to using HTTP POST methods to integrate  with the middleware
+  * Test and demonstrate secure logons using session_ids, time stamps and elliptic curve cryptography (public/private keys). Assist with integration into middleware and JavaScript frontends.
+  * Assist with Node.js service integration into middleware, data loader and JavaScript frontends.
+  * Shapefile simplification
+  * Shapefile conversion to WKT (Well known text) format
 
-*	RIF batch (Java code calling a) database procedural code for study data extraction and b) R code [created by the Statistical team] to calculate statistical results from the study data extraction. Includes work to: 
-  *	Extend the study extraction code to use separate age sex group field named; 
-  *	Add code to validate RIF setup;
-  *	Performance tune study extract code; in particular the triggers; SQL injection detection may need to be changed from a function to domain regular expression check;
-  *	Complete harmonisation and documentation of error and trace messages.
-*	Complete webserver integration for SAHSU [Remote access using my old desktop will be required]
-  *	Liaise with RIF middleware and JavaScript frontend to fix pernicious mixed content issues (mixtures of HTTP/HTTPS traffic);
-  *	Test SAHSU RIF testbed wpea-darwin remotely; using JavaScript on httpd (i.e. minimise reverse proxy traffic);  
-  *	Set up httpd as a reverse proxy so that Tomcat (running the Java middleware) traffic is forwarded securely to the tomcat server.
-  *	Secure wpea-darwin httpd by jailing it; 
-  *	Add HTTP caching to enhance web page load performance; 
-  *	Preparation for penetration testing by an accredited third party; SQL injection testing.
-*	Provision and tuning of database services to the middleware and data loader. In particular ensure that partitioning is being used.
+2. Assist as required in the coding, integration and testing of: 
 
-3.	Assist with porting to Microsoft SQL server.
+  * RIF batch (Java code calling a) database procedural code for study data extraction and b) R code [created by the Statistical team] to calculate statistical results from the study data extraction. Includes work to: 
+    * Extend the study extraction code to use separate age sex group field named; 
+    * Add code to validate RIF setup;
+    * Performance tune study extract code; in particular the triggers; SQL injection detection may need to be changed from a function to domain regular expression check;
+    * Complete harmonisation and documentation of error and trace messages.
+  * Complete webserver integration for SAHSU [Remote access using my old desktop will be required]
+    * Liaise with RIF middleware and JavaScript frontend to fix pernicious mixed content issues (mixtures of HTTP/HTTPS traffic);
+    * Test SAHSU RIF testbed wpea-darwin remotely; using JavaScript on httpd (i.e. minimise reverse proxy traffic);  
+    * Set up httpd as a reverse proxy so that Tomcat (running the Java middleware) traffic is forwarded securely to the tomcat server.
+    * Secure wpea-darwin httpd by jailing it; 
+    * Add HTTP caching to enhance web page load performance; 
+    * Preparation for penetration testing by an accredited third party; SQL injection testing.
+  * Provision and tuning of database services to the middleware and data loader. In particular ensure that partitioning is being used.
 
-4.	Information Governance module: complete database support as required by the middleware.
+3. Assist with porting to Microsoft SQL server.
 
-5.	Build and revision control.
+4. Information Governance module: complete database support as required by the middleware.
 
-6.	Test harness:
-*	Add tests for all triggers. errors and to exercise a range of study choices;
-*	Per test logging to separate files;
-*   Remove *rif40_test_runs_.number_test_cases_registered*;
-*	Add *rif40_test_harness.port_specific_test*; either: P (Postgres only) or: S (SQL Server only);
-*	Auto registering of error and trace messages.
+5. Build and revision control.
 
-7.	Additional RIF development tasks as required by Dr. Anna Hansell; 
+6. Test harness:
+
+  *	Add tests for all triggers. errors and to exercise a range of study choices;
+  *	Per test logging to separate files;
+  *   Remove *rif40_test_runs_.number_test_cases_registered*;
+  *	Add *rif40_test_harness.port_specific_test*; either: P (Postgres only) or: S (SQL Server only);
+  *	Auto registering of error and trace messages.
+
+7. Additional RIF development tasks as required by Dr. Anna Hansell; 
 
 Bugs
 
