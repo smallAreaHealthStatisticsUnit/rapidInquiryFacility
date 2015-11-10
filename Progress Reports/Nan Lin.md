@@ -1,6 +1,24 @@
 # Nan Lin Progress Report RIF4.0 
 Principal Work Area: **Java Middleware** 
 ### 2015 
+#### September to October
+Download RIF 4.0 from Github on a laptop, try to build the database (Postgres version) by following Peter’s online documents.
+
+The long process encounters errors, the bugs have been reported to Peter. Accordingly, Peter modifies the code and text in the documentation. Finally, the database is installed successfully. (However, make provided by MinGW sometimes cannot work when Windows installs the latest updates.)
+
+
+After this, try to build RIF middleware. Modify the pom.xml under rifServices directory: in the dependency section about javax.servlet, add scope attribute with the value ‘provided’. The package has been deployed on to a Tomcat 8 server, the start page and the user login procedure work fine.
+
+####August
+Wrap ICD10ClaMLTaxonomyProvider class developed last month into Jersey, exposing the work-alone service as a RESTful web service. 
+
+
+The methodology follows the MVC convention: ICD10ClaMLTaxonomyProvider works as the controller, borrowed class HealthCode, TaxonomyTerm (from RIF) as the model, borrowed class HealthCodeProxy and WebServiceResponseGenerator (from RIF) as the view. 
+
+
+The project is managed by maven, which uses the latest version of Jersey and Jackson. The package has been deployed on a Tomcat 8 container, it returns expected results when URLs have different combinations of parameters. 
+
+
 #### July
 Convert the prototype code developed last month into ICD10ClaMLTaxonomyProvider class in rifServices.taxonomyServices package, which implements RIF HealthCodeProviderInterface. This class provides an interpretation of ICD 10 code service and then save results into an internal HashMap container. As a result:
 - The tree structure of the ICD 10 code is exposed: the class can return the parent and immediate children of a health code.
