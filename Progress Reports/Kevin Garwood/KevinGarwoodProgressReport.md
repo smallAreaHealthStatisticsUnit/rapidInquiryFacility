@@ -39,10 +39,10 @@ Trying to be more brief in reports, will transfer design issue discussions to we
      the skill of RIF managers who would use the graphical tool
    * Finalised the process stages of loading data from a CSV file to when it becomes published.
 
-#June 22 to June 26
+##June 22 to June 26
    * Developed new XML format for the data loader tool that favours a data centric view.
    * Developed a new data model to match the new XML format 
-June 29 to July 3 
+##June 29 to July 3 
    * Annual Leave
 
 ##July 6 to 31
@@ -50,7 +50,7 @@ June 29 to July 3
    of the code base.
    * Completely rewrote the UI from scratch, got rid of old prototype code because it's no longer relevant
 
-#August 3 to August 7 
+##August 3 to August 7 
    * Holidays
 ##August 10 to August 14 
    * Improving auditing, packaging results into a zip file.

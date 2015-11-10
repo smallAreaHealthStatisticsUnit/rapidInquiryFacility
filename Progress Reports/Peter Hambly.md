@@ -186,7 +186,7 @@ Test harness refactor; Node.js version working
 #### 7th to 11th September 
 
 * Debug functions
-* Instrumnetation
+* Instrumnentation
 * Conversion to Mutex locked version to prevent stack overload with waterfall of cascading callback functions
 
 #### 14th to 18th September
@@ -233,21 +233,23 @@ To do
 1. Build and integrate Node.js middleware server:
 
   * GeoJSON to TopoJSON conversion; by converting existing Node.js program to using HTTP POST methods to integrate  with the middleware
-  * Test and demonstrate secure logons using session_ids, time stamps and elliptic curve cryptography (public/private keys). Assist with integration into middleware and JavaScript frontends.
+  * Test and demonstrate secure logons using session_ids, time stamps and elliptic curve cryptography (public/private keys). Assist with
+    integration into middleware and JavaScript frontends.
   * Assist with Node.js service integration into middleware, data loader and JavaScript frontends.
   * Shapefile simplification
   * Shapefile conversion to WKT (Well known text) format
 
 2. Assist as required in the coding, integration and testing of: 
 
-  * RIF batch (Java code calling a) database procedural code for study data extraction and b) R code [created by the Statistical team] to calculate statistical results from the study data extraction. Includes work to: 
+  * RIF batch: Java code calling a) database procedural code for study data extraction and b) R code [created by the Statistical team] 
+    to calculate statistical results from the study data extraction. Includes work to: 
     * Extend the study extraction code to use separate age sex group field named; 
     * Add code to validate RIF setup;
     * Performance tune study extract code; in particular the triggers; SQL injection detection may need to be changed from a function to domain regular expression check;
     * Complete harmonisation and documentation of error and trace messages.
   * Complete webserver integration for SAHSU [Remote access using my old desktop will be required]
     * Liaise with RIF middleware and JavaScript frontend to fix pernicious mixed content issues (mixtures of HTTP/HTTPS traffic);
-    * Test SAHSU RIF testbed wpea-darwin remotely; using JavaScript on httpd (i.e. minimise reverse proxy traffic);  
+    * Test SAHSU RIF testbed wpea-darwin remotely;  
     * Set up httpd as a reverse proxy so that Tomcat (running the Java middleware) traffic is forwarded securely to the tomcat server.
     * Secure wpea-darwin httpd by jailing it; 
     * Add HTTP caching to enhance web page load performance; 
@@ -256,7 +258,7 @@ To do
 
 3. Assist with porting to Microsoft SQL server.
 
-4. Information Governance module: complete database support as required by the middleware.
+4. Information Governance module: Complete database support as required by the middleware.
 
 5. Build and revision control.
 

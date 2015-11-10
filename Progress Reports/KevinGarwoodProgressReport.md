@@ -76,13 +76,35 @@ areas of the RIF schema such as numerator health data.
 ##Week of June 15, 2015
 I spent most of the week developing business classes and XML serialisation classes that support configuration options 
 in the Data Loader Tool.  However, three issues have arisen:
-•	determining what steps should be supported in the process of transforming data from a CSV file into a published data set
-•	the influence  that command-line and GUI-based versions of the data loader tool have on the code
-•	the design tension between data-centric and process-centric views of the data loader activities
-•	the skill levels a RIF manager should have
+*	determining what steps should be supported in the process of transforming data from a CSV file into a published data set
+*	the influence  that command-line and GUI-based versions of the data loader tool have on the code
+*	the design tension between data-centric and process-centric views of the data loader activities
+*	the skill levels a RIF manager should have
+*	the skill levels a RIF manager should have
 
 The outcome of this work is a design discussion that I am trying to write up as part of the formal design documentation 
 for the tool.
 
 The first issue is defining steps in the workflow that will transform an imported data set into a data set that can 
 be used as part of the RIF database.  
+
+##June 29 to July 3 
+   * Annual Leave
+##July 6 to 31
+   * Rewriting most of the data loader tool.  The rewrite of the data loader tool had a knock-on effect in most parts 
+   of the code base.
+   * Completely rewrote the UI from scratch, got rid of old prototype code because it's no longer relevant
+
+#August 3 to August 7 
+   * Holidays
+##August 10 to August 14 
+   * Improving auditing, packaging results into a zip file.
+##August 17 to August 21
+   * August. 19, 20: Annual Leave
+   * Preparing learning and presentation tutorials for the CDC, scenario testing.
+
+##August 24 - August 2th: 
+   * CDC Atlanta Visit, attendance of Environmental Health Tracking Conference
+
+##September 1 to November 30
+   * working on other projects, no RIF work will be done in this period.
