@@ -132,10 +132,12 @@ endif
 # This is because 7 was written before the partitioning was enabled and does not support it
 #
 SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_5.sql $(PLR_SOURCES) v4_0_alter_7.sql v4_0_alter_8.sql \
-			v4_0_alter_3.sql v4_0_alter_4.sql 
+			v4_0_alter_3.sql
+#			v4_0_alter_4.sql 
  
+DEV_SOURCES=v4_0_alter_4.sql  
 # DEV_SOURCES=$(PLR_DEV_SOURCES) 
-DEV_SOURCES=$(PLR_DEV_SOURCES)
+#DEV_SOURCES=$(PLR_DEV_SOURCES)
 #
 # Derive targets from sources
 # Target extension depends on source, build rule

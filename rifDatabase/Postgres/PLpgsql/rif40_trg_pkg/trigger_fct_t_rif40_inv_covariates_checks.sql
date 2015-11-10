@@ -141,7 +141,8 @@ BEGIN
 --
 	IF TG_OP = 'UPDATE' AND COALESCE(NEW.study_id::Text, '') != COALESCE(OLD.study_id::Text, '') THEN
 		PERFORM rif40_log_pkg.rif40_error(-20280, 'trigger_fct_t_rif40_inv_covariates_checks', 
-			'T_RIF40_INV_COVARIATES study id may not be changed: %=>%',
+			'%.% study id may not be changed: %=>%',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			OLD.study_id::VARCHAR	/* Study id */,	
 			NEW.study_id::VARCHAR	/* Study id */);
 	END IF;
@@ -159,7 +160,8 @@ BEGIN
 			NULL;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_error(-20260, 'trigger_fct_t_rif40_inv_covariates_checks',
-				'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % username: % is not USER: %',
+				'%.% study: % investigation: % covariate: % username: % is not USER: %',
+				TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,				
 				NEW.study_id::VARCHAR		/* Study */,
 				NEW.inv_id::VARCHAR		/* Investigation */,
 				NEW.covariate_name::VARCHAR	/* Covariate */,
@@ -172,7 +174,8 @@ BEGIN
 			NULL;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_error(-20260, 'trigger_fct_t_rif40_inv_covariates_checks',
-				'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % new username: % is not USER: %; old: %',
+				'%.% study: % investigation: % covariate: % new username: % is not USER: %; old: %',
+				TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 				NEW.study_id::VARCHAR		/* Study */,
 				NEW.inv_id::VARCHAR		/* Investigation */,
 				NEW.covariate_name::VARCHAR	/* Covariate */,
@@ -183,7 +186,8 @@ BEGIN
 /*
 	ELSIF INSTR(NEW.username, '@PRIVATE.NET') = 0 THEN
 		PERFORM rif40_log_pkg.rif40_error(-20261, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % username: % is not a Kerberos USER: %',
+			'%.% study: % investigation: % covariate: % username: % is not a Kerberos USER: %',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR		/- Study -/,
 			NEW.inv_id::VARCHAR		/- Investigation -/,
 			NEW.covariate_name::VARCHAR	/- Covariate -/,
@@ -191,13 +195,15 @@ BEGIN
 			USER::VARCHAR			/- Logon username -/); */
 	ELSIF TG_OP = 'UPDATE' THEN
 		PERFORM rif40_log_pkg.rif40_error(-20262, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % UPDATE not allowed on T_RIF40_INV_COVARIATES',
+			'%.% study: % investigation: % covariate: % UPDATE not allowed',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR		/* Study */,
 			NEW.inv_id::VARCHAR		/* Investigation */,
 			NEW.covariate_name::VARCHAR	/* Covariate */);
 	ELSIF TG_OP = 'DELETE' AND OLD.username != USER THEN
 		PERFORM rif40_log_pkg.rif40_error(-20263, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % DELETE only allowed on own records in T_RIF40_INV_COVARIATES, record owned by: ',
+			'%.% study: % investigation: % covariate: % DELETE only allowed on own records, record owned by: ',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			OLD.study_id::VARCHAR		/* Study */,
 			OLD.inv_id::VARCHAR		/* Investigation */,
 			OLD.covariate_name::VARCHAR	/* Covariate */,
@@ -210,16 +216,18 @@ BEGIN
 	IF TG_OP = 'DELETE' THEN
 --
  	       PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_inv_covariates_checks',
-       			'[20600-3] T_RIF40_INV_COVARIATES study: % investigation: % covariate: % CRUD checks OK',
-			OLD.study_id::VARCHAR			/* Study id */,
-			OLD.inv_id::VARCHAR			/* Investigation */,
-			OLD.covariate_name::VARCHAR		/* Covariate */);
+       			'[20600-3] %.% study: % investigation: % covariate: % CRUD checks OK',
+				TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
+				OLD.study_id::VARCHAR			/* Study id */,
+				OLD.inv_id::VARCHAR			/* Investigation */,
+				OLD.covariate_name::VARCHAR		/* Covariate */);
 		RETURN OLD;
 	END IF;
 
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_inv_covariates_checks',
-		'[20600-3] T_RIF40_INV_COVARIATES study: % investigation: % covariate: % CRUD checks OK',
+		'[20600-3] %.% study: % investigation: % covariate: % CRUD checks OK',
+		TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 		NEW.study_id::VARCHAR			/* Study id */,
 		NEW.inv_id::VARCHAR			/* Investigation */,
 		NEW.covariate_name::VARCHAR		/* Covariate */);
@@ -234,7 +242,8 @@ BEGIN
 		IF NOT FOUND THEN
 			CLOSE c2_ckicov;
 			PERFORM rif40_log_pkg.rif40_error(-20264, 'trigger_fct_t_rif40_inv_covariates_checks',
-				'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % study area geolevel name: % not found in RIF40_GEOLEVELS',
+				'%.% study: % investigation: % covariate: % study area geolevel name: % not found in RIF40_GEOLEVELS',
+				TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,			
 				NEW.study_id::VARCHAR		/* Study */,
 				NEW.inv_id::VARCHAR		/* Investigation */,
 				NEW.covariate_name::VARCHAR	/* Covariate */,
@@ -266,7 +275,8 @@ BEGIN
 			IF NOT FOUND THEN
 				CLOSE c6_ckicov;
 				PERFORM rif40_log_pkg.rif40_error(-20364, 'trigger_fct_t_rif40_inv_covariates_checks',
-					'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % study area geolevel name: % not found in T_RIF40_STUDIES for study %',
+					'%.% study: % investigation: % covariate: % study area geolevel name: % not found in T_RIF40_STUDIES for study %',
+					TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 					NEW.study_id::VARCHAR		/* Study */,
 					NEW.inv_id::VARCHAR		/* Investigation */,
 					NEW.covariate_name::VARCHAR	/* Covariate */,
@@ -274,7 +284,8 @@ BEGIN
 					currval('rif40_study_id_seq'::regclass)::VARCHAR	/* Covariate geolevel_id */);
 			ELSIF c2b_rec.geolevel_id = c6_rec.geolevel_id THEN
 				PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_inv_covariates_checks',
-					'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % study area geolevel name: % (id %) same as geolevel in T_RIF40_STUDIES for study %',
+					'%.% study: % investigation: % covariate: % study area geolevel name: % (id %) same as geolevel in T_RIF40_STUDIES for study %',
+					TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 					NEW.study_id::VARCHAR		/* Study */,
 					NEW.inv_id::VARCHAR		/* Investigation */,
 					NEW.covariate_name::VARCHAR	/* Covariate */,
@@ -283,7 +294,8 @@ BEGIN
 					currval('rif40_study_id_seq'::regclass)::VARCHAR);
 			ELSIF c2b_rec.geolevel_id = c6_rec.geolevel_id THEN
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'trigger_fct_t_rif40_inv_covariates_checks',
-					'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % study area geolevel name: % (id %) higher resolution than geolevel in T_RIF40_STUDIES for study % geolevel (id %) [NOT CURRENTLY SUPPORTED]',
+					'%.% study: % investigation: % covariate: % study area geolevel name: % (id %) higher resolution than geolevel in T_RIF40_STUDIES for study % geolevel (id %) [NOT CURRENTLY SUPPORTED]',
+					TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 					NEW.study_id::VARCHAR		/* Study */,
 					NEW.inv_id::VARCHAR		/* Investigation */,
 					NEW.covariate_name::VARCHAR	/* Covariate */,
@@ -294,7 +306,8 @@ BEGIN
 					c6_rec.geolevel_id::VARCHAR	/* Study geolevel_id */);
 			ELSE
 				PERFORM rif40_log_pkg.rif40_error(-20365, 'trigger_fct_t_rif40_inv_covariates_checks',
-					'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % study area geolevel name: % (id %) lower resolution than geolevel in T_RIF40_STUDIES for study % geolevel (id %) [NOT CURRENTLY SUPPORTED]',
+					'%.% study: % investigation: % covariate: % study area geolevel name: % (id %) lower resolution than geolevel in T_RIF40_STUDIES for study % geolevel (id %) [NOT CURRENTLY SUPPORTED]',
+					TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 					NEW.study_id::VARCHAR		/* Study */,
 					NEW.inv_id::VARCHAR		/* Investigation */,
 					NEW.covariate_name::VARCHAR	/* Covariate */,
@@ -317,7 +330,8 @@ BEGIN
 	IF NOT FOUND THEN
 		CLOSE c1_ckicov;
 		PERFORM rif40_log_pkg.rif40_error(-20265, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'T_RIF40_INV_COVARIATES study: % investigation: % no % covariate: % found for study area geolevel name: %',
+			'%.% study: % investigation: % no % covariate: % found for study area geolevel name: %',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR		/* Study */,
 			NEW.inv_id::VARCHAR		/* Investigation */,
 			NEW.covariate_name::VARCHAR	/* Covariate */,
@@ -329,7 +343,8 @@ BEGIN
 --
 	IF NEW.min < c1_rec.min THEN
 		PERFORM rif40_log_pkg.rif40_error(-20266, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate: min (%) < RIF40_COVARIATES min (%) for study area geolevel name: ',
+			'%.% study: % investigation: % covariate: % covariate: min (%) < RIF40_COVARIATES min (%) for study area geolevel name: ',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR		/* Study */,
 			NEW.inv_id::VARCHAR		/* Investigation */,
 			NEW.covariate_name::VARCHAR	/* Covariate */,
@@ -338,7 +353,8 @@ BEGIN
 			NEW.study_geolevel_name::VARCHAR /* Study geolevel */);
 	ELSIF NEW.max > c1_rec.max THEN
 		PERFORM rif40_log_pkg.rif40_error(-20267, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate: max (%) > RIF40_COVARIATES max (%) for study area geolevel name: ',
+			'%.% study: % investigation: % covariate: % covariate: max (%) > RIF40_COVARIATES max (%) for study area geolevel name: ',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR		/* Study */,
 			NEW.inv_id::VARCHAR		/* Investigation */,
 			NEW.covariate_name::VARCHAR	/* Covariate */,
@@ -350,35 +366,40 @@ BEGIN
 --
 	ELSIF c1_rec.type = 2 THEN
 		PERFORM rif40_log_pkg.rif40_error(-20268, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'Error: T_RIF40_INV_COVARIATES study: % type = 2 (continuous variable) is not currently supported for geolevel_name: % covariate: %',
+			'Error: %.% study: % type = 2 (continuous variable) is not currently supported for geolevel_name: % covariate: %',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.study_geolevel_name::VARCHAR	/* Study geolevel */,
 			NEW.covariate_name::VARCHAR		/* Covariate name */);
 
 	ELSIF c1_rec.type = 1 AND ROUND(NEW.max) != NEW.max THEN /* integer score */
 		PERFORM rif40_log_pkg.rif40_error(-20269, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'Error: T_RIF40_INV_COVARIATES study: % type = 1 (integer score) and max is not an integer: % for geolevel_name: % covariate: %',
+			'Error: %.% study: % type = 1 (integer score) and max is not an integer: % for geolevel_name: % covariate: %',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.max::VARCHAR			/* New max */,
 			NEW.study_geolevel_name::VARCHAR	/* Study geolevel */,
 			NEW.covariate_name::VARCHAR		/* Covariate name */);
 	ELSIF c1_rec.type = 1 AND ROUND(NEW.min) != NEW.min THEN /* integer score */
 		PERFORM rif40_log_pkg.rif40_error(-20270, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'Error: T_RIF40_INV_COVARIATES study: % type = 1 (integer score) and min is not an integer: % for geolevel_name: % covariate: %',
+			'Error: %.% study: % type = 1 (integer score) and min is not an integer: % for geolevel_name: % covariate: %',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.min::VARCHAR			/* New min */,
 			NEW.study_geolevel_name::VARCHAR	/*Study geolevel */,
 			NEW.covariate_name::VARCHAR		/* Covariate name */);
 	ELSIF c1_rec.type = 1 AND NEW.min < 0 THEN /* integer score */
 		PERFORM rif40_log_pkg.rif40_error(-20271, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'Error: T_RIF40_INV_COVARIATES study: % type = 1 (integer score) and min <0: % for geolevel_name: % covariate: %',
+			'Error: %.% study: % type = 1 (integer score) and min <0: % for geolevel_name: % covariate: %',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.min::VARCHAR			/* New min */,
 			NEW.study_geolevel_name::VARCHAR	/* Study geolevel */,
 			NEW.covariate_name::VARCHAR		/* Covariate name */);
 	END IF;
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_inv_covariates_checks',
-			'[20266-71] T_RIF40_INV_COVARIATES study: % investigation: % covariate: % max/in checks OK',
+			'[20266-71] %.% study: % investigation: % covariate: % max/in checks OK',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.inv_id::VARCHAR			/* Investigation */,
 			NEW.covariate_name::VARCHAR		/* Covariate */);
@@ -389,7 +410,8 @@ BEGIN
 	owner:=rif40_sql_pkg.rif40_object_resolve(c2b_rec.covariate_table::VARCHAR);
 	IF coalesce(owner::text, '') = '' THEN
 		PERFORM rif40_log_pkg.rif40_error(-20272, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate table: % cannot be accessed',
+			'%.% study: % investigation: % covariate: % covariate table: % cannot be accessed',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.inv_id::VARCHAR			/* Investigation */,
 			NEW.covariate_name::VARCHAR		/* Covariate */,
@@ -400,7 +422,8 @@ BEGIN
 	IF NOT FOUND THEN
 		CLOSE c3_ckicov;
 		PERFORM rif40_log_pkg.rif40_error(-20273, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate table column: %.%.% cannot be accessed',
+			'%.% study: % investigation: % covariate: % covariate table column: %.%.% cannot be accessed',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.inv_id::VARCHAR			/* Investigation */,
 			NEW.covariate_name::VARCHAR		/* Covariate */,
@@ -409,7 +432,8 @@ BEGIN
 			NEW.covariate_name::VARCHAR		/* Covariate column */);
 	ELSE	
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_inv_covariates_checks',
-			'[20272-3] T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate table column: %.%.% can be accessed',
+			'[20272-3] %.% study: % investigation: % covariate: % covariate table column: %.%.% can be accessed',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.inv_id::VARCHAR			/* Investigation */,
 			NEW.covariate_name::VARCHAR		/* Covariate */,
@@ -424,7 +448,8 @@ BEGIN
 	IF NOT FOUND THEN
 		CLOSE c3_ckicov;
 		PERFORM rif40_log_pkg.rif40_error(-20274, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate table column: %.%.YEAR cannot be accessed',
+			'%.% study: % investigation: % covariate: % covariate table column: %.%.YEAR cannot be accessed',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.inv_id::VARCHAR			/* Investigation */,
 			NEW.covariate_name::VARCHAR		/* Covariate */,
@@ -432,7 +457,8 @@ BEGIN
 			c2b_rec.covariate_table::VARCHAR	/* Covariate table */);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_inv_covariates_checks',
-			'[20274] T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate table column: %.%.YEAR can be accessed',
+			'[20274] %.% study: % investigation: % covariate: % covariate table column: %.%.YEAR can be accessed',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.inv_id::VARCHAR			/* Investigation */,
 			NEW.covariate_name::VARCHAR		/* Covariate */,
@@ -445,7 +471,8 @@ BEGIN
 	IF NOT FOUND THEN
 		CLOSE c3_ckicov;
 		PERFORM rif40_log_pkg.rif40_error(-20275, 'trigger_fct_t_rif40_inv_covariates_checks',
-			'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate table column: %.%.% cannot be accessed',
+			'%.% study: % investigation: % covariate: % covariate table column: %.%.% cannot be accessed',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.inv_id::VARCHAR			/* Investigation */,
 			NEW.covariate_name::VARCHAR		/* Covariate */,
@@ -454,7 +481,8 @@ BEGIN
 			NEW.study_geolevel_name::VARCHAR 	/* Study geolevel column */);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_t_rif40_inv_covariates_checks',
-			'[20275] T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate table column: %.%.% can be accessed',
+			'[20275] %.% study: % investigation: % covariate: % covariate table column: %.%.% can be accessed',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR			/* Study */,
 			NEW.inv_id::VARCHAR			/* Investigation */,
 			NEW.covariate_name::VARCHAR		/* Covariate */,
@@ -483,7 +511,8 @@ BEGIN
 		EXCEPTION
 			WHEN others THEN
 				PERFORM rif40_log_pkg.rif40_error(-20276, 'trigger_fct_t_rif40_inv_covariates_checks',
-					'T_RIF40_INV_COVARIATES Caught % for study: % investigation: % covariate: % covariate table column: %.%.% min value: %; SQL %',
+					'%.% Caught % for study: % investigation: % covariate: % covariate table column: %.%.% min value: %; SQL %',
+					TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 					sqlerrm::VARCHAR			/* Error message */,
 					NEW.study_id::VARCHAR			/* Study */,
 					NEW.inv_id::VARCHAR			/* Investigation */,
@@ -497,7 +526,8 @@ BEGIN
 --
 		IF total = 0 THEN
 			PERFORM rif40_log_pkg.rif40_error(-20277, 'trigger_fct_t_rif40_inv_covariates_checks',
-				'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate table column: %.%.% min value: % not found',
+				'%.% study: % investigation: % covariate: % covariate table column: %.%.% min value: % not found',
+				TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 				NEW.study_id::VARCHAR			/* Study */,
 				NEW.inv_id::VARCHAR			/* Investigation */,
 				NEW.covariate_name::VARCHAR		/* Covariate */,
@@ -513,7 +543,8 @@ BEGIN
 		EXCEPTION
 			WHEN others THEN
 				PERFORM rif40_log_pkg.rif40_error(-20278, 'trigger_fct_t_rif40_inv_covariates_checks',
-					'T_RIF40_INV_COVARIATES Caught % for study: % investigation: % covariate: % covariate table column: %.%.% max value: %; SQL %',
+					'%.% Caught % for study: % investigation: % covariate: % covariate table column: %.%.% max value: %; SQL %',
+					TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 					sqlerrm::VARCHAR			/* Error message */,
 					NEW.study_id::VARCHAR			/* Study */,
 					NEW.inv_id::VARCHAR			/* Investigation */,
@@ -526,7 +557,8 @@ BEGIN
 		END;
 		IF total = 0 THEN
 			PERFORM rif40_log_pkg.rif40_error(-20279, 'trigger_fct_t_rif40_inv_covariates_checks',
-				'T_RIF40_INV_COVARIATES study: % investigation: % covariate: % covariate table column: %.%.% max value: % not found',
+				'%.% study: % investigation: % covariate: % covariate table column: %.%.% max value: % not found',
+				TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 				NEW.study_id::VARCHAR			/* Study */,
 				NEW.inv_id::VARCHAR			/* Investigation */,
 				NEW.covariate_name::VARCHAR		/* Covariate */,

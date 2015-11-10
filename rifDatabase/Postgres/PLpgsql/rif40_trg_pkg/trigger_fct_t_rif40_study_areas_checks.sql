@@ -109,7 +109,8 @@ BEGIN
 --
 	IF TG_OP = 'UPDATE' AND COALESCE(NEW.study_id::Text, '') != COALESCE(OLD.study_id::Text, '') THEN
 		PERFORM rif40_log_pkg.rif40_error(-20284, 'trigger_fct_t_rif40_study_areas_checks', 
-			'T_RIF40_STUDY_AREAS study id may not be changed: %=>%',
+			'%.% study id may not be changed: %=>%',	
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			OLD.study_id::VARCHAR	/* Study id */,	
 			NEW.study_id::VARCHAR	/* Study id */);
 	END IF;
@@ -128,7 +129,8 @@ BEGIN
 			NULL;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_error(-20280,  'trigger_fct_t_rif40_study_areas_checks',
-				'T_RIF40_STUDY_AREAS study: % area_id: % band_id: % username: % is not USER: %',
+				'%.% study: % area_id: % band_id: % username: % is not USER: %',
+				TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 				NEW.study_id::VARCHAR		/* Study id */,
 				NEW.area_id::VARCHAR		/* Area */,
 			 	NEW.band_id::VARCHAR		/* Band */,
@@ -137,7 +139,8 @@ BEGIN
 		END IF;
 /*	ELSIF INSTR(NEW.username, '@PRIVATE.NET') = 0 THEN
 		PERFORM rif40_log_pkg.rif40_error(-20281,  't_rif40_study_areas_checks',
-			'T_RIF40_STUDY_AREAS study: % area_id: % band_id: % username: % is not a Kerberos USER: %',
+			'%.% study: % area_id: % band_id: % username: % is not a Kerberos USER: %',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,		
 			NEW.study_id::VARCHAR		/- Study id -/,
 			NEW.area_id::VARCHAR		/- Area -/,
 			NEW.band_id::VARCHAR		/- Band -/,
@@ -145,12 +148,13 @@ BEGIN
 			USER::VARCHAR			/- Logon username -/); */
 	ELSIF TG_OP = 'UPDATE' THEN
 		PERFORM rif40_log_pkg.rif40_error(-20282,  'trigger_fct_t_rif40_study_areas_checks',
-			'T_RIF40_STUDY_AREAS UPDATE study: % area_id: % band_id: % not allowed on T_RIF40_STUDY_AREAS',
+			'%.% UPDATE study: % area_id: % band_id: % not allowed',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,			
 			NEW.study_id::VARCHAR		/* Study id */);
 	ELSIF TG_OP = 'DELETE' AND OLD.username != USER THEN
 		PERFORM rif40_log_pkg.rif40_error(-20283,  'trigger_fct_t_rif40_study_areas_checks',
-			'T_RIF40_STUDY_AREAS DELETE study: % area_id: % band_id: % only allowed on own records in T_RIF40_STUDY_AREAS, record owned by: %',
-			OLD.study_id::VARCHAR		/* Study id */,
+			'%.% DELETE study: % area_id: % band_id: % only allowed on own records, record owned by: %',	
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,OLD.study_id::VARCHAR		/* Study id */,
 			OLD.area_id::VARCHAR		/* Area */,
 			OLD.band_id::VARCHAR		/* Band */,
 			OLD.username::VARCHAR		/* INSERT username */);
@@ -160,7 +164,8 @@ BEGIN
 	IF TG_OP = 'DELETE' THEN
 --
 --		PERFORM rif40_log_pkg.rif40_log('DEBUG4', 'trigger_fct_t_rif40_study_areas_checks',
---	     	 	'[20280-3] T_RIF40_STUDY_AREAS study: % area_id: % band_id % CRUD checks OK',
+--	     	 	'[20280-3] %.% study: % area_id: % band_id % CRUD checks OK',
+--			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 --			OLD.study_id::VARCHAR		/* Study id */,
 --			OLD.area_id::VARCHAR		/* Area */,
 --		 	OLD.band_id::VARCHAR		/* Band */);
@@ -169,7 +174,8 @@ BEGIN
 	ELSE  	
 --
 --		PERFORM rif40_log_pkg.rif40_log('DEBUG4', 'trigger_fct_t_rif40_study_areas_checks',
---			'[20280-3] T_RIF40_STUDY_AREAS study: % area_id: % band_id % CRUD checks OK',
+--			'[20280-3] %.% study: % area_id: % band_id % CRUD checks OK',
+--			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 --			NEW.study_id::VARCHAR		/* Study id */,
 --			NEW.area_id::VARCHAR		/* Area */,
 --		 	NEW.band_id::VARCHAR		/* Band */);

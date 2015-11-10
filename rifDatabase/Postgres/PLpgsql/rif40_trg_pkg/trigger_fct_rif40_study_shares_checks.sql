@@ -205,7 +205,8 @@ BEGIN
 --
 	IF TG_OP = 'UPDATE' AND COALESCE(NEW.study_id::Text, '') != COALESCE(OLD.study_id::Text, '') THEN
 		PERFORM rif40_log_pkg.rif40_error(-20324, 'trigger_fct_rif40_study_shares_checks', 
-			'RIF40_STUDY_SHARES study id may not be changed: %=>%',
+			'%.% study id may not be changed: %=>%',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,			
 			OLD.study_id::VARCHAR	/* Study id */,	
 			NEW.study_id::VARCHAR	/* Study id */);
 	END IF;
@@ -220,33 +221,39 @@ BEGIN
 
 	IF NOT TG_OP = 'DELETE' AND USER = 'rif40' AND c4stsh_rec.total = 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'trigger_fct_rif40_study_shares_checks', 
-			'[20320] RIF40_STUDY_SHARES study % username: %: allowed duing build before first result is added to system',
+			'[20320] %.% study % username: %: allowed duing build before first result is added to system',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR	/* Study id */,
 			USER::VARCHAR 		/* User */);
 	ELSIF NOT TG_OP = 'DELETE' AND NEW.grantor != USER AND NOT pg_has_role(USER, 'rif_manager', 'USAGE') /* Not granted RIF_MANAGER */ THEN
 		PERFORM rif40_log_pkg.rif40_error(-20320, 'trigger_fct_rif40_study_shares_checks', 
-			'RIF40_STUDY_SHARES study_id: % grantor username: % is not USER: % or a RIF40_MANAGER',
+			'%.% study_id: % grantor username: % is not USER: % or a RIF40_MANAGER',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR		/* Study id */,
 			NEW.grantor::VARCHAR		/* Grantor */,
 			USER::VARCHAR			/* User */);
 	ELSIF USER != 'rif40' AND NOT (pg_has_role(USER, 'rif_user', 'USAGE') AND pg_has_role(USER, 'rif_manager', 'USAGE')) THEN
 		PERFORM rif40_log_pkg.rif40_error(-20321, 'trigger_fct_rif40_study_shares_checks', 
-			'RIF40_STUDY_SHARES study_id: % username: % is not a RIF USER',
+			'%.% study_id: % username: % is not a RIF USER',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR	/* Study id */,
 			USER::VARCHAR			/* User */);
 /* Kerberos checks no longer possible 
 		PERFORM rif40_log_pkg.rif40_error(-20321, 'rif40_study_shares_checks', 
-			'RIF40_STUDY_SHARES study_id: % grantor username: % is not a Kerberos USER: %',
+			'%.% study_id: % grantor username: % is not a Kerberos USER: %',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id::VARCHAR		-* Study id *-,
 			NEW.grantor::VARCHAR		-* Grantor *-,
 			USER::VARCHAR			-* User *-);  */
 	ELSIF TG_OP = 'UPDATE' THEN
 		PERFORM rif40_log_pkg.rif40_error(-20322, 'trigger_fct_rif40_study_shares_checks', 
-			'RIF40_STUDY_SHARES study_id: % UPDATE not allowed on RIF40_STUDY_SHARES',
+			'%.% study_id: % UPDATE not allowed',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			NEW.study_id		/* Study id */);
 	ELSIF TG_OP = 'DELETE' AND OLD.grantor != USER AND NOT pg_has_role(USER, 'rif_manager', 'USAGE') /* Not granted RIF_MANAGER */ THEN
 		PERFORM rif40_log_pkg.rif40_error(-20323, 'trigger_fct_rif40_study_shares_checks', 
-			'RIF40_STUDY_SHARES study_id: % DELETE only allowed on own records or by RIF40_MANAGER in RIF40_STUDY_SHARES, record owned by: %',
+			'%.% study_id: % DELETE only allowed on own records or by RIF40_MANAGER, record owned by: %',
+			TG_TABLE_SCHEMA::VARCHAR, TG_TABLE_NAME::VARCHAR,
 			OLD.study_id::VARCHAR		/* Study id */,
 			OLD.grantor::VARCHAR		/* INSERTER */);
 	END IF;

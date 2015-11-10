@@ -693,6 +693,8 @@ DECLARE
 	v_context			VARCHAR;	
 	v_detail 			VARCHAR;
 	v_message_text		VARCHAR;
+--
+	start_nextval		INTEGER:=0;
 BEGIN
 --
 -- Check if any studies exist; only run this section of code if study_id 1 has already been created. This occurs 
@@ -703,8 +705,8 @@ BEGIN
 	OPEN c3sm;
 	FETCH c3sm INTO c3sm_rec;
 	CLOSE c3sm;	
-	IF c3sm_rec.total > 0 THEN
-		RAISE INFO 'v4_0_alter_4.sql: total studies: %; not running study test code', c3sm_rec.total;
+	IF c3sm_rec.total = 0 THEN
+		RAISE INFO 'v4_0_alter_4.sql: total studies: %; running study test code', c3sm_rec.total;
 		RETURN;
 	END IF;
 --
@@ -726,6 +728,7 @@ BEGIN
 	CLOSE c2sm;	
 --
 	RAISE INFO 'v4_0_alter_4.sql: Create new test study';
+	start_nextval:=nextval('rif40_study_id_seq'::regclass)+1;
 	PERFORM rif40_sm_pkg.rif40_create_disease_mapping_example(
 		'SAHSU'::VARCHAR 			/* Geography */,
 		'LEVEL1'::VARCHAR			/* Geolevel view */,
@@ -743,6 +746,7 @@ BEGIN
 											outcome_group_name, min_condition, max_condition, predefined_group_name */,
 		investigation_desc_array 	/* investigation description array */,
 		covariate_array				/* covariate array */);	
+		
 --
 -- Test partition movement is disallowed; or you will get a record in the wrong partition 
 -- (there is no code to move the record)
@@ -859,17 +863,18 @@ BEGIN
 					v_sqlstate, v_detail, v_message_text;
 			END IF;
 	END;	
+	RAISE INFO 'Nextval - start; %, now: %', start_nextval, currval('rif40_study_id_seq'::regclass);
 END;
 $$;
 
 ROLLBACK TO SAVEPOINT rif40_studies_insert_test;	
 
---DO LANGUAGE plpgsql $$
---BEGIN
---	RAISE INFO 'v4_0_alter_4.sql: Aborting (script being tested)';
---	RAISE EXCEPTION 'v4_0_alter_4.sql: C20999: Abort';
---END;
---$$;
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE INFO 'v4_0_alter_4.sql: Aborting (script being tested)';
+	RAISE EXCEPTION 'v4_0_alter_4.sql: C20999: Abort';
+END;
+$$;
 
 END;
 
