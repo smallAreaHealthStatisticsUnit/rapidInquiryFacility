@@ -6,7 +6,7 @@ No milestones.
 
 ## Data Loader - Kevin
   
-* Kevin working on other projects
+* Kevin working on other projects until 16/11/2015.
   
 ## Front end (webPlatform)
 

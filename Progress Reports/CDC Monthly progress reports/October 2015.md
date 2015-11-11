@@ -18,7 +18,12 @@ The data viewer prototype is currently frozen until it can be integrated into th
 
 ## Middleware
 
-### Web services (rifServices). 
+### Web services (rifServices) - Nan
+
+Try to build RIF middleware. Modify the pom.xml under rifServices directory: in the dependency section about javax.servlet, add scope attribute 
+with the value ‘provided’. The package has been deployed on to a Tomcat 8 server, the start page and the user login procedure work fine.
+
+A full report is at:  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Nan%20Lin.md
 
 ### Run study batch - Nan
 
@@ -26,7 +31,7 @@ No progress, waiting Peter.
 
 ### Ontology support - Nan
 
-A full report is at:  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Nan%20Lin.md
+No progress until a new Javascript developer is hired.
 
 ## Databases
 

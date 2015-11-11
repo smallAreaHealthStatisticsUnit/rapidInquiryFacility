@@ -23,11 +23,19 @@ The data viewer prototype is currently frozen until it can be integrated into th
    
 ### Web services (rifServices). 
 
+No progress.
+
 ### Run study batch - Nan
 
 No progress, waiting Peter.
 
 ### Ontology support - Nan
+
+Wrap ICD10ClaMLTaxonomyProvider class developed last month into Jersey, exposing the work-alone service as a RESTful web service. 
+
+The methodology follows the MVC convention: ICD10ClaMLTaxonomyProvider works as the controller, borrowed class HealthCode, TaxonomyTerm (from RIF) as the model, borrowed class HealthCodeProxy and WebServiceResponseGenerator (from RIF) as the view. 
+
+The project is managed by maven, which uses the latest version of Jersey and Jackson. The package has been deployed on a Tomcat 8 container, it returns expected results when URLs have different combinations of parameters. 
 
 A full report is at:  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Nan%20Lin.md
 

@@ -16,7 +16,30 @@ No milestones.
 
 The data viewer prototype is currently frozen until it can be integrated into the Middleware.
 
-## Middleware
+## Middleware - Nan
+
+Building demonstration systems for the visit to the CDC in Atlanta showed that the middleware would not build and install correctly in Tomcat; the process 
+had to be carried out manually using Eclipse. The following tasks were allocated to Nan:
+
+* Fix pom.xml (Java Maven build configuration) so that the Tomcat rif-services.war file is built correctly;
+* Upgrade webservices interface to latest Jersey version.
+
+Currently, integration is via make and copy; Tomcat automatically unpacks the rif-services.war file. If this fails this is logged into <log directory; e.g. /var/log/tomcat6 on Linux>/catalina.<date>.log.
+This potentially could be improved by using the Tomcat Client Deployer package.
+
+Java updates are also a problem as the Tomcat configuration needs to be edited.
+
+Additionally, the web services themselves need to be manually verified as working in the middleware; as it is possible for:
+
+a) The rif-services.war file unpack but the services fails to start (normally a pom.xml issue). 
+b) RIf services starts but one or more services fail. i.e. RIF services needs regression testing.  
+ 
+Download RIF 4.0 from Github on a laptop, try to build the database (Postgres version) by following Peter’s online documents.
+
+The long process encounters errors, the bugs have been reported to Peter. Accordingly, Peter modifies the code and text in the documentation. 
+Finally, the database is installed successfully. (However, make provided by MinGW sometimes cannot work when Windows installs the latest updates.)
+
+A full report is at:  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Nan%20Lin.md
 
 ### Web services (rifServices). 
 
@@ -26,7 +49,6 @@ No progress, waiting Peter.
 
 ### Ontology support - Nan
 
-A full report is at:  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Nan%20Lin.md
 
 ## Databases
 
