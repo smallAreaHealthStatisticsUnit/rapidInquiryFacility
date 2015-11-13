@@ -72,6 +72,8 @@ Returns:	Nothing
 Description:	Automatic range partition schema.table on column
 		Completion tasks
 
+* If table has PRE-INSERT/UPDATE/DELETE triggers; disable [to stop them being executed twice]
+ 
 * If table is a numerator, cluster each partition (not the master table)
 
 CLUSTER VERBOSE rif40.sahsuland_pop_1989 USING sahsuland_pop_1989_pk;
@@ -132,10 +134,29 @@ DECLARE
 		   AND nmsp_child.oid        = child.relnamespace
 	       	   AND parent.relname        = l_table 
 		   AND nmsp_parent.nspname   = l_schema;
+	c6gangep CURSOR(l_schema VARCHAR, l_table VARCHAR) FOR 
+		WITH a AS (	
+			SELECT t.tgname, cl.relname AS table_name, cl.relnamespace AS table_namespace, p.proname, p.pronamespace	
+			  FROM pg_trigger t
+				LEFT OUTER JOIN pg_class cl ON (t.tgrelid = cl.oid)
+				LEFT OUTER JOIN pg_constraint con ON (con.oid = t.tgconstraint)
+				LEFT OUTER JOIN pg_proc p ON (p.oid = t.tgfoid)
+			 WHERE NOT t.tgisinternal 		/* Not internally generated */
+			   AND t.tgenabled = 'O' 		/* Origin and local mode; i.e. not a replica */
+			   AND con.conname IS NULL 		/* No  associated contraints */
+		)
+		SELECT a.tgname, a.table_name, ns.nspname AS schema_name, ns2.nspname AS pro_schema, a.proname,
+			   'ALTER TABLE '||ns.nspname||'.'||a.table_name||' DISABLE TRIGGER '||a.tgname AS sql_stmt
+		  FROM a
+				LEFT OUTER JOIN pg_namespace ns ON (a.table_namespace = ns.oid)
+				LEFT OUTER JOIN pg_namespace ns2 ON (a.pronamespace = ns2.oid)		
+		  WHERE ns.nspname   = l_schema
+			AND a.table_name = l_table;		   
 --	
 	c3a_rec 	RECORD;
 	c4_rec 		RECORD;
 	c5_rec 		RECORD;
+	c6_rec 		RECORD;
 --
 	ddl_stmt	VARCHAR[];
 	i 		INTEGER:=1;
@@ -148,6 +169,20 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_create_insert', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;
+--
+-- If table has PRE-INSERT/UPDATE/DELETE triggers; disable [to stop them being executed twice]
+--	
+	FOR c6_rec IN c6gangep(l_schema, l_table) LOOP
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_common_partition_create_complete', 
+			'Trigger disable: % on: %.% %SQL> %;', 
+			c6_rec.tgname::VARCHAR, 
+			c6_rec.schema_name::VARCHAR, 
+			c6_rec.table_name::VARCHAR, E'\n', 
+			c6_rec.sql_stmt::VARCHAR);
+		ddl_stmt[i]:=c6_rec.sql_stmt;
+		i:=i+1;
+	END LOOP;
+		
 --
 -- If table is a numerator, cluster
 --
@@ -226,6 +261,7 @@ Returns:	Nothing
 Description:	Automatic range partition schema.table on column
 		Completion tasks
 
+* If table has PRE-INSERT/UPDATE/DELETE triggers; disable [to stop them being executed twice]
 * If table is a numerator, cluster each partition (not the master table)
 * Re-anaylse';
 

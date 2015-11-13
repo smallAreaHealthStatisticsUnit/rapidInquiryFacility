@@ -869,12 +869,13 @@ $$;
 
 ROLLBACK TO SAVEPOINT rif40_studies_insert_test;	
 
-DO LANGUAGE plpgsql $$
-BEGIN
-	RAISE INFO 'v4_0_alter_4.sql: Aborting (script being tested)';
-	RAISE EXCEPTION 'v4_0_alter_4.sql: C20999: Abort';
-END;
-$$;
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE INFO 'v4_0_alter_4.sql: Aborting (script being tested)';
+--	RAISE EXCEPTION 'v4_0_alter_4.sql: C20999: Abort';
+--END;
+--$$;
+
 /*
 --
 -- Reset sequences

@@ -222,9 +222,9 @@ Test harness refactor; Node.js version working
  
 #### 9th November to 21st November
 
-* Testing confirmed susecpted double execution of triggers. Triggers to be disabled at the master level
-* Sequence NEXTVAL is only calling once for master and partition; the lack of test 1 is caused by a logic fault in alter 4
-* Add check constraints for partition value
+* Testing confirmed susecpted double execution of triggers. Triggers were disabled at the master level
+* Sequence NEXTVAL is only calling once for master and partition; the lack of test 1 is caused by a logic fault in alter 4. Fixed
+* Add check constraints for partition value; this was not needed as done already
 
 From January 2016: 
 
@@ -274,4 +274,4 @@ To do
 
 Bugs
 
- * alter 4 causes test 4 to fail because study 1 is never created.
+None outstanding.

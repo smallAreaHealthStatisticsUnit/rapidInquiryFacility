@@ -519,8 +519,9 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg.rif40_hash_partition(VARCHAR, VARCHAR, VAR
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create(l_schema character varying, master_table character varying, partition_table character varying, l_column character varying, l_value integer, num_partitions integer);
 
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create(
-	 	VARCHAR, VARCHAR, VARCHAR, VARCHAR, INTEGER, INTEGER, VARCHAR[]);
+-- OLD
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create(character varying, character varying, character varying, character varying, integer, integer, character varying[]);
 		
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, integer, integer, OUT ddl_stmt character varying[], OUT index_name character varying);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_hash_partition_create_insert(VARCHAR, VARCHAR, VARCHAR, VARCHAR, integer, integer, OUT ddl_stmt character varying[], OUT index_name character varying);
@@ -531,7 +532,6 @@ DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_drop_master_trigger(l_schema charac
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(l_schema character varying, l_table character varying, l_column character varying, enable_or_disable character varying, OUT ddl_stmt character varying[]);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_triggers(l_schema VARCHAR, l_table VARCHAR, l_column VARCHAR, 
 	enable_or_disable VARCHAR, partition_schema VARCHAR, OUT ddl_stmt VARCHAR[]);
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create(l_schema character varying, master_table character varying, partition_table character varying, l_column character varying, l_value character varying);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, INTEGER, 
 	OUT VARCHAR[], OUT VARCHAR[], OUT VARCHAR[], OUT INTEGER, OUT INTEGER, OUT INTEGER);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create_setup(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[], INTEGER, 

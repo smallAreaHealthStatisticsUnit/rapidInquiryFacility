@@ -414,7 +414,7 @@ BEGIN
 		ddl_stmt[array_length(ddl_stmt, 1)+1]:='SELECT rif40_log_pkg.rif40_add_to_debug('''||quote_ident(l_table||'_insert')||':DEBUG1'')';
 	END IF;
 -- 
--- Add trigger to existing table
+-- Add PRE-INSERT trigger to existing table to partition data. Does NOT handle movement(you would need a post update trigger)!
 --
 	ddl_stmt[array_length(ddl_stmt, 1)+1]:='CREATE TRIGGER '||quote_ident(l_table||'_insert')||E'\n'||
 '  BEFORE INSERT ON '||quote_ident(l_schema)||'.'||quote_ident(l_table)||E'\n'||

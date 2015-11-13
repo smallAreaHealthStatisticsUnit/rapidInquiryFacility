@@ -61,17 +61,17 @@ BEGIN
 END;
 $$;
 
-DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]);
-
+-- OLD
+DROP FUNCTION IF EXISTS rif40_sql_pkg._rif40_common_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR);
 
 CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_common_partition_create(
-	l_schema 	VARCHAR, 
+	l_schema 		VARCHAR, 
 	master_table 	VARCHAR, 
 	partition_table VARCHAR, 
-	l_column	VARCHAR, 
-	l_value		VARCHAR,
-	l_table_list VARCHAR[])
+	l_column		VARCHAR, 
+	l_value			VARCHAR,
+	l_table_list 	VARCHAR[])
 RETURNS void
 SECURITY DEFINER
 AS $func$
@@ -95,9 +95,9 @@ Generates the following SQL to:
 
 Generates the following SQL>
 
-GRANT SELECT ON rif40.sahsuland_cancer_1990 TO rif_manager;
-GRANT SELECT ON rif40.sahsuland_cancer_1990 TO rif_user;
-GRANT UPDATE, DELETE, INSERT, REFERENCES, TRIGGER, TRUNCATE, SELECT ON rif40.sahsuland_cancer_1990 TO rif40 WITH GRANT OPTION;
+GRANT SELECT ON rif40.sahsuland_cancer_1989 TO rif_manager;
+GRANT SELECT ON rif40.sahsuland_cancer_1989 TO rif_user;
+GRANT UPDATE, DELETE, INSERT, REFERENCES, TRIGGER, TRUNCATE, SELECT ON rif40.sahsuland_cancer_1989 TO rif40 WITH GRANT OPTION;
 COMMENT ON TABLE sahsuland_cancer_1989 IS 'Range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer';
 COMMENT ON COLUMN sahsuland_cancer_1989.age_sex_group IS'Age sex group';
 COMMENT ON COLUMN sahsuland_cancer_1989.icd IS 'ICD';
@@ -323,6 +323,7 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_error(-20999, '_rif40_common_partition_create', 'User % must be rif40 or have rif_user or rif_manager role', 
 			USER::VARCHAR);
 	END IF;
+		
 --
 -- Table and column comments
 --
@@ -642,9 +643,10 @@ Generates the following SQL to:
 
 Generates the following SQL>
 
-GRANT SELECT ON rif40.sahsuland_cancer_1990 TO rif_manager;
-GRANT SELECT ON rif40.sahsuland_cancer_1990 TO rif_user;
-GRANT UPDATE, DELETE, INSERT, REFERENCES, TRIGGER, TRUNCATE, SELECT ON rif40.sahsuland_cancer_1990 TO rif40 WITH GRANT OPTION;
+ALTER TABLE sahsuland_cancer_1989 ADD CONSTRAINT sahsuland_cancer_1989_year_partck CHECK(year::Text=''1989'');
+GRANT SELECT ON rif40.sahsuland_cancer_1989 TO rif_manager;
+GRANT SELECT ON rif40.sahsuland_cancer_1989 TO rif_user;
+GRANT UPDATE, DELETE, INSERT, REFERENCES, TRIGGER, TRUNCATE, SELECT ON rif40.sahsuland_cancer_1989 TO rif40 WITH GRANT OPTION;
 COMMENT ON TABLE sahsuland_cancer_1989 IS ''Range partition: sahsuland_cancer_1989 for value 1989 on column: year; master: rif40.sahsuland_cancer'';
 COMMENT ON COLUMN sahsuland_cancer_1989.age_sex_group IS ''Age sex group'';
 COMMENT ON COLUMN sahsuland_cancer_1989.icd IS ''ICD'';

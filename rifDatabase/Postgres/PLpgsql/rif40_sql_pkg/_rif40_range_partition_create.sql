@@ -155,7 +155,7 @@ LANGUAGE plpgsql;
 COMMENT ON FUNCTION rif40_sql_pkg._rif40_range_partition_create(VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR[]) IS 'Function: 	_rif40_range_partition_create()
 Parameters:	Schema, master table, partition table, column, value, list of tables being processed
 Returns:	Nothing
-Description:	Create range partition schema.table_<value> on column <column> value <value>, inheriting from <mnaster table>.
+Description:	Create range partition schema.table_<value> on column <column> value <value>, inheriting from <master table>.
 		Comment columns
 
 Runs as RIF40 (so can create partition tables)
