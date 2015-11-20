@@ -199,7 +199,15 @@ ORDER BY 5, 2, 3;
 -- Hash partition all tables with study_id as a column
 -- This will cope with data already present in the table
 --
-\i ../psql_scripts/v4_0_study_id_partitions.sql
+
+--
+-- Quit if not sahsuland_dev database
+--
+\copy (SELECT '\i ../psql_scripts/v4_0_study_id_partitions.sql' AS txt WHERE current_database() = 'sahsuland_dev') TO ../psql_scripts/auto_quit_tmp.sql WITH (FORMAT csv, ESCAPE '/')
+--
+-- Execute
+--
+\i ../psql_scripts/auto_quit_tmp.sql
 
 \dS+ t_rif40_investigations
 \dS+ rif40_partitions.t_rif40_investigations_p1

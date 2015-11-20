@@ -391,7 +391,7 @@ BEGIN
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
 		RAISE INFO 'v4_0_alter_8.sql: No studies, resetting sequences';
 	ELSE
-		RAISE EXCEPTION 'v4_0_alter_8.sql: % studies: %; unable to reset sequence numbers', 
+		RAISE WARNING 'v4_0_alter_8.sql: % studies: %; unable to reset sequence numbers', 
 			c5sm_rec.total::Text, c5sm_rec.study_list::Text;
 	END IF;
 END;

@@ -40,3 +40,4 @@ rifBuild/JavaMiddleware/rifServices.war
 rapidInquiryFacility/clean.log
 rifDatabase/Thumbs.db
 rifDatabase/Thumbs.db
+rifDatabase/Postgres/psql_scripts/auto_quit_tmp.sql
