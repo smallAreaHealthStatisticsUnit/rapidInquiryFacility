@@ -175,7 +175,7 @@ ifeq ($(OS),Windows_NT)
 		TESTUSER=$(USERNAME)
 	endif
 #	TOPOJSON=C:\Users\$(USERNAME)\AppData\Roaming\npm\topojson.cmd
-	TOPOJSON=node_modules\topojson\bin\topojson
+	TOPOJSON=Node node_modules\topojson\bin\topojson
 	NODE=node
 	NPM=npm
 	PGPASSFILE=$(APPDATA)\postgresql\pgpass.conf
