@@ -871,7 +871,7 @@ BEGIN
 					v_sqlstate, v_detail, v_message_text;
 			END IF;
 	END;	
-	RAISE INFO 'Nextval - start; %, now: %', start_nextval, currval('rif40_study_id_seq'::regclass);
+	RAISE INFO 'v4_0_alter_4.sql: Nextval - start; %, now: %', start_nextval, currval('rif40_study_id_seq'::regclass);
 END;
 $$;
 

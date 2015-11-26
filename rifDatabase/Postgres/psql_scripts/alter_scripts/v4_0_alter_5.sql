@@ -111,9 +111,9 @@ BEGIN;
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF user = 'rif40' THEN
-		RAISE INFO 'User check: %', user;	
+		RAISE INFO 'v4_0_alter_5.sql: User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'C20900: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'v4_0_alter_5.sql: C20900: User check failed: % is not rif40', user;	
 	END IF;
 END;
 $$;
@@ -147,7 +147,7 @@ BEGIN
 -- Enabled debug on select rif40_sm_pkg functions
 --
 	FOREACH l_function IN ARRAY rif40_sql_pkg_functions LOOP
-		RAISE INFO 'Enable debug for function: %', l_function;
+		RAISE INFO 'v4_0_alter_5.sql: Enable debug for function: %', l_function;
 		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 	END LOOP;
 	
@@ -553,7 +553,7 @@ BEGIN
 --
 	SET rif40.debug = '';
 	FOREACH l_function IN ARRAY rif40_geo_pkg_functions LOOP
-		RAISE INFO 'Enable debug for function: %', l_function;
+		RAISE INFO 'v4_0_alter_5.sql: Enable debug for function: %', l_function;
 		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 
 	END LOOP;
@@ -564,7 +564,7 @@ BEGIN
 	FETCH c1alter5 INTO c1_rec;
 	CLOSE c1alter5;
 --	IF c1_rec.column_name = 'optimised_geojson_3' THEN
---		RAISE INFO 'Column: t_rif40_sahsu_geometry.optimised_geojson_3 exists; no need to rebuild geometry tables';
+--		RAISE INFO 'v4_0_alter_5.sql: Column: t_rif40_sahsu_geometry.optimised_geojson_3 exists; no need to rebuild geometry tables';
 --	ELSE
 --
 -- Drop old geometry tables
@@ -577,7 +577,7 @@ BEGIN
 -- new p_rif40_geolevels_geometry_<GEOGRAPHY>_<GEOELVELS> partitioned tables
 --
 		PERFORM rif40_geo_pkg.create_rif40_geolevels_geometry_tables('SAHSU');
---	RAISE EXCEPTION 'Stop!!!';
+--	RAISE EXCEPTION 'v4_0_alter_5.sql: Stop!!!';
 --
 -- Create and populate rif40_geolevels lookup and create hierarchy tables 
 --
@@ -639,7 +639,7 @@ BEGIN
 --
 	etp:=clock_timestamp();
 	took:=age(etp, stp);
-	RAISE INFO 'Processed SAHSU geography: %s', took;
+	RAISE INFO 'v4_0_alter_5.sql: Processed SAHSU geography: %s', took;
 --
 END;
 $$;
@@ -686,8 +686,8 @@ WITH b AS (
 /*  
 DO LANGUAGE plpgsql $$
 BEGIN
-	RAISE INFO 'Aborting (script being tested)';
-	RAISE EXCEPTION 'C20999: Abort';
+	RAISE INFO 'v4_0_alter_5.sql: Aborting (script being tested)';
+	RAISE EXCEPTION 'v4_0_alter_5.sql: C20999: Abort';
 END;
 $$;
  */
@@ -867,11 +867,11 @@ BEGIN
 	CLOSE c1;
 --
 	IF c1_rec.total_tiles = 0 THEN
-		RAISE WARNING 'C20999: No tiles found';	
+		RAISE EXCEPTION 'v4_0_alter_5.sql: C20999: No tiles found';	
 	ELSIF c1_rec.unconverted_tiles > 0 THEN
-		RAISE WARNING 'C20999: %/% Unconverted optimised_topojson files found', c1_rec.unconverted_tiles, c1_rec.total_tiles;
+		RAISE EXCEPTION 'v4_0_alter_5.sql: C20999: %/% Unconverted optimised_topojson files found', c1_rec.unconverted_tiles, c1_rec.total_tiles;
 	ELSE
-		RAISE INFO 'C20999: All % optimised_topojson files converted', c1_rec.total_tiles;
+		RAISE INFO 'v4_0_alter_5.sql: C20999: All % optimised_topojson files converted', c1_rec.total_tiles;
 	END IF;
 END;
 $$; 

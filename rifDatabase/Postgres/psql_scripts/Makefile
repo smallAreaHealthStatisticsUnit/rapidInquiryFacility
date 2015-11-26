@@ -397,7 +397,11 @@ endif
 	$(MAKE) clean v4_0_vacuum_analyse_dev PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
 	$(MAKE) sahsuland_dump
+ifneq ($(OS),Windows_NT)
+ifneq ($(UNAME_S),Darwin)	
 	-$(MAKE) -C ../../ERD dbms_tools
+endif
+endif	
 	@echo "SAHSULAND and SAHSULAND_DEV setup completed OK"
 
 #- ERD: remake ERD	
