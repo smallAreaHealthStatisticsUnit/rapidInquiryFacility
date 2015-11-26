@@ -390,7 +390,23 @@ endif
 ifeq ($(PG_VERSION),PostgreSQL 9.4.1)
 	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
 else
+ifeq ($(PG_VERSION),PostgreSQL 9.4.2)
+	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+else
+ifeq ($(PG_VERSION),PostgreSQL 9.4.3)
+	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+else
+ifeq ($(PG_VERSION),PostgreSQL 9.4.4)
+	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+else
+ifeq ($(PG_VERSION),PostgreSQL 9.4.5)
+	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+else
 	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+endif
+endif
+endif
+endif
 endif
 	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland		
 	$(MAKE) -C ../Node topojson_convert PGDATABASE=sahsuland
