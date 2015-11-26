@@ -228,9 +228,9 @@ modules: $(MODULE_JSON) $(MODULES)
 
 # Module dependency control	
 $(MODULE_JSON):
-	$(NPM) update --save pg pg-native optimist mutexjs	
+	-$(NPM) update --save pg pg-native optimist mutexjs	
 $(MODULES):
-	mkdir $@
+	-mkdir $@
 	
 #clean:
 #	 $(DELETE) node_modules
@@ -239,7 +239,7 @@ $(MODULES):
 install:
 #- update: Update required Node.js modules using npm install --save to update dependencies in package.json 
 update:
-	$(NPM) update --save pg pg-native optimist mutexjs	
+	-$(NPM) update --save pg pg-native optimist mutexjs	
 	
 #- db_test_harness: Run the complete database test harness	(same as target test)	
 db_test_harness:
