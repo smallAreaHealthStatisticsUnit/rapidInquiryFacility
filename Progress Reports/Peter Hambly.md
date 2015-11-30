@@ -222,9 +222,14 @@ Test harness refactor; Node.js version working
  
 #### 9th November to 21st November
 
-* Testing confirmed susecpted double execution of triggers. Triggers were disabled at the master level
+* Testing confirmed susecpted double execution of triggers. Triggers were disabled at the master level [This code did not work,
+  to be fixed with trigger tune up]
 * Sequence NEXTVAL is only calling once for master and partition; the lack of test 1 is caused by a logic fault in alter 4. Fixed
 * Add check constraints for partition value; this was not needed as done already
+
+#### 23rd to 27th November
+
+* Clean build on Windows and Linux; re-patch now OK with partitions. Some issues with Windows 8.1 breaking Node.js.
 
 From January 2016: 
 
