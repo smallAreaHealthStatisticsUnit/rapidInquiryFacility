@@ -229,7 +229,8 @@ Test harness refactor; Node.js version working
 
 #### 23rd to 27th November
 
-* Clean build on Windows and Linux; re-patch now OK with partitions. Some issues with Windows 8.1 breaking Node.js.
+* Clean build on Windows and Linux; re-patch now OK with partitions. Some issues with Windows 8.1 breaking Node.js; Node.js makefiles 
+  need to be able to install/update as appropriate
 
 From January 2016: 
 
