@@ -44,6 +44,7 @@
 --
 -- Peter Hambly, SAHSU
 --
+
 --\set ECHO all
 \set ECHO none
 \set ON_ERROR_STOP on
