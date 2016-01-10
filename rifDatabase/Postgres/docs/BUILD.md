@@ -108,7 +108,7 @@ If you enable PL/R then the directories ? and ? must exist
 
 * Make sure psql and make run correctly on the command line (see the Windows notes). Check logon to psql with a password for:
   * postgres
-* Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *make install topojson*. 
+* Check Node.js is correctly installed; *cd GitHub\rapidInquiryFacility\rifDatabase\Postgres\Node*; *npm install pg pg-native topojson*; *make install topojson*. 
   The [Node.js install dialog]
 (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/Node/Node%20Install.md) is provided as an example.
   **If the toposjon node.js does not run correctly then node is not properly installed**. 
