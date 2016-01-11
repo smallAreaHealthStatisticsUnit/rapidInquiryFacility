@@ -445,9 +445,11 @@ BEGIN
 	ELSIF c11_rec.usecreatedb THEN
 		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % has database creation privilege', 
 			c11_rec.usename::VARCHAR);
-	ELSIF c11_rec.usecatupd THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % has update system catalog privilege', 
-			c11_rec.usename::VARCHAR);
+	ELSIF SUBSTR(version(), 12, 3)::NUMERIC < 9.5 THEN	
+		IF c11_rec.usecatupd THEN
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_startup', 'User % has update system catalog privilege', 
+				c11_rec.usename::VARCHAR);
+		END IF;
 	END IF;
 	
 --

@@ -446,9 +446,11 @@ BEGIN
 			ELSIF c11_rec.usecreatedb THEN
 				RAISE EXCEPTION 'db_create.sql() C209xx: Role % has database creation privilege', 
 					c11_rec.usename::VARCHAR;
-			ELSIF c11_rec.usecatupd THEN
-				RAISE EXCEPTION 'db_create.sql() C209xx: Role % has update system catalog privilege', 
-					c11_rec.usename::VARCHAR;
+			ELSIF SUBSTR(version(), 12, 3)::NUMERIC < 9.5 THEN
+				IF c11_rec.usecatupd THEN
+					RAISE EXCEPTION 'db_create.sql() C209xx: Role % has update system catalog privilege', 
+						c11_rec.usename::VARCHAR;
+				END IF;
 			END IF;
 --
 		ELSE
@@ -481,9 +483,11 @@ BEGIN
 			ELSIF c11_rec.usecreatedb THEN
 				RAISE EXCEPTION 'db_create.sql() C209xx: User % has database creation privilege', 
 					c11_rec.usename::VARCHAR;
-			ELSIF c11_rec.usecatupd THEN
-				RAISE EXCEPTION 'db_create.sql() C209xx: User % has update system catalog privilege', 
-					c11_rec.usename::VARCHAR;
+			ELSIF SUBSTR(version(), 12, 3)::NUMERIC < 9.5 THEN
+				IF c11_rec.usecatupd THEN
+					RAISE EXCEPTION 'db_create.sql() C209xx: User % has update system catalog privilege', 
+						c11_rec.usename::VARCHAR;
+				END IF;
             ELSE
                 RAISE INFO 'db_create.sql() privilege check OK for: %', x;
 			END IF;
