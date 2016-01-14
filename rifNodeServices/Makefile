@@ -79,6 +79,10 @@
 #
 # - Do not create SAHSULAND_DEV
 #
+ifneq (,)
+This makefile requires GNU Make.
+endif
+#
 DBNAME?=$(PGDATABASE)
 VERBOSITY?=$(DEFAULT_VERBOSITY)
 DEFAULT_DEBUG_LEVEL=1
@@ -179,13 +183,6 @@ endif
 #
 # Module list, module package.json for dependency control
 #
-MODULES=node_modules/request \
-	node_modules/form-data \
-	node_modules/mapshaper \
-	node_modules/adm-zip \
-	node_modules/express \
-	node_modules/topojson \
-	node_modules/connect-busboy
 MODULE_JSON=node_modules/request/package.json \
 	node_modules/form-data/package.json \
 	node_modules/mapshaper/package.json \
@@ -193,11 +190,9 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/express/package.json \
 	node_modules/topojson/package.json \
 	node_modules/connect-busboy/package.json
-#MODULES=$(MODULE_JSON:=:%.json=)	
-MODULE_LIST=request form-data mapshaper adm-zip express topojson connect-busboy
-#.SUFFIXES: .sql .rpt
-#.sql.rpt:
-
+MODULES=$(patsubst %/package.json,%,$(MODULE_JSON))	
+MODULE_LIST=$(patsubst node_modules/%/package.json,%,$(MODULE_JSON))
+	
 #- all: Build modules, run the complete database test harness	
 all: modules update 
 # rifNode
@@ -213,13 +208,14 @@ $(MODULES):
 	-mkdir $@
 	-$(NPM) install --save $(MODULE_LIST)
 	
-#- clean: clean Node modules; avoid Windows path length stupidities by rimraf	
+#- clean: clean Node modules; avoid Windows path length stupidities with rimraf	
 clean:
 	 $(NPM) install rimraf 
 	 $(NODE) node_modules\rimraf\bin.js $(MODULES)
 	 
 # No install target (dummy)	 
 install:
+
 #- update: Update required Node.js modules using npm install --save to update dependencies in package.json 
 update:
 	-$(NPM) update --save $(MODULE_LIST)	
@@ -234,7 +230,6 @@ test: rifNode
 retest:
 	$(NODE) rifNode.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL) -F	
 	
-
 #- help: Display makefile help, rifNode.js help
 help:
 	$(HELP)
