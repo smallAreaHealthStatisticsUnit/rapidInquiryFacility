@@ -144,6 +144,7 @@ ifeq ($(OS),Windows_NT)
 #	TOPOJSON=C:\Users\$(USERNAME)\AppData\Roaming\npm\topojson.cmd
 	TOPOJSON=Node node_modules\topojson\bin\topojson
 	NODE=node
+	FOREVER=$(APPDATA)\npm\forever
 	NPM=npm
 	PGPASSFILE=$(APPDATA)\postgresql\pgpass.conf
 else
@@ -161,6 +162,7 @@ else
 	TOPOJSON=node_modules/topojson/bin/topojson
 	NODE=node
 	NPM=npm
+	FOREVER=~/npm/forever
     ifeq ($(UNAME_S),Linux)
 		OS=$(UNAME_S)
 #		POSTGRES_ETC_DIR=/var/opt/PostgreSQL/9.3/etc
@@ -190,13 +192,24 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/express/package.json \
 	node_modules/topojson/package.json \
 	node_modules/connect-busboy/package.json
-MODULES=$(patsubst %/package.json,%,$(MODULE_JSON))	
+#
+MODULES=$(patsubst %/package.json,%,$(MODULE_JSON))
 MODULE_LIST=$(patsubst node_modules/%/package.json,%,$(MODULE_JSON))
-	
+#
+# Forever (NPM daemon control)
+#
+FOREVER_VERBOSE=-verbose
+FOREVER_LOGGING=-l forever.log -e forever.err -o forever.log --append
+
 #- all: Build modules, run the complete database test harness	
 all: modules update 
 # rifNode
 
+forever: $(FOREVER)
+	
+$(FOREVER):
+	$(NPM) install -g forever
+	
 #- modules: Build required Node.js modules using npm install --save to update dependencies in package.json
 modules: $(MODULES) $(MODULE_JSON) 
 
@@ -213,9 +226,26 @@ clean:
 	 $(NPM) install rimraf 
 	 $(NODE) node_modules\rimraf\bin.js $(MODULES)
 	 
-# No install target (dummy)	 
+#- install:  No install target (dummy)	 
 install:
 
+#- server-start: start server
+server-start: forever expressServer.js
+	$(FOREVER) start  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
+#- server-restart: restart server
+server-restart: forever expressServer.js
+	$(FOREVER) restart  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
+#- server-status: status of running server
+server-status: forever expressServer.js
+	$(FOREVER) list $(FOREVER_VERBOSE) ./expressServer.js
+#- server-stop: stop server
+server-stop: forever expressServer.js
+	$(FOREVER) stopall $(FOREVER_VERBOSE) ./expressServer.js
+#- server-log: display server logs
+server-logs: forever expressServer.js
+	$(FOREVER) logs $(FOREVER_VERBOSE) ./expressServer.js 
+	$(FOREVER) logs 0 $(FOREVER_VERBOSE) ./expressServer.js 
+	
 #- update: Update required Node.js modules using npm install --save to update dependencies in package.json 
 update:
 	-$(NPM) update --save $(MODULE_LIST)	

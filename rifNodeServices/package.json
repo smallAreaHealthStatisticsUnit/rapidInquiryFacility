@@ -3,13 +3,39 @@
   "description": "Geospatial web services",
   "version": "0.0.1",
   "private": true,
+  "author": [
+		"Peter Hambly <phambly@fastmail.co.uk>"
+  ],
+  "maintainers": [
+    "Peter Hambly <phambly@fastmail.co.uk>",
+    "Frederico Fabbri <f.fabbri@imperial.ac.uk>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rifNodeServices/rifNodeServices.git"
+  },
+  "keywords": [
+    "Rapid Inquiry Facility",
+    "Topojson",
+    "Geojson",
+    "Shapefile",
+    "Simplification"
+  ],
   "dependencies": {
     "adm-zip": "^0.4.7",
     "connect-busboy": "0.0.2",
     "express": "^4.13.3",
+    "forever": "^0.15.1",
     "form-data": "^1.0.0-rc3",
     "mapshaper": "^0.3.13",
     "request": "^2.67.0",
     "topojson": "^1.6.19"
-  }
+  },
+  "scripts": {
+    "test": "vows test/**/request*.js --spec -i"
+  },
+  "engines": {
+    "node": ">= 4.2.x"
+  },
+  "license": "MIT"
 }

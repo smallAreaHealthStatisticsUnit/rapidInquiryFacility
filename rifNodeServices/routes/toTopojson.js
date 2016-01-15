@@ -50,43 +50,62 @@ exports.convert = function(req, res) {
 
       req.setEncoding('utf-8');
       res.setHeader("Content-Type", "text/plain");
+	  
       var d = new TempData();
-    
+	  var expected_length = req.headers["content-length"];
+//	  var expected_length = 0;
+	  
       if (req.method == 'POST') {
             
          var options = {
-            verbose: false,
+            verbose: true,
             //quantization:default
          };
           
          req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
             d.fName = filename;
+			d.expected_length = expected_length;
+			
             stream.on('data', function(data) {
                d.fullData += data;  
+//			   if (d.fullData != '') {
+//					console.error("toTopoJSON(): read: " + d.fullData.length);
+//			   }
                if (d.fullData.length > d.UPPER_LIMIT) { // Max geojs allowed 2MB
                   d.withinLimit = false;  
                   try { 
-                      console.log("Stopping file upload...");
+                      console.log("toTopoJSON(): Stopping file: " + d.fName + " upload...");
                   } catch (e) { 
-                      res.end("File upload stopped."); 
+                      res.end("toTopoJSON(): File: " + d.fName + " upload stopped."); 
                   };     
                };
             });
 
             stream.on('end', function() {
-               console.log("end");
+//			   d.fullData = d.fullData.replace(/(\r\n|\n|\r)/gm,"");
                if (d.fName != '' && d.withinLimit) {
                   try {
                      jsonData = JSON.parse(d.fullData);
                      d.topology = topojson.topology({
                         collection: jsonData
                      }, options);
-                     var output = JSON.stringify(d.topology); 
-                     res.write(output);  
+                     d.output = JSON.stringify(d.topology); 
+                     res.write(d.output);  
+					 console.error("toTopoJSON() file: " + d.fName + "; size: " + d.fullData.length+ "\r\nData:\r\n" + 
+						d.output.substring(0, 132) + "\r\n");					 
                   } catch (e) {
-                     res.write("Your input file does not seem to be valid." );
+                     console.error("ERROR! toTopoJSON(): Your input file: " + 
+							d.fName + "; size: " + d.fullData.length + "/" + d.expected_length + ": does not seem to be valid: \n\n" + 
+								e + "\r\nTruncated data:\r\n" + 
+								d.fullData.substring(0, 132) + "...\r\n");					  
+				     res.status(500);					  
+                     res.write("ERROR! toTopoJSON(): Your input file: " + 
+							d.fName + "; size: " + d.fullData.length + "/" + d.expected_length + ": does not seem to be valid: \n\n" + 
+								e + "\r\Truncated data:\r\n" + 
+								d.fullData.substring(0, 132) + "...\r\n");
                      return;
                   };
+			  
                   //console.log(topology.objects.collection); 
                };
             });
