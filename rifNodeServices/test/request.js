@@ -25,10 +25,10 @@ var MakeRequest = function(){
 	else if (nRequests == 3) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;		
-		formData["my_test"]="Verbose";		
+		formData["my_test"]="zoomLevel: 0";		
 	}	
-	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length +
-		'; ' + JSON.stringify(formData, null, 4));
+	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
+//		'; ' + JSON.stringify(formData, null, 4));
 		
     this.options = {
         url:  'http://127.0.0.1:3000/toTopojson',
@@ -50,20 +50,18 @@ var postIt = function(){
 		}
 			else {
 				var jsonData = JSON.parse(body);
-				var json = JSON.stringify(jsonData.topojson)
-				console.log('Upload #' + nRequests + ': '+ jsonData.message + '; new length: ' + json.length);
+				var json = JSON.stringify(jsonData.topojson);
+				var ofields=jsonData.fields;
+				console.log('Upload #' + ofields["my_reference"] + ': '+ jsonData.message + '; new length: ' + json.length +
+					'; fields: ' + JSON.stringify(ofields, null, 4));
 			}
 		});
-//	var f=p.form();
- 
-//	f.append('verbose', true);
 };
   
 
 var timeOut = function(){
   setTimeout(function(){
     if(nRequests++ < 3){ 
-//     console.log(nRequests);
       postIt();
       timeOut();    
     }
