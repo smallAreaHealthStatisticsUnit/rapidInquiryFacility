@@ -26,7 +26,14 @@ var MakeRequest = function(){
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;		
 		formData["my_test"]="zoomLevel: 0";		
+	}
+	else if (nRequests == 4) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;
+		formData["projection"]=27700;		
+		formData["my_test"]="projection: 27700";		
 	}	
+	formData["length"]=length;		
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 //		'; ' + JSON.stringify(formData, null, 4));
 		
@@ -34,7 +41,7 @@ var MakeRequest = function(){
         url:  'http://127.0.0.1:3000/toTopojson',
         headers:{'Content-Type': contentType},
         formData: formData, 
-        'content-length':length
+        'content-length': length
     }; 
 }
 
@@ -61,7 +68,7 @@ var postIt = function(){
 
 var timeOut = function(){
   setTimeout(function(){
-    if(nRequests++ < 3){ 
+    if(nRequests++ < 4){ 
       postIt();
       timeOut();    
     }
