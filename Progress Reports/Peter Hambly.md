@@ -244,23 +244,24 @@ Test harness refactor; Node.js version working
   
 * Port to Postgres 9.5
 * RIF Node Services - build enviornment
-* RIF Node Services - topoJSON convertor:
+* RIF Node Services - topoJSON convertor
 
 	1. Restructure of code;
 	2. Convert to test_6_sahsu_4_level4_0_0_0.js (level 4, zoomnlevel 0 sahusland example, 3.6M);
 	3. Convert to support form fields as parameteres and return;
+	4. Return debug output from topoJSON module;	
 
 	Todo:
 
-	4. Failure cases:
+	5. Failure cases:
 	   * GeoJSON syntax issues
 	   * Failures in file stream
 	   * Enforce single file attachment
 	   * General syntax errors
 	   * Size limits (100M); also test limits
-	5. Return debug from topoJSON module;
 	6. Support properties, property-transform and my_id topoJSON module options;
-	7. Compressed attachments.
+	7. Compressed attachments;
+	8. Integration to build.
 
 ## 2016 Plans: 
 

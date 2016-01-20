@@ -62,7 +62,8 @@
  
 //  Globals
 var inspect = require('util').inspect,
-    topojson = require('topojson'),
+	topojson = require('topojson'),
+    stderrHook = require('./stderrHook'),
     fs = require('fs'),
     setStatusCode = function(res, code ) {
         res.statusCode = code;
@@ -103,7 +104,12 @@ exports.convert = function(req, res) {
 
     req.setEncoding('utf-8');
     res.setHeader("Content-Type", "text/plain");
-	  
+	
+// Add stderr hook to capture debug output from topoJSON	
+	var stderr = stderrHook.stderrHook(function(output, obj) { 
+		output.str += obj.str;
+	});
+
     var d = new TempData(); // This is local to the post requests; the field processing cannot see it
 
 // Post method	
@@ -151,14 +157,27 @@ exports.convert = function(req, res) {
                  if (d.fName != '' && d.withinLimit) {
                     try {
 						jsonData = JSON.parse(d.fullData); // Parse file stream data to JSON
+						// Re-route topoJSON stderr to stderr.str
+						stderr.disable();
 						d.topology = topojson.topology({   // Convert geoJSON to topoJSON
 							collection: jsonData
-							}, options);
-						d.response = {                        // Set output response    
-							message: 'OK',                    // Parse and convert is OK  
-							topojson: d.topology,             // Add topoJSON 
+							}, options);				
+						stderr.enable(); 				   // Re-enable stderr
+						
+						var topojson_stderr=stderr.str();
+						console.error(topojson_stderr);
+						d.response = {                     // Set output response    
+							message: 'OK',                 // Parse and convert is OK  
+							topojson: d.topology,          // Add topoJSON 
 							fields: ofields				   // Add return fields
 						};
+					
+						console.error('TopoJson stderr(' + topojson_stderr.length + '): \n'  + topojson_stderr);	
+						if (topojson_stderr.length > 0) {  // Add topoJSON stderr to message		
+							d.response.message = 'OK:\n' + topojson_stderr;
+						}
+						stderr.restore();                  // Restore normal stderr functionality 
+						
                         d.output = JSON.stringify(d.response);// Convert output response to JSON 
                         res.write(d.output);                  // Write output  
 					    console.error("toTopoJSON() [" + d.response.fields["my_reference"] + 
