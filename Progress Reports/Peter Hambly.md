@@ -246,25 +246,24 @@ Test harness refactor; Node.js version working
 * RIF Node Services - build enviornment
 * RIF Node Services - topoJSON convertor:
 
-1. Restructure of code;
-2. Convert to test_6_sahsu_4_level4_0_0_0.js (level 4, zoomnlevel 0 sahusland example, 3.6M);
-3. Convert to support form fields as parameteres and return;
+	1. Restructure of code;
+	2. Convert to test_6_sahsu_4_level4_0_0_0.js (level 4, zoomnlevel 0 sahusland example, 3.6M);
+	3. Convert to support form fields as parameteres and return;
 
-Todo:
+	Todo:
 
-4. Failure cases:
-   * GeoJSON syntax issues
-   * Failures in file stream
-   * Enforce single file attachment
-   * General syntax errors
-   * Size limits (100M); also test limits
-5. Return debug from topoJSON module;
-6. Support properties, property-transform and my_id topoJSON module options;
-7. Compressed attachments.
+	4. Failure cases:
+	   * GeoJSON syntax issues
+	   * Failures in file stream
+	   * Enforce single file attachment
+	   * General syntax errors
+	   * Size limits (100M); also test limits
+	5. Return debug from topoJSON module;
+	6. Support properties, property-transform and my_id topoJSON module options;
+	7. Compressed attachments.
 
-From January 2016: 
+## 2016 Plans: 
 
-To do
 
 1. Build and integrate Node.js middleware server:
 
@@ -308,6 +307,6 @@ To do
 
 7. Additional RIF development tasks as required by Dr. Anna Hansell; 
 
-Bugs
+## Bugs
 
 None outstanding.
