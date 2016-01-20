@@ -1,6 +1,6 @@
 var FormData = require('form-data');
 var fs = require('fs');
-var inputFile = './data/test_6_sahsu_4_level4_0_0_0.js';
+
 var contentType = 'application/json';
 
 var nRequests = 0;
@@ -8,7 +8,13 @@ var nRequests = 0;
 var MakeRequest = function(){
 
     this.request = require('request');
-	var json_file = fs.createReadStream(inputFile);
+
+	var inputFile = './data/test_6_sahsu_4_level4_0_0_0.js';
+	if (nRequests == 5) {
+		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js';
+	}
+	
+	var json_file = fs.createReadStream(inputFile);;
     var length = fs.statSync(inputFile).size;
 	var id=nRequests;
 	var formData = {
@@ -33,6 +39,12 @@ var MakeRequest = function(){
 		formData["projection"]=27700;		
 		formData["my_test"]="projection: 27700";		
 	}	
+	else if (nRequests == 5) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="gzip geoJSON file";		
+	}	
+	
 	formData["length"]=length;		
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 //		'; ' + JSON.stringify(formData, null, 4));
@@ -68,7 +80,7 @@ var postIt = function(){
 
 var timeOut = function(){
   setTimeout(function(){
-    if(nRequests++ < 4){ 
+    if(nRequests++ < 5){ 
       postIt();
       timeOut();    
     }

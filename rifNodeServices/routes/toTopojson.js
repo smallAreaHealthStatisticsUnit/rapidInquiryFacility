@@ -238,7 +238,9 @@ exports.convert = function(req, res) {
           
     } // End of post method
 	else {
+		var msg="toTopojson.js: GET Requests not allowed; please see: " + 
+			"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
+		console.error(msg);
         setStatusCode( res, 405  );
-        res.end("GET Requests not allowed.");
-    };      
+        res.end(msg);   };      
 };
