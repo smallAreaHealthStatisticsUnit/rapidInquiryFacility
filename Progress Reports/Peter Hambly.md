@@ -204,6 +204,8 @@ Test harness refactor; Node.js version working
 * Build documentation
 * Small fixes to build (e.g. ::1 localhost fix, Node make fixes), regression tests complete opn Windows and Linux
 
+### October
+
 #### 5th to 9th October
 
 * Test harness documentation
@@ -219,6 +221,8 @@ Test harness refactor; Node.js version working
 #### 26th October to 6th November
 
 * Complete and test partitioning
+
+### November
  
 #### 9th November to 21st November
 
@@ -231,6 +235,32 @@ Test harness refactor; Node.js version working
 
 * Clean build on Windows and Linux; re-patch now OK with partitions. Some issues with Windows 8.1 breaking Node.js; Node.js makefiles 
   need to be able to install/update as appropriate
+
+## 2016
+  
+### January  
+ 
+#### 8th to 15th January
+  
+* Port to Postgres 9.5
+* RIF Node Services - build enviornment
+* RIF Node Services - topoJSON convertor:
+
+1. Restructure of code;
+2. Convert to test_6_sahsu_4_level4_0_0_0.js (level 4, zoomnlevel 0 sahusland example, 3.6M);
+3. Convert to support form fields as parameteres and return;
+
+Todo:
+
+4. Failure cases:
+   * GeoJSON syntax issues
+   * Failures in file stream
+   * Enforce single file attachment
+   * General syntax errors
+   * Size limits (100M); also test limits
+5. Return debug from topoJSON module;
+6. Support properties, property-transform and my_id topoJSON module options;
+7. Compressed attachments.
 
 From January 2016: 
 
