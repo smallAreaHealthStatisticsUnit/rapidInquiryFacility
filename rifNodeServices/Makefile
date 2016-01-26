@@ -191,6 +191,8 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/adm-zip/package.json \
 	node_modules/express/package.json \
 	node_modules/topojson/package.json \
+	node_modules/mutexjs/package.json \
+	node_modules/request-debug/package.json \
 	node_modules/connect-busboy/package.json
 #
 MODULES=$(patsubst %/package.json,%,$(MODULE_JSON))
@@ -201,8 +203,12 @@ MODULE_LIST=$(patsubst node_modules/%/package.json,%,$(MODULE_JSON))
 FOREVER_VERBOSE=-verbose
 FOREVER_LOGGING=-l forever.log -e forever.err -o forever.log --append
 
+NODE_DEBUG=request,form-data,busboy,connect-busboy
+NODE_DEBUG_DEBUG=express:*
+
+#combined-stream,mime-types,fs
 #- all: Build modules, run the complete database test harness	
-all: modules update 
+all: modules update
 # rifNode
 
 forever: $(FOREVER)
@@ -234,7 +240,11 @@ server-start: forever expressServer.js
 	$(FOREVER) start  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 #- server-restart: restart server
 server-restart: forever expressServer.js
-	$(FOREVER) restart  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
+	-$(FOREVER) stop  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
+	$(FOREVER) start  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
+#- server-restart-debug: restart server with debugging
+server-restart-debug: 
+	$(MAKE) -e NODE_DEBUG=$(NODE_DEBUG) -e DEBUG=$(NODE_DEBUG_DEBUG) server-restart
 #- server-status: status of running server
 server-status: forever expressServer.js
 	$(FOREVER) list $(FOREVER_VERBOSE) ./expressServer.js

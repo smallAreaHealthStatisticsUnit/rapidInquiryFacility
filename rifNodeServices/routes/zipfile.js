@@ -8,7 +8,8 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - RIF Node web services; implemented using Express 
+// Rapid Enquiry Facility (RIF) - compression testing webservice
+//								  Uses node.js TopoJSON module
 //
 // Copyright:
 //
@@ -44,72 +45,71 @@
 //
 // Peter Hambly, SAHSU
 //
+// Usage: tests/requests.js
+//
 // Uses:
+//
+// CONVERTS GEOJSON(MAX 100MB) TO TOPOJSON
+// Only POST requests are processed
+// Expects a vaild geojson as input
+// Topojson have quantization on
+// The level of quantization is based on map tile zoom level
+// More info on quantization here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
 //
 // Prototype author: Federico Fabbri
 // Imperial College London
 //
-var express = require('express'),
-    busboy = require('connect-busboy'),
-    toTopojson = require('./routes/toTopojson'),
-    simplify = require('./routes/simplify'),
-    zipfile = require('./routes/zipfile');
-
-var app = express(); 	// default options, no immediate parsing 
-
-// development error handler
-// will print stacktrace
-/*
-if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-	console.log('expressServer.js: error: ' + err.message + "\n" + err.stack);
-    res.render('expressServer.js: error', {
-        message: err.message,
-        error: err
-    });
-  });
-
-}
- */
  
-// production error handler
-// no stacktraces leaked to user
-/*
-app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-	console.log('expressServer.js: error: ' + err.message);
-    res.render('expressServer.js: error', {
-        message: err.message,
-        error: {}
-    });
-});  
- */
-
-app.use( 				// For parsing incoming HTML form data.
-	busboy());
+//  Globals
+var zlib = require('zlib'),
+    fs = require('fs');
+var l_file_name;
 	
-/*
-app.use( 				// For parsing incoming HTML form data.
-	busboy({
-		highWaterMark: 2000 * 1024 * 1024,
-		limits: {
-			fileSize: 1000 * 1024 * 1024
-		},
-		defCharset: 'binary'
-	}));
-*/
+exports.convert = function(req, res) {
 
-// Get methods are dummies for test purposes
-app.get('/toTopojson', toTopojson.convert);
-app.post('/toTopojson', toTopojson.convert);
-app.get('/simplify', simplify.convert);
-app.post('/simplify', simplify.convert);
+//    req.setEncoding('utf-8'); // This corrupts the data stream with binary data
+    res.setHeader("Content-Type", "text/plain");
 
-app.post('/zipfile', zipfile.convert);
- 
-//app.use(express.static(__dirname + '/public'));
-  
-app.listen(3000);
+	
+    req.busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
+		l_file_name = __dirname + "x.js.gz";
+		console.error("DDD: " + l_file_name);
+		 
+        var writeStream = fs.createWriteStream(
+            l_file_name, {
+            flags: 'w',
+			defaultEncoding: undefined,
+            content_type: mimetype,
+            metadata: {
+                encoding: encoding,
+            }
+        });
 
-console.log('expressServer.js: RIF Node web services listening on 127.0.0.1 port 3000...');
+        file.pipe(writeStream);
+    });
+
+    req.busboy.on('finish', function() {
+		json_file2 = fs.createReadStream(l_file_name);
+		var data = new Buffer('');
+		var chunks = [];
+		var chunk;
+
+		json_file2.on('readable', function() {
+			while ((chunk=json_file2.read()) != null) {
+				chunks.push(chunk);
+			}
+		});
+
+		json_file2.on('end', function() {
+			data=Buffer.concat(chunks);
+			console.log('Gzipped binary stream: ' + data.toString('hex').substring(0, 132));
+			
+	        return res.status(200).send({
+				message: "OK: " + l_file_name + '; Gzipped binary stream: ' + data.toString('hex').substring(0, 132)
+				});
+		});	
+
+    });
+
+    req.pipe(req.busboy);
+};

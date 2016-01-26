@@ -1,11 +1,17 @@
 var FormData = require('form-data');
 var fs = require('fs');
 
-var nRequests = 0;
+var nRequests = 5;
 
 var MakeRequest = function(){
 
-    this.request = require('request'); 
+    this.request = require('request');
+	require('request-debug')(this.request, 
+		function(type, data, r) {
+			console.log('Request debug: ' + type + 
+				";\nheaders" + JSON.stringify(data.headers, null, 4) + 
+				";\nbody" + JSON.stringify(data, null, 4))
+});
 	
 	var inputFile = './data/test_6_sahsu_4_level4_0_0_0.js';
 	var contentType = 'application/json';
@@ -15,7 +21,7 @@ var MakeRequest = function(){
 // Gzipped file tests
 	if (nRequests == 5) { 
 		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.gz';
-//		contentType = 'application/gzip';
+		contentType = 'application/zip';
 		json_file = fs.createReadStream(inputFile);
 		json_file2 = fs.createReadStream(inputFile);
 		var data = new Buffer('');
@@ -76,7 +82,7 @@ var MakeRequest = function(){
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
 		formData["my_test"]="gzip geoJSON file";	
-//		this.request.debug = true;		
+		this.request.debug = true;		
 	}	
 	else if (nRequests == 6) {
 		formData["verbose"]="true";
@@ -96,7 +102,12 @@ var MakeRequest = function(){
     }; 
 	if (nRequests == 5) { // Gzipped file test	
 		this.debug = true;
-		this.options.headers={'Content-Type': contentType, 'Content-Encoding': 'gzip', "accept-encoding" : "gzip"};
+		this.options.headers={
+			'Content-Type': contentType, 
+			'Content-Transfer-Encoding': 'gzip', 
+			'Transfer-Encoding': 'gzip', 
+			'Content-Encoding': 'gzip', 
+			'Accept-Encoding' : "gzip,zip,zlib"};
 //		this.options.headers:{'Content-Type': contentType};
 		this.options.gzip = true;
 //		json_file.setDefaultEncoding('binary');
@@ -127,14 +138,4 @@ var postIt = function(){
 	});
 };
   
-
-var timeOut = function(){
-  setTimeout(function(){
-    if(nRequests++ < 5){ 
-      postIt();
-      timeOut();    
-    }
-  },100);
-};
-
-timeOut();
+postIt();   

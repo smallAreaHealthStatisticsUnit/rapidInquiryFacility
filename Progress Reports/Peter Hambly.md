@@ -253,7 +253,7 @@ Test harness refactor; Node.js version working
 
 	Todo:
 
-	5. Failure cases:
+	5. Error handlers, busboy limit handlers, failure cases:
 	   * GeoJSON syntax issues
 	   * Failures in file stream
 	   * Enforce single file attachment
@@ -262,6 +262,10 @@ Test harness refactor; Node.js version working
 	6. Support properties, property-transform and my_id topoJSON module options;
 	7. Compressed attachments;
 	8. Integration to build.
+	9. Documentation;
+	10. Full client logging;
+	11. Instrumentation;
+	12. Security as per recommendations.
 
 ## 2016 Plans: 
 
