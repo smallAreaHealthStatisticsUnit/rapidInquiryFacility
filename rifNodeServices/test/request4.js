@@ -7,7 +7,7 @@ var form = new FormData();
 form.append('verbose', 'true');
 
 
-		json_file2 = fs.createReadStream('./data/helloworld.js.gz');
+		json_file2 = fs.createReadStream('./data/test_6_sahsu_4_level4_0_0_0.js.gz');
 		var data = new Buffer('');
 		var chunks = [];
 		var chunk;
@@ -23,8 +23,8 @@ form.append('verbose', 'true');
 			console.log('Gzipped binary stream: ' + data.toString('hex').substring(0, 132))
 		});	
 
-form.append('my_file', fs.createReadStream('./data/helloworld.js.gz'), {
-	filename: 'helloworld2.js.gz',
+form.append('my_file', fs.createReadStream('./data/test_6_sahsu_4_level4_0_0_0.js.gz'), {
+	filename: 'test_6_sahsu_4_level4_0_0_0.js.gz',
 	ContentType: 'image/gzip', 
 	ContentTransferEncoding: 'gzip', 
 	TransferEncoding: 'gzip', 

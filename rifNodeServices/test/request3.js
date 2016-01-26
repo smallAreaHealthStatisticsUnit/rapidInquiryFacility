@@ -21,7 +21,7 @@ var MakeRequest = function(){
 // Gzipped file tests
 	if (nRequests == 5) { 
 		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.gz';
-		contentType = 'application/zip';
+		contentType = 'application/gzip';
 		json_file = fs.createReadStream(inputFile);
 		json_file2 = fs.createReadStream(inputFile);
 		var data = new Buffer('');
@@ -103,13 +103,13 @@ var MakeRequest = function(){
 	if (nRequests == 5) { // Gzipped file test	
 		this.debug = true;
 		this.options.headers={
-			'Content-Type': contentType, 
+			'Content-Type': contentType /*, 
 			'Content-Transfer-Encoding': 'gzip', 
 			'Transfer-Encoding': 'gzip', 
 			'Content-Encoding': 'gzip', 
-			'Accept-Encoding' : "gzip,zip,zlib"};
+			'Accept-Encoding' : "gzip,zip,zlib" */}; 
 //		this.options.headers:{'Content-Type': contentType};
-		this.options.gzip = true;
+//		this.options.gzip = true;
 //		json_file.setDefaultEncoding('binary');
 		console.error("GZIP: " + JSON.stringify(formData, null, 4));
 	}
