@@ -87,6 +87,7 @@ exports.convert = function(req, res) {
 		}
 			
 		l_file_name = os.tmpdir()  + "/" + filename;
+		/*
 		console.error("Create temporary file: " + l_file_name + "; extension: " + extension + "; file_encoding: " + file_encoding);
 		 
         var writeStream = fs.createWriteStream(
@@ -99,10 +100,21 @@ exports.convert = function(req, res) {
             }
         });
 
-        file.pipe(writeStream);
+        file.pipe(writeStream); */
+		
+		var chunks = [];
+//		var chunk;
+		
+		file.on('data', function(chunk) {
+			chunks.push(chunk);
+		});
+		file.on('end', function() {
+			data=Buffer.concat(chunks);
+		});
     });
 
     req.busboy.on('finish', function() {
+		/*
 		json_file2 = fs.createReadStream(l_file_name);
 		var data = new Buffer('');
 		var chunks = [];
@@ -113,10 +125,10 @@ exports.convert = function(req, res) {
 				chunks.push(chunk);
 			}
 		});
-
-		json_file2.on('end', function() {
+		*/
+//		json_file2.on('end', function() {
 			var buf;
-			data=Buffer.concat(chunks);
+//			data=Buffer.concat(chunks);
 			console.log('Gzipped binary stream: ' + data.toString('hex').substring(0, 132));
 
 			if (file_encoding === "gzip") {	
@@ -137,7 +149,7 @@ exports.convert = function(req, res) {
 					";\ndata:\n" + JSON.stringify(jsonData, null, 4).substring(0, 132)
 			});
 		 
-		});	
+//		});	
 
     });
 

@@ -205,7 +205,7 @@ exports.convert = function(req, res) {
 		};
 		
 
-		req.setEncoding('binary');
+//		req.setEncoding('binary');
 			
 // File attachment processing function		  
         req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
@@ -278,15 +278,15 @@ KKKK: 1f8b08084b1599560003746573745f365f73616873755f345f6c6576656c345f305f305f30
 
 // EOF processor 
             stream.on('end', function() {
-				
+				console.error('END');
 //			     d.fullData = d.fullData.replace(/(\r\n|\n|\r)/gm,""); CRLF=> CR
-                 if (d.fName != '' && d.withinLimit) {
+//                 if (d.fName != '' && d.withinLimit) {
 
 						var zmsg="YYYY";	
 	
 						var buf=Buffer.concat(d.chunks);
 						if (file_encoding === "zip" || file_encoding === "gzip" || file_encoding === "zlib") {	
-							d.fullData="";
+/*							d.fullData="";
 							zlib.unzip(buf, function(ze, decoded) {
 								if (!ze) {
 									d.fullData=decoded.toString(); // Parse file stream data to JSON								
@@ -306,9 +306,10 @@ KKKK: 1f8b08084b1599560003746573745f365f73616873755f345f6c6576656c345f305f305f30
 									res.write(zmsg);
 									res.end();
 								}
-							});
-														
-							console.error(file_encoding + ": [" + ofields["my_reference"] + "] 2: " + d.fullData.length); 
+							}); */
+							d.fullData=zlib.gunzipSync(buf)							
+							console.error(file_encoding + ": [" + ofields["my_reference"] + "] 2: " + d.fullData.length + 
+								"; buf: " + buf.length); 
 							if (d.fullData.length > 0) {
 								d=_process_json(d, ofields, options, stderr, req, res, encoding);				
 							}	
@@ -318,7 +319,7 @@ KKKK: 1f8b08084b1599560003746573745f365f73616873755f345f6c6576656c345f305f305f30
 							console.error(file_encoding + ": [" + ofields["my_reference"] + "] 4: " + d.fullData.length); 							
 							d=_process_json(d, ofields, options, stderr, req, res, encoding);								
 						}
-                };
+//                }
             }); // End of EOF processor
         }); // End of file attachment processing function
           
@@ -350,6 +351,7 @@ KKKK: 1f8b08084b1599560003746573745f365f73616873755f345f6c6576656c345f305f305f30
         req.busboy.on('finish', function() {
 			// This will need synchronsing with a mutex - gunzip is asynchronous will not complete before you get here
 			// Or use the synchronous method...
+			console.error('FINISH');
         });
 
         req.pipe(req.busboy);
