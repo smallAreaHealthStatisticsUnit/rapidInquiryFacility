@@ -89,6 +89,9 @@ exports.convert = function(req, res) {
 			else if (file.extension === "zip") {
 					file.file_encoding="zip";
 			}
+			else if (file.extension === "lz77") {
+					file.file_encoding="zlib";
+			}
 		}
 			
 		file.temp_file_name = os.tmpdir()  + "/" + filename;
@@ -104,7 +107,7 @@ exports.convert = function(req, res) {
 			if (file.file_encoding === "gzip") {	
 				buf=zlib.gunzipSync(data);
 			}
-			else if (file.file_encoding === "zip" || file_encoding === "zlib") {	
+			else if (file.file_encoding === "zlib") {	
 				buf=zlib.inflateSync(data);
 			}
 			else {

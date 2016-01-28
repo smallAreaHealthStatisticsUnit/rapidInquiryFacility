@@ -330,7 +330,7 @@ KKKK: 1f8b08084b1599560003746573745f365f73616873755f345f6c6576656c345f305f305f30
 			console.error('FINISH');
         });
 
-        req.pipe(req.busboy);
+        req.pipe(req.busboy); // Pipe request stream to busboy form data handler
           
     } // End of post method
 	else {
