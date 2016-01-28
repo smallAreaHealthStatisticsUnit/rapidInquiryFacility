@@ -80,7 +80,7 @@ exports.convert = function(req, res) {
 			var chunks = [];
 			var buf;
 			
-			response.files++;	
+			response.files++;	// Increment file counter	
 
 			// Determine file enconding from content or extension
 			file.file_encoding=req.get('Content-Encoding');

@@ -90,21 +90,38 @@ var MakeRequest = function(){
 		json_file = fs.createReadStream(inputFile);
 	
 	}	
+	else if (nRequests == 7) { 
+		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.gz';
+		json_file = fs.createReadStream(inputFile);
+		json_file2 = fs.createReadStream(inputFile);
+	}
 	else {
 		json_file = fs.createReadStream(inputFile);
 	}
 	
     var length = fs.statSync(inputFile).size;
 	var id=nRequests;
-	
-// Default: test case 1	
-	var formData = {
-		my_test: "Defaults",
-		my_reference: nRequests,
-		attachments: [
-			json_file
-		]
-	};
+		
+	if (nRequests == 7) { 
+			var formData = {
+			my_test: "Defaults",
+			my_reference: nRequests,
+			attachments: [
+				json_file,
+				json_file2
+			]
+		};
+	}
+	else {
+		var formData = {
+			my_test: "Defaults",
+			my_reference: nRequests,
+			attachments: [
+				json_file
+			]
+		};
+	}
+
 	
 // Test cases
 	if (nRequests == 2) {
@@ -132,6 +149,11 @@ var MakeRequest = function(){
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
 		formData["my_test"]="gzip geoJSON file; wrong Content-Type";		
+	}
+	else if (nRequests == 7) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="gzip geoJSON multiple files";		
 	}
 	
 	formData["length"]=length;		
@@ -169,10 +191,16 @@ var postIt = function(){
 		}
 		else {
 			var jsonData = JSON.parse(body);
-			var json = JSON.stringify(jsonData.topojson);
-			var ofields=jsonData.fields;
-			console.log('Upload #' + ofields["my_reference"] + ': '+ jsonData.message + '; new length: ' + json.length +
+			var topojson;
+			var ofields=jsonData.fields;		
+			var file_list=jsonData.file_list;
+			console.error('Upload #' + ofields["my_reference"] + '\n'+ jsonData.message + 
+				'\nfiles processed: ' + jsonData.no_files +
 				'; fields: ' + JSON.stringify(ofields, null, 4));
+			for (i = 0; i < jsonData.no_files; i++) {	
+				 topojson = JSON.stringify(file_list[i].topojson);
+				 console.error("File [" + i + ":" + file_list[i].file_name + "; topoJSON length: " + topojson.length);
+			}
 		}
 	});
 };
@@ -180,7 +208,7 @@ var postIt = function(){
 
 var timeOut = function(){
   setTimeout(function(){
-    if(nRequests++ < 5){ 
+    if(nRequests++ < 7){ 
       postIt();
       timeOut();    
     }
