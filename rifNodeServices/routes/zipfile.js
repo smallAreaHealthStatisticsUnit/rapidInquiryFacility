@@ -51,95 +51,108 @@
 //
  
 //  Globals
-var zlib = require('zlib'),
+const zlib = require('zlib'),
     fs = require('fs'),
     os = require('os');
 	
 exports.convert = function(req, res) {
-
-	var response = {                     // Set output response   
-		message: "UNK",
-		files: 0,
-		file_list: []
-	};
-
-//  req.setEncoding('utf-8'); // This corrupts the data stream with binary data
-    res.setHeader("Content-Type", "text/plain");
 	
-    req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
-		var file = { // File return data type
-			file_name: filename,
-			temp_file_name: "",
-			file_encoding: "",	
-			extension: "",
-			jsonData: ""
-		}
-		var chunks = [];
-		var buf;
+// Post method	
+    if (req.method == 'POST') {
 		
-		response.files++;	
+		var response = {                     // Set output response   
+			message: "UNK",
+			files: 0,
+			file_list: []
+		};
 
-		// Determine file enconding from content or extension
-		file.file_encoding=req.get('Content-Encoding');
-		file.extension = filename.split('.').pop();
-		if (!file.file_encoding) {
-			if (file.extension === "gz") {
-					file.file_encoding="gzip";
-			}
-			else if (file.extension === "zip") {
-					file.file_encoding="zip";
-			}
-			else if (file.extension === "lz77") {
-					file.file_encoding="zlib";
-			}
-		}
-			
-		file.temp_file_name = os.tmpdir()  + "/" + filename;
+	//  req.setEncoding('utf-8'); // This corrupts the data stream with binary data
+		res.setHeader("Content-Type", "text/plain");
 		
-		// Streeam handlers
-		stream.on('data', function(chunk) {
-			chunks.push(chunk);
-		});
-		stream.on('end', function() {
-		
-			data=Buffer.concat(chunks);
+		req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
+			var file = { // File return data type
+				file_name: filename,
+				temp_file_name: "",
+				file_encoding: "",	
+				extension: "",
+				jsonData: ""
+			}
+			var chunks = [];
+			var buf;
 			
-			if (file.file_encoding === "gzip") {	
-				buf=zlib.gunzipSync(data);
-			}
-			else if (file.file_encoding === "zlib") {	
-				buf=zlib.inflateSync(data);
-			}
-			else {
-				return res.status(500).send({
-					message: "FAIL[" + response.files + "]: " + file.file_name + "; extension: " + 
-						file.extension + "; file_encoding: " + file.file_encoding
-				});				
-			}
+			response.files++;	
 
-			console.error("Gzipped binary stream[" + response.files + "]: " + file.file_name + 
-				"; " + data.length + " => " + buf.length + " >>>\n" + 
-				data.toString('hex').substring(0, 80));
+			// Determine file enconding from content or extension
+			file.file_encoding=req.get('Content-Encoding');
+			file.extension = filename.split('.').pop();
+			if (!file.file_encoding) {
+				if (file.extension === "gz") {
+						file.file_encoding="gzip";
+				}
+				else if (file.extension === "zip") {
+						file.file_encoding="zip";
+				}
+				else if (file.extension === "lz77") {
+						file.file_encoding="zlib";
+				}
+			}
 				
-			// Add file to response
-			file.jsonData = JSON.parse(buf.toString());
-			response.file_list[response.files-1]=file;
+			file.temp_file_name = os.tmpdir()  + "/" + filename;
+			
+			// Streeam handlers
+			stream.on('data', function(chunk) {
+				chunks.push(chunk);
+			});
+			stream.on('end', function() {
+			
+				data=Buffer.concat(chunks);
+				
+				if (file.file_encoding === "gzip") {	
+					buf=zlib.gunzipSync(data);
+				}
+				else if (file.file_encoding === "zlib") {	
+					buf=zlib.inflateSync(data);
+				}
+				else {
+					return res.status(500).send({
+						message: "FAIL[" + response.files + "]: " + file.file_name + "; extension: " + 
+							file.extension + "; file_encoding: " + file.file_encoding
+					});				
+				}
+
+				console.error("Gzipped binary stream[" + response.files + "]: " + file.file_name + 
+					"; " + data.length + " => " + buf.length + " >>>\n" + 
+					data.toString('hex').substring(0, 80));
+					
+				// Add file to response
+				file.jsonData = JSON.parse(buf.toString());
+				response.file_list[response.files-1]=file;
+			});
+
 		});
 
-    });
+		// Set response message; JSON it; write response
+		req.busboy.on('finish', function() {
+			var message="OK: " + response.files + " file(s) processed";
+			var output;
+			
+			console.error(message);
+			response.message=message			
+			output = JSON.stringify(response);// Convert output response to JSON 
 
-	// Set response message; JSON it; write response
-    req.busboy.on('finish', function() {
-		var message="OK: " + response.files + " file(s) processed";
-		var output;
-		
-		console.error(message);
-		response.message=message			
-		output = JSON.stringify(response);// Convert output response to JSON 
+			res.write(output);                    // Write output  
+			res.end();		
+		});
 
-		res.write(output);                    // Write output  
+		req.pipe(req.busboy); // Pipe request stream to busboy form data handler
+	}
+	else {
+		var msg="ERROR! zipfile.js: GET Requests not allowed; please see: " + 
+			"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
+		console.error(msg);
+        res.status(405);				  
+		res.write(msg);
 		res.end();		
-    });
-
-    req.pipe(req.busboy); // Pipe request stream to busboy form data handler
-};
+		return;		  
+	}	
+}

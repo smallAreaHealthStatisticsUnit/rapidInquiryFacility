@@ -49,10 +49,10 @@
 //
 // Test4: Not using request!
 
-var FormData = require('form-data');
-var fs = require('fs');
-var zlib = require('zlib');
-var inspect = require('util').inspect;
+const FormData = require('form-data'),
+	fs = require('fs'),
+	zlib = require('zlib'),
+	inspect = require('util').inspect;
 
 var form = new FormData();
 

@@ -49,7 +49,7 @@
 // Prototype author: Federico Fabbri
 // Imperial College London
 //
-var express = require('express'),
+const express = require('express'),
     busboy = require('connect-busboy'),
     toTopojson = require('./routes/toTopojson'),
     simplify = require('./routes/simplify'),
@@ -86,10 +86,11 @@ app.use(function(err, req, res, next) {
 });  
  */
 
+ /*
 app.use( 				// For parsing incoming HTML form data.
 	busboy());
-	
-/*
+ */	
+
 app.use( 				// For parsing incoming HTML form data.
 	busboy({
 		highWaterMark: 2000 * 1024 * 1024,
@@ -98,7 +99,6 @@ app.use( 				// For parsing incoming HTML form data.
 		},
 		defCharset: 'binary'
 	}));
-*/
 
 // Get methods are dummies for test purposes
 app.get('/toTopojson', toTopojson.convert);
@@ -106,6 +106,8 @@ app.post('/toTopojson', toTopojson.convert);
 app.get('/simplify', simplify.convert);
 app.post('/simplify', simplify.convert);
 
+// Zipfile test method. Assumes compressed JSON file
+app.get('/zipfile', zipfile.convert);
 app.post('/zipfile', zipfile.convert);
  
 //app.use(express.static(__dirname + '/public'));
