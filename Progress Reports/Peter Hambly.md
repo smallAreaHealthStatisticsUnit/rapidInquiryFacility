@@ -249,18 +249,21 @@ Test harness refactor; Node.js version working
 	1. Restructure of code;
 	2. Convert to test_6_sahsu_4_level4_0_0_0.js (level 4, zoomnlevel 0 sahusland example, 3.6M);
 	3. Convert to support form fields as parameteres and return;
-	4. Return debug output from topoJSON module;	
+	4. Return debug output from topoJSON module;
 
+#### 18th to 29th January
+	
+	5. Compressed attachments using zlib; multi attachment support; browser verification
+	
 	Todo:
 
-	5. Error handlers, busboy limit handlers, failure cases:
+	6. Error handlers, busboy limit handlers, failure cases:
 	   * GeoJSON syntax issues
 	   * Failures in file stream
 	   * Enforce single file attachment
 	   * General syntax errors
 	   * Size limits (100M); also test limits
-	6. Support properties, property-transform and my_id topoJSON module options;
-	7. Compressed attachments;
+	7. Support properties, property-transform and my_id topoJSON module options;
 	8. Integration to build.
 	9. Documentation;
 	10. Full client logging;
