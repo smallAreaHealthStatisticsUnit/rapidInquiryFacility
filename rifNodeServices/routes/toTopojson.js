@@ -175,7 +175,9 @@ function _process_json(d1, ofields, options, stderr, req, res, encoding) {
  */
 exports.convert = function(req, res) {
 
-//    req.setEncoding('utf-8'); // This corrupts the data stream with binary data
+//  req.setEncoding('utf-8'); // This corrupts the data stream with binary data
+//	req.setEncoding('binary'); // So does this! Leave it alone - it gets it right!
+
     res.setHeader("Content-Type", "text/plain");
 	
 // Add stderr hook to capture debug output from topoJSON	
@@ -203,9 +205,6 @@ exports.convert = function(req, res) {
 			quantization: options.quantization,
 			projection: options.projection
 		};
-		
-
-//		req.setEncoding('binary');
 			
 // File attachment processing function		  
         req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
@@ -286,27 +285,6 @@ KKKK: 1f8b08084b1599560003746573745f365f73616873755f345f6c6576656c345f305f305f30
 	
 						var buf=Buffer.concat(d.chunks);
 						if (file_encoding === "zip" || file_encoding === "gzip" || file_encoding === "zlib") {	
-/*							d.fullData="";
-							zlib.unzip(buf, function(ze, decoded) {
-								if (!ze) {
-									d.fullData=decoded.toString(); // Parse file stream data to JSON								
-								}
-								else {
-									zmsg="XXXX EXCEPTION! toTopoJSON.js: [" + ofields["my_reference"] + 
-											"; " + req.url + "; " + req.ip + "]:" + "]: " + 
-											"zlib.unzip() failed: " + 
-											d.fName + "; size: " + buf.length + "/" + ofields["length"] + 
-											": does not seem to be valid: \n\n" + 
-											ze + 
-											"\r\nTruncated buf:\r\n" + buf.toString('hex').substring(0, 132) + "...\r\n" + 
-											'; Content-Transfer-Encoding: ' + encoding + 
-											'; Content-Encoding: ' + req.get('Content-Encoding');
-									console.error(zmsg + "\n" + ze.stack);	
-									res.status(500);					  
-									res.write(zmsg);
-									res.end();
-								}
-							}); */
 							d.fullData=zlib.gunzipSync(buf)							
 							console.error(file_encoding + ": [" + ofields["my_reference"] + "] 2: " + d.fullData.length + 
 								"; buf: " + buf.length); 
@@ -349,8 +327,6 @@ KKKK: 1f8b08084b1599560003746573745f365f73616873755f345f6c6576656c345f305f305f30
           		  
 // End of request - complete response		  
         req.busboy.on('finish', function() {
-			// This will need synchronsing with a mutex - gunzip is asynchronous will not complete before you get here
-			// Or use the synchronous method...
 			console.error('FINISH');
         });
 

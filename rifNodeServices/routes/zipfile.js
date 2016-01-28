@@ -9,7 +9,6 @@
 // Description:
 //
 // Rapid Enquiry Facility (RIF) - compression testing webservice
-//								  Uses node.js TopoJSON module
 //
 // Copyright:
 //
@@ -45,19 +44,10 @@
 //
 // Peter Hambly, SAHSU
 //
-// Usage: tests/requests.js
+// Usage: tests/request4.js
 //
-// Uses:
+// Uses: zlib, fs, os
 //
-// CONVERTS GEOJSON(MAX 100MB) TO TOPOJSON
-// Only POST requests are processed
-// Expects a vaild geojson as input
-// Topojson have quantization on
-// The level of quantization is based on map tile zoom level
-// More info on quantization here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
-//
-// Prototype author: Federico Fabbri
-// Imperial College London
 //
  
 //  Globals
@@ -70,9 +60,8 @@ var extension;
 	
 exports.convert = function(req, res) {
 
-//    req.setEncoding('utf-8'); // This corrupts the data stream with binary data
+//  req.setEncoding('utf-8'); // This corrupts the data stream with binary data
     res.setHeader("Content-Type", "text/plain");
-
 	
     req.busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
 		file_encoding=req.get('Content-Encoding');
@@ -87,23 +76,8 @@ exports.convert = function(req, res) {
 		}
 			
 		l_file_name = os.tmpdir()  + "/" + filename;
-		/*
-		console.error("Create temporary file: " + l_file_name + "; extension: " + extension + "; file_encoding: " + file_encoding);
-		 
-        var writeStream = fs.createWriteStream(
-            l_file_name, {
-            flags: 'w',
-			defaultEncoding: undefined,
-            content_type: mimetype,
-            metadata: {
-                encoding: encoding,
-            }
-        });
-
-        file.pipe(writeStream); */
 		
 		var chunks = [];
-//		var chunk;
 		
 		file.on('data', function(chunk) {
 			chunks.push(chunk);
@@ -114,21 +88,8 @@ exports.convert = function(req, res) {
     });
 
     req.busboy.on('finish', function() {
-		/*
-		json_file2 = fs.createReadStream(l_file_name);
-		var data = new Buffer('');
-		var chunks = [];
-		var chunk;
 
-		json_file2.on('readable', function() {
-			while ((chunk=json_file2.read()) != null) {
-				chunks.push(chunk);
-			}
-		});
-		*/
-//		json_file2.on('end', function() {
 			var buf;
-//			data=Buffer.concat(chunks);
 			console.log('Gzipped binary stream: ' + data.toString('hex').substring(0, 132));
 
 			if (file_encoding === "gzip") {	
@@ -148,8 +109,6 @@ exports.convert = function(req, res) {
 				message: "OK: : " + l_file_name + "; extension: " + extension + "; file_encoding: " + file_encoding +
 					";\ndata:\n" + JSON.stringify(jsonData, null, 4).substring(0, 132)
 			});
-		 
-//		});	
 
     });
 
