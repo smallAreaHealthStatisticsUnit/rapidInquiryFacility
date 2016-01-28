@@ -54,63 +54,89 @@
 var zlib = require('zlib'),
     fs = require('fs'),
     os = require('os');
-var l_file_name;
-var file_encoding;
-var extension;
 	
 exports.convert = function(req, res) {
+
+	var response = {                     // Set output response   
+		message: "UNK",
+		files: 0,
+		file_list: []
+	};
 
 //  req.setEncoding('utf-8'); // This corrupts the data stream with binary data
     res.setHeader("Content-Type", "text/plain");
 	
-    req.busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
-		file_encoding=req.get('Content-Encoding');
-		extension = filename.split('.').pop();
-		if (!file_encoding) {
-			if (extension === "gz") {
-					file_encoding="gzip";
+    req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
+		var file = { // File return data type
+			file_name: filename,
+			temp_file_name: "",
+			file_encoding: "",	
+			extension: "",
+			jsonData: ""
+		}
+		var chunks = [];
+		var buf;
+		
+		response.files++;	
+
+		// Determine file enconding from content or extension
+		file.file_encoding=req.get('Content-Encoding');
+		file.extension = filename.split('.').pop();
+		if (!file.file_encoding) {
+			if (file.extension === "gz") {
+					file.file_encoding="gzip";
 			}
-			else if (extension === "zip") {
-					file_encoding="zip";
+			else if (file.extension === "zip") {
+					file.file_encoding="zip";
 			}
 		}
 			
-		l_file_name = os.tmpdir()  + "/" + filename;
+		file.temp_file_name = os.tmpdir()  + "/" + filename;
 		
-		var chunks = [];
-		
-		file.on('data', function(chunk) {
+		// Streeam handlers
+		stream.on('data', function(chunk) {
 			chunks.push(chunk);
 		});
-		file.on('end', function() {
+		stream.on('end', function() {
+		
 			data=Buffer.concat(chunks);
-		});
-    });
-
-    req.busboy.on('finish', function() {
-
-			var buf;
-			console.log('Gzipped binary stream: ' + data.toString('hex').substring(0, 132));
-
-			if (file_encoding === "gzip") {	
+			
+			if (file.file_encoding === "gzip") {	
 				buf=zlib.gunzipSync(data);
 			}
-			else if (file_encoding === "zip" || file_encoding === "zlib") {	
+			else if (file.file_encoding === "zip" || file_encoding === "zlib") {	
 				buf=zlib.inflateSync(data);
 			}
 			else {
 				return res.status(500).send({
-					message: "FAIL: : " + l_file_name + "; extension: " + extension + "; file_encoding: " + file_encoding
+					message: "FAIL[" + response.files + "]: " + file.file_name + "; extension: " + 
+						file.extension + "; file_encoding: " + file.file_encoding
 				});				
 			}
-			var jsonData = JSON.parse(buf.toString());
-							
-	        return res.status(200).send({
-				message: "OK: : " + l_file_name + "; extension: " + extension + "; file_encoding: " + file_encoding +
-					";\ndata:\n" + JSON.stringify(jsonData, null, 4).substring(0, 132)
-			});
+
+			console.error("Gzipped binary stream[" + response.files + "]: " + file.file_name + 
+				"; " + data.length + " => " + buf.length + " >>>\n" + 
+				data.toString('hex').substring(0, 80));
+				
+			// Add file to response
+			file.jsonData = JSON.parse(buf.toString());
+			response.file_list[response.files-1]=file;
+		});
 
     });
 
-    req.pipe(req.busboy);
+	// Set response message; JSON it; write response
+    req.busboy.on('finish', function() {
+		var message="OK: " + response.files + " file(s) processed";
+		var output;
+		
+		console.error(message);
+		response.message=message			
+		output = JSON.stringify(response);// Convert output response to JSON 
+
+		res.write(output);                    // Write output  
+		res.end();		
+    });
+
+    req.pipe(req.busboy); // Pipe request stream to busboy form data handler
 };
