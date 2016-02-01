@@ -66,7 +66,6 @@ var MakeRequest = function(){
 // Gzipped file tests
 	if (nRequests == 5) { 
 		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.gz';
-//		contentType = 'application/gzip';
 		json_file = fs.createReadStream(inputFile);
 		json_file2 = fs.createReadStream(inputFile);
 		var data = new Buffer('');
@@ -83,8 +82,7 @@ var MakeRequest = function(){
 			data=Buffer.concat(chunks)
 			console.log('Gzipped binary stream: ' + data.toString('hex').substring(0, 132))
 		});	
-
-//		require('request-debug')(this.request);	
+	
 	}
 	else if (nRequests == 6) { // wrong Content-Type, binary stream
 		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.lz77';
@@ -105,7 +103,8 @@ var MakeRequest = function(){
 	
     var length = fs.statSync(inputFile).size;
 	var id=nRequests;
-		
+	
+// Multi-file test	
 	if (nRequests == 7) { 
 			var formData = {
 			my_test: "Defaults",
@@ -128,7 +127,7 @@ var MakeRequest = function(){
 	}
 
 	
-// Test cases
+// Test case: fields
 	if (nRequests == 2) {
 		formData["verbose"]="true";
 		formData["my_test"]="Verbose";		
@@ -147,13 +146,12 @@ var MakeRequest = function(){
 	else if (nRequests == 5) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="gzip geoJSON file";	
-//		this.request.debug = true;		
+		formData["my_test"]="gzip geoJSON file";		
 	}	
 	else if (nRequests == 6) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="gzip geoJSON file; wrong Content-Type";		
+		formData["my_test"]="gzip geoJSON file; wrong Content-Type; will work";		
 	}
 	else if (nRequests == 7) {
 		formData["verbose"]="true";
@@ -162,7 +160,6 @@ var MakeRequest = function(){
 	}
 		
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
-//		'; ' + JSON.stringify(formData, null, 4));
 		
     this.options = {
         url:  'http://127.0.0.1:3000/toTopojson',
@@ -173,50 +170,47 @@ var MakeRequest = function(){
 	if (nRequests == 5) { // Gzipped file test	
 		this.debug = true;
 		this.options.headers={'Content-Type': contentType, 'Content-Encoding': 'gzip', "accept-encoding" : "gzip"};
-//		this.options.headers:{'Content-Type': contentType};
 		this.options.gzip = true;
-//		json_file.setDefaultEncoding('binary');
 		console.error("GZIP: " + JSON.stringify(formData, null, 4));
-	}
-	
+	}	
 }
 
 var postIt = function(){
 	var r = new MakeRequest(); 
 	var p=r.request.post(r.options, function optionalCallback(err, httpResponse, body) {
 		if (err) {
-			return console.error('Upload #' + nRequests + ' failed: ' + JSON.stringify(httpResponse, null, 4) + 
+			console.error('Upload #' + nRequests + ' failed: ' + JSON.stringify(httpResponse, null, 4) + 
 				"\r\nError: ", err);
 		}
 		else if (httpResponse.statusCode != 200) {
-			return console.error('Upload failed HTTP status: ' + httpResponse.statusCode + 
-				"\r\nError: [", body + "]\r\n");
-		   
+			console.error('Upload failed HTTP status: ' + httpResponse.statusCode + 
+				"\r\nError: [", body + "]\r\n");		   
 		}
 		else {
 			var jsonData = JSON.parse(body);
 			var topojson;
 			var ofields=jsonData.fields;		
 			var file_list=jsonData.file_list;
-			console.error('Upload #' + ofields["my_reference"] + '\n'+ jsonData.message + 
+			console.error('\nUpload #' + ofields["my_reference"] + '\n' + jsonData.message + 
 				'\nfiles processed: ' + jsonData.no_files +
 				'; fields: ' + JSON.stringify(ofields, null, 4));
 			for (i = 0; i < jsonData.no_files; i++) {	
 				 topojson = JSON.stringify(file_list[i].topojson);
 				 console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] topoJSON length: " + topojson.length);
 			}
+			console.error('\nEnd of upload #' + ofields["my_reference"] + '\n');
 		}
 	});
 };
   
 
 var timeOut = function(){
-  setTimeout(function(){
-    if(nRequests++ < 7){ 
-      postIt();
-      timeOut();    
-    }
-  },100);
+	setTimeout(function() {
+		if(nRequests++ < 7){ 
+			postIt();
+			timeOut();    
+		}
+	}, 100);
 };
 
 timeOut();

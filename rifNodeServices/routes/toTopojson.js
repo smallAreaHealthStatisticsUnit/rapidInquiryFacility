@@ -345,6 +345,8 @@ exports.convert = function(req, res) {
           		  
 // End of request - complete response		  
         req.busboy.on('finish', function() {
+			var msg;
+			
 			for (i = 0; i < response.no_files; i++) {	
 				d=d_files.d_list[i];
 				if (!d.file) {
@@ -353,17 +355,26 @@ exports.convert = function(req, res) {
 					});					
 				}
 				else if (d.file.file_data.length > 0) {
-					d=_process_json(d, ofields, options, stderr, req, res, response);				
+					d=_process_json(d, ofields, options, stderr, req, res, response);	
+					if (!d) {
+						return; // _process_json() has emitted the error
+					}
 				}	
 				else {
 					return res.status(500).send({
-						message: "FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+						message: "FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 							file.extension + "; file size is zero"
 					});
 				}	
 			}
-			rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", 
-				"Processed: " + response.no_files + " files; debug message:\n" + response.message, req);		
+			if (!ofields["my_reference"]) {
+				msg="[No my_reference] Processed: " + response.no_files + " files; debug message:\n" + response.message
+			}
+			else {
+				msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files; debug message:\n" + response.message
+			}
+			
+			rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", msg, req);		
 			response.fields=ofields;				   // Add return fields		
 			var output = JSON.stringify(response);// Convert output response to JSON 
 			
