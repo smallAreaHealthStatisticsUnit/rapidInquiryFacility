@@ -87,7 +87,7 @@ var MakeRequest = function(){
 //		require('request-debug')(this.request);	
 	}
 	else if (nRequests == 6) { // wrong Content-Type, binary stream
-		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.gz';
+		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.lz77';
 		json_file = fs.createReadStream(inputFile);
 	
 	}	

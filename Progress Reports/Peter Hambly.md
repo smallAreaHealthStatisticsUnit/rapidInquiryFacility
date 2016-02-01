@@ -260,7 +260,6 @@ Test harness refactor; Node.js version working
 	6. Error handlers, busboy limit handlers, failure cases:
 	   * GeoJSON syntax issues
 	   * Failures in file stream
-	   * Enforce single file attachment
 	   * General syntax errors
 	   * Size limits (100M); also test limits
 	7. Support properties, property-transform and my_id topoJSON module options;

@@ -100,7 +100,6 @@ var inspect = require('util').inspect,
 				TopoJSON topology processing options,
 				HTTP request object,
 				HTTP response object, 
-				busboy on-file file encoding,
 				my response object
  * Returns:		d object/Nothing on failure
  * Description: TopoJSON processing:
@@ -108,7 +107,7 @@ var inspect = require('util').inspect,
  *				- calls topojson.topology() using options
  * 				- Add file name, stderr and topoJSON to my response
  */
-function _process_json(d1, ofields, options, stderr, req, res, encoding, response) {
+function _process_json(d1, ofields, options, stderr, req, res, response) {
 	var d=d1;
 	var msg;
 		
@@ -124,6 +123,7 @@ function _process_json(d1, ofields, options, stderr, req, res, encoding, respons
 		stderr.enable(); 				   // Re-enable stderr
 		
 		d.file.topojson_stderr=stderr.str();  // Get stderr as a string	
+		stderr.clean();						// Clean down stderr string
 		stderr.restore();                  // Restore normal stderr functionality 
 
 // Add file name, stderr and topoJSON to my response
@@ -160,8 +160,7 @@ function _process_json(d1, ofields, options, stderr, req, res, encoding, respons
 		}
 		msg="Your input file " + d.no_files + ": " + 
 			d.file.file_name + "; size: " + d.file.file_data.length + 
-			"; " + msg + ": \n\n" + 
-			'; Content-Transfer-Encoding: ' + encoding;
+			"; " + msg + ": \n\n";
 		if (d.file.file_data.length > 0) {
 			msg=msg + "\nTruncated data:\n" + 
 				d.file.file_data.toString('hex').substring(0, 132) + "...\r\n";
@@ -199,6 +198,9 @@ exports.convert = function(req, res) {
 		message: '',               
 		fields: [] 
 	};
+	var d_files = { 
+		d_list: []
+	}
 		
 // Post method	
     if (req.method == 'POST') {
@@ -286,36 +288,31 @@ exports.convert = function(req, res) {
 						if (d.file.file_encoding === "gzip") {
 							d.file.file_data=zlib.gunzipSync(buf)							
 							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-								d.file.file_encoding + ": [" + ofields["my_reference"] + "] zlib.gunzip(): " + d.file.file_data.length + 
+								"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+								d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
 								"; from buf: " + buf.length, req); 
 						}	
 						else if (d.file.file_encoding === "zlib") {	
 							d.file.file_data=zlib.inflateSync(buf)							
 							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-								d.file.file_encoding + ": [" + ofields["my_reference"] + "] zlib.inflate(): " + d.file.file_data.length + 
+								"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+								d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
 								"; from buf: " + buf.length, req); 
 						}
 						else if (d.file.file_encoding === "zip") {
 							return res.status(500).send({
-								message: "FAIL[" + d.response.files + "]: " + d.file.file_name + "; extension: " + 
+								message: "FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 									file.extension + "; file_encoding: " + d.file.file_encoding + " not supported"
 							});								
 						}
 						else {
 							d.file.file_data=buf;
-							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-								"[" + ofields["my_reference"] + "] uncompressed data: " + d.file.file_data.length, req); 												
+							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 			
+								"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+								"; uncompressed data: " + d.file.file_data.length, req); 												
 						}
 						
-						if (d.file.file_data.length > 0) {
-							d=_process_json(d, ofields, options, stderr, req, res, encoding, response);				
-						}	
-						else {
-							return res.status(500).send({
-								message: "FAIL[" + d.response.files + "]: " + d.file.file_name + "; extension: " + 
-									file.extension + "; file size is zero"
-							});
-						}						
+						d_files.d_list[d.no_files-1] = d;						
 					
 //                }
             }); // End of EOF processor
@@ -347,7 +344,24 @@ exports.convert = function(req, res) {
          }); // End of field processing function
           		  
 // End of request - complete response		  
-        req.busboy.on('finish', function() {		
+        req.busboy.on('finish', function() {
+			for (i = 0; i < response.no_files; i++) {	
+				d=d_files.d_list[i];
+				if (!d.file) {
+					return res.status(500).send({
+						message: "FAIL! File [" + (i+1) + "/" + d.no_files + "]: not found in list"
+					});					
+				}
+				else if (d.file.file_data.length > 0) {
+					d=_process_json(d, ofields, options, stderr, req, res, response);				
+				}	
+				else {
+					return res.status(500).send({
+						message: "FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+							file.extension + "; file size is zero"
+					});
+				}	
+			}
 			rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", 
 				"Processed: " + response.no_files + " files; debug message:\n" + response.message, req);		
 			response.fields=ofields;				   // Add return fields		
