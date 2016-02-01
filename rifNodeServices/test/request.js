@@ -61,6 +61,7 @@ var MakeRequest = function(){
 	var contentType = 'application/json';
 	var json_file;
 	var json_file2;
+	var json_file3;
 	
 // Gzipped file tests
 	if (nRequests == 5) { 
@@ -92,8 +93,11 @@ var MakeRequest = function(){
 	}	
 	else if (nRequests == 7) { 
 		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.gz';
+		var inputFile2 = './data/test_6a_sahsu_4_level4_0_0_0.js';
+		var inputFile3 = './data/test_6_sahsu_4_level4_0_0_0.js.lz77';
 		json_file = fs.createReadStream(inputFile);
-		json_file2 = fs.createReadStream(inputFile);
+		json_file2 = fs.createReadStream(inputFile2);
+		json_file3 = fs.createReadStream(inputFile3);
 	}
 	else {
 		json_file = fs.createReadStream(inputFile);
@@ -108,7 +112,8 @@ var MakeRequest = function(){
 			my_reference: nRequests,
 			attachments: [
 				json_file,
-				json_file2
+				json_file2,
+				json_file3
 			]
 		};
 	}
@@ -198,7 +203,7 @@ var postIt = function(){
 				'; fields: ' + JSON.stringify(ofields, null, 4));
 			for (i = 0; i < jsonData.no_files; i++) {	
 				 topojson = JSON.stringify(file_list[i].topojson);
-				 console.error("File [" + i + ":" + file_list[i].file_name + "; topoJSON length: " + topojson.length);
+				 console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] topoJSON length: " + topojson.length);
 			}
 		}
 	});

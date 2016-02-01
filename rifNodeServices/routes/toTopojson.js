@@ -110,7 +110,8 @@ var inspect = require('util').inspect,
  */
 function _process_json(d1, ofields, options, stderr, req, res, encoding, response) {
 	var d=d1;
-	
+	var msg;
+		
     try {	
 		d.file.jsonData = undefined;
 		d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
@@ -122,27 +123,35 @@ function _process_json(d1, ofields, options, stderr, req, res, encoding, respons
 			}, options);				
 		stderr.enable(); 				   // Re-enable stderr
 		
-		d.file.topojson_stderr=stderr.str();  // Get stderr as a string
-		rifLog.rifLog("TopoJson.topology() stderr for file " + d.no_files + ": " + d.file.file_name + ">>>\n"  + 
-			d.file.topojson_stderr + "<<<", 
-			req);	
+		d.file.topojson_stderr=stderr.str();  // Get stderr as a string	
 		stderr.restore();                  // Restore normal stderr functionality 
 
 // Add file name, stderr and topoJSON to my response
-		response.no_files++;
-		response.file_list[response.no_files-1] = {
+// This will need a mutex if > 1 thread is being processed at the same time
+		response.file_list[d.no_files-1] = {
 			file_name: d.file.file_name,
 			topojson: d.file.topojson,
 			topojson_stderr: d.file.topojson_stderr
-		};		
-		if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message		
-			response.message = response.message + "\n[" + d.file.file_name + ":" + d.no_files + "] OK:\n>>>\n" + 
+		};	
+		
+		msg="File [" + d.no_files + "]: " + d.file.file_name + "; topoJSON: " + JSON.stringify(d.file.topojson).length + "]"
+		if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message	
+// This will need a mutex if > 1 thread is being processed at the same time	
+			response.message = response.message + "\n" + msg + " OK:\n>>>\n" + 
 				d.file.topojson_stderr + "<<<";
+			rifLog.rifLog("TopoJson.topology() stderr; " + msg  + ">>>\n"  + 
+				d.file.topojson_stderr + "<<<", 
+				req);
 		}
+		else {
+// This will need a mutex if > 1 thread is being processed at the same time
+			response.message = response.message + "\n" + msg + " OK";
+			rifLog.rifLog("TopoJson.topology() no stderr; " + msg, 
+				req);		
+		}			
 															   
 		return d;								   
 	} catch (e) {                            // Catch conversion errors
-		var msg;
 		if (!d.file.jsonData) {
 			msg="does not seem to contain valid JSON";
 		}
@@ -229,7 +238,10 @@ exports.convert = function(req, res) {
 				topojson_stderr: ""
 			};
 
-			d.no_files++;	// Increment file counter
+			// This will need a mutex if > 1 thread is being processed at the same time
+			response.no_files++;	// Increment file counter
+			d.no_files=response.no_files; // Local copy
+			
 			d.file.file_name = filename;
 			d.file.temp_file_name = os.tmpdir()  + "/" + filename;
 			d.file.file_encoding=req.get('Content-Encoding');
@@ -276,31 +288,34 @@ exports.convert = function(req, res) {
 							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
 								d.file.file_encoding + ": [" + ofields["my_reference"] + "] zlib.gunzip(): " + d.file.file_data.length + 
 								"; from buf: " + buf.length, req); 
-							if (d.file.file_data.length > 0) {
-								d=_process_json(d, ofields, options, stderr, req, res, encoding, response);				
-							}	
 						}	
 						else if (d.file.file_encoding === "zlib") {	
 							d.file.file_data=zlib.inflateSync(buf)							
 							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
 								d.file.file_encoding + ": [" + ofields["my_reference"] + "] zlib.inflate(): " + d.file.file_data.length + 
 								"; from buf: " + buf.length, req); 
-							if (d.file.file_data.length > 0) {
-								d=_process_json(d, ofields, options, stderr, req, res, encoding, response);				
-							}	
 						}
 						else if (d.file.file_encoding === "zip") {
 							return res.status(500).send({
 								message: "FAIL[" + d.response.files + "]: " + d.file.file_name + "; extension: " + 
-									file.extension + "; file_encoding: " + d.file.file_encoding
+									file.extension + "; file_encoding: " + d.file.file_encoding + " not supported"
 							});								
 						}
 						else {
 							d.file.file_data=buf;
 							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-								d.file.file_encoding + ": [" + ofields["my_reference"] + "] uncompressed data: " + d.file.file_data.length, req); 							
-							d=_process_json(d, ofields, options, stderr, req, res, encoding, response);								
+								"[" + ofields["my_reference"] + "] uncompressed data: " + d.file.file_data.length, req); 												
 						}
+						
+						if (d.file.file_data.length > 0) {
+							d=_process_json(d, ofields, options, stderr, req, res, encoding, response);				
+						}	
+						else {
+							return res.status(500).send({
+								message: "FAIL[" + d.response.files + "]: " + d.file.file_name + "; extension: " + 
+									file.extension + "; file size is zero"
+							});
+						}						
 					
 //                }
             }); // End of EOF processor

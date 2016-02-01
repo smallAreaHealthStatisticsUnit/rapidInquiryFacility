@@ -52,7 +52,7 @@
 var FormData = require('form-data');
 var fs = require('fs');
 
-var nRequests = 5;
+var nRequests = 7;
 
 var MakeRequest = function(){
 
@@ -60,14 +60,15 @@ var MakeRequest = function(){
 	require('request-debug')(this.request, 
 		function(type, data, r) {
 			console.log('Request debug: ' + type + 
-				";\nheaders" + JSON.stringify(data.headers, null, 4) + 
-				";\nbody" + JSON.stringify(data, null, 4))
+				";\nheaders" + JSON.stringify(data.headers, null, 4).substring(0, 132) + 
+				";\nbody" + JSON.stringify(data, null, 4).substring(0, 132))
 });
 	
 	var inputFile = './data/test_6_sahsu_4_level4_0_0_0.js';
 	var contentType = 'application/json';
 	var json_file;
 	var json_file2;
+	var json_file3;
 	
 // Gzipped file tests
 	if (nRequests == 5) { 
@@ -97,21 +98,41 @@ var MakeRequest = function(){
 		json_file = fs.createReadStream(inputFile);
 	
 	}	
+	else if (nRequests == 7) { 
+		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.gz';
+		var inputFile2 = './data/test_6a_sahsu_4_level4_0_0_0.js';
+		var inputFile3 = './data/test_6_sahsu_4_level4_0_0_0.js.lz77';
+		json_file = fs.createReadStream(inputFile);
+		json_file2 = fs.createReadStream(inputFile2);
+		json_file3 = fs.createReadStream(inputFile3);
+	}	
 	else {
 		json_file = fs.createReadStream(inputFile);
 	}
 	
     var length = fs.statSync(inputFile).size;
 	var id=nRequests;
-	
-// Default: test case 1	
-	var formData = {
-		my_test: "Defaults",
-		my_reference: nRequests,
-		attachments: [
-			json_file
-		]
-	};
+		
+	if (nRequests == 7) { 
+			var formData = {
+			my_test: "Defaults",
+			my_reference: nRequests,
+			attachments: [
+				json_file,
+				json_file2,
+				json_file3
+			]
+		};
+	}
+	else { // Default: test case 1
+		var formData = {
+			my_test: "Defaults",
+			my_reference: nRequests,
+			attachments: [
+				json_file
+			]
+		};
+	}
 	
 // Test cases
 	if (nRequests == 2) {
@@ -139,6 +160,11 @@ var MakeRequest = function(){
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
 		formData["my_test"]="gzip geoJSON file; wrong Content-Type";		
+	}
+	else if (nRequests == 7) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="gzip geoJSON multiple files";		
 	}
 	
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
@@ -188,7 +214,7 @@ var postIt = function(){
 				'; fields: ' + JSON.stringify(ofields, null, 4));
 			for (i = 0; i < jsonData.no_files; i++) {	
 				 topojson = JSON.stringify(file_list[i].topojson);
-				 console.error("File [" + i + ":" + file_list[i].file_name + "; topoJSON length: " + topojson.length);
+				 console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] topoJSON length: " + topojson.length);
 			}
 		}
 	});
