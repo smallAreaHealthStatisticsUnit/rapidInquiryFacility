@@ -155,8 +155,7 @@ var MakeRequest = function(){
 		formData["zoomLevel"]=0;	
 		formData["my_test"]="gzip geoJSON multiple files";		
 	}
-	
-	formData["length"]=length;		
+		
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 //		'; ' + JSON.stringify(formData, null, 4));
 		

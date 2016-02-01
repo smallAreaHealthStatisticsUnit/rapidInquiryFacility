@@ -65,6 +65,7 @@ var inspect = require('util').inspect,
 	topojson = require('topojson'),
 	zlib = require('zlib'),
     stderrHook = require('./stderrHook'),
+    rifLog = require('./rifLog'),
     os = require('os'),
     fs = require('fs'),
 
@@ -92,13 +93,27 @@ var inspect = require('util').inspect,
         return this; 
      };
 
+/*
+ * Function:	_process_json()
+ * Parameters:	d object (temporary processing data, 
+				ofields [field parameters array],
+				TopoJSON topology processing options,
+				HTTP request object,
+				HTTP response object, 
+				busboy on-file file encoding,
+				my response object
+ * Returns:		d object/Nothing on failure
+ * Description: TopoJSON processing:
+ *				- converts string to JSON
+ *				- calls topojson.topology() using options
+ * 				- Add file name, stderr and topoJSON to my response
+ */
 function _process_json(d1, ofields, options, stderr, req, res, encoding, response) {
 	var d=d1;
 	
     try {	
-		console.error("XXXX[" + ofields["my_reference"] + "] 3: " + d.file.file_data.length); 						
+		d.file.jsonData = undefined;
 		d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
-		console.error("YYYY[" + ofields["my_reference"] + "] 3: " +  JSON.stringify(d.file.jsonData, null, 4).length); 						
 
 		// Re-route topoJSON stderr to stderr.str
 		stderr.disable();
@@ -108,12 +123,12 @@ function _process_json(d1, ofields, options, stderr, req, res, encoding, respons
 		stderr.enable(); 				   // Re-enable stderr
 		
 		d.file.topojson_stderr=stderr.str();  // Get stderr as a string
-		console.error(d.file.topojson_stderr);
-
-		console.error("TopoJson stderr[" + d.file.file_name + ":" + d.no_files + "]: \n"  + d.file.topojson_stderr);	
+		rifLog.rifLog("TopoJson.topology() stderr for file " + d.no_files + ": " + d.file.file_name + ">>>\n"  + 
+			d.file.topojson_stderr + "<<<", 
+			req);	
 		stderr.restore();                  // Restore normal stderr functionality 
 
-// Add file to response
+// Add file name, stderr and topoJSON to my response
 		response.no_files++;
 		response.file_list[response.no_files-1] = {
 			file_name: d.file.file_name,
@@ -121,32 +136,29 @@ function _process_json(d1, ofields, options, stderr, req, res, encoding, respons
 			topojson_stderr: d.file.topojson_stderr
 		};		
 		if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message		
-			response.message = response.message + "[" + d.file.file_name + ":" + d.no_files + "]:\n" + 
-				d.file.topojson_stderr;
+			response.message = response.message + "\n[" + d.file.file_name + ":" + d.no_files + "] OK:\n>>>\n" + 
+				d.file.topojson_stderr + "<<<";
 		}
-			
-//		console.error("toTopoJSON._process_json() [" + d.response.fields["my_reference"] + 
-//			"; " + req.url + "; " + req.ip + "]: " + 
-//			"file: " + d.file.file_name + "; size: " + 
-//			d.file.file_data.length + "/" + d.response.fields["length"] + "\r\nData:\r\n" + 
-//			d.output.substring(0, 132) + "\r\n");			
-										   // Write trace to strerr 
 															   
 		return d;								   
 	} catch (e) {                            // Catch conversion errors
 		var msg;
-
-			msg="EXCEPTION! toTopoJSON._process_json() [UNK; " + req.url + "; " + req.ip + "]: " +  
-				"Your input file: " + 
-				d.file.file_name + "; size: " + d.file.file_data.length + 
-				": does not seem to be valid: \n\n" + 
-				e /* + 
-				"\r\nTruncated data:\r\n" + 
-				d.file.file_data.toString('hex').substring(0, 132) + "...\r\n" */ + 
-				'; Content-Transfer-Encoding: ' + encoding + 
-				'; Content-Encoding: ' + req.get('Content-Encoding');
+		if (!d.file.jsonData) {
+			msg="does not seem to contain valid JSON";
+		}
+		else {
+			msg="does not seem to contain valid TopoJSON";
+		}
+		msg="Your input file " + d.no_files + ": " + 
+			d.file.file_name + "; size: " + d.file.file_data.length + 
+			"; " + msg + ": \n\n" + 
+			'; Content-Transfer-Encoding: ' + encoding;
+		if (d.file.file_data.length > 0) {
+			msg=msg + "\nTruncated data:\n" + 
+				d.file.file_data.toString('hex').substring(0, 132) + "...\r\n";
+		}
 				
-		console.error(msg + "\n" + e.stack);					  
+		rifLog.rifLog(msg, req, e);					  
 		res.status(500);					  
 		res.write(msg);
 		res.end();		
@@ -171,6 +183,14 @@ exports.convert = function(req, res) {
 		output.str += obj.str;
 	});
 	
+// Response	
+	var response = {                 // Set output response    
+		no_files: 0,
+		file_list: [],
+		message: '',               
+		fields: [] 
+	};
+		
 // Post method	
     if (req.method == 'POST') {
  
@@ -189,14 +209,6 @@ exports.convert = function(req, res) {
 			quantization: options.quantization,
 			projection: options.projection
 		};	
-	
-// Response	
-		var response = {                 // Set output response    
-			no_files: 0,
-			file_list: [],
-			message: 'OK',               
-			fields: [] 
-		};
 		
 // File attachment processing function		  
         req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
@@ -231,18 +243,9 @@ exports.convert = function(req, res) {
 						d.file.file_encoding="zlib";
 				}
 			}
-			console.error(d.file.extension + "[" + d.no_files + "]: headers[" + d.file.filename + "]: " + JSON.stringify(req.headers, null, 4));
 		
 // Data processor			
             stream.on('data', function(data) {
-				if  (d.file.chunks.length == '') {
-				}
-				if (d.file.file_encoding === "zip" || d.file.file_encoding === "gzip" || d.file.file_encoding === "zlib") {					
-					console.error(d.file.file_encoding + "; 1: " + data.toString('hex').substring(0, 132)); 
-				}	
-//				else {
-//					console.error("toTopoJSON(): read: " + d.file.file_data.length);
-//				}
 				d.file.chunks.push(data);  
 			
 /*			    if (d.file.file_data.length > d.upper_limit) { // Max geojs allowed upper_limit
@@ -262,7 +265,6 @@ exports.convert = function(req, res) {
 
 // EOF processor 
             stream.on('end', function() {
-				console.error('END');
 //			     d.file.file_data = d.file.file_data.replace(/(\r\n|\n|\r)/gm,""); CRLF=> CR
 //                 if (d.file.file_name != '' && d.withinLimit) {	
 	
@@ -271,16 +273,18 @@ exports.convert = function(req, res) {
 						d.file.file_data="";
 						if (d.file.file_encoding === "gzip") {
 							d.file.file_data=zlib.gunzipSync(buf)							
-							console.error(d.file.file_encoding + ": [" + ofields["my_reference"] + "] zlib.gunzip(): " + d.file.file_data.length + 
-								"; from buf: " + buf.length); 
+							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+								d.file.file_encoding + ": [" + ofields["my_reference"] + "] zlib.gunzip(): " + d.file.file_data.length + 
+								"; from buf: " + buf.length, req); 
 							if (d.file.file_data.length > 0) {
 								d=_process_json(d, ofields, options, stderr, req, res, encoding, response);				
 							}	
 						}	
 						else if (d.file.file_encoding === "zlib") {	
 							d.file.file_data=zlib.inflateSync(buf)							
-							console.error(d.file.file_encoding + ": [" + ofields["my_reference"] + "] zlib.inflate(): " + d.file.file_data.length + 
-								"; from buf: " + buf.length); 
+							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+								d.file.file_encoding + ": [" + ofields["my_reference"] + "] zlib.inflate(): " + d.file.file_data.length + 
+								"; from buf: " + buf.length, req); 
 							if (d.file.file_data.length > 0) {
 								d=_process_json(d, ofields, options, stderr, req, res, encoding, response);				
 							}	
@@ -293,7 +297,8 @@ exports.convert = function(req, res) {
 						}
 						else {
 							d.file.file_data=buf;
-							console.error(d.file.file_encoding + ": [" + ofields["my_reference"] + "] 4: " + d.file.file_data.length); 							
+							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+								d.file.file_encoding + ": [" + ofields["my_reference"] + "] uncompressed data: " + d.file.file_data.length, req); 							
 							d=_process_json(d, ofields, options, stderr, req, res, encoding, response);								
 						}
 					
@@ -323,13 +328,13 @@ exports.convert = function(req, res) {
 			else {
 				ofields[fieldname]=val;				
 			}	
-			console.error('Field: ' + fieldname + '[' + val + ']; ' + text);
+			response.message = response.message + "\nField: " + fieldname + "[" + val + "]; " + text;
          }); // End of field processing function
           		  
 // End of request - complete response		  
-        req.busboy.on('finish', function() {
-			console.error('FINISH');
-					
+        req.busboy.on('finish', function() {		
+			rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", 
+				"Processed: " + response.no_files + " files; debug message:\n" + response.message, req);		
 			response.fields=ofields;				   // Add return fields		
 			var output = JSON.stringify(response);// Convert output response to JSON 
 			
@@ -342,9 +347,9 @@ exports.convert = function(req, res) {
           
     } // End of post method
 	else {
-		var msg="ERROR! toTopojson.js: GET Requests not allowed; please see: " + 
+		var msg="ERROR! GET Requests not allowed; please see: " + 
 			"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
-		console.error(msg);
+		rifLog.rifLog2(__file, __line, "exports.convert", msg, req);
         res.status(405);				  
 		res.write(msg);
 		res.end();		

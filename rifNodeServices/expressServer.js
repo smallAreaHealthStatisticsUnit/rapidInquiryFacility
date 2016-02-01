@@ -114,4 +114,4 @@ app.post('/zipfile', zipfile.convert);
   
 app.listen(3000);
 
-console.log('expressServer.js: RIF Node web services listening on 127.0.0.1 port 3000...');
+console.error('expressServer.js: RIF Node web services listening on 127.0.0.1 port 3000...');

@@ -141,7 +141,6 @@ var MakeRequest = function(){
 		formData["my_test"]="gzip geoJSON file; wrong Content-Type";		
 	}
 	
-	formData["length"]=length;		
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 //		'; ' + JSON.stringify(formData, null, 4));
 		
