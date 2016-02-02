@@ -40,3 +40,4 @@ rifDatabase/Thumbs.db
 rifDatabase/Thumbs.db
 rifDatabase/Postgres/psql_scripts/auto_quit_tmp.sql
 rifDatabase/TestHarness/db_test_harness/npm-debug.log
+*.prefs
