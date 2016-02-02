@@ -274,6 +274,16 @@ public class CSVFileSelectionDialog
 	public DataSetConfiguration getDataSetConfiguration() {
 		
 		String coreDataSetName = selectedCSVFile.getName();
+		
+		//Strip file extension
+		int dotIndex = coreDataSetName.lastIndexOf(".");
+		if (dotIndex != -1) {
+			//Assume that CSV file filter will prevent
+			//cases where file name begins with a dot.
+			
+			coreDataSetName = coreDataSetName.substring(0, dotIndex);
+		}
+		
 		String[] csvFieldNames
 			= previewTable.getFieldNames();
 		String[][] csvPreviewData
@@ -293,7 +303,6 @@ public class CSVFileSelectionDialog
 			originalDataSetConfiguration, 
 			csvFieldNames, 
 			csvPreviewData);
-
 		
 		return originalDataSetConfiguration;
 	}
