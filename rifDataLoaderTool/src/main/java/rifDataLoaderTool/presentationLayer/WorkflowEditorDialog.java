@@ -80,9 +80,10 @@ public class WorkflowEditorDialog
 			//RIFDataLoaderToolSession session
 			//	= new RIFDataLoaderToolSession();
 			//session.setUser(user);
-
+			UserInterfaceFactory userInterfaceFactory
+				= new UserInterfaceFactory();
 			WorkflowEditorDialog workflowEditorDialog
-				= new WorkflowEditorDialog();
+				= new WorkflowEditorDialog(userInterfaceFactory);
 			workflowEditorDialog.initialiseService();			
 			workflowEditorDialog.show();
 			
@@ -110,7 +111,7 @@ public class WorkflowEditorDialog
 	private JMenuItem initialiseDemoDatabaseMenuItem;
 	private JMenuItem loadWorkflowMenuItem;
 	private JMenuItem saveWorkflowMenuItem;
-	private JMenuItem exitMenuItem;
+	private JMenuItem closeMenuItem;
 		
 	private JComboBox<String> startingStateComboBox;
 	private JComboBox<String> stoppingStateComboBox;
@@ -120,21 +121,20 @@ public class WorkflowEditorDialog
 	
 	private JButton runWorkflowButton;
 	private JButton saveWorkflowButton;
-	private JButton exitButton;
+	private JButton closeButton;
 	
 	private File currentlySelectedFile;
 	
-	private JFrame frame;
+	private JDialog dialog;
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public WorkflowEditorDialog() {
+	public WorkflowEditorDialog(final UserInterfaceFactory userInterfaceFactory) {
 
 		rifManager = User.newInstance("kgarwood", "111.111.111.111");		
 
-		userInterfaceFactory 
-			= new UserInterfaceFactory();
+		this.userInterfaceFactory = userInterfaceFactory;
 		
 		originalLinearWorkflow = LinearWorkflow.newInstance();
 		
@@ -155,9 +155,9 @@ public class WorkflowEditorDialog
 		String title
 			= RIFDataLoaderToolMessages.getMessage(
 				"workflowEditorDialog.title");
-		frame
-			= userInterfaceFactory.createFrame(title);
-		frame.setJMenuBar(createFileMenuBar());			
+		dialog
+			= userInterfaceFactory.createDialog(title);
+		dialog.setJMenuBar(createFileMenuBar());			
 		
 		JPanel panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC
@@ -200,8 +200,8 @@ public class WorkflowEditorDialog
 			createBottomPanel(userInterfaceFactory),
 			panelGC);
 		
-		frame.getContentPane().add(panel);
-		frame.setSize(500, 500);
+		dialog.getContentPane().add(panel);
+		dialog.setSize(500, 500);
 	}
 	
 	private JMenuBar createFileMenuBar() {
@@ -241,9 +241,9 @@ public class WorkflowEditorDialog
 		String exitText
 			= RIFDataLoaderToolMessages.getMessage(
 				"workflowEditorDialog.fileMenu.exit.label");
-		exitMenuItem
+		closeMenuItem
 			= userInterfaceFactory.createJMenuItem(exitText);
-		exitMenuItem.addActionListener(this);
+		closeMenuItem.addActionListener(this);
 		
 		
 		menuBar.add(fileMenu);
@@ -376,10 +376,10 @@ public class WorkflowEditorDialog
 		String exitButtonText
 			= RIFDataLoaderToolMessages.getMessage(
 				"workflowEditorDialog.exit.label");
-		exitButton
+		closeButton
 			= userInterfaceFactory.createButton(exitButtonText);
-		exitButton.addActionListener(this);
-		panel.add(exitButton, panelGC);
+		closeButton.addActionListener(this);
+		panel.add(closeButton, panelGC);
 		
 		return panel;
 	}
@@ -389,7 +389,7 @@ public class WorkflowEditorDialog
 	// ==========================================
 	
 	public void show() {
-		frame.setVisible(true);		
+		dialog.setVisible(true);		
 	}
 
 	private void initialiseDatabase() {
@@ -413,7 +413,7 @@ public class WorkflowEditorDialog
 			
 		}
 		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(frame, rifServiceException.getErrorMessages());
+			ErrorDialog.showError(dialog, rifServiceException.getErrorMessages());
 		}
 		
 	}
@@ -432,7 +432,7 @@ public class WorkflowEditorDialog
 			fileChooser.setFileFilter(xmlFileFilter);
 		
 			int result
-				= fileChooser.showOpenDialog(frame);
+				= fileChooser.showOpenDialog(dialog);
 			if (result != JFileChooser.APPROVE_OPTION) {
 				return;
 			}
@@ -448,7 +448,7 @@ public class WorkflowEditorDialog
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
-				frame, 
+				dialog, 
 				rifServiceException.getErrorMessages());
 		}		
 	}
@@ -472,7 +472,7 @@ public class WorkflowEditorDialog
 				fileChooser.setFileFilter(xmlFileFilter);
 		
 				int result
-					= fileChooser.showSaveDialog(frame);
+					= fileChooser.showSaveDialog(dialog);
 				if (result != JFileChooser.APPROVE_OPTION) {
 					return;
 				}
@@ -487,7 +487,7 @@ public class WorkflowEditorDialog
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
-				frame, 
+				dialog, 
 				rifServiceException.getErrorMessages());
 		}
 			
@@ -549,12 +549,12 @@ public class WorkflowEditorDialog
 					"workflowEditorDialog.info.workflowFinishedRunning");
 
 			JOptionPane.showMessageDialog(
-				frame, 
+				dialog, 
 				workflowCompletedMessage);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
-				frame, 
+				dialog, 
 				rifServiceException.getErrorMessages());
 		}
 		
@@ -668,8 +668,8 @@ public class WorkflowEditorDialog
 	}
 	
 	
-	private void exit() {
-		System.exit(0);		
+	private void close() {
+		dialog.setVisible(false);
 	}
 	
 	private void populateWorkingCopyFromForm() {
@@ -802,9 +802,9 @@ public class WorkflowEditorDialog
 		else if (dataSetConfigurationListButtonPanel.isDeleteButton(button)) {
 			deleteSelectedDataSetConfigurations();
 		}
-		else if ((button == exitMenuItem) ||
-				 (button == exitButton)) {
-			exit();
+		else if ((button == closeMenuItem) ||
+				 (button == closeButton)) {
+			close();
 		}
 		else if (button == runWorkflowButton) {
 			runWorkflow();
