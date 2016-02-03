@@ -87,7 +87,8 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	private UserInterfaceFactory userInterfaceFactory;
 	private JFrame frame;
 	
-	private JButton initialiseDemoDatabaseButton;	
+	private JButton initialiseDemoDatabaseButton;
+	private JButton editDatabaseDataTypesButton;
 	private JButton loadShapeFilesButton;
 	private JButton loadPopulationHealthDataButton;
 	private JButton quitButton;
@@ -148,12 +149,21 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		
 		String initialiseDemoDatabaseText
 			= RIFDataLoaderToolMessages.getMessage(
-				"populationHealthDataLoaderDialog.fileMenu.initialiseDemoDatabase.label");		
+				"populationHealthDataLoaderDialog.buttons.initialiseDemoDatabase.label");		
 		initialiseDemoDatabaseButton
 			= userInterfaceFactory.createButton(initialiseDemoDatabaseText);
 		initialiseDemoDatabaseButton.addActionListener(this);
 		panel.add(initialiseDemoDatabaseButton, panelGC);
-		
+				
+		panelGC.gridy++;
+		String editDatabaseDataTypesButtonText
+			= RIFDataLoaderToolMessages.getMessage(
+				"populationHealthDataLoaderDialog.buttons.editDatabaseDataTypes.label");		
+		editDatabaseDataTypesButton
+			= userInterfaceFactory.createButton(editDatabaseDataTypesButtonText);
+		editDatabaseDataTypesButton.addActionListener(this);
+		panel.add(editDatabaseDataTypesButton, panelGC);
+				
 		panelGC.gridy++;
 		String loadShapeFilesButtonText
 			= RIFDataLoaderMessages.getMessage("rifDataLoaderToolApplication.buttons.loadShapeFiles.label");
@@ -223,6 +233,10 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		}		
 	}
 	
+	private void editDatabaseButtonDataTypes() {
+		
+	}
+	
 	private void loadShapeFiles() {
 		ShapeFileLoaderDialog dialog 
 			= new ShapeFileLoaderDialog(userInterfaceFactory);
@@ -254,7 +268,10 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		
 		if (button == initialiseDemoDatabaseButton) {
 			initialiseDatabase();
-		}		
+		}
+		else if (button == editDatabaseDataTypesButton) {
+			editDatabaseButtonDataTypes();
+		}
 		else if (button == loadShapeFilesButton) {
 			loadShapeFiles();
 		}
