@@ -150,28 +150,6 @@ public class ShapeFileLoaderDialog
 		dialog.getContentPane().add(panel);
 		dialog.setSize(500, 500);
 	}
-
-	private JPanel createInstructionPanel() {
-		
-		String instructionsText
-			= RIFDataLoaderToolMessages.getMessage("shapeFileLoaderDialog.instructions");
-		JTextArea instructionsTextArea
-			= userInterfaceFactory.createNonEditableTextArea(3, 20);
-		instructionsTextArea.setText(instructionsText);
-		instructionsTextArea.setBorder(LineBorder.createGrayLineBorder());
-		
-		JPanel panel 
-			= userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC
-			= userInterfaceFactory.createGridBagConstraints();
-		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weightx = 1;
-		panelGC.weighty = 1;
-		
-		panel.add(instructionsTextArea, panelGC);
-				
-		return panel;
-	}
 	
 	private JPanel createBrowseShapeFilePanel() {
 		JPanel panel 
@@ -179,11 +157,22 @@ public class ShapeFileLoaderDialog
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
 
+		String shapeFileDirectoryLabelText
+			= RIFDataLoaderMessages.getMessage("shapeFileDirectory.label");
+		JLabel shapeFileDirectoryLabel
+			= userInterfaceFactory.createLabel(shapeFileDirectoryLabelText);
+		panel.add(shapeFileDirectoryLabel, panelGC);
+
+		panelGC.gridx++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
 		shapeFileBrowseDirectoryTextField
 			= userInterfaceFactory.createNonEditableTextField();
 		panel.add(shapeFileBrowseDirectoryTextField, panelGC);
 		
-		panelGC.gridy++;
+		panelGC.gridx++;
+		panelGC.fill = GridBagConstraints.NONE;
+		panelGC.weightx = 0;		
 		String browseButtonText
 			= RIFGenericLibraryMessages.getMessage("buttons.browse.label");
 		browseButton
