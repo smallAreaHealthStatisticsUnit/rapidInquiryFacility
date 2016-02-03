@@ -6,9 +6,11 @@ import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 
 
+
 import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.KeyStroke;
+import javax.swing.border.LineBorder;
 
 import java.util.ArrayList;
 import java.awt.Event;
@@ -109,7 +111,9 @@ public final class ListEditingButtonPanel {
 	private JButton clearButton;
 	private JButton importButton;
 	private JButton exportButton;
-		
+	
+	private boolean includeBorder;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -152,13 +156,19 @@ public final class ListEditingButtonPanel {
 		exportButton = userInterfaceFactory.createButton(exportButtonText);
 		
 		isLeftJustified = false;
+		includeBorder = false;
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-
+	public void setIncludeBorder(
+		final boolean includeBorder) {
+		
+		this.includeBorder = includeBorder;
+		
+	}
 	
 	public void includeAddButton(
 		final String toolTipText) {
@@ -401,7 +411,14 @@ public final class ListEditingButtonPanel {
 			setActionListenersForButton(buttonToInclude);
 			panel.add(buttonToInclude, panelGC);
 			panelGC.gridx++;
-		}		
+		}
+		
+		if (includeBorder == true) {
+			panel.setBorder(LineBorder.createGrayLineBorder());
+		}
+		else {
+			panel.setBorder(null);
+		}
 		
 		return panel;
 	}
