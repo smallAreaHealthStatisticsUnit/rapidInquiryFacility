@@ -297,8 +297,8 @@ public class PopulationHealthDataLoaderDialog
 		lowerPanelGC.anchor = GridBagConstraints.SOUTHEAST;
 
 		String runWorkflowButtonText
-			= RIFDataLoaderToolMessages.getMessage(
-				"populationHealthDataLoaderDialog.run.label");
+			= RIFGenericLibraryMessages.getMessage(
+				"buttons.run.label");
 		runWorkflowButton
 			= userInterfaceFactory.createButton(runWorkflowButtonText);
 		runWorkflowButton.addActionListener(this);
