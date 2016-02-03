@@ -5,7 +5,11 @@ import rifGenericLibrary.presentationLayer.*;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.util.ShapeFileScanner;
 import rifDataLoaderTool.fileFormats.DirectoryFileFilter;
+import rifDataLoaderTool.businessConceptLayer.ShapeFile;
+
+
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -15,6 +19,7 @@ import javax.swing.border.LineBorder;
 
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  *
@@ -187,10 +192,18 @@ public class ShapeFileLoaderDialog
 	// ==========================================
 
 	public void updateAvailableShapeFiles() {
+		File targetDirectory
+			= new File(shapeFileBrowseDirectoryTextField.getText().trim());
 		
-		
-		
-		
+		ShapeFileScanner shapeFileScanner
+			= new ShapeFileScanner();
+		ArrayList<ShapeFile> shapeFiles
+			= shapeFileScanner.scanForShapeFiles(targetDirectory);
+		shapeFileListPanel.clearList();
+		for (ShapeFile shapeFile : shapeFiles) {
+			shapeFileListPanel.addListItem(shapeFile);
+		}
+		shapeFileListPanel.updateUI();
 	}
 	
 	public void show() {

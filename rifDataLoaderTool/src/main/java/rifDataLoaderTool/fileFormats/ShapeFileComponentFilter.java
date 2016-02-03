@@ -1,5 +1,6 @@
 package rifDataLoaderTool.fileFormats;
 
+import rifDataLoaderTool.businessConceptLayer.ShapeFileComponent;
 import java.io.File;
 import java.io.FileFilter;
 
@@ -55,7 +56,7 @@ import java.io.FileFilter;
  *
  */
 
-public class GeneralFileFilter implements FileFilter {
+public class ShapeFileComponentFilter implements FileFilter {
 
 	// ==========================================
 	// Section Constants
@@ -64,21 +65,25 @@ public class GeneralFileFilter implements FileFilter {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String fileExtension;
+	private ShapeFileComponent shapeFileComponent;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public GeneralFileFilter(final String fileExtension) {
-		this.fileExtension = "." + fileExtension.toUpperCase();
+	public ShapeFileComponentFilter(final ShapeFileComponent shapeFileComponent) {
+		this.shapeFileComponent = shapeFileComponent;
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 	public String getFileExtension() {
-		return fileExtension;
+		return shapeFileComponent.getFileExtension();
+	}
+	
+	public ShapeFileComponent getShapeFileComponent() {
+		return shapeFileComponent;
 	}
 	
 	// ==========================================
@@ -93,6 +98,9 @@ public class GeneralFileFilter implements FileFilter {
 		
 		//We're only interested in files that end in *.shp
 		
+		String fileExtension
+			= shapeFileComponent.getFileExtension().toUpperCase();
+			
 		if (candidateFile.isDirectory()) {
 			return false;
 		}
