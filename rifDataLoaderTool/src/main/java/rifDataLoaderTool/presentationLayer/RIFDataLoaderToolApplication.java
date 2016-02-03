@@ -191,8 +191,8 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	}
 
 	public void loadPopulationHealthData() {
-		WorkflowEditorDialog dialog
-			= new WorkflowEditorDialog(userInterfaceFactory);
+		PopulationHealthDataLoaderDialog dialog
+			= new PopulationHealthDataLoaderDialog(userInterfaceFactory);
 		dialog.show();
 	}
 	

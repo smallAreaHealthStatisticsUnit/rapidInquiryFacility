@@ -69,7 +69,7 @@ import java.util.*;
  *
  */
 
-public class WorkflowEditorDialog 
+public class PopulationHealthDataLoaderDialog 
 	implements ActionListener {
 
 	public static void main(String[] arguments) {
@@ -82,10 +82,10 @@ public class WorkflowEditorDialog
 			//session.setUser(user);
 			UserInterfaceFactory userInterfaceFactory
 				= new UserInterfaceFactory();
-			WorkflowEditorDialog workflowEditorDialog
-				= new WorkflowEditorDialog(userInterfaceFactory);
-			workflowEditorDialog.initialiseService();			
-			workflowEditorDialog.show();
+			PopulationHealthDataLoaderDialog populationHealthDataLoaderDialog
+				= new PopulationHealthDataLoaderDialog(userInterfaceFactory);
+			populationHealthDataLoaderDialog.initialiseService();			
+			populationHealthDataLoaderDialog.show();
 			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -130,7 +130,7 @@ public class WorkflowEditorDialog
 	// Section Construction
 	// ==========================================
 
-	public WorkflowEditorDialog(final UserInterfaceFactory userInterfaceFactory) {
+	public PopulationHealthDataLoaderDialog(final UserInterfaceFactory userInterfaceFactory) {
 
 		rifManager = User.newInstance("kgarwood", "111.111.111.111");		
 
@@ -154,7 +154,7 @@ public class WorkflowEditorDialog
 		//set the title of the dialog
 		String title
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.title");
+				"populationHealthDataLoaderDialog.title");
 		dialog
 			= userInterfaceFactory.createDialog(title);
 		dialog.setJMenuBar(createFileMenuBar());			
@@ -210,13 +210,13 @@ public class WorkflowEditorDialog
 		
 		String fileMenuText
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.fileMenu.label");
+				"populationHealthDataLoaderDialog.fileMenu.label");
 		JMenu fileMenu
 			= userInterfaceFactory.createMenu(fileMenuText);
 				
 		String initialiseDemoDatabaseText
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.fileMenu.initialiseDemoDatabase.label");		
+				"populationHealthDataLoaderDialog.fileMenu.initialiseDemoDatabase.label");		
 		initialiseDemoDatabaseMenuItem
 			= userInterfaceFactory.createJMenuItem(initialiseDemoDatabaseText);
 		initialiseDemoDatabaseMenuItem.addActionListener(this);
@@ -224,7 +224,7 @@ public class WorkflowEditorDialog
 	
 		String loadWorkflowText
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.fileMenu.loadWorkflow.label");
+				"populationHealthDataLoaderDialog.fileMenu.loadWorkflow.label");
 		loadWorkflowMenuItem
 			= userInterfaceFactory.createJMenuItem(loadWorkflowText);
 		loadWorkflowMenuItem.addActionListener(this);
@@ -232,7 +232,7 @@ public class WorkflowEditorDialog
 				
 		String saveWorkflowText
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.fileMenu.saveWorkflow.label");
+				"populationHealthDataLoaderDialog.fileMenu.saveWorkflow.label");
 		saveWorkflowMenuItem
 			= userInterfaceFactory.createJMenuItem(saveWorkflowText);
 		saveWorkflowMenuItem.addActionListener(this);
@@ -240,7 +240,7 @@ public class WorkflowEditorDialog
 		
 		String exitText
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.fileMenu.exit.label");
+				"populationHealthDataLoaderDialog.fileMenu.exit.label");
 		closeMenuItem
 			= userInterfaceFactory.createJMenuItem(exitText);
 		closeMenuItem.addActionListener(this);
@@ -258,12 +258,12 @@ public class WorkflowEditorDialog
 		
 		String startWorkflowStateText
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.startWorkState.label");
+				"populationHealthDataLoaderDialog.startWorkState.label");
 		JLabel startWorkflowStateLabel
 			= userInterfaceFactory.createLabel(startWorkflowStateText);
 		String startWorkflowStateToolTip
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.startWorkState.toolTip");
+				"populationHealthDataLoaderDialog.startWorkState.toolTip");
 		startWorkflowStateLabel.setToolTipText(startWorkflowStateToolTip);
 		
 		panel.add(startWorkflowStateLabel, panelGC);
@@ -282,12 +282,12 @@ public class WorkflowEditorDialog
 		
 		String stopWorkflowStateText
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.stopWorkState.label");
+				"populationHealthDataLoaderDialog.stopWorkState.label");
 		JLabel stopWorkflowStateLabel
 			= userInterfaceFactory.createLabel(stopWorkflowStateText);
 		String stopWorkflowStateToolTip
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.stopWorkState.toolTip");
+				"populationHealthDataLoaderDialog.stopWorkState.toolTip");
 		stopWorkflowStateLabel.setToolTipText(stopWorkflowStateToolTip);
 		panel.add(stopWorkflowStateLabel, panelGC);
 		panelGC.gridx++;
@@ -355,7 +355,7 @@ public class WorkflowEditorDialog
 		
 		String runWorkflowButtonText
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.run.label");
+				"populationHealthDataLoaderDialog.run.label");
 		runWorkflowButton
 			= userInterfaceFactory.createButton(runWorkflowButtonText);
 		runWorkflowButton.addActionListener(this);
@@ -365,7 +365,7 @@ public class WorkflowEditorDialog
 		
 		String saveWorkflowButtonText
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.save.label");
+				"populationHealthDataLoaderDialog.save.label");
 		saveWorkflowButton
 			= userInterfaceFactory.createButton(saveWorkflowButtonText);
 		saveWorkflowButton.addActionListener(this);
@@ -375,7 +375,7 @@ public class WorkflowEditorDialog
 		
 		String exitButtonText
 			= RIFDataLoaderToolMessages.getMessage(
-				"workflowEditorDialog.exit.label");
+				"populationHealthDataLoaderDialog.exit.label");
 		closeButton
 			= userInterfaceFactory.createButton(exitButtonText);
 		closeButton.addActionListener(this);
@@ -546,7 +546,7 @@ public class WorkflowEditorDialog
 
 			String workflowCompletedMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"workflowEditorDialog.info.workflowFinishedRunning");
+					"populationHealthDataLoaderDialog.info.workflowFinishedRunning");
 
 			JOptionPane.showMessageDialog(
 				dialog, 
@@ -602,11 +602,11 @@ public class WorkflowEditorDialog
 		}
 		
 		String dialogTitle
-			= RIFDataLoaderToolMessages.getMessage("workflowEditorDialog.copyDataSetConfiguration.title");
+			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.copyDataSetConfiguration.title");
 		String instructionsText
-			= RIFDataLoaderToolMessages.getMessage("workflowEditorDialog.copyDataSetConfiguration.instructions");
+			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.copyDataSetConfiguration.instructions");
 		String fieldName
-			= RIFDataLoaderToolMessages.getMessage("workflowEditorDialog.copyDataSetConfiguration.fieldName");		
+			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.copyDataSetConfiguration.fieldName");		
 		String[] existingListItemNames
 			= dataSetConfigurationListPanel.getDisplayNames();
 		
@@ -748,7 +748,7 @@ public class WorkflowEditorDialog
 		if (currentStartWorkflowState.getStateSequenceNumber() > currentStopWorkflowState.getStateSequenceNumber()) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"workflowEditorDialog.error.startStateComesAfterStopState",
+					"populationHealthDataLoaderDialog.error.startStateComesAfterStopState",
 					currentStartWorkflowState.getStateName(),
 					currentStopWorkflowState.getStateName());
 			RIFServiceException rifServiceException
