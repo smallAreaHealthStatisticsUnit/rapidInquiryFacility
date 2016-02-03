@@ -2,13 +2,13 @@ package rifDataLoaderTool.presentationLayer;
 
 import rifGenericLibrary.presentationLayer.*;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifServices.businessConceptLayer.User;
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.*;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
 import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
-import rifDataLoaderTool.dataStorageLayer.SampleRIFDatabaseCreationManager;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -108,9 +108,6 @@ public class PopulationHealthDataLoaderDialog
 	private LinearWorkflow originalLinearWorkflow;
 	private LinearWorkflow workingCopyLinearWorkflow;
 	
-	private JMenuItem initialiseDemoDatabaseMenuItem;
-	private JMenuItem loadWorkflowMenuItem;
-	private JMenuItem saveWorkflowMenuItem;
 	private JMenuItem closeMenuItem;
 		
 	private JComboBox<String> startingStateComboBox;
@@ -120,12 +117,16 @@ public class PopulationHealthDataLoaderDialog
 	private ListEditingButtonPanel dataSetConfigurationListButtonPanel;
 	
 	private JButton runWorkflowButton;
+	private JButton loadWorkflowButton;
 	private JButton saveWorkflowButton;
+	private JButton saveAsWorkflowButton;	
 	private JButton closeButton;
 	
-	private File currentlySelectedFile;
-	
+	private File currentlySelectedFile;	
 	private JDialog dialog;
+	
+	private OKCloseButtonPanel okCloseButtonPanel;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -157,7 +158,6 @@ public class PopulationHealthDataLoaderDialog
 				"populationHealthDataLoaderDialog.title");
 		dialog
 			= userInterfaceFactory.createDialog(title);
-		dialog.setJMenuBar(createFileMenuBar());			
 		
 		JPanel panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC
@@ -192,63 +192,26 @@ public class PopulationHealthDataLoaderDialog
 			panelGC);
 		
 		panelGC.gridy++;				
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
 		panelGC.weighty = 0;
-		panelGC.anchor = GridBagConstraints.SOUTHEAST;
 		panel.add(
-			createBottomPanel(userInterfaceFactory),
+			createOptionButtonPanel(userInterfaceFactory),
+			panelGC);
+		
+		panelGC.gridy++;				
+		panelGC.weightx = 0;
+		panelGC.anchor = GridBagConstraints.SOUTHEAST;
+		panelGC.fill = GridBagConstraints.NONE;
+		okCloseButtonPanel 
+			= new OKCloseButtonPanel(userInterfaceFactory, false);
+		okCloseButtonPanel.addActionListener(this);
+		panel.add(
+			okCloseButtonPanel.getPanel(), 
 			panelGC);
 		
 		dialog.getContentPane().add(panel);
 		dialog.setSize(500, 500);
-	}
-	
-	private JMenuBar createFileMenuBar() {
-		JMenuBar menuBar 
-			= userInterfaceFactory.createMenuBar();
-		
-		String fileMenuText
-			= RIFDataLoaderToolMessages.getMessage(
-				"populationHealthDataLoaderDialog.fileMenu.label");
-		JMenu fileMenu
-			= userInterfaceFactory.createMenu(fileMenuText);
-				
-		String initialiseDemoDatabaseText
-			= RIFDataLoaderToolMessages.getMessage(
-				"populationHealthDataLoaderDialog.fileMenu.initialiseDemoDatabase.label");		
-		initialiseDemoDatabaseMenuItem
-			= userInterfaceFactory.createJMenuItem(initialiseDemoDatabaseText);
-		initialiseDemoDatabaseMenuItem.addActionListener(this);
-		fileMenu.add(initialiseDemoDatabaseMenuItem);
-	
-		String loadWorkflowText
-			= RIFDataLoaderToolMessages.getMessage(
-				"populationHealthDataLoaderDialog.fileMenu.loadWorkflow.label");
-		loadWorkflowMenuItem
-			= userInterfaceFactory.createJMenuItem(loadWorkflowText);
-		loadWorkflowMenuItem.addActionListener(this);
-		fileMenu.add(loadWorkflowMenuItem);
-				
-		String saveWorkflowText
-			= RIFDataLoaderToolMessages.getMessage(
-				"populationHealthDataLoaderDialog.fileMenu.saveWorkflow.label");
-		saveWorkflowMenuItem
-			= userInterfaceFactory.createJMenuItem(saveWorkflowText);
-		saveWorkflowMenuItem.addActionListener(this);
-		fileMenu.add(saveWorkflowMenuItem);
-		
-		String exitText
-			= RIFDataLoaderToolMessages.getMessage(
-				"populationHealthDataLoaderDialog.fileMenu.exit.label");
-		closeMenuItem
-			= userInterfaceFactory.createJMenuItem(exitText);
-		closeMenuItem.addActionListener(this);
-		
-		
-		menuBar.add(fileMenu);
-		
-		return menuBar;
 	}
 	
 	private JPanel createStartStopWorkflowStatePanel() {
@@ -275,8 +238,7 @@ public class PopulationHealthDataLoaderDialog
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
 		panel.add(startingStateComboBox, panelGC);
-		
-		
+			
 		panelGC.gridy++;
 		panelGC.gridx = 0;
 		
@@ -302,85 +264,103 @@ public class PopulationHealthDataLoaderDialog
 		panel.setBorder(LineBorder.createGrayLineBorder());
 		return panel;
 	}
-	
-	private JPanel createBottomPanel(
+		
+	private JPanel createOptionButtonPanel(
 		final UserInterfaceFactory userInterfaceFactory) {
-			
-		GridBagConstraints panelGC
-			= userInterfaceFactory.createGridBagConstraints();
-		JPanel panel = userInterfaceFactory.createPanel();
-		panelGC.anchor = GridBagConstraints.SOUTHEAST;				
-		panelGC.fill = GridBagConstraints.NONE;
 
-		dataSetConfigurationListButtonPanel
-			= new ListEditingButtonPanel(userInterfaceFactory);
-		dataSetConfigurationListButtonPanel.includeAddButton(null);
-		dataSetConfigurationListButtonPanel.includeCopyButton(null);
-		dataSetConfigurationListButtonPanel.includeEditButton(null);
-		
-		dataSetConfigurationListButtonPanel.includeDeleteButton(null);
-		dataSetConfigurationListButtonPanel.rightJustifyButtons();
-		dataSetConfigurationListButtonPanel.indicateEmptyState();
-		dataSetConfigurationListButtonPanel.addActionListener(this);
+		JPanel panel = userInterfaceFactory.createBorderLayoutPanel();
 		panel.add(
-			dataSetConfigurationListButtonPanel.getPanel(), 
-			panelGC);
+			createWorkflowOptionsButtonPanel(), 
+			BorderLayout.WEST);
 
-		panelGC.gridy++;		
-		
-		panel.add(
-			dataSetConfigurationListButtonPanel.getPanel(), 
-			panelGC);
-
-		panelGC.gridy++;		
-		
-		panelGC.weightx = 0;
-		panelGC.weighty = 0;
-		panel.add(
-			createButtonControlPanel(userInterfaceFactory),
-			panelGC);
+		panel.add(createDataSetOptionsPanel(),
+			BorderLayout.EAST);
 		
 		return panel;
 	}
-	
-	
-	
-	private JPanel createButtonControlPanel(
-		final UserInterfaceFactory userInterfaceFactory) {
 		
-		GridBagConstraints panelGC
-			= userInterfaceFactory.createGridBagConstraints();
-		JPanel panel = userInterfaceFactory.createPanel();
-		panelGC.anchor = GridBagConstraints.SOUTHEAST;
+	private JPanel createWorkflowOptionsButtonPanel() {
+
+		JPanel panel
+			= userInterfaceFactory.createBorderLayoutPanel();
 		
+		String workflowOptionsPanelTitle
+			= RIFDataLoaderMessages.getMessage(
+				"populationHealthDataLoaderDialog.workflowOptions.label");
+		JLabel workflowOptionsPanelLabel
+			= userInterfaceFactory.createLabel(workflowOptionsPanelTitle);
+		panel.add(workflowOptionsPanelLabel, BorderLayout.NORTH);
+				
+		GridBagConstraints lowerPanelGC
+			= userInterfaceFactory.createGridBagConstraints();		
+		JPanel lowerPanel = userInterfaceFactory.createPanel();
+		lowerPanelGC.anchor = GridBagConstraints.SOUTHEAST;
+
 		String runWorkflowButtonText
 			= RIFDataLoaderToolMessages.getMessage(
 				"populationHealthDataLoaderDialog.run.label");
 		runWorkflowButton
 			= userInterfaceFactory.createButton(runWorkflowButtonText);
 		runWorkflowButton.addActionListener(this);
-		panel.add(runWorkflowButton, panelGC);
+		lowerPanel.add(runWorkflowButton, lowerPanelGC);
 		
-		panelGC.gridx++;
-		
+		lowerPanelGC.gridx++;				
+		String loadWorkflowText
+			= RIFGenericLibraryMessages.getMessage(
+				"buttons.load.label");
+		loadWorkflowButton
+			= userInterfaceFactory.createButton(loadWorkflowText);
+		loadWorkflowButton.addActionListener(this);
+		lowerPanel.add(loadWorkflowButton, lowerPanelGC);
+
+		lowerPanelGC.gridx++;				
 		String saveWorkflowButtonText
-			= RIFDataLoaderToolMessages.getMessage(
-				"populationHealthDataLoaderDialog.save.label");
+			= RIFGenericLibraryMessages.getMessage(
+				"buttons.save.label");
 		saveWorkflowButton
 			= userInterfaceFactory.createButton(saveWorkflowButtonText);
 		saveWorkflowButton.addActionListener(this);
-		panel.add(saveWorkflowButton, panelGC);
+		lowerPanel.add(saveWorkflowButton, lowerPanelGC);
+		
+		lowerPanelGC.gridx++;				
+		String saveAsWorkflowButtonText
+			= RIFGenericLibraryMessages.getMessage(
+				"buttons.saveAs.label");
+		saveAsWorkflowButton
+			= userInterfaceFactory.createButton(saveAsWorkflowButtonText);
+		saveAsWorkflowButton.addActionListener(this);
+		lowerPanel.add(saveAsWorkflowButton, lowerPanelGC);
 				
-		panelGC.gridx++;
+		panel.add(lowerPanel, BorderLayout.CENTER);
+		panel.setBorder(LineBorder.createGrayLineBorder());
+		return panel;
+	}
+	
+	private JPanel createDataSetOptionsPanel() {
+		JPanel panel
+			= userInterfaceFactory.createBorderLayoutPanel();
 		
-		String exitButtonText
-			= RIFDataLoaderToolMessages.getMessage(
-				"populationHealthDataLoaderDialog.exit.label");
-		closeButton
-			= userInterfaceFactory.createButton(exitButtonText);
-		closeButton.addActionListener(this);
-		panel.add(closeButton, panelGC);
+		String dataSetOptionsPanelTitle
+			= RIFDataLoaderMessages.getMessage(
+				"populationHealthDataLoaderDialog.dataSetOptions.label");
+		JLabel dataSetOptionsTitleLabel
+			= userInterfaceFactory.createLabel(dataSetOptionsPanelTitle);
+		panel.add(dataSetOptionsTitleLabel, BorderLayout.NORTH);
 		
+		dataSetConfigurationListButtonPanel
+			= new ListEditingButtonPanel(userInterfaceFactory);
+		dataSetConfigurationListButtonPanel.includeAddButton(null);
+		dataSetConfigurationListButtonPanel.includeCopyButton(null);
+		dataSetConfigurationListButtonPanel.includeEditButton(null);
+
+		dataSetConfigurationListButtonPanel.includeDeleteButton(null);
+		dataSetConfigurationListButtonPanel.rightJustifyButtons();
+		dataSetConfigurationListButtonPanel.indicateEmptyState();
+		dataSetConfigurationListButtonPanel.addActionListener(this);
+		panel.add(
+			dataSetConfigurationListButtonPanel.getPanel(),
+			BorderLayout.CENTER);
+		panel.setBorder(LineBorder.createGrayLineBorder());
 		return panel;
 	}
 	
@@ -392,34 +372,7 @@ public class PopulationHealthDataLoaderDialog
 		dialog.setVisible(true);		
 	}
 
-	private void initialiseDatabase() {
-		
-		try {
-			InitialiseDemoDatabaseDialog dialog
-				= new InitialiseDemoDatabaseDialog(userInterfaceFactory);
-			dialog.show();
-			
-			RIFDataLoaderStartupOptions startupOptions
-				= dialog.getDataLoaderStartupOptions();
-			
-			SampleRIFDatabaseCreationManager databaseCreationManager
-				= new SampleRIFDatabaseCreationManager(startupOptions);
-			databaseCreationManager.setup();	
-			
-			//Show a dialog indicating that the setup has completed
-			
-			
-			
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(dialog, rifServiceException.getErrorMessages());
-		}
-		
-	}
-	
-	private void loadWorkflow() {
-		
+	private void loadWorkflow() {		
 		try {
 			
 			File defaultDir = new File("C://");
@@ -491,6 +444,10 @@ public class PopulationHealthDataLoaderDialog
 				rifServiceException.getErrorMessages());
 		}
 			
+	}
+
+	private void saveAsWorkflow() {
+
 	}
 	
 	private void writeCurrentDataToFile() 
@@ -780,13 +737,11 @@ public class PopulationHealthDataLoaderDialog
 	public void actionPerformed(ActionEvent event) {
 		Object button = event.getSource();
 		
-		if (button == initialiseDemoDatabaseMenuItem) {
-			initialiseDatabase();
-		}
-		else if (button == loadWorkflowMenuItem) {
+
+		if (button == loadWorkflowButton) {
 			loadWorkflow();
 		}
-		else if ((button == saveWorkflowMenuItem) ||
+		else if ((button == saveWorkflowButton) ||
 				 (button == saveWorkflowButton)) {
 			saveWorkflow();
 		}
@@ -802,12 +757,11 @@ public class PopulationHealthDataLoaderDialog
 		else if (dataSetConfigurationListButtonPanel.isDeleteButton(button)) {
 			deleteSelectedDataSetConfigurations();
 		}
-		else if ((button == closeMenuItem) ||
-				 (button == closeButton)) {
-			close();
-		}
 		else if (button == runWorkflowButton) {
 			runWorkflow();
+		}
+		else if (okCloseButtonPanel.isCloseButton(button)) {
+			close();
 		}
 
 	}

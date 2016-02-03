@@ -1,8 +1,13 @@
 package rifDataLoaderTool.presentationLayer;
 
+import rifDataLoaderTool.dataStorageLayer.SampleRIFDatabaseCreationManager;
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -82,6 +87,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	private UserInterfaceFactory userInterfaceFactory;
 	private JFrame frame;
 	
+	private JButton initialiseDemoDatabaseButton;	
 	private JButton loadShapeFilesButton;
 	private JButton loadPopulationHealthDataButton;
 	private JButton quitButton;
@@ -140,6 +146,15 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		panelGC.weightx = 1;
 		panelGC.anchor = GridBagConstraints.NORTHWEST;
 		
+		String initialiseDemoDatabaseText
+			= RIFDataLoaderToolMessages.getMessage(
+				"populationHealthDataLoaderDialog.fileMenu.initialiseDemoDatabase.label");		
+		initialiseDemoDatabaseButton
+			= userInterfaceFactory.createButton(initialiseDemoDatabaseText);
+		initialiseDemoDatabaseButton.addActionListener(this);
+		panel.add(initialiseDemoDatabaseButton, panelGC);
+		
+		panelGC.gridy++;
 		String loadShapeFilesButtonText
 			= RIFDataLoaderMessages.getMessage("rifDataLoaderToolApplication.buttons.loadShapeFiles.label");
 		loadShapeFilesButton
@@ -183,20 +198,44 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	public void show() {		
 		frame.setVisible(true);
 	}
+
+	private void initialiseDatabase() {
 		
-	public void loadShapeFiles() {
+		try {
+			InitialiseDemoDatabaseDialog dialog
+				= new InitialiseDemoDatabaseDialog(userInterfaceFactory);
+			dialog.show();
+			
+			RIFDataLoaderStartupOptions startupOptions
+				= dialog.getDataLoaderStartupOptions();
+			
+			SampleRIFDatabaseCreationManager databaseCreationManager
+				= new SampleRIFDatabaseCreationManager(startupOptions);
+			databaseCreationManager.setup();	
+			
+			//Show a dialog indicating that the setup has completed
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			ErrorDialog.showError(
+				frame, 
+				rifServiceException.getErrorMessages());
+		}		
+	}
+	
+	private void loadShapeFiles() {
 		ShapeFileLoaderDialog dialog 
 			= new ShapeFileLoaderDialog(userInterfaceFactory);
 		dialog.show();
 	}
 
-	public void loadPopulationHealthData() {
+	private void loadPopulationHealthData() {
 		PopulationHealthDataLoaderDialog dialog
 			= new PopulationHealthDataLoaderDialog(userInterfaceFactory);
 		dialog.show();
 	}
 	
-	public void quit() {
+	private void quit() {
 		frame.setVisible(false);
 		System.exit(0);
 	}
@@ -213,7 +252,10 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	public void actionPerformed(final ActionEvent event) {
 		Object button = event.getSource();
 		
-		if (button == loadShapeFilesButton) {
+		if (button == initialiseDemoDatabaseButton) {
+			initialiseDatabase();
+		}		
+		else if (button == loadShapeFilesButton) {
 			loadShapeFiles();
 		}
 		else if (button == loadPopulationHealthDataButton) {
