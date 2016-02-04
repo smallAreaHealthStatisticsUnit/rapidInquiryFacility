@@ -200,7 +200,6 @@ public class LinearWorkflowEnactor {
 		final WorkflowState currentWorkflowState) 
 		throws RIFServiceException {
 		
-		System.out.println("LinearWorkflowEnactor processing step=="+currentWorkflowState.getStateName()+"==");
 		if (currentWorkflowState == WorkflowState.EXTRACT) {
 			
 			dataLoaderService.setupConfiguration(
