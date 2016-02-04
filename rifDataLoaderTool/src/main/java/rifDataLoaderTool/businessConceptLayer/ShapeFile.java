@@ -72,82 +72,6 @@ public class ShapeFile
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/**
-	 * shape format, contains feature geometry
-	 */
-	private String shpFilePath;
-	
-	/**
-	 * shape index format
-	 */
-	private String shxFilePath; 
-	
-	/**
-	 * attribute format, columnar attributes for each shape
-	 */
-	private String dbfFilePath;
-	
-	/**
-	 * projection format, the coordinate system and projection information
-	 */
-	private String prjFilePath;
-
-	/**
-	 * sbn spatial index of features
-	 */
-	private String sbnFilePath;
-	
-	/**
-	 * sbx spatial index of features
-	 */
-	private String sbxFilePath;
-
-	/**
-	 * fbn spatial index of features that are read-only
-	 */
-	private String fbnFilePath;
-
-	/**
-	 * fbx spatial index of features that are read-only
-	 */
-	private String fbxFilePath;
-
-	/**
-	 * ain attribute index of the active fields in a table
-	 */
-	private String ainFilePath;
-	
-	/**
-	 * aih attribute index of the active fields in a table
-	 */
-	private String aihFilePath;
-	
-	/**
-	 * a geocoding index for read-write datasets
-	 */
-	private String ixsFilePath;
-	
-	/**
-	 * a geocoding index for read-write datasets (ODB format)
-	 */
-	private String mxsFilePath;
-	
-	/**
-	 * an attribute index for the .dbf file in the 
-	 * form of shapefile.columnname.atx (ArcGIS 8 and later)
-	 */
-	private String atxFilePath;
-	
-	/**
-	 * used to specify the code page (only for .dbf) for identifying the character encoding to be used
-	 */
-	private String cpgFilePath;
-	
-	/**
-	 * an alternative quadtree spatial index used by MapServer and GDAL/OGR software
-	 */
-	private String qixFilePath;
-		
 	
 	private HashMap<ShapeFileComponent, String> filePathForShapeFileComponent;
 	
@@ -182,138 +106,18 @@ public class ShapeFile
 		
 		return filePathForShapeFileComponent.get(shapeFileComponent);
 	}
-
-	/*
-	public String getShpFilePath() {
-		return shpFilePath;
-	}
-
-	public void setShpFilePath(final String shpFilePath) {
-		this.shpFilePath = shpFilePath;
-	}
-
-	public String getShxFilePath() {
-		return shxFilePath;
-	}
-
-	public void setShxFilePath(final String shxFilePath) {
-		this.shxFilePath = shxFilePath;
-	}
-
-	public String getDbfFilePath() {
-		return dbfFilePath;
-	}
-
-	public void setDbfFilePath(final String dbfFilePath) {
-		this.dbfFilePath = dbfFilePath;
-	}
-	
-
-	public String getPrjFilePath() {
-		return prjFilePath;
-	}
-
-	public void setPrjFilePath(String prjFilePath) {
-		this.prjFilePath = prjFilePath;
-	}
-
-
-	public String getSbnFilePath() {
-		return sbnFilePath;
-	}
-
-	public void setSbnFilePath(String sbnFilePath) {
-		this.sbnFilePath = sbnFilePath;
-	}
-
-	public String getSbxFilePath() {
-		return sbxFilePath;
-	}
-
-	public void setSbxFilePath(String sbxFilePath) {
-		this.sbxFilePath = sbxFilePath;
-	}
-
-	public String getFbnFilePath() {
-		return fbnFilePath;
-	}
-
-	public void setFbnFilePath(String fbnFilePath) {
-		this.fbnFilePath = fbnFilePath;
-	}
-
-	public String getFbxFilePath() {
-		return fbxFilePath;
-	}
-
-	public void setFbxFilePath(String fbxFilePath) {
-		this.fbxFilePath = fbxFilePath;
-	}
-
-	public String getAinFilePath() {
-		return ainFilePath;
-	}
-
-	public void setAinFilePath(String ainFilePath) {
-		this.ainFilePath = ainFilePath;
-	}
-
-	public String getAihFilePath() {
-		return aihFilePath;
-	}
-
-	public void setAihFilePath(String aihFilePath) {
-		this.aihFilePath = aihFilePath;
-	}
-
-	public String getIxsFilePath() {
-		return ixsFilePath;
-	}
-
-	public void setIxsFilePath(String ixsFilePath) {
-		this.ixsFilePath = ixsFilePath;
-	}
-
-	public String getMxsFilePath() {
-		return mxsFilePath;
-	}
-
-	public void setMxsFilePath(String mxsFilePath) {
-		this.mxsFilePath = mxsFilePath;
-	}
-
-	public String getAtxFilePath() {
-		return atxFilePath;
-	}
-
-	public void setAtxFilePath(String atxFilePath) {
-		this.atxFilePath = atxFilePath;
-	}
-
-	public String getCpgFilePath() {
-		return cpgFilePath;
-	}
-
-	public void setCpgFilePath(String cpgFilePath) {
-		this.cpgFilePath = cpgFilePath;
-	}
-
-	public String getQixFilePath() {
-		return qixFilePath;
-	}
-
-	public void setQixFilePath(String qixFilePath) {
-		this.qixFilePath = qixFilePath;
-	}
-	
-	*/
-
 	
 	private String extractBaseFileName(final String filePath) {
 		File file = new File(filePath);
 		String baseFileName = file.getName();
-			
-		return baseFileName;
+		
+		int dotIndex = baseFileName.lastIndexOf(".");
+		if (dotIndex != -1) {
+			return baseFileName.substring(0, dotIndex);
+		}
+		else {
+			return baseFileName;		
+		}			
 	}
 		
 	// ==========================================
@@ -378,107 +182,94 @@ public class ShapeFile
 		//check if any of them are null
 		checkFile(
 			shpFieldName,
-			shpFilePath,
+			ShapeFileComponent.SHP,
 			errorMessages);
 
 		checkFile(
 			shxFieldName,
-			shxFilePath,
-			errorMessages);
-
-		checkFile(
-			shxFieldName,
-			shxFilePath,
+			ShapeFileComponent.SHX,
 			errorMessages);
 
 		checkFile(
 			dbfFieldName,
-			dbfFilePath,
+			ShapeFileComponent.DBF,
 			errorMessages);
 
-		
 		checkFile(
 			prjFieldName,
-			prjFilePath,
+			ShapeFileComponent.PRJ,
 			errorMessages);
 				
 		checkFile(
 			sbnFieldName,
-			sbnFilePath,
+			ShapeFileComponent.SBN,
 			errorMessages);
 		
 		checkFile(
 			sbxFieldName,
-			sbxFilePath,
+			ShapeFileComponent.SBX,
 			errorMessages);
 		
 		checkFile(
 			fbnFieldName,
-			fbnFilePath,
+			ShapeFileComponent.FBN,
 			errorMessages);
-
-		
+	
 		checkFile(
 			fbxFieldName,
-			fbxFilePath,
+			ShapeFileComponent.FBX,
 			errorMessages);
 				
 		checkFile(
 			ainFieldName,
-			aihFilePath,
+			ShapeFileComponent.AIH,
 			errorMessages);
 		
 		checkFile(
 			ixsFieldName,
-			ixsFilePath,
+			ShapeFileComponent.IXS,
 			errorMessages);
 
 		checkFile(
 			mxsFieldName,
-			mxsFilePath,
+			ShapeFileComponent.MXS,
 			errorMessages);
 
 		checkFile(
 			atxFieldName,
-			atxFilePath,
+			ShapeFileComponent.ATX,
 			errorMessages);
 		
 		checkFile(
 			cpgFieldName,
-			cpgFilePath,
+			ShapeFileComponent.CPG,
 			errorMessages);
 		
 		checkFile(
 			qixFieldName,
-			qixFilePath,
+			ShapeFileComponent.QIX,
 			errorMessages);
 		
-		//Now check that they all have the same base name
-		Collator collator = RIFServiceMessages.getCollator();
-		String baseShpFileName 
-			= extractBaseFileName(shpFilePath);
-		String baseShxFileName
-			= extractBaseFileName(shxFilePath);
-		String baseDbfFileName
-			= extractBaseFileName(dbfFilePath);
-		if (collator.equals(baseShpFileName, baseShxFileName) == false ||
-			collator.equals(baseShpFileName, baseDbfFileName) == false) {
-		
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"shapeFile.error.invalidBaseShapeFileName");			
-			errorMessages.add(errorMessage);
-		}
-		
 		return errorMessages;
+	}
+
+	public String[] getFilePaths() {
+		ArrayList<String> filePaths = new ArrayList<String>();
+		filePaths.addAll(filePathForShapeFileComponent.values());
+		
+		String[] results = filePaths.toArray(new String[0]);
+		return results;		
 	}
 	
 	private void checkFile(
 		final String fieldName,
-		final String filePath,
+		final ShapeFileComponent shapeFileComponent,
 		final ArrayList<String> errorMessages) {
 
-		if (shxFilePath == null) {
+		String filePath
+			= filePathForShapeFileComponent.get(shapeFileComponent);
+		
+		if (filePath == null) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"general.validation.emptyRequiredField",
@@ -525,14 +316,29 @@ public class ShapeFile
 		System.out.println(buffer.toString());
 	}
 	
+	public String getBaseFilePath() {
+		String filePath
+			= filePathForShapeFileComponent.get(ShapeFileComponent.SHP);	
+		int dotIndex = filePath.lastIndexOf(".");
+		if (dotIndex == -1) {
+			return filePath;
+		}
+		else {
+			return filePath.substring(0, dotIndex);
+		}
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
 
 	//Interface: DisplayableListItemInterface
 	public String getDisplayName() {
+		String filePath
+			= filePathForShapeFileComponent.get(ShapeFileComponent.SHP);
+		System.out.println("ShapeFile getDisplayName  filePath=="+filePath+"==");
 		String shapeFileName
-			= extractBaseFileName(shpFilePath);
+			= extractBaseFileName(filePath);
 		return shapeFileName;
 	}
 	
