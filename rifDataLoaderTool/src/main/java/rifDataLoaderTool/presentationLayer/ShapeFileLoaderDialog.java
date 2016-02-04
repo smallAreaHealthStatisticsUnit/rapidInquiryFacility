@@ -2,23 +2,21 @@ package rifDataLoaderTool.presentationLayer;
 
 
 import rifGenericLibrary.presentationLayer.*;
+
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.fileFormats.ZipFileUtility;
 import rifDataLoaderTool.system.RIFDataLoaderMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.util.ShapeFileScanner;
-import rifDataLoaderTool.fileFormats.DirectoryFileFilter;
 import rifDataLoaderTool.businessConceptLayer.ShapeFile;
-
-
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -91,7 +89,6 @@ public class ShapeFileLoaderDialog
 	// ==========================================
 	
 	private UserInterfaceFactory userInterfaceFactory;
-	
 	private JDialog dialog;
 	
 	
@@ -142,7 +139,7 @@ public class ShapeFileLoaderDialog
 				shapeFileListTitle,
 				null,
 				userInterfaceFactory,
-				true);		
+				false);	
 		panel.add(shapeFileListPanel.getPanel(), panelGC);
 				
 		panelGC.gridy++;
@@ -191,14 +188,13 @@ public class ShapeFileLoaderDialog
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void updateAvailableShapeFiles() {
-		File targetDirectory
-			= new File(shapeFileBrowseDirectoryTextField.getText().trim());
+	public void updateAvailableShapeFiles(
+		final File selectedDirectory) {
 		
 		ShapeFileScanner shapeFileScanner
 			= new ShapeFileScanner();
 		ArrayList<ShapeFile> shapeFiles
-			= shapeFileScanner.scanForShapeFiles(targetDirectory);
+			= shapeFileScanner.scanForShapeFiles(selectedDirectory);
 		shapeFileListPanel.clearList();
 		for (ShapeFile shapeFile : shapeFiles) {
 			shapeFileListPanel.addListItem(shapeFile);
@@ -213,7 +209,7 @@ public class ShapeFileLoaderDialog
 	private void browse() {
 		JFileChooser fileChooser
 			= userInterfaceFactory.createFileChooser();
-		fileChooser.setFileFilter(new DirectoryFileFilter());
+		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int result = fileChooser.showOpenDialog(dialog);
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
@@ -223,20 +219,53 @@ public class ShapeFileLoaderDialog
 		shapeFileBrowseDirectoryTextField.setText(selectedDirectory.getAbsolutePath());
 	
 		//update the total number of shape files that are available
-		
-		
-		updateAvailableShapeFiles();
+		updateAvailableShapeFiles(selectedDirectory);
 	}
 	
 	private void ok() {
 		
-		
-		dialog.setVisible(false);		
+		File destinationZipFile = null;
+		try {
+			
+			//obtain the currently selected Shape File
+			ShapeFile shapeFile
+				= (ShapeFile) shapeFileListPanel.getSelectedItem();
+			if (shapeFile != null) {
+				destinationZipFile
+					= createDestinationZipFile(shapeFile.getBaseFilePath());
+				System.out.println("SFLD ok - destinationZipFile ==" + destinationZipFile.getPath()+"==");
+				String[] shapeFileComponents = shapeFile.getFilePaths();
+			
+				ZipFileUtility zipFileUtility = new ZipFileUtility();
+				zipFileUtility.writeZipFile(
+					destinationZipFile, 
+					shapeFileComponents);
+			}		
+			dialog.setVisible(false);		
+		}
+		catch(IOException exception) {
+			String errorMessage
+				= RIFDataLoaderMessages.getMessage(
+					"shapeFileLoaderDialog.error.unableToLoadShapeFile",
+					destinationZipFile.getName());
+			ErrorDialog.showError(dialog, errorMessage);
+		}
+
 	}
 	
-	private void close() {
-		
+	private void close() {	
 		dialog.setVisible(false);
+	}
+	
+	private File createDestinationZipFile(
+		final String baseFileName) {
+		
+		StringBuilder path = new StringBuilder();
+		path.append(baseFileName);
+		path.append(".zip");
+		
+		File zipFile = new File(path.toString());
+		return zipFile;
 	}
 	
 	// ==========================================
