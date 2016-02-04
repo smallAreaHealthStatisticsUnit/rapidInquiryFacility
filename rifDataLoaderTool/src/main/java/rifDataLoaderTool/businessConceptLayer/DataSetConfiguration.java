@@ -444,6 +444,9 @@ public class DataSetConfiguration
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
 		checkEmptyFields(errorMessages);
+		checkAtLeastOneRequiredFieldExists(errorMessages);
+		
+		
 		
 		countErrors(
 			RIFDataLoaderToolError.INVALID_DATA_SET_CONFIGURATION, 
@@ -490,7 +493,6 @@ public class DataSetConfiguration
 				break;
 			}
 		}
-		
 		
 		String targetCleanFieldName
 			= targetDataSetFieldConfiguration.getCleanFieldName();
@@ -619,6 +621,25 @@ public class DataSetConfiguration
 			fieldConfiguration.checkEmptyFields(errorMessages);
 		}
 	}
+
+	private void checkAtLeastOneRequiredFieldExists(
+		final ArrayList<String> errorMessages) {
+		
+		int numberRequiredFields = 0;
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			if (fieldConfiguration.getFieldRequirementLevel() == FieldRequirementLevel.REQUIRED_BY_RIF) {
+				numberRequiredFields++;
+			}
+		}
+		
+		if (numberRequiredFields == 0) {
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfiguration.error.noRequiredFields");
+			errorMessages.add(errorMessage);			
+		}
+	}
+	
 	
 	public int getNumberOfCovariateFields() {
 		
@@ -693,7 +714,13 @@ public class DataSetConfiguration
 			= new ArrayList<DataSetFieldConfiguration>();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			if (fieldConfiguration.getConvertFunction() != null) {
-				fieldsWithConversionFunctions.add(fieldConfiguration);
+				
+				FieldRequirementLevel fieldRequirementLevel
+					= fieldConfiguration.getFieldRequirementLevel();
+					
+				if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD) {
+					fieldsWithConversionFunctions.add(fieldConfiguration);					
+				}
 			}
 		}
 		
@@ -706,7 +733,12 @@ public class DataSetConfiguration
 			= new ArrayList<DataSetFieldConfiguration>();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			if (fieldConfiguration.getConvertFunction() == null) {
-				fieldsWithoutConversionFunctions.add(fieldConfiguration);
+
+				FieldRequirementLevel fieldRequirementLevel
+					= fieldConfiguration.getFieldRequirementLevel();
+				if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD) {
+					fieldsWithoutConversionFunctions.add(fieldConfiguration);					
+				}				
 			}
 		}
 		
