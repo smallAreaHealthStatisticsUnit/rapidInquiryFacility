@@ -56,6 +56,7 @@ public enum ShapeFileComponent {
 	DBF("dbf"),
 	PRJ("prj"),
 	SBX("sbx"),
+	SBN("sbn"),
 	FBN("fbn"),
 	FBX("fbx"),
 	AIN("ain"),
