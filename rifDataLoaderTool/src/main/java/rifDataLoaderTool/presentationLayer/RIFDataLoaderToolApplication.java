@@ -233,7 +233,9 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	}
 	
 	private void editDatabaseButtonDataTypes() {
-		
+		DatabaseTypeEditorDialog databaseTypeEditorDialog
+			= new DatabaseTypeEditorDialog(userInterfaceFactory);
+		databaseTypeEditorDialog.show();
 	}
 	
 	private void loadShapeFiles() {
