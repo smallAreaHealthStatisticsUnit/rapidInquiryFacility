@@ -202,247 +202,247 @@ exports.convert = function(req, res) {
 //  req.setEncoding('utf-8'); // This corrupts the data stream with binary data
 //	req.setEncoding('binary'); // So does this! Leave it alone - it gets it right!
 
-    res.setHeader("Content-Type", "text/plain");
-	
-// Add stderr hook to capture debug output from topoJSON	
-	var stderr = stderrHook.stderrHook(function(output, obj) { 
-		output.str += obj.str;
-	});
-	
-// Response	
-	var response = {                 // Set output response    
-		no_files: 0,    
-		field_errors: 0,
-		file_list: [],
-		message: '',               
-		fields: [] 
-	};
-	var d_files = { 
-		d_list: []
-	}
+		res.setHeader("Content-Type", "text/plain");
 		
-// Post method	
-    if (req.method == 'POST') {
- 
-// Default topojson options 
-        var options = {
-            verbose: false,
-            quantization: 1e4,				
-			projection: "4326"		
-        };
-	
-// Default return fields	
-		var ofields = {
-			my_reference: '', 
-			zoomLevel: 0, 
-			verbose: false,
-			quantization: options.quantization,
-			projection: options.projection
-		};	
+	// Add stderr hook to capture debug output from topoJSON	
+		var stderr = stderrHook.stderrHook(function(output, obj) { 
+			output.str += obj.str;
+		});
 		
-// File attachment processing function		  
-        req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
+	// Response	
+		var response = {                 // Set output response    
+			no_files: 0,    
+			field_errors: 0,
+			file_list: [],
+			message: '',               
+			fields: [] 
+		};
+		var d_files = { 
+			d_list: []
+		}
 			
-			var d = new TempData(); // This is local to the post requests; the field processing cannot see it	
-			
-//        this.withinLimit = true;
-//        this.upper_limit = 1e8;				
-			d.file = { // File return data type
-				file_name: "",
-				temp_file_name: "",
-				file_encoding: "",	
-				extension: "",
-				jsonData: "",
-				file_data: "",
-				chunks: [],
-				topojson: "",
-				topojson_stderr: ""
+	// Post method	
+		if (req.method == 'POST') {
+	 
+	// Default topojson options 
+			var options = {
+				verbose: false,
+				quantization: 1e4,				
+				projection: "4326"		
 			};
-
-			// This will need a mutex if > 1 thread is being processed at the same time
-			response.no_files++;	// Increment file counter
-			d.no_files=response.no_files; // Local copy
-			
-			d.file.file_name = filename;
-			d.file.temp_file_name = os.tmpdir()  + "/" + filename;
-			d.file.file_encoding=req.get('Content-Encoding');
-			d.file.extension = filename.split('.').pop();
-			
-			if (!d.file.file_encoding) {
-				if (d.file.extension === "gz") {
-						d.file.file_encoding="gzip";
-				}
-				else if (d.file.extension === "lz77") {
-						d.file.file_encoding="zlib";
-				}
-			}
 		
-// Data processor			
-            stream.on('data', function(data) {
-				d.file.chunks.push(data);  
+	// Default return fields	
+			var ofields = {
+				my_reference: '', 
+				zoomLevel: 0, 
+				verbose: false,
+				quantization: options.quantization,
+				projection: options.projection
+			};	
 			
-/*			    if (d.file.file_data.length > d.upper_limit) { // Max geojs allowed upper_limit
-					d.withinLimit = false;  
-					try { 
-						console.log("toTopoJSON(): Stopping file: " + d.file.file_name + " upload...");
-					} catch (e) { 
-						var msg="EXCEPTION! toTopoJSON.js: File: " + d.file.file_name + " upload stopped: " + e; 
-						                        console.error(msg);					  
-						res.status(500);					  
-						res.write(msg);
-						res.end();						
-                        return;
-					};     
-			    }; */
-			});
+	// File attachment processing function		  
+			req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
+				
+				var d = new TempData(); // This is local to the post requests; the field processing cannot see it	
+				
+	//        this.withinLimit = true;
+	//        this.upper_limit = 1e8;				
+				d.file = { // File return data type
+					file_name: "",
+					temp_file_name: "",
+					file_encoding: "",	
+					extension: "",
+					jsonData: "",
+					file_data: "",
+					chunks: [],
+					topojson: "",
+					topojson_stderr: ""
+				};
 
-// EOF processor 
-            stream.on('end', function() {
-//			     d.file.file_data = d.file.file_data.replace(/(\r\n|\n|\r)/gm,""); CRLF=> CR
-//                 if (d.file.file_name != '' && d.withinLimit) {	
-	
-						var buf=Buffer.concat(d.file.chunks);
+				// This will need a mutex if > 1 thread is being processed at the same time
+				response.no_files++;	// Increment file counter
+				d.no_files=response.no_files; // Local copy
+				
+				d.file.file_name = filename;
+				d.file.temp_file_name = os.tmpdir()  + "/" + filename;
+				d.file.file_encoding=req.get('Content-Encoding');
+				d.file.extension = filename.split('.').pop();
+				
+				if (!d.file.file_encoding) {
+					if (d.file.extension === "gz") {
+							d.file.file_encoding="gzip";
+					}
+					else if (d.file.extension === "lz77") {
+							d.file.file_encoding="zlib";
+					}
+				}
+			
+	// Data processor			
+				stream.on('data', function(data) {
+					d.file.chunks.push(data);  
+				
+	/*			    if (d.file.file_data.length > d.upper_limit) { // Max geojs allowed upper_limit
+						d.withinLimit = false;  
+						try { 
+							console.log("toTopoJSON(): Stopping file: " + d.file.file_name + " upload...");
+						} catch (e) { 
+							var msg="EXCEPTION! toTopoJSON.js: File: " + d.file.file_name + " upload stopped: " + e; 
+													console.error(msg);					  
+							res.status(500);					  
+							res.write(msg);
+							res.end();						
+							return;
+						};     
+					}; */
+				});
+
+	// EOF processor 
+				stream.on('end', function() {
+	//			     d.file.file_data = d.file.file_data.replace(/(\r\n|\n|\r)/gm,""); CRLF=> CR
+	//                 if (d.file.file_name != '' && d.withinLimit) {	
+		
+							var buf=Buffer.concat(d.file.chunks);
+							
+							d.file.file_data="";
+							if (d.file.file_encoding === "gzip") {
+								d.file.file_data=zlib.gunzipSync(buf)							
+								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+									d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
+									"; from buf: " + buf.length, req); 
+							}	
+							else if (d.file.file_encoding === "zlib") {	
+								d.file.file_data=zlib.inflateSync(buf)							
+								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+									d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
+									"; from buf: " + buf.length, req); 
+							}
+							else if (d.file.file_encoding === "zip") {
+								msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+										file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
+								_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 500, req, res, msg);
+								return;							
+							}
+							else {
+								d.file.file_data=buf;
+								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 			
+									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+									"; uncompressed data: " + d.file.file_data.length, req); 												
+							}
+							
+							d_files.d_list[d.no_files-1] = d;						
 						
-						d.file.file_data="";
-						if (d.file.file_encoding === "gzip") {
-							d.file.file_data=zlib.gunzipSync(buf)							
-							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-								"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-								d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
-								"; from buf: " + buf.length, req); 
-						}	
-						else if (d.file.file_encoding === "zlib") {	
-							d.file.file_data=zlib.inflateSync(buf)							
-							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-								"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-								d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
-								"; from buf: " + buf.length, req); 
-						}
-						else if (d.file.file_encoding === "zip") {
-							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-									file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
-							_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 500, req, res, msg);
-							return;							
+	//                }
+				}); // End of EOF processor
+					
+			}); // End of file attachment processing function
+			  
+	// Field processing function        
+			req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
+				var text="";
+				if (fieldname == 'zoomLevel') {
+				   options.quantization = getQuantization(val);
+				   text="Quantization set to: " + options.quantization;
+				   ofields["quantization"]=options.quantization;
+				}
+				else if (fieldname == 'projection') {
+				   options.projection = val;
+				   text="Projection set to: " + options.projection;
+				   ofields["projection"]=options.projection;
+				}
+				else if ((fieldname == 'verbose')&&(val == 'true')) {
+					options.verbose = true;
+					text="verbose mode enabled";
+					ofields[fieldname]="true";
+				}
+				else if (fieldname == 'id') {				
+					text="myId() function id field set to: " + val;
+					ofields[fieldname]=val;				
+	//
+	// Promote tile gid to id
+	//					
+					ofields.myId = function(d) {
+	// Dont use eval() = it is source of potential injection
+	//					var rval=eval("d.properties." + ofields[fieldname]);
+						if (!d.properties[ofields[fieldname]]) {
+							response.field_errors++;
+							var msg="ERROR! Id field: d.properties." + ofields[fieldname] + " does not exist";
+							if (options.id) {
+								rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
+								options.id = undefined; // Prevent this section running again!	
+							}
 						}
 						else {
-							d.file.file_data=buf;
-							rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 			
-								"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-								"; uncompressed data: " + d.file.file_data.length, req); 												
+							return d.properties[ofields[fieldname]];
 						}
-						
-						d_files.d_list[d.no_files-1] = d;						
-					
-//                }
-            }); // End of EOF processor
-				
-        }); // End of file attachment processing function
-          
-// Field processing function        
-        req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
-            var text="";
-            if (fieldname == 'zoomLevel') {
-               options.quantization = getQuantization(val);
-			   text="Quantization set to: " + options.quantization;
-			   ofields["quantization"]=options.quantization;
-            }
-			else if (fieldname == 'projection') {
-               options.projection = val;
-			   text="Projection set to: " + options.projection;
-			   ofields["projection"]=options.projection;
-            }
-			else if ((fieldname == 'verbose')&&(val == 'true')) {
-				options.verbose = true;
-				text="verbose mode enabled";
-				ofields[fieldname]="true";
-            }
-			else if (fieldname == 'id') {				
-				text="myId() function id field set to: " + val;
-				ofields[fieldname]=val;				
-//
-// Promote tile gid to id
-//					
-				ofields.myId = function(d) {
-// Dont use eval() = it is source of potential injection
-//					var rval=eval("d.properties." + ofields[fieldname]);
-					if (!d.properties[ofields[fieldname]]) {
-						response.field_errors++;
-						var msg="ERROR! Id field: d.properties." + ofields[fieldname] + " does not exist";
-						if (options.id) {
-							rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
-							options.id = undefined; // Prevent this section running again!	
-						}
-					}
-					else {
-						return d.properties[ofields[fieldname]];
-					}
-//					response.message = response.message + "\nCall myId() for id field: " + ofields[fieldname] + "; value: " + rval;									
-				}						
-				options.id = ofields.myId;				
-			}
-			else {
-				ofields[fieldname]=val;				
-			}	
-			response.message = response.message + "\nField: " + fieldname + "[" + val + "]; " + text;
-         }); // End of field processing function
-          		  
-// End of request - complete response		  
-        req.busboy.on('finish', function() {
-			var msg;
-			
-			for (i = 0; i < response.no_files; i++) {	
-				d=d_files.d_list[i];
-				if (!d.file) {
-					msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: not found in list";
-					_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);
-					return;			
+	//					response.message = response.message + "\nCall myId() for id field: " + ofields[fieldname] + "; value: " + rval;									
+					}						
+					options.id = ofields.myId;				
 				}
-				else if (d.file.file_data.length > 0) {
-					d=_process_json(d, ofields, options, stderr, req, res, response);	
-					if (!d) {
-						return; // _process_json() has emitted the error
-					}
-				}	
 				else {
-					msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-							file.extension + "; file size is zero";
-					_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);
-					return;
+					ofields[fieldname]=val;				
 				}	
-			}
-			if (!ofields["my_reference"]) {
-				msg="[No my_reference] Processed: " + response.no_files + " files; debug message:\n" + response.message
-			}
-			else {
-				msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files; debug message:\n" + response.message
-			}
+				response.message = response.message + "\nField: " + fieldname + "[" + val + "]; " + text;
+			 }); // End of field processing function
+					  
+	// End of request - complete response		  
+			req.busboy.on('finish', function() {
+				var msg;
 				
-			response.fields=ofields;				// Add return fields	
-			var output;
-			if (response.field_errors == 0) { // OK
-				rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", msg, req);					
-				output = JSON.stringify(response);// Convert output response to JSON 
-// Need to test res was not finished by an expection to avoid "write after end" errors			
-				res.write(output);                  // Write output  
-				res.end();				
-			}
-			else {
-				msg = "FAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
-				_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);				  
-			}		
+				for (i = 0; i < response.no_files; i++) {	
+					d=d_files.d_list[i];
+					if (!d.file) {
+						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: not found in list";
+						_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);
+						return;			
+					}
+					else if (d.file.file_data.length > 0) {
+						d=_process_json(d, ofields, options, stderr, req, res, response);	
+						if (!d) {
+							return; // _process_json() has emitted the error
+						}
+					}	
+					else {
+						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+								file.extension + "; file size is zero";
+						_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);
+						return;
+					}	
+				}
+				if (!ofields["my_reference"]) {
+					msg="[No my_reference] Processed: " + response.no_files + " files; debug message:\n" + response.message
+				}
+				else {
+					msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files; debug message:\n" + response.message
+				}
+					
+				response.fields=ofields;				// Add return fields	
+				var output;
+				if (response.field_errors == 0) { // OK
+					rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", msg, req);					
+					output = JSON.stringify(response);// Convert output response to JSON 
+	// Need to test res was not finished by an expection to avoid "write after end" errors			
+					res.write(output);                  // Write output  
+					res.end();				
+				}
+				else {
+					msg = "FAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
+					_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);				  
+				}		
 
-        });
+			});
 
-        req.pipe(req.busboy); // Pipe request stream to busboy form data handler
-          
-    } // End of post method
-	else {
-		var msg="ERROR! GET Requests not allowed; please see: " + 
-			"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
-		_http_error_response(__file, __line, "exports.convert", 405, req, res, msg);		
-		return;		  
-	}
-	
+			req.pipe(req.busboy); // Pipe request stream to busboy form data handler
+			  
+		} // End of post method
+		else {
+			var msg="ERROR! GET Requests not allowed; please see: " + 
+				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
+			_http_error_response(__file, __line, "exports.convert", 405, req, res, msg);		
+			return;		  
+		}
+		
 	} catch (e) {                            // Catch syntax errors
 		var msg="General processing ERROR!";				  
 		_http_error_response(__file, __line, "exports.convert catch()", 500, req, res, msg, e);		
