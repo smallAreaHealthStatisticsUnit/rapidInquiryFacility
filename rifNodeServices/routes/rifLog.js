@@ -77,7 +77,7 @@ rifLog = function(msg, req, err) {
 		":" + __stack[2].getLineNumber() + 
 		"; function: " + calling_function + "()";
 	var request_tracer="";
-	var error_tracer="";
+	var error_tracer=";\nNo exceptions";
 	
 	// Add request tracer if present
 	if (req) {
@@ -126,7 +126,7 @@ rifLog2 = function(file, line, calling_function, msg, req, err) {
 		":" + line + 
 		"; function: " + calling_function + "()";
 	var request_tracer="";
-	var error_tracer="";
+	var error_tracer=";\nNo exceptions";
 	
 	// Add request tracer if present
 	if (req) {

@@ -89,10 +89,27 @@ var inspect = require('util').inspect,
 		this.file = '';
 		this.file_list = [];
 		this.no_files = 0;	
+		this.myId = '';
 		
         return this; 
-     };
+     },
 
+/*
+ * Function: 	_http_error_response() 
+ * Parameters:  File called from, line number called from, procedure called from, 
+ *				HTTP status,
+ *				HTTP request object,
+ *				HTTP response object,
+ * 				Message text,
+ *				Error object
+ */		
+	_http_error_response=function(file, line, calling_function, status, req, res, msg, err) {
+		rifLog.rifLog2(file, line, calling_function, msg, req, err);
+		res.status(500);					  
+		res.write(msg);
+		res.end();	
+	},
+	 
 /*
  * Function:	_process_json()
  * Parameters:	d object (temporary processing data, 
@@ -101,16 +118,16 @@ var inspect = require('util').inspect,
 				HTTP request object,
 				HTTP response object, 
 				my response object
- * Returns:		d object/Nothing on failure
+ * Returns:		d object topojson/Nothing on failure
  * Description: TopoJSON processing:
  *				- converts string to JSON
  *				- calls topojson.topology() using options
  * 				- Add file name, stderr and topoJSON to my response
  */
-function _process_json(d1, ofields, options, stderr, req, res, response) {
-	var d=d1;
-	var msg;
-		
+	_process_json=function(d, ofields, options, stderr, req, res, response) {
+	var msg="File [" + d.no_files + "]: " + d.file.file_name;
+	
+	response.message = response.message + '\nProcessing ' + msg;	
     try {	
 		d.file.jsonData = undefined;
 		d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
@@ -134,13 +151,13 @@ function _process_json(d1, ofields, options, stderr, req, res, response) {
 			topojson_stderr: d.file.topojson_stderr
 		};	
 		
-		msg="File [" + d.no_files + "]: " + d.file.file_name + "; topoJSON: " + JSON.stringify(d.file.topojson).length + "]"
+		msg+= "; topoJSON: " + JSON.stringify(d.file.topojson).length + "]"
 		if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message	
 // This will need a mutex if > 1 thread is being processed at the same time	
-			response.message = response.message + "\n" + msg + " OK:\n>>>\n" + 
-				d.file.topojson_stderr + "<<<";
-			rifLog.rifLog("TopoJson.topology() stderr; " + msg  + ">>>\n"  + 
-				d.file.topojson_stderr + "<<<", 
+			response.message = response.message + "\n" + msg + " OK:\nTopoJson.topology() stderr >>>\n" + 
+				d.file.topojson_stderr + "<<< TopoJson.topology() stderr";
+			rifLog.rifLog("TopoJson.topology() stderr; " + msg  + "TopoJson.topology() stderr >>>\n"  + 
+				d.file.topojson_stderr + "<<< TopoJson.topology() stderr", 
 				req);
 		}
 		else {
@@ -150,8 +167,10 @@ function _process_json(d1, ofields, options, stderr, req, res, response) {
 				req);		
 		}			
 															   
-		return d;								   
+		return d.file.topojson;								   
 	} catch (e) {                            // Catch conversion errors
+
+		stderr.restore();                  // Restore normal stderr functionality 	
 		if (!d.file.jsonData) {
 			msg="does not seem to contain valid JSON";
 		}
@@ -160,19 +179,16 @@ function _process_json(d1, ofields, options, stderr, req, res, response) {
 		}
 		msg="Your input file " + d.no_files + ": " + 
 			d.file.file_name + "; size: " + d.file.file_data.length + 
-			"; " + msg + ": \n\n";
+			"; " + msg + ": \n" + "Debug message:\n" + response.message + "\n\n";
 		if (d.file.file_data.length > 0) {
 			msg=msg + "\nTruncated data:\n" + 
 				d.file.file_data.toString('hex').substring(0, 132) + "...\r\n";
 		}
-				
-		rifLog.rifLog(msg, req, e);					  
-		res.status(500);					  
-		res.write(msg);
-		res.end();		
+					
+		_http_error_response(__file, __line, "_process_json()", 500, req, res, msg, e);				
 		return;
-	}; 	
-}
+	} 	
+};
 
 /*
  * Function: 	exports.convert()
@@ -181,6 +197,8 @@ function _process_json(d1, ofields, options, stderr, req, res, response) {
  */
 exports.convert = function(req, res) {
 
+	try {
+		
 //  req.setEncoding('utf-8'); // This corrupts the data stream with binary data
 //	req.setEncoding('binary'); // So does this! Leave it alone - it gets it right!
 
@@ -193,7 +211,8 @@ exports.convert = function(req, res) {
 	
 // Response	
 	var response = {                 // Set output response    
-		no_files: 0,
+		no_files: 0,    
+		field_errors: 0,
 		file_list: [],
 		message: '',               
 		fields: [] 
@@ -300,10 +319,10 @@ exports.convert = function(req, res) {
 								"; from buf: " + buf.length, req); 
 						}
 						else if (d.file.file_encoding === "zip") {
-							return res.status(500).send({
-								message: "FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-									file.extension + "; file_encoding: " + d.file.file_encoding + " not supported"
-							});								
+							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+									file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
+							_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 500, req, res, msg);
+							return;							
 						}
 						else {
 							d.file.file_data=buf;
@@ -337,6 +356,30 @@ exports.convert = function(req, res) {
 				text="verbose mode enabled";
 				ofields[fieldname]="true";
             }
+			else if (fieldname == 'id') {				
+				text="myId() function id field set to: " + val;
+				ofields[fieldname]=val;				
+//
+// Promote tile gid to id
+//					
+				ofields.myId = function(d) {
+// Dont use eval() = it is source of potential injection
+//					var rval=eval("d.properties." + ofields[fieldname]);
+					if (!d.properties[ofields[fieldname]]) {
+						response.field_errors++;
+						var msg="ERROR! Id field: d.properties." + ofields[fieldname] + " does not exist";
+						if (options.id) {
+							rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
+							options.id = undefined; // Prevent this section running again!	
+						}
+					}
+					else {
+						return d.properties[ofields[fieldname]];
+					}
+//					response.message = response.message + "\nCall myId() for id field: " + ofields[fieldname] + "; value: " + rval;									
+				}						
+				options.id = ofields.myId;				
+			}
 			else {
 				ofields[fieldname]=val;				
 			}	
@@ -350,9 +393,9 @@ exports.convert = function(req, res) {
 			for (i = 0; i < response.no_files; i++) {	
 				d=d_files.d_list[i];
 				if (!d.file) {
-					return res.status(500).send({
-						message: "FAIL! File [" + (i+1) + "/" + d.no_files + "]: not found in list"
-					});					
+					msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: not found in list";
+					_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);
+					return;			
 				}
 				else if (d.file.file_data.length > 0) {
 					d=_process_json(d, ofields, options, stderr, req, res, response);	
@@ -361,10 +404,10 @@ exports.convert = function(req, res) {
 					}
 				}	
 				else {
-					return res.status(500).send({
-						message: "FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-							file.extension + "; file size is zero"
-					});
+					msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+							file.extension + "; file size is zero";
+					_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);
+					return;
 				}	
 			}
 			if (!ofields["my_reference"]) {
@@ -373,14 +416,21 @@ exports.convert = function(req, res) {
 			else {
 				msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files; debug message:\n" + response.message
 			}
-			
-			rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", msg, req);		
-			response.fields=ofields;				   // Add return fields		
-			var output = JSON.stringify(response);// Convert output response to JSON 
-			
+				
+			response.fields=ofields;				// Add return fields	
+			var output;
+			if (response.field_errors == 0) { // OK
+				rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", msg, req);					
+				output = JSON.stringify(response);// Convert output response to JSON 
 // Need to test res was not finished by an expection to avoid "write after end" errors			
-			res.write(output);                  // Write output  
-			res.end();
+				res.write(output);                  // Write output  
+				res.end();				
+			}
+			else {
+				msg = "FAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
+				_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);				  
+			}		
+
         });
 
         req.pipe(req.busboy); // Pipe request stream to busboy form data handler
@@ -389,11 +439,14 @@ exports.convert = function(req, res) {
 	else {
 		var msg="ERROR! GET Requests not allowed; please see: " + 
 			"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
-		rifLog.rifLog2(__file, __line, "exports.convert", msg, req);
-        res.status(405);				  
-		res.write(msg);
-		res.end();		
+		_http_error_response(__file, __line, "exports.convert", 405, req, res, msg);		
 		return;		  
 	}
-  
+	
+	} catch (e) {                            // Catch syntax errors
+		var msg="General processing ERROR!";				  
+		_http_error_response(__file, __line, "exports.convert catch()", 500, req, res, msg, e);		
+		return;
+	}
+	  
 };

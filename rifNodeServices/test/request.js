@@ -51,7 +51,21 @@
 var FormData = require('form-data');
 var fs = require('fs');
 
-var nRequests = 0;
+// Process Args
+var nRequests = process.argv[2];
+var max_nRequests = 9;
+if (!nRequests) {
+	nRequests = 0;
+	console.log('Processing all request tests');
+}
+else {
+	console.log('Using arg[2] nRequests: ' + nRequests);
+	max_nRequests = 1;
+}
+
+var passed=0;
+var failed=0;
+var tests=0;
 
 var MakeRequest = function(){
 
@@ -113,7 +127,8 @@ var MakeRequest = function(){
 				json_file,
 				json_file2,
 				json_file3
-			]
+			],
+			expected_to_pass: "true" 
 		};
 	}
 	else {
@@ -122,7 +137,8 @@ var MakeRequest = function(){
 			my_reference: nRequests,
 			attachments: [
 				json_file
-			]
+			],
+			expected_to_pass: "true" 
 		};
 	}
 
@@ -158,7 +174,20 @@ var MakeRequest = function(){
 		formData["zoomLevel"]=0;	
 		formData["my_test"]="gzip geoJSON multiple files";		
 	}
-		
+	else if (nRequests == 8) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="TopoJSON id support";	
+		formData["id"]="gid";		
+	}
+	else if (nRequests == 9) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="TopoJSON id support: invalid id";	
+		formData["id"]="invalid_id";
+		formData["expected_to_pass"]="false"; 		
+	}
+	
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 		
     this.options = {
@@ -175,16 +204,44 @@ var MakeRequest = function(){
 	}	
 }
 
-var postIt = function(){
+/*
+ * Function: postIt()
+ * Parameter: Request debug (true/false) 
+ */
+var postIt = function(debug) {
 	var r = new MakeRequest(); 
+	r.request = require('request');
+
+// Request debugging - single test node only	
+	if (debug) {
+		r.request.debug = true;
+	
+		// Debugger function
+		require('request-debug')(r.request, 
+			function(type, data, r) {
+				console.log('Request debug: ' + type + 
+					";\nheaders" + JSON.stringify(data.headers, null, 4).substring(0, 132) + 
+					";\nbody" + JSON.stringify(data, null, 4).substring(0, 132))
+		});
+	}
+
+	// Post request, with callback for when complete. This will cause multiple tests to run in almost any order
 	var p=r.request.post(r.options, function optionalCallback(err, httpResponse, body) {
-		if (err) {
+		tests++;
+		if (err && err.code === 'ETIMEOUT') {
 			console.error('Upload #' + nRequests + ' failed: ' + JSON.stringify(httpResponse, null, 4) + 
-				"\r\nError: ", err);
+				"err.connect: " + err.connect + 
+				"\nError: ", err);
+			failed++;
+		} else if (err) {
+			console.error('Upload #' + nRequests + ' failed: ' + JSON.stringify(httpResponse, null, 4) + 
+				"\nError: ", err);
+			failed++;
 		}
 		else if (httpResponse.statusCode != 200) {
 			console.error('Upload failed HTTP status: ' + httpResponse.statusCode + 
-				"\r\nError: [", body + "]\r\n");		   
+				"\nError>>>\n" + body + "\n<<< HTTP status error\n");
+			failed++;				
 		}
 		else {
 			var jsonData = JSON.parse(body);
@@ -197,20 +254,52 @@ var postIt = function(){
 			for (i = 0; i < jsonData.no_files; i++) {	
 				 topojson = JSON.stringify(file_list[i].topojson);
 				 console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] topoJSON length: " + topojson.length);
+				// Single test mode: print first 600 characters of formatted topoJSON
+				 if (max_nRequests == 1) {
+					 console.error("First 600 characters of formatted topoJSON >>>\n" + 
+						JSON.stringify(file_list[i].topojson, null, 2).substring(0, 600) + "\n\n<<< formatted topoJSON\n");
+				 }
 			}
-			console.error('\nEnd of upload #' + ofields["my_reference"] + '\n');
+			console.error('\nEnd of upload #' + ofields["my_reference"] + '\n');			
+			passed++;
 		}
 	});
 };
   
+// Test processing loop  
+if (nRequests == 0) { // Process all requests
+	var timeOut = function() {
+		setTimeout(function() {
+			if(nRequests++ < max_nRequests){ 
+				postIt(false); //No request debug
+				timeOut();    
+			}
+		}, 100);
+	};
 
-var timeOut = function(){
+	timeOut();
+}
+else {
+	postIt(true); // Enable request debug
+}
+
+// Wait until all tests complete
+var timeOut2 = function() {
+	
 	setTimeout(function() {
-		if(nRequests++ < 7){ 
-			postIt();
-			timeOut();    
+		if (tests < max_nRequests) {
+			timeOut2();   
+		}
+		else {
+			if (failed > 0) {
+				throw new Error("Failed " + failed + "/" + tests + "; passed: " + passed);
+			}
+			else {
+				console.error("All tests passed: " + passed + "/" + tests);
+			}
 		}
 	}, 100);
-};
+}
 
-timeOut();
+timeOut2();
+
