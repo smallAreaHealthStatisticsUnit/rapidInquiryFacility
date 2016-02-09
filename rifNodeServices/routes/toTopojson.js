@@ -125,70 +125,70 @@ var inspect = require('util').inspect,
  * 				- Add file name, stderr and topoJSON to my response
  */
 	_process_json=function(d, ofields, options, stderr, req, res, response) {
-	var msg="File [" + d.no_files + "]: " + d.file.file_name;
-	
-	response.message = response.message + '\nProcessing ' + msg;	
-    try {	
-		d.file.jsonData = undefined;
-		d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
-
-		// Re-route topoJSON stderr to stderr.str
-		stderr.disable();
-		d.file.topojson = topojson.topology({   // Convert geoJSON to topoJSON
-			collection: d.file.jsonData
-			}, options);				
-		stderr.enable(); 				   // Re-enable stderr
+		var msg="File [" + d.no_files + "]: " + d.file.file_name;
 		
-		d.file.topojson_stderr=stderr.str();  // Get stderr as a string	
-		stderr.clean();						// Clean down stderr string
-		stderr.restore();                  // Restore normal stderr functionality 
+		response.message = response.message + '\nProcessing ' + msg;	
+		try {	
+			d.file.jsonData = undefined;
+			d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
 
-// Add file name, stderr and topoJSON to my response
-// This will need a mutex if > 1 thread is being processed at the same time
-		response.file_list[d.no_files-1] = {
-			file_name: d.file.file_name,
-			topojson: d.file.topojson,
-			topojson_stderr: d.file.topojson_stderr
-		};	
-		
-		msg+= "; topoJSON: " + JSON.stringify(d.file.topojson).length + "]"
-		if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message	
-// This will need a mutex if > 1 thread is being processed at the same time	
-			response.message = response.message + "\n" + msg + " OK:\nTopoJson.topology() stderr >>>\n" + 
-				d.file.topojson_stderr + "<<< TopoJson.topology() stderr";
-			rifLog.rifLog("TopoJson.topology() stderr; " + msg  + "TopoJson.topology() stderr >>>\n"  + 
-				d.file.topojson_stderr + "<<< TopoJson.topology() stderr", 
-				req);
-		}
-		else {
-// This will need a mutex if > 1 thread is being processed at the same time
-			response.message = response.message + "\n" + msg + " OK";
-			rifLog.rifLog("TopoJson.topology() no stderr; " + msg, 
-				req);		
-		}			
-															   
-		return d.file.topojson;								   
-	} catch (e) {                            // Catch conversion errors
+			// Re-route topoJSON stderr to stderr.str
+			stderr.disable();
+			d.file.topojson = topojson.topology({   // Convert geoJSON to topoJSON
+				collection: d.file.jsonData
+				}, options);				
+			stderr.enable(); 				   // Re-enable stderr
+			
+			d.file.topojson_stderr=stderr.str();  // Get stderr as a string	
+			stderr.clean();						// Clean down stderr string
+			stderr.restore();                  // Restore normal stderr functionality 
 
-		stderr.restore();                  // Restore normal stderr functionality 	
-		if (!d.file.jsonData) {
-			msg="does not seem to contain valid JSON";
-		}
-		else {
-			msg="does not seem to contain valid TopoJSON";
-		}
-		msg="Your input file " + d.no_files + ": " + 
-			d.file.file_name + "; size: " + d.file.file_data.length + 
-			"; " + msg + ": \n" + "Debug message:\n" + response.message + "\n\n";
-		if (d.file.file_data.length > 0) {
-			msg=msg + "\nTruncated data:\n" + 
-				d.file.file_data.toString('hex').substring(0, 132) + "...\r\n";
-		}
-					
-		_http_error_response(__file, __line, "_process_json()", 500, req, res, msg, e);				
-		return;
-	} 	
-};
+	// Add file name, stderr and topoJSON to my response
+	// This will need a mutex if > 1 thread is being processed at the same time
+			response.file_list[d.no_files-1] = {
+				file_name: d.file.file_name,
+				topojson: d.file.topojson,
+				topojson_stderr: d.file.topojson_stderr
+			};	
+			
+			msg+= "; topoJSON: " + JSON.stringify(d.file.topojson).length + "]"
+			if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message	
+	// This will need a mutex if > 1 thread is being processed at the same time	
+				response.message = response.message + "\n" + msg + " OK:\nTopoJson.topology() stderr >>>\n" + 
+					d.file.topojson_stderr + "<<< TopoJson.topology() stderr";
+				rifLog.rifLog("TopoJson.topology() stderr; " + msg  + "TopoJson.topology() stderr >>>\n"  + 
+					d.file.topojson_stderr + "<<< TopoJson.topology() stderr", 
+					req);
+			}
+			else {
+	// This will need a mutex if > 1 thread is being processed at the same time
+				response.message = response.message + "\n" + msg + " OK";
+				rifLog.rifLog("TopoJson.topology() no stderr; " + msg, 
+					req);		
+			}			
+																   
+			return d.file.topojson;								   
+		} catch (e) {                            // Catch conversion errors
+
+			stderr.restore();                  // Restore normal stderr functionality 	
+			if (!d.file.jsonData) {
+				msg="does not seem to contain valid JSON";
+			}
+			else {
+				msg="does not seem to contain valid TopoJSON";
+			}
+			msg="Your input file " + d.no_files + ": " + 
+				d.file.file_name + "; size: " + d.file.file_data.length + 
+				"; " + msg + ": \n" + "Debug message:\n" + response.message + "\n\n";
+			if (d.file.file_data.length > 0) {
+				msg=msg + "\nTruncated data:\n" + 
+					d.file.file_data.toString('hex').substring(0, 132) + "...\r\n";
+			}
+						
+			_http_error_response(__file, __line, "_process_json()", 500, req, res, msg, e);				
+			return;
+		} 	
+	}; // End of globals
 
 /*
  * Function: 	exports.convert()
