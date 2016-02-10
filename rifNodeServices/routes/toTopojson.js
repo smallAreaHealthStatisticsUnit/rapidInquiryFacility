@@ -129,9 +129,23 @@ var inspect = require('util').inspect,
 				l_response.no_files = g_response.no_files;
 				l_response.field_errors = g_response.field_errors;
 				for (i = 0; i < l_response.no_files; i++) {	
-					l_response.file_list[i] = {
-						file_name: g_response.file_list[i].file_name
-					};
+					if (g_response.file_list[i]) {
+						if (g_response.file_list[i].file_name) {
+							l_response.file_list[i] = {
+								file_name: g_response.file_list[i].file_name
+							};
+						}
+						else {
+							l_response.file_list[i] = {
+								file_name: ''
+							};
+						}							
+					}
+					else {
+						l_response.file_list[i] = {
+							file_name: ''
+						};
+					}
 				}
 				l_response.fields = g_response.fields;
 			}
@@ -374,14 +388,35 @@ exports.convert = function(req, res) {
 							
 							d.file.file_data="";
 							if (d.file.file_encoding === "gzip") {
-								d.file.file_data=zlib.gunzipSync(buf)							
+								try {
+									d.file.file_data=zlib.gunzipSync(buf);
+								}
+								catch (e) {
+									msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+										d.file.extension + "; file_encoding: " + d.file.file_encoding + " gunzip exception";
+									response.no_files=d.no_files;			// Add number of files process to response
+									response.fields=ofields;				// Add return fields	
+									_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+										500, req, res, msg, e, response);									
+								}															
 								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
 									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 									d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
 									"; from buf: " + buf.length, req); 
 							}	
 							else if (d.file.file_encoding === "zlib") {	
-								d.file.file_data=zlib.inflateSync(buf)							
+								try {
+									d.file.file_data=zlib.inflateSync(buf);
+								}
+								catch (e) {
+									msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+										d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+									response.no_files=d.no_files;			// Add number of files process to response
+									response.fields=ofields;				// Add return fields	
+									_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+										500, req, res, msg, e, response);
+								return;											
+								}
 								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
 									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 									d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
@@ -389,10 +424,11 @@ exports.convert = function(req, res) {
 							}
 							else if (d.file.file_encoding === "zip") {
 								msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-										file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
+										d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
 								response.no_files=d.no_files;			// Add number of files process to response
 								response.fields=ofields;				// Add return fields	
-								_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 500, req, res, msg, undefined, response);
+								_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+									500, req, res, msg, undefined, response);
 								return;							
 							}
 							else {
@@ -463,8 +499,15 @@ exports.convert = function(req, res) {
 				
 				for (i = 0; i < response.no_files; i++) {	
 					d=d_files.d_list[i];
-					if (!d.file) {
-						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: not found in list";
+					if (!d) { // File could not be processed, _http_error_response() already processed
+//						msg="FAIL! File [" + (i+1) + "/?]: entry not found, no file list";
+//						response.no_files=0;					// Add number of files process to response
+//						response.fields=ofields;				// Add return fields	
+//						_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg, undefined, response);
+						return;							
+					}
+					else if (!d.file) {
+						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: object not found in list";
 						response.no_files=d.no_files;			// Add number of files process to response
 						response.fields=ofields;				// Add return fields	
 						_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg, undefined, response);

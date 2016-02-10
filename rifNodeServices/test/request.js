@@ -53,10 +53,13 @@ var fs = require('fs');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 10;
+var max_nRequests = 12;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all request tests');
+}
+else if (nRequests > max_nRequests) {
+	throw new Error("Invalid request number: " + nRequests + "; must be between 1 and " + max_nRequests);
 }
 else {
 	console.log('Using arg[2] nRequests: ' + nRequests);
@@ -112,6 +115,14 @@ var MakeRequest = function(){
 	}
 	else if (nRequests == 10) { // Invalid GeoJSON
 		inputFile = './data/helloworld.js';
+		json_file = fs.createReadStream(inputFile);
+	}	
+	else if (nRequests == 11) { // Invalid lz77 (actaully a zip file!)
+		inputFile = './data/test_6_sahsu_4_level4_0_0_0_is_zip.lz77';
+		json_file = fs.createReadStream(inputFile);
+	}
+	else if (nRequests == 12) { // Invalid zip file
+		inputFile = './data/test_6_sahsu_4_level4_0_0_0.zip';
 		json_file = fs.createReadStream(inputFile);
 	}	
 	else {
@@ -194,6 +205,18 @@ var MakeRequest = function(){
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
 		formData["my_test"]="TopoJSON conversion: invalid geoJSON";	
+		formData["expected_to_pass"]="false"; 		
+	}
+	else if (nRequests == 11) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="Uncompress: invalid lz77";	
+		formData["expected_to_pass"]="false"; 		
+	}
+	else if (nRequests == 12) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="Invalid  zip file (not supported)";	
 		formData["expected_to_pass"]="false"; 		
 	}
 	
