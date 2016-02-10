@@ -46,7 +46,7 @@
 //
 // Peter Hambly, SAHSU
 
-require('magic-globals');
+require('magic-globals'); // For file and line information. Does not work from Event queues
 var util = require('util');
  
 /*
@@ -59,6 +59,8 @@ var util = require('util');
 			d.file.topojson_stderr + "<<<", 
 			req);	
 
+   DO NOT USE WITH EVENT QUEUES - THE STACK IS MANGLED; use the second form below
+   
 Stderr log:
 			
 [C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\routes\toTopojson:269; function: _process_json();

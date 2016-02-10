@@ -101,13 +101,58 @@ var inspect = require('util').inspect,
  *				HTTP request object,
  *				HTTP response object,
  * 				Message text,
- *				Error object
+ *				Error object [may be null],
+ *				Internal response object [may be null]
+ * Description: HTTP error reponse
+ *
+ * Response object - no errors:
+ *  
+ * error: 			Error stack (if present) 
+ * no_files: 		Numeric, number of files    
+ * field_errors: 	Number of errors in processing fields
+ * file_list: 		Array file objects:
+ *						file_name: File name
+ * message: 		Processing messages, including debug from topoJSON               
+ * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  */		
-	_http_error_response=function(file, line, calling_function, status, req, res, msg, err) {
-		rifLog.rifLog2(file, line, calling_function, msg, req, err);
-		res.status(500);					  
-		res.write(msg);
-		res.end();	
+	_http_error_response=function(file, line, calling_function, status, req, res, msg, err, g_response) {
+		var l_response = {                 // Set output response    
+			error: '',
+			no_files: 0,    
+			field_errors: 0,
+			file_list: [],
+			message: '',               
+			fields: [] 
+		};
+		try {			
+			if (g_response) {
+				l_response.no_files = g_response.no_files;
+				l_response.field_errors = g_response.field_errors;
+				for (i = 0; i < l_response.no_files; i++) {	
+					l_response.file_list[i] = {
+						file_name: g_response.file_list[i].file_name
+					};
+				}
+				l_response.fields = g_response.fields;
+			}
+			l_response.message = msg;
+			if (err) {
+				l_response.error = err;
+			}
+			rifLog.rifLog2(file, line, calling_function, msg, req, err);
+			res.status(500);		
+			var output = JSON.stringify(l_response);// Convert output response to JSON 		
+			res.write(output);
+			res.end();	
+
+		} catch (e) {                            // Catch conversion errors
+			var n_msg="Error response processing ERROR!\n\n" + msg;				  
+			rifLog.rifLog(n_msg, req, e);
+			res.status(500);			
+			res.write(n_msg);
+			res.end();				
+			return;
+		}
 	},
 	 
 /*
@@ -130,6 +175,12 @@ var inspect = require('util').inspect,
 		response.message = response.message + '\nProcessing ' + msg;	
 		try {	
 			d.file.jsonData = undefined;
+			// Set up file list reponse now, in case of exception
+			response.file_list[d.no_files-1] = {
+				file_name: d.file.file_name,
+				topojson: '',
+				topojson_stderr: ''
+			};				
 			d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
 
 			// Re-route topoJSON stderr to stderr.str
@@ -143,13 +194,10 @@ var inspect = require('util').inspect,
 			stderr.clean();						// Clean down stderr string
 			stderr.restore();                  // Restore normal stderr functionality 
 
-	// Add file name, stderr and topoJSON to my response
+	// Add file stderr and topoJSON to my response
 	// This will need a mutex if > 1 thread is being processed at the same time
-			response.file_list[d.no_files-1] = {
-				file_name: d.file.file_name,
-				topojson: d.file.topojson,
-				topojson_stderr: d.file.topojson_stderr
-			};	
+			response.file_list[d.no_files-1].topojson=d.file.topojson;
+			response.file_list[d.no_files-1].topojson_stderr=d.file.topojson_stderr;
 			
 			msg+= "; topoJSON: " + JSON.stringify(d.file.topojson).length + "]"
 			if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message	
@@ -184,8 +232,10 @@ var inspect = require('util').inspect,
 				msg=msg + "\nTruncated data:\n" + 
 					d.file.file_data.toString('hex').substring(0, 132) + "...\r\n";
 			}
-						
-			_http_error_response(__file, __line, "_process_json()", 500, req, res, msg, e);				
+				
+			response.no_files=d.no_files;			// Add number of files process to response
+			response.fields=ofields;				// Add return fields			
+			_http_error_response(__file, __line, "_process_json()", 500, req, res, msg, e, response);				
 			return;
 		} 	
 	}; // End of globals
@@ -209,7 +259,18 @@ exports.convert = function(req, res) {
 			output.str += obj.str;
 		});
 		
-	// Response	
+/*
+ * Response object - no errors:
+ *                    
+ * no_files: 		Numeric, number of files    
+ * field_errors: 	Number of errors in processing fields
+ * file_list: 		Array file objects:
+ *						file_name: File name
+ *						topojson: TopoJSON created from file geoJSON,
+ *						topojson_stderr: Debug from TopoJSON module
+ * message: 		Processing messages, including debug from topoJSON               
+ * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
+ */ 
 		var response = {                 // Set output response    
 			no_files: 0,    
 			field_errors: 0,
@@ -321,7 +382,9 @@ exports.convert = function(req, res) {
 							else if (d.file.file_encoding === "zip") {
 								msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 										file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
-								_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 500, req, res, msg);
+								response.no_files=d.no_files;			// Add number of files process to response
+								response.fields=ofields;				// Add return fields	
+								_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 500, req, res, msg, undefined, response);
 								return;							
 							}
 							else {
@@ -367,7 +430,7 @@ exports.convert = function(req, res) {
 	//					var rval=eval("d.properties." + ofields[fieldname]);
 						if (!d.properties[ofields[fieldname]]) {
 							response.field_errors++;
-							var msg="ERROR! Id field: d.properties." + ofields[fieldname] + " does not exist";
+							var msg="ERROR! Invalid id field: d.properties." + ofields[fieldname] + " does not exist in geoJSON";
 							if (options.id) {
 								rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
 								options.id = undefined; // Prevent this section running again!	
@@ -394,7 +457,9 @@ exports.convert = function(req, res) {
 					d=d_files.d_list[i];
 					if (!d.file) {
 						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: not found in list";
-						_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);
+						response.no_files=d.no_files;			// Add number of files process to response
+						response.fields=ofields;				// Add return fields	
+						_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg, undefined, response);
 						return;			
 					}
 					else if (d.file.file_data.length > 0) {
@@ -405,8 +470,11 @@ exports.convert = function(req, res) {
 					}	
 					else {
 						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-								file.extension + "; file size is zero";
-						_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);
+								d.file.extension + "; file size is zero";
+		
+						response.no_files=d.no_files;			// Add number of files process to response
+						response.fields=ofields;				// Add return fields							
+						_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg, undefined, reponse);
 						return;
 					}	
 				}
@@ -416,19 +484,29 @@ exports.convert = function(req, res) {
 				else {
 					msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files; debug message:\n" + response.message
 				}
-					
+/*
+ * Response object - no errors:
+ *                    
+ * no_files: 		Numeric, number of files    
+ * field_errors: 	Number of errors in processing fields
+ * file_list: 		Array file objects:
+ *						file_name: File name
+ *						topojson: TopoJSON created from file geoJSON,
+ *						topojson_stderr: Debug from TopoJSON module
+ * message: 		Processing messages, including debug from topoJSON               
+ * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing  
+ */ 
 				response.fields=ofields;				// Add return fields	
-				var output;
 				if (response.field_errors == 0) { // OK
 					rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", msg, req);					
-					output = JSON.stringify(response);// Convert output response to JSON 
+					var output = JSON.stringify(response);// Convert output response to JSON 
 	// Need to test res was not finished by an expection to avoid "write after end" errors			
 					res.write(output);                  // Write output  
 					res.end();				
 				}
 				else {
 					msg = "FAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
-					_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg);				  
+					_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg, undefined, response);				  
 				}		
 
 			});

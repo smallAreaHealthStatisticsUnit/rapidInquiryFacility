@@ -251,9 +251,11 @@ Test harness refactor; Node.js version working
 	3. Convert to support form fields as parameteres and return;
 	4. Return debug output from topoJSON module;
 
-#### 18th to 29th January
+#### 18th January to 5th February
 	
 	5. Compressed attachments using zlib; multi attachment support; browser verification
+	
+#### 8th to ?th February
 	
 	Todo:
 

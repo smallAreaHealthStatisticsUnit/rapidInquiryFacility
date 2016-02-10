@@ -239,8 +239,28 @@ var postIt = function(debug) {
 			failed++;
 		}
 		else if (httpResponse.statusCode != 200) {
-			console.error('Upload failed HTTP status: ' + httpResponse.statusCode + 
-				"\nError>>>\n" + body + "\n<<< HTTP status error\n");
+			try {
+				var jsonData = JSON.parse(body);
+				var ofields=jsonData.fields;		
+				var file_list=jsonData.file_list;
+				var my_reference = ofields["my_reference"] || 'No reference';
+				var error = jsonData.error.message || 'No error';
+				console.error('\nUpload #' + my_reference + 
+					' failed with HTTP status: ' + httpResponse.statusCode + 
+					'\nDebug >>>' + jsonData.message + 
+					'\n<<< End of debug\nError exception caught by server >>>\n' + error +
+					'\n<<< End of error exception caught by server\nfiles processed: ' + jsonData.no_files +
+					'; fields: ' + JSON.stringify(ofields, null, 4));
+				for (i = 0; i < jsonData.no_files; i++) {	
+					 console.error("File [" + (i+1) + ":" + file_list[i].file_name + "]");
+				}
+				console.error('\nEnd of upload #' + ofields["my_reference"] + '\n');
+
+			} catch (e) {                            // Catch message not in JSON errors			
+				console.error('Upload failed with HTTP status: ' + httpResponse.statusCode + 
+					"\n\nError(" + e.name + "): " + e.message + "\nStack>>>\n" + e.stack + "<<<" +
+					"\nMessage body>>>\n" + body + "\n<<< End of message body\n");
+			}
 			failed++;				
 		}
 		else {
@@ -248,8 +268,8 @@ var postIt = function(debug) {
 			var topojson;
 			var ofields=jsonData.fields;		
 			var file_list=jsonData.file_list;
-			console.error('\nUpload #' + ofields["my_reference"] + '\n' + jsonData.message + 
-				'\nfiles processed: ' + jsonData.no_files +
+			console.error('\nUpload #' + ofields["my_reference"] + '\nDebug >>>' + jsonData.message + 
+				'\n<<< End of debug\nfiles processed: ' + jsonData.no_files +
 				'; fields: ' + JSON.stringify(ofields, null, 4));
 			for (i = 0; i < jsonData.no_files; i++) {	
 				 topojson = JSON.stringify(file_list[i].topojson);
