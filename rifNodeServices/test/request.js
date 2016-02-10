@@ -53,7 +53,7 @@ var fs = require('fs');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 13;
+var max_nRequests = 17;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all request tests');
@@ -229,6 +229,33 @@ var MakeRequest = function(){
 		formData["my_test"]="Zero sized file";	
 		formData["expected_to_pass"]="false"; 		
 	}
+	else if (nRequests == 14) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="TopoJSON property-transform test";	
+		formData["property-transform-fields"]='["name","area_id","gid"]'; // Javascript array as text
+	}	
+	else if (nRequests == 15) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="TopoJSON property-transform support: invalid property-transform field";	
+		formData["expected_to_pass"]="false"; 	
+		formData["property-transform-fields"]='["invalid"]';
+	}	
+	else if (nRequests == 16) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="TopoJSON property-transform support: invalid property-transform array";	
+		formData["expected_to_pass"]="false"; 	
+		formData["property-transform-fields"]="invalid";
+	}
+	else if (nRequests == 17) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="TopoJSON id and property-transform test";	
+		formData["property-transform-fields"]='["name","area_id","gid"]'; // Javascript array as tex
+		formData["id"]="gid";				
+	}
 	
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 		
@@ -344,7 +371,7 @@ var postIt = function(debug) {
 				passed++;
 			}
 			else {
-				console.error('WARNING! test failed when expected to pass');			
+				console.error('WARNING! test passed when expected to fail');			
 				failed++;
 			}
 		}

@@ -261,10 +261,11 @@ Test harness refactor; Node.js version working
 	   * GeoJSON syntax issues
 	   * Failures in file stream
 	   * General syntax errors
-	   
+	7. Support properties, property-transform and my_id topoJSON module options;
+	
 	Todo:
 
-	7. Support properties, property-transform and my_id topoJSON module options;
+
 	8. Integration to build.
 	9. Documentation;
 	10. Full client logging;

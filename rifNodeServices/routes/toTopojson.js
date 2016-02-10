@@ -415,7 +415,7 @@ exports.convert = function(req, res) {
 									response.fields=ofields;				// Add return fields	
 									_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
 										500, req, res, msg, e, response);
-								return;											
+									return;											
 								}
 								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
 									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
@@ -478,14 +478,63 @@ exports.convert = function(req, res) {
 							if (options.id) {
 								rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
 								options.id = undefined; // Prevent this section running again!	
+								response.message = response.message + "\n" + msg;
 							}
 						}
 						else {
 							return d.properties[ofields[fieldname]];
 						}
-	//					response.message = response.message + "\nCall myId() for id field: " + ofields[fieldname] + "; value: " + rval;									
+	//					response.message = response.message + "\nCall myId() for id field: " + ofields[fieldname] + 
+	//						"; value: " + d.properties[ofields[fieldname]];									
 					}						
 					options.id = ofields.myId;				
+				}
+				else if (fieldname == 'property-transform-fields') {	
+					var propertyTransformFields;
+					ofields[fieldname]=val;	
+					try {
+						propertyTransformFields=JSON.parse(val);
+						text="myPropertyTransform() function id fields set to: " + val + 
+							"; " + propertyTransformFields.length + " field(s)";
+	//
+	// Promote tile gid to id
+	//					
+						ofields.myPropertyTransform = function(d) {
+		// Dont use eval() = it is source of potential injection
+		//					var rval=eval("d.properties." + ofields[fieldname]);
+							var rval={}; // Empty object
+							for (i = 0; i < propertyTransformFields.length; i++) {
+								if (!d.properties[propertyTransformFields[i]]) {
+									response.field_errors++;
+									var msg="ERROR! Invalid property-transform field: d.properties." + propertyTransformFields[i] + 
+										" does not exist in geoJSON";
+									if (options["property-transform"]) {
+										rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
+										options["property-transform"] = undefined; // Prevent this section running again!	
+										response.message = response.message + "\n" + msg;
+									}
+								}
+								else {
+									rval[propertyTransformFields[i]] = d.properties[propertyTransformFields[i]];
+								}
+//								response.message = response.message + "\nCall myPropertyTransform() for property-transform field: " + 
+//									propertyTransformFields[i] + 
+//									"; value: " + d.properties[propertyTransformFields[i]];									
+							}
+							
+//							console.error('transform rval: ' + JSON.stringify(ofields, null, 4));
+	//								return d.properties[ofields[fieldname]];
+	//								return { "name": d.properties.name, "area_id": d.properties.area_id, "gid": d.properties.gid };
+							return rval;
+						};
+						options["property-transform"] = ofields.myPropertyTransform;	
+					}
+					catch (e) {
+						response.field_errors++;
+						msg="ERROR! field [" + fieldname + "]: " + val + "; invalid array exception";
+						response.message = response.message + "\n" + msg;
+						rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);							
+					}
 				}
 				else {
 					ofields[fieldname]=val;				
