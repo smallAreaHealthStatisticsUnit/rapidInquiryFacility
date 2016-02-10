@@ -53,7 +53,7 @@ var fs = require('fs');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 9;
+var max_nRequests = 10;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all request tests');
@@ -101,7 +101,6 @@ var MakeRequest = function(){
 	else if (nRequests == 6) { // wrong Content-Type, binary stream
 		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.lz77';
 		json_file = fs.createReadStream(inputFile);
-	
 	}	
 	else if (nRequests == 7) { 
 		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.gz';
@@ -111,6 +110,10 @@ var MakeRequest = function(){
 		json_file2 = fs.createReadStream(inputFile2);
 		json_file3 = fs.createReadStream(inputFile3);
 	}
+	else if (nRequests == 10) { // Invalid GeoJSON
+		inputFile = './data/helloworld.js';
+		json_file = fs.createReadStream(inputFile);
+	}	
 	else {
 		json_file = fs.createReadStream(inputFile);
 	}
@@ -187,6 +190,12 @@ var MakeRequest = function(){
 		formData["id"]="invalid_id";
 		formData["expected_to_pass"]="false"; 		
 	}
+	else if (nRequests == 10) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="TopoJSON conversion: invalid geoJSON";	
+		formData["expected_to_pass"]="false"; 		
+	}
 	
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 		
@@ -239,12 +248,14 @@ var postIt = function(debug) {
 			failed++;
 		}
 		else if (httpResponse.statusCode != 200) {
+			var expected_to_pass=true;
 			try {
 				var jsonData = JSON.parse(body);
 				var ofields=jsonData.fields;		
 				var file_list=jsonData.file_list;
 				var my_reference = ofields["my_reference"] || 'No reference';
-				var error = jsonData.error.message || 'No error';
+				expected_to_pass = ofields["expected_to_pass"] || true;
+				var error = jsonData.error || 'No error';
 				console.error('\nUpload #' + my_reference + 
 					' failed with HTTP status: ' + httpResponse.statusCode + 
 					'\nDebug >>>' + jsonData.message + 
@@ -261,27 +272,48 @@ var postIt = function(debug) {
 					"\n\nError(" + e.name + "): " + e.message + "\nStack>>>\n" + e.stack + "<<<" +
 					"\nMessage body>>>\n" + body + "\n<<< End of message body\n");
 			}
-			failed++;				
+			if (expected_to_pass == "true") {
+				failed++;
+				console.error('WARNING! test failed when expected to pass');
+			}
+			else {
+				passed++;
+				console.error('GOOD! test failed as expected');
+			}					
 		}
 		else {
-			var jsonData = JSON.parse(body);
-			var topojson;
-			var ofields=jsonData.fields;		
-			var file_list=jsonData.file_list;
-			console.error('\nUpload #' + ofields["my_reference"] + '\nDebug >>>' + jsonData.message + 
-				'\n<<< End of debug\nfiles processed: ' + jsonData.no_files +
-				'; fields: ' + JSON.stringify(ofields, null, 4));
-			for (i = 0; i < jsonData.no_files; i++) {	
-				 topojson = JSON.stringify(file_list[i].topojson);
-				 console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] topoJSON length: " + topojson.length);
-				// Single test mode: print first 600 characters of formatted topoJSON
-				 if (max_nRequests == 1) {
-					 console.error("First 600 characters of formatted topoJSON >>>\n" + 
-						JSON.stringify(file_list[i].topojson, null, 2).substring(0, 600) + "\n\n<<< formatted topoJSON\n");
-				 }
+			var expected_to_pass=true;
+			try {			
+				var jsonData = JSON.parse(body);
+				var topojson;
+				var ofields=jsonData.fields;		
+				var file_list=jsonData.file_list;		
+				expected_to_pass = ofields["expected_to_pass"] || true;
+				console.error('\nUpload #' + ofields["my_reference"] + '\nDebug >>>' + jsonData.message + 
+					'\n<<< End of debug\nfiles processed: ' + jsonData.no_files +
+					'; fields: ' + JSON.stringify(ofields, null, 4));
+				for (i = 0; i < jsonData.no_files; i++) {	
+					 topojson = JSON.stringify(file_list[i].topojson);
+					 console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] topoJSON length: " + topojson.length);
+					// Single test mode: print first 600 characters of formatted topoJSON
+					 if (max_nRequests == 1) {
+						 console.error("First 600 characters of formatted topoJSON >>>\n" + 
+							JSON.stringify(file_list[i].topojson, null, 2).substring(0, 600) + "\n\n<<< formatted topoJSON\n");
+					 }
+				}
+				console.error('\nEnd of upload #' + ofields["my_reference"] + '\n');				
+			} catch (e) {                            // Catch message not in JSON errors			
+				console.error('Upload failed with client exception: ' +
+					"\n\nError(" + e.name + "): " + e.message + "\nStack>>>\n" + e.stack + "<<<" +
+					"\nMessage body>>>\n" + body + "\n<<< End of message body\n");
+			}	
+			if (expected_to_pass == "true") {
+				passed++;
 			}
-			console.error('\nEnd of upload #' + ofields["my_reference"] + '\n');			
-			passed++;
+			else {
+				console.error('WARNING! test failed when expected to pass');			
+				failed++;
+			}
 		}
 	});
 };

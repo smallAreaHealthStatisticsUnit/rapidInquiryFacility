@@ -107,7 +107,7 @@ var inspect = require('util').inspect,
  *
  * Response object - no errors:
  *  
- * error: 			Error stack (if present) 
+ * error: 			Error message (if present) 
  * no_files: 		Numeric, number of files    
  * field_errors: 	Number of errors in processing fields
  * file_list: 		Array file objects:
@@ -137,7 +137,7 @@ var inspect = require('util').inspect,
 			}
 			l_response.message = msg;
 			if (err) {
-				l_response.error = err;
+				l_response.error = err.message;
 			}
 			rifLog.rifLog2(file, line, calling_function, msg, req, err);
 			res.status(500);		
@@ -229,10 +229,18 @@ var inspect = require('util').inspect,
 				d.file.file_name + "; size: " + d.file.file_data.length + 
 				"; " + msg + ": \n" + "Debug message:\n" + response.message + "\n\n";
 			if (d.file.file_data.length > 0) {
-				msg=msg + "\nTruncated data:\n" + 
-					d.file.file_data.toString('hex').substring(0, 132) + "...\r\n";
+				var truncated_data=d.file.file_data.toString().substring(0, 132);
+				if (!/^[\x00-\x7F]*$/.test(truncated_data)) { // Test if not ascii
+					truncated_data=d.file.file_data.toString('hex').substring(0, 132);
+				}
+				if (truncated_data.length > 132) {
+					msg=msg + "\nTruncated data:\n" + truncated_data + "\n";
+				}
+				else {
+					msg=msg + "\nData:\n" + truncated_data + "\n";
+				}
 			}
-				
+		
 			response.no_files=d.no_files;			// Add number of files process to response
 			response.fields=ofields;				// Add return fields			
 			_http_error_response(__file, __line, "_process_json()", 500, req, res, msg, e, response);				

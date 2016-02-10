@@ -56,4 +56,5 @@ var timeOut = function(){
   },100);
 };
 
-timeOut();
+// Disabled until re-written - crashes server
+//timeOut();
