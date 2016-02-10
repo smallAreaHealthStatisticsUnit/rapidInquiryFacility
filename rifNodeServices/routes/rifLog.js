@@ -75,22 +75,10 @@ topology: 3986 arcs, 18197 points
 rifLog = function(msg, req, err) {
 	var calling_function = arguments.callee.caller.name || '(anonymous)';
 	// Get file information from magic-globals: __stack
-	var file_trace=__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0] + 
-		":" + __stack[2].getLineNumber() + 
-		"; function: " + calling_function + "()";
-	var request_tracer="";
-	var error_tracer=";\nNo exceptions";
+	var file=__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0];
+	var line=__stack[2].getLineNumber();
 	
-	// Add request tracer if present
-	if (req) {
-		request_tracer=";\n url: " + req.url + "; ip: " + req.ip + "; Content-Encoding: " + req.get('Content-Encoding');
-	}
-	// Add error tracer if present
-	if (err) {
-		error_tracer="\n\nError(" + err.name + "): " + err.message + "\nStack>>>\n" + err.stack + "<<<";
-	}
-	
-	console.error("[" + file_trace + request_tracer + "]\n" + msg + error_tracer);
+	rifLog2(file, line, calling_function, msg, req, err)
 }
 
 /*
@@ -129,17 +117,20 @@ rifLog2 = function(file, line, calling_function, msg, req, err) {
 		"; function: " + calling_function + "()";
 	var request_tracer="";
 	var error_tracer=";\nNo exceptions";
+	var theDate = new Date();
 	
 	// Add request tracer if present
 	if (req) {
-		request_tracer=";\n url: " + req.url + "; ip: " + req.ip + "; Content-Encoding: " + req.get('Content-Encoding');
+		request_tracer=";\n url: " + req.url + 
+					"; ip: " + req.ip + 
+					"; Content-Encoding: " + req.get('Content-Encoding');
 	}
 	// Add error tracer if present
 	if (err) {
 		error_tracer="\n\nError(" + err.name + "): " + err.message + "\nStack>>>\n" + err.stack + "<<<";
 	}
 	
-	console.error("[" + file_trace + request_tracer + "]\n" + msg + error_tracer);
+	console.error(theDate.toString() + "\n[" + file_trace + request_tracer + "]\n" + msg + error_tracer);
 }
 
 module.exports.rifLog = rifLog;

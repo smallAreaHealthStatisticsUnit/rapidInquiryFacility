@@ -264,12 +264,12 @@ Test harness refactor; Node.js version working
 	7. Support properties, property-transform and my_id topoJSON module options;
 	8. Security as per recommendations - added Helmet. Helmet helps you secure 
 	   your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help;
+	9. Full client logging;
 	
 	Todo:
 
-	9. Documentation;
-	10. Full client logging;
-	11. Instrumentation;
+	10. Instrumentation;
+	11. Documentation;
 	13. Size limits (100M); 
 	14. Connection timeout (connect/post connect) limits;
 	15. Integration to build.
