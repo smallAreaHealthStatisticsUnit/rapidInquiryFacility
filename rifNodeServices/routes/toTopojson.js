@@ -129,7 +129,7 @@ var inspect = require('util').inspect,
 				l_response.no_files = g_response.no_files;
 				l_response.field_errors = g_response.field_errors;
 				for (i = 0; i < l_response.no_files; i++) {	
-					if (g_response.file_list[i]) {
+					if (g_response.file_list[i]) { // Handle incomplete file list
 						if (g_response.file_list[i].file_name) {
 							l_response.file_list[i] = {
 								file_name: g_response.file_list[i].file_name
@@ -150,11 +150,11 @@ var inspect = require('util').inspect,
 				l_response.fields = g_response.fields;
 			}
 			l_response.message = msg;
-			if (err) {
+			if (err) { // Add error to message
 				l_response.error = err.message;
 			}
 			rifLog.rifLog2(file, line, calling_function, msg, req, err);
-			res.status(500);		
+			res.status(status);		
 			var output = JSON.stringify(l_response);// Convert output response to JSON 		
 			res.write(output);
 			res.end();	
@@ -162,7 +162,7 @@ var inspect = require('util').inspect,
 		} catch (e) {                            // Catch conversion errors
 			var n_msg="Error response processing ERROR!\n\n" + msg;				  
 			rifLog.rifLog(n_msg, req, e);
-			res.status(500);			
+			res.status(501);			
 			res.write(n_msg);
 			res.end();				
 			return;
@@ -242,10 +242,10 @@ var inspect = require('util').inspect,
 			msg="Your input file " + d.no_files + ": " + 
 				d.file.file_name + "; size: " + d.file.file_data.length + 
 				"; " + msg + ": \n" + "Debug message:\n" + response.message + "\n\n";
-			if (d.file.file_data.length > 0) {
+			if (d.file.file_data.length > 0) { // Add first 132 chars of file to message
 				var truncated_data=d.file.file_data.toString().substring(0, 132);
 				if (!/^[\x00-\x7F]*$/.test(truncated_data)) { // Test if not ascii
-					truncated_data=d.file.file_data.toString('hex').substring(0, 132);
+					truncated_data=d.file.file_data.toString('hex').substring(0, 132); // Binary: display as hex
 				}
 				if (truncated_data.length > 132) {
 					msg=msg + "\nTruncated data:\n" + truncated_data + "\n";
@@ -525,7 +525,7 @@ exports.convert = function(req, res) {
 		
 						response.no_files=d.no_files;			// Add number of files process to response
 						response.fields=ofields;				// Add return fields							
-						_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg, undefined, reponse);
+						_http_error_response(__file, __line, "req.busboy.on('finish')", 500, req, res, msg, undefined, response);
 						return;
 					}	
 				}

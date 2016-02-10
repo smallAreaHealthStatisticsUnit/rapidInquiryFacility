@@ -256,20 +256,21 @@ Test harness refactor; Node.js version working
 	5. Compressed attachments using zlib; multi attachment support; browser verification
 	
 #### 8th to ?th February
-	
-	Todo:
 
 	6. Error handlers, busboy limit handlers, failure cases:
 	   * GeoJSON syntax issues
 	   * Failures in file stream
 	   * General syntax errors
-	   * Size limits (100M); also test limits
+	   
+	Todo:
+
 	7. Support properties, property-transform and my_id topoJSON module options;
 	8. Integration to build.
 	9. Documentation;
 	10. Full client logging;
 	11. Instrumentation;
-	12. Security as per recommendations.
+	12. Security as per recommendations;
+	13. Size limits (100M); also test limits
 
 ## 2016 Plans: 
 

@@ -53,7 +53,7 @@ var fs = require('fs');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 12;
+var max_nRequests = 13;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all request tests');
@@ -80,7 +80,7 @@ var MakeRequest = function(){
 	var json_file2;
 	var json_file3;
 	
-// Gzipped file tests
+// Tests using differed files other than ./data/test_6_sahsu_4_level4_0_0_0.js
 	if (nRequests == 5) { 
 		inputFile = './data/test_6_sahsu_4_level4_0_0_0.js.gz';
 		json_file = fs.createReadStream(inputFile);
@@ -125,7 +125,11 @@ var MakeRequest = function(){
 		inputFile = './data/test_6_sahsu_4_level4_0_0_0.zip';
 		json_file = fs.createReadStream(inputFile);
 	}	
-	else {
+	else if (nRequests == 13) { // Zero sized file
+		inputFile = './data/test_6_sahsu_4_level4_0_0_0_zero_sized.js';
+		json_file = fs.createReadStream(inputFile);
+	}		
+	else { // Defasult	
 		json_file = fs.createReadStream(inputFile);
 	}
 	
@@ -217,6 +221,12 @@ var MakeRequest = function(){
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
 		formData["my_test"]="Invalid  zip file (not supported)";	
+		formData["expected_to_pass"]="false"; 		
+	}
+	else if (nRequests == 13) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="Zero sized file";	
 		formData["expected_to_pass"]="false"; 		
 	}
 	
