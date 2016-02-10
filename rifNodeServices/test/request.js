@@ -220,7 +220,7 @@ var MakeRequest = function(){
 	else if (nRequests == 12) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="Invalid  zip file (not supported)";	
+		formData["my_test"]="Invalid zip file (not supported)";	
 		formData["expected_to_pass"]="false"; 		
 	}
 	else if (nRequests == 13) {

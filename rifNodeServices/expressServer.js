@@ -51,6 +51,7 @@
 //
 const express = require('express'),
     busboy = require('connect-busboy'),
+	helmet = require('helmet'),
     toTopojson = require('./routes/toTopojson'),
     simplify = require('./routes/simplify'),
     zipfile = require('./routes/zipfile');
@@ -90,6 +91,8 @@ app.use(function(err, req, res, next) {
 app.use( 				// For parsing incoming HTML form data.
 	busboy());
  */	
+app.use(
+	helmet()); // Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!
 
 app.use( 				// For parsing incoming HTML form data.
 	busboy({
