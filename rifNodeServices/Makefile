@@ -261,21 +261,14 @@ server-logs: forever expressServer.js
 #- update: Update required Node.js modules using npm install --save to update dependencies in package.json 
 update:
 	-$(NPM) update --save $(MODULE_LIST)	
-	
-#- rifNode: Run the complete database test harness	(same as target test)	
-rifNode:
-	$(NODE) rifNode.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL)
-	
-#- test: Run the complete database test harness	
-test: rifNode
-#- retest: Re-run the failed database test harness tests (-F flag)
-retest:
-	$(NODE) rifNode.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL) -F	
+		
+#- test: Run the test harness	
+test: forever.err
+	$(NPM) test
 	
 #- help: Display makefile help, rifNode.js help
 help:
 	$(HELP)
-	$(NODE) rifNode.js --help
 	
 #
 # Eof

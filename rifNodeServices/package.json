@@ -36,7 +36,7 @@
     "topojson": "^1.6.22"
   },
   "scripts": {
-    "test": "vows test/**/request*.js --spec -i"
+    "test": "node test/request.js"
   },
   "engines": {
     "node": ">= 4.2.x"
