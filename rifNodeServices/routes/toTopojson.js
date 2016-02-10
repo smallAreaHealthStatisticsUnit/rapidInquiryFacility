@@ -471,8 +471,8 @@ exports.convert = function(req, res) {
 	//					
 					ofields.myId = function(d) {
 	// Dont use eval() = it is source of potential injection
-	//					var rval=eval("d.properties." + ofields[fieldname]);
-						if (!d.properties[ofields[fieldname]]) {
+	// e.g.					var rval=eval("d.properties." + ofields[fieldname]);
+						if (!d.properties[ofields[fieldname]]) { // Dont raise errors, count them up and stop later
 							response.field_errors++;
 							var msg="ERROR! Invalid id field: d.properties." + ofields[fieldname] + " does not exist in geoJSON";
 							if (options.id) {
@@ -497,14 +497,14 @@ exports.convert = function(req, res) {
 						text="myPropertyTransform() function id fields set to: " + val + 
 							"; " + propertyTransformFields.length + " field(s)";
 	//
-	// Promote tile gid to id
+	// Property transform support
 	//					
 						ofields.myPropertyTransform = function(d) {
 		// Dont use eval() = it is source of potential injection
-		//					var rval=eval("d.properties." + ofields[fieldname]);
-							var rval={}; // Empty object
+		//e.g.				var rval=eval("d.properties." + ofields[fieldname]);
+							var rval={}; // Empty return object
 							for (i = 0; i < propertyTransformFields.length; i++) {
-								if (!d.properties[propertyTransformFields[i]]) {
+								if (!d.properties[propertyTransformFields[i]]) { // Dont raise errors, count them up and stop later
 									response.field_errors++;
 									var msg="ERROR! Invalid property-transform field: d.properties." + propertyTransformFields[i] + 
 										" does not exist in geoJSON";
@@ -520,11 +520,7 @@ exports.convert = function(req, res) {
 //								response.message = response.message + "\nCall myPropertyTransform() for property-transform field: " + 
 //									propertyTransformFields[i] + 
 //									"; value: " + d.properties[propertyTransformFields[i]];									
-							}
-							
-//							console.error('transform rval: ' + JSON.stringify(ofields, null, 4));
-	//								return d.properties[ofields[fieldname]];
-	//								return { "name": d.properties.name, "area_id": d.properties.area_id, "gid": d.properties.gid };
+							}						
 							return rval;
 						};
 						options["property-transform"] = ofields.myPropertyTransform;	
