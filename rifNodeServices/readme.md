@@ -16,15 +16,14 @@ Form fields specific processing:
 * zoomLevel: 	Set quantization field and Topojson.Topology() option using local function getQuantization()
   				i.e. Set the maximum number of differentiable values along each dimension) by zoomLevel
  
-Zoomlevel		Quantization
----------		------------
-
-<=6				400
-7				700
-8				1500
-9				3000
-10				5000
->10				10000
+|Zoomlevel|Quantization|
+|---------|------------|
+|<=6	  |	400		   |
+|7		  |	700		   |
+|8		  |	1500	   |
+|9		  |	3000	   |
+|10		  |	5000	   |
+|>10	  |	10000	   |
 							
 * projection: 	Set projection field and Topojson.Topology() option. E.g. to convert spherical input geometry 
 				to Cartesian coordinates via a D3 geographic projection. For example, a projection of 'd3.geo.albersUsa()' 
@@ -50,7 +49,14 @@ var rval=eval("d.properties." + ofields[fieldname]);
 Instead it tests for the field name directly:
 ```
 if (!d.properties[ofields[fieldname]]) { 
-...
+	response.field_errors++;
+	var msg="FIELD PROCESSING ERROR! Invalid id field: d.properties." + ofields[fieldname] + " does not exist in geoJSON";
+	if (options.id) {
+		rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
+		options.id = undefined; // Prevent this section running again!	
+		response.message = response.message + "\n" + msg;
+	}
+}
 ```						
 So setting formData (see test\request.js test 18) to:
 ```
