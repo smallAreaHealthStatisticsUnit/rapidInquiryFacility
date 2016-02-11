@@ -9,7 +9,7 @@
 
 ## toTopojson web service
 
-The toTopojson service converts GeoJSON files upto 100MB un size to TopoJSON:
+The toTopojson service converts GeoJSON files upto 100MB in size to TopoJSON:
 
 * Only POST requests are processed; 
 * Expects a vaild geojson as an input file;
@@ -87,7 +87,7 @@ FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(cons
 
 Response object - no errors:
                     
-* no_files: 		Numeric, number of files    
+* no_files: 		Number of files    
 * field_errors: 	Number of errors in processing fields
 * file_list: 		Array file objects:
 
@@ -97,15 +97,15 @@ Response object - no errors:
   * topojson_runtime: Time to convert geoJSON to topoJSON (S),
   * file_size: Transferred file size in bytes,
   * transfer_time: Time to transfer file (S),
-  * uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
-  * uncompress_size: Size of uncompressed file in bytes
+  * uncompress_time: Time to uncompress file (S) or undefined if file not compressed,
+  * uncompress_size: Size of uncompressed file in bytes or undefined if file not compressed
 * message: 			Processing messages, including debug from topoJSON               
 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing  
 
 Response object - errors:
    
-* error: 			Error message (if present) 
-* no_files: 		Numeric, number of files    
+* error: 			Error message (if present)
+* no_files: 		Numeric, number of files
 * field_errors: 	Number of errors in processing fields
 * file_list: 		Array file objects:
 
@@ -113,6 +113,11 @@ Response object - errors:
 * message: 		Processing messages, including debug from topoJSON               
 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  
+E.g.
+
+```JSON
+{"error":"Unexpected token P","no_files":1,"field_errors":0,"file_list":[{"file_name":"test_6_sahsu_4_level4_0_0_0.zip"}],"message":"Your input file 1: test_6_sahsu_4_level4_0_0_0.zip; size: 831358; does not seem to contain valid JSON: \nDebug message:\n\nField: verbose[true]; verbose mode enabled\nProcessing File [1]: test_6_sahsu_4_level4_0_0_0.zip\n\n\nData:\n504b0304140000000800527e2f48cd802badbcae0c005d163a001e000000746573745f365f73616873755f345f6c6576656c345f305f305f302e6a73a49dc98a6d4d\n","fields":{"my_reference":"","zoomLevel":0,"verbose":"true","quantization":10000,"projection":"4326"}}
+```
 More info on quantization here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
 
 ## simplify web service
