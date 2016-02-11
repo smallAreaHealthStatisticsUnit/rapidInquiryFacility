@@ -1,12 +1,13 @@
 # ![RIF logo](http://www.envhealthatlas.co.uk/homepage/images/sahsu_logo.png) Node Web Services API for RIF 4.0
 
 ### Table of Contents
-**[toTopojson service](#toTopojson-service)**  
-**[simplify service](#simplify-service)**  
-**[Install](#Install)**   
-**[Testing](#Testing)**  
 
-## toTopojson service
+**[toTopojson web service](#toTopojson-web-service)**  
+**[simplify web service](#simplify-web-service)**  
+**[Install rifNodeServices](#Installing-rifNodeServices)**   
+**[Testing rifNodeServices](#Testing-rifNodeServices)**  
+
+## toTopojson web service
 
 The toTopojson service converts GeoJSON files upto 100MB un size to TopoJSON:
 
@@ -14,7 +15,7 @@ The toTopojson service converts GeoJSON files upto 100MB un size to TopoJSON:
 * Expects a vaild geojson as an input file;
 * Gzip and lz77 (not ZIP) files are supported;
 * Mutliple input files supported;  
-* Topojson output is returned as a (Response-JSON) object;
+* Topojson output is returned as a [Response-JSON] object;
 * Topojson is quantized based on map tile zoom level; 
 * Processing is controlled by form fields;
 
@@ -47,7 +48,7 @@ Form fields specific processing:
  				Creates myId() function and registers it with Topojson.Topology() via the id option
 * property-transform-fields:
 				JSON array of additional fields in GeoJSON to add to output topoJSON. Uses the Topojson.Topology()
-  				property-transform option. Value must be parseable by JSON.parse(). Value must exist in data.
+  				property-transform option. Value must be parseable by `JSON.parse()`. Value must exist in data.
  				Creates myPropertyTransform() function and registers it with Topojson.Topology() via the 
  				property-transform option
  
@@ -114,7 +115,7 @@ Response object - errors:
  
 More info on quantization here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
 
-## simplify service
+## simplify web service
 
 COPY / UNZIP / SIMPLIFY FIRST SHAPEFILE FOUND IN ZIPPED FOLDER 
 * Only POST requests are processed
@@ -122,7 +123,7 @@ COPY / UNZIP / SIMPLIFY FIRST SHAPEFILE FOUND IN ZIPPED FOLDER
 * Simplified shapefile as output
 NOTE: ADM-ZIP is blocking 
 
-## Install
+## Installing rifNodeServices
 
 To be added
 
@@ -136,7 +137,7 @@ The API make use of the following modules downloadable via npm:
 * Magic-globals
 * Helmet
 
-## Testing
+## Testing rifNodeServices
 
 To test using the request scripts the following are also needed:
 
