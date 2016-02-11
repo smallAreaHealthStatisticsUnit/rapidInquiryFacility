@@ -53,7 +53,7 @@ var fs = require('fs');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 17;
+var max_nRequests = 18;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all request tests');
@@ -255,6 +255,13 @@ var MakeRequest = function(){
 		formData["my_test"]="TopoJSON id and property-transform test";	
 		formData["property-transform-fields"]='["name","area_id","gid"]'; // Javascript array as tex
 		formData["id"]="gid";				
+	}
+	else if (nRequests == 18) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="TopoJSON property-transform support: JSON injection tests";	
+		formData["expected_to_pass"]="false"; 	
+		formData["property-transform-fields"]='["eval(console.error(JSON.stringify(req, null, 4)))"]';
 	}
 	
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 

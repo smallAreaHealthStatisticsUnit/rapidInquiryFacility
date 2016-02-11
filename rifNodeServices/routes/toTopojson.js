@@ -69,6 +69,21 @@ var inspect = require('util').inspect,
     os = require('os'),
     fs = require('fs'),
 
+/*
+ * Function: 	_http_error_response() 
+ * Parameters:  Level
+ * Description: Set quantization (the maximum number of differentiable values along each dimension) by zoomLevel
+ *
+ * Zoomlevel		Quantization
+ * ---------		------------
+ *
+ * <=6				400
+ * 7				700
+ * 8				1500
+ * 9				3000
+ * 10				5000
+ * >10				10000
+ */
     getQuantization = function(lvl) {
          if (lvl <= 6) {
             return 400;
@@ -81,9 +96,14 @@ var inspect = require('util').inspect,
          } else if (lvl == 10) {
             return 5000;
          } else {
-            return 10000;
+            return 10000; // Default
          }
      },
+/*
+ * Function: 	TempData() 
+ * Parameters:  NONE
+ * Description: Construction for TempData
+ */
      TempData = function() {
 		
 		this.file = '';
@@ -105,7 +125,7 @@ var inspect = require('util').inspect,
  *				Internal response object [may be null]
  * Description: HTTP error reponse
  *
- * Response object - no errors:
+ * Response object - errors:
  *  
  * error: 			Error message (if present) 
  * no_files: 		Numeric, number of files    
@@ -339,8 +359,7 @@ exports.convert = function(req, res) {
 	// Default topojson options 
 			var options = {
 				verbose: false,
-				quantization: 1e4,				
-				projection: "4326"		
+				quantization: 1e4		
 			};
 		
 	// Default return fields	
@@ -351,8 +370,12 @@ exports.convert = function(req, res) {
 				quantization: options.quantization,
 				projection: options.projection
 			};	
-			
-	// File attachment processing function		  
+
+/*
+ * Function: 	req.busboy.on('file') callback function
+ * Parameters:	fieldname, stream, filename, encoding, mimetype
+ * Description:	File attachment processing function  
+ */				  
 			req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
 				
 				var d = new TempData(); // This is local to the post requests; the field processing cannot see it	
@@ -394,8 +417,12 @@ exports.convert = function(req, res) {
 							d.file.file_encoding="zlib";
 					}
 				}
-			
-	// Data processor			
+	
+/*
+ * Function: 	req.busboy.on('file').stream.on:('data') callback function
+ * Parameters:	None
+ * Description: Data processor. Push data onto d.file.chunks[] array. Binary safe.
+ */			
 				stream.on('data', function(data) {
 					d.file.chunks.push(data);  
 				
@@ -414,12 +441,16 @@ exports.convert = function(req, res) {
 					}; */
 				});
 
-	// EOF processor 
+/*
+ * Function: 	req.busboy.on('file').stream.on:('end') callback function
+ * Parameters:	None
+ * Description: EOF processor. Concatenate d.file.chunks[] array, uncompress if needed.
+ */
 				stream.on('end', function() {
 	//			     d.file.file_data = d.file.file_data.replace(/(\r\n|\n|\r)/gm,""); CRLF=> CR
 	//                 if (d.file.file_name != '' && d.withinLimit) {	
 		
-							var buf=Buffer.concat(d.file.chunks);
+							var buf=Buffer.concat(d.file.chunks); // Safe binary concat
 							d.file.file_size=buf.length;
 							var end = new Date().getTime();
 							d.file.transfer_time=(end - d.file.lstart)/1000; // in S	
@@ -483,33 +514,89 @@ exports.convert = function(req, res) {
 									"; uncompressed data: " + d.file.file_data.length, req); 												
 							}
 							
-							d_files.d_list[d.no_files-1] = d;						
-						
+							d_files.d_list[d.no_files-1] = d;										
 	//                }
 				}); // End of EOF processor
 					
-			}); // End of file attachment processing function
+			}); // End of file attachment processing function: req.busboy.on('file')
 			  
-	// Field processing function        
+/*
+ * Function: 	req.busboy.on('field') callback function
+ * Parameters:	fieldname, value, fieldnameTruncated, valTruncated
+ * Description:	Field processing function; fields supported  
+ *
+ *				zoomLevel: 	Set quantization field and Topojson.Topology() option using local function getQuantization()
+ * 							i.e. Set the maximum number of differentiable values along each dimension) by zoomLevel
+ *
+ * 							Zoomlevel		Quantization
+ * 							---------		------------
+ *
+ * 							<=6				400
+ * 							7				700
+ * 							8				1500
+ * 							9				3000
+ * 							10				5000
+ * 							>10				10000
+ *				projection: Set projection field and Topojson.Topology() option. E.g. to convert spherical input geometry 
+ *							to Cartesian coordinates via a D3 geographic projection. For example, a projection of 'd3.geo.albersUsa()' 
+ *							will project geometry using a composite Albers equal-area conic projection suitable for the contiguous 
+ *							United States, Alaska and Hawaii. DO NOT SET UNLESS YOU KNOW WHAT YOU ARE DOING!
+ *			 	verbose: 	Set Topojson.Topology() option if true. Produces debug returned as part of reponse.message
+ *				id:			Name of feature property to promote to geometry id; default is ID. Value must exist in data.
+ *							Creates myId() function and registers it with Topojson.Topology() via the id option
+ *				property-transform-fields:
+ *							JSON array of additional fields in GeoJSON to add to output topoJSON. Uses the Topojson.Topology()
+ * 							property-transform option. Value must be parseable by JSON.parse(). Value must exist in data.
+ *							Creates myPropertyTransform() function and registers it with Topojson.Topology() via the 
+ *							property-transform option
+ *
+ * All other fields have no special processing. Fields are returned in the response.fields JSON array. Any field processing errors 
+ * either during processing or in the id and property-transform Topojson.Topology() callback functions will cause processing to fail.
+ *
+ * See NPM tpopjson command line reference: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
+ *
+ * JSON injection protection. This function does NOT use eval() as it is source of potential injection
+ * e.g.					var rval=eval("d.properties." + ofields[fieldname]);
+ * Instead it tests for the field name directly:
+ *						if (!d.properties[ofields[fieldname]]) { ...
+ * So setting formData (see test\request.js test 18) to:
+ * formData["property-transform-fields"]='["eval(console.error(JSON.stringify(req, null, 4)))"]';
+ * Will cause an error:
+ * Field: property-transform-fields[["eval(console.error(JSON.stringify(req, null, 4)))"]];
+ * myPropertyTransform() function id fields set to: ["eval(console.error(JSON.stringify(req, null, 4)))"]; 1 field(s)
+ * FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(console.error(JSON.stringify(req, null, 4))) does not exist in geoJSON;
+ */ 
 			req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
-				var text="";
+				var text="\nField: " + fieldname + "[" + val + "]; ";
+				
+				// Handle truncation
+				if (fieldnameTruncated) {
+					text+="\FIELD PROCESSING ERROR! field truncated";
+					response.field_errors++;
+				}
+				if (valTruncated) {
+					text+="\FIELD PROCESSING ERROR! value truncated";
+					response.field_errors++;
+				}
+				
+				// Process fields
 				if (fieldname == 'zoomLevel') {
 				   options.quantization = getQuantization(val);
-				   text="Quantization set to: " + options.quantization;
+				   text+="Quantization set to: " + options.quantization;
 				   ofields["quantization"]=options.quantization;
 				}
 				else if (fieldname == 'projection') {
 				   options.projection = val;
-				   text="Projection set to: " + options.projection;
+				   text+="Projection set to: " + options.projection;
 				   ofields["projection"]=options.projection;
 				}
 				else if ((fieldname == 'verbose')&&(val == 'true')) {
 					options.verbose = true;
-					text="verbose mode enabled";
+					text+="verbose mode enabled";
 					ofields[fieldname]="true";
 				}
 				else if (fieldname == 'id') {				
-					text="myId() function id field set to: " + val;
+					text+="\nmyId() function id field set to: " + val;
 					ofields[fieldname]=val;				
 	//
 	// Promote tile gid to id
@@ -519,7 +606,7 @@ exports.convert = function(req, res) {
 	// e.g.					var rval=eval("d.properties." + ofields[fieldname]);
 						if (!d.properties[ofields[fieldname]]) { // Dont raise errors, count them up and stop later
 							response.field_errors++;
-							var msg="ERROR! Invalid id field: d.properties." + ofields[fieldname] + " does not exist in geoJSON";
+							var msg="FIELD PROCESSING ERROR! Invalid id field: d.properties." + ofields[fieldname] + " does not exist in geoJSON";
 							if (options.id) {
 								rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
 								options.id = undefined; // Prevent this section running again!	
@@ -539,7 +626,7 @@ exports.convert = function(req, res) {
 					ofields[fieldname]=val;	
 					try {
 						propertyTransformFields=JSON.parse(val);
-						text="myPropertyTransform() function id fields set to: " + val + 
+						text+="\nmyPropertyTransform() function id fields set to: " + val + 
 							"; " + propertyTransformFields.length + " field(s)";
 	//
 	// Property transform support
@@ -551,7 +638,7 @@ exports.convert = function(req, res) {
 							for (i = 0; i < propertyTransformFields.length; i++) {
 								if (!d.properties[propertyTransformFields[i]]) { // Dont raise errors, count them up and stop later
 									response.field_errors++;
-									var msg="ERROR! Invalid property-transform field: d.properties." + propertyTransformFields[i] + 
+									var msg="FIELD PROCESSING ERROR! Invalid property-transform field: d.properties." + propertyTransformFields[i] + 
 										" does not exist in geoJSON";
 									if (options["property-transform"]) {
 										rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
@@ -572,7 +659,7 @@ exports.convert = function(req, res) {
 					}
 					catch (e) {
 						response.field_errors++;
-						msg="ERROR! field [" + fieldname + "]: " + val + "; invalid array exception";
+						msg="FIELD PROCESSING ERROR! field [" + fieldname + "]: " + val + "; invalid array exception";
 						response.message = response.message + "\n" + msg;
 						rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);							
 					}
@@ -580,10 +667,14 @@ exports.convert = function(req, res) {
 				else {
 					ofields[fieldname]=val;				
 				}	
-				response.message = response.message + "\nField: " + fieldname + "[" + val + "]; " + text;
+				response.message = response.message + text;
 			 }); // End of field processing function
-					  
-	// End of request - complete response		  
+
+/*
+ * Function: 	req.busboy.on('finish') callback function
+ * Parameters:	None
+ * Description:	End of request - complete response		  
+ */ 
 			req.busboy.on('finish', function() {
 				var msg;
 				
@@ -660,8 +751,8 @@ exports.convert = function(req, res) {
 			req.pipe(req.busboy); // Pipe request stream to busboy form data handler
 			  
 		} // End of post method
-		else {
-			var msg="ERROR! GET Requests not allowed; please see: " + 
+		else {								// All other methods are errors
+			var msg="ERROR! "+ req.method + " Requests not allowed; please see: " + 
 				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
 			_http_error_response(__file, __line, "exports.convert", 405, req, res, msg);		
 			return;		  
