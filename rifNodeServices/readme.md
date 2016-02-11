@@ -163,7 +163,7 @@ make test will also run the comnplete test set.
 
 #### Example
 
-```Node
+```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices>node test\request.js 17
 Using arg[2] nRequests: 17
 Sending ./data/test_6_sahsu_4_level4_0_0_0.js request:17; length: 3806813

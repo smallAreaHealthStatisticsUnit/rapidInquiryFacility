@@ -174,7 +174,7 @@ var MakeRequest = function(){
 	else if (nRequests == 4) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;
-		formData["projection"]=27700;		
+		formData["projection"]='d3.geo.mercator()';		
 		formData["my_test"]="4: projection: 27700";		
 	}	
 	else if (nRequests == 5) {

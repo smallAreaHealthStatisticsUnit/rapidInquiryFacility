@@ -270,6 +270,7 @@ Test harness refactor; Node.js version working
 	Todo:
 
 	11. Documentation;
+	12. JSON injection protection;
 	13. Size limits (100M); 
 	14. Connection timeout (connect/post connect) limits;
 	15. Integration to build.

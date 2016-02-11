@@ -320,7 +320,7 @@ exports.convert = function(req, res) {
 
 		res.setHeader("Content-Type", "text/plain");
 		
-	// Add stderr hook to capture debug output from topoJSON	
+// Add stderr hook to capture debug output from topoJSON	
 		var stderr = stderrHook.stderrHook(function(output, obj) { 
 			output.str += obj.str;
 		});
@@ -372,6 +372,46 @@ exports.convert = function(req, res) {
 			};	
 
 /*
+ * Function: 	req.busboy.on('filesLimit') callback function
+ * Parameters:	None
+ * Description:	Processor if the files limit has been reached  
+ */				  
+			req.busboy.on('filesLimit', function() {
+				var msg="FAIL! Files limit reached";
+				response.no_files=d.no_files;			// Add number of files process to response
+				response.fields=ofields;				// Add return fields	
+				_http_error_response(__file, __line, "req.busboy.on('filesLimit')", 
+					500, req, res, msg, undefined, response);
+				return;				
+			});
+/*
+ * Function: 	req.busboy.on('partsLimit') callback function
+ * Parameters:	None
+ * Description:	Processor if the parts limit has been reached 
+ */				  
+			req.busboy.on('partsLimit', function() {
+				var msg="FAIL! Parts limit reached";
+				response.no_files=d.no_files;			// Add number of files process to response
+				response.fields=ofields;				// Add return fields	
+				_http_error_response(__file, __line, "req.busboy.on('partsLimit')", 
+					500, req, res, msg, undefined, response);
+				return;				
+			});
+/*
+ * Function: 	req.busboy.on('fieldsLimit') callback function
+ * Parameters:	None
+ * Description:	Processor if the fields limit has been reached  
+ */				  
+			req.busboy.on('fieldsLimit', function() {
+				var msg="FAIL! Fields limit reached";
+				response.no_files=d.no_files;			// Add number of files process to response
+				response.fields=ofields;				// Add return fields	
+				_http_error_response(__file, __line, "req.busboy.on('fieldsLimit')", 
+					500, req, res, msg, undefined, response);
+				return;				
+			});
+			
+/*
  * Function: 	req.busboy.on('file') callback function
  * Parameters:	fieldname, stream, filename, encoding, mimetype
  * Description:	File attachment processing function  
@@ -379,9 +419,7 @@ exports.convert = function(req, res) {
 			req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
 				
 				var d = new TempData(); // This is local to the post requests; the field processing cannot see it	
-				
-	//        this.withinLimit = true;
-	//        this.upper_limit = 1e8;				
+								
 				d.file = { // File return data type
 					file_name: "",
 					temp_file_name: "",
@@ -425,20 +463,6 @@ exports.convert = function(req, res) {
  */			
 				stream.on('data', function(data) {
 					d.file.chunks.push(data);  
-				
-	/*			    if (d.file.file_data.length > d.upper_limit) { // Max geojs allowed upper_limit
-						d.withinLimit = false;  
-						try { 
-							console.log("toTopoJSON(): Stopping file: " + d.file.file_name + " upload...");
-						} catch (e) { 
-							var msg="EXCEPTION! toTopoJSON.js: File: " + d.file.file_name + " upload stopped: " + e; 
-													console.error(msg);					  
-							res.status(500);					  
-							res.write(msg);
-							res.end();						
-							return;
-						};     
-					}; */
 				});
 
 /*
@@ -447,75 +471,72 @@ exports.convert = function(req, res) {
  * Description: EOF processor. Concatenate d.file.chunks[] array, uncompress if needed.
  */
 				stream.on('end', function() {
-	//			     d.file.file_data = d.file.file_data.replace(/(\r\n|\n|\r)/gm,""); CRLF=> CR
-	//                 if (d.file.file_name != '' && d.withinLimit) {	
 		
-							var buf=Buffer.concat(d.file.chunks); // Safe binary concat
-							d.file.file_size=buf.length;
-							var end = new Date().getTime();
-							d.file.transfer_time=(end - d.file.lstart)/1000; // in S	
-							
-							d.file.file_data="";
-							var lstart = new Date().getTime();
-							if (d.file.file_encoding === "gzip") {
-								try {
-									d.file.file_data=zlib.gunzipSync(buf);
-								}
-								catch (e) {
-									msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-										d.file.extension + "; file_encoding: " + d.file.file_encoding + " gunzip exception";
-									response.no_files=d.no_files;			// Add number of files process to response
-									response.fields=ofields;				// Add return fields	
-									_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-										500, req, res, msg, e, response);									
-								}	
-								end = new Date().getTime();		
-								d.file.uncompress_time=(end - lstart)/1000; // in S		
-								d.file.uncompress_size=d.file.file_data.length;								
-								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-									d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
-									"; from buf: " + buf.length, req); 
-							}	
-							else if (d.file.file_encoding === "zlib") {	
-								try {
-									d.file.file_data=zlib.inflateSync(buf);
-								}
-								catch (e) {
-									msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-										d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-									response.no_files=d.no_files;			// Add number of files process to response
-									response.fields=ofields;				// Add return fields	
-									_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-										500, req, res, msg, e, response);
-									return;											
-								}
-								end = new Date().getTime();	
-								d.file.uncompress_time=(end - lstart)/1000; // in S		
-								d.file.uncompress_size=d.file.file_data.length;		
-								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-									d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
-									"; from buf: " + buf.length, req); 
-							}
-							else if (d.file.file_encoding === "zip") {
-								msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-										d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
-								response.no_files=d.no_files;			// Add number of files process to response
-								response.fields=ofields;				// Add return fields	
-								_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-									500, req, res, msg, undefined, response);
-								return;							
-							}
-							else {
-								d.file.file_data=buf;
-								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 			
-									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-									"; uncompressed data: " + d.file.file_data.length, req); 												
-							}
-							
-							d_files.d_list[d.no_files-1] = d;										
-	//                }
+					var buf=Buffer.concat(d.file.chunks); // Safe binary concat
+					d.file.file_size=buf.length;
+					var end = new Date().getTime();
+					d.file.transfer_time=(end - d.file.lstart)/1000; // in S	
+					
+					d.file.file_data="";
+					var lstart = new Date().getTime();
+					if (d.file.file_encoding === "gzip") {
+						try {
+							d.file.file_data=zlib.gunzipSync(buf);
+						}
+						catch (e) {
+							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+								d.file.extension + "; file_encoding: " + d.file.file_encoding + " gunzip exception";
+							response.no_files=d.no_files;			// Add number of files process to response
+							response.fields=ofields;				// Add return fields	
+							_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+								500, req, res, msg, e, response);									
+						}	
+						end = new Date().getTime();		
+						d.file.uncompress_time=(end - lstart)/1000; // in S		
+						d.file.uncompress_size=d.file.file_data.length;								
+						rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+							"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+							d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
+							"; from buf: " + buf.length, req); 
+					}	
+					else if (d.file.file_encoding === "zlib") {	
+						try {
+							d.file.file_data=zlib.inflateSync(buf);
+						}
+						catch (e) {
+							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+							response.no_files=d.no_files;			// Add number of files process to response
+							response.fields=ofields;				// Add return fields	
+							_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+								500, req, res, msg, e, response);
+							return;											
+						}
+						end = new Date().getTime();	
+						d.file.uncompress_time=(end - lstart)/1000; // in S		
+						d.file.uncompress_size=d.file.file_data.length;		
+						rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+							"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+							d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
+							"; from buf: " + buf.length, req); 
+					}
+					else if (d.file.file_encoding === "zip") {
+						msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+								d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
+						response.no_files=d.no_files;			// Add number of files process to response
+						response.fields=ofields;				// Add return fields	
+						_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
+							500, req, res, msg, undefined, response);
+						return;							
+					}
+					else {
+						d.file.file_data=buf;
+						rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 			
+							"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+							"; uncompressed data: " + d.file.file_data.length, req); 												
+					}
+					
+					d_files.d_list[d.no_files-1] = d;										
 				}); // End of EOF processor
 					
 			}); // End of file attachment processing function: req.busboy.on('file')
