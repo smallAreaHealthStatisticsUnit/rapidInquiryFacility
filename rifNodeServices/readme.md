@@ -14,7 +14,7 @@ The toTopojson service converts GeoJSON files upto 100MB un size to TopoJSON:
 * Expects a vaild geojson as an input file;
 * Gzip and lz77 (not ZIP) files are supported;
 * Mutliple input files supported;  
-* Topojson output is returned as a (#Response-JSON) object;
+* Topojson output is returned as a (Response-JSON) object;
 * Topojson is quantized based on map tile zoom level; 
 * Processing is controlled by form fields;
 
