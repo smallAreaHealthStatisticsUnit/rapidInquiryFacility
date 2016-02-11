@@ -15,6 +15,7 @@ Form fields specific processing:
 
 * zoomLevel: 	Set quantization field and Topojson.Topology() option using local function getQuantization()
   				i.e. Set the maximum number of differentiable values along each dimension) by zoomLevel
+				
 |Zoomlevel|Quantization|
 |---------|------------|
 |<=6	  |	400		   |
@@ -141,24 +142,24 @@ make test will also run the comnplete test set.
 
 #### Tests
 
-1: Defaults
-2: Verbose
-3: ZoomLevel=0
-4: Projection: 27700
-5: gzip geoJSON file
-6: gzip geoJSON file; wrong Content-Type; will work
-7: gzip geoJSON multiple files
-8: TopoJSON id support
-9: TopoJSON id support: invalid id
-10: TopoJSON conversion: invalid geoJSON
-11: Uncompress: invalid lz77
-12: Invalid zip file (not supported)
-13: Zero sized file
-14: TopoJSON property-transform test
-15: TopoJSON property-transform support: invalid property-transform field
-16: TopoJSON property-transform support: invalid property-transform array
-17: TopoJSON id and property-transform test
-18: TopoJSON property-transform support: JSON injection tests
+1. Defaults
+2. Verbose
+3. ZoomLevel=0
+4. Projection: 27700
+5. gzip geoJSON file
+6. gzip geoJSON file; wrong Content-Type; will work
+7. gzip geoJSON multiple files
+8. TopoJSON id support
+9. TopoJSON id support: invalid id
+10. TopoJSON conversion: invalid geoJSON
+11. Uncompress: invalid lz77
+12. Invalid zip file (not supported)
+13. Zero sized file
+14. TopoJSON property-transform test
+15. TopoJSON property-transform support: invalid property-transform field
+16. TopoJSON property-transform support: invalid property-transform array
+17. TopoJSON id and property-transform test
+18. TopoJSON property-transform support: JSON injection tests
 
 #### Example
 
