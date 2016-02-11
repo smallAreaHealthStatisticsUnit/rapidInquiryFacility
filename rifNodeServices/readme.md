@@ -1,4 +1,4 @@
-# Node Web Services API for RIF 4.0
+# ![RIF logo](http://www.sahsu.org/sites/impc_sahsu/files/rif%203%20screenshot.png) Node Web Services API for RIF 4.0
 
 ### Table of Contents
 **[toTopojson service](#toTopojson-service)**  
@@ -108,7 +108,8 @@ Response object - errors:
  
 More info on quantization here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
 
-## simplify
+## simplify service
+
 COPY / UNZIP / SIMPLIFY FIRST SHAPEFILE FOUND IN ZIPPED FOLDER 
 * Only POST requests are processed
 * Expects a shapefile as input
