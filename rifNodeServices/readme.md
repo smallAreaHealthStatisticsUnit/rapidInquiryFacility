@@ -13,22 +13,23 @@ Processing is controlled by form fields:
 
 Form fields specific processing:
 
-*zoomLevel: 	Set quantization field and Topojson.Topology() option using local function getQuantization()
-  							i.e. Set the maximum number of differentiable values along each dimension) by zoomLevel
+* zoomLevel: 	Set quantization field and Topojson.Topology() option using local function getQuantization()
+  				i.e. Set the maximum number of differentiable values along each dimension) by zoomLevel
  
-  							Zoomlevel		Quantization
-  							---------		------------
- 
-  							<=6				400
-  							7				700
-  							8				1500
-  							9				3000
-  							10				5000
-  							>10				10000
+Zoomlevel		Quantization
+---------		------------
+
+<=6				400
+7				700
+8				1500
+9				3000
+10				5000
+>10				10000
+							
 * projection: 	Set projection field and Topojson.Topology() option. E.g. to convert spherical input geometry 
-							to Cartesian coordinates via a D3 geographic projection. For example, a projection of 'd3.geo.albersUsa()' 
- 							will project geometry using a composite Albers equal-area conic projection suitable for the contiguous 
- 							United States, Alaska and Hawaii. DO NOT SET UNLESS YOU KNOW WHAT YOU ARE DOING!
+				to Cartesian coordinates via a D3 geographic projection. For example, a projection of 'd3.geo.albersUsa()' 
+ 				will project geometry using a composite Albers equal-area conic projection suitable for the contiguous 
+ 				United States, Alaska and Hawaii. DO NOT SET UNLESS YOU KNOW WHAT YOU ARE DOING!
 * verbose: 		Set Topojson.Topology() option if true. Produces debug returned as part of reponse.message
 * id:			Name of feature property to promote to geometry id; default is ID. Value must exist in data.
  				Creates myId() function and registers it with Topojson.Topology() via the id option
@@ -44,12 +45,12 @@ either during processing or in the id and property-transform Topojson.Topology()
 JSON injection protection. This function does NOT use eval() as it is source of potential injection
 e.g.
 ```
-					var rval=eval("d.properties." + ofields[fieldname]);
+var rval=eval("d.properties." + ofields[fieldname]);
 ```
 Instead it tests for the field name directly:
 ```
- 						if (!d.properties[ofields[fieldname]]) { 
-						...
+if (!d.properties[ofields[fieldname]]) { 
+...
 ```						
 So setting formData (see test\request.js test 18) to:
 ```
@@ -108,11 +109,20 @@ NOTE: ADM-ZIP is blocking
 * Topojson
 * Connect-Busboy
 * Mapshaper
+* Magic-globals
+* Helmet
 
-## To test using the request scripts the following are also needed:
+## Install
+
+To be added
+
+## Testing
+
+To test using the request scripts the following are also needed:
 
 * Request
 * Form-Data
+* Request-debug
 
 ```Node
 P:\Github\rapidInquiryFacility\rifNodeServices>node expressServer.js
