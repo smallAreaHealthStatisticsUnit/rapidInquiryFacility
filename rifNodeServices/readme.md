@@ -7,12 +7,18 @@
 **[Testing](#Testing)**  
 
 ## toTopojson service
-CONVERTS GEOJSON(MAX 1000MB) TO TOPOJSON:
-* Only POST requests are processed 
-* Expects a vaild geojson as an input file. Gzip and lz77 (not ZIP) files are supported. 
-* Topojson output is returned as a reponse JSON object
-* Topojson is quantized based on map tile zoom level 
-* Processing is controlled by form fields
+
+The toTopojson service converts GeoJSON files upto 100MB un size to TopoJSON:
+
+* Only POST requests are processed; 
+* Expects a vaild geojson as an input file;
+* Gzip and lz77 (not ZIP) files are supported;
+* Mutliple input files supported;  
+* Topojson output is returned as a (#Response-JSON) object;
+* Topojson is quantized based on map tile zoom level; 
+* Processing is controlled by form fields;
+
+The toTopojson service uses [Mike Bostock's TopoJSON node package](https://github.com/mbostock/topojson).
 
 ### Field Processing
 
@@ -76,7 +82,7 @@ myPropertyTransform() function id fields set to: ["eval(console.error(JSON.strin
 FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(console.error(JSON.stringify(req, null, 4))) does not exist in geoJSON;
 ```
 
-### Response (returned) JSON
+### Response JSON
 
 Response object - no errors:
                     
@@ -120,7 +126,7 @@ NOTE: ADM-ZIP is blocking
 
 To be added
 
-### The API make use of the following modules downloadable via npm:
+The API make use of the following modules downloadable via npm:
 
 * Express
 * ADM-ZIP
@@ -169,7 +175,7 @@ make test will also run the comnplete test set.
 17. TopoJSON id and property-transform test
 18. TopoJSON property-transform support: JSON injection tests
 
-#### Example
+#### Tests Example
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices>node test\request.js 17
