@@ -190,15 +190,32 @@ var inspect = require('util').inspect,
 		try {	
 			d.file.jsonData = undefined;
 			// Set up file list reponse now, in case of exception
+			
+/* Array file objects:
+ *						file_name: File name
+ *						topojson: TopoJSON created from file geoJSON,
+ *						topojson_stderr: Debug from TopoJSON module,
+ *						topojson_runtime: Time to convert geoJSON to topoJSON (S),
+ *						file_size: Transferred file size in bytes,
+ *						transfer_time: Time to transfer file (S),
+ *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+ *						uncompress_size: Size of uncompressed file in bytes
+ */
 			response.file_list[d.no_files-1] = {
 				file_name: d.file.file_name,
 				topojson: '',
-				topojson_stderr: ''
+				topojson_stderr: '',
+				topojson_runtime: '',
+				file_size: '',
+				transfer_time: '',
+				uncompress_time: undefined,
+				uncompress_size: undefined
 			};				
 			d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
 
 			// Re-route topoJSON stderr to stderr.str
 			stderr.disable();
+			var lstart = new Date().getTime();			
 			d.file.topojson = topojson.topology({   // Convert geoJSON to topoJSON
 				collection: d.file.jsonData
 				}, options);				
@@ -212,13 +229,20 @@ var inspect = require('util').inspect,
 	// This will need a mutex if > 1 thread is being processed at the same time
 			response.file_list[d.no_files-1].topojson=d.file.topojson;
 			response.file_list[d.no_files-1].topojson_stderr=d.file.topojson_stderr;
+
+			var end = new Date().getTime();
+			response.file_list[d.no_files-1].topojson_runtime=(end - lstart)/1000; // in S			
+			response.file_list[d.no_files-1].file_size=d.file.file_size;
+			response.file_list[d.no_files-1].transfer_time=d.file.transfer_time;
+			response.file_list[d.no_files-1].uncompress_time=d.file.uncompress_time;
+			response.file_list[d.no_files-1].uncompress_size=d.file.uncompress_size;
 			
-			msg+= "; topoJSON: " + JSON.stringify(d.file.topojson).length + "]"
+			msg+= "; runtime: " + "; topoJSON length: " + JSON.stringify(d.file.topojson).length + "]"
 			if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message	
 	// This will need a mutex if > 1 thread is being processed at the same time	
 				response.message = response.message + "\n" + msg + " OK:\nTopoJson.topology() stderr >>>\n" + 
 					d.file.topojson_stderr + "<<< TopoJson.topology() stderr";
-				rifLog.rifLog("TopoJson.topology() stderr; " + msg  + "TopoJson.topology() stderr >>>\n"  + 
+				rifLog.rifLog(msg + "TopoJson.topology() stderr >>>\n"  + 
 					d.file.topojson_stderr + "<<< TopoJson.topology() stderr", 
 					req);
 			}
@@ -289,7 +313,12 @@ exports.convert = function(req, res) {
  * file_list: 		Array file objects:
  *						file_name: File name
  *						topojson: TopoJSON created from file geoJSON,
- *						topojson_stderr: Debug from TopoJSON module
+ *						topojson_stderr: Debug from TopoJSON module,
+ *						topojson_runtime: Time to convert geoJSON to topoJSON (S),
+ *						file_size: Transferred file size in bytes,
+ *						transfer_time: Time to transfer file (S),
+ *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+ *						uncompress_size: Size of uncompressed file in bytes
  * message: 		Processing messages, including debug from topoJSON               
  * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  */ 
@@ -339,7 +368,12 @@ exports.convert = function(req, res) {
 					file_data: "",
 					chunks: [],
 					topojson: "",
-					topojson_stderr: ""
+					topojson_stderr: "",
+					file_size: 0,
+					transfer_time: '',
+					uncompress_time: undefined,
+					uncompress_size: undefined,
+					lstart: ''
 				};
 
 				// This will need a mutex if > 1 thread is being processed at the same time
@@ -350,6 +384,7 @@ exports.convert = function(req, res) {
 				d.file.temp_file_name = os.tmpdir()  + "/" + filename;
 				d.file.file_encoding=req.get('Content-Encoding');
 				d.file.extension = filename.split('.').pop();
+				d.file.lstart=new Date().getTime();
 				
 				if (!d.file.file_encoding) {
 					if (d.file.extension === "gz") {
@@ -385,8 +420,12 @@ exports.convert = function(req, res) {
 	//                 if (d.file.file_name != '' && d.withinLimit) {	
 		
 							var buf=Buffer.concat(d.file.chunks);
+							d.file.file_size=buf.length;
+							var end = new Date().getTime();
+							d.file.transfer_time=(end - d.file.lstart)/1000; // in S	
 							
 							d.file.file_data="";
+							var lstart = new Date().getTime();
 							if (d.file.file_encoding === "gzip") {
 								try {
 									d.file.file_data=zlib.gunzipSync(buf);
@@ -398,7 +437,10 @@ exports.convert = function(req, res) {
 									response.fields=ofields;				// Add return fields	
 									_http_error_response(__file, __line, "req.busboy.on('file').stream.on:('end')", 
 										500, req, res, msg, e, response);									
-								}															
+								}	
+								end = new Date().getTime();		
+								d.file.uncompress_time=(end - lstart)/1000; // in S		
+								d.file.uncompress_size=d.file.file_data.length;								
 								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
 									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 									d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
@@ -417,6 +459,9 @@ exports.convert = function(req, res) {
 										500, req, res, msg, e, response);
 									return;											
 								}
+								end = new Date().getTime();	
+								d.file.uncompress_time=(end - lstart)/1000; // in S		
+								d.file.uncompress_size=d.file.file_data.length;		
 								rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
 									"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 									d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
@@ -588,7 +633,12 @@ exports.convert = function(req, res) {
  * file_list: 		Array file objects:
  *						file_name: File name
  *						topojson: TopoJSON created from file geoJSON,
- *						topojson_stderr: Debug from TopoJSON module
+ *						topojson_stderr: Debug from TopoJSON module,
+ *						topojson_runtime: Time to convert geoJSON to topoJSON (S),
+ *						file_size: Transferred file size in bytes,
+ *						transfer_time: Time to transfer file (S),
+ *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+ *						uncompress_size: Size of uncompressed file in bytes
  * message: 		Processing messages, including debug from topoJSON               
  * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing  
  */ 

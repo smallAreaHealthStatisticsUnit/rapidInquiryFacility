@@ -265,10 +265,10 @@ Test harness refactor; Node.js version working
 	8. Security as per recommendations - added Helmet. Helmet helps you secure 
 	   your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help;
 	9. Full client logging;
+	10. Instrumentation;
 	
 	Todo:
 
-	10. Instrumentation;
 	11. Documentation;
 	13. Size limits (100M); 
 	14. Connection timeout (connect/post connect) limits;

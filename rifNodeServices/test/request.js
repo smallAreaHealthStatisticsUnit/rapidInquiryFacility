@@ -318,8 +318,8 @@ var postIt = function(debug) {
 				var error = jsonData.error || 'No error';
 				console.error('\nUpload #' + my_reference + 
 					' failed with HTTP status: ' + httpResponse.statusCode + 
-					'\nDebug >>>' + jsonData.message + 
-					'\n<<< End of debug\nError exception caught by server >>>\n' + error +
+					'\nServer debug >>>' + jsonData.message + 
+					'\n<<< End of server debug\nError exception caught by server >>>\n' + error +
 					'\n<<< End of error exception caught by server\nfiles processed: ' + jsonData.no_files +
 					'; fields: ' + JSON.stringify(ofields, null, 4));
 				for (i = 0; i < jsonData.no_files; i++) {	
@@ -341,25 +341,39 @@ var postIt = function(debug) {
 				console.error('GOOD! test failed as expected');
 			}					
 		}
-		else {
+		else { // No HTTP status
 			var expected_to_pass=true;
 			try {			
 				var jsonData = JSON.parse(body);
 				var topojson;
 				var ofields=jsonData.fields;		
-				var file_list=jsonData.file_list;		
+				var file_list=jsonData.file_list;
+				var pct_compression;
 				expected_to_pass = ofields["expected_to_pass"] || true;
-				console.error('\nUpload #' + ofields["my_reference"] + '\nDebug >>>' + jsonData.message + 
-					'\n<<< End of debug\nfiles processed: ' + jsonData.no_files +
+				console.error('\nUpload #' + ofields["my_reference"] + '\nServer debug >>>' + jsonData.message + 
+					'\n<<< End of server debug\n\nfiles processed: ' + jsonData.no_files +
 					'; fields: ' + JSON.stringify(ofields, null, 4));
 				for (i = 0; i < jsonData.no_files; i++) {	
-					 topojson = JSON.stringify(file_list[i].topojson);
-					 console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] topoJSON length: " + topojson.length);
+					topojson = JSON.stringify(file_list[i].topojson);
+					if (!file_list[i].uncompress_size) {
+						pct_compression=Math.round((topojson.length/file_list[i].file_size)*100);
+					}
+					else {
+						pct_compression=Math.round((topojson.length/file_list[i].uncompress_size)*100);
+					}
+					console.error("File [" + (i+1) + ":" + file_list[i].file_name + "]\n" +			
+						"topoJSON length: " + topojson.length + 
+						"; file size: " + file_list[i].file_size + 
+						"; Topology() runtime: " + file_list[i].topojson_runtime + " S" + 
+						"; transfer time: " + file_list[i].transfer_time + " S;\n" + 
+						"uncompress time: " + (file_list[i].uncompress_time || "(Not compressed)") + " S" +
+						"; uncompress file size: " + (file_list[i].uncompress_size || "(Not compressed)") + 
+						"; JSON compression: " + pct_compression + "%\n");
 					// Single test mode: print first 600 characters of formatted topoJSON
-					 if (max_nRequests == 1) {
+					if (max_nRequests == 1) {
 						 console.error("First 600 characters of formatted topoJSON >>>\n" + 
 							JSON.stringify(file_list[i].topojson, null, 2).substring(0, 600) + "\n\n<<< formatted topoJSON\n");
-					 }
+					}
 				}
 				console.error('\nEnd of upload #' + ofields["my_reference"] + '\n');				
 			} catch (e) {                            // Catch message not in JSON errors			
