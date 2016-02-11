@@ -43,11 +43,11 @@ either during processing or in the id and property-transform Topojson.Topology()
  
 JSON injection protection. This function does NOT use eval() as it is source of potential injection
 e.g.
-```
+```Node
 var rval=eval("d.properties." + ofields[fieldname]);
 ```
 Instead it tests for the field name directly:
-```
+```Node
 if (!d.properties[ofields[fieldname]]) { 
 	response.field_errors++;
 	var msg="FIELD PROCESSING ERROR! Invalid id field: d.properties." + ofields[fieldname] + " does not exist in geoJSON";
@@ -57,9 +57,9 @@ if (!d.properties[ofields[fieldname]]) {
 		response.message = response.message + "\n" + msg;
 	}
 }
-```						
+```					
 So setting formData (see test\request.js test 18) to:
-```
+```Node
 formData["property-transform-fields"]='["eval(console.error(JSON.stringify(req, null, 4)))"]';
 ```
 Will cause an error:
@@ -130,7 +130,7 @@ To test using the request scripts the following are also needed:
 * Form-Data
 * Request-debug
 
-```Node
+```
 P:\Github\rapidInquiryFacility\rifNodeServices>node expressServer.js
 Listening on port 3000...
 ```
