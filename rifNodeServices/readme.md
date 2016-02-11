@@ -11,7 +11,8 @@ CONVERTS GEOJSON(MAX 1000MB) TO TOPOJSON:
 
 Processing is controlled by form fields:
 
-Form fields specific processing
+Form fields specific processing:
+
 *				zoomLevel: 	Set quantization field and Topojson.Topology() option using local function getQuantization()
   							i.e. Set the maximum number of differentiable values along each dimension) by zoomLevel
  
@@ -51,11 +52,15 @@ Instead it tests for the field name directly:
 						...
 ```						
 So setting formData (see test\request.js test 18) to:
- * formData["property-transform-fields"]='["eval(console.error(JSON.stringify(req, null, 4)))"]';
- * Will cause an error:
- * Field: property-transform-fields[["eval(console.error(JSON.stringify(req, null, 4)))"]];
- * myPropertyTransform() function id fields set to: ["eval(console.error(JSON.stringify(req, null, 4)))"]; 1 field(s)
- * FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(console.error(JSON.stringify(req, null, 4))) does not exist in geoJSON;
+```
+formData["property-transform-fields"]='["eval(console.error(JSON.stringify(req, null, 4)))"]';
+```
+Will cause an error:
+```
+Field: property-transform-fields[["eval(console.error(JSON.stringify(req, null, 4)))"]];
+myPropertyTransform() function id fields set to: ["eval(console.error(JSON.stringify(req, null, 4)))"]; 1 field(s)
+FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(console.error(JSON.stringify(req, null, 4))) does not exist in geoJSON;
+```
 
 ### Response (returned) JSON
 
@@ -64,14 +69,15 @@ Response object - no errors:
 * no_files: 		Numeric, number of files    
 * field_errors: 	Number of errors in processing fields
 * file_list: 		Array file objects:
- 					*	file_name: File name
- 					*	topojson: TopoJSON created from file geoJSON,
- 					*	topojson_stderr: Debug from TopoJSON module,
- 					*	topojson_runtime: Time to convert geoJSON to topoJSON (S),
- 					*	file_size: Transferred file size in bytes,
- 					*	transfer_time: Time to transfer file (S),
- 					*	uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
- 					*	uncompress_size: Size of uncompressed file in bytes
+
+ 					* file_name: File name
+ 					* topojson: TopoJSON created from file geoJSON,
+ 					* topojson_stderr: Debug from TopoJSON module,
+ 					* topojson_runtime: Time to convert geoJSON to topoJSON (S),
+ 					* file_size: Transferred file size in bytes,
+ 					* transfer_time: Time to transfer file (S),
+ 					* uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+ 					* uncompress_size: Size of uncompressed file in bytes
 * message: 			Processing messages, including debug from topoJSON               
 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing  
 
@@ -81,7 +87,8 @@ Response object - errors:
 * no_files: 		Numeric, number of files    
 * field_errors: 	Number of errors in processing fields
 * file_list: 		Array file objects:
- 					*	file_name: File name
+
+ 					* file_name: File name
 * message: 		Processing messages, including debug from topoJSON               
 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  
