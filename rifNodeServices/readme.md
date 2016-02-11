@@ -2,9 +2,9 @@
 
 ### Table of Contents
 **[toTopojson service](#toTopojson-service)**  
-**[simplify service](#simplify)**  
-**[Install](#Install-services)**   
-**[Testing](#Test-services)**  
+**[simplify service](#simplify-service)**  
+**[Install](#Install)**   
+**[Testing](#Testing)**  
 
 ## toTopojson service
 CONVERTS GEOJSON(MAX 1000MB) TO TOPOJSON:
