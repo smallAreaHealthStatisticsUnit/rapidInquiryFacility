@@ -1,10 +1,10 @@
-# ![RIF logo](http://www.sahsu.org/sites/impc_sahsu/files/rif%203%20screenshot.png) Node Web Services API for RIF 4.0
+# ![RIF logo](http://www.envhealthatlas.co.uk/homepage/images/sahsu_logo.png) Node Web Services API for RIF 4.0
 
 ### Table of Contents
 **[toTopojson service](#toTopojson-service)**  
-**[simplify service](#simplify-service)**  
-**[Install](#Install)**   
-**[Testing](#Testing)**  
+**[simplify service](#simplify)**  
+**[Install](#Install-services)**   
+**[Testing](#Test-services)**  
 
 ## toTopojson service
 CONVERTS GEOJSON(MAX 1000MB) TO TOPOJSON:
