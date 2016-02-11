@@ -13,7 +13,7 @@ Processing is controlled by form fields:
 
 Form fields specific processing:
 
-*				zoomLevel: 	Set quantization field and Topojson.Topology() option using local function getQuantization()
+*zoomLevel: 	Set quantization field and Topojson.Topology() option using local function getQuantization()
   							i.e. Set the maximum number of differentiable values along each dimension) by zoomLevel
  
   							Zoomlevel		Quantization
@@ -25,18 +25,18 @@ Form fields specific processing:
   							9				3000
   							10				5000
   							>10				10000
-*				projection: Set projection field and Topojson.Topology() option. E.g. to convert spherical input geometry 
+* projection: 	Set projection field and Topojson.Topology() option. E.g. to convert spherical input geometry 
 							to Cartesian coordinates via a D3 geographic projection. For example, a projection of 'd3.geo.albersUsa()' 
  							will project geometry using a composite Albers equal-area conic projection suitable for the contiguous 
  							United States, Alaska and Hawaii. DO NOT SET UNLESS YOU KNOW WHAT YOU ARE DOING!
-*			 	verbose: 	Set Topojson.Topology() option if true. Produces debug returned as part of reponse.message
-*				id:			Name of feature property to promote to geometry id; default is ID. Value must exist in data.
- 							Creates myId() function and registers it with Topojson.Topology() via the id option
-* 				property-transform-fields:
-							JSON array of additional fields in GeoJSON to add to output topoJSON. Uses the Topojson.Topology()
-  							property-transform option. Value must be parseable by JSON.parse(). Value must exist in data.
- 							Creates myPropertyTransform() function and registers it with Topojson.Topology() via the 
- 							property-transform option
+* verbose: 		Set Topojson.Topology() option if true. Produces debug returned as part of reponse.message
+* id:			Name of feature property to promote to geometry id; default is ID. Value must exist in data.
+ 				Creates myId() function and registers it with Topojson.Topology() via the id option
+* property-transform-fields:
+				JSON array of additional fields in GeoJSON to add to output topoJSON. Uses the Topojson.Topology()
+  				property-transform option. Value must be parseable by JSON.parse(). Value must exist in data.
+ 				Creates myPropertyTransform() function and registers it with Topojson.Topology() via the 
+ 				property-transform option
  
 All other fields have no special processing. Fields are returned in the response.fields JSON array. Any field processing errors 
 either during processing or in the id and property-transform Topojson.Topology() callback functions will cause processing to fail.
@@ -70,14 +70,14 @@ Response object - no errors:
 * field_errors: 	Number of errors in processing fields
 * file_list: 		Array file objects:
 
- 					* file_name: File name
- 					* topojson: TopoJSON created from file geoJSON,
- 					* topojson_stderr: Debug from TopoJSON module,
- 					* topojson_runtime: Time to convert geoJSON to topoJSON (S),
- 					* file_size: Transferred file size in bytes,
- 					* transfer_time: Time to transfer file (S),
- 					* uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
- 					* uncompress_size: Size of uncompressed file in bytes
+  * file_name: File name
+  * topojson: TopoJSON created from file geoJSON,
+  * topojson_stderr: Debug from TopoJSON module,
+  * topojson_runtime: Time to convert geoJSON to topoJSON (S),
+  * file_size: Transferred file size in bytes,
+  * transfer_time: Time to transfer file (S),
+  * uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+  * uncompress_size: Size of uncompressed file in bytes
 * message: 			Processing messages, including debug from topoJSON               
 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing  
 
@@ -88,7 +88,7 @@ Response object - errors:
 * field_errors: 	Number of errors in processing fields
 * file_list: 		Array file objects:
 
- 					* file_name: File name
+  * file_name: File name
 * message: 		Processing messages, including debug from topoJSON               
 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  
