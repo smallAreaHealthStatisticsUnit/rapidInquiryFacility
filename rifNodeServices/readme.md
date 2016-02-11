@@ -116,7 +116,22 @@ Response object - errors:
 E.g.
 
 ```JSON
-{"error":"Unexpected token P","no_files":1,"field_errors":0,"file_list":[{"file_name":"test_6_sahsu_4_level4_0_0_0.zip"}],"message":"Your input file 1: test_6_sahsu_4_level4_0_0_0.zip; size: 831358; does not seem to contain valid JSON: \nDebug message:\n\nField: verbose[true]; verbose mode enabled\nProcessing File [1]: test_6_sahsu_4_level4_0_0_0.zip\n\n\nData:\n504b0304140000000800527e2f48cd802badbcae0c005d163a001e000000746573745f365f73616873755f345f6c6576656c345f305f305f302e6a73a49dc98a6d4d\n","fields":{"my_reference":"","zoomLevel":0,"verbose":"true","quantization":10000,"projection":"4326"}}
+{
+	"error": "Unexpected token P",
+	"no_files": 1,
+	"field_errors": 0,
+	"file_list": [{
+		"file_name": "test_6_sahsu_4_level4_0_0_0.zip"
+	}],
+	"message": "Your input file 1: test_6_sahsu_4_level4_0_0_0.zip; size: 831358; does not seem to contain valid JSON: \nDebug message:\n\nField: verbose[true]; verbose mode enabled\nProcessing File [1]: test_6_sahsu_4_level4_0_0_0.zip\n\n\nData:\n504b0304140000000800527e2f48cd802badbcae0c005d163a001e000000746573745f365f73616873755f345f6c6576656c345f305f305f302e6a73a49dc98a6d4d\n",
+	"fields": {
+		"my_reference": "",
+		"zoomLevel": 0,
+		"verbose": "true",
+		"quantization": 10000,
+		"projection": "4326"
+	}
+}
 ```
 More info on quantization here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
 
