@@ -139,7 +139,7 @@ var MakeRequest = function(){
 // Multi-file test	
 	if (nRequests == 7) { 
 			var formData = {
-			my_test: "Defaults",
+			my_test: "1: Defaults",
 			my_reference: nRequests,
 			attachments: [
 				json_file,
@@ -151,7 +151,7 @@ var MakeRequest = function(){
 	}
 	else {
 		var formData = {
-			my_test: "Defaults",
+			my_test: "1: Defaults",
 			my_reference: nRequests,
 			attachments: [
 				json_file
@@ -164,102 +164,102 @@ var MakeRequest = function(){
 // Test case: fields
 	if (nRequests == 2) {
 		formData["verbose"]="true";
-		formData["my_test"]="Verbose";		
+		formData["my_test"]="2: Verbose";		
 	}
 	else if (nRequests == 3) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;		
-		formData["my_test"]="zoomLevel: 0";		
+		formData["my_test"]="3: zoomLevel=0";		
 	}
 	else if (nRequests == 4) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;
 		formData["projection"]=27700;		
-		formData["my_test"]="projection: 27700";		
+		formData["my_test"]="4: projection: 27700";		
 	}	
 	else if (nRequests == 5) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="gzip geoJSON file";		
+		formData["my_test"]="5: gzip geoJSON file";		
 	}	
 	else if (nRequests == 6) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="gzip geoJSON file; wrong Content-Type; will work";		
+		formData["my_test"]="6: gzip geoJSON file; wrong Content-Type; will work";		
 	}
 	else if (nRequests == 7) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="gzip geoJSON multiple files";		
+		formData["my_test"]="7: gzip geoJSON multiple files";		
 	}
 	else if (nRequests == 8) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="TopoJSON id support";	
+		formData["my_test"]="8: TopoJSON id support";	
 		formData["id"]="gid";		
 	}
 	else if (nRequests == 9) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="TopoJSON id support: invalid id";	
+		formData["my_test"]="9: TopoJSON id support: invalid id";	
 		formData["id"]="invalid_id";
 		formData["expected_to_pass"]="false"; 		
 	}
 	else if (nRequests == 10) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="TopoJSON conversion: invalid geoJSON";	
+		formData["my_test"]="10: TopoJSON conversion: invalid geoJSON";	
 		formData["expected_to_pass"]="false"; 		
 	}
 	else if (nRequests == 11) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="Uncompress: invalid lz77";	
+		formData["my_test"]="11: Uncompress: invalid lz77";	
 		formData["expected_to_pass"]="false"; 		
 	}
 	else if (nRequests == 12) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="Invalid zip file (not supported)";	
+		formData["my_test"]="12: Invalid zip file (not supported)";	
 		formData["expected_to_pass"]="false"; 		
 	}
 	else if (nRequests == 13) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="Zero sized file";	
+		formData["my_test"]="13: Zero sized file";	
 		formData["expected_to_pass"]="false"; 		
 	}
 	else if (nRequests == 14) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="TopoJSON property-transform test";	
+		formData["my_test"]="14: TopoJSON property-transform test";	
 		formData["property-transform-fields"]='["name","area_id","gid"]'; // Javascript array as text
 	}	
 	else if (nRequests == 15) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="TopoJSON property-transform support: invalid property-transform field";	
+		formData["my_test"]="15: TopoJSON property-transform support: invalid property-transform field";	
 		formData["expected_to_pass"]="false"; 	
 		formData["property-transform-fields"]='["invalid"]';
 	}	
 	else if (nRequests == 16) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="TopoJSON property-transform support: invalid property-transform array";	
+		formData["my_test"]="16: TopoJSON property-transform support: invalid property-transform array";	
 		formData["expected_to_pass"]="false"; 	
 		formData["property-transform-fields"]="invalid";
 	}
 	else if (nRequests == 17) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="TopoJSON id and property-transform test";	
+		formData["my_test"]="17: TopoJSON id and property-transform test";	
 		formData["property-transform-fields"]='["name","area_id","gid"]'; // Javascript array as tex
 		formData["id"]="gid";				
 	}
 	else if (nRequests == 18) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="TopoJSON property-transform support: JSON injection tests";	
+		formData["my_test"]="18: TopoJSON property-transform support: JSON injection tests";	
 		formData["expected_to_pass"]="false"; 	
 		formData["property-transform-fields"]='["eval(console.error(JSON.stringify(req, null, 4)))"]';
 	}
