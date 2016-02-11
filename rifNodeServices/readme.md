@@ -1,5 +1,12 @@
 # Node Web Services API for RIF 4.0
-## toTopojson
+
+### Table of Contents
+**[toTopojson service](#toTopojson-service)**  
+**[simplify service](#simplify-service)**  
+**[Install](#Install)**   
+**[Testing](#Testing)**  
+
+## toTopojson service
 CONVERTS GEOJSON(MAX 1000MB) TO TOPOJSON:
 * Only POST requests are processed 
 * Expects a vaild geojson as an input file. Gzip and lz77 (not ZIP) files are supported. 
@@ -28,7 +35,7 @@ Form fields specific processing:
 * projection: 	Set projection field and Topojson.Topology() option. E.g. to convert spherical input geometry 
 				to Cartesian coordinates via a D3 geographic projection. For example, a projection of 'd3.geo.albersUsa()' 
  				will project geometry using a composite Albers equal-area conic projection suitable for the contiguous 
- 				United States, Alaska and Hawaii. DO NOT SET UNLESS YOU KNOW WHAT YOU ARE DOING!
+ 				United States, Alaska and Hawaii. **DO NOT SET UNLESS YOU KNOW WHAT YOU ARE DOING!**
 * verbose: 		Set Topojson.Topology() option if true. Produces debug returned as part of reponse.message
 * id:			Name of feature property to promote to geometry id; default is ID. Value must exist in data.
  				Creates myId() function and registers it with Topojson.Topology() via the id option
@@ -108,7 +115,11 @@ COPY / UNZIP / SIMPLIFY FIRST SHAPEFILE FOUND IN ZIPPED FOLDER
 * Simplified shapefile as output
 NOTE: ADM-ZIP is blocking 
 
-## The API make use of the following modules downloadable via npm:
+## Install
+
+To be added
+
+### The API make use of the following modules downloadable via npm:
 
 * Express
 * ADM-ZIP
@@ -117,10 +128,6 @@ NOTE: ADM-ZIP is blocking
 * Mapshaper
 * Magic-globals
 * Helmet
-
-## Install
-
-To be added
 
 ## Testing
 
