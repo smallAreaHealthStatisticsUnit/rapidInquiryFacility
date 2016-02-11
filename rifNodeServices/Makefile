@@ -227,7 +227,7 @@ $(MODULE_JSON):
 	
 $(MODULES):
 	-mkdir $@
-	-$(NPM) install --save $(MODULE_LIST)
+	-$(NPM) install --save $@
 	
 #- clean: clean Node modules; avoid Windows path length stupidities with rimraf	
 clean:
@@ -263,7 +263,7 @@ update:
 	-$(NPM) update --save $(MODULE_LIST)	
 		
 #- test: Run the test harness	
-test: forever.err
+test: forever.err modules update server-restart
 	$(NPM) test
 	
 #- help: Display makefile help, rifNode.js help

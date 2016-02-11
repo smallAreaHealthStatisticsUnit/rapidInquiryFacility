@@ -33,7 +33,7 @@
     "mutexjs": "^1.2.0",
     "request": "^2.69.0",
     "request-debug": "^0.2.0",
-    "topojson": "^1.6.22"
+    "topojson": "^1.6.24"
   },
   "scripts": {
     "test": "node test/request.js"
