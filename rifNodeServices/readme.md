@@ -17,7 +17,7 @@ The toTopojson service converts GeoJSON files upto 100MB in size to TopoJSON:
 * Mutliple input files supported;  
 * Topojson output is returned as a [Response JSON](#Response-JSON) object;
 * Topojson is quantized based on map tile zoom level; 
-* Processing is controlled by form fields;
+* Processing is controlled by form fields (see next section);
 
 The toTopojson service uses [Mike Bostock's TopoJSON node package](https://github.com/mbostock/topojson).
 
@@ -55,12 +55,16 @@ Form fields specific processing:
 All other fields have no special processing. Fields are returned in the response.fields JSON array. Any field processing errors 
 either during processing or in the id and property-transform Topojson.Topology() callback functions will cause processing to fail.
  
-JSON injection protection. This function does NOT use eval() as it is source of potential injection
+#### JSON injection protection in form fields 
+
+The form field processing function `req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated)` 
+does NOT use eval() as this is source of potential injection
+
 e.g.
 ```Node
 var rval=eval("d.properties." + ofields[fieldname]);
 ```
-Instead it tests for the field name directly:
+Instead the function tests for the field name directly:
 ```Node
 if (!d.properties[ofields[fieldname]]) { 
 	response.field_errors++;
@@ -113,7 +117,7 @@ Response object - errors:
 * message: 		Processing messages, including debug from topoJSON               
 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  
-E.g.
+E.g. Posting a ZIP file:
 
 ```JSON
 {
@@ -133,7 +137,7 @@ E.g.
 	}
 }
 ```
-More info on quantization here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
+More info on Node Topojson options (e.g. quantization) is available here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
 
 ## simplify web service
 
@@ -177,26 +181,42 @@ make test will also run the comnplete test set.
 
 #### Tests
 
-1. Defaults
-2. Verbose
-3. ZoomLevel=0
-4. Projection: 27700
-5. gzip geoJSON file
-6. gzip geoJSON file; wrong Content-Type; will work
-7. gzip geoJSON multiple files
-8. TopoJSON id support
-9. TopoJSON id support: invalid id
-10. TopoJSON conversion: invalid geoJSON
-11. Uncompress: invalid lz77
-12. Invalid zip file (not supported)
-13. Zero sized file
-14. TopoJSON property-transform test
-15. TopoJSON property-transform support: invalid property-transform field
-16. TopoJSON property-transform support: invalid property-transform array
-17. TopoJSON id and property-transform test
-18. TopoJSON property-transform support: JSON injection tests
+The test harness uses the fields *my_reference* (test number) and *expected_to_pass* ("true"/"false") for internal control.
 
-#### Tests Example
+1. Defaults;
+2. Verbose;
+3. ZoomLevel=0;
+4. Projection: d3.geo.mercator();
+5. gzip geoJSON file;
+6. gzip geoJSON file: wrong Content-Type [will work];
+7. gzip geoJSON multiple files;
+8. TopoJSON id support: use gid as the [unique] id field;
+9. TopoJSON id support: invalid id [intentional failure];
+10. TopoJSON conversion: invalid geoJSON;
+11. Uncompress: invalid lz77 [intentional failure];
+12. Invalid zip file (not supported) [intentional failure];
+13. Zero sized file [intentional failure];
+14. TopoJSON property-transform test
+
+    Add ["name","area_id","gid"] fields to topoJSON;
+	
+15. TopoJSON property-transform support: invalid property-transform field [intentional failure];
+16. TopoJSON property-transform support: invalid property-transform array [intentional failure];
+17. TopoJSON id and property-transform test;
+18. TopoJSON property-transform support: JSON injection tests (field does not exist) [intentional failure]
+
+    Attempt to dump the req object to the console:
+```JSON
+["{eval(console.error(JSON.stringify(req, null, 4)))};"]
+```
+19. TopoJSON property-transform support: JSON injection tests (invalid array exception) [intentional failure]
+
+    Attempt to dump the req object to the console:
+```JSON
+["invalid"+`{eval(console.error(JSON.stringify(req, null, 4)));}`]
+```
+
+#### Tests Example - Test 19
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices>node test\request.js 17

@@ -269,11 +269,14 @@ Test harness refactor; Node.js version working
 	
 	Todo:
 
-	11. Documentation;
-	12. JSON injection protection;
-	13. Size limits (100M); 
-	14. Connection timeout (connect/post connect) limits;
-	15. Integration to build.
+	11. Documentation [in progress];
+	12. JSON injection protection [will be a regexp];
+	13. Size limits (100M) - this is be BusBoy processing exception filesLimit/fieldsLimit/partsLimit [needs testing]; 
+	14. Connection timeout (connect/post connect) limits - as previous;
+	15. Integration to build, severeal options:
+		i.   Replace topojson_convert.js;
+		ii.  New node program to rteplace existing functionality;
+		iii. Awaiting data loader.
 	
 ## 2016 Plans: 
 
