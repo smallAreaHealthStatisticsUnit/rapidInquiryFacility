@@ -207,16 +207,16 @@ The test harness uses the fields *my_reference* (test number) and *expected_to_p
 
     Attempt to dump the req object to the console:
 ```JSON
-["{eval(console.error(JSON.stringify(req, null, 4)))};"]
+["{eval(console.error(JSON.stringify(req.headers, null, 4)))};"]
 ```
 19. TopoJSON property-transform support: JSON injection tests (invalid array exception) [intentional failure]
 
     Attempt to dump the req object to the console:
 ```JSON
-["invalid"+`{eval(console.error(JSON.stringify(req, null, 4)));}`]
+["invalid"+`{eval(console.error(JSON.stringify(req.headers, null, 4)));}`]
 ```
 
-#### Tests Example - Test 19
+#### Tests Example - Test 17
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices>node test\request.js 17

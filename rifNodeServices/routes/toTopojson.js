@@ -61,7 +61,7 @@
 //
  
 //  Globals
-var inspect = require('util').inspect,
+var util = require('util'),
 	topojson = require('topojson'),
 	zlib = require('zlib'),
     stderrHook = require('./stderrHook'),
@@ -760,7 +760,10 @@ exports.convert = function(req, res) {
 					var output = JSON.stringify(response);// Convert output response to JSON 
 	// Need to test res was not finished by an expection to avoid "write after end" errors			
 					res.write(output);                  // Write output  
-					res.end();				
+					res.end();	
+
+//					console.error(util.inspect(req));
+//					console.error(JSON.stringify(req.headers, null, 4));
 				}
 				else {
 					msg = "FAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;

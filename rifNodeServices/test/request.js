@@ -261,14 +261,14 @@ var MakeRequest = function(){
 		formData["zoomLevel"]=0;	
 		formData["my_test"]="18: TopoJSON property-transform support: JSON injection tests (field does not exist)";	
 		formData["expected_to_pass"]="false"; 	
-		formData["property-transform-fields"]='["{eval(console.error(JSON.stringify(req, null, 4)))};"]';
+		formData["property-transform-fields"]='["{eval(console.error(JSON.stringify(req.headers, null, 4)))};"]';
 	}
 	else if (nRequests == 19) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
 		formData["my_test"]="18: TopoJSON property-transform support: JSON injection tests (invalid array exception)";	
 		formData["expected_to_pass"]="false"; 	
-		formData["property-transform-fields"]='["invalid"+`{eval(console.error(JSON.stringify(req, null, 4)));}`]';
+		formData["property-transform-fields"]='["invalid"+`{eval(console.error(JSON.stringify(req.headers, null, 4)));}`]';
 	}	
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 		
