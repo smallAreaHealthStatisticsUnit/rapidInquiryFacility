@@ -212,15 +212,15 @@ The test harness uses the fields *my_reference* (test number) and *expected_to_p
 ```JSON
 ["{eval(console.error(JSON.stringify(req.headers, null, 4)))};"]
 ```
-19. TopoJSON property-transform support: JSON injection tests (invalid array exception) [intentional failure]
+19. TopoJSON property-transform support: JSON injection tests (invalid array exception)
 
     Attempt to dump the req object to the console:
 ```JSON
 ["invalid"+`{eval(console.error(JSON.stringify(req.headers, null, 4)));}`]
 ```
 
-20: TopoJSON conversion: invalid geoJSON - overload transport with 2G file
-21: gzip geoJSON multiple files limit (100)
+20: TopoJSON conversion: invalid geoJSON - overload transport with 2G file [intentional failure]
+21: gzip geoJSON multiple files limit (100) [intentional failure]
 
 #### Tests Example - Test 17
 
