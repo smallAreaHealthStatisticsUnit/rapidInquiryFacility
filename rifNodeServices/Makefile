@@ -147,6 +147,8 @@ ifeq ($(OS),Windows_NT)
 	FOREVER=$(APPDATA)\npm\forever
 	NPM=npm
 	PGPASSFILE=$(APPDATA)\postgresql\pgpass.conf
+	MKDIR=mkdir
+	RM=rm -f
 else
 #
 # Linux macos support
@@ -181,6 +183,8 @@ else
 		endif
 	endif
 	PGPASSFILE=~/.pgpass
+	MKDIR=mkdir
+	RM=rm -f
 endif
 #
 # Module list, module package.json for dependency control
@@ -226,7 +230,7 @@ $(MODULE_JSON):
 	$(NPM) update --save $(MODULE_LIST)
 	
 $(MODULES):
-	-mkdir $@
+	-$(MKDIR) $@
 	-$(NPM) install --save $@
 	
 #- clean: clean Node modules; avoid Windows path length stupidities with rimraf	
@@ -242,6 +246,7 @@ server-start: forever expressServer.js
 	$(FOREVER) start  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 #- server-restart: restart server
 server-restart: forever expressServer.js
+	-$(RM) forever.err
 	-$(FOREVER) stop  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 	$(FOREVER) start  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 #- server-restart-debug: restart server with debugging

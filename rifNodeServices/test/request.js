@@ -53,7 +53,7 @@ var fs = require('fs');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 19;
+var max_nRequests = 20;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all request tests');
@@ -129,6 +129,10 @@ var MakeRequest = function(){
 		inputFile = './data/test_6_sahsu_4_level4_0_0_0_zero_sized.js';
 		json_file = fs.createReadStream(inputFile);
 	}		
+	else if (nRequests == 20) { // Invalid GeoJSON; overload transport with a 2G file
+		inputFile = './data/bighelloworld.js';
+		json_file = fs.createReadStream(inputFile);
+	}
 	else { // Defasult	
 		json_file = fs.createReadStream(inputFile);
 	}
@@ -266,10 +270,17 @@ var MakeRequest = function(){
 	else if (nRequests == 19) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="18: TopoJSON property-transform support: JSON injection tests (invalid array exception)";	
+		formData["my_test"]="19: TopoJSON property-transform support: JSON injection tests (invalid array exception)";	
 		formData["expected_to_pass"]="false"; 	
 		formData["property-transform-fields"]='["invalid"+`{eval(console.error(JSON.stringify(req.headers, null, 4)));}`]';
 	}	
+	else if (nRequests == 20) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=20;	
+		formData["my_test"]="10: TopoJSON conversion: invalid geoJSON - overload transport with 2G file";	
+		formData["expected_to_pass"]="false"; 		
+	}
+	
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 		
     this.options = {

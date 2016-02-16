@@ -42,7 +42,7 @@
 //
 // Author:
 //
-// Peter Hambly, SAHSU; copied from original stdout hook by: Javier Carrillo
+// Peter Hambly, SAHSU
 
 /*
  * Function: 	httpErrorResponse() 
