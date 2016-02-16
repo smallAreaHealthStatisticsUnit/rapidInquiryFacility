@@ -219,6 +219,9 @@ The test harness uses the fields *my_reference* (test number) and *expected_to_p
 ["invalid"+`{eval(console.error(JSON.stringify(req.headers, null, 4)));}`]
 ```
 
+20: TopoJSON conversion: invalid geoJSON - overload transport with 2G file
+21: gzip geoJSON multiple files limit (100)
+
 #### Tests Example - Test 17
 
 ```
@@ -286,7 +289,7 @@ body{
 
 Upload #17
 Server debug >>>
-Field: my_test[TopoJSON id and property-transform test];
+Field: my_test[17: TopoJSON id and property-transform test];
 Field: my_reference[17];
 Field: expected_to_pass[true];
 Field: verbose[true]; verbose mode enabled
@@ -295,6 +298,7 @@ Field: property-transform-fields[["name","area_id","gid"]];
 myPropertyTransform() function id fields set to: ["name","area_id","gid"]; 3 field(s)
 Field: id[gid];
 myId() function id field set to: gid
+File received OK [1]: test_6_sahsu_4_level4_0_0_0.js; encoding: ; uncompressed data: 3806813
 Processing File [1]: test_6_sahsu_4_level4_0_0_0.js
 File [1]: test_6_sahsu_4_level4_0_0_0.js; runtime: ; topoJSON length: 354583] OK:
 TopoJson.topology() stderr >>>
@@ -309,13 +313,13 @@ files processed: 1; fields: {
     "zoomLevel": 0,
     "verbose": "true",
     "quantization": 400,
-    "my_test": "TopoJSON id and property-transform test",
+    "my_test": "17: TopoJSON id and property-transform test",
     "expected_to_pass": "true",
     "property-transform-fields": "[\"name\",\"area_id\",\"gid\"]",
     "id": "gid"
 }
 File [1:test_6_sahsu_4_level4_0_0_0.js]
-topoJSON length: 354583; file size: 3806813; Topology() runtime: 0.128 S; transfer time: 0.019 S;
+topoJSON length: 354583; file size: 3806813; Topology() runtime: 0.193 S; transfer time: 1.202 S;
 uncompress time: (Not compressed) S; uncompress file size: (Not compressed); JSON compression: 9%
 
 First 600 characters of formatted topoJSON >>>
