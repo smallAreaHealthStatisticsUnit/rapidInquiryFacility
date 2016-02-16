@@ -131,6 +131,18 @@ var MakeRequest = function(){
 	}		
 	else if (nRequests == 20) { // Invalid GeoJSON; overload transport with a 2G file
 		inputFile = './data/bighelloworld.js';
+		/*
+		if (!fs.existsSync(inputFile)) {
+			var bighelloworld2 = fs.createWriteStream(inputFile);
+			var numc;
+			console.error('Creating: ' + inputFile);
+			bighelloworld2.once('open', function(fd) {
+				numc=bighelloworld2.write('{ "name":"value", array:[1,2,3], "hello", "world"}\n');
+				bighelloworld2.end();
+			});
+			
+			console.error('Created: ' + inputFile + ": " + numc + " chars");
+ 		}  */
 		json_file = fs.createReadStream(inputFile);
 	}
 	else { // Defasult	

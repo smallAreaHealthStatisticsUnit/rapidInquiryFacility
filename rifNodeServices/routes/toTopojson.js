@@ -743,12 +743,17 @@ exports.convert = function(req, res) {
  */ 
 				response.fields=ofields;				// Add return fields	
 				if (response.field_errors == 0 && response.file_errors == 0) { // OK
-					rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", msg, req);					
-					var output = JSON.stringify(response);// Convert output response to JSON 
-	// Need to test res was not finished by an expection to avoid "write after end" errors			
-					res.write(output);                  // Write output  
-					res.end();	
+					rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
 
+					if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
+						var output = JSON.stringify(response);// Convert output response to JSON 
+	// Need to test res was not finished by an expection to avoid "write after end" errors			
+						res.write(output);                  // Write output  
+						res.end();	
+					}
+					else {
+						rifLog.rifLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
+					}	
 //					console.error(util.inspect(req));
 //					console.error(JSON.stringify(req.headers, null, 4));
 				}
