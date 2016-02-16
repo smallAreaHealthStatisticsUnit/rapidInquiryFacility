@@ -107,17 +107,27 @@ httpErrorResponse=function(file, line, calling_function, rifLog, status, req, re
 			l_response.error = err.message;
 		}
 		rifLog.rifLog2(file, line, calling_function, g_response.message, req, err);
-		res.status(status);		
-		var output = JSON.stringify(l_response);// Convert output response to JSON 		
-		res.write(output);
-		res.end();	
+		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
+			res.status(status);		
+			var output = JSON.stringify(l_response);// Convert output response to JSON 		
+			res.write(output);
+			res.end();	
+		}
+		else {
+			rifLog.rifLog("FATAL! Unable to return error to user - httpErrorResponse() already processed", req, err);
+		}
 
 	} catch (e) {                            // Catch conversion errors
 		var n_msg="Error response processing ERROR!\n\n" + msg;				  
 		rifLog.rifLog(n_msg, req, e);
-		res.status(501);			
-		res.write(n_msg);
-		res.end();				
+		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
+			res.status(501);			
+			res.write(n_msg);
+			res.end();	
+		}
+		else {
+			rifLog.rifLog("FATAL! Unable to return error to user - httpErrorResponse() already processed", req, err);
+		}		
 		return;
 	}
 }

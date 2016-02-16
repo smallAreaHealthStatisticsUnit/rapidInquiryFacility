@@ -674,10 +674,16 @@ exports.convert = function(req, res) {
 				for (i = 0; i < response.no_files; i++) {	
 					d=d_files.d_list[i];
 					if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
-//						msg="FAIL! File [" + (i+1) + "/?]: entry not found, no file list";
-//						response.no_files=0;					// Add number of files process to response
-//						response.fields=ofields;				// Add return fields
-//						response.file_errors++;					// Increment file error count
+						if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
+							msg="FAIL! File [" + (i+1) + "/?]: entry not found, no file list" + 
+								"; httpErrorResponse.httpErrorResponse() NOT already processed";
+							response.message = msg + "\n" + response.message;
+							response.no_files=0;					// Add number of files process to response
+							response.fields=ofields;				// Add return fields
+							response.file_errors++;					// Increment file error count
+							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+								rifLog, 500, req, res, msg, undefined, response);				
+						}
 						return;							
 					}
 					else if (!d.file) {
@@ -711,12 +717,12 @@ exports.convert = function(req, res) {
 					}	
 				} // End of for loop
 				if (!ofields["my_reference"]) {
-					msg="[No my_reference] Processed: " + response.no_files + " files\n";
+					msg="[No my_reference] Processed: " + response.no_files + " files";
 				}
 				else {
-					msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files\n";
+					msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files";
 				}
-				console.error("req.busboy.on('finish') " + msg);
+//				console.error("req.busboy.on('finish') " + msg);
 				
 /*
  * Response object - no errors:
