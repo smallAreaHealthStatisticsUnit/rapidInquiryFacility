@@ -53,7 +53,7 @@ var fs = require('fs');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 20;
+var max_nRequests = 21;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all request tests');
@@ -142,7 +142,7 @@ var MakeRequest = function(){
 	
 // Multi-file test	
 	if (nRequests == 7) { 
-			var formData = {
+		var formData = {
 			my_test: "1: Defaults",
 			my_reference: nRequests,
 			attachments: [
@@ -153,6 +153,19 @@ var MakeRequest = function(){
 			expected_to_pass: "true" 
 		};
 	}
+	else if (nRequests == 21) { 
+		var formData = {
+			my_test: "1: Defaults",
+			my_reference: nRequests,
+			attachments: [
+				json_file
+			],
+			expected_to_pass: "true" 
+		};
+		for (i = 0; i < 101; i++) {	
+			formData.attachments.push(fs.createReadStream(inputFile));
+		}
+	}	
 	else {
 		var formData = {
 			my_test: "1: Defaults",
@@ -276,8 +289,14 @@ var MakeRequest = function(){
 	}	
 	else if (nRequests == 20) {
 		formData["verbose"]="true";
-		formData["zoomLevel"]=20;	
-		formData["my_test"]="10: TopoJSON conversion: invalid geoJSON - overload transport with 2G file";	
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="20: TopoJSON conversion: invalid geoJSON - overload transport with 2G file";	
+		formData["expected_to_pass"]="false"; 		
+	}
+	else if (nRequests == 21) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="21: gzip geoJSON multiple files limit";	
 		formData["expected_to_pass"]="false"; 		
 	}
 	
@@ -322,12 +341,18 @@ var postIt = function(debug) {
 	var p=r.request.post(r.options, function optionalCallback(err, httpResponse, body) {
 		tests++;
 		if (err && err.code === 'ETIMEOUT') {
-			console.error('Upload #' + nRequests + ' failed: ' + JSON.stringify(httpResponse, null, 4) + 
+			console.error('Upload failed: ' + JSON.stringify(httpResponse, null, 4) + 
 				"err.connect: " + err.connect + 
 				"\nError: ", err);
 			failed++;
-		} else if (err) {
-			console.error('Upload #' + nRequests + ' failed: ' + JSON.stringify(httpResponse, null, 4) + 
+		} 		
+		else if (err && err.code === 'ECONNRESET') {
+			console.error('Upload failed [SERVER FAILURE]: ' + 
+				"\nError: ", err);
+			failed++;
+		} 
+		else if (err) {
+			console.error('Upload failed: ' + JSON.stringify(httpResponse, null, 4) + 
 				"\nError: ", err);
 			failed++;
 		}

@@ -96,9 +96,10 @@ app.use(
 
 app.use( 				// For parsing incoming HTML form data.
 	busboy({
-		highWaterMark: (2000 * 1024 * 1024)-1,
+		highWaterMark: (4000 * 1024 * 1024),	// Buffer memory
 		limits: {
-			fileSize: (2000 * 1024 * 1024)-1 // 2G
+			fileSize: (2000 * 1024 * 1024)-1, 	// 2G-1 file size limit
+			files: 100							// Total file attachments limit	
 		},
 		defCharset: 'binary'
 	}));

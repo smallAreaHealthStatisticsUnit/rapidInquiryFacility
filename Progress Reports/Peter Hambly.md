@@ -266,12 +266,12 @@ Test harness refactor; Node.js version working
 	   your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help;
 	9. Full client logging;
 	10. Instrumentation;
+	11. Size limits (100M); 100 files - this is be BusBoy processing exception filesLimit/fieldsLimit/partsLimit; 
 	
 	Todo:
 
-	11. Documentation [in progress];
-	12. JSON injection protection [will be a regexp];
-	13. Size limits (100M) - this is be BusBoy processing exception filesLimit/fieldsLimit/partsLimit [needs testing]; 
+	12. Documentation [in progress];
+	13. JSON injection protection [will be a regexp];
 	14. Connection timeout (connect/post connect) limits - as previous;
 	15. Integration to build, severeal options:
 		i.   Replace topojson_convert.js;

@@ -47,12 +47,13 @@
 // Globals
 var cf={};	// NOT exported
 
-exports.commonFilesInit=function(rifLog, req, res, response, ofields) {
+exports.commonFilesInit=function(rifLog, req, res, response, ofields, httpErrorResponse) {
 	cf.rifLog=rifLog;
 	cf.req=req;
 	cf.res=res;
 	cf.response=response;
 	cf.ofields=ofields;
+	cf.httpErrorResponse=httpErrorResponse;
 }
 
 /*
@@ -62,7 +63,6 @@ exports.commonFilesInit=function(rifLog, req, res, response, ofields) {
  */	
 exports.commonPartsLimit=function() {
 	var msg="FAIL! Parts limit reached";
-	cf.response.no_files=d.no_files;			// Add number of files process to response
 	response.fields=cf.ofields;				// Add return fields	
 	cf.httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('partsLimit')", 
 		cf.rifLog, 500, cf.req, cf.res, msg, undefined, cf.response);
@@ -76,9 +76,8 @@ exports.commonPartsLimit=function() {
  */			
 exports.commonFieldsLimit=function() {
 	var msg="FAIL! Fields limit reached";
-	cf.response.no_files=d.no_files;			// Add number of files process to response
 	response.fields=cf.ofields;				// Add return fields	
-	httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('fieldsLimit')", 
+	cf.httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('fieldsLimit')", 
 		cf.rifLog, 500, cf.req, cf.res, msg, undefined, cf.response);
 	return;				
 }
@@ -90,9 +89,8 @@ exports.commonFieldsLimit=function() {
  */	
 exports.commonFilesLimit=function() {
 	var msg="FAIL! Files limit reached";
-	cf.response.no_files=d.no_files;			// Add number of files process to response
 	cf.response.fields=cf.ofields;				// Add return fields	
-	httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('filesLimit')", 
+	cf.httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('filesLimit')", 
 		cf.rifLog, 500, cf.req, cf.res, msg, undefined, cf.response);
 	return;				
 }

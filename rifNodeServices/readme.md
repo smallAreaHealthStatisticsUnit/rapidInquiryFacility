@@ -93,6 +93,7 @@ Response object - no errors:
                     
 * no_files: 		Number of files    
 * field_errors: 	Number of errors in processing fields
+* file_errors: 		Number of errors in processing fields
 * file_list: 		Array file objects:
 
   * file_name: File name
@@ -111,6 +112,7 @@ Response object - errors:
 * error: 			Error message (if present)
 * no_files: 		Numeric, number of files
 * field_errors: 	Number of errors in processing fields
+* file_errors: 		Number of errors in processing fields
 * file_list: 		Array file objects:
 
   * file_name: File name
@@ -124,6 +126,7 @@ E.g. Posting a ZIP file:
 	"error": "Unexpected token P",
 	"no_files": 1,
 	"field_errors": 0,
+	"file_errors": 0,
 	"file_list": [{
 		"file_name": "test_6_sahsu_4_level4_0_0_0.zip"
 	}],

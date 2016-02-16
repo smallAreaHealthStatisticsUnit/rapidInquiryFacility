@@ -67,7 +67,6 @@ var util = require('util'),
     stderrHook = require('../lib/stderrHook'),
     httpErrorResponse = require('../lib/httpErrorResponse'),
     rifLog = require('../lib/rifLog'),
-    busboyCommon = require('../lib/busboyCommon'),
     os = require('os'),
     fs = require('fs'),
 
@@ -272,7 +271,8 @@ exports.convert = function(req, res) {
  */ 
 		var response = {                 // Set output response    
 			no_files: 0,    
-			field_errors: 0,
+			field_errors: 0, 
+			file_errors: 0,
 			file_list: [],
 			message: '',               
 			fields: [] 
@@ -304,24 +304,37 @@ exports.convert = function(req, res) {
  * Parameters:	None
  * Description:	Processor if the files limit has been reached  
  */				  
-			req.busboy.on('filesLimit', busboyCommon.commonFilesLimit);
-			
-/*
- * Function: 	req.busboy.on('partsLimit') callback function
- * Parameters:	None
- * Description:	Processor if the parts limit has been reached 
- */				  
-			req.busboy.on('partsLimit', busboyCommon.commonPartsLimit); 
+			req.busboy.on('filesLimit', function() {
+				var msg="FAIL! Files limit reached: " + response.no_files;
+				response.message=msg + "\n" + response.message;
+				response.file_errors++;				// Increment file error count	
+				rifLog.rifLog2(__file, __line, "req.busboy.on('filesLimit')", msg, req);								
+			});
 			
 /*
  * Function: 	req.busboy.on('fieldsLimit') callback function
  * Parameters:	None
  * Description:	Processor if the fields limit has been reached  
  */				  
-			req.busboy.on('fieldsLimit', busboyCommon.commonFieldsLimit); 
-
-			// Export variables for busboyCommon.js
-			busboyCommon.commonFilesInit(rifLog, req, res, response, ofields);
+			req.busboy.on('fieldsLimit', function() {	
+				var msg="FAIL! fields limit reached: " + (response.fields.length+1);
+				response.fields=ofields;				// Add return fields	
+				response.message=msg + "\n" + response.message;
+				response.field_errors++;				// Increment field error count			
+				rifLog.rifLog2(__file, __line, "req.busboy.on('fieldsLimit')", msg, req);	
+			});
+			
+/*
+ * Function: 	req.busboy.on('partsLimit') callback function
+ * Parameters:	None
+ * Description:	Processor if the parts limit has been reached  
+ */				  
+			req.busboy.on('partsLimit', function() {
+				var msg="FAIL! Parts limit reached.";
+				response.message=msg + "\n" + response.message;
+				response.file_errors++;				// Increment file error count			
+				rifLog.rifLog2(__file, __line, "req.busboy.on('partsLimit')", msg, req);	
+			});
 				
 /*
  * Function: 	req.busboy.on('file') callback function
@@ -374,16 +387,16 @@ exports.convert = function(req, res) {
  * Function: 	req.busboy.on('file').stream.on:('data') callback function
  * Parameters:	None
  * Description: Data processor. Push data onto d.file.chunks[] array. Binary safe.
+ *				Emit message every 10M
  */
 				stream.on('data', function(data) {
 					d.file.chunks.push(data); 
 					d.file.partial_chunk_size+=data.length;
 					d.file.chunks_length+=data.length;
 					if (d.file.partial_chunk_size > 10*1024*1024) { // 10 Mb
-						rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('data')", 
-							"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 							d.file.file_encoding + 
-							'; read [' + d.file.chunks.length + '] ' + d.file.partial_chunk_size + ', ' + d.file.chunks_length + ' total');
+							'; read [' + d.file.chunks.length + '] ' + d.file.partial_chunk_size + ', ' + d.file.chunks_length + ' total';
 						d.file.partial_chunk_size=0;
 					}
 				});
@@ -397,11 +410,13 @@ exports.convert = function(req, res) {
 					var msg="FAIL! Strream error; file [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 							d.file.file_encoding + 
 							'; read [' + d.file.chunks.length + '] ' + d.file.partial_chunk_size + ', ' + d.file.chunks_length + ' total';
-					response.no_files=d.no_files;			// Add number of files process to response
+
+					response.message=msg + "\n" + response.message;			
+					response.no_files=d.no_files;			// Add number of files process to response				
 					response.fields=ofields;				// Add return fields	
-					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file').stream.on:('error')", 
-						rifLog, 500, req, res, msg, undefined, response);
-					return;				
+					response.file_errors++;					// Increment file error count	
+					rifLog.rifLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);							
+					d_files.d_list[d.no_files-1] = d;		
 				});				
 
 /*
@@ -411,6 +426,7 @@ exports.convert = function(req, res) {
  */
 				stream.on('end', function() {
 					
+					var msg;
 					var buf=Buffer.concat(d.file.chunks); // Safe binary concat
 					d.file.file_size=buf.length;
 					var end = new Date().getTime();
@@ -419,11 +435,14 @@ exports.convert = function(req, res) {
 					if (stream.truncated) { // Test for truncation
 						msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 							d.file.extension + "; file_encoding: " + d.file.file_encoding + 
-							" is truncated at " + d.file.file_size + " bytes";
+							" is truncated at " + d.file.file_size + " bytes"; 
+						response.message=msg + "\n" + response.message;
 						response.no_files=d.no_files;			// Add number of files process to response
-						response.fields=ofields;				// Add return fields	
-						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-							rifLog, 500, req, res, msg, undefined, response);								
+						response.fields=ofields;				// Add return fields		
+						response.file_errors++;					// Increment file error count
+						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file'),stream.on('end')", 
+							rifLog, 500, req, res, msg, undefined, response);						
+						return;
 					}
 					
 					d.file.file_data="";
@@ -435,19 +454,20 @@ exports.convert = function(req, res) {
 						catch (e) {
 							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 								d.file.extension + "; file_encoding: " + d.file.file_encoding;
+							response.message=msg + "\n" + response.message;
 							response.no_files=d.no_files;			// Add number of files process to response
-							response.fields=ofields;				// Add return fields	
-							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-								rifLog, 500, req, res, msg, e, response);
+							response.fields=ofields;				// Add return fields		
+							response.file_errors++;					// Increment file error count	
+							rifLog.rifLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
+							d_files.d_list[d.no_files-1] = d;							
 							return;
 						}	
 						end = new Date().getTime();		
 						d.file.uncompress_time=(end - lstart)/1000; // in S		
 						d.file.uncompress_size=d.file.file_data.length;								
-						rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-							"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 							d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
-							"; from buf: " + buf.length, req); 
+							"; from buf: " + buf.length, req; 
 					}	
 					else if (d.file.file_encoding === "zlib") {	
 						try {
@@ -456,34 +476,36 @@ exports.convert = function(req, res) {
 						catch (e) {
 							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+							response.message=msg + "\n" + response.message;
 							response.no_files=d.no_files;			// Add number of files process to response
 							response.fields=ofields;				// Add return fields	
-							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-								rifLog, 500, req, res, msg, e, response);
+							response.file_errors++;					// Increment file error count	
+							rifLog.rifLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
+							d_files.d_list[d.no_files-1] = d;				
 							return;											
 						}
 						end = new Date().getTime();	
 						d.file.uncompress_time=(end - lstart)/1000; // in S		
 						d.file.uncompress_size=d.file.file_data.length;		
-						rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-							"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 							d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
-							"; from buf: " + buf.length, req); 
+							"; from buf: " + buf.length, req; 
 					}
 					else if (d.file.file_encoding === "zip") {
 						msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-								d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
+							d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
+						response.message=msg + "\n" + response.message;
 						response.no_files=d.no_files;			// Add number of files process to response
 						response.fields=ofields;				// Add return fields	
-						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file').stream.on:('end')", 
-							rifLog, 500, req, res, msg, undefined, response);
+						response.file_errors++;					// Increment file error count	
+						rifLog.rifLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
+						d_files.d_list[d.no_files-1] = d;				
 						return;							
 					}
 					else {
 						d.file.file_data=buf;
-						rifLog.rifLog2(__file, __line, "req.busboy.on('file').stream.on:('end')", 			
-							"File [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-							"; uncompressed data: " + d.file.file_data.length, req); 												
+						response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+							"; uncompressed data: " + d.file.file_data.length, req; 												
 					}
 					
 					d_files.d_list[d.no_files-1] = d;										
@@ -631,7 +653,7 @@ exports.convert = function(req, res) {
 					catch (e) {
 						response.field_errors++;
 						msg="FIELD PROCESSING ERROR! field [" + fieldname + "]: " + val + "; invalid array exception";
-						response.message = response.message + "\n" + msg;
+						response.message = msg + "\n" + response.message;
 						rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);							
 					}
 				}
@@ -654,16 +676,19 @@ exports.convert = function(req, res) {
 					if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
 //						msg="FAIL! File [" + (i+1) + "/?]: entry not found, no file list";
 //						response.no_files=0;					// Add number of files process to response
-//						response.fields=ofields;				// Add return fields	
-//						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", rifLog, 500, req, res, msg, undefined, response);
+//						response.fields=ofields;				// Add return fields
+//						response.file_errors++;					// Increment file error count
 						return;							
 					}
 					else if (!d.file) {
-						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: object not found in list";
+						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: object not found in list" + 
+							"\n" + response.message;
+						response.message = msg + "\n" + response.message;
 						response.no_files=d.no_files;			// Add number of files process to response
 						response.fields=ofields;				// Add return fields	
+						response.file_errors++;					// Increment file error count	
 						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-							rifLog, 500, req, res, msg, undefined, response);
+							rifLog, 500, req, res, msg, undefined, response);							
 						return;			
 					}
 					else if (d.file.file_data.length > 0) {
@@ -674,21 +699,25 @@ exports.convert = function(req, res) {
 					}	
 					else {
 						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-								d.file.extension + "; file size is zero";
-		
+							d.file.extension + "; file size is zero" + 
+							"\n" + response.message;
+						response.message = msg + "\n" + response.message;
 						response.no_files=d.no_files;			// Add number of files process to response
-						response.fields=ofields;				// Add return fields							
+						response.fields=ofields;				// Add return fields
+						response.file_errors++;					// Increment file error count	
 						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-							rifLog, 500, req, res, msg, undefined, response);
+							rifLog, 500, req, res, msg, undefined, response);							
 						return;
 					}	
-				}
+				} // End of for loop
 				if (!ofields["my_reference"]) {
-					msg="[No my_reference] Processed: " + response.no_files + " files; debug message:\n" + response.message
+					msg="[No my_reference] Processed: " + response.no_files + " files\n";
 				}
 				else {
-					msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files; debug message:\n" + response.message
+					msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files\n";
 				}
+				console.error("req.busboy.on('finish') " + msg);
+				
 /*
  * Response object - no errors:
  *                    
@@ -707,7 +736,7 @@ exports.convert = function(req, res) {
  * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing  
  */ 
 				response.fields=ofields;				// Add return fields	
-				if (response.field_errors == 0) { // OK
+				if (response.field_errors == 0 && response.file_errors == 0) { // OK
 					rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", msg, req);					
 					var output = JSON.stringify(response);// Convert output response to JSON 
 	// Need to test res was not finished by an expection to avoid "write after end" errors			
@@ -717,11 +746,32 @@ exports.convert = function(req, res) {
 //					console.error(util.inspect(req));
 //					console.error(JSON.stringify(req.headers, null, 4));
 				}
-				else {
-					msg = "FAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
+				else if (response.field_errors > 0 && response.file_errors > 0) {
+					msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
+						" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+					response.message = msg + "\n" + response.message;						
 					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 						rifLog, 500, req, res, msg, undefined, response);				  
-				}		
+				}				
+				else if (response.field_errors > 0) {
+					msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
+					response.message = msg + "\n" + response.message;
+					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+						rifLog, 500, req, res, msg, undefined, response);				  
+				}	
+				else if (response.file_errors > 0) {
+					msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
+					response.message = msg + "\n" + response.message;					
+					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+						rifLog, 500, req, res, msg, undefined, response);				  
+				}	
+				else {
+					msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
+						" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+					response.message = msg + "\n" + response.message;						
+					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+						rifLog, 500, req, res, msg, undefined, response);
+				}
 
 			});
 

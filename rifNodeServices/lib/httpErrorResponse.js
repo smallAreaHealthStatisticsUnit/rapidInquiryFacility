@@ -71,6 +71,7 @@ httpErrorResponse=function(file, line, calling_function, rifLog, status, req, re
 		error: '',
 		no_files: 0,    
 		field_errors: 0,
+		file_errors: 0,
 		file_list: [],
 		message: '',               
 		fields: [] 
@@ -79,6 +80,7 @@ httpErrorResponse=function(file, line, calling_function, rifLog, status, req, re
 		if (g_response) {
 			l_response.no_files = g_response.no_files;
 			l_response.field_errors = g_response.field_errors;
+			l_response.file_errors = g_response.file_errors;
 			for (i = 0; i < l_response.no_files; i++) {	
 				if (g_response.file_list[i]) { // Handle incomplete file list
 					if (g_response.file_list[i].file_name) {
@@ -104,7 +106,7 @@ httpErrorResponse=function(file, line, calling_function, rifLog, status, req, re
 		if (err) { // Add error to message
 			l_response.error = err.message;
 		}
-		rifLog.rifLog2(file, line, calling_function, msg, req, err);
+		rifLog.rifLog2(file, line, calling_function, g_response.message, req, err);
 		res.status(status);		
 		var output = JSON.stringify(l_response);// Convert output response to JSON 		
 		res.write(output);
