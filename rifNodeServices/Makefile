@@ -231,7 +231,7 @@ $(MODULE_JSON):
 	
 $(MODULES):
 	-$(MKDIR) $@
-	-$(NPM) install --save $@
+	-$(NPM) install --save $(patsubst node_modules/%,%,$@)
 	
 #- clean: clean Node modules; avoid Windows path length stupidities with rimraf	
 clean:
