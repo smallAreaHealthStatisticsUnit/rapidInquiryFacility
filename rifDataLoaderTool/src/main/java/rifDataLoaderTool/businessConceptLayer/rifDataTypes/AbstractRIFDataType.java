@@ -1,12 +1,18 @@
 package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
-import java.util.ArrayList;
 
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
+
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifServices.system.RIFServiceMessages;
+import rifServices.util.FieldValidationUtility;
+
+import java.util.ArrayList;
 
 /**
  * The base class for classes which implement the {@link rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface} 
@@ -148,13 +154,15 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 	private String description;
 	
 	private RIFFieldValidationPolicy fieldValidationPolicy;
-	private ArrayList<String> validationExpressions;
+	private ArrayList<ValidationRule> validationRules;
 	private String validationFunctionName;
+	private String validationSQLFragment;
 	private String validationFunctionParameterPhrase;
 
 	
 	private RIFFieldCleaningPolicy fieldCleaningPolicy;	
 	private String cleaningFunctionName;
+	private String cleaningSQLFragment;
 	private String cleaningFunctionParameterPhrase;
 	private ArrayList<CleaningRule> cleaningRules;
 	
@@ -171,10 +179,13 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 		this.name = name;
 		this.description = description;
 		
+		cleaningSQLFragment = "";
+		validationSQLFragment = "";
+		
 		fieldValidationPolicy = RIFFieldValidationPolicy.NO_VALIDATION;
-		validationExpressions = new ArrayList<String>();
+		validationRules = new ArrayList<ValidationRule>();
+		
 		fieldCleaningPolicy = RIFFieldCleaningPolicy.NO_CLEANING;
-
 		cleaningRules = new ArrayList<CleaningRule>();
 	}
 
@@ -185,15 +196,17 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 		cloneType.setName(getName());
 
 		cloneType.setFieldValidationPolicy(getFieldValidationPolicy());
-		ArrayList<String> validationExpressions
-			= getValidationExpressions();
-		ArrayList<String> cloneValidationExpressions = new ArrayList<String>();
-		cloneValidationExpressions.addAll(validationExpressions);
+		ArrayList<ValidationRule> cloneValidationRules
+			= new ArrayList<ValidationRule>();
+		for (ValidationRule validationRule : validationRules) {
+			ValidationRule cloneValidationRule
+				= ValidationRule.createCopy(validationRule);
+			cloneValidationRules.add(cloneValidationRule);
+		}
+		cloneType.setValidationRules(cloneValidationRules);
 		cloneType.setValidationFunctionName(getValidationFunctionName());
 		
 		cloneType.setFieldCleaningPolicy(fieldCleaningPolicy);
-		cloneType.setCleaningFunctionName(getCleaningFunctionName());
-		
 		ArrayList<CleaningRule> cloneCleaningRules
 			= new ArrayList<CleaningRule>();
 		for (CleaningRule cleaningRule : cleaningRules) {
@@ -201,6 +214,9 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 				= CleaningRule.createCopy(cleaningRule);
 			cloneCleaningRules.add(cloneCleaningRule);
 		}
+		cloneType.setCleaningRules(cloneCleaningRules);
+		cloneType.setCleaningFunctionName(getCleaningFunctionName());
+			
 	}
 
 	
@@ -241,7 +257,6 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 
 		this.cleaningFunctionParameterPhrase = cleaningFunctionParameterPhrase;
 	}
-	
 
 	public String getValidationFunctionParameterPhrase() {
 		return validationFunctionParameterPhrase;
@@ -252,8 +267,7 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 
 		this.validationFunctionParameterPhrase = validationFunctionParameterPhrase;
 	}
-	
-	
+
 	public void setDescription(
 		final String description) {
 
@@ -269,32 +283,27 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 
 		this.fieldValidationPolicy = fieldValidationPolicy;
 	}
-
-	public String getMainValidationExpression() {
-		if (validationExpressions.isEmpty()) {
-			return null;
-		}
-		else {
-			return validationExpressions.get(0);
-		}
-	}
 	
-	public ArrayList<String> getValidationExpressions() {
-		return validationExpressions;
+	public ArrayList<ValidationRule> getValidationRules() {
+		return validationRules;
 	}
 
-	public void addValidationExpression(
-		final String validationExpression) {
+	public void addValidationRule(
+		final ValidationRule validationRule) {
 		
-		validationExpressions.add(validationExpression);
+		validationRules.add(validationRule);
 	}
 	
-	public void setValidationExpressions(
-		final ArrayList<String> validationExpressions) {
+	public void setValidationRules(
+		final ArrayList<ValidationRule> validationRules) {
 
-		this.validationExpressions = validationExpressions;
+		this.validationRules = validationRules;
 	}
 
+	public void clearValidationRules() {
+		validationRules.clear();
+	}
+	
 	public String getValidationFunctionName() {
 		return validationFunctionName;
 	}
@@ -337,6 +346,11 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 		this.cleaningRules = cleaningRules;
 	}
 
+	public void clearCleaningRules() {
+		
+		cleaningRules.clear();
+	}
+	
 	public ArrayList<CleaningRule> getCleaningRules() {
 
 		return cleaningRules;
@@ -351,10 +365,76 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 		return "";
 	}
 
+	public String getMainValidationValue() {
+		if (validationRules.size() == 0) {
+			return null;
+		}
+		else {
+			return validationRules.get(0).getValidValue();
+		}		
+	}
+
+	
+	public String getValidationSQLFragment() {
+		return validationSQLFragment;
+	}
+
+	public void setValidationSQLFragment(String validationSQLFragment) {
+		this.validationSQLFragment = validationSQLFragment;
+	}
+
+	public String getCleaningSQLFragment() {
+		return cleaningSQLFragment;
+	}
+
+	public void setCleaningSQLFragment(String cleaningSQLFragment) {
+		this.cleaningSQLFragment = cleaningSQLFragment;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
+	protected void checkErrors(
+		final String recordType, 
+		final ArrayList<String> errorMessages) {
+		
+		String identifierFieldName
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.identifier.label");
+		String nameFieldName
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.name.label");
+		String descriptionFieldName
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.description.label");
+				
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();		
+		if (fieldValidationUtility.isEmpty(identifier)) {		
 
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					identifierFieldName);
+			errorMessages.add(errorMessage);
+		}
+		else if (fieldValidationUtility.isEmpty(name)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					nameFieldName);
+			errorMessages.add(errorMessage);			
+		}
+		else if (fieldValidationUtility.isEmpty(description)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordType,
+					descriptionFieldName);
+			errorMessages.add(errorMessage);			
+		}
+
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

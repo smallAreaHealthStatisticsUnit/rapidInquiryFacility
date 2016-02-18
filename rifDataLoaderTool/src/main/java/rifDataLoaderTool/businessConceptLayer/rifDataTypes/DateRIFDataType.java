@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**
  * a data type for Date.  Note that unlike other data type classes, the validation expressions
  * are not written for the POSIX regular expression languages. Here the validation patterns 
@@ -92,23 +93,29 @@ public final class DateRIFDataType
 	public static DateRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.date.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.date.label");
 
 		//this is the order of date formats which are used to validate RIF dates
-		ArrayList<String> validationExpressions = new ArrayList<String>();
-		validationExpressions.add("MM/DD/YYYY");
-		
-		
+
+		ArrayList<ValidationRule> validationRules = new ArrayList<ValidationRule>();
+		ValidationRule mmddyyyyValidationRule
+			= ValidationRule.newInstance(
+				"", 
+				"", 
+				"MM/DD/YYYY", 
+				true);
+		validationRules.add(mmddyyyyValidationRule);
+
 		StringBuilder dateFormatPatternList = new StringBuilder();
-		for (int i = 0; i < validationExpressions.size(); i++) {
+		for (int i = 0; i < validationRules.size(); i++) {
 			if (i != 0) {
 				dateFormatPatternList.append(",");
 			}
-			dateFormatPatternList.append(validationExpressions.get(i));
+			dateFormatPatternList.append(validationRules.get(i).getValidValue());
 		}
 		
 		String description
-			= RIFDataLoaderMessages.getMessage(
+			= RIFDataLoaderToolMessages.getMessage(
 				"rifDataType.date.description",
 				dateFormatPatternList.toString());
 		DateRIFDataType dateRIFDataType
@@ -117,7 +124,7 @@ public final class DateRIFDataType
 				name, 
 				description);
 
-		dateRIFDataType.setValidationExpressions(validationExpressions);
+		dateRIFDataType.setValidationRules(validationRules);
 		
 		return dateRIFDataType;
 	}

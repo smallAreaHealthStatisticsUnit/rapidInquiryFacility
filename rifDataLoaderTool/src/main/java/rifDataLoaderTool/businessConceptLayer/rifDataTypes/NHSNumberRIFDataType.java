@@ -1,6 +1,7 @@
 package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
  * A data type for NHS numbers.
@@ -78,18 +79,25 @@ public final class NHSNumberRIFDataType
 			description);
 		
 		//@TODO: Find acceptable pattern
-		String validationRegularExpression
-			= "^([0-9]*)";
-		addValidationExpression(validationRegularExpression);
+		String validationRule1Name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.nhsNumber.validationRule1.name");
+		String validationRule1Description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.nhsNumber.validationRule1.description");
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		validationRule.setName(validationRule1Name);
+		validationRule.setDescription(validationRule1Description);
+		validationRule.setValidValue("^[0-9]{10}$");
+		addValidationRule(validationRule);
 		
 	}
 
 	public static NHSNumberRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.nhsNumber.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.nhsNumber.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.nhsNumber.description");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.nhsNumber.description");
 		NHSNumberRIFDataType nhsNumberRIFDataType
 			= new NHSNumberRIFDataType(
 				"rif_nhs_number",

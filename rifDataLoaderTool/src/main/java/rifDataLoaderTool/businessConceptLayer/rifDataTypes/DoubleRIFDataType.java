@@ -1,7 +1,8 @@
 package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**
  * a data type for double precision numeric data.
  *
@@ -79,16 +80,23 @@ public final class DoubleRIFDataType
 		
 		String validationRegularExpression
 			= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
-		addValidationExpression(validationRegularExpression);
+		ValidationRule validationRule
+			= ValidationRule.newInstance(
+				"", 
+				"", 
+				validationRegularExpression, 
+				true);
+
+		addValidationRule(validationRule);
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);		
 	}
 
 	public static DoubleRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.double.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.double.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.double.description");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.double.description");
 		DoubleRIFDataType doubleRIFDataType
 			= new DoubleRIFDataType(
 				"rif_double",

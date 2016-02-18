@@ -5,7 +5,7 @@ import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**
  * A data type for Sex.  Note that different data sources may have different codings for sex.
@@ -87,107 +87,107 @@ public final class SexRIFDataType
 			name, 
 			description);
 		
-		addValidationExpression("^[0|1|2|3]");
 
-		String name1 
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.name1");
+
+		String cleaningName1 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name1");
 		String description1
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.description1");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description1");
 		CleaningRule cleaningRule1
 			= CleaningRule.newInstance(
-				name1, 
+				cleaningName1, 
 				description1, 
 				"^female|FEMALE$", 
 				"1", 
 				true);
 		addCleaningRule(cleaningRule1);
 			
-		String name2 
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.name2");
-		String description2
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.description2");
+		String cleaningName2 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name2");
+		String cleaningDescription2
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description2");
 		CleaningRule cleaningRule2
 			= CleaningRule.newInstance(
-				name2, 
-				description2, 
+				cleaningName2, 
+				cleaningDescription2, 
 				"^male|MALE$", 
 				"0", 
 				true);
 		addCleaningRule(cleaningRule2);
 
-		String name3 
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.name3");
-		String description3
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.description3");		
+		String cleaningName3 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name3");
+		String cleaningDescription3
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description3");		
 		CleaningRule cleaningRule3
 			= CleaningRule.newInstance(
-				name3, 
-				description3, 
+				cleaningName3, 
+				cleaningDescription3, 
 				"^hermaphrodite|HERMAPHRODITE$", 
 				"2", 
 				true);
 		addCleaningRule(cleaningRule3);
 
-		String name4 
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.name4");
-		String description4
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.description4");		
+		String cleaningName4 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name4");
+		String cleaningDescription4
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description4");		
 		CleaningRule cleaningRule4
 			= CleaningRule.newInstance(
-				name4, 
-				description4, 
+				cleaningName4, 
+				cleaningDescription4, 
 				"^unknown|UNKNOWN$", 
 				"3", 
 				true);
 		addCleaningRule(cleaningRule4);
 				
-		String name5 
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.name5");
-		String description5
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.description5");		
+		String cleaningName5 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name5");
+		String cleaningDescription5
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description5");		
 		CleaningRule cleaningRule5
 			= CleaningRule.newInstance(
-				name5, 
-				description5, 
+				cleaningName5, 
+				cleaningDescription5, 
 				"^[fF]$", 
 				"1", 
 				true);
 		addCleaningRule(cleaningRule5);
 				
-		String name6 
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.name6");
-		String description6
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.description6");		
+		String cleaningName6 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name6");
+		String cleaningDescription6
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description6");		
 		CleaningRule cleaningRule6
 			= CleaningRule.newInstance(
-				name5, 
-				description5, 
+				cleaningName6, 
+				cleaningDescription6, 
 				"^[mM]$", 
 				"0", 
 				true);
 		addCleaningRule(cleaningRule6);
 		
-		String name7 
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.name7");
-		String description7
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.description7");		
+		String cleaningName7 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name7");
+		String cleaningDescription7
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description7");		
 		CleaningRule cleaningRule7
 			= CleaningRule.newInstance(
-				name7, 
-				description7, 
+				cleaningName7, 
+				cleaningDescription7, 
 				"^[hH]$", 
 				"2", 
 				true);
 		addCleaningRule(cleaningRule7);
 
-		String name8 
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.name8");
-		String description8
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.description8");		
+		String cleaningName8 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name8");
+		String cleaningDescription8
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description8");		
 		CleaningRule cleaningRule8
 			= CleaningRule.newInstance(
-				name8, 
-				description8, 
+				cleaningName8, 
+				cleaningDescription8, 
 				"^[uU]$", 
 				"3", 
 				true);
@@ -195,16 +195,28 @@ public final class SexRIFDataType
 		
 		
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		
 		setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_RULES);		
 
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		
+		String validatingName1 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.validating.name1");
+		String validatingDescription8
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.validating.description1");	
+		validationRule.setName(validatingName1);
+		validationRule.setDescription(validatingDescription8);
+		validationRule.setValidValue("[0|1|2|3]");
+		addValidationRule(validationRule);
 	}
 
 	public static SexRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.sex.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.sex.description");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.description");
 		
 		/**
 		 * 0 = male

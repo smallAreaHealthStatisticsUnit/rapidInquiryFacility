@@ -2,7 +2,8 @@ package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**
  * a data type for Integers.
  *
@@ -78,8 +79,9 @@ public final class IntegerRIFDataType
 			name, 
 			description);
 		
-		String validationRegularExpression = "^(\\d+)";
-		addValidationExpression(validationRegularExpression);
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		validationRule.setValidValue("^(\\d+)");
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
 		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
 	}
@@ -87,9 +89,9 @@ public final class IntegerRIFDataType
 	public static IntegerRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.integer.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.integer.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.integer.description");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.integer.description");
 		IntegerRIFDataType integerRIFDataType
 			= new IntegerRIFDataType(
 				"rif_integer",
