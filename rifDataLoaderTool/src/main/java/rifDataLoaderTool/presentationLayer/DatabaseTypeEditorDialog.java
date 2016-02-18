@@ -1,18 +1,28 @@
 package rifDataLoaderTool.presentationLayer;
 
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.rifDataTypes.CustomRIFDataType;
+
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
 import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
-
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
+
 
 /**
  *
@@ -65,14 +75,19 @@ import java.awt.event.ActionEvent;
  */
 
 public class DatabaseTypeEditorDialog 
-	implements ActionListener {
+	implements ActionListener,
+	ListSelectionListener {
 
 	
 	public static void main(String[] arguments) {
 		UserInterfaceFactory userInterfaceFactory
 			= new UserInterfaceFactory();
+		RIFDataTypeFactory rifDataTypeFactory
+			= RIFDataTypeFactory.newInstance();
 		DatabaseTypeEditorDialog dialog
-			= new DatabaseTypeEditorDialog(userInterfaceFactory);
+			= new DatabaseTypeEditorDialog(
+				userInterfaceFactory,
+				rifDataTypeFactory);
 		dialog.show();
 	}
 	
@@ -84,21 +99,27 @@ public class DatabaseTypeEditorDialog
 	// Section Properties
 	// ==========================================
 	private UserInterfaceFactory userInterfaceFactory;	
+	private RIFDataTypeFactory rifDataTypeFactory;
 	private JDialog dialog;	
 	
 	private OrderedListPanel currentlySupportedDataTypesPanel;
 	private ListEditingButtonPanel dataTypeListEditingPanel;
+	private DataTypeEditingPanel dataTypeEditingPanel;
 	
 	private OKCloseButtonPanel okCloseButtonPanel;
+	
+	private JLabel readOnlyLabel;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public DatabaseTypeEditorDialog(
-		final UserInterfaceFactory userInterfaceFactory) {
+		final UserInterfaceFactory userInterfaceFactory,
+		final RIFDataTypeFactory rifDataTypeFactory) {
 		
-		this.userInterfaceFactory = userInterfaceFactory;		
+		this.userInterfaceFactory = userInterfaceFactory;	
+		this.rifDataTypeFactory = rifDataTypeFactory;
 		buildUI();
 	}
 
@@ -125,28 +146,50 @@ public class DatabaseTypeEditorDialog
 		
 		panelGC.fill = GridBagConstraints.BOTH;
 		panelGC.weighty = 1;
-		panelGC.gridy++;
+		panelGC.gridy++;		
 		panel.add(createDataTypeEditingPanel(), panelGC);
 		
 		panelGC.gridy++;
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
-		panelGC.weighty = 0;		
-		panelGC.anchor = GridBagConstraints.SOUTHEAST;
-		okCloseButtonPanel = new OKCloseButtonPanel(userInterfaceFactory);
-		okCloseButtonPanel.addActionListener(this);
-		panel.add(okCloseButtonPanel.getPanel(), panelGC);
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		panelGC.weighty = 0;
+		
+		panel.add(createBottomPanel(), panelGC);
 		
 		dialog.getContentPane().add(panel);
-		dialog.setSize(400, 400);
+		dialog.setSize(800, 600);
 		
 	}
 
 	private JPanel createDataTypeEditingPanel() {
 		JPanel panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC = userInterfaceFactory.createGridBagConstraints();
+	
+		dataTypeEditingPanel
+			= new DataTypeEditingPanel(userInterfaceFactory);
+		
+		JSplitPane splitPane
+			= userInterfaceFactory.createLeftRightSplitPane(
+				createListEditingPanel(), 
+				dataTypeEditingPanel.getPanel());
 
-
+		panelGC.fill = GridBagConstraints.BOTH;
+		panelGC.weightx = 1;
+		panelGC.weighty = 1;
+		panel.add(splitPane, panelGC);
+		splitPane.setBorder(LineBorder.createGrayLineBorder());
+		
+		return panel;
+	}
+	
+	
+	private JPanel createListEditingPanel() {
+		JPanel panel = userInterfaceFactory.createPanel();
+		GridBagConstraints panelGC 
+			= userInterfaceFactory.createGridBagConstraints();
+		panelGC.fill = GridBagConstraints.BOTH;
+		panelGC.weightx = 1;		
+		panelGC.weighty = 1;
 		
 		String listTitle
 			= RIFDataLoaderToolMessages.getMessage("databaseTypeEditorDialog.currentlySupportedTypes.label");
@@ -156,31 +199,47 @@ public class DatabaseTypeEditorDialog
 				listTitle,
 				listToolTipText,
 				userInterfaceFactory,
-				false);
-
+				false);	
+	
+		ArrayList<RIFDataTypeInterface> registeredDataTypes
+			= rifDataTypeFactory.getRegisteredDataTypes();
+		for (RIFDataTypeInterface registeredDataType : registeredDataTypes) {
+			currentlySupportedDataTypesPanel.addListItem(registeredDataType);			
+		}
 		
-		JSplitPane splitPane
-			= userInterfaceFactory.createLeftRightSplitPane(
-				currentlySupportedDataTypesPanel.getPanel(), 
-				createDataTypePropertiesEditingPanel());
-
-		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weightx = 1;
-		panelGC.weighty = 1;
-		panel.add(splitPane, panelGC);
-				
+		currentlySupportedDataTypesPanel.addListSelectionListener(this);
+		panel.add(currentlySupportedDataTypesPanel.getPanel(), panelGC);
+		
+		panelGC.gridy++;
+		panelGC.fill = GridBagConstraints.NONE;
+		panelGC.weighty = 0;		
+		dataTypeListEditingPanel
+			= new ListEditingButtonPanel(userInterfaceFactory);
+		dataTypeListEditingPanel.includeAddButton("");
+		dataTypeListEditingPanel.includeCopyButton("");
+		dataTypeListEditingPanel.includeEditButton("");
+		dataTypeListEditingPanel.includeDeleteButton("");
+		dataTypeListEditingPanel.addActionListener(this);
+		panel.add(
+			dataTypeListEditingPanel.getPanel(), 
+			panelGC);
+		
 		return panel;
 	}
 	
-	private JPanel createDataTypePropertiesEditingPanel() {
-		JPanel panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC 
-			= userInterfaceFactory.createGridBagConstraints();
+	private JPanel createBottomPanel() {
+		JPanel panel = userInterfaceFactory.createBorderLayoutPanel();
 		
-		
+		readOnlyLabel = userInterfaceFactory.createLabel("");
+		panel.add(readOnlyLabel, BorderLayout.WEST);
+
+		okCloseButtonPanel = new OKCloseButtonPanel(userInterfaceFactory);
+		okCloseButtonPanel.addActionListener(this);
+
+		panel.add(okCloseButtonPanel.getPanel(), BorderLayout.EAST);
+
 		return panel;
 	}
-	
 	
 	// ==========================================
 	// Section Accessors and Mutators
@@ -190,14 +249,47 @@ public class DatabaseTypeEditorDialog
 		dialog.setVisible(true);
 	}
 	
-	private void ok() {
+	private void addSelectedDataType() {
+		System.out.println("add selected data type 1");
+		CustomRIFDataType customRIFDataType
+			= CustomRIFDataType.newInstance(
+				"custom-data-type-1", 
+				"custom data type 1", 
+				"");
+		
+		
+		currentlySupportedDataTypesPanel.addListItem(customRIFDataType);		
+		currentlySupportedDataTypesPanel.updateUI();
+		currentlySupportedDataTypesPanel.setSelectedItem(customRIFDataType);		
+	}
 
+	private void editSelectedDataType() {
+		
+		
+	}
+	
+	private void copySelectedDataType() {
+		
+	}
+	
+	private void deleteSelectedDataType() {
+		
+	}
+	
+	private void updateListButtonEditingStates() {
+		
+		
+	}
+	
+	private void ok() {
 		
 		dialog.setVisible(false);		
+		System.exit(0);
 	}
 	
 	private void close() {
 		dialog.setVisible(false);
+		System.exit(0);
 	}
 	
 	
@@ -213,8 +305,19 @@ public class DatabaseTypeEditorDialog
 	public void actionPerformed(final ActionEvent event) {
 		Object button = event.getSource();
 		
-
-		if (okCloseButtonPanel.isOKButton(button)) {
+		if (dataTypeListEditingPanel.isAddButton(button)) {
+			addSelectedDataType();			
+		}
+		else if (dataTypeListEditingPanel.isEditButton(button)) {
+			editSelectedDataType();			
+		}
+		else if (dataTypeListEditingPanel.isCopyButton(button)) {
+			copySelectedDataType();
+		}
+		else if (dataTypeListEditingPanel.isDeleteButton(button)) {
+			deleteSelectedDataType();
+		}		
+		else if (okCloseButtonPanel.isOKButton(button)) {
 			ok();
 		}
 		else if (okCloseButtonPanel.isCloseButton(button)) {
@@ -222,6 +325,26 @@ public class DatabaseTypeEditorDialog
 		}
 	}
 	
+	//Interface: List Selection Listener
+	public void valueChanged(final ListSelectionEvent event) {
+		
+		AbstractRIFDataType selectedRIFDataType
+			= (AbstractRIFDataType) currentlySupportedDataTypesPanel.getSelectedItem();
+		if (selectedRIFDataType == null) {
+			return;
+		}
+		dataTypeEditingPanel.setData(selectedRIFDataType);
+		
+		if (selectedRIFDataType instanceof CustomRIFDataType) {
+			readOnlyLabel.setText("");			
+		}
+		else {
+			String readOnlyLabelText
+				= RIFDataLoaderToolMessages.getMessage("general.readOnly.label");
+			readOnlyLabel.setText(readOnlyLabelText);
+		}
+			
+	}
 	
 	// ==========================================
 	// Section Override
