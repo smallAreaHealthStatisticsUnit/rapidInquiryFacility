@@ -45,8 +45,7 @@ public interface RIFDataTypeInterface extends DisplayableListItemInterface {
 	public String getDescription();
 	
 	public RIFFieldValidationPolicy getFieldValidationPolicy();
-	public String getMainValidationExpression();
-	public ArrayList<String> getValidationExpressions();
+	public ArrayList<ValidationRule> getValidationRules();
 	public String getValidationFunctionName();
 	public String getValidationFunctionParameterValues();	
 	public RIFFieldCleaningPolicy getFieldCleaningPolicy();
@@ -55,5 +54,6 @@ public interface RIFDataTypeInterface extends DisplayableListItemInterface {
 	public String getCleaningFunctionParameterValues();
 	public RIFDataTypeInterface createCopy();
 	public String getCleaningFunctionName();
+	public String getMainValidationValue();
 	
 }
