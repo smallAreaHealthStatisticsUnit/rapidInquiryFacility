@@ -243,14 +243,14 @@ public class PostgreSQLDataTypeValidationUtility {
 			queryFormatter.addQueryPhrase(baseIndentationLevel, "CASE");
 			queryFormatter.padAndFinishLine();
 
-			ArrayList<String> validationExpressions 
-				= rifDataType.getValidationExpressions();
-			for (String validationExpression : validationExpressions) {
+			ArrayList<ValidationRule> validationRules 
+				= rifDataType.getValidationRules();
+			for (ValidationRule validationRule : validationRules) {
 				queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
 				queryFormatter.addQueryPhrase(loadFieldName);
 				queryFormatter.addQueryPhrase(" ~ ");
 				queryFormatter.addQueryPhrase("'");
-				queryFormatter.addQueryPhrase(validationExpression);
+				queryFormatter.addQueryPhrase(validationRule.getValidValue());
 				queryFormatter.addQueryPhrase("'");
 				queryFormatter.addQueryPhrase(" THEN ");
 				queryFormatter.addQueryPhrase(loadFieldName);
@@ -303,10 +303,10 @@ public class PostgreSQLDataTypeValidationUtility {
 				//in the case of dates, we call a validation function, but
 				//we also make use of the validation expressions to obtain
 				//the date format that should be used
-				ArrayList<String> validationRules
-					= rifDataType.getValidationExpressions();
+				ArrayList<ValidationRule> validationRules
+					= rifDataType.getValidationRules();
 				queryFormatter.addQueryPhrase(",'");
-				queryFormatter.addQueryPhrase(validationRules.get(0));
+				queryFormatter.addQueryPhrase(validationRules.get(0).getValidValue());
 				queryFormatter.addQueryPhrase("'");
 			}
 			queryFormatter.addQueryPhrase(") THEN ");
