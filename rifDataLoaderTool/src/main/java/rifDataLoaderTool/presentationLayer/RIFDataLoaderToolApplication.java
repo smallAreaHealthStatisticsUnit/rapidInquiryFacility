@@ -1,7 +1,8 @@
 package rifDataLoaderTool.presentationLayer;
 
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.dataStorageLayer.SampleRIFDatabaseCreationManager;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
@@ -101,7 +102,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 			= new UserInterfaceFactory();
 		
 		String title
-			= RIFDataLoaderMessages.getMessage("rifDataLoaderToolApplication.title");
+			= RIFDataLoaderToolMessages.getMessage("rifDataLoaderToolApplication.title");
 		frame = userInterfaceFactory.createFrame(title);
 		JPanel panel = createMainPanel();
 		frame.getContentPane().add(panel);
@@ -116,7 +117,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
 		String instructionsText
-			= RIFDataLoaderMessages.getMessage("rifDataLoaderToolApplication.instructions");	
+			= RIFDataLoaderToolMessages.getMessage("rifDataLoaderToolApplication.instructions");	
 		JPanel instructionsPanel
 			= userInterfaceFactory.createHTMLInstructionPanel(instructionsText);
 		panel.add(instructionsPanel, panelGC);
@@ -165,7 +166,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 				
 		panelGC.gridy++;
 		String loadShapeFilesButtonText
-			= RIFDataLoaderMessages.getMessage("rifDataLoaderToolApplication.buttons.loadShapeFiles.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataLoaderToolApplication.buttons.loadShapeFiles.label");
 		loadShapeFilesButton
 			= userInterfaceFactory.createButton(loadShapeFilesButtonText);
 		loadShapeFilesButton.addActionListener(this);
@@ -173,7 +174,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	
 		panelGC.gridy++;
 		String loadPopulationHealthDataText
-			= RIFDataLoaderMessages.getMessage("rifDataLoaderToolApplication.buttons.loadPopulationHealthData.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataLoaderToolApplication.buttons.loadPopulationHealthData.label");
 		loadPopulationHealthDataButton
 			= userInterfaceFactory.createButton(loadPopulationHealthDataText);
 		loadPopulationHealthDataButton.addActionListener(this);
@@ -233,8 +234,9 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	}
 	
 	private void editDatabaseButtonDataTypes() {
+		RIFDataTypeFactory rifDataTypeFactory = RIFDataTypeFactory.newInstance();
 		DatabaseTypeEditorDialog databaseTypeEditorDialog
-			= new DatabaseTypeEditorDialog(userInterfaceFactory);
+			= new DatabaseTypeEditorDialog(userInterfaceFactory, rifDataTypeFactory);
 		databaseTypeEditorDialog.show();
 	}
 	

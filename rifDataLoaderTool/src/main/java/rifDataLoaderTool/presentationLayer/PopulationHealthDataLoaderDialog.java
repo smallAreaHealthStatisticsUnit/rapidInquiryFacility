@@ -285,7 +285,7 @@ public class PopulationHealthDataLoaderDialog
 			= userInterfaceFactory.createBorderLayoutPanel();
 		
 		String workflowOptionsPanelTitle
-			= RIFDataLoaderMessages.getMessage(
+			= RIFDataLoaderToolMessages.getMessage(
 				"populationHealthDataLoaderDialog.workflowOptions.label");
 		JLabel workflowOptionsPanelLabel
 			= userInterfaceFactory.createLabel(workflowOptionsPanelTitle);
@@ -341,7 +341,7 @@ public class PopulationHealthDataLoaderDialog
 			= userInterfaceFactory.createBorderLayoutPanel();
 		
 		String dataSetOptionsPanelTitle
-			= RIFDataLoaderMessages.getMessage(
+			= RIFDataLoaderToolMessages.getMessage(
 				"populationHealthDataLoaderDialog.dataSetOptions.label");
 		JLabel dataSetOptionsTitleLabel
 			= userInterfaceFactory.createLabel(dataSetOptionsPanelTitle);
