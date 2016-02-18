@@ -3,7 +3,6 @@ package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.presentationLayer.*;
@@ -149,7 +148,7 @@ public class DataSetFieldPropertyEditorPanel
 		panelGC.weightx = 1;
 		
 		String dataSetFieldPanelTitle
-			= RIFDataLoaderMessages.getMessage(
+			= RIFDataLoaderToolMessages.getMessage(
 				"dataSetFieldConfigurationEditorPanel.title");
 		titleLabel = userInterfaceFactory.createHTMLLabel(1, dataSetFieldPanelTitle);
 		panel.add(titleLabel, panelGC);
