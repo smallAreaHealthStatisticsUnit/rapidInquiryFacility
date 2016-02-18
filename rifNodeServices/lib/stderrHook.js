@@ -43,8 +43,13 @@
 //
 // Author:
 //
-// Peter Hambly, SAHSU; original stdout hook: Javier Carrillo
+// Peter Hambly, SAHSU; copied from original stdout hook by: Javier Carrillo
 
+/*
+ * Function: 	httpErrorResponse() 
+ * Parameters:  Callback
+ * Description:
+ */
 var stderrHook = function (callback) {
 
   var oldWrite = process.stderr.write;

@@ -46,7 +46,7 @@
 //
 // Peter Hambly, SAHSU
 
-require('magic-globals');
+require('magic-globals'); // For file and line information. Does not work from Event queues
 var util = require('util');
  
 /*
@@ -59,6 +59,8 @@ var util = require('util');
 			d.file.topojson_stderr + "<<<", 
 			req);	
 
+   DO NOT USE WITH EVENT QUEUES - THE STACK IS MANGLED; use the second form below
+   
 Stderr log:
 			
 [C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\routes\toTopojson:269; function: _process_json();
@@ -73,22 +75,10 @@ topology: 3986 arcs, 18197 points
 rifLog = function(msg, req, err) {
 	var calling_function = arguments.callee.caller.name || '(anonymous)';
 	// Get file information from magic-globals: __stack
-	var file_trace=__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0] + 
-		":" + __stack[2].getLineNumber() + 
-		"; function: " + calling_function + "()";
-	var request_tracer="";
-	var error_tracer="";
+	var file=__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0];
+	var line=__stack[2].getLineNumber();
 	
-	// Add request tracer if present
-	if (req) {
-		request_tracer=";\n url: " + req.url + "; ip: " + req.ip + "; Content-Encoding: " + req.get('Content-Encoding');
-	}
-	// Add error tracer if present
-	if (err) {
-		error_tracer="\n\nError(" + err.name + "): " + err.message + "\nStack>>>\n" + err.stack + "<<<";
-	}
-	
-	console.error("[" + file_trace + request_tracer + "]\n" + msg + error_tracer);
+	rifLog2(file, line, calling_function, msg, req, err)
 }
 
 /*
@@ -126,18 +116,21 @@ rifLog2 = function(file, line, calling_function, msg, req, err) {
 		":" + line + 
 		"; function: " + calling_function + "()";
 	var request_tracer="";
-	var error_tracer="";
+	var error_tracer=";\nNo exceptions";
+	var theDate = new Date();
 	
 	// Add request tracer if present
 	if (req) {
-		request_tracer=";\n url: " + req.url + "; ip: " + req.ip + "; Content-Encoding: " + req.get('Content-Encoding');
+		request_tracer=";\n url: " + req.url + 
+					"; ip: " + req.ip + 
+					"; Content-Encoding: " + req.get('Content-Encoding');
 	}
 	// Add error tracer if present
 	if (err) {
 		error_tracer="\n\nError(" + err.name + "): " + err.message + "\nStack>>>\n" + err.stack + "<<<";
 	}
 	
-	console.error("[" + file_trace + request_tracer + "]\n" + msg + error_tracer);
+	console.error(theDate.toString() + "\n[" + file_trace + request_tracer + "]\n" + msg + error_tracer);
 }
 
 module.exports.rifLog = rifLog;

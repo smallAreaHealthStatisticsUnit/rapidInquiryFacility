@@ -147,6 +147,8 @@ ifeq ($(OS),Windows_NT)
 	FOREVER=$(APPDATA)\npm\forever
 	NPM=npm
 	PGPASSFILE=$(APPDATA)\postgresql\pgpass.conf
+	MKDIR=mkdir
+	RM=rm -f
 else
 #
 # Linux macos support
@@ -181,6 +183,8 @@ else
 		endif
 	endif
 	PGPASSFILE=~/.pgpass
+	MKDIR=mkdir
+	RM=rm -f
 endif
 #
 # Module list, module package.json for dependency control
@@ -188,6 +192,7 @@ endif
 MODULE_JSON=node_modules/request/package.json \
 	node_modules/form-data/package.json \
 	node_modules/magic-globals/package.json \
+	node_modules/helmet/package.json \
 	node_modules/mapshaper/package.json \
 	node_modules/adm-zip/package.json \
 	node_modules/express/package.json \
@@ -225,8 +230,8 @@ $(MODULE_JSON):
 	$(NPM) update --save $(MODULE_LIST)
 	
 $(MODULES):
-	-mkdir $@
-	-$(NPM) install --save $(MODULE_LIST)
+	-$(MKDIR) $@
+	-$(NPM) install --save $(patsubst node_modules/%,%,$@)
 	
 #- clean: clean Node modules; avoid Windows path length stupidities with rimraf	
 clean:
@@ -241,6 +246,7 @@ server-start: forever expressServer.js
 	$(FOREVER) start  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 #- server-restart: restart server
 server-restart: forever expressServer.js
+	-$(RM) forever.err
 	-$(FOREVER) stop  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 	$(FOREVER) start  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 #- server-restart-debug: restart server with debugging
@@ -260,21 +266,14 @@ server-logs: forever expressServer.js
 #- update: Update required Node.js modules using npm install --save to update dependencies in package.json 
 update:
 	-$(NPM) update --save $(MODULE_LIST)	
-	
-#- rifNode: Run the complete database test harness	(same as target test)	
-rifNode:
-	$(NODE) rifNode.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL)
-	
-#- test: Run the complete database test harness	
-test: rifNode
-#- retest: Re-run the failed database test harness tests (-F flag)
-retest:
-	$(NODE) rifNode.js -H $(PGHOST) -D $(PGDATABASE) -U $(TESTUSER) -d $(DEBUG_LEVEL) -F	
+		
+#- test: Run the test harness	
+test: forever.err modules update server-restart
+	$(NPM) test
 	
 #- help: Display makefile help, rifNode.js help
 help:
 	$(HELP)
-	$(NODE) rifNode.js --help
 	
 #
 # Eof

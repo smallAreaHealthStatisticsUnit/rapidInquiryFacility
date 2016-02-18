@@ -251,24 +251,33 @@ Test harness refactor; Node.js version working
 	3. Convert to support form fields as parameteres and return;
 	4. Return debug output from topoJSON module;
 
-#### 18th to 29th January
+#### 18th January to 5th February
 	
 	5. Compressed attachments using zlib; multi attachment support; browser verification
 	
-	Todo:
+#### 8th to ?th February
 
 	6. Error handlers, busboy limit handlers, failure cases:
 	   * GeoJSON syntax issues
 	   * Failures in file stream
 	   * General syntax errors
-	   * Size limits (100M); also test limits
 	7. Support properties, property-transform and my_id topoJSON module options;
-	8. Integration to build.
-	9. Documentation;
-	10. Full client logging;
-	11. Instrumentation;
-	12. Security as per recommendations.
+	8. Security as per recommendations - added Helmet. Helmet helps you secure 
+	   your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help;
+	9. Full client logging;
+	10. Instrumentation;
+	11. Size limits (100M); 100 files - this is be BusBoy processing exception filesLimit/fieldsLimit/partsLimit; 
+	
+	Todo:
 
+	12. Documentation [in progress];
+	13. JSON injection protection [will be a regexp];
+	14. Connection timeout (connect/post connect) limits - as previous;
+	15. Integration to build, severeal options:
+		i.   Replace topojson_convert.js;
+		ii.  New node program to rteplace existing functionality;
+		iii. Awaiting data loader.
+	
 ## 2016 Plans: 
 
 
