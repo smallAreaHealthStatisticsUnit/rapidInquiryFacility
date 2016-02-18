@@ -79,19 +79,29 @@ public abstract class AbstractRIFDataLoaderToolConcept
 	// Section Properties
 	// ==========================================
 	private String identifier;
+	private boolean isChanged;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public AbstractRIFDataLoaderToolConcept() {
-
+		isChanged = false;
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public boolean isChanged() {
+		return isChanged;
+	}
+	
+	public void setChanged(final boolean isChanged) {
+		this.isChanged = isChanged;
+	}
+	
+	
 	abstract public String getDisplayName();
 	abstract public void checkSecurityViolations() throws RIFServiceSecurityException;
 	abstract public void checkErrors() throws RIFServiceException;
