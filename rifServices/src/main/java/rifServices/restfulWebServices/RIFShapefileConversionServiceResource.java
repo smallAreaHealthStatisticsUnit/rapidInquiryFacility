@@ -172,11 +172,8 @@ public class RIFShapefileConversionServiceResource {
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
 
-		
-		System.out.println("Testing shape file submission with userid==" + userID + "==");
-		String result = "";
-
-		
+		String result = "Testing shape file submission with userid==" + userID + "==";
+	
 		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);
@@ -192,9 +189,14 @@ public Response submitShapeFiles(
 	@FormDataParam("userID") String userID,
 	@FormDataParam("fileField") InputStream inputStream) {
 */	
-	
+/*	
+	POST
+	Produces({"application/json"})	
+	Path("/submitShapeFiles")
+	Consumes(MediaType.MULTIPART_FORM_DATA)
+*/	
 	@POST
-	@Produces({"application/json"})	
+	@Produces(MediaType.TEXT_PLAIN)	
 	@Path("/submitShapeFiles")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response submitShapeFiles(
@@ -202,6 +204,7 @@ public Response submitShapeFiles(
 		@FormDataParam("userID") String userID,
 		@FormDataParam("fileField") InputStream inputStream) {
 
+		System.out.println("submitShapeFiles userID is =="+userID+"==");
 		String result = "test";
 
 /*		

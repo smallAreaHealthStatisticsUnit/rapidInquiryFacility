@@ -232,7 +232,6 @@ public class ShapeFileLoaderDialog
 			if (shapeFile != null) {
 				destinationZipFile
 					= createDestinationZipFile(shapeFile.getBaseFilePath());
-				System.out.println("SFLD ok - destinationZipFile ==" + destinationZipFile.getPath()+"==");
 				String[] shapeFileComponents = shapeFile.getFilePaths();
 			
 				ZipFileUtility zipFileUtility = new ZipFileUtility();
