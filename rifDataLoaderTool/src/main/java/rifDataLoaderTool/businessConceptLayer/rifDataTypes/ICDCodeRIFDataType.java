@@ -3,7 +3,7 @@ package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
  * A data type for ICD codes from the ICD-9 or ICD-10 standard.  Support for the two different
@@ -83,10 +83,10 @@ public final class ICDCodeRIFDataType
 			description);
 		
 		//expression for ICD 9
-		addValidationExpression("^([EV])?\\d{3,3}(\\.\\d{1,2})?$");
+		//addValidationRule("^([EV])?\\d{3,3}(\\.\\d{1,2})?$");
 
 		//expression for ICD 10
-		addValidationExpression("^[A-Z]\\d{2}(\\.\\d){0,1}$");
+		//addValidationRule("^[A-Z]\\d{2}(\\.\\d){0,1}$");
 		
 		setCleaningFunctionName("clean_icd");
 		
@@ -97,9 +97,9 @@ public final class ICDCodeRIFDataType
 	public static ICDCodeRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.icd.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.icd.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.icd.description");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.icd.description");
 		ICDCodeRIFDataType icdCodeRIFDataType
 			= new ICDCodeRIFDataType(
 				"rif_icd_code",

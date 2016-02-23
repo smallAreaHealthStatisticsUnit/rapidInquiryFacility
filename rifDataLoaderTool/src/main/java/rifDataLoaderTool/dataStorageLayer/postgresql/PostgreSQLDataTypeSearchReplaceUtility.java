@@ -234,18 +234,6 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 				baseIndentationLevel, 
 				loadFieldName);
 		}
-		else if (fieldCleaningPolicy == RIFFieldCleaningPolicy.SQL_FRAGMENT) {
-			if (rifDataType instanceof QuintiliseRIFDataType) {
-				queryFormatter.addQueryPhrase(baseIndentationLevel, "NTILE(5) ");
-				queryFormatter.addQueryPhrase("OVER (ORDER BY ");
-				queryFormatter.addQueryPhrase(loadFieldName);
-				queryFormatter.addQueryPhrase(")::TEXT AS ");
-				queryFormatter.addQueryPhrase(cleanFieldName);			
-			}
-			else {
-				assert false;
-			}			
-		}	
 		else if (fieldCleaningPolicy == RIFFieldCleaningPolicy.CLEANING_RULES) {
 			/*
 			 * eg:

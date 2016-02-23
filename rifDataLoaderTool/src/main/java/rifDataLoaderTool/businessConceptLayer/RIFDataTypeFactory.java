@@ -2,6 +2,12 @@ package rifDataLoaderTool.businessConceptLayer;
 
 
 import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.RIFServiceException;
+
+
+
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -81,7 +87,6 @@ public class RIFDataTypeFactory {
 		dataTypeFromCodes.put(ageRIFDataType.getIdentifier(), ageRIFDataType);
 		dataTypeFromNames.put(ageRIFDataType.getName(), ageRIFDataType);
 		
-		
 		DoubleRIFDataType doubleRIFDataType = DoubleRIFDataType.newInstance();
 		dataTypeFromCodes.put(doubleRIFDataType.getIdentifier(), doubleRIFDataType);
 		dataTypeFromNames.put(doubleRIFDataType.getName(), doubleRIFDataType);
@@ -105,8 +110,7 @@ public class RIFDataTypeFactory {
 		NHSNumberRIFDataType nhsNumberRIFDataType = NHSNumberRIFDataType.newInstance();
 		dataTypeFromCodes.put(nhsNumberRIFDataType.getIdentifier(), nhsNumberRIFDataType);
 		dataTypeFromNames.put(nhsNumberRIFDataType.getName(), nhsNumberRIFDataType);
-		
-		
+				
 		SexRIFDataType sexRIFDataType = SexRIFDataType.newInstance();
 		dataTypeFromCodes.put(sexRIFDataType.getIdentifier(), sexRIFDataType);
 		dataTypeFromNames.put(sexRIFDataType.getName(), sexRIFDataType);
@@ -134,6 +138,62 @@ public class RIFDataTypeFactory {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	/**
+	 * takes any given instance of a rif data type, and creates a custom rif data type that has
+	 * all the same attributes
+	 * @param originalRIFDataType
+	 * @return
+	 */
+	public static CustomRIFDataType createCopy(
+		final AbstractRIFDataType originalRIFDataType) {
+		
+		String originalIdentifier = originalRIFDataType.getIdentifier();
+		String originalName = originalRIFDataType.getName();
+		String originalDescription = originalRIFDataType.getDescription();
+		
+		CustomRIFDataType customRIFDataType
+			= CustomRIFDataType.newInstance(
+				originalIdentifier, 
+				originalName, 
+				originalDescription);
+		originalRIFDataType.copyAttributes(customRIFDataType);
+		
+		return customRIFDataType;
+	}
+	
+	public ArrayList<RIFDataTypeInterface> getRegisteredDataTypes() {
+		ArrayList<RIFDataTypeInterface> dataTypes
+			= new ArrayList<RIFDataTypeInterface>();
+		dataTypes.addAll(dataTypeFromCodes.values());
+		
+		return dataTypes;
+	}
+	
+	public void registerDataType(final CustomRIFDataType customRIFDataType) 
+		throws RIFServiceException {
+
+		//Validate fields of data type
+		
+		
+		String dataTypeIdentifier = customRIFDataType.getIdentifier();
+				
+		if (dataTypeFromCodes.containsKey(dataTypeIdentifier)) {
+			//Error: Attempt to register a duplicate data type
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"general.validation.duplicateValue",
+					dataTypeIdentifier);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.DUPLICATE_RIF_DATA_TYPE, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		
+		dataTypeFromCodes.put(customRIFDataType.getIdentifier(), customRIFDataType);
+		dataTypeFromNames.put(customRIFDataType.getName(), customRIFDataType);	
+	}
+	
 	public AbstractRIFDataType getDataTypeFromCode(final String dataTypeCode) {
 		return dataTypeFromCodes.get(dataTypeCode);		
 	}
@@ -145,7 +205,11 @@ public class RIFDataTypeFactory {
 	public DateRIFDataType getDateType(final String dateFormat) {
 		DateRIFDataType dateRIFDataType
 			= DateRIFDataType.newInstance();
-		dateRIFDataType.addValidationExpression(dateFormat);
+		
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		validationRule.setValidValue(dateFormat);
+		dateRIFDataType.addValidationRule(validationRule);
 		
 		return dateRIFDataType;		
 	}

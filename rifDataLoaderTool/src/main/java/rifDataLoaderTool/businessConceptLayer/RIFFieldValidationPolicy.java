@@ -75,7 +75,6 @@ public enum RIFFieldValidationPolicy {
 
 	VALIDATION_FUNCTION("rifFieldValidationPolicy.validationFunction.label"),
 	VALIDATION_RULES("rifFieldValidationPolicy.validationRules.label"),
-	SQL_FRAGMENT("rifFieldValidationPolicy.validationRules.label"),
 	NO_VALIDATION("rifFieldValidationPolicy.noValidation.label");
 	
 	private String propertyName;

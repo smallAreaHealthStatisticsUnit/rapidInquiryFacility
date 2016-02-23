@@ -2,7 +2,8 @@ package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**
  * A data type to represent text values.
  *
@@ -78,7 +79,9 @@ public final class TextRIFDataType
 			description, 
 			validationRegularExpression);
 		
-		addValidationExpression("^(\\w+)");
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		validationRule.setValidValue("^(\\w+)");
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
 		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);			
 	}
@@ -86,9 +89,9 @@ public final class TextRIFDataType
 	public static TextRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.text.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.text.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.text.description");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.text.description");
 		TextRIFDataType textRIFDataType
 			= new TextRIFDataType(
 				"rif_text",

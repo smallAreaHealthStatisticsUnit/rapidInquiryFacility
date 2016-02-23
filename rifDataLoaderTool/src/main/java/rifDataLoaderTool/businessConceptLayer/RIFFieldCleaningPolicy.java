@@ -75,7 +75,6 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 public enum RIFFieldCleaningPolicy {
 	CLEANING_FUNCTION("rifFieldCleaningPolicy.cleaningFunction.label"),
 	CLEANING_RULES("rifFieldCleaningPolicy.cleaningRules.label"),
-	SQL_FRAGMENT("rifFieldCleaningPolicy.sqlFragment.label"),
 	NO_CLEANING("rifFieldCleaningPolicy.noCleaning.label");
 	
 	private String propertyName;

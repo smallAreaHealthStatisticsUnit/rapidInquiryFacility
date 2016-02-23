@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.JTableHeader;
+import javax.swing.text.JTextComponent;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -546,6 +547,18 @@ public final class UserInterfaceFactory {
 		JComboBox<String> comboBox = new JComboBox<String>(options);
 		setPlainFont(comboBox);
 		return comboBox;
+	}
+	
+	public void setReadOnlyAppearance(
+		final JTextComponent textComponent, 
+		final boolean isEditable) {
+		
+		if (isEditable) {
+			textComponent.setBackground(Color.LIGHT_GRAY);			
+		}
+		else {
+			textComponent.setBackground(Color.WHITE);		
+		}
 	}
 	
 	/**

@@ -131,14 +131,16 @@ public final class OrderedListPanel {
 		panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC = userInterfaceFactory.createGridBagConstraints();		
 		
-		JLabel listTitleLabel
-			= userInterfaceFactory.createLabel(listTitle);
-		if (listToolTipText != null) {
-			listTitleLabel.setToolTipText(listToolTipText);
+		if (listTitle != null) {
+			JLabel listTitleLabel
+				= userInterfaceFactory.createLabel(listTitle);
+			if (listToolTipText != null) {
+				listTitleLabel.setToolTipText(listToolTipText);
+			}
+			panel.add(listTitleLabel, panelGC);
+			panelGC.gridy++;
 		}
-		panel.add(listTitleLabel, panelGC);
 		
-		panelGC.gridy++;
 		panelGC.fill = GridBagConstraints.BOTH;
 		panelGC.weightx = 1.0;
 		panelGC.weighty = 1.0;

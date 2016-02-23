@@ -2,6 +2,7 @@ package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
@@ -100,7 +101,9 @@ public final class YearRIFDataType
 			name, 
 			description);
 		
-		addValidationExpression("^(19|20)\\d{2}$");
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		validationRule.setValidValue("^(19|20)\\d{2}$");
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
 		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);
 	}

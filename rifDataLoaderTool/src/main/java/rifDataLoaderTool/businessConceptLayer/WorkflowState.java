@@ -1,6 +1,5 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 import java.text.Collator;
@@ -177,11 +176,11 @@ public enum WorkflowState {
 	}
 	
 	public String getStateName() {
-		return RIFDataLoaderMessages.getMessage(statePropertyName);
+		return RIFDataLoaderToolMessages.getMessage(statePropertyName);
 	}
 	
 	public String getCompletedStatusMessage() {
-		return RIFDataLoaderMessages.getMessage(statusPropertyName);		
+		return RIFDataLoaderToolMessages.getMessage(statusPropertyName);		
 	}
 	
 	public String getTablePrefix() {

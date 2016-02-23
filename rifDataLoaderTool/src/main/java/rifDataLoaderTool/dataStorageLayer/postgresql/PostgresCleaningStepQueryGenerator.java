@@ -431,32 +431,32 @@ public final class PostgresCleaningStepQueryGenerator
 		}
 		else if (fieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_RULES) {
 		
-			ArrayList<String> validationExpressions
-				= rifDataType.getValidationExpressions();
+			ArrayList<ValidationRule> validationRules
+				= rifDataType.getValidationRules();
 		
 			queryFormatter.addQueryPhrase(baseIndentationLevel, "CASE");
 			queryFormatter.padAndFinishLine();
 		
 			if (rifDataType instanceof DateRIFDataType) {
-				for (String validationExpression : validationExpressions) {
+				for (ValidationRule validationRule : validationRules) {
 					queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
 					queryFormatter.addQueryPhrase("is_valid_date(");
 					queryFormatter.addQueryPhrase(cleanedFieldName);
 					queryFormatter.addQueryPhrase(",");
 					queryFormatter.addQueryPhrase("'");
-					queryFormatter.addQueryPhrase(validationExpression);
+					queryFormatter.addQueryPhrase(validationRule.getValidValue());
 					queryFormatter.addQueryPhrase("') = TRUE THEN ");
 					queryFormatter.addQueryPhrase(cleanedFieldName);
 					queryFormatter.padAndFinishLine();
 				}
 			}
 			else {
-				for (String validationExpression : validationExpressions) {
+				for (ValidationRule validationRule : validationRules) {
 					queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
 					queryFormatter.addQueryPhrase(cleanedFieldName);
 					queryFormatter.addQueryPhrase(" ~ ");
 					queryFormatter.addQueryPhrase("'");
-					queryFormatter.addQueryPhrase(validationExpression);
+					queryFormatter.addQueryPhrase(validationRule.getValidValue());
 					queryFormatter.addQueryPhrase("'");
 					queryFormatter.addQueryPhrase(" THEN ");
 					queryFormatter.addQueryPhrase(cleanedFieldName);
@@ -1285,7 +1285,9 @@ public final class PostgresCleaningStepQueryGenerator
 			queryFormatter.addQueryPhrase(cleanedTableFieldName);
 			queryFormatter.addQueryPhrase(",");
 			queryFormatter.addQueryPhrase("'");
-			queryFormatter.addQueryPhrase(rifDataType.getMainValidationExpression());
+			
+	
+			queryFormatter.addQueryPhrase(rifDataType.getMainValidationValue());
 			queryFormatter.addQueryPhrase("')");
 		}
 		else if (rifDataType instanceof DoubleRIFDataType) {

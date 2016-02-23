@@ -290,7 +290,7 @@ public final class PostgreSQLCastingUtility {
 			queryFormatter.addQueryPhrase(cleanedTableFieldName);
 			queryFormatter.addQueryPhrase(",");
 			queryFormatter.addQueryPhrase("'");
-			queryFormatter.addQueryPhrase(rifDataType.getMainValidationExpression());
+			queryFormatter.addQueryPhrase(rifDataType.getMainValidationValue());
 			queryFormatter.addQueryPhrase("')");
 		}
 		else if (rifDataType instanceof DoubleRIFDataType) {

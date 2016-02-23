@@ -2,7 +2,8 @@ package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**
  *
  * A data type that describes ASCII text field values.  The type is used to 
@@ -80,17 +81,30 @@ public final class ASCIITextRIFDataType
 			description, 
 			validationRegularExpression);
 		
-		addValidationExpression("^(\\w+)");
+		String validationRuleName1
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.asciiText.validationRule1.name");
+		String validationRuleDescription1
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.asciiText.validationRule1.description");
+
+		ValidationRule validationRule
+			= ValidationRule.newInstance(
+				validationRuleName1, 
+				validationRuleDescription1, 
+				"^(\\w+)", 
+				true);
+
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		addValidationRule(validationRule);
+		
 		setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);			
 	}
 
 	public static ASCIITextRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.asciiText.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.asciiText.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.asciiText.description");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.asciiText.description");
 		ASCIITextRIFDataType asciiTextRIFDataType
 			= new ASCIITextRIFDataType(
 				"rif_ascii_text",

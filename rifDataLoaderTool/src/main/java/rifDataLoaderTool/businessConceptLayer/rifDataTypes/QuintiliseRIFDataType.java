@@ -2,7 +2,7 @@ package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**
  * a data type for Integers.
  *
@@ -80,16 +80,15 @@ public final class QuintiliseRIFDataType
 		
 		//String validationRegularExpression = "^(\\d+)";
 		//addValidationExpression(validationRegularExpression);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.SQL_FRAGMENT);
 		setFieldValidationPolicy(RIFFieldValidationPolicy.NO_VALIDATION);
 	}
 
 	public static QuintiliseRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.quintilise.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.quintilise.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.quintilise.description");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.quintilise.description");
 		QuintiliseRIFDataType integerRIFDataType
 			= new QuintiliseRIFDataType(
 				"rif_quintilise",

@@ -3,7 +3,7 @@ package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**
  * A data type to represent UK postal codes.
  *
@@ -90,9 +90,9 @@ public final class UKPostalCodeRIFDataType
 	public static UKPostalCodeRIFDataType newInstance() {
 
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.ukPostalCode.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.ukPostalCode.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.ukPostalCode.description");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.ukPostalCode.description");
 		UKPostalCodeRIFDataType ukPostalCodeRIFDataType
 			= new UKPostalCodeRIFDataType(
 				"rif_uk_postcode",

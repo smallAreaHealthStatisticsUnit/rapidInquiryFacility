@@ -138,7 +138,7 @@ public final class ListEditingButtonPanel {
 		String copyButtonText
 			= RIFGenericLibraryMessages.getMessage("buttons.copy.label");
 		copyButton = userInterfaceFactory.createButton(copyButtonText);
-		
+
 		String deleteButtonText
 			= RIFGenericLibraryMessages.getMessage("buttons.delete.label");
 		deleteButton = userInterfaceFactory.createButton(deleteButtonText);
@@ -368,6 +368,10 @@ public final class ListEditingButtonPanel {
 	
 	public void indicateEmptyState() {
 		addButton.setEnabled(true);
+		
+		String editButtonText
+			= RIFGenericLibraryMessages.getMessage("buttons.edit.label");
+		editButton.setText(editButtonText);		
 		editButton.setEnabled(false);
 		copyButton.setEnabled(false);
 		deleteButton.setEnabled(false);
@@ -376,11 +380,30 @@ public final class ListEditingButtonPanel {
 
 	public void indicatePopulatedState() {
 		addButton.setEnabled(true);
+		
+		String editButtonText
+			= RIFGenericLibraryMessages.getMessage("buttons.edit.label");
+		editButton.setText(editButtonText);		
 		editButton.setEnabled(true);
 		copyButton.setEnabled(true);
 		deleteButton.setEnabled(true);
 		clearButton.setEnabled(true);
 	}
+	
+	public void indicateViewOnlyState() {
+		addButton.setEnabled(false);
+		
+		String viewButtonText
+			= RIFGenericLibraryMessages.getMessage("buttons.view.label");
+		editButton.setText(viewButtonText);
+		editButton.setEnabled(true);
+		copyButton.setEnabled(false);
+		deleteButton.setEnabled(false);
+		clearButton.setEnabled(false);		
+	}
+	
+	
+	
 	
 	public void disableAllButtons() {
 		for (JButton buttonToInclude : buttonsToInclude) {

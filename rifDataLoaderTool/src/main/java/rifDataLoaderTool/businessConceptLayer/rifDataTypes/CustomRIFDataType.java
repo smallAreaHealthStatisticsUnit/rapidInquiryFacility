@@ -1,7 +1,9 @@
 package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
+import java.util.ArrayList;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.RIFServiceException;
 
 
 
@@ -103,7 +105,19 @@ public final class CustomRIFDataType
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-
+	public void checkErrors(final CustomRIFDataType candidateRIFDataType) 
+		throws RIFServiceException {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		
+		String recordType
+			= RIFDataLoaderToolMessages.getMessage("customRIFDataType.label");
+		checkErrors(
+			recordType, 
+			errorMessages);
+	}
+	
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
@@ -112,7 +126,7 @@ public final class CustomRIFDataType
 	// Section Override
 	// ==========================================
 
-	public RIFDataTypeInterface createCopy() {
+	public CustomRIFDataType createCopy() {
 		CustomRIFDataType clonedCustomRIFDataType
 			= new CustomRIFDataType(
 				getIdentifier(),

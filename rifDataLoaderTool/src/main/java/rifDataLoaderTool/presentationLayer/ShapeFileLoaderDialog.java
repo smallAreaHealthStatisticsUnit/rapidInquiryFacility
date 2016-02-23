@@ -5,7 +5,6 @@ import rifGenericLibrary.presentationLayer.*;
 
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.fileFormats.ZipFileUtility;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.util.ShapeFileScanner;
 import rifDataLoaderTool.businessConceptLayer.ShapeFile;
@@ -120,7 +119,7 @@ public class ShapeFileLoaderDialog
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
 		String instructionsText
-			= RIFDataLoaderMessages.getMessage("shapeFileLoaderDialog.instructions");	
+			= RIFDataLoaderToolMessages.getMessage("shapeFileLoaderDialog.instructions");	
 		JPanel instructionsPanel
 			= userInterfaceFactory.createHTMLInstructionPanel(instructionsText);
 		panel.add(instructionsPanel, panelGC);
@@ -160,7 +159,7 @@ public class ShapeFileLoaderDialog
 			= userInterfaceFactory.createGridBagConstraints();
 
 		String shapeFileDirectoryLabelText
-			= RIFDataLoaderMessages.getMessage("shapeFileDirectory.label");
+			= RIFDataLoaderToolMessages.getMessage("shapeFileDirectory.label");
 		JLabel shapeFileDirectoryLabel
 			= userInterfaceFactory.createLabel(shapeFileDirectoryLabelText);
 		panel.add(shapeFileDirectoryLabel, panelGC);
@@ -233,7 +232,6 @@ public class ShapeFileLoaderDialog
 			if (shapeFile != null) {
 				destinationZipFile
 					= createDestinationZipFile(shapeFile.getBaseFilePath());
-				System.out.println("SFLD ok - destinationZipFile ==" + destinationZipFile.getPath()+"==");
 				String[] shapeFileComponents = shapeFile.getFilePaths();
 			
 				ZipFileUtility zipFileUtility = new ZipFileUtility();
@@ -245,7 +243,7 @@ public class ShapeFileLoaderDialog
 		}
 		catch(IOException exception) {
 			String errorMessage
-				= RIFDataLoaderMessages.getMessage(
+				= RIFDataLoaderToolMessages.getMessage(
 					"shapeFileLoaderDialog.error.unableToLoadShapeFile",
 					destinationZipFile.getName());
 			ErrorDialog.showError(dialog, errorMessage);

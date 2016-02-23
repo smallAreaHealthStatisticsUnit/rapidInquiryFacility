@@ -1,6 +1,5 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
@@ -298,7 +297,7 @@ public final class CheckWorkflowManager
 				logFileWriter,
 				sqlException);
 			String errorMessage
-				= RIFDataLoaderMessages.getMessage(
+				= RIFDataLoaderToolMessages.getMessage(
 					"checkWorkflowManager.error.unableToCreateCheckedTable",
 					checkTableName);
 			RIFServiceException rifServiceException

@@ -3,7 +3,8 @@ package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.system.RIFDataLoaderMessages;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
  * A data type for age.  In future, the type may need to be modfied so that it can 
@@ -91,8 +92,25 @@ public final class AgeRIFDataType
 		 * <li>100 to 119</li>
 		 * </ul>
 		 */
-		addValidationExpression("^[0-9]{1,2}$|1[0-1][0-9]$");
+
+		String regularExpression
+			= "^[0-9]{1,2}$|1[0-1][0-9]$";
+		
+		String validationRuleName1
+			= RIFDataLoaderToolMessages.getMessage(
+				"rifDataType.age.vaidationRule1.name");
+		String validationRuleDescription1
+			= RIFDataLoaderToolMessages.getMessage(
+				"rifDataType.age.vaidationRule1.description");
+		ValidationRule validationRule 
+			= ValidationRule.newInstance(
+				validationRuleName1, 
+				validationRuleDescription1, 
+				regularExpression, 
+				true);
+		
 		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		addValidationRule(validationRule);
 		setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_FUNCTION);
 		setCleaningFunctionName("map_age_to_rif_age_group");
 	}
@@ -101,9 +119,9 @@ public final class AgeRIFDataType
 
 		String identifier = "rif_age";
 		String name
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.label");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.age.label");
 		String description
-			= RIFDataLoaderMessages.getMessage("rifDataType.age.description");
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.age.description");
 
 		AgeRIFDataType ageRIFDataType
 			= new AgeRIFDataType(

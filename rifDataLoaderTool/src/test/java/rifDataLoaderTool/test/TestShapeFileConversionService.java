@@ -1,13 +1,10 @@
-package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
+package rifDataLoaderTool.test;
 
-import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.businessConceptLayer.ValidationRule;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**
- * a data type for double precision numeric data.
+ *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -53,9 +50,16 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
  *
  */
 
-public final class DoubleRIFDataType 
-	extends AbstractRIFDataType {
+public class TestShapeFileConversionService 
+	extends AbstractRIFDataLoaderTestCase {
 
+	public static void main(String[] args) {
+	
+		
+		
+		
+	}
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -63,53 +67,19 @@ public final class DoubleRIFDataType
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private DoubleRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
+	public TestShapeFileConversionService() {
 
-		super(
-			identifier,
-			name, 
-			description);
-		
-		String validationRegularExpression
-			= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
-		ValidationRule validationRule
-			= ValidationRule.newInstance(
-				"", 
-				"", 
-				validationRegularExpression, 
-				true);
-
-		addValidationRule(validationRule);
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);		
 	}
 
-	public static DoubleRIFDataType newInstance() {
-
-		String name
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.double.label");
-		String description
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.double.description");
-		DoubleRIFDataType doubleRIFDataType
-			= new DoubleRIFDataType(
-				"rif_double",
-				name, 
-				description);
-		
-		return doubleRIFDataType;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -122,12 +92,6 @@ public final class DoubleRIFDataType
 	// Section Override
 	// ==========================================
 
-	public DoubleRIFDataType createCopy() {
-		DoubleRIFDataType cloneDoubleRIFDataType = newInstance();
-		copyAttributes(cloneDoubleRIFDataType);
-		return cloneDoubleRIFDataType;
-	}
-	
 }
 
 
