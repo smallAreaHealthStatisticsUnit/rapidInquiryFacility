@@ -92,16 +92,12 @@ public class DataCleaningPolicyEditingPanel
 		
 	private JRadioButton useFunctionRadioButton;
 	private JRadioButton useRulesRadioButton;
-	private JRadioButton useSQLFragmentRadioButton;
 	private JRadioButton doNothingRadioButton;
 	
 	private OrderedListPanel rulesListPanel;
 	private ListEditingButtonPanel rulesListButtonPanel;
 	private JComboBox databaseFunctionsComboBox;
 	private JTextArea databaseFunctionDescriptionTextArea;
-	
-	private JTextField sqlQueryFragmentTextField;
-
 	
 	// ==========================================
 	// Section Construction
@@ -175,19 +171,8 @@ public class DataCleaningPolicyEditingPanel
 		panelGC.weighty = 0;
 		panel.add(createValidationFunctionFeaturePanel(), panelGC);
 	
-		panelGC.gridy++;	
-		useSQLFragmentRadioButton
-			= userInterfaceFactory.createRadioButton(
-				RIFFieldCleaningPolicy.SQL_FRAGMENT.getName());
-		useSQLFragmentRadioButton.addActionListener(this);			
-		validationPolicyButtonGroup.add(useSQLFragmentRadioButton);
-		panel.add(createSQLFragmentFeaturePanel(), panelGC);
-
 		panel.setBorder(LineBorder.createGrayLineBorder());
 	}
-
-
-	
 	
 	private JPanel createCleaningRuleListEditingPanel() {
 		JPanel panel 
@@ -265,42 +250,7 @@ public class DataCleaningPolicyEditingPanel
 		
 		return panel;
 	}
-	
-	private JPanel createSQLFragmentFeaturePanel() {
-		JPanel panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC
-			= userInterfaceFactory.createGridBagConstraints();		
 		
-		useSQLFragmentRadioButton
-			= userInterfaceFactory.createRadioButton(
-				RIFFieldCleaningPolicy.SQL_FRAGMENT.getName());
-		useSQLFragmentRadioButton.addActionListener(this);			
-		validationPolicyButtonGroup.add(useSQLFragmentRadioButton);
-		panel.add(useSQLFragmentRadioButton, panelGC);
-		
-		panelGC.gridy++;
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 1;
-		JPanel lowerPanel = userInterfaceFactory.createPanel();
-		GridBagConstraints lowerPanelGC
-			= userInterfaceFactory.createGridBagConstraints();		
-		
-		String fragmentLabelText
-			= RIFDataLoaderToolMessages.getMessage("dataTypeEditingPanel.sqlFragment.label");
-		JLabel fragmentLabel
-			= userInterfaceFactory.createLabel(fragmentLabelText);
-		lowerPanel.add(fragmentLabel, lowerPanelGC);
-		
-		lowerPanelGC.gridx++;
-		lowerPanelGC.fill = GridBagConstraints.HORIZONTAL;
-		lowerPanelGC.weightx = 1;
-		sqlQueryFragmentTextField = userInterfaceFactory.createTextField();
-		lowerPanel.add(sqlQueryFragmentTextField, lowerPanelGC);
-		panel.add(lowerPanel, panelGC);
-
-		return panel;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -322,7 +272,6 @@ public class DataCleaningPolicyEditingPanel
 			
 		useFunctionRadioButton.removeActionListener(this);
 		useRulesRadioButton.removeActionListener(this);
-		useSQLFragmentRadioButton.removeActionListener(this);
 		doNothingRadioButton.removeActionListener(this);
 				
 		RIFFieldCleaningPolicy fieldCleaningPolicy
@@ -350,25 +299,17 @@ public class DataCleaningPolicyEditingPanel
 				currentRIFDataType.getCleaningFunctionName());			
 			cleaningUseFunction();			
 		}
-		else if (fieldCleaningPolicy == RIFFieldCleaningPolicy.SQL_FRAGMENT) {
-			useSQLFragmentRadioButton.setSelected(true);
-			sqlQueryFragmentTextField.setText(currentRIFDataType.getCleaningSQLFragment());
-			cleaningUseSQLFragment();
-		}
 
 		doNothingRadioButton.addActionListener(this);
 		useRulesRadioButton.addActionListener(this);
 		useFunctionRadioButton.addActionListener(this);
-		useSQLFragmentRadioButton.addActionListener(this);
 		
 		
 		//determine if buttons should be enabled or disabled
 		useFunctionRadioButton.setEnabled(isEditable);
 		useRulesRadioButton.setEnabled(isEditable);
-		useSQLFragmentRadioButton.setEnabled(isEditable);
 		doNothingRadioButton.setEnabled(isEditable);		
 		databaseFunctionsComboBox.setEnabled(isEditable);
-		sqlQueryFragmentTextField.setEnabled(isEditable);
 		if (isEditable) {
 			if (rulesListPanel.isEmpty()) {
 				rulesListButtonPanel.indicateEmptyState();
@@ -405,39 +346,28 @@ public class DataCleaningPolicyEditingPanel
 				(String) databaseFunctionsComboBox.getSelectedItem());
 			currentRIFDataType.setCleaningSQLFragment("");			
 		}
-		else if (useSQLFragmentRadioButton.isSelected()) {
-			currentRIFDataType.clearCleaningRules();
-			currentRIFDataType.setCleaningFunctionName(
-				(String) databaseFunctionsComboBox.getSelectedItem());
-			currentRIFDataType.setCleaningSQLFragment(
-				sqlQueryFragmentTextField.getText().trim());
-		}
 	}
 	
 	private void doNothing() {	
 		setEnableValidationFunctionFeature(false);
 		setEnableRulesFeature(false);
-		setEnableSQLFragmentFeature(false);
 	}
 
 	private void useRules() {		
 		setEnableValidationFunctionFeature(false);
 		setEnableRulesFeature(true);
-		setEnableSQLFragmentFeature(false);
 	}
 	
 	private void cleaningUseFunction() {
 		
 		setEnableValidationFunctionFeature(true);
 		setEnableRulesFeature(false);
-		setEnableSQLFragmentFeature(false);
 	}
 
 	private void cleaningUseSQLFragment() {	
 
 		setEnableValidationFunctionFeature(false);
 		setEnableRulesFeature(false);
-		setEnableSQLFragmentFeature(true);		
 	}
 	
 	private void addCleaningRule() {
@@ -519,16 +449,7 @@ public class DataCleaningPolicyEditingPanel
 			rulesListPanel.updateUI();
 		}		
 	}
-	
-	private void setEnableSQLFragmentFeature(
-		final boolean isEnabled) {
 		
-		sqlQueryFragmentTextField.setEnabled(isEnabled);
-		if (isEnabled == false) {
-			sqlQueryFragmentTextField.setText("");
-		}	
-	}
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -548,9 +469,6 @@ public class DataCleaningPolicyEditingPanel
 		}
 		else if (button == useFunctionRadioButton) {
 			cleaningUseFunction();
-		}
-		else if (button == useSQLFragmentRadioButton) {
-			cleaningUseSQLFragment();
 		}
 		else if (rulesListButtonPanel.isAddButton(button)) {
 			addCleaningRule();

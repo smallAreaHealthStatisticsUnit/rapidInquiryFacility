@@ -80,7 +80,6 @@ public final class QuintiliseRIFDataType
 		
 		//String validationRegularExpression = "^(\\d+)";
 		//addValidationExpression(validationRegularExpression);
-		setFieldCleaningPolicy(RIFFieldCleaningPolicy.SQL_FRAGMENT);
 		setFieldValidationPolicy(RIFFieldValidationPolicy.NO_VALIDATION);
 	}
 
