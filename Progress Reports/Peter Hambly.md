@@ -314,7 +314,6 @@ Test harness refactor; Node.js version working
 	
 	GeoNode is essentially Open Google Earth/Maps with an emphasis on accessibility via easy to use interfaces and good metadata.
 	
-	
 	Todo:
 
 	12. Documentation [in progress];
