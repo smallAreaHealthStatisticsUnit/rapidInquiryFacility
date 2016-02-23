@@ -255,7 +255,7 @@ Test harness refactor; Node.js version working
 	
 	5. Compressed attachments using zlib; multi attachment support; browser verification
 	
-#### 8th to ?th February
+#### 8th to 17th February
 
 	6. Error handlers, busboy limit handlers, failure cases:
 	   * GeoJSON syntax issues
@@ -267,6 +267,52 @@ Test harness refactor; Node.js version working
 	9. Full client logging;
 	10. Instrumentation;
 	11. Size limits (100M); 100 files - this is be BusBoy processing exception filesLimit/fieldsLimit/partsLimit; 
+	
+#### 19th to ?th February
+
+	Analysis of current geospatial presentation, design meeting with Kev. Principle decision - to build a self contained Node 
+    service (NodeGeoSpatialServices). 
+	
+	NodeGeoSpatialServices:
+	
+	NodeGeoSpatialServices integrates a number of Node modules as web services to provide remote web services to:
+	
+	* Convert shapefiles to GeoJSON;
+	* Validate, clean and simplify converted shapefile data suitable for use in maptiles;
+	* Convert GeoJSON to a) TopoJSON and b) Well known text;
+	* Create hierarchy tables;
+	* Create maptiles;
+	* Create polygonal and population weighted centroids.
+	
+	NodeGeoSpatialServices will require PostGres and PostGIS in the server for access to OGSS functionality. It will also be 
+	designed to be portable to SQL server.
+	
+	The inputs to NodeGeoSpatialServices will be one or more shapefiles; the outputs a set of maptiles and a set of  
+	portable geospatial data.
+
+	The NodeGeoSpatialServices client would normally store data either in flat files (e.g. maptiles) or a GeoSpatial database
+	(e.g. PostGIS). The client is not required to carry out any additional geosptial processing. Since multiple processing 
+	steps are envisaged thence the server will need to maintain state. It will do this by saving data as GeoJson in a file or in 
+	a PostGIS table. This will reduce the data be transferred to a minimum.
+	
+	It is not intended at present to support:
+
+	* Shapefile formats not supported by Node SHP/MapShaper;
+	* To convert a) TopoJSON and b) Well known text to GeoJSON;
+	* To convert a) TopoJSON or b) GeoSON to shapefiles.
+	
+	This is technically possible, but requires GDAL.
+	
+	Population weighted centroids requires population data and additional non standard processing (i.e. there is no OGSS 
+	standard function) in PostGIS.
+	
+	NodeGeoSpatialServices should not be confused with GeoNode (http://geonode.org/): 
+	
+	GeoNode is a platform for the management and publication of geospatial data. It brings together mature and stable open-source 
+	software projects under a consistent and easy-to-use interface allowing users, with little training, to quickly and easily 
+	share data and create interactive maps.	
+	
+	GeoNode is essentially Open Google Earth/Maps with an emphasis on accessibility via easy to use interfaces and good metadata.
 	
 	Todo:
 
