@@ -36,7 +36,7 @@
     "topojson": "^1.6.24"
   },
   "scripts": {
-    "test": "node test/request.js"
+    "test": "node test/request-toTopojson.js"
   },
   "engines": {
     "node": ">= 4.2.x"

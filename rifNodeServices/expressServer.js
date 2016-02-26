@@ -52,7 +52,7 @@
 const express = require('express'),
     busboy = require('connect-busboy'),
 	helmet = require('helmet'),
-    toTopojson = require('./routes/toTopojson'),
+    nodeGeoSpatialServices = require('./lib/nodeGeoSpatialServices'),
     simplify = require('./routes/simplify'),
     zipfile = require('./routes/zipfile');
 
@@ -105,8 +105,10 @@ app.use( 				// For parsing incoming HTML form data.
 	}));
 
 // Get methods are dummies for test purposes
-app.get('/toTopojson', toTopojson.convert);
-app.post('/toTopojson', toTopojson.convert);
+app.get('/toTopojson', nodeGeoSpatialServices.convert);
+app.post('/toTopojson', nodeGeoSpatialServices.convert);
+
+// Old Fred zip shaepfile code
 app.get('/simplify', simplify.convert);
 app.post('/simplify', simplify.convert);
 

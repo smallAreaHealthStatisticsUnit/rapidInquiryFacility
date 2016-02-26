@@ -106,7 +106,12 @@ httpErrorResponse=function(file, line, calling_function, rifLog, status, req, re
 		if (err) { // Add error to message
 			l_response.error = err.message;
 		}
-		rifLog.rifLog2(file, line, calling_function, g_response.message, req, err);
+		if (g_response) { 
+			rifLog.rifLog2(file, line, calling_function, g_response.message, req, err);
+		}
+		else { 
+			rifLog.rifLog2(file, line, calling_function, "Unknown", req, err);
+		}
 		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 			res.status(status);		
 			var output = JSON.stringify(l_response);// Convert output response to JSON 		
@@ -126,7 +131,7 @@ httpErrorResponse=function(file, line, calling_function, rifLog, status, req, re
 			res.end();	
 		}
 		else {
-			rifLog.rifLog("FATAL! Unable to return error to user - httpErrorResponse() already processed", req, err);
+			rifLog.rifLog("FATAL! Unable to return error to user - httpErrorResponse() already processed", req, e);
 		}		
 		return;
 	}
