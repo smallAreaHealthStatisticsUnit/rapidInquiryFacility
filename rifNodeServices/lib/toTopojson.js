@@ -45,7 +45,7 @@
 // Peter Hambly, SAHSU
 
 /*
- * Function:	toTopojson()
+ * Function:	toTopojsonFile()
  * Parameters:	d object (temporary processing data, 
 				ofields [field parameters array],
 				TopoJSON topology processing options,
@@ -53,14 +53,13 @@
 				HTTP response object, 
 				my response object
  * Returns:		d object topojson/Nothing on failure
- * Description: TopoJSON processing:
+ * Description: TopoJSON processing for files (toTopojson service):
  *				- converts string to JSON
  *				- calls topojson.topology() using options
  * 				- Add file name, stderr and topoJSON to my response
  */
-toTopojson=function(d, ofields, options, stderr, req, res, response) {
-	var httpErrorResponse = require('../lib/httpErrorResponse')
-        rifLog = require('../lib/rifLog'),
+toTopojsonFile=function(d, ofields, options, stderr, req, res, response) {
+	var rifLog = require('../lib/rifLog'),
 	    topojson = require('topojson');
 	
 	var msg="File [" + d.no_files + "]: " + d.file.file_name;
@@ -159,11 +158,13 @@ toTopojson=function(d, ofields, options, stderr, req, res, response) {
 		}
 	
 		response.no_files=d.no_files;			// Add number of files process to response
-		response.fields=ofields;				// Add return fields			
-		httpErrorResponse.httpErrorResponse(__file, __line, "toTopojson()", rifLog, 
-			500, req, res, msg, e, response);				
+		response.fields=ofields;				// Add return fields		
+		response.file_errors++;					// Increment file error count		
+		response.message = msg + "\n" + response.message;	
+		response.error = e.message;
+				
 		return;
 	} 	
 }
 
-module.exports.toTopojson = toTopojson;	
+module.exports.toTopojsonFile = toTopojsonFile;	

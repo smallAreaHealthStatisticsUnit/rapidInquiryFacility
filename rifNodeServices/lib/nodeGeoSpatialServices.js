@@ -162,7 +162,34 @@ exports.convert = function(req, res) {
 		var d_files = { 
 			d_list: []
 		}
-			
+		
+/*
+ * Services supported:
+ * 
+ * shp2GeoJSON: Upload then convert shapefile to geoJSON;
+ * simplifyGeoJSON: Load, validate, aggregate, clean and simplify converted shapefile data;
+ * toTopojson: Convert geoJSON to TopoJSON;
+ * geoJSONtoWKT: Convert geoJSON to Well Known Text (WKT);
+ * createHierarchy: Create hierarchical geospatial intersection of all the shapefiles;
+ * createCentroids: Create centroids for all shapefiles;
+ * createMaptiles: Create topoJSON maptiles for all geolevels and zoomlevels; 
+ * getGeospatialData: Fetches GeoSpatial Data;
+ * getNumShapefilesInSet: Returns the number of shapefiles in the set. This is the same as the highest resolution geolevel id;
+ * getMapTile: Get maptile for specified geolevel, zoomlevel, X and Y tile number.
+ */		
+		if (!((req.url == '/shp2GeoJSON') ||
+			  (req.url == '/simplifyGeoJSON') ||
+			  (req.url == '/toTopojson') ||
+			  (req.url == '/geoJSONtoWKT') ||
+			  (req.url == '/createHierarchy') ||
+			  (req.url == '/createCentroids') ||
+			  (req.url == '/createMaptiles') ||
+			  (req.url == '/getGeospatialData') ||
+			  (req.url == '/getNumShapefilesInSet') ||
+			  (req.url == '/getMapTile'))) {
+				
+		}
+	
 	// Post method	
 		if (req.method == 'POST') {
 	 
@@ -237,8 +264,8 @@ exports.convert = function(req, res) {
 					chunks: [],
 					partial_chunk_size: 0,
 					chunks_length: 0,
-					topojson: "",
-					topojson_stderr: "",
+//					topojson: "",
+//					topojson_stderr: "",
 					file_size: 0,
 					transfer_time: '',
 					uncompress_time: undefined,
@@ -553,57 +580,68 @@ exports.convert = function(req, res) {
 			req.busboy.on('finish', function() {
 				var msg;
 				
-				for (i = 0; i < response.no_files; i++) {	
-					d=d_files.d_list[i];
-					if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
-						if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
-							msg="FAIL! File [" + (i+1) + "/?]: entry not found, no file list" + 
-								"; httpErrorResponse.httpErrorResponse() NOT already processed";
+				if (req.url == '/toTopojson') {
+					for (i = 0; i < response.no_files; i++) {	
+						d=d_files.d_list[i];
+						if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
+							if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
+								msg="FAIL! File [" + (i+1) + "/?]: entry not found, no file list" + 
+									"; httpErrorResponse.httpErrorResponse() NOT already processed";
+								response.message = msg + "\n" + response.message;
+								response.no_files=0;					// Add number of files process to response
+								response.fields=ofields;				// Add return fields
+								response.file_errors++;					// Increment file error count
+								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+									rifLog, 500, req, res, msg, undefined, response);				
+							}
+							return;							
+						}
+						else if (!d.file) {
+							msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: object not found in list" + 
+								"\n" + response.message;
 							response.message = msg + "\n" + response.message;
-							response.no_files=0;					// Add number of files process to response
-							response.fields=ofields;				// Add return fields
-							response.file_errors++;					// Increment file error count
+							response.no_files=d.no_files;			// Add number of files process to response
+							response.fields=ofields;				// Add return fields	
+							response.file_errors++;					// Increment file error count	
 							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-								rifLog, 500, req, res, msg, undefined, response);				
+								rifLog, 500, req, res, msg, undefined, response);							
+							return;			
 						}
-						return;							
+						else if (d.file.file_data.length > 0) {
+							// Call GeoJSON to TopoJSON converter
+							d=toTopojson.toTopojsonFile(d, ofields, options, stderr, req, res, response);	
+							if (!d) {
+								httpErrorResponse.httpErrorResponse(__file, __line, "toTopojson.toTopojsonFile()", rifLog, 
+									500, req, res, msg, response.error, response);							
+								return; 
+							}
+						}	
+						else {
+							msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+								d.file.extension + "; file size is zero" + 
+								"\n" + response.message;
+							response.message = msg + "\n" + response.message;
+							response.no_files=d.no_files;			// Add number of files process to response
+							response.fields=ofields;				// Add return fields
+							response.file_errors++;					// Increment file error count	
+							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+								rifLog, 500, req, res, msg, undefined, response);							
+							return;
+						}	
+					} // End of for loop
+
+					if (!ofields["my_reference"]) {
+						msg="[No my_reference] Processed: " + response.no_files + " files";
 					}
-					else if (!d.file) {
-						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: object not found in list" + 
-							"\n" + response.message;
-						response.message = msg + "\n" + response.message;
-						response.no_files=d.no_files;			// Add number of files process to response
-						response.fields=ofields;				// Add return fields	
-						response.file_errors++;					// Increment file error count	
-						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-							rifLog, 500, req, res, msg, undefined, response);							
-						return;			
-					}
-					else if (d.file.file_data.length > 0) {
-						// Call GeoJSON to TopoJSON converter
-						d=toTopojson.toTopojson(d, ofields, options, stderr, req, res, response);	
-						if (!d) {
-							return; // toTopojson() has emitted the error
-						}
-					}	
 					else {
-						msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-							d.file.extension + "; file size is zero" + 
-							"\n" + response.message;
-						response.message = msg + "\n" + response.message;
-						response.no_files=d.no_files;			// Add number of files process to response
-						response.fields=ofields;				// Add return fields
-						response.file_errors++;					// Increment file error count	
-						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-							rifLog, 500, req, res, msg, undefined, response);							
-						return;
-					}	
-				} // End of for loop
-				if (!ofields["my_reference"]) {
-					msg="[No my_reference] Processed: " + response.no_files + " files";
+						msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files";
+					}
 				}
 				else {
-					msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files";
+					var msg="ERROR! " + req.url + " service not not yet supported";
+					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+						rifLog, 405, req, res, msg);		
+					return;		
 				}
 //				console.error("req.busboy.on('finish') " + msg);
 				

@@ -104,10 +104,35 @@ app.use( 				// For parsing incoming HTML form data.
 		defCharset: 'binary'
 	}));
 
+/*
+ * Services supported:
+ * 
+ * shp2GeoJSON: Upload then convert shapefile to geoJSON;
+ * simplifyGeoJSON: Load, validate, aggregate, clean and simplify converted shapefile data;
+ * toTopojson: Convert geoJSON to TopoJSON;
+ * geoJSONtoWKT: Convert geoJSON to Well Known Text (WKT);
+ * createHierarchy: Create hierarchical geospatial intersection of all the shapefiles;
+ * createCentroids: Create centroids for all shapefiles;
+ * createMaptiles: Create topoJSON maptiles for all geolevels and zoomlevels; 
+ * getGeospatialData: Fetches GeoSpatial Data;
+ * getNumShapefilesInSet: Returns the number of shapefiles in the set. This is the same as the highest resolution geolevel id;
+ * getMapTile: Get maptile for specified geolevel, zoomlevel, X and Y tile number.
+ */		
+var services=["shp2GeoJSON",
+			  "simplifyGeoJSON",
+			  "toTopojson",
+			  "geoJSONtoWKT",
+			  "createHierarchy",
+			  "createCentroids",
+			  "createMaptiles",
+			  "getGeospatialData",
+			  "getNumShapefilesInSet",
+			  "getMapTile"];
+for (var i=0; i<services.length; i++) { // Call common method
 // Get methods are dummies for test purposes
-app.get('/toTopojson', nodeGeoSpatialServices.convert);
-app.post('/toTopojson', nodeGeoSpatialServices.convert);
-
+	app.get(services[i], nodeGeoSpatialServices.convert);
+	app.post(services[i], nodeGeoSpatialServices.convert);
+}
 // Old Fred zip shaepfile code
 app.get('/simplify', simplify.convert);
 app.post('/simplify', simplify.convert);
