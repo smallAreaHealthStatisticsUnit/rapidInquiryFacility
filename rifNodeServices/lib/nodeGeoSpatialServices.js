@@ -187,7 +187,11 @@ exports.convert = function(req, res) {
 			  (req.url == '/getGeospatialData') ||
 			  (req.url == '/getNumShapefilesInSet') ||
 			  (req.url == '/getMapTile'))) {
-				
+			var msg="ERROR! " + req.url + " service invalid; please see: " + 
+				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
+			httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert", 
+				rifLog, 405, req, res, msg);		
+			return;					
 		}
 	
 	// Post method	

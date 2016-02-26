@@ -118,19 +118,20 @@ app.use( 				// For parsing incoming HTML form data.
  * getNumShapefilesInSet: Returns the number of shapefiles in the set. This is the same as the highest resolution geolevel id;
  * getMapTile: Get maptile for specified geolevel, zoomlevel, X and Y tile number.
  */		
-var services=["shp2GeoJSON",
-			  "simplifyGeoJSON",
-			  "toTopojson",
-			  "geoJSONtoWKT",
-			  "createHierarchy",
-			  "createCentroids",
-			  "createMaptiles",
-			  "getGeospatialData",
-			  "getNumShapefilesInSet",
-			  "getMapTile"];
+var services=["/shp2GeoJSON",
+			  "/simplifyGeoJSON",
+			  "/toTopojson",
+			  "/geoJSONtoWKT",
+			  "/createHierarchy",
+			  "/createCentroids",
+			  "/createMaptiles",
+			  "/getGeospatialData",
+			  "/getNumShapefilesInSet",
+			  "/getMapTile"];
 for (var i=0; i<services.length; i++) { // Call common method
 // Get methods are dummies for test purposes
 	app.get(services[i], nodeGeoSpatialServices.convert);
+	console.error('expressServer.js: register service: ' + services[i]);
 	app.post(services[i], nodeGeoSpatialServices.convert);
 }
 // Old Fred zip shaepfile code

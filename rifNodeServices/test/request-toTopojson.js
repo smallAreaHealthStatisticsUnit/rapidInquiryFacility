@@ -392,6 +392,8 @@ var postIt = function(debug) {
 				console.error('Upload failed with HTTP status: ' + httpResponse.statusCode + 
 					"\n\nError(" + e.name + "): " + e.message + "\nStack>>>\n" + e.stack + "<<<" +
 					"\nMessage body>>>\n" + body + "\n<<< End of message body\n");
+				failed++;
+				return;
 			}
 			if (expected_to_pass == "true") {
 				failed++;
