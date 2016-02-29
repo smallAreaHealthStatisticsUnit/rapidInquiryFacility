@@ -613,7 +613,7 @@ exports.convert = function(req, res) {
 						}
 						else if (d.file.file_data.length > 0) {
 							// Call GeoJSON to TopoJSON converter
-							d=toTopojson.toTopojsonFile(d, ofields, options, stderr, req, res, response);	
+							d=toTopojson.toTopojsonFile(d, ofields, options, stderr, response);	
 							if (!d) {
 								httpErrorResponse.httpErrorResponse(__file, __line, "toTopojson.toTopojsonFile()", rifLog, 
 									500, req, res, msg, response.error, response);							

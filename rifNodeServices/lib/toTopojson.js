@@ -48,17 +48,37 @@
  * Function:	toTopojsonFile()
  * Parameters:	d object (temporary processing data, 
 				ofields [field parameters array],
-				TopoJSON topology processing options,
-				HTTP request object,
-				HTTP response object, 
+				TopoJSON topology processing options, 
 				my response object
  * Returns:		d object topojson/Nothing on failure
  * Description: TopoJSON processing for files (toTopojson service):
  *				- converts string to JSON
  *				- calls topojson.topology() using options
  * 				- Add file name, stderr and topoJSON to my response
+ *
+ * Modifies/creates:
+ *				d.file.jsonData,
+ *				d.file.topojson,
+ *				d.file.topojson_stderr,
+ *				response.message,
+ *				reponse.file_list[d.no_files-1] set to file object:
+ *						file_name: File name
+ *						topojson: TopoJSON created from file geoJSON,
+ *						topojson_stderr: Debug from TopoJSON module,
+ *						topojson_runtime: Time to convert geoJSON to topoJSON (S),
+ *						file_size: Transferred file size in bytes,
+ *						transfer_time: Time to transfer file (S),
+ *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+ *						uncompress_size: Size of uncompressed file in bytes 
+ *
+ * On error sets:
+ *				response.message,
+ *				response.no_files,
+ *				response.fields,
+ *				response.file_errors,
+ *				response.error 
  */
-toTopojsonFile=function(d, ofields, options, stderr, req, res, response) {
+toTopojsonFile=function(d, ofields, options, stderr, response) {
 	var rifLog = require('../lib/rifLog'),
 	    topojson = require('topojson');
 	
@@ -69,16 +89,16 @@ toTopojsonFile=function(d, ofields, options, stderr, req, res, response) {
 		d.file.jsonData = undefined;
 		// Set up file list reponse now, in case of exception
 		
-/* Array file objects:
-*						file_name: File name
-*						topojson: TopoJSON created from file geoJSON,
-*						topojson_stderr: Debug from TopoJSON module,
-*						topojson_runtime: Time to convert geoJSON to topoJSON (S),
-*						file_size: Transferred file size in bytes,
-*						transfer_time: Time to transfer file (S),
-*						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
-*						uncompress_size: Size of uncompressed file in bytes
-*/
+/* Response array file objects:
+ *						file_name: File name
+ *						topojson: TopoJSON created from file geoJSON,
+ *						topojson_stderr: Debug from TopoJSON module,
+ *						topojson_runtime: Time to convert geoJSON to topoJSON (S),
+ *						file_size: Transferred file size in bytes,
+ *						transfer_time: Time to transfer file (S),
+ *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+ *						uncompress_size: Size of uncompressed file in bytes
+ */
 		response.file_list[d.no_files-1] = {
 			file_name: d.file.file_name,
 			topojson: '',
@@ -120,15 +140,15 @@ toTopojsonFile=function(d, ofields, options, stderr, req, res, response) {
 // This will need a mutex if > 1 thread is being processed at the same time	
 			response.message = response.message + "\n" + msg + " OK:\nTopoJson.topology() stderr >>>\n" + 
 				d.file.topojson_stderr + "<<< TopoJson.topology() stderr";
-			rifLog.rifLog(msg + "TopoJson.topology() stderr >>>\n"  + 
-				d.file.topojson_stderr + "<<< TopoJson.topology() stderr", 
-				req);
+//			rifLog.rifLog(msg + "TopoJson.topology() stderr >>>\n"  + 
+//				d.file.topojson_stderr + "<<< TopoJson.topology() stderr", 
+//				req);
 		}
 		else {
 // This will need a mutex if > 1 thread is being processed at the same time
 			response.message = response.message + "\n" + msg + " OK";
-			rifLog.rifLog("TopoJson.topology() no stderr; " + msg, 
-				req);		
+//			rifLog.rifLog("TopoJson.topology() no stderr; " + msg, 
+//				req);		
 		}			
 															   
 		return d.file.topojson;								   
