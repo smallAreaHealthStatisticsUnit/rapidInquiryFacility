@@ -45,6 +45,175 @@
 // Peter Hambly, SAHSU
 
 /*
+ * Function:	toTopojsonFieldProcessor()
+ * Parameters:	fieldname, val, text, options, ofields, response object, express HTTP request object, RIF logging object
+ * Returns:		Text of field processing log
+ * Description: toTopoJSON method field processor. Called from req.busboy.on('field') callback function
+ * Parameters:	fieldname, value, fieldnameTruncated, valTruncated
+ * Description:	Field processing function; fields supported
+ *
+ *				zoomLevel: 	Set quantization field and Topojson.Topology() option using local function getQuantization()
+ * 							i.e. Set the maximum number of differentiable values along each dimension) by zoomLevel
+ *
+ * 							Zoomlevel		Quantization
+ * 							---------		------------
+ *
+ * 							<=6				400
+ * 							7				700
+ * 							8				1500
+ * 							9				3000
+ * 							10				5000
+ * 							>10				10000
+ *				projection: Set projection field and Topojson.Topology() option. E.g. to convert spherical input geometry 
+ *							to Cartesian coordinates via a D3 geographic projection. For example, a projection of 'd3.geo.albersUsa()' 
+ *							will project geometry using a composite Albers equal-area conic projection suitable for the contiguous 
+ *							United States, Alaska and Hawaii. DO NOT SET UNLESS YOU KNOW WHAT YOU ARE DOING!
+ *			 	verbose: 	Set Topojson.Topology() option if true. Produces debug returned as part of reponse.message
+ *				id:			Name of feature property to promote to geometry id; default is ID. Value must exist in data.
+ *							Creates myId() function and registers it with Topojson.Topology() via the id option
+ *				property-transform-fields:
+ *							JSON array of additional fields in GeoJSON to add to output topoJSON. Uses the Topojson.Topology()
+ * 							property-transform option. Value must be parseable by JSON.parse(). Value must exist in data.
+ *							Creates myPropertyTransform() function and registers it with Topojson.Topology() via the 
+ *							property-transform option
+ *
+ * All other fields have no special processing. Fields are returned in the response.fields JSON array. Any field processing errors 
+ * either during processing or in the id and property-transform Topojson.Topology() callback functions will cause processing to fail.
+ *
+ * See NPM tpopjson command line reference: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
+ *
+ * JSON injection protection. This function does NOT use eval() as it is source of potential injection
+ * e.g.					var rval=eval("d.properties." + ofields[fieldname]);
+ * Instead it tests for the field name directly:
+ *						if (!d.properties[ofields[fieldname]]) { ...
+ * So setting formData (see test\request.js test 18) to:
+ * formData["property-transform-fields"]='["eval(console.error(JSON.stringify(req, null, 4)))"]';
+ * Will cause an error:
+ * Field: property-transform-fields[["eval(console.error(JSON.stringify(req, null, 4)))"]];
+ * myPropertyTransform() function id fields set to: ["eval(console.error(JSON.stringify(req, null, 4)))"]; 1 field(s)
+ * FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(console.error(JSON.stringify(req, null, 4))) does not exist in geoJSON;
+ */
+toTopojsonFieldProcessor=function(fieldname, val, text, options, ofields, response, req, rifLog) {
+	var msg,
+
+/*
+ * Function: 	getQuantization() 
+ * Parameters:  Level
+ * Description: Set quantization (the maximum number of differentiable values along each dimension) by zoomLevel
+ *
+ * Zoomlevel		Quantization
+ * ---------		------------
+ *
+ * <=6				400
+ * 7				700
+ * 8				1500
+ * 9				3000
+ * 10				5000
+ * >10				10000
+ */
+    getQuantization = function(lvl) {
+         if (lvl <= 6) {
+            return 400;
+         } else if (lvl == 7) {
+            return 700;
+         } else if (lvl == 8) {
+            return 1500;
+         } else if (lvl == 9) {
+            return 3000;
+         } else if (lvl == 10) {
+            return 5000;
+         } else {
+            return 10000; // Default
+         }
+     };
+	
+	if (fieldname == 'zoomLevel') {
+	   options.quantization = getQuantization(val);
+	   text+="Quantization set to: " + options.quantization;
+	   ofields["quantization"]=options.quantization;
+	}
+	else if (fieldname == 'projection') {
+	   options.projection = val;
+	   text+="Projection set to: " + options.projection;
+	   ofields["projection"]=options.projection;
+	}
+	else if (fieldname == 'id') {				
+		text+="\nmyId() function id field set to: " + val;
+		ofields[fieldname]=val;				
+//
+// Promote tile gid to id
+//					
+		ofields.myId = function(d) {
+// Dont use eval() = it is source of potential injection
+// e.g.					var rval=eval("d.properties." + ofields[fieldname]);
+			if (!d.properties[ofields[fieldname]]) { // Dont raise errors, count them up and stop later
+				response.field_errors++;
+				var msg="FIELD PROCESSING ERROR! Invalid id field: d.properties." + ofields[fieldname] + " does not exist in geoJSON";
+				if (options.id) {
+					rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
+					options.id = undefined; // Prevent this section running again!	
+					response.message = response.message + "\n" + msg;
+				}
+			}
+			else {
+				return d.properties[ofields[fieldname]];
+			}
+//					response.message = response.message + "\nCall myId() for id field: " + ofields[fieldname] + 
+//						"; value: " + d.properties[ofields[fieldname]];									
+		}						
+		options.id = ofields.myId;				
+	}
+	else if (fieldname == 'property-transform-fields') {	
+		var propertyTransformFields;
+		ofields[fieldname]=val;	
+		try {
+			propertyTransformFields=JSON.parse(val);
+			text+="\nmyPropertyTransform() function id fields set to: " + val + 
+				"; " + propertyTransformFields.length + " field(s)";
+//
+// Property transform support
+//					
+			ofields.myPropertyTransform = function(d) {
+// Dont use eval() = it is source of potential injection
+//e.g.				var rval=eval("d.properties." + ofields[fieldname]);
+				var rval={}; // Empty return object
+				for (i = 0; i < propertyTransformFields.length; i++) {
+					if (!d.properties[propertyTransformFields[i]]) { // Dont raise errors, count them up and stop later
+						response.field_errors++;
+						var msg="FIELD PROCESSING ERROR! Invalid property-transform field: d.properties." + propertyTransformFields[i] + 
+							" does not exist in geoJSON";
+						if (options["property-transform"]) {
+							rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
+							options["property-transform"] = undefined; // Prevent this section running again!	
+							response.message = response.message + "\n" + msg;
+						}
+					}
+					else {
+						rval[propertyTransformFields[i]] = d.properties[propertyTransformFields[i]];
+					}
+//								response.message = response.message + "\nCall myPropertyTransform() for property-transform field: " + 
+//									propertyTransformFields[i] + 
+//									"; value: " + d.properties[propertyTransformFields[i]];									
+				}						
+				return rval;
+			};
+			options["property-transform"] = ofields.myPropertyTransform;	
+		}
+		catch (e) {
+			response.field_errors++;
+			msg="FIELD PROCESSING ERROR! field [" + fieldname + "]: " + val + "; invalid array exception";
+			response.message = msg + "\n" + response.message;
+			rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);							
+		}
+	}
+	else {
+		ofields[fieldname]=val;	
+	}	
+	
+	return text;
+}
+
+/*
  * Function:	toTopojsonFile()
  * Parameters:	d object (temporary processing data, 
 				ofields [field parameters array],
@@ -187,4 +356,5 @@ toTopojsonFile=function(d, ofields, options, stderr, response) {
 	} 	
 }
 
+module.exports.toTopojsonFieldProcessor = toTopojsonFieldProcessor;
 module.exports.toTopojsonFile = toTopojsonFile;	
