@@ -249,8 +249,7 @@ toTopojsonFieldProcessor=function(fieldname, val, text, topojson_options, ofield
  *				response.error 
  */
 toTopojsonFile=function(d, ofields, topojson_options, stderr, response) {
-	var rifLog = require('../lib/rifLog'),
-	    topojson = require('topojson');
+	var topojson = require('topojson');
 	
 	var msg="File [" + d.no_files + "]: " + d.file.file_name;
 	
