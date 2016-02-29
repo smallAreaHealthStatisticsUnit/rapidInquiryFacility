@@ -8,7 +8,7 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - toTopojson - GeoJSON to TopoJSON convertor
+// Rapid Enquiry Facility (RIF) - toTopojson - GeoJSON to TopoJSON convertor; method specfic functions
 //
 // Copyright:
 //
@@ -46,12 +46,11 @@
 
 /*
  * Function:	toTopojsonFieldProcessor()
- * Parameters:	fieldname, val, text, options, ofields, response object, express HTTP request object, RIF logging object
+ * Parameters:	fieldname, val, text, topojson_options, ofields, response object, express HTTP request object, RIF logging object
  * Returns:		Text of field processing log
  * Description: toTopoJSON method field processor. Called from req.busboy.on('field') callback function
- * Parameters:	fieldname, value, fieldnameTruncated, valTruncated
- * Description:	Field processing function; fields supported
  *
+ *				verbose: 	Set Topojson.Topology() option if true. 
  *				zoomLevel: 	Set quantization field and Topojson.Topology() option using local function getQuantization()
  * 							i.e. Set the maximum number of differentiable values along each dimension) by zoomLevel
  *
@@ -68,7 +67,6 @@
  *							to Cartesian coordinates via a D3 geographic projection. For example, a projection of 'd3.geo.albersUsa()' 
  *							will project geometry using a composite Albers equal-area conic projection suitable for the contiguous 
  *							United States, Alaska and Hawaii. DO NOT SET UNLESS YOU KNOW WHAT YOU ARE DOING!
- *			 	verbose: 	Set Topojson.Topology() option if true. Produces debug returned as part of reponse.message
  *				id:			Name of feature property to promote to geometry id; default is ID. Value must exist in data.
  *							Creates myId() function and registers it with Topojson.Topology() via the id option
  *				property-transform-fields:
@@ -93,7 +91,7 @@
  * myPropertyTransform() function id fields set to: ["eval(console.error(JSON.stringify(req, null, 4)))"]; 1 field(s)
  * FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(console.error(JSON.stringify(req, null, 4))) does not exist in geoJSON;
  */
-toTopojsonFieldProcessor=function(fieldname, val, text, options, ofields, response, req, rifLog) {
+toTopojsonFieldProcessor=function(fieldname, val, text, topojson_options, ofields, response, req, rifLog) {
 	var msg,
 
 /*
@@ -127,15 +125,18 @@ toTopojsonFieldProcessor=function(fieldname, val, text, options, ofields, respon
          }
      };
 	
-	if (fieldname == 'zoomLevel') {
-	   options.quantization = getQuantization(val);
-	   text+="Quantization set to: " + options.quantization;
-	   ofields["quantization"]=options.quantization;
+	if ((fieldname == 'verbose')&&(val == 'true')) {
+		topojson_options.verbose = true;
+	}
+	else if (fieldname == 'zoomLevel') {
+	   topojson_options.quantization = getQuantization(val);
+	   text+="Quantization set to: " + topojson_options.quantization;
+	   ofields["quantization"]=topojson_options.quantization;
 	}
 	else if (fieldname == 'projection') {
-	   options.projection = val;
-	   text+="Projection set to: " + options.projection;
-	   ofields["projection"]=options.projection;
+	   topojson_options.projection = val;
+	   text+="Projection set to: " + topojson_options.projection;
+	   ofields["projection"]=topojson_options.projection;
 	}
 	else if (fieldname == 'id') {				
 		text+="\nmyId() function id field set to: " + val;
@@ -149,9 +150,9 @@ toTopojsonFieldProcessor=function(fieldname, val, text, options, ofields, respon
 			if (!d.properties[ofields[fieldname]]) { // Dont raise errors, count them up and stop later
 				response.field_errors++;
 				var msg="FIELD PROCESSING ERROR! Invalid id field: d.properties." + ofields[fieldname] + " does not exist in geoJSON";
-				if (options.id) {
+				if (topojson_options.id) {
 					rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
-					options.id = undefined; // Prevent this section running again!	
+					topojson_options.id = undefined; // Prevent this section running again!	
 					response.message = response.message + "\n" + msg;
 				}
 			}
@@ -161,7 +162,7 @@ toTopojsonFieldProcessor=function(fieldname, val, text, options, ofields, respon
 //					response.message = response.message + "\nCall myId() for id field: " + ofields[fieldname] + 
 //						"; value: " + d.properties[ofields[fieldname]];									
 		}						
-		options.id = ofields.myId;				
+		topojson_options.id = ofields.myId;				
 	}
 	else if (fieldname == 'property-transform-fields') {	
 		var propertyTransformFields;
@@ -182,9 +183,9 @@ toTopojsonFieldProcessor=function(fieldname, val, text, options, ofields, respon
 						response.field_errors++;
 						var msg="FIELD PROCESSING ERROR! Invalid property-transform field: d.properties." + propertyTransformFields[i] + 
 							" does not exist in geoJSON";
-						if (options["property-transform"]) {
+						if (topojson_options["property-transform"]) {
 							rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
-							options["property-transform"] = undefined; // Prevent this section running again!	
+							topojson_options["property-transform"] = undefined; // Prevent this section running again!	
 							response.message = response.message + "\n" + msg;
 						}
 					}
@@ -197,7 +198,7 @@ toTopojsonFieldProcessor=function(fieldname, val, text, options, ofields, respon
 				}						
 				return rval;
 			};
-			options["property-transform"] = ofields.myPropertyTransform;	
+			topojson_options["property-transform"] = ofields.myPropertyTransform;	
 		}
 		catch (e) {
 			response.field_errors++;
@@ -217,12 +218,12 @@ toTopojsonFieldProcessor=function(fieldname, val, text, options, ofields, respon
  * Function:	toTopojsonFile()
  * Parameters:	d object (temporary processing data, 
 				ofields [field parameters array],
-				TopoJSON topology processing options, 
+				TopoJSON topology processing topojson_options, 
 				my response object
  * Returns:		d object topojson/Nothing on failure
  * Description: TopoJSON processing for files (toTopojson service):
  *				- converts string to JSON
- *				- calls topojson.topology() using options
+ *				- calls topojson.topology() using topojson_options
  * 				- Add file name, stderr and topoJSON to my response
  *
  * Modifies/creates:
@@ -247,7 +248,7 @@ toTopojsonFieldProcessor=function(fieldname, val, text, options, ofields, respon
  *				response.file_errors,
  *				response.error 
  */
-toTopojsonFile=function(d, ofields, options, stderr, response) {
+toTopojsonFile=function(d, ofields, topojson_options, stderr, response) {
 	var rifLog = require('../lib/rifLog'),
 	    topojson = require('topojson');
 	
@@ -285,7 +286,7 @@ toTopojsonFile=function(d, ofields, options, stderr, response) {
 		var lstart = new Date().getTime();			
 		d.file.topojson = topojson.topology({   // Convert geoJSON to topoJSON
 			collection: d.file.jsonData
-			}, options);				
+			}, topojson_options);				
 		stderr.enable(); 				   // Re-enable stderr
 		
 		d.file.topojson_stderr=stderr.str();  // Get stderr as a string	

@@ -66,6 +66,7 @@ var util = require('util'),
     fs = require('fs'),
 	zlib = require('zlib'),
     toTopojson = require('../lib/toTopojson'),
+    shp2GeoJSON = require('../lib/shp2GeoJSON'),
 	stderrHook = require('../lib/stderrHook'),
     httpErrorResponse = require('../lib/httpErrorResponse'),
     rifLog = require('../lib/rifLog'),
@@ -170,9 +171,9 @@ exports.convert = function(req, res) {
 			var ofields = {	
 				my_reference: '', 
 				verbose: false
-			};
+			}
 			if (req.url == '/toTopojson') {
-				// Default topojson options 
+				// Default toTopojson options 
 				var topojson_options = {
 					verbose: false,
 					quantization: 1e4		
@@ -180,8 +181,14 @@ exports.convert = function(req, res) {
 				ofields.zoomLevel=0; 
 				ofields.quantization=topojson_options.quantization;
 				ofields.projection=topojson_options.projection;
-			};	
-
+			}
+			else if (req.url == '/shp2GeoJSON') {
+				// Default shp2GeoJSON options 
+				var topojson_options = {
+					verbose: false		
+				};
+			}
+			
 /*
  * Function: 	req.busboy.on('filesLimit') callback function
  * Parameters:	None
@@ -401,7 +408,7 @@ exports.convert = function(req, res) {
  * Parameters:	fieldname, value, fieldnameTruncated, valTruncated
  * Description:	Field processing function; fields supported  
  *
- *			 	verbose: 	Set Topojson.Topology() option if true. Produces debug returned as part of reponse.message
+ *			 	verbose: 	Produces debug returned as part of reponse.message
  */ 
 			req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
 				var text="\nField: " + fieldname + "[" + val + "]; ";
@@ -418,13 +425,15 @@ exports.convert = function(req, res) {
 				
 				// Process fields
 				if ((fieldname == 'verbose')&&(val == 'true')) {
-					topojson_options.verbose = true;
 					text+="verbose mode enabled";
 					ofields[fieldname]="true";
 				}
-				else if (req.url == '/toTopojson') {
+				if (req.url == '/toTopojson') {
 					text=toTopojson.toTopojsonFieldProcessor(fieldname, val, text, topojson_options, ofields, response, req, rifLog);
-				}	
+				}
+				else if (req.url == '/shp2GeoJSON') {
+					text=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, text, shp_options, ofields, response, req, rifLog);
+				}					
 				response.message = response.message + text;
 			 }); // End of field processing function
 
