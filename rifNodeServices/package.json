@@ -29,7 +29,7 @@
     "form-data": "^1.0.0-rc3",
     "helmet": "^1.1.0",
     "magic-globals": "^0.5.0",
-    "mapshaper": "^0.3.15",
+    "mapshaper": "^0.3.16",
     "mutexjs": "^1.2.0",
     "request": "^2.69.0",
     "request-debug": "^0.2.0",
