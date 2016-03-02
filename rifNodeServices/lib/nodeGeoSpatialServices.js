@@ -238,6 +238,7 @@ exports.convert = function(req, res) {
 					file_name: "",
 					temp_file_name: "",
 					file_encoding: "",	
+					inflate_error: "",
 					extension: "",
 					jsonData: "",
 					file_data: "",
@@ -299,7 +300,7 @@ exports.convert = function(req, res) {
 					var msg="FAIL! Strream error; file [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 							d.file.file_encoding + 
 							'; read [' + d.file.chunks.length + '] ' + d.file.partial_chunk_size + ', ' + d.file.chunks_length + ' total';
-
+					d.file.inflate_error=msg;		
 					response.message=msg + "\n" + response.message;			
 					response.no_files=d.no_files;			// Add number of files process to response				
 					response.fields=ofields;				// Add return fields	
@@ -325,6 +326,7 @@ exports.convert = function(req, res) {
 						msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 							d.file.extension + "; file_encoding: " + d.file.file_encoding + 
 							" is truncated at " + d.file.file_size + " bytes"; 
+						d.file.inflate_error=msg;		
 						response.message=msg + "\n" + response.message;
 						response.no_files=d.no_files;			// Add number of files process to response
 						response.fields=ofields;				// Add return fields		
@@ -342,7 +344,8 @@ exports.convert = function(req, res) {
 						}
 						catch (e) {
 							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-								d.file.extension + "; file_encoding: " + d.file.file_encoding;
+								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+							d.file.inflate_error=msg;	
 							response.message=msg + "\n" + response.message;
 							response.no_files=d.no_files;			// Add number of files process to response
 							response.fields=ofields;				// Add return fields		
@@ -365,6 +368,7 @@ exports.convert = function(req, res) {
 						catch (e) {
 							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+							d.file.inflate_error=msg;	
 							response.message=msg + "\n" + response.message;
 							response.no_files=d.no_files;			// Add number of files process to response
 							response.fields=ofields;				// Add return fields	
@@ -383,6 +387,7 @@ exports.convert = function(req, res) {
 					else if (d.file.file_encoding === "zip") {
 						msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 							d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
+						d.file.inflate_error=msg;			
 						response.message=msg + "\n" + response.message;
 						response.no_files=d.no_files;			// Add number of files process to response
 						response.fields=ofields;				// Add return fields	
@@ -448,15 +453,18 @@ exports.convert = function(req, res) {
 					for (i = 0; i < response.no_files; i++) {	
 						d=d_files.d_list[i];
 						if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
+							msg="FAIL! File [" + (i+1) + "/?]: entry not found, no file list" + 
+								"; httpErrorResponse.httpErrorResponse() NOT already processed";						
 							if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
-								msg="FAIL! File [" + (i+1) + "/?]: entry not found, no file list" + 
-									"; httpErrorResponse.httpErrorResponse() NOT already processed";
 								response.message = msg + "\n" + response.message;
 								response.no_files=0;					// Add number of files process to response
 								response.fields=ofields;				// Add return fields
 								response.file_errors++;					// Increment file error count
 								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 									serverLog, 500, req, res, msg, undefined, response);				
+							}
+							else {
+								serverLog.serverLog(__file, __line, "req.busboy.on('finish')", req, msg, undefined);
 							}
 							return;							
 						}
@@ -470,6 +478,16 @@ exports.convert = function(req, res) {
 							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 								serverLog, 500, req, res, msg, undefined, response);							
 							return;			
+						}
+						else if (d.file.inflate_error) {
+							msg=d.file.inflate_error;
+							response.message = msg + "\n" + response.message;
+							response.no_files=d.no_files;			// Add number of files process to response
+							response.fields=ofields;				// Add return fields
+							response.file_errors++;					// Increment file error count	
+							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+								serverLog, 500, req, res, msg, undefined, response);							
+							return;							
 						}
 						else if (d.file.file_data.length > 0) {
 							if (req.url == '/geo2topoJSON') {
