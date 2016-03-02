@@ -109,8 +109,8 @@ app.use( 				// For parsing incoming HTML form data.
  * 
  * shp2GeoJSON: Upload then convert shapefile to geoJSON;
  * simplifyGeoJSON: Load, validate, aggregate, clean and simplify converted shapefile data;
- * toTopojson: Convert geoJSON to TopoJSON;
- * geoJSONtoWKT: Convert geoJSON to Well Known Text (WKT);
+ * geo2topoJSON: Convert geoJSON to TopoJSON;
+ * geoJSON2WKT: Convert geoJSON to Well Known Text (WKT);
  * createHierarchy: Create hierarchical geospatial intersection of all the shapefiles;
  * createCentroids: Create centroids for all shapefiles;
  * createMaptiles: Create topoJSON maptiles for all geolevels and zoomlevels; 
@@ -120,8 +120,8 @@ app.use( 				// For parsing incoming HTML form data.
  */		
 var services=["/shp2GeoJSON",
 			  "/simplifyGeoJSON",
-			  "/toTopojson",
-			  "/geoJSONtoWKT",
+			  "/geo2TopoJSON",
+			  "/geoJSON2WKT",
 			  "/createHierarchy",
 			  "/createCentroids",
 			  "/createMaptiles",

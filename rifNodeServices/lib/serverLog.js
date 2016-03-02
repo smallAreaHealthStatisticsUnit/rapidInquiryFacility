@@ -126,7 +126,7 @@ serverLog2 = function(file, line, calling_function, msg, req, err) {
 					"; Content-Encoding: " + req.get('Content-Encoding');
 	}
 	// Add error tracer if present
-	if (err) {
+	if (err && err.message && err.stack) {
 		error_tracer="\n\nError(" + err.name + "): " + err.message + "\nStack>>>\n" + err.stack + "<<<";
 	}
 	
