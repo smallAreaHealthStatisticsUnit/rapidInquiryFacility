@@ -8,7 +8,7 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - geo2topoJSON - GeoJSON to TopoJSON convertor; method specfic functions
+// Rapid Enquiry Facility (RIF) - geo2TopoJSON - GeoJSON to TopoJSON convertor; method specfic functions
 //
 // Copyright:
 //
@@ -45,7 +45,7 @@
 // Peter Hambly, SAHSU
 
 /*
- * Function:	geo2topoJSONFieldProcessor()
+ * Function:	geo2TopoJSONFieldProcessor()
  * Parameters:	fieldname, val, text, topojson_options, ofields, response object, express HTTP request object, RIF logging object
  * Returns:		Text of field processing log
  * Description: toTopoJSON method field processor. Called from req.busboy.on('field') callback function
@@ -91,7 +91,7 @@
  * myPropertyTransform() function id fields set to: ["eval(console.error(JSON.stringify(req, null, 4)))"]; 1 field(s)
  * FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(console.error(JSON.stringify(req, null, 4))) does not exist in geoJSON;
  */
-geo2topoJSONFieldProcessor=function(fieldname, val, text, topojson_options, ofields, response, req, serverLog) {
+geo2TopoJSONFieldProcessor=function(fieldname, val, text, topojson_options, ofields, response, req, serverLog) {
 	var msg,
 
 /*
@@ -215,13 +215,13 @@ geo2topoJSONFieldProcessor=function(fieldname, val, text, topojson_options, ofie
 }
 
 /*
- * Function:	geo2topoJSONFile()
+ * Function:	geo2TopoJSONFile()
  * Parameters:	d object (temporary processing data, 
 				ofields [field parameters array],
 				TopoJSON topology processing topojson_options, 
 				my response object
  * Returns:		d object topojson/Nothing on failure
- * Description: TopoJSON processing for files (geo2topoJSON service):
+ * Description: TopoJSON processing for files (geo2TopoJSON service):
  *				- converts string to JSON
  *				- calls topojson.topology() using topojson_options
  * 				- Add file name, stderr and topoJSON to my response
@@ -248,7 +248,7 @@ geo2topoJSONFieldProcessor=function(fieldname, val, text, topojson_options, ofie
  *				response.file_errors,
  *				response.error 
  */
-geo2topoJSONFile=function(d, ofields, topojson_options, stderr, response) {
+geo2TopoJSONFile=function(d, ofields, topojson_options, stderr, response) {
 	var topojson = require('topojson');
 	
 	var msg="File [" + d.no_files + "]: " + d.file.file_name;
@@ -356,5 +356,5 @@ geo2topoJSONFile=function(d, ofields, topojson_options, stderr, response) {
 	} 	
 }
 
-module.exports.geo2topoJSONFieldProcessor = geo2topoJSONFieldProcessor;
-module.exports.geo2topoJSONFile = geo2topoJSONFile;	
+module.exports.geo2TopoJSONFieldProcessor = geo2TopoJSONFieldProcessor;
+module.exports.geo2TopoJSONFile = geo2TopoJSONFile;	

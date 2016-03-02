@@ -315,7 +315,7 @@ var MakeRequest = function(){
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 		
     this.options = {
-        url:  'http://127.0.0.1:3000/geo2topoJSON',
+        url:  'http://127.0.0.1:3000/geo2TopoJSON',
         headers:{'Content-Type': contentType},
         formData: formData, 
         'content-length': length

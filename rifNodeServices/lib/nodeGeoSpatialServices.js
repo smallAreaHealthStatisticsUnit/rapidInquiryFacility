@@ -64,7 +64,7 @@ var util = require('util'),
     os = require('os'),
     fs = require('fs'),
 	zlib = require('zlib'),
-    geo2topoJSON = require('../lib/geo2topoJSON'),
+    geo2TopoJSON = require('../lib/geo2TopoJSON'),
     shp2GeoJSON = require('../lib/shp2GeoJSON'),
 	stderrHook = require('../lib/stderrHook'),
     httpErrorResponse = require('../lib/httpErrorResponse'),
@@ -137,7 +137,7 @@ exports.convert = function(req, res) {
  * 
  * shp2GeoJSON: Upload then convert shapefile to geoJSON;
  * simplifyGeoJSON: Load, validate, aggregate, clean and simplify converted shapefile data;
- * geo2topoJSON: Convert geoJSON to TopoJSON;
+ * geo2TopoJSON: Convert geoJSON to TopoJSON;
  * geoJSONtoWKT: Convert geoJSON to Well Known Text (WKT);
  * createHierarchy: Create hierarchical geospatial intersection of all the shapefiles;
  * createCentroids: Create centroids for all shapefiles;
@@ -148,7 +148,7 @@ exports.convert = function(req, res) {
  */		
 		if (!((req.url == '/shp2GeoJSON') ||
 			  (req.url == '/simplifyGeoJSON') ||
-			  (req.url == '/geo2topoJSON') ||
+			  (req.url == '/geo2TopoJSON') ||
 			  (req.url == '/geoJSONtoWKT') ||
 			  (req.url == '/createHierarchy') ||
 			  (req.url == '/createCentroids') ||
@@ -171,8 +171,8 @@ exports.convert = function(req, res) {
 				my_reference: '', 
 				verbose: false
 			}
-			if (req.url == '/geo2topoJSON') {
-				// Default geo2topoJSON options 
+			if (req.url == '/geo2TopoJSON') {
+				// Default geo2TopoJSON options 
 				var topojson_options = {
 					verbose: false,
 					quantization: 1e4		
@@ -437,8 +437,8 @@ exports.convert = function(req, res) {
 					text+="verbose mode enabled";
 					ofields[fieldname]="true";
 				}
-				if (req.url == '/geo2topoJSON') {
-					text=geo2topoJSON.geo2topoJSONFieldProcessor(fieldname, val, text, topojson_options, ofields, response, req, serverLog);
+				if (req.url == '/geo2TopoJSON') {
+					text=geo2TopoJSON.geo2TopoJSONFieldProcessor(fieldname, val, text, topojson_options, ofields, response, req, serverLog);
 				}
 				else if (req.url == '/shp2GeoJSON') {
 					text=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, text, shp_options, ofields, response, req, serverLog);
@@ -454,7 +454,7 @@ exports.convert = function(req, res) {
 			req.busboy.on('finish', function() {
 				var msg;
 				
-				if (req.url == '/geo2topoJSON') {
+				if (req.url == '/geo2TopoJSON') {
 					for (i = 0; i < response.no_files; i++) {	
 						d=d_files.d_list[i];
 						if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
@@ -495,11 +495,11 @@ exports.convert = function(req, res) {
 							return;							
 						}
 						else if (d.file.file_data.length > 0) {
-							if (req.url == '/geo2topoJSON') {
+							if (req.url == '/geo2TopoJSON') {
 								// Call GeoJSON to TopoJSON converter
-								d=geo2topoJSON.geo2topoJSONFile(d, ofields, topojson_options, stderr, response);	
+								d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);	
 								if (!d) {
-									httpErrorResponse.httpErrorResponse(__file, __line, "geo2topoJSON.geo2topoJSONFile()", serverLog, 
+									httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile()", serverLog, 
 										500, req, res, msg, response.error, response);							
 									return; 
 								}
