@@ -47,7 +47,7 @@
 /*
  * Function: 	httpErrorResponse() 
  * Parameters:  File called from, line number called from, procedure called from, 
- *				rifLog object,
+ *				serverLog object,
  *				HTTP status,
  *				HTTP request object,
  *				HTTP response object,
@@ -66,7 +66,7 @@
  * message: 		Processing messages, including debug from topoJSON               
  * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  */		
-httpErrorResponse=function(file, line, calling_function, rifLog, status, req, res, msg, err, g_response) {
+httpErrorResponse=function(file, line, calling_function, serverLog, status, req, res, msg, err, g_response) {
 	var l_response = {                 // Set output response    
 		error: '',
 		no_files: 0,    
@@ -107,10 +107,10 @@ httpErrorResponse=function(file, line, calling_function, rifLog, status, req, re
 			l_response.error = err.message;
 		}
 		if (g_response) { 
-			rifLog.rifLog2(file, line, calling_function, g_response.message, req, err);
+			serverLog.serverLog2(file, line, calling_function, g_response.message, req, err);
 		}
 		else { 
-			rifLog.rifLog2(file, line, calling_function, "Unknown", req, err);
+			serverLog.serverLog2(file, line, calling_function, "Unknown", req, err);
 		}
 		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 			res.status(status);		
@@ -119,19 +119,19 @@ httpErrorResponse=function(file, line, calling_function, rifLog, status, req, re
 			res.end();	
 		}
 		else {
-			rifLog.rifLog("FATAL! Unable to return error to user - httpErrorResponse() already processed", req, err);
+			serverLog.serverLog("FATAL! Unable to return error to user - httpErrorResponse() already processed", req, err);
 		}
 
 	} catch (e) {                            // Catch conversion errors
 		var n_msg="Error response processing ERROR!\n\n" + msg;				  
-		rifLog.rifLog(n_msg, req, e);
+		serverLog.serverLog(n_msg, req, e);
 		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 			res.status(501);			
 			res.write(n_msg);
 			res.end();	
 		}
 		else {
-			rifLog.rifLog("FATAL! Unable to return error to user - httpErrorResponse() already processed", req, e);
+			serverLog.serverLog("FATAL! Unable to return error to user - httpErrorResponse() already processed", req, e);
 		}		
 		return;
 	}

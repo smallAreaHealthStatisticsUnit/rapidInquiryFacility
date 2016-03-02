@@ -8,7 +8,7 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - rifLog logging primitive
+// Rapid Enquiry Facility (RIF) - serverLog logging primitive
 //                                Logs to stderr; uses Magic-Globals 
 //								  https://www.npmjs.com/package/magic-globals by Gavin Engel
 //
@@ -50,12 +50,12 @@ require('magic-globals'); // For file and line information. Does not work from E
 var util = require('util');
  
 /*
- * Function:	rifLog.rifLog()
+ * Function:	serverLog.serverLog()
  * Parameters:	Message, HTTP request object, error object
  * Returns:		Nothing
- * Description: rifLog logging primitive, e.g.
+ * Description: serverLog logging primitive, e.g.
 
-		rifLog.rifLog("TopoJson.topology() stderr for file " + d.no_files + ": " + d.file.file_name + ">>>\n"  + 
+		serverLog.serverLog("TopoJson.topology() stderr for file " + d.no_files + ": " + d.file.file_name + ">>>\n"  + 
 			d.file.topojson_stderr + "<<<", 
 			req);	
 
@@ -72,23 +72,23 @@ topology: 3986 arcs, 18197 points
 <<<		
  
  */
-rifLog = function(msg, req, err) {
+serverLog = function(msg, req, err) {
 	var calling_function = arguments.callee.caller.name || '(anonymous)';
 	// Get file information from magic-globals: __stack
 	var file=__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0];
 	var line=__stack[2].getLineNumber();
 	
-	rifLog2(file, line, calling_function, msg, req, err)
+	serverLog2(file, line, calling_function, msg, req, err)
 }
 
 /*
- * Function:	rifLog.rifLog2()
+ * Function:	serverLog.serverLog2()
  * Parameters:	File called from, line number called from, procedure called from, 
  *				Message, HTTP request object, error object
  * Returns:		Nothing
- * Description: rifLog logging primitive for event anonymous functions, e.g.
+ * Description: serverLog logging primitive for event anonymous functions, e.g.
 
-			rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", 
+			serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", 
 				"Processed: " + response.no_files + " files; debug message:\n" + response.message, req);	
 
 Stderr log:
@@ -110,7 +110,7 @@ topology: 3986 arcs, 18197 points
 <<<	
  
  */
-rifLog2 = function(file, line, calling_function, msg, req, err) {
+serverLog2 = function(file, line, calling_function, msg, req, err) {
 	// Get file information from magic-globals: __stack
 	var file_trace=file + 
 		":" + line + 
@@ -133,5 +133,5 @@ rifLog2 = function(file, line, calling_function, msg, req, err) {
 	console.error(theDate.toString() + "\n[" + file_trace + request_tracer + "]\n" + msg + error_tracer);
 }
 
-module.exports.rifLog = rifLog;
-module.exports.rifLog2 = rifLog2;
+module.exports.serverLog = serverLog;
+module.exports.serverLog2 = serverLog2;

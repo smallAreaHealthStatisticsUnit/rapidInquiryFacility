@@ -69,7 +69,7 @@ var util = require('util'),
     shp2GeoJSON = require('../lib/shp2GeoJSON'),
 	stderrHook = require('../lib/stderrHook'),
     httpErrorResponse = require('../lib/httpErrorResponse'),
-    rifLog = require('../lib/rifLog'),
+    serverLog = require('../lib/serverLog'),
 /*
  * Function: 	TempData() 
  * Parameters:  NONE
@@ -160,7 +160,7 @@ exports.convert = function(req, res) {
 			var msg="ERROR! " + req.url + " service invalid; please see: " + 
 				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
 			httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert", 
-				rifLog, 405, req, res, msg);		
+				serverLog, 405, req, res, msg);		
 			return;					
 		}
 	
@@ -198,7 +198,7 @@ exports.convert = function(req, res) {
 				var msg="FAIL! Files limit reached: " + response.no_files;
 				response.message=msg + "\n" + response.message;
 				response.file_errors++;				// Increment file error count	
-				rifLog.rifLog2(__file, __line, "req.busboy.on('filesLimit')", msg, req);								
+				serverLog.serverLog2(__file, __line, "req.busboy.on('filesLimit')", msg, req);								
 			});
 			
 /*
@@ -211,7 +211,7 @@ exports.convert = function(req, res) {
 				response.fields=ofields;				// Add return fields	
 				response.message=msg + "\n" + response.message;
 				response.field_errors++;				// Increment field error count			
-				rifLog.rifLog2(__file, __line, "req.busboy.on('fieldsLimit')", msg, req);	
+				serverLog.serverLog2(__file, __line, "req.busboy.on('fieldsLimit')", msg, req);	
 			});
 			
 /*
@@ -223,7 +223,7 @@ exports.convert = function(req, res) {
 				var msg="FAIL! Parts limit reached.";
 				response.message=msg + "\n" + response.message;
 				response.file_errors++;				// Increment file error count			
-				rifLog.rifLog2(__file, __line, "req.busboy.on('partsLimit')", msg, req);	
+				serverLog.serverLog2(__file, __line, "req.busboy.on('partsLimit')", msg, req);	
 			});
 				
 /*
@@ -305,7 +305,7 @@ exports.convert = function(req, res) {
 					response.no_files=d.no_files;			// Add number of files process to response				
 					response.fields=ofields;				// Add return fields	
 					response.file_errors++;					// Increment file error count	
-					rifLog.rifLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);							
+					serverLog.serverLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);							
 					d_files.d_list[d.no_files-1] = d;		
 				});				
 
@@ -331,7 +331,7 @@ exports.convert = function(req, res) {
 						response.fields=ofields;				// Add return fields		
 						response.file_errors++;					// Increment file error count
 						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file'),stream.on('end')", 
-							rifLog, 500, req, res, msg, undefined, response);						
+							serverLog, 500, req, res, msg, undefined, response);						
 						return;
 					}
 					
@@ -348,7 +348,7 @@ exports.convert = function(req, res) {
 							response.no_files=d.no_files;			// Add number of files process to response
 							response.fields=ofields;				// Add return fields		
 							response.file_errors++;					// Increment file error count	
-							rifLog.rifLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
+							serverLog.serverLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
 							d_files.d_list[d.no_files-1] = d;							
 							return;
 						}	
@@ -370,7 +370,7 @@ exports.convert = function(req, res) {
 							response.no_files=d.no_files;			// Add number of files process to response
 							response.fields=ofields;				// Add return fields	
 							response.file_errors++;					// Increment file error count	
-							rifLog.rifLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
+							serverLog.serverLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
 							d_files.d_list[d.no_files-1] = d;				
 							return;											
 						}
@@ -388,7 +388,7 @@ exports.convert = function(req, res) {
 						response.no_files=d.no_files;			// Add number of files process to response
 						response.fields=ofields;				// Add return fields	
 						response.file_errors++;					// Increment file error count	
-						rifLog.rifLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
+						serverLog.serverLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
 						d_files.d_list[d.no_files-1] = d;				
 						return;							
 					}
@@ -429,10 +429,10 @@ exports.convert = function(req, res) {
 					ofields[fieldname]="true";
 				}
 				if (req.url == '/toTopojson') {
-					text=toTopojson.toTopojsonFieldProcessor(fieldname, val, text, topojson_options, ofields, response, req, rifLog);
+					text=toTopojson.toTopojsonFieldProcessor(fieldname, val, text, topojson_options, ofields, response, req, serverLog);
 				}
 				else if (req.url == '/shp2GeoJSON') {
-					text=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, text, shp_options, ofields, response, req, rifLog);
+					text=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, text, shp_options, ofields, response, req, serverLog);
 				}					
 				response.message = response.message + text;
 			 }); // End of field processing function
@@ -457,7 +457,7 @@ exports.convert = function(req, res) {
 								response.fields=ofields;				// Add return fields
 								response.file_errors++;					// Increment file error count
 								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-									rifLog, 500, req, res, msg, undefined, response);				
+									serverLog, 500, req, res, msg, undefined, response);				
 							}
 							return;							
 						}
@@ -469,7 +469,7 @@ exports.convert = function(req, res) {
 							response.fields=ofields;				// Add return fields	
 							response.file_errors++;					// Increment file error count	
 							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-								rifLog, 500, req, res, msg, undefined, response);							
+								serverLog, 500, req, res, msg, undefined, response);							
 							return;			
 						}
 						else if (d.file.file_data.length > 0) {
@@ -477,7 +477,7 @@ exports.convert = function(req, res) {
 								// Call GeoJSON to TopoJSON converter
 								d=toTopojson.toTopojsonFile(d, ofields, topojson_options, stderr, response);	
 								if (!d) {
-									httpErrorResponse.httpErrorResponse(__file, __line, "toTopojson.toTopojsonFile()", rifLog, 
+									httpErrorResponse.httpErrorResponse(__file, __line, "toTopojson.toTopojsonFile()", serverLog, 
 										500, req, res, msg, response.error, response);							
 									return; 
 								}
@@ -492,7 +492,7 @@ exports.convert = function(req, res) {
 							response.fields=ofields;				// Add return fields
 							response.file_errors++;					// Increment file error count	
 							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-								rifLog, 500, req, res, msg, undefined, response);							
+								serverLog, 500, req, res, msg, undefined, response);							
 							return;
 						}	
 					} // End of for loop
@@ -507,7 +507,7 @@ exports.convert = function(req, res) {
 				else {
 					var msg="ERROR! " + req.url + " service not not yet supported";
 					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-						rifLog, 405, req, res, msg);		
+						serverLog, 405, req, res, msg);		
 					return;		
 				}
 //				console.error("req.busboy.on('finish') " + msg);
@@ -531,7 +531,7 @@ exports.convert = function(req, res) {
  */ 
 				response.fields=ofields;				// Add return fields	
 				if (response.field_errors == 0 && response.file_errors == 0) { // OK
-					rifLog.rifLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
+					serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
 
 					if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 						var output = JSON.stringify(response);// Convert output response to JSON 
@@ -540,7 +540,7 @@ exports.convert = function(req, res) {
 						res.end();	
 					}
 					else {
-						rifLog.rifLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
+						serverLog.serverLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
 					}	
 //					console.error(util.inspect(req));
 //					console.error(JSON.stringify(req.headers, null, 4));
@@ -550,26 +550,26 @@ exports.convert = function(req, res) {
 						" and file processing ERRORS! " + response.file_errors + "\n" + msg;
 					response.message = msg + "\n" + response.message;						
 					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-						rifLog, 500, req, res, msg, undefined, response);				  
+						serverLog, 500, req, res, msg, undefined, response);				  
 				}				
 				else if (response.field_errors > 0) {
 					msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
 					response.message = msg + "\n" + response.message;
 					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-						rifLog, 500, req, res, msg, undefined, response);				  
+						serverLog, 500, req, res, msg, undefined, response);				  
 				}	
 				else if (response.file_errors > 0) {
 					msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
 					response.message = msg + "\n" + response.message;					
 					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-						rifLog, 500, req, res, msg, undefined, response);				  
+						serverLog, 500, req, res, msg, undefined, response);				  
 				}	
 				else {
 					msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
 						" and file processing ERRORS! " + response.file_errors + "\n" + msg;
 					response.message = msg + "\n" + response.message;						
 					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-						rifLog, 500, req, res, msg, undefined, response);
+						serverLog, 500, req, res, msg, undefined, response);
 				}
 
 			});
@@ -581,13 +581,13 @@ exports.convert = function(req, res) {
 			var msg="ERROR! "+ req.method + " Requests not allowed; please see: " + 
 				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
 			httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert", 
-				rifLog, 405, req, res, msg);		
+				serverLog, 405, req, res, msg);		
 			return;		  
 		}
 		
 	} catch (e) {                            // Catch syntax errors
 		var msg="General processing ERROR!";				  
-		httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert catch()", rifLog, 500, req, res, msg, e);		
+		httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert catch()", serverLog, 500, req, res, msg, e);		
 		return;
 	}
 	  

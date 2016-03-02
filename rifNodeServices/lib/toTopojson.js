@@ -91,7 +91,7 @@
  * myPropertyTransform() function id fields set to: ["eval(console.error(JSON.stringify(req, null, 4)))"]; 1 field(s)
  * FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(console.error(JSON.stringify(req, null, 4))) does not exist in geoJSON;
  */
-toTopojsonFieldProcessor=function(fieldname, val, text, topojson_options, ofields, response, req, rifLog) {
+toTopojsonFieldProcessor=function(fieldname, val, text, topojson_options, ofields, response, req, serverLog) {
 	var msg,
 
 /*
@@ -151,7 +151,7 @@ toTopojsonFieldProcessor=function(fieldname, val, text, topojson_options, ofield
 				response.field_errors++;
 				var msg="FIELD PROCESSING ERROR! Invalid id field: d.properties." + ofields[fieldname] + " does not exist in geoJSON";
 				if (topojson_options.id) {
-					rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
+					serverLog.serverLog2(__file, __line, "req.busboy.on('field')", msg, req);	
 					topojson_options.id = undefined; // Prevent this section running again!	
 					response.message = response.message + "\n" + msg;
 				}
@@ -184,7 +184,7 @@ toTopojsonFieldProcessor=function(fieldname, val, text, topojson_options, ofield
 						var msg="FIELD PROCESSING ERROR! Invalid property-transform field: d.properties." + propertyTransformFields[i] + 
 							" does not exist in geoJSON";
 						if (topojson_options["property-transform"]) {
-							rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);	
+							serverLog.serverLog2(__file, __line, "req.busboy.on('field')", msg, req);	
 							topojson_options["property-transform"] = undefined; // Prevent this section running again!	
 							response.message = response.message + "\n" + msg;
 						}
@@ -204,7 +204,7 @@ toTopojsonFieldProcessor=function(fieldname, val, text, topojson_options, ofield
 			response.field_errors++;
 			msg="FIELD PROCESSING ERROR! field [" + fieldname + "]: " + val + "; invalid array exception";
 			response.message = msg + "\n" + response.message;
-			rifLog.rifLog2(__file, __line, "req.busboy.on('field')", msg, req);							
+			serverLog.serverLog2(__file, __line, "req.busboy.on('field')", msg, req);							
 		}
 	}
 	else {
@@ -309,14 +309,14 @@ toTopojsonFile=function(d, ofields, topojson_options, stderr, response) {
 // This will need a mutex if > 1 thread is being processed at the same time	
 			response.message = response.message + "\n" + msg + " OK:\nTopoJson.topology() stderr >>>\n" + 
 				d.file.topojson_stderr + "<<< TopoJson.topology() stderr";
-//			rifLog.rifLog(msg + "TopoJson.topology() stderr >>>\n"  + 
+//			serverLog.serverLog(msg + "TopoJson.topology() stderr >>>\n"  + 
 //				d.file.topojson_stderr + "<<< TopoJson.topology() stderr", 
 //				req);
 		}
 		else {
 // This will need a mutex if > 1 thread is being processed at the same time
 			response.message = response.message + "\n" + msg + " OK";
-//			rifLog.rifLog("TopoJson.topology() no stderr; " + msg, 
+//			serverLog.serverLog("TopoJson.topology() no stderr; " + msg, 
 //				req);		
 		}			
 															   
