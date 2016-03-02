@@ -238,7 +238,7 @@ exports.convert = function(req, res) {
 					file_name: "",
 					temp_file_name: "",
 					file_encoding: "",	
-					inflate_error: "",
+					file_error: "",
 					extension: "",
 					jsonData: "",
 					file_data: "",
@@ -300,7 +300,11 @@ exports.convert = function(req, res) {
 					var msg="FAIL! Strream error; file [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 							d.file.file_encoding + 
 							'; read [' + d.file.chunks.length + '] ' + d.file.partial_chunk_size + ', ' + d.file.chunks_length + ' total';
-					d.file.inflate_error=msg;		
+					d.file.file_error=msg;	
+					var buf=Buffer.concat(d.file.chunks); // Safe binary concat					
+					d.file.file_size=buf.length;
+					var end = new Date().getTime();
+					d.file.transfer_time=(end - d.file.lstart)/1000; // in S						
 					response.message=msg + "\n" + response.message;			
 					response.no_files=d.no_files;			// Add number of files process to response				
 					response.fields=ofields;				// Add return fields	
@@ -325,14 +329,15 @@ exports.convert = function(req, res) {
 					if (stream.truncated) { // Test for truncation
 						msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 							d.file.extension + "; file_encoding: " + d.file.file_encoding + 
-							" is truncated at " + d.file.file_size + " bytes"; 
-						d.file.inflate_error=msg;		
+							"; file is truncated at " + d.file.file_size + " bytes"; 
+						d.file.file_error=msg;		
 						response.message=msg + "\n" + response.message;
 						response.no_files=d.no_files;			// Add number of files process to response
 						response.fields=ofields;				// Add return fields		
-						response.file_errors++;					// Increment file error count
-						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file'),stream.on('end')", 
-							serverLog, 500, req, res, msg, undefined, response);						
+						response.file_errors++;					// Increment file error countv					
+						d_files.d_list[d.no_files-1] = d;		
+//						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file'),stream.on('end')", 
+//							serverLog, 500, req, res, msg, undefined, response);						
 						return;
 					}
 					
@@ -345,7 +350,7 @@ exports.convert = function(req, res) {
 						catch (e) {
 							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-							d.file.inflate_error=msg;	
+							d.file.file_error=msg;	
 							response.message=msg + "\n" + response.message;
 							response.no_files=d.no_files;			// Add number of files process to response
 							response.fields=ofields;				// Add return fields		
@@ -368,7 +373,7 @@ exports.convert = function(req, res) {
 						catch (e) {
 							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-							d.file.inflate_error=msg;	
+							d.file.file_error=msg;	
 							response.message=msg + "\n" + response.message;
 							response.no_files=d.no_files;			// Add number of files process to response
 							response.fields=ofields;				// Add return fields	
@@ -387,7 +392,7 @@ exports.convert = function(req, res) {
 					else if (d.file.file_encoding === "zip") {
 						msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 							d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
-						d.file.inflate_error=msg;			
+						d.file.file_error=msg;			
 						response.message=msg + "\n" + response.message;
 						response.no_files=d.no_files;			// Add number of files process to response
 						response.fields=ofields;				// Add return fields	
@@ -479,8 +484,8 @@ exports.convert = function(req, res) {
 								serverLog, 500, req, res, msg, undefined, response);							
 							return;			
 						}
-						else if (d.file.inflate_error) {
-							msg=d.file.inflate_error;
+						else if (d.file.file_error) {
+							msg=d.file.file_error;
 							response.message = msg + "\n" + response.message;
 							response.no_files=d.no_files;			// Add number of files process to response
 							response.fields=ofields;				// Add return fields
