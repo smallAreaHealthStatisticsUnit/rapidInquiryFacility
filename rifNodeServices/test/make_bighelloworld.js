@@ -77,7 +77,7 @@ if (!fs.existsSync(inputFile)) {
 		numc+=msg.length;
 		bighelloworld.write(msg);
 		
-		if (numc> (2*1024*1024*1024)) {
+		if (numc> (2*1024*1024*1024)) { // Stop at 2G
 			break;
 		}
 

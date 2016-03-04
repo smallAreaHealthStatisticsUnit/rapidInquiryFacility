@@ -64,6 +64,7 @@ var util = require('util'),
     os = require('os'),
     fs = require('fs'),
 	zlib = require('zlib'),
+	path = require('path'),
     geo2TopoJSON = require('../lib/geo2TopoJSON'),
     shp2GeoJSON = require('../lib/shp2GeoJSON'),
 	stderrHook = require('../lib/stderrHook'),
@@ -452,9 +453,12 @@ exports.convert = function(req, res) {
  * Description:	End of request - complete response		  
  */ 
 			req.busboy.on('finish', function() {
-				var msg;
+				var msg="";
 				
-				if (req.url == '/geo2TopoJSON') {
+				if ((req.url == '/geo2TopoJSON')||(req.url == '/shp2GeoJSON')) {
+					var shpList = {};
+					var shpTotal=0;
+					
 					for (i = 0; i < response.no_files; i++) {	
 						d=d_files.d_list[i];
 						if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
@@ -504,6 +508,37 @@ exports.convert = function(req, res) {
 									return; 
 								}
 							}
+							else if (req.url == '/shp2GeoJSON') { // Check which files and extensions are present		
+								var extName = path.extname(d.file.file_name);
+								if (extName == ".xml") {
+									extName=".shp.xml";
+								}
+								var fileNoext = path.basename(d.file.file_name, extName);
+								if (!shpList[fileNoext]) {
+									shpTotal++;
+									shpList[fileNoext] = {
+										fileName: d.file.file_name,
+										hasShp: false,
+										hasPrj: false,
+										hasDbf: false
+									};
+								}
+								if (extName == '.shp') {
+									shpList[fileNoext].hasShp=true;
+									response.message+="\nhasShp for file: " + shpList[fileNoext].fileName;
+								}
+								else if (extName == '.prj') {
+									shpList[fileNoext].hasPrj=true;
+									response.message+="\nhasPrj for file: " + shpList[fileNoext].fileName;
+								}
+								else if (extName == '.dbf') {
+									shpList[fileNoext].hasDbf=true;
+									response.message+="\nhasDbf for file: " + shpList[fileNoext].fileName;
+								}
+								else {
+									response.message+="\nIgnore extension: " + extName + " for file: " + shpList[fileNoext].fileName;
+								}
+							}
 						}	
 						else {
 							msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
@@ -518,12 +553,49 @@ exports.convert = function(req, res) {
 							return;
 						}	
 					} // End of for loop
+					
+					if (req.url == '/shp2GeoJSON') { // Check which files and extensions are present
+						var i=0;
+						msg="";
+						for (var key in shpList) {
+							i++;
+							response.file_list[i-1] = {
+								file_name: shpList[key].fileName,
+					//			topojson: '',
+					//			topojson_stderr: '',
+					//			topojson_runtime: '',
+								file_size: '',
+								transfer_time: '',
+								uncompress_time: undefined,
+								uncompress_size: undefined
+							};
+								
+							if (shpList[key].hasShp && shpList[key].hasPrj && shpList[key].hasDbf) {
+								msg+="\nProcess shapefile[" + i + "]: " + shpList[key].fileName;
+							}
+							else {		
+								response.file_errors++;					// Increment file error count	
+								msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + shpList[key].fileName + " is missing a shapefile/DBF file/Projection file";							
+							}	
+						}
+						if (msg.length == 0) {
+							response.message = msg + "\n" + response.message;
+							response.no_files=shpTotal;				// Add number of files process to response
+							response.fields=ofields;				// Add return fields
+							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+								serverLog, 500, req, res, msg, undefined, response);							
+							return;	
+						}
+						else {
+							msg+="\n";
+						}
+					}
 
 					if (!ofields["my_reference"]) {
-						msg="[No my_reference] Processed: " + response.no_files + " files";
+						msg+="[No my_reference] Processed: " + response.no_files + " files";
 					}
 					else {
-						msg="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files";
+						msg+="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files";
 					}
 				}
 				else {
