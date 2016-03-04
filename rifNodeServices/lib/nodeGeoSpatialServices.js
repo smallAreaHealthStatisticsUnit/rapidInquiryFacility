@@ -578,10 +578,10 @@ exports.convert = function(req, res) {
 								msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + shpList[key].fileName + " is missing a shapefile/DBF file/Projection file";							
 							}	
 						}
+						response.no_files=shpTotal;				// Add number of files process to response
+						response.fields=ofields;				// Add return fields
 						if (msg.length == 0) {
 							response.message = msg + "\n" + response.message;
-							response.no_files=shpTotal;				// Add number of files process to response
-							response.fields=ofields;				// Add return fields
 							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 								serverLog, 500, req, res, msg, undefined, response);							
 							return;	
