@@ -36,7 +36,10 @@
     "topojson": "^1.6.24"
   },
   "scripts": {
-    "test": "node test/request-geo2TopoJSON.js && node test/request-shp2GeoJSON.js"
+    "test": "node test/request-geo2TopoJSON.js && node test/request-shp2GeoJSON.js",
+	"start": "forever start  -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js",
+	"stop": "forever stop  -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js",
+	"pretest": "node test/make_bighelloworld.js"
   },
   "engines": {
     "node": ">= 4.2.x"

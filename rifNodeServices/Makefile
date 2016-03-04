@@ -262,7 +262,11 @@ server-stop: forever expressServer.js
 server-logs: forever expressServer.js
 	$(FOREVER) logs $(FOREVER_VERBOSE) ./expressServer.js 
 	$(FOREVER) logs 0 $(FOREVER_VERBOSE) ./expressServer.js 
-	
+
+#- test\make_bighelloworld.js: create >2G data\bighelloworld.js	
+data\bighelloworld.js:
+	$(NODE) test\make_bighelloworld.js
+		
 #- update: Update required Node.js modules using npm install --save to update dependencies in package.json 
 update:
 	-$(NPM) update --save $(MODULE_LIST)	
