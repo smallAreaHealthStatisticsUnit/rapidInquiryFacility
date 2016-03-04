@@ -56,9 +56,11 @@ shp2GeoJSONFieldProcessor=function(fieldname, val, text, shp_options, ofields, r
 	var msg;
 	
 	if ((fieldname == 'verbose')&&(val == 'true')) {
-		shp_options.verbose = true;
+		if (shp_options) {
+			shp_options.verbose = true;
+		}
 	}
-		else {
+	else {
 		ofields[fieldname]=val;	
 	}	
 	

@@ -441,7 +441,7 @@ exports.convert = function(req, res) {
 					text=geo2TopoJSON.geo2TopoJSONFieldProcessor(fieldname, val, text, topojson_options, ofields, response, req, serverLog);
 				}
 				else if (req.url == '/shp2GeoJSON') {
-					text=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, text, shp_options, ofields, response, req, serverLog);
+					text=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, text, undefined /* shp_options */, ofields, response, req, serverLog);
 				}					
 				response.message = response.message + text;
 			 }); // End of field processing function
@@ -528,8 +528,15 @@ exports.convert = function(req, res) {
 				}
 				else {
 					var msg="ERROR! " + req.url + " service not not yet supported";
+					if (d && d.no_files) {
+						response.no_files=d.no_files;			// Add number of files process to response
+					}
+					if (ofields) {
+						response.fields=ofields;				// Add return fields
+					}
+					response.file_errors++;					// Increment file error count	
 					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-						serverLog, 405, req, res, msg);		
+						serverLog, 405, req, res, msg, undefined, response);		
 					return;		
 				}
 //				console.error("req.busboy.on('finish') " + msg);

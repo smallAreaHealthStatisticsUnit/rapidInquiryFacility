@@ -8,7 +8,7 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - Node.js webservice request tests
+// Rapid Enquiry Facility (RIF) - Node.js webservice request tests - geo2TopoJSON service
 //
 // Copyright:
 //
@@ -44,7 +44,7 @@
 //
 // Peter Hambly, SAHSU
 //
-// Usage: node test/request.js
+// Usage: node test/request-geo2TopoJSON.js
 //
 // Tests: 
 //
@@ -56,7 +56,7 @@ var nRequests = process.argv[2];
 var max_nRequests = 21;
 if (!nRequests) {
 	nRequests = 0;
-	console.log('Processing all request tests');
+	console.log('Processing all geo2TopoJSON service tests');
 }
 else if (nRequests > max_nRequests) {
 	throw new Error("Invalid request number: " + nRequests + "; must be between 1 and " + max_nRequests);
