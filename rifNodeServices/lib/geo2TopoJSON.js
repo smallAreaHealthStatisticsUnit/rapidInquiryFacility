@@ -333,7 +333,10 @@ geo2TopoJSONFile=function(d, ofields, topojson_options, stderr, response) {
 		msg="Your input file " + d.no_files + ": " + 
 			d.file.file_name + "; size: " + d.file.file_data.length + 
 			"; " + msg + ": \n" + "Debug message:\n" + response.message + "\n\n";
-		if (d.file.file_data.length > 0) { // Add first 132 chars of file to message
+		if (d.file.file_data.length > (1024*1024*1024)) { // >1 GB - causes exception in d.file.file_data.toString()
+			msg=msg + "\nTruncated data (>1GB).";
+		}
+		else if (d.file.file_data.length > 0) { // Add first 132 chars of file to message
 			var truncated_data=d.file.file_data.toString().substring(0, 132);
 			if (!/^[\x00-\x7F]*$/.test(truncated_data)) { // Test if not ascii
 				truncated_data=d.file.file_data.toString('hex').substring(0, 132); // Binary: display as hex
