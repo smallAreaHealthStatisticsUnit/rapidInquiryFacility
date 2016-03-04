@@ -46,7 +46,28 @@
 //
 // Usage: node test/request-geo2TopoJSON.js
 //
-// Tests: 
+// Tests geo2TopoJSON service:
+//
+// 1. Defaults;
+// 2. Verbose;
+// 3. ZoomLevel=0;
+// 4. Projection: d3.geo.mercator();
+// 5. gzip geoJSON file;
+// 6. gzip geoJSON file: wrong Content-Type [will work];
+// 7. gzip geoJSON multiple files;
+// 8. TopoJSON id support: use gid as the [unique] id field;
+// 9. TopoJSON id support: invalid id [intentional failure];
+// 10. TopoJSON conversion: invalid geoJSON;
+// 11. Uncompress: invalid lz77 [intentional failure];
+// 12. Invalid zip file (not supported) [intentional failure];
+// 13. Zero sized file [intentional failure];
+// 15. TopoJSON property-transform support: invalid property-transform field [intentional failure];
+// 16. TopoJSON property-transform support: invalid property-transform array [intentional failure];
+// 17. TopoJSON id and property-transform test;
+// 18. TopoJSON property-transform support: JSON injection tests (field does not exist) [intentional failure]
+// 19. TopoJSON property-transform support: JSON injection tests (invalid array exception)
+// 20: TopoJSON conversion: invalid geoJSON - overload transport with 2G file [intentional failure]
+// 21: gzip geoJSON multiple files limit (100) [intentional failure]
 //
 var FormData = require('form-data');
 var fs = require('fs');
@@ -131,18 +152,6 @@ var MakeRequest = function(){
 	}		
 	else if (nRequests == 20) { // Invalid GeoJSON; overload transport with a 2G file
 		inputFile = './data/bighelloworld.js';
-		/*
-		if (!fs.existsSync(inputFile)) {
-			var bighelloworld2 = fs.createWriteStream(inputFile);
-			var numc;
-			console.error('Creating: ' + inputFile);
-			bighelloworld2.once('open', function(fd) {
-				numc=bighelloworld2.write('{ "name":"value", array:[1,2,3], "hello", "world"}\n');
-				bighelloworld2.end();
-			});
-			
-			console.error('Created: ' + inputFile + ": " + numc + " chars");
- 		}  */
 		json_file = fs.createReadStream(inputFile);
 	}
 	else { // Defasult	

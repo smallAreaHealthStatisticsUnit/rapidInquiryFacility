@@ -46,7 +46,18 @@
 //
 // Usage: node test/request-shp2GeoJSON.js
 //
-// Tests: 
+// Tests shp2GeoJSON service
+//
+// 1: Level 1 shapefile;
+// 2: Level 1, 2 shapefiles;
+// 3: Level 1, 2, 3 shapefiles;
+// 4: Level 1, 2, 3, 4 shapefiles;
+// 5: Level 1 shapefile; missing prj file [intentional failure];
+// 6: Level 1 shapefile; missing dbf file [intentional failure];			
+// 7: Level 1 shapefile; missing sbn file;
+// 8: Level 1 shapefile; missing sbx file;
+// 9: Level 1 shapefile;  missing sbn, sbx files;
+// 10: Level 1 shapefile; missing .shp.xml file;
 //
 var FormData = require('form-data');
 var fs = require('fs');
