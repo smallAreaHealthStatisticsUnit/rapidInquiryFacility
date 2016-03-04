@@ -36,7 +36,7 @@
     "topojson": "^1.6.24"
   },
   "scripts": {
-    "test": "node test/request-geo2TopoJSON.js test/request-shp2GeoJSON.js"
+    "test": "node test/request-geo2TopoJSON.js && node test/request-shp2GeoJSON.js"
   },
   "engines": {
     "node": ">= 4.2.x"
