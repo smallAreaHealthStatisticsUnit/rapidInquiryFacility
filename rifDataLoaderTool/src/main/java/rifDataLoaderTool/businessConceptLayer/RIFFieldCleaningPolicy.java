@@ -73,21 +73,35 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
  */
 
 public enum RIFFieldCleaningPolicy {
-	CLEANING_FUNCTION("rifFieldCleaningPolicy.cleaningFunction.label"),
-	CLEANING_RULES("rifFieldCleaningPolicy.cleaningRules.label"),
-	NO_CLEANING("rifFieldCleaningPolicy.noCleaning.label");
+	CLEANING_FUNCTION(
+		"cleaning_function", 
+		"rifFieldCleaningPolicy.cleaningFunction.label"),
+	CLEANING_RULES(
+		"cleaning_rules",
+		"rifFieldCleaningPolicy.cleaningRules.label"),
+	NO_CLEANING(
+		"no_cleaning", 
+		"rifFieldCleaningPolicy.noCleaning.label");
 	
+	private String tagName;
 	private String propertyName;
 	
 	RIFFieldCleaningPolicy(
+		final String tagName,
 		final String propertyName) {
 		
+		this.tagName = tagName;
 		this.propertyName = propertyName;
 	}
 	
 	public String getName() {
 		return RIFDataLoaderToolMessages.getMessage(propertyName);
 	}
+	
+	public String getTagName() {
+		return tagName;
+	}
+	
 }
 
 

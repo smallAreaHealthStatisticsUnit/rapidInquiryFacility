@@ -1,15 +1,14 @@
 package rifDataLoaderTool.presentationLayer;
 
-
-
 import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.businessConceptLayer.ValidationRule;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.CustomRIFDataType;
 
+
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -79,13 +78,12 @@ public class DataValidationPolicyEditingPanel
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private CustomRIFDataType currentRIFDataType;
 	
 	private JPanel panel;
-	//private CustomRIFDataType customRIFDataType;
+	
 	private UserInterfaceFactory userInterfaceFactory;
 	private ButtonGroup validationPolicyButtonGroup;
-		
+	
 	private JRadioButton useFunctionRadioButton;
 	private JRadioButton useRulesRadioButton;
 	private JRadioButton doNothingRadioButton;
@@ -94,8 +92,6 @@ public class DataValidationPolicyEditingPanel
 	private ListEditingButtonPanel rulesListButtonPanel;
 	private JComboBox databaseFunctionsComboBox;
 	private JTextArea databaseFunctionDescriptionTextArea;
-	
-	private boolean isEditable;
 	
 	// ==========================================
 	// Section Construction
@@ -118,6 +114,7 @@ public class DataValidationPolicyEditingPanel
 				rulesListButtonPanel.includeEditButton("");
 				rulesListButtonPanel.includeCopyButton("");
 				rulesListButtonPanel.includeDeleteButton("");
+		rulesListButtonPanel.addActionListener(this);
 
 		GridBagConstraints panelGC 
 			= userInterfaceFactory.createGridBagConstraints();
@@ -125,12 +122,12 @@ public class DataValidationPolicyEditingPanel
 		panelGC.weightx = 1;
 		panelGC.weighty = 0;
 
-		String dataTypeCleaningPolicyLabelText
+		String dataTypeValidationPolicyLabelText
 			= RIFDataLoaderToolMessages.getMessage("rifFieldValidationPolicy.label");
-		JLabel dataTypeCleaningPolicyLabel
-			= userInterfaceFactory.createLabel(dataTypeCleaningPolicyLabelText);
-		userInterfaceFactory.setBoldFont(dataTypeCleaningPolicyLabel);
-		panel.add(dataTypeCleaningPolicyLabel, panelGC);
+		JLabel dataTypeValidationPolicyLabel
+			= userInterfaceFactory.createLabel(dataTypeValidationPolicyLabelText);
+		userInterfaceFactory.setBoldFont(dataTypeValidationPolicyLabel);
+		panel.add(dataTypeValidationPolicyLabel, panelGC);
 
 		panelGC.gridy++;		
 		String instructionsText
@@ -161,7 +158,7 @@ public class DataValidationPolicyEditingPanel
 		panelGC.gridy++;	
 		panelGC.fill = GridBagConstraints.BOTH;		
 		panelGC.weighty = 1;		
-		panel.add(createCleaningRuleListEditingPanel(), panelGC);
+		panel.add(createValidationRuleListEditingPanel(), panelGC);
 
 		panelGC.gridy++;	
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
@@ -170,8 +167,8 @@ public class DataValidationPolicyEditingPanel
 	
 		panel.setBorder(LineBorder.createGrayLineBorder());
 	}
-
-	private JPanel createCleaningRuleListEditingPanel() {
+	
+	private JPanel createValidationRuleListEditingPanel() {
 		JPanel panel 
 			= userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC 
@@ -218,10 +215,11 @@ public class DataValidationPolicyEditingPanel
 		upperPanelGC.gridx++;
 		upperPanelGC.fill = GridBagConstraints.HORIZONTAL;
 		upperPanelGC.weightx = 1;
-		String[] validationFunctionNames = new String[3];
-		validationFunctionNames[0] = "is_uk_post_code_valid";
-		validationFunctionNames[1] = "is_icd10_code_valid";
-		validationFunctionNames[2] = "is_sex_valid";
+		String[] validationFunctionNames = new String[4];
+		validationFunctionNames[0] = "is_valid_uk_postal_code";
+		validationFunctionNames[1] = "is_valid_icd10_code";
+		validationFunctionNames[2] = "is_valid_sex";
+		validationFunctionNames[3] = "is_valid_age";		
 		databaseFunctionsComboBox
 			= userInterfaceFactory.createComboBox(validationFunctionNames);
 		databaseFunctionsComboBox.addActionListener(this);
@@ -247,8 +245,7 @@ public class DataValidationPolicyEditingPanel
 		
 		return panel;
 	}
-	
-	
+		
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -257,71 +254,79 @@ public class DataValidationPolicyEditingPanel
 		return panel;
 	}
 	
-	public void setData(
-		final CustomRIFDataType originalRIFDataType,
-		final boolean isEditable) {
+	public RIFFieldValidationPolicy getFieldValidationPolicy() {
+		if (useRulesRadioButton.isSelected()) {
+			System.out.println("DataValidationPolicyEditingPanel validation== validation rules");
+			return RIFFieldValidationPolicy.VALIDATION_RULES;
+		}
+		else if (useFunctionRadioButton.isSelected()) {
+			System.out.println("DataValidationPolicyEditingPanel validation== validation function");
+			return RIFFieldValidationPolicy.VALIDATION_FUNCTION;
+		}		
+		else {
+			System.out.println("DataValidationPolicyEditingPanel validation== no validation");
+			return RIFFieldValidationPolicy.NO_VALIDATION;
+		}	
+	}
 		
-		this.currentRIFDataType = originalRIFDataType;
-		this.isEditable = isEditable;
-		populateForm();
+	public void setNoValidationPolicy() {
+		removeActionListeners();		
+		doNothingRadioButton.setSelected(true);	
+		doNothing();
+		addActionListeners();
 	}
 	
-	private void populateForm() {
+	public void setValidationRulesPolicy(final ArrayList<ValidationRule> validationRules) {
+		removeActionListeners();
+		useRulesRadioButton.setSelected(true);
 		
+		rulesListPanel.clearList();
+		for (ValidationRule validationRule : validationRules) {
+			rulesListPanel.addListItem(validationRule);
+		}
+		if (rulesListPanel.isEmpty() == false) {
+			rulesListPanel.selectFirstItem();
+		}		
+		rulesListPanel.updateUI();		
+
+		useRules();
+		addActionListeners();
+	}
+	
+	public ArrayList<ValidationRule> getValidationRules() {
+		ArrayList<ValidationRule> validationRules = new ArrayList<ValidationRule>();
+		ArrayList<DisplayableListItemInterface> listItems
+			= rulesListPanel.getAllItems();
+		for (DisplayableListItemInterface listItem : listItems) {
+			validationRules.add((ValidationRule) listItem);
+		}
+		return validationRules;
+	}
+	
+	public void setValidationFunctionPolicy(final String validationFunctionName) {
+		removeActionListeners();	
+		useFunctionRadioButton.setSelected(true);
+		databaseFunctionsComboBox.setSelectedItem(validationFunctionName);
+		validationUseFunction();
+		addActionListeners();
+	}
+		
+	public String getValidationFunctionName() {
+		return (String) databaseFunctionsComboBox.getSelectedItem();
+	}
+	
+	private void addActionListeners() {
 		useFunctionRadioButton.removeActionListener(this);
 		useRulesRadioButton.removeActionListener(this);
-		doNothingRadioButton.removeActionListener(this);		
-		
-		RIFFieldValidationPolicy fieldValidationPolicy
-			= currentRIFDataType.getFieldValidationPolicy();
-		if (fieldValidationPolicy == RIFFieldValidationPolicy.NO_VALIDATION) {
-			doNothingRadioButton.setSelected(true);			
-			doNothing();
-		}
-		else if (fieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_RULES) {
-			useRulesRadioButton.setSelected(true);		
-			rulesListPanel.clearList();
-			ArrayList<ValidationRule> validationRules
-				= currentRIFDataType.getValidationRules();
-			for (ValidationRule validationRule : validationRules) {
-				rulesListPanel.addListItem(validationRule);		
-			}
-			rulesListPanel.updateUI();
-		}
-		else if (fieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_FUNCTION) {
-			useFunctionRadioButton.setSelected(true);			
-			databaseFunctionsComboBox.setSelectedItem(
-				currentRIFDataType.getValidationFunctionName());
-			validatingUseFunction();
-		}
-		
-		doNothingRadioButton.addActionListener(this);
-		useRulesRadioButton.addActionListener(this);
+		doNothingRadioButton.removeActionListener(this);
+	}
+	
+	private void removeActionListeners() {
 		useFunctionRadioButton.addActionListener(this);
-		
-		//determine if buttons should be enabled or disabled
-		useFunctionRadioButton.setEnabled(isEditable);
-		useRulesRadioButton.setEnabled(isEditable);
-		doNothingRadioButton.setEnabled(isEditable);		
-		databaseFunctionsComboBox.setEnabled(isEditable);
-		if (isEditable) {
-			if (rulesListPanel.isEmpty()) {
-				rulesListButtonPanel.indicateEmptyState();
-			}
-			else {
-				rulesListButtonPanel.indicatePopulatedState();				
-			}			
-		}
-		else {
-			rulesListButtonPanel.indicateViewOnlyState();
-		}			
-		
+		useRulesRadioButton.addActionListener(this);
+		doNothingRadioButton.addActionListener(this);
 	}
-	
-	public void saveChanges() {
 		
-	}
-	
 	private void doNothing() {	
 		setEnableValidationFunctionFeature(false);
 		setEnableRulesFeature(false);
@@ -332,39 +337,60 @@ public class DataValidationPolicyEditingPanel
 		setEnableRulesFeature(true);
 	}
 	
-	private void validatingUseFunction() {
+	private void validationUseFunction() {
 		
 		setEnableValidationFunctionFeature(true);
 		setEnableRulesFeature(false);
 	}
-
-	private void validatingUseSQLFragment() {	
-
-		setEnableValidationFunctionFeature(false);
-		setEnableRulesFeature(false);
-	}
 	
 	private void addValidationRule() {
-		
+		ValidationRuleEditorDialog validationEditorDialog
+			= new ValidationRuleEditorDialog(userInterfaceFactory);
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		validationEditorDialog.setData(validationRule, true);
+		validationEditorDialog.show();
+		if (validationEditorDialog.isCancelled()) {
+			return;
+		}
+
+		rulesListPanel.addListItem(validationEditorDialog.getData());
 	}
 	
 	private void editValidationRule() {
+		ValidationRule selectedValidationRule
+			= (ValidationRule) rulesListPanel.getSelectedItem();
+		ValidationRuleEditorDialog validationRuleEditorDialog
+			= new ValidationRuleEditorDialog(userInterfaceFactory);
+		validationRuleEditorDialog.setData(selectedValidationRule, true);
+		validationRuleEditorDialog.show();
 		
 	}
 
 	private void copyValidationRule() {
+		ValidationRule selectedValidationRule
+			= (ValidationRule) rulesListPanel.getSelectedItem();
+		ValidationRule cloneValidationRule
+			= ValidationRule.createCopy(selectedValidationRule);
+		String currentValidationRuleName
+			= selectedValidationRule.getName();
+		cloneValidationRule.setName("Copy of " + currentValidationRuleName);
+		ValidationRuleEditorDialog validationRuleEditorDialog
+			= new ValidationRuleEditorDialog(userInterfaceFactory);
+		validationRuleEditorDialog.setData(selectedValidationRule, true);
+		validationRuleEditorDialog.show();
 		
 	}
 	
 	private void deleteValidationRule() {
-		
+		rulesListPanel.deleteSelectedListItems();
 	}
 	
 	private void updateValidationFunctionDescription() {
-		String currentlySelectedCleaningFunctionName
+		String currentlySelectedValidationFunctionName
 			= (String) databaseFunctionsComboBox.getSelectedItem();
 		databaseFunctionDescriptionTextArea.setText(
-			"Description of " + currentlySelectedCleaningFunctionName);		
+			"Description of " + currentlySelectedValidationFunctionName);		
 	}
 
 	private void setEnableValidationFunctionFeature(
@@ -385,12 +411,18 @@ public class DataValidationPolicyEditingPanel
 	private void setEnableRulesFeature(
 		final boolean isEnabled) {
 
+		rulesListPanel.setEnabled(isEnabled);		
 		if (isEnabled) {
-			rulesListButtonPanel.indicateEmptyState();		
+			if (rulesListPanel.isEmpty()) {
+				rulesListButtonPanel.indicateEmptyState();				
+			}
+			else {
+				rulesListButtonPanel.indicatePopulatedState();
+			}
 		}
 		else {
 			rulesListPanel.clearList();
-			rulesListButtonPanel.disableAllButtons();
+			rulesListButtonPanel.disableAllButtons();	
 			rulesListPanel.updateUI();
 		}		
 	}
@@ -413,7 +445,7 @@ public class DataValidationPolicyEditingPanel
 			useRules();
 		}
 		else if (button == useFunctionRadioButton) {
-			validatingUseFunction();
+			validationUseFunction();
 		}
 		else if (rulesListButtonPanel.isAddButton(button)) {
 			addValidationRule();

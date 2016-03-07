@@ -1,6 +1,5 @@
 package rifDataLoaderTool.dataStorageLayer.postgresql;
 
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -8,6 +7,7 @@ import rifGenericLibrary.dataStorageLayer.SQLCreatePrimaryKeyQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
 import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
+
 
 
 
@@ -220,7 +220,7 @@ public class PostgreSQLDataTypeValidationUtility {
 		String cleanFieldName
 			= dataSetFieldConfiguration.getCleanFieldName();
 		
-		AbstractRIFDataType rifDataType
+		RIFDataType rifDataType
 			= dataSetFieldConfiguration.getRIFDataType();
 		RIFFieldValidationPolicy fieldValidationPolicy
 			= rifDataType.getFieldValidationPolicy();
@@ -299,7 +299,7 @@ public class PostgreSQLDataTypeValidationUtility {
 			queryFormatter.addQueryPhrase("(");
 			queryFormatter.addQueryPhrase(loadFieldName);
 			
-			if (rifDataType instanceof DateRIFDataType) {
+			if (RIFDataTypeFactory.isDateDataType(rifDataType)) {
 				//in the case of dates, we call a validation function, but
 				//we also make use of the validation expressions to obtain
 				//the date format that should be used

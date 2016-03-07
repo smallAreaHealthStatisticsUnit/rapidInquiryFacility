@@ -1,13 +1,18 @@
-package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
+package rifGenericLibrary.util;
 
-import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
-import rifDataLoaderTool.businessConceptLayer.ValidationRule;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+
 /**
- * a data type for double precision numeric data.
+ *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -53,8 +58,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
  *
  */
 
-public final class DoubleRIFDataType 
-	extends AbstractRIFDataType {
+public class ListItemNameUtility {
 
 	// ==========================================
 	// Section Constants
@@ -63,52 +67,58 @@ public final class DoubleRIFDataType
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private DoubleRIFDataType(
-		final String identifier,
-		final String name,
-		final String description) {
+	public ListItemNameUtility() {
 
-		super(
-			identifier,
-			name, 
-			description);
-		
-		String validationRegularExpression
-			= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
-		ValidationRule validationRule
-			= ValidationRule.newInstance(
-				"", 
-				"", 
-				validationRegularExpression, 
-				true);
-
-		addValidationRule(validationRule);
-		setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);		
 	}
 
-	public static DoubleRIFDataType newInstance() {
-
-		String name
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.double.label");
-		String description
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.double.description");
-		DoubleRIFDataType doubleRIFDataType
-			= new DoubleRIFDataType(
-				"rif_double",
-				name, 
-				description);
-		
-		return doubleRIFDataType;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	public static String generateUniqueListItemName(
+		final String baseName,
+		final ArrayList<String> existingNames) {
+		
+		//Check - if base name is already unique then return that
+		if (existingNames.contains(baseName) == false) {
+			return baseName;
+		}
+		
+		int counter = 1;
+		for (;;) {
+			counter++;
+			String candidateName
+				= baseName + "-" + String.valueOf(counter);
+			if (existingNames.contains(candidateName) == false) {
+				//name is unique
+				return candidateName;
+			}
+		}	
+	}
+	
+	public static void checkListDuplicate(
+		final String candidateItem,
+		final ArrayList<String> currentListItems) 
+		throws RIFServiceException {
+				
+		if (currentListItems.contains(candidateItem)) {
+			//Error Message
+			String errorMessage
+				= RIFGenericLibraryMessages.getMessage(
+					"listItemNameUtility.duplicateFieldName",
+					candidateItem);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DUPLICATE_LIST_ITEM_NAME,
+					errorMessage);
+			throw rifServiceException;
+		}	
+	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -121,13 +131,4 @@ public final class DoubleRIFDataType
 	// ==========================================
 	// Section Override
 	// ==========================================
-
-	public DoubleRIFDataType createCopy() {
-		DoubleRIFDataType cloneDoubleRIFDataType = newInstance();
-		copyAttributes(cloneDoubleRIFDataType);
-		return cloneDoubleRIFDataType;
-	}
-	
 }
-
-

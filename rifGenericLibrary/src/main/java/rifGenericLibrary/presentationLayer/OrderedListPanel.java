@@ -312,6 +312,20 @@ public final class OrderedListPanel {
 		}
 	}
 	
+	public void replaceItem(
+		String oldDisplayName,
+		DisplayableListItemInterface revisedItem) {
+		
+		itemFromListName.remove(oldDisplayName);		
+		listItems.remove(oldDisplayName);	
+		
+		itemFromListName.put(revisedItem.getDisplayName(), revisedItem);
+		listItems.add(revisedItem.getDisplayName());
+		if (alphabeticallySortItems == true) {
+			Collections.sort(listItems);	
+		}
+	}	
+	
 	/**
 	 * Delete selected list items.
 	 */
@@ -397,6 +411,10 @@ public final class OrderedListPanel {
 		}
 	}
 	
+	public int getSelectedIndex() {
+		return list.getSelectedIndex();
+	}
+	
 	/**
 	 * Gets the selected items.
 	 *
@@ -456,8 +474,11 @@ public final class OrderedListPanel {
 		list.setPrototypeCellValue(prototypeListValue);
 	}
 	
-	public String[] getDisplayNames() {
-		return listItems.toArray(new String[0]);
+	public ArrayList<String> getDisplayNames() {
+		ArrayList<String> results = new ArrayList<String>();
+		results.addAll(listItems);
+		
+		return results;
 	}
 	
 	public ArrayList<DisplayableListItemInterface> getListItems() {

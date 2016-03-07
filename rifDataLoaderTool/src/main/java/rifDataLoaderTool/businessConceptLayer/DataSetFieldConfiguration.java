@@ -1,7 +1,5 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.TextRIFDataType;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
@@ -104,7 +102,7 @@ public class DataSetFieldConfiguration
 	 * Used to transform a text-based column field value into a data type that is
 	 * recognised by the RIF database.
 	 */
-	private AbstractRIFDataType rifDataType;
+	private RIFDataType rifDataType;
 	
 	/**
 	 * The name of this field when it is imported during the load step.  In a CSV
@@ -255,7 +253,7 @@ public class DataSetFieldConfiguration
 		
 		
 		coreFieldDescription = "";
-		rifDataType = TextRIFDataType.newInstance();
+		rifDataType = RIFDataTypeFactory.RIF_TEXT_DATA_TYPE;
 		optimiseUsingIndex = false;
 		checkOptions = new ArrayList<RIFCheckOption>();
 			
@@ -398,13 +396,13 @@ public class DataSetFieldConfiguration
 		this.coreFieldDescription = coreFieldDescription;
 	}
 
-	public AbstractRIFDataType getRIFDataType() {
+	public RIFDataType getRIFDataType() {
 
 		return rifDataType;
 	}
 
 	public void setRIFDataType(
-		final AbstractRIFDataType rifDataType) {
+		final RIFDataType rifDataType) {
 
 		this.rifDataType = rifDataType;
 	}

@@ -1,6 +1,7 @@
 package rifServices.util;
 
 import rifGenericLibrary.system.RIFServiceException;
+
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
@@ -484,6 +485,26 @@ public final class FieldValidationUtility {
 		}		
 		
 		return differenceMessage;			
+	}
+	
+	public static boolean areFieldsEqual(
+		final String valueA, 
+		final String valueB) {
+	
+		Collator collator 
+			= RIFServiceMessages.getCollator();
+		if ((valueA == null) && (valueB != null)) {
+			return false;
+		}
+		else if ((valueA != null) && (valueB == null)) {
+			return false;
+		}
+		else if (valueA != valueB) {			
+			return collator.equals(valueA, valueB);
+		}
+		else {
+			return true;
+		}
 	}
 	
 	// ==========================================

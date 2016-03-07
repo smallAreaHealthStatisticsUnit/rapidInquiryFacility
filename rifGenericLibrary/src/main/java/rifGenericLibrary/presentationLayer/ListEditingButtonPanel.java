@@ -402,8 +402,29 @@ public final class ListEditingButtonPanel {
 		clearButton.setEnabled(false);		
 	}
 	
+	public void indicateViewAndCopyState() {
+		addButton.setEnabled(true);
+		
+		String viewButtonText
+			= RIFGenericLibraryMessages.getMessage("buttons.view.label");
+		editButton.setText(viewButtonText);
+		editButton.setEnabled(true);
+		copyButton.setEnabled(true);
+		deleteButton.setEnabled(false);
+		clearButton.setEnabled(false);		
+	}	
 	
-	
+	public void indicateFullEditingState() {
+		addButton.setEnabled(true);
+		
+		String editButtonText
+			= RIFGenericLibraryMessages.getMessage("buttons.edit.label");
+		editButton.setText(editButtonText);
+		editButton.setEnabled(true);
+		copyButton.setEnabled(true);
+		deleteButton.setEnabled(true);
+		clearButton.setEnabled(true);		
+	}	
 	
 	public void disableAllButtons() {
 		for (JButton buttonToInclude : buttonsToInclude) {

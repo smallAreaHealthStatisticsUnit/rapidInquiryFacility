@@ -1,7 +1,6 @@
 package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.dataStorageLayer.*;
 import rifDataLoaderTool.system.*;
 import rifGenericLibrary.system.*;
@@ -282,17 +281,18 @@ public class PostgreSQLDataLoadingScriptWriter {
 	 * Creates field type of "text", "int", "double precision", "date"
 	 */
 	private String getDataTypePhrase(final DataSetFieldConfiguration dataSetFieldConfiguration) {
-		AbstractRIFDataType dataType = dataSetFieldConfiguration.getRIFDataType();
+		RIFDataType dataType = dataSetFieldConfiguration.getRIFDataType();
 		
-		if ((dataType instanceof AgeRIFDataType) ||
-			(dataType instanceof YearRIFDataType) ||
-			(dataType instanceof IntegerRIFDataType)) {
+		if ( RIFDataTypeFactory.isAgeDataType(dataType) ||
+			 RIFDataTypeFactory.isYearDataType(dataType) ||
+			 RIFDataTypeFactory.isIntegerDataType(dataType)) {
+			
 			return "INT";
 		}
-		else if (dataType instanceof DoubleRIFDataType) {
+		else if (RIFDataTypeFactory.isDoubleDataType(dataType)) {
 			return "DOUBLE PRECISION";
 		}
-		else if (dataType instanceof DateRIFDataType) {
+		else if (RIFDataTypeFactory.isDateDataType(dataType)) {
 			return "DATE";
 		}		
 		else {

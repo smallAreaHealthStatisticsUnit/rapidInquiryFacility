@@ -1,6 +1,5 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
@@ -423,14 +422,14 @@ public class WorkflowValidator {
 			//Here we want to identify mapped conversion fields by 
 			//using the 'convertFieldName
 			String fieldName = fieldConfiguration.getConvertFieldName();
-			AbstractRIFDataType proposedDataType
+			RIFDataType proposedDataType
 				= fieldConfiguration.getRIFDataType();
 			String proposedDataTypeIdentifier
 				= proposedDataType.getIdentifier();
 			
 			//expectedDataType might be null if the schema property manager 
 			//does not know about the field.
-			AbstractRIFDataType expectedDataType
+			RIFDataType expectedDataType
 				= schemaAreaPropertyManager.getExpectedRIFDataType(
 					rifSchemaArea, 
 					fieldName);

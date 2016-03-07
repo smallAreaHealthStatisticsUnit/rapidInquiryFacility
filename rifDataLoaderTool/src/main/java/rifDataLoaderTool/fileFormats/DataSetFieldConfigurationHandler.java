@@ -7,10 +7,9 @@ import rifDataLoaderTool.businessConceptLayer.RIFConversionFunction;
 import rifDataLoaderTool.businessConceptLayer.RIFConversionFunctionFactory;
 import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
 import rifDataLoaderTool.businessConceptLayer.FieldChangeAuditLevel;
-
 import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
+import rifDataLoaderTool.businessConceptLayer.RIFDataType;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.XMLUtility;
@@ -333,7 +332,7 @@ public final class DataSetFieldConfigurationHandler
 		}
 		else if (equalsFieldName("rif_data_type", qualifiedName)) {
 			String dataTypeName = getCurrentFieldValue();
-			AbstractRIFDataType rifDataType 
+			RIFDataType rifDataType 
 				= rifDataTypeFactory.getDataTypeFromCode(dataTypeName);
 			currentDataSetFieldConfiguration.setRIFDataType(rifDataType);
 		}

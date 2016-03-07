@@ -1,9 +1,5 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AgeRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.SexRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DateRIFDataType;
-
 import java.util.HashMap;
 
 /**
@@ -98,9 +94,9 @@ public class RIFConversionFunctionFactory {
 		ageSexConversionFunction.setSchemaName(null);
 		ageSexConversionFunction.setFunctionName("convert_age_sex");
 		ageSexConversionFunction.defineFormalParameter(
-			"age", AgeRIFDataType.newInstance());
+			"age", RIFDataTypeFactory.createAgeRIFDataType());
 		ageSexConversionFunction.defineFormalParameter(
-			"sex", SexRIFDataType.newInstance());
+			"sex", RIFDataTypeFactory.RIF_SEX_DATA_TYPE);
 		ageSexConversionFunction.setConvertFieldName("age_sex_group");
 		factory.registerConvertFunction(
 			ageSexConversionFunction.getFunctionName(), 
@@ -121,7 +117,8 @@ public class RIFConversionFunctionFactory {
 		dateFormattingFunction.setSupportsOneToOneConversion(true);
 		
 		dateFormattingFunction.defineFormalParameter(
-			"date", DateRIFDataType.newInstance());
+			"date", 
+			RIFDataTypeFactory.RIF_DATE_DATA_TYPE);
 		factory.registerConvertFunction(
 			ageSexConversionFunction.getFunctionName(), 
 			ageSexConversionFunction);

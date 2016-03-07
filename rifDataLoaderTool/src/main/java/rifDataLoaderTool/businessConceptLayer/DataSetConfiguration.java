@@ -2,7 +2,6 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.util.FieldValidationUtility;
@@ -699,7 +698,7 @@ public class DataSetConfiguration
 		ArrayList<DataSetFieldConfiguration> fieldsWithValidationChecks
 			= new ArrayList<DataSetFieldConfiguration>();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			AbstractRIFDataType dataType = fieldConfiguration.getRIFDataType();
+			RIFDataType dataType = fieldConfiguration.getRIFDataType();
 			if (dataType.getFieldValidationPolicy() != RIFFieldValidationPolicy.NO_VALIDATION) {
 				fieldsWithValidationChecks.add(fieldConfiguration);
 			}

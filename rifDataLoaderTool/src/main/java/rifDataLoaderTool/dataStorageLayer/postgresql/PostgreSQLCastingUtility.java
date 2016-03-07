@@ -1,8 +1,6 @@
 package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -233,7 +231,7 @@ public final class PostgreSQLCastingUtility {
 		
 		String cleanedTableFieldName
 			= dataSetFieldConfiguration.getCleanFieldName();
-		RIFDataTypeInterface rifDataType
+		RIFDataType rifDataType
 			= dataSetFieldConfiguration.getRIFDataType();
 		
 		/*
@@ -255,12 +253,12 @@ public final class PostgreSQLCastingUtility {
 		queryFormatter.addQueryPhrase(" = 'rif_error' THEN NULL");
 		queryFormatter.padAndFinishLine();
 			
-		if ((rifDataType instanceof IntegerRIFDataType) ||
-			(rifDataType instanceof AgeRIFDataType) ||
-			(rifDataType instanceof SexRIFDataType) ||
-			(rifDataType instanceof YearRIFDataType) ||
-			(rifDataType instanceof QuintiliseRIFDataType)) {
-		
+		if (RIFDataTypeFactory.isIntegerDataType(rifDataType) ||
+			RIFDataTypeFactory.isAgeDataType(rifDataType) ||
+			RIFDataTypeFactory.isSexDataType(rifDataType) ||
+			RIFDataTypeFactory.isYearDataType(rifDataType) ||
+			RIFDataTypeFactory.isQuintiliseDataType(rifDataType)) {
+					
 			/*
 			 * Generates a query fragment like:
 			 * 
@@ -273,7 +271,7 @@ public final class PostgreSQLCastingUtility {
 			queryFormatter.addQueryPhrase(cleanedTableFieldName);
 			queryFormatter.addQueryPhrase(" AS INTEGER)");
 		}
-		else if (rifDataType instanceof DateRIFDataType) {
+		else if (RIFDataTypeFactory.isDateDataType(rifDataType)) {
 			
 			/*
 			 * @TODO KLG - may have to create a function that
@@ -293,7 +291,7 @@ public final class PostgreSQLCastingUtility {
 			queryFormatter.addQueryPhrase(rifDataType.getMainValidationValue());
 			queryFormatter.addQueryPhrase("')");
 		}
-		else if (rifDataType instanceof DoubleRIFDataType) {
+		else if (RIFDataTypeFactory.isDoubleDataType(rifDataType)) {
 			
 			/*
 			 * Generates a query fragment like:

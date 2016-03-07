@@ -1,7 +1,6 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
@@ -88,7 +87,7 @@ public class RIFConversionFunction {
 	
 	//eg: func(cleanFieldA, cleanFieldB) AS convertFieldName
 	private String convertFieldName;
-	private HashMap<String, AbstractRIFDataType> dataTypeFromFormalParameterName;
+	private HashMap<String, RIFDataType> dataTypeFromFormalParameterName;
 	
 	private ArrayList<DataSetFieldConfiguration> actualParameterValues;
 	
@@ -99,7 +98,7 @@ public class RIFConversionFunction {
 
 	private RIFConversionFunction() {
 		formalParameterNames = new ArrayList<String>();
-		dataTypeFromFormalParameterName = new HashMap<String, AbstractRIFDataType>();
+		dataTypeFromFormalParameterName = new HashMap<String, RIFDataType>();
 		convertFieldName = "";
 		actualParameterValues = new ArrayList<DataSetFieldConfiguration>();
 		supportsOneToOneConversion = true;
@@ -130,16 +129,16 @@ public class RIFConversionFunction {
 		cloneFunction.setActualParameterValues(cloneActualParameterValues);
 
 		RIFDataTypeFactory rifDataTypeFactory = RIFDataTypeFactory.newInstance();
-		HashMap<String, AbstractRIFDataType> originalParamatersFromNames
+		HashMap<String, RIFDataType> originalParamatersFromNames
 			= originalFunction.getDataTypesFromFormalParmaterNames();
-		HashMap<String, AbstractRIFDataType> cloneParamatersFromNames
-			= new HashMap<String, AbstractRIFDataType>();		
+		HashMap<String, RIFDataType> cloneParamatersFromNames
+			= new HashMap<String, RIFDataType>();		
 		ArrayList<String> originalKeys = new ArrayList<String>();
 		originalKeys.addAll(originalParamatersFromNames.keySet());
 		for (String originalKey : originalKeys) {
-			AbstractRIFDataType originalDataType
+			RIFDataType originalDataType
 				= originalParamatersFromNames.get(originalKey);
-			AbstractRIFDataType cloneDataType
+			RIFDataType cloneDataType
 				= rifDataTypeFactory.getDataTypeFromCode(originalDataType.getIdentifier());
 			cloneParamatersFromNames.put(originalKey, cloneDataType);
 		}
@@ -150,7 +149,7 @@ public class RIFConversionFunction {
 	
 	public void defineFormalParameter(
 		final String parameterName,
-		final AbstractRIFDataType rifDataType) {
+		final RIFDataType rifDataType) {
 		
 		formalParameterNames.add(parameterName);
 		dataTypeFromFormalParameterName.put(
@@ -397,12 +396,12 @@ public class RIFConversionFunction {
 		this.supportsOneToOneConversion = supportsOneToOneConversion;
 	}
 
-	public HashMap<String, AbstractRIFDataType> getDataTypesFromFormalParmaterNames() {
+	public HashMap<String, RIFDataType> getDataTypesFromFormalParmaterNames() {
 		return dataTypeFromFormalParameterName;
 	}
 	
 	public void setDataTypesFromFormalParameterNames(
-		final HashMap<String, AbstractRIFDataType> dataTypeFromFormalParameterName) {
+		final HashMap<String, RIFDataType> dataTypeFromFormalParameterName) {
 		
 		this.dataTypeFromFormalParameterName = dataTypeFromFormalParameterName;		
 	}

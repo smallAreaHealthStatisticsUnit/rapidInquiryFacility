@@ -4,14 +4,15 @@ package rifGenericLibrary.presentationLayer;
 import rifGenericLibrary.system.*;
 
 
-
+import rifGenericLibrary.util.ListItemNameUtility;
 
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.text.Collator;
-
+import java.util.ArrayList;
+import java.util.Iterator;
 /**
  *
  *
@@ -65,30 +66,6 @@ import java.text.Collator;
 public class CopyListItemNameEditorDialog 
 	implements ActionListener {
 
-	/*
-	public static void main(String[] arguments) {
-		
-		UserInterfaceFactory userInterfaceFactory
-			= new UserInterfaceFactory();
-		String dialogTitle = "Data Set Name Editor Dialog";
-		String instructionsText = "Choose something";
-		String fieldName = "Name";
-		String[] existingListItemNames = new String[3];
-		existingListItemNames[0] = "one";
-		existingListItemNames[1] = "two";
-		existingListItemNames[2] = "three";
-		
-		CopyListItemNameEditorDialog dialog 
-			= new CopyListItemNameEditorDialog(
-				userInterfaceFactory,
-				dialogTitle,
-				instructionsText,
-				fieldName,
-				existingListItemNames);
-		dialog.show();
-	}
-	*/
-	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -96,7 +73,8 @@ public class CopyListItemNameEditorDialog
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String[] existingListItemNames;
+	private ArrayList existingListItemNames;
+	private String fieldName;
 	private boolean isCancelled;
 
 	private UserInterfaceFactory userInterfaceFactory;
@@ -113,11 +91,12 @@ public class CopyListItemNameEditorDialog
 		final String dialogTitle,
 		final String instructionsText,
 		final String fieldName,
-		final String[] existingListItemNames) {
+		final ArrayList<String> existingListItemNames) {
 
 		isCancelled = false;
 		this.userInterfaceFactory = userInterfaceFactory;
 		this.existingListItemNames = existingListItemNames;
+		this.fieldName = fieldName;
 		
 		okCloseButtonPanel 
 			= new OKCloseButtonPanel(userInterfaceFactory);
@@ -176,7 +155,13 @@ public class CopyListItemNameEditorDialog
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void show() {
+	public void show() {	
+		String candidateName
+			= ListItemNameUtility.generateUniqueListItemName(
+				fieldName, 
+				existingListItemNames);
+		listItemNameTextField.setText(candidateName);
+		
 		dialog.setVisible(true);
 	}
 	
@@ -215,23 +200,10 @@ public class CopyListItemNameEditorDialog
 	private void validateForm() 
 		throws RIFServiceException {
 
-		String candidateListItemName = getFieldName();
-		
-		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
-		for (String existingListItemName : existingListItemNames) {
-			if (collator.equals(candidateListItemName, existingListItemName)) {
-				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
-						"copyListItemNameEditorDialog.error.duplicateFieldName",
-						candidateListItemName);
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFGenericLibraryError.DUPLICATE_LIST_ITEM_NAME,
-						errorMessage);
-				throw rifServiceException;
-			}
-		}
+		String candidateListItemName = getFieldName();		
+		ListItemNameUtility.checkListDuplicate(
+			candidateListItemName, 
+			existingListItemNames);
 	}
 	
 	// ==========================================

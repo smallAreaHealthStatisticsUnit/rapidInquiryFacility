@@ -1,16 +1,20 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.CustomRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
+import rifDataLoaderTool.businessConceptLayer.RIFDataType;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
+import rifDataLoaderTool.businessConceptLayer.CleaningRule;
+import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.system.RIFServiceException;
 
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
 /**
  *
@@ -73,27 +77,28 @@ public class DataTypeEditingPanel
 	// Section Properties
 	// ==========================================
 	private JPanel panel;
+	private Component parentComponent;
 	
 	private UserInterfaceFactory userInterfaceFactory;
-	private JTextField identifierTextField;
 	private JTextField nameTextField;
 	private JTextField descriptionTextField;
 	
 	private DataCleaningPolicyEditingPanel dataCleaningPolicyEditingPanel;
 	private DataValidationPolicyEditingPanel dataValidationPolicyEditingPanel;
 	
-	private AbstractRIFDataType originalRIFDataType;
-	private CustomRIFDataType currentRIFDataType;
+	private RIFDataType originalRIFDataType;
 	
-	private boolean isEditable;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DataTypeEditingPanel(final UserInterfaceFactory userInterfaceFactory) {
+	public DataTypeEditingPanel(
+		final UserInterfaceFactory userInterfaceFactory,
+		final Component parentComponent) {
+		
 		this.userInterfaceFactory = userInterfaceFactory;
-		isEditable = true;
+		this.parentComponent = parentComponent;
 		
 		panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC 
@@ -134,19 +139,19 @@ public class DataTypeEditingPanel
 		JPanel panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC 
 			= userInterfaceFactory.createGridBagConstraints();
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
-		String identifierLabelText
-			= RIFDataLoaderToolMessages.getMessage("rifDataType.identifier.label");
-		JLabel identifierLabel
-			= userInterfaceFactory.createLabel(identifierLabelText);
-		panel.add(identifierLabel, panelGC);
+		//panelGC.fill = GridBagConstraints.NONE;
+		//panelGC.weightx = 0;
+		//String identifierLabelText
+		//	= RIFDataLoaderToolMessages.getMessage("rifDataType.identifier.label");
+		//JLabel identifierLabel
+		//	= userInterfaceFactory.createLabel(identifierLabelText);
+		//panel.add(identifierLabel, panelGC);
 		
-		panelGC.gridx++;
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 1;
-		identifierTextField = userInterfaceFactory.createTextField();
-		panel.add(identifierTextField, panelGC);
+		//panelGC.gridx++;
+		//panelGC.fill = GridBagConstraints.HORIZONTAL;
+		//panelGC.weightx = 1;
+		//identifierTextField = userInterfaceFactory.createTextField();
+		//panel.add(identifierTextField, panelGC);
 		
 		panelGC.gridx = 0;
 		panelGC.gridy++;
@@ -159,6 +164,7 @@ public class DataTypeEditingPanel
 		panel.add(nameLabel, panelGC);
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;		
 		nameTextField = userInterfaceFactory.createTextField();
 		panel.add(nameTextField, panelGC);
 				
@@ -173,6 +179,7 @@ public class DataTypeEditingPanel
 		panel.add(descriptionLabel, panelGC);
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;		
 		descriptionTextField = userInterfaceFactory.createTextField();
 		panel.add(descriptionTextField, panelGC);
 
@@ -186,65 +193,165 @@ public class DataTypeEditingPanel
 		return panel;
 	}
 	
-	public void setData(final AbstractRIFDataType originalRIFDataType) {
-		this.originalRIFDataType = originalRIFDataType;
 	
-		this.currentRIFDataType = RIFDataTypeFactory.createCopy(originalRIFDataType);
+	
+	
+	public void setData(final RIFDataType originalRIFDataType) {
 		
-		identifierTextField.setText(originalRIFDataType.getIdentifier());
+		System.out.println("DTEP - setData original data type identifier=="+originalRIFDataType.getIdentifier()+"==");
+		
+		this.originalRIFDataType = originalRIFDataType;
+		
 		nameTextField.setText(originalRIFDataType.getName());
 		descriptionTextField.setText(originalRIFDataType.getDescription());
 			
-		if (originalRIFDataType instanceof CustomRIFDataType) {	
-			userInterfaceFactory.setReadOnlyAppearance(
-				identifierTextField,
-				false);
-			userInterfaceFactory.setReadOnlyAppearance(
-				nameTextField,
-				false);
-			userInterfaceFactory.setReadOnlyAppearance(
-				descriptionTextField,
-				false);			
+		boolean isEditable = true;
+		if (originalRIFDataType.isReservedDataType()) {
+			isEditable = false;
+		}
 
-			dataCleaningPolicyEditingPanel.setData(currentRIFDataType, true);
-			dataValidationPolicyEditingPanel.setData(currentRIFDataType, true);		
+		
+		userInterfaceFactory.setEditableAppearance(
+			nameTextField,
+			isEditable);
+		userInterfaceFactory.setEditableAppearance(
+			descriptionTextField,
+			isEditable);			
+
+		RIFFieldCleaningPolicy fieldCleaningPolicy
+			= originalRIFDataType.getFieldCleaningPolicy();
+		if (fieldCleaningPolicy == RIFFieldCleaningPolicy.CLEANING_RULES) {
+			ArrayList<CleaningRule> cleaningRules
+				= originalRIFDataType.getCleaningRules();
+			dataCleaningPolicyEditingPanel.setCleaningRulesPolicy(cleaningRules);
+		}
+		else if (fieldCleaningPolicy == RIFFieldCleaningPolicy.CLEANING_FUNCTION) {
+			String cleaningFunctionName
+				= originalRIFDataType.getCleaningFunctionName();
+			dataCleaningPolicyEditingPanel.setCleaningFunctionPolicy(cleaningFunctionName);
 		}
 		else {
-			userInterfaceFactory.setReadOnlyAppearance(
-				identifierTextField,
-				true);
-			userInterfaceFactory.setReadOnlyAppearance(
-				nameTextField,
-				true);
-			userInterfaceFactory.setReadOnlyAppearance(
-				descriptionTextField,
-				true);	
-
-			dataCleaningPolicyEditingPanel.setData(currentRIFDataType, false);
-			dataValidationPolicyEditingPanel.setData(currentRIFDataType, false);				
+			dataCleaningPolicyEditingPanel.setNoCleaningPolicy();
 		}
+
+		RIFFieldValidationPolicy fieldValidationPolicy
+			= originalRIFDataType.getFieldValidationPolicy();
+		if (fieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_RULES) {
+			ArrayList<ValidationRule> validationRules
+				= originalRIFDataType.getValidationRules();
+			System.out.println("DataTypeEditingPanel setting validation rules=="+validationRules.size()+"==");
+			dataValidationPolicyEditingPanel.setValidationRulesPolicy(validationRules);
+		}
+		else if (fieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_FUNCTION) {
+			String validationFunctionName
+				= originalRIFDataType.getValidationFunctionName();
+			dataValidationPolicyEditingPanel.setValidationFunctionPolicy(validationFunctionName);
+		}
+		else {
+			dataValidationPolicyEditingPanel.setNoValidationPolicy();
+		}		
 	}
 	
-	private void populateForm(final boolean isEditable) {
-				
-		identifierTextField.setText(currentRIFDataType.getIdentifier());
-		nameTextField.setText(currentRIFDataType.getName());
-		descriptionTextField.setText(currentRIFDataType.getDescription());
+	public RIFDataType getDataType() {
+		return originalRIFDataType;
+	}
+	
+	public boolean saveChanges() 
+		throws RIFServiceException {
 		
-		identifierTextField.setEditable(isEditable);
-		nameTextField.setEditable(isEditable);
-		descriptionTextField.setEditable(isEditable);				
+		RIFDataType rifDataTypeFromForm = createDataTypeFromForm();
+		if (originalRIFDataType.hasIdenticalContents(rifDataTypeFromForm)) {
+			//no changes need to be made and we can assume that
+			//it is valid
+			return false;
+		}
+		else {
+			//changes have been made.  Ask users if they want to save changes
+			String message
+				= RIFDataLoaderToolMessages.getMessage(
+						"databaseTypeEditorDialog.saveChanges.message");
+			String title
+				= RIFDataLoaderToolMessages.getMessage(
+					"databaseTypeEditorDialog.saveChanges.title");
+			int result 
+				= JOptionPane.showConfirmDialog(
+					parentComponent,
+					message,
+					title,
+					JOptionPane.YES_NO_OPTION);
+			if (result != JOptionPane.YES_OPTION) {
+				return false;
+			}
+
+			//The original version and the version provided through the GUI differ.
+			//Assume that the original was valid but validate the one provided through
+			//the form
+			rifDataTypeFromForm.checkErrors();
+
+			System.out.println("BEFORE form description=="+rifDataTypeFromForm.getDescription()+"==");
+			System.out.println("BEFORE original description=="+originalRIFDataType.getDescription()+"==");
+			
+			//Changes were made and the result is a valid 
+			RIFDataType.copyInto(
+				rifDataTypeFromForm, 
+				originalRIFDataType);
+			
+			System.out.println("AFTER original description=="+originalRIFDataType.getDescription()+"==");			
+			return true;
+		}		
 	}
 	
-	public void saveChanges() {
-		dataCleaningPolicyEditingPanel.saveChanges();
-		dataValidationPolicyEditingPanel.saveChanges();		
+	private RIFDataType createDataTypeFromForm() {
+		RIFDataType rifDataType = RIFDataType.newInstance();
+		rifDataType.setIdentifier(originalRIFDataType.getIdentifier());
+		rifDataType.setName(nameTextField.getText().trim());
+		rifDataType.setDescription(descriptionTextField.getText().trim());
+		
+		//set values in the cleaning policy panel
+		RIFFieldCleaningPolicy rifFieldCleaningPolicy
+			= dataCleaningPolicyEditingPanel.getFieldCleaningPolicy();
+		rifDataType.setFieldCleaningPolicy(rifFieldCleaningPolicy);
+		if (rifFieldCleaningPolicy == RIFFieldCleaningPolicy.CLEANING_RULES) {
+			ArrayList<CleaningRule> cleaningRules
+				= dataCleaningPolicyEditingPanel.getCleaningRules();
+			rifDataType.setCleaningRules(cleaningRules);
+		}
+		else if (rifFieldCleaningPolicy == RIFFieldCleaningPolicy.CLEANING_FUNCTION) {
+			String cleaningFunctionName
+				= dataCleaningPolicyEditingPanel.getCleaningFunctionName();
+			rifDataType.setCleaningFunctionName(cleaningFunctionName);
+		}
+
+		System.out.println("DataTypeEditingPanel getting validation rules==111==");
+		
+		//set values in the validation policy panel
+		RIFFieldValidationPolicy rifFieldValidationPolicy
+			= dataValidationPolicyEditingPanel.getFieldValidationPolicy();
+		rifDataType.setFieldValidationPolicy(rifFieldValidationPolicy);
+		if (rifFieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_RULES) {
+			ArrayList<ValidationRule> validationRules
+				= dataValidationPolicyEditingPanel.getValidationRules();
+			System.out.println("DataTypeEditingPanel getting validation rules=="+validationRules.size()+"==");
+
+			rifDataType.setValidationRules(validationRules);
+		}
+		else if (rifFieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_FUNCTION) {
+			String validationFunctionName
+				= dataValidationPolicyEditingPanel.getValidationFunctionName();
+			rifDataType.setValidationFunctionName(validationFunctionName);
+		}
+		else {
+			
+		}
+			
+		return rifDataType;
 	}
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-
+	
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

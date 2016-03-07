@@ -1,17 +1,13 @@
 package rifDataLoaderTool.presentationLayer;
 
-
-
 import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
-
-
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.CustomRIFDataType;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
@@ -81,15 +77,11 @@ public class DataCleaningPolicyEditingPanel
 	// Section Properties
 	// ==========================================
 	
-	private CustomRIFDataType currentRIFDataType;
-	private boolean isEditable;
-
-	
 	private JPanel panel;
 	
 	private UserInterfaceFactory userInterfaceFactory;
 	private ButtonGroup validationPolicyButtonGroup;
-		
+	
 	private JRadioButton useFunctionRadioButton;
 	private JRadioButton useRulesRadioButton;
 	private JRadioButton doNothingRadioButton;
@@ -221,10 +213,11 @@ public class DataCleaningPolicyEditingPanel
 		upperPanelGC.gridx++;
 		upperPanelGC.fill = GridBagConstraints.HORIZONTAL;
 		upperPanelGC.weightx = 1;
-		String[] validationFunctionNames = new String[3];
-		validationFunctionNames[0] = "clean_uk_post_code";
-		validationFunctionNames[1] = "clean_icd10_code";
+		String[] validationFunctionNames = new String[4];
+		validationFunctionNames[0] = "clean_uk_postal_code";
+		validationFunctionNames[1] = "clean_icd_code";
 		validationFunctionNames[2] = "clean_sex";
+		validationFunctionNames[3] = "clean_age";
 		databaseFunctionsComboBox
 			= userInterfaceFactory.createComboBox(validationFunctionNames);
 		databaseFunctionsComboBox.addActionListener(this);
@@ -259,95 +252,76 @@ public class DataCleaningPolicyEditingPanel
 		return panel;
 	}
 	
-	public void setData(
-		final CustomRIFDataType currentRIFDataType,
-		final boolean isEditable) {
+	public RIFFieldCleaningPolicy getFieldCleaningPolicy() {
+		if (useRulesRadioButton.isSelected()) {
+			return RIFFieldCleaningPolicy.CLEANING_RULES;
+		}
+		else if (useFunctionRadioButton.isSelected()) {
+			return RIFFieldCleaningPolicy.CLEANING_FUNCTION;
+		}		
+		else {
+			return RIFFieldCleaningPolicy.NO_CLEANING;
+		}	
+	}
 		
-		this.currentRIFDataType = currentRIFDataType;
-		this.isEditable = isEditable;
-		populateForm();
+	public void setNoCleaningPolicy() {
+		removeActionListeners();		
+		doNothingRadioButton.setSelected(true);	
+		doNothing();
+		addActionListeners();
 	}
 	
-	private void populateForm() {
-			
+	public void setCleaningRulesPolicy(final ArrayList<CleaningRule> cleaningRules) {
+		removeActionListeners();
+		useRulesRadioButton.setSelected(true);
+		
+		rulesListPanel.clearList();
+		for (CleaningRule cleaningRule : cleaningRules) {
+			rulesListPanel.addListItem(cleaningRule);
+		}
+		if (rulesListPanel.isEmpty() == false) {
+			rulesListPanel.selectFirstItem();
+		}
+		rulesListPanel.updateUI();		
+
+		useRules();
+		addActionListeners();
+	}
+	
+	public ArrayList<CleaningRule> getCleaningRules() {
+		ArrayList<CleaningRule> cleaningRules = new ArrayList<CleaningRule>();
+		ArrayList<DisplayableListItemInterface> listItems
+			= rulesListPanel.getAllItems();
+		for (DisplayableListItemInterface listItem : listItems) {
+			cleaningRules.add((CleaningRule) listItem);
+		}
+		return cleaningRules;
+	}
+	
+	public void setCleaningFunctionPolicy(final String cleaningFunctionName) {
+		removeActionListeners();	
+		useFunctionRadioButton.setSelected(true);
+		databaseFunctionsComboBox.setSelectedItem(cleaningFunctionName);
+		cleaningUseFunction();
+		addActionListeners();
+	}
+		
+	public String getCleaningFunctionName() {
+		return (String) databaseFunctionsComboBox.getSelectedItem();
+	}
+	
+	private void addActionListeners() {
 		useFunctionRadioButton.removeActionListener(this);
 		useRulesRadioButton.removeActionListener(this);
 		doNothingRadioButton.removeActionListener(this);
-				
-		RIFFieldCleaningPolicy fieldCleaningPolicy
-			= currentRIFDataType.getFieldCleaningPolicy();
-		System.out.println("DataCleaningPolicyPanel populateForm cleaning policy=="+fieldCleaningPolicy.getName()+"==");
-		if (fieldCleaningPolicy == RIFFieldCleaningPolicy.NO_CLEANING) {
-			doNothingRadioButton.setSelected(true);
-			doNothing();
-		}
-		else if (fieldCleaningPolicy == RIFFieldCleaningPolicy.CLEANING_RULES) {
-			useRulesRadioButton.setSelected(true);
-
-			rulesListPanel.clearList();
-			ArrayList<CleaningRule> cleaningRules
-				= currentRIFDataType.getCleaningRules();
-			for (CleaningRule cleaningRule : cleaningRules) {
-				rulesListPanel.addListItem(cleaningRule);
-			}
-			rulesListPanel.updateUI();
-			useRules();
-		}
-		else if (fieldCleaningPolicy == RIFFieldCleaningPolicy.CLEANING_FUNCTION) {
-			useFunctionRadioButton.setSelected(true);
-			databaseFunctionsComboBox.setSelectedItem(
-				currentRIFDataType.getCleaningFunctionName());			
-			cleaningUseFunction();			
-		}
-
-		doNothingRadioButton.addActionListener(this);
-		useRulesRadioButton.addActionListener(this);
+	}
+	
+	private void removeActionListeners() {
 		useFunctionRadioButton.addActionListener(this);
-		
-		
-		//determine if buttons should be enabled or disabled
-		useFunctionRadioButton.setEnabled(isEditable);
-		useRulesRadioButton.setEnabled(isEditable);
-		doNothingRadioButton.setEnabled(isEditable);		
-		databaseFunctionsComboBox.setEnabled(isEditable);
-		if (isEditable) {
-			if (rulesListPanel.isEmpty()) {
-				rulesListButtonPanel.indicateEmptyState();
-			}
-			else {
-				rulesListButtonPanel.indicatePopulatedState();				
-			}			
-		}
-		else {
-			rulesListButtonPanel.indicateViewOnlyState();
-		}		
+		useRulesRadioButton.addActionListener(this);
+		doNothingRadioButton.addActionListener(this);
 	}
-	
-	public void saveChanges() {
-		if (doNothingRadioButton.isSelected()) {
-			currentRIFDataType.clearCleaningRules();
-			currentRIFDataType.setCleaningFunctionName("");
-			currentRIFDataType.setCleaningSQLFragment("");
-		}
-		else if (useRulesRadioButton.isSelected()) {			
-			currentRIFDataType.clearCleaningRules();
-			ArrayList<DisplayableListItemInterface> currentCleaningRules
-				= rulesListPanel.getAllItems();
-			for (DisplayableListItemInterface currentCleaningRule : currentCleaningRules) {
-				currentRIFDataType.addCleaningRule((CleaningRule) currentCleaningRule);
-			}			
-			currentRIFDataType.setCleaningFunctionName(
-				(String) databaseFunctionsComboBox.getSelectedItem());
-			currentRIFDataType.setCleaningSQLFragment("");			
-		}
-		else if (useFunctionRadioButton.isSelected()) {
-			currentRIFDataType.clearCleaningRules();
-			currentRIFDataType.setCleaningFunctionName(
-				(String) databaseFunctionsComboBox.getSelectedItem());
-			currentRIFDataType.setCleaningSQLFragment("");			
-		}
-	}
-	
+		
 	private void doNothing() {	
 		setEnableValidationFunctionFeature(false);
 		setEnableRulesFeature(false);
@@ -363,19 +337,13 @@ public class DataCleaningPolicyEditingPanel
 		setEnableValidationFunctionFeature(true);
 		setEnableRulesFeature(false);
 	}
-
-	private void cleaningUseSQLFragment() {	
-
-		setEnableValidationFunctionFeature(false);
-		setEnableRulesFeature(false);
-	}
 	
 	private void addCleaningRule() {
 		CleaningRuleEditorDialog cleaningEditorDialog
 			= new CleaningRuleEditorDialog(userInterfaceFactory);
 		CleaningRule cleaningRule
 			= CleaningRule.newInstance();
-		cleaningEditorDialog.setData(cleaningRule, isEditable);
+		cleaningEditorDialog.setData(cleaningRule, true);
 		cleaningEditorDialog.show();
 		if (cleaningEditorDialog.isCancelled()) {
 			return;
@@ -389,7 +357,7 @@ public class DataCleaningPolicyEditingPanel
 			= (CleaningRule) rulesListPanel.getSelectedItem();
 		CleaningRuleEditorDialog cleaningRuleEditorDialog
 			= new CleaningRuleEditorDialog(userInterfaceFactory);
-		cleaningRuleEditorDialog.setData(selectedCleaningRule, isEditable);
+		cleaningRuleEditorDialog.setData(selectedCleaningRule, true);
 		cleaningRuleEditorDialog.show();
 		
 	}
@@ -404,13 +372,13 @@ public class DataCleaningPolicyEditingPanel
 		cloneCleaningRule.setName("Copy of " + currentCleaningRuleName);
 		CleaningRuleEditorDialog cleaningRuleEditorDialog
 			= new CleaningRuleEditorDialog(userInterfaceFactory);
-		cleaningRuleEditorDialog.setData(selectedCleaningRule, isEditable);
+		cleaningRuleEditorDialog.setData(selectedCleaningRule, true);
 		cleaningRuleEditorDialog.show();
 		
 	}
 	
 	private void deleteCleaningRule() {
-		
+		rulesListPanel.deleteSelectedListItems();		
 	}
 	
 	private void updateValidationFunctionDescription() {
@@ -438,10 +406,14 @@ public class DataCleaningPolicyEditingPanel
 	private void setEnableRulesFeature(
 		final boolean isEnabled) {
 
-		System.out.println("DataCleaningPolicyEditingPanel setEnableRulesFeature=="+isEnabled+"==");
 		rulesListPanel.setEnabled(isEnabled);		
 		if (isEnabled) {
-			rulesListButtonPanel.indicateEmptyState();		
+			if (rulesListPanel.isEmpty()) {
+				rulesListButtonPanel.indicateEmptyState();				
+			}
+			else {
+				rulesListButtonPanel.indicatePopulatedState();
+			}
 		}
 		else {
 			rulesListPanel.clearList();

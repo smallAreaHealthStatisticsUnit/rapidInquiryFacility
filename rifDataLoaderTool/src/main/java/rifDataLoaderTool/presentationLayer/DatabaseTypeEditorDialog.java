@@ -1,16 +1,18 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AbstractRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.CustomRIFDataType;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
 import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.util.ListItemNameUtility;
+import rifGenericLibrary.system.RIFServiceException;
+import rifDataLoaderTool.businessConceptLayer.RIFDataType;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ import javax.swing.border.LineBorder;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 
@@ -80,15 +83,23 @@ public class DatabaseTypeEditorDialog
 
 	
 	public static void main(String[] arguments) {
-		UserInterfaceFactory userInterfaceFactory
-			= new UserInterfaceFactory();
-		RIFDataTypeFactory rifDataTypeFactory
-			= RIFDataTypeFactory.newInstance();
-		DatabaseTypeEditorDialog dialog
-			= new DatabaseTypeEditorDialog(
-				userInterfaceFactory,
-				rifDataTypeFactory);
-		dialog.show();
+		try {
+			
+			UserInterfaceFactory userInterfaceFactory
+				= new UserInterfaceFactory();
+			RIFDataTypeFactory rifDataTypeFactory
+				= RIFDataTypeFactory.newInstance();
+			rifDataTypeFactory.populateFactoryWithBuiltInTypes();
+			DatabaseTypeEditorDialog dialog
+				= new DatabaseTypeEditorDialog(
+					userInterfaceFactory,
+					rifDataTypeFactory);
+			dialog.show();
+		
+		}
+		catch(RIFServiceException rifServiceException) {
+			ErrorDialog.showError(null, rifServiceException.getErrorMessages());
+		}
 	}
 	
 	// ==========================================
@@ -110,6 +121,10 @@ public class DatabaseTypeEditorDialog
 	
 	private JLabel readOnlyLabel;
 	
+	private boolean allowSelectionChange;
+	
+	private int previouslySelectedIndex;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -120,6 +135,8 @@ public class DatabaseTypeEditorDialog
 		
 		this.userInterfaceFactory = userInterfaceFactory;	
 		this.rifDataTypeFactory = rifDataTypeFactory;
+		
+		allowSelectionChange = true;
 		buildUI();
 	}
 
@@ -133,8 +150,7 @@ public class DatabaseTypeEditorDialog
 		JPanel panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
-
-		
+	
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
 		
@@ -155,7 +171,15 @@ public class DatabaseTypeEditorDialog
 		panelGC.weighty = 0;
 		
 		panel.add(createBottomPanel(), panelGC);
-		
+
+		//now that everything is initialised, set the initial data
+		//there should be at least one data type in the list
+		currentlySupportedDataTypesPanel.selectFirstItem();
+		updateDisplayForSelectedDataType();
+		previouslySelectedIndex 
+			= currentlySupportedDataTypesPanel.getSelectedIndex();
+		currentlySupportedDataTypesPanel.addListSelectionListener(this);
+			
 		dialog.getContentPane().add(panel);
 		dialog.setSize(800, 600);
 		
@@ -166,7 +190,9 @@ public class DatabaseTypeEditorDialog
 		GridBagConstraints panelGC = userInterfaceFactory.createGridBagConstraints();
 	
 		dataTypeEditingPanel
-			= new DataTypeEditingPanel(userInterfaceFactory);
+			= new DataTypeEditingPanel(
+				userInterfaceFactory, 
+				dialog);
 		
 		JSplitPane splitPane
 			= userInterfaceFactory.createLeftRightSplitPane(
@@ -201,13 +227,12 @@ public class DatabaseTypeEditorDialog
 				userInterfaceFactory,
 				false);	
 	
-		ArrayList<RIFDataTypeInterface> registeredDataTypes
+		ArrayList<RIFDataType> registeredDataTypes
 			= rifDataTypeFactory.getRegisteredDataTypes();
-		for (RIFDataTypeInterface registeredDataType : registeredDataTypes) {
+		for (RIFDataType registeredDataType : registeredDataTypes) {
 			currentlySupportedDataTypesPanel.addListItem(registeredDataType);			
 		}
 		
-		currentlySupportedDataTypesPanel.addListSelectionListener(this);
 		panel.add(currentlySupportedDataTypesPanel.getPanel(), panelGC);
 		
 		panelGC.gridy++;
@@ -219,7 +244,13 @@ public class DatabaseTypeEditorDialog
 		dataTypeListEditingPanel.includeCopyButton("");
 		dataTypeListEditingPanel.includeEditButton("");
 		dataTypeListEditingPanel.includeDeleteButton("");
+		
 		dataTypeListEditingPanel.addActionListener(this);
+		
+		currentlySupportedDataTypesPanel.selectFirstItem();			
+
+		
+		
 		panel.add(
 			dataTypeListEditingPanel.getPanel(), 
 			panelGC);
@@ -250,17 +281,44 @@ public class DatabaseTypeEditorDialog
 	}
 	
 	private void addSelectedDataType() {
-		System.out.println("add selected data type 1");
-		CustomRIFDataType customRIFDataType
-			= CustomRIFDataType.newInstance(
-				"custom-data-type-1", 
-				"custom data type 1", 
-				"");
+		//validate current form
+		try {
+			//Get them to fix any problems in the current form first
+			dataTypeEditingPanel.saveChanges();
+
+			//Now create the new data type
+			RIFDataType customRIFDataType
+				= RIFDataType.newInstance();	
+			ArrayList<String> currentDatatypeNames
+				= getRIFDataTypeNameFieldValues();
+			String title
+				= RIFDataLoaderToolMessages.getMessage("addDataTypeDialog.title");
+			NamedListItemDialog dialog
+				= new NamedListItemDialog(
+					userInterfaceFactory, 
+					title, 
+					currentDatatypeNames);
+			dialog.show();
+			if (dialog.isCancelled()) {
+				return;
+			}
 		
+			customRIFDataType.setName(dialog.getCandidateName());
+			System.out.println("DTED == about to add a data type 1");
 		
-		currentlySupportedDataTypesPanel.addListItem(customRIFDataType);		
-		currentlySupportedDataTypesPanel.updateUI();
-		currentlySupportedDataTypesPanel.setSelectedItem(customRIFDataType);		
+			currentlySupportedDataTypesPanel.addListItem(customRIFDataType);		
+			currentlySupportedDataTypesPanel.updateUI();		
+			currentlySupportedDataTypesPanel.setSelectedItem(customRIFDataType);
+
+			System.out.println("DTED == about to add a data type 2");
+		
+		}
+		catch(RIFServiceException rifServiceException) {
+			ErrorDialog.showError(
+				dialog, 
+				rifServiceException.getErrorMessages());
+		}
+
 	}
 
 	private void editSelectedDataType() {
@@ -269,16 +327,34 @@ public class DatabaseTypeEditorDialog
 	}
 	
 	private void copySelectedDataType() {
-		
-	}
+		RIFDataType originalRIFDataType
+			= (RIFDataType) currentlySupportedDataTypesPanel.getSelectedItem();
+		RIFDataType cloneRIFDataType
+			= RIFDataType.createCopy(originalRIFDataType);
+		cloneRIFDataType.setReservedDataType(false);
 	
+		ArrayList<String> currentDatatypeNames
+			= getRIFDataTypeNameFieldValues();
+		
+		String baseName
+			= cloneRIFDataType.getName().toLowerCase();
+		//find out existing names of list items
+		String candidateIdentifier
+			= ListItemNameUtility.generateUniqueListItemName(
+				baseName, 
+				currentDatatypeNames);
+		cloneRIFDataType.setIdentifier(candidateIdentifier);
+		dataTypeEditingPanel.setData(cloneRIFDataType);		
+	}
+		
 	private void deleteSelectedDataType() {
-		
-	}
-	
-	private void updateListButtonEditingStates() {
-		
-		
+		currentlySupportedDataTypesPanel.deleteSelectedListItems();
+		if (currentlySupportedDataTypesPanel.isEmpty()) {
+			dataTypeListEditingPanel.indicateEmptyState();
+		}
+		else {
+			currentlySupportedDataTypesPanel.selectFirstItem();			
+		}		
 	}
 	
 	private void ok() {
@@ -292,6 +368,33 @@ public class DatabaseTypeEditorDialog
 		System.exit(0);
 	}
 	
+	private void updateDisplayForSelectedDataType() {
+		System.out.println("updateDisplayForSelectedDataType 11");
+		RIFDataType currentlySelectedDataType
+			= (RIFDataType) currentlySupportedDataTypesPanel.getSelectedItem();
+		if (currentlySelectedDataType == null) {
+			//list is empty.  Ensure buttons indicate empty look
+			dataTypeListEditingPanel.indicateEmptyState();			
+			dataTypeEditingPanel.setData(RIFDataType.EMPTY_RIF_DATA_TYPE);
+		}
+		else {
+
+			if (currentlySelectedDataType.isReservedDataType()){
+				dataTypeListEditingPanel.indicateViewAndCopyState();			
+				String warningLabelText
+					= RIFDataLoaderToolMessages.getMessage("databaseTypeEditorDialog.warning.dataTypeIsReserved");
+				readOnlyLabel.setText(warningLabelText);
+				readOnlyLabel.setForeground(Color.RED);				
+				dataTypeListEditingPanel.indicateViewAndCopyState();				
+			}
+			else {
+				dataTypeListEditingPanel.indicateFullEditingState();
+				readOnlyLabel.setForeground(Color.BLACK);
+				readOnlyLabel.setText("");				
+			}
+			dataTypeEditingPanel.setData(currentlySelectedDataType);
+		}
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -328,24 +431,63 @@ public class DatabaseTypeEditorDialog
 	//Interface: List Selection Listener
 	public void valueChanged(final ListSelectionEvent event) {
 		
-		AbstractRIFDataType selectedRIFDataType
-			= (AbstractRIFDataType) currentlySupportedDataTypesPanel.getSelectedItem();
-		if (selectedRIFDataType == null) {
-			return;
-		}
-		dataTypeEditingPanel.setData(selectedRIFDataType);
+		System.out.println("valueChanged 1");
+		if (event.getValueIsAdjusting()) {
+			return;			
+		}		
 		
-		if (selectedRIFDataType instanceof CustomRIFDataType) {
-			readOnlyLabel.setText("");			
+		if (allowSelectionChange == true) {
+
+			try {
+				RIFDataType unalteredRIFDataType
+					= dataTypeEditingPanel.getDataType();
+				String oldDisplayName = unalteredRIFDataType.getDisplayName();
+				boolean changesWereSaved = dataTypeEditingPanel.saveChanges();
+				if (changesWereSaved) {
+					//changes in the item may have affected the display name
+					RIFDataType changedRIFDataType
+						= dataTypeEditingPanel.getDataType();
+					//update item in the list
+					currentlySupportedDataTypesPanel.replaceItem(
+						oldDisplayName, 
+						changedRIFDataType);
+				}
+			}
+			catch(RIFServiceException rifServiceException) {
+				ErrorDialog.showError(
+					dialog, 
+					rifServiceException.getErrorMessages());
+				allowSelectionChange = false;
+			}
+		}
+
+		if (allowSelectionChange == true) {
+			updateDisplayForSelectedDataType();
+			previouslySelectedIndex = event.getFirstIndex();			
 		}
 		else {
-			String readOnlyLabelText
-				= RIFDataLoaderToolMessages.getMessage("general.readOnly.label");
-			readOnlyLabel.setText(readOnlyLabelText);
+
+			//remove listeners to prevent more triggers
+			currentlySupportedDataTypesPanel.removeListSelectionListener(this);
+			currentlySupportedDataTypesPanel.setSelectedItem(previouslySelectedIndex);		
+			currentlySupportedDataTypesPanel.addListSelectionListener(this);
 		}
-			
+		
 	}
 	
+	private ArrayList<String> getRIFDataTypeNameFieldValues() {
+		ArrayList<String> results = new ArrayList<String>();
+		ArrayList<DisplayableListItemInterface> currentListItems
+			= currentlySupportedDataTypesPanel.getAllItems();
+		for (DisplayableListItemInterface currentListItem : currentListItems) {
+			RIFDataType currentDataType
+				= (RIFDataType) currentListItem;
+			results.add(currentDataType.getIdentifier());
+		}
+		
+		return results;
+		
+	}
 	// ==========================================
 	// Section Override
 	// ==========================================

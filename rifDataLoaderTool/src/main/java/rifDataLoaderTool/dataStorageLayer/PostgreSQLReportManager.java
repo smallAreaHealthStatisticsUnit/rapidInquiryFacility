@@ -2,15 +2,12 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
 import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLExportTableToCSVQueryFormatter;
-import rifGenericLibrary.system.RIFGenericLibraryError;
+
 import rifGenericLibrary.system.RIFServiceException;
 
-import java.io.FileReader;
 import java.io.Writer;
 import java.sql.*;
 import java.io.*;

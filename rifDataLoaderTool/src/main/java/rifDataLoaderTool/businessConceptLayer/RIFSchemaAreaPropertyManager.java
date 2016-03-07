@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 
 /**
  * Holds knowledge about what properties are expected for different parts of the
@@ -68,10 +67,10 @@ public class RIFSchemaAreaPropertyManager {
 	// Section Properties
 	// ==========================================
 	
-	private HashMap<String, AbstractRIFDataType> dataTypeFromCovariateFieldName;
-	private HashMap<String, AbstractRIFDataType> dataTypeFromHealthCodeFieldName;
-	private HashMap<String, AbstractRIFDataType> dataTypeFromNumeratorFieldName;
-	private HashMap<String, AbstractRIFDataType> dataTypeFromDenominatorFieldName;
+	private HashMap<String, RIFDataType> dataTypeFromCovariateFieldName;
+	private HashMap<String, RIFDataType> dataTypeFromHealthCodeFieldName;
+	private HashMap<String, RIFDataType> dataTypeFromNumeratorFieldName;
+	private HashMap<String, RIFDataType> dataTypeFromDenominatorFieldName;
 		
 	// ==========================================
 	// Section Construction
@@ -83,57 +82,57 @@ public class RIFSchemaAreaPropertyManager {
 		/*
 		 * Fields in covariate data
 		 */
-		dataTypeFromCovariateFieldName = new HashMap<String, AbstractRIFDataType>();
+		dataTypeFromCovariateFieldName = new HashMap<String, RIFDataType>();
 		dataTypeFromCovariateFieldName.put(
 			"geography", 
-			TextRIFDataType.newInstance());
+			RIFDataTypeFactory.RIF_TEXT_DATA_TYPE);
 		dataTypeFromCovariateFieldName.put(
 			"geolevel_name", 
-			TextRIFDataType.newInstance());
+			RIFDataTypeFactory.RIF_TEXT_DATA_TYPE);
 		dataTypeFromCovariateFieldName.put(
 			"covariate_name", 
-			TextRIFDataType.newInstance());
+			RIFDataTypeFactory.RIF_TEXT_DATA_TYPE);
 		dataTypeFromCovariateFieldName.put(
 			"min", 
-			DoubleRIFDataType.newInstance());		
+			RIFDataTypeFactory.RIF_DOUBLE_DATA_TYPE);		
 		dataTypeFromCovariateFieldName.put(
 			"max", 
-			DoubleRIFDataType.newInstance());		
+			RIFDataTypeFactory.RIF_DOUBLE_DATA_TYPE);		
 		dataTypeFromCovariateFieldName.put(
 			"type", 
-			DoubleRIFDataType.newInstance());			
+			RIFDataTypeFactory.RIF_DOUBLE_DATA_TYPE);			
 
 		dataTypeFromHealthCodeFieldName
-			= new HashMap<String, AbstractRIFDataType>();
+			= new HashMap<String, RIFDataType>();
 		dataTypeFromHealthCodeFieldName.put(
 			"code", 
-			TextRIFDataType.newInstance());
+			RIFDataTypeFactory.RIF_TEXT_DATA_TYPE);
 		dataTypeFromHealthCodeFieldName.put(
 			"label", 
-			TextRIFDataType.newInstance());
+			RIFDataTypeFactory.RIF_TEXT_DATA_TYPE);
 		dataTypeFromHealthCodeFieldName.put(
 			"description", 
-			TextRIFDataType.newInstance());		
+			RIFDataTypeFactory.RIF_TEXT_DATA_TYPE);		
 		dataTypeFromHealthCodeFieldName.put(
 			"nameSpace", 
-			TextRIFDataType.newInstance());
+			RIFDataTypeFactory.RIF_TEXT_DATA_TYPE);
 				
-		dataTypeFromNumeratorFieldName = new HashMap<String, AbstractRIFDataType>();
+		dataTypeFromNumeratorFieldName = new HashMap<String, RIFDataType>();
 		dataTypeFromNumeratorFieldName.put(
 			"year", 
-			YearRIFDataType.newInstance());
+			RIFDataTypeFactory.RIF_YEAR_DATA_TYPE);
 		dataTypeFromNumeratorFieldName.put(
 			"age_sex_group", 
-			YearRIFDataType.newInstance());
+			RIFDataTypeFactory.RIF_INTEGER_DATA_TYPE);
 
 		dataTypeFromDenominatorFieldName 
-			= new HashMap<String, AbstractRIFDataType>();
+			= new HashMap<String, RIFDataType>();
 		dataTypeFromDenominatorFieldName.put(
 			"year", 
-			YearRIFDataType.newInstance());
+			RIFDataTypeFactory.RIF_YEAR_DATA_TYPE);
 		dataTypeFromDenominatorFieldName.put(
 			"age", 
-			AgeRIFDataType.newInstance());
+			RIFDataTypeFactory.createAgeRIFDataType());
 		
 	}
 
@@ -263,7 +262,7 @@ public class RIFSchemaAreaPropertyManager {
 		
 	}
 	
-	public AbstractRIFDataType getExpectedRIFDataType(
+	public RIFDataType getExpectedRIFDataType(
 		final RIFSchemaArea rifSchemaArea,
 		final String fieldName) {
 		

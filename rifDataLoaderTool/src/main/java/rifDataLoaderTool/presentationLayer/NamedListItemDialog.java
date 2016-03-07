@@ -1,6 +1,7 @@
 package rifDataLoaderTool.presentationLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
@@ -12,6 +13,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
 import java.text.Collator;
+import java.util.ArrayList;
 
 /**
  *
@@ -63,7 +65,7 @@ import java.text.Collator;
  *
  */
 
-public class CopyItemDialog 
+public class NamedListItemDialog 
 	implements ActionListener {
 
 	// ==========================================
@@ -79,7 +81,7 @@ public class CopyItemDialog
 	private JTextField nameTextField;
 	private OKCloseButtonPanel okCloseButtonPanel;
 	
-	private String[] existingNames;
+	private ArrayList<String> existingNames;
 	
 	private boolean isCancelled;
 	
@@ -87,10 +89,10 @@ public class CopyItemDialog
 	// Section Construction
 	// ==========================================
 
-	public CopyItemDialog(
+	public NamedListItemDialog(
 		final UserInterfaceFactory userInterfaceFactory,
 		final String title,
-		final String[] existingNames) {
+		final ArrayList<String> existingNames) {
 		
 		this.userInterfaceFactory = userInterfaceFactory;
 		this.existingNames = existingNames;
@@ -161,7 +163,7 @@ public class CopyItemDialog
 			checkErrors();
 			
 			isCancelled = false;
-			dialog.setVisible(true);			
+			dialog.setVisible(false);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
@@ -173,7 +175,7 @@ public class CopyItemDialog
 	
 	private void close() {
 		isCancelled = true;
-		dialog.setVisible(true);
+		dialog.setVisible(false);
 	}
 	
 	// ==========================================

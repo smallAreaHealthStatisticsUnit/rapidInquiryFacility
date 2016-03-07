@@ -549,15 +549,16 @@ public final class UserInterfaceFactory {
 		return comboBox;
 	}
 	
-	public void setReadOnlyAppearance(
+	public void setEditableAppearance(
 		final JTextComponent textComponent, 
 		final boolean isEditable) {
 		
+		textComponent.setEditable(isEditable);
 		if (isEditable) {
-			textComponent.setBackground(Color.LIGHT_GRAY);			
+			textComponent.setBackground(Color.WHITE);	
 		}
 		else {
-			textComponent.setBackground(Color.WHITE);		
+			textComponent.setBackground(Color.LIGHT_GRAY);
 		}
 	}
 	

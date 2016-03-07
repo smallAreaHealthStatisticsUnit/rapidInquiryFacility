@@ -1,6 +1,5 @@
 package rifDataLoaderTool.dataStorageLayer.postgresql;
 
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -8,6 +7,7 @@ import rifGenericLibrary.dataStorageLayer.SQLCreatePrimaryKeyQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
 import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
+
 
 
 
@@ -222,7 +222,7 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 		String cleanFieldName
 			= dataSetFieldConfiguration.getCleanFieldName();
 		
-		AbstractRIFDataType rifDataType
+		RIFDataType rifDataType
 			= dataSetFieldConfiguration.getRIFDataType();
 		RIFFieldCleaningPolicy fieldCleaningPolicy
 			= rifDataType.getFieldCleaningPolicy();

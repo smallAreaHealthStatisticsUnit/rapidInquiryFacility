@@ -1,7 +1,6 @@
 package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 import java.util.regex.Pattern;
@@ -159,7 +158,7 @@ public class DataSetConfigurationHints {
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
 			= dataSetConfiguration.getFieldConfigurations();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			AbstractRIFDataType rifDataType
+			RIFDataType rifDataType
 				= guessDataTypeFromFieldName(fieldConfiguration.getCoreFieldName());
 			fieldConfiguration.setRIFDataType(rifDataType);
 		}		
@@ -188,7 +187,7 @@ public class DataSetConfigurationHints {
 		}		
 	}
 	
-	private AbstractRIFDataType guessDataTypeFromFieldName(
+	private RIFDataType guessDataTypeFromFieldName(
 		final String fieldName) {
 		
 		RIFDataTypeFactory rifDataTypeFactory = RIFDataTypeFactory.newInstance();

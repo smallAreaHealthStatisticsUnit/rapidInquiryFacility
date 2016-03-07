@@ -1,12 +1,6 @@
 package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.AgeRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DateRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.DoubleRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.IntegerRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.SexRIFDataType;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.YearRIFDataType;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
@@ -238,7 +232,7 @@ public final class PostgresCleaningStepQueryGenerator
 		String cleanedTableFieldName
 			= dataSetFieldConfiguration.getCleanFieldName();
 
-		RIFDataTypeInterface rifDataType 
+		RIFDataType rifDataType 
 			= dataSetFieldConfiguration.getRIFDataType();
 		RIFFieldCleaningPolicy rifFieldCleaningPolicy
 			= rifDataType.getFieldCleaningPolicy();
@@ -408,7 +402,7 @@ public final class PostgresCleaningStepQueryGenerator
 		 * END
 		 *  
 		 */
-		RIFDataTypeInterface rifDataType = fieldConfiguration.getRIFDataType();
+		RIFDataType rifDataType = fieldConfiguration.getRIFDataType();
 		RIFFieldValidationPolicy fieldValidationPolicy
 			= rifDataType.getFieldValidationPolicy();
 		
@@ -437,7 +431,7 @@ public final class PostgresCleaningStepQueryGenerator
 			queryFormatter.addQueryPhrase(baseIndentationLevel, "CASE");
 			queryFormatter.padAndFinishLine();
 		
-			if (rifDataType instanceof DateRIFDataType) {
+			if (RIFDataTypeFactory.isDateDataType(rifDataType)) {
 				for (ValidationRule validationRule : validationRules) {
 					queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
 					queryFormatter.addQueryPhrase("is_valid_date(");
@@ -1225,7 +1219,7 @@ public final class PostgresCleaningStepQueryGenerator
 		
 		String cleanedTableFieldName
 			= dataSetFieldConfiguration.getCleanFieldName();
-		RIFDataTypeInterface rifDataType
+		RIFDataType rifDataType
 			= dataSetFieldConfiguration.getRIFDataType();
 		
 		/*
@@ -1251,10 +1245,10 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryPhrase(" = 'rif_error' THEN NULL");
 		queryFormatter.padAndFinishLine();
 			
-		if ((rifDataType instanceof IntegerRIFDataType) ||
-			(rifDataType instanceof AgeRIFDataType) ||
-			(rifDataType instanceof SexRIFDataType) ||
-			(rifDataType instanceof YearRIFDataType)) {
+		if (RIFDataTypeFactory.isIntegerDataType(rifDataType) ||
+			RIFDataTypeFactory.isAgeDataType(rifDataType) ||
+			RIFDataTypeFactory.isSexDataType(rifDataType) ||
+			RIFDataTypeFactory.isYearDataType(rifDataType)) {
 		
 			/*
 			 * Generates a query fragment like:
@@ -1268,8 +1262,7 @@ public final class PostgresCleaningStepQueryGenerator
 			queryFormatter.addQueryPhrase(cleanedTableFieldName);
 			queryFormatter.addQueryPhrase(" AS INTEGER)");
 		}
-		else if (rifDataType instanceof DateRIFDataType) {
-			
+		else if (RIFDataTypeFactory.isDateDataType(rifDataType)) {
 			/*
 			 * @TODO KLG - may have to create a function that
 			 * produces a TIMESTAMP object
@@ -1290,7 +1283,7 @@ public final class PostgresCleaningStepQueryGenerator
 			queryFormatter.addQueryPhrase(rifDataType.getMainValidationValue());
 			queryFormatter.addQueryPhrase("')");
 		}
-		else if (rifDataType instanceof DoubleRIFDataType) {
+		else if (RIFDataTypeFactory.isDoubleDataType(rifDataType)) {
 			
 			/*
 			 * Generates a query fragment like:

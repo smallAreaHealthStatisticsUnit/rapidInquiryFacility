@@ -2,7 +2,6 @@ package rifDataLoaderTool.presentationLayer;
 
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.presentationLayer.*;
@@ -653,7 +652,7 @@ public class DataSetFieldPropertyEditorPanel
 
 	private void populateFormFromWorkingCopy() {
 
-		AbstractRIFDataType rifDataType
+		RIFDataType rifDataType
 			= workingCopyDataSetFieldConfiguration.getRIFDataType();
 		rifDataTypeComboBox.setSelectedItem(rifDataType.getName());
 		loadTextField.setText(workingCopyDataSetFieldConfiguration.getLoadFieldName());
@@ -799,7 +798,7 @@ public class DataSetFieldPropertyEditorPanel
 			= (String) rifDataTypeComboBox.getSelectedItem();
 		RIFDataTypeFactory dataTypeFactory
 			= RIFDataTypeFactory.newInstance();
-		AbstractRIFDataType currentlySelectedRIFDataType
+		RIFDataType currentlySelectedRIFDataType
 			= dataTypeFactory.getDataTypeFromName(currentlySelectedRIFDataTypeName);
 		workingCopyDataSetFieldConfiguration.setRIFDataType(currentlySelectedRIFDataType);
 		

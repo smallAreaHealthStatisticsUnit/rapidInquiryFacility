@@ -1,10 +1,31 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-
-import rifDataLoaderTool.businessConceptLayer.rifDataTypes.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
+
+import java.text.Collator;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -71,8 +92,24 @@ public class RIFDataTypeFactory {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private HashMap<String, AbstractRIFDataType> dataTypeFromCodes;
-	private HashMap<String, AbstractRIFDataType> dataTypeFromNames;
+	
+	private static int customRIFDataTypeKeyNumber = 1;
+	
+	private HashMap<String, RIFDataType> dataTypeFromCodes;
+	private HashMap<String, RIFDataType> dataTypeFromNames;
+	
+	public static final RIFDataType RIF_AGE_DATA_TYPE = createAgeRIFDataType();
+	public static final RIFDataType RIF_SEX_DATA_TYPE = createSexDataType();	
+	public static final RIFDataType RIF_YEAR_DATA_TYPE = createYearDataType();
+	
+	public static final RIFDataType RIF_INTEGER_DATA_TYPE = createIntegerDataType();
+	public static final RIFDataType RIF_DOUBLE_DATA_TYPE = createDoubleRIFDataType();
+	public static final RIFDataType RIF_TEXT_DATA_TYPE = createTextDataType();
+	public static final RIFDataType RIF_DATE_DATA_TYPE = createDateDataType();
+	public static final RIFDataType RIF_ICD_DATA_TYPE = createICDDataType();
+	public static final RIFDataType RIF_ASCII_DATA_TYPE = createASCIIDataType();
+	public static final RIFDataType RIF_QUINTILISE_DATA_TYPE = createQuintiliseDataType();	
+	public static final RIFDataType RIF_UK_POSTAL_CODE_DATA_TYPE = createUKPostalCodeDataType();
 	
 	// ==========================================
 	// Section Construction
@@ -80,55 +117,28 @@ public class RIFDataTypeFactory {
 
 	private RIFDataTypeFactory() {
 		
-		dataTypeFromCodes = new HashMap<String, AbstractRIFDataType>();
-		dataTypeFromNames = new HashMap<String, AbstractRIFDataType>();
+		dataTypeFromCodes = new HashMap<String, RIFDataType>();
+		dataTypeFromNames = new HashMap<String, RIFDataType>();
 		
-		AgeRIFDataType ageRIFDataType = AgeRIFDataType.newInstance();
-		dataTypeFromCodes.put(ageRIFDataType.getIdentifier(), ageRIFDataType);
-		dataTypeFromNames.put(ageRIFDataType.getName(), ageRIFDataType);
-		
-		DoubleRIFDataType doubleRIFDataType = DoubleRIFDataType.newInstance();
-		dataTypeFromCodes.put(doubleRIFDataType.getIdentifier(), doubleRIFDataType);
-		dataTypeFromNames.put(doubleRIFDataType.getName(), doubleRIFDataType);
-		
-		DateRIFDataType dateRIFDataType = DateRIFDataType.newInstance();
-		dataTypeFromCodes.put(dateRIFDataType.getIdentifier(), dateRIFDataType);		
-		dataTypeFromNames.put(dateRIFDataType.getName(), dateRIFDataType);		
-
-		ICDCodeRIFDataType icdCodeRIFDataType = ICDCodeRIFDataType.newInstance();
-		dataTypeFromCodes.put(icdCodeRIFDataType.getIdentifier(), icdCodeRIFDataType);		
-		dataTypeFromNames.put(icdCodeRIFDataType.getName(), icdCodeRIFDataType);		
-
-		QuintiliseRIFDataType quintiliseRIFDataType = QuintiliseRIFDataType.newInstance();
-		dataTypeFromCodes.put(quintiliseRIFDataType.getIdentifier(), quintiliseRIFDataType);		
-		dataTypeFromNames.put(quintiliseRIFDataType.getName(), quintiliseRIFDataType);		
-				
-		IntegerRIFDataType integerRIFDataType = IntegerRIFDataType.newInstance();
-		dataTypeFromCodes.put(integerRIFDataType.getIdentifier(), integerRIFDataType);
-		dataTypeFromNames.put(integerRIFDataType.getName(), integerRIFDataType);
-		
-		NHSNumberRIFDataType nhsNumberRIFDataType = NHSNumberRIFDataType.newInstance();
-		dataTypeFromCodes.put(nhsNumberRIFDataType.getIdentifier(), nhsNumberRIFDataType);
-		dataTypeFromNames.put(nhsNumberRIFDataType.getName(), nhsNumberRIFDataType);
-				
-		SexRIFDataType sexRIFDataType = SexRIFDataType.newInstance();
-		dataTypeFromCodes.put(sexRIFDataType.getIdentifier(), sexRIFDataType);
-		dataTypeFromNames.put(sexRIFDataType.getName(), sexRIFDataType);
-		
-		TextRIFDataType textRIFDataType = TextRIFDataType.newInstance();
-		dataTypeFromCodes.put(textRIFDataType.getIdentifier(), textRIFDataType);
-		dataTypeFromNames.put(textRIFDataType.getName(), textRIFDataType);
-			
-		UKPostalCodeRIFDataType ukPostalCodeRIFDataType
-			= UKPostalCodeRIFDataType.newInstance();
-		dataTypeFromCodes.put(ukPostalCodeRIFDataType.getIdentifier(), ukPostalCodeRIFDataType);
-		dataTypeFromNames.put(ukPostalCodeRIFDataType.getName(), ukPostalCodeRIFDataType);
-		
-		YearRIFDataType yearRIFDataType = YearRIFDataType.newInstance();
-		dataTypeFromCodes.put(yearRIFDataType.getIdentifier(), yearRIFDataType);
-		dataTypeFromNames.put(yearRIFDataType.getName(), yearRIFDataType);		
 	}
 
+	public void populateFactoryWithBuiltInTypes() 
+		throws RIFServiceException {
+
+		clearDataTypes();
+		registerReservedDataType(RIF_AGE_DATA_TYPE);
+		registerReservedDataType(RIF_SEX_DATA_TYPE);
+		registerReservedDataType(RIF_DOUBLE_DATA_TYPE);
+		registerReservedDataType(RIF_ASCII_DATA_TYPE);
+		registerReservedDataType(RIF_ICD_DATA_TYPE);
+		registerReservedDataType(RIF_TEXT_DATA_TYPE);
+		registerReservedDataType(RIF_INTEGER_DATA_TYPE);	
+		registerReservedDataType(RIF_YEAR_DATA_TYPE);
+		registerReservedDataType(RIF_DATE_DATA_TYPE);		
+		registerReservedDataType(RIF_QUINTILISE_DATA_TYPE);
+		registerReservedDataType(RIF_UK_POSTAL_CODE_DATA_TYPE);
+	}
+	
 	public static RIFDataTypeFactory newInstance() {
 		RIFDataTypeFactory rifDataTypeFactory = new RIFDataTypeFactory();
 		return rifDataTypeFactory;
@@ -138,51 +148,626 @@ public class RIFDataTypeFactory {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	/**
-	 * takes any given instance of a rif data type, and creates a custom rif data type that has
-	 * all the same attributes
-	 * @param originalRIFDataType
-	 * @return
-	 */
-	public static CustomRIFDataType createCopy(
-		final AbstractRIFDataType originalRIFDataType) {
+	public static boolean isReservedIdentifier(final RIFDataType rifDataType) {
+		return true;
 		
-		String originalIdentifier = originalRIFDataType.getIdentifier();
-		String originalName = originalRIFDataType.getName();
-		String originalDescription = originalRIFDataType.getDescription();
 		
-		CustomRIFDataType customRIFDataType
-			= CustomRIFDataType.newInstance(
-				originalIdentifier, 
-				originalName, 
-				originalDescription);
-		originalRIFDataType.copyAttributes(customRIFDataType);
+		
+	}
+
+	
+	public RIFDataType createCustomRIFDataType() {
+	
+		RIFDataType customRIFDataType
+			= RIFDataType.newInstance();
+		customRIFDataType.setIdentifier(generateCustomDataTypeIdentifier());			
+
+		return customRIFDataType;
+	}	
+	
+	
+	public RIFDataType createCustomRIFDataType(
+		final String identifier,
+		final String name,
+		final String description) {
+	
+		RIFDataType customRIFDataType
+			= RIFDataType.newInstance(
+				identifier, 
+				name, 
+				description,
+				false);		
+		customRIFDataType.setIdentifier(generateCustomDataTypeIdentifier());			
+	
 		
 		return customRIFDataType;
 	}
 	
-	public ArrayList<RIFDataTypeInterface> getRegisteredDataTypes() {
-		ArrayList<RIFDataTypeInterface> dataTypes
-			= new ArrayList<RIFDataTypeInterface>();
+	public static RIFDataType createAgeRIFDataType() {
+		String identifier = "rif_age";
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.age.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.age.description");
+		RIFDataType ageRIFDataType
+			= RIFDataType.newInstance(
+				identifier, 
+				name, 
+				description,
+				true);		
+		
+		String regularExpression
+			= "^[0-9]{1,2}$|1[0-1][0-9]$";
+	
+		String validationRuleName1
+			= RIFDataLoaderToolMessages.getMessage(
+				"rifDataType.age.vaidationRule1.name");
+		String validationRuleDescription1
+			= RIFDataLoaderToolMessages.getMessage(
+				"rifDataType.age.vaidationRule1.description");
+	
+		ValidationRule validationRule 
+			= ValidationRule.newInstance(
+				validationRuleName1, 
+				validationRuleDescription1, 
+				regularExpression, 
+				true);
+	
+		ageRIFDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		ageRIFDataType.addValidationRule(validationRule);
+		ageRIFDataType.setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_FUNCTION);
+		ageRIFDataType.setCleaningFunctionName("clean_age");
+		
+		return ageRIFDataType;
+	}
+	
+	private static RIFDataType createDoubleRIFDataType() {
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.double.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.double.description");
+		
+		RIFDataType doubleRIFDataType
+			= RIFDataType.newInstance(
+				"rif_double", 
+				name, 
+				description,
+				true);
+				
+		String validationRegularExpression
+			= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
+		ValidationRule validationRule
+			= ValidationRule.newInstance(
+				"", 
+				"", 
+				validationRegularExpression, 
+				true);
+
+		doubleRIFDataType.addValidationRule(validationRule);
+		doubleRIFDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);		
+		
+		return doubleRIFDataType;
+	}
+	
+	private static RIFDataType createICDDataType() {
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.icd.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.icd.description");
+		RIFDataType icdCodeRIFDataType
+			= RIFDataType.newInstance(
+				"rif_icd_code",
+				name, 
+				description,
+				true);		
+		
+		icdCodeRIFDataType.setCleaningFunctionName("clean_icd_code");	
+		icdCodeRIFDataType.setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_FUNCTION);
+		icdCodeRIFDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.NO_VALIDATION);
+		
+		return icdCodeRIFDataType;
+	}
+	
+	private static RIFDataType createYearDataType() {
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.year.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.year.description");
+
+		RIFDataType yearRIFDataType
+			= RIFDataType.newInstance(
+				"rif_year",
+				name, 
+				description,
+				true);
+			
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		validationRule.setValidValue("^(19|20)\\d{2}$");
+		yearRIFDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		yearRIFDataType.setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
+		yearRIFDataType.addValidationRule(validationRule);
+		return yearRIFDataType;		
+	}
+	
+	private static RIFDataType createSexDataType() {
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.description");
+	
+		/**
+		 * 0 = male
+		 * 1 = female
+		 * 2 = hermaphrodite
+		 * 3 = unknown
+		 */
+		RIFDataType sexRIFDataType
+			= RIFDataType.newInstance(
+				"rif_sex",
+				name, 
+				description,
+				true);
+		
+
+
+		String cleaningName1 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name1");
+		String description1
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description1");
+		CleaningRule cleaningRule1
+			= CleaningRule.newInstance(
+				cleaningName1, 
+				description1, 
+				"^female|FEMALE$", 
+				"1", 
+				true);
+		sexRIFDataType.addCleaningRule(cleaningRule1);
+			
+		String cleaningName2 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name2");
+		String cleaningDescription2
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description2");
+		CleaningRule cleaningRule2
+			= CleaningRule.newInstance(
+				cleaningName2, 
+				cleaningDescription2, 
+				"^male|MALE$", 
+				"0", 
+				true);
+		sexRIFDataType.addCleaningRule(cleaningRule2);
+
+		String cleaningName3 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name3");
+		String cleaningDescription3
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description3");		
+		CleaningRule cleaningRule3
+			= CleaningRule.newInstance(
+				cleaningName3, 
+				cleaningDescription3, 
+				"^hermaphrodite|HERMAPHRODITE$", 
+				"2", 
+				true);
+		sexRIFDataType.addCleaningRule(cleaningRule3);
+
+		String cleaningName4 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name4");
+		String cleaningDescription4
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description4");		
+		CleaningRule cleaningRule4
+			= CleaningRule.newInstance(
+				cleaningName4, 
+				cleaningDescription4, 
+				"^unknown|UNKNOWN$", 
+				"3", 
+				true);
+		sexRIFDataType.addCleaningRule(cleaningRule4);
+				
+		String cleaningName5 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name5");
+		String cleaningDescription5
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description5");		
+		CleaningRule cleaningRule5
+			= CleaningRule.newInstance(
+				cleaningName5, 
+				cleaningDescription5, 
+				"^[fF]$", 
+				"1", 
+				true);
+		sexRIFDataType.addCleaningRule(cleaningRule5);
+				
+		String cleaningName6 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name6");
+		String cleaningDescription6
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description6");		
+		CleaningRule cleaningRule6
+			= CleaningRule.newInstance(
+				cleaningName6, 
+				cleaningDescription6, 
+				"^[mM]$", 
+				"0", 
+				true);
+		sexRIFDataType.addCleaningRule(cleaningRule6);
+		
+		String cleaningName7 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name7");
+		String cleaningDescription7
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description7");		
+		CleaningRule cleaningRule7
+			= CleaningRule.newInstance(
+				cleaningName7, 
+				cleaningDescription7, 
+				"^[hH]$", 
+				"2", 
+				true);
+		sexRIFDataType.addCleaningRule(cleaningRule7);
+
+		String cleaningName8 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.name8");
+		String cleaningDescription8
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.cleaning.description8");		
+		CleaningRule cleaningRule8
+			= CleaningRule.newInstance(
+				cleaningName8, 
+				cleaningDescription8, 
+				"^[uU]$", 
+				"3", 
+				true);
+		sexRIFDataType.addCleaningRule(cleaningRule8);
+		
+		
+		sexRIFDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		
+		sexRIFDataType.setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_RULES);		
+
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		
+		String validatingName1 
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.validating.name1");
+		String validatingDescription8
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.validating.description1");	
+		validationRule.setName(validatingName1);
+		validationRule.setDescription(validatingDescription8);
+		validationRule.setValidValue("[0|1|2|3]");
+		sexRIFDataType.addValidationRule(validationRule);
+	
+		return sexRIFDataType;
+	}
+		
+	private static RIFDataType createIntegerDataType() {
+
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.integer.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.integer.description");
+		RIFDataType integerRIFDataType
+			= RIFDataType.newInstance(
+				"rif_integer",
+				name, 
+				description,
+				true);		
+	
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		validationRule.setValidValue("^(\\d+)");
+		integerRIFDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		integerRIFDataType.setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);			
+		integerRIFDataType.addValidationRule(validationRule);
+		
+		
+		return integerRIFDataType;
+	}
+		
+	private static RIFDataType createTextDataType() {
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.text.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.text.description");		
+		RIFDataType textDataType
+			= RIFDataType.newInstance(
+				"rif_text",
+				name, 
+				description,
+				true);		
+		
+		ValidationRule validationRule
+			= ValidationRule.newInstance();
+		validationRule.setValidValue("^(\\w+)");
+		textDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		textDataType.setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);			
+		
+		return textDataType;
+	}
+
+	
+	public static boolean isTextDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_TEXT_DATA_TYPE.getIdentifier());
+		return result;
+	}
+	
+	
+	public static boolean isAgeDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_AGE_DATA_TYPE.getIdentifier());		
+		return result;
+	}
+
+	
+	public static boolean isSexDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_SEX_DATA_TYPE.getIdentifier());		
+		return result;
+	}
+	
+	public static boolean isDoubleDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_DOUBLE_DATA_TYPE.getIdentifier());		
+		return result;	
+	}
+
+	public static boolean isIntegerDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_INTEGER_DATA_TYPE.getIdentifier());		
+		return result;			
+	}	
+	
+
+	public static boolean isASCIIDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_ASCII_DATA_TYPE.getIdentifier());		
+		return result;
+	}	
+
+	public static boolean isICDDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_ICD_DATA_TYPE.getIdentifier());		
+		return result;		
+	}	
+	
+	public static boolean isYearDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_YEAR_DATA_TYPE.getIdentifier());		
+		return result;		
+	}	
+
+	public static boolean isUKPostalCodeDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_UK_POSTAL_CODE_DATA_TYPE.getIdentifier());		
+		return result;		
+	}	
+
+	public static boolean isQuintiliseDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_QUINTILISE_DATA_TYPE.getIdentifier());		
+		return result;		
+	}	
+
+	public static boolean isDateDataType(final RIFDataType rifDataType) {
+		if (rifDataType == null) {
+			return false;
+		}
+		
+		Collator collator
+			= RIFDataLoaderToolMessages.getCollator();
+		boolean result
+			= collator.equals(rifDataType.getIdentifier(), 
+				RIF_DATE_DATA_TYPE.getIdentifier());		
+		return result;
+	}	
+		
+	private static RIFDataType createQuintiliseDataType() {
+
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.quintilise.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.quintilise.description");
+		RIFDataType quintiliseDataType
+			= RIFDataType.newInstance(
+				"rif_quintilise",
+				name, 
+				description,
+				true);		
+		
+		//String validationRegularExpression = "^(\\d+)";
+		//addValidationExpression(validationRegularExpression);
+		quintiliseDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.NO_VALIDATION);		
+		
+		return quintiliseDataType;
+	}
+	
+	public static RIFDataType createASCIIDataType() {
+
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.asciiText.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.asciiText.description");
+		RIFDataType asciiTextRIFDataType
+			= RIFDataType.newInstance(
+				"rif_ascii_text",
+				name, 
+				description,
+				true);
+
+		String validationRuleName1
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.asciiText.validationRule1.name");
+		String validationRuleDescription1
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.asciiText.validationRule1.description");
+
+		ValidationRule validationRule
+			= ValidationRule.newInstance(
+				validationRuleName1, 
+				validationRuleDescription1, 
+				"^(\\w+)", 
+				true);
+
+		asciiTextRIFDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		asciiTextRIFDataType.addValidationRule(validationRule);	
+		asciiTextRIFDataType.setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);			
+
+		return asciiTextRIFDataType;
+	}
+	
+	private static RIFDataType createUKPostalCodeDataType() {
+
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.ukPostalCode.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.ukPostalCode.description");
+		RIFDataType ukPostalCodeRIFDataType
+			= RIFDataType.newInstance(
+				"rif_uk_postcode",
+				name, 
+				description,
+				true);
+
+		ukPostalCodeRIFDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_FUNCTION);
+		ukPostalCodeRIFDataType.setValidationFunctionName("is_valid_uk_postal_code");
+		ukPostalCodeRIFDataType.setFieldCleaningPolicy(RIFFieldCleaningPolicy.CLEANING_FUNCTION);
+		ukPostalCodeRIFDataType.setCleaningFunctionName("clean_uk_postal_code");		
+		
+		return ukPostalCodeRIFDataType;
+	}
+	
+	public ArrayList<RIFDataType> getRegisteredDataTypes() {
+		ArrayList<RIFDataType> dataTypes
+			= new ArrayList<RIFDataType>();
 		dataTypes.addAll(dataTypeFromCodes.values());
 		
 		return dataTypes;
 	}
 	
-	public void registerDataType(final CustomRIFDataType customRIFDataType) 
+	private static RIFDataType createDateDataType() {
+
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.date.label");
+
+		//this is the order of date formats which are used to validate RIF dates
+
+		ArrayList<ValidationRule> validationRules = new ArrayList<ValidationRule>();
+		ValidationRule mmddyyyyValidationRule
+			= ValidationRule.newInstance(
+				"", 
+				"", 
+				"MM/DD/YYYY", 
+				true);
+		validationRules.add(mmddyyyyValidationRule);
+
+		StringBuilder dateFormatPatternList = new StringBuilder();
+		for (int i = 0; i < validationRules.size(); i++) {
+			if (i != 0) {
+				dateFormatPatternList.append(",");
+			}
+			dateFormatPatternList.append(validationRules.get(i).getValidValue());
+		}
+		
+		String description
+			= RIFDataLoaderToolMessages.getMessage(
+				"rifDataType.date.description",
+				dateFormatPatternList.toString());
+		
+		RIFDataType dateDataType
+			= RIFDataType.newInstance(
+				"rif_date", 
+				name, 
+				description,
+				true);
+		
+		dateDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
+		
+		dateDataType.setValidationRules(validationRules);	
+		
+		return dateDataType;
+	}
+
+	
+	private void registerReservedDataType(final RIFDataType reservedRIFDataType) {
+			//Validate fields of data type
+			dataTypeFromCodes.put(reservedRIFDataType.getIdentifier(), reservedRIFDataType);
+			dataTypeFromNames.put(reservedRIFDataType.getName(), reservedRIFDataType);	
+	}		
+	
+	public void registerCustomDataType(final RIFDataType rifDataType) 
 		throws RIFServiceException {
 
-		//Validate fields of data type
-		
-		
-		String dataTypeIdentifier = customRIFDataType.getIdentifier();
-				
-		if (dataTypeFromCodes.containsKey(dataTypeIdentifier)) {
+		//Validate fields of data type					
+		if (dataTypeFromCodes.containsKey(rifDataType.getName())) {
 			//Error: Attempt to register a duplicate data type
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"general.validation.duplicateValue",
-					dataTypeIdentifier);
+					rifDataType.getName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFDataLoaderToolError.DUPLICATE_RIF_DATA_TYPE, 
@@ -190,28 +775,18 @@ public class RIFDataTypeFactory {
 			throw rifServiceException;
 		}
 		
-		dataTypeFromCodes.put(customRIFDataType.getIdentifier(), customRIFDataType);
-		dataTypeFromNames.put(customRIFDataType.getName(), customRIFDataType);	
+		dataTypeFromCodes.put(rifDataType.getIdentifier(), rifDataType);
+		dataTypeFromNames.put(rifDataType.getName(), rifDataType);	
 	}
 	
-	public AbstractRIFDataType getDataTypeFromCode(final String dataTypeCode) {
+	
+	
+	public RIFDataType getDataTypeFromCode(final String dataTypeCode) {
 		return dataTypeFromCodes.get(dataTypeCode);		
 	}
 	
-	public AbstractRIFDataType getDataTypeFromName(final String dataTypeName) {
+	public RIFDataType getDataTypeFromName(final String dataTypeName) {
 		return dataTypeFromNames.get(dataTypeName);		
-	}
-	
-	public DateRIFDataType getDateType(final String dateFormat) {
-		DateRIFDataType dateRIFDataType
-			= DateRIFDataType.newInstance();
-		
-		ValidationRule validationRule
-			= ValidationRule.newInstance();
-		validationRule.setValidValue(dateFormat);
-		dateRIFDataType.addValidationRule(validationRule);
-		
-		return dateRIFDataType;		
 	}
 	
 	public String[] getDataTypeCodes() {
@@ -225,6 +800,20 @@ public class RIFDataTypeFactory {
 		names.addAll(dataTypeFromNames.keySet());
 		return names.toArray(new String[0]);
 	}	
+	
+	public void clearDataTypes() {
+		dataTypeFromCodes.clear();
+		dataTypeFromNames.clear();
+	}
+	
+	public String generateCustomDataTypeIdentifier() {		
+    	Date date = new Date();
+    	
+    	SimpleDateFormat simpleTimeFormat 
+ 	   		= new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss:SSS");
+ 	   	String result = simpleTimeFormat.format(date);
+ 	   	return result;
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

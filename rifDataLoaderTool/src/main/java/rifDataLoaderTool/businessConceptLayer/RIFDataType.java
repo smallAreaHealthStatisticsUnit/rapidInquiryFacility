@@ -1,18 +1,14 @@
-package rifDataLoaderTool.businessConceptLayer.rifDataTypes;
+package rifDataLoaderTool.businessConceptLayer;
 
 
-import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-import rifDataLoaderTool.businessConceptLayer.ValidationRule;
-
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface;
-import rifDataLoaderTool.businessConceptLayer.RIFFieldCleaningPolicy;
-import rifDataLoaderTool.businessConceptLayer.RIFFieldValidationPolicy;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 import java.util.ArrayList;
+import java.util.Objects;
+
 
 /**
  * The base class for classes which implement the {@link rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface} 
@@ -140,12 +136,14 @@ import java.util.ArrayList;
  *
  */
 
-public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
+public final class RIFDataType 
+	implements DisplayableListItemInterface {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	public static final RIFDataType EMPTY_RIF_DATA_TYPE = new RIFDataType(false);
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -156,67 +154,137 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 	private RIFFieldValidationPolicy fieldValidationPolicy;
 	private ArrayList<ValidationRule> validationRules;
 	private String validationFunctionName;
-	private String validationSQLFragment;
 	private String validationFunctionParameterPhrase;
 
-	
 	private RIFFieldCleaningPolicy fieldCleaningPolicy;	
 	private String cleaningFunctionName;
-	private String cleaningSQLFragment;
 	private String cleaningFunctionParameterPhrase;
 	private ArrayList<CleaningRule> cleaningRules;
-	
+
+	private boolean isReservedDataType;
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public AbstractRIFDataType(
+	private RIFDataType() {
+		this.isReservedDataType = true;
+		
+		init(
+			"", 
+			"", 
+			"");		
+	}
+
+	private RIFDataType(final boolean isMutable) {
+		
+		this.isReservedDataType = isMutable;
+		
+		init(
+			"", 
+			"", 
+			"");		
+	}
+	
+	private RIFDataType(
 		final String identifier,
 		final String name,
-		final String description) {
+		final String description,
+		final boolean isMutable) {
 		
+		this.isReservedDataType = isMutable;
+		
+		init(
+			identifier, 
+			name, 
+			description);
+	}
+
+	private void init(
+		final String identifier,
+		final String name, 
+		final String description) {
+				
 		this.identifier = identifier;
 		this.name = name;
 		this.description = description;
-		
-		cleaningSQLFragment = "";
-		validationSQLFragment = "";
-		
+
 		fieldValidationPolicy = RIFFieldValidationPolicy.NO_VALIDATION;
 		validationRules = new ArrayList<ValidationRule>();
 		
 		fieldCleaningPolicy = RIFFieldCleaningPolicy.NO_CLEANING;
-		cleaningRules = new ArrayList<CleaningRule>();
+		cleaningRules = new ArrayList<CleaningRule>();		
 	}
-
-	public void copyAttributes(
-		final AbstractRIFDataType cloneType) {
+	
+	public static RIFDataType newInstance() {
+		RIFDataType rifDataType 
+			= new RIFDataType(
+				"", 
+				"", 
+				"",
+				false);		
+			
+		return rifDataType;
+	}	
+	
+	public static RIFDataType newInstance(
+		final String identifier,
+		final String name,
+		final String description,
+		final boolean isMutable) {
+		RIFDataType rifDataType 
+			= new RIFDataType(
+				identifier, 
+				name, 
+				description,
+				isMutable);		
 		
-		cloneType.setIdentifier(getIdentifier());
-		cloneType.setName(getName());
+		return rifDataType;
+	}
+	
+	public static RIFDataType createCopy(final RIFDataType originalDataType) {
+		
+		RIFDataType cloneType = new RIFDataType(originalDataType.isReservedDataType());
+		return copyInto(originalDataType, cloneType);
+	}
+	
+	public static RIFDataType copyInto(
+		final RIFDataType source,
+		final RIFDataType destination) {
+				
+		destination.setIdentifier(source.getIdentifier());
+		destination.setName(source.getName());
+		destination.setDescription(source.getDescription());
 
-		cloneType.setFieldValidationPolicy(getFieldValidationPolicy());
+		destination.setFieldValidationPolicy(source.getFieldValidationPolicy());
+		ArrayList<ValidationRule> sourceValidationRules
+			= source.getValidationRules();
 		ArrayList<ValidationRule> cloneValidationRules
 			= new ArrayList<ValidationRule>();
-		for (ValidationRule validationRule : validationRules) {
+		for (ValidationRule sourceValidationRule : sourceValidationRules) {
 			ValidationRule cloneValidationRule
-				= ValidationRule.createCopy(validationRule);
+				= ValidationRule.createCopy(sourceValidationRule);
 			cloneValidationRules.add(cloneValidationRule);
 		}
-		cloneType.setValidationRules(cloneValidationRules);
-		cloneType.setValidationFunctionName(getValidationFunctionName());
+		destination.setValidationRules(cloneValidationRules);
+		destination.setValidationFunctionName(source.getValidationFunctionName());
 		
-		cloneType.setFieldCleaningPolicy(fieldCleaningPolicy);
+		RIFFieldCleaningPolicy originalFieldCleaningPolicy
+			= source.getFieldCleaningPolicy();
+		destination.setFieldCleaningPolicy(originalFieldCleaningPolicy);
+		
+		ArrayList<CleaningRule> originalCleaningRules
+			= source.getCleaningRules();
 		ArrayList<CleaningRule> cloneCleaningRules
 			= new ArrayList<CleaningRule>();
-		for (CleaningRule cleaningRule : cleaningRules) {
+		for (CleaningRule originalCleaningRule : originalCleaningRules) {
 			CleaningRule cloneCleaningRule
-				= CleaningRule.createCopy(cleaningRule);
+				= CleaningRule.createCopy(originalCleaningRule);
 			cloneCleaningRules.add(cloneCleaningRule);
 		}
-		cloneType.setCleaningRules(cloneCleaningRules);
-		cloneType.setCleaningFunctionName(getCleaningFunctionName());
-			
+		destination.setCleaningRules(cloneCleaningRules);
+		destination.setCleaningFunctionName(source.getCleaningFunctionName());
+	
+		return destination;
 	}
 
 	
@@ -373,30 +441,102 @@ public abstract class AbstractRIFDataType implements RIFDataTypeInterface {
 			return validationRules.get(0).getValidValue();
 		}		
 	}
-
 	
-	public String getValidationSQLFragment() {
-		return validationSQLFragment;
+
+	public boolean hasIdenticalContents(
+		final RIFDataType otherRIFDataType) {
+		
+		String otherIdentifier = otherRIFDataType.getIdentifier();
+		String otherName = otherRIFDataType.getName();
+		String otherDescription = otherRIFDataType.getDescription();
+		
+		if (Objects.deepEquals(identifier, otherIdentifier) == false) {
+			return false;
+		}
+		if (Objects.deepEquals(name, otherName) == false) {
+			return false;
+		}
+		if (Objects.deepEquals(description, otherDescription) == false) {
+			return false;
+		}		
+	 
+		System.out.println("hasIdenticalContents 1");
+		
+		RIFFieldCleaningPolicy otherFieldCleaningPolicy
+			= otherRIFDataType.getFieldCleaningPolicy();
+		if (fieldCleaningPolicy != otherFieldCleaningPolicy) {
+			return false;
+		}
+
+		System.out.println("hasIdenticalContents 2");
+		
+		ArrayList<CleaningRule> otherCleaningRules
+			= otherRIFDataType.getCleaningRules();
+		if (CleaningRule.cleaningRulesAreEqual(
+			cleaningRules, 
+			otherCleaningRules) == false) {
+			return false;
+		}
+		
+
+		
+		String otherCleaningFunctionName
+			= otherRIFDataType.getCleaningFunctionName();
+		System.out.println("hasIdenticalContents 3 cleaningFunc=="+cleaningFunctionName+"==other cleaning=="+otherCleaningFunctionName+"==");
+		if (Objects.deepEquals(
+			cleaningFunctionName, 
+			otherCleaningFunctionName) == false) {
+
+			return false;
+		}		
+
+		System.out.println("hasIdenticalContents 4");
+		
+		RIFFieldValidationPolicy otherFieldValidationPolicy
+			= otherRIFDataType.getFieldValidationPolicy();
+		if (fieldValidationPolicy != otherFieldValidationPolicy) {
+			return false;
+		}
+	
+		System.out.println("hasIdenticalContents 5");
+		
+		ArrayList<ValidationRule> otherValidationRules
+			= otherRIFDataType.getValidationRules();
+		if (ValidationRule.validationRulesAreEqual(
+			validationRules, 
+			otherValidationRules) == false) {
+			return false;
+		}
+
+		System.out.println("hasIdenticalContents 6");
+		
+		String otherValidationFunctionName
+			= otherRIFDataType.getValidationFunctionName();
+		if (Objects.deepEquals(
+				validationFunctionName, 
+				otherValidationFunctionName) == false) {
+			return false;
+		}		
+				
+		return true;		
+	}
+	
+	public boolean isReservedDataType() {
+		return isReservedDataType;
 	}
 
-	public void setValidationSQLFragment(String validationSQLFragment) {
-		this.validationSQLFragment = validationSQLFragment;
-	}
-
-	public String getCleaningSQLFragment() {
-		return cleaningSQLFragment;
-	}
-
-	public void setCleaningSQLFragment(String cleaningSQLFragment) {
-		this.cleaningSQLFragment = cleaningSQLFragment;
+	public void setReservedDataType(final boolean isReservedDataType) {
+		this.isReservedDataType = isReservedDataType;
 	}
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-	protected void checkErrors(
-		final String recordType, 
-		final ArrayList<String> errorMessages) {
+	public void checkErrors() {
+		
+		ArrayList<String> errorMessages = new ArrayList<String>();
+		String recordType
+			= RIFDataLoaderToolMessages.getMessage("abstractRIFDataType.name.label");
 		
 		String identifierFieldName
 			= RIFDataLoaderToolMessages.getMessage("rifDataType.identifier.label");

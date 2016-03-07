@@ -564,7 +564,7 @@ public class PopulationHealthDataLoaderDialog
 			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.copyDataSetConfiguration.instructions");
 		String fieldName
 			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.copyDataSetConfiguration.fieldName");		
-		String[] existingListItemNames
+		ArrayList<String> existingListItemNames
 			= dataSetConfigurationListPanel.getDisplayNames();
 		
 		CopyListItemNameEditorDialog dialog

@@ -73,16 +73,29 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 public enum RIFFieldValidationPolicy {
 
-	VALIDATION_FUNCTION("rifFieldValidationPolicy.validationFunction.label"),
-	VALIDATION_RULES("rifFieldValidationPolicy.validationRules.label"),
-	NO_VALIDATION("rifFieldValidationPolicy.noValidation.label");
+	VALIDATION_FUNCTION(
+		"validation_function",
+		"rifFieldValidationPolicy.validationFunction.label"),
+	VALIDATION_RULES(
+		"validation_rules",
+		"rifFieldValidationPolicy.validationRules.label"),
+	NO_VALIDATION(
+		"no_validation",
+		"rifFieldValidationPolicy.noValidation.label");
 	
+	private String tagName;
 	private String propertyName;
 	
 	RIFFieldValidationPolicy(
+		final String tagName,
 		final String propertyName) {
 		
+		this.tagName = tagName;
 		this.propertyName = propertyName;
+	}
+	
+	public String getTagName() {
+		return tagName;
 	}
 	
 	public String getName() {

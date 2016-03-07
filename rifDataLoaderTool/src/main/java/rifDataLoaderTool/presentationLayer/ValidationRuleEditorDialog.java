@@ -1,6 +1,6 @@
 package rifDataLoaderTool.presentationLayer;
 
-import rifDataLoaderTool.businessConceptLayer.CleaningRule;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
@@ -66,14 +66,14 @@ import java.util.regex.Pattern;
  *
  */
 
-public class CleaningRuleEditorDialog 
+public class ValidationRuleEditorDialog 
 	implements ActionListener {
 
 	public static void main(final String[] arguments) {
 		UserInterfaceFactory userInterfaceFactory
 			= new UserInterfaceFactory();
-		CleaningRuleEditorDialog dialog
-			= new CleaningRuleEditorDialog(userInterfaceFactory);
+		ValidationRuleEditorDialog dialog
+			= new ValidationRuleEditorDialog(userInterfaceFactory);
 		dialog.show();
 		System.exit(0);
 
@@ -87,7 +87,7 @@ public class CleaningRuleEditorDialog
 	// Section Properties
 	// ==========================================
 	
-	private CleaningRule originalCleaningRule;
+	private ValidationRule originalValidationRule;
 	
 	
 	private UserInterfaceFactory userInterfaceFactory;
@@ -95,13 +95,9 @@ public class CleaningRuleEditorDialog
 	private JDialog dialog;
 	private JTextField nameTextField;
 	private JTextArea descriptionTextArea;
-	private JTextField searchTextField;
-	private JTextField searchTestTextField;
-	private JButton testSearchConditionButton;
-	
-	private JTextField replaceTextField;
-	private JTextField replaceTestTextField;
-	private JButton testReplaceConditionButton;
+	private JTextField validValueTextField;
+	private JTextField validValueTestTextField;
+	private JButton testValidValueConditionButton;
 
 	private JTextArea testResultTextArea;
 
@@ -115,14 +111,14 @@ public class CleaningRuleEditorDialog
 	// Section Construction
 	// ==========================================
 
-	public CleaningRuleEditorDialog(
+	public ValidationRuleEditorDialog(
 		final UserInterfaceFactory userInterfaceFactory) {
 
 		this.userInterfaceFactory = userInterfaceFactory;
-		this.originalCleaningRule = CleaningRule.newInstance();
+		this.originalValidationRule = ValidationRule.newInstance();
 		
 		String dialogTitle
-			= RIFDataLoaderToolMessages.getMessage("cleaningRuleEditorDialog.title");
+			= RIFDataLoaderToolMessages.getMessage("validatingRuleEditorDialog.title");
 		dialog
 			= userInterfaceFactory.createDialog(dialogTitle);
 
@@ -133,7 +129,7 @@ public class CleaningRuleEditorDialog
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
 		String instructionsText
-			= RIFDataLoaderToolMessages.getMessage("cleaningRuleEditorDialog.instructions");
+			= RIFDataLoaderToolMessages.getMessage("validatingRuleEditorDialog.instructions");
 		JPanel instructionPanel
 			= userInterfaceFactory.createHTMLInstructionPanel(instructionsText);
 		panel.add(instructionPanel, panelGC);
@@ -175,7 +171,7 @@ public class CleaningRuleEditorDialog
 			= userInterfaceFactory.createGridBagConstraints();
 
 		String nameFieldLabelText
-			= RIFDataLoaderToolMessages.getMessage("cleaningRule.name.label");
+			= RIFDataLoaderToolMessages.getMessage("validationRule.name.label");
 		JLabel nameFieldLabel
 			= userInterfaceFactory.createLabel(nameFieldLabelText);
 		panel.add(nameFieldLabel, panelGC);
@@ -192,7 +188,7 @@ public class CleaningRuleEditorDialog
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;		
 		String descriptionFieldLabelText
-			= RIFDataLoaderToolMessages.getMessage("cleaningRule.description.label");
+			= RIFDataLoaderToolMessages.getMessage("validationRule.description.label");
 		JLabel descriptionFieldLabel
 			= userInterfaceFactory.createLabel(descriptionFieldLabelText);
 		panel.add(descriptionFieldLabel, panelGC);
@@ -215,68 +211,35 @@ public class CleaningRuleEditorDialog
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
 				
-		String searchLabelText
-			= RIFDataLoaderToolMessages.getMessage("cleaningRule.searchValue.label");
+		String validLabelText
+			= RIFDataLoaderToolMessages.getMessage("validationRule.validValue.label");
 		JLabel searchLabel
-			= userInterfaceFactory.createLabel(searchLabelText);
+			= userInterfaceFactory.createLabel(validLabelText);
 		panel.add(searchLabel, panelGC);
 		
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 0.5;
-		searchTextField
+		validValueTextField
 			= userInterfaceFactory.createTextField();
-		panel.add(searchTextField, panelGC);
+		panel.add(validValueTextField, panelGC);
 		
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
 		String searchTestLabelText
-			= RIFDataLoaderToolMessages.getMessage("cleaningRuleEditorDialog.buttons.test");
-		testSearchConditionButton
+			= RIFDataLoaderToolMessages.getMessage("validatingRuleEditorDialog.buttons.test");
+		testValidValueConditionButton
 			= userInterfaceFactory.createButton(searchTestLabelText);
-		testSearchConditionButton.addActionListener(this);
-		panel.add(testSearchConditionButton, panelGC);
+		testValidValueConditionButton.addActionListener(this);
+		panel.add(testValidValueConditionButton, panelGC);
 				
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 0.5;
-		searchTestTextField 
+		validValueTestTextField 
 			= userInterfaceFactory.createTextField();
-		panel.add(searchTestTextField, panelGC);
-
-		panelGC.gridy++;
-		panelGC.gridx = 0;
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;		
-		String replaceLabelText
-			= RIFDataLoaderToolMessages.getMessage("cleaningRule.replaceValue.label");
-		JLabel replaceLabel
-			= userInterfaceFactory.createLabel(replaceLabelText);
-		panel.add(replaceLabel, panelGC);
-
-		panelGC.gridx++;
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 0.5;
-		replaceTextField
-			= userInterfaceFactory.createTextField();
-		panel.add(replaceTextField, panelGC);
-
-		panelGC.gridx++;
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
-		String replaceTestLabelText
-			= RIFDataLoaderToolMessages.getMessage("cleaningRuleEditorDialog.buttons.test");
-		testReplaceConditionButton		
-			= userInterfaceFactory.createButton(replaceTestLabelText);
-		panel.add(testReplaceConditionButton, panelGC);
-
-		panelGC.gridx++;
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 0.5;
-		replaceTestTextField 
-			= userInterfaceFactory.createTextField();
-		panel.add(replaceTestTextField, panelGC);
+		panel.add(validValueTestTextField, panelGC);
 		
 		return panel;
 	}
@@ -288,7 +251,7 @@ public class CleaningRuleEditorDialog
 			= userInterfaceFactory.createGridBagConstraints();
 		
 		String testResultLabelText
-			= RIFDataLoaderToolMessages.getMessage("cleaningRuleEditorDialog.testResult.label");
+			= RIFDataLoaderToolMessages.getMessage("validatingRuleEditorDialog.testResult.label");
 		JLabel testResultLabel
 			= userInterfaceFactory.createLabel(testResultLabelText);
 		panel.add(testResultLabel, panelGC);
@@ -329,15 +292,11 @@ public class CleaningRuleEditorDialog
 		dialog.setVisible(true);
 	}
 	
-	/*
 	public void setEditable(final boolean isEditable) {
 		nameTextField.setEditable(isEditable);
-		searchTextField.setEditable(isEditable);
+		validValueTextField.setEditable(isEditable);
 		descriptionTextArea.setEditable(isEditable);
-		replaceTextField.setEditable(isEditable);
 
-		
-		
 		if (isEditable) {
 			readOnlyLabel.setText("");		
 		}
@@ -347,17 +306,16 @@ public class CleaningRuleEditorDialog
 			readOnlyLabel.setText(readOnlyLabelText);
 		}
 	}
-	*/
 	
-	public CleaningRule getData() {
-		return originalCleaningRule;		
+	public ValidationRule getData() {
+		return originalValidationRule;		
 	}
 	
 	public void setData(
-		final CleaningRule originalCleaningRule,
+		final ValidationRule originalValidationRule,
 		final boolean isEditable) {
 		
-		this.originalCleaningRule = originalCleaningRule;
+		this.originalValidationRule = originalValidationRule;
 		
 		populateForm(isEditable);
 	}
@@ -367,41 +325,34 @@ public class CleaningRuleEditorDialog
 	}
 	
 	private void populateForm(final boolean isEditable) {
-		nameTextField.setText(originalCleaningRule.getName());
-		descriptionTextArea.setText(originalCleaningRule.getDescription());
-		searchTextField.setText(originalCleaningRule.getSearchValue());
-		replaceTextField.setText(originalCleaningRule.getReplaceValue());		
-		searchTestTextField.setText("");
-		replaceTestTextField.setText("");	
+		nameTextField.setText(originalValidationRule.getName());
+		descriptionTextArea.setText(originalValidationRule.getDescription());
+		validValueTextField.setText(originalValidationRule.getValidValue());
+		validValueTestTextField.setText("");
 		
 		nameTextField.setEditable(isEditable);
 		descriptionTextArea.setEditable(isEditable);
-		searchTextField.setEditable(isEditable);
-		replaceTextField.setEditable(isEditable);	
+		validValueTextField.setEditable(isEditable);
 		
 		userInterfaceFactory.setEditableAppearance(
 			nameTextField,
-			isEditable);				
+			true);				
 		userInterfaceFactory.setEditableAppearance(
 			descriptionTextArea,
-			isEditable);				
+			true);				
 		userInterfaceFactory.setEditableAppearance(
-			searchTextField,
-			isEditable);				
-		userInterfaceFactory.setEditableAppearance(
-			replaceTextField,
-			true);	
+			validValueTextField,
+			true);		
 	}
 	
 	private void saveChanges() {
-		CleaningRule currentCleaningRule = CleaningRule.newInstance();
-		currentCleaningRule.setName(nameTextField.getText().trim());
-		currentCleaningRule.setDescription(descriptionTextArea.getText().trim());
-		currentCleaningRule.setSearchValue(searchTextField.getText().trim());
-		currentCleaningRule.setReplaceValue(replaceTextField.getText().trim());
+		ValidationRule currentValidationRule = ValidationRule.newInstance();
+		currentValidationRule.setName(nameTextField.getText().trim());
+		currentValidationRule.setDescription(descriptionTextArea.getText().trim());
+		currentValidationRule.setValidValue(validValueTextField.getText().trim());
 		
 		try {
-			currentCleaningRule.checkErrors();
+			currentValidationRule.checkErrors();
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
@@ -409,15 +360,14 @@ public class CleaningRuleEditorDialog
 				rifServiceException.getErrorMessages());
 		}
 		
-		originalCleaningRule.setSearchValue(searchTextField.getText());
-		originalCleaningRule.setReplaceValue(replaceTextField.getText());		
+		originalValidationRule.setValidValue(validValueTextField.getText());
 	}
 	
-	private void testSearchValue() {
+	private void testValidValue() {
 		String currentSearchValue
-			= searchTextField.getText().trim();
+			= validValueTextField.getText().trim();
 		String currentTestValue
-			= searchTestTextField.getText().trim();
+			= validValueTestTextField.getText().trim();
 		String passMessage
 			= RIFDataLoaderToolMessages.getMessage(
 				"cleaningRuleEditorDialog.passMessage",
@@ -448,29 +398,6 @@ public class CleaningRuleEditorDialog
 			testResultTextArea.setText(failMessage);			
 		}
 	}
-				
-	private void testReplaceValue() {
-		String currentReplaceValue
-			= replaceTextField.getText().trim();
-		String currentTestValue
-			= replaceTestTextField.getText().trim();
-		String passMessage
-			= RIFDataLoaderToolMessages.getMessage(
-				"cleaningRuleEditorDialog.passMessage",
-				currentTestValue,				
-				currentReplaceValue);
-		String failMessage
-			= RIFDataLoaderToolMessages.getMessage(
-				"cleaningRuleEditorDialog.failMessage",
-				currentReplaceValue,
-				currentTestValue);
-		
-		performTest(
-			currentReplaceValue,
-			currentTestValue,
-			passMessage,
-			failMessage);
-	}
 	
 	private void ok() {
 		saveChanges();
@@ -494,11 +421,8 @@ public class CleaningRuleEditorDialog
 	public void actionPerformed(final ActionEvent event) {
 		Object button = event.getSource();
 		
-		if (button == testSearchConditionButton) {
-			testSearchValue();
-		}
-		else if (button == testReplaceConditionButton) {
-			testReplaceValue();
+		if (button == testValidValueConditionButton) {
+			testValidValue();
 		}
 		if (okCloseButtonPanel.isOKButton(button)) {
 			ok();

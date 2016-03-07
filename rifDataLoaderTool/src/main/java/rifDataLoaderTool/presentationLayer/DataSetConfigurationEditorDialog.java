@@ -9,12 +9,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.swing.event.*;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
 import java.io.*;
+
+
 
 /**
  *
@@ -591,7 +594,7 @@ public class DataSetConfigurationEditorDialog
 			= RIFDataLoaderToolMessages.getMessage("dataSetConfigurationEditorDialog.copyDataSetFieldConfiguration.instructions");
 		String fieldName
 			= RIFDataLoaderToolMessages.getMessage("dataSetConfigurationEditorDialog.copyDataSetFieldConfiguration.fieldName");		
-		String[] existingListItemNames
+		ArrayList<String> existingListItemNames
 			= dataSetFieldListPanel.getDisplayNames();
 		
 		CopyListItemNameEditorDialog dialog
