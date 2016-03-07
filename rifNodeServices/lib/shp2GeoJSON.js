@@ -72,7 +72,7 @@ shp2GeoJSONFieldProcessor=function(fieldname, val, text, shp_options, ofields, r
  * Function:	shp2GeoJSONCheckFiles()
  * Parameters:	Shapefile list, response object, total shapefiles, ofields [field parameters array]
  * Returns:		Rval object { file_errors, msg }
- * Description: Check which files and extensions are present
+ * Description: Check which files and extensions are present, convert shapefiles to geoJSON
  */
 shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields) {
 	var i=0;
@@ -113,15 +113,23 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields) {
 
 /*
  * Function:	shp2GeoJSONFileProcessor()
- * Parameters:	d object (temporary processing data), Shapefile list, total shapefiles, path Node.js library, response object
- * Returns:		Total shapefiles
+ * Parameters:	d object (temporary processing data), Shapefile list, total shapefiles, path Node.js library, response object, 
+ *				RIF logging object, express HTTP request object
+ * Returns:		Rval object { file_errors, msg, total shapefiles }
  * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save 
  *				Called once per file
  */
-shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofields) {
+shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofields, serverLog, req) {
 	const uuid = require('node-uuid');
 	const crypto = require('crypto');
 	const os = require('os');
+	const fs = require('fs');
+
+	var rval = {
+		file_errors: 0,
+		msg: "",
+		shpTotal: shpTotal
+	};
 	
 	var extName = path.extname(d.file.file_name);
 
@@ -181,7 +189,7 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 	}
 	var fileNoext = path.basename(d.file.file_name, extName);
 	if (!shpList[fileNoext]) { // Use file name without the extension as an index into the shapefile lisy
-		shpTotal++;
+		rval.shpTotal++;
 		shpList[fileNoext] = {
 			fileName: d.file.file_name,
 			hasShp: false,
@@ -210,7 +218,108 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 //
 // Save file
 //	
-	return shpTotal;
+// 1. Create directory: $TEMP/shp2GeoJSON if required
+//
+	var dir=os.tmpdir() + "/shp2GeoJSON";
+	try {
+		var stats=fs.statSync(dir);
+	} catch (e) { 
+		if (e.code == 'ENOENT') {
+			try {
+				fs.mkdirSync(dir);
+				response.message += "\nmkdir: " + dir;
+			} catch (e) { 
+				rval.msg = "ERROR: Cannot create directory: " + e.message;
+				rval.file_errors++;
+			}			
+		}
+		else {
+			rval.msg = "ERROR: Cannot access directory: " + e.message;
+			rval.file_errors++;
+		}
+	}
+
+//
+// 2. Create directory: $TEMP/shp2GeoJSON/<uuidV1> if required
+//	
+	if (rval.file_errors == 0) {
+		dir += "/" + ofields["uuidV1"];	
+		try {
+			var stats=fs.statSync(dir);
+		} catch (e) { 
+			if (e.code == 'ENOENT') {
+				try {
+					fs.mkdirSync(dir);
+					response.message += "\nmkdir: " + dir;
+				} catch (e) { 
+					rval.msg = "ERROR: Cannot create directory: " + e.message;
+					rval.file_errors++;
+				}			
+			}
+			else {
+				rval.msg = "ERROR: Cannot access directory: " + e.message;
+				rval.file_errors++;
+			}
+		}
+	}
+	
+//
+// 3. Create directory: $TEMP/shp2GeoJSON/<uuidV1>/<fileNoext> if required
+//	
+	if (rval.file_errors == 0) {
+		dir += "/" + fileNoext;	
+		try {
+			var stats=fs.statSync(dir);
+			response.message += "\nDirectory: " + dir + " exists";
+		} catch (e) { 
+			if (e.code == 'ENOENT') {
+				try {
+					fs.mkdirSync(dir);
+					response.message += "\nmkdir: " + dir;
+				} catch (e) { 
+					rval.msg = "ERROR: Cannot create directory: " + e.message;
+					rval.file_errors++;
+				}			
+			}
+			else {
+				rval.msg = "ERROR: Cannot access directory: " + e.message;
+				rval.file_errors++;
+			}
+		}
+	}	
+	
+//	
+// 4. Write file to directory
+//		
+	var file=dir + "/" + fileNoext + extName;
+	if (fs.existsSync(file)) { // Exists
+		rval.msg = "ERROR: Cannot write file, already exists: " + file;
+		rval.file_errors++;
+	}
+	else {
+		// This needs to be done asynchronously, so save as <file>.tmp
+		fs.writeFile(file + '.tmp', d.file.file_data.toString(), function(err) {
+			if (err) {
+				serverLog.serverLog('ERROR! writing file: ' + file + '.tmp', req, err);
+				throw err;
+			}
+			try { // And do an atomic rename when complete
+				fs.renameSync(file + '.tmp', file);
+			} catch (e) { 
+				serverLog.serverLog('ERROR! renaming file: ' + file + '.tmp', req, e);
+				throw e;
+			}
+		});
+		response.message += "\nSaving file: " + file;
+	}
+	
+	if (rval.file_errors > 0) {
+		response.no_files=shpTotal;				// Add number of files process to response
+		response.fields=ofields;				// Add return fields
+		response.file_errors+=rval.file_errors;	
+		response.message = rval.msg + "\n" + response.message;
+	}
+	return rval;
 }
 							
 // Export
