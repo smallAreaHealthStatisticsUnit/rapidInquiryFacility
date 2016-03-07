@@ -31,15 +31,17 @@
     "magic-globals": "^0.5.0",
     "mapshaper": "^0.3.16",
     "mutexjs": "^1.2.0",
+    "node-uuid": "^1.4.7",
     "request": "^2.69.0",
     "request-debug": "^0.2.0",
+    "shapefile": "^0.3.1",
     "topojson": "^1.6.24"
   },
   "scripts": {
     "test": "node test/request-geo2TopoJSON.js && node test/request-shp2GeoJSON.js",
-	"start": "forever start  -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js",
-	"stop": "forever stop  -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js",
-	"pretest": "node test/make_bighelloworld.js"
+    "start": "forever start  -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js",
+    "stop": "forever stop  -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js",
+    "pretest": "node test/make_bighelloworld.js"
   },
   "engines": {
     "node": ">= 4.2.x"

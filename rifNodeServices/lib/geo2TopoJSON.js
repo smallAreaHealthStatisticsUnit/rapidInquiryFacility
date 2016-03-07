@@ -46,7 +46,8 @@
 
 /*
  * Function:	geo2TopoJSONFieldProcessor()
- * Parameters:	fieldname, val, text, topojson_options, ofields, response object, express HTTP request object, RIF logging object
+ * Parameters:	fieldname, val, text, topojson_options, ofields [field parameters array], 
+ *				response object, express HTTP request object, RIF logging object
  * Returns:		Text of field processing log
  * Description: toTopoJSON method field processor. Called from req.busboy.on('field') callback function
  *

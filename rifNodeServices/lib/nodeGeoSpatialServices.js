@@ -508,36 +508,9 @@ exports.convert = function(req, res) {
 									return; 
 								}
 							}
-							else if (req.url == '/shp2GeoJSON') { // Check which files and extensions are present		
-								var extName = path.extname(d.file.file_name);
-								if (extName == ".xml") {
-									extName=".shp.xml";
-								}
-								var fileNoext = path.basename(d.file.file_name, extName);
-								if (!shpList[fileNoext]) {
-									shpTotal++;
-									shpList[fileNoext] = {
-										fileName: d.file.file_name,
-										hasShp: false,
-										hasPrj: false,
-										hasDbf: false
-									};
-								}
-								if (extName == '.shp') {
-									shpList[fileNoext].hasShp=true;
-									response.message+="\nhasShp for file: " + shpList[fileNoext].fileName;
-								}
-								else if (extName == '.prj') {
-									shpList[fileNoext].hasPrj=true;
-									response.message+="\nhasPrj for file: " + shpList[fileNoext].fileName;
-								}
-								else if (extName == '.dbf') {
-									shpList[fileNoext].hasDbf=true;
-									response.message+="\nhasDbf for file: " + shpList[fileNoext].fileName;
-								}
-								else {
-									response.message+="\nIgnore extension: " + extName + " for file: " + shpList[fileNoext].fileName;
-								}
+							else if (req.url == '/shp2GeoJSON') { // Note which files and extensions are present, 
+																  // generate serial if required, save 		
+								shpTotal=shp2GeoJSON.shp2GeoJSONFileProcessor(d, shpList, shpTotal, path, response, ofields);
 							}
 						}	
 						else {
@@ -555,39 +528,11 @@ exports.convert = function(req, res) {
 					} // End of for loop
 					
 					if (req.url == '/shp2GeoJSON') { // Check which files and extensions are present
-						var i=0;
-						msg="";
-						for (var key in shpList) {
-							i++;
-							response.file_list[i-1] = {
-								file_name: shpList[key].fileName,
-					//			topojson: '',
-					//			topojson_stderr: '',
-					//			topojson_runtime: '',
-								file_size: '',
-								transfer_time: '',
-								uncompress_time: undefined,
-								uncompress_size: undefined
-							};
-								
-							if (shpList[key].hasShp && shpList[key].hasPrj && shpList[key].hasDbf) {
-								msg+="\nProcess shapefile[" + i + "]: " + shpList[key].fileName;
-							}
-							else {		
-								response.file_errors++;					// Increment file error count	
-								msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + shpList[key].fileName + " is missing a shapefile/DBF file/Projection file";							
-							}	
-						}
-						response.no_files=shpTotal;				// Add number of files process to response
-						response.fields=ofields;				// Add return fields
-						if (msg.length == 0) {
-							response.message = msg + "\n" + response.message;
+						rval=shp2GeoJSON.shp2GeoJSONCheckFiles(shpList, response, shpTotal, ofields);
+						if (rval.file_errors > 0 ) {
 							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-								serverLog, 500, req, res, msg, undefined, response);							
-							return;	
-						}
-						else {
-							msg+="\n";
+								serverLog, 500, req, res, rval.msg, undefined, response);							
+							return;
 						}
 					}
 
