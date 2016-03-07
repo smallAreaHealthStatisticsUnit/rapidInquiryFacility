@@ -1,7 +1,7 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;

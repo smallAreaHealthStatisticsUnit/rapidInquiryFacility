@@ -8,7 +8,7 @@ import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 
 
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
-import rifDataLoaderTool.fileFormats.LinearWorkflowReader;
+import rifDataLoaderTool.fileFormats.workflows.LinearWorkflowReader;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.system.RIFServiceException;

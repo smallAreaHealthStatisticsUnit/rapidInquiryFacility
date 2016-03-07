@@ -1,4 +1,4 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.workflows;
 
 
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
@@ -11,6 +11,7 @@ import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
 import rifDataLoaderTool.businessConceptLayer.RIFDataType;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
 import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.XMLUtility;
 

@@ -1,17 +1,8 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.filters;
 
-import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
-
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifServices.fileFormats.XMLCommentInjector;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 
 /**
@@ -64,7 +55,8 @@ import java.io.FileOutputStream;
  *
  */
 
-public class LinearWorkflowWriter {
+public class DirectoryFileFilter extends javax.swing.filechooser.FileFilter
+	implements java.io.FileFilter {
 
 	// ==========================================
 	// Section Constants
@@ -78,7 +70,7 @@ public class LinearWorkflowWriter {
 	// Section Construction
 	// ==========================================
 
-	public LinearWorkflowWriter() {
+	public DirectoryFileFilter() {
 
 	}
 
@@ -86,44 +78,6 @@ public class LinearWorkflowWriter {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public String write(
-		final LinearWorkflow linearWorkflow,
-		final File file) 
-		throws RIFServiceException {
-				
-			try {
-				FileOutputStream fileOutputStream
-					= new FileOutputStream(file);
-						
-				LinearWorkflowConfigurationHandler rifWorkflowConfigurationHandler
-					= new LinearWorkflowConfigurationHandler();
-
-				ByteArrayOutputStream outputStream
-					= new ByteArrayOutputStream();
-				XMLCommentInjector commentInjector = new XMLCommentInjector();			
-				rifWorkflowConfigurationHandler.initialise(
-					fileOutputStream, 
-					commentInjector);
-				rifWorkflowConfigurationHandler.writeXML(linearWorkflow);
-		    	String result 
-					= new String(outputStream.toByteArray(), "UTF-8");	
-		    	outputStream.flush();
-		    	outputStream.close();			
-		    	return result;
-			}
-			catch(Exception exception) {
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"io.error.problemWritingFileContentsToString");
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-						errorMessage);
-				throw rifServiceException;			
-			}
-		}	
-
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -132,6 +86,24 @@ public class LinearWorkflowWriter {
 	// Section Interfaces
 	// ==========================================
 
+	public boolean accept(
+		final File candidateFile) {		
+
+		if (candidateFile.isDirectory()) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public String getDescription() {
+		String description
+			= RIFDataLoaderToolMessages.getMessage(
+				"io.directoriesOnly.description");
+		return description;
+	}
+		
+	
 	// ==========================================
 	// Section Override
 	// ==========================================

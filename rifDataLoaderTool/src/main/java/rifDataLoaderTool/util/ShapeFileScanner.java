@@ -1,12 +1,13 @@
 package rifDataLoaderTool.util;
 
 import rifDataLoaderTool.businessConceptLayer.ShapeFile;
-import rifDataLoaderTool.fileFormats.ShapeFileComponentFilter;
 import rifDataLoaderTool.businessConceptLayer.ShapeFileComponent;
-import rifDataLoaderTool.fileFormats.GeneralFileFilter;
-import rifDataLoaderTool.fileFormats.DirectoryFileFilter;
 
 
+
+import rifDataLoaderTool.fileFormats.filters.DirectoryFileFilter;
+import rifDataLoaderTool.fileFormats.filters.GeneralFileFilter;
+import rifDataLoaderTool.fileFormats.filters.ShapeFileComponentFilter;
 
 import java.io.File;
 import java.util.ArrayList;

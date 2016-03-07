@@ -1,6 +1,6 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 

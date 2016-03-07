@@ -7,7 +7,7 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;

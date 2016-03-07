@@ -6,7 +6,7 @@ import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
-import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFGenericLibraryError;

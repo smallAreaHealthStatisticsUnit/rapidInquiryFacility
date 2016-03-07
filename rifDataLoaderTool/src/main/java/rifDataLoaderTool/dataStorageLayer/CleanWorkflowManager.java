@@ -9,7 +9,7 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
-import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;

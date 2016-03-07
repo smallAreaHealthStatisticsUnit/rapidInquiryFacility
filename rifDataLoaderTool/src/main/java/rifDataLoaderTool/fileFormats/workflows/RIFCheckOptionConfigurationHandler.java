@@ -1,16 +1,21 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.workflows;
 
-import rifDataLoaderTool.businessConceptLayer.ShapeFileComponent;
-import java.io.File;
-import java.io.FileFilter;
+
+import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
+import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
+import rifServices.fileFormats.XMLUtility;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
- * A general class for filtering files using the file.listFiles(FileFilter fileFilter) method.
- * The constructor takes a file extension - do not add the file name ".", just the letters
- * of the file extension that would follow it.
+ *
  *
  * <hr>
- * Copyright 2015 Imperial College London, developed by the Small Area
+ * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -56,7 +61,8 @@ import java.io.FileFilter;
  *
  */
 
-public class ShapeFileComponentFilter implements FileFilter {
+public final class RIFCheckOptionConfigurationHandler 
+	extends AbstractDataLoaderConfigurationHandler {
 
 	// ==========================================
 	// Section Constants
@@ -65,26 +71,78 @@ public class ShapeFileComponentFilter implements FileFilter {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ShapeFileComponent shapeFileComponent;
+	private ArrayList<RIFCheckOption> checkOptions;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public ShapeFileComponentFilter(final ShapeFileComponent shapeFileComponent) {
-		this.shapeFileComponent = shapeFileComponent;
+	public RIFCheckOptionConfigurationHandler() {
+		checkOptions = new ArrayList<RIFCheckOption>();
+		
+		setPluralRecordName("check_options");
+		setSingularRecordName("check_option");
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public String getFileExtension() {
-		return shapeFileComponent.getFileExtension();
+
+	public ArrayList<RIFCheckOption> getCheckOptions() {
+		return checkOptions;
+	}
+
+	public void writeXML(
+		final ArrayList<RIFCheckOption> checkOptions)
+		throws IOException {
+		
+		XMLUtility xmlUtility = getXMLUtility();
+		xmlUtility.writeRecordStartTag(getPluralRecordName());
+
+		for (RIFCheckOption checkOption : checkOptions) {
+			xmlUtility.writeRecordStartTag(getSingularRecordName());
+			xmlUtility.writeValue(checkOption.getCode());
+			xmlUtility.writeRecordEndTag(getSingularRecordName());
+		}
+		xmlUtility.writeRecordEndTag(getPluralRecordName());
+
 	}
 	
-	public ShapeFileComponent getShapeFileComponent() {
-		return shapeFileComponent;
+	
+	@Override
+	public void startElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName,
+		final Attributes attributes) 
+		throws SAXException {
+		
+		if (isPluralRecordName(qualifiedName)) {
+			activate();
+			checkOptions = new ArrayList<RIFCheckOption>();
+		}
+
 	}
+	
+	public void endElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName) 
+		throws SAXException {
+
+		if (isPluralRecordName(qualifiedName)) {
+			deactivate();
+		}
+		else if (isSingularRecordName(qualifiedName)) {
+			String checkOptionName
+				= getCurrentFieldValue();
+			RIFCheckOption rifCheckOption
+				= RIFCheckOption.getOptionFromCode(checkOptionName);
+			checkOptions.add(rifCheckOption);
+		}
+	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -94,26 +152,6 @@ public class ShapeFileComponentFilter implements FileFilter {
 	// Section Interfaces
 	// ==========================================
 
-	public boolean accept(final File candidateFile) {
-		
-		//We're only interested in files that end in *.shp
-		
-		String fileExtension
-			= shapeFileComponent.getFileExtension().toUpperCase();
-			
-		if (candidateFile.isDirectory()) {
-			return false;
-		}
-		
-		String upperCaseFilePath
-			= candidateFile.getAbsolutePath().toUpperCase();
-		if (upperCaseFilePath.endsWith(fileExtension) == true) {
-			return true;
-		}
-		
-		return false;
-	}
-	
 	// ==========================================
 	// Section Override
 	// ==========================================

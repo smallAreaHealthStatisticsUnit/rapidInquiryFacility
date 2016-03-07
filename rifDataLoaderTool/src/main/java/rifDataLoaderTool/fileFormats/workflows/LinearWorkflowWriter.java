@@ -1,12 +1,21 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.workflows;
 
+import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
+
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.fileFormats.XMLCommentInjector;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileFilter;
+import java.io.FileOutputStream;
+
+
 
 /**
- * A general class for filtering files using the file.listFiles(FileFilter fileFilter) method.
- * The constructor takes a file extension - do not add the file name ".", just the letters
- * of the file extension that would follow it.
+ *
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
@@ -55,7 +64,7 @@ import java.io.FileFilter;
  *
  */
 
-public class GeneralFileFilter implements FileFilter {
+public class LinearWorkflowWriter {
 
 	// ==========================================
 	// Section Constants
@@ -64,22 +73,56 @@ public class GeneralFileFilter implements FileFilter {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String fileExtension;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public GeneralFileFilter(final String fileExtension) {
-		this.fileExtension = "." + fileExtension.toUpperCase();
+	public LinearWorkflowWriter() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public String getFileExtension() {
-		return fileExtension;
-	}
+
+	public String write(
+		final LinearWorkflow linearWorkflow,
+		final File file) 
+		throws RIFServiceException {
+				
+			try {
+				FileOutputStream fileOutputStream
+					= new FileOutputStream(file);
+						
+				LinearWorkflowConfigurationHandler rifWorkflowConfigurationHandler
+					= new LinearWorkflowConfigurationHandler();
+
+				ByteArrayOutputStream outputStream
+					= new ByteArrayOutputStream();
+				XMLCommentInjector commentInjector = new XMLCommentInjector();			
+				rifWorkflowConfigurationHandler.initialise(
+					fileOutputStream, 
+					commentInjector);
+				rifWorkflowConfigurationHandler.writeXML(linearWorkflow);
+		    	String result 
+					= new String(outputStream.toByteArray(), "UTF-8");	
+		    	outputStream.flush();
+		    	outputStream.close();			
+		    	return result;
+			}
+			catch(Exception exception) {
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"io.error.problemWritingFileContentsToString");
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.XML_FILE_PARSING_PROBLEM, 
+						errorMessage);
+				throw rifServiceException;			
+			}
+		}	
+
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -89,23 +132,6 @@ public class GeneralFileFilter implements FileFilter {
 	// Section Interfaces
 	// ==========================================
 
-	public boolean accept(final File candidateFile) {
-		
-		//We're only interested in files that end in *.shp
-		
-		if (candidateFile.isDirectory()) {
-			return false;
-		}
-		
-		String upperCaseFilePath
-			= candidateFile.getAbsolutePath().toUpperCase();
-		if (upperCaseFilePath.endsWith(fileExtension) == true) {
-			return true;
-		}
-		
-		return false;
-	}
-	
 	// ==========================================
 	// Section Override
 	// ==========================================

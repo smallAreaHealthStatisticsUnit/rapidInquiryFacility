@@ -1,12 +1,12 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.filters;
 
 import java.io.File;
-
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
+import java.io.FileFilter;
 
 /**
- *
+ * A general class for filtering files using the file.listFiles(FileFilter fileFilter) method.
+ * The constructor takes a file extension - do not add the file name ".", just the letters
+ * of the file extension that would follow it.
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
@@ -55,8 +55,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
  *
  */
 
-public class DirectoryFileFilter extends javax.swing.filechooser.FileFilter
-	implements java.io.FileFilter {
+public class GeneralFileFilter implements FileFilter {
 
 	// ==========================================
 	// Section Constants
@@ -65,19 +64,23 @@ public class DirectoryFileFilter extends javax.swing.filechooser.FileFilter
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private String fileExtension;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DirectoryFileFilter() {
-
+	public GeneralFileFilter(final String fileExtension) {
+		this.fileExtension = "." + fileExtension.toUpperCase();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	public String getFileExtension() {
+		return fileExtension;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -86,23 +89,22 @@ public class DirectoryFileFilter extends javax.swing.filechooser.FileFilter
 	// Section Interfaces
 	// ==========================================
 
-	public boolean accept(
-		final File candidateFile) {		
-
+	public boolean accept(final File candidateFile) {
+		
+		//We're only interested in files that end in *.shp
+		
 		if (candidateFile.isDirectory()) {
+			return false;
+		}
+		
+		String upperCaseFilePath
+			= candidateFile.getAbsolutePath().toUpperCase();
+		if (upperCaseFilePath.endsWith(fileExtension) == true) {
 			return true;
 		}
 		
 		return false;
 	}
-	
-	public String getDescription() {
-		String description
-			= RIFDataLoaderToolMessages.getMessage(
-				"io.directoriesOnly.description");
-		return description;
-	}
-		
 	
 	// ==========================================
 	// Section Override

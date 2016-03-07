@@ -1,5 +1,5 @@
 
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.workflows;
 
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
@@ -7,8 +7,10 @@ import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 
 
+import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
 import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.XMLUtility;
+
 
 
 

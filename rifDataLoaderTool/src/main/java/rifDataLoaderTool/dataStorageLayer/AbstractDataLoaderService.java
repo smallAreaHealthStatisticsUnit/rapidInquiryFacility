@@ -5,7 +5,7 @@ import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifDataLoaderTool.dataStorageLayer.SQLConnectionManager;
-import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
 import rifServices.util.FieldValidationUtility;

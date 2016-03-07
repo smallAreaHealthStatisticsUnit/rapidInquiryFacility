@@ -1,4 +1,4 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.workflows;
 
 /**
  *

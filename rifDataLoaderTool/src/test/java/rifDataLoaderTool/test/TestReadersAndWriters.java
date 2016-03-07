@@ -2,8 +2,8 @@ package rifDataLoaderTool.test;
 
 import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.LinearWorkflowWriter;
-import rifDataLoaderTool.fileFormats.LinearWorkflowReader;
+import rifDataLoaderTool.fileFormats.workflows.LinearWorkflowReader;
+import rifDataLoaderTool.fileFormats.workflows.LinearWorkflowWriter;
 import rifGenericLibrary.system.RIFServiceException;
 import static org.junit.Assert.*;
 

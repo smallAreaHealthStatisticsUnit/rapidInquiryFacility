@@ -3,9 +3,8 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
-import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.io.Writer;

@@ -1,5 +1,5 @@
 
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.workflows;
 
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifGenericLibrary.system.RIFServiceException;

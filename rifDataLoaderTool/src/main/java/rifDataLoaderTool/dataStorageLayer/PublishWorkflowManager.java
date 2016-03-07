@@ -1,9 +1,8 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
 import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
-import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;

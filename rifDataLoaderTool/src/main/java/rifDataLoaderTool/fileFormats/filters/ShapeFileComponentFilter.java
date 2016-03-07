@@ -1,20 +1,16 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.filters;
 
-
-import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
-import rifServices.fileFormats.XMLUtility;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.util.ArrayList;
+import rifDataLoaderTool.businessConceptLayer.ShapeFileComponent;
+import java.io.File;
+import java.io.FileFilter;
 
 /**
- *
+ * A general class for filtering files using the file.listFiles(FileFilter fileFilter) method.
+ * The constructor takes a file extension - do not add the file name ".", just the letters
+ * of the file extension that would follow it.
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -60,8 +56,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class RIFCheckOptionConfigurationHandler 
-	extends AbstractDataLoaderConfigurationHandler {
+public class ShapeFileComponentFilter implements FileFilter {
 
 	// ==========================================
 	// Section Constants
@@ -70,78 +65,26 @@ public final class RIFCheckOptionConfigurationHandler
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ArrayList<RIFCheckOption> checkOptions;
+	private ShapeFileComponent shapeFileComponent;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public RIFCheckOptionConfigurationHandler() {
-		checkOptions = new ArrayList<RIFCheckOption>();
-		
-		setPluralRecordName("check_options");
-		setSingularRecordName("check_option");
-
+	public ShapeFileComponentFilter(final ShapeFileComponent shapeFileComponent) {
+		this.shapeFileComponent = shapeFileComponent;
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	public ArrayList<RIFCheckOption> getCheckOptions() {
-		return checkOptions;
-	}
-
-	public void writeXML(
-		final ArrayList<RIFCheckOption> checkOptions)
-		throws IOException {
-		
-		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeRecordStartTag(getPluralRecordName());
-
-		for (RIFCheckOption checkOption : checkOptions) {
-			xmlUtility.writeRecordStartTag(getSingularRecordName());
-			xmlUtility.writeValue(checkOption.getCode());
-			xmlUtility.writeRecordEndTag(getSingularRecordName());
-		}
-		xmlUtility.writeRecordEndTag(getPluralRecordName());
-
+	public String getFileExtension() {
+		return shapeFileComponent.getFileExtension();
 	}
 	
-	
-	@Override
-	public void startElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName,
-		final Attributes attributes) 
-		throws SAXException {
-		
-		if (isPluralRecordName(qualifiedName)) {
-			activate();
-			checkOptions = new ArrayList<RIFCheckOption>();
-		}
-
+	public ShapeFileComponent getShapeFileComponent() {
+		return shapeFileComponent;
 	}
-	
-	public void endElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName) 
-		throws SAXException {
-
-		if (isPluralRecordName(qualifiedName)) {
-			deactivate();
-		}
-		else if (isSingularRecordName(qualifiedName)) {
-			String checkOptionName
-				= getCurrentFieldValue();
-			RIFCheckOption rifCheckOption
-				= RIFCheckOption.getOptionFromCode(checkOptionName);
-			checkOptions.add(rifCheckOption);
-		}
-	}
-	
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -151,6 +94,26 @@ public final class RIFCheckOptionConfigurationHandler
 	// Section Interfaces
 	// ==========================================
 
+	public boolean accept(final File candidateFile) {
+		
+		//We're only interested in files that end in *.shp
+		
+		String fileExtension
+			= shapeFileComponent.getFileExtension().toUpperCase();
+			
+		if (candidateFile.isDirectory()) {
+			return false;
+		}
+		
+		String upperCaseFilePath
+			= candidateFile.getAbsolutePath().toUpperCase();
+		if (upperCaseFilePath.endsWith(fileExtension) == true) {
+			return true;
+		}
+		
+		return false;
+	}
+	
 	// ==========================================
 	// Section Override
 	// ==========================================

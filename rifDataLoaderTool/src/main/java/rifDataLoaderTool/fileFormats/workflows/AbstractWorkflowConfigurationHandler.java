@@ -1,5 +1,5 @@
 
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.workflows;
 
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
