@@ -8,6 +8,8 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * A rule that is used to generate SQL code that can search and replace values. Apart from
@@ -222,7 +224,93 @@ public final class CleaningRule
 
 		this.isRegularExpressionSearch = isRegularExpressionSearch;
 	}
+	
+	static public boolean cleaningRulesAreEqual(
+		final ArrayList<CleaningRule> listACleaningRules,
+		final ArrayList<CleaningRule> listBCleaningRules) {
 		
+		if (listACleaningRules.size() != listBCleaningRules.size()) {
+			return false;
+		}
+		
+		HashMap<String, CleaningRule> ruleFromIdentifierA
+			= new HashMap<String, CleaningRule>();
+		for (CleaningRule listACleaningRule : listACleaningRules) {
+			ruleFromIdentifierA.put(
+				listACleaningRule.getIdentifier(), 
+				listACleaningRule);
+		}
+			
+		HashMap<String, CleaningRule> ruleFromIdentifierB
+			= new HashMap<String, CleaningRule>();
+		for (CleaningRule listBCleaningRule : listBCleaningRules) {
+			ruleFromIdentifierB.put(
+				listBCleaningRule.getIdentifier(), 
+				listBCleaningRule);
+		}
+		
+		ArrayList<String> listAKeys = new ArrayList<String>();
+		listAKeys.addAll(ruleFromIdentifierA.keySet());
+		for (String listAKey : listAKeys) {
+			CleaningRule ruleFromListA
+				= ruleFromIdentifierA.get(listAKey);
+			CleaningRule ruleFromListB
+				= ruleFromIdentifierB.get(listAKey);
+			if (ruleFromListB == null) {
+				return false;
+			}
+			else {
+				if (ruleFromListA.hasIdenticalContents(ruleFromListB) == false) {
+					return false;
+				}
+			}
+		}
+
+		ArrayList<String> listBKeys = new ArrayList<String>();
+		listBKeys.addAll(ruleFromIdentifierB.keySet());	
+		for (String listBKey : listBKeys) {
+			CleaningRule ruleFromListB
+				= ruleFromIdentifierB.get(listBKey);
+			CleaningRule ruleFromListA
+				= ruleFromIdentifierA.get(listBKey);
+			if (ruleFromListA == null) {
+				return false;
+			}
+			else {
+				if (ruleFromListB.hasIdenticalContents(ruleFromListA) == false) {
+					return false;
+				}
+			}
+		}
+		
+		return true;		
+	}
+	
+	public boolean hasIdenticalContents(
+		final CleaningRule otherCleaningRule) {
+		
+		String otherName = otherCleaningRule.getName();
+		String otherDescription = otherCleaningRule.getDescription();
+		String otherSearchValue = otherCleaningRule.getSearchValue();
+		String otherReplaceValue = otherCleaningRule.getReplaceValue();
+				
+		if (Objects.deepEquals(name, otherName) == false) {
+			return false;
+		}
+		if (Objects.deepEquals(description, otherDescription) == false) {
+			return false;
+		}
+		if (Objects.deepEquals(searchValue, otherSearchValue) == false) {
+			return false;
+		}
+		if (Objects.deepEquals(replaceValue, otherReplaceValue) == false) {
+			return false;
+		}		
+		
+		return true;		
+	}
+
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

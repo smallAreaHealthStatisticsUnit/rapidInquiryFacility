@@ -1,6 +1,7 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
@@ -8,6 +9,8 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.HashMap;
 
 /**
  * A rule that is used to generate SQL code that can search and replace values. Apart from
@@ -92,6 +95,7 @@ import java.util.ArrayList;
 public final class ValidationRule 
 	extends AbstractRIFDataLoaderToolConcept {
 
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -165,7 +169,27 @@ public final class ValidationRule
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+	public boolean hasIdenticalContents(
+		final ValidationRule otherValidationRule) {
 		
+		String otherName = otherValidationRule.getName();
+		String otherDescription = otherValidationRule.getDescription();
+		String otherValidValue = otherValidationRule.getValidValue();
+		if (Objects.deepEquals(name, otherName) == false) {
+			return false;
+		}
+		if (Objects.deepEquals(description, otherDescription) == false) {
+			return false;
+		}
+		if (Objects.deepEquals(validValue, otherValidValue) == false) {
+			return false;
+		}
+		
+		return true;		
+	}
+	
+	
 	public String getName() {
 		return name;
 	}
@@ -205,7 +229,68 @@ public final class ValidationRule
 
 		this.isRegularExpressionSearch = isRegularExpressionSearch;
 	}
+	
+	static public boolean validationRulesAreEqual(
+		final ArrayList<ValidationRule> listAValidationRules,
+		final ArrayList<ValidationRule> listBValidationRules) {
 		
+		if (listAValidationRules.size() != listBValidationRules.size()) {
+			return false;
+		}
+		
+		HashMap<String, ValidationRule> ruleFromIdentifierA
+			= new HashMap<String, ValidationRule>();
+		for (ValidationRule listAValidationRule : listAValidationRules) {
+			ruleFromIdentifierA.put(
+				listAValidationRule.getIdentifier(), 
+				listAValidationRule);
+		}
+			
+		HashMap<String, ValidationRule> ruleFromIdentifierB
+			= new HashMap<String, ValidationRule>();
+		for (ValidationRule listBValidationRule : listBValidationRules) {
+			ruleFromIdentifierB.put(
+				listBValidationRule.getIdentifier(), 
+				listBValidationRule);
+		}
+		
+		ArrayList<String> listAKeys = new ArrayList<String>();
+		listAKeys.addAll(ruleFromIdentifierA.keySet());
+		for (String listAKey : listAKeys) {
+			ValidationRule ruleFromListA
+				= ruleFromIdentifierA.get(listAKey);
+			ValidationRule ruleFromListB
+				= ruleFromIdentifierB.get(listAKey);
+			if (ruleFromListB == null) {
+				return false;
+			}
+			else {
+				if (ruleFromListA.hasIdenticalContents(ruleFromListB) == false) {
+					return false;
+				}
+			}
+		}
+
+		ArrayList<String> listBKeys = new ArrayList<String>();
+		listBKeys.addAll(ruleFromIdentifierB.keySet());	
+		for (String listBKey : listBKeys) {
+			ValidationRule ruleFromListB
+				= ruleFromIdentifierB.get(listBKey);
+			ValidationRule ruleFromListA
+				= ruleFromIdentifierA.get(listBKey);
+			if (ruleFromListA == null) {
+				return false;
+			}
+			else {
+				if (ruleFromListB.hasIdenticalContents(ruleFromListA) == false) {
+					return false;
+				}
+			}
+		}
+		
+		return true;		
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
