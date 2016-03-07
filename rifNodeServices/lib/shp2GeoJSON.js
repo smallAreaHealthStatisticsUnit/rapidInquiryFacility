@@ -70,16 +70,39 @@ shp2GeoJSONFieldProcessor=function(fieldname, val, text, shp_options, ofields, r
 
 /*
  * Function:	shp2GeoJSONCheckFiles()
- * Parameters:	Shapefile list, response object, total shapefiles, ofields [field parameters array]
+ * Parameters:	Shapefile list, response object, total shapefiles, ofields [field parameters array], 
+ *				RIF logging object, express HTTP request object
  * Returns:		Rval object { file_errors, msg }
  * Description: Check which files and extensions are present, convert shapefiles to geoJSON
  */
-shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields) {
+shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, req) {
+	const os = require('os'),
+	      fs = require('fs');
+		  
 	var i=0;
 	var rval = {
 		file_errors: 0,
 		msg: ""
 	};
+	
+	// Wait for shapefile to appear
+	var waitForShapeFileWrite = function(shapefile, waits, serverLog, req) {
+		
+		setTimeout(function() {
+			if (waits > 1000) { // Timeout
+				serverLog.serverLog('ERROR! timeout waiting for file: ' + shapefile, req);
+				return false;
+			}
+			else if (!fs.existsSync(shapefile)) {
+				return waitForShapeFileWrite(shapefile, waits+1, serverLog, req);   
+			}
+			else { // OK
+				console.error("File: " + shapefile + " written after " + waits);
+				return true;
+			}
+		}, 100);
+	}
+
 	for (var key in shpList) {
 		i++;
 		response.file_list[i-1] = {
@@ -94,11 +117,29 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields) {
 		};
 			
 		if (shpList[key].hasShp && shpList[key].hasPrj && shpList[key].hasDbf) {
-			rval.msg+="\nProcess shapefile[" + i + "]: " + shpList[key].fileName;
+			var dir=os.tmpdir() + "/shp2GeoJSON/" + ofields["uuidV1"];
+			var file=dir + "/" + key + ".shp"
+			if (fs.existsSync(file) || fs.existsSync(file + ".tmp")) { // Exists
+				// Wait for shapefile to appear
+				if (waitForShapeFileWrite(file, 0)) {		
+					rval.msg+="\nProcess shapefile[" + i + "]: " + file;
+				}
+				else {
+					rval.errors++;					// Increment file error count	
+					rval.msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + file + 
+						" shapefile was not written after waiting";						
+				}
+			}
+			else {
+				rval.errors++;					// Increment file error count	
+				rval.msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + file + 
+					" shapefile was not written";										
+			}
 		}
 		else {		
 			rval.errors++;					// Increment file error count	
-			rval.msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + shpList[key].fileName + " is missing a shapefile/DBF file/Projection file";							
+			rval.msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + shpList[key].fileName + 
+				" is missing a shapefile/DBF file/Projection file";							
 		}	
 	}
 	response.no_files=shpTotal;				// Add number of files process to response
@@ -120,10 +161,10 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields) {
  *				Called once per file
  */
 shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofields, serverLog, req) {
-	const uuid = require('node-uuid');
-	const crypto = require('crypto');
-	const os = require('os');
-	const fs = require('fs');
+	const uuid = require('node-uuid'),
+	      crypto = require('crypto'),
+	      os = require('os'),
+	      fs = require('fs');
 
 	var rval = {
 		file_errors: 0,
@@ -301,13 +342,17 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 		fs.writeFile(file + '.tmp', d.file.file_data.toString(), function(err) {
 			if (err) {
 				serverLog.serverLog('ERROR! writing file: ' + file + '.tmp', req, err);
-				throw err;
+				try {
+					fs.unlinkSync(file + '.tmp');
+				}
+				catch (e) { 
+					serverLog.serverLog('ERROR! deleting file (after error): ' + file + '.tmp', req, e);
+				}
 			}
 			try { // And do an atomic rename when complete
 				fs.renameSync(file + '.tmp', file);
 			} catch (e) { 
 				serverLog.serverLog('ERROR! renaming file: ' + file + '.tmp', req, e);
-				throw e;
 			}
 		});
 		response.message += "\nSaving file: " + file;

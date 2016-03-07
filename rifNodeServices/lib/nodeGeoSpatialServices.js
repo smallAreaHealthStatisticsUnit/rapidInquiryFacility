@@ -516,8 +516,13 @@ exports.convert = function(req, res) {
 										httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 											serverLog, 500, req, res, rval.msg, undefined, response);							
 										return;
-									}								
-									shpTotal=rval.shpTotal;
+									}	
+									else {
+										if (rval.msg) {
+											msg+=rval.msg + "\n";			
+										}
+										shpTotal=rval.shpTotal;
+									}						
 								}
 							}	
 							else {
@@ -535,11 +540,16 @@ exports.convert = function(req, res) {
 						} // End of for loop
 						
 						if (req.url == '/shp2GeoJSON') { // Check which files and extensions are present, convert shapefiles to geoJSON
-							rval=shp2GeoJSON.shp2GeoJSONCheckFiles(shpList, response, shpTotal, ofields);
+							rval=shp2GeoJSON.shp2GeoJSONCheckFiles(shpList, response, shpTotal, ofields, serverLog, req);
 							if (rval.file_errors > 0 ) {
 								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 									serverLog, 500, req, res, rval.msg, undefined, response);							
 								return;
+							}
+							else {
+								if (rval.msg) {
+									msg+=rval.msg + "\n";			
+								}
 							}
 						}
 
