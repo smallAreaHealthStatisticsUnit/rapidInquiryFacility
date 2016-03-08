@@ -230,7 +230,42 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 		return uuid.v1({
 			node: [buf[0], buf[1], buf[2], buf[5], buf[3], buf[4]] // first 6 bytes of hash; NIC bits swapped
 			});		
-	}
+		} /* End of generateUUID() */, 
+	/*
+	 * Function:	createTemporaryDirectory()
+	 * Parameters:	Directory component array [$TEMP/shp2GeoJSON, <uuidV1>, <fileNoext>]
+	 * Returns:		Final directory (e.g. $TEMP/shp2GeoJSON/<uuidV1>/<fileNoext>)
+	 * Description: Create temporary directory (for shapefiles)
+	 */
+		createTemporaryDirectory = function(dirArray, rval, response, fs) {
+			var tdir;
+			for (var i = 0; i < dirArray.length; i++) {  
+				if (!tdir) {
+					tdir=dirArray[i];
+				}
+				else {
+					tdir+="/" + dirArray[i];
+				}	
+				try {
+					var stats=fs.statSync(tdir);
+				} catch (e) { 
+					if (e.code == 'ENOENT') {
+						try {
+							fs.mkdirSync(tdir);
+							response.message += "\nmkdir: " + tdir;
+						} catch (e) { 
+							rval.msg = "ERROR: Cannot create directory: " + e.message;
+							rval.file_errors++;
+						}			
+					}
+					else {
+						rval.msg = "ERROR: Cannot access directory: " + e.message;
+						rval.file_errors++;
+					}
+				}
+			}
+			return tdir;
+		} /* End of createTemporaryDirectory() */;
 	
 	var extName = path.extname(d.file.file_name);
 
@@ -239,8 +274,6 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 //	
 	if (!ofields["uuidV1"]) { // Generate UUID
 		ofields["uuidV1"]=generateUUID();
-		
-
 	}
 
 //	
@@ -277,82 +310,17 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 		response.message+="\nIgnore extension: " + extName + " for file: " + shpList[fileNoext].fileName;
 	}
 	
-//
-// Save file
 //	
-// 1. Create directory: $TEMP/shp2GeoJSON if required
+// Create directory: $TEMP/shp2GeoJSON/<uuidV1>/<fileNoext> as required
 //
-	var dir=os.tmpdir() + "/shp2GeoJSON";
-	try {
-		var stats=fs.statSync(dir);
-	} catch (e) { 
-		if (e.code == 'ENOENT') {
-			try {
-				fs.mkdirSync(dir);
-				response.message += "\nmkdir: " + dir;
-			} catch (e) { 
-				rval.msg = "ERROR: Cannot create directory: " + e.message;
-				rval.file_errors++;
-			}			
-		}
-		else {
-			rval.msg = "ERROR: Cannot access directory: " + e.message;
-			rval.file_errors++;
-		}
-	}
+	var dirArray=[os.tmpdir() + "/shp2GeoJSON", ofields["uuidV1"], fileNoext];
+	dir=createTemporaryDirectory(dirArray, rval, response, fs);
 
-//
-// 2. Create directory: $TEMP/shp2GeoJSON/<uuidV1> if required
-//	
-	if (rval.file_errors == 0) {
-		dir += "/" + ofields["uuidV1"];	
-		try {
-			var stats=fs.statSync(dir);
-		} catch (e) { 
-			if (e.code == 'ENOENT') {
-				try {
-					fs.mkdirSync(dir);
-					response.message += "\nmkdir: " + dir;
-				} catch (e) { 
-					rval.msg = "ERROR: Cannot create directory: " + e.message;
-					rval.file_errors++;
-				}			
-			}
-			else {
-				rval.msg = "ERROR: Cannot access directory: " + e.message;
-				rval.file_errors++;
-			}
-		}
-	}
-	
-//
-// 3. Create directory: $TEMP/shp2GeoJSON/<uuidV1>/<fileNoext> if required
-//	
-	if (rval.file_errors == 0) {
-		dir += "/" + fileNoext;	
-		try {
-			var stats=fs.statSync(dir);
-			response.message += "\nDirectory: " + dir + " exists";
-		} catch (e) { 
-			if (e.code == 'ENOENT') {
-				try {
-					fs.mkdirSync(dir);
-					response.message += "\nmkdir: " + dir;
-				} catch (e) { 
-					rval.msg = "ERROR: Cannot create directory: " + e.message;
-					rval.file_errors++;
-				}			
-			}
-			else {
-				rval.msg = "ERROR: Cannot access directory: " + e.message;
-				rval.file_errors++;
-			}
-		}
-	}	
+	console.error("Dir: " + dir);
 	
 //	
-// 4. Write file to directory
-//		
+// Write file to directory
+//	
 	var file=dir + "/" + fileNoext + extName;
 	if (fs.existsSync(file)) { // Exists
 		rval.msg = "ERROR: Cannot write file, already exists: " + file;

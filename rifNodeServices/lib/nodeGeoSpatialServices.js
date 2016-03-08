@@ -460,7 +460,7 @@ exports.convert = function(req, res) {
 						var shpList = {};
 						var shpTotal=0;
 						
-						for (i = 0; i < response.no_files; i++) {	
+						for (var i = 0; i < response.no_files; i++) {	
 							d=d_files.d_list[i];
 							if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
 								msg="FAIL! File [" + (i+1) + "/?]: entry not found, no file list" + 

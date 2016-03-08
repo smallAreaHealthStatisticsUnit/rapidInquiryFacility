@@ -128,6 +128,7 @@ var services=["/shp2GeoJSON",
 			  "/getGeospatialData",
 			  "/getNumShapefilesInSet",
 			  "/getMapTile"];
+var theDate = new Date();
 for (var i=0; i<services.length; i++) { // Call common method
 // Get methods are dummies for test purposes
 	app.get(services[i], nodeGeoSpatialServices.convert);
@@ -146,4 +147,4 @@ app.post('/zipfile', zipfile.convert);
   
 app.listen(3000);
 
-console.error('expressServer.js: RIF Node web services listening on 127.0.0.1 port 3000...');
+console.error(theDate.toString() + '\nexpressServer.js: RIF Node web services listening on 127.0.0.1 port 3000...');
