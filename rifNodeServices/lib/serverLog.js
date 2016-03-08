@@ -120,10 +120,12 @@ serverLog2 = function(file, line, calling_function, msg, req, err) {
 	var theDate = new Date();
 	
 	// Add request tracer if present
-	if (req) {
+	if (req && req.get) {
 		request_tracer=";\n url: " + req.url + 
-					"; ip: " + req.ip + 
-					"; Content-Encoding: " + req.get('Content-Encoding');
+					"; ip: " + req.ip;
+		if (req.get('Content-Encoding')) {
+			request_tracer+="; Content-Encoding: " + req.get('Content-Encoding');
+		}
 	}
 	// Add error tracer if present
 	if (err && err.message && err.stack) {

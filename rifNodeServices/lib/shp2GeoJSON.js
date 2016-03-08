@@ -172,25 +172,32 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 		shpTotal: shpTotal
 	};
 	
-	var extName = path.extname(d.file.file_name);
-
-//
-// UUID generator
-//	
-	if (!ofields["uuidV1"]) { // Generate UUID
-	
-	// UUID generator - Generate RFC4122 version 1 compliant UUID
-	// Use first six bits of HMAC 256 key for the Node ID
-	// Key is mac address of eth0 + process ID or hostname + process ID if eth0 does not exist	
-	// E.g. 7a9ee1c0-e469-11e5-b100-2f737ba57483
+	/*
+	 * Function:	shp2GeoJSONFileProcessor()
+	 * Parameters:	None
+	 * Returns:		UUID v1
+	 * Description: UUID generator - Generate RFC4122 version 1 compliant UUID
+	 * 				Use first six bits of HMAC 256 key for the Node ID
+	 * 				Key is mac address of eth0 + or hostname + process ID if eth0 does not exist	
+	 * 				E.g. 7a9ee1c0-e469-11e5-b100-2f737ba57483
+	 * 
+	 *				The use of the MAC address as the node is correct, but does reveal information useful for spoofing.
+	 *				Therefore the bytes are swapped in the order 012 [Organizationally Unique Identifier (OUI)] 534 [NIC specific]
+	 */
+	var generateUUID = function() {
 	
 		var networkInterfaces = os.networkInterfaces();
 		var key;
 		var nif;
+		var buf;
+		var hash;
+		
 		if (networkInterfaces['eth0']) { // For Linux - easy
 			nif=networkInterfaces['eth0'];	
 			if (nif[0].mac != '00:00:00:00:00:00') {
-				key=nif[0].mac + process.pid;
+				key=nif[0].mac;
+//				console.error("A mac: " + key + "; " + key.replace(/:/g, '').toString());
+				buf=new Buffer(key.replace(/:/g, '').toString(), 'hex');
 			}			
 		}
 		else {
@@ -198,17 +205,20 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 												 // Use the first one that is not localhost
 				nif=networkInterfaces[key];
 				if (nif[0].mac != '00:00:00:00:00:00') {
-					key=nif[0].mac + process.pid;	
+					key=nif[0].mac;
+//					console.error("B mac: " + key + "; " + key.replace(/:/g, '').toString());
+					buf=new Buffer(key.replace(/:/g, '').toString(), 'hex');
 					break;
 				}
 			}
 		}
 
-		if (!key) {
+		if (!buf) { // no non zeros nic; use the hostname + PID
 			key=os.hostname() + "+" + process.pid;
+			hash=crypto.createHmac('sha256', key).digest('hex');	
+			buf=new Buffer(hash, 'hex');			
 		}	
-		var hash=crypto.createHmac('sha256', key).digest('hex');	
-		var buf=new Buffer(hash, 'hex');
+	
 //		console.error("Key: " + key + "\n" +
 //			"hash[0]: [0x" + hash.substring(0, 2) + "], [0x" + buf[0].toString(16) + "]\n" +
 //			"hash[1]: [0x" + hash.substring(2, 4) + "], [0x" + buf[1].toString(16) + "]\n" +
@@ -217,9 +227,20 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 //			"hash[4]: [0x" + hash.substring(8, 10) + "], [0x" + buf[4].toString(16) + "]\n" +
 //			"hash[5]: [0x" + hash.substring(10, 12) + "], [0x" + buf[5].toString(16) + "]\n" +
 //			"networkInterface: " + JSON.stringify(nif, null, 4));
-		ofields["uuidV1"]=uuid.v1({
-			node: [buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]] // first 6 bytes of hash
-			});
+		return uuid.v1({
+			node: [buf[0], buf[1], buf[2], buf[5], buf[3], buf[4]] // first 6 bytes of hash; NIC bits swapped
+			});		
+	}
+	
+	var extName = path.extname(d.file.file_name);
+
+//
+// UUID generator
+//	
+	if (!ofields["uuidV1"]) { // Generate UUID
+		ofields["uuidV1"]=generateUUID();
+		
+
 	}
 
 //	

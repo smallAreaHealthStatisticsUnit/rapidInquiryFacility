@@ -635,7 +635,9 @@ exports.convert = function(req, res) {
 							serverLog, 500, req, res, msg, undefined, response);
 					}
 				} catch(e) {
-					serverLog.serverLog(__file, __line, "req.busboy.on('finish')", 'Caught unexpected error (probably async)', req, e);
+					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+						serverLog, 500, req, res, 'Caught unexpected error (possibly async)', e, undefined /* My response */);
+					return;
 				}
 			});
 
