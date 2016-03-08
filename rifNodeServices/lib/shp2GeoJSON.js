@@ -125,19 +125,19 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 					rval.msg+="\nProcess shapefile[" + i + "]: " + file;
 				}
 				else {
-					rval.errors++;					// Increment file error count	
+					rval.file_errors++;					// Increment file error count	
 					rval.msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + file + 
 						" shapefile was not written after waiting";						
 				}
 			}
 			else {
-				rval.errors++;					// Increment file error count	
+				rval.file_errors++;					// Increment file error count	
 				rval.msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + file + 
 					" shapefile was not written";										
 			}
 		}
 		else {		
-			rval.errors++;					// Increment file error count	
+			rval.file_errors++;					// Increment file error count	
 			rval.msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + shpList[key].fileName + 
 				" is missing a shapefile/DBF file/Projection file";							
 		}	
@@ -146,9 +146,8 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	response.fields=ofields;				// Add return fields
 	response.file_errors+=rval.file_errors;
 	rval.msg+="\n";
-	if (rval.file_errors > 0) {
-		response.message = rval.msg + "\n" + response.message;
-	}
+	response.message = rval.msg + "\n" + response.message;
+
 	return rval;
 }
 
@@ -315,8 +314,6 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 //
 	var dirArray=[os.tmpdir() + "/shp2GeoJSON", ofields["uuidV1"], fileNoext];
 	dir=createTemporaryDirectory(dirArray, rval, response, fs);
-
-	console.error("Dir: " + dir);
 	
 //	
 // Write file to directory
@@ -353,6 +350,7 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 		response.file_errors+=rval.file_errors;	
 		response.message = rval.msg + "\n" + response.message;
 	}
+
 	return rval;
 }
 							

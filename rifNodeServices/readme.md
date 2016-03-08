@@ -116,7 +116,8 @@ Response object - errors:
 * file_list: 		Array file objects:
 
   * file_name: File name
-* message: 		Processing messages, including debug from topoJSON               
+* message: 			Error message
+* diagnostic:		Diagnotic message             
 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  
 E.g. Posting a ZIP file:

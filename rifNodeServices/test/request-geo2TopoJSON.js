@@ -388,10 +388,13 @@ var postIt = function(debug) {
 				var error = jsonData.error || 'No error';
 				console.error('\nUpload #' + my_reference + 
 					' failed with HTTP status: ' + httpResponse.statusCode + 
-					'\nServer debug >>>' + jsonData.message + 
-					'\n<<< End of server debug\nError exception caught by server >>>\n' + error +
+					'\nServer error message >>>' + jsonData.message + 
+					'\n<<< End of server error message\nError exception caught by server >>>\n' + error +
 					'\n<<< End of error exception caught by server\nfiles processed: ' + jsonData.no_files +
 					'; fields: ' + JSON.stringify(ofields, null, 4));
+				if (jsonData.diagnostic) {
+					console.error('\nServer diagnostic >>>' + jsonData.diagnostic + '\n<<< End of server diagnostic');
+				}	
 				for (i = 0; i < jsonData.no_files; i++) {	
 					 console.error("File [" + (i+1) + ":" + file_list[i].file_name + "]");
 				}

@@ -63,7 +63,8 @@
  * field_errors: 	Number of errors in processing fields
  * file_list: 		Array file objects:
  *						file_name: File name
- * message: 		Processing messages, including debug from topoJSON               
+ * message: 		Error message
+ * diagnostic:		Diagnotic message 
  * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  */		
 httpErrorResponse=function(file, line, calling_function, serverLog, status, req, res, msg, err, g_response) {
@@ -73,7 +74,8 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		field_errors: 0,
 		file_errors: 0,
 		file_list: [],
-		message: '',               
+		message: '',  
+		diagnostic: '',
 		fields: [] 
 	};
 	try {			
@@ -81,7 +83,7 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			l_response.no_files = g_response.no_files;
 			l_response.field_errors = g_response.field_errors;
 			l_response.file_errors = g_response.file_errors;
-			for (i = 0; i < l_response.no_files; i++) {	
+			for (var i = 0; i < l_response.no_files; i++) {	
 				if (g_response.file_list[i]) { // Handle incomplete file list
 					if (g_response.file_list[i].file_name) {
 						l_response.file_list[i] = {
@@ -102,15 +104,21 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			}
 			l_response.fields = g_response.fields;
 		}
-		l_response.message = msg;
+		if (msg) {
+			l_response.message = msg;
+		}
+		else {
+			l_response.message = "(No error message)";
+		}
 		if (err) { // Add error to message
 			l_response.error = err.message;
 		}
-		if (g_response) { 
+		if (g_response) { // Add diagnostic
 			serverLog.serverLog2(file, line, calling_function, g_response.message, req, err);
+			l_response.diagnostic += "\n\n" + g_response.message;
 		}
 		else { 
-			serverLog.serverLog2(file, line, calling_function, "Unknown", req, err);
+			serverLog.serverLog2(file, line, calling_function, "(No diagnostic)", req, err);
 		}
 		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 			res.status(status);		
