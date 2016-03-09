@@ -253,7 +253,7 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 	};
 	
 	/*
-	 * Function:	shp2GeoJSONFileProcessor()
+	 * Function:	generateUUID()
 	 * Parameters:	None
 	 * Returns:		UUID v1
 	 * Description: UUID generator - Generate RFC4122 version 1 compliant UUID
@@ -310,42 +310,42 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 		return uuid.v1({
 			node: [buf[0], buf[1], buf[2], buf[5], buf[3], buf[4]] // first 6 bytes of hash; NIC bits swapped
 			});		
-		} /* End of generateUUID() */, 
+	} /* End of generateUUID() */, 
 	/*
 	 * Function:	createTemporaryDirectory()
 	 * Parameters:	Directory component array [$TEMP/shp2GeoJSON, <uuidV1>, <fileNoext>]
 	 * Returns:		Final directory (e.g. $TEMP/shp2GeoJSON/<uuidV1>/<fileNoext>)
 	 * Description: Create temporary directory (for shapefiles)
 	 */
-		createTemporaryDirectory = function(dirArray, rval, response, fs) {
-			var tdir;
-			for (var i = 0; i < dirArray.length; i++) {  
-				if (!tdir) {
-					tdir=dirArray[i];
+	createTemporaryDirectory = function(dirArray, rval, response, fs) {
+		var tdir;
+		for (var i = 0; i < dirArray.length; i++) {  
+			if (!tdir) {
+				tdir=dirArray[i];
+			}
+			else {
+				tdir+="/" + dirArray[i];
+			}	
+			try {
+				var stats=fs.statSync(tdir);
+			} catch (e) { 
+				if (e.code == 'ENOENT') {
+					try {
+						fs.mkdirSync(tdir);
+						response.message += "\nmkdir: " + tdir;
+					} catch (e) { 
+						rval.msg = "ERROR: Cannot create directory: " + e.message;
+						rval.file_errors++;
+					}			
 				}
 				else {
-					tdir+="/" + dirArray[i];
-				}	
-				try {
-					var stats=fs.statSync(tdir);
-				} catch (e) { 
-					if (e.code == 'ENOENT') {
-						try {
-							fs.mkdirSync(tdir);
-							response.message += "\nmkdir: " + tdir;
-						} catch (e) { 
-							rval.msg = "ERROR: Cannot create directory: " + e.message;
-							rval.file_errors++;
-						}			
-					}
-					else {
-						rval.msg = "ERROR: Cannot access directory: " + e.message;
-						rval.file_errors++;
-					}
+					rval.msg = "ERROR: Cannot access directory: " + e.message;
+					rval.file_errors++;
 				}
 			}
-			return tdir;
-		} /* End of createTemporaryDirectory() */;
+		}
+		return tdir;
+	} /* End of createTemporaryDirectory() */;
 	
 	var extName = path.extname(d.file.file_name);
 
