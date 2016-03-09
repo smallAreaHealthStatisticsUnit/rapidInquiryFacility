@@ -310,7 +310,7 @@ exports.convert = function(req, res) {
 					response.no_files=d.no_files;			// Add number of files process to response				
 					response.fields=ofields;				// Add return fields	
 					response.file_errors++;					// Increment file error count	
-					serverLog.serverLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);							
+					serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);							
 					d_files.d_list[d.no_files-1] = d;		
 				});				
 
@@ -337,7 +337,7 @@ exports.convert = function(req, res) {
 						response.fields=ofields;				// Add return fields		
 						response.file_errors++;					// Increment file error countv					
 						d_files.d_list[d.no_files-1] = d;		
-//						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file'),stream.on('end')", 
+//						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('file').stream.on('end')", 
 //							serverLog, 500, req, res, msg, undefined, response);						
 						return;
 					}
@@ -356,7 +356,7 @@ exports.convert = function(req, res) {
 							response.no_files=d.no_files;			// Add number of files process to response
 							response.fields=ofields;				// Add return fields		
 							response.file_errors++;					// Increment file error count	
-							serverLog.serverLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
+							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
 							d_files.d_list[d.no_files-1] = d;							
 							return;
 						}	
@@ -379,7 +379,7 @@ exports.convert = function(req, res) {
 							response.no_files=d.no_files;			// Add number of files process to response
 							response.fields=ofields;				// Add return fields	
 							response.file_errors++;					// Increment file error count	
-							serverLog.serverLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
+							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
 							d_files.d_list[d.no_files-1] = d;				
 							return;											
 						}
@@ -398,7 +398,7 @@ exports.convert = function(req, res) {
 						response.no_files=d.no_files;			// Add number of files process to response
 						response.fields=ofields;				// Add return fields	
 						response.file_errors++;					// Increment file error count	
-						serverLog.serverLog2(__file, __line, "req.busboy.on('file'),stream.on('error')", msg, req);						
+						serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
 						d_files.d_list[d.no_files-1] = d;				
 						return;							
 					}
@@ -474,7 +474,7 @@ exports.convert = function(req, res) {
 										serverLog, 500, req, res, msg, undefined, response);				
 								}
 								else {
-									serverLog.serverLog(__file, __line, "req.busboy.on('finish')", req, msg, undefined);
+									serverLog.serverLog2(__file, __line, "req.busboy.on('finish')", req, msg, undefined);
 								}
 								return;							
 							}
@@ -504,7 +504,7 @@ exports.convert = function(req, res) {
 									// Call GeoJSON to TopoJSON converter
 									d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);	
 									if (!d) {
-										httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile()", serverLog, 
+										httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile", serverLog, 
 											500, req, res, msg, response.error, response);							
 										return; 
 									}
