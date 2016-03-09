@@ -11,11 +11,9 @@ rifDatabase/Postgres/example_data/sahsuland_example_map.csv
 .project
 .classpath
 rifDatabase/~$RIF database.pptx
-rifDatabase/Thumbs.db
 rifDatabase/Postgres/~$NSTALL.docx
 rifDatabase/Postgres/install/pg_restore.rpt
 rifDatabase/Postgres/install/pg_restore.rpt
-rifDatabase/Thumbs.db
 rifDatabase/Postgres/psql_scripts/npm-debug.log
 rifDatabase/Postgres/Node/npm-debug.log
 rifDatabase/Postgres/psql_scripts/p.json
@@ -30,19 +28,13 @@ rifDatabase/Postgres/Node/new  1.txt
 rifServices/.classpath
 *.classpath
 rifServices/.classpath
-Progress Reports/Screenshots/Thumbs.db
 build.log*
 rifDatabase/SQLserver/sahsuland_dev/rif40/table_triggers/test_rif40_version_trigger.sql
 rifServices/war.log
 rifBuild/JavaMiddleware/rifServices.war
 rapidInquiryFacility/clean.log
-rifDatabase/Thumbs.db
-rifDatabase/Thumbs.db
 rifDatabase/Postgres/psql_scripts/auto_quit_tmp.sql
 rifDatabase/TestHarness/db_test_harness/npm-debug.log
 rifNodeServices/data/bighelloworld.js
 rifNodeServices/data/bighelloworld2.js
-rifNodeServices/Thumbs.db
-rifNodeServices/Thumbs.db
 rifNodeServices/~$NodeGeoSpatialServices.pptx
-rifNodeServices/Thumbs.db
