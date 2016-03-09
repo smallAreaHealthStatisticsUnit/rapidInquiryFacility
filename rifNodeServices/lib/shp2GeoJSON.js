@@ -91,6 +91,7 @@ shp2GeoJSONFieldProcessor=function(fieldname, val, text, shapefile_options, ofie
  */
 shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, req, shapefile_options) {
 	const os = require('os'),
+	      path = require('path'),
 	      fs = require('fs'),
 	      shapefile = require('shapefile');
 		  
@@ -102,7 +103,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	
 	// Wait for shapefile to appear
 	var waitForShapeFileWrite = function(shapeFileName, dbfFileName, projFileName, waits, serverLog, req, rval, lstart, uuidV1, shapefile_options) {
-	
+		
 		if (waits > 5) {
 			if (fs.existsSync(shapeFileName) || fs.existsSync(shapeFileName + ".tmp")) { // Exists			
 			}
@@ -128,10 +129,19 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 				return;
 			}
 			else if (fs.existsSync(shapeFileName) && fs.existsSync(dbfFileName) && fs.existsSync(projFileName)) { // OK
+				var qualify = function(file) {
+//					console.error('qualify: ' + file + ";\nfile.path: " + (i >= 0 ? file.substring(i + 1) : file));
+					var i = file.indexOf("=");
+					return {
+						name: i >= 0 ? file.substring(0, i) : path.basename(file, path.extname(file)),
+						path: i >= 0 ? file.substring(i + 1) : file
+					};
+				};			
 				
 				// Now read shapefile
 				try {
-					shapefile.read(shapeFileName, shapefile_options, function(err, collection) {
+					file=qualify(shapeFileName);
+					shapefile.read(file.path, shapefile_options, function(err, collection) {
 						if (err) {
 							serverLog.serverLog2(__file, __line, "waitForShapeFileWrite().setTimeout", 
 								'ERROR! [' + ofields["uuidV1"] + '] in shapefile read: ' + shapeFileName, req, err);
@@ -146,8 +156,12 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 						} // End of err
 						// OK
 						if (collection.bbox) { // Check bounding box present
-							console.error("OK [" + uuidV1 + "] File: " + shapeFileName + " written after " + waits + "; " + elapsedTime + " S; " +
-								JSON.stringify(collection.bbox, null, 4));
+							console.error("OK [" + uuidV1 + "] File: " + shapeFileName + 
+								"\nwritten after " + waits + "; " + elapsedTime + " S;\nbounding box [" +
+								"xmin: " + collection.bbox[0] + ", " +
+								"ymin: " + collection.bbox[1] + ", " +
+								"xmax: " + collection.bbox[2] + ", " +
+								"ymax: " + collection.bbox[3] + "]");
 						}
 						else {
 							serverLog.serverLog2(__file, __line, "waitForShapeFileWrite().setTimeout", 
@@ -401,7 +415,11 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 	}
 	else {
 		// This needs to be done asynchronously, so save as <file>.tmp
-		fs.writeFile(file + '.tmp', d.file.file_data.toString(), function(err) {
+		fs.writeFile(file + '.tmp', d.file.file_data.toString('binary'), 
+			{
+				encoding: 'binary',
+				mode: 0o600,
+			}, function(err) {
 			if (err) {
 				serverLog.serverLog2(__file, __line, "shp2GeoJSONCheckFiles", 
 					'ERROR! [' + ofields["uuidV1"] + '] writing file: ' + file + '.tmp', req, err);
