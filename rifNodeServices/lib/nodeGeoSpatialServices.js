@@ -173,7 +173,7 @@ exports.convert = function(req, res) {
 				verbose: false
 			}
 			if (req.url == '/geo2TopoJSON') {
-				// Default geo2TopoJSON options 
+				// Default geo2TopoJSON options (see topology Node.js module)
 				var topojson_options = {
 					verbose: false,
 					quantization: 1e4		
@@ -183,10 +183,12 @@ exports.convert = function(req, res) {
 				ofields.projection=topojson_options.projection;
 			}
 			else if (req.url == '/shp2GeoJSON') {
-				// Default shp2GeoJSON options 
-				var topojson_options = {
-					verbose: false		
+				// Default shp2GeoJSON options (see shapefile Node.js module)
+				var shapefile_options = {
+					verbose: false,
+					encoding: 'ISO-8859-1'
 				};
+				shapefile_options["ignore-properties"] = false;
 			}
 			
 /*
@@ -442,7 +444,7 @@ exports.convert = function(req, res) {
 					text=geo2TopoJSON.geo2TopoJSONFieldProcessor(fieldname, val, text, topojson_options, ofields, response, req, serverLog);
 				}
 				else if (req.url == '/shp2GeoJSON') {
-					text=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, text, undefined /* shp_options */, ofields, response, req, serverLog);
+					text=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, text, shapefile_options, ofields, response, req, serverLog);
 				}					
 				response.message = response.message + text;
 			 }); // End of field processing function
@@ -540,7 +542,7 @@ exports.convert = function(req, res) {
 						} // End of for loop
 						
 						if (req.url == '/shp2GeoJSON') { // Check which files and extensions are present, convert shapefiles to geoJSON
-							rval=shp2GeoJSON.shp2GeoJSONCheckFiles(shpList, response, shpTotal, ofields, serverLog, req);
+							rval=shp2GeoJSON.shp2GeoJSONCheckFiles(shpList, response, shpTotal, ofields, serverLog, req, shapefile_options);
 							if (rval.file_errors > 0 ) {
 								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 									serverLog, 500, req, res, rval.msg, undefined, response);							
