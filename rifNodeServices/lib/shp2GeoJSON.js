@@ -104,15 +104,28 @@ shp2GeoJSONFieldProcessor=function(fieldname, val, text, shapefile_options, ofie
 		text+="uuidV1: " + val;
 		ofields["uuidV1"]=val;		
 	}
-	else if (fieldname == 'encoding ') {
+	else if (fieldname == 'encoding') {
 		text+="DBF file encoding set to: " + val;
-		ofields["encoding "]=val;		
+		ofields["encoding"]=val;		
 		shapefile_options.encoding = val;
 	}
 	else if ((fieldname == 'ignore-properties')&&(val == 'true')) {
 		text+="Read faster (ignore-properties): " + val;
 		ofields["ignore-properties"]=val;	
 		shapefile_options["ignore-properties"] = true;
+	}	
+	else if (fieldname == 'shapefileBaseName') {
+		text+="shapefileBaseName set to: " + val;
+		ofields["shapefileBaseName "]=val;		
+	}
+//	else if (fieldname == 'geometryColumn') {
+//		text+="geometryColumn set to: " + val;
+//		ofields["geometryColumn"]=val;		
+//	}
+	else if ((fieldname == 'store')&&(val == 'true')) {
+		text+="JSON file will be stored";
+		ofields["store"]=val;		
+		shapefile_options["store"] = true;
 	}	
 	else {
 		ofields[fieldname]=val;	
@@ -168,7 +181,11 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 					"ymin: " + collection.bbox[1] + ", " +
 					"xmax: " + collection.bbox[2] + ", " +
 					"ymax: " + collection.bbox[3] + "]");
-				shp2GeoJSONWriteFile(jsonFileName, JSON.stringify(collection), serverLog, uuidV1, req);	
+				if (shapefile_options.store) {
+					shp2GeoJSONWriteFile(jsonFileName, JSON.stringify(collection), serverLog, uuidV1, req);
+				}
+				else { // Convert to topoJSON and return
+				}
 			}
 			else {
 				serverLog.serverLog2(__file, __line, "readShapeFile", 
@@ -242,9 +259,15 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			uncompress_time: undefined,
 			uncompress_size: undefined
 		};
-				
 //
-// Wait for shapefile to appear
+// Check if geometryColumn field is defined - NOT NEEDED - LIBRARY HANDLES IT
+//
+//		if (!ofields["geometryColumn"] || ofields["geometryColumn"] == "") {
+//			rval.file_errors++;					// Increment file error count	
+//			rval.msg+="\nFAIL geometryColumn field is not defined";			
+//		}
+//
+// All require files present
 //		
 		if (shpList[key].hasShp && shpList[key].hasPrj && shpList[key].hasDbf) {
 			var dir=os.tmpdir() + "/shp2GeoJSON/" + ofields["uuidV1"] + "/" + key;
@@ -254,11 +277,14 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			var jsonFileName=dir + "/" + key + ".json";
 			
 			var lstart = new Date().getTime();
+			// Wait for shapefile to appear
 			// This continues processing, return control to core calling function
 			waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, jsonFileName, 
 				0, serverLog, req, lstart, ofields["uuidV1"], shapefile_options);	
 			rval.msg+="\nProcessing shapefile[" + i + "]: " + shapeFileName;			
 		}	
+
+		
 //
 // Missing shapefile/DBF file/Projection file
 //		

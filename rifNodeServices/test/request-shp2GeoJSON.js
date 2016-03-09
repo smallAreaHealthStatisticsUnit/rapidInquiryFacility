@@ -96,7 +96,8 @@ var MakeRequest = function(){
 		attachments: [				
 		],
 		expected_to_pass: "true", 
-		verbose: "true" 
+		verbose: "true",
+		store: "true"
 	};
 	
 	
@@ -104,6 +105,7 @@ var MakeRequest = function(){
 // test 6 missing dbf file - FAILS
 	
 	if (nRequests > 4) { 
+		formData["store"]="false";
 		idx=1; // Do case 1
 		if ((nRequests == 5)||(nRequests == 6)) {
 			formData.expected_to_pass="false";

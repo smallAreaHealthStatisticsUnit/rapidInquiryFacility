@@ -186,7 +186,8 @@ exports.convert = function(req, res) {
 				// Default shp2GeoJSON options (see shapefile Node.js module)
 				var shapefile_options = {
 					verbose: false,
-					encoding: 'ISO-8859-1'
+					encoding: 'ISO-8859-1',
+					store: false
 				};
 				shapefile_options["ignore-properties"] = false;
 			}
