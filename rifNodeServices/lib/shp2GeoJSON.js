@@ -43,7 +43,46 @@
 // Author:
 //
 // Peter Hambly, SAHSU
-
+ 
+		
+/*
+ * Function:	shp2GeoJSONWriteFile()
+ * Parameters:	file name with path, data, RIF logging object, uuidV1 
+ *				express HTTP request object
+ * Returns:		Text of field processing log
+ * Description: Write GeoJSON file 
+ */ 
+shp2GeoJSONWriteFile=function(file, data, serverLog, uuidV1, req) {
+	const fs = require('fs');
+	
+	// This needs to be done asynchronously, so save as <file>.tmp
+	fs.writeFile(file + '.tmp', data.toString('binary'), 
+		{
+			encoding: 'binary',
+			mode: 0o600,
+		}, function(err) {
+		if (err) {
+			serverLog.serverLog2(__file, __line, "shp2GeoJSONWriteFile", 
+				'ERROR! [' + uuidV1 + '] writing file: ' + file + '.tmp', req, err);
+			try {
+				fs.unlinkSync(file + '.tmp');
+			}
+			catch (e) { 
+				serverLog.serverLog2(__file, __line, "shp2GeoJSONWriteFile", 
+					'ERROR! [' + uuidV1 + '] deleting file (after fs.writeFile error): ' + file + '.tmp', req, e);
+			}
+		}
+		try { // And do an atomic rename when complete
+			fs.renameSync(file + '.tmp', file);
+			serverLog.serverLog2(__file, __line, "shp2GeoJSONWriteFile", 
+				'OK! [' + uuidV1 + '] saved file: ' + file, req, err);			
+		} catch (e) { 
+			serverLog.serverLog2(__file, __line, "shp2GeoJSONWriteFile", 
+				'ERROR! [' + uuidV1 + '] renaming file: ' + file + '.tmp', req, e);
+		}
+	}); // End of fs.writeFile()
+}
+		
 /*
  * Function:	shp2GeoJSONFieldProcessor()
  * Parameters:	fieldname, val, text, shapefile_options, ofields [field parameters array], response object, 
@@ -104,17 +143,18 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	/*
 	 * Function:	readShapeFile()
 	 * Parameters:	Shapefile name with path, 
-	 *				RIF logging object, express HTTP request object, start time, uuidV1, shapefile options, time to write file
+	 *				RIF logging object, express HTTP request object, start time, uuidV1, shapefile options, time to write file,
+	 *				JSON file name with path
 	 * Returns:		Nothing
 	 * Description: Read shapefile
 	 */
-	var readShapeFile = function(shapeFileName, serverLog, req, lstart, uuidV1, shapefile_options, writeTime) {
+	var readShapeFile = function(shapeFileName, serverLog, req, lstart, uuidV1, shapefile_options, writeTime, jsonFileName) {
 		// Now read shapefile
 
 		shapefile.read(shapeFileName, shapefile_options, function(err, collection) {
 			if (err) {
 				serverLog.serverLog2(__file, __line, "readShapeFile", 
-					'ERROR! [' + ofields["uuidV1"] + '] in shapefile read: ' + shapeFileName, req, err);
+					'ERROR! [' + uuidV1 + '] in shapefile read: ' + shapeFileName, req, err);
 			} // End of err
 			// OK
 			var end = new Date().getTime();
@@ -128,6 +168,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 					"ymin: " + collection.bbox[1] + ", " +
 					"xmax: " + collection.bbox[2] + ", " +
 					"ymax: " + collection.bbox[3] + "]");
+				shp2GeoJSONWriteFile(jsonFileName, JSON.stringify(collection), serverLog, uuidV1, req);	
 			}
 			else {
 				serverLog.serverLog2(__file, __line, "readShapeFile", 
@@ -138,12 +179,14 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	},
 	/*
 	 * Function:	waitForShapeFileWrite()
-	 * Parameters:	Shapefile name with path, DBF file name with path, Projection file name with path, number of waits,
+	 * Parameters:	Shapefile name with path, DBF file name with path, Projection file name with path, 
+	 *				JSON file with path, number of waits,
 	 *				RIF logging object, express HTTP request object, start time, uuidV1, shapefile options
 	 * Returns:		Nothing
 	 * Description: Wait for shapefile to appear, call readShapeFile()
 	 */
-	waitForShapeFileWrite = function(shapeFileName, dbfFileName, projFileName, waits, serverLog, req, lstart, uuidV1, shapefile_options) {
+	waitForShapeFileWrite = function(shapeFileName, dbfFileName, projFileName, jsonFileName, 
+		waits, serverLog, req, lstart, uuidV1, shapefile_options) {
 		
 		if (waits > 5) {
 			if (fs.existsSync(shapeFileName) || fs.existsSync(shapeFileName + ".tmp") ||
@@ -173,14 +216,15 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 				return;
 			}
 			else if (fs.existsSync(shapeFileName) && fs.existsSync(dbfFileName) && fs.existsSync(projFileName)) { // OK			
-				readShapeFile(shapeFileName, serverLog, req, lstart, uuidV1, shapefile_options, elapsedTime);
+				readShapeFile(shapeFileName, serverLog, req, lstart, uuidV1, shapefile_options, elapsedTime, jsonFileName);
 				return;
 			}
 			else { // OK			
 				serverLog.serverLog2(__file, __line, "waitForShapeFileWrite().setTimeout", 
 					"[" + uuidV1 + "] Wait(" + elapsedTime + " S): " + waits + ";\nshapefile: " + shapeFileName + 
 					";\ntests: " + fs.existsSync(shapeFileName) + ", " + fs.existsSync(shapeFileName + ".tmp"), req, e);
-				waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, waits+1, serverLog, req, lstart, uuidV1, shapefile_options); //Recurse  
+				waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, jsonFileName,
+					waits+1, serverLog, req, lstart, uuidV1, shapefile_options); //Recurse  
 			}
 			
 		}, 1000 /* 1S */); // End of setTimeout
@@ -205,12 +249,14 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 		if (shpList[key].hasShp && shpList[key].hasPrj && shpList[key].hasDbf) {
 			var dir=os.tmpdir() + "/shp2GeoJSON/" + ofields["uuidV1"] + "/" + key;
 			var shapeFileName=dir + "/" + key + ".shp";
-			var dbfFileName=dir + "/" + key + ".shp";
-			var projFileName=dir + "/" + key + ".shp";
+			var dbfFileName=dir + "/" + key + ".dbf";
+			var projFileName=dir + "/" + key + ".prj";
+			var jsonFileName=dir + "/" + key + ".json";
 			
 			var lstart = new Date().getTime();
 			// This continues processing, return control to core calling function
-			waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, 0, serverLog, req, lstart, ofields["uuidV1"], shapefile_options);	
+			waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, jsonFileName, 
+				0, serverLog, req, lstart, ofields["uuidV1"], shapefile_options);	
 			rval.msg+="\nProcessing shapefile[" + i + "]: " + shapeFileName;			
 		}	
 //
@@ -405,31 +451,7 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 		rval.file_errors++;
 	}
 	else {
-		// This needs to be done asynchronously, so save as <file>.tmp
-		fs.writeFile(file + '.tmp', d.file.file_data.toString('binary'), 
-			{
-				encoding: 'binary',
-				mode: 0o600,
-			}, function(err) {
-			if (err) {
-				serverLog.serverLog2(__file, __line, "shp2GeoJSONCheckFiles", 
-					'ERROR! [' + ofields["uuidV1"] + '] writing file: ' + file + '.tmp', req, err);
-				try {
-					fs.unlinkSync(file + '.tmp');
-				}
-				catch (e) { 
-					serverLog.serverLog2('ERROR! [' + ofields["uuidV1"] + '] deleting file (after fs.writeFile error): ' + file + '.tmp', req, e);
-				}
-			}
-			try { // And do an atomic rename when complete
-				fs.renameSync(file + '.tmp', file);
-				serverLog.serverLog2(__file, __line, "shp2GeoJSONCheckFiles", 
-					'OK! [' + ofields["uuidV1"] + '] saved file: ' + file, req, err);			
-			} catch (e) { 
-				serverLog.serverLog2(__file, __line, "shp2GeoJSONCheckFiles", 
-					'ERROR! [' + ofields["uuidV1"] + '] renaming file: ' + file + '.tmp', req, e);
-			}
-		}); // Enf of fs.writeFile()
+		shp2GeoJSONWriteFile(file, d.file.file_data, serverLog, ofields["uuidV1"], req);
 		response.message += "\nSaving file: " + file;
 	}
 	
