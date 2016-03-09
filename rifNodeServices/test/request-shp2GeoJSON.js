@@ -275,7 +275,8 @@ var postIt = function(debug) {
 						geojson = JSON.stringify(file_list[i].geojson);
 						console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] - geojson length: " + geojson.length +
 							"; file size: " + file_list[i].file_size + 
-							"; transfer time: " + file_list[i].transfer_time + " S;\n" + 
+							"; transfer time: " + file_list[i].transfer_time + " S" + 
+							"; geojson convert time: " + file_list[i].geojson_time + " S;\n" + 
 							"uncompress time: " + (file_list[i].uncompress_time || "(Not compressed)") + " S" +
 							"; uncompress file size: " + (file_list[i].uncompress_size || "(Not compressed)"));
 
@@ -284,7 +285,7 @@ var postIt = function(debug) {
 							JSON.stringify(geojson, null, 2).substring(0, 600) + "\n\n<<< formatted topoJSON\n");						
 					}
 					else {
-						console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] - no geojson\n" + "; file size: " + file_list[i].file_size +  
+						console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] - no geojson\n" + 
 							"; transfer time: " + file_list[i].transfer_time + " S;\n" + 
 							"uncompress time: " + (file_list[i].uncompress_time || "(Not compressed)") + " S" +
 							"; uncompress file size: " + (file_list[i].uncompress_size || "(Not compressed)"));

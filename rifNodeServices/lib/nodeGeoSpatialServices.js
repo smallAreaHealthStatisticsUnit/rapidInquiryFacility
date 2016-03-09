@@ -617,7 +617,8 @@ exports.convert = function(req, res) {
 	 *						file_name: File name
 	 *						geojson: GeoJSON created from shapefile,
 	 *						file_size: Transferred file size in bytes,
-	 *						transfer_time: Time to transfer file (S),
+	 *						transfer_time: Time to transfer files (S),
+	 *						geojson_time: Time to convert to geojson (S),
 	 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
 	 *						uncompress_size: Size of uncompressed file in bytes
 	 * message: 		Processing messages              

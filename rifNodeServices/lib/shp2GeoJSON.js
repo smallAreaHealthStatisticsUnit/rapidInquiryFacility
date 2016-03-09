@@ -186,6 +186,8 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 					shp2GeoJSONWriteFile(jsonFileName, JSON.stringify(collection), serverLog, uuidV1, req);
 				}
 				else { // Convert to topoJSON and return
+					response.file_list[shapefile_no-1].file_size=fs.statSync(shapeFileName).size;
+					response.file_list[shapefile_no-1].geojson_time=elapsedTime;
 					response.file_list[shapefile_no-1].geojson=collection;
 					if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 						var output = JSON.stringify(response);// Convert output response to JSON 
@@ -262,14 +264,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 
 	for (var key in shpList) {
 		shapefile_no++;
-		response.file_list[shapefile_no-1] = {
-			file_name: shpList[key].fileName,
-//			geojson: '',
-			file_size: '',
-			transfer_time: '',
-			uncompress_time: undefined,
-			uncompress_size: undefined
-		};
+
 //
 // Check if geometryColumn field is defined - NOT NEEDED - LIBRARY HANDLES IT
 //
@@ -288,17 +283,27 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			var jsonFileName=dir + "/" + key + ".json";
 			
 			var lstart = new Date().getTime();
-			// Wait for shapefile to appear
-			// This continues processing, return control to core calling function
 			
-	
+			response.file_list[shapefile_no-1] = {
+				file_name: key + ".shp",
+	//			geojson: '',
+				file_size: '',
+				transfer_time: '',
+				geojson_time: '',
+				uncompress_time: undefined,
+				uncompress_size: undefined
+			};
+			response.file_list[shapefile_no-1].transfer_time=shpList[key].transfer_time;
+			
 			rval.msg+="\nProcessing shapefile[" + shapefile_no + "]: " + shapeFileName;		
 			response.no_files=shpTotal;				// Add number of files process to response
 			response.fields=ofields;				// Add return fields
 			response.file_errors+=rval.file_errors;
 			rval.msg+="\n";
 			response.message = rval.msg + "\n" + response.message;
-	
+
+			// Wait for shapefile to appear
+			// This continues processing, return control to core calling function			
 			waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, jsonFileName, 
 				0, serverLog, req, res, lstart, ofields["uuidV1"], shapefile_options, response, shapefile_no);		
 		}	
@@ -309,7 +314,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 //		
 		else {		
 			rval.file_errors++;					// Increment file error count	
-			rval.msg+="\nFAIL Shapefile[" + i + "/" + shpTotal + "/" + key + "]:\n" + shpList[key].fileName + 
+			rval.msg+="\nFAIL Shapefile[" + shapefile_no + "/" + shpTotal + "/" + key + "]:\n" + shpList[key].fileName + 
 				" is missing a shapefile/DBF file/Projection file";							
 		}
 	} // Shapefiles for loop
@@ -458,11 +463,13 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 		rval.shpTotal++;
 		shpList[fileNoext] = {
 			fileName: d.file.file_name,
+			transfer_time: 0,
 			hasShp: false,
 			hasPrj: false,
 			hasDbf: false
 		};
 	}
+	shpList[fileNoext].transfer_time=d.file.transfer_time;
 	
 	// Check for shp, dbf and prj extensions
 	if (extName == '.shp') {
