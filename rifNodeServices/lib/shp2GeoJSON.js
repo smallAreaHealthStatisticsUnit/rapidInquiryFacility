@@ -101,11 +101,54 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 		msg: ""
 	};
 	
-	// Wait for shapefile to appear
-	var waitForShapeFileWrite = function(shapeFileName, dbfFileName, projFileName, waits, serverLog, req, rval, lstart, uuidV1, shapefile_options) {
+	/*
+	 * Function:	readShapeFile()
+	 * Parameters:	Shapefile name with path, 
+	 *				RIF logging object, express HTTP request object, start time, uuidV1, shapefile options, time to write file
+	 * Returns:		Nothing
+	 * Description: Read shapefile
+	 */
+	var readShapeFile = function(shapeFileName, serverLog, req, lstart, uuidV1, shapefile_options, writeTime) {
+		// Now read shapefile
+
+		shapefile.read(shapeFileName, shapefile_options, function(err, collection) {
+			if (err) {
+				serverLog.serverLog2(__file, __line, "readShapeFile", 
+					'ERROR! [' + ofields["uuidV1"] + '] in shapefile read: ' + shapeFileName, req, err);
+			} // End of err
+			// OK
+			var end = new Date().getTime();
+			var elapsedTime=(end - lstart)/1000; // in S
+			
+			if (collection.bbox) { // Check bounding box present
+				serverLog.serverLog2(__file, __line, "readShapeFile", 
+					"OK [" + uuidV1 + "] File: " + shapeFileName + 
+					"\nwritten after: " + writeTime + " S; total time: " + elapsedTime + " S\nbounding box [" +
+					"xmin: " + collection.bbox[0] + ", " +
+					"ymin: " + collection.bbox[1] + ", " +
+					"xmax: " + collection.bbox[2] + ", " +
+					"ymax: " + collection.bbox[3] + "]");
+			}
+			else {
+				serverLog.serverLog2(__file, __line, "readShapeFile", 
+					'ERROR! [' + ofields["uuidV1"] + '] no collection.bbox: ' + 
+					shapeFileName, req);						
+			}	
+		}); /* End of shapefile.read() */	
+	},
+	/*
+	 * Function:	waitForShapeFileWrite()
+	 * Parameters:	Shapefile name with path, DBF file name with path, Projection file name with path, number of waits,
+	 *				RIF logging object, express HTTP request object, start time, uuidV1, shapefile options
+	 * Returns:		Nothing
+	 * Description: Wait for shapefile to appear, call readShapeFile()
+	 */
+	waitForShapeFileWrite = function(shapeFileName, dbfFileName, projFileName, waits, serverLog, req, lstart, uuidV1, shapefile_options) {
 		
 		if (waits > 5) {
-			if (fs.existsSync(shapeFileName) || fs.existsSync(shapeFileName + ".tmp")) { // Exists			
+			if (fs.existsSync(shapeFileName) || fs.existsSync(shapeFileName + ".tmp") ||
+			    fs.existsSync(dbfFileName) || fs.existsSync(dbfFileName + ".tmp") ||
+				fs.existsSync(projFileName) || fs.existsSync(projFileName + ".tmp")) { // Exists			
 			}
 			else {
 				var end = new Date().getTime();
@@ -114,12 +157,13 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 				serverLog.serverLog2(__file, __line, "waitForShapeFileWrite", 
 					"[" + uuidV1 + "] FAIL Wait[" + waits + "; " + elapsedTime + " S];" +
 					" Shapefile[" + i + "/" + shpTotal + "/" + key + "]: " + shapeFileName + 
-					" shapefile was not written", req);
+					" shapefile/dbf file/projection file was not written", req);
 				return;									
 			}
 		}
-			
-		setTimeout(function() {
+		
+		// Warning this code is asynchronous!		
+		setTimeout(function() { // Timeout function
 			var end = new Date().getTime();
 			var elapsedTime=(end - lstart)/1000; // in S
 			
@@ -128,68 +172,15 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 					'ERROR! [' + uuidV1 + '] timeout (' + elapsedTime + ' S) waiting for file: ' + shapeFileName, req);
 				return;
 			}
-			else if (fs.existsSync(shapeFileName) && fs.existsSync(dbfFileName) && fs.existsSync(projFileName)) { // OK
-				var qualify = function(file) {
-//					console.error('qualify: ' + file + ";\nfile.path: " + (i >= 0 ? file.substring(i + 1) : file));
-					var i = file.indexOf("=");
-					return {
-						name: i >= 0 ? file.substring(0, i) : path.basename(file, path.extname(file)),
-						path: i >= 0 ? file.substring(i + 1) : file
-					};
-				};			
-				
-				// Now read shapefile
-				try {
-					file=qualify(shapeFileName);
-					shapefile.read(file.path, shapefile_options, function(err, collection) {
-						if (err) {
-							serverLog.serverLog2(__file, __line, "waitForShapeFileWrite().setTimeout", 
-								'ERROR! [' + ofields["uuidV1"] + '] in shapefile read: ' + shapeFileName, req, err);
-							try {
-								fs.unlinkSync(shapeFileName);
-							}
-							catch (e) { 
-								serverLog.serverLog2(__file, __line, "waitForShapeFileWrite().setTimeout", 
-									'ERROR! [' + ofields["uuidV1"] + '] deleting file (after shapefile.read error): ' + 
-									shapeFileName, req, e);
-							}
-						} // End of err
-						// OK
-						if (collection.bbox) { // Check bounding box present
-							console.error("OK [" + uuidV1 + "] File: " + shapeFileName + 
-								"\nwritten after " + waits + "; " + elapsedTime + " S;\nbounding box [" +
-								"xmin: " + collection.bbox[0] + ", " +
-								"ymin: " + collection.bbox[1] + ", " +
-								"xmax: " + collection.bbox[2] + ", " +
-								"ymax: " + collection.bbox[3] + "]");
-						}
-						else {
-							serverLog.serverLog2(__file, __line, "waitForShapeFileWrite().setTimeout", 
-								'ERROR! [' + ofields["uuidV1"] + '] no collection.bbox: ' + 
-								shapeFileName, req);
-							try {
-								fs.unlinkSync(shapeFileName);
-							}
-							catch (e) { 
-								serverLog.serverLog2(__file, __line, "waitForShapeFileWrite().setTimeout", 
-									'ERROR! [' + ofields["uuidV1"] + '] deleting file (after no collection.bbox error): ' + 
-									shapeFileName, req, e);
-							}						
-						}	
-					}); /* End of shapefile.read() */
-				}
-				catch (e) { 
-					serverLog.serverLog2(__file, __line, "waitForShapeFileWrite().setTimeout", 
-						'ERROR! [' + ofields["uuidV1"] + '] in shapefile.read: ' + 
-						shapeFileName, req, e);					
-				}
+			else if (fs.existsSync(shapeFileName) && fs.existsSync(dbfFileName) && fs.existsSync(projFileName)) { // OK			
+				readShapeFile(shapeFileName, serverLog, req, lstart, uuidV1, shapefile_options, elapsedTime);
 				return;
 			}
 			else { // OK			
 				serverLog.serverLog2(__file, __line, "waitForShapeFileWrite().setTimeout", 
 					"[" + uuidV1 + "] Wait(" + elapsedTime + " S): " + waits + ";\nshapefile: " + shapeFileName + 
 					";\ntests: " + fs.existsSync(shapeFileName) + ", " + fs.existsSync(shapeFileName + ".tmp"), req, e);
-				waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, waits+1, serverLog, req, rval, lstart, uuidV1, shapefile_options); //Recurse  
+				waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, waits+1, serverLog, req, lstart, uuidV1, shapefile_options); //Recurse  
 			}
 			
 		}, 1000 /* 1S */); // End of setTimeout
@@ -219,7 +210,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			
 			var lstart = new Date().getTime();
 			// This continues processing, return control to core calling function
-			waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, 0, serverLog, req, rval, lstart, ofields["uuidV1"], shapefile_options);	
+			waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, 0, serverLog, req, lstart, ofields["uuidV1"], shapefile_options);	
 			rval.msg+="\nProcessing shapefile[" + i + "]: " + shapeFileName;			
 		}	
 //
