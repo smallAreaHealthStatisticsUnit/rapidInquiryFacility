@@ -543,7 +543,8 @@ exports.convert = function(req, res) {
 						} // End of for loop
 						
 						if (req.url == '/shp2GeoJSON') { // Check which files and extensions are present, convert shapefiles to geoJSON
-							rval=shp2GeoJSON.shp2GeoJSONCheckFiles(shpList, response, shpTotal, ofields, serverLog, req, shapefile_options);
+							rval=shp2GeoJSON.shp2GeoJSONCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
+								req, res, shapefile_options);
 							if (rval.file_errors > 0 ) {
 								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 									serverLog, 500, req, res, rval.msg, undefined, response);							
@@ -579,7 +580,7 @@ exports.convert = function(req, res) {
 	//				console.error("req.busboy.on('finish') " + msg);
 					
 	/*
-	 * toTopojon response object - no errors:
+	 * geo2TopoJSON response object - no errors:
 	 *                    
 	 * no_files: 		Numeric, number of files    
 	 * field_errors: 	Number of errors in processing fields
@@ -593,13 +594,42 @@ exports.convert = function(req, res) {
 	 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
 	 *						uncompress_size: Size of uncompressed file in bytes
 	 * message: 		Processing messages, including debug from topoJSON               
-	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing  
+	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
+	 *
+	 * shp2GeoJSON response object - no errors, store=false
+	 *                    
+	 * no_files: 		Numeric, number of files    
+	 * field_errors: 	Number of errors in processing fields
+	 * file_list: 		Array file objects:
+	 *						file_name: File name
+	 *						file_size: Transferred file size in bytes,
+	 *						transfer_time: Time to transfer file (S),
+	 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+	 *						uncompress_size: Size of uncompressed file in bytes
+	 * message: 		Processing messages, including debug from topoJSON               
+	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
+	 *  
+	 * shp2GeoJSON response object - no errors, store=true [Processed by shp2GeoJSONCheckFiles()]
+	 *  	 
+	 * no_files: 		Numeric, number of files    
+	 * field_errors: 	Number of errors in processing fields
+	 * file_list: 		Array file objects:
+	 *						file_name: File name
+	 *						geojson: GeoJSON created from shapefile,
+	 *						file_size: Transferred file size in bytes,
+	 *						transfer_time: Time to transfer file (S),
+	 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+	 *						uncompress_size: Size of uncompressed file in bytes
+	 * message: 		Processing messages              
+	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 	 
 	 */ 
 					response.fields=ofields;				// Add return fields	
 					if (response.field_errors == 0 && response.file_errors == 0) { // OK
 						serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
-
-						if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
+						
+						if (req.url == '/shp2GeoJSON' && ofields["store"] != "true") { // Processed by shp2GeoJSONCheckFiles()
+						}
+						else if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 							var output = JSON.stringify(response);// Convert output response to JSON 
 		// Need to test res was not finished by an expection to avoid "write after end" errors			
 							res.write(output);                  // Write output  
