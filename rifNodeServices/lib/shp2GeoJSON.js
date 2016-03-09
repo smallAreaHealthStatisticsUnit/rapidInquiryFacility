@@ -147,7 +147,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	      fs = require('fs'),
 	      shapefile = require('shapefile');
 		  
-	var i=0;
+	var shapefile_no=0;
 	var rval = {
 		file_errors: 0,
 		msg: ""
@@ -157,11 +157,12 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	 * Function:	readShapeFile()
 	 * Parameters:	Shapefile name with path, 
 	 *				RIF logging object, express HTTP request object, express HTTP response object, start time, uuidV1, shapefile options, time to write file,
-	 *				JSON file name with path, response object
+	 *				JSON file name with path, response object, shapefile number
 	 * Returns:		Nothing
 	 * Description: Read shapefile
 	 */
-	var readShapeFile = function(shapeFileName, serverLog, req, res, lstart, uuidV1, shapefile_options, writeTime, jsonFileName, response) {
+	var readShapeFile = function(shapeFileName, serverLog, req, res, lstart, uuidV1, shapefile_options, writeTime, jsonFileName, 
+		response, shapefile_no) {
 		// Now read shapefile
 
 		shapefile.read(shapeFileName, shapefile_options, function(err, collection) {
@@ -185,7 +186,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 					shp2GeoJSONWriteFile(jsonFileName, JSON.stringify(collection), serverLog, uuidV1, req);
 				}
 				else { // Convert to topoJSON and return
-					response.geojson=collection;
+					response.file_list[shapefile_no-1].geojson=collection;
 					if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 						var output = JSON.stringify(response);// Convert output response to JSON 
 		// Need to test res was not finished by an expection to avoid "write after end" errors			
@@ -209,12 +210,12 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	 * Parameters:	Shapefile name with path, DBF file name with path, Projection file name with path, 
 	 *				JSON file with path, number of waits,
 	 *				RIF logging object, express HTTP request object, express HTTP response object, start time, uuidV1, shapefile options,
-	 *				Response object
+	 *				Response object, shapefile number
 	 * Returns:		Nothing
 	 * Description: Wait for shapefile to appear, call readShapeFile()
 	 */
 	waitForShapeFileWrite = function(shapeFileName, dbfFileName, projFileName, jsonFileName, 
-		waits, serverLog, req, res, lstart, uuidV1, shapefile_options, response) {
+		waits, serverLog, req, res, lstart, uuidV1, shapefile_options, response, shapefile_no) {
 		
 		if (waits > 5) {
 			if (fs.existsSync(shapeFileName) || fs.existsSync(shapeFileName + ".tmp") ||
@@ -244,7 +245,8 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 				return;
 			}
 			else if (fs.existsSync(shapeFileName) && fs.existsSync(dbfFileName) && fs.existsSync(projFileName)) { // OK			
-				readShapeFile(shapeFileName, serverLog, req, res, lstart, uuidV1, shapefile_options, elapsedTime, jsonFileName, response);
+				readShapeFile(shapeFileName, serverLog, req, res, lstart, uuidV1, shapefile_options, elapsedTime, jsonFileName, 
+					response, shapefile_no);
 				return;
 			}
 			else { // OK			
@@ -252,19 +254,17 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 					"[" + uuidV1 + "] Wait(" + elapsedTime + " S): " + waits + ";\nshapefile: " + shapeFileName + 
 					";\ntests: " + fs.existsSync(shapeFileName) + ", " + fs.existsSync(shapeFileName + ".tmp"), req, e);
 				waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, jsonFileName,
-					waits+1, serverLog, req, res, lstart, uuidV1, shapefile_options, response); //Recurse  
+					waits+1, serverLog, req, res, lstart, uuidV1, shapefile_options, response, shapefile_no); //Recurse  
 			}
 			
 		}, 1000 /* 1S */); // End of setTimeout
 	}
 
 	for (var key in shpList) {
-		i++;
-		response.file_list[i-1] = {
+		shapefile_no++;
+		response.file_list[shapefile_no-1] = {
 			file_name: shpList[key].fileName,
-//			topojson: '',
-//			topojson_stderr: '',
-//			topojson_runtime: '',
+//			geojson: '',
 			file_size: '',
 			transfer_time: '',
 			uncompress_time: undefined,
@@ -292,7 +292,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			// This continues processing, return control to core calling function
 			
 	
-			rval.msg+="\nProcessing shapefile[" + i + "]: " + shapeFileName;		
+			rval.msg+="\nProcessing shapefile[" + shapefile_no + "]: " + shapeFileName;		
 			response.no_files=shpTotal;				// Add number of files process to response
 			response.fields=ofields;				// Add return fields
 			response.file_errors+=rval.file_errors;
@@ -300,7 +300,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			response.message = rval.msg + "\n" + response.message;
 	
 			waitForShapeFileWrite(shapeFileName, dbfFileName, projFileName, jsonFileName, 
-				0, serverLog, req, res, lstart, ofields["uuidV1"], shapefile_options, response);		
+				0, serverLog, req, res, lstart, ofields["uuidV1"], shapefile_options, response, shapefile_no);		
 		}	
 
 		

@@ -280,10 +280,8 @@ var postIt = function(debug) {
 							"; uncompress file size: " + (file_list[i].uncompress_size || "(Not compressed)"));
 
 					// Single test mode: print first 600 characters of formatted topoJSON
-//						if (max_nRequests == 7) {
-//							 console.error("First 600 characters of formatted topoJSON >>>\n" + 
-//								JSON.stringify(file_list[i].topojson, null, 2).substring(0, 600) + "\n\n<<< formatted topoJSON\n");
-//					`	}							
+						 console.error("First 600 characters of formatted topoJSON >>>\n" + 
+							JSON.stringify(geojson, null, 2).substring(0, 600) + "\n\n<<< formatted topoJSON\n");						
 					}
 					else {
 						console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] - no geojson\n" + "; file size: " + file_list[i].file_size +  
