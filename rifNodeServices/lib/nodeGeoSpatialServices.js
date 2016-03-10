@@ -531,7 +531,7 @@ exports.convert = function(req, res) {
 							else {
 								msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 									d.file.extension + "; file size is zero" + 
-									"\n" + response.message;
+									"\n";
 								response.message = msg + "\n" + response.message;
 								response.no_files=d.no_files;			// Add number of files process to response
 								response.fields=ofields;				// Add return fields
@@ -542,7 +542,16 @@ exports.convert = function(req, res) {
 							}	
 						} // End of for loop
 						
-						if (req.url == '/shp2GeoJSON') { // Check which files and extensions are present, convert shapefiles to geoJSON
+						if (response.no_files == 0 && (req.url == '/shp2GeoJSON' || req.url == '/geo2TopoJSON')) { 
+								msg="FAIL! No files attached\n";						
+								response.message = msg + "\n" + response.message;
+								response.fields=ofields;				// Add return fields
+								response.file_errors++;					// Increment file error count	
+								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+									serverLog, 500, req, res, msg, undefined, response);							
+								return;						
+						}
+						else if (req.url == '/shp2GeoJSON') { // Check which files and extensions are present, convert shapefiles to geoJSON
 							rval=shp2GeoJSON.shp2GeoJSONCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
 								req, res, shapefile_options);
 							if (rval.file_errors > 0 ) {

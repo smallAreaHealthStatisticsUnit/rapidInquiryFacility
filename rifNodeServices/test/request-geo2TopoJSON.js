@@ -68,13 +68,14 @@
 // 19. TopoJSON property-transform support: JSON injection tests (invalid array exception)
 // 20: TopoJSON conversion: invalid geoJSON - overload transport with 2G file [intentional failure]
 // 21: gzip geoJSON multiple files limit (100) [intentional failure]
+// 22. No files [intentional failure]
 //
 var FormData = require('form-data');
 var fs = require('fs');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 21;
+var max_nRequests = 22;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all geo2TopoJSON service tests');
@@ -154,7 +155,7 @@ var MakeRequest = function(){
 		inputFile = './data/bighelloworld.js';
 		json_file = fs.createReadStream(inputFile);
 	}
-	else { // Defasult	
+	else { // Default	
 		json_file = fs.createReadStream(inputFile);
 	}
 	
@@ -186,6 +187,13 @@ var MakeRequest = function(){
 		for (i = 0; i < 101; i++) {	
 			formData.attachments.push(fs.createReadStream(inputFile));
 		}
+	}	
+	else if (nRequests == 22) { 
+		var formData = {
+			my_test: "22: No files",
+			my_reference: nRequests,
+			expected_to_pass: "true" 
+		};
 	}	
 	else {
 		var formData = {
@@ -318,6 +326,12 @@ var MakeRequest = function(){
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
 		formData["my_test"]="21: gzip geoJSON multiple files limit";	
+		formData["expected_to_pass"]="false"; 		
+	}
+	else if (nRequests == 22) {
+		formData["verbose"]="true";
+		formData["zoomLevel"]=0;	
+		formData["my_test"]="22: No files";	
 		formData["expected_to_pass"]="false"; 		
 	}
 	

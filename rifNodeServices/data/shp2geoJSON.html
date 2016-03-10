@@ -1,17 +1,56 @@
 <html>
-<head>
-<title>Shapefile Uploading Form</title>
-</head>
-<body>
-<h3>Shapefile Upload:</h3>
-Select a set/sets of shapefile files to upload: 
-<form action="http://127.0.0.1:3000/shp2GeoJSON" method="POST" 
-      enctype="multipart/form-data">
-<input type="file" name="file" size="50" multiple="multiple" />
-<br />
-<input type="submit" value="Upload Files" />
-<input type="hidden" name="store" value="false">
-<input type="checkbox" name="verbose" value="true">Verbose<br>
-</form>
-</body>
+  <head>
+	<script src="https://code.jquery.com/jquery-2.2.1.js"></script> 
+    <title>Shapefile Uploading Form</title>
+  </head>
+  <body>
+    <h3>Shapefile Upload:</h3>Select a set/sets of shapefile files to upload: 
+    <form action="http://127.0.0.1:3000/shp2GeoJSON" method="POST" id="shp2GeoJSON"
+          enctype="multipart/form-data">
+      <input type="file" id="files" size="50" multiple="multiple" />
+      <br />
+      <button type="button" id="save" onclick="submitform()">Upload Files</button>
+      <input type="submit" id="submit_handle" style="display: none">
+      <input type="hidden" id="store" value="false">
+      <input type="checkbox" id="verbose" value="true">Verbose<br>
+    </form>
+	<!-- the result of the search will be rendered inside this div -->
+    <div id="result"></div>
+	
+    <script>
+function submitform() {
+
+	var store=document.getElementById('store').value;
+	var files_elem=document.getElementById('files');
+	var verbose=document.getElementById('verbose').value;
+	var files = [];
+
+//	var formdata = new FormData();
+		
+	for (var i = 0; i < files_elem.files.length; ++i) {
+		var name = files_elem.files.item(i).name;
+		files.push(name);
+//		formdata.append('files[]', name);
+		console.log('[' + i + ']: ' + name);
+	}
+//	formdata.append('verbose', verbose);
+//	formdata.append('store', store);
+	
+  var request = new XMLHttpRequest();
+      // POST to httpbin which returns the POST data as JSON
+    request.open('POST', 'http://127.0.0.1:3000/shp2GeoJSON');
+
+  console.log("submitform. store: " + store + "; files: " + files.length + "; verbose: " + verbose);
+  
+    var formData = new FormData(document.getElementById('shp2GeoJSON'));
+    request.send(formData);
+
+    console.log('Response: ' + request.response);
+  
+
+//    $('#submit_handle').click()
+}
+</script>
+
+  </body>
 </html>

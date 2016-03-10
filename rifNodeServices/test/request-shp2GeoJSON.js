@@ -65,7 +65,7 @@ var path = require('path');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 7;
+var max_nRequests = 10;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all shp2GeoJSON tests');
