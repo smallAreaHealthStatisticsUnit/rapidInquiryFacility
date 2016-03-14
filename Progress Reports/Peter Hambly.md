@@ -268,7 +268,7 @@ Test harness refactor; Node.js version working
 	10. Instrumentation;
 	11. Size limits (100M); 100 files - this is be BusBoy processing exception filesLimit/fieldsLimit/partsLimit; 
 	
-#### 19th to ?th February
+#### 19th to 25th February
 
 	Analysis of current geospatial presentation, design meeting with Kev. Principle decision - to build a self contained Node 
     service (NodeGeoSpatialServices). 
@@ -313,6 +313,23 @@ Test harness refactor; Node.js version working
 	share data and create interactive maps.	
 	
 	GeoNode is essentially Open Google Earth/Maps with an emphasis on accessibility via easy to use interfaces and good metadata.
+	
+
+#### 28th February to 11th March
+	
+	* Code refactor for multiple services;
+	* shp2GeoJSON service;
+	* Portable make_bighwelloworld.js script;
+	* Async file save;
+	* UUID generation;
+	* Shapefile to geoJSON converion;
+	* Project planning
+	
+#### 14th to 18th March	
+	
+	* shp2GeoJSON.html HTML 5 browser tester; works in Chrome and firfoix.  1.3G coa2011 shapefile cracks chrome; also breaks 
+	  the synchronous file write in Node. Code needs restructuring to be fully async with streaming everywhere.
+	
 	
 	Todo:
 

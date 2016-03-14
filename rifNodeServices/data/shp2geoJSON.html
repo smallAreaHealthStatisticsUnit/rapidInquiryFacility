@@ -1,6 +1,8 @@
 <html>
   <head>
 	<script src="https://code.jquery.com/jquery-2.2.1.js"></script> 
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
     <title>Shapefile Uploading Form</title>
   </head>
   <body>
@@ -20,11 +22,11 @@
 	  
       <button type="button" id="save" onclick="submitForm()">Upload Files</button></br>	  
     </form>
-	<!-- the status and the result will be rendered inside this div -->
+
+    <div id="map"></div>
     <div id="status"></div>
-    <div id="result"></div>
 	
-    <script>
+    <script>	
 /*
  * Function: 	generateUUID()
  * Parameters: 	None
@@ -62,12 +64,11 @@ function submitForm() {
   
     var formData = new FormData();
 	
-	formData.append('my_reference', generateUUID()); // Random reference
-	
 	if (verbose) {
 		console.log('Verbose mode: ' + verbose);
 		formData.append('verbose', verbose);
 	}
+	formData.append('my_reference', generateUUID()); // Random reference
 	if (store) {
 		console.log('Store [hidden]: ' + store);
 		formData.append('store', store);
@@ -87,8 +88,7 @@ function submitForm() {
 
     request.open('POST', 'http://127.0.0.1:3000/' + output_type);
 	
-	document.getElementById("status").innerHTML = "Processing...";
-	document.getElementById("result").innerHTML = "";
+	document.getElementById("map").innerHTML = "";
 	
 	request.upload.onprogress = function(evt) {
 		if (evt.lengthComputable) {
@@ -134,7 +134,16 @@ function submitForm() {
   
 	// Process results
 	request.onreadystatechange = function() {
-		if (request.readyState == 4) { 
+		if (request.readyState == 1) { 
+			document.getElementById("status").innerHTML = "Connected...";
+		}
+		else if (request.readyState == 2) { 
+			document.getElementById("status").innerHTML = "Request received...";
+		}		
+		else if (request.readyState == 3) { 
+			document.getElementById("status").innerHTML = "Processing request...";
+		}
+		else if (request.readyState == 4) { 
 			displayResponse(request.response, request.status)
 		}
 	};
@@ -175,7 +184,14 @@ function displayResponse(responseText, status) {
 					msg+="<tr><td>" + (i+1) + "</td><td>" + response.file_list[i].file_name + "</td><td>";
 					if (response.file_list[i].geojson) {			
 						try {
-							var geojson = JSON.stringify(response.file_list[i].geojson);							
+							var geojson = JSON.stringify(response.file_list[i].geojson);
+							if (i == 1) {
+								var map = L.map('map').setView([39.74739, -105], 13);
+
+								L.geoJson(geojson, {
+									onEachFeature: onEachFeature
+								}).addTo(map);
+							}							
 							msg+=geojson.length;
 						} catch (e) {  							
 							msg+="GeoJSON conversion error: " + e.message;
