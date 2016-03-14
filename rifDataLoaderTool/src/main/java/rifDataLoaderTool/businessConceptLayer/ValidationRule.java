@@ -118,6 +118,7 @@ public final class ValidationRule
 		name = "";
 		description = "";
 		validValue = "";
+		setIdentifier("");
 	}
 	
 	private ValidationRule(
@@ -130,6 +131,7 @@ public final class ValidationRule
 		this.description = description;
 		this.validValue = validValue;
 		this.isRegularExpressionSearch = isRegularExpressionSearch;
+		setIdentifier("");
 	}
 
 	public static ValidationRule newInstance() {
