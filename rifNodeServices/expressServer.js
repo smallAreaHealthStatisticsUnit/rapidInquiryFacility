@@ -104,6 +104,28 @@ app.use( 				// For parsing incoming HTML form data.
 		defCharset: 'binary'
 	}));
 
+	// Add headers
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect - cross-origin HTTP request (CORS) rules
+//    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+//    res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:3000');
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all access
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
+
 /*
  * Services supported:
  * 
@@ -119,6 +141,8 @@ app.use( 				// For parsing incoming HTML form data.
  * getMapTile: Get maptile for specified geolevel, zoomlevel, X and Y tile number.
  */		
 var services=["/shp2GeoJSON",
+			  "/shp2TopoJSON",
+			  "/shp2WKT",
 			  "/simplifyGeoJSON",
 			  "/geo2TopoJSON",
 			  "/geoJSON2WKT",
@@ -135,7 +159,7 @@ for (var i=0; i<services.length; i++) { // Call common method
 	console.error('expressServer.js: register service: ' + services[i]);
 	app.post(services[i], nodeGeoSpatialServices.convert);
 }
-// Old Fred zip shaepfile code
+// Old Fred zip shapefile code
 app.get('/simplify', simplify.convert);
 app.post('/simplify', simplify.convert);
 

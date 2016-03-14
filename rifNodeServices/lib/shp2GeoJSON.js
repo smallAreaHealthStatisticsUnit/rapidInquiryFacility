@@ -55,6 +55,22 @@
 shp2GeoJSONWriteFile=function(file, data, serverLog, uuidV1, req) {
 	const fs = require('fs');
 	
+/* 1.3G SOA 2011 file uploads in firefox (NOT chrome) but gives:
+
+Error(Error): toString failed
+Stack>>>
+Error: toString failed
+    at Buffer.toString (buffer.js:382:11)
+    at shp2GeoJSONWriteFile (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shp2GeoJSON.js:59:35)
+    at Object.shp2GeoJSONFileProcessor (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shp2GeoJSON.js:505:3)
+    at Busboy.<anonymous> (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServices.js:524:27)
+    at emitNone (events.js:72:20)
+    at Busboy.emit (events.js:166:7)
+    at Busboy.emit (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\connect-busboy\node_modules\busboy\lib\main.js:31:35)
+    at C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\connect-busboy\node_modules\busboy\lib\types\multipart.js:52:13
+    at doNTCallback0 (node.js:419:9)
+    at process._tickCallback (node.js:348:13)<<<
+ */
 	// This needs to be done asynchronously, so save as <file>.tmp
 	fs.writeFile(file + '.tmp', data.toString('binary'), 
 		{
@@ -85,15 +101,16 @@ shp2GeoJSONWriteFile=function(file, data, serverLog, uuidV1, req) {
 		
 /*
  * Function:	shp2GeoJSONFieldProcessor()
- * Parameters:	fieldname, val, text, shapefile_options, ofields [field parameters array], response object, 
+ * Parameters:	fieldname, val, shapefile_options, ofields [field parameters array], response object, 
  *				express HTTP request object, RIF logging object
  * Returns:		Text of field processing log
  * Description: shp2GeoJSON method field processor. Called from req.busboy.on('field') callback function
  *
  *				verbose: 	Set Topojson.Topology() ???? option if true. 
  */ 
-shp2GeoJSONFieldProcessor=function(fieldname, val, text, shapefile_options, ofields, response, req, rifLog) {
+shp2GeoJSONFieldProcessor=function(fieldname, val, shapefile_options, ofields, response, req, rifLog) {
 	var msg;
+	var text="";
 	
 	if ((fieldname == 'verbose')&&(val == 'true')) {
 		if (shapefile_options) {
@@ -185,10 +202,11 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 				if (shapefile_options.store) {
 					shp2GeoJSONWriteFile(jsonFileName, JSON.stringify(collection), serverLog, uuidV1, req);
 				}
-				else { // Convert to topoJSON and return
+				else { // Convert to geoJSON and return
 					response.file_list[shapefile_no-1].file_size=fs.statSync(shapeFileName).size;
 					response.file_list[shapefile_no-1].geojson_time=elapsedTime;
 					response.file_list[shapefile_no-1].geojson=collection;
+					// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
 					if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 						var output = JSON.stringify(response);// Convert output response to JSON 
 		// Need to test res was not finished by an expection to avoid "write after end" errors			
@@ -260,7 +278,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			}
 			
 		}, 1000 /* 1S */); // End of setTimeout
-	}
+	} // End of waitForShapeFileWrite()
 
 	for (var key in shpList) {
 		shapefile_no++;
@@ -299,8 +317,6 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			response.no_files=shpTotal;				// Add number of files process to response
 			response.fields=ofields;				// Add return fields
 			response.file_errors+=rval.file_errors;
-			rval.msg+="\n";
-			response.message = rval.msg + "\n" + response.message;
 
 			// Wait for shapefile to appear
 			// This continues processing, return control to core calling function			
@@ -322,8 +338,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	response.no_files=shpTotal;				// Add number of files process to response
 	response.fields=ofields;				// Add return fields
 	response.file_errors+=rval.file_errors;
-	rval.msg+="\n";
-	response.message = rval.msg + "\n" + response.message;
+	response.message = response.message + "\n" + rval.msg;
 
 	return rval;
 }

@@ -94,6 +94,7 @@
  */
 geo2TopoJSONFieldProcessor=function(fieldname, val, text, topojson_options, ofields, response, req, serverLog) {
 	var msg,
+	    text = "",
 
 /*
  * Function: 	getQuantization() 
@@ -110,7 +111,7 @@ geo2TopoJSONFieldProcessor=function(fieldname, val, text, topojson_options, ofie
  * 10				5000
  * >10				10000
  */
-    getQuantization = function(lvl) {
+        getQuantization = function(lvl) {
          if (lvl <= 6) {
             return 400;
          } else if (lvl == 7) {
@@ -124,7 +125,7 @@ geo2TopoJSONFieldProcessor=function(fieldname, val, text, topojson_options, ofie
          } else {
             return 10000; // Default
          }
-     };
+        };
 	
 	if ((fieldname == 'verbose')&&(val == 'true')) {
 		topojson_options.verbose = true;

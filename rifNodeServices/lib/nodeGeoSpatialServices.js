@@ -407,8 +407,15 @@ exports.convert = function(req, res) {
 					}
 					else {
 						d.file.file_data=buf;
-						response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-							"; uncompressed data: " + d.file.file_data.length, req; 												
+						if (d.file.file_encoding) {
+							response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
+								"; encoding: " + d.file.file_encoding +
+								"; uncompressed data: " + d.file.file_data.length, req;
+						}
+						else {
+							response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
+								"; uncompressed data: " + d.file.file_data.length, req; 
+						}								
 					}
 					
 					d_files.d_list[d.no_files-1] = d;										
@@ -442,12 +449,12 @@ exports.convert = function(req, res) {
 					ofields[fieldname]="true";
 				}
 				if (req.url == '/geo2TopoJSON') {
-					text=geo2TopoJSON.geo2TopoJSONFieldProcessor(fieldname, val, text, topojson_options, ofields, response, req, serverLog);
+					text+=geo2TopoJSON.geo2TopoJSONFieldProcessor(fieldname, val, topojson_options, ofields, response, req, serverLog);
 				}
 				else if (req.url == '/shp2GeoJSON') {
-					text=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, text, shapefile_options, ofields, response, req, serverLog);
+					text+=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, shapefile_options, ofields, response, req, serverLog);
 				}					
-				response.message = response.message + text;
+				response.message += text;
 			 }); // End of field processing function
 
 /*
@@ -483,7 +490,7 @@ exports.convert = function(req, res) {
 							}
 							else if (!d.file) {
 								msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: object not found in list" + 
-									"\n" + response.message;
+									"\n";
 								response.message = msg + "\n" + response.message;
 								response.no_files=d.no_files;			// Add number of files process to response
 								response.fields=ofields;				// Add return fields	
