@@ -1,19 +1,24 @@
 
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.GeographicalResolutionLevel;
-import rifDataLoaderTool.fileFormats.dataTypes.*;
 
+import rifDataLoaderTool.businessConceptLayer.*;
+import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
 import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.XMLUtility;
 
-import java.util.ArrayList;
+
+
+
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+
 
 /**
  *
@@ -80,7 +85,7 @@ import java.io.UnsupportedEncodingException;
  */
 
 
-final class RIFDataLoaderConfigurationHandler 
+final class GeographicalResolutionConfigurationHandler 
 	extends AbstractDataLoaderConfigurationHandler {
 
 // ==========================================
@@ -91,25 +96,18 @@ final class RIFDataLoaderConfigurationHandler
 // Section Properties
 // ==========================================
 	private ArrayList<GeographicalResolutionLevel> geographicalResolutionLevels;
-	private RIFDataTypeFactory rifDataTypeFactory;
-	private GeographicalResolutionConfigurationHandler geographicalResolutionConfigurationHandler;
-	private RIFDataTypeConfigurationHandler rifDataTypeConfigurationHandler;
-		
+	private GeographicalResolutionLevel currentLevel;
 // ==========================================
 // Section Construction
 // ==========================================
     /**
      * Instantiates a new disease mapping study content handler.
      */
-	public RIFDataLoaderConfigurationHandler() {
+	public GeographicalResolutionConfigurationHandler() {
+		setPluralRecordName("geographical_resolutions");
+		setSingularRecordName("geographical_resolution");
 		
-		setSingularRecordName("rif_data_loader_settings");
-		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
-		rifDataTypeConfigurationHandler = new RIFDataTypeConfigurationHandler();
-		geographicalResolutionConfigurationHandler
-			= new GeographicalResolutionConfigurationHandler();
-		geographicalResolutionLevels
-			= new ArrayList<GeographicalResolutionLevel>();
+		geographicalResolutionLevels = new ArrayList<GeographicalResolutionLevel>();
 	}
 
 
@@ -119,15 +117,7 @@ final class RIFDataLoaderConfigurationHandler
 		final XMLCommentInjector commentInjector) 
 		throws UnsupportedEncodingException {
 
-		super.initialise(
-			outputStream, 
-			commentInjector);
-		rifDataTypeConfigurationHandler.initialise(
-			outputStream, 
-			commentInjector);		
-		geographicalResolutionConfigurationHandler.initialise(
-			outputStream, 
-			commentInjector);
+		super.initialise(outputStream, commentInjector);
 	}
 
 	public void initialise(
@@ -135,9 +125,9 @@ final class RIFDataLoaderConfigurationHandler
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream);
-		rifDataTypeConfigurationHandler.initialise(outputStream);
 	}
-		
+	
+	
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
@@ -147,29 +137,38 @@ final class RIFDataLoaderConfigurationHandler
 	 *
 	 * @return the disease mapping study
 	 */
-	public RIFDataTypeFactory getRIFDataTypeFactory() {
-		return rifDataTypeFactory;
-	}
-
 	public ArrayList<GeographicalResolutionLevel> getGeographicalResolutionLevels() {
 		return geographicalResolutionLevels;
 	}
-	
+
 	public void writeXML(
-		final ArrayList<GeographicalResolutionLevel> geographicalResolutionLevels,
-		final RIFDataTypeFactory rifDataTypeFactory)
+		final ArrayList<GeographicalResolutionLevel> levels)
 		throws IOException {
 			
 		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeStartXML();		
-
-		String recordType = getSingularRecordName();
-		xmlUtility.writeRecordStartTag(recordType);
-		geographicalResolutionConfigurationHandler.writeXML(geographicalResolutionLevels);
-		rifDataTypeConfigurationHandler.writeXML(rifDataTypeFactory);
-		xmlUtility.writeRecordEndTag(recordType);	
-	}	
 		
+		xmlUtility.writeRecordStartTag(getPluralRecordName());		
+		String recordType = getSingularRecordName();		
+		for (GeographicalResolutionLevel level : levels) {
+			xmlUtility.writeRecordStartTag(recordType);
+			xmlUtility.writeField(
+				recordType, 
+				"identifier", 
+				level.getIdentifier());
+			xmlUtility.writeField(
+				recordType, 
+				"name", 
+				level.getName());
+			xmlUtility.writeField(
+				recordType, 
+				"description", 
+				level.getDescription());
+	
+			xmlUtility.writeRecordEndTag(recordType);
+		}
+		xmlUtility.writeRecordEndTag(getPluralRecordName());
+	}	
+	
 // ==========================================
 // Section Errors and Validation
 // ==========================================
@@ -191,44 +190,13 @@ final class RIFDataLoaderConfigurationHandler
 		final Attributes attributes) 
 		throws SAXException {
 		
-		if (isSingularRecordName(qualifiedName)) {
+		if (isPluralRecordName(qualifiedName)) {
 			activate();
 		}
-		else if (isDelegatedHandlerAssigned()) {
-			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
-				= getCurrentDelegatedHandler();
-			currentDelegatedHandler.startElement(
-				nameSpaceURI, 
-				localName, 
-				qualifiedName, 
-				attributes);
-		}
-		else {
-			
-			//check to see if handlers could be assigned to delegate parsing
-			if (geographicalResolutionConfigurationHandler.isPluralRecordName(qualifiedName)) {
-				assignDelegatedHandler(geographicalResolutionConfigurationHandler);				
-			}
-			else if (rifDataTypeConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
-				assignDelegatedHandler(rifDataTypeConfigurationHandler);
-			}
-									
-			//delegate to a handler.  If not, then scan for fields relating to this handler
-			if (isDelegatedHandlerAssigned()) {
+		else if (isPluralRecordName(qualifiedName)) {
+			currentLevel = GeographicalResolutionLevel.newInstance();
+		}		
 
-				AbstractDataLoaderConfigurationHandler currentDelegatedHandler
-					= getCurrentDelegatedHandler();
-				currentDelegatedHandler.startElement(
-					nameSpaceURI, 
-					localName, 
-					qualifiedName, 
-					attributes);
-			}
-			else {
-				assert false;
-			}
-
-		}
 	}
 	
 	@Override
@@ -238,36 +206,23 @@ final class RIFDataLoaderConfigurationHandler
 		final String qualifiedName) 
 		throws SAXException {
 		
-		if (isSingularRecordName(qualifiedName)) {
+		if (isPluralRecordName(qualifiedName)) {
 			deactivate();
 		}
-		else if (isDelegatedHandlerAssigned()) {
-			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
-				= getCurrentDelegatedHandler();
-			currentDelegatedHandler.endElement(
-				nameSpaceURI, 
-				localName, 
-				qualifiedName);
-						
-			if (currentDelegatedHandler.isActive() == false) {
-				if (currentDelegatedHandler == rifDataTypeConfigurationHandler) {
-					rifDataTypeFactory
-						= rifDataTypeConfigurationHandler.getRIFDataTypeFactory();
-				}
-				else if (currentDelegatedHandler == rifDataTypeConfigurationHandler) {
-					geographicalResolutionLevels
-						= geographicalResolutionConfigurationHandler.getGeographicalResolutionLevels();
-				}				
-				else {
-					assert false;
-				}				
-				
-				//handler just finished				
-				unassignDelegatedHandler();				
-			}
-			else {
-				assert false;				
-			}
+		else if (isSingularRecordName(qualifiedName)) {
+			geographicalResolutionLevels.add(currentLevel);
+		}
+		else if (equalsFieldName("identifier", qualifiedName)) {
+			currentLevel.setIdentifier(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("name", qualifiedName)) {
+			currentLevel.setName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("description", qualifiedName)) {
+			currentLevel.setDescription(getCurrentFieldValue());
+		}		
+		else {
+			assert false;
 		}
 	}
 }
