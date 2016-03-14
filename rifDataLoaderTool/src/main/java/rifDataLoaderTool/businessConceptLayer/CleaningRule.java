@@ -115,6 +115,7 @@ public final class CleaningRule
 
 	private CleaningRule() {
 		name = "";
+		setIdentifier("");
 		description = "";
 		searchValue = "";
 		replaceValue = "";
@@ -132,6 +133,8 @@ public final class CleaningRule
 		this.searchValue = searchValue;
 		this.replaceValue = replaceValue;
 		this.isRegularExpressionSearch = isRegularExpressionSearch;
+		setIdentifier("");
+
 	}
 
 	public static CleaningRule newInstance() {
