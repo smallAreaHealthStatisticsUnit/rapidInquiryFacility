@@ -92,9 +92,7 @@ public class RIFDataTypeFactory {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
-	private static int customRIFDataTypeKeyNumber = 1;
-	
+		
 	private HashMap<String, RIFDataType> dataTypeFromCodes;
 	private HashMap<String, RIFDataType> dataTypeFromNames;
 	
@@ -122,6 +120,20 @@ public class RIFDataTypeFactory {
 		
 	}
 
+	public void clearRegisteredTypes() {
+		
+		dataTypeFromCodes.clear();
+		dataTypeFromNames.clear();
+	}
+	
+	public void printRegisteredDataTypes() {
+		ArrayList<RIFDataType> rifDataTypes = new ArrayList<RIFDataType>();
+		rifDataTypes.addAll(dataTypeFromCodes.values());
+		for (RIFDataType rifDataType : rifDataTypes) {
+			rifDataType.printFields();
+		}	
+	}
+	
 	public void populateFactoryWithBuiltInTypes() 
 		throws RIFServiceException {
 
@@ -283,6 +295,15 @@ public class RIFDataTypeFactory {
 			
 		ValidationRule validationRule
 			= ValidationRule.newInstance();
+		String validationRuleName1
+			= RIFDataLoaderToolMessages.getMessage(
+				"rifDataType.year.vaidationRule1.name");
+		validationRule.setName(validationRuleName1);
+		String validationRuleDescription1
+			= RIFDataLoaderToolMessages.getMessage(
+				"rifDataType.year.vaidationRule1.description");
+		validationRule.setDescription(validationRuleDescription1);
+		
 		validationRule.setValidValue("^(19|20)\\d{2}$");
 		yearRIFDataType.setFieldValidationPolicy(RIFFieldValidationPolicy.VALIDATION_RULES);
 		yearRIFDataType.setFieldCleaningPolicy(RIFFieldCleaningPolicy.NO_CLEANING);		
@@ -758,28 +779,85 @@ public class RIFDataTypeFactory {
 			dataTypeFromNames.put(reservedRIFDataType.getName(), reservedRIFDataType);	
 	}		
 	
-	public void registerCustomDataType(final RIFDataType rifDataType) 
-		throws RIFServiceException {
-
-		//Validate fields of data type					
-		if (dataTypeFromCodes.containsKey(rifDataType.getName())) {
-			//Error: Attempt to register a duplicate data type
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"general.validation.duplicateValue",
-					rifDataType.getName());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFDataLoaderToolError.DUPLICATE_RIF_DATA_TYPE, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		
-		dataTypeFromCodes.put(rifDataType.getIdentifier(), rifDataType);
-		dataTypeFromNames.put(rifDataType.getName(), rifDataType);	
+	private void deregisterDataType(final RIFDataType rifDataTypeToDelete) {
+		dataTypeFromCodes.remove(rifDataTypeToDelete.getIdentifier());
+		dataTypeFromNames.remove(rifDataTypeToDelete.getName());		
 	}
 	
 	
+	/*
+	 * This method attempts to register a new custom data type.  When it encounters
+	 * a type that is already known, it has two choices.  First, it can throw an
+	 * exception, indicating that an attempt to add a duplicate type has been made.
+	 * Second, it can simply overwrite fields in the currently registered type.
+	 * 
+	 * The first use is helpful in cases where a new type is being added through the UI.
+	 * The second use is helpful when we're reading a list of saved rif data types
+	 * from file and use them with the intent of overwriting any existing definitions
+	 * 
+	 */
+	public void registerCustomDataType(
+		final RIFDataType candidateDataType, 
+		final boolean allowOverwrite) 
+		throws RIFServiceException {
+
+		//Validate fields of data type
+		String candidateDataTypeName
+			= candidateDataType.getName();	
+		
+		System.out.println("Trying to register type=="+candidateDataTypeName+"==existing types=="+dataTypeFromCodes.size()+"==");
+		ArrayList<String> keys = new ArrayList<String>();
+		keys.addAll(dataTypeFromNames.keySet());
+		for (String key : keys) {
+			//System.out.println("Looking at key=="+key+"==");
+		}
+		RIFDataType existingRegisteredDataType
+			= dataTypeFromNames.get(candidateDataTypeName);
+		if (existingRegisteredDataType != null) {
+			//Type already exists
+			
+			System.out.println("Candidate data type=="+candidateDataTypeName+"== EXISTS!!!");
+			
+			if (allowOverwrite) {
+				deregisterDataType(existingRegisteredDataType);
+
+				System.out.println("Overwriting ==original desc=="+existingRegisteredDataType.getDescription()+"==revised desc=="+candidateDataType.getDescription()+"==");
+				
+				RIFDataType.copyInto(
+					candidateDataType, 
+					existingRegisteredDataType);	
+				
+				System.out.println("Overwriting ==revised desc=="+existingRegisteredDataType.getDescription()+"==");
+	
+				
+				dataTypeFromCodes.put(
+					existingRegisteredDataType.getIdentifier(), 
+					existingRegisteredDataType);
+				dataTypeFromNames.put(
+					existingRegisteredDataType.getName(), 
+					existingRegisteredDataType);
+			}
+			else {
+				
+				//Error: Attempt to register a duplicate data type
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"general.validation.duplicateValue",
+						candidateDataType.getName());
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFDataLoaderToolError.DUPLICATE_RIF_DATA_TYPE, 
+						errorMessage);
+				throw rifServiceException;
+			}		
+		}
+		else {
+			System.out.println("Candidate data type=="+candidateDataTypeName+"== does NOT EXIST!!!");
+			
+			dataTypeFromCodes.put(candidateDataType.getIdentifier(), candidateDataType);
+			dataTypeFromNames.put(candidateDataType.getName(), candidateDataType);			
+		}
+	}
 	
 	public RIFDataType getDataTypeFromCode(final String dataTypeCode) {
 		return dataTypeFromCodes.get(dataTypeCode);		
