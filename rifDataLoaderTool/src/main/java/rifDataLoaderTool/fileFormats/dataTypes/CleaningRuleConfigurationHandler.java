@@ -85,7 +85,7 @@ import java.util.ArrayList;
  */
 
 
-final class FieldCleaningPolicyConfigurationHandler 
+final class CleaningRuleConfigurationHandler 
 	extends AbstractDataLoaderConfigurationHandler {
 
 // ==========================================
@@ -95,22 +95,19 @@ final class FieldCleaningPolicyConfigurationHandler
 // ==========================================
 // Section Properties
 // ==========================================
-	private RIFFieldCleaningPolicy policy;
-	private String functionName;
 	private ArrayList<CleaningRule> rules;
-	private CleaningRuleConfigurationHandler rulesConfigurationHandler;
+	private CleaningRule currentRule;
+	
 // ==========================================
 // Section Construction
 // ==========================================
     /**
      * Instantiates a new disease mapping study content handler.
      */
-	public FieldCleaningPolicyConfigurationHandler() {
-		setSingularRecordName("field_cleaning_policy");
+	public CleaningRuleConfigurationHandler() {
+		setPluralRecordName("cleaning_rules");
+		setSingularRecordName("cleaning_rule");
 		
-		rulesConfigurationHandler
-			= new CleaningRuleConfigurationHandler();
-		functionName = "";
 		rules = new ArrayList<CleaningRule>();
 	}
 
@@ -122,9 +119,6 @@ final class FieldCleaningPolicyConfigurationHandler
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream, commentInjector);
-		rulesConfigurationHandler.initialise(
-			outputStream, 
-			commentInjector);		
 	}
 
 	public void initialise(
@@ -132,8 +126,6 @@ final class FieldCleaningPolicyConfigurationHandler
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream);
-		rulesConfigurationHandler.initialise(
-			outputStream);				
 	}
 	
 	
@@ -146,47 +138,44 @@ final class FieldCleaningPolicyConfigurationHandler
 	 *
 	 * @return the disease mapping study
 	 */
-	public RIFFieldCleaningPolicy getFieldCleaningPolicy() {
-		return policy;
-	}
-	
 	public ArrayList<CleaningRule> getCleaningRules() {
 		return rules;
 	}
-	
-	public String getCleaningFunction() {
-		return functionName;
-	}
-	
+
 	public void writeXML(
-		final RIFDataType rifDataType)
+		final ArrayList<CleaningRule> rules)
 		throws IOException {
 			
-		XMLUtility xmlUtility = getXMLUtility();	
+		XMLUtility xmlUtility = getXMLUtility();
 		
-		String recordType = getSingularRecordName();
-		xmlUtility.writeRecordStartTag(recordType);
-		RIFFieldCleaningPolicy fieldCleaningPolicy
-			= rifDataType.getFieldCleaningPolicy();
-		xmlUtility.writeField(
-			recordType, 
-			"policy_type", 
-			fieldCleaningPolicy.getTagName());
-
-		//write out list of cleaning rules
-		ArrayList<CleaningRule> cleaningRules
-			= rifDataType.getCleaningRules();
-		rulesConfigurationHandler.writeXML(cleaningRules);
-
-		//write out the cleaning rule function
-		xmlUtility.writeField(
-			recordType, 
-			"cleaning_function_name", 
-			rifDataType.getCleaningFunctionName());
-		
-		xmlUtility.writeRecordEndTag(recordType);		
+		xmlUtility.writeRecordStartTag(getPluralRecordName());		
+		String recordType = getSingularRecordName();		
+		for (CleaningRule rule : rules) {
+			xmlUtility.writeRecordStartTag(recordType);
+			xmlUtility.writeField(
+				recordType, 
+				"identifier", 
+				rule.getIdentifier());
+			xmlUtility.writeField(
+				recordType, 
+				"name", 
+				rule.getName());
+			xmlUtility.writeField(
+				recordType, 
+				"description", 
+				rule.getName());
+			xmlUtility.writeField(
+				recordType, 
+				"search_value", 
+				rule.getSearchValue());
+			xmlUtility.writeField(
+				recordType, 
+				"replace_value", 
+				rule.getReplaceValue());
+			xmlUtility.writeRecordEndTag(recordType);
+		}
+		xmlUtility.writeRecordEndTag(getPluralRecordName());
 	}	
-
 	
 // ==========================================
 // Section Errors and Validation
@@ -212,38 +201,10 @@ final class FieldCleaningPolicyConfigurationHandler
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
 		}
-		else if (isDelegatedHandlerAssigned()) {
-			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
-				= getCurrentDelegatedHandler();
-			currentDelegatedHandler.startElement(
-				nameSpaceURI, 
-				localName, 
-				qualifiedName, 
-				attributes);
-		}
-		else {
-			
-			//check to see if handlers could be assigned to delegate parsing			
-			if (rulesConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
-				assignDelegatedHandler(rulesConfigurationHandler);
-			}
+		else if (isPluralRecordName(qualifiedName)) {
+			currentRule = CleaningRule.newInstance();
+		}		
 
-				
-			//delegate to a handler.  If not, then scan for fields relating to this handler
-			if (isDelegatedHandlerAssigned()) {
-				AbstractDataLoaderConfigurationHandler currentDelegatedHandler
-					= getCurrentDelegatedHandler();
-				currentDelegatedHandler.startElement(
-					nameSpaceURI, 
-					localName, 
-					qualifiedName, 
-					attributes);
-			}
-			else {
-				assert false;
-			}
-
-		}
 	}
 	
 	@Override
@@ -253,35 +214,26 @@ final class FieldCleaningPolicyConfigurationHandler
 		final String qualifiedName) 
 		throws SAXException {
 		
-		if (isSingularRecordName(qualifiedName)) {
+		if (isPluralRecordName(qualifiedName)) {
 			deactivate();
 		}
-		else if (isDelegatedHandlerAssigned()) {
-			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
-				= getCurrentDelegatedHandler();
-			currentDelegatedHandler.endElement(
-				nameSpaceURI, 
-				localName, 
-				qualifiedName);
-						
-			if (currentDelegatedHandler.isActive() == false) {
-				if (currentDelegatedHandler == rulesConfigurationHandler) {
-					rules
-						= rulesConfigurationHandler.getCleaningRules();
-				}			
-				else {
-					assert false;
-				}				
-				
-				//handler just finished				
-				unassignDelegatedHandler();				
-			}
+		else if (isSingularRecordName(qualifiedName)) {
+			rules.add(currentRule);
 		}
-		else if (equalsFieldName("policy_type", qualifiedName)) {
-			functionName = getCurrentFieldValue();
-		}		
-		else if (equalsFieldName("cleaning_function_name", qualifiedName)) {
-			functionName = getCurrentFieldValue();
+		else if (equalsFieldName("identifier", qualifiedName)) {
+			currentRule.setIdentifier(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("name", qualifiedName)) {
+			currentRule.setName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("description", qualifiedName)) {
+			currentRule.setDescription(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("search_value", qualifiedName)) {
+			currentRule.setSearchValue(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("replace_value", qualifiedName)) {
+			currentRule.setReplaceValue(getCurrentFieldValue());
 		}
 		else {
 			assert false;

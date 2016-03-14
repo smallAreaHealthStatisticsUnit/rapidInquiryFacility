@@ -78,7 +78,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 
 
-abstract class AbstractDataLoaderConfigurationHandler 
+public abstract class AbstractDataLoaderConfigurationHandler 
 	extends DefaultHandler {
 
 

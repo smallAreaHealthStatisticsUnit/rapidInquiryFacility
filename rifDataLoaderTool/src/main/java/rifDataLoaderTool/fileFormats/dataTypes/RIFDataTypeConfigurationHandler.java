@@ -6,7 +6,7 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
 import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.XMLUtility;
-
+import rifGenericLibrary.system.RIFServiceException;
 
 
 
@@ -85,7 +85,7 @@ import java.util.ArrayList;
  */
 
 
-final class RIFDataTypeConfigurationHandler 
+final public class RIFDataTypeConfigurationHandler 
 	extends AbstractDataLoaderConfigurationHandler {
 
 // ==========================================
@@ -96,10 +96,11 @@ final class RIFDataTypeConfigurationHandler
 // Section Properties
 // ==========================================
 	
+	private ArrayList<String> errorMessages;
 	private RIFDataTypeFactory rifDataTypeFactory;
 	private RIFDataType currentRIFDataType;
-	private CleaningPolicyContentHandler cleaningPolicyContentHandler;
-	private ValidationPolicyContentHandler validationPolicyContentHandler;
+	private FieldCleaningPolicyConfigurationHandler cleaningPolicyConfigurationHandler;
+	private FieldValidatingPolicyConfigurationHandler validatingPolicyConfigurationHandler;
 	
 // ==========================================
 // Section Construction
@@ -108,9 +109,15 @@ final class RIFDataTypeConfigurationHandler
      * Instantiates a new disease mapping study content handler.
      */
 	public RIFDataTypeConfigurationHandler() {
+		errorMessages = new ArrayList<String>();
 		setPluralRecordName("rif_data_types");
 		setSingularRecordName("rif_data_type");
 		rifDataTypeFactory = RIFDataTypeFactory.newInstance();	
+		cleaningPolicyConfigurationHandler
+			= new FieldCleaningPolicyConfigurationHandler();
+		validatingPolicyConfigurationHandler
+			= new FieldValidatingPolicyConfigurationHandler();
+		
 	}
 
 
@@ -121,6 +128,13 @@ final class RIFDataTypeConfigurationHandler
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream, commentInjector);
+		cleaningPolicyConfigurationHandler.initialise(
+			outputStream, 
+			commentInjector);
+		validatingPolicyConfigurationHandler.initialise(
+			outputStream, 
+			commentInjector);
+		
 	}
 
 	public void initialise(
@@ -128,6 +142,12 @@ final class RIFDataTypeConfigurationHandler
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream);
+		
+		cleaningPolicyConfigurationHandler.initialise(
+			outputStream);
+		validatingPolicyConfigurationHandler.initialise(
+			outputStream);
+		
 	}
 	
 	
@@ -143,22 +163,21 @@ final class RIFDataTypeConfigurationHandler
 	public RIFDataTypeFactory getRIFDataTypeFactory() {
 		return rifDataTypeFactory;
 	}
-
+	
+	public ArrayList<String> getErrorMessages() {
+		return errorMessages;
+	}
+	
 	public void writeXML(
 		final RIFDataTypeFactory rifDataTypeFactory)
 		throws IOException {
 			
 		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeStartXML();		
-
-
 		xmlUtility.writeRecordStartTag(getPluralRecordName());
 		ArrayList<RIFDataType> rifDataTypes
 			= rifDataTypeFactory.getRegisteredDataTypes();
 		for (RIFDataType rifDataType : rifDataTypes) {
-			
-			
-			
+			writeRIFDataType(rifDataType);
 		}
 		xmlUtility.writeRecordEndTag(getPluralRecordName());		
 	}	
@@ -184,18 +203,11 @@ final class RIFDataTypeConfigurationHandler
 			"description", 
 			rifDataType.getDescription());
 		
-		RIFFieldCleaningPolicy fieldCleaningPolicy
-			= rifDataType.getFieldCleaningPolicy();		
-		xmlUtility.writeField(
-			recordTag, 
-			"cleaning_policy", 
-			fieldCleaningPolicy.getTagName());
-		
+		cleaningPolicyConfigurationHandler.writeXML(rifDataType);			
+		validatingPolicyConfigurationHandler.writeXML(rifDataType);
 		xmlUtility.writeRecordEndTag(recordTag);		
 		
 	}
-
-	private void write 
 	
 // ==========================================
 // Section Errors and Validation
@@ -236,11 +248,11 @@ final class RIFDataTypeConfigurationHandler
 		else {
 			
 			//check to see if handlers could be assigned to delegate parsing			
-			if (cleaningPolicyContentHandler.isPluralRecordTypeApplicable(qualifiedName)) {
-				assignDelegatedHandler(cleaningPolicyContentHandler);
+			if (cleaningPolicyConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(cleaningPolicyConfigurationHandler);
 			}
-			else if (validationPolicyHandler.isPluralRecordTypeApplicable(qualifiedName)) {
-				assignDelegatedHandler(cleaningPolicyContentHandler);
+			else if (validatingPolicyConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(cleaningPolicyConfigurationHandler);
 			}
 				
 			//delegate to a handler.  If not, then scan for fields relating to this handler
@@ -271,7 +283,12 @@ final class RIFDataTypeConfigurationHandler
 			deactivate();
 		}
 		else if (isSingularRecordName(qualifiedName)) {
-			rifDataTypeFactory.registerCustomDataType(currentRIFDataType);
+			try {
+				rifDataTypeFactory.registerCustomDataType(currentRIFDataType, false);				
+			}
+			catch(RIFServiceException rifServiceException) {
+				errorMessages.addAll(rifServiceException.getErrorMessages());
+			}
 		}
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
@@ -282,14 +299,14 @@ final class RIFDataTypeConfigurationHandler
 				qualifiedName);
 						
 			if (currentDelegatedHandler.isActive() == false) {
-				if (currentDelegatedHandler == cleaningPolicyContentHandler) {
+				if (currentDelegatedHandler == cleaningPolicyConfigurationHandler) {
 					ArrayList<CleaningRule> cleaningRules
-						= cleaningPolicyContentHandler.getCleaningRules();
+						= cleaningPolicyConfigurationHandler.getCleaningRules();
 					currentRIFDataType.setCleaningRules(cleaningRules);					
 				}
-				else if (currentDelegatedHandler == validationPolicyHandler) {
+				else if (currentDelegatedHandler == validatingPolicyConfigurationHandler) {
 					ArrayList<ValidationRule> validationRules
-						= validationPolicyHandler.getCleaningRules();
+						= validatingPolicyConfigurationHandler.getValidationRules();
 					currentRIFDataType.setValidationRules(validationRules);					
 				}			
 				else {

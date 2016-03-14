@@ -85,7 +85,7 @@ import java.util.ArrayList;
  */
 
 
-final class FieldCleaningPolicyConfigurationHandler 
+final class FieldValidatingPolicyConfigurationHandler 
 	extends AbstractDataLoaderConfigurationHandler {
 
 // ==========================================
@@ -97,21 +97,21 @@ final class FieldCleaningPolicyConfigurationHandler
 // ==========================================
 	private RIFFieldCleaningPolicy policy;
 	private String functionName;
-	private ArrayList<CleaningRule> rules;
-	private CleaningRuleConfigurationHandler rulesConfigurationHandler;
+	private ArrayList<ValidationRule> rules;
+	private ValidationRuleConfigurationHandler rulesConfigurationHandler;
 // ==========================================
 // Section Construction
 // ==========================================
     /**
      * Instantiates a new disease mapping study content handler.
      */
-	public FieldCleaningPolicyConfigurationHandler() {
-		setSingularRecordName("field_cleaning_policy");
+	public FieldValidatingPolicyConfigurationHandler() {
+		setSingularRecordName("field_validating_policy");
 		
 		rulesConfigurationHandler
-			= new CleaningRuleConfigurationHandler();
+			 = new ValidationRuleConfigurationHandler();
 		functionName = "";
-		rules = new ArrayList<CleaningRule>();
+		rules = new ArrayList<ValidationRule>();
 	}
 
 
@@ -121,7 +121,10 @@ final class FieldCleaningPolicyConfigurationHandler
 		final XMLCommentInjector commentInjector) 
 		throws UnsupportedEncodingException {
 
-		super.initialise(outputStream, commentInjector);
+		super.initialise(
+			outputStream, 
+			commentInjector);
+		
 		rulesConfigurationHandler.initialise(
 			outputStream, 
 			commentInjector);		
@@ -133,7 +136,7 @@ final class FieldCleaningPolicyConfigurationHandler
 
 		super.initialise(outputStream);
 		rulesConfigurationHandler.initialise(
-			outputStream);				
+			outputStream);		
 	}
 	
 	
@@ -150,7 +153,7 @@ final class FieldCleaningPolicyConfigurationHandler
 		return policy;
 	}
 	
-	public ArrayList<CleaningRule> getCleaningRules() {
+	public ArrayList<ValidationRule> getValidationRules() {
 		return rules;
 	}
 	
@@ -162,7 +165,7 @@ final class FieldCleaningPolicyConfigurationHandler
 		final RIFDataType rifDataType)
 		throws IOException {
 			
-		XMLUtility xmlUtility = getXMLUtility();	
+		XMLUtility xmlUtility = getXMLUtility();
 		
 		String recordType = getSingularRecordName();
 		xmlUtility.writeRecordStartTag(recordType);
@@ -174,8 +177,8 @@ final class FieldCleaningPolicyConfigurationHandler
 			fieldCleaningPolicy.getTagName());
 
 		//write out list of cleaning rules
-		ArrayList<CleaningRule> cleaningRules
-			= rifDataType.getCleaningRules();
+		ArrayList<ValidationRule> cleaningRules
+			= rifDataType.getValidationRules();
 		rulesConfigurationHandler.writeXML(cleaningRules);
 
 		//write out the cleaning rule function
@@ -227,8 +230,7 @@ final class FieldCleaningPolicyConfigurationHandler
 			if (rulesConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(rulesConfigurationHandler);
 			}
-
-				
+			
 			//delegate to a handler.  If not, then scan for fields relating to this handler
 			if (isDelegatedHandlerAssigned()) {
 				AbstractDataLoaderConfigurationHandler currentDelegatedHandler
@@ -267,7 +269,7 @@ final class FieldCleaningPolicyConfigurationHandler
 			if (currentDelegatedHandler.isActive() == false) {
 				if (currentDelegatedHandler == rulesConfigurationHandler) {
 					rules
-						= rulesConfigurationHandler.getCleaningRules();
+						= rulesConfigurationHandler.getValidationRules();
 				}			
 				else {
 					assert false;
