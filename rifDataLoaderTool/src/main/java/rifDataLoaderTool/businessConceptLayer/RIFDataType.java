@@ -167,7 +167,7 @@ public final class RIFDataType
 	// ==========================================
 
 	private RIFDataType() {
-		this.isReservedDataType = true;
+		this.isReservedDataType = false;
 		
 		init(
 			"", 
@@ -204,15 +204,19 @@ public final class RIFDataType
 		final String name, 
 		final String description) {
 				
+		
 		this.identifier = identifier;
+		
 		this.name = name;
 		this.description = description;
 
 		fieldValidationPolicy = RIFFieldValidationPolicy.NO_VALIDATION;
 		validationRules = new ArrayList<ValidationRule>();
+		validationFunctionName = "";
 		
 		fieldCleaningPolicy = RIFFieldCleaningPolicy.NO_CLEANING;
-		cleaningRules = new ArrayList<CleaningRule>();		
+		cleaningRules = new ArrayList<CleaningRule>();	
+		cleaningFunctionName = "";
 	}
 	
 	public static RIFDataType newInstance() {
@@ -527,6 +531,29 @@ public final class RIFDataType
 
 	public void setReservedDataType(final boolean isReservedDataType) {
 		this.isReservedDataType = isReservedDataType;
+	}
+	
+	public void printFields() {
+		System.out.println("RIFDataType Name:==" + name+"== Identifier=="+identifier+"==");
+		System.out.println("Description:=="+ description+"==");
+		System.out.println("Cleaning Policy:=="+fieldCleaningPolicy.getName()+"==");
+		System.out.println("Cleaning function name:=="+validationFunctionName+"==");
+		for (CleaningRule cleaningRule : cleaningRules) {
+			System.out.println("Cleaning Rule id=="+cleaningRule.getIdentifier()+"==");
+			System.out.println("Cleaning Rule name=="+cleaningRule.getName()+"==");
+			System.out.println("Cleaning Rule description=="+cleaningRule.getDescription()+"==");
+			System.out.println("Cleaning Rule search value=="+cleaningRule.getSearchValue()+"==");
+			System.out.println("Cleaning Rule replace value=="+cleaningRule.getReplaceValue()+"==");
+		}
+		System.out.println("Validation Policy:=="+fieldCleaningPolicy.getName()+"==");
+		System.out.println("Validation function name:=="+validationFunctionName+"==");
+		for (ValidationRule validationRule : validationRules) {
+			System.out.println("Validation Rule id=="+validationRule.getIdentifier()+"==");
+			System.out.println("Validation Rule name=="+validationRule.getName()+"==");
+			System.out.println("Validation Rule description=="+validationRule.getDescription()+"==");
+			System.out.println("Validation Rule validation value=="+validationRule.getValidValue()+"==");
+		}
+	
 	}
 	
 	// ==========================================
