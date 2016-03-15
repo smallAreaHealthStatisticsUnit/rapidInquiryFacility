@@ -193,6 +193,8 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/form-data/package.json \
 	node_modules/magic-globals/package.json \
 	node_modules/helmet/package.json \
+	node_modules/srs/package.json \
+	node_modules/reproject/package.json \
 	node_modules/mapshaper/package.json \
 	node_modules/shapefile/package.json \
 	node_modules/node-uuid/package.json \

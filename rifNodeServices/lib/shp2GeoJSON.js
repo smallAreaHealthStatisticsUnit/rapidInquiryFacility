@@ -70,6 +70,9 @@ Error: toString failed
     at C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\connect-busboy\node_modules\busboy\lib\types\multipart.js:52:13
     at doNTCallback0 (node.js:419:9)
     at process._tickCallback (node.js:348:13)<<<
+	
+This does mean it converted to shapefile to geojson...
+
  */
 	// This needs to be done asynchronously, so save as <file>.tmp
 	fs.writeFile(file + '.tmp', data.toString('binary'), 
@@ -162,7 +165,9 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	const os = require('os'),
 	      path = require('path'),
 	      fs = require('fs'),
-	      shapefile = require('shapefile');
+	      shapefile = require('shapefile'),
+	      reproject = require('reproject'),
+	      srs = require('srs');
 		  
 	var shapefile_no=0;
 	var rval = {
@@ -172,16 +177,38 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	
 	/*
 	 * Function:	readShapeFile()
-	 * Parameters:	Shapefile name with path, 
+	 * Parameters:	Shapefile name with path, projection name with path, 
 	 *				RIF logging object, express HTTP request object, express HTTP response object, start time, uuidV1, shapefile options, time to write file,
 	 *				JSON file name with path, response object, shapefile number
 	 * Returns:		Nothing
 	 * Description: Read shapefile
 	 */
-	var readShapeFile = function(shapeFileName, serverLog, req, res, lstart, uuidV1, shapefile_options, writeTime, jsonFileName, 
+	var readShapeFile = function(shapeFileName, projFileName, serverLog, req, res, lstart, uuidV1, shapefile_options, writeTime, jsonFileName, 
 		response, shapefile_no) {
-		// Now read shapefile
 
+		// Work out projection; convert to 4326 if required - NEEDS ERROR HANDLERS
+		var prj=fs.readFileSync(projFileName);
+		var mySrs;
+		var crss={
+			"EPSG:2400": "+lon_0=15.808277777799999 +lat_0=0.0 +k=1.0 +x_0=1500000.0 +y_0=0.0 +proj=tmerc +ellps=bessel +units=m +towgs84=414.1,41.3,603.1,-0.855,2.141,-7.023,0 +no_defs",
+			"EPSG:3006": "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+			"EPSG:4326": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
+			"EPSG:3857": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs"
+		};
+		
+		if (prj) {
+			mySrs=srs.parse(prj);
+			if (!mySrs.srid) { // 
+				if (mySrs.name == "British_National_Grid") {
+					mySrs.srid="27700";
+				}
+				else { // Error - needs to be defined
+				}
+			}
+			crss["EPSG:" + mySrs.srid] = mySrs.proj4;
+		}
+		
+		// Now read shapefile
 		shapefile.read(shapeFileName, shapefile_options, function(err, collection) {
 			if (err) {
 				serverLog.serverLog2(__file, __line, "readShapeFile", 
@@ -190,22 +217,56 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			// OK
 			var end = new Date().getTime();
 			var elapsedTime=(end - lstart)/1000; // in S
-			
+			var proj4;
+
+			if (mySrs.srid != "4326") {
+				try {
+					wgs84=reproject.toWgs84(collection, "EPSG:" + mySrs.srid, crss);
+				}
+				catch (e) {
+					serverLog.serverLog2(__file, __line, "readShapeFile", 
+						"reproject.toWgs84() failed [" + uuidV1 + "] File: " + shapeFileName + "\n" + e.message + 
+						"\nProjection data:\n" + prj + "\n<<<" +
+						"\nCRSS database >>>\n" + JSON.stringify(crss, null, 2) + "\n<<<" +
+						"\nGeoJSON sample >>>\n" + JSON.stringify(collection, null, 2).substring(0, 600) + "\n<<<");
+				}
+			}
+			else {
+				wgs84=collection;
+			}
 			if (collection.bbox) { // Check bounding box present
 				serverLog.serverLog2(__file, __line, "readShapeFile", 
 					"OK [" + uuidV1 + "] File: " + shapeFileName + 
-					"\nwritten after: " + writeTime + " S; total time: " + elapsedTime + " S\nbounding box [" +
+					"\nwritten after: " + writeTime + " S; total time: " + elapsedTime + " S\nBounding box [" +
 					"xmin: " + collection.bbox[0] + ", " +
 					"ymin: " + collection.bbox[1] + ", " +
 					"xmax: " + collection.bbox[2] + ", " +
-					"ymax: " + collection.bbox[3] + "]");
+					"ymax: " + collection.bbox[3] + "];" + 
+					"\nProjection name: " + mySrs.name + "; " +
+					"srid: " + mySrs.srid + "; " +
+					"proj4: " + mySrs.proj4);
+				var boundingBox = {
+					xmin: 0,
+					ymin: 0,
+					xmax: 0,
+					ymax: 0
+				};
+				boundingBox.xmin=wgs84.bbox[0];
+				boundingBox.ymin=wgs84.bbox[1];
+				boundingBox.xmax=wgs84.bbox[2];					
+				boundingBox.ymax=wgs84.bbox[3];
 				if (shapefile_options.store) {
 					shp2GeoJSONWriteFile(jsonFileName, JSON.stringify(collection), serverLog, uuidV1, req);
 				}
 				else { // Convert to geoJSON and return
 					response.file_list[shapefile_no-1].file_size=fs.statSync(shapeFileName).size;
 					response.file_list[shapefile_no-1].geojson_time=elapsedTime;
-					response.file_list[shapefile_no-1].geojson=collection;
+					response.file_list[shapefile_no-1].geojson=wgs84;
+					response.file_list[shapefile_no-1].boundingBox=boundingBox;
+					response.file_list[shapefile_no-1].proj4=mySrs.proj4;
+					response.file_list[shapefile_no-1].srid=mySrs.srid;
+					response.file_list[shapefile_no-1].projection_name=mySrs.name;
+					
 					// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
 					if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 						var output = JSON.stringify(response);// Convert output response to JSON 
@@ -217,6 +278,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 						serverLog.serverLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
 					}				
 				}
+				// Move to here
 			}
 			else {
 				serverLog.serverLog2(__file, __line, "readShapeFile", 
@@ -265,7 +327,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 				return;
 			}
 			else if (fs.existsSync(shapeFileName) && fs.existsSync(dbfFileName) && fs.existsSync(projFileName)) { // OK			
-				readShapeFile(shapeFileName, serverLog, req, res, lstart, uuidV1, shapefile_options, elapsedTime, jsonFileName, 
+				readShapeFile(shapeFileName, projFileName, serverLog, req, res, lstart, uuidV1, shapefile_options, elapsedTime, jsonFileName, 
 					response, shapefile_no);
 				return;
 			}

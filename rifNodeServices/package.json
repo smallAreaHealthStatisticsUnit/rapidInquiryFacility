@@ -33,9 +33,11 @@
     "mapshaper": "^0.3.16",
     "mutexjs": "^1.2.0",
     "node-uuid": "^1.4.7",
+    "reproject": "^1.1.0",
     "request": "^2.69.0",
     "request-debug": "^0.2.0",
     "shapefile": "^0.3.1",
+    "srs": "^1.1.0",
     "topojson": "^1.6.24"
   },
   "scripts": {
