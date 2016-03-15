@@ -83,23 +83,17 @@ public class DatabaseTypeEditorDialog
 
 	
 	public static void main(String[] arguments) {
-		try {
-			
-			UserInterfaceFactory userInterfaceFactory
-				= new UserInterfaceFactory();
-			RIFDataTypeFactory rifDataTypeFactory
-				= RIFDataTypeFactory.newInstance();
-			rifDataTypeFactory.populateFactoryWithBuiltInTypes();
-			DatabaseTypeEditorDialog dialog
-				= new DatabaseTypeEditorDialog(
-					userInterfaceFactory,
-					rifDataTypeFactory);
-			dialog.show();
 		
-		}
-		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(null, rifServiceException.getErrorMessages());
-		}
+		UserInterfaceFactory userInterfaceFactory
+			= new UserInterfaceFactory();
+		RIFDataTypeFactory rifDataTypeFactory
+			= RIFDataTypeFactory.newInstance();
+		rifDataTypeFactory.populateFactoryWithBuiltInTypes();
+		DatabaseTypeEditorDialog dialog
+			= new DatabaseTypeEditorDialog(
+				userInterfaceFactory,
+				rifDataTypeFactory);
+		dialog.show();
 	}
 	
 	// ==========================================
@@ -369,7 +363,6 @@ public class DatabaseTypeEditorDialog
 	}
 	
 	private void updateDisplayForSelectedDataType() {
-		System.out.println("updateDisplayForSelectedDataType 11");
 		RIFDataType currentlySelectedDataType
 			= (RIFDataType) currentlySupportedDataTypesPanel.getSelectedItem();
 		if (currentlySelectedDataType == null) {
@@ -431,7 +424,6 @@ public class DatabaseTypeEditorDialog
 	//Interface: List Selection Listener
 	public void valueChanged(final ListSelectionEvent event) {
 		
-		System.out.println("valueChanged 1");
 		if (event.getValueIsAdjusting()) {
 			return;			
 		}		

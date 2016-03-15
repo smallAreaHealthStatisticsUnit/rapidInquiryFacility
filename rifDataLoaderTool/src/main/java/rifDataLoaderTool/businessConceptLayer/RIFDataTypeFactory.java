@@ -134,8 +134,7 @@ public class RIFDataTypeFactory {
 		}	
 	}
 	
-	public void populateFactoryWithBuiltInTypes() 
-		throws RIFServiceException {
+	public void populateFactoryWithBuiltInTypes() {
 
 		clearDataTypes();
 		registerReservedDataType(RIF_AGE_DATA_TYPE);
@@ -820,15 +819,10 @@ public class RIFDataTypeFactory {
 			
 			if (allowOverwrite) {
 				deregisterDataType(existingRegisteredDataType);
-
-				System.out.println("Overwriting ==original desc=="+existingRegisteredDataType.getDescription()+"==revised desc=="+candidateDataType.getDescription()+"==");
 				
 				RIFDataType.copyInto(
 					candidateDataType, 
-					existingRegisteredDataType);	
-				
-				System.out.println("Overwriting ==revised desc=="+existingRegisteredDataType.getDescription()+"==");
-	
+					existingRegisteredDataType);		
 				
 				dataTypeFromCodes.put(
 					existingRegisteredDataType.getIdentifier(), 

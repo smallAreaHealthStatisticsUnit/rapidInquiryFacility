@@ -8,6 +8,7 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 /**
@@ -96,7 +97,9 @@ public final class GeographicalResolutionLevel
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	public static final GeographicalResolutionLevel EMPTY_GEOGRAPHICAL_RESOLUTION_LEVEL 
+		= new GeographicalResolutionLevel();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -146,12 +149,22 @@ public final class GeographicalResolutionLevel
 		
 		GeographicalResolutionLevel cloneGeographicalResolutionLevel
 			= new GeographicalResolutionLevel();
-		cloneGeographicalResolutionLevel.setName(originalGeographicalResolutionRule.getName());
-		cloneGeographicalResolutionLevel.setDescription(originalGeographicalResolutionRule.getDescription());
+		
+		copyInto(originalGeographicalResolutionRule, cloneGeographicalResolutionLevel);
 			
 		return cloneGeographicalResolutionLevel;
 	}
 
+	public static void copyInto(
+		final GeographicalResolutionLevel sourceLevel,
+		final GeographicalResolutionLevel destinationLevel) {
+		
+		destinationLevel.setIdentifier(sourceLevel.getIdentifier());
+		destinationLevel.setName(sourceLevel.getName());
+		destinationLevel.setDescription(sourceLevel.getDescription());
+		
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -175,7 +188,29 @@ public final class GeographicalResolutionLevel
 
 		this.description = description;
 	}
+
 	
+	public boolean hasIdenticalContents(final GeographicalResolutionLevel otherLevel) {
+		String otherIdentifier
+			= otherLevel.getIdentifier();
+		if (Objects.deepEquals(getIdentifier(), otherIdentifier) == false) {
+			return false;
+		}		
+		
+		String otherName = otherLevel.getName();
+		if (Objects.deepEquals(name, otherName) == false) {
+			return false;
+		}
+				
+		String otherDescription
+			= otherLevel.getDescription();
+		if (Objects.deepEquals(description, otherDescription) == false) {
+			return false;
+		}	
+		
+		return true;
+	
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -190,7 +225,7 @@ public final class GeographicalResolutionLevel
 
 		if (name != null) {
 			String nameField
-				= RIFDataLoaderToolMessages.getMessage("cleaningRule.name.label");		
+				= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.name.label");		
 			fieldValidationUtility.checkMaliciousCode(
 				recordType,
 				nameField,
@@ -199,7 +234,7 @@ public final class GeographicalResolutionLevel
 
 		if (description != null) {
 			String descriptionFieldName
-				= RIFDataLoaderToolMessages.getMessage("cleaningRule.description.label");		
+				= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.description.label");		
 			fieldValidationUtility.checkMaliciousCode(
 				recordType,
 				descriptionFieldName,
@@ -235,8 +270,12 @@ public final class GeographicalResolutionLevel
 	
 	public String getRecordType() {
 		String recordType
-			= RIFDataLoaderToolMessages.getMessage("cleaningRule.label");
+			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.singular.label");
 		return recordType;
+	}
+	
+	public void printFields() {
+		System.out.println("Name=="+name+"==description=="+description+"==");
 	}
 	
 	// ==========================================
