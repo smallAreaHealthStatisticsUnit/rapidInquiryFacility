@@ -348,6 +348,10 @@ public final class OrderedListPanel {
 			itemFromListName.remove(displayNameToDelete);
 			listItems.remove(displayNameToDelete);
 		}
+		
+		if (listItems.isEmpty() == false) {
+			list.setSelectedIndex(0);
+		}
 		updateUI();
 	}
 	
