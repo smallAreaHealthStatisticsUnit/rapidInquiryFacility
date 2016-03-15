@@ -329,7 +329,8 @@ Test harness refactor; Node.js version working
 	
 	* shp2GeoJSON.html HTML 5 browser tester; works in Chrome and firfoix.  1.3G coa2011 shapefile cracks chrome; also breaks 
 	  the synchronous file write in Node. Code needs restructuring to be fully async with streaming everywhere.
-	
+	* Leaflet display of returned data
+	* Basic projection support (converted to 4326 for leaflet)
 	
 	Todo:
 
