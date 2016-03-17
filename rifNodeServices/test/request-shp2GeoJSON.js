@@ -82,6 +82,8 @@ var passed=0;
 var failed=0;
 var tests=0;
 
+var resultArray=[];
+
 var MakeRequest = function(){
 
     this.request = require('request'); 
@@ -250,10 +252,16 @@ var postIt = function(debug) {
 				return;
 			}
 			if (expected_to_pass == "true") {
+				if (ofields["my_reference"]) {
+					resultArray[ofields["my_reference"]]=false;
+				}
 				failed++;
 				console.error('WARNING! test failed when expected to pass');
 			}
 			else {
+				if (ofields["my_reference"]) {
+					resultArray[ofields["my_reference"]]=true;
+				}				
 				passed++;
 				console.error('GOOD! test failed as expected');
 			}					
@@ -299,9 +307,15 @@ var postIt = function(debug) {
 					"\nMessage body>>>\n" + body + "\n<<< End of message body\n");
 			}	
 			if (expected_to_pass == "true") {
+				if (ofields["my_reference"]) {
+					resultArray[ofields["my_reference"]]=true;
+				}				
 				passed++;
 			}
 			else {
+				if (ofields["my_reference"]) {
+					resultArray[ofields["my_reference"]]=false;
+				}				
 				console.error('WARNING! test passed when expected to fail');			
 				failed++;
 			}
@@ -335,7 +349,12 @@ var timeOut2 = function() {
 		}
 		else {
 			if (failed > 0) {
-				throw new Error("Failed " + failed + "/" + tests + "; passed: " + passed);
+				for (var i=1; i<=resultArray.length; i++) {
+					if (resultArray[i] && resultArray[i] == false) {
+						console.error("Test: " + i + " failed.");
+					}
+				}
+				throw new Error("Failed " + failed + "/" + tests + "; passed: " + passed);		
 			}
 			else {
 				console.error("All tests passed: " + passed + "/" + tests);

@@ -46,7 +46,7 @@
 
 /*
  * Function:	geo2TopoJSONFieldProcessor()
- * Parameters:	fieldname, val, text, topojson_options, ofields [field parameters array], 
+ * Parameters:	fieldname, val, topojson_options, ofields [field parameters array], 
  *				response object, express HTTP request object, RIF logging object
  * Returns:		Text of field processing log
  * Description: toTopoJSON method field processor. Called from req.busboy.on('field') callback function
@@ -92,7 +92,7 @@
  * myPropertyTransform() function id fields set to: ["eval(console.error(JSON.stringify(req, null, 4)))"]; 1 field(s)
  * FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(console.error(JSON.stringify(req, null, 4))) does not exist in geoJSON;
  */
-geo2TopoJSONFieldProcessor=function(fieldname, val, text, topojson_options, ofields, response, req, serverLog) {
+geo2TopoJSONFieldProcessor=function(fieldname, val, topojson_options, ofields, response, req, serverLog) {
 	var msg,
 	    text = "",
 
