@@ -1,7 +1,7 @@
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.GeographicalResolutionLevel;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -10,7 +10,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
 import java.io.*;
-import java.util.ArrayList;
+
 
 /**
  *
@@ -81,44 +81,13 @@ public final class RIFDataLoaderSettingsWriter {
 		
 		System.out.println("RIF Data Loader Tool settings writer");
 		File outputFile = new File("C://rif_scratch//test_data_loader_tool.xml");
-		RIFDataTypeFactory rifDataTypeFactory
-			= RIFDataTypeFactory.newInstance();	
-		ArrayList<GeographicalResolutionLevel> geographicalResolutionLevels
-			= new ArrayList<GeographicalResolutionLevel>();
-		GeographicalResolutionLevel soaLevel
-			= GeographicalResolutionLevel.newInstance(
-				"super output area", 
-				"a super output area description");
-		geographicalResolutionLevels.add(soaLevel);
-		GeographicalResolutionLevel oaLevel
-			= GeographicalResolutionLevel.newInstance(
-				"output area", 
-				"output area description");
-		geographicalResolutionLevels.add(oaLevel);
-		GeographicalResolutionLevel wardLevel
-			= GeographicalResolutionLevel.newInstance(
-				"ward", 
-					"ward description");		
-		geographicalResolutionLevels.add(wardLevel);
-		GeographicalResolutionLevel districtLevel
-			= GeographicalResolutionLevel.newInstance(
-				"district", 
-				"district description");			
-		geographicalResolutionLevels.add(districtLevel);
-		GeographicalResolutionLevel regionLevel
-			= GeographicalResolutionLevel.newInstance(
-				"region", 
-				"region description");			
-		geographicalResolutionLevels.add(regionLevel);
+		DataLoaderToolSettings dataLoaderToolSettings
+			= new DataLoaderToolSettings();
 				
 		RIFDataLoaderSettingsWriter writer
 			= new RIFDataLoaderSettingsWriter();
 		try {
-			rifDataTypeFactory.populateFactoryWithBuiltInTypes();
-			writer.write(
-				geographicalResolutionLevels,
-				rifDataTypeFactory, 
-				outputFile);			
+			writer.writeFile(outputFile, dataLoaderToolSettings);			
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
@@ -147,10 +116,9 @@ public final class RIFDataLoaderSettingsWriter {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public String write(
-		final ArrayList<GeographicalResolutionLevel> geographicalResolutionLevels,
-		final RIFDataTypeFactory rifDataTypeFactory,
-		final File file) 
+	public String writeFile(
+		final File file,
+		final DataLoaderToolSettings dataLoaderToolSettings)
 		throws RIFServiceException {
 			
 		try {
@@ -165,9 +133,8 @@ public final class RIFDataLoaderSettingsWriter {
 			rifDataLoaderConfigurationHandler.initialise(
 				fileOutputStream, 
 				commentInjector);
-			rifDataLoaderConfigurationHandler.writeXML(
-				geographicalResolutionLevels,
-				rifDataTypeFactory);
+			rifDataLoaderConfigurationHandler.writeXML(dataLoaderToolSettings);
+			outputStream.flush();
 	    	String result 
 				= new String(outputStream.toByteArray(), "UTF-8");	
 	    	outputStream.close();			

@@ -1,8 +1,7 @@
 
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.RIFDataType;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
@@ -12,7 +11,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.InputSource;
 import java.io.*;
-import java.util.ArrayList;
 
 /**
  *
@@ -140,12 +138,16 @@ public final class RIFDataLoaderSettingsReader {
 // Section Accessors and Mutators
 // ==========================================
     
+	public DataLoaderToolSettings getDataLoaderToolSettings() {
+		return rifDataLoaderConfigurationHandler.getDataLoaderToolSettings();
+	}
+	
 	/**
- * Read file.
- *
- * @param rifSubmissionFile the rif submission file
- * @throws RIFServiceException the RIF service exception
- */
+	 * Read file.
+	 *
+	 * @param rifSubmissionFile the rif submission file
+	 * @throws RIFServiceException the RIF service exception
+	 */
 	public void readFile(
 		final File rifSubmissionFile) 
 		throws RIFServiceException {
@@ -221,22 +223,16 @@ public final class RIFDataLoaderSettingsReader {
 		}
 	}			
 	
-	public RIFDataTypeFactory getRIFDataTypeFactory() {
-		return rifDataLoaderConfigurationHandler.getRIFDataTypeFactory();
-	}
-	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
-	
-// ==========================================
-// Section Errors and Validation
-// ==========================================
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
 
-// ==========================================
-// Section Interfaces
-// ==========================================
-
-// ==========================================
-// Section Override
-// ==========================================
+	// ==========================================
+	// Section Override
+	// ==========================================
 
 }

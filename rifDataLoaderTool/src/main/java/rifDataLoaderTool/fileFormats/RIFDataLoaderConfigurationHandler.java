@@ -2,7 +2,11 @@
 package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
+import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
+import rifDataLoaderTool.businessConceptLayer.ShapeFile;
 import rifDataLoaderTool.businessConceptLayer.GeographicalResolutionLevel;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+
 import rifDataLoaderTool.fileFormats.dataTypes.*;
 
 import rifServices.fileFormats.XMLCommentInjector;
@@ -90,8 +94,11 @@ final class RIFDataLoaderConfigurationHandler
 // ==========================================
 // Section Properties
 // ==========================================
-	private ArrayList<GeographicalResolutionLevel> geographicalResolutionLevels;
-	private RIFDataTypeFactory rifDataTypeFactory;
+	private DataLoaderToolSettings dataLoaderToolSettings;
+	
+	
+	private DatabaseConnectionConfigurationHandler databaseConnectionConfigurationHandler;
+	private ShapeFileConfigurationHandler shapeFileConfigurationHandler;
 	private GeographicalResolutionConfigurationHandler geographicalResolutionConfigurationHandler;
 	private RIFDataTypeConfigurationHandler rifDataTypeConfigurationHandler;
 		
@@ -102,14 +109,19 @@ final class RIFDataLoaderConfigurationHandler
      * Instantiates a new disease mapping study content handler.
      */
 	public RIFDataLoaderConfigurationHandler() {
+		dataLoaderToolSettings = new DataLoaderToolSettings();
 		
 		setSingularRecordName("rif_data_loader_settings");
-		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
 		rifDataTypeConfigurationHandler = new RIFDataTypeConfigurationHandler();
+		
+		databaseConnectionConfigurationHandler
+			= new DatabaseConnectionConfigurationHandler();
+		shapeFileConfigurationHandler
+			= new ShapeFileConfigurationHandler();
 		geographicalResolutionConfigurationHandler
 			= new GeographicalResolutionConfigurationHandler();
-		geographicalResolutionLevels
-			= new ArrayList<GeographicalResolutionLevel>();
+		//geographicalResolutionLevels
+		//	= new ArrayList<GeographicalResolutionLevel>();
 	}
 
 
@@ -122,6 +134,13 @@ final class RIFDataLoaderConfigurationHandler
 		super.initialise(
 			outputStream, 
 			commentInjector);
+
+		databaseConnectionConfigurationHandler.initialise(
+			outputStream, 
+			commentInjector);	
+		shapeFileConfigurationHandler.initialise(
+			outputStream, 
+			commentInjector);		
 		rifDataTypeConfigurationHandler.initialise(
 			outputStream, 
 			commentInjector);		
@@ -135,6 +154,9 @@ final class RIFDataLoaderConfigurationHandler
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream);
+		databaseConnectionConfigurationHandler.initialise(outputStream);
+		shapeFileConfigurationHandler.initialise(outputStream);		
+		geographicalResolutionConfigurationHandler.initialise(outputStream);
 		rifDataTypeConfigurationHandler.initialise(outputStream);
 	}
 		
@@ -142,22 +164,17 @@ final class RIFDataLoaderConfigurationHandler
 // Section Accessors and Mutators
 // ==========================================
     	
+	public DataLoaderToolSettings getDataLoaderToolSettings() {
+		return dataLoaderToolSettings;
+	}
+	
 	/**
 	 * Gets the disease mapping study.
 	 *
 	 * @return the disease mapping study
 	 */
-	public RIFDataTypeFactory getRIFDataTypeFactory() {
-		return rifDataTypeFactory;
-	}
 
-	public ArrayList<GeographicalResolutionLevel> getGeographicalResolutionLevels() {
-		return geographicalResolutionLevels;
-	}
-	
-	public void writeXML(
-		final ArrayList<GeographicalResolutionLevel> geographicalResolutionLevels,
-		final RIFDataTypeFactory rifDataTypeFactory)
+	public void writeXML(final DataLoaderToolSettings dataLoaderToolSettings)
 		throws IOException {
 			
 		XMLUtility xmlUtility = getXMLUtility();
@@ -165,8 +182,14 @@ final class RIFDataLoaderConfigurationHandler
 
 		String recordType = getSingularRecordName();
 		xmlUtility.writeRecordStartTag(recordType);
-		geographicalResolutionConfigurationHandler.writeXML(geographicalResolutionLevels);
-		rifDataTypeConfigurationHandler.writeXML(rifDataTypeFactory);
+		databaseConnectionConfigurationHandler.writeXML(
+			dataLoaderToolSettings.getDatabaseConnectionParameters());
+		shapeFileConfigurationHandler.writeXML(
+			dataLoaderToolSettings.getShapeFiles());
+		geographicalResolutionConfigurationHandler.writeXML(
+			dataLoaderToolSettings.getGeographicalResolutionLevels());
+		rifDataTypeConfigurationHandler.writeXML(
+			dataLoaderToolSettings.getRIFDataTypeFactory());
 		xmlUtility.writeRecordEndTag(recordType);	
 	}	
 		
@@ -206,8 +229,14 @@ final class RIFDataLoaderConfigurationHandler
 		else {
 			
 			//check to see if handlers could be assigned to delegate parsing
-			if (geographicalResolutionConfigurationHandler.isPluralRecordName(qualifiedName)) {
+			if (databaseConnectionConfigurationHandler.isSingularRecordName(qualifiedName)) {
+				assignDelegatedHandler(databaseConnectionConfigurationHandler);				
+			}
+			else if (geographicalResolutionConfigurationHandler.isPluralRecordName(qualifiedName)) {
 				assignDelegatedHandler(geographicalResolutionConfigurationHandler);				
+			}
+			else if (shapeFileConfigurationHandler.isPluralRecordName(qualifiedName)) {
+				assignDelegatedHandler(shapeFileConfigurationHandler);				
 			}
 			else if (rifDataTypeConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(rifDataTypeConfigurationHandler);
@@ -250,14 +279,26 @@ final class RIFDataLoaderConfigurationHandler
 				qualifiedName);
 						
 			if (currentDelegatedHandler.isActive() == false) {
-				if (currentDelegatedHandler == rifDataTypeConfigurationHandler) {
-					rifDataTypeFactory
-						= rifDataTypeConfigurationHandler.getRIFDataTypeFactory();
-				}
-				else if (currentDelegatedHandler == rifDataTypeConfigurationHandler) {
-					geographicalResolutionLevels
-						= geographicalResolutionConfigurationHandler.getGeographicalResolutionLevels();
+				if (currentDelegatedHandler == databaseConnectionConfigurationHandler) {
+					RIFDatabaseConnectionParameters databaseConnectionParameters
+						= databaseConnectionConfigurationHandler.getDatabaseConnectionParameters();
+					dataLoaderToolSettings.setDatabaseConnectionParameters(databaseConnectionParameters);
 				}				
+				else if (currentDelegatedHandler == geographicalResolutionConfigurationHandler) {
+					ArrayList<GeographicalResolutionLevel> geographicalResolutionLevels
+						= geographicalResolutionConfigurationHandler.getGeographicalResolutionLevels();
+					dataLoaderToolSettings.setGeographicalResolutionLevels(geographicalResolutionLevels);
+				}
+				else if (currentDelegatedHandler == shapeFileConfigurationHandler) {
+					ArrayList<ShapeFile> shapeFiles
+						= shapeFileConfigurationHandler.getShapeFiles();
+					dataLoaderToolSettings.setShapeFiles(shapeFiles);
+				}				
+				else if (currentDelegatedHandler == rifDataTypeConfigurationHandler) {
+					RIFDataTypeFactory rifDataTypeFactory
+						= rifDataTypeConfigurationHandler.getRIFDataTypeFactory();
+					dataLoaderToolSettings.setRIFDataTypeFactory(rifDataTypeFactory);
+				}
 				else {
 					assert false;
 				}				
