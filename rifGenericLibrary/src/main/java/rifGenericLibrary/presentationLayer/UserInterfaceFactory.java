@@ -475,6 +475,18 @@ public final class UserInterfaceFactory {
 		return createMenu(fileMenuText);
 	}
 	
+	public JMenuItem createLoadMenuItem() {
+		String loadMenuItemText
+			= RIFGenericLibraryMessages.getMessage("buttons.load.label");
+		return createJMenuItem(loadMenuItemText);			
+	}
+	
+	public JMenuItem createSaveAsMenuItem() {
+		String saveAsMenuItemText
+			= RIFGenericLibraryMessages.getMessage("buttons.saveAs.label");
+		return createJMenuItem(saveAsMenuItemText);		
+	}
+	
 	public JMenuItem createExitMenuItem() {
 		String exitMenuItemText
 			= RIFGenericLibraryMessages.getMessage("fileMenu.exit.label");
@@ -931,6 +943,12 @@ public final class UserInterfaceFactory {
 		dialog.setTitle(title);
 		return dialog;
 	}
+
+	public JDialog createDialog() {
+			
+		JDialog dialog = new JDialog();
+		return dialog;
+	}	
 	
 	/**
 	 * Creates a new UserInterface object.
