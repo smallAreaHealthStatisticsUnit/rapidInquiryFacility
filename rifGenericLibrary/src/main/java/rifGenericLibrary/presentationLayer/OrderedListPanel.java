@@ -145,6 +145,10 @@ public final class OrderedListPanel {
 		panelGC.weightx = 1.0;
 		panelGC.weighty = 1.0;
 		list = userInterfaceFactory.createList(listItems);
+		//list.setDragEnabled(true);
+		//list.setDropMode(DropMode.USE_SELECTION);
+		//list.setTransferHandler(new DefaultDnDTransferHandler());
+		
 		userInterfaceFactory.setPlainFont(list);
 		ListSelectionModel listSelectionModel
 			= list.getSelectionModel();
@@ -298,31 +302,54 @@ public final class OrderedListPanel {
 	public void replaceItem(
 			DisplayableListItemInterface originalItem,
 			DisplayableListItemInterface revisedItem) {
-		
-		String displayName
+				
+		String originalDisplayName
 			= originalItem.getDisplayName();
+		String revisedDisplayName
+			= revisedItem.getDisplayName();
 		
-		itemFromListName.remove(displayName);		
-		listItems.remove(displayName);	
+		//preserve original index so that when we reinsert the revised
+		//version we may have the option of keeping the original list position
+		int originalIndex = listItems.indexOf(originalDisplayName);
 		
-		itemFromListName.put(revisedItem.getDisplayName(), revisedItem);
-		listItems.add(revisedItem.getDisplayName());
+		//remove any trace of the original display name
+		itemFromListName.remove(originalDisplayName);		
+		listItems.remove(originalDisplayName);	
+		
+		//now add the revised version again
+		itemFromListName.put(revisedDisplayName, revisedItem);
 		if (alphabeticallySortItems == true) {
+			//sorting may change the position of the item if revised fields in the 
+			//item changed the display name
+			listItems.add(revisedDisplayName);
 			Collections.sort(listItems);	
+		}
+		else {
+			//add the item back in exact same position in the list
+			listItems.add(originalIndex, revisedDisplayName);
 		}
 	}
 	
 	public void replaceItem(
-		String oldDisplayName,
+		String originalDisplayName,
 		DisplayableListItemInterface revisedItem) {
+
+		String revisedDisplayName = revisedItem.getDisplayName();
+
+		//preserve original index so that when we reinsert the revised
+		//version we may have the option of keeping the original list position
+		int originalIndex = listItems.indexOf(originalDisplayName);
 		
-		itemFromListName.remove(oldDisplayName);		
-		listItems.remove(oldDisplayName);	
+		itemFromListName.remove(originalDisplayName);		
+		listItems.remove(originalDisplayName);	
 		
 		itemFromListName.put(revisedItem.getDisplayName(), revisedItem);
-		listItems.add(revisedItem.getDisplayName());
 		if (alphabeticallySortItems == true) {
+			listItems.add(revisedDisplayName);
 			Collections.sort(listItems);	
+		}
+		else {
+			listItems.add(originalIndex, revisedDisplayName);
 		}
 	}	
 	
@@ -497,16 +524,76 @@ public final class OrderedListPanel {
 		return displayableItems;
 	}
 	
-// ==========================================
-// Section Errors and Validation
-// ==========================================
+	public void shiftSelectedItemUp() {
+		//remove list of list selection listeners in order to prevent undesirable
+		//selection events from being fired
+		ListSelectionListener[] listSelectionListeners
+			= list.getListSelectionListeners();
+		for (ListSelectionListener listSelectionListener : listSelectionListeners) {
+			list.removeListSelectionListener(listSelectionListener);			
+		}
+		
+		int currentTargetIndex = list.getSelectedIndex();
+		
+		int shiftedUpIndex = currentTargetIndex - 1;
+		if (shiftedUpIndex < 0) {
+			//no change
+			return;
+		}
 
-// ==========================================
-// Section Interfaces
-// ==========================================
+		//we are not at the top of the list, so there is room to shift things up
+		String listItem = listItems.get(currentTargetIndex);
+		listItems.remove(listItem);
+		listItems.add(shiftedUpIndex, listItem);
+		list.updateUI();
+		list.setSelectedIndex(shiftedUpIndex);
+		
+		//now add the list selection listeners back
+		for (ListSelectionListener listSelectionListener : listSelectionListeners) {
+			list.addListSelectionListener(listSelectionListener);			
+		}
+		
+	}
 
-// ==========================================
-// Section Override
-// ==========================================
+	public void shiftSelectedItemDown() {
+		//remove list of list selection listeners in order to prevent undesirable
+		//selection events from being fired
+		ListSelectionListener[] listSelectionListeners
+			= list.getListSelectionListeners();
+		for (ListSelectionListener listSelectionListener : listSelectionListeners) {
+			list.removeListSelectionListener(listSelectionListener);			
+		}
+		
+		int currentTargetIndex = list.getSelectedIndex();
+		
+		int shiftedDownIndex = currentTargetIndex + 1;		
+		if (shiftedDownIndex >= listItems.size()) {
+			//no change, we're at the bottom of the list
+			return;
+		}
+
+		//we are not at the top of the list, so there is room to shift things up
+		String listItem = listItems.get(currentTargetIndex);
+		listItems.remove(listItem);
+		listItems.add(shiftedDownIndex, listItem);
+		list.updateUI();
+		list.setSelectedIndex(shiftedDownIndex);
+		//now add the list selection listeners back
+		for (ListSelectionListener listSelectionListener : listSelectionListeners) {
+			list.addListSelectionListener(listSelectionListener);			
+		}
+	}
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
+
+	// ==========================================
+	// Section Override
+	// ==========================================
 
 }
