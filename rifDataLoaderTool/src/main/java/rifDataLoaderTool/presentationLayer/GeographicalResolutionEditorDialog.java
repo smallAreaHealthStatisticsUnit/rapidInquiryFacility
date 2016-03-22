@@ -75,8 +75,8 @@ public class GeographicalResolutionEditorDialog
 
 	
 	public static void main(String[] arguments) {
-		RIFDataLoaderToolSettings settings
-			= new RIFDataLoaderToolSettings();
+		DataLoaderToolSettings settings
+			= new DataLoaderToolSettings();
 		
 		UserInterfaceFactory userInterfaceFactory
 			= new UserInterfaceFactory();
@@ -97,10 +97,11 @@ public class GeographicalResolutionEditorDialog
 
 	private JDialog dialog;
 	
-
-	
 	private OrderedListPanel listPanel;
 	private ListEditingButtonPanel listEditingButtonPanel;
+	private JButton shiftUpButton;
+	private JButton shiftDownButton;
+	
 	
 	private GeographicalResolutionLevelEditingPanel resolutionEditingPanel;
 	
@@ -112,6 +113,8 @@ public class GeographicalResolutionEditorDialog
 	
 	private GeographicalResolutionLevel currentLevel;
 	
+	private boolean isCancelled;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -121,7 +124,8 @@ public class GeographicalResolutionEditorDialog
 
 		this.userInterfaceFactory = userInterfaceFactory;
 		allowSelectionChange = true;
-		currentLevel = GeographicalResolutionLevel.EMPTY_GEOGRAPHICAL_RESOLUTION_LEVEL;
+		currentLevel = null;
+		isCancelled = false;
 		buildUI();
 	}
 	
@@ -159,7 +163,7 @@ public class GeographicalResolutionEditorDialog
 			= userInterfaceFactory.createLeftRightSplitPane(
 					createListEditingPanel(), 
 					resolutionEditingPanel.getPanel());
-		splitPane.setDividerLocation(0.20);
+		splitPane.setDividerLocation(0.50);
 		panel.add(splitPane, panelGC);
 		
 		panelGC.gridy++;
@@ -172,7 +176,7 @@ public class GeographicalResolutionEditorDialog
 		panel.add(okCloseButtonPanel.getPanel(), panelGC);
 
 		dialog.getContentPane().add(panel);
-		dialog.setSize(600, 300);
+		dialog.setSize(800, 400);
 		dialog.setModal(true);
 	}
 
@@ -208,6 +212,23 @@ public class GeographicalResolutionEditorDialog
 		listEditingButtonPanel.includeAddButton("");
 		listEditingButtonPanel.includeCopyButton("");
 		listEditingButtonPanel.includeDeleteButton("");
+
+		String shiftUpButtonText
+			= RIFDataLoaderToolMessages.getMessage(
+				"geographicalResolutionEditorDialog.buttons.shiftUp.label");	
+		shiftUpButton
+			= userInterfaceFactory.createButton(shiftUpButtonText);
+		shiftUpButton.addActionListener(this);
+		listEditingButtonPanel.addSpecialisedButton(shiftUpButton);
+		
+		String shiftDownButtonText
+			= RIFDataLoaderToolMessages.getMessage(
+				"geographicalResolutionEditorDialog.buttons.shiftDown.label");	
+		shiftDownButton
+			= userInterfaceFactory.createButton(shiftDownButtonText);
+		shiftDownButton.addActionListener(this);		
+		listEditingButtonPanel.addSpecialisedButton(shiftDownButton);
+
 		panel.add(listEditingButtonPanel.getPanel(), panelGC);
 		
 		return panel;
@@ -253,12 +274,26 @@ public class GeographicalResolutionEditorDialog
 		dialog.setVisible(true);
 	}
 	
+	public boolean isCancelled() {
+		return isCancelled;
+	}
+	
 	public void addGeographicalResolutionLevel() {
 		
 		try {
+			//save changes to the current selected item		
 			saveFormChanges();
+			
+			//now create a new item
+			currentLevel = GeographicalResolutionLevel.newInstance();
+			currentLevel.setName(generateNewItemName());
+			System.out.println("Adding level=="+currentLevel.getName()+"==");
+			listPanel.removeListSelectionListener(this);
 			listPanel.addListItem(currentLevel);
-			listPanel.setSelectedItem(currentLevel);			
+			listPanel.updateUI();			
+			listPanel.setSelectedItem(currentLevel);
+			resolutionEditingPanel.setData(currentLevel);
+			listPanel.addListSelectionListener(this);
 			updateListButtonStates();			
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -272,24 +307,26 @@ public class GeographicalResolutionEditorDialog
 			= (GeographicalResolutionLevel) listPanel.getSelectedItem();
 		GeographicalResolutionLevel cloneLevel
 			= GeographicalResolutionLevel.createCopy(selectedLevel);
+		cloneLevel.setName(generateCopyItemName(selectedLevel));
 		
-		String nameListItemDialogTitle
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionEditorDialog.copyLevel.title");
 		
-		ArrayList<String> existingNames = getExistingNames();
+		//String nameListItemDialogTitle
+		//	= RIFDataLoaderToolMessages.getMessage("geographicalResolutionEditorDialog.copyLevel.title");
 		
-		NamedListItemDialog nameListItemDialog
-			= new NamedListItemDialog(
-				userInterfaceFactory,
-				nameListItemDialogTitle,
-				existingNames);
+	//	ArrayList<String> existingNames = getExistingNames();
+		
+		//NamedListItemDialog nameListItemDialog
+		//	= new NamedListItemDialog(
+		//		userInterfaceFactory,
+		//		nameListItemDialogTitle,
+		//		existingNames);
 			
-		nameListItemDialog.show();
-		if (nameListItemDialog.isCancelled()) {
-			return;
-		}
+		//nameListItemDialog.show();
+		//if (nameListItemDialog.isCancelled()) {
+		//	return;
+		//}
 		
-		cloneLevel.setName(nameListItemDialog.getCandidateName());
+		//cloneLevel.setName(nameListItemDialog.getCandidateName());
 		listPanel.addListItem(cloneLevel);
 		listPanel.updateUI();
 		listPanel.setSelectedItem(cloneLevel);
@@ -308,6 +345,14 @@ public class GeographicalResolutionEditorDialog
 		
 	}
 	
+	private void shiftGeographicalResolutionLevelUp() {
+		listPanel.shiftSelectedItemUp();
+	}
+	
+	private void shiftGeographicalResolutionDown() {
+		listPanel.shiftSelectedItemDown();		
+	}
+	
 	private ArrayList<String> getExistingNames() {
 		ArrayList<String> results = new ArrayList<String>();
 		ArrayList<DisplayableListItemInterface> listItems
@@ -322,11 +367,20 @@ public class GeographicalResolutionEditorDialog
 	}
 	
 	private void ok() {
-
-		dialog.setVisible(false);
+		try {
+			saveFormChanges();			
+			dialog.setVisible(false);
+		}
+		catch(RIFServiceException rifServiceException) {
+			ErrorDialog.showError(
+				dialog, 
+				rifServiceException.getErrorMessages());
+		}
 	}
 	
-	private void close() {		
+	private void close() {	
+		
+		isCancelled = true;
 		dialog.setVisible(false);
 	}
 	
@@ -334,14 +388,50 @@ public class GeographicalResolutionEditorDialog
 	private void updateListButtonStates() {
 		if (listPanel.isEmpty()) {
 			listEditingButtonPanel.indicateEmptyState();
+			shiftUpButton.setEnabled(false);
+			shiftDownButton.setEnabled(false);
 		}
 		else {
 			listEditingButtonPanel.indicatePopulatedState();
-
+			shiftUpButton.setEnabled(true);
+			shiftDownButton.setEnabled(true);
 		}
 		
 	}
 	
+	private String generateNewItemName() {
+		String baseName
+			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.singular.label");
+		int counter = 1;
+		
+		ArrayList<String> existingNames = getExistingNames();
+		
+		String currentCandidateName = baseName + " " + counter;
+		while (existingNames.contains(currentCandidateName) == true) {
+			counter++;
+			currentCandidateName = baseName + " " + counter;
+		}
+		
+		return currentCandidateName;		
+	}
+
+	private String generateCopyItemName(final GeographicalResolutionLevel levelToCopy) {
+		String baseName
+			= levelToCopy.getName();
+		
+		int counter = 2;
+		
+		ArrayList<String> existingNames = getExistingNames();
+		
+		String currentCandidateName = baseName + " " + counter;
+		while (existingNames.contains(currentCandidateName) == true) {
+			counter++;
+			currentCandidateName = baseName + " " + counter;
+		}
+		
+		return currentCandidateName;		
+	}
+
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -364,6 +454,12 @@ public class GeographicalResolutionEditorDialog
 		else if (listEditingButtonPanel.isDeleteButton(button)) {
 			deleteGeographicalResolutionLevel();
 		}
+		else if (button == shiftUpButton) {
+			listPanel.shiftSelectedItemUp();
+		}
+		else if (button == shiftDownButton) {
+			listPanel.shiftSelectedItemDown();
+		}		
 		else if (okCloseButtonPanel.isOKButton(button)) {
 			ok();
 		}
@@ -373,7 +469,6 @@ public class GeographicalResolutionEditorDialog
 	}
 	
 	public void valueChanged(final ListSelectionEvent event) {
-		System.out.println("valueChanged there are=="+ listPanel.getNumberOfItems() + "== items");
 		
 		if (event.getValueIsAdjusting()) {
 			return;
@@ -382,7 +477,7 @@ public class GeographicalResolutionEditorDialog
 		//Try to save the previously selected item
 		try {
 			System.out.println("valueChanged 0.1");
-			if (currentLevel != GeographicalResolutionLevel.EMPTY_GEOGRAPHICAL_RESOLUTION_LEVEL) {		
+			if (currentLevel != null) {		
 				System.out.println("valueChanged 1");
 				String oldDisplayName = currentLevel.getDisplayName();
 				boolean changesWereSaved = saveFormChanges();
@@ -428,9 +523,10 @@ public class GeographicalResolutionEditorDialog
 	private boolean saveFormChanges() 
 		throws RIFServiceException {
 		
-		GeographicalResolutionLevel candidateLevel = resolutionEditingPanel.getLevelFromForm();
+		GeographicalResolutionLevel candidateLevel 
+			= resolutionEditingPanel.getLevelFromForm();
 
-		if (listPanel.isEmpty()) {
+		if (listPanel.isEmpty() || currentLevel == null) {
 			return false;
 		}
 		else {

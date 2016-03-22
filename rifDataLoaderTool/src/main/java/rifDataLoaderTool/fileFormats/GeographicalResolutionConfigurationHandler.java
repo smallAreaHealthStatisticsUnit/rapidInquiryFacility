@@ -193,7 +193,7 @@ final class GeographicalResolutionConfigurationHandler
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
 		}
-		else if (isPluralRecordName(qualifiedName)) {
+		else if (isSingularRecordName(qualifiedName)) {
 			currentLevel = GeographicalResolutionLevel.newInstance();
 		}		
 
