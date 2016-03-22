@@ -94,6 +94,24 @@ public class ShapeFile
 	// Section Accessors and Mutators
 	// ==========================================
 	
+	public ArrayList<String> getShapeFileComponentPaths() {
+		ArrayList<String> results = new ArrayList<String>();		
+		results.addAll(filePathForShapeFileComponent.values());		
+		return results;
+	}
+	
+	public void addShapeFileComponentPath(
+		final String shapeFileComponentPath) {
+		
+		ShapeFileComponent shapeFileComponent
+			= ShapeFileComponent.getShapeFileComponent(shapeFileComponentPath);
+		if (shapeFileComponent != null) {
+			setShapeFileComponentPath(
+				shapeFileComponent, 
+				shapeFileComponentPath);
+		}
+	}
+	
 	public void setShapeFileComponentPath(
 		final ShapeFileComponent shapeFileComponent,
 		final String filePath) {
@@ -336,7 +354,6 @@ public class ShapeFile
 	public String getDisplayName() {
 		String filePath
 			= filePathForShapeFileComponent.get(ShapeFileComponent.SHP);
-		System.out.println("ShapeFile getDisplayName  filePath=="+filePath+"==");
 		String shapeFileName
 			= extractBaseFileName(filePath);
 		return shapeFileName;

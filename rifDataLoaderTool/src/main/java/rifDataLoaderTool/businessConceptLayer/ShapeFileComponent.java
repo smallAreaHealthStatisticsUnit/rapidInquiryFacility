@@ -75,6 +75,68 @@ public enum ShapeFileComponent {
 	public String getFileExtension() {
 		return fileExtension;
 	}
+	
+	public boolean isFileComponent(final String filePath) {
+		
+		String lowerCaseFilePath = filePath.toLowerCase();
+		return lowerCaseFilePath.endsWith(fileExtension);
+	}
+	
+	public static final ShapeFileComponent getShapeFileComponent(
+		final String shapeFileComponentPath) {
+		
+		if (SHP.isFileComponent(shapeFileComponentPath)) {
+			return SHP;
+		}
+		else if (SHP.isFileComponent(shapeFileComponentPath)) {
+			return SHP;
+		}
+		else if (SHX.isFileComponent(shapeFileComponentPath)) {
+			return SHX;
+		}
+		else if (DBF.isFileComponent(shapeFileComponentPath)) {
+			return DBF;
+		}
+		else if (PRJ.isFileComponent(shapeFileComponentPath)) {
+			return PRJ;
+		}
+		else if (SBX.isFileComponent(shapeFileComponentPath)) {
+			return SBX;
+		}
+		else if (SBN.isFileComponent(shapeFileComponentPath)) {
+			return SBN;
+		}
+		else if (FBN.isFileComponent(shapeFileComponentPath)) {
+			return FBN;
+		}
+		else if (FBX.isFileComponent(shapeFileComponentPath)) {
+			return FBX;
+		}
+		else if (AIN.isFileComponent(shapeFileComponentPath)) {
+			return AIN;
+		}
+		else if (AIH.isFileComponent(shapeFileComponentPath)) {
+			return AIH;
+		}
+		else if (IXS.isFileComponent(shapeFileComponentPath)) {
+			return IXS;
+		}
+		else if (MXS.isFileComponent(shapeFileComponentPath)) {
+			return MXS;
+		}
+		else if (ATX.isFileComponent(shapeFileComponentPath)) {
+			return ATX;
+		}
+		else if (CPG.isFileComponent(shapeFileComponentPath)) {
+			return CPG;
+		}
+		else if (QIX.isFileComponent(shapeFileComponentPath)) {
+			return QIX;
+		}
+		else {
+			return null;
+		}
+	}
 }
 
 
