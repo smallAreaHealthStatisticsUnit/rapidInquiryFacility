@@ -354,12 +354,10 @@ public class DatabaseTypeEditorDialog
 	private void ok() {
 		
 		dialog.setVisible(false);		
-		System.exit(0);
 	}
 	
 	private void close() {
 		dialog.setVisible(false);
-		System.exit(0);
 	}
 	
 	private void updateDisplayForSelectedDataType() {
