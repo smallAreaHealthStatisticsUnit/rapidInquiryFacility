@@ -3,8 +3,7 @@ package rifDataLoaderTool.presentationLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifGenericLibrary.presentationLayer.*;
-
-
+import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -73,7 +72,7 @@ public class InitialiseDemoDatabaseDialog
 	// Section Properties
 	// ==========================================
 	
-	private RIFDataLoaderStartupOptions rifDataLoaderStartupOptions;
+	private RIFDatabaseConnectionParameters databaseConnectionParameters;
 	
 	private JDialog dialog;
 	private UserInterfaceFactory userInterfaceFactory;	
@@ -96,10 +95,7 @@ public class InitialiseDemoDatabaseDialog
 
 		this.userInterfaceFactory = userInterfaceFactory;
 
-		rifDataLoaderStartupOptions
-			= new RIFDataLoaderStartupOptions();
 		buildUI();
-		populateForm();
 	}
 
 	private void buildUI() {
@@ -272,15 +268,21 @@ public class InitialiseDemoDatabaseDialog
 		return passwordTextField.getText();
 	}
 
-	public RIFDataLoaderStartupOptions getDataLoaderStartupOptions() {
+	public RIFDatabaseConnectionParameters getData() {
 		
-		return rifDataLoaderStartupOptions;		
+		return databaseConnectionParameters;		
+	}
+	
+	public void setData(
+		final RIFDatabaseConnectionParameters databaseConnectionParameters) {
+		
+		this.databaseConnectionParameters = databaseConnectionParameters;
+		populateForm();
 	}
 	
 	public void setDataLoaderStartupOptions(
 		final RIFDataLoaderStartupOptions rifDataLoaderStartupOptions) {
 		
-		this.rifDataLoaderStartupOptions = rifDataLoaderStartupOptions;
 	}
 	
 	public void show() {
@@ -289,11 +291,11 @@ public class InitialiseDemoDatabaseDialog
 	}
 
 	private void ok() {
-		rifDataLoaderStartupOptions.setDatabaseName(
+		databaseConnectionParameters.setDatabaseName(
 			databaseNameTextField.getText());
-		rifDataLoaderStartupOptions.setHost(
+		databaseConnectionParameters.setHostName(
 			hostTextField.getText());
-		rifDataLoaderStartupOptions.setPort(
+		databaseConnectionParameters.setPortName(
 			portTextField.getText());
 		
 		dialog.setVisible(false);
@@ -307,12 +309,11 @@ public class InitialiseDemoDatabaseDialog
 	private void populateForm() {
 		
 		databaseNameTextField.setText(
-			rifDataLoaderStartupOptions.getDatabaseName());
+			databaseConnectionParameters.getDatabaseName());
 		portTextField.setText(
-			rifDataLoaderStartupOptions.getPort());
+			databaseConnectionParameters.getPortName());
 		hostTextField.setText(
-			rifDataLoaderStartupOptions.getHost());	
-		
+			databaseConnectionParameters.getHostName());	
 	}
 	
 	// ==========================================
