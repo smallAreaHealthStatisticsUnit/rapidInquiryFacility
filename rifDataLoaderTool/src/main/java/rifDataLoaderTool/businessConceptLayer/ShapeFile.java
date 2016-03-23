@@ -4,13 +4,12 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-
 import rifServices.system.RIFServiceMessages;
+import rifServices.util.FieldValidationUtility;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.text.Collator;
 
 /**
  *
@@ -73,6 +72,10 @@ public class ShapeFile
 	// Section Properties
 	// ==========================================
 	
+	private String shapeFileDescription;
+	private String areaIdentifierFieldName;
+	private String nameFieldName;
+	private ArrayList<String> shapeFileFieldNames;
 	private HashMap<ShapeFileComponent, String> filePathForShapeFileComponent;
 	
 	// ==========================================
@@ -82,7 +85,11 @@ public class ShapeFile
 	private ShapeFile() {
 		filePathForShapeFileComponent 
 			= new HashMap<ShapeFileComponent, String>();
-		
+		shapeFileDescription = "";
+				
+		shapeFileFieldNames = new ArrayList<String>();
+		areaIdentifierFieldName = "";
+		nameFieldName = "";		
 	}
 
 	public static ShapeFile newInstance() {
@@ -90,9 +97,71 @@ public class ShapeFile
 		return shapeFile;
 	}
 	
+	public static ShapeFile createCopy(final ShapeFile originalShapeFile) {
+		ShapeFile cloneShapeFile = new ShapeFile();
+	
+		cloneShapeFile.setShapeFileDescription(
+			originalShapeFile.getShapeFileDescription());
+		cloneShapeFile.setAreaIdentifierFieldName(
+			originalShapeFile.getAreaIdentifierFieldName());
+		cloneShapeFile.setNameFieldName(
+			originalShapeFile.getNameFieldName());
+
+		ArrayList<String> originalShapeFileFieldNames
+			= originalShapeFile.getShapeFileFieldNames();
+		for (String originalShapeFileFieldName : originalShapeFileFieldNames) {
+			cloneShapeFile.addShapeFileFieldName(originalShapeFileFieldName);
+		}
+			
+		ArrayList<String> originalShapeFileComponentPaths
+			= originalShapeFile.getShapeFileComponentPaths();
+		for (String originalShapeFileComponentPath : originalShapeFileComponentPaths) {
+			cloneShapeFile.addShapeFileComponentPath(originalShapeFileComponentPath);
+		}
+		
+		return cloneShapeFile;		
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+		
+	public String getShapeFileDescription() {
+		return shapeFileDescription;
+	}
+
+	public void setShapeFileDescription(String shapeFileDescription) {
+		this.shapeFileDescription = shapeFileDescription;
+	}
+
+	public ArrayList<String> getShapeFileFieldNames() {
+		return shapeFileFieldNames;
+	}
+
+	public void addShapeFileFieldName(final String shapeFileFieldName) {
+		shapeFileFieldNames.add(shapeFileFieldName);
+	}
+		
+	public void setShapeFileFieldNames(final ArrayList<String> shapeFileFieldNames) {
+		this.shapeFileFieldNames = shapeFileFieldNames;
+	}
+	
+	public String getAreaIdentifierFieldName() {
+		return areaIdentifierFieldName;
+	}
+
+	public void setAreaIdentifierFieldName(String areaIdentifierFieldName) {
+		this.areaIdentifierFieldName = areaIdentifierFieldName;
+	}
+
+	public String getNameFieldName() {
+		return nameFieldName;
+	}
+
+	public void setNameFieldName(String nameFieldName) {
+		this.nameFieldName = nameFieldName;
+	}
 	
 	public ArrayList<String> getShapeFileComponentPaths() {
 		ArrayList<String> results = new ArrayList<String>();		
@@ -137,7 +206,7 @@ public class ShapeFile
 			return baseFileName;		
 		}			
 	}
-		
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -165,6 +234,44 @@ public class ShapeFile
 	private ArrayList<String> identifyErrorMessages() {
 
 		ArrayList<String> errorMessages = new ArrayList<String>();
+		
+		String recordName
+			= RIFDataLoaderToolMessages.getMessage("shapeFile.name.label");
+		String shapeFileDescriptionFieldLabel
+			= RIFDataLoaderToolMessages.getMessage("shapeFile.description.label");		
+		String areaIdentifierFieldLabel
+			= RIFDataLoaderToolMessages.getMessage("shapeFile.areaIdentifierFieldName.label");
+		String nameFieldLabel
+			= RIFDataLoaderToolMessages.getMessage("shapeFile.nameFieldName.label");
+		
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		if (fieldValidationUtility.isEmpty(shapeFileDescription)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordName,
+					shapeFileDescriptionFieldLabel);
+			errorMessages.add(errorMessage);			
+		}
+		
+		if (fieldValidationUtility.isEmpty(areaIdentifierFieldName)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordName,
+					areaIdentifierFieldLabel);
+			errorMessages.add(errorMessage);			
+		}
+		
+		if (fieldValidationUtility.isEmpty(nameFieldName)) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"general.validation.emptyRequiredRecordField", 
+					recordName,
+					nameFieldLabel);
+			errorMessages.add(errorMessage);
+		}
 		
 		String shpFieldName
 			= RIFDataLoaderToolMessages.getMessage("shapeFile.shp.label");
@@ -321,6 +428,10 @@ public class ShapeFile
 	
 	public void print() {
 		StringBuilder buffer = new StringBuilder();
+
+		buffer.append("Description:" + shapeFileDescription + "==\n");
+		buffer.append("Area Identifier:" + areaIdentifierFieldName + "==\n");
+		buffer.append("Name Field:" + nameFieldName + "==\n");
 
 		ArrayList<ShapeFileComponent> shapeFileComponents
 			= new ArrayList<ShapeFileComponent>(filePathForShapeFileComponent.keySet());
