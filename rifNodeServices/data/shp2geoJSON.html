@@ -7,20 +7,21 @@
   </head>
   <body>
     <div id="header">
-      <h3>Shapefile Upload:</h3>
+      <h4>Shapefile Upload</h4>
     </div>
   <div id="nav">
 	<form action="http://127.0.0.1:3000/shp2GeoJSON" method="POST" id="shp2GeoJSON"
 		  enctype="multipart/form-data">
-	  Select a set/sets of shapefile files to upload: <input type="file" id="files" size="50" multiple="multiple" /></br> 
+	  Select a set/sets of shapefile files to upload: <input type="file" id="files" size="50" multiple="multiple" />
 	  <!-- Use multi file submit -->
 
       <input type="submit" id="submit_handle" style="display: none"> 
 	  <input type="hidden" id="store" name="store" value="false">
+	  <div id="conversion">
 	  Select conversion:
 	  <input type="radio" id="output_type_geojson" name="output_type" value="shp2GeoJSON" checked>GeoJSON
 	  <input type="radio" id="output_type_topojson" name="output_type" value="shp2TopoJSON">TopoJSON
-	  <input type="radio" id="output_type_wkt" name="output_type" value="shp2WKT">Well Known text (WKT)</br>
+	  <input type="radio" id="output_type_wkt" name="output_type" value="shp2WKT">Well Known text (WKT)</div></br>
 	  Verbose mode:
 	  <input type="checkbox" id="verbose" value="true">
 	  <button type="button" id="save" onclick="submitForm()">Upload Files</button></br>	  
@@ -34,17 +35,21 @@
     <style>
 #header {
     background-color:black;
+	width: 100%;
+    height: 30px;
     color:white;
+    padding:0px; 
     text-align:center;
-    padding:5px; 
+}
+#header.h4 {
 }
 #nav {
     line-height:30px;
     background-color:#eeeeee;
 	width: 100%;
-    height: 90px;
+    height: 60px;
     float:left;
-    padding:5px; 
+    padding:0px; 
 }
 #status {
     width:600px;
@@ -53,7 +58,7 @@
 }
 #footer {
     background-color:#eeeeee;
-    color:white;
+    color:black;
     clear:both;
     text-align:center;
     padding:5px; 
@@ -61,10 +66,14 @@
 #save {
     float:right;
     padding:5px; 
+    margin: 0 0 10px 10px;
 }
 #map {
 	width:550px; 
 	height:550px; 
+    float:right;
+}
+#conversion {
     float:right;
 }
 table {
@@ -111,10 +120,16 @@ function submitForm() {
 	var verbose=document.getElementById('verbose').checked;
 	var output_type="shp2GeoJSON";
 	var files = files_elem.files;
+	var fileno = 0;
 	
 	var request = new XMLHttpRequest();
   
     var formData = new FormData();
+	
+	if (files.length == 0) {
+		document.getElementById('status').innerHTML = "ERROR! No files selected, unable to upload.";
+		return;
+	}
 	
 	if (verbose) {
 		console.log('Verbose mode: ' + verbose);
@@ -138,21 +153,43 @@ function submitForm() {
 		console.log('POST method: ' + output_type);
 	}
 
-    request.open('POST', 'http://127.0.0.1:3000/' + output_type);
+	try {
+		request.open('POST', 'http://127.0.0.1:3000/' + output_type);
+			// Process results
+		request.onreadystatechange = function() {
+			if (request.readyState == 1) { 
+				document.getElementById("status").innerHTML = "Connected...";
+			}
+			else if (request.readyState == 2) { 
+				document.getElementById("status").innerHTML = "Request received...";
+			}		
+			else if (request.readyState == 3) { 
+				document.getElementById("status").innerHTML = "Processing request...";
+			}
+			else if (request.readyState == 4) { 
+				document.getElementById("status").innerHTML = "Processing complete...";		
+				displayResponse(request.response, request.status)
+			}
+	};
+	}
+	catch (e) {
+		document.getElementById('status').innerHTML = "ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type + ": " + e.messaged;
+		return;
+	}
 	
 	request.upload.onprogress = function(evt) {
 		if (evt.lengthComputable) {
 			var percentComplete = Math.round(evt.loaded * 100 / evt.total);
-			document.getElementById('status').innerHTML = "Uploading files: " + percentComplete.toString() + '%';
+			document.getElementById('status').innerHTML = "Uploading file + " + fileno + "/" + files.length + ": " + percentComplete.toString() + '%';
 		}
 		else {
-			document.getElementById('status').innerHTML = '"Uploading files: unable to compute percent complete';
+			console.log("ERROR! Uploading files: unable to compute percent complete");
 		}
 	}	
 	
 	// Process submitted files
-	for (var i = 0; i < files.length; ++i) {
-		var file=files[i];
+	for (fileno = 0; fileno < files.length; ++fileno) {
+		var file=files[fileno];
 		if (file !== null) {
 				
 			var name = file.name;
@@ -163,7 +200,9 @@ function submitForm() {
 				var arrayIndex = 0;		  
 			}
 			reader.onerror = function(err) {
-				console.log('ERROR! [' + i + ']: ' + name + "; " + err); 			
+				document.getElementById('status').innerHTML = "ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
+					name + "; " + err; 		
+				return;
 			}
 			var fileSize = "";
 			if (file.size > 1024 * 1024) {
@@ -173,30 +212,24 @@ function submitForm() {
 				fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
 			}
 			formData.append('file[]', file, name);
-			console.log('Loading file [' + i + ']: ' + name + "; " + fileSize);	
+			console.log('Loading file [' + fileno + ']: ' + name + "; " + fileSize);	
 			
 			reader.readAsArrayBuffer(file);
 		}
 	}
 
-    request.send(formData);	
+	document.getElementById("status").innerHTML = "Sending to server...";
+	try {
+		request.send(formData);	
+	}
+	catch (e) {
+		console.error("ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type + ": " + e.message);
+		document.getElementById('status').innerHTML = "ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type + ": " + e.messaged;
+		return;
+	}		
 //    request.sendAsBinary(formData); // Bad crash!!
   
-	// Process results
-	request.onreadystatechange = function() {
-		if (request.readyState == 1) { 
-			document.getElementById("status").innerHTML = "Connected...";
-		}
-		else if (request.readyState == 2) { 
-			document.getElementById("status").innerHTML = "Request received...";
-		}		
-		else if (request.readyState == 3) { 
-			document.getElementById("status").innerHTML = "Processing request...";
-		}
-		else if (request.readyState == 4) { 
-			displayResponse(request.response, request.status)
-		}
-	};
+
 }
 
 /*
@@ -210,11 +243,18 @@ function displayResponse(responseText, status) {
 	var msg="";
 	var responseErrors=0;
 	
+	document.getElementById("status").innerHTML = "Processing response from server...";
 	try {
 		response=JSON.parse(responseText);
 	} catch (e) {  
-		document.getElementById("status").innerHTML = "<h1>Send Failed</h1><h2>Error parsing response: " +  
-			e.message +"</h2><p>Reponse:" + responseText + "</p>";
+		if (responseText) {
+			document.getElementById("status").innerHTML = "<h1>Send Failed</h1><h2>Error parsing response: " +  
+				e.message +"</h2><p>Reponse:" + responseText + "</p>";
+		}
+		else {
+			document.getElementById("status").innerHTML = "<h1>Send Failed</h1><h2>Error parsing response: " +  
+				e.message +"</h2><p>no response from server</p>";
+		}
 		return;
 	}
 	
@@ -225,7 +265,7 @@ function displayResponse(responseText, status) {
 	if (response.no_files) {
 		msg+="<p>Files processed: " + response.no_files;
 		if (response.file_list) {
-			if (response.no_files >  0) {
+			if (response.no_files > 0) {
 				msg+="<table border=\"1\" style=\"width:100%\">" + 
 				"<tr><th>No.</th><th>File</th><th>GeoJSON length</th>" +
 				"<th>File size</th><th>Transfer time (S)</th><th>Geojson convert time (S)</th>" +
@@ -269,9 +309,12 @@ function displayResponse(responseText, status) {
 								if (!map) {
 									console.log('New map');	
 									map = new L.map('map');
-																	
-									map.setView([y_avg, x_avg], 6);
-																
+									map.fitBounds([
+										[response.file_list[0].boundingBox.ymin, response.file_list[0].boundingBox.xmin],
+										[response.file_list[0].boundingBox.ymax, response.file_list[0].boundingBox.xmax]], {maxZoom: 11}
+									);
+//									map.setView([y_avg, x_avg], 6);
+									document.getElementById("status").innerHTML = "Creating basemap...";															
 									console.log('New tileLayer');
 									tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 										maxZoom: 11,
@@ -302,8 +345,13 @@ function displayResponse(responseText, status) {
 										console.log('New map');	
 										map = new L.map('map');
 								
-										map.setView([y_avg, x_avg], 6);
-																	
+										map.fitBounds([
+											[boundingBox.ymin, boundingBox.xmin],
+											[boundingBox.ymax, boundingBox.xmax]], {maxZoom: 11}
+										);
+	//									map.setView([y_avg, x_avg], 6);
+
+										document.getElementById("status").innerHTML = "Re-creating basemap...";											
 										console.log('New tileLayer');
 										tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 											maxZoom: 11,
@@ -318,6 +366,7 @@ function displayResponse(responseText, status) {
 								}
 								
 								console.log('New geoJSONLayer');	
+								document.getElementById("status").innerHTML = "Adding geoJSON...";	
 								geoJSONLayer = L.geoJson().addTo(map);
 								console.log('Add data to geoJSONLayer');	
 								geoJSONLayer.addData(response.file_list[i].geojson);
@@ -344,6 +393,21 @@ function displayResponse(responseText, status) {
 				}
 			}
 			msg+="</table>";
+			if (response.file_list[0].srid) {
+				console.log("SRID: " + response.file_list[0].srid);
+			}	
+				
+			if (response.file_list[0].projection_name) {
+				console.log("Projection name: " + response.file_list[0].projection_name);
+			}	
+			
+			if (response.file_list[0].boundingBox) {
+				console.log("Bounding box [" +
+							"xmin: " + response.file_list[0].boundingBox.xmin + ", " +
+							"ymin: " + response.file_list[0].boundingBox.ymin + ", " +
+							"xmax: " + response.file_list[0].boundingBox.xmax + ", " +
+							"ymax: " + response.file_list[0].boundingBox.ymax + "]");
+			}
 		}
 		else {
 			msg+="; no file list";
@@ -351,21 +415,7 @@ function displayResponse(responseText, status) {
 		msg+="</p>";
 	}
 
-	if (response.file_list[0].srid) {
-		console.log("SRID: " + response.file_list[0].srid);
-	}	
-		
-	if (response.file_list[0].projection_name) {
-		console.log("Projection name: " + response.file_list[0].projection_name);
-	}	
-	
-	if (response.file_list[0].boundingBox) {
-		console.log("Bounding box [" +
-					"xmin: " + response.file_list[0].boundingBox.xmin + ", " +
-					"ymin: " + response.file_list[0].boundingBox.ymin + ", " +
-					"xmax: " + response.file_list[0].boundingBox.xmax + ", " +
-					"ymax: " + response.file_list[0].boundingBox.ymax + "]");
-	}
+
 
 	if (response.fields) {
 		var fieldCount=0;
