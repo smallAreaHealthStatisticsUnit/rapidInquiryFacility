@@ -521,7 +521,15 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 	} /* End of createTemporaryDirectory() */;
 	
 	var extName = path.extname(d.file.file_name);
-
+	var fileNoext = path.basename(d.file.file_name, extName);
+	var extName2 = path.extname(fileNoext); /* undefined if .shp, dbf etc; */
+	if (extName == ".xml") {
+		while (extName2) { 		// deal with funny ESRI XML files: .shp.xml, .shp.iso.xml, .shp.ea.iso.xml 
+			extName=extName2 + extName;
+			fileNoext = path.basename(d.file.file_name, extName);
+			extName2 = path.extname(fileNoext); 
+		}
+	}
 //
 // UUID generator
 //	
@@ -531,11 +539,7 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 
 //	
 // Shapefile checks
-//
-	if (extName == ".xml") { // deal with funny ESRI XML file
-		extName=".shp.xml";
-	}
-	var fileNoext = path.basename(d.file.file_name, extName);
+//	
 	if (!shpList[fileNoext]) { // Use file name without the extension as an index into the shapefile lisy
 		rval.shpTotal++;
 		shpList[fileNoext] = {
