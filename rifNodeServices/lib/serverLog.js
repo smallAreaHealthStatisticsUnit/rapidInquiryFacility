@@ -135,5 +135,32 @@ serverLog2 = function(file, line, calling_function, msg, req, err) {
 	console.error(theDate.toString() + "\n[" + file_trace + request_tracer + "]\n" + msg + error_tracer);
 }
 
+// Likewise for error; except RAISE the error
+serverError = function(msg, req, err) {
+	var calling_function = arguments.callee.caller.name || '(anonymous)';
+	// Get file information from magic-globals: __stack
+	var file=__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0];
+	var line=__stack[2].getLineNumber();
+	
+	serverLog2(file, line, calling_function, msg, req, err);
+	if (err) {
+		throw err;
+	}
+	else {
+		throw new Error(msg);
+	}
+}
+serverError2 = function(file, line, calling_function, msg, req, err) {		
+	serverLog2(file, line, calling_function, msg, req, err);
+	if (err) {
+		throw err;
+	}
+	else {
+		throw new Error(msg);
+	}
+}
+
+module.exports.serverLog = serverError;
+module.exports.serverLog2 = serverError2;
 module.exports.serverLog = serverLog;
 module.exports.serverLog2 = serverLog2;
