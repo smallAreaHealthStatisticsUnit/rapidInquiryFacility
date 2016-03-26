@@ -521,16 +521,29 @@ var timeOut2 = function() {
 			timeOut2();   
 		}
 		else {
-			for (var i=1; i<resultArray.length; i++) {
-				if (resultArray[i] && resultArray[i] == false) {
-					console.error("Test: " + i + " failed: " + resultArrayDesc[i]);
+			if (max_nRequests != 1) { // argv
+				for (var i=1; i<resultArray.length; i++) {
+					if (resultArray[i] && resultArray[i] == false) {
+						console.error("Test: " + i + " failed: " + resultArrayDesc[i]);
+					}
+					else if (resultArray[i] && resultArray[i] == true) {
+						console.error("Test: " + i + " passed: " + resultArrayDesc[i]);
+					}		
+					else {
+						console.error("Test: " + i + " undefined [likely an exception]: " + resultArrayDesc[i]);
+					}				
+				}	
+			}
+			else {
+				if (resultArray[nRequests] && resultArray[nRequests] == false) {
+					console.error("Test: " + nRequests + " failed: " + resultArrayDesc[nRequests]);
 				}
-				else if (resultArray[i] && resultArray[i] == true) {
-					console.error("Test: " + i + " passed: " + resultArrayDesc[i]);
+				else if (resultArray[nRequests] && resultArray[nRequests] == true) {
+					console.error("Test: " + nRequests + " passed: " + resultArrayDesc[nRequests]);
 				}		
 				else {
-					console.error("Test: " + i + " undefined [likely an exception]: " + resultArrayDesc[i]);
-				}				
+					console.error("Test: " + nRequests + " undefined [likely an exception]: " + resultArrayDesc[nRequests]);
+				}					
 			}
 			if (failed > 0) {
 				throw new Error("Failed " + failed + "/" + tests + "; passed: " + passed);

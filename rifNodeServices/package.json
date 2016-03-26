@@ -23,6 +23,7 @@
   ],
   "dependencies": {
     "adm-zip": "^0.4.7",
+    "async": "^2.0.0-rc.2",
     "connect-busboy": "0.0.2",
     "express": "^4.13.4",
     "forever": "^0.15.1",

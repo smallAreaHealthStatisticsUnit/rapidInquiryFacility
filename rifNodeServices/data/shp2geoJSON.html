@@ -171,7 +171,7 @@ function submitForm() {
 			}
 			else if (request.readyState == 4) { 
 				document.getElementById("status").innerHTML = "Processing complete...";		
-				displayResponse(request.response, request.status)
+				displayResponse(request.response, request.status);
 			}
 	};
 	}
@@ -183,7 +183,7 @@ function submitForm() {
 	request.upload.onprogress = function(evt) {
 		if (evt.lengthComputable) {
 			var percentComplete = Math.round(evt.loaded * 100 / evt.total);
-			document.getElementById('status').innerHTML = "Uploading file + " + fileno + "/" + files.length + ": " + percentComplete.toString() + '%';
+			document.getElementById('status').innerHTML = "Uploading file " + fileno + "/" + files.length + ": " + percentComplete.toString() + '%';
 		}
 		else {
 			console.log("ERROR! Uploading files: unable to compute percent complete");

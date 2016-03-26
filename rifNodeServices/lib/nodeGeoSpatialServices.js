@@ -644,7 +644,7 @@ exports.convert = function(req, res) {
 					if (response.field_errors == 0 && response.file_errors == 0) { // OK
 						serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
 						
-						if (req.url == '/shp2GeoJSON' && ofields["store"] != "true") { // Processed by shp2GeoJSONCheckFiles()
+						if (req.url == '/shp2GeoJSON') { // Processed by shp2GeoJSONCheckFiles() - uses async
 						}
 						else if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 							var output = JSON.stringify(response);// Convert output response to JSON 
