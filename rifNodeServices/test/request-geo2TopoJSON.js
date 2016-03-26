@@ -92,6 +92,7 @@ var passed=0;
 var failed=0;
 var tests=0;
 var resultArray=[];
+var resultArrayDesc=[];
 
 var MakeRequest = function(){
 
@@ -185,7 +186,7 @@ var MakeRequest = function(){
 			],
 			expected_to_pass: "true" 
 		};
-		for (i = 0; i < 101; i++) {	
+		for (var i = 0; i < 101; i++) {	
 			formData.attachments.push(fs.createReadStream(inputFile));
 		}
 	}	
@@ -335,6 +336,7 @@ var MakeRequest = function(){
 		formData["my_test"]="22: No files";	
 		formData["expected_to_pass"]="false"; 		
 	}
+	resultArrayDesc[nRequests]=formData.my_test;
 	
 	console.log("Sending " + inputFile + " request:" + nRequests + "; length: " + length); 
 		
@@ -449,7 +451,7 @@ var postIt = function(debug) {
 				console.error('\nUpload #' + ofields["my_reference"] + '\nServer debug >>>' + jsonData.message + 
 					'\n<<< End of server debug\n\nfiles processed: ' + jsonData.no_files +
 					'; fields: ' + JSON.stringify(ofields, null, 4));
-				for (i = 0; i < jsonData.no_files; i++) {	
+				for (var i = 0; i < jsonData.no_files; i++) {	
 					topojson = JSON.stringify(file_list[i].topojson);
 					if (!file_list[i].uncompress_size) {
 						pct_compression=Math.round((topojson.length/file_list[i].file_size)*100);
@@ -519,12 +521,18 @@ var timeOut2 = function() {
 			timeOut2();   
 		}
 		else {
-			if (failed > 0) {
-				for (var i=1; i<=resultArray.length; i++) {
-					if (resultArray[i] && resultArray[i] == false) {
-						console.error("Test: " + i + " failed.");
-					}
+			for (var i=1; i<resultArray.length; i++) {
+				if (resultArray[i] && resultArray[i] == false) {
+					console.error("Test: " + i + " failed: " + resultArrayDesc[i]);
 				}
+				else if (resultArray[i] && resultArray[i] == true) {
+					console.error("Test: " + i + " passed: " + resultArrayDesc[i]);
+				}		
+				else {
+					console.error("Test: " + i + " undefined [likely an exception]: " + resultArrayDesc[i]);
+				}				
+			}
+			if (failed > 0) {
 				throw new Error("Failed " + failed + "/" + tests + "; passed: " + passed);
 			}
 			else {

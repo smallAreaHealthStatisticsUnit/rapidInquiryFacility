@@ -83,6 +83,7 @@ var failed=0;
 var tests=0;
 
 var resultArray=[];
+var resultArrayDesc=[];
 
 var MakeRequest = function(){
 
@@ -113,6 +114,9 @@ var MakeRequest = function(){
 			formData.expected_to_pass="false";
 		}
 	}
+	else {
+		formData["my_test"]+=" (" + idx + " shapefiles)";
+	}
 	var msg;
 
 
@@ -120,7 +124,7 @@ var MakeRequest = function(){
 
 
 	var noFiles=0;
-	for (i = 1; i <= idx; i++) {	
+	for (var i = 1; i <= idx; i++) {	
 		var inputShapeFile = './data/sahsuland/SAHSU_GRD_Level' + i + '.shp';
 		var dirname = path.dirname(inputShapeFile);
 		var file_noext = path.basename(inputShapeFile, '.shp');
@@ -135,7 +139,7 @@ var MakeRequest = function(){
 		noFiles++;
 		
 		var extList = [".dbf", ".prj", ".shp.xml", ".sbn", ".sbx", ".fbn", ".fbx", ".ain", ".aih", ".ixs", ".mxs", ".atx", ".cpg", ".qix"];
-		for (j=0; j<extList.length; j++) {
+		for (var j=0; j<extList.length; j++) {
 			var extFile=dirname + "/" + file_noext + extList[j];
 // test 5 missing prj file - FAILS
 // test 6 missing dbf file - FAILS			
@@ -173,7 +177,8 @@ var MakeRequest = function(){
 // Test case: fields
 	
 	console.log("Sending SAHSULAND request: " + nRequests + "; files: " + noFiles + "\n" + msg); 
-		
+	resultArrayDesc[nRequests]=formData.my_test;
+	
     this.options = {
         url:  'http://127.0.0.1:3000/shp2GeoJSON',
         headers:{'Content-Type': contentType},
@@ -348,12 +353,18 @@ var timeOut2 = function() {
 			timeOut2();   
 		}
 		else {
-			if (failed > 0) {
-				for (var i=1; i<=resultArray.length; i++) {
-					if (resultArray[i] && resultArray[i] == false) {
-						console.error("Test: " + i + " failed.");
-					}
+			for (var i=1; i<resultArray.length; i++) {
+				if (resultArray[i] && resultArray[i] == false) {
+					console.error("Test: " + i + " failed: " + resultArrayDesc[i]);
 				}
+				else if (resultArray[i] && resultArray[i] == true) {
+					console.error("Test: " + i + " passed: " + resultArrayDesc[i]);
+				}		
+				else {
+					console.error("Test: " + i + " undefined [likely an exception]: " + resultArrayDesc[i]);
+				}				
+			}			
+			if (failed > 0) {
 				throw new Error("Failed " + failed + "/" + tests + "; passed: " + passed);		
 			}
 			else {
