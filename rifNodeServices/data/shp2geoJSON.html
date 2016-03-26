@@ -334,16 +334,14 @@ function displayResponse(responseText, status) {
 					"#0000ff", // Blue
 					"#00ff00", // Green
 					"#ff00c8", // Magenta
-					"#0f0f0f", // Onyx (nearly black)
+					"#ffb700", // Orange
 					"#f0f0f0", // Light grey
-					"#ffb700"  // Orange
+					"#0f0f0f"  // Onyx (nearly black)
 					];
 				
 				for (var i=0; i < response.no_files; i++) {
-					var color=layerColours[i];
-					if (!color) {
-						color="#000000"; // Black
-					}	
+					var weight=(response.no_files - i); // i.e. Lower numbers have most weight
+					var color=layerColours[i];	
 // Chroma.js - to be added (Node module)
 //					var colorScale = chroma  
 //						.scale(['#D5E3FF', '#003171'])
@@ -351,6 +349,10 @@ function displayResponse(responseText, status) {
 					var opacity=1;
 					if (i > 0) {
 						opacity=0;
+					}
+					if (!color || i == (response.no_files - 1)) {
+						color="#000000"; // Black
+						weight=response.no_files;
 					}
 					msg+="<tr style=\"color:" + color + "\"><td>" + (i+1) + "</td><td>" + response.file_list[i].file_name + "</td><td>";
 					if (response.file_list[i].geojson) {			
@@ -369,7 +371,7 @@ function displayResponse(responseText, status) {
 									{style: 
 										{color: 	color,
 										 fillColor: "#ccf4ff",
-										 weight: 	(response.no_files - i), // i.e. Lower numbers have most weight
+										 weight: 	weight, // i.e. Lower numbers have most weight
 										 opacity: 	1,
 										 fillOpacity: opacity}
 									}).addTo(map);
