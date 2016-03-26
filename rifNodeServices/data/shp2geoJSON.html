@@ -17,12 +17,12 @@
 
       <input type="submit" id="submit_handle" style="display: none"> 
 	  <input type="hidden" id="store" name="store" value="false">
-	  <div id="conversion">
+	  <div id="conversion"><!--
 	  Select conversion:
 	  <input type="radio" id="output_type_geojson" name="output_type" value="shp2GeoJSON" checked>GeoJSON
 	  <input type="radio" id="output_type_topojson" name="output_type" value="shp2TopoJSON">TopoJSON
-	  <input type="radio" id="output_type_wkt" name="output_type" value="shp2WKT">Well Known text (WKT)</div></br>
-	  Verbose mode:
+	  <input type="radio" id="output_type_wkt" name="output_type" value="shp2WKT">Well Known text (WKT) --></div></br>
+	  Diagnostics:
 	  <input type="checkbox" id="verbose" value="true">
 	  <button type="button" id="save" onclick="submitForm()">Upload Files</button></br>	  
 	</form>
@@ -143,6 +143,7 @@ function submitForm() {
 		console.log('Store [hidden]: ' + store);
 		formData.append('store', store);
 	}
+	/*
 	if (output_type) {
 		if (document.getElementById('output_type_geojson').checked) {
 			output_type="shp2GeoJSON";	
@@ -154,7 +155,7 @@ function submitForm() {
 			output_type="shp2WKT";	
 		}
 		console.log('POST method: ' + output_type);
-	}
+	} */
 
 	try {
 		request.open('POST', 'http://127.0.0.1:3000/' + output_type);
@@ -191,7 +192,7 @@ function submitForm() {
 	}	
 	
 	// Process submitted files
-	for (fileno = 0; fileno < files.length; ++fileno) {
+	for (var fileno = 0; fileno < files.length; ++fileno) {
 		var file=files[fileno];
 		if (file !== null) {
 				
@@ -235,6 +236,29 @@ function submitForm() {
 
 }
 
+function createMap(boundingBox) {
+	console.log('New map');	
+	var map = new L.map('map');
+	map.fitBounds([
+		[boundingBox.ymin, boundingBox.xmin],
+		[boundingBox.ymax, boundingBox.xmax]], {maxZoom: 11}
+	);
+//									map.setView([y_avg, x_avg], 6);
+	document.getElementById("status").innerHTML = "Creating basemap...";															
+	console.log('New tileLayer');
+	tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
+		maxZoom: 11,
+		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+		id: 'mapbox.light'
+	});
+	tileLayer.addTo(map);	
+	console.log('Add tileLayer to map');
+	
+	return map;
+}
+
 /*
  * Function: 	displayResponse()
  * Parameters: 	Response text (JSON as a string), status code
@@ -245,6 +269,7 @@ function displayResponse(responseText, status) {
 	var response;
 	var msg="";
 	var responseErrors=0;
+	var geoJSONLayer=[];
 	
 	document.getElementById("status").innerHTML = "Processing response from server...";
 	try {
@@ -275,104 +300,81 @@ function displayResponse(responseText, status) {
 				"<th>Uncompress time (S)</th><th>Uncompressed file size</th>" + 
 				"<th>SRID</th>" +
 				"</tr>";
-				for (i = 0; i < response.no_files; i++) {
-					msg+="<tr><td>" + (i+1) + "</td><td>" + response.file_list[i].file_name + "</td><td>";
+				if (response.file_list[0].boundingBox) {
+					if (!map) {
+						map=createMap(response.file_list[0].boundingBox);
+					}
+					else {
+						var centre=map.getCenter();
+							
+						console.log("Centre: " + centre.lat + ", " + centre.lng);
+						if (+centre.lat.toFixed(4) == +y_avg.toFixed(4) && 
+							+centre.lng.toFixed(4) == +x_avg.toFixed(4)) {
+							console.log("Map centre has not changed");
+						}
+						else {
+							map.eachLayer(function (layer) {
+								console.log('Remove tileLayer');
+								map.removeLayer(layer);
+							});
+							console.log('Remove map');
+							map.remove(); // Known leaflet bug:
+										  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+							
+							map=createMap(response.file_list[0].boundingBox);				
+						}	
+					}				
+				}
+				else {
+					console.error("response.file_list[0].boundingBox is not defined");				
+				}
+				
+				var layerColours = [ // Some advice needed here!!!
+					"#ff0000", // Red
+					"#0000ff", // Blue
+					"#00ff00", // Green
+					"#ff00c8", // Magenta
+					"#0f0f0f", // Onyx (nearly black)
+					"#f0f0f0", // Light grey
+					"#ffb700"  // Orange
+					];
+				
+				for (var i=0; i < response.no_files; i++) {
+					var color=layerColours[i];
+					if (!color) {
+						color="#000000"; // Black
+					}	
+// Chroma.js - to be added (Node module)
+//					var colorScale = chroma  
+//						.scale(['#D5E3FF', '#003171'])
+//						.domain([0,1]);	
+					var opacity=1;
+					if (i > 0) {
+						opacity=0;
+					}
+					msg+="<tr style=\"color:" + color + "\"><td>" + (i+1) + "</td><td>" + response.file_list[i].file_name + "</td><td>";
 					if (response.file_list[i].geojson) {			
 						try {
-
 							var geojson = JSON.stringify(response.file_list[i].geojson);
-							if (response.file_list[i].boundingBox && i == 0) {
-								var x_avg;
-								var y_avg;
-								
-								if (response.file_list[i].boundingBox.xmax > 0) {
-									x_avg=response.file_list[i].boundingBox.xmin +
-										(response.file_list[i].boundingBox.xmax-response.file_list[i].boundingBox.xmin)/2;
-								}
-								else {
-									x_avg=response.file_list[i].boundingBox.xmax -
-										(response.file_list[i].boundingBox.xmax-response.file_list[i].boundingBox.xmin)/2;
-								}
-								
-								if (response.file_list[i].boundingBox.ymax > 0) {
-									y_avg=response.file_list[i].boundingBox.ymin +
-										(response.file_list[i].boundingBox.ymax-response.file_list[i].boundingBox.ymin)/2;
-								}
-								else {
-									y_avg=response.file_list[i].boundingBox.ymax -
-										(response.file_list[i].boundingBox.ymax-response.file_list[i].boundingBox.ymin)/2;
-								}
-								console.log("x_avg: " + x_avg + "; y_avg: " + y_avg);
+							if (response.file_list[i].boundingBox && map) {
 			
-								if (geoJSONLayer) {	
-									console.log('Remove geoJSONLayer');
-									map.removeLayer(geoJSONLayer);
+								if (geoJSONLayer[i]) {	
+									console.log('Remove geoJSONLayer' + i + ']');
+									map.removeLayer(geoJSONLayer[i]);
 								}		
-
-								if (!map) {
-									console.log('New map');	
-									map = new L.map('map');
-									map.fitBounds([
-										[response.file_list[0].boundingBox.ymin, response.file_list[0].boundingBox.xmin],
-										[response.file_list[0].boundingBox.ymax, response.file_list[0].boundingBox.xmax]], {maxZoom: 11}
-									);
-//									map.setView([y_avg, x_avg], 6);
-									document.getElementById("status").innerHTML = "Creating basemap...";															
-									console.log('New tileLayer');
-									tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-										maxZoom: 11,
-										attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-											'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-											'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-										id: 'mapbox.light'
-									});
-									tileLayer.addTo(map);	
-									console.log('Add tileLayer to map');
-								}
-								else {
-									var centre=map.getCenter();
-										
-									console.log("Centre: " + centre.lat + ", " + centre.lng);
-									if (+centre.lat.toFixed(4) == +y_avg.toFixed(4) && 
-									    +centre.lng.toFixed(4) == +x_avg.toFixed(4)) {
-										console.log("Map centre has not changed");
-									}
-									else {
-										map.eachLayer(function (layer) {
-											console.log('Remove tileLayer');
-											map.removeLayer(layer);
-										});
-										console.log('Remove map');
-										map.remove(); // Known leaflet bug:
-													  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-										console.log('New map');	
-										map = new L.map('map');
 								
-										map.fitBounds([
-											[boundingBox.ymin, boundingBox.xmin],
-											[boundingBox.ymax, boundingBox.xmax]], {maxZoom: 11}
-										);
-	//									map.setView([y_avg, x_avg], 6);
-
-										document.getElementById("status").innerHTML = "Re-creating basemap...";											
-										console.log('New tileLayer');
-										tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-											maxZoom: 11,
-											attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-												'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-												'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-											id: 'mapbox.light'
-										});
-										tileLayer.addTo(map);	
-										console.log('Add tileLayer to map');					
-									}	
-								}
-								
-								console.log('New geoJSONLayer');	
-								document.getElementById("status").innerHTML = "Adding geoJSON...";	
-								geoJSONLayer = L.geoJson().addTo(map);
+								console.log('New geoJSONLayer[' + i + '], color: ' + color);	
+								document.getElementById("status").innerHTML = "Adding geoJSONLayer[" + i + "]...";	
+								geoJSONLayer[i] = L.geoJson(undefined, 
+									{style: 
+										{color: 	color,
+										 fillColor: "#ccf4ff",
+										 weight: 	(response.no_files - i), // i.e. Lower numbers have most weight
+										 opacity: 	1,
+										 fillOpacity: opacity}
+									}).addTo(map);
 								console.log('Add data to geoJSONLayer');	
-								geoJSONLayer.addData(response.file_list[i].geojson);
+								geoJSONLayer[i].addData(response.file_list[i].geojson);
 							}
 							
 							msg+=geojson.length;
