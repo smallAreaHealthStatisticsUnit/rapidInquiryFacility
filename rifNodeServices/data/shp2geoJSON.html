@@ -347,8 +347,10 @@ function displayResponse(responseText, status) {
 //						.scale(['#D5E3FF', '#003171'])
 //						.domain([0,1]);	
 					var opacity=1;
+					var fillOpacity=0.4;
 					if (i > 0) {
 						opacity=0;
+						fillOpacity=0;
 					}
 					if (!color || i == (response.no_files - 1)) {
 						color="#000000"; // Black
@@ -373,7 +375,7 @@ function displayResponse(responseText, status) {
 										 fillColor: "#ccf4ff",
 										 weight: 	weight, // i.e. Lower numbers have most weight
 										 opacity: 	1,
-										 fillOpacity: opacity}
+										 fillOpacity: fillOpacity}
 									}).addTo(map);
 								console.log('Add data to geoJSONLayer');	
 								geoJSONLayer[i].addData(response.file_list[i].geojson);
