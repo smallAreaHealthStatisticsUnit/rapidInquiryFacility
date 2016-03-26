@@ -5,7 +5,7 @@
     <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
     <title>Shapefile Uploading Form</title>
   </head>
-  <body>
+  <body onload="setupMap();">
     <div id="header">
       <h4>Shapefile Upload</h4>
     </div>
@@ -48,10 +48,11 @@
 #nav {
     line-height:30px;
     background-color:#eeeeee;
-	width: 100%;
     height: 60px;
+	width: 100%
     float:left;
-    padding:0px; 
+    padding-left:5px; 
+    padding-right:5px; 
 }
 #status {
     width:600px;
@@ -64,6 +65,7 @@
     clear:both;
     text-align:center;
     padding:5px; 
+    height: 14px;
     vertical-align:bottom;
 }
 #save {
@@ -84,13 +86,50 @@ table {
     font-family: courier;
     font-size:75%;
 }
+button {
+    text-rendering: auto;
+    color: initial;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-transform: none;
+    text-indent: 0px;
+    text-shadow: none;
+    display: inline-block;
+    text-align: start;
+    margin: 0em 0em 0em 0em;
+    font: 12px Arial;
+	border-radius: 12px;
+}
     </style>
     <script>
 						
 var map;
 var tileLayer;
 var geoJSONLayer;
-							
+
+function setupMap() {	
+	var w = window.innerWidth
+		|| document.documentElement.clientWidth
+		|| document.body.clientWidth;
+
+	var h = window.innerHeight
+		|| document.documentElement.clientHeight
+		|| document.body.clientHeight;
+	if (h && w) {
+		var old_w=document.getElementById('map').style.width;
+		var old_h=document.getElementById('map').style.height;
+		var new_w=w-700;
+		var new_h=h-150;
+	
+		document.getElementById('map').style.width=new_w;
+		document.getElementById('map').style.height=new_h;
+		document.getElementById('status').style.height=new_h;
+		
+		document.getElementById('status').innerHTML = "Size h x w: " + h + "+" + w +
+			"; map size old: " + old_h + "+" + old_w + ", new: " + new_h + "+" + new_w	
+	}
+}
+	
 /*
  * Function: 	generateUUID()
  * Parameters: 	None
@@ -250,7 +289,7 @@ function createMap(boundingBox) {
 		maxZoom: 11,
 		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
 			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-			'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
 		id: 'mapbox.light'
 	});
 	tileLayer.addTo(map);	
@@ -308,11 +347,11 @@ function displayResponse(responseText, status) {
 						var centre=map.getCenter();
 							
 						console.log("Centre: " + centre.lat + ", " + centre.lng);
-						if (+centre.lat.toFixed(4) == +y_avg.toFixed(4) && 
-							+centre.lng.toFixed(4) == +x_avg.toFixed(4)) {
-							console.log("Map centre has not changed");
-						}
-						else {
+//						if (+centre.lat.toFixed(4) == +y_avg.toFixed(4) && 
+//							+centre.lng.toFixed(4) == +x_avg.toFixed(4)) {
+//							console.log("Map centre has not changed");
+//						}
+//						else {
 							map.eachLayer(function (layer) {
 								console.log('Remove tileLayer');
 								map.removeLayer(layer);
@@ -322,7 +361,7 @@ function displayResponse(responseText, status) {
 										  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
 							
 							map=createMap(response.file_list[0].boundingBox);				
-						}	
+//						}	
 					}				
 				}
 				else {
