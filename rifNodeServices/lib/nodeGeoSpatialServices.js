@@ -539,7 +539,9 @@ exports.convert = function(req, res) {
 								msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 									d.file.extension + "; file size is zero" + 
 									"\n";
-								response.message = msg + "\n" + response.message;
+								if (ofields["verbose"]) {
+									response.message = msg + "\n" + response.message;
+								}
 								response.no_files=d.no_files;			// Add number of files process to response
 								response.fields=ofields;				// Add return fields
 								response.file_errors++;					// Increment file error count	

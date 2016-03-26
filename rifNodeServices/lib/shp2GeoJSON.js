@@ -411,6 +411,14 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 	q.drain = function() {
 		response.message+="All " + response.no_files + " shapefiles have been processed";
 						// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
+		if (!shapefile_options.verbose) {
+			response.message="";	
+		}
+		else {
+			serverLog.serverLog2(__file, __line, "shp2GeoJSONFieldProcessor().q.drain()", 
+				"Diagnostics enabled; diagnostics >>>\n" +
+				response.message + "\n<<< End of diagnostics");	
+		}
 		if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 			var output = JSON.stringify(response);// Convert output response to JSON 
 // Need to test res was not finished by an expection to avoid "write after end" errors			
@@ -418,7 +426,8 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			res.end();	
 		}
 		else {
-			serverLog.serverLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", 
+			serverLog.serverLog2(__file, __line, "shp2GeoJSONFieldProcessor().q.drain()", 
+				"FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", 
 				req);
 		}			
 	}	
@@ -475,7 +484,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			// Add to queue			
 			q.push(shapefileData, function(err) {
 				if (err) {
-					serverLog.serverLog2(__file, __line, "q.push()", 
+					serverLog.serverLog2(__file, __line, "shp2GeoJSONFieldProcessor().q.push()", 
 						'ERROR! [' + shapefileData["uuidV1"] + '] in shapefile read: ' + shapefileData["shapeFileName"], 
 						shapefileData["req"], err);	
 				} // End of err		
