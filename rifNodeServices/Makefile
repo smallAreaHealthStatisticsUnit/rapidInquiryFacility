@@ -199,10 +199,10 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/mapshaper/package.json \
 	node_modules/shapefile/package.json \
 	node_modules/node-uuid/package.json \
-	node_modules/adm-zip/package.json \
+	node_modules/chroma-js/package.json \
+	node_modules/jszip/package.json \
 	node_modules/express/package.json \
 	node_modules/topojson/package.json \
-	node_modules/mutexjs/package.json \
 	node_modules/request-debug/package.json \
 	node_modules/connect-busboy/package.json
 #
