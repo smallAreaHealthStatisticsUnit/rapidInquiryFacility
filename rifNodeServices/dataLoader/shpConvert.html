@@ -467,7 +467,7 @@ function displayResponse(responseText, status) {
 		for (var field in response.fields) {
 			fieldCount++;
 			if (fieldCount == 1) {
-				msg+="<p>Fields returned by shp2GeoJSON<ul id=\"fields\">";
+				msg+="<p>Fields returned by shpConvert<ul id=\"fields\">";
 			}
 			msg+="<li>" + field + "=" + response.fields[field] + "</li>";
 		}
