@@ -10,13 +10,12 @@
       <h4>Shapefile Upload</h4>
     </div>
   <div id="nav">
-	<form action="http://127.0.0.1:3000/shp2GeoJSON" method="POST" id="shp2GeoJSON"
+	<form action="http://127.0.0.1:3000/shpConvert" method="POST" id="shpConvert"
 		  enctype="multipart/form-data">
 	  Select a set/sets of shapefile files to upload: <input type="file" id="files" size="50" multiple="multiple" />
 	  <!-- Use multi file submit -->
 
       <input type="submit" id="submit_handle" style="display: none"> 
-	  <input type="hidden" id="store" name="store" value="false">
 	  <div id="conversion"><!--
 	  Select conversion:
 	  <input type="radio" id="output_type_geojson" name="output_type" value="shp2GeoJSON" checked>GeoJSON
@@ -120,13 +119,16 @@ function setupMap() {
 		var old_h=document.getElementById('map').style.height;
 		var new_w=w-700;
 		var new_h=h-150;
+		var new_status_width=w-new_w-50;
 	
 		document.getElementById('map').style.width=new_w;
 		document.getElementById('map').style.height=new_h;
 		document.getElementById('status').style.height=new_h;
+		document.getElementById('status').style.width=new_status_width;
 		
 		document.getElementById('status').innerHTML = "Size h x w: " + h + "+" + w +
-			"; map size old: " + old_h + "+" + old_w + ", new: " + new_h + "+" + new_w	
+			"; map size old: " + old_h + "+" + old_w + ", new: " + new_h + "+" + new_w +
+			"; new_status_width: " + new_status_width;
 	}
 }
 	
@@ -157,10 +159,9 @@ function generateUUID() { // Post by briguy37 on stackoverflow
  */
 function submitForm() {
 
-	var store=document.getElementById('store').value;
 	var files_elem=document.getElementById('files');
 	var verbose=document.getElementById('verbose').checked;
-	var output_type="shp2GeoJSON";
+	var output_type="shpConvert";
 	var files = files_elem.files;
 	var fileno = 0;
 	
@@ -178,10 +179,6 @@ function submitForm() {
 		formData.append('verbose', verbose);
 	}
 	formData.append('my_reference', generateUUID()); // Random reference
-	if (store) {
-		console.log('Store [hidden]: ' + store);
-		formData.append('store', store);
-	}
 	/*
 	if (output_type) {
 		if (document.getElementById('output_type_geojson').checked) {

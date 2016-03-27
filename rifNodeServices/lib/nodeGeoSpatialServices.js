@@ -66,7 +66,7 @@ var util = require('util'),
 	zlib = require('zlib'),
 	path = require('path'),
     geo2TopoJSON = require('../lib/geo2TopoJSON'),
-    shp2GeoJSON = require('../lib/shp2GeoJSON'),
+    shpConvert = require('../lib/shpConvert'),
 	stderrHook = require('../lib/stderrHook'),
     httpErrorResponse = require('../lib/httpErrorResponse'),
     serverLog = require('../lib/serverLog'),
@@ -136,7 +136,7 @@ exports.convert = function(req, res) {
 /*
  * Services supported:
  * 
- * shp2GeoJSON: Upload then convert shapefile to geoJSON;
+ * shpConvert: Upload then convert shapefile to geoJSON;
  * simplifyGeoJSON: Load, validate, aggregate, clean and simplify converted shapefile data;
  * geo2TopoJSON: Convert geoJSON to TopoJSON;
  * geoJSONtoWKT: Convert geoJSON to Well Known Text (WKT);
@@ -147,7 +147,7 @@ exports.convert = function(req, res) {
  * getNumShapefilesInSet: Returns the number of shapefiles in the set. This is the same as the highest resolution geolevel id;
  * getMapTile: Get maptile for specified geolevel, zoomlevel, X and Y tile number.
  */		
-		if (!((req.url == '/shp2GeoJSON') ||
+		if (!((req.url == '/shpConvert') ||
 			  (req.url == '/simplifyGeoJSON') ||
 			  (req.url == '/geo2TopoJSON') ||
 			  (req.url == '/geoJSONtoWKT') ||
@@ -182,8 +182,8 @@ exports.convert = function(req, res) {
 				ofields.quantization=topojson_options.quantization;
 				ofields.projection=topojson_options.projection;
 			}
-			else if (req.url == '/shp2GeoJSON') {
-				// Default shp2GeoJSON options (see shapefile Node.js module)
+			else if (req.url == '/shpConvert') {
+				// Default shpConvert options (see shapefile Node.js module)
 				var shapefile_options = {
 					verbose: false,
 					encoding: 'ISO-8859-1',
@@ -451,8 +451,8 @@ exports.convert = function(req, res) {
 				if (req.url == '/geo2TopoJSON') {
 					text+=geo2TopoJSON.geo2TopoJSONFieldProcessor(fieldname, val, topojson_options, ofields, response, req, serverLog);
 				}
-				else if (req.url == '/shp2GeoJSON') {
-					text+=shp2GeoJSON.shp2GeoJSONFieldProcessor(fieldname, val, shapefile_options, ofields, response, req, serverLog);
+				else if (req.url == '/shpConvert') {
+					text+=shpConvert.shpConvertFieldProcessor(fieldname, val, shapefile_options, ofields, response, req, serverLog);
 				}					
 				response.message += text;
 			 }); // End of field processing function
@@ -466,7 +466,7 @@ exports.convert = function(req, res) {
 				try {
 					var msg="";
 					
-					if ((req.url == '/geo2TopoJSON')||(req.url == '/shp2GeoJSON')) {
+					if ((req.url == '/geo2TopoJSON')||(req.url == '/shpConvert')) {
 						var shpList = {};
 						var shpTotal=0;
 						
@@ -519,9 +519,9 @@ exports.convert = function(req, res) {
 										return; 
 									}
 								}
-								else if (req.url == '/shp2GeoJSON') { // Note which files and extensions are present, 
+								else if (req.url == '/shpConvert') { // Note which files and extensions are present, 
 																	  // generate serial if required, save 		
-									rval=shp2GeoJSON.shp2GeoJSONFileProcessor(d, shpList, shpTotal, path, response, ofields, serverLog, req);
+									rval=shpConvert.shpConvertFileProcessor(d, shpList, shpTotal, path, response, ofields, serverLog, req);
 									if (rval.file_errors > 0 ) {
 										httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 											serverLog, 500, req, res, rval.msg, undefined, response);							
@@ -551,7 +551,7 @@ exports.convert = function(req, res) {
 							}	
 						} // End of for loop
 						
-						if (response.no_files == 0 && (req.url == '/shp2GeoJSON' || req.url == '/geo2TopoJSON')) { 
+						if (response.no_files == 0 && (req.url == '/shpConvert' || req.url == '/geo2TopoJSON')) { 
 								msg="FAIL! No files attached\n";						
 								response.message = msg + "\n" + response.message;
 								response.fields=ofields;				// Add return fields
@@ -560,8 +560,8 @@ exports.convert = function(req, res) {
 									serverLog, 500, req, res, msg, undefined, response);							
 								return;						
 						}
-						else if (req.url == '/shp2GeoJSON') { // Check which files and extensions are present, convert shapefiles to geoJSON
-							rval=shp2GeoJSON.shp2GeoJSONCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
+						else if (req.url == '/shpConvert') { // Check which files and extensions are present, convert shapefiles to geoJSON
+							rval=shpConvert.shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
 								req, res, shapefile_options);
 							if (rval.file_errors > 0 ) {
 								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
@@ -614,7 +614,7 @@ exports.convert = function(req, res) {
 	 * message: 		Processing messages, including debug from topoJSON               
 	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
 	 *
-	 * shp2GeoJSON response object - no errors, store=false
+	 * shpConvert response object - no errors, store=false
 	 *                    
 	 * no_files: 		Numeric, number of files    
 	 * field_errors: 	Number of errors in processing fields
@@ -627,7 +627,7 @@ exports.convert = function(req, res) {
 	 * message: 		Processing messages, including debug from topoJSON               
 	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
 	 *  
-	 * shp2GeoJSON response object - no errors, store=true [Processed by shp2GeoJSONCheckFiles()]
+	 * shpConvert response object - no errors, store=true [Processed by shpConvertCheckFiles()]
 	 *  	 
 	 * no_files: 		Numeric, number of files    
 	 * field_errors: 	Number of errors in processing fields
@@ -646,7 +646,7 @@ exports.convert = function(req, res) {
 					if (response.field_errors == 0 && response.file_errors == 0) { // OK
 						serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
 						
-						if (req.url == '/shp2GeoJSON') { // Processed by shp2GeoJSONCheckFiles() - uses async
+						if (req.url == '/shpConvert') { // Processed by shpConvertCheckFiles() - uses async
 						}
 						else if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 							var output = JSON.stringify(response);// Convert output response to JSON 

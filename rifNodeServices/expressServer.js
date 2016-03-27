@@ -140,9 +140,7 @@ app.use(function (req, res, next) {
  * getNumShapefilesInSet: Returns the number of shapefiles in the set. This is the same as the highest resolution geolevel id;
  * getMapTile: Get maptile for specified geolevel, zoomlevel, X and Y tile number.
  */		
-var services=["/shp2GeoJSON",
-			  "/shp2TopoJSON",
-			  "/shp2WKT",
+var services=["/shpConvert",
 			  "/simplifyGeoJSON",
 			  "/geo2TopoJSON",
 			  "/geoJSON2WKT",
@@ -160,12 +158,12 @@ for (var i=0; i<services.length; i++) { // Call common method
 	app.post(services[i], nodeGeoSpatialServices.convert);
 }
 // Old Fred zip shapefile code
-app.get('/simplify', simplify.convert);
-app.post('/simplify', simplify.convert);
+//app.get('/simplify', simplify.convert);
+//app.post('/simplify', simplify.convert);
 
 // Zipfile test method. Assumes compressed JSON file
-app.get('/zipfile', zipfile.convert);
-app.post('/zipfile', zipfile.convert);
+//app.get('/zipfile', zipfile.convert);
+//app.post('/zipfile', zipfile.convert);
  
 //app.use(express.static(__dirname + '/public'));
   

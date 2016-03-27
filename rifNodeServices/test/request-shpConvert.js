@@ -8,7 +8,7 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - Node.js webservice request tests - shp2GeoJSON service
+// Rapid Enquiry Facility (RIF) - Node.js webservice request tests - shpConvert service
 //
 // Copyright:
 //
@@ -44,9 +44,9 @@
 //
 // Peter Hambly, SAHSU
 //
-// Usage: node test/request-shp2GeoJSON.js
+// Usage: node test/request-shpConvert.js
 //
-// Tests shp2GeoJSON service
+// Tests shpConvert service
 //
 // 1: Level 1 shapefile;
 // 2: Level 1, 2 shapefiles;
@@ -68,7 +68,7 @@ var nRequests = process.argv[2];
 var max_nRequests = 10;
 if (!nRequests) {
 	nRequests = 0;
-	console.log('Processing all shp2GeoJSON tests');
+	console.log('Processing all shpConvert tests');
 }
 else if (nRequests > max_nRequests) {
 	throw new Error("Invalid request number: " + nRequests + "; must be between 1 and " + max_nRequests);
@@ -99,8 +99,7 @@ var MakeRequest = function(){
 		attachments: [				
 		],
 		expected_to_pass: "true", 
-		verbose: "true",
-		store: "true"
+		verbose: "true"
 	};
 	
 	
@@ -108,7 +107,6 @@ var MakeRequest = function(){
 // test 6 missing dbf file - FAILS
 	
 	if (nRequests > 4) { 
-		formData["store"]="false";
 		idx=1; // Do case 1
 		if ((nRequests == 5)||(nRequests == 6)) {
 			formData.expected_to_pass="false";
@@ -180,7 +178,7 @@ var MakeRequest = function(){
 	resultArrayDesc[nRequests]=formData.my_test;
 	
     this.options = {
-        url:  'http://127.0.0.1:3000/shp2GeoJSON',
+        url:  'http://127.0.0.1:3000/shpConvert',
         headers:{'Content-Type': contentType},
         formData: formData
     }; 

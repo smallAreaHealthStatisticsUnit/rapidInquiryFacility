@@ -8,7 +8,7 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - toTopojson - Shapefile file to GeoJSON convertor; method specfic functions
+// Rapid Enquiry Facility (RIF) - shpConvert - Shapefile file convertor; method specfic functions
 //
 // Copyright:
 //
@@ -46,13 +46,13 @@
  
 		
 /*
- * Function:	shp2GeoJSONWriteFile()
+ * Function:	shpConvertWriteFile()
  * Parameters:	file name with path, data, RIF logging object, uuidV1 
  *				express HTTP request object
  * Returns:		Text of field processing log
  * Description: Write GeoJSON file 
  */ 
-shp2GeoJSONWriteFile=function(file, data, serverLog, uuidV1, req) {
+shpConvertWriteFile=function(file, data, serverLog, uuidV1, req) {
 	const fs = require('fs');
 	
 /* 1.3G SOA 2011 file uploads in firefox (NOT chrome) but gives:
@@ -61,8 +61,8 @@ Error(Error): toString failed
 Stack>>>
 Error: toString failed
     at Buffer.toString (buffer.js:382:11)
-    at shp2GeoJSONWriteFile (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shp2GeoJSON.js:59:35)
-    at Object.shp2GeoJSONFileProcessor (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shp2GeoJSON.js:505:3)
+    at shpConvertWriteFile (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:59:35)
+    at Object.shpConvertFileProcessor (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:505:3)
     at Busboy.<anonymous> (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServices.js:524:27)
     at emitNone (events.js:72:20)
     at Busboy.emit (events.js:166:7)
@@ -81,37 +81,37 @@ This does mean it converted to shapefile to geojson...
 			mode: 0o600,
 		}, function(err) {
 		if (err) {
-			serverLog.serverLog2(__file, __line, "shp2GeoJSONWriteFile", 
+			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", 
 				'ERROR! [' + uuidV1 + '] writing file: ' + file + '.tmp', req, err);
 			try {
 				fs.unlinkSync(file + '.tmp');
 			}
 			catch (e) { 
-				serverLog.serverLog2(__file, __line, "shp2GeoJSONWriteFile", 
+				serverLog.serverLog2(__file, __line, "shpConvertWriteFile", 
 					'ERROR! [' + uuidV1 + '] deleting file (after fs.writeFile error): ' + file + '.tmp', req, e);
 			}
 		}
 		try { // And do an atomic rename when complete
 			fs.renameSync(file + '.tmp', file);
-			serverLog.serverLog2(__file, __line, "shp2GeoJSONWriteFile", 
+			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", 
 				'OK! [' + uuidV1 + '] saved file: ' + file, req, err);			
 		} catch (e) { 
-			serverLog.serverLog2(__file, __line, "shp2GeoJSONWriteFile", 
+			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", 
 				'ERROR! [' + uuidV1 + '] renaming file: ' + file + '.tmp', req, e);
 		}
 	}); // End of fs.writeFile()
 }
 		
 /*
- * Function:	shp2GeoJSONFieldProcessor()
+ * Function:	shpConvertFieldProcessor()
  * Parameters:	fieldname, val, shapefile_options, ofields [field parameters array], response object, 
  *				express HTTP request object, RIF logging object
  * Returns:		Text of field processing log
- * Description: shp2GeoJSON method field processor. Called from req.busboy.on('field') callback function
+ * Description: shpConvert method field processor. Called from req.busboy.on('field') callback function
  *
  *				verbose: 	Set Topojson.Topology() ???? option if true. 
  */ 
-shp2GeoJSONFieldProcessor=function(fieldname, val, shapefile_options, ofields, response, req, rifLog) {
+shpConvertFieldProcessor=function(fieldname, val, shapefile_options, ofields, response, req, rifLog) {
 	var msg;
 	var text="";
 	
@@ -141,12 +141,7 @@ shp2GeoJSONFieldProcessor=function(fieldname, val, shapefile_options, ofields, r
 //	else if (fieldname == 'geometryColumn') {
 //		text+="geometryColumn set to: " + val;
 //		ofields["geometryColumn"]=val;		
-//	}
-	else if ((fieldname == 'store')&&(val == 'true')) {
-		text+="JSON file will be stored";
-		ofields["store"]=val;		
-		shapefile_options["store"] = true;
-	}	
+//	}	
 	else {
 		ofields[fieldname]=val;	
 	}	
@@ -155,13 +150,13 @@ shp2GeoJSONFieldProcessor=function(fieldname, val, shapefile_options, ofields, r
 }
 
 /*
- * Function:	shp2GeoJSONCheckFiles()
+ * Function:	shpConvertCheckFiles()
  * Parameters:	Shapefile list, response object, total shapefiles, ofields [field parameters array], 
  *				RIF logging object, express HTTP request object, express HTTP response object, shapefile options
  * Returns:		Rval object { file_errors, msg }
  * Description: Check which files and extensions are present, convert shapefiles to geoJSON
  */
-shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, req, res, shapefile_options) {
+shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, req, res, shapefile_options) {
 	const os = require('os'),
 	      path = require('path'),
 	      fs = require('fs'),
@@ -297,10 +292,9 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 					boundingBox.ymin=wgs84.bbox[1];
 					boundingBox.xmax=wgs84.bbox[2];					
 					boundingBox.ymax=wgs84.bbox[3];
-					if (shapefileData["shapefile_options"].store) {
-						shp2GeoJSONWriteFile(shapefileData["jsonFileName"], JSON.stringify(collection), 
-							shapefileData["serverLog"], shapefileData["uuidV1"], shapefileData["req"]);
-					}
+					shpConvertWriteFile(shapefileData["jsonFileName"], JSON.stringify(collection), 
+						shapefileData["serverLog"], shapefileData["uuidV1"], shapefileData["req"]);
+		
 					// Convert to geoJSON and return
 					response.file_list[shapefileData["shapefile_no"]-1].file_size=fs.statSync(shapefileData["shapeFileName"]).size;
 					response.file_list[shapefileData["shapefile_no"]-1].geojson_time=shapefileData["elapsedTime"];
@@ -416,12 +410,12 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 			response.message="";	
 		}
 		else {
-			serverLog.serverLog2(__file, __line, "shp2GeoJSONFieldProcessor().q.drain()", 
+			serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", 
 				"Diagnostics enabled; diagnostics >>>\n" +
 				response.message + "\n<<< End of diagnostics");	
 		}
 		if (response.field_errors == 0 && response.file_errors == 0) { // OK
-			serverLog.serverLog2(__file, __line, "shp2GeoJSONFieldProcessor().q.drain()", msg, req);
+			serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", msg, req);
 
 			if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 				var output = JSON.stringify(response);// Convert output response to JSON 
@@ -430,7 +424,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 				res.end();	
 			}
 			else {
-				serverLog.serverError2(__file, __line, "shp2GeoJSONFieldProcessor().q.drain()", 
+				serverLog.serverError2(__file, __line, "shpConvertFieldProcessor().q.drain()", 
 					"FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", 
 					req);
 			}				
@@ -477,7 +471,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 // All require files present
 //		
 		if (shpList[key].hasShp && shpList[key].hasPrj && shpList[key].hasDbf) {
-			var dir=os.tmpdir() + "/shp2GeoJSON/" + ofields["uuidV1"] + "/" + key;
+			var dir=os.tmpdir() + "/shpConvert/" + ofields["uuidV1"] + "/" + key;
 			var shapefileData = {
 				shapeFileName: dir + "/" + key + ".shp", 
 				dbfFileName: dir + "/" + key + ".dbf", 
@@ -519,7 +513,7 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 						
 					response.message+="\n" + msg;	
 					response.file_errors++;
-					serverLog.serverLog2(__file, __line, "shp2GeoJSONFieldProcessor().q.push()", msg, 
+					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.push()", msg, 
 						shapefileData["req"], err);	
 				} // End of err		
 				else {
@@ -548,14 +542,14 @@ shp2GeoJSONCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, 
 }
 
 /*
- * Function:	shp2GeoJSONFileProcessor()
+ * Function:	shpConvertFileProcessor()
  * Parameters:	d object (temporary processing data), Shapefile list, total shapefiles, path Node.js library, response object, 
  *				RIF logging object, express HTTP request object
  * Returns:		Rval object { file_errors, msg, total shapefiles }
  * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save shapefile to temporary directory
  *				Called once per file
  */
-shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofields, serverLog, req) {
+shpConvertFileProcessor = function(d, shpList, shpTotal, path, response, ofields, serverLog, req) {
 	const uuid = require('node-uuid'),
 	      crypto = require('crypto'),
 	      os = require('os'),
@@ -628,8 +622,8 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 	} /* End of generateUUID() */, 
 	/*
 	 * Function:	createTemporaryDirectory()
-	 * Parameters:	Directory component array [$TEMP/shp2GeoJSON, <uuidV1>, <fileNoext>]
-	 * Returns:		Final directory (e.g. $TEMP/shp2GeoJSON/<uuidV1>/<fileNoext>)
+	 * Parameters:	Directory component array [$TEMP/shpConvert, <uuidV1>, <fileNoext>]
+	 * Returns:		Final directory (e.g. $TEMP/shpConvert/<uuidV1>/<fileNoext>)
 	 * Description: Create temporary directory (for shapefiles)
 	 */
 	createTemporaryDirectory = function(dirArray, rval, response, fs) {
@@ -712,9 +706,9 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 	}
 	
 //	
-// Create directory: $TEMP/shp2GeoJSON/<uuidV1>/<fileNoext> as required
+// Create directory: $TEMP/shpConvert/<uuidV1>/<fileNoext> as required
 //
-	var dirArray=[os.tmpdir() + "/shp2GeoJSON", ofields["uuidV1"], fileNoext];
+	var dirArray=[os.tmpdir() + "/shpConvert", ofields["uuidV1"], fileNoext];
 	dir=createTemporaryDirectory(dirArray, rval, response, fs);
 	
 //	
@@ -726,7 +720,7 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 		rval.file_errors++;
 	}
 	else {
-		shp2GeoJSONWriteFile(file, d.file.file_data, serverLog, ofields["uuidV1"], req);
+		shpConvertWriteFile(file, d.file.file_data, serverLog, ofields["uuidV1"], req);
 		response.message += "\nSaving file: " + file;
 	}
 	
@@ -741,6 +735,6 @@ shp2GeoJSONFileProcessor = function(d, shpList, shpTotal, path, response, ofield
 }
 							
 // Export
-module.exports.shp2GeoJSONFileProcessor = shp2GeoJSONFileProcessor;
-module.exports.shp2GeoJSONCheckFiles = shp2GeoJSONCheckFiles;
-module.exports.shp2GeoJSONFieldProcessor = shp2GeoJSONFieldProcessor;
+module.exports.shpConvertFileProcessor = shpConvertFileProcessor;
+module.exports.shpConvertCheckFiles = shpConvertCheckFiles;
+module.exports.shpConvertFieldProcessor = shpConvertFieldProcessor;
