@@ -327,13 +327,13 @@ function displayResponse(responseText, status) {
 	}
 
 	if (response.no_files) {
-		msg+="<p>Files processed: " + response.no_files;
+		msg+="<p>Shape files processed: " + response.no_files;
 		if (response.file_list) {
 			if (response.no_files > 0) {
 				msg+="<table border=\"1\" style=\"width:100%\">" + 
 				"<tr><th>No.</th><th>File</th><th>GeoJSON length</th>" +
-				"<th>File size</th><th>Transfer time (S)</th><th>Geojson convert time (S)</th>" +
-				"<th>Uncompress time (S)</th><th>Uncompressed file size</th>" + 
+				"<th>File size</th><th>Areas</th><th>Geojson convert time (S)</th>" +
+				"<th>Geo level</th><th>Uncompressed file size</th>" + 
 				"<th>SRID</th>" +
 				"</tr>";
 				if (response.file_list[0].boundingBox) {
@@ -429,9 +429,9 @@ function displayResponse(responseText, status) {
 					}
 					msg+="</td><td>" + 
 						(response.file_list[i].file_size || "Not Set") + "</td><td>" + 
-						response.file_list[i].transfer_time + "</td><td>" +
+						response.file_list[i].total_areas + "</td><td>" +
 						(response.file_list[i].geojson_time || "Not converted") + "</td><td>" + 
-						(response.file_list[i].uncompress_time || "N/A") + "</td><td>" + 
+						(response.file_list[i].geolevel_id || "N/A") + "</td><td>" + 
 						(response.file_list[i].uncompress_size || "N/A") + "</td><td>" +
 						(response.file_list[i].srid || "No SRID") + "</td>" +
 						"</tr>";

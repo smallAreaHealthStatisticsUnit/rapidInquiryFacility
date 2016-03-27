@@ -280,14 +280,31 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 						"\nProjection name: " + mySrs.name + "; " +
 						"srid: " + mySrs.srid + "; " +
 						"proj4: " + mySrs.proj4;
-					response.message+="\n" + msg;
-					serverLog.serverLog2(__file, __line, "readShapeFile", "OK [" + shapefileData["uuidV1"] + "] " + msg);
 					var boundingBox = {
 						xmin: 0,
 						ymin: 0,
 						xmax: 0,
 						ymax: 0
 					};
+//					serverLog.serverLog2(__file, __line, "readShapeFile", "WGS 84 geoJSON (1..4000 chars)>>>\n" +
+//						JSON.stringify(wgs84, null, 2).substring(0, 4000) + "\n\n<<< formatted WGS 84");
+					var dbf_fields = [];
+
+					if (wgs84.features[0].properties) {
+						for (var key in wgs84.features[0].properties) {
+							dbf_fields.push(key);
+						}						
+					}
+//					for (var i=0;i < wgs84.features.length;i++) {
+//							if (wgs84.features[i].properties) {
+//								console.error("Feature [" + i + "]: " + JSON.stringify(wgs84.features[i].properties, null, 2));
+//							}
+//					}
+					msg+="\n" + dbf_fields.length + " fields: " + JSON.stringify(dbf_fields) + "; areas: " + wgs84.features.length;
+
+					response.message+="\n" + msg;
+					serverLog.serverLog2(__file, __line, "readShapeFile", "OK [" + shapefileData["uuidV1"] + "] " + msg);
+					
 					boundingBox.xmin=wgs84.bbox[0];
 					boundingBox.ymin=wgs84.bbox[1];
 					boundingBox.xmax=wgs84.bbox[2];					
@@ -303,6 +320,9 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					response.file_list[shapefileData["shapefile_no"]-1].proj4=mySrs.proj4;
 					response.file_list[shapefileData["shapefile_no"]-1].srid=mySrs.srid;
 					response.file_list[shapefileData["shapefile_no"]-1].projection_name=mySrs.name;
+					response.file_list[shapefileData["shapefile_no"]-1].total_areas=wgs84.features.length;
+					response.file_list[shapefileData["shapefile_no"]-1].dbf_fields=dbf_fields;
+					
 					callback();				
 				}
 				else {
@@ -414,6 +434,32 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				"Diagnostics enabled; diagnostics >>>\n" +
 				response.message + "\n<<< End of diagnostics");	
 		}
+		var geolevels = [];
+		for (var i=0; i<response.file_list.length; i++) {
+			geolevels[i] = {
+				i: i,
+				file_name: response.file_list[i].file_name,
+				total_areas: response.file_list[i].total_areas,
+				geolevel_id: 0
+			};
+//			console.error("Shape file [" + i + "]: " + geolevels[i].file_name + "; areas: " + geolevels[i].total_areas); 
+		}
+		var ngeolevels = geolevels.sort(function (a, b) {
+			if (a.total_areas > b.total_areas) {
+				return 1;
+			}
+			if (a.total_areas < b.total_areas) {
+				return -1;
+			}
+			// a must be equal to b
+			return 0;
+		});
+		for (var i=0; i<ngeolevels.length; i++) {		
+			ngeolevels[i].geolevel_id=i+1;
+			console.error("Shape file [" + ngeolevels[i].i + "]: " + ngeolevels[i].file_name + "; areas: " + ngeolevels[i].total_areas + 
+				"; geolevel: " + ngeolevels[i].geolevel_id); 
+				response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
+		}
 		if (response.field_errors == 0 && response.file_errors == 0) { // OK
 			serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", msg, req);
 
@@ -487,7 +533,10 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				response: response, 
 				shapefile_no: shapefile_no,
 				key: key,
-				shpTotal: shpTotal
+				shpTotal: shpTotal,
+				total_areas: 0,
+				dbf_fields: 0,
+				geolevel_id: 0
 			}
 			
 			response.file_list[shapefile_no-1] = {

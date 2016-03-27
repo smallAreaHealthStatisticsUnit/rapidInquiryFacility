@@ -345,7 +345,7 @@ Test harness refactor; Node.js version working
 	
 	Current TODO list aimed at Judy Qualters visit:
 	
-	* Geeolevel detection, numbers of areas, names of fields 
+	* Geeolevel detection: numbers of areas, names of fields 
 	* Async write support: shpConvertFileProcessor(), shpConvertWriteFile() (test on coa2011)
 	* Zip file support. Convert zlib, zip file support to async
 	* Detect bounds mismatch betwqeen shapefiles
