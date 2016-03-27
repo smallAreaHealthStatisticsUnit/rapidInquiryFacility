@@ -327,12 +327,47 @@ Test harness refactor; Node.js version working
 	
 #### 14th to 18th March	
 	
-	* shp2GeoJSON.html HTML 5 browser tester; works in Chrome and firfoix.  1.3G coa2011 shapefile cracks chrome; also breaks 
+	* shp2GeoJSON.html HTML 5 browser tester; works in Chrome and firefox.  1.3G coa2011 shapefile cracks chrome; also breaks 
 	  the synchronous file write in Node. Code needs restructuring to be fully async with streaming everywhere.
 	* Leaflet display of returned data
 	* Basic projection support (converted to 4326 for leaflet)
+
+#### 21st to 24th March
+
+    * Multiple shapefile support (using Async module)
+	* Full leaflet support
+	* UI tidy; cross browser fix. Decided to use JQuery-UI going forwards
+	* Rename shp2geojson to shpConvert, remove store parameter
 	
-	Todo:
+#### 29th March to 1st April
+	
+	* ...
+	
+	Current TODO list aimed at Judy Qualters visit:
+	
+	* Geeolevel detection, numbers of areas, names of fields 
+	* Async write support: shpConvertFileProcessor(), shpConvertWriteFile() (test on coa2011)
+	* Zip file support. Convert zlib, zip file support to async
+	* Detect bounds mismatch betwqeen shapefiles
+	* Add tests:
+		i. Unsupported projection files (modify proj data slightly...)
+		ii. Wrong shapefile in set
+	* WKT support
+	* Database connection; clean, check OK and ST_Union() for PK 
+	* Area support. add to shapefile checks
+	* Move shpConvert.html to Node express server; make so does not need network
+	* Add topoJSON support
+	
+	Maybe list:
+	
+	* Simplify...
+	* Status update using my_reference
+	* Hover support for name at highest resolution
+	* Replace traditional html with JQuery-UI
+	
+#### 20th April - Judy Qualters - CDC Visit
+	
+##	General RIF database Todo:
 
 	12. Documentation [in progress];
 	13. JSON injection protection [will be a regexp];
