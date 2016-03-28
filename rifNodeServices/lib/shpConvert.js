@@ -664,14 +664,52 @@ shpConvertFileQueue = function() {
 }
 
 /*
+ * Function:	createTemporaryDirectory()
+ * Parameters:	Directory component array [$TEMP/shpConvert, <uuidV1>, <fileNoext>]
+ * Returns:		Final directory (e.g. $TEMP/shpConvert/<uuidV1>/<fileNoext>)
+ * Description: Create temporary directory (for shapefiles)
+ */
+createTemporaryDirectory = function(dirArray, rval, response) {
+	const fs = require('fs');
+
+	var tdir;
+	for (var i = 0; i < dirArray.length; i++) {  
+		if (!tdir) {
+			tdir=dirArray[i];
+		}
+		else {
+			tdir+="/" + dirArray[i];
+		}	
+		try {
+			var stats=fs.statSync(tdir);
+		} catch (e) { 
+			if (e.code == 'ENOENT') {
+				try {
+					fs.mkdirSync(tdir);
+					response.message += "\nmkdir: " + tdir;
+				} catch (e) { 
+					rval.msg = "ERROR: Cannot create directory: " + e.message;
+					rval.file_errors++;
+				}			
+			}
+			else {
+				rval.msg = "ERROR: Cannot access directory: " + e.message;
+				rval.file_errors++;
+			}
+		}
+	}
+	return tdir;
+} /* End of createTemporaryDirectory() */;
+	
+/*
  * Function:	shpConvertFileProcessor()
  * Parameters:	d object (temporary processing data), Shapefile list, total shapefiles, path Node.js library, response object, 
- *				RIF logging object, express HTTP request object
+ *				uuidV1, HTTP request object
  * Returns:		Rval object { file_errors, msg, total shapefiles }
  * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save shapefile to temporary directory
  *				Called once per file
  */
-shpConvertFileProcessor = function(d, shpList, shpTotal, path, response, ofields, serverLog, req) {
+shpConvertFileProcessor = function(d, shpList, shpTotal, path, response, uuidV1, req) {
 	const os = require('os'),
 	      fs = require('fs');
 
@@ -681,42 +719,6 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, path, response, ofields
 		shpTotal: shpTotal
 	};
  
-	/*
-	 * Function:	createTemporaryDirectory()
-	 * Parameters:	Directory component array [$TEMP/shpConvert, <uuidV1>, <fileNoext>]
-	 * Returns:		Final directory (e.g. $TEMP/shpConvert/<uuidV1>/<fileNoext>)
-	 * Description: Create temporary directory (for shapefiles)
-	 */
-	createTemporaryDirectory = function(dirArray, rval, response, fs) {
-		var tdir;
-		for (var i = 0; i < dirArray.length; i++) {  
-			if (!tdir) {
-				tdir=dirArray[i];
-			}
-			else {
-				tdir+="/" + dirArray[i];
-			}	
-			try {
-				var stats=fs.statSync(tdir);
-			} catch (e) { 
-				if (e.code == 'ENOENT') {
-					try {
-						fs.mkdirSync(tdir);
-						response.message += "\nmkdir: " + tdir;
-					} catch (e) { 
-						rval.msg = "ERROR: Cannot create directory: " + e.message;
-						rval.file_errors++;
-					}			
-				}
-				else {
-					rval.msg = "ERROR: Cannot access directory: " + e.message;
-					rval.file_errors++;
-				}
-			}
-		}
-		return tdir;
-	} /* End of createTemporaryDirectory() */;
-	
 	var extName = path.extname(d.file.file_name);
 	var fileNoext = path.basename(d.file.file_name, extName);
 	var extName2 = path.extname(fileNoext); /* undefined if .shp, dbf etc; */
@@ -763,8 +765,8 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, path, response, ofields
 //	
 // Create directory: $TEMP/shpConvert/<uuidV1>/<fileNoext> as required
 //
-	var dirArray=[os.tmpdir() + "/shpConvert", ofields["uuidV1"], fileNoext];
-	dir=createTemporaryDirectory(dirArray, rval, response, fs);
+	var dirArray=[os.tmpdir() + "/shpConvert", uuidV1, fileNoext];
+	dir=createTemporaryDirectory(dirArray, rval, response);
 	
 //	
 // Write file to directory
@@ -775,7 +777,7 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, path, response, ofields
 		rval.file_errors++;
 	}
 	else {
-		shpConvertWriteFile(file, d.file.file_data, serverLog, ofields["uuidV1"], req, response);
+		shpConvertWriteFile(file, d.file.file_data, serverLog, uuidV1, req, response);
 //		response.message += "\nSaving file: " + file;
 	}
 	

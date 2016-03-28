@@ -529,7 +529,7 @@ exports.convert = function(req, res) {
 								}
 								else if (req.url == '/shpConvert') { // Note which files and extensions are present, 
 																	  // generate serial if required, save 		
-									rval=shpConvert.shpConvertFileProcessor(d, shpList, shpTotal, path, response, ofields, serverLog, req);
+									rval=shpConvert.shpConvertFileProcessor(d, shpList, shpTotal, path, response, ofields["uuidV1"]);
 									if (rval.file_errors > 0 ) {
 										httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 											serverLog, 500, req, res, rval.msg, undefined, response);							
