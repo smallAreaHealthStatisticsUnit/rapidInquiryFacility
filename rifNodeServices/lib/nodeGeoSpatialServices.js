@@ -551,35 +551,9 @@ exports.convert = function(req, res) {
 						}			
 						else if (req.url == '/shpConvert') { // Note which files and extensions are present, 
 																							// generate serial if required, save 
-																							
-							var shpList = {};
-							var shpTotal=0;			
-
-							if (!ofields["uuidV1"]) { // Generate UUID
-								ofields["uuidV1"]=serverLog.generateUUID();
-							}
-																									
-							for (var i = 0; i < response.no_files; i++) {
-								d=d_files.d_list[i];
-								rval=shpConvert.shpConvertFileProcessor(d, shpList, shpTotal, response, ofields["uuidV1"]);
-								if (rval.file_errors > 0 ) {
-									httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-										serverLog, 500, req, res, rval.msg, undefined, response);							
-									return;
-								}	
-								else {
-									shpTotal=rval.shpTotal;
-								}									
-							} // End of for loop	
-						
-							// Check which files and extensions are present, convert shapefiles to geoJSON						
-							rval=shpConvert.shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
-								req, res, shapefile_options);
-							if (rval.file_errors > 0 ) {
-								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-									serverLog, 500, req, res, rval.msg, undefined, response);							
+							if (!shpConvert.shpConvert(ofields, d_files, response, req, res, shapefile_options)) {
 								return;
-							}						
+							}
 						}	
 					
 		/*

@@ -832,8 +832,68 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req) 
 
 	return rval;
 }
-							
+	
+/*
+ * Function:	shpConvert()
+ * Parameters:	Ofields array, files array, response object, HTTP request object, HTTP response object
+ *				shapefile options
+ * Returns:		Nothing
+ * Description: Generate UUID if required, process all files into ShpList
+ *				Check which files and extensions are present, convert shapefiles to geoJSON		
+ */	
+shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {							
+	var rval;
+	var shpList = {};
+	var shpTotal=0;		
+	var lres=res;	
+
+	const serverLog = require('../lib/serverLog'),
+	      httpErrorResponse = require('../lib/httpErrorResponse'); 
+
+	if (!req) {
+		throw new Error("No HTTP request object [out of scope]");
+	}		  
+	if (!res) {
+		throw new Error("No HTTP response object [out of scope]");
+	}
+	if (!ofields["uuidV1"]) { // Generate UUID
+		ofields["uuidV1"]=serverLog.generateUUID();
+	}
+																			
+	for (var i = 0; i < response.no_files; i++) {
+		d=d_files.d_list[i];
+		rval=shpConvertFileProcessor(d, shpList, shpTotal, response, ofields["uuidV1"]);
+		if (rval.file_errors > 0 ) {
+			break;
+		}	
+		else {
+			shpTotal=rval.shpTotal;
+		}									
+	} // End of for loop	
+	
+	response.no_files=shpTotal;				// Add number of files process to response
+	response.fields=ofields;				// Add return fields	
+	if (rval.file_errors > 0) {
+		response.file_errors+=rval.file_errors;	
+		response.message = rval.msg + "\n" + response.message;
+		
+		httpErrorResponse.httpErrorResponse(__file, __line, "shpConvert", 
+			serverLog, 500, req, lres, rval.msg, undefined, response);
+	}
+	else {
+		// Check which files and extensions are present, convert shapefiles to geoJSON						
+		rval=shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
+			req, lres, shapefile_options);
+		if (rval.file_errors > 0 ) {
+			response.file_errors+=rval.file_errors;	
+			response.message = rval.msg + "\n" + response.message;
+		
+			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvert", 
+				serverLog, 500, req, lres, rval.msg, undefined, response);							
+		}
+	}							
+}
+	
 // Export
-module.exports.shpConvertFileProcessor = shpConvertFileProcessor;
-module.exports.shpConvertCheckFiles = shpConvertCheckFiles;
+module.exports.shpConvert = shpConvert;
 module.exports.shpConvertFieldProcessor = shpConvertFieldProcessor;
