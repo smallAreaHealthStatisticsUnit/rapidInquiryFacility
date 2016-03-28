@@ -150,6 +150,7 @@ serverError = function(msg, req, err) {
 		throw new Error(msg);
 	}
 }
+
 serverError2 = function(file, line, calling_function, msg, req, err) {		
 	serverLog2(file, line, calling_function, msg, req, err);
 	if (err) {

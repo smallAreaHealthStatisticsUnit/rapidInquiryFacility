@@ -466,18 +466,8 @@ exports.convert = function(req, res) {
 				try {
 					var msg="";
 					
-					if ((req.url == '/geo2TopoJSON')||(req.url == '/shpConvert')) {
-						var shpList = {};
-						var shpTotal=0;
-						
-						if (req.url == '/shpConvert') {
-//
-// UUID generator
-//	
-							if (!ofields["uuidV1"]) { // Generate UUID
-								ofields["uuidV1"]=serverLog.generateUUID();
-							}
-						}
+					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
+
 						for (var i = 0; i < response.no_files; i++) {	
 							d=d_files.d_list[i];
 							if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
@@ -517,39 +507,10 @@ exports.convert = function(req, res) {
 									serverLog, 500, req, res, msg, undefined, response);							
 								return;							
 							}
-							else if (d.file.file_data.length > 0) {
-								if (req.url == '/geo2TopoJSON') {
-									// Call GeoJSON to TopoJSON converter
-									d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);	
-									if (!d) {
-										httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile", serverLog, 
-											500, req, res, msg, response.error, response);							
-										return; 
-									}
-								}
-								else if (req.url == '/shpConvert') { // Note which files and extensions are present, 
-																	  // generate serial if required, save 		
-									rval=shpConvert.shpConvertFileProcessor(d, shpList, shpTotal, path, response, ofields["uuidV1"]);
-									if (rval.file_errors > 0 ) {
-										httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-											serverLog, 500, req, res, rval.msg, undefined, response);							
-										return;
-									}	
-									else {
-										if (rval.msg) {
-											msg+=rval.msg + "\n";			
-										}
-										shpTotal=rval.shpTotal;
-									}						
-								}
-							}	
-							else {
+							else if (d.file.file_data.length == 0) {
 								msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
 									d.file.extension + "; file size is zero" + 
 									"\n";
-								if (ofields["verbose"]) {
-									response.message = msg + "\n" + response.message;
-								}
 								response.no_files=d.no_files;			// Add number of files process to response
 								response.fields=ofields;				// Add return fields
 								response.file_errors++;					// Increment file error count	
@@ -557,18 +518,46 @@ exports.convert = function(req, res) {
 									serverLog, 500, req, res, msg, undefined, response);							
 								return;
 							}	
-						} // End of for loop
+						} // End of for loop	
+									
+						if (req.url == '/geo2TopoJSON') {			
+							for (var i = 0; i < response.no_files; i++) {
+								d=d_files.d_list[i];
+								// Call GeoJSON to TopoJSON converter
+								d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);	
+								if (!d) {
+									httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile", serverLog, 
+										500, req, res, msg, response.error, response);							
+									return; 
+								}								
+							} // End of for loop
+						}			
+						else if (req.url == '/shpConvert') { // Note which files and extensions are present, 
+																							// generate serial if required, save 
+							var shpList = {};
+							var shpTotal=0;			
+
+							if (!ofields["uuidV1"]) { // Generate UUID
+								ofields["uuidV1"]=serverLog.generateUUID();
+							}
+																									
+							for (var i = 0; i < response.no_files; i++) {
+								d=d_files.d_list[i];
+								rval=shpConvert.shpConvertFileProcessor(d, shpList, shpTotal, path, response, ofields["uuidV1"]);
+								if (rval.file_errors > 0 ) {
+									httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+										serverLog, 500, req, res, rval.msg, undefined, response);							
+									return;
+								}	
+								else {
+									if (rval.msg) {
+										msg+=rval.msg + "\n";			
+									}
+									shpTotal=rval.shpTotal;
+								}									
+							} // End of for loop	
 						
-						if (response.no_files == 0 && (req.url == '/shpConvert' || req.url == '/geo2TopoJSON')) { 
-								msg="FAIL! No files attached\n";						
-								response.message = msg + "\n" + response.message;
-								response.fields=ofields;				// Add return fields
-								response.file_errors++;					// Increment file error count	
-								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-									serverLog, 500, req, res, msg, undefined, response);							
-								return;						
-						}
-						else if (req.url == '/shpConvert') { // Check which files and extensions are present, convert shapefiles to geoJSON
+							// Check which files and extensions are present, convert shapefiles to geoJSON						
 							rval=shpConvert.shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
 								req, res, shapefile_options);
 							if (rval.file_errors > 0 ) {
@@ -580,8 +569,8 @@ exports.convert = function(req, res) {
 								if (rval.msg) {
 									msg+=rval.msg + "\n";			
 								}
-							}
-						}
+							}							
+						}	
 
 						if (!ofields["my_reference"]) {
 							msg+="[No my_reference] Processed: " + response.no_files + " files";
@@ -651,48 +640,69 @@ exports.convert = function(req, res) {
 	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 	 
 	 */ 
 					response.fields=ofields;				// Add return fields	
-					if (response.field_errors == 0 && response.file_errors == 0) { // OK
-						serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
-						
-						if (req.url == '/shpConvert') { // Processed by shpConvertCheckFiles() - uses async
-						}
-						else if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
-							var output = JSON.stringify(response);// Convert output response to JSON 
-		// Need to test res was not finished by an expection to avoid "write after end" errors			
-							res.write(output);                  // Write output  
-							res.end();	
-						}
-						else {
-							serverLog.serverLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
-						}	
-	//					console.error(util.inspect(req));
-	//					console.error(JSON.stringify(req.headers, null, 4));
-					}
-					else if (response.field_errors > 0 && response.file_errors > 0) {
-						msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
-							" and file processing ERRORS! " + response.file_errors + "\n" + msg;
-						response.message = msg + "\n" + response.message;						
-						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-							serverLog, 500, req, res, msg, undefined, response);				  
-					}				
-					else if (response.field_errors > 0) {
-						msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
+					if (response.no_files == 0) { 
+						msg="FAIL! No files attached\n";						
 						response.message = msg + "\n" + response.message;
+						response.fields=ofields;				// Add return fields
+						response.file_errors++;					// Increment file error count	
 						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-							serverLog, 500, req, res, msg, undefined, response);				  
-					}	
-					else if (response.file_errors > 0) {
-						msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
-						response.message = msg + "\n" + response.message;					
-						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-							serverLog, 500, req, res, msg, undefined, response);				  
-					}	
-					else {
-						msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
-							" and file processing ERRORS! " + response.file_errors + "\n" + msg;
-						response.message = msg + "\n" + response.message;						
-						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-							serverLog, 500, req, res, msg, undefined, response);
+							serverLog, 500, req, res, msg, undefined, response);							
+						return;						
+					}
+					
+					// Final processing
+					if (req.url == '/shpConvert') { // Processed by shpConvertCheckFiles() - uses async
+					}
+					else if (req.url == '/geo2TopoJSON') {	
+						if (response.no_files == 0) { 
+							msg="FAIL! No files attached\n";						
+							response.message = msg + "\n" + response.message;
+							response.fields=ofields;				// Add return fields
+							response.file_errors++;					// Increment file error count	
+							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+								serverLog, 500, req, res, msg, undefined, response);							
+							return;						
+						}
+						else if (response.field_errors == 0 && response.file_errors == 0) { // OK
+							serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
+							if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
+								var output = JSON.stringify(response);// Convert output response to JSON 
+			// Need to test res was not finished by an expection to avoid "write after end" errors			
+								res.write(output);                  // Write output  
+								res.end();	
+							}
+							else {
+								serverLog.serverLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
+							}	
+		//					console.error(util.inspect(req));
+		//					console.error(JSON.stringify(req.headers, null, 4));
+						}
+						else if (response.field_errors > 0 && response.file_errors > 0) {
+							msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
+								" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+							response.message = msg + "\n" + response.message;						
+							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+								serverLog, 500, req, res, msg, undefined, response);				  
+						}				
+						else if (response.field_errors > 0) {
+							msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
+							response.message = msg + "\n" + response.message;
+							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+								serverLog, 500, req, res, msg, undefined, response);				  
+						}	
+						else if (response.file_errors > 0) {
+							msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
+							response.message = msg + "\n" + response.message;					
+							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+								serverLog, 500, req, res, msg, undefined, response);				  
+						}	
+						else {
+							msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
+								" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+							response.message = msg + "\n" + response.message;						
+							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+								serverLog, 500, req, res, msg, undefined, response);
+						}
 					}
 				} catch(e) {
 					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 

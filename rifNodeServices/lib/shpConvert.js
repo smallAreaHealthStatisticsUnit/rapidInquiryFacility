@@ -55,7 +55,17 @@
 shpConvertWriteFile=function(file, data, serverLog, uuidV1, req, response, callback) {
 	const fs = require('fs');
 	const path = require('path');
-	
+
+	if (!serverLog) {
+		throw new Error("No serverLog object");
+	}
+	else if (!serverLog.serverError2) {
+		serverLog = require('../lib/serverLog'); // deal with scope problems
+	}	
+	else if (typeof serverLog.serverError2 != "function") {
+		throw new Error("serverLog.serverError2 is not a function");
+	}
+		
 	// Will need to check if the callback is defined 
 	
 	var baseName=path.basename(file);
@@ -73,7 +83,7 @@ shpConvertWriteFile=function(file, data, serverLog, uuidV1, req, response, callb
 			fs.renameSync(file + '.tmp', file);
 			msg="Saved file: " + baseName + "; size: " + fs.statSync(file).size + " bytes";
 			response.message+="\n" + msg;
-//			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", "OK [" + shapefileData["uuidV1"] + "] " + msg, req);
+			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", "OK [" + uuidV1 + "] " + msg, req);
 			if (callback) { 
 				callback();	
 			}
@@ -250,9 +260,18 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	var readShapeFile = function(shapefileData) {
 
 		if (!shapefileData) {
-			serverLog.serverError2(__file, __line, "readShapeFile", 
-				"No shapefileData object");
-//				callback();		// Not needed - serverError2() raises exception 		
+			throw new Error("No shapefileData object");
+//			callback();		// Not needed - serverError2() raises exception 		
+		}
+		var serverLog = shapefileData["serverLog"];
+		if (!serverLog) {
+			throw new Error("No serverLog object");
+		}
+		else if (!serverLog.serverError2) {
+			serverLog = require('../lib/serverLog'); // deal with scope problems
+		}	
+		else if (typeof serverLog.serverError2 != "function") {
+			throw new Error("serverLog.serverError2 is not a function");
 		}
 		
 		// Work out projection; convert to 4326 if required 
@@ -402,10 +421,20 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	waitForShapeFileWrite = function(shapefileData) {
 		
 		if (!shapefileData) {
-			serverLog.serverError2(__file, __line, "waitForShapeFileWrite", 
-				"No shapefileData object");
-//				callback();			// Not needed - serverError2() raises exception 					
+			throw new Error("No shapefileData object");
+//			callback();		// Not needed - serverError2() raises exception 		
 		}
+		var serverLog = shapefileData["serverLog"];
+		if (!serverLog) {
+			throw new Error("No serverLog object");
+		}
+		else if (!serverLog.serverError2) {
+			serverLog = require('../lib/serverLog'); // deal with scope problems
+		}	
+		else if (typeof serverLog.serverError2 != "function") {
+			throw new Error("serverLog.serverError2 is not a function");
+		}
+
 		
 		if (shapefileData["waits"] > 5) {
 			if (fs.existsSync(shapefileData["shapeFileName"]) || fs.existsSync(shapefileData["shapeFileName"] + ".tmp") ||
@@ -467,6 +496,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			
 		response.message+="\nWaiting for shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;	
 		shapefileData["callback"]=callback;
+		shapefileData["serverLog"]=serverLog;
 		waitForShapeFileWrite(shapefileData);	
 	}, 1 /* Single threaded - shapefileData needs to become an object */); // End of async.queue()
 
@@ -513,7 +543,18 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					"; geolevel: " + ngeolevels[i].geolevel_id); 
 					response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
 			}
-			if (response.field_errors == 0 && response.file_errors == 0) { // OK
+			
+			// Final processing
+			if (response.no_files == 0) { 
+				msg="FAIL! No files attached\n";						
+				response.message = msg + "\n" + response.message;
+				response.fields=ofields;				// Add return fields
+				response.file_errors++;					// Increment file error count	
+				httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+					serverLog, 500, req, res, msg, undefined, response);							
+				return;						
+			}
+			else if (response.field_errors == 0 && response.file_errors == 0) { // OK
 				serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", msg, req);
 
 				if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
