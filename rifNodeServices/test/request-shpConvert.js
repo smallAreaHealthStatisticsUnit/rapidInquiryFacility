@@ -259,14 +259,18 @@ var postIt = function(debug) {
 					resultArray[ofields["my_reference"]]=false;
 				}
 				failed++;
-				console.error('WARNING! test failed when expected to pass');
+				console.error('[statusCode != 200] WARNING! test failed when expected to pass');
 			}
 			else {
 				if (ofields["my_reference"]) {
 					resultArray[ofields["my_reference"]]=true;
-				}				
-				passed++;
-				console.error('GOOD! test failed as expected');
+					passed++;
+					console.error('[statusCode != 200] GOOD! test failed as expected');
+				}
+				else {				
+					failed++;
+					console.error('[statusCode != 200] WARNING! test failed, no reference returned');
+				}
 			}					
 		}
 		else { // No HTTP status
@@ -312,14 +316,15 @@ var postIt = function(debug) {
 			if (expected_to_pass == "true") {
 				if (ofields["my_reference"]) {
 					resultArray[ofields["my_reference"]]=true;
-				}				
+				}		
+				console.error('[No HTTP status] GOOD! test passed as expected');				
 				passed++;
 			}
 			else {
 				if (ofields["my_reference"]) {
 					resultArray[ofields["my_reference"]]=false;
 				}				
-				console.error('WARNING! test passed when expected to fail');			
+				console.error('[No HTTP status] WARNING! test passed when expected to fail');			
 				failed++;
 			}
 		}
