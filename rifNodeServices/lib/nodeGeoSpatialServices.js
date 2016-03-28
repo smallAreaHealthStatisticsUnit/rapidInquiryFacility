@@ -551,6 +551,7 @@ exports.convert = function(req, res) {
 						}			
 						else if (req.url == '/shpConvert') { // Note which files and extensions are present, 
 																							// generate serial if required, save 
+																							
 							var shpList = {};
 							var shpTotal=0;			
 
@@ -560,16 +561,13 @@ exports.convert = function(req, res) {
 																									
 							for (var i = 0; i < response.no_files; i++) {
 								d=d_files.d_list[i];
-								rval=shpConvert.shpConvertFileProcessor(d, shpList, shpTotal, path, response, ofields["uuidV1"]);
+								rval=shpConvert.shpConvertFileProcessor(d, shpList, shpTotal, response, ofields["uuidV1"]);
 								if (rval.file_errors > 0 ) {
 									httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 										serverLog, 500, req, res, rval.msg, undefined, response);							
 									return;
 								}	
 								else {
-									if (rval.msg) {
-										msg+=rval.msg + "\n";			
-									}
 									shpTotal=rval.shpTotal;
 								}									
 							} // End of for loop	
@@ -581,12 +579,7 @@ exports.convert = function(req, res) {
 								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 									serverLog, 500, req, res, rval.msg, undefined, response);							
 								return;
-							}
-							else {
-								if (rval.msg) {
-									msg+=rval.msg + "\n";			
-								}
-							}							
+							}						
 						}	
 					
 		/*

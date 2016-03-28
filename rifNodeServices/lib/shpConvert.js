@@ -744,15 +744,16 @@ createTemporaryDirectory = function(dirArray, rval, response) {
 	
 /*
  * Function:	shpConvertFileProcessor()
- * Parameters:	d object (temporary processing data), Shapefile list, total shapefiles, path Node.js library, response object, 
+ * Parameters:	d object (temporary processing data), Shapefile list, total shapefiles, response object, 
  *				uuidV1, HTTP request object
  * Returns:		Rval object { file_errors, msg, total shapefiles }
  * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save shapefile to temporary directory
  *				Called once per file
  */
-shpConvertFileProcessor = function(d, shpList, shpTotal, path, response, uuidV1, req) {
+shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req) {
 	const os = require('os'),
-	      fs = require('fs');
+	      fs = require('fs'),
+	      path = require('path');
 
 	var rval = {
 		file_errors: 0,
