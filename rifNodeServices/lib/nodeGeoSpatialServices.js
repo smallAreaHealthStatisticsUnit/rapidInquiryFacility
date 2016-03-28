@@ -289,7 +289,7 @@ exports.convert = function(req, res) {
 					d.file.chunks_length+=data.length;
 					if (d.file.partial_chunk_size > 10*1024*1024) { // 10 Mb
 						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-							d.file.file_encoding + 
+							(d.file.file_encoding || "N/A") + 
 							'; read [' + d.file.chunks.length + '] ' + d.file.partial_chunk_size + ', ' + d.file.chunks_length + ' total';
 						d.file.partial_chunk_size=0;
 					}
