@@ -340,7 +340,10 @@ function displayResponse(responseText, status) {
 		msg+="<p>Error message" + response.error + "</p>"
 	}
 
-	if (response.no_files) {
+	if (!response.no_files) {
+		msg+="<p>No processed shape files returned [ERROR!]</p>";
+	}
+	else {
 		msg+="<p>Shape files processed: " + response.no_files;
 		if (response.file_list) {
 			if (response.no_files > 0) {
