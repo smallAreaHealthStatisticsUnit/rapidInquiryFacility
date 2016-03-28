@@ -160,7 +160,71 @@ serverError2 = function(file, line, calling_function, msg, req, err) {
 	}
 }
 
+/*
+ * Function:	generateUUID()
+ * Parameters:	None
+ * Returns:		UUID v1
+ * Description: UUID generator - Generate RFC4122 version 1 compliant UUID
+ * 				Use first six bits of HMAC 256 key for the Node ID
+ * 				Key is mac address of eth0 + or hostname + process ID if eth0 does not exist	
+ * 				E.g. 7a9ee1c0-e469-11e5-b100-2f737ba57483
+ * 
+ *				The use of the MAC address as the node is correct, but does reveal information useful for spoofing.
+ *				Therefore the bytes are swapped in the order 012 [Organizationally Unique Identifier (OUI)] 534 [NIC specific]
+ */
+generateUUID = function() {
+	const os = require('os'),
+	      uuid = require('node-uuid'),
+	      crypto = require('crypto');
+	      
+	var networkInterfaces = os.networkInterfaces();
+	var key;
+	var nif;
+	var buf;
+	var hash;
+	
+	if (networkInterfaces['eth0']) { // For Linux - easy
+		nif=networkInterfaces['eth0'];	
+		if (nif[0].mac != '00:00:00:00:00:00') {
+			key=nif[0].mac;
+//				console.error("A mac: " + key + "; " + key.replace(/:/g, '').toString());
+			buf=new Buffer(key.replace(/:/g, '').toString(), 'hex');
+		}			
+	}
+	else {
+		for (var key in networkInterfaces) { // Windows - can be called  all sort of things. 
+											 // Use the first one that is not localhost
+			nif=networkInterfaces[key];
+			if (nif[0].mac != '00:00:00:00:00:00') {
+				key=nif[0].mac;
+//					console.error("B mac: " + key + "; " + key.replace(/:/g, '').toString());
+				buf=new Buffer(key.replace(/:/g, '').toString(), 'hex');
+				break;
+			}
+		}
+	}
+
+	if (!buf) { // no non zeros nic; use the hostname + PID
+		key=os.hostname() + "+" + process.pid;
+		hash=crypto.createHmac('sha256', key).digest('hex');	
+		buf=new Buffer(hash, 'hex');			
+	}	
+
+//		console.error("Key: " + key + "\n" +
+//			"hash[0]: [0x" + hash.substring(0, 2) + "], [0x" + buf[0].toString(16) + "]\n" +
+//			"hash[1]: [0x" + hash.substring(2, 4) + "], [0x" + buf[1].toString(16) + "]\n" +
+//			"hash[2]: [0x" + hash.substring(4, 6) + "], [0x" + buf[2].toString(16) + "]\n" +
+//			"hash[3]: [0x" + hash.substring(6, 8) + "], [0x" + buf[3].toString(16) + "]\n" +
+//			"hash[4]: [0x" + hash.substring(8, 10) + "], [0x" + buf[4].toString(16) + "]\n" +
+//			"hash[5]: [0x" + hash.substring(10, 12) + "], [0x" + buf[5].toString(16) + "]\n" +
+//			"networkInterface: " + JSON.stringify(nif, null, 4));
+	return uuid.v1({
+		node: [buf[0], buf[1], buf[2], buf[5], buf[3], buf[4]] // first 6 bytes of hash; NIC bits swapped
+		});		
+} /* End of generateUUID() */
+	
 module.exports.serverError = serverError;
 module.exports.serverError2 = serverError2;
 module.exports.serverLog = serverLog;
 module.exports.serverLog2 = serverLog2;
+module.exports.generateUUID = generateUUID;

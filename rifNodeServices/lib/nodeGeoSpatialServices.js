@@ -470,6 +470,14 @@ exports.convert = function(req, res) {
 						var shpList = {};
 						var shpTotal=0;
 						
+						if (req.url == '/shpConvert') {
+//
+// UUID generator
+//	
+							if (!ofields["uuidV1"]) { // Generate UUID
+								ofields["uuidV1"]=serverLog.generateUUID();
+							}
+						}
 						for (var i = 0; i < response.no_files; i++) {	
 							d=d_files.d_list[i];
 							if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
