@@ -519,7 +519,24 @@ exports.convert = function(req, res) {
 								return;
 							}	
 						} // End of for loop	
-									
+								
+						if (response.no_files == 0) { 
+							msg="FAIL! No files attached\n";						
+							response.message = msg + "\n" + response.message;
+							response.fields=ofields;				// Add return fields
+							response.file_errors++;					// Increment file error count	
+							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+								serverLog, 500, req, res, msg, undefined, response);							
+							return;						
+						}
+						else if (!ofields["my_reference"]) {
+							msg+="[No my_reference] Processed: " + response.no_files + " files";
+						}
+						else {
+							msg+="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files";
+						}
+							
+						// url specific code	
 						if (req.url == '/geo2TopoJSON') {			
 							for (var i = 0; i < response.no_files; i++) {
 								d=d_files.d_list[i];
@@ -571,12 +588,97 @@ exports.convert = function(req, res) {
 								}
 							}							
 						}	
-
-						if (!ofields["my_reference"]) {
-							msg+="[No my_reference] Processed: " + response.no_files + " files";
+					
+		/*
+		 * geo2TopoJSON response object - no errors:
+		 *                    
+		 * no_files: 		Numeric, number of files    
+		 * field_errors: 	Number of errors in processing fields
+		 * file_list: 		Array file objects:
+		 *						file_name: File name
+		 *						topojson: TopoJSON created from file geoJSON,
+		 *						topojson_stderr: Debug from TopoJSON module,
+		 *						topojson_runtime: Time to convert geoJSON to topoJSON (S),
+		 *						file_size: Transferred file size in bytes,
+		 *						transfer_time: Time to transfer file (S),
+		 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+		 *						uncompress_size: Size of uncompressed file in bytes
+		 * message: 		Processing messages, including debug from topoJSON               
+		 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
+		 *
+		 * shpConvert response object - no errors, store=false
+		 *                    
+		 * no_files: 		Numeric, number of files    
+		 * field_errors: 	Number of errors in processing fields
+		 * file_list: 		Array file objects:
+		 *						file_name: File name
+		 *						file_size: Transferred file size in bytes,
+		 *						transfer_time: Time to transfer file (S),
+		 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+		 *						uncompress_size: Size of uncompressed file in bytes
+		 * message: 		Processing messages, including debug from topoJSON               
+		 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
+		 *  
+		 * shpConvert response object - no errors, store=true [Processed by shpConvertCheckFiles()]
+		 *  	 
+		 * no_files: 		Numeric, number of files    
+		 * field_errors: 	Number of errors in processing fields
+		 * file_list: 		Array file objects:
+		 *						file_name: File name
+		 *						geojson: GeoJSON created from shapefile,
+		 *						file_size: Transferred file size in bytes,
+		 *						transfer_time: Time to transfer files (S),
+		 *						geojson_time: Time to convert to geojson (S),
+		 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+		 *						uncompress_size: Size of uncompressed file in bytes
+		 * message: 		Processing messages              
+		 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 	 
+		 */ 				
+						// Final processing
+						if (req.url == '/shpConvert') { // Processed by shpConvertCheckFiles() - uses async
 						}
-						else {
-							msg+="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files";
+						else if (req.url == '/geo2TopoJSON') {	
+							response.fields=ofields;				// Add return fields	
+							if (response.field_errors == 0 && response.file_errors == 0) { // OK
+								serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
+								if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
+									var output = JSON.stringify(response);// Convert output response to JSON 
+				// Need to test res was not finished by an expection to avoid "write after end" errors			
+									res.write(output);                  // Write output  
+									res.end();	
+								}
+								else {
+									serverLog.serverLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
+								}	
+			//					console.error(util.inspect(req));
+			//					console.error(JSON.stringify(req.headers, null, 4));
+							}
+							else if (response.field_errors > 0 && response.file_errors > 0) {
+								msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
+									" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+								response.message = msg + "\n" + response.message;						
+								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+									serverLog, 500, req, res, msg, undefined, response);				  
+							}				
+							else if (response.field_errors > 0) {
+								msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
+								response.message = msg + "\n" + response.message;
+								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+									serverLog, 500, req, res, msg, undefined, response);				  
+							}	
+							else if (response.file_errors > 0) {
+								msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
+								response.message = msg + "\n" + response.message;					
+								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+									serverLog, 500, req, res, msg, undefined, response);				  
+							}	
+							else {
+								msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
+									" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+								response.message = msg + "\n" + response.message;						
+								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+									serverLog, 500, req, res, msg, undefined, response);
+							}
 						}
 					}
 					else {
@@ -592,118 +694,7 @@ exports.convert = function(req, res) {
 							serverLog, 405, req, res, msg, undefined, response);		
 						return;		
 					}
-	//				console.error("req.busboy.on('finish') " + msg);
-					
-	/*
-	 * geo2TopoJSON response object - no errors:
-	 *                    
-	 * no_files: 		Numeric, number of files    
-	 * field_errors: 	Number of errors in processing fields
-	 * file_list: 		Array file objects:
-	 *						file_name: File name
-	 *						topojson: TopoJSON created from file geoJSON,
-	 *						topojson_stderr: Debug from TopoJSON module,
-	 *						topojson_runtime: Time to convert geoJSON to topoJSON (S),
-	 *						file_size: Transferred file size in bytes,
-	 *						transfer_time: Time to transfer file (S),
-	 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
-	 *						uncompress_size: Size of uncompressed file in bytes
-	 * message: 		Processing messages, including debug from topoJSON               
-	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
-	 *
-	 * shpConvert response object - no errors, store=false
-	 *                    
-	 * no_files: 		Numeric, number of files    
-	 * field_errors: 	Number of errors in processing fields
-	 * file_list: 		Array file objects:
-	 *						file_name: File name
-	 *						file_size: Transferred file size in bytes,
-	 *						transfer_time: Time to transfer file (S),
-	 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
-	 *						uncompress_size: Size of uncompressed file in bytes
-	 * message: 		Processing messages, including debug from topoJSON               
-	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
-	 *  
-	 * shpConvert response object - no errors, store=true [Processed by shpConvertCheckFiles()]
-	 *  	 
-	 * no_files: 		Numeric, number of files    
-	 * field_errors: 	Number of errors in processing fields
-	 * file_list: 		Array file objects:
-	 *						file_name: File name
-	 *						geojson: GeoJSON created from shapefile,
-	 *						file_size: Transferred file size in bytes,
-	 *						transfer_time: Time to transfer files (S),
-	 *						geojson_time: Time to convert to geojson (S),
-	 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
-	 *						uncompress_size: Size of uncompressed file in bytes
-	 * message: 		Processing messages              
-	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 	 
-	 */ 
-					response.fields=ofields;				// Add return fields	
-					if (response.no_files == 0) { 
-						msg="FAIL! No files attached\n";						
-						response.message = msg + "\n" + response.message;
-						response.fields=ofields;				// Add return fields
-						response.file_errors++;					// Increment file error count	
-						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-							serverLog, 500, req, res, msg, undefined, response);							
-						return;						
-					}
-					
-					// Final processing
-					if (req.url == '/shpConvert') { // Processed by shpConvertCheckFiles() - uses async
-					}
-					else if (req.url == '/geo2TopoJSON') {	
-						if (response.no_files == 0) { 
-							msg="FAIL! No files attached\n";						
-							response.message = msg + "\n" + response.message;
-							response.fields=ofields;				// Add return fields
-							response.file_errors++;					// Increment file error count	
-							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-								serverLog, 500, req, res, msg, undefined, response);							
-							return;						
-						}
-						else if (response.field_errors == 0 && response.file_errors == 0) { // OK
-							serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
-							if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
-								var output = JSON.stringify(response);// Convert output response to JSON 
-			// Need to test res was not finished by an expection to avoid "write after end" errors			
-								res.write(output);                  // Write output  
-								res.end();	
-							}
-							else {
-								serverLog.serverLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
-							}	
-		//					console.error(util.inspect(req));
-		//					console.error(JSON.stringify(req.headers, null, 4));
-						}
-						else if (response.field_errors > 0 && response.file_errors > 0) {
-							msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
-								" and file processing ERRORS! " + response.file_errors + "\n" + msg;
-							response.message = msg + "\n" + response.message;						
-							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-								serverLog, 500, req, res, msg, undefined, response);				  
-						}				
-						else if (response.field_errors > 0) {
-							msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
-							response.message = msg + "\n" + response.message;
-							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-								serverLog, 500, req, res, msg, undefined, response);				  
-						}	
-						else if (response.file_errors > 0) {
-							msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
-							response.message = msg + "\n" + response.message;					
-							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-								serverLog, 500, req, res, msg, undefined, response);				  
-						}	
-						else {
-							msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
-								" and file processing ERRORS! " + response.file_errors + "\n" + msg;
-							response.message = msg + "\n" + response.message;						
-							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-								serverLog, 500, req, res, msg, undefined, response);
-						}
-					}
+	//				console.error("req.busboy.on('finish') " + msg);					
 				} catch(e) {
 					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
 						serverLog, 500, req, res, 'Caught unexpected error (possibly async)', e, undefined /* My response */);
