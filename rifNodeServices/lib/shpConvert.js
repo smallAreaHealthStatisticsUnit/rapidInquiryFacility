@@ -48,11 +48,11 @@
 /*
  * Function:	shpConvertWriteFile()
  * Parameters:	file name with path, data, RIF logging object, uuidV1 
- *				express HTTP request object
+ *				express HTTP request object, response object, callback
  * Returns:		Text of field processing log
  * Description: Write GeoJSON file 
  */ 
-shpConvertWriteFile=function(file, data, serverLog, uuidV1, req) {
+shpConvertWriteFile=function(file, data, serverLog, uuidV1, req, response, callback) {
 	const fs = require('fs');
 	
 /* 1.3G SOA 2011 file uploads in firefox (NOT chrome) but gives:
@@ -80,23 +80,29 @@ This does mean it converted to shapefile to geojson...
 			encoding: 'binary',
 			mode: 0o600,
 		}, function(err) {
-		if (err) {
-			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", 
-				'ERROR! [' + uuidV1 + '] writing file: ' + file + '.tmp', req, err);
+		var msg;
+		
+		if (err) {			
 			try {
 				fs.unlinkSync(file + '.tmp');
+				serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
+					'ERROR! [' + uuidV1 + '] writing file: ' + file + '.tmp', req, err);
 			}
 			catch (e) { 
-				serverLog.serverLog2(__file, __line, "shpConvertWriteFile", 
-					'ERROR! [' + uuidV1 + '] deleting file (after fs.writeFile error): ' + file + '.tmp', req, e);
+				serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
+					'ERROR! [' + uuidV1 + '] deleting file (after fs.writeFile error: ' + e.message + '): ' + file + '.tmp', req, e);
 			}
 		}
 		try { // And do an atomic rename when complete
 			fs.renameSync(file + '.tmp', file);
-			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", 
-				'OK! [' + uuidV1 + '] saved file: ' + file, req, err);			
+			msg="Saved file: " + file + "; size: " + fs.statSync(file).size;
+			response.message+="\n" + msg;
+//			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", "OK [" + shapefileData["uuidV1"] + "] " + msg, req);
+			if (callback) { 
+				callback();	
+			}
 		} catch (e) { 
-			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", 
+			serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
 				'ERROR! [' + uuidV1 + '] renaming file: ' + file + '.tmp', req, e);
 		}
 	}); // End of fs.writeFile()
@@ -206,13 +212,13 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		 */
 		var readShapeFile = function(shapefileData) {
 
-				if (!shapefileData) {
+			if (!shapefileData) {
 				serverLog.serverError2(__file, __line, "readShapeFile", 
 					"No shapefileData object");
-//				callback();				
+//				callback();		// Not needed - serverError2() raises exception 		
 			}
 			
-			// Work out projection; convert to 4326 if required - NEEDS ERROR HANDLERS
+			// Work out projection; convert to 4326 if required 
 			var prj=fs.readFileSync(shapefileData["projFileName"]);
 			var mySrs;
 			var crss={
@@ -232,7 +238,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 						serverLog.serverError2(__file, __line, "readShapeFile", 
 							"ERROR! no SRID for projection data: " + prj + " in shapefile: " +
 							shapefileData["shapeFileName"], shapefileData["req"]);	
-//						callback();	
+//						callback();	// Not needed - serverError2() raises exception 
 					}
 				}
 				crss["EPSG:" + mySrs.srid] = mySrs.proj4;
@@ -244,7 +250,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					serverLog.serverError2(__file, __line, "readShapeFile", 
 						'ERROR! [' + shapefileData["uuidV1"] + '] in shapefile read: ' + shapefileData["shapeFileName"], 
 						shapefileData["req"], err);	
-//					callback();	
+//					callback();		// Not needed - serverError2() raises exception 
 				} // End of err
 				// OK
 				var end = new Date().getTime();
@@ -258,11 +264,12 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					catch (e) {
 						serverLog.serverError2(__file, __line, "readShapeFile", 
 							"reproject.toWgs84() failed [" + shapefileData["uuidV1"] + 
-							"] File: " + shapefileData["shapeFileName"] + "\n" + e.message + 
+							"] File: " + shapefileData["shapeFileName"] + "\n" + 
 							"\nProjection data:\n" + prj + "\n<<<" +
 							"\nCRSS database >>>\n" + JSON.stringify(crss, null, 2) + "\n<<<" +
-							"\nGeoJSON sample >>>\n" + JSON.stringify(collection, null, 2).substring(0, 600) + "\n<<<");	
-//						callback();
+							"\nGeoJSON sample >>>\n" + JSON.stringify(collection, null, 2).substring(0, 600) + "\n<<<", 
+							shapefileData["req"], e);	
+//						callback();	// Not needed - serverError2() raises exception 
 					}
 				}
 				else {
@@ -303,14 +310,13 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					msg+="\n" + dbf_fields.length + " fields: " + JSON.stringify(dbf_fields) + "; areas: " + wgs84.features.length;
 
 					response.message+="\n" + msg;
-					serverLog.serverLog2(__file, __line, "readShapeFile", "OK [" + shapefileData["uuidV1"] + "] " + msg);
+//					serverLog.serverLog2(__file, __line, "readShapeFile", "OK [" + shapefileData["uuidV1"] + "] " + msg);
 					
 					boundingBox.xmin=wgs84.bbox[0];
 					boundingBox.ymin=wgs84.bbox[1];
 					boundingBox.xmax=wgs84.bbox[2];					
 					boundingBox.ymax=wgs84.bbox[3];
-					shpConvertWriteFile(shapefileData["jsonFileName"], JSON.stringify(collection), 
-						shapefileData["serverLog"], shapefileData["uuidV1"], shapefileData["req"]);
+
 		
 					// Convert to geoJSON and return
 					response.file_list[shapefileData["shapefile_no"]-1].file_size=fs.statSync(shapefileData["shapeFileName"]).size;
@@ -323,16 +329,18 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					response.file_list[shapefileData["shapefile_no"]-1].total_areas=wgs84.features.length;
 					response.file_list[shapefileData["shapefile_no"]-1].dbf_fields=dbf_fields;
 					
-					callback();				
+					shpConvertWriteFile(shapefileData["jsonFileName"], JSON.stringify(collection), 
+						shapefileData["serverLog"], shapefileData["uuidV1"], shapefileData["req"], response, callback);
+					// shpConvertWriteFile runs callback
 				}
 				else {
 					serverLog.serverError2(__file, __line, "readShapeFile", 
 						'ERROR! [' + shapefileData["uuidV1"] + '] no collection.bbox: ' + 
 						shapefileData["shapeFileName"], shapefileData["req"]);	
-//					callback();					
+//					callback();			// Not needed - serverError2() raises exception 			
 				}		
 			}); /* End of shapefile.read() */	
-		},
+		}, // End of readShapeFile()
 		/*
 		 * Function:	waitForShapeFileWrite()
 		 * Parameters:	Shapefile data object:
@@ -359,7 +367,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			if (!shapefileData) {
 				serverLog.serverError2(__file, __line, "waitForShapeFileWrite", 
 					"No shapefileData object");
-//				callback();				
+//				callback();			// Not needed - serverError2() raises exception 					
 			}
 			
 			if (shapefileData["waits"] > 5) {
@@ -377,7 +385,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 						" Shapefile[" + i + "/" + shapefileData["shpTotal"] + "/" + shapefileData["key"] + "]: " + 
 						shapefileData["shapeFileName"] + 
 						" shapefile/dbf file/projection file was not written", shapefileData["req"]);
-//					callback();									
+//					callback();			// Not needed - serverError2() raises exception 										
 				}
 			}
 			
@@ -390,7 +398,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					serverLog.serverError2(__file, __line, "waitForShapeFileWrite().setTimeout", 
 						'ERROR! [' + shapefileData["uuidV1"] + '] timeout (' + shapefileData["elapsedTime"] + ' S) waiting for file: ' + 
 						shapefileData["shapeFileName"], shapefileData["req"]);
-//					callback();
+//					callback();		// Not needed - serverError2() raises exception 		
 				}
 				else if (fs.existsSync(shapefileData["shapeFileName"]) && 
 						 fs.existsSync(shapefileData["dbfFileName"]) && 
@@ -419,89 +427,100 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			
 		response.message+="\nProcessing shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;			
 		waitForShapeFileWrite(shapefileData);	
-	}, 1 /* Single threaded - shapefileData needss to become an object */);
+	}, 1 /* Single threaded - shapefileData needss to become an object */); // End of async.queue()
 
-	// assign a callback at end of processing
+	/* 
+	 * Function: 	shpConvertFieldProcessor().q.drain()
+	 * Description: Async module drain function assign a callback at end of processing
+	 */
 	q.drain = function() {
-		var msg="All " + response.no_files + " shapefiles have been processed";
-						// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
-		response.message+=msg;				
-		if (!shapefile_options.verbose) {
-			response.message="";	
-		}
-		else {
-			serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", 
-				"Diagnostics enabled; diagnostics >>>\n" +
-				response.message + "\n<<< End of diagnostics");	
-		}
-		var geolevels = [];
-		for (var i=0; i<response.file_list.length; i++) {
-			geolevels[i] = {
-				i: i,
-				file_name: response.file_list[i].file_name,
-				total_areas: response.file_list[i].total_areas,
-				geolevel_id: 0
-			};
-//			console.error("Shape file [" + i + "]: " + geolevels[i].file_name + "; areas: " + geolevels[i].total_areas); 
-		}
-		var ngeolevels = geolevels.sort(function (a, b) {
-			if (a.total_areas > b.total_areas) {
-				return 1;
-			}
-			if (a.total_areas < b.total_areas) {
-				return -1;
-			}
-			// a must be equal to b
-			return 0;
-		});
-		for (var i=0; i<ngeolevels.length; i++) {		
-			ngeolevels[i].geolevel_id=i+1;
-			console.error("Shape file [" + ngeolevels[i].i + "]: " + ngeolevels[i].file_name + "; areas: " + ngeolevels[i].total_areas + 
-				"; geolevel: " + ngeolevels[i].geolevel_id); 
-				response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
-		}
-		if (response.field_errors == 0 && response.file_errors == 0) { // OK
-			serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", msg, req);
-
-			if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
-				var output = JSON.stringify(response);// Convert output response to JSON 
-// Need to test res was not finished by an expection to avoid "write after end" errors			
-				res.write(output);                  // Write output  
-				res.end();	
+		try {
+			var msg="All " + response.no_files + " shapefiles have been processed";
+							// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
+			response.message+=msg;				
+			if (!shapefile_options.verbose) {
+				response.message="";	
 			}
 			else {
-				serverLog.serverError2(__file, __line, "shpConvertFieldProcessor().q.drain()", 
-					"FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", 
-					req);
+				serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+					"Diagnostics enabled; diagnostics >>>\n" +
+					response.message + "\n<<< End of diagnostics");	
+			}
+			var geolevels = [];
+			for (var i=0; i<response.file_list.length; i++) {
+				geolevels[i] = {
+					i: i,
+					file_name: response.file_list[i].file_name,
+					total_areas: response.file_list[i].total_areas,
+					geolevel_id: 0
+				};
+	//			console.error("Shape file [" + i + "]: " + geolevels[i].file_name + "; areas: " + geolevels[i].total_areas); 
+			}
+			var ngeolevels = geolevels.sort(function (a, b) {
+				if (a.total_areas > b.total_areas) {
+					return 1;
+				}
+				if (a.total_areas < b.total_areas) {
+					return -1;
+				}
+				// a must be equal to b
+				return 0;
+			});
+			for (var i=0; i<ngeolevels.length; i++) {		
+				ngeolevels[i].geolevel_id=i+1;
+				console.error("Shape file [" + ngeolevels[i].i + "]: " + ngeolevels[i].file_name + "; areas: " + ngeolevels[i].total_areas + 
+					"; geolevel: " + ngeolevels[i].geolevel_id); 
+					response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
+			}
+			if (response.field_errors == 0 && response.file_errors == 0) { // OK
+				serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", msg, req);
+
+				if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
+					var output = JSON.stringify(response);// Convert output response to JSON 
+	// Need to test res was not finished by an expection to avoid "write after end" errors			
+					res.write(output);                  // Write output  
+					res.end();	
+				}
+				else {
+					serverLog.serverError2(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+						"FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", 
+						req);
+				}				
+			}
+			else if (response.field_errors > 0 && response.file_errors > 0) {
+				msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
+					" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+				response.message = msg + "\n" + response.message;						
+				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+					serverLog, 500, req, res, msg, undefined, response);				  
 			}				
+			else if (response.field_errors > 0) {
+				msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
+				response.message = msg + "\n" + response.message;
+				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+					serverLog, 500, req, res, msg, undefined, response);				  
+			}	
+			else if (response.file_errors > 0) {
+				msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
+				response.message = msg + "\n" + response.message;					
+				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+					serverLog, 500, req, res, msg, undefined, response);				  
+			}	
+			else {
+				msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
+					" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+				response.message = msg + "\n" + response.message;						
+				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+					serverLog, 500, req, res, msg, undefined, response);
+			}		
 		}
-		else if (response.field_errors > 0 && response.file_errors > 0) {
-			msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
-				" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+		catch (e) {
+			msg+='\nCaught exception: ' + e.message;
 			response.message = msg + "\n" + response.message;						
-			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-				serverLog, 500, req, res, msg, undefined, response);				  
-		}				
-		else if (response.field_errors > 0) {
-			msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
-			response.message = msg + "\n" + response.message;
-			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-				serverLog, 500, req, res, msg, undefined, response);				  
-		}	
-		else if (response.file_errors > 0) {
-			msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
-			response.message = msg + "\n" + response.message;					
-			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-				serverLog, 500, req, res, msg, undefined, response);				  
-		}	
-		else {
-			msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
-				" and file processing ERRORS! " + response.file_errors + "\n" + msg;
-			response.message = msg + "\n" + response.message;						
-			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().q.drain()", 
 				serverLog, 500, req, res, msg, undefined, response);
-		}				
-	}	
+		}
+	} // End of shpConvertFieldProcessor().q.drain()	
 
 	for (var key in shpList) {
 		shapefile_no++;
@@ -769,7 +788,7 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, path, response, ofields
 		rval.file_errors++;
 	}
 	else {
-		shpConvertWriteFile(file, d.file.file_data, serverLog, ofields["uuidV1"], req);
+		shpConvertWriteFile(file, d.file.file_data, serverLog, ofields["uuidV1"], req, response);
 		response.message += "\nSaving file: " + file;
 	}
 	

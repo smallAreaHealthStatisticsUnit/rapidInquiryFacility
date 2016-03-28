@@ -337,15 +337,15 @@ Test harness refactor; Node.js version working
     * Multiple shapefile support (using Async module)
 	* Full leaflet support
 	* UI tidy; cross browser fix. Decided to use JQuery-UI going forwards
+	
+#### 26th March to 1st April
+	
+
 	* Rename shp2geojson to shpConvert, remove store parameter
-	
-#### 29th March to 1st April
-	
-	* ...
+	* Geeolevel detection: numbers of areas, names of fields 
 	
 	Current TODO list aimed at Judy Qualters visit:
 	
-	* Geeolevel detection: numbers of areas, names of fields 
 	* Async write support: shpConvertFileProcessor(), shpConvertWriteFile() (test on coa2011)
 	* Zip file support. Convert zlib, zip file support to async
 	* Detect bounds mismatch betwqeen shapefiles
@@ -354,7 +354,7 @@ Test harness refactor; Node.js version working
 		ii. Wrong shapefile in set
 	* WKT support
 	* Database connection; clean, check OK and ST_Union() for PK 
-	* Area support. add to shapefile checks
+	* Area support. Add to shapefile checks
 	* Move shpConvert.html to Node express server; make so does not need network
 	* Add topoJSON support
 	

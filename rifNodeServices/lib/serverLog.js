@@ -160,7 +160,7 @@ serverError2 = function(file, line, calling_function, msg, req, err) {
 	}
 }
 
-module.exports.serverLog = serverError;
-module.exports.serverLog2 = serverError2;
+module.exports.serverError = serverError;
+module.exports.serverError2 = serverError2;
 module.exports.serverLog = serverLog;
 module.exports.serverLog2 = serverLog2;
