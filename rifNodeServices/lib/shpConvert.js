@@ -54,6 +54,44 @@
  */ 
 shpConvertWriteFile=function(file, data, serverLog, uuidV1, req, response, callback) {
 	const fs = require('fs');
+	const path = require('path');
+	
+	var baseName=path.basename(file);
+
+	// This needs to be done asynchronously, so save as <file>.tmp
+	var wStream=fs.createWriteStream(file + '.tmp', // Do nice async non blocking IO
+		{
+			encoding: 'binary',
+			mode: 0o600,
+		});
+	var msg;
+	
+	wStream.on('finish', function() {
+		try { // And do an atomic rename when complete
+			fs.renameSync(file + '.tmp', file);
+			msg="Saved file: " + baseName + "; size: " + fs.statSync(file).size + " bytes";
+			response.message+="\n" + msg;
+//			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", "OK [" + shapefileData["uuidV1"] + "] " + msg, req);
+			if (callback) { 
+				callback();	
+			}
+		} catch (e) { 
+			serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
+				'ERROR! [' + uuidV1 + '] renaming file: ' + file + '.tmp', req, e);
+		}
+	});
+	wStream.on('error', function (err) {
+		try {
+			fs.unlinkSync(file + '.tmp');
+			serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
+				'ERROR! [' + uuidV1 + '] writing file: ' + file + '.tmp', req, err);
+		}
+		catch (e) { 
+			serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
+				'ERROR! [' + uuidV1 + '] deleting file (after fs.writeFile error: ' + e.message + '): ' + file + '.tmp', req, e);
+		}
+	}); 
+	
 	
 /* 1.3G SOA 2011 file uploads in firefox (NOT chrome) but gives:
 
@@ -73,39 +111,38 @@ Error: toString failed
 	
 This does mean it converted to shapefile to geojson...
 
- */
-	// This needs to be done asynchronously, so save as <file>.tmp
-	fs.writeFile(file + '.tmp', data.toString('binary'), 
-		{
-			encoding: 'binary',
-			mode: 0o600,
-		}, function(err) {
-		var msg;
+So write in pieces...
+ */	
+	var pos=0;
+	var len=1024*1024; // 1MB chunks
+	var i=0;
+	
+	myWrite(); // Do first write
+
+	function myWrite() {
+		var ok=true;
 		
-		if (err) {			
-			try {
-				fs.unlinkSync(file + '.tmp');
-				serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
-					'ERROR! [' + uuidV1 + '] writing file: ' + file + '.tmp', req, err);
-			}
-			catch (e) { 
-				serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
-					'ERROR! [' + uuidV1 + '] deleting file (after fs.writeFile error: ' + e.message + '): ' + file + '.tmp', req, e);
-			}
+		do {
+			i++;
+			ok=wStream.write(data, pos, len, 'binary');
+				response.message+="\nWrote to file: " + baseName + " [" + i + "] pos: " + pos + 
+				"; len: " + len + "; data.length: " + data.length;
+			pos+=len;	
+			if (pos >= data.length) {
+				response.message+="\nEnd write file: " + baseName + " [" + i + "] pos: " + pos + 
+					"; len: " + len + "; data.length: " + data.length;			
+				wStream.end();
+			}		
 		}
-		try { // And do an atomic rename when complete
-			fs.renameSync(file + '.tmp', file);
-			msg="Saved file: " + file + "; size: " + fs.statSync(file).size;
-			response.message+="\n" + msg;
-//			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", "OK [" + shapefileData["uuidV1"] + "] " + msg, req);
-			if (callback) { 
-				callback();	
-			}
-		} catch (e) { 
-			serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
-				'ERROR! [' + uuidV1 + '] renaming file: ' + file + '.tmp', req, e);
+		while (pos < data.length && ok);
+		
+		if (pos < data.length) { // Wait for drain event
+			response.message+="\nWait for stream drain for file: " + baseName + " [" + i + "] pos: " + pos + 
+				"; len: " + len + "; data.length: " + data.length;		
+			wStream.once('drain', myWrite);
 		}
-	}); // End of fs.writeFile()
+	} // End of myWrite()
+
 }
 		
 /*
@@ -412,7 +449,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 						"[" + shapefileData["uuidV1"] + "] Wait(" + shapefileData["elapsedTime"] + " S): " + 
 						shapefileData["waits"] + ";\nshapefile: " + shapefileData["shapeFileName"] + 
 						";\ntests: " + fs.existsSync(shapefileData["shapeFileName"]) + ", " + 
-						fs.existsSync(shapefileData["shapeFileName"] + ".tmp"), shapefileData["req"], e);
+						fs.existsSync(shapefileData["shapeFileName"] + ".tmp"), shapefileData["req"]);
 					shapefileData["waits"]++;
 					waitForShapeFileWrite(shapefileData); //Recurse  
 				}
@@ -425,7 +462,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		// Wait for shapefile to appear
 		// This continues processing, return control to core calling function
 			
-		response.message+="\nProcessing shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;			
+		response.message+="\nWaiting for shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;			
 		waitForShapeFileWrite(shapefileData);	
 	}, 1 /* Single threaded - shapefileData needss to become an object */); // End of async.queue()
 
@@ -569,7 +606,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			};
 			response.file_list[shapefile_no-1].transfer_time=shpList[key].transfer_time;
 			
-			response.message+="\nProcessing shapefile[" + shapefile_no + "]: " + shapefileData["shapeFileName"];		
+			response.message+="\nProcessing shapefile [" + shapefile_no + "]: " + shapefileData["shapeFileName"];		
 			response.no_files=shpTotal;				// Add number of files process to response
 			response.fields=ofields;				// Add return fields
 			response.file_errors+=rval.file_errors;
@@ -789,7 +826,7 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, path, response, ofields
 	}
 	else {
 		shpConvertWriteFile(file, d.file.file_data, serverLog, ofields["uuidV1"], req, response);
-		response.message += "\nSaving file: " + file;
+//		response.message += "\nSaving file: " + file;
 	}
 	
 	if (rval.file_errors > 0) {
