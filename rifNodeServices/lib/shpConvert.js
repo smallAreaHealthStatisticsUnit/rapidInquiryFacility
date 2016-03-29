@@ -84,9 +84,17 @@ shpConvertWriteFile=function(file, data, serverLog, uuidV1, req, response, callb
 	wStream.on('finish', function() {
 		try { // And do an atomic rename when complete
 			fs.renameSync(file + '.tmp', file);
-			msg="Saved file: " + baseName + "; size: " + fs.statSync(file).size + " bytes";
+			var len=fs.statSync(file).size;
+			msg="Saved file: " + baseName + "; size: " + len + " bytes";
 			response.message+="\n" + msg;
-			serverLog.serverLog2(__file, __line, "shpConvertWriteFile", "OK [" + uuidV1 + "] " + msg, req);
+			if (len != data.length) {
+				serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
+					'ERROR! [' + uuidV1 + '] file: ' + baseName + ' is the wrong size, expecting: ' + data.length + ' got: ' + len +
+					'\n\nDiagnostics >>>\n' + response.message + '\n<<<= End of diagnostics\n', req);				
+			}
+			else {
+				serverLog.serverLog2(__file, __line, "shpConvertWriteFile", "OK [" + uuidV1 + "] " + msg, req);
+			}
 			if (callback) { 
 				callback();	
 			}
@@ -140,8 +148,9 @@ So write in pieces...
 		
 		do {
 			i++;
-			ok=wStream.write(data, pos, len, 'binary');
-				response.message+="\nWrote to file: " + baseName + " [" + i + "] pos: " + pos + 
+			buf=data.slice(pos, pos+len);
+			ok=wStream.write(buf, 'binary');
+				response.message+="\nWrote " + buf.length + " bytes to file: " + baseName + " [" + i + "] pos: " + pos + 
 				"; len: " + len + "; data.length: " + data.length;
 			pos+=len;	
 			if (pos >= data.length) {
@@ -305,11 +314,18 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		
 		// Now read shapefile
 		shapefile.read(shapefileData["shapeFileName"], shapefileData["shapefile_options"], function(err, collection) {
-			if (err) {
-				serverLog.serverError2(__file, __line, "readShapeFile", 
-					'ERROR! [' + shapefileData["uuidV1"] + '] in shapefile read: ' + shapefileData["shapeFileName"], 
-					shapefileData["req"], err);	
+			if (err) { // Not within scope of calling function!
+				var msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile read: ' + shapefileData["shapeFileName"];
+				serverLog.serverLog2(__file, __line, "readShapeFile", 
+					msg, shapefileData["req"], err);	
 //					callback();		// Not needed - serverError2() raises exception 
+				var httpErrorResponse = require('../lib/httpErrorResponse'); // deal with scope problems
+				httpErrorResponse.httpErrorResponse(__file, __line, "readShapeFile", 
+					serverLog, 500, shapefileData["req"], shapefileData["res"], 
+					msg, err, shapefileData["response"]);
+					rval.file_errors++;
+					rval.msg+=msg;
+				return rval;
 			} // End of err
 			// OK
 			var end = new Date().getTime();
