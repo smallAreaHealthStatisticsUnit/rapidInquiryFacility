@@ -340,23 +340,25 @@ Test harness refactor; Node.js version working
 	
 #### 26th March to 1st April
 	
-
 	* Rename shp2geojson to shpConvert, remove store parameter
 	* Geeolevel detection: numbers of areas, names of fields 
+	* Async write support: shpConvertFileProcessor(), shpConvertWriteFile() (still to test on coa2011 - times out). 
+	  Also added file size checks after coa2011 tests. Hilarious bug where I was writing out ther whole buffer rather 
+	  than a 1MB chunk tried to create a 1TB coa2011 shapefile. Desktop very unhappy; laptop with SSDs filled them up very quickly 
+	  but without distress...
 	
 	Current TODO list aimed at Judy Qualters visit:
-	
-	* Async write support: shpConvertFileProcessor(), shpConvertWriteFile() (test on coa2011)
+
+	* Move shpConvert.html to Node express server; make so does not need network. Also needed for IE
+	* Add topoJSON support
 	* Zip file support. Convert zlib, zip file support to async
-	* Detect bounds mismatch betwqeen shapefiles
+	* Detect bounds mismatch between shapefiles
 	* Add tests:
 		i. Unsupported projection files (modify proj data slightly...)
 		ii. Wrong shapefile in set
 	* WKT support
 	* Database connection; clean, check OK and ST_Union() for PK 
 	* Area support. Add to shapefile checks
-	* Move shpConvert.html to Node express server; make so does not need network
-	* Add topoJSON support
 	
 	Maybe list:
 	
