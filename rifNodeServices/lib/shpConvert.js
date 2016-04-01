@@ -424,95 +424,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 //					callback();			// Not needed - serverError2() raises exception 			
 			}		
 		}); /* End of shapefile.read() */	
-	}, // End of readShapeFile()
-	/*
-	 * Function:	waitForShapeFileWrite()
-	 * Parameters:	Shapefile data object:
-	 *					Shapefile name with path, 
-	 *					DBF file name with path, 
-	 *					Projection file name with path, 
-	 *					JSON file with path, 
-	 *					number of waits,
-	 *					RIF logging object, 
-	 *					express HTTP request object, 
-	 *					express HTTP response object, 
-	 *					start time, 
-	 *					uuidV1, 
-	 *					shapefile options,
-	 *					Response object, 
-	 *					shapefile number,
-	 *					key,
-	 *					shpTotal
-	 * Returns:		Nothing
-	 * Description: Wait for shapefile to appear, call readShapeFile()
-	 */
-	waitForShapeFileWrite = function(shapefileData) {
-		
-		if (!shapefileData) {
-			throw new Error("No shapefileData object");
-//			callback();		// Not needed - serverError2() raises exception 		
-		}
-		var serverLog = shapefileData["serverLog"];
-		if (!serverLog) {
-			throw new Error("No serverLog object");
-		}
-		else if (!serverLog.serverError2) {
-			serverLog = require('../lib/serverLog'); // deal with scope problems
-		}	
-		else if (typeof serverLog.serverError2 != "function") {
-			throw new Error("serverLog.serverError2 is not a function");
-		}
-
-		
-		if (shapefileData["waits"] > 5) {
-			if (fs.existsSync(shapefileData["shapeFileName"]) || fs.existsSync(shapefileData["shapeFileName"] + ".tmp") ||
-				fs.existsSync(shapefileData["dbfFileName"]) || fs.existsSync(shapefileData["dbfFileName"] + ".tmp") ||
-				fs.existsSync(shapefileData["projFileName"]) || fs.existsSync(shapefileData["projFileName"] + ".tmp")) { // Exists			
-			}
-			else {
-				var end = new Date().getTime();
-				shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
-			
-				serverLog.serverError2(__file, __line, "waitForShapeFileWrite", 
-					"[" + shapefileData["uuidV1"] + "] FAIL Wait[" + shapefileData["waits"] + "; " + 
-					shapefileData["elapsedTime"] + " S];" +
-					" Shapefile[" + i + "/" + shapefileData["shpTotal"] + "/" + shapefileData["key"] + "]: " + 
-					shapefileData["shapeFileName"] + 
-					" shapefile/dbf file/projection file was not written", shapefileData["req"]);
-//					callback();			// Not needed - serverError2() raises exception 										
-			}
-		}
-		
-		// Warning this code is asynchronous!		
-		setTimeout(function() { // Timeout function
-			var end = new Date().getTime();
-			shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
-			
-			if (shapefileData["waits"] > 100) { // Timeout
-				serverLog.serverError2(__file, __line, "waitForShapeFileWrite().setTimeout", 
-					'ERROR! [' + shapefileData["uuidV1"] + '] timeout (' + shapefileData["elapsedTime"] + ' S) waiting for file: ' + 
-					shapefileData["shapeFileName"], shapefileData["req"]);
-//					callback();		// Not needed - serverError2() raises exception 		
-			}
-			else if (fs.existsSync(shapefileData["shapeFileName"]) && 
-					 fs.existsSync(shapefileData["dbfFileName"]) && 
-					 fs.existsSync(shapefileData["projFileName"])) { // OK	
-				shapefileData["writeTime"]=shapefileData["elapsedTime"];		
-				readShapeFile(shapefileData); // Does callback();
-				return;
-			}
-			else { // OK			
-				serverLog.serverLog2(__file, __line, "waitForShapeFileWrite().setTimeout", 
-					"[" + shapefileData["uuidV1"] + "] Wait(" + shapefileData["elapsedTime"] + " S): " + 
-					shapefileData["waits"] + ";\nshapefile: " + shapefileData["shapeFileName"] + 
-					";\ntests: " + fs.existsSync(shapefileData["shapeFileName"]) + ", " + 
-					fs.existsSync(shapefileData["shapeFileName"] + ".tmp"), shapefileData["req"]);
-				shapefileData["waits"]++;
-				waitForShapeFileWrite(shapefileData); //Recurse  
-			}
-			
-		}, 1000 /* 1S */); // End of setTimeout
-	} // End of waitForShapeFileWrite()
+	} // End of readShapeFile()
 	
 	// End of queue functions
 
@@ -527,11 +439,8 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		shapefileData["callback"]=callback; // Regisgter callback for readShapeFile
 		shapefileData["serverLog"]=serverLog;
 
-// Remove old non async code		
-//		waitForShapeFileWrite(shapefileData);	
-
 //		shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
-		shapefileData["writeTime"]=shapefileData["elapsedTime"];		
+//		shapefileData["writeTime"]=(end - shapefileData["lstart"])/1000; // in S	
 		readShapeFile(shapefileData); // Does callback();
 	}, 1 /* Single threaded - shapefileData needs to become an object */); // End of async.queue()
 
@@ -880,7 +789,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 		
 		// Free up memory
 		for (var i = 0; i < response.no_files; i++) {
-			response.message+="\nFreeing " + d_files.d_list[i].file.file_size + " for file: " + d_files.d_list[i].file.file_name;
+			response.message+="\nFreeing " + d_files.d_list[i].file.file_size + " bytes for file: " + d_files.d_list[i].file.file_name;
 			d_files.d_list[i].file.file_data=undefined;
 			if (global.gc && d_files.d_list[i].file.file_size > (1024*1024*500)) { // GC is file > 500M
 				serverLog.serverLog2(__file, __line, "Force garbage collection for file: " + d_files.d_list[i].file.file_name, req);
