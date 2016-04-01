@@ -158,11 +158,11 @@ So write in pieces...
 			i++;
 			buf=data.slice(pos, pos+len);
 			ok=wStream.write(buf, 'binary');
-				response.message+="\nWrote " + buf.length + " bytes to file: " + baseName + " [" + i + "] pos: " + pos + 
-				"; len: " + len + "; data.length: " + data.length;
+			response.message+="\nWrote " + buf.length + " bytes to file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
+				"; len: " + len + "; data.length: " + data.length + "; ok: " + ok;
 			pos+=len;	
 			if (pos >= data.length) {
-				response.message+="\nEnd write file: " + baseName + " [" + i + "] pos: " + pos + 
+				response.message+="\nEnd write file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
 					"; len: " + len + "; data.length: " + data.length;			
 				wStream.end();
 			}		
@@ -399,7 +399,6 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				boundingBox.ymin=wgs84.bbox[1];
 				boundingBox.xmax=wgs84.bbox[2];					
 				boundingBox.ymax=wgs84.bbox[3];
-
 	
 				// Convert to geoJSON and return
 				response.file_list[shapefileData["shapefile_no"]-1].file_size=fs.statSync(shapefileData["shapeFileName"]).size;
@@ -412,6 +411,8 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				response.file_list[shapefileData["shapefile_no"]-1].total_areas=wgs84.features.length;
 				response.file_list[shapefileData["shapefile_no"]-1].dbf_fields=dbf_fields;
 				
+				response.message+="\nCompleted processing shapefile[" + shapefileData["shapefile_no"] + "]: " + shapefileData["shapeFileName"];
+//		
 				shpConvertWriteFile(shapefileData["jsonFileName"], JSON.stringify(collection), 
 					shapefileData["serverLog"], shapefileData["uuidV1"], shapefileData["req"], response, shapefileData["callback"]);
 				// shpConvertWriteFile runs callback
@@ -514,17 +515,24 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	} // End of waitForShapeFileWrite()
 	
 	// End of queue functions
-		
+
 	// Set up async queue; 1 worker
 	var q = async.queue(function(shapefileData, callback) {
 	
 		// Wait for shapefile to appear
 		// This continues processing, return control to core calling function
 			
-		response.message+="\nWaiting for shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;	
-		shapefileData["callback"]=callback;
+//		response.message+="\nWaiting for shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;
+		response.message+="\nasync.queue() for write shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;	
+		shapefileData["callback"]=callback; // Regisgter callback for readShapeFile
 		shapefileData["serverLog"]=serverLog;
-		waitForShapeFileWrite(shapefileData);	
+
+// Remove old non async code		
+//		waitForShapeFileWrite(shapefileData);	
+
+//		shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
+		shapefileData["writeTime"]=shapefileData["elapsedTime"];		
+		readShapeFile(shapefileData); // Does callback();
 	}, 1 /* Single threaded - shapefileData needs to become an object */); // End of async.queue()
 
 	/* 
@@ -535,7 +543,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		try {
 			var msg="All " + response.no_files + " shapefiles have been processed";
 							// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
-			response.message+=msg;				
+			response.message+="\n"+ msg;				
 			if (!shapefile_options.verbose) {
 				response.message="";	
 			}
@@ -687,16 +695,16 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			// Add to queue			
 			q.push(shapefileData, function(err) {
 				if (err) {
-					var msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile read: ' + shapefileData["shapeFileName"];
+					var msg='ERROR! in readShapeFile()';
 						
 					response.message+="\n" + msg;	
 					response.file_errors++;
 					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.push()", msg, 
 						shapefileData["req"], err);	
 				} // End of err		
-				else {
-					response.message+="\nCompleted processing shapefile[" + shapefileData["shapefile_no"] + "]: " + shapefileData["shapeFileName"];
-				}
+//				else {
+//					response.message+="\nXXXX Completed processing shapefile[" + shapefileData["shapefile_no"] + "]: " + shapefileData["shapeFileName"];
+//				}
 			});		
 		}	
 
@@ -869,6 +877,17 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 	
 	q.drain = function() {
 		shpTotal=Object.keys(shpList).length;
+		
+		// Free up memory
+		for (var i = 0; i < response.no_files; i++) {
+			response.message+="\nFreeing " + d_files.d_list[i].file.file_size + " for file: " + d_files.d_list[i].file.file_name;
+			d_files.d_list[i].file.file_data=undefined;
+			if (global.gc && d_files.d_list[i].file.file_size > (1024*1024*500)) { // GC is file > 500M
+				serverLog.serverLog2(__file, __line, "Force garbage collection for file: " + d_files.d_list[i].file.file_name, req);
+				global.gc();
+			}
+		}
+	
 		if (!shpTotal || shpTotal == 0) {
 			var msg="ERROR! no shapefiles found";
 			response.file_errors++;	
@@ -899,23 +918,29 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 			shpTotal: 	shpList.length,
 			response: 	response,
 			uuidV1: 	ofields["uuidV1"],
-			i: 			i,
+			i: 			0,
 			req: 		req
 		}
 		
+		fileData.i=i;
+		response.message+="\nQueued file for shpConvertFileProcessor[" + fileData["i"] + "]: " + fileData.d.file.file_name;
 		// Add to queue			
 		q.push(fileData, function(err) {
 			if (err) {
-				var msg='ERROR! [' + fileData["uuidV1"] + '] in shapefile read: ' + fileData.d.file.file_name;
-					
+//				var msg='ERROR! [' + fileData["uuidV1"] + '] in shapefile read: ' + fileData.d.file.file_name;
+				var msg="Error! in shpConvertFileProcessor()";
+				
 				response.message+="\n" + msg;	
 				response.file_errors++;
 				serverLog.serverLog2(__file, __line, "shpConvertFileProcessor().q.push()", msg, 
 					fileData["req"], err);	
 			} // End of err		
-			else {
-				response.message+="\nCompleted processing file[" + fileData["i"] + "]: " + fileData.d.file.file_name;
-			}
+			// else {
+				// response.message+="\nCompleted processing file[" + fileData["i"] + "]: " + fileData.d.file.file_name;
+				//
+				// Release memory
+				//fileData.d.file.file_data=undefined; // NO DONT - STILL IN USE i = i == end of loop; as is fileData
+			// }
 		});	
 										
 	} // End of for loop	
