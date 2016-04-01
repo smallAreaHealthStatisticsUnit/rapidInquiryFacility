@@ -197,6 +197,7 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/async/package.json \
 	node_modules/reproject/package.json \
 	node_modules/mapshaper/package.json \
+	node_modules/forever/package.json \
 	node_modules/shapefile/package.json \
 	node_modules/node-uuid/package.json \
 	node_modules/chroma-js/package.json \
@@ -211,6 +212,8 @@ MODULE_LIST=$(patsubst node_modules/%/package.json,%,$(MODULE_JSON))
 #
 # Forever (NPM daemon control)
 #
+FOREVER=node_modules\\forever\\bin\\forever
+FOREVER_OPTIONS=--trace-gc --expose-gc
 FOREVER_VERBOSE=-verbose
 FOREVER_LOGGING=-l forever.log -e forever.err -o forever.log --append
 
@@ -222,10 +225,11 @@ NODE_DEBUG_DEBUG=express:*
 all: modules update
 # rifNode
 
-forever: $(FOREVER)
-	
-$(FOREVER):
-	$(NPM) install -g forever
+#forever: $(FOREVER)
+forever:
+
+#$(FOREVER):
+#	$(NPM) install -g forever
 	
 #- modules: Build required Node.js modules using npm install --save to update dependencies in package.json
 modules: $(MODULES) $(MODULE_JSON) 
@@ -248,12 +252,12 @@ install:
 
 #- server-start: start server
 server-start: forever expressServer.js
-	$(FOREVER) start  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
+	$(FOREVER) start -c "node $(FOREVER_OPTIONS)" $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 #- server-restart: restart server
 server-restart: forever expressServer.js
 	-$(RM) forever.err
-	-$(FOREVER) stop  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
-	$(FOREVER) start  $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
+	-$(FOREVER) stop $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
+	$(FOREVER) start -c "node $(FOREVER_OPTIONS)" $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 #- server-restart-debug: restart server with debugging
 server-restart-debug: 
 	$(MAKE) -e NODE_DEBUG=$(NODE_DEBUG) -e DEBUG=$(NODE_DEBUG_DEBUG) server-restart

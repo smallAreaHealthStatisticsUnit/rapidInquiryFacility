@@ -183,13 +183,23 @@ function submitForm() {
 	var files = files_elem.files;
 	var fileno = 0;
 	var totalFileSize = 0;
+	var timeout = 300*1000 // 300,000 ms; 5 minutes
 	
 	var request = new XMLHttpRequest();
+	request.timeout = timeout
     var formData = new FormData();
 	
 	if (files.length == 0) {
 		document.getElementById('status').innerHTML = "ERROR! No files selected, unable to upload.";
 		return;
+	}
+	
+	// Remove old map layers
+	if (map) {
+		map.eachLayer(function (layer) {
+			console.log('Remove tileLayer');
+			map.removeLayer(layer);
+		});
 	}
 	
 	if (verbose) { // i.e. diagnostics
@@ -225,13 +235,18 @@ function submitForm() {
 				document.getElementById("status").innerHTML = "Processing request...";
 			}
 			else if (request.readyState == 4) { 
-				document.getElementById("status").innerHTML = "Processing complete...";		
 				displayResponse(request.response, request.status);
 			}
+			else {		
+				document.getElementById("status").innerHTML = "request.onreadystatechange() unknown state: " + request.readyState;
+			}
+		request.ontimeout = function() {
+			document.getElementById("status").innerHTML = "Processing timed out after " + (timeout/1000) + " seconds";		
+		}
 	};
 	}
 	catch (e) {
-		document.getElementById('status').innerHTML = "ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type + ": " + e.messaged;
+		document.getElementById('status').innerHTML = "ERROR! Unable to open for post to: http://127.0.0.1:3000/" + output_type + ": " + e.message;
 		return;
 	}
 	
@@ -239,8 +254,14 @@ function submitForm() {
 	request.upload.onprogress = function(evt) {
 		if (evt.lengthComputable) {
 			var percentComplete = Math.round(evt.loaded * 100 / evt.total);
-			document.getElementById('status').innerHTML = "Uploading file " + fileno + "/" + files.length + ": " + 
-				percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize);
+			if (percentComplete == 100) {
+				document.getElementById('status').innerHTML = "Uploaded file " + fileno + "/" + files.length + ": " + 
+					percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize);			
+			}
+			else {
+				document.getElementById('status').innerHTML = "Uploading file " + fileno + "/" + files.length + ": " + 
+					percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize);
+			}
 		}
 		else {
 			console.log("ERROR! Uploading files: unable to compute percent complete");
@@ -278,7 +299,7 @@ function submitForm() {
 	}
 	catch (e) {
 		console.error("ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type + ": " + e.message);
-		document.getElementById('status').innerHTML = "ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type + ": " + e.messaged;
+		document.getElementById('status').innerHTML = "ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type + ": " + e.message;
 		return;
 	}		
 //    request.sendAsBinary(formData); // Bad crash!!
