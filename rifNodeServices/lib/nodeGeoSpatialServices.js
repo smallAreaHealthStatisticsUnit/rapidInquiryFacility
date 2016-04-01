@@ -325,7 +325,8 @@ exports.convert = function(req, res) {
 				stream.on('end', function() {
 					
 					var msg;
-					var buf=Buffer.concat(d.file.chunks); // Safe binary concat
+					var buf=Buffer.concat(d.file.chunks); 	// Safe binary concat
+					d.file.chunks=undefined;				// Release memory
 					d.file.file_size=buf.length;
 					var end = new Date().getTime();
 					d.file.transfer_time=(end - d.file.lstart)/1000; // in S	
@@ -418,7 +419,8 @@ exports.convert = function(req, res) {
 						}								
 					}
 					
-					d_files.d_list[d.no_files-1] = d;										
+					d_files.d_list[d.no_files-1] = d;	
+					buf=undefined;
 				}); // End of EOF processor
 					
 			}); // End of file attachment processing function: req.busboy.on('file')

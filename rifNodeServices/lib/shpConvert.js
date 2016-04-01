@@ -93,7 +93,15 @@ shpConvertWriteFile=function(file, data, serverLog, uuidV1, req, response, callb
 					'\n\nDiagnostics >>>\n' + response.message + '\n<<<= End of diagnostics\n', req);				
 			}
 			else {
-				serverLog.serverLog2(__file, __line, "shpConvertWriteFile", "OK [" + uuidV1 + "] " + msg, req);
+				
+				data=undefined; // Be nice. Could force GC at this point		
+				if (global.gc && len > (1024*1024*500)) { // GC is file > 500M
+					serverLog.serverLog2(__file, __line, "shpConvertWriteFile", "OK [" + uuidV1 + "] " + msg + "\nForce garbage collection", req);
+					global.gc();
+				}
+				else {
+					serverLog.serverLog2(__file, __line, "shpConvertWriteFile", "OK [" + uuidV1 + "] " + msg, req);
+				}
 			}
 			if (callback) { 
 				callback();	

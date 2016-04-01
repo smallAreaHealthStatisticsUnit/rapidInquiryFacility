@@ -170,3 +170,12 @@ for (var i=0; i<services.length; i++) { // Call common method
 app.listen(3000);
 
 console.error(theDate.toString() + '\nexpressServer.js: RIF Node web services listening on 127.0.0.1 port 3000...');
+if (global.gc) {
+	console.error("Garbage collection exposed; will attempt to prod gc into acction when releasing >500M memory");
+}
+const v8 = require('v8');
+
+var heap=v8.getHeapStatistics();
+for (var key in heap) {
+	console.error(key + ": " + heap[key]);
+}
