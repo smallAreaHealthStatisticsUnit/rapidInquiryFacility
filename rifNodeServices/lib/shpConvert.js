@@ -319,7 +319,9 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			}
 			crss["EPSG:" + mySrs.srid] = mySrs.proj4;
 		}
-		
+		serverLog.serverLog2(__file, __line, "readShapeFile", 
+					"In readShapeFile(), call shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
+					
 		// Now read shapefile
 		shapefile.read(shapefileData["shapeFileName"], shapefileData["shapefile_options"], function(err, collection) {
 			if (err) { // Not within scope of calling function!
@@ -336,13 +338,19 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				return rval;
 			} // End of err
 			// OK
+			serverLog.serverLog2(__file, __line, "readShapeFile", 
+				"In readShapeFile(), completed shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
 			var end = new Date().getTime();
 			shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
 			var proj4;
 
 			if (mySrs.srid != "4326") {
 				try {
-					wgs84=reproject.toWgs84(collection, "EPSG:" + mySrs.srid, crss);
+					serverLog.serverLog2(__file, __line, "readShapeFile", 
+						"In readShapeFile(), call reproject.toWgs84() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
+					response.file_list[shapefileData["shapefile_no"]-1].geojson=reproject.toWgs84(collection, "EPSG:" + mySrs.srid, crss);
+					serverLog.serverLog2(__file, __line, "readShapeFile", 
+						"In readShapeFile(), completed reproject.toWgs84() for: " + shapefileData["shapeFileName"], shapefileData["req"]);				
 				}
 				catch (e) {
 					serverLog.serverError2(__file, __line, "readShapeFile", 
@@ -356,17 +364,27 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				}
 			}
 			else {
-				wgs84=collection;
+				response.file_list[shapefileData["shapefile_no"]-1].geojson=collection;
 			}
+// This causes shpConvertWriteFile() to crash as data is now undefined (i.e. it was copied by reference)
+//			if (global.gc && collection.length > (1024*1024*500)) { // GC is file > 500M
+//				serverLog.serverLog2(__file, __line, "Force garbage collection for Sahepfile geoJSON: " + shapefileData["shapeFileName"], 
+//					fileData["req"]);
+//				collection=undefined;
+//				global.gc();
+//			}
+//			else {
+//				collection=undefined;
+//			}
 			
-			if (wgs84.bbox) { // Check bounding box present
+			if (response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) { // Check bounding box present
 				var msg="File: " + shapefileData["shapeFileName"] + 
 					"\nwritten after: " + shapefileData["writeTime"] + " S; total time: " + shapefileData["elapsedTime"] + 
 					" S\nBounding box [" +
-					"xmin: " + wgs84.bbox[0] + ", " +
-					"ymin: " + wgs84.bbox[1] + ", " +
-					"xmax: " + wgs84.bbox[2] + ", " +
-					"ymax: " + wgs84.bbox[3] + "];" + 
+					"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
+					"ymin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1] + ", " +
+					"xmax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2] + ", " +
+					"ymax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3] + "];" + 
 					"\nProjection name: " + mySrs.name + "; " +
 					"srid: " + mySrs.srid + "; " +
 					"proj4: " + mySrs.proj4;
@@ -377,38 +395,38 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					ymax: 0
 				};
 //					serverLog.serverLog2(__file, __line, "readShapeFile", "WGS 84 geoJSON (1..4000 chars)>>>\n" +
-//						JSON.stringify(wgs84, null, 2).substring(0, 4000) + "\n\n<<< formatted WGS 84");
+//						JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson, null, 2).substring(0, 4000) + "\n\n<<< formatted WGS 84");
 				var dbf_fields = [];
 
-				if (wgs84.features[0].properties) {
-					for (var key in wgs84.features[0].properties) {
+				if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) {
+					for (var key in response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) {
 						dbf_fields.push(key);
 					}						
 				}
-//					for (var i=0;i < wgs84.features.length;i++) {
-//							if (wgs84.features[i].properties) {
-//								console.error("Feature [" + i + "]: " + JSON.stringify(wgs84.features[i].properties, null, 2));
+//					for (var i=0;i < response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;i++) {
+//							if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].properties) {
+//								console.error("Feature [" + i + "]: " + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].properties, null, 2));
 //							}
 //					}
-				msg+="\n" + dbf_fields.length + " fields: " + JSON.stringify(dbf_fields) + "; areas: " + wgs84.features.length;
+				msg+="\n" + dbf_fields.length + " fields: " + JSON.stringify(dbf_fields) + "; areas: " + 
+					response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;
 
 				response.message+="\n" + msg;
 //					serverLog.serverLog2(__file, __line, "readShapeFile", "OK [" + shapefileData["uuidV1"] + "] " + msg);
 				
-				boundingBox.xmin=wgs84.bbox[0];
-				boundingBox.ymin=wgs84.bbox[1];
-				boundingBox.xmax=wgs84.bbox[2];					
-				boundingBox.ymax=wgs84.bbox[3];
+				boundingBox.xmin=response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0];
+				boundingBox.ymin=response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1];
+				boundingBox.xmax=response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2];					
+				boundingBox.ymax=response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3];
 	
 				// Convert to geoJSON and return
 				response.file_list[shapefileData["shapefile_no"]-1].file_size=fs.statSync(shapefileData["shapeFileName"]).size;
 				response.file_list[shapefileData["shapefile_no"]-1].geojson_time=shapefileData["elapsedTime"];
-				response.file_list[shapefileData["shapefile_no"]-1].geojson=wgs84;
 				response.file_list[shapefileData["shapefile_no"]-1].boundingBox=boundingBox;
 				response.file_list[shapefileData["shapefile_no"]-1].proj4=mySrs.proj4;
 				response.file_list[shapefileData["shapefile_no"]-1].srid=mySrs.srid;
 				response.file_list[shapefileData["shapefile_no"]-1].projection_name=mySrs.name;
-				response.file_list[shapefileData["shapefile_no"]-1].total_areas=wgs84.features.length;
+				response.file_list[shapefileData["shapefile_no"]-1].total_areas=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;
 				response.file_list[shapefileData["shapefile_no"]-1].dbf_fields=dbf_fields;
 				
 				response.message+="\nCompleted processing shapefile[" + shapefileData["shapefile_no"] + "]: " + shapefileData["shapeFileName"];
@@ -792,7 +810,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 			response.message+="\nFreeing " + d_files.d_list[i].file.file_size + " bytes for file: " + d_files.d_list[i].file.file_name;
 			d_files.d_list[i].file.file_data=undefined;
 			if (global.gc && d_files.d_list[i].file.file_size > (1024*1024*500)) { // GC is file > 500M
-				serverLog.serverLog2(__file, __line, "Force garbage collection for file: " + d_files.d_list[i].file.file_name, req);
+				serverLog.serverLog2(__file, __line, "Force garbage collection for file: " + d_files.d_list[i].file.file_name, fileData["req"]);
 				global.gc();
 			}
 		}
