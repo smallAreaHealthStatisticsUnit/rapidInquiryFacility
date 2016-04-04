@@ -347,6 +347,12 @@ Test harness refactor; Node.js version working
 	  than a 1MB chunk tried to create a 1TB coa2011 shapefile. Desktop very unhappy; laptop with SSDs filled them up very quickly 
 	  but without distress...
 	
+#### 4th to 8th April 	
+
+    * Completed garbage collection tracing and improvements to reduce memory footprint
+	* Created shapefile reader function. Reads shapefile record by record; converting to WGS84 if required to minimise meory footprint
+	* Added check that all bounding boxes are the same
+	
 	Current TODO list aimed at Judy Qualters visit:
 
 	* Move shpConvert.html to Node express server; make so does not need network. Also needed for IE
