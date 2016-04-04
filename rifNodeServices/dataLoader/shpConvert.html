@@ -310,26 +310,47 @@ function submitForm() {
 function createMap(boundingBox) {
 	console.log('New map');	
 	var map = new L.map('map');
-	map.fitBounds([
-		[boundingBox.ymin, boundingBox.xmin],
-		[boundingBox.ymax, boundingBox.xmax]], {maxZoom: 11}
-	);
-//									map.setView([y_avg, x_avg], 6);
-	document.getElementById("status").innerHTML = "Creating basemap...";															
-	console.log('New tileLayer');
-	tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-		maxZoom: 11,
-		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
-		id: 'mapbox.light'
-	});
-	tileLayer.addTo(map);	
-	L.control.scale().addTo(map); // Add scale
+	var msg;
 	
-	console.log('Add tileLayer to map');
+	try {
+		map.fitBounds([
+			[boundingBox.ymin, boundingBox.xmin],
+			[boundingBox.ymax, boundingBox.xmax]], {maxZoom: 11}
+		);
+	}
+	catch (e) {
+		msg="Unable to create map: " + e.message;
+		console.error(msg);
+		document.getElementById("status").innerHTML = msg;	
+		map.remove(); 
+		return undefined;
+	}
+
+	try {
+		document.getElementById("status").innerHTML = "Creating basemap...";															
+		console.log('New tileLayer');
+		tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
+			maxZoom: 11,
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+				'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
+			id: 'mapbox.light'
+		});
+		tileLayer.addTo(map);	
+		L.control.scale().addTo(map); // Add scale
 	
-	return map;
+		console.log('Added tileLayer and scale to map');	
+	
+		return map;
+	}
+	catch (e) {
+		msg="Unable to add tile layer to map: " + e.message;
+		console.error(msg);
+		document.getElementById("status").innerHTML = msg;	
+		map.remove(); 
+		return undefined;
+	}
+
 }
 
 /*
@@ -547,13 +568,20 @@ Add data to geoJSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 		msg+="<p>Processing diagnostic:</br><pre>" + response.diagnostic + "</pre></p>";
 	}	
 	
-	if (status == 200 && responseErrors == 0) {	
+	if (status == 200 && responseErrors == 0 && map) {	
 		document.getElementById("status").innerHTML = "<h1>Shapefile processed OK</h1>" + msg;
 	}
-	else if (status == 200 && responseErrors > 0) {	
+	else if (status == 200 && responseErrors > 0 && map) {	
 		document.getElementById("status").innerHTML = "<h1>Shapefile processed OK; but with " + 
 			responseErrors + " error(s) in response</h1>" + msg;
 	}
+	else if (status == 200 && responseErrors > 0 && !map) {	
+		document.getElementById("status").innerHTML = "<h1>Shapefile processed OK; but with " + 
+			responseErrors + " error(s) in response; no map was produced</h1>" + '<h2>Error: ' + document.getElementById("status").innerHTML + '</h2>' +  msg;
+	}	
+	else if (status == 200 && responseErrors == 0 && !map) {	
+		document.getElementById("status").innerHTML = "<h1>Shapefile processed OK; no map was produced</h1>" + '<h2>Error: ' + document.getElementById("status").innerHTML + '</h2>' + msg;
+	}	
 	else {
 		document.getElementById("status").innerHTML = "<h1>Send Failed: " + status + "</h1>" + msg;
 	}

@@ -476,12 +476,6 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 							"\nProjection name: " + mySrs.name + "; " +
 							"srid: " + mySrs.srid + "; " +
 							"proj4: " + mySrs.proj4;
-						var boundingBox = {
-							xmin: 0,
-							ymin: 0,
-							xmax: 0,
-							ymax: 0
-						};
 		//					serverLog.serverLog2(__file, __line, "readShapeFile", "WGS 84 geoJSON (1..4000 chars)>>>\n" +
 		//						JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson, null, 2).substring(0, 4000) + "\n\n<<< formatted WGS 84");
 						var dbf_fields = [];
@@ -496,20 +490,35 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		//								console.error("Feature [" + i + "]: " + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].properties, null, 2));
 		//							}
 		//					}
+						if (recNo != response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length) { // Record check
+							var msg='ERROR! [' + shapefileData["uuidV1"] + "] in shapefile record check failed; expected: " + recNo + 
+								"; got: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length + 
+								"; for: " + shapefileData["shapeFileName"];
+							serverLog.serverLog2(__file, __line, "readShapeFile", 
+								msg, shapefileData["req"], err);	
+	//						callback();		// Not needed - serverError2() raises exception 
+							var httpErrorResponse = require('../lib/httpErrorResponse'); // deal with scope problems
+							httpErrorResponse.httpErrorResponse(__file, __line, "readShapeFile", 
+								serverLog, 500, shapefileData["req"], shapefileData["res"], 
+								msg, err, shapefileData["response"]);
+								rval.file_errors++;
+								rval.msg+=msg;
+							return rval;	
+						}
 						msg+="\n" + dbf_fields.length + " fields: " + JSON.stringify(dbf_fields) + "; areas: " + 
 							response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;
 
 						response.message+="\n" + msg;
-		//					serverLog.serverLog2(__file, __line, "readShapeFile", "OK [" + shapefileData["uuidV1"] + "] " + msg);
-						
-						boundingBox.xmin=response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0];
-						boundingBox.ymin=response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1];
-						boundingBox.xmax=response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2];					
-						boundingBox.ymax=response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3];
 			
 						// Convert to geoJSON and return
 						response.file_list[shapefileData["shapefile_no"]-1].file_size=fs.statSync(shapefileData["shapeFileName"]).size;
 						response.file_list[shapefileData["shapefile_no"]-1].geojson_time=shapefileData["elapsedTime"];
+						var boundingBox = {
+							xmin: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0],
+							ymin: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1],
+							xmax: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2],
+							ymax: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3] 
+						};
 						response.file_list[shapefileData["shapefile_no"]-1].boundingBox=boundingBox;
 						response.file_list[shapefileData["shapefile_no"]-1].proj4=mySrs.proj4;
 						response.file_list[shapefileData["shapefile_no"]-1].srid=mySrs.srid;
@@ -562,15 +571,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		try {
 			var msg="All " + response.no_files + " shapefiles have been processed";
 							// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
-			response.message+="\n"+ msg;				
-			if (!shapefile_options.verbose) {
-				response.message="";	
-			}
-			else {
-				serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", 
-					"Diagnostics enabled; diagnostics >>>\n" +
-					response.message + "\n<<< End of diagnostics");	
-			}
+
 			var geolevels = [];
 			for (var i=0; i<response.file_list.length; i++) {
 				geolevels[i] = {
@@ -579,7 +580,6 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					total_areas: response.file_list[i].total_areas,
 					geolevel_id: 0
 				};
-	//			console.error("Shape file [" + i + "]: " + geolevels[i].file_name + "; areas: " + geolevels[i].total_areas); 
 			}
 			var ngeolevels = geolevels.sort(function (a, b) {
 				if (a.total_areas > b.total_areas) {
@@ -593,13 +593,14 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			});
 			for (var i=0; i<ngeolevels.length; i++) {		
 				ngeolevels[i].geolevel_id=i+1;
-				console.error("Shape file [" + ngeolevels[i].i + "]: " + ngeolevels[i].file_name + "; areas: " + ngeolevels[i].total_areas + 
-					"; geolevel: " + ngeolevels[i].geolevel_id); 
-					response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
+				msg+="\nShape file [" + ngeolevels[i].i + "]: " + ngeolevels[i].file_name + "; areas: " + ngeolevels[i].total_areas + 
+					"; geolevel: " + ngeolevels[i].geolevel_id; 
+				response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
 			}
 			
 			// Final processing
 			if (response.no_files == 0) { 
+				response.message = msg + "\n" + response.message;
 				msg="FAIL! No files attached\n";						
 				response.message = msg + "\n" + response.message;
 				response.fields=ofields;				// Add return fields
@@ -609,8 +610,18 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				return;						
 			}
 			else if (response.field_errors == 0 && response.file_errors == 0) { // OK
-				serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", msg, req);
-
+				msg+="\nshpConvertFieldProcessor().q.drain() OK";
+				response.message = msg + "\n" + response.message;
+				
+				if (!shapefile_options.verbose) {
+					response.message="";	
+				}
+				else {		
+					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+						"Diagnostics enabled; diagnostics >>>\n" +
+						response.message + "\n<<< End of diagnostics");	
+				}
+			
 				if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 					var output = JSON.stringify(response);// Convert output response to JSON 
 	// Need to test res was not finished by an expection to avoid "write after end" errors			
