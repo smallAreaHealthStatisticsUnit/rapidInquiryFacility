@@ -215,7 +215,7 @@ MODULE_LIST=$(patsubst node_modules/%/package.json,%,$(MODULE_JSON))
 FOREVER=node_modules\\forever\\bin\\forever
 FOREVER_OPTIONS=--trace-gc --expose-gc
 FOREVER_VERBOSE=-verbose
-FOREVER_LOGGING=-l forever.log -e forever.err -o forever.log --append
+FOREVER_LOGGING=-l forever.log -e forever.log -o forever.log --append
 
 NODE_DEBUG=request,form-data,busboy,connect-busboy
 NODE_DEBUG_DEBUG=express:*
@@ -255,7 +255,7 @@ server-start: forever expressServer.js
 	$(FOREVER) start -c "node $(FOREVER_OPTIONS)" $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 #- server-restart: restart server
 server-restart: forever expressServer.js
-	-$(RM) forever.err
+	-$(RM) forever.err forever.log
 	-$(FOREVER) stop $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 	$(FOREVER) start -c "node $(FOREVER_OPTIONS)" $(FOREVER_VERBOSE) $(FOREVER_LOGGING) ./expressServer.js
 #- server-restart-debug: restart server with debugging

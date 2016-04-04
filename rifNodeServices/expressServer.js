@@ -170,12 +170,33 @@ for (var i=0; i<services.length; i++) { // Call common method
 app.listen(3000);
 
 console.error(theDate.toString() + '\nexpressServer.js: RIF Node web services listening on 127.0.0.1 port 3000...');
-if (global.gc) {
-	console.error("Garbage collection exposed; will attempt to prod gc into acction when releasing >500M memory");
-}
+
 const v8 = require('v8');
+if (global.gc) {
+	console.error("Garbage collection exposed (see forever.log); will attempt to prod gc into acction when releasing >500M memory");
+	v8.setFlagsFromString('--trace_gc');
+	v8.setFlagsFromString('--trace_gc_verbose');
+	v8.setFlagsFromString('--trace_gc_ignore_scavenger');
+	v8.setFlagsFromString('--trace_external_memory');
+}
 
 var heap=v8.getHeapStatistics();
+console.error('Memory heap >>>');
 for (var key in heap) {
 	console.error(key + ": " + heap[key]);
+}
+console.error('<<< End of memory heap.');
+if (v8.getHeapSpaceStatistics) { // Currently not exposed, altough in manual; --trace_gc turned on to compensate; appears in forever.log
+	var heapSpace=v8.getHeapSpaceStatistics();
+	console.error('Memory heap space >>>');
+	for (var i=0; i<heapSpace.length; i++) {
+		var heap=heapSpace[i];
+		for (var key in heap) {
+			console.error("[" + i + "]: " + key + ": " + heap[key]);
+		}
+	}
+	console.error('<<< End of memory heap space.');
+}
+else {	
+	console.error('No memory heap space statistics');
 }
