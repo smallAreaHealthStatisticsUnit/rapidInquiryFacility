@@ -358,7 +358,7 @@ Test harness refactor; Node.js version working
 	* Move shpConvert.html to Node express server; make so does not need network. Also needed for IE
 	* Add topoJSON support
 	* Zip file support. Convert zlib, zip file support to async
-	* Detect bounds mismatch between shapefiles
+	* Detect area mismatch between shapefiles
 	* Add tests:
 		i. Unsupported projection files (modify proj data slightly...)
 		ii. Wrong shapefile in set
