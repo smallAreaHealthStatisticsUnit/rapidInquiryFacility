@@ -583,9 +583,12 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					total_areas: response.file_list[i].total_areas,
 					geolevel_id: 0
 				};
-				if (bbox != response.file_list[i].boundingBox) {
-					response.bbox_errors++;
-					msg+="ERROR: Bounding box " + i + ": [" +
+				if (bbox[0] != response.file_list[i].boundingBox[0] &&
+				    bbox[1] != response.file_list[i].boundingBox[1] &&
+				    bbox[2] != response.file_list[i].boundingBox[2] &&
+				    bbox[3] != response.file_list[i].boundingBox[3]) { // Bounding box checks
+					bbox_errors++;
+					msg+="\nERROR: Bounding box " + i + ": [" +
 						"xmin: " + response.file_list[i].geojson.bbox[0] + ", " +
 						"ymin: " + response.file_list[i].geojson.bbox[1] + ", " +
 						"xmax: " + response.file_list[i].geojson.bbox[2] + ", " +
@@ -599,6 +602,9 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			}
 			if (bbox_errors > 0) {
 				file_errors+=bbox_errors;
+			}
+			else {
+				msg+="\nAll bounding boxes are the same";
 			}
 			
 			var ngeolevels = geolevels.sort(function (a, b) {
@@ -631,7 +637,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			}
 			else if (response.field_errors == 0 && response.file_errors == 0) { // OK
 				msg+="\nshpConvertFieldProcessor().q.drain() OK";
-				response.message = msg + "\n" + response.message;
+				response.message = response.message + "\n" + msg;
 				
 				if (!shapefile_options.verbose) {
 					response.message="";	
