@@ -284,55 +284,6 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	 * Description: Read shapefile
 	 */
 	var readShapeFile = function(shapefileData) {
-
-		if (!shapefileData) {
-			throw new Error("No shapefileData object");
-//			callback();		// Not needed - serverError2() raises exception 		
-		}
-		var serverLog = shapefileData["serverLog"];
-		if (!serverLog) {
-			throw new Error("No serverLog object");
-		}
-		else if (!serverLog.serverError2) {
-			serverLog = require('../lib/serverLog'); // deal with scope problems
-		}	
-		else if (typeof serverLog.serverError2 != "function") {
-			throw new Error("serverLog.serverError2 is not a function");
-		}
-		
-		// Work out projection; convert to 4326 if required 
-		var prj=fs.readFileSync(shapefileData["projFileName"]);
-		var mySrs;
-		var crss={
-			"EPSG:2400": "+lon_0=15.808277777799999 +lat_0=0.0 +k=1.0 +x_0=1500000.0 +y_0=0.0 +proj=tmerc +ellps=bessel +units=m +towgs84=414.1,41.3,603.1,-0.855,2.141,-7.023,0 +no_defs",
-			"EPSG:3006": "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
-			"EPSG:4326": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
-			"EPSG:3857": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs"
-		};
-		
-		if (prj) {
-			mySrs=srs.parse(prj);
-			if (!mySrs.srid) { // 
-				if (mySrs.name == "British_National_Grid") {
-					mySrs.srid="27700";
-				}
-				else { // Error
-					serverLog.serverError2(__file, __line, "readShapeFile", 
-						"ERROR! no SRID for projection data: " + prj + " in shapefile: " +
-						shapefileData["shapeFileName"], shapefileData["req"]);	
-//						callback();	// Not needed - serverError2() raises exception 
-				}
-			}
-			crss["EPSG:" + mySrs.srid] = mySrs.proj4;
-		}
-		serverLog.serverLog2(__file, __line, "readShapeFile", 
-					"In readShapeFile(), call shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
-					
-		// Now read shapefile
-
-		var reader = shapefile.reader(shapefileData["shapeFileName"], shapefileData["shapefile_options"]);
-		response.file_list[shapefileData["shapefile_no"]-1].geojson=undefined;
-
 		/*
 	 	 * Function: 	shapefileReader()
 		 * Parameters:	Error, record (header/feature/end) from shapefile
@@ -540,7 +491,55 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					}		
 				});
 			}
-		} // End of shapefileReader()
+		} // End of shapefileReader() function
+		
+		if (!shapefileData) {
+			throw new Error("No shapefileData object");
+//			callback();		// Not needed - serverError2() raises exception 		
+		}
+		var serverLog = shapefileData["serverLog"];
+		if (!serverLog) {
+			throw new Error("No serverLog object");
+		}
+		else if (!serverLog.serverError2) {
+			serverLog = require('../lib/serverLog'); // deal with scope problems
+		}	
+		else if (typeof serverLog.serverError2 != "function") {
+			throw new Error("serverLog.serverError2 is not a function");
+		}
+		
+		// Work out projection; convert to 4326 if required 
+		var prj=fs.readFileSync(shapefileData["projFileName"]);
+		var mySrs;
+		var crss={
+			"EPSG:2400": "+lon_0=15.808277777799999 +lat_0=0.0 +k=1.0 +x_0=1500000.0 +y_0=0.0 +proj=tmerc +ellps=bessel +units=m +towgs84=414.1,41.3,603.1,-0.855,2.141,-7.023,0 +no_defs",
+			"EPSG:3006": "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+			"EPSG:4326": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
+			"EPSG:3857": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs"
+		};
+		
+		if (prj) {
+			mySrs=srs.parse(prj);
+			if (!mySrs.srid) { // 
+				if (mySrs.name == "British_National_Grid") {
+					mySrs.srid="27700";
+				}
+				else { // Error
+					serverLog.serverError2(__file, __line, "readShapeFile", 
+						"ERROR! no SRID for projection data: " + prj + " in shapefile: " +
+						shapefileData["shapeFileName"], shapefileData["req"]);	
+//						callback();	// Not needed - serverError2() raises exception 
+				}
+			}
+			crss["EPSG:" + mySrs.srid] = mySrs.proj4;
+		}
+		serverLog.serverLog2(__file, __line, "readShapeFile", 
+					"In readShapeFile(), call shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
+					
+		// Now read shapefile
+
+		var reader = shapefile.reader(shapefileData["shapeFileName"], shapefileData["shapefile_options"]);
+		response.file_list[shapefileData["shapefile_no"]-1].geojson=undefined;
 		reader.readHeader(shapefileReader); // Read shapefile
 
 	} // End of readShapeFile()
@@ -572,7 +571,11 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			var msg="All " + response.no_files + " shapefiles have been processed";
 							// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
 
+			// Re-order shapefiles by total areas
 			var geolevels = [];
+			var bbox=response.file_list[0].boundingBox;
+			var bbox_errors=0;
+			
 			for (var i=0; i<response.file_list.length; i++) {
 				geolevels[i] = {
 					i: i,
@@ -580,7 +583,24 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					total_areas: response.file_list[i].total_areas,
 					geolevel_id: 0
 				};
+				if (bbox != response.file_list[i].boundingBox) {
+					response.bbox_errors++;
+					msg+="ERROR: Bounding box " + i + ": [" +
+						"xmin: " + response.file_list[i].geojson.bbox[0] + ", " +
+						"ymin: " + response.file_list[i].geojson.bbox[1] + ", " +
+						"xmax: " + response.file_list[i].geojson.bbox[2] + ", " +
+						"ymax: " + response.file_list[i].geojson.bbox[3] + "];" +
+						"\n is not the same as the first bounding box: " + 
+						"xmin: " + response.file_list[i].geojson.bbox[0] + ", " +
+						"ymin: " + response.file_list[i].geojson.bbox[1] + ", " +
+						"xmax: " + response.file_list[i].geojson.bbox[2] + ", " +
+						"ymax: " + response.file_list[i].geojson.bbox[3] + "];";
+				}
 			}
+			if (bbox_errors > 0) {
+				file_errors+=bbox_errors;
+			}
+			
 			var ngeolevels = geolevels.sort(function (a, b) {
 				if (a.total_areas > b.total_areas) {
 					return 1;
@@ -910,7 +930,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 		
 		// Free up memory
 		for (var i = 0; i < response.no_files; i++) {
-			response.message+="\nFreeing " + d_files.d_list[i].file.file_size + " bytes for file: " + d_files.d_list[i].file.file_name;
+//			response.message+="\nFreeing " + d_files.d_list[i].file.file_size + " bytes for file: " + d_files.d_list[i].file.file_name;
 			d_files.d_list[i].file.file_data=undefined;
 			if (global.gc && d_files.d_list[i].file.file_size > (1024*1024*500)) { // GC is file > 500M
 				serverLog.serverLog2(__file, __line, "Force garbage collection for file: " + d_files.d_list[i].file.file_name, fileData["req"]);
