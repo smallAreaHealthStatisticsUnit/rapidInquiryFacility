@@ -325,6 +325,8 @@ function createMap(boundingBox) {
 		id: 'mapbox.light'
 	});
 	tileLayer.addTo(map);	
+	L.control.scale().addTo(map); // Add scale
+	
 	console.log('Add tileLayer to map');
 	
 	return map;
