@@ -284,6 +284,8 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	 * Description: Read shapefile
 	 */
 	var readShapeFile = function(shapefileData) {
+		var recLen=0;
+		
 		/*
 	 	 * Function: 	shapefileReader()
 		 * Parameters:	Error, record (header/feature/end) from shapefile
@@ -291,8 +293,13 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		 * Description: Shapefile reader function. Reads shapefile line by line; converting to WGS84 if required to minimise meory footprint
 		 */
 		var shapefileReader = function(err, record) {
+			var readNextRecord = function() {
+				reader.readRecord(shapefileReader); 	// Read next record	
+			}
 			var msg;
-			
+			var fileNoExt = path.basename(shapefileData["shapeFileName"]);
+			const v8 = require('v8');
+
 			if (err) {
 				msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile reader.read: ' + shapefileData["shapeFileName"];
 				serverLog.serverLog2(__file, __line, "readShapeFile", 
@@ -307,20 +314,29 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				return rval;					
 			}
 			else if (record.bbox) { // Header		
-				msg="shapefile read header for: " + shapefileData["shapeFileName"];
+				recLen+=JSON.stringify(record).length;
+				msg="shapefile read header for: " + fileNoExt;
 				response.message+="\n" + msg;					
 				response.file_list[shapefileData["shapefile_no"]-1].geojson={type: "FeatureCollection", bbox: record.bbox, features: []};
-				reader.readRecord(shapefileReader); 	// Read next record
+				process.nextTick(readNextRecord);	// Read next record
 			}
 			else if (record !== shapefile.end) {
 				var recNo=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length+1;
-				var recLen=response.file_list[shapefileData["shapefile_no"]-1].geojson.length;
+				recLen+=JSON.stringify(record).length;
 				var doTrace=false;
 				
+				msg="shapefile read [" + recNo + "] for: " + fileNoExt + "; size: " + recLen;
 				if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1) { // Print read record diagnostics every 1000 shapefile records
 					doTrace=true;
-					msg="shapefile read [" + recNo + "] for: " + shapefileData["shapeFileName"];
 					if (recLen > 50*1024*1024) { // 50 MB
+						if (global.gc) {
+							var heap=v8.getHeapStatistics();
+							msg+="\nMemory heap >>>";
+							for (var key in heap) {
+								msg+="\n" + key + ": " + heap[key];
+							}
+							msg+="\n<<< End of memory heap";
+						}
 						serverLog.serverLog2(__file, __line, "readShapeFile", "In readShapeFile(), " + msg, shapefileData["req"]);
 					}
 					response.message+="\n" + msg;
@@ -328,7 +344,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 
 				if (mySrs.srid != "4326") { // Re-project to 4326
 					try {
-						msg="shapefile read [" + recNo	+ "]; call reproject.toWgs84() for: " + shapefileData["shapeFileName"];
+						msg="shapefile read [" + recNo	+ "] call reproject.toWgs84() for: " + fileNoExt;
 						if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length == 0) { // Re-project BBOX with no features (or you will shrink it to the first feature!)
 							msg+="\nBounding box conversion from (" + mySrs.srid + "): " +
 								"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
@@ -366,13 +382,6 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 								"EPSG:" + mySrs.srid, 
 								crss).features[0]
 							);
-						if (doTrace) {
-							msg+="\nshapefile read [" + recNo	+ "]; completed reproject.toWgs84() for: " + shapefileData["shapeFileName"];
-							if (recLen > 50*1024*1024) { // 50 MB
-								serverLog.serverLog2(__file, __line, "readShapeFile", "In readShapeFile(), " + msg, shapefileData["req"]);
-							}
-							response.message+="\n" + msg;
-						}
 					}
 					catch (e) {
 						serverLog.serverError2(__file, __line, "readShapeFile", 
@@ -388,11 +397,12 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				else {
 					response.file_list[shapefileData["shapefile_no"]-1].geojson.features.push(record); 		// Add feature to collection
 				}
-				reader.readRecord(shapefileReader); 	// Read next record
+				
+				process.nextTick(readNextRecord); 	// Read next record
 			}
 			else {
 				var recNo=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;				
-				msg="shapefile read [" + recNo	+ "]; completed for: " + shapefileData["shapeFileName"];
+				msg="shapefile read [" + recNo	+ "] completed for: " + fileNoExt;
 				if (recLen > 50*1024*1024) { // 50 MB
 					serverLog.serverLog2(__file, __line, "readShapeFile", "In readShapeFile(), " + msg, shapefileData["req"]);
 				}

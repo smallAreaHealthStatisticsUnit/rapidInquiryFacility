@@ -177,7 +177,7 @@ if (global.gc) {
 	v8.setFlagsFromString('--trace_gc');
 	v8.setFlagsFromString('--trace_gc_verbose');
 	v8.setFlagsFromString('--trace_gc_ignore_scavenger');
-	v8.setFlagsFromString('--trace_external_memory');
+//	v8.setFlagsFromString('--trace_external_memory');
 }
 
 var heap=v8.getHeapStatistics();
