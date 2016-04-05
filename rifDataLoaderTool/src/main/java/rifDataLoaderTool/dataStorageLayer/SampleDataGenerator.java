@@ -107,6 +107,8 @@ public class SampleDataGenerator {
 			= RIFConversionFunctionFactory.newInstance();
 		RIFDataTypeFactory rifDataTypeFactory
 			= RIFDataTypeFactory.newInstance();
+		rifDataTypeFactory.populateFactoryWithBuiltInTypes();
+		
 		
 		/*		
 		 * This is a data set configuration for a CSV file that contains
@@ -157,7 +159,7 @@ public class SampleDataGenerator {
 				"cancer_data", 
 				"year");
 		//this data type comes with transformation rules that can help
-		//validate field values so they are reasonable (eg: start with a "19" or a "20")
+		//validate field values so they are reasonable (eg: start with a "19" or a "20")		
 		yearFieldConfiguration.setRIFDataType(
 			rifDataTypeFactory.getDataTypeFromCode("rif_year"));
 		//will appear as a comment in the schema for the table

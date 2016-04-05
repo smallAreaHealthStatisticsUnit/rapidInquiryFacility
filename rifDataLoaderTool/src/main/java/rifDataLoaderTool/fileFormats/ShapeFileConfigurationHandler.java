@@ -4,8 +4,11 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
-import rifServices.fileFormats.XMLCommentInjector;
-import rifServices.fileFormats.XMLUtility;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.util.XMLUtility;
+import rifGenericLibrary.util.XMLCommentInjector;
+
+
 
 
 
@@ -17,6 +20,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.text.Collator;
 import java.util.ArrayList;
 
 
@@ -97,6 +101,8 @@ final class ShapeFileConfigurationHandler
 // ==========================================
 	private ArrayList<ShapeFile> shapeFiles;
 	private ShapeFile currentShapeFile;
+	private String unknownPhrase;
+	
 // ==========================================
 // Section Construction
 // ==========================================
@@ -108,8 +114,29 @@ final class ShapeFileConfigurationHandler
 		setSingularRecordName("shape_file");
 		
 		shapeFiles = new ArrayList<ShapeFile>();
-	}
+		
+		String shapeFileComment
+			= RIFDataLoaderToolMessages.getMessage("shapeFile.toolTipText");
+		setComment(
+			"shape_file", 
+			shapeFileComment);
+		String shapeFileTotalAreaIdentifiersComment
+			= RIFDataLoaderToolMessages.getMessage("shapeFile.totalAreaIdentifiers.toolTipText");
+		setComment(
+			"shape_file",
+			"shape_file_total_area_identifiers",
+			shapeFileTotalAreaIdentifiersComment);
+		String shapeFileNameFieldComment
+			= RIFDataLoaderToolMessages.getMessage("shapeFile.nameFieldName.toolTipText");	
+		setComment(
+			"shape_file",
+			"shape_file_name_field",
+			shapeFileNameFieldComment);	
+		
+		unknownPhrase
+			= RIFDataLoaderToolMessages.getMessage("general.label.unknown");
 
+	}
 
 	@Override
 	public void initialise(
@@ -147,11 +174,18 @@ final class ShapeFileConfigurationHandler
 			
 		XMLUtility xmlUtility = getXMLUtility();
 		
-		xmlUtility.writeRecordStartTag(getPluralRecordName());		
+		xmlUtility.writeRecordStartTag(getPluralRecordName());
 		String recordType = getSingularRecordName();		
+		
 		for (ShapeFile shapeFile : shapeFiles) {
+			
 			xmlUtility.writeRecordStartTag(recordType);
 			
+			xmlUtility.writeField(
+				recordType, 
+				"shape_file_description", 
+				shapeFile.getShapeFileDescription());			
+
 			ArrayList<String> shapeFileComponentPaths
 				= shapeFile.getShapeFileComponentPaths();
 			for (String shapeFileComponentPath : shapeFileComponentPaths) {
@@ -161,6 +195,41 @@ final class ShapeFileConfigurationHandler
 					shapeFileComponentPath);				
 			}
 
+			int totalAreaIdentifiers
+				= shapeFile.getTotalAreaIdentifiers();
+			if (totalAreaIdentifiers == ShapeFile.UNKNOWN_TOTAL_AREA_IDENTIFIERS) {
+
+				xmlUtility.writeField(
+					recordType, 
+					"shape_file_total_area_identifiers", 
+					unknownPhrase);				
+			}
+			else {
+				xmlUtility.writeField(
+					recordType, 
+					"shape_file_total_area_identifiers", 
+					String.valueOf(totalAreaIdentifiers));					
+			}
+			
+			xmlUtility.writeField(
+				recordType, 
+				"shape_file_area_identifier_field", 
+				shapeFile.getAreaIdentifierFieldName());				
+
+			xmlUtility.writeField(
+				recordType, 
+				"shape_file_name_field", 
+				shapeFile.getNameFieldName());				
+						
+			ArrayList<String> shapeFileFieldNames
+				= shapeFile.getShapeFileFieldNames();
+			for (String shapeFileFieldName : shapeFileFieldNames) {
+				xmlUtility.writeField(
+					recordType, 
+					"shape_file_field_name", 
+					shapeFileFieldName);				
+			}
+			
 			xmlUtility.writeRecordEndTag(recordType);
 		}
 		xmlUtility.writeRecordEndTag(getPluralRecordName());
@@ -207,12 +276,43 @@ final class ShapeFileConfigurationHandler
 			deactivate();
 		}
 		else if (isSingularRecordName(qualifiedName)) {
-			System.out.println("Detecting shape file");
 			shapeFiles.add(currentShapeFile);
 		}
+		else if (equalsFieldName("shape_file_description", qualifiedName)) {
+			currentShapeFile.setShapeFileDescription(getCurrentFieldValue());
+		}		
 		else if (equalsFieldName("shape_file_component_file_path", qualifiedName)) {
-			System.out.println("Detecting shape file component");
 			currentShapeFile.addShapeFileComponentPath(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("shape_file_field_name", qualifiedName)) {
+			currentShapeFile.addShapeFileFieldName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("shape_file_area_identifier_field", qualifiedName)) {
+			currentShapeFile.setAreaIdentifierFieldName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("shape_file_name_field", qualifiedName)) {
+			currentShapeFile.setNameFieldName(getCurrentFieldValue());
+		}	
+		else if (equalsFieldName("shape_file_field_name", qualifiedName)) {
+			currentShapeFile.addShapeFileFieldName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("shape_file_total_area_identifiers", qualifiedName)) {
+			String totalAreaIdentifiersPhrase
+				= getCurrentFieldValue();
+			Collator collator
+				= RIFDataLoaderToolMessages.getCollator();
+			String unknownPhrase
+				= RIFDataLoaderToolMessages.getMessage("shapeFile.totalAreaIdentifiers.unknown.label");
+			if (collator.equals(
+				totalAreaIdentifiersPhrase, 
+				unknownPhrase)) {
+				currentShapeFile.setTotalAreaIdentifiers(ShapeFile.UNKNOWN_TOTAL_AREA_IDENTIFIERS);
+			}
+			else {
+				Integer totalAreaIdentifiers
+					= Integer.valueOf(totalAreaIdentifiersPhrase);
+				currentShapeFile.setTotalAreaIdentifiers(totalAreaIdentifiers);
+			}
 		}
 		else {
 			assert false;

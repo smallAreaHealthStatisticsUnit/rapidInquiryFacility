@@ -24,7 +24,24 @@ BEGIN
 END;
 $$   LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION clean_icd(
+
+CREATE OR REPLACE FUNCTION clean_age(
+	original_age TEXT)
+	RETURNS TEXT AS 
+$$
+DECLARE
+	cleaned_age TEXT;
+BEGIN
+	--This is just a stub function to demonstrate functionality.
+
+	cleaned_age := original_age;
+	RETURN cleaned_age;
+END;
+$$   LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION clean_icd_code(
 	original_icd_code TEXT)
 	RETURNS TEXT AS 
 $$

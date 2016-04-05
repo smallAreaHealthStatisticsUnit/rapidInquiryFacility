@@ -3,15 +3,15 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifServices.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
 
 import java.util.ArrayList;
 import java.io.*;

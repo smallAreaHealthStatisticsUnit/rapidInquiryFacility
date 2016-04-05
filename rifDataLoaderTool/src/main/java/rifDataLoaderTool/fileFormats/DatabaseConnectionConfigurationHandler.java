@@ -3,19 +3,21 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
-import rifServices.fileFormats.XMLCommentInjector;
-import rifServices.fileFormats.XMLUtility;
+
+import rifGenericLibrary.util.XMLUtility;
+import rifGenericLibrary.util.XMLCommentInjector;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
 
 /**
- *
- *
+ * Serialises and deserialises {@link rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters}
+ * using XML.
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 

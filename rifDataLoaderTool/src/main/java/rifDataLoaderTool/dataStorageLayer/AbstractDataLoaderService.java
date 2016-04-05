@@ -5,26 +5,19 @@ import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifDataLoaderTool.dataStorageLayer.SQLConnectionManager;
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
 import rifServices.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.dataStorageLayer.DatabaseType;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+
+import org.apache.commons.io.FileUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.io.*;
 import java.nio.file.*;
-import java.nio.file.attribute.*;
-import java.nio.file.StandardCopyOption.*;
-
-import org.apache.commons.io.FileUtils;
-
-
 
 /**
  * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService}.
@@ -111,7 +104,7 @@ import org.apache.commons.io.FileUtils;
  *
  */
 
-public abstract class AbstractDataLoaderService 
+abstract class AbstractDataLoaderService 
 	implements DataLoaderServiceAPI {
 	
 	// ==========================================
@@ -139,9 +132,7 @@ public abstract class AbstractDataLoaderService
 	
 	private PostgreSQLReportManager reportManager;
 	private PublishWorkflowManager publishWorkflowManager;
-	
-
-	
+		
 	private ArrayList<DataSetConfiguration> dataSetConfigurations;
 	
 	private String exportDirectoryPath;
@@ -152,7 +143,7 @@ public abstract class AbstractDataLoaderService
 	// ==========================================
 
 	public AbstractDataLoaderService() {
-			
+					
 		dataSetConfigurations 
 			= new ArrayList<DataSetConfiguration>();
 		exportDirectoryPath = "C:" + File.separator + "rif_scratch";
@@ -177,58 +168,44 @@ public abstract class AbstractDataLoaderService
 				port,
 				databaseName);
 		sqlConnectionManager.initialiseConnectionQueue();
-			
-	
-		RIFDatabaseProperties rifDatabaseProperties 
-			= RIFDatabaseProperties.newInstance(
-				DatabaseType.POSTGRESQL, 
-				false);
-		dataSetManager = new DataSetManager(rifDatabaseProperties);
+
+		dataSetManager = new DataSetManager();
 		extractWorkflowManager
 			= new ExtractWorkflowManager(
-				rifDatabaseProperties,
 				dataSetManager);
 		
 		changeAuditManager
-			= new ChangeAuditManager(rifDatabaseProperties);
+			= new ChangeAuditManager();
 		
 		PostgresCleaningStepQueryGenerator cleanWorkflowQueryGenerator
 			= new PostgresCleaningStepQueryGenerator();
 		cleanWorkflowManager
 			= new CleanWorkflowManager(
-				rifDatabaseProperties,
 				dataSetManager,
 				changeAuditManager,
 				cleanWorkflowQueryGenerator);
 					
 		convertWorkflowManager
-			= new ConvertWorkflowManager(
-				rifDatabaseProperties);
+			= new ConvertWorkflowManager();
 		
 		combineWorkflowManager
-			= new CombineWorkflowManager(
-				rifDatabaseProperties);
+			= new CombineWorkflowManager();
 				
 		splitWorkflowManager
-			= new SplitWorkflowManager(
-				rifDatabaseProperties);
+			= new SplitWorkflowManager();
 		
 		optimiseWorkflowManager
-			= new OptimiseWorkflowManager(
-				rifDatabaseProperties);
+			= new OptimiseWorkflowManager();
 				
 		checkWorkflowManager
 			= new CheckWorkflowManager(
-				rifDatabaseProperties,
 				optimiseWorkflowManager);
 		
 		publishWorkflowManager
-			= new PublishWorkflowManager(
-				rifDatabaseProperties);
+			= new PublishWorkflowManager();
 		
 		reportManager
-			= new PostgreSQLReportManager(
-				rifDatabaseProperties);
+			= new PostgreSQLReportManager();
 	}
 	
 	public void shutdownService() 
@@ -254,7 +231,7 @@ public abstract class AbstractDataLoaderService
 		final User rifManager) 
 		throws RIFServiceException {
 		
-		sqlConnectionManager.logout(rifManager);
+		//sqlConnectionManager.logout(rifManager);
 	}
 	
 	public void shutdown() throws RIFServiceException {
@@ -432,6 +409,97 @@ public abstract class AbstractDataLoaderService
 		
 	}
 
+	
+	public String[] getShapeFileFieldNames(final ShapeFile shapeFile)
+		throws RIFServiceException {
+		
+		String[] columnNames = new String[7];
+		columnNames[0] = "gid";
+		columnNames[1] = "district";
+		columnNames[2] = "ladua2011";
+		columnNames[3] = "xcentroid";
+		columnNames[4] = "ycentroid";
+		columnNames[5] = "males";
+		columnNames[6] = "females";
+			
+		return columnNames;
+	}
+
+	public int getTotalAreaIdentifiers(final ShapeFile shapeFile)
+		throws RIFServiceException {
+		
+		String baseFileName
+			= shapeFile.getBaseFilePath();
+		if (baseFileName.endsWith("_region")) {
+			return 5;
+		}
+		else if (baseFileName.endsWith("_district")) {
+			return 50;
+		}
+		else if (baseFileName.endsWith("_ward")) {
+			return 500;
+		}
+		else if (baseFileName.endsWith("_oa")) {
+			return 5000;
+		}		
+		else if (baseFileName.endsWith("_oa")) {
+			return 50000;
+		}
+		else {
+			return ShapeFile.UNKNOWN_TOTAL_AREA_IDENTIFIERS;
+		}
+		
+	}
+	
+	public String[][] getShapeFileFieldPreviewData(final ShapeFile shapeFile)
+		throws RIFServiceException {
+		
+		String[][] data = new String[3][7];
+		data[0][0] = "1";
+		data[0][1] = "district one";
+		data[0][2] = "AA005566";
+		data[0][3] = "45.768";
+		data[0][4] = "53.456";
+		data[0][5] = "25";
+		data[0][6] = "30";
+
+		data[1][0] = "2";
+		data[1][1] = "district two";
+		data[1][2] = "AA005566";
+		data[1][3] = "45.768";
+		data[1][4] = "53.456";
+		data[1][5] = "25";
+		data[1][6] = "30";
+
+		data[2][0] = "3";
+		data[2][1] = "district three";
+		data[2][2] = "AA22AA33";
+		data[2][3] = "65.222";
+		data[2][4] = "50.121";
+		data[2][5] = "31";
+		data[2][6] = "40";
+		
+		return data;
+	}
+	
+	public void generateShapeFileScripts(final ArrayList<ShapeFile> shapeFiles)
+		throws RIFServiceException {
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public void addFileToDataSetResults(
 		final User _rifManager,
 		final Writer logWriter,
@@ -1826,7 +1894,49 @@ public abstract class AbstractDataLoaderService
 		
 		return dataSetExportDirectoryPath.toString();		
 	}
+	
+	public String[] getCleaningFunctionNames() 
+		throws RIFServiceException {
 		
+		//@TODO: make this come from the database
+		String[] cleaningFunctionNames = new String[4];
+		cleaningFunctionNames[0] = "clean_uk_postal_code";
+		cleaningFunctionNames[1] = "clean_icd_code";
+		cleaningFunctionNames[2] = "clean_sex";
+		cleaningFunctionNames[3] = "clean_age";
+		
+		return cleaningFunctionNames;
+	}
+	
+	public String getDescriptionForCleaningFunction(
+		final String cleaningFunctionName) 
+		throws RIFServiceException {
+		
+		//@TODO: make this come from the database
+		return "Description of " + cleaningFunctionName;
+	}
+	
+	public String[] getValidationFunctionNames() 
+		throws RIFServiceException {
+
+		//@TODO: make this come from the database
+		String[] validationFunctionNames = new String[4];
+		validationFunctionNames[0] = "is_valid_uk_postal_code";
+		validationFunctionNames[1] = "is_valid_icd_code";
+		validationFunctionNames[2] = "is_valid_sex";
+		validationFunctionNames[3] = "is_valid_age";
+		return validationFunctionNames;
+	}
+
+	public String getDescriptionForValidationFunction(
+		final String validationFunctionName) 
+		throws RIFServiceException {
+
+		//@TODO: make this come from the database
+		return "Description of " + validationFunctionName;
+		
+	}
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

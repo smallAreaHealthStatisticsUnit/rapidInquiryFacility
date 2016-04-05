@@ -244,7 +244,7 @@ public OrderedListComboBox(UserInterfaceFactory userInterfaceFactory) {
 	 */
 	public DisplayableListItemInterface getFirstItem() {
 		
-		if (listItems.size() == 0) {
+		if (listItems.isEmpty()) {
 			return null;
 		}
 		

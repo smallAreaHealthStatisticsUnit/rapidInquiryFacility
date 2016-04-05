@@ -7,6 +7,7 @@ import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 /**
@@ -546,6 +547,173 @@ public class DataSetFieldConfiguration
 		return true;		
 	}
 	
+	
+	static public boolean hasIdenticalContents(
+		final ArrayList<DataSetFieldConfiguration> dataSetFieldConfigurationsA, 
+		final ArrayList<DataSetFieldConfiguration> dataSetFieldConfigurationsB) {
+		
+		if (dataSetFieldConfigurationsA == dataSetFieldConfigurationsB) {
+			return true;
+		}
+
+		if ((dataSetFieldConfigurationsA == null && dataSetFieldConfigurationsB != null) ||
+			(dataSetFieldConfigurationsA != null && dataSetFieldConfigurationsB == null)) {
+				
+			return false;
+		}
+
+		int numberOfFieldConfigurationsA = dataSetFieldConfigurationsA.size();
+		if (numberOfFieldConfigurationsA != dataSetFieldConfigurationsB.size()) {
+			
+			return false;
+		}
+		
+		for (int i = 0; i < numberOfFieldConfigurationsA; i++) {
+			DataSetFieldConfiguration dataSetFieldConfigurationA
+				= dataSetFieldConfigurationsA.get(i);
+			DataSetFieldConfiguration dataSetFieldConfigurationB
+				= dataSetFieldConfigurationsB.get(i);
+			if (dataSetFieldConfigurationA.hasIdenticalContents(dataSetFieldConfigurationB) == false) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public boolean hasIdenticalContents(final DataSetFieldConfiguration otherDataSetFieldConfiguration) {
+		if (this == otherDataSetFieldConfiguration) {
+			return true;
+		}
+
+		if (isNewRecord != otherDataSetFieldConfiguration.isNewRecord()) {
+			return false;
+		}
+		
+		if (Objects.deepEquals(
+			coreDataSetName, 
+			otherDataSetFieldConfiguration.getCoreDataSetName()) == false) {
+			
+			return false;			
+		}
+		
+		if (Objects.deepEquals(
+			coreFieldName, 
+			otherDataSetFieldConfiguration.getCoreFieldName()) == false) {
+			
+			return false;			
+		}
+		
+		if (Objects.deepEquals(
+			coreFieldDescription, 
+			otherDataSetFieldConfiguration.getCoreFieldDescription()) == false) {
+			
+			return false;			
+		}
+
+		RIFDataType otherRIFDataType
+			= otherDataSetFieldConfiguration.getRIFDataType();
+		if (rifDataType != otherRIFDataType) {
+			if ((rifDataType == null) || (otherRIFDataType == null)) {
+				return false;
+			}
+			else if (rifDataType.hasIdenticalContents(otherRIFDataType) == false) {
+				return false;
+			}
+		}
+		
+		if (Objects.deepEquals(
+			loadFieldName, 
+			otherDataSetFieldConfiguration.getLoadFieldName()) == false) {
+			
+			return false;			
+		}
+		
+		if (Objects.deepEquals(
+			cleanFieldName, 
+			otherDataSetFieldConfiguration.getCleanFieldName()) == false) {
+			
+			return false;			
+		}
+				
+		if (Objects.deepEquals(
+			convertFieldName, 
+			otherDataSetFieldConfiguration.getConvertFieldName()) == false) {
+			
+			return false;			
+		}
+		
+		if (Objects.deepEquals(
+			rifConversionFunction, 
+			otherDataSetFieldConfiguration.getConvertFieldName()) == false) {
+	
+			return false;			
+		}
+		
+		RIFConversionFunction otherRIFConversionFunction
+			= otherDataSetFieldConfiguration.getConvertFunction();
+		
+		if (rifConversionFunction != otherRIFConversionFunction) {
+			if (rifConversionFunction == null) {
+				return false;
+			}
+			else {
+				if (rifConversionFunction.hasIdenticalContents(otherRIFConversionFunction) == false) {
+					return false;
+				}
+			}
+		}
+
+		if (Objects.deepEquals(
+			optimiseUsingIndex, 
+			otherDataSetFieldConfiguration.optimiseUsingIndex()) == false) {
+	
+			return false;			
+		}
+		
+		if (Objects.deepEquals(
+			isDuplicateIdentificationField, 
+			otherDataSetFieldConfiguration.isDuplicateIdentificationField()) == false) {
+		
+			return false;			
+		}
+
+		FieldPurpose otherFieldPurpose
+			= otherDataSetFieldConfiguration.getFieldPurpose();
+		if (fieldPurpose != otherFieldPurpose) {
+			return false;
+		}
+		
+		ArrayList<RIFCheckOption> otherCheckOptions
+			= otherDataSetFieldConfiguration.getCheckOptions();
+		if (RIFCheckOption.hasIdenticalContents(checkOptions, otherCheckOptions) == false) {
+			return false;
+		}
+
+		if (Objects.deepEquals(
+			isEmptyValueAllowed, 
+			otherDataSetFieldConfiguration.isEmptyValueAllowed()) == false) {
+			
+			return false;
+		}
+		
+		if (Objects.deepEquals(
+			fieldRequirementLevel, 
+			otherDataSetFieldConfiguration.getFieldRequirementLevel()) == false) {
+			
+			return false;			
+		}
+		
+		if (Objects.deepEquals(
+			fieldChangeAuditLevel, 
+			otherDataSetFieldConfiguration.getFieldChangeAuditLevel()) == false) {
+			
+			return false;			
+		}
+		
+		return true;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -622,10 +790,11 @@ public class DataSetFieldConfiguration
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 
+		
 		if (fieldValidationUtility.isEmpty(coreDataSetName)) {
 			String parentRecordNameLabel
 				= RIFDataLoaderToolMessages.getMessage(
-					"dataSetFieldConfiguration.coreFieldName.label");
+					"dataSetFieldConfiguration.parentRecordName.label");
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"general.validation.emptyRequiredField",
@@ -633,8 +802,8 @@ public class DataSetFieldConfiguration
 			errorMessages.add(errorMessage);	
 			
 		}
-		
 
+		
 		if (fieldValidationUtility.isEmpty(coreFieldName)) {
 			String coreFieldNameLabel
 				= RIFDataLoaderToolMessages.getMessage(
@@ -671,7 +840,7 @@ public class DataSetFieldConfiguration
 					rifDataTypeLabel);
 			errorMessages.add(errorMessage);		
 		}
-
+		
 		if (fieldValidationUtility.isEmpty(loadFieldName)) {
 			String loadFieldNameLabel
 				= RIFDataLoaderToolMessages.getMessage(
@@ -693,8 +862,7 @@ public class DataSetFieldConfiguration
 					fieldPurposeLabel);
 			errorMessages.add(errorMessage);			
 		}	
-		
-		
+				
 		if (fieldRequirementLevel == null) {
 			String fieldPurposeLabel
 				= RIFDataLoaderToolMessages.getMessage(
@@ -716,9 +884,7 @@ public class DataSetFieldConfiguration
 					"general.validation.emptyRequiredField",
 					fieldPurposeLabel);
 			errorMessages.add(errorMessage);			
-		}	
-		
-		
+		}			
 	}
 	
 	/**

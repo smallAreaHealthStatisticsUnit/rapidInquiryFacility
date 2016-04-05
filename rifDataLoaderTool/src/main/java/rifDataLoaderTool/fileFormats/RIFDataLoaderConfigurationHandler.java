@@ -3,18 +3,20 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
-import rifDataLoaderTool.businessConceptLayer.ShapeFile;
-import rifDataLoaderTool.businessConceptLayer.GeographicalResolutionLevel;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolGeography;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
+import rifDataLoaderTool.businessConceptLayer.RIFDataType;
 
-import rifDataLoaderTool.fileFormats.dataTypes.*;
 
-import rifServices.fileFormats.XMLCommentInjector;
-import rifServices.fileFormats.XMLUtility;
+import rifGenericLibrary.util.XMLUtility;
+import rifGenericLibrary.util.XMLCommentInjector;
 
 import java.util.ArrayList;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -96,11 +98,10 @@ final class RIFDataLoaderConfigurationHandler
 // ==========================================
 	private DataLoaderToolSettings dataLoaderToolSettings;
 	
-	
 	private DatabaseConnectionConfigurationHandler databaseConnectionConfigurationHandler;
-	private ShapeFileConfigurationHandler shapeFileConfigurationHandler;
-	private GeographicalResolutionConfigurationHandler geographicalResolutionConfigurationHandler;
+	private GeographyConfigurationHandler geographyConfigurationHandler;
 	private RIFDataTypeConfigurationHandler rifDataTypeConfigurationHandler;
+	private LinearWorkflowConfigurationHandler linearWorkflowConfigurationHandler;
 		
 // ==========================================
 // Section Construction
@@ -116,10 +117,11 @@ final class RIFDataLoaderConfigurationHandler
 		
 		databaseConnectionConfigurationHandler
 			= new DatabaseConnectionConfigurationHandler();
-		shapeFileConfigurationHandler
-			= new ShapeFileConfigurationHandler();
-		geographicalResolutionConfigurationHandler
-			= new GeographicalResolutionConfigurationHandler();
+
+		geographyConfigurationHandler
+			= new GeographyConfigurationHandler();
+		linearWorkflowConfigurationHandler
+			= new LinearWorkflowConfigurationHandler();
 		//geographicalResolutionLevels
 		//	= new ArrayList<GeographicalResolutionLevel>();
 	}
@@ -138,15 +140,16 @@ final class RIFDataLoaderConfigurationHandler
 		databaseConnectionConfigurationHandler.initialise(
 			outputStream, 
 			commentInjector);	
-		shapeFileConfigurationHandler.initialise(
-			outputStream, 
-			commentInjector);		
 		rifDataTypeConfigurationHandler.initialise(
 			outputStream, 
 			commentInjector);		
-		geographicalResolutionConfigurationHandler.initialise(
+		geographyConfigurationHandler.initialise(
 			outputStream, 
 			commentInjector);
+		linearWorkflowConfigurationHandler.initialise(
+			outputStream, 
+			commentInjector);	
+				
 	}
 
 	public void initialise(
@@ -155,9 +158,9 @@ final class RIFDataLoaderConfigurationHandler
 
 		super.initialise(outputStream);
 		databaseConnectionConfigurationHandler.initialise(outputStream);
-		shapeFileConfigurationHandler.initialise(outputStream);		
-		geographicalResolutionConfigurationHandler.initialise(outputStream);
+		geographyConfigurationHandler.initialise(outputStream);
 		rifDataTypeConfigurationHandler.initialise(outputStream);
+		linearWorkflowConfigurationHandler.initialise(outputStream);
 	}
 		
 // ==========================================
@@ -180,17 +183,30 @@ final class RIFDataLoaderConfigurationHandler
 		XMLUtility xmlUtility = getXMLUtility();
 		xmlUtility.writeStartXML();		
 
+		System.out.println("RDLConfigHandler writeXML 1");
 		String recordType = getSingularRecordName();
 		xmlUtility.writeRecordStartTag(recordType);
 		databaseConnectionConfigurationHandler.writeXML(
 			dataLoaderToolSettings.getDatabaseConnectionParameters());
-		shapeFileConfigurationHandler.writeXML(
-			dataLoaderToolSettings.getShapeFiles());
-		geographicalResolutionConfigurationHandler.writeXML(
-			dataLoaderToolSettings.getGeographicalResolutionLevels());
+
+		System.out.println("RDLConfigHandler writeXML 2");
+		geographyConfigurationHandler.writeXML(
+			dataLoaderToolSettings.getGeographies());
 		rifDataTypeConfigurationHandler.writeXML(
 			dataLoaderToolSettings.getRIFDataTypeFactory());
+
+		System.out.println("RDLConfigHandler writeXML 3");
+		
+		//@TODO In future, we will have the Data Loader Tool
+		//support multiple work flows
+		ArrayList<LinearWorkflow> workFlows
+			= dataLoaderToolSettings.getWorkflows();
+		linearWorkflowConfigurationHandler.writeXML(workFlows);			
 		xmlUtility.writeRecordEndTag(recordType);	
+		
+		System.out.println("RDLConfigHandler writeXML 4");
+
+		
 	}	
 		
 // ==========================================
@@ -232,16 +248,16 @@ final class RIFDataLoaderConfigurationHandler
 			if (databaseConnectionConfigurationHandler.isSingularRecordName(qualifiedName)) {
 				assignDelegatedHandler(databaseConnectionConfigurationHandler);				
 			}
-			else if (geographicalResolutionConfigurationHandler.isPluralRecordName(qualifiedName)) {
-				assignDelegatedHandler(geographicalResolutionConfigurationHandler);				
-			}
-			else if (shapeFileConfigurationHandler.isPluralRecordName(qualifiedName)) {
-				assignDelegatedHandler(shapeFileConfigurationHandler);				
+			else if (geographyConfigurationHandler.isPluralRecordName(qualifiedName)) {
+				assignDelegatedHandler(geographyConfigurationHandler);				
 			}
 			else if (rifDataTypeConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(rifDataTypeConfigurationHandler);
 			}
-									
+			else if (linearWorkflowConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(linearWorkflowConfigurationHandler);
+			}
+											
 			//delegate to a handler.  If not, then scan for fields relating to this handler
 			if (isDelegatedHandlerAssigned()) {
 
@@ -284,20 +300,20 @@ final class RIFDataLoaderConfigurationHandler
 						= databaseConnectionConfigurationHandler.getDatabaseConnectionParameters();
 					dataLoaderToolSettings.setDatabaseConnectionParameters(databaseConnectionParameters);
 				}				
-				else if (currentDelegatedHandler == geographicalResolutionConfigurationHandler) {
-					ArrayList<GeographicalResolutionLevel> geographicalResolutionLevels
-						= geographicalResolutionConfigurationHandler.getGeographicalResolutionLevels();
-					dataLoaderToolSettings.setGeographicalResolutionLevels(geographicalResolutionLevels);
+				else if (currentDelegatedHandler == geographyConfigurationHandler) {
+					ArrayList<DataLoaderToolGeography> geographies
+						= geographyConfigurationHandler.getGeographies();
+					dataLoaderToolSettings.setGeographies(geographies);
 				}
-				else if (currentDelegatedHandler == shapeFileConfigurationHandler) {
-					ArrayList<ShapeFile> shapeFiles
-						= shapeFileConfigurationHandler.getShapeFiles();
-					dataLoaderToolSettings.setShapeFiles(shapeFiles);
-				}				
 				else if (currentDelegatedHandler == rifDataTypeConfigurationHandler) {
 					RIFDataTypeFactory rifDataTypeFactory
 						= rifDataTypeConfigurationHandler.getRIFDataTypeFactory();
 					dataLoaderToolSettings.setRIFDataTypeFactory(rifDataTypeFactory);
+				}
+				else if (currentDelegatedHandler == linearWorkflowConfigurationHandler) {
+					ArrayList<LinearWorkflow> linearWorkflows
+						= linearWorkflowConfigurationHandler.getLinearWorkflows();
+					dataLoaderToolSettings.setWorkflows(linearWorkflows);
 				}
 				else {
 					assert false;

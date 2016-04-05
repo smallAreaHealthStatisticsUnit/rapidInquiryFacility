@@ -6,7 +6,6 @@ import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.SQLCreatePrimaryKeyQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
-import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 
 
 
@@ -128,6 +127,8 @@ public class PostgreSQLDataTypeValidationUtility {
 		
 		//add comments to the SQL query
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
+		
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage(
 				"queryComments.clean.validationQuery.comment1");
@@ -190,7 +191,7 @@ public class PostgreSQLDataTypeValidationUtility {
 		queryFormatter.addQueryLine(1, "row_number,");
 	
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getFieldConfigurations();
+			= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 		for (int i = 0; i < numberOfFieldConfigurations; i++) {
 			if (i != 0) {
@@ -205,8 +206,6 @@ public class PostgreSQLDataTypeValidationUtility {
 		queryFormatter.finishLine();
 		queryFormatter.addPaddedQueryLine(0, "FROM");
 		queryFormatter.addQueryPhrase(1, cleanSearchReplaceTableName);
-		queryFormatter.addQueryPhrase(";");
-		queryFormatter.finishLine();
 	}
 	
 	
@@ -222,15 +221,15 @@ public class PostgreSQLDataTypeValidationUtility {
 		
 		RIFDataType rifDataType
 			= dataSetFieldConfiguration.getRIFDataType();
-		RIFFieldValidationPolicy fieldValidationPolicy
+		RIFFieldActionPolicy fieldValidationPolicy
 			= rifDataType.getFieldValidationPolicy();
-		if (fieldValidationPolicy == RIFFieldValidationPolicy.NO_VALIDATION) {
+		if (fieldValidationPolicy == RIFFieldActionPolicy.DO_NOTHING) {
 			//just allow load field value to pass
 			queryFormatter.addQueryPhrase(
 				baseIndentationLevel, 
 				loadFieldName);
 		}
-		else if (fieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_RULES) {
+		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_RULES) {
 			/*
 			 * eg:
 			 *
@@ -240,44 +239,51 @@ public class PostgreSQLDataTypeValidationUtility {
 			 * END AS age, //using validation rule
 			 * 
 			 */
-			queryFormatter.addQueryPhrase(baseIndentationLevel, "CASE");
-			queryFormatter.padAndFinishLine();
-
 			ArrayList<ValidationRule> validationRules 
 				= rifDataType.getValidationRules();
-			for (ValidationRule validationRule : validationRules) {
-				queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
-				queryFormatter.addQueryPhrase(loadFieldName);
-				queryFormatter.addQueryPhrase(" ~ ");
-				queryFormatter.addQueryPhrase("'");
-				queryFormatter.addQueryPhrase(validationRule.getValidValue());
-				queryFormatter.addQueryPhrase("'");
-				queryFormatter.addQueryPhrase(" THEN ");
-				queryFormatter.addQueryPhrase(loadFieldName);
-				queryFormatter.padAndFinishLine();
+			if (validationRules.isEmpty()) {
+				queryFormatter.addQueryPhrase(baseIndentationLevel, cleanFieldName);
 			}
-			
-			if (dataSetFieldConfiguration.isEmptyValueAllowed()) {
-				queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
-				queryFormatter.addQueryPhrase(loadFieldName);
-				queryFormatter.addQueryPhrase(" ='' ");
-				queryFormatter.addQueryPhrase("THEN ");
-				queryFormatter.addQueryPhrase(loadFieldName);
-				String allowBlankValuesMessage
-					= RIFDataLoaderToolMessages.getMessage(
-						"sqlQuery.comment.allowBlankValues");
-				queryFormatter.addComment(allowBlankValuesMessage);		
+			else {
+				
+				queryFormatter.addQueryPhrase(baseIndentationLevel, "CASE");
 				queryFormatter.padAndFinishLine();
-			}	
 
-			//does not fit any of the regular expressions, therefore is not valid
-			queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "ELSE 'rif_error'");
-			queryFormatter.padAndFinishLine();
+				for (ValidationRule validationRule : validationRules) {
+					queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
+					queryFormatter.addQueryPhrase(loadFieldName);
+					queryFormatter.addQueryPhrase(" ~ ");
+					queryFormatter.addQueryPhrase("'");
+					queryFormatter.addQueryPhrase(validationRule.getValidValue());
+					queryFormatter.addQueryPhrase("'");
+					queryFormatter.addQueryPhrase(" THEN ");
+					queryFormatter.addQueryPhrase(loadFieldName);
+					queryFormatter.padAndFinishLine();
+				}
+			
+				if (dataSetFieldConfiguration.isEmptyValueAllowed()) {
+					queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
+					queryFormatter.addQueryPhrase(loadFieldName);
+					queryFormatter.addQueryPhrase(" ='' ");
+					queryFormatter.addQueryPhrase("THEN ");
+					queryFormatter.addQueryPhrase(loadFieldName);
+					String allowBlankValuesMessage
+						= RIFDataLoaderToolMessages.getMessage(
+							"sqlQuery.comment.allowBlankValues");
+					queryFormatter.addComment(allowBlankValuesMessage);		
+					queryFormatter.padAndFinishLine();
+				}	
 
-			queryFormatter.addQueryPhrase(baseIndentationLevel, "END AS ");
-			queryFormatter.addQueryPhrase(cleanFieldName);
+				//does not fit any of the regular expressions, therefore is not valid
+				queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "ELSE 'rif_error'");
+				queryFormatter.padAndFinishLine();
+
+				queryFormatter.addQueryPhrase(baseIndentationLevel, "END AS ");
+				queryFormatter.addQueryPhrase(cleanFieldName);
+			
+			}
 		}
-		else if (fieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_FUNCTION) {
+		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
 			
 				
 			/*

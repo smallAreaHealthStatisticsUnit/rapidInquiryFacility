@@ -1,7 +1,6 @@
 package rifDataLoaderTool.test;
 
 
-import rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService;
 import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;

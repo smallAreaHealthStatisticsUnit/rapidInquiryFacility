@@ -2,21 +2,19 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
+
+import org.apache.commons.io.FileUtils;
 
 import java.sql.*;
 import java.io.*;
 import java.util.zip.*;
 import java.util.Date;
-
-import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -70,7 +68,7 @@ import org.apache.commons.io.FileUtils;
  *
  */
 
-public final class PublishWorkflowManager 
+final class PublishWorkflowManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -85,10 +83,7 @@ public final class PublishWorkflowManager
 	// Section Construction
 	// ==========================================
 
-	public PublishWorkflowManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
-
-		super(rifDatabaseProperties);
+	public PublishWorkflowManager() {
 
 	}
 

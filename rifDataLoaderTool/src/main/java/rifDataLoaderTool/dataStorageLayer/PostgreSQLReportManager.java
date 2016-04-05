@@ -3,17 +3,12 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.io.Writer;
 import java.sql.*;
 import java.io.*;
 import java.util.ArrayList;
-
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
 
 /**
  *
@@ -65,7 +60,7 @@ import org.postgresql.core.BaseConnection;
  *
  */
 
-public class PostgreSQLReportManager 
+class PostgreSQLReportManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -81,10 +76,8 @@ public class PostgreSQLReportManager
 	// Section Construction
 	// ==========================================
 
-	public PostgreSQLReportManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public PostgreSQLReportManager() {
 
-		super(rifDatabaseProperties);
 	}
 	
 	// ==========================================

@@ -1,11 +1,11 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.User;
 
 import java.io.Writer;
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  *
@@ -77,6 +77,26 @@ public interface DataLoaderServiceAPI {
 		final User rifManager,
 		final Writer logWriter,
 		final DataSetConfiguration dataSetConfiguration)
+		throws RIFServiceException;
+	
+	public String[] getShapeFileFieldNames(final ShapeFile shapeFile)
+		throws RIFServiceException;
+	public int getTotalAreaIdentifiers(final ShapeFile shapeFile)
+		throws RIFServiceException;
+	
+	public String[][] getShapeFileFieldPreviewData(final ShapeFile shapeFile)
+		throws RIFServiceException;	
+	
+	public String[] getCleaningFunctionNames() 
+		throws RIFServiceException;
+	public String getDescriptionForCleaningFunction(final String cleaningFunctionName) 
+		throws RIFServiceException;
+	public String[] getValidationFunctionNames() 
+		throws RIFServiceException;
+	public String getDescriptionForValidationFunction(final String validationFunctionName) 
+		throws RIFServiceException;
+	
+	public void generateShapeFileScripts(final ArrayList<ShapeFile> shapeFiles)
 		throws RIFServiceException;
 	
 	public void addFileToDataSetResults(

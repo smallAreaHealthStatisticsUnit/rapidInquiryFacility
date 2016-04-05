@@ -3,11 +3,13 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
+//import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
@@ -16,13 +18,13 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.text.Collator;
 import java.io.*;
-
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
 
 /**
  * provides functionality common to all manager classes associated with different steps
@@ -76,7 +78,7 @@ import org.postgresql.core.BaseConnection;
  *
  */
 
-public abstract class AbstractDataLoaderStepManager {
+abstract class AbstractDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -85,21 +87,25 @@ public abstract class AbstractDataLoaderStepManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDatabaseProperties rifDatabaseProperties;
+	private DataLoaderToolSettings dataLoaderToolSettings;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public AbstractDataLoaderStepManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
-		
-		this.rifDatabaseProperties = rifDatabaseProperties;
+	public AbstractDataLoaderStepManager() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public void setDataLoaderToolSettings(
+		final DataLoaderToolSettings dataLoaderToolSettings) {
+		
+		this.dataLoaderToolSettings = dataLoaderToolSettings;
+	}
 	
 	protected RIFResultTable getTableData(
 		final Connection connection,
@@ -328,7 +334,7 @@ public abstract class AbstractDataLoaderStepManager {
 			
 			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
 			ArrayList<DataSetFieldConfiguration> fieldConfigurations
-				= dataSetConfiguration.getFieldConfigurations();
+				= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
 			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 				
 				if (excludeFieldFromConsideration(

@@ -234,11 +234,11 @@ public final class PostgresCleaningStepQueryGenerator
 
 		RIFDataType rifDataType 
 			= dataSetFieldConfiguration.getRIFDataType();
-		RIFFieldCleaningPolicy rifFieldCleaningPolicy
+		RIFFieldActionPolicy RIFFieldActionPolicy
 			= rifDataType.getFieldCleaningPolicy();
 		
 		
-		if (rifFieldCleaningPolicy == RIFFieldCleaningPolicy.NO_CLEANING) {
+		if (RIFFieldActionPolicy == RIFFieldActionPolicy.DO_NOTHING) {
 			//pass the value back as is
 			queryFormatter.addQueryPhrase(
 				baseIndentationLevel,
@@ -246,7 +246,7 @@ public final class PostgresCleaningStepQueryGenerator
 			queryFormatter.addQueryPhrase(" AS ");
 			queryFormatter.addQueryPhrase(cleanedTableFieldName);
 		}
-		else if (rifFieldCleaningPolicy == RIFFieldCleaningPolicy.CLEANING_RULES) {
+		else if (RIFFieldActionPolicy == RIFFieldActionPolicy.USE_RULES) {
 			//construct a case statement with an ordered list of cleaning rules
 			
 			ArrayList<CleaningRule> cleaningRules
@@ -403,16 +403,16 @@ public final class PostgresCleaningStepQueryGenerator
 		 *  
 		 */
 		RIFDataType rifDataType = fieldConfiguration.getRIFDataType();
-		RIFFieldValidationPolicy fieldValidationPolicy
+		RIFFieldActionPolicy fieldValidationPolicy
 			= rifDataType.getFieldValidationPolicy();
 		
 		String cleanedFieldName
 			= fieldConfiguration.getCleanFieldName();
-		if (fieldValidationPolicy == RIFFieldValidationPolicy.NO_VALIDATION) {
+		if (fieldValidationPolicy == RIFFieldActionPolicy.DO_NOTHING) {
 			queryFormatter.addQueryPhrase(cleanedFieldName);
 			queryFormatter.padAndFinishLine();
 		}
-		else if (fieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_FUNCTION) {
+		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
 			queryFormatter.addQueryPhrase(rifDataType.getValidationFunctionName());
 			queryFormatter.addQueryPhrase("(");
 			queryFormatter.addQueryPhrase(cleanedFieldName);
@@ -423,7 +423,7 @@ public final class PostgresCleaningStepQueryGenerator
 			queryFormatter.addQueryPhrase(cleanedFieldName);
 			queryFormatter.padAndFinishLine();
 		}
-		else if (fieldValidationPolicy == RIFFieldValidationPolicy.VALIDATION_RULES) {
+		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_RULES) {
 		
 			ArrayList<ValidationRule> validationRules
 				= rifDataType.getValidationRules();

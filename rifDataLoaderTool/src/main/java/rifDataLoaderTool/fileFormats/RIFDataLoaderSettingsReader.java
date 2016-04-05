@@ -78,42 +78,6 @@ import java.io.*;
 
 
 public final class RIFDataLoaderSettingsReader {
-/*	
-	public static void main(String[] arguments) {
-		
-		File inputFile
-			= new File("C://rif_scratch//test_data_settings_modified.xml");
-		try {
-			RIFDataLoaderSettingsReader reader
-				= new RIFDataLoaderSettingsReader();
-			reader.readFile(inputFile);
-			RIFDataTypeFactory rifDataTypeFactoryA
-				= reader.getRIFDataTypeFactory();
-			
-			ArrayList<RIFDataType> dataTypesA
-				= rifDataTypeFactoryA.getRegisteredDataTypes();
-			RIFDataTypeFactory dataTypeFactoryB
-				= RIFDataTypeFactory.newInstance();
-			dataTypeFactoryB.populateFactoryWithBuiltInTypes();
-			
-			System.out.println("===================================================");
-			for (RIFDataType dataTypeA : dataTypesA) {
-				dataTypeFactoryB.registerCustomDataType(dataTypeA, true);
-			}
-
-			ArrayList<RIFDataType> modifiedTypes
-				= dataTypeFactoryB.getRegisteredDataTypes();
-			for (RIFDataType modifiedType : modifiedTypes) {
-				modifiedType.printFields();				
-			}
-		}
-		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-		}
-		
-		
-	}
-*/	
 // ==========================================
 // Section Constants
 // ==========================================

@@ -1,5 +1,6 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 /**
  *
  *
@@ -51,11 +52,11 @@ package rifDataLoaderTool.businessConceptLayer;
  */
 
 public enum ShapeFileComponent {
-	SHP("shp"),
-	SHX("shx"),
-	DBF("dbf"),
-	PRJ("prj"),
-	SBX("sbx"),
+	SHP("shp", "shapeFile.shp.toolTipText"),
+	SHX("shx", "shapeFile.shx.toolTipText"),
+	DBF("dbf", "shapeFile.dbf.toolTipText"),
+	PRJ("prj", "shapeFile.prj.toolTipText"),
+	SBX("sbx", null),
 	SBN("sbn"),
 	FBN("fbn"),
 	FBX("fbx"),
@@ -67,13 +68,34 @@ public enum ShapeFileComponent {
 	CPG("cpg"),
 	QIX("qix");
 		
-	private String fileExtension;	
-	private ShapeFileComponent(final String fileExtension) {
+	private String fileExtension;
+	private String fileExtensionDescriptionProperty;
+
+	private ShapeFileComponent(
+		final String fileExtension) {
+			
 		this.fileExtension = "." + fileExtension;
+	}
+	
+	private ShapeFileComponent(
+		final String fileExtension,
+		final String fileExtensionDescriptionProperty) {
+		
+		this.fileExtension = "." + fileExtension;
+		this.fileExtensionDescriptionProperty = fileExtensionDescriptionProperty;
 	}
 	
 	public String getFileExtension() {
 		return fileExtension;
+	}
+	
+	public String getFileExtensionDescription() {
+		if (fileExtensionDescriptionProperty == null) {
+			return null;
+		}
+		else {
+			return RIFDataLoaderToolMessages.getMessage(fileExtensionDescriptionProperty);
+		}
 	}
 	
 	public boolean isFileComponent(final String filePath) {

@@ -55,7 +55,7 @@ import java.sql.*;
  *
  */
 
-public class ReportsManager {
+class ReportsManager {
 
 	// ==========================================
 	// Section Constants

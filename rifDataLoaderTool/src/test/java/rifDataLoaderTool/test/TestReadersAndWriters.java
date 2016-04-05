@@ -2,14 +2,14 @@ package rifDataLoaderTool.test;
 
 import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.workflows.LinearWorkflowReader;
-import rifDataLoaderTool.fileFormats.workflows.LinearWorkflowWriter;
+import rifDataLoaderTool.fileFormats.LinearWorkflowReader;
+import rifDataLoaderTool.fileFormats.LinearWorkflowWriter;
 import rifGenericLibrary.system.RIFServiceException;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  *
@@ -91,13 +91,16 @@ public class TestReadersAndWriters {
 			File outputFile 
 				= new File("C://rif_scripts//test_data//cancer_numerator_data.xml");
 			LinearWorkflowWriter writer1 = new LinearWorkflowWriter();
-			writer1.write(numeratorWorkflow, outputFile);
+			ArrayList<LinearWorkflow> linearWorkflows1
+				= new ArrayList<LinearWorkflow>();
+			linearWorkflows1.add(numeratorWorkflow);
+			writer1.write(linearWorkflows1, outputFile);
 			
 			LinearWorkflowReader reader1 = new LinearWorkflowReader();
 			reader1.readFile(outputFile);
 			
-			LinearWorkflow numeratorWorkflow2
-				= reader1.getLinearWorkflow();
+			ArrayList<LinearWorkflow> numeratorWorkflow2
+				= reader1.getLinearWorkflows();
 			
 			File outputFile2 
 				= new File("C://rif_scripts//test_data//cancer_numerator_data2.xml");
@@ -124,16 +127,17 @@ public class TestReadersAndWriters {
 			File outputFile 
 				= new File("C://rif_scripts//test_data//minimal_linear_workflow.xml");
 			LinearWorkflowWriter writer = new LinearWorkflowWriter();
-			writer.write(minimalLinearWorkflow, outputFile);
+			ArrayList<LinearWorkflow> linearWorkflows1
+				= new ArrayList<LinearWorkflow>();
+			linearWorkflows1.add(minimalLinearWorkflow);			
+			writer.write(linearWorkflows1, outputFile);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
 			fail();
 		}		
 	}
-	
-	
-	
+
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================

@@ -155,7 +155,6 @@ public class LinearWorkflowStateMachine
 			currentWorkflowState = WorkflowState.PUBLISH;
 		}
 		else if (currentWorkflowState == WorkflowState.PUBLISH) {
-			System.out.println("LinearWorkflowStateMachine reached STOP state!");
 			currentWorkflowState = WorkflowState.STOP;
 		}		
 	}

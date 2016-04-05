@@ -640,7 +640,14 @@ public final class UserInterfaceFactory {
 		
 		return splitPane;
 	}
-	
+
+	public JList<String> createList(
+		final DefaultListModel<String> listModel) {
+
+		JList<String> list = new JList<String>(listModel);
+		return list;
+	}
+
 	/**
 	 * Creates a new UserInterface object.
 	 *

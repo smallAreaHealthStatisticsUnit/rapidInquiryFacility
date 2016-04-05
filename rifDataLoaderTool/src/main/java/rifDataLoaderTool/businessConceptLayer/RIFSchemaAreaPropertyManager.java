@@ -1,10 +1,11 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
  * Holds knowledge about what properties are expected for different parts of the

@@ -1,6 +1,7 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
@@ -68,7 +69,7 @@ import java.util.ArrayList;
  *
  */
 
-public abstract class AbstractRIFDataLoaderToolConcept
+abstract class AbstractRIFDataLoaderToolConcept
 	implements DisplayableListItemInterface {
 
 	// ==========================================

@@ -3,8 +3,8 @@ package rifDataLoaderTool.fileFormats;
 
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
-import rifServices.fileFormats.XMLUtility;
-import rifServices.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.util.XMLUtility;
+import rifGenericLibrary.util.XMLCommentInjector;
 
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -78,7 +78,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 
 
-public abstract class AbstractDataLoaderConfigurationHandler 
+abstract class AbstractDataLoaderConfigurationHandler 
 	extends DefaultHandler {
 
 
@@ -125,6 +125,8 @@ public abstract class AbstractDataLoaderConfigurationHandler
 	/** The ignored xml end tags. */
 	private ArrayList<String> ignoredXMLEndTags;
 	
+	private boolean isCommentingActive;
+	
 // ==========================================
 // Section Construction
 // ==========================================
@@ -140,11 +142,13 @@ public abstract class AbstractDataLoaderConfigurationHandler
 		
 		ignoredXMLStartTags = new ArrayList<String>();
 		ignoredXMLEndTags = new ArrayList<String>();
+		
+		isCommentingActive = true;
+		
+		commentInjector = new XMLCommentInjector();
+
     }
 
-// ==========================================
-// Section Accessors and Mutators
-// ==========================================
 	/**
 	 * Initialise.
 	 *
@@ -157,6 +161,7 @@ public abstract class AbstractDataLoaderConfigurationHandler
 		final XMLCommentInjector commentInjector) 
 		throws UnsupportedEncodingException {
 
+		this.commentInjector = commentInjector;
 		xmlUtility.initialise(commentInjector, outputStream, "UTF-8");
 		htmlUtility.initialise(outputStream, "UTF-8");
 	}
@@ -171,11 +176,32 @@ public abstract class AbstractDataLoaderConfigurationHandler
 		final OutputStream outputStream) 
 		throws UnsupportedEncodingException {
 
-		XMLCommentInjector commentInjector = new XMLCommentInjector();
 		xmlUtility.initialise(commentInjector, outputStream, "UTF-8");
 		htmlUtility.initialise(outputStream, "UTF-8");
 	}
 	
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	protected void setComment(
+		final String recordName,
+		final String comment) {
+		
+		commentInjector.registerRecordComment(recordName, comment);
+	}
+
+	protected void setComment(
+		final String recordName,
+		final String fieldName,
+		final String comment) {
+		
+		commentInjector.registerFieldComment(
+			recordName, 
+			fieldName, 
+			comment);
+		
+	}
 	
 	/**
 	 * Gets the writer.
@@ -524,6 +550,14 @@ public abstract class AbstractDataLoaderConfigurationHandler
 		final String xmlEndTag) {
 
 		return ignoredXMLEndTags.contains(xmlEndTag);
+	}
+	
+	protected void setIsCommentingActive(final boolean isCommentingActive) {
+		this.isCommentingActive = isCommentingActive;
+	}
+	
+	protected boolean isCommentingActive() {
+		return isCommentingActive;
 	}
 	
 // ==========================================

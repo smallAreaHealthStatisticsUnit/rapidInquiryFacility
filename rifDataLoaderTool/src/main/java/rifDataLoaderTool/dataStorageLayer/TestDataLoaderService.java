@@ -1,12 +1,12 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-import java.sql.Connection;
-
 
 import rifGenericLibrary.system.RIFServiceException;
+
 import rifServices.businessConceptLayer.User;
 
 import java.io.*;
+import java.sql.Connection;
 
 /**
  *
@@ -74,7 +74,7 @@ public class TestDataLoaderService
 	// ==========================================
 
 	public TestDataLoaderService() {
-
+		
 	}
 
 	// ==========================================

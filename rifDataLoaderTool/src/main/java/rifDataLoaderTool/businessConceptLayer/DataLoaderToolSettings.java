@@ -1,6 +1,5 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 import java.util.ArrayList;
 
@@ -64,9 +63,9 @@ public class DataLoaderToolSettings {
 	// Section Properties
 	// ==========================================
 	private RIFDatabaseConnectionParameters databaseConnectionParameters;
-	private ArrayList<GeographicalResolutionLevel> geographicalResolutionLevels;
-	private ArrayList<ShapeFile> shapeFiles;
+	private ArrayList<DataLoaderToolGeography> geographies;
 	private RIFDataTypeFactory rifDataTypeFactory;
+	private ArrayList<LinearWorkflow> workflows;
 	
 	// ==========================================
 	// Section Construction
@@ -77,65 +76,12 @@ public class DataLoaderToolSettings {
 		databaseConnectionParameters
 			= RIFDatabaseConnectionParameters.newInstance();
 		
-		geographicalResolutionLevels 
-			= new ArrayList<GeographicalResolutionLevel>();
-
-		String regionLevelName
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.region.label");
-		String regionLevelDescription	
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.region.description");
-		GeographicalResolutionLevel regionLevel
-			= GeographicalResolutionLevel.newInstance(
-				regionLevelName, 
-				regionLevelDescription);
-		geographicalResolutionLevels.add(regionLevel);		
-
-		String districtLevelName
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.district.label");
-		String districtLevelDescription	
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.district.description");
-		GeographicalResolutionLevel districtLevel
-			= GeographicalResolutionLevel.newInstance(
-				districtLevelName, 
-				districtLevelDescription);
-		geographicalResolutionLevels.add(districtLevel);		
-		
-		String wardLevelName
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.ward.label");
-		String wardLevelDescription	
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.ward.description");
-		GeographicalResolutionLevel wardLevel
-			= GeographicalResolutionLevel.newInstance(
-				wardLevelName, 
-				wardLevelDescription);
-		geographicalResolutionLevels.add(wardLevel);
-		
-		String oaLevelName
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.oa.label");
-		String oaLevelDescription	
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.oa.description");
-		GeographicalResolutionLevel oaLevel
-			= GeographicalResolutionLevel.newInstance(
-				oaLevelName, 
-				oaLevelDescription);
-		geographicalResolutionLevels.add(oaLevel);
-			
-		String soaLevelName
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.soa.label");
-		String soaLevelDescription	
-			= RIFDataLoaderToolMessages.getMessage("geographicalResolutionLevel.soa.description");
-		GeographicalResolutionLevel soaLevel
-			= GeographicalResolutionLevel.newInstance(
-				soaLevelName, 
-				soaLevelDescription);
-		geographicalResolutionLevels.add(soaLevel);
+		geographies 
+			= new ArrayList<DataLoaderToolGeography>();
 		
 		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
 		rifDataTypeFactory.populateFactoryWithBuiltInTypes();
-		
-		shapeFiles = new ArrayList<ShapeFile>();
-		
-		
+		workflows = new ArrayList<LinearWorkflow>();
 	}
 
 	// ==========================================
@@ -150,12 +96,12 @@ public class DataLoaderToolSettings {
 		this.databaseConnectionParameters = databaseConnectionParameters;
 	}
 	
-	public ArrayList<GeographicalResolutionLevel> getGeographicalResolutionLevels() {
-		return geographicalResolutionLevels;
+	public ArrayList<DataLoaderToolGeography> getGeographies() {
+		return geographies;
 	}
 	
-	public void setGeographicalResolutionLevels(final ArrayList<GeographicalResolutionLevel> geographicalResolutionLevels) {
-		this.geographicalResolutionLevels = geographicalResolutionLevels;
+	public void setGeographies(final ArrayList<DataLoaderToolGeography> geographies) {
+		this.geographies = geographies;
 	}
 	
 	public RIFDataTypeFactory getRIFDataTypeFactory() {
@@ -166,34 +112,26 @@ public class DataLoaderToolSettings {
 		this.rifDataTypeFactory = rifDataTypeFactory;
 	}
 	
-	public void setShapeFiles(final ArrayList<ShapeFile> shapeFiles) {
-		this.shapeFiles = shapeFiles;
+	public ArrayList<LinearWorkflow> getWorkflows() {
+		return workflows;
 	}
 	
-	public ArrayList<ShapeFile> getShapeFiles() {
-		return shapeFiles;
+	public void setWorkflows(final ArrayList<LinearWorkflow> workflows) {
+		this.workflows = workflows;
 	}
 	
 	public boolean areDatabaseConnectionSettingsValid() {
 		return true;		
 	}
 	
-	public boolean areGeographicalResolutionLevelsValid() {
-		if (geographicalResolutionLevels.isEmpty() == false) {
+	public boolean areGeographiesValid() {
+		if (geographies.isEmpty() == false) {
 			return true;
 		}
 		
 		return false;
 	}
-	
-	public boolean areShapeFileSettingsValid() {
-		if (shapeFiles.isEmpty() == false) {
-			return true;
-		}
 		
-		return false;
-	}
-	
 	public boolean areDataTypesValid() {
 		ArrayList<RIFDataType> rifDataTypes
 			= rifDataTypeFactory.getRegisteredDataTypes();

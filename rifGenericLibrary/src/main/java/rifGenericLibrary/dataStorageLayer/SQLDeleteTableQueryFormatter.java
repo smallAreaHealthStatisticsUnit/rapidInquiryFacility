@@ -111,7 +111,6 @@ public final class SQLDeleteTableQueryFormatter
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "DROP TABLE IF EXISTS ");
 		addQueryPhrase(tableToDelete);
-		addQueryPhrase(";");
 
 		return super.generateQuery();		
 	}

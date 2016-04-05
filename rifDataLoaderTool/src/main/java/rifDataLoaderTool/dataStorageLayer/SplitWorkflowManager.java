@@ -2,14 +2,6 @@ package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 
-
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
@@ -67,7 +59,7 @@ import java.io.*;
  *
  */
 
-public final class SplitWorkflowManager 
+final class SplitWorkflowManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -82,10 +74,7 @@ public final class SplitWorkflowManager
 	// Section Construction
 	// ==========================================
 
-	public SplitWorkflowManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
-
-		super(rifDatabaseProperties);
+	public SplitWorkflowManager() {
 
 	}
 

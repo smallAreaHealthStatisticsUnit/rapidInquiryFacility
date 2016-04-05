@@ -1,8 +1,8 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
 import java.text.Collator;
-import java.util.ArrayList;
 
 /**
  *
@@ -122,7 +122,6 @@ public class DataSetFieldNameGenerator {
 
 		Collator collator = RIFDataLoaderToolMessages.getCollator();
 		int i = 1;
-		System.out.println("generateName numberExistingNames=="+existingFieldNames.length+"==");
 		String candidateFieldName = baseFieldName + String.valueOf(i);
 		if (existingFieldNames.length == 0) {
 			return candidateFieldName;
@@ -132,12 +131,9 @@ public class DataSetFieldNameGenerator {
 		boolean nameCollisionExists = true;
 		while (nameCollisionExists == true) {
 			candidateFieldName = baseFieldName + String.valueOf(i);
-			//System.out.println("DSFNG generateName i="+i);
 			int j;
 			for (j = 0; j < existingFieldNames.length; j++) {
-				System.out.println("candidate=="+candidateFieldName+"==existing=="+existingFieldNames[j]+"==");
 				if (collator.equals(candidateFieldName, existingFieldNames[j]) == true) {
-					System.out.println("candidate2222=="+candidateFieldName+"==existing=="+existingFieldNames[j]+"==");
 					nameCollisionExists = true;
 					break;
 				}

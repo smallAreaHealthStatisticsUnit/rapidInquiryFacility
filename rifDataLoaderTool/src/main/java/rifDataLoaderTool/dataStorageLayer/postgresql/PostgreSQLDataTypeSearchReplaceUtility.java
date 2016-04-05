@@ -6,7 +6,6 @@ import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.SQLCreatePrimaryKeyQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
-import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 
 
 
@@ -130,6 +129,7 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 		
 		//add comments to the SQL query
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage(
 				"queryComments.clean.validationQuery.comment1");
@@ -145,7 +145,6 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 			= new SQLDeleteTableQueryFormatter();
 		deleteQueryFormatter.setTableToDelete(cleanSearchReplaceTableName);
 		queryFormatter.addQueryPhrase(deleteQueryFormatter.generateQuery());
-		queryFormatter.finishLine();
 		
 		
 		/*
@@ -158,12 +157,15 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 		 *    ...
 		 */
 		SQLGeneralQueryFormatter createValidationCTASQueryFormatter
-			= new SQLGeneralQueryFormatter();		
+			= new SQLGeneralQueryFormatter();	
+		createValidationCTASQueryFormatter.setEndWithSemiColon(true);
 		createSearchReplaceCTASStatement(
 			createValidationCTASQueryFormatter,
 			loadTableName,
 			cleanSearchReplaceTableName,
-			dataSetConfiguration);
+			dataSetConfiguration,
+			false);
+		
 		queryFormatter.addQuery(createValidationCTASQueryFormatter);
 				
 		//Add primary key statement
@@ -180,7 +182,8 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 		final SQLGeneralQueryFormatter queryFormatter,
 		final String loadTableName,
 		final String cleanSearchReplaceTableName,
-		final DataSetConfiguration dataSetConfiguration) {
+		final DataSetConfiguration dataSetConfiguration,
+		final boolean includeIgnoredFields) {
 				
 		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
 		queryFormatter.addQueryPhrase(cleanSearchReplaceTableName);
@@ -191,8 +194,17 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 		queryFormatter.addQueryLine(1, "data_set_id,");
 		queryFormatter.addQueryLine(1, "row_number,");
 	
-		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getFieldConfigurations();
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations 
+			= new ArrayList<DataSetFieldConfiguration>();
+		if (includeIgnoredFields) {
+			fieldConfigurations
+				= dataSetConfiguration.getFieldConfigurations();			
+		}
+		else {
+			fieldConfigurations
+				= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
+		}
+		
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 		for (int i = 0; i < numberOfFieldConfigurations; i++) {
 			if (i != 0) {
@@ -207,8 +219,6 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 		queryFormatter.finishLine();
 		queryFormatter.addPaddedQueryLine(0, "FROM");
 		queryFormatter.addQueryPhrase(1, loadTableName);
-		queryFormatter.addQueryPhrase(";");
-		queryFormatter.finishLine();
 	}
 	
 	
@@ -224,17 +234,17 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 		
 		RIFDataType rifDataType
 			= dataSetFieldConfiguration.getRIFDataType();
-		RIFFieldCleaningPolicy fieldCleaningPolicy
+		RIFFieldActionPolicy fieldCleaningPolicy
 			= rifDataType.getFieldCleaningPolicy();
 
 		
-		if (fieldCleaningPolicy == RIFFieldCleaningPolicy.NO_CLEANING) {
+		if (fieldCleaningPolicy == RIFFieldActionPolicy.DO_NOTHING) {
 			//just allow load field value to pass
 			queryFormatter.addQueryPhrase(
 				baseIndentationLevel, 
 				loadFieldName);
 		}
-		else if (fieldCleaningPolicy == RIFFieldCleaningPolicy.CLEANING_RULES) {
+		else if (fieldCleaningPolicy == RIFFieldActionPolicy.USE_RULES) {
 			/*
 			 * eg:
 			 *
@@ -278,7 +288,7 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 			queryFormatter.addQueryPhrase(baseIndentationLevel, "END AS ");
 			queryFormatter.addQueryPhrase(cleanFieldName);
 		}
-		else if (fieldCleaningPolicy == RIFFieldCleaningPolicy.CLEANING_FUNCTION) {
+		else if (fieldCleaningPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
 			/*
 			 * eg: 
 			 * 

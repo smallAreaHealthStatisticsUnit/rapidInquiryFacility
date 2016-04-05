@@ -4,10 +4,11 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * This is one of the major business classes that describes properties
@@ -208,7 +209,9 @@ public class DataSetConfiguration
 
 		DataSetConfiguration cloneDataSetConfiguration
 			= new DataSetConfiguration();
-		copyInto(originalDataSetConfiguration, cloneDataSetConfiguration);
+		copyInto(
+			originalDataSetConfiguration, 
+			cloneDataSetConfiguration);
 				
 		return cloneDataSetConfiguration;
 	}
@@ -393,6 +396,121 @@ public class DataSetConfiguration
 	
 	public int getTotalFieldCount() {
 		return fieldConfigurations.size();
+	}
+	
+	/**
+	 * Here, order of elements in corresponding arrays is not considered
+	 * important.
+	 * @param dataSetConfigurationsA
+	 * @param dataSetConfigurationsB
+	 * @return
+	 */
+	public static boolean hasIdenticalContents(
+		final ArrayList<DataSetConfiguration> dataSetConfigurationsA,
+		final ArrayList<DataSetConfiguration> dataSetConfigurationsB) {
+		
+		if (dataSetConfigurationsA == dataSetConfigurationsB) {
+			return true;
+		}
+		
+		if ( (dataSetConfigurationsA == null && dataSetConfigurationsB != null) ||
+			 (dataSetConfigurationsA != null && dataSetConfigurationsB == null)) {
+			return false;
+		}
+		
+		if (dataSetConfigurationsA.size() != dataSetConfigurationsB.size()) {
+			return false;
+		}
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		return true;
+	}
+	
+	public boolean hasIdenticalContents(
+		final DataSetConfiguration otherDataSetConfiguration) {
+		
+		if (otherDataSetConfiguration == null) {
+			return false;
+		}
+
+		if (this == otherDataSetConfiguration) {
+			return true;
+		}
+		
+		if (Objects.deepEquals(
+			isNewRecord, 
+			otherDataSetConfiguration.isNewRecord()) == false) {
+			
+			return false;
+		}
+				
+		if (Objects.deepEquals(
+			name, 
+			otherDataSetConfiguration.getName()) == false) {
+			
+			return false;
+		}
+		
+		if (Objects.deepEquals(
+			version, 
+			otherDataSetConfiguration.getVersion()) == false) {
+	
+			return false;
+		}
+				
+		if (Objects.deepEquals(
+			description, 
+			otherDataSetConfiguration.getDescription()) == false) {
+	
+			return false;
+		}
+		
+		if (Objects.deepEquals(
+			filePath, 
+			otherDataSetConfiguration.getFilePath()) == false) {
+
+			return false;
+		}
+
+		RIFSchemaArea otherRIFSchemaArea
+			= otherDataSetConfiguration.getRIFSchemaArea();
+		if (rifSchemaArea != otherRIFSchemaArea) {
+			return false;
+		}
+		
+		ArrayList<DataSetFieldConfiguration> otherDataSetFieldConfigurations
+			= otherDataSetConfiguration.getFieldConfigurations();
+		if (DataSetFieldConfiguration.hasIdenticalContents(
+			fieldConfigurations, 
+			otherDataSetFieldConfigurations) == false) {
+			
+			return false;
+		}
+
+		WorkflowState otherCurrentWorkflowState
+			= otherDataSetConfiguration.getCurrentWorkflowState();
+		if (currentWorkflowState != otherCurrentWorkflowState) {
+			return false;
+		}
+				
+		if (Objects.deepEquals(
+			fileHasFieldNamesDefined, 
+			otherDataSetConfiguration.fileHasFieldNamesDefined()) == false) {
+
+			return false;
+		}
+		
+		
+		
+		return true;
 	}
 	
 	// ==========================================
@@ -698,9 +816,14 @@ public class DataSetConfiguration
 		ArrayList<DataSetFieldConfiguration> fieldsWithValidationChecks
 			= new ArrayList<DataSetFieldConfiguration>();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			RIFDataType dataType = fieldConfiguration.getRIFDataType();
-			if (dataType.getFieldValidationPolicy() != RIFFieldValidationPolicy.NO_VALIDATION) {
-				fieldsWithValidationChecks.add(fieldConfiguration);
+			FieldRequirementLevel fieldRequirementLevel
+				= fieldConfiguration.getFieldRequirementLevel();
+			if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD){
+				
+				RIFDataType dataType = fieldConfiguration.getRIFDataType();
+				if (dataType.getFieldValidationPolicy() != RIFFieldActionPolicy.DO_NOTHING) {
+					fieldsWithValidationChecks.add(fieldConfiguration);
+				}			
 			}
 		}
 		
@@ -758,7 +881,22 @@ public class DataSetConfiguration
 	
 		return fieldsWithEmptyFieldCheck;	
 	}
+		
+	public ArrayList<DataSetFieldConfiguration> getRequiredAndExtraFieldConfigurations() {
+		ArrayList<DataSetFieldConfiguration> requiredAndExtraFieldConfigurations
+			= new ArrayList<DataSetFieldConfiguration>();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			FieldRequirementLevel fieldRequirementLevel
+				= fieldConfiguration.getFieldRequirementLevel();
+			if (fieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD ||
+				fieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) {
+
+				requiredAndExtraFieldConfigurations.add(fieldConfiguration);
+			}
+		}
 	
+		return requiredAndExtraFieldConfigurations;	
+	}
 	
 	public ArrayList<DataSetFieldConfiguration> getFieldsWithEmptyPerYearFieldCheck() {
 		ArrayList<DataSetFieldConfiguration> fieldsWithEmptyPerYearFieldCheck
@@ -822,7 +960,10 @@ public class DataSetConfiguration
 		
 		ArrayList<String> duplicateCriteriaFieldNames = new ArrayList<String>();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			if (fieldConfiguration.isDuplicateIdentificationField()) {
+			FieldRequirementLevel fieldRequirementLevel
+				= fieldConfiguration.getFieldRequirementLevel();
+			if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD && 
+				fieldConfiguration.isDuplicateIdentificationField()) {
 				duplicateCriteriaFieldNames.add(fieldConfiguration.getConvertFieldName());
 			}			
 		}

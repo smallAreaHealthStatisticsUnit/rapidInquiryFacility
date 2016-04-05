@@ -63,18 +63,19 @@ public final class RIFDataLoaderStartupOptions {
 	public static final int MAXIMUM_TABLE_NAME_WIDTH = 30;
 	public static final int MAXIMUM_DESCRIPTION_FIELD_WIDTH=200;
 	public static final int MAXIMUM_USER_ID_WIDTH = 20;
-	private static final int TEXT_FIELD_WIDTH = 30;
 	
+	// ==========================================
+	// Section Properties
+	// ==========================================
+
+	//Data
+	private DatabaseType databaseType;
 	private String jdbcDriverPrefix;
 	private String databaseName;
 	private String port;
 	private String host;
 	
-	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	private DatabaseType databaseType;
+	//GUI Components
 	
 	// ==========================================
 	// Section Construction

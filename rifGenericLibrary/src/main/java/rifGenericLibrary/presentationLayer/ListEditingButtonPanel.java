@@ -2,21 +2,12 @@ package rifGenericLibrary.presentationLayer;
 
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
-
-
-
-
-
 import javax.swing.JPanel;
 import javax.swing.JButton;
-import javax.swing.KeyStroke;
 import javax.swing.border.LineBorder;
-
 import java.util.ArrayList;
-import java.awt.Event;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 
 
 /**

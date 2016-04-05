@@ -1,11 +1,9 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLCreateIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -67,7 +65,7 @@ import java.io.*;
  *
  */
 
-public final class OptimiseWorkflowManager 
+final class OptimiseWorkflowManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -83,10 +81,8 @@ public final class OptimiseWorkflowManager
 	// Section Construction
 	// ==========================================
 
-	public OptimiseWorkflowManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public OptimiseWorkflowManager() {
 
-		super(rifDatabaseProperties);
 	}
 
 	// ==========================================

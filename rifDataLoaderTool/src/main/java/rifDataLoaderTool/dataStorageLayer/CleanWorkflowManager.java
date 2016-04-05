@@ -1,16 +1,14 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
@@ -71,7 +69,7 @@ import java.sql.*;
  *
  */
 
-public final class CleanWorkflowManager 
+final class CleanWorkflowManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -89,12 +87,10 @@ public final class CleanWorkflowManager
 	// ==========================================
 
 	public CleanWorkflowManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
 		final DataSetManager dataSetManager,
 		final ChangeAuditManager changeAuditManager,
 		final CleanWorkflowQueryGeneratorAPI queryGenerator) {
 
-		super(rifDatabaseProperties);
 		this.dataSetManager = dataSetManager;
 		this.changeAuditManager = changeAuditManager;
 	}
@@ -167,8 +163,7 @@ public final class CleanWorkflowManager
 			PostgreSQLDataTypeSearchReplaceUtility searchReplaceUtility
 				= new PostgreSQLDataTypeSearchReplaceUtility();
 			String searchReplaceQuery
-				= searchReplaceUtility.generateSearchReplaceTableStatement(dataSetConfiguration);
-
+				= searchReplaceUtility.generateSearchReplaceTableStatement(dataSetConfiguration);			
 			logSQLQuery(
 				logFileWriter, 
 				"createCleaningSearchReplaceTable", 
@@ -209,6 +204,8 @@ public final class CleanWorkflowManager
 				validationQuery);
 			validationStatement
 				= connection.prepareStatement(validationQuery);
+			System.out.println("CWFM -- printing validation query===");
+			System.out.println(validationQuery);
 			validationStatement.executeUpdate();
 
 			exportTable(

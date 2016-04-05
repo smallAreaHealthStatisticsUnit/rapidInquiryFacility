@@ -1,7 +1,6 @@
 package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.SQLCreatePrimaryKeyQueryFormatter;
@@ -135,6 +134,8 @@ public final class PostgreSQLCastingUtility {
 			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
+		
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.castQuery.comment1");
 		queryFormatter.addCommentLine(queryCommentLine1);
@@ -204,7 +205,7 @@ public final class PostgreSQLCastingUtility {
 		queryFormatter.addQueryLine(1, "row_number,");
 	
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getFieldConfigurations();
+			= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 		for (int i = 0; i < numberOfFieldConfigurations; i++) {
 			if (i != 0) {

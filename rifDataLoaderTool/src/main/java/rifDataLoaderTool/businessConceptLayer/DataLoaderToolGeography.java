@@ -8,6 +8,7 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  *
@@ -86,6 +87,35 @@ public class DataLoaderToolGeography
 			= new DataLoaderToolGeography();
 		return geography;
 	}
+
+	public static final DataLoaderToolGeography createCopy(
+		final DataLoaderToolGeography originalGeography) {
+		
+		DataLoaderToolGeography cloneGeography
+			= DataLoaderToolGeography.newInstance();
+		copyInto(
+			originalGeography, 
+			cloneGeography);
+		
+		return cloneGeography;
+	}
+	
+	public static final void copyInto(
+		final DataLoaderToolGeography source,
+		final DataLoaderToolGeography destination) {
+		
+		destination.setIdentifier(source.getIdentifier());
+		destination.setName(source.getName());
+		
+		ArrayList<ShapeFile> sourceShapeFiles
+			= source.getShapeFiles();
+		destination.clearShapeFiles();
+		for (ShapeFile sourceShapeFile : sourceShapeFiles) {
+			ShapeFile cloneShapeFile
+				= ShapeFile.createCopy(sourceShapeFile);
+			destination.addShapeFile(cloneShapeFile);
+		}
+	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
@@ -107,8 +137,54 @@ public class DataLoaderToolGeography
 		this.shapeFiles = shapeFiles;
 	}
 
+	public void addAllShapeFiles(final ArrayList<ShapeFile> shapeFilesToAdd) {
+		shapeFiles.addAll(shapeFilesToAdd);
+	}
+	
 	public void addShapeFile(final ShapeFile shapeFile) {
 		shapeFiles.add(shapeFile);
+	}
+	
+	public void clearShapeFiles() {
+		shapeFiles.clear();
+	}
+	
+	public static final boolean hasIdenticalContents(
+		final DataLoaderToolGeography geographyA,
+		final DataLoaderToolGeography geographyB) {
+		
+		if (geographyA == geographyB) {
+			return true;
+		}
+		
+		if ((geographyA == null) && (geographyB != null) ||
+			(geographyA != null) && (geographyB == null)) {
+			return false;
+		}
+
+		
+		if (Objects.deepEquals(
+			geographyA.getIdentifier(), 
+			geographyB.getIdentifier()) == false) {
+
+			return false;
+		}
+		
+		if (Objects.deepEquals(
+			geographyA.getName(), 
+			geographyB.getName()) == false) {
+
+			return false;
+		}
+
+		ArrayList<ShapeFile> shapeFilesA
+			= geographyA.getShapeFiles();
+		ArrayList<ShapeFile> shapeFilesB
+			= geographyB.getShapeFiles();
+		return ShapeFile.hasIdenticalContents(
+			shapeFilesA, 
+			shapeFilesB);
+
 	}
 	
 	// ==========================================

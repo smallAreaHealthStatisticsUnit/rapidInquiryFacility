@@ -4,8 +4,8 @@ package rifDataLoaderTool.fileFormats;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.XMLCommentInjector;
 
-import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
@@ -141,6 +141,7 @@ public final class RIFDataLoaderSettingsWriter {
 	    	return result;
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"io.error.problemWritingFileContentsToString");

@@ -2,14 +2,17 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
+
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  *
@@ -67,11 +70,13 @@ public class ShapeFile
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	public static final int UNKNOWN_TOTAL_AREA_IDENTIFIERS = -1;
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
 	
+	private int totalAreaIdentifiers;
 	private String shapeFileDescription;
 	private String areaIdentifierFieldName;
 	private String nameFieldName;
@@ -85,6 +90,8 @@ public class ShapeFile
 	private ShapeFile() {
 		filePathForShapeFileComponent 
 			= new HashMap<ShapeFileComponent, String>();
+		
+		totalAreaIdentifiers = UNKNOWN_TOTAL_AREA_IDENTIFIERS;
 		shapeFileDescription = "";
 				
 		shapeFileFieldNames = new ArrayList<String>();
@@ -96,36 +103,186 @@ public class ShapeFile
 		ShapeFile shapeFile = new ShapeFile();
 		return shapeFile;
 	}
-	
+
 	public static ShapeFile createCopy(final ShapeFile originalShapeFile) {
+		if (originalShapeFile == null) {
+			return null;
+		}
+		
 		ShapeFile cloneShapeFile = new ShapeFile();
+		
+		copyInto(originalShapeFile, cloneShapeFile);
+		
+		return cloneShapeFile;
+	}
 	
-		cloneShapeFile.setShapeFileDescription(
-			originalShapeFile.getShapeFileDescription());
-		cloneShapeFile.setAreaIdentifierFieldName(
-			originalShapeFile.getAreaIdentifierFieldName());
-		cloneShapeFile.setNameFieldName(
-			originalShapeFile.getNameFieldName());
+	public static void copyInto(
+		final ShapeFile sourceShapeFile,
+		final ShapeFile destinationShapeFile) {
+		
+		destinationShapeFile.setTotalAreaIdentifiers(
+			sourceShapeFile.getTotalAreaIdentifiers());
+		destinationShapeFile.setShapeFileDescription(
+			sourceShapeFile.getShapeFileDescription());
+		destinationShapeFile.setAreaIdentifierFieldName(
+			sourceShapeFile.getAreaIdentifierFieldName());
+		destinationShapeFile.setNameFieldName(
+			sourceShapeFile.getNameFieldName());
 
 		ArrayList<String> originalShapeFileFieldNames
-			= originalShapeFile.getShapeFileFieldNames();
+			= sourceShapeFile.getShapeFileFieldNames();
 		for (String originalShapeFileFieldName : originalShapeFileFieldNames) {
-			cloneShapeFile.addShapeFileFieldName(originalShapeFileFieldName);
+			destinationShapeFile.addShapeFileFieldName(originalShapeFileFieldName);
 		}
 			
 		ArrayList<String> originalShapeFileComponentPaths
-			= originalShapeFile.getShapeFileComponentPaths();
+			= sourceShapeFile.getShapeFileComponentPaths();
 		for (String originalShapeFileComponentPath : originalShapeFileComponentPaths) {
-			cloneShapeFile.addShapeFileComponentPath(originalShapeFileComponentPath);
-		}
-		
-		return cloneShapeFile;		
+			destinationShapeFile.addShapeFileComponentPath(originalShapeFileComponentPath);
+		}		
 	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public int getTotalAreaIdentifiers() {
+		return totalAreaIdentifiers;
+	}
+	
+	public void setTotalAreaIdentifiers(final int totalAreaIdentifiers) {
+		this.totalAreaIdentifiers = totalAreaIdentifiers;
+	}
+	
+	public static boolean hasIdenticalContents(
+		final ArrayList<ShapeFile> shapeFileListA,
+		final ArrayList<ShapeFile> shapeFileListB) {
+		
+		if (shapeFileListA == shapeFileListB) {
+			//they point to the same place in memory
+			return true;
+		}
+		
+		if ((shapeFileListA != null) && (shapeFileListB == null) ||
+			(shapeFileListA == null) && (shapeFileListB != null)){
+			return false;
+		}
+		
+		if (shapeFileListA.size() != shapeFileListB.size()) {
+			return false;
+		}
+		
+		HashMap<String, ShapeFile> shapeFileFromBaseNameA 
+			= new HashMap<String, ShapeFile>();
+		for (ShapeFile shapeFile : shapeFileListA) {
+			shapeFileFromBaseNameA.put(shapeFile.getBaseFilePath(), shapeFile);
+		}
+		
+		HashMap<String, ShapeFile> shapeFileFromBaseNameB 
+			= new HashMap<String, ShapeFile>();
+		for (ShapeFile shapeFile : shapeFileListB) {
+			shapeFileFromBaseNameB.put(shapeFile.getBaseFilePath(), shapeFile);
+		}
+		
+		ArrayList<String> keysListA = new ArrayList<String>();
+		keysListA.addAll(shapeFileFromBaseNameA.keySet());
+		for (String keyA : keysListA) {
+			ShapeFile shapeFileB
+				= shapeFileFromBaseNameB.get(keyA);
+			if (shapeFileB == null) {
+				return false;
+			}
+			
+			ShapeFile shapeFileA
+				= shapeFileFromBaseNameA.get(keyA);
+			if (shapeFileA.hasIdenticalContents(shapeFileB) == false) {
+				return false;
+			}
+		}
+		
+		
+		ArrayList<String> keysListB = new ArrayList<String>();
+		keysListB.addAll(shapeFileFromBaseNameB.keySet());
+		for (String keyB : keysListB) {
+			ShapeFile shapeFileA
+				= shapeFileFromBaseNameB.get(keyB);
+			if (shapeFileA == null) {
+				return false;
+			}
+			
+			ShapeFile shapeFileB
+				= shapeFileFromBaseNameA.get(keyB);
+			if (shapeFileA.hasIdenticalContents(shapeFileB) == false) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public boolean hasIdenticalContents(final ShapeFile otherShapeFile) {
+	
+		int otherTotalAreaIdentifiers
+			= otherShapeFile.getTotalAreaIdentifiers();
+		String otherShapeFileDescription
+			= otherShapeFile.getShapeFileDescription();
+		String otherAreaIdentifierFieldName
+			= otherShapeFile.getAreaIdentifierFieldName();
+		String otherNameFieldName
+			= otherShapeFile.getNameFieldName();
+		
+		if (totalAreaIdentifiers != otherTotalAreaIdentifiers) {
+			return false;
+		}
+				
+		if (Objects.deepEquals(
+			shapeFileDescription, 
+			otherShapeFileDescription) == false) {
+
+			return false;
+		}
+		if (Objects.deepEquals(
+			areaIdentifierFieldName, 
+			otherAreaIdentifierFieldName) == false) {
+
+			return false;
+		}
+		
+		if (Objects.deepEquals(
+			nameFieldName, 
+			otherNameFieldName) == false) {
+
+			return false;
+		}
+		
+		ArrayList<String> otherShapeFileFieldNames
+			= otherShapeFile.getShapeFileFieldNames();
+		if (shapeFileFieldNames.size() != otherShapeFileFieldNames.size()) {
+			return false;
+		}
+		
+		for (int i = 0; i < shapeFileFieldNames.size(); i++) {
+			if (shapeFileFieldNames.get(i).equals(otherShapeFileFieldNames.get(i)) == false) {
+				return false;
+			}
+		}
+
+		ArrayList<String> shapeFilePathComponents
+			= getShapeFileComponentPaths();
+		ArrayList<String> otherShapeFilePathComponents
+			= otherShapeFile.getShapeFileComponentPaths();
+		if (shapeFilePathComponents.size() != otherShapeFilePathComponents.size()) {
+			return false;
+		}
+		
+		for (int i = 0; i < shapeFilePathComponents.size(); i++) {
+			if (shapeFilePathComponents.get(i).equals(otherShapeFilePathComponents.get(i)) == false) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 		
 	public String getShapeFileDescription() {
 		return shapeFileDescription;
@@ -281,6 +438,7 @@ public class ShapeFile
 			= RIFDataLoaderToolMessages.getMessage("shapeFile.dbf.label");
 		String prjFieldName
 			= RIFDataLoaderToolMessages.getMessage("shapeFile.prj.label");
+		/*
 		String sbnFieldName
 			= RIFDataLoaderToolMessages.getMessage("shapeFile.sbn.label");
 		String sbxFieldName
@@ -303,7 +461,8 @@ public class ShapeFile
 			= RIFDataLoaderToolMessages.getMessage("shapeFile.cpg.label");
 		String qixFieldName
 			= RIFDataLoaderToolMessages.getMessage("shapeFile.qix.label");
-			
+		*/
+		
 		//check if any of them are null
 		checkFile(
 			shpFieldName,
@@ -324,7 +483,8 @@ public class ShapeFile
 			prjFieldName,
 			ShapeFileComponent.PRJ,
 			errorMessages);
-				
+
+		/*
 		checkFile(
 			sbnFieldName,
 			ShapeFileComponent.SBN,
@@ -374,6 +534,7 @@ public class ShapeFile
 			qixFieldName,
 			ShapeFileComponent.QIX,
 			errorMessages);
+		*/
 		
 		return errorMessages;
 	}
@@ -401,22 +562,23 @@ public class ShapeFile
 					fieldName);			
 			errorMessages.add(errorMessage);		
 		}		
-		
-		File file = new File(filePath);
-		if (file.exists() == false) {
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"general.io.nonExistentFile",
-					filePath);
-			errorMessages.add(errorMessage);
+		else {			
+			File file = new File(filePath);
+			if (file.exists() == false) {
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"general.io.nonExistentFile",
+						filePath);
+				errorMessages.add(errorMessage);
+			}
+			else if (file.canRead() == false) {
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"general.io.unableToReadFile",
+						filePath);			
+				errorMessages.add(errorMessage);
+			}		
 		}
-		else if (file.canRead() == false) {
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"general.io.unableToReadFile",
-					filePath);			
-			errorMessages.add(errorMessage);
-		}	
 	}
 	
 	public void checkSecurityViolations() 
@@ -430,6 +592,7 @@ public class ShapeFile
 		StringBuilder buffer = new StringBuilder();
 
 		buffer.append("Description:" + shapeFileDescription + "==\n");
+		buffer.append("Total Area Identifiers:" + totalAreaIdentifiers + "==\n");
 		buffer.append("Area Identifier:" + areaIdentifierFieldName + "==\n");
 		buffer.append("Name Field:" + nameFieldName + "==\n");
 
@@ -442,6 +605,12 @@ public class ShapeFile
 			buffer.append("\n");
 		}
 
+		buffer.append("Shape file fields:\n");
+		for (String shapeFileFieldName : shapeFileFieldNames) {
+			buffer.append(shapeFileFieldName);
+			buffer.append("\n");
+		}
+		
 		System.out.println(buffer.toString());
 	}
 	

@@ -1,29 +1,21 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 
-
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-
-
-
-
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifServices.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-
-
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.RIFResultTable;
 
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -83,7 +75,7 @@ import java.io.*;
  *
  */
 
-public final class ExtractWorkflowManager 
+final class ExtractWorkflowManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -102,10 +94,7 @@ public final class ExtractWorkflowManager
 	// ==========================================
 
 	public ExtractWorkflowManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
 		final DataSetManager dataSetManager) {
-
-		super(rifDatabaseProperties);
 
 		this.dataSetManager = dataSetManager;
 	}
@@ -149,7 +138,6 @@ public final class ExtractWorkflowManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 		
-		PreparedStatement dropTableStatement = null;		
 		String coreDataSetName 
 			= dataSetConfiguration.getName();
 

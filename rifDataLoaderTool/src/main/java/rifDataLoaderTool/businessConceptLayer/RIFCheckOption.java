@@ -1,7 +1,6 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.util.FieldValidationUtility;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -148,50 +147,35 @@ public enum RIFCheckOption {
 	/*
 	 * Assume neither collection is null
 	 */
-	public static ArrayList<String> identifyDifferences(
+	public static boolean hasIdenticalContents(
 		final ArrayList<RIFCheckOption> rifCheckOptionsA,
-		final String recordNameA,
-		final ArrayList<RIFCheckOption> rifCheckOptionsB,
-		final String recordNameB) {
+		final ArrayList<RIFCheckOption> rifCheckOptionsB) {
 		
-		ArrayList<String> differences = new ArrayList<String>();
-		
-		if (rifCheckOptionsA.size() != rifCheckOptionsB.size()) {
-			String differenceMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"",
-					recordNameA,
-					String.valueOf(rifCheckOptionsA.size()),
-					recordNameB,
-					String.valueOf(rifCheckOptionsB.size()));
-			differences.add(differenceMessage);
+		if (rifCheckOptionsA == rifCheckOptionsB) {
+			return true;
 		}
 		
-		for (RIFCheckOption rifCheckOptionA : rifCheckOptionsA) {
-			if (rifCheckOptionsB.contains(rifCheckOptionA) == false) {
-				String differenceMessage
-					= RIFDataLoaderToolMessages.getMessage(
-						"",
-						recordNameA,
-						rifCheckOptionA.getName(),
-						recordNameB);
-				differences.add(differenceMessage);
+		if ((rifCheckOptionsA == null && rifCheckOptionsB != null) ||
+			(rifCheckOptionsB != null && rifCheckOptionsB == null)) {
+			
+			return false;
+		}
+		
+		int numberCheckOptionsA = rifCheckOptionsA.size();		
+		if (numberCheckOptionsA != rifCheckOptionsB.size()) {
+			return false;
+		}
+		
+		
+		for (int i = 0; i < numberCheckOptionsA; i++) {
+			RIFCheckOption rifCheckOptionA = rifCheckOptionsA.get(i);
+			RIFCheckOption rifCheckOptionB = rifCheckOptionsB.get(i);
+			if (rifCheckOptionA != rifCheckOptionB) {
+				return false;
 			}
 		}
-				
-		for (RIFCheckOption rifCheckOptionB : rifCheckOptionsB) {
-			if (rifCheckOptionsA.contains(rifCheckOptionB) == false) {
-				String differenceMessage
-					= RIFDataLoaderToolMessages.getMessage(
-						"",
-						recordNameB,
-						rifCheckOptionB.getName(),
-						recordNameA);
-				differences.add(differenceMessage);
-			}
-		}
-		
-		return differences;
+						
+		return true;
 	}
 	
 }

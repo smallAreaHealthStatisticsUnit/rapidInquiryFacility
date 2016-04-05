@@ -5,7 +5,6 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -69,7 +68,7 @@ import java.io.*;
  *
  */
 
-public final class DataSetManager 
+final class DataSetManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -84,11 +83,8 @@ public final class DataSetManager
 	// Section Construction
 	// ==========================================
 
-	public DataSetManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public DataSetManager() {
 		
-		super(rifDatabaseProperties);
-				
 	}
 
 	// ==========================================
@@ -154,20 +150,16 @@ public final class DataSetManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 
-		System.out.println("updateDataSetRegistration 1");
 		deleteDataSetConfiguration(
 			connection,
 			logFileWriter,
 			dataSetConfiguration);
-		System.out.println("updateDataSetRegistration 2");
 
 		int identifier
 			= addDataSetConfiguration(
 				connection,
 				logFileWriter,
 				dataSetConfiguration);
-
-		System.out.println("updateDataSetRegistration 3");
 		
 		return identifier;
 	}

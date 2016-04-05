@@ -5,10 +5,9 @@ import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -71,7 +70,7 @@ import java.io.*;
  *
  */
 
-public final class CheckWorkflowManager 
+final class CheckWorkflowManager 
 	extends AbstractDataLoaderStepManager {
 
 	// ==========================================
@@ -88,10 +87,7 @@ public final class CheckWorkflowManager
 	// ==========================================
 
 	public CheckWorkflowManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
 		final OptimiseWorkflowManager optimiseWorkflowManager) {
-
-		super(rifDatabaseProperties);
 	
 		this.optimiseWorkflowManager = optimiseWorkflowManager;
 	}
@@ -109,8 +105,6 @@ public final class CheckWorkflowManager
 		
 		String coreDataSetName 
 			= dataSetConfiguration.getName();
-		String optimiseTableName
-			= RIFTemporaryTablePrefixes.OPTIMISE.getTableName(coreDataSetName);
 		String checkTableName
 			= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
 		deleteTable(
@@ -254,7 +248,7 @@ public final class CheckWorkflowManager
 				queryFormatter);
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addPaddedQueryLine(0, "FROM");
-			queryFormatter.addPaddedQueryLine(1, "duplicate_rows;");
+			queryFormatter.addPaddedQueryLine(1, "duplicate_rows");
 			
 			logSQLQuery(
 				logFileWriter,
@@ -263,6 +257,8 @@ public final class CheckWorkflowManager
 						
 			statement 
 				= createPreparedStatement(connection, queryFormatter);
+			System.out.println("CheckworkflowManager == queryFormatter");
+			System.out.println(queryFormatter.generateQuery());
 			statement.executeUpdate();
 
 			addPrimaryKey(
@@ -345,7 +341,7 @@ public final class CheckWorkflowManager
 		
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getFieldConfigurations();
+			= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			if (excludeFieldFromChecks(fieldConfiguration) == false) {
 				String convertFieldName 
@@ -585,11 +581,7 @@ public final class CheckWorkflowManager
 				queryFormatter.finishLine();
 				queryFormatter.addQueryPhrase(2, "tmp_age_sex_group_empty");
 			}
-			
-			System.out.println("=================CheckWorkflowManager ==check empty fields===");
-			System.out.println(queryFormatter.generateQuery());
-			System.out.println("=================CheckWorkflowManager ==check empty fields===");
-			
+						
 			logSQLQuery(
 				logFileWriter,
 				"createEmptyFieldCheckDataQualityTable", 
@@ -911,12 +903,7 @@ public final class CheckWorkflowManager
 			queryFormatter.finishLine();
 			queryFormatter.addPaddedQueryLine(1, "ORDER BY");
 			queryFormatter.addPaddedQueryLine(2, "summary.year");
-
-			
-			System.out.println("=================CheckWorkflowManager 2=======================");
-			System.out.println(queryFormatter.generateQuery());
-			System.out.println("=================CheckWorkflowManager 2=======================");
-
+		
 			logSQLQuery(
 				logFileWriter,
 				"createEmptyFieldCheckDataQualityTable", 

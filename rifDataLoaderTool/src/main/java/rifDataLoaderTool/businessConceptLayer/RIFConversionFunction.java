@@ -4,11 +4,13 @@ package rifDataLoaderTool.businessConceptLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 import java.text.Collator;
+
 /**
  * <p>
  * Describes the properties of a function that is used to convert a cleaned
@@ -400,10 +402,96 @@ public class RIFConversionFunction {
 		return dataTypeFromFormalParameterName;
 	}
 	
+	public RIFDataType getDataTypeFromFormalParameter(final String formalParameterName) {
+		return dataTypeFromFormalParameterName.get(formalParameterName);
+	}
+
 	public void setDataTypesFromFormalParameterNames(
 		final HashMap<String, RIFDataType> dataTypeFromFormalParameterName) {
 		
 		this.dataTypeFromFormalParameterName = dataTypeFromFormalParameterName;		
+	}
+	
+	public boolean hasIdenticalContents(
+		final RIFConversionFunction otherRIFConversionFunction) {
+		
+		if (otherRIFConversionFunction == null) {
+			return false;
+		}
+		
+		if (this == otherRIFConversionFunction) {
+			return true;
+		}
+		
+		if (Objects.deepEquals(
+			code, 
+			otherRIFConversionFunction.getCode())) {
+			
+			return false;
+		}
+				
+		if (Objects.deepEquals(
+			schemaName, 
+			otherRIFConversionFunction.getSchemaName())) {
+			
+			return false;
+		}
+
+		if (Objects.deepEquals(
+			functionName, 
+			otherRIFConversionFunction.getFunctionName())) {
+	
+			return false;
+		}
+		
+		ArrayList<String> otherFormalParameterNames
+			= otherRIFConversionFunction.getFormalParameterNames();		
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		if (fieldValidationUtility.hasIdenticalContents(
+			true, 
+			formalParameterNames, 
+			otherFormalParameterNames) == false) {
+
+			return false;
+		}
+				
+		if (Objects.deepEquals(
+			convertFieldName, 
+			otherRIFConversionFunction.getConvertFieldName())) {
+			
+			return false;
+		}
+
+		//Now check the types
+		int numberOfFormalParameters = formalParameterNames.size();
+		for (int i = 0; i < numberOfFormalParameters; i++) {
+			RIFDataType rifDataType
+				= getDataTypeFromFormalParameter(formalParameterNames.get(i));
+			RIFDataType otherRIFDatatype
+				= getDataTypeFromFormalParameter(otherFormalParameterNames.get(i));
+			if (rifDataType.hasIdenticalContents(otherRIFDatatype) == false) {
+				return false;
+			}
+		}
+		
+		ArrayList<DataSetFieldConfiguration> otherActualParameterValues
+			= otherRIFConversionFunction.getActualParameterValues();
+		if (DataSetFieldConfiguration.hasIdenticalContents(
+			actualParameterValues, 
+			otherActualParameterValues) == false) {
+			
+			return false;
+		}
+		
+		if (Objects.deepEquals(
+				supportsOneToOneConversion, 
+			otherRIFConversionFunction.supportsOneToOneConversion())) {
+			
+			return false;
+		}
+		
+		return true;		
 	}
 	
 	// ==========================================

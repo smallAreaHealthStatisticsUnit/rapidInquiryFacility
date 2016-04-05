@@ -2,12 +2,10 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.text.Collator;
-
-
-
 import java.util.ArrayList;
 
 
@@ -176,8 +174,6 @@ public class WorkflowValidator {
 		detectException(
 			errorMessages,
 			RIFDataLoaderToolError.INVALID_DATA_SET_CONFIGURATION);
-		System.out.println("Validate workflow 8");
-
 	}
 
 	private void checkStartStopStatesInOrder(
@@ -242,9 +238,7 @@ public class WorkflowValidator {
 		final WorkflowState workFlowState,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
-		
-		System.out.println("validateDataSetConfiguration state=="+workFlowState.getStateName()+"==");
-		
+				
 		ArrayList<String> errorMessages
 			= new ArrayList<String>();
 		

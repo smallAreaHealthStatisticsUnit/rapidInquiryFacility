@@ -52,7 +52,7 @@ import java.util.ArrayList;
  *
  */
 
-public abstract class AbstractRIFWorkflow {
+abstract class AbstractRIFWorkflow {
 
 	// ==========================================
 	// Section Constants
@@ -124,9 +124,7 @@ public abstract class AbstractRIFWorkflow {
 		if (index != -1) {
 			dataSetConfigurations.set(index, revisedDataSetConfiguration);
 		}	
-		else {
-			System.out.println("AbstractWorkflow wasn't able to find original item");
-		}
+
 	}
 	
 	

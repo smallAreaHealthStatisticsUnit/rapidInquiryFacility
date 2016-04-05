@@ -124,7 +124,7 @@ public final class ErrorDialog {
 		Component parent, 
 		ArrayList<String> errorMessages) {
 
-		if (errorMessages.size() == 0) {
+		if (errorMessages.isEmpty()) {
 			return;
 		}
 

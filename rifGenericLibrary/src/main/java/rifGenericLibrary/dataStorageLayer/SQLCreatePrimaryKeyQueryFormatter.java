@@ -134,7 +134,7 @@ public final class SQLCreatePrimaryKeyQueryFormatter
 		addQueryPhrase(tableName);
 		addQueryPhrase(" ADD PRIMARY KEY (");
 		addQueryPhrase(primaryKeyFieldPhrase);
-		addQueryPhrase(");");
+		addQueryPhrase(")");
 		
 		return super.generateQuery();		
 	}

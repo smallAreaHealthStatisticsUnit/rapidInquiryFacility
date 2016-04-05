@@ -2,14 +2,15 @@ package rifDataLoaderTool.dataStorageLayer;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
 import java.io.File;
 import java.io.FileReader;
@@ -98,7 +99,7 @@ import java.util.PropertyResourceBundle;
  *
  */
 
-public final class SQLConnectionManager {
+final class SQLConnectionManager {
 
 	// ==========================================
 	// Section Constants
@@ -110,9 +111,7 @@ public final class SQLConnectionManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
-	private RIFDatabaseProperties rifDatabaseProperties;
-	
+		
 	/** The write connection from user. */
 	private ConnectionQueue writeConnections;
 		
@@ -122,11 +121,7 @@ public final class SQLConnectionManager {
 	private final HashSet<String> registeredUserIDs;
 	private final HashSet<String> userIDsToBlock;
 
-	private String databaseDriverClassName;
-	private String databaseDriverPrefix;
-	private String host;
-	private String port;
-	private String databaseName;
+
 	
 	// ==========================================
 	// Section Construction
@@ -143,13 +138,7 @@ public final class SQLConnectionManager {
 		final String host,
 		final String port,
 		final String databaseName) {
-				
-		this.databaseDriverClassName = databaseDriverClassName;
-		this.databaseDriverPrefix = databaseDriverPrefix;
-		this.host = host;
-		this.port = port;
-		this.databaseName = databaseName;
-				
+			
 		registeredUserIDs = new HashSet<String>();
 		userIDsToBlock = new HashSet<String>();
 		writeConnections = new ConnectionQueue();

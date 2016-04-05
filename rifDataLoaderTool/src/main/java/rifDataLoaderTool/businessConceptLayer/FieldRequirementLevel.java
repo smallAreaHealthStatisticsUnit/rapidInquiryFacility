@@ -1,8 +1,9 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
 import java.text.Collator;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 /**
  *

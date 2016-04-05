@@ -1,11 +1,8 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.workflows.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
-
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.system.RIFGenericLibraryError;
@@ -66,7 +63,7 @@ import java.io.*;
  *
  */
 
-public final class ChangeAuditManager 
+final class ChangeAuditManager 
 	extends AbstractDataLoaderStepManager {
 	
 	// ==========================================
@@ -81,11 +78,8 @@ public final class ChangeAuditManager
 	// Section Construction
 	// ==========================================
 
-	public ChangeAuditManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
-		
-		super(rifDatabaseProperties);
-				
+	public ChangeAuditManager() {
+						
 	}
 
 	// ==========================================

@@ -160,6 +160,10 @@ public abstract class AbstractSQLQueryFormatter {
 		query.append("\n");		
 	}
 	
+	public void addBlankLine() {
+		query.append("\n\n");
+	}
+
 	public void addPaddedQueryLine(
 		final int indentationLevel,
 		final String queryPhrase) {
@@ -254,7 +258,7 @@ public abstract class AbstractSQLQueryFormatter {
 		result.append(query.toString());
 		
 		if (endWithSemiColon) {
-			result.append(";");
+			result.append(";\n\n");
 		}
 		return result.toString();
 	}

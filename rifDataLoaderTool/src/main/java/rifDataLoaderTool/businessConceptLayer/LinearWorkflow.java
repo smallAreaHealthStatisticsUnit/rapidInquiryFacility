@@ -1,5 +1,8 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.util.ArrayList;
+import java.util.Objects;
+
 
 /**
  * A main business class that describes the typical workflow expected by the RIF
@@ -146,6 +149,7 @@ public class LinearWorkflow
 	
 	public static LinearWorkflow newInstance() {
 		LinearWorkflow linearWorkflow = new LinearWorkflow();
+		linearWorkflow.initialise();
 				
 		return linearWorkflow;
 	}
@@ -172,7 +176,57 @@ public class LinearWorkflow
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	public boolean hasIdenticalContents(final LinearWorkflow otherLinearWorkflow) {
+		
+		if (otherLinearWorkflow == null) {
+			return false;
+		}
+		
+		if (this == otherLinearWorkflow) {
+			return true;
+		}
 
+		//For the purposes of checking identical contents between two 
+		//instances, we will not bother comparing workflowStateMachine
+		//objects.  They only hold the current state of the workflow as
+		//it is completes execution.
+
+		ArrayList<DataSetConfiguration> dataSetConfigurations
+			= getDataSetConfigurations();
+		ArrayList<DataSetConfiguration> otherDataSetConfigurations
+			= otherLinearWorkflow.getDataSetConfigurations();
+		if (DataSetConfiguration.hasIdenticalContents(
+			dataSetConfigurations, 
+			otherDataSetConfigurations) == false) {
+
+			return false;
+		}
+		
+		WorkflowState startWorkflowState
+			= getStartWorkflowState();
+		WorkflowState otherStartWorkflowState
+			= otherLinearWorkflow.getStartWorkflowState();
+		if (startWorkflowState != otherStartWorkflowState) {
+			return false;
+		}
+		
+		WorkflowState stopWorkflowState
+			= getStartWorkflowState();
+		WorkflowState otherStopWorkflowState
+			= otherLinearWorkflow.getStopWorkflowState();
+		if (stopWorkflowState != otherStopWorkflowState) {
+			return false;
+		}
+
+		if (Objects.deepEquals(
+			isNewRecord(), 
+			otherLinearWorkflow.isNewRecord()) == false) {
+			return false;
+		}
+		
+		return true;
+	}
+	
 
 	// ==========================================
 	// Section Errors and Validation

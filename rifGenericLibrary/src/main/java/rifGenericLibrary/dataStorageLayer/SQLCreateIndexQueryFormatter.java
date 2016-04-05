@@ -127,6 +127,7 @@ public final class SQLCreateIndexQueryFormatter
 		addQueryPhrase(" (");
 		addQueryPhrase(indexTableField);		
 		addQueryPhrase(")");
+		
 
 		return super.generateQuery();		
 	}

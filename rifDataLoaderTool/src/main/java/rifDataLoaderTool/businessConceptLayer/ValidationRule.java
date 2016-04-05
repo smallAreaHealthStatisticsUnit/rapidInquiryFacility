@@ -1,10 +1,11 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
+
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 
@@ -160,12 +161,21 @@ public final class ValidationRule
 		
 		ValidationRule cloneValidationRule
 			= new ValidationRule();
-		cloneValidationRule.setName(originalValidationRule.getName());
-		cloneValidationRule.setDescription(originalValidationRule.getDescription());
-		cloneValidationRule.setRegularExpressionSearch(originalValidationRule.isRegularExpressionSearch());
-		cloneValidationRule.setValidValue(originalValidationRule.getValidValue());
+		copyInto(
+			originalValidationRule, 
+			cloneValidationRule);
 			
 		return cloneValidationRule;
+	}
+	
+	public static void copyInto(
+		final ValidationRule sourceValidationRule,
+		final ValidationRule destinationValidationRule) {
+		
+		destinationValidationRule.setName(sourceValidationRule.getName());
+		destinationValidationRule.setDescription(sourceValidationRule.getDescription());
+		destinationValidationRule.setRegularExpressionSearch(sourceValidationRule.isRegularExpressionSearch());
+		destinationValidationRule.setValidValue(sourceValidationRule.getValidValue());
 	}
 
 	// ==========================================
@@ -336,10 +346,6 @@ public final class ValidationRule
 		String recordType
 			= getRecordType();
 		
-		String nameField
-			= RIFDataLoaderToolMessages.getMessage("validationRule.name.label");
-		String descriptionFieldName
-			= RIFDataLoaderToolMessages.getMessage("validationRule.description.label");
 		String validFieldName
 			= RIFDataLoaderToolMessages.getMessage("validationRule.validValue.label");
 
@@ -352,7 +358,7 @@ public final class ValidationRule
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
-					validValue);
+					validFieldName);
 			errorMessages.add(errorMessage);			
 		}
 						
@@ -374,7 +380,7 @@ public final class ValidationRule
 
 	//Interface: Display Name
 	public String getDisplayName() {
-		return validValue;
+		return name;
 	}
 	
 	// ==========================================

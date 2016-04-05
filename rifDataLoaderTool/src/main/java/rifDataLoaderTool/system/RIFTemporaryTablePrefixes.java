@@ -71,8 +71,6 @@ public enum RIFTemporaryTablePrefixes {
 	AUD_CHANGES("aud_chg_"),
 	AUD_FAILED_VALIDATION("aud_val_");
 	
-	
-	
 	private String tablePrefix;
 	
 	private RIFTemporaryTablePrefixes(

@@ -1,7 +1,6 @@
 package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.dataStorageLayer.*;
 import rifDataLoaderTool.system.*;
 import rifGenericLibrary.system.*;
 import rifGenericLibrary.dataStorageLayer.*;

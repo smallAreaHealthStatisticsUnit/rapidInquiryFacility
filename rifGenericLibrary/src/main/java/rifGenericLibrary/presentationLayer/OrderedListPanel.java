@@ -90,13 +90,14 @@ public final class OrderedListPanel {
 // Section Properties
 // ==========================================
 	
-	//Data
+	//Data	
 	/** The alphabetically sort items. */
 	private boolean alphabeticallySortItems;
 	/** The list items. */
 	private Vector<String> listItems;
 	
 	//GUI Components
+	private boolean isEnabled;
 	/** The item from list name. */
 	private HashMap<String, DisplayableListItemInterface> itemFromListName;	
 	/** The panel. */
@@ -123,6 +124,7 @@ public final class OrderedListPanel {
 		UserInterfaceFactory userInterfaceFactory,
 		boolean allowMultipleItemSelection) {
 	
+		isEnabled = true;
 		itemFromListName = new HashMap<String, DisplayableListItemInterface>();
 		listItems = new Vector<String>();
 	
@@ -169,6 +171,9 @@ public final class OrderedListPanel {
 // Section Accessors and Mutators
 // ==========================================
     
+	public boolean isEnabled() {
+		return isEnabled;
+	}
     /**
      * Checks if is empty.
      *
@@ -227,6 +232,8 @@ public final class OrderedListPanel {
     public void setEnabled(
     	boolean isEnabled) {
     	
+    	this.isEnabled = isEnabled;
+    	
     	list.setEnabled(isEnabled);
     	if (isEnabled == false) {
     		clearList();
@@ -273,6 +280,25 @@ public final class OrderedListPanel {
 	public void removeListDataListener(final ListDataListener listDataListener) {
 		ListModel<String> listModel = list.getModel();
 		listModel.removeListDataListener(listDataListener);
+	}
+	
+	
+	/**
+	 * Adds the list item.
+	 *
+	 * @param listItem the list item
+	 */
+	public void addListItems(
+		final ArrayList<DisplayableListItemInterface> listItemsToAdd) {
+		
+		for (DisplayableListItemInterface listItemToAdd : listItemsToAdd) {
+			itemFromListName.put(listItemToAdd.getDisplayName(), listItemToAdd);	
+			listItems.add(listItemToAdd.getDisplayName());	
+		}
+		
+		if (alphabeticallySortItems == true) {
+			Collections.sort(listItems);	
+		}
 	}
 	
 	

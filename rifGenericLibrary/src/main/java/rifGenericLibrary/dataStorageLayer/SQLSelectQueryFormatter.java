@@ -612,6 +612,7 @@ public final class SQLSelectQueryFormatter
 		if (endWithSemiColon() == true) {			
 			addQueryPhrase(";");
 			finishLine();
+			addBlankLine();
 		}
 
 				

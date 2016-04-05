@@ -2,8 +2,10 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
+
 import rifServices.system.RIFServiceMessages;
 import rifServices.util.FieldValidationUtility;
 
@@ -105,8 +107,7 @@ public final class CleaningRule
 	private String name;
 	private String description;
 	private String searchValue;
-	private String replaceValue;
-	
+	private String replaceValue;	
 	private boolean isRegularExpressionSearch;
 	
 	// ==========================================
@@ -165,19 +166,27 @@ public final class CleaningRule
 		
 		CleaningRule cloneCleaningRule
 			= new CleaningRule();
-		cloneCleaningRule.setName(originalCleaningRule.getName());
-		cloneCleaningRule.setDescription(originalCleaningRule.getDescription());
-		cloneCleaningRule.setRegularExpressionSearch(originalCleaningRule.isRegularExpressionSearch());
-		cloneCleaningRule.setSearchValue(originalCleaningRule.getSearchValue());
-		cloneCleaningRule.setReplaceValue(originalCleaningRule.getReplaceValue());
-			
+		copyInto(originalCleaningRule, cloneCleaningRule);
 		return cloneCleaningRule;
+	}
+	
+	public static void copyInto(
+		final CleaningRule sourceCleaningRule, 
+		final CleaningRule destinationCleaningRule) {
+		
+		destinationCleaningRule.setIdentifier(sourceCleaningRule.getIdentifier());
+		destinationCleaningRule.setName(sourceCleaningRule.getName());		
+		destinationCleaningRule.setDescription(sourceCleaningRule.getDescription());
+		destinationCleaningRule.setRegularExpressionSearch(sourceCleaningRule.isRegularExpressionSearch());
+		destinationCleaningRule.setSearchValue(sourceCleaningRule.getSearchValue());
+		destinationCleaningRule.setReplaceValue(sourceCleaningRule.getReplaceValue());
+	
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-		
+	
 	public String getName() {
 		return name;
 	}
@@ -233,6 +242,7 @@ public final class CleaningRule
 		final ArrayList<CleaningRule> listBCleaningRules) {
 		
 		if (listACleaningRules.size() != listBCleaningRules.size()) {
+			System.out.println("CleaningRule cleaningRulesAreEqual sizeA=="+listACleaningRules.size()+"==sizeB=="+listBCleaningRules.size()+"==");
 			return false;
 		}
 		
@@ -369,8 +379,6 @@ public final class CleaningRule
 		
 		String nameField
 			= RIFDataLoaderToolMessages.getMessage("cleaningRule.name.label");
-		String descriptionFieldName
-			= RIFDataLoaderToolMessages.getMessage("cleaningRule.description.label");
 		String searchFieldName
 			= RIFDataLoaderToolMessages.getMessage("cleaningRule.searchValue.label");
 		String replaceFieldName
@@ -385,7 +393,7 @@ public final class CleaningRule
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
-					name);
+					nameField);
 			errorMessages.add(errorMessage);			
 		}
 
@@ -395,7 +403,7 @@ public final class CleaningRule
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
-					searchValue);
+					searchFieldName);
 			errorMessages.add(errorMessage);			
 		}
 				
@@ -404,7 +412,7 @@ public final class CleaningRule
 				= RIFServiceMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
-					replaceValue);
+					replaceFieldName);
 			errorMessages.add(errorMessage);			
 		}
 		

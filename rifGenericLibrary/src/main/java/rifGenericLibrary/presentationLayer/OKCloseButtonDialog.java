@@ -77,6 +77,12 @@ public abstract class OKCloseButtonDialog
 	
 	private OKCloseButtonPanel okCloseButtonPanel;
 	
+	private int mainPanelFillSetting;
+	private int mainPanelWeightX;
+	private int mainPanelWeightY;
+	
+	private boolean doSystemExitOnClose;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -86,8 +92,14 @@ public abstract class OKCloseButtonDialog
 		
 		this.userInterfaceFactory = userInterfaceFactory;
 		dialog = userInterfaceFactory.createDialog();
-			
+
+		mainPanelFillSetting = GridBagConstraints.BOTH;
+		mainPanelWeightX = 1;
+		mainPanelWeightY = 1;
+
 		isCancelled = false;
+		
+		doSystemExitOnClose = false;
 	}
 	
 	protected UserInterfaceFactory getUserInterfaceFactory() {
@@ -100,6 +112,18 @@ public abstract class OKCloseButtonDialog
 	
 	protected void setInstructionText(final String dialogInstructionsText) {
 		this.dialogInstructionsText = dialogInstructionsText;
+	}
+
+	protected void setMainPanelFillConstraints(
+		final int mainPanelFillSetting,
+		final int mainPanelWeightX,
+		final int mainPanelWeightY) {
+		
+		
+		this.mainPanelFillSetting = GridBagConstraints.BOTH;
+		this.mainPanelWeightX = mainPanelWeightX;
+		this.mainPanelWeightY = mainPanelWeightY;
+
 	}
 	
 	protected void setMainPanel(final JPanel mainPanel) {
@@ -114,16 +138,19 @@ public abstract class OKCloseButtonDialog
 		GridBagConstraints panelGC 
 			= userInterfaceFactory.createGridBagConstraints();
 		
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 1;		
-		JPanel instructionsPanel
-			= userInterfaceFactory.createHTMLInstructionPanel(dialogInstructionsText);
-		panel.add(instructionsPanel, panelGC);
+		if (dialogInstructionsText != null) {			
+			panelGC.fill = GridBagConstraints.HORIZONTAL;
+			panelGC.weightx = 1;		
+			JPanel instructionsPanel
+				= userInterfaceFactory.createHTMLInstructionPanel(dialogInstructionsText);
+			panel.add(instructionsPanel, panelGC);
+			panelGC.gridy++;
+		}
 		
-		panelGC.gridy++;
-		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weightx = 1;
-		panelGC.weighty = 1;
+	
+		panelGC.fill = mainPanelFillSetting;
+		panelGC.weightx = mainPanelWeightX;
+		panelGC.weighty = mainPanelWeightY;
 		panel.add(mainPanel, panelGC);
 
 		panelGC.gridy++;
@@ -156,18 +183,37 @@ public abstract class OKCloseButtonDialog
 			okAction();		
 			dialog.setVisible(false);
 			isCancelled = false;
+			if (doSystemExitOnClose) {
+				System.out.println("OKCloseButtonDialog ok exit");
+				System.exit(0);
+			}
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
 				dialog, 
 				rifServiceException.getErrorMessages());
+			okRecoverAction();
 		}	
 	}
 	
-	abstract protected void okAction() throws RIFServiceException;
-		
+	public void setEnableOKButton(final boolean isEnabled) {
+		okCloseButtonPanel.setEnableOKButton(isEnabled);
+	}
+	
+	public void okAction() throws RIFServiceException {
+	}
+
+	public void okRecoverAction() {
+
+	}
+	
 	private void close() {
+		isCancelled = true;
 		dialog.setVisible(false);
+		if (doSystemExitOnClose) {			
+			System.out.println("OKCloseButtonDialog ok exit");
+			System.exit(0);
+		}		
 	}
 	
 	public boolean isCancelled() {
@@ -176,6 +222,10 @@ public abstract class OKCloseButtonDialog
 	
 	public void setSize(final int width, final int height) {
 		dialog.setSize(width, height);
+	}
+	
+	public void doSystemExitOnClose() {
+		doSystemExitOnClose = true;
 	}
 	
 	// ==========================================
