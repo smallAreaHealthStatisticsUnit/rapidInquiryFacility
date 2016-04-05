@@ -285,7 +285,13 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	 */
 	var readShapeFile = function(shapefileData) {
 		var recLen=0;
-		
+		var readNextRecord = function() {
+			reader.readRecord(shapefileReader); 	// Read next record	
+		}
+		var msg;
+		var fileNoExt = path.basename(shapefileData["shapeFileName"]);
+		const v8 = require('v8');
+			
 		/*
 	 	 * Function: 	shapefileReader()
 		 * Parameters:	Error, record (header/feature/end) from shapefile
@@ -293,12 +299,6 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		 * Description: Shapefile reader function. Reads shapefile line by line; converting to WGS84 if required to minimise meory footprint
 		 */
 		var shapefileReader = function(err, record) {
-			var readNextRecord = function() {
-				reader.readRecord(shapefileReader); 	// Read next record	
-			}
-			var msg;
-			var fileNoExt = path.basename(shapefileData["shapeFileName"]);
-			const v8 = require('v8');
 
 			if (err) {
 				msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile reader.read: ' + shapefileData["shapeFileName"];

@@ -352,7 +352,10 @@ Test harness refactor; Node.js version working
     * Completed garbage collection tracing and improvements to reduce memory footprint
 	* Created shapefile reader function. Reads shapefile record by record; converting to WGS84 if required to minimise meory footprint
 	* Added check that all bounding boxes are the same
-	
+	* Tested 1.1G coa2011 shapefile on 8G laptop - ran out of memory at around 62,000 records (out of 181,408). Json size = 273,018,806; 
+	  total available size = 1,486,054,944. Although uses process.nextTick() it is recursive; could rewrite as async queue to reduce 
+	  memory usage. Will add 8GB more RAM. Memory from file processing stage has been released.
+	  
 	Current TODO list aimed at Judy Qualters visit:
 
 	* Move shpConvert.html to Node express server; make so does not need network. Also needed for IE
