@@ -198,7 +198,9 @@ final class ValidationRuleConfigurationHandler
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
 			rules.clear();
-			currentRule = ValidationRule.newInstance();
+		}
+		else if (isSingularRecordName(qualifiedName)) {
+			currentRule = ValidationRule.newInstance();			
 		}
 	}
 	

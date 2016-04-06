@@ -213,9 +213,10 @@ final class CleaningRuleConfigurationHandler
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
 			rules.clear();
-			currentRule = CleaningRule.newInstance();
 		}
-
+		else if (isSingularRecordName(qualifiedName)) {
+			currentRule = CleaningRule.newInstance();			
+		}
 	}
 	
 	@Override

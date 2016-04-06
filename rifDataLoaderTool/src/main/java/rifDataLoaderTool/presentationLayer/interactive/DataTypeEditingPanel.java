@@ -204,7 +204,6 @@ class DataTypeEditingPanel
 	
 	
 	public void setData(final RIFDataType originalRIFDataType) {
-				
 		this.originalRIFDataType = originalRIFDataType;
 		
 		nameTextField.setText(originalRIFDataType.getName());
@@ -223,6 +222,7 @@ class DataTypeEditingPanel
 		userInterfaceFactory.setEditableAppearance(
 			descriptionTextField,
 			isEditable);			
+
 
 		RIFFieldActionPolicy fieldCleaningPolicy
 			= originalRIFDataType.getFieldCleaningPolicy();
@@ -245,11 +245,9 @@ class DataTypeEditingPanel
 		if (fieldValidationPolicy == RIFFieldActionPolicy.USE_RULES) {
 			ArrayList<ValidationRule> validationRules
 				= originalRIFDataType.getValidationRules();
-			System.out.println("DataTypeEditingPanel setting data type=="+originalRIFDataType.getDisplayName()+"==validation rules=="+validationRules.size()+"==");
 			dataValidationPolicyEditingPanel.setValidationRulesPolicy(validationRules);
 		}
 		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
-			System.out.println("DataTypeEditingPanel setting data type=="+originalRIFDataType.getDisplayName()+"==use function=="+originalRIFDataType.getValidationFunctionName()+"==");
 			String validationFunctionName
 				= originalRIFDataType.getValidationFunctionName();
 			dataValidationPolicyEditingPanel.setUseFunctionPolicy(validationFunctionName);
@@ -258,11 +256,7 @@ class DataTypeEditingPanel
 			dataValidationPolicyEditingPanel.setDoNothingPolicy();			
 		}
 		else {
-			if (fieldValidationPolicy == null) {
-				System.out.println("Field validation policy was null!!");
-			}
 			assert false;
-			System.out.println("DataTypeEditingPanel setting data type=="+originalRIFDataType.getDisplayName()+"==do nothing==");			
 		}		
 	}
 	
@@ -274,14 +268,6 @@ class DataTypeEditingPanel
 		throws RIFServiceException {
 		
 		RIFDataType rifDataTypeFromForm = createDataTypeFromForm();
-		System.out.println("=-=-==-=-====-=-==-==--===--======--=-===-===-=-====--=");
-		
-		System.out.println("DataTypeEditingPanel original data type");
-		originalRIFDataType.printFields();
-		System.out.println("DataTypeEditingPanel form-based data type");
-		rifDataTypeFromForm.printFields();
-		System.out.println("=-=-==-=-====-=-==-==--===--======--=-===-===-=-====--=");
-		
 		
 		if (originalRIFDataType.hasIdenticalContents(rifDataTypeFromForm)) {
 			//no changes need to be made and we can assume that
@@ -289,7 +275,6 @@ class DataTypeEditingPanel
 			return false;
 		}
 		else {
-			System.out.println("DataTypeEditingPanel saveChanges 1 changes detected");
 			//changes have been made.  Ask users if they want to save changes
 			String message
 				= RIFDataLoaderToolMessages.getMessage(
@@ -349,7 +334,6 @@ class DataTypeEditingPanel
 		if (fieldValidationPolicy == RIFFieldActionPolicy.USE_RULES) {
 			ArrayList<ValidationRule> validationRules
 				= dataValidationPolicyEditingPanel.getValidationRules();
-			System.out.println("Gleaning =="+validationRules.size()+"==validation rules from form");
 
 			rifDataType.setValidationRules(validationRules);
 		}

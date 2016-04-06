@@ -14,7 +14,7 @@ import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifDataLoaderTool.businessConceptLayer.RIFDataType;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
+import rifDataLoaderTool.businessConceptLayer.*;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -132,6 +132,9 @@ class DataTypeEditorDialog
 		setMainPanel(createMainPanel());
 		setSize(800, 600);
 		buildUI();
+		
+		
+		
 		
 	}
 
@@ -288,13 +291,7 @@ class DataTypeEditorDialog
 				originalRIFDataTypes, 
 				currentRIFDataTypes);
 		if (saveChanges) {
-			//
-			System.out.println("DatabaseTypeEditorDialog saveChanges SAVE DATA TYPE CHANGES");
 			rifDataTypeFactory.setDataTypes(currentRIFDataTypes);
-		}
-		else {
-			System.out.println("DatabaseTypeEditorDialog saveChanges NONE");
-			
 		}
 		
 		return saveChanges;

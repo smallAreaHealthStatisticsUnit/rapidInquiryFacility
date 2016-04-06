@@ -117,6 +117,11 @@ final class FieldValidatingPolicyConfigurationHandler
 		rules = new ArrayList<ValidationRule>();
 	}
 
+	public void resetPolicyAttributes() {
+		rules.clear();
+		functionName = "";
+		policy = RIFFieldActionPolicy.DO_NOTHING;
+	}
 
 	@Override
 	public void initialise(
@@ -152,15 +157,18 @@ final class FieldValidatingPolicyConfigurationHandler
 	 *
 	 * @return the disease mapping study
 	 */
-	public RIFFieldActionPolicy getFieldCleaningPolicy() {
+	public RIFFieldActionPolicy getFieldValidationPolicy() {
 		return policy;
 	}
 	
 	public ArrayList<ValidationRule> getValidationRules() {
-		return rules;
+		ArrayList<ValidationRule> results
+			= new ArrayList<ValidationRule>();
+		results.addAll(rules);
+		return results;
 	}
 	
-	public String getCleaningFunction() {
+	public String getValidationFunctionName() {
 		return functionName;
 	}
 	
@@ -188,7 +196,7 @@ final class FieldValidatingPolicyConfigurationHandler
 		xmlUtility.writeField(
 			recordType, 
 			"validation_function_name", 
-			rifDataType.getCleaningFunctionName());
+			rifDataType.getValidationFunctionName());
 		
 		xmlUtility.writeRecordEndTag(recordType);		
 	}	
@@ -217,7 +225,6 @@ final class FieldValidatingPolicyConfigurationHandler
 		
 		if (isSingularRecordName(qualifiedName)) {
 			activate();
-			System.out.println("FieldValidatingPolicyConfigurationHandler== start element");
 		}
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
@@ -260,7 +267,6 @@ final class FieldValidatingPolicyConfigurationHandler
 		throws SAXException {
 		
 		if (isSingularRecordName(qualifiedName)) {
-			System.out.println("FieldValidatingPolicyConfigurationHandler== end element");
 			deactivate();
 		}
 		else if (isDelegatedHandlerAssigned()) {
@@ -286,7 +292,6 @@ final class FieldValidatingPolicyConfigurationHandler
 		}
 		else if (equalsFieldName("policy_type", qualifiedName)) {	
 			policy = RIFFieldActionPolicy.getPolicyFromTagName(getCurrentFieldValue());
-			System.out.println("FieldValidationPolicyConfigReader policy=="+policy.getName()+"==");
 		}		
 		else if (equalsFieldName("validation_function_name", qualifiedName)) {
 			functionName = getCurrentFieldValue();

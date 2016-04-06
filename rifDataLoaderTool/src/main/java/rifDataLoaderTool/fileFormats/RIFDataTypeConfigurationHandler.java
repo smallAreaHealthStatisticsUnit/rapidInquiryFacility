@@ -14,6 +14,7 @@ import rifGenericLibrary.system.RIFServiceException;
 
 
 
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -259,7 +260,6 @@ final public class RIFDataTypeConfigurationHandler
 				assignDelegatedHandler(cleaningPolicyConfigurationHandler);
 			}
 			else if (validatingPolicyConfigurationHandler.isSingularRecordTypeApplicable(qualifiedName)) {
-				System.out.println("RIFDataTypeConfigurationHandler activating validating policy");
 				assignDelegatedHandler(validatingPolicyConfigurationHandler);
 			}
 				
@@ -292,7 +292,8 @@ final public class RIFDataTypeConfigurationHandler
 		}
 		else if (isSingularRecordName(qualifiedName)) {
 			try {
-				rifDataTypeFactory.registerCustomDataType(currentRIFDataType, false);				
+				rifDataTypeFactory.registerCustomDataType(currentRIFDataType, false);	
+				currentRIFDataType = RIFDataType.newInstance();
 			}
 			catch(RIFServiceException rifServiceException) {
 				errorMessages.addAll(rifServiceException.getErrorMessages());
@@ -308,14 +309,28 @@ final public class RIFDataTypeConfigurationHandler
 						
 			if (currentDelegatedHandler.isActive() == false) {
 				if (currentDelegatedHandler == cleaningPolicyConfigurationHandler) {
+					RIFFieldActionPolicy fieldCleaningPolicy
+						= cleaningPolicyConfigurationHandler.getFieldCleaningPolicy();
+					currentRIFDataType.setFieldCleaningPolicy(fieldCleaningPolicy);
 					ArrayList<CleaningRule> cleaningRules
 						= cleaningPolicyConfigurationHandler.getCleaningRules();
-					currentRIFDataType.setCleaningRules(cleaningRules);					
+					currentRIFDataType.setCleaningRules(cleaningRules);
+					String cleaningFunctionName
+						= cleaningPolicyConfigurationHandler.getCleaningFunctionName();
+					currentRIFDataType.setCleaningFunctionName(cleaningFunctionName);			
+					cleaningPolicyConfigurationHandler.resetPolicyAttributes();
 				}
 				else if (currentDelegatedHandler == validatingPolicyConfigurationHandler) {
+					RIFFieldActionPolicy fieldValidationPolicy
+						= validatingPolicyConfigurationHandler.getFieldValidationPolicy();
+					currentRIFDataType.setFieldValidationPolicy(fieldValidationPolicy);
 					ArrayList<ValidationRule> validationRules
 						= validatingPolicyConfigurationHandler.getValidationRules();
-					currentRIFDataType.setValidationRules(validationRules);					
+					currentRIFDataType.setValidationRules(validationRules);
+					String validationFunctionName
+						= validatingPolicyConfigurationHandler.getValidationFunctionName();
+					currentRIFDataType.setValidationFunctionName(validationFunctionName);
+					validatingPolicyConfigurationHandler.resetPolicyAttributes();
 				}			
 				else {
 					assert false;

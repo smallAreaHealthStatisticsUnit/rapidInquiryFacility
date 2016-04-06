@@ -183,19 +183,15 @@ final class RIFDataLoaderConfigurationHandler
 		XMLUtility xmlUtility = getXMLUtility();
 		xmlUtility.writeStartXML();		
 
-		System.out.println("RDLConfigHandler writeXML 1");
 		String recordType = getSingularRecordName();
 		xmlUtility.writeRecordStartTag(recordType);
 		databaseConnectionConfigurationHandler.writeXML(
 			dataLoaderToolSettings.getDatabaseConnectionParameters());
 
-		System.out.println("RDLConfigHandler writeXML 2");
 		geographyConfigurationHandler.writeXML(
 			dataLoaderToolSettings.getGeographies());
 		rifDataTypeConfigurationHandler.writeXML(
 			dataLoaderToolSettings.getRIFDataTypeFactory());
-
-		System.out.println("RDLConfigHandler writeXML 3");
 		
 		//@TODO In future, we will have the Data Loader Tool
 		//support multiple work flows

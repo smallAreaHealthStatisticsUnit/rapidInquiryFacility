@@ -107,6 +107,11 @@ final class FieldCleaningPolicyConfigurationHandler
 		rules = new ArrayList<CleaningRule>();
 	}
 
+	public void resetPolicyAttributes() {
+		rules.clear();
+		functionName = "";
+		policy = RIFFieldActionPolicy.DO_NOTHING;
+	}	
 
 	@Override
 	public void initialise(
@@ -144,10 +149,12 @@ final class FieldCleaningPolicyConfigurationHandler
 	}
 	
 	public ArrayList<CleaningRule> getCleaningRules() {
-		return rules;
+		ArrayList<CleaningRule> results = new ArrayList<CleaningRule>();
+		results.addAll(rules);
+		return results;
 	}
 	
-	public String getCleaningFunction() {
+	public String getCleaningFunctionName() {
 		return functionName;
 	}
 	
@@ -271,9 +278,8 @@ final class FieldCleaningPolicyConfigurationHandler
 		}
 		else if (equalsFieldName("policy_type", qualifiedName)) {
 			policy = RIFFieldActionPolicy.getPolicyFromTagName(getCurrentFieldValue());
-			System.out.println("FieldCleaningPolicyConfigReader policy=="+policy.getName()+"==");
 		}		
-		else if (equalsFieldName("cleaning_function_name", qualifiedName)) {
+		else if (equalsFieldName("cleaning_function_name", qualifiedName)) {			
 			functionName = getCurrentFieldValue();
 		}
 		else {

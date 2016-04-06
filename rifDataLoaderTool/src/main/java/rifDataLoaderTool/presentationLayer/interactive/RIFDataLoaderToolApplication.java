@@ -1,14 +1,10 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-
 import rifDataLoaderTool.businessConceptLayer.*;
-
 import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.fileFormats.RIFDataLoaderSettingsWriter;
-
 import rifGenericLibrary.fileFormats.XMLFileFilter;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
@@ -17,7 +13,9 @@ import rifGenericLibrary.system.RIFServiceException;
 
 
 
+
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -272,8 +270,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 				= new RIFDataLoaderSettingsReader();
 			reader.readFile(selectedFile);
 
-			dataLoaderToolSettings = reader.getDataLoaderToolSettings();
-			
+			dataLoaderToolSettings = reader.getDataLoaderToolSettings();		
 			session.setDataLoaderToolSettings(dataLoaderToolSettings);
 			
 			updateButtonStates(dataLoaderToolSettings);
@@ -409,17 +406,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	
 	private void editDataTypes() {
 		DataTypeEditorDialog dataTypeEditorDialog
-			= new DataTypeEditorDialog(session);
-		
-		RIFDataTypeFactory fac
-			 = session.getRIFDataTypeFactory();
-		ArrayList<RIFDataType> rifDataTypes
-			= fac.getRegisteredDataTypes();
-		for (RIFDataType rifDataType : rifDataTypes) {
-			rifDataType.printFields();
-		}
-		
-		
+			= new DataTypeEditorDialog(session);		
 		dataTypeEditorDialog.show();
 		if (dataTypeEditorDialog.isCancelled()) {
 			return;
@@ -430,7 +417,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		if (saveChanges) {
 			session.setSaveChanges(true);
 		}
-		updateButtonStates(dataLoaderToolSettings);
+		updateButtonStates(session.getDataLoaderToolSettings());
 
 	}
 	
@@ -472,7 +459,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		results.add(originalWorkflow);
 		dataLoaderToolSettings.setWorkflows(results);
 		
-		updateButtonStates(dataLoaderToolSettings);
+		updateButtonStates(session.getDataLoaderToolSettings());
 	}
 	
 	private void quit() {

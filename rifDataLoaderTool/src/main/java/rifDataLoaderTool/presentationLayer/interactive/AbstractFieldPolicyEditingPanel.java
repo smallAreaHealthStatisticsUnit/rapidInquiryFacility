@@ -294,7 +294,6 @@ abstract class AbstractFieldPolicyEditingPanel
 		
 		rulesListPanel.clearList();
 		for (DisplayableListItemInterface rule : rules) {
-			System.out.println("AbstractFieldPolicyEditingPanel setUseRulesPolicy ==1");
 			rulesListPanel.addListItem(rule);
 		}
 		rulesListPanel.updateUI();		

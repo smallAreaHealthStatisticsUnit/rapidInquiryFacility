@@ -126,6 +126,8 @@ public final class RIFDataLoaderSettingsReader {
 			saxParser.parse(rifSubmissionFile, rifDataLoaderConfigurationHandler);
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileReadingProblemException(rifSubmissionFile.getName());
@@ -164,6 +166,7 @@ public final class RIFDataLoaderSettingsReader {
 				rifDataLoaderConfigurationHandler);
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileReadingProblemException("");

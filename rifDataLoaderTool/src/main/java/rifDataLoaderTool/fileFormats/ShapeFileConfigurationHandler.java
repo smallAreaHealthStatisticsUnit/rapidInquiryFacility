@@ -302,8 +302,6 @@ final class ShapeFileConfigurationHandler
 				= getCurrentFieldValue();
 			Collator collator
 				= RIFDataLoaderToolMessages.getCollator();
-			String unknownPhrase
-				= RIFDataLoaderToolMessages.getMessage("shapeFile.totalAreaIdentifiers.unknown.label");
 			if (collator.equals(
 				totalAreaIdentifiersPhrase, 
 				unknownPhrase)) {
