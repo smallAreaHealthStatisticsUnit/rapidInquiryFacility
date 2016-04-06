@@ -138,6 +138,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		JPanel panel = createMainPanel();
 		frame.getContentPane().add(panel);
 		frame.setSize(300, 300);
+		frame.setResizable(false);
 		
 		shutdownManager
 			= new RIFDataLoaderToolShutdownManager(frame, session);
@@ -172,8 +173,10 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	}
 		
 	private JPanel createMainPanel() {
+		
 		UserInterfaceFactory userInterfaceFactory
 			= session.getUserInterfaceFactory();
+
 		JPanel panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
@@ -187,17 +190,11 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		panel.add(instructionsPanel, panelGC);
 		
 		panelGC.gridy++;
-		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weighty = 1;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		panelGC.weighty = 0;
 		panel.add(createOptionsPanel(), panelGC);
-		
-		panelGC.gridy++;
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
-		panelGC.weighty = 0;		
-		panelGC.anchor = GridBagConstraints.SOUTHEAST;
-		panel.add(createQuitButtonPanel(), panelGC);
-				
+
 		return panel;		
 	}
 	
@@ -249,19 +246,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 				
 		return panel;
 	}
-	
-	private JPanel createQuitButtonPanel() {
-		UserInterfaceFactory userInterfaceFactory
-			= session.getUserInterfaceFactory();
-		JPanel panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC
-			= userInterfaceFactory.createGridBagConstraints();
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.anchor = GridBagConstraints.SOUTHEAST;
 		
-		return panel;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
