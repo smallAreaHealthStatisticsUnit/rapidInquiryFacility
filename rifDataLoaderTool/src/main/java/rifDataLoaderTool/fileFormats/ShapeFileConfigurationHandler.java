@@ -5,8 +5,9 @@ package rifDataLoaderTool.fileFormats;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifGenericLibrary.util.XMLUtility;
-import rifGenericLibrary.util.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLUtility;
+
 
 
 

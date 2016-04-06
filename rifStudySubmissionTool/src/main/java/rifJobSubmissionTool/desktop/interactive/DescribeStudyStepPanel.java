@@ -1,20 +1,22 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericLibrary.presentationLayer.ErrorDialog;
-import rifGenericLibrary.presentationLayer.OrderedListComboBox;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.OrderedListComboBox;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.util.FieldValidationUtility;
+
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -22,7 +24,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextArea;
-
 import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 

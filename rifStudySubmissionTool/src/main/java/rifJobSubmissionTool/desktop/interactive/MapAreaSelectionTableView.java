@@ -1,13 +1,10 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericLibrary.presentationLayer.ErrorDialog;
-import rifGenericLibrary.presentationLayer.ListNavigationButtonPanel;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-
-
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
+
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelArea;
@@ -16,16 +13,18 @@ import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.ListNavigationButtonPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.businessConceptLayer.User;
 
 import java.util.ArrayList;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-
 import javax.swing.*;
-
 import java.util.Observable;
 
 

@@ -113,6 +113,36 @@ public class XMLFileFilter extends FileFilter {
 		return false;
 	}
 	
+	
+	/**
+	 * Ensure file ends with xml.
+	 *
+	 * @param file the file
+	 * @return the file
+	 */
+	public static File ensureFileEndsWithXML(
+		final File file) {
+
+		String fileNamePath = file.getAbsolutePath();
+		int lastIndexOfDot
+			= fileNamePath.lastIndexOf(".");
+		StringBuilder buffer = new StringBuilder();
+		
+		if (lastIndexOfDot == -1) {
+			//no dot found, therefore append one
+			buffer.append(fileNamePath);
+			buffer.append(".");
+			buffer.append(XML_EXTENSION.toLowerCase());
+		}
+		else {
+			buffer.append(fileNamePath.substring(0, lastIndexOfDot));
+			buffer.append(XML_EXTENSION.toLowerCase());
+		}
+		
+		File resultFile = new File(buffer.toString());
+		return resultFile;		
+	}
+		
 	public String getDescription() {
 		String description
 			= RIFGenericLibraryMessages.getMessage(

@@ -5,9 +5,9 @@ package rifDataLoaderTool.fileFormats;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLUtility;
 
-import rifGenericLibrary.util.XMLUtility;
-import rifGenericLibrary.util.XMLCommentInjector;
 
 
 

@@ -2,14 +2,13 @@
 
 package rifServices.fileFormats;
 
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.RIFOutputOption;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFDateFormat;
-import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.businessConceptLayer.RIFOutputOption;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 
 import java.io.File;
 import java.io.FileOutputStream;

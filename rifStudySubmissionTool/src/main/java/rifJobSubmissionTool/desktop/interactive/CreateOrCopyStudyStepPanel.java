@@ -1,8 +1,6 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericLibrary.presentationLayer.ErrorDialog;
-import rifGenericLibrary.presentationLayer.OrderedListPanel;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+
 import rifJobSubmissionTool.system.RIFStudySubmissionActivityStep;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
@@ -12,7 +10,11 @@ import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.User;
+
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.OrderedListPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.businessConceptLayer.User;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;

@@ -11,8 +11,8 @@ import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
 import rifDataLoaderTool.businessConceptLayer.RIFDataType;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifGenericLibrary.util.XMLUtility;
-import rifGenericLibrary.util.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLUtility;
 
 import java.util.ArrayList;
 import java.io.IOException;

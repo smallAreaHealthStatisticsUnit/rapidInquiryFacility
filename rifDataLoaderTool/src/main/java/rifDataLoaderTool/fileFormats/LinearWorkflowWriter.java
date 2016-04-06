@@ -1,13 +1,12 @@
 package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
-
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
-import rifGenericLibrary.util.XMLCommentInjector;
+
 
 
 

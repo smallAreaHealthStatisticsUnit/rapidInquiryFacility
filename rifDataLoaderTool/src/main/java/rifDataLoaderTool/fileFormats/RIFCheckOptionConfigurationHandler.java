@@ -2,7 +2,7 @@ package rifDataLoaderTool.fileFormats;
 
 
 import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
-import rifGenericLibrary.util.XMLUtility;
+import rifGenericLibrary.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

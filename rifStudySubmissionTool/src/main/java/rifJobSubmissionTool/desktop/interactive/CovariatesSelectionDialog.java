@@ -1,23 +1,23 @@
 package rifJobSubmissionTool.desktop.interactive;
 
 
+import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
+import rifServices.system.RIFServiceMessages;
+import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.fileFormats.CovariateContentHandler;
 
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.system.RIFServiceMessages;
-import rifServices.businessConceptLayer.AbstractCovariate;
-import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.GeoLevelToMap;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.User;
-import rifServices.fileFormats.CovariateContentHandler;
+import rifGenericLibrary.businessConceptLayer.User;
 
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;

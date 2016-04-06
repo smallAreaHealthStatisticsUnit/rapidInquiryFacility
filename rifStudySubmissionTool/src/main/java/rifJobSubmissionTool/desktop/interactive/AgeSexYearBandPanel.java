@@ -1,22 +1,24 @@
 
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-import rifGenericLibrary.system.RIFServiceException;
+
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
 import rifGenericLibrary.util.FieldValidationUtility;
+
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.businessConceptLayer.User;
 
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;

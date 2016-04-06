@@ -2,14 +2,14 @@ package rifServices.dataStorageLayer;
 
 
 import rifServices.system.RIFServiceStartupOptions;
-import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.fileFormats.XMLCommentInjector;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFDateFormat;
 

@@ -1,24 +1,25 @@
 
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericLibrary.presentationLayer.ErrorDialog;
-import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.fileFormats.HealthCodeListReader;
 import rifServices.fileFormats.HealthCodeListWriter;
-import rifServices.fileFormats.XMLFileFilter;
-import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.fileFormats.XMLFileFilter;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
-
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,7 +30,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
-
 
 /**
  *

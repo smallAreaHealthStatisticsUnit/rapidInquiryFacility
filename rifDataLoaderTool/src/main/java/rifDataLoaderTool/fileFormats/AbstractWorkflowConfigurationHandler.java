@@ -1,15 +1,16 @@
 
 package rifDataLoaderTool.fileFormats;
 
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
-import rifGenericLibrary.util.XMLUtility;
-import rifGenericLibrary.util.XMLCommentInjector;
 
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
+
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 

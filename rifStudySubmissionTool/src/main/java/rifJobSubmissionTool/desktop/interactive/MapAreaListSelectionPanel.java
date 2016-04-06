@@ -1,13 +1,10 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericLibrary.presentationLayer.ErrorDialog;
-import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
-import rifGenericLibrary.presentationLayer.NoDataAvailablePanel;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.MapAreaSelectionBasket;
 import rifJobSubmissionTool.system.MapAreaSelectionEvent;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelArea;
@@ -17,12 +14,17 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.User;
 import rifServices.fileFormats.MapAreaListReader;
 import rifServices.fileFormats.MapAreaListWriter;
-import rifServices.fileFormats.XMLFileFilter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
+import rifGenericLibrary.presentationLayer.NoDataAvailablePanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.fileFormats.XMLFileFilter;
+import rifGenericLibrary.businessConceptLayer.User;
 
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;

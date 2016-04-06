@@ -1,10 +1,12 @@
 package rifServices.fileFormats;
 
 
-import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLUtility;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.io.File;
 import java.io.FileOutputStream;

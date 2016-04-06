@@ -2,6 +2,7 @@
 package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.HealthTheme;
+import rifGenericLibrary.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

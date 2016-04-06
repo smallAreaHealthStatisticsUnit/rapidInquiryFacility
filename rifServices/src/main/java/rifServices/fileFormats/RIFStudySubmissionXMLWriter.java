@@ -2,25 +2,17 @@ package rifServices.fileFormats;
 
 import java.io.ByteArrayOutputStream;
 
-
-
-
-
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-
-
-import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.util.zip.ZipOutputStream;
-import java.io.File;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
+
+
+
+import java.io.*;
 
 /**
  *
@@ -154,7 +146,9 @@ public final class RIFStudySubmissionXMLWriter {
 				= new RIFStudySubmissionContentHandler();
 			ByteArrayOutputStream outputStream
 				= new ByteArrayOutputStream();
-			XMLCommentInjector commentInjector = new XMLCommentInjector();			
+			XMLCommentInjector commentInjector 
+				= createXMLCommentInjector();
+			
 			rifStudySubmissionContentHandler.initialise(
 				fileOutputStream, 
 				commentInjector);
@@ -171,7 +165,75 @@ public final class RIFStudySubmissionXMLWriter {
 		}
 	}	
 	
+	private XMLCommentInjector createXMLCommentInjector() {
+		XMLCommentInjector commentInjector
+			= new XMLCommentInjector();
+		
+		String introductionMessage
+			= RIFServiceMessages.getMessage("general.dataSharingComment1");
+		commentInjector.addIntroductionComment(introductionMessage);
 	
+		commentInjector.setRecordToolTipMessage(
+			"user", 
+			"user.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"calculation_method", 
+			"calculationMethod.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"parameter", 
+			"parameter.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"rif_output_option", 
+			"rifOutputOption.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"disease_mapping_study", 
+			"diseaseMappingStudy.label");
+		commentInjector.setRecordToolTipMessage(
+			"comparison_area", 
+			"comparisonArea.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"disease_mapping_study_area", 
+			"diseaseMappingStudyArea.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"age_group",
+			"ageGroup.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"health_code", 
+			"healthCode.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"exposure_covariate", 
+			"exposureCovariate.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"adjustable_covariate", 
+			"adjustableCovariate.toolTip");		
+		commentInjector.setRecordToolTipMessage(
+			"sex", 
+			"sex.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"year_range", 
+			"yearRange.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"year_interval", 
+			"yearInterval.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"geolevel_select", 
+			"geoLevelSelect.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"geolevel_area", 
+			"geoLevelArea.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"geolevel_view", 
+			"geoLevelView.toolTip");
+		commentInjector.setRecordToolTipMessage(
+			"geolevel_to_map", 
+			"geoLevelToMap.toolTip");
+		commentInjector.setFieldToolTipMessage(
+			"health_code", 
+			"code", 
+			"healthCode.code.toolTip");
+		
+		return commentInjector;
+	}
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

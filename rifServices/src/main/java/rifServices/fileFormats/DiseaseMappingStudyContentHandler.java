@@ -1,14 +1,15 @@
 
 package rifServices.fileFormats;
 
-import rifGenericLibrary.presentationLayer.HTMLUtility;
-
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.Geography;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLUtility;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

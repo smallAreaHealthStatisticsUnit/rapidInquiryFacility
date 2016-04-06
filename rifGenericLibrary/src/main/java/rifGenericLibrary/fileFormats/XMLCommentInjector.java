@@ -1,5 +1,5 @@
 
-package rifGenericLibrary.util;
+package rifGenericLibrary.fileFormats;
 
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
@@ -297,7 +297,7 @@ public final class XMLCommentInjector {
 	 * @param recordTagName the record tag name
 	 * @param propertyName the property name
 	 */
-	private void setRecordToolTipMessage(
+	public void setRecordToolTipMessage(
 		final String recordTagName,
 		final String propertyName) {
 		
@@ -313,7 +313,7 @@ public final class XMLCommentInjector {
 	 * @param fieldTagName the field tag name
 	 * @param propertyName the property name
 	 */
-	private void setFieldToolTipMessage(
+	public void setFieldToolTipMessage(
 		final String recordTagName, 
 		final String fieldTagName,
 		final String propertyName) {

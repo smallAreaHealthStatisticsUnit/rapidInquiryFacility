@@ -41,7 +41,7 @@
  * classes are in the <code>rifServices.util</code> package and are:
  * <ul>
  * <li>{@link rifGenericLibrary.presentationLayer.HTMLUtility}</li>
- * <li>{@link rifServices.fileFormats.XMLUtility}</li>
+ * <li>{@link rifGenericLibrary.fileFormats.XMLUtility}</li>
  * </ul>
  * </p>
  * 

@@ -1,9 +1,10 @@
 
 package rifServices.fileFormats;
 
-import rifGenericLibrary.presentationLayer.HTMLUtility;
 import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.fileFormats.XMLUtility;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

@@ -1,11 +1,13 @@
 
 package rifServices.fileFormats;
 
-import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
-
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
+
+import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;

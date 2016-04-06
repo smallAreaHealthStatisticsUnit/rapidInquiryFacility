@@ -3,6 +3,7 @@ package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.AgeGroup;
+import rifGenericLibrary.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

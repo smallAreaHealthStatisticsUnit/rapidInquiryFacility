@@ -1,5 +1,5 @@
 
-package rifGenericLibrary.util;
+package rifGenericLibrary.fileFormats;
 
 import java.io.*;
 

@@ -1,20 +1,18 @@
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
-
-
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.User;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
+
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.businessConceptLayer.User;
 
 import javax.swing.JDialog;
-
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
 import javax.swing.JOptionPane;
 
 

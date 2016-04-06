@@ -1,10 +1,11 @@
 
 package rifServices.fileFormats;
 
-import rifGenericLibrary.presentationLayer.HTMLUtility;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.Geography;
-
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLUtility;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

@@ -3,6 +3,7 @@ package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

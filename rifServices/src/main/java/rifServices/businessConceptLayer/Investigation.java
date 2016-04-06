@@ -7,7 +7,7 @@ import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifServices.util.RIFComparisonUtility;
+import rifGenericLibrary.util.RIFComparisonUtility;
 
 import java.text.Collator;
 import java.util.ArrayList;

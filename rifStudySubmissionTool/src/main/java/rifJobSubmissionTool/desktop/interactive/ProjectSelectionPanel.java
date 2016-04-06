@@ -1,14 +1,16 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
+
+import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.system.RIFServiceMessages;
+
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OrderedListComboBox;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
-import rifServices.businessConceptLayer.Project;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.User;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.system.RIFServiceMessages;
 
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
