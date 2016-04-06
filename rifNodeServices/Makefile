@@ -213,7 +213,8 @@ MODULE_LIST=$(patsubst node_modules/%/package.json,%,$(MODULE_JSON))
 # Forever (NPM daemon control)
 #
 FOREVER=node_modules\\forever\\bin\\forever
-FOREVER_OPTIONS=--trace-gc --expose-gc
+NODE_MAX_MEMORY?=4096
+FOREVER_OPTIONS=--max-old-space-size=$(NODE_MAX_MEMORY) --expose-gc
 FOREVER_VERBOSE=-verbose
 FOREVER_LOGGING=-l forever.log -e forever.err -o forever.log --append
 

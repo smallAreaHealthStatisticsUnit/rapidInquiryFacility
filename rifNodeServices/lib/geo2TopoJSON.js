@@ -279,16 +279,24 @@ geo2TopoJSONFile=function(d, ofields, topojson_options, stderr, response) {
 			transfer_time: '',
 			uncompress_time: undefined,
 			uncompress_size: undefined
-		};				
-		d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
-
+		};
+		
+//		var str=d.file.file_data.replace(/(\r\n|\n|\r)/gm, "");		
+//		msg="\nSTR(" + str.length + "): " + d.file.file_data.toString('ascii', 0, 240) + "\nSTR replaced: " + str.toString('ascii', 0, 240);
+//		response.message = response.message + msg;	
+//		d.file.file_data=str;
+		
 		// Re-route topoJSON stderr to stderr.str
 		stderr.disable();
+		
+		d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
+		
 		var lstart = new Date().getTime();			
 		d.file.topojson = topojson.topology({   // Convert geoJSON to topoJSON
 			collection: d.file.jsonData
 			}, topojson_options);				
 		stderr.enable(); 				   // Re-enable stderr
+		str=undefined;
 		
 		d.file.topojson_stderr=stderr.str();  // Get stderr as a string	
 		stderr.clean();						// Clean down stderr string
@@ -325,25 +333,26 @@ geo2TopoJSONFile=function(d, ofields, topojson_options, stderr, response) {
 		return d.file.topojson;								   
 	} catch (e) {                            // Catch conversion errors
 
+		d.file.topojson_stderr=stderr.str();  // Get stderr as a string	
+		stderr.clean();						// Clean down stderr string
 		stderr.restore();                  // Restore normal stderr functionality 	
 		if (!d.file.jsonData) {
-			msg="does not seem to contain valid JSON";
+			msg="does not seem to contain valid JSON: ";
 		}
 		else {
-			msg="does not seem to contain valid TopoJSON";
+			msg="does not seem to contain valid TopoJSON: ";
 		}
-		msg="Your input file " + d.no_files + ": " + 
+		msg+="\nCaught error: " + e.message + "Stack >>>\n" + e.stack + "\n<< End of stack";
+		msg+="\nYour input file " + d.no_files + ": " + 
 			d.file.file_name + "; size: " + d.file.file_data.length + 
-			"; " + msg + ": \n" + "Debug message:\n" + response.message + "\n\n";
-		if (d.file.file_data.length > (1024*1024*1024)) { // >1 GB - causes exception in d.file.file_data.toString()
-			msg=msg + "\nTruncated data (>1GB).";
-		}
-		else if (d.file.file_data.length > 0) { // Add first 132 chars of file to message
-			var truncated_data=d.file.file_data.toString().substring(0, 132);
+			"; " + msg + ": \n" + "Debug message:\n" + response.message + "\n\n" + 
+			"stderr >>>\n" + d.file.topojson_stderr + "\n<<< end of stderr";
+		if (d.file.file_data.length > 0) { // Add first 240 chars of file to message
+			var truncated_data=d.file.file_data.toString('ascii', 0, 240);
 			if (!/^[\x00-\x7F]*$/.test(truncated_data)) { // Test if not ascii
-				truncated_data=d.file.file_data.toString('hex').substring(0, 132); // Binary: display as hex
+				truncated_data=d.file.file_data.toString('hex', 0, 240); // Binary: display as hex
 			}
-			if (truncated_data.length > 132) {
+			if (truncated_data.length < d.file.file_data.length) {
 				msg=msg + "\nTruncated data:\n" + truncated_data + "\n";
 			}
 			else {

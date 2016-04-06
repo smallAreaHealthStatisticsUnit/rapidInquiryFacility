@@ -120,4 +120,10 @@ DEFAULT_WINDOWS_ADMIN_USER=Administrator
 #CREATE_SAHSULAND_ONLY=N
 
 #
+# Node --max-old-space-size in MB. Leave at least 5G for Windows or you will swap!
+# Default is 4G
+#
+#NODE_MAX_MEMORY=4096
+
+#
 # Eof

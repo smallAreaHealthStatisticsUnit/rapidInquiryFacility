@@ -180,12 +180,20 @@ if (global.gc) {
 //	v8.setFlagsFromString('--trace_external_memory');
 }
 
+var usage=process.memoryUsage();
+console.error('Memory usage >>>');
+for (var key in usage) {
+	console.error(key + ": " + usage[key]);
+}
+console.error('<<< End of memory usage.');
+
 var heap=v8.getHeapStatistics();
 console.error('Memory heap >>>');
 for (var key in heap) {
 	console.error(key + ": " + heap[key]);
 }
 console.error('<<< End of memory heap.');
+
 if (v8.getHeapSpaceStatistics) { // Currently not exposed, altough in manual; --trace_gc turned on to compensate; appears in forever.log
 	var heapSpace=v8.getHeapSpaceStatistics();
 	console.error('Memory heap space >>>');

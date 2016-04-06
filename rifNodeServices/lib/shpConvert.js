@@ -285,12 +285,10 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	 */
 	var readShapeFile = function(shapefileData) {
 		var recLen=0;
-		var readNextRecord = function() {
-			reader.readRecord(shapefileReader); 	// Read next record	
-		}
 		var msg;
 		var fileNoExt = path.basename(shapefileData["shapeFileName"]);
 		const v8 = require('v8');
+		var featureList = [];
 			
 		/*
 	 	 * Function: 	shapefileReader()
@@ -313,30 +311,30 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					rval.msg+=msg;
 				return rval;					
 			}
-			else if (record.bbox) { // Header		
-				recLen+=JSON.stringify(record).length;
+			else if (record.bbox) { // Header						
+				var lRec=JSON.stringify(record);
+				recLen+=lRec.length;
+				lRec=undefined;
 				msg="shapefile read header for: " + fileNoExt;
 				response.message+="\n" + msg;					
 				response.file_list[shapefileData["shapefile_no"]-1].geojson={type: "FeatureCollection", bbox: record.bbox, features: []};
-				process.nextTick(readNextRecord);	// Read next record
+				
+				record=undefined;	
+				
+				process.nextTick(reader.readRecord, shapefileReader);	// Read next record
 			}
 			else if (record !== shapefile.end) {
-				var recNo=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length+1;
-				recLen+=JSON.stringify(record).length;
+				var recNo=featureList.length+1;
+				var lRec=JSON.stringify(record);
+				recLen+=lRec.length;
+				lRec=undefined;
+				
 				var doTrace=false;
 				
 				msg="shapefile read [" + recNo + "] for: " + fileNoExt + "; size: " + recLen;
 				if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1) { // Print read record diagnostics every 1000 shapefile records
 					doTrace=true;
 					if (recLen > 50*1024*1024) { // 50 MB
-						if (global.gc) {
-							var heap=v8.getHeapStatistics();
-							msg+="\nMemory heap >>>";
-							for (var key in heap) {
-								msg+="\n" + key + ": " + heap[key];
-							}
-							msg+="\n<<< End of memory heap";
-						}
 						serverLog.serverLog2(__file, __line, "readShapeFile", "In readShapeFile(), " + msg, shapefileData["req"]);
 					}
 					response.message+="\n" + msg;
@@ -344,8 +342,8 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 
 				if (mySrs.srid != "4326") { // Re-project to 4326
 					try {
-						msg="shapefile read [" + recNo	+ "] call reproject.toWgs84() for: " + fileNoExt;
-						if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length == 0) { // Re-project BBOX with no features (or you will shrink it to the first feature!)
+						msg="\nshapefile read [" + recNo	+ "] call reproject.toWgs84() for: " + fileNoExt;
+						if (featureList.length == 0) { // Re-project BBOX with no features (or you will shrink it to the first feature!)
 							msg+="\nBounding box conversion from (" + mySrs.srid + "): " +
 								"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
 								"ymin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1] + ", " +
@@ -376,7 +374,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 								"xmax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2] + ", " +
 								"ymax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3] + "];";
 						}
-						response.file_list[shapefileData["shapefile_no"]-1].geojson.features.push(
+						featureList.push(
 							reproject.toWgs84(
 								{type: "FeatureCollection", bbox: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox, features: [record]}, 
 								"EPSG:" + mySrs.srid, 
@@ -389,18 +387,34 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 							"] File: " + shapefileData["shapeFileName"] + "\n" + 
 							"\nProjection data:\n" + prj + "\n<<<" +
 							"\nCRSS database >>>\n" + JSON.stringify(crss, null, 2) + "\n<<<" +
-							"\nGeoJSON sample >>>\n" + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson, null, 2).substring(0, 600) + "\n<<<", 
+							"\nGeoJSON sample >>>\n" + JSON.stringify(featureList, null, 2).substring(0, 600) + "\n<<<", 
 							shapefileData["req"], e);	
 	//						callback();	// Not needed - serverError2() raises exception 
 					}
 				}
 				else {
-					response.file_list[shapefileData["shapefile_no"]-1].geojson.features.push(record); 		// Add feature to collection
+					featureList.push(record); 		// Add feature to collection
 				}
-				
-				process.nextTick(readNextRecord); 	// Read next record
+
+				record=undefined;	
+				// Force garbage collection
+				if (global.gc && recLen > (1024*1024*500) && ((recNo/10000)-Math.floor(recNo/10000)) == 0) { // GC if json > 500M;  every 10K records
+					global.gc();
+					var heap=v8.getHeapStatistics();
+					msg+="\nMemory heap >>>";
+					for (var key in heap) {
+						msg+="\n" + key + ": " + heap[key];
+					}
+					msg+="\n<<< End of memory heap";
+					serverLog.serverLog2(__file, __line, "readShapeFile", "OK [" + shapefileData["uuidV1"] + 
+						"] Force garbage collection shapefile at read [" + recNo + "] for: " + fileNoExt + "; size: " + recLen + msg, shapefileData["req"]);					
+				}
+
+				process.nextTick(reader.readRecord, shapefileReader); 	// Read next record
 			}
 			else {
+				response.file_list[shapefileData["shapefile_no"]-1].geojson.features=featureList;
+				featureList=undefined;
 				var recNo=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;				
 				msg="shapefile read [" + recNo	+ "] completed for: " + fileNoExt;
 				if (recLen > 50*1024*1024) { // 50 MB
@@ -948,7 +962,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 		for (var i = 0; i < response.no_files; i++) {
 //			response.message+="\nFreeing " + d_files.d_list[i].file.file_size + " bytes for file: " + d_files.d_list[i].file.file_name;
 			d_files.d_list[i].file.file_data=undefined;
-			if (global.gc && d_files.d_list[i].file.file_size > (1024*1024*500)) { // GC is file > 500M
+			if (global.gc && d_files.d_list[i].file.file_size > (1024*1024*500)) { // GC if file > 500M
 				serverLog.serverLog2(__file, __line, "Force garbage collection for file: " + d_files.d_list[i].file.file_name, fileData["req"]);
 				global.gc();
 			}

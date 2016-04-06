@@ -355,6 +355,7 @@ Test harness refactor; Node.js version working
 	* Tested 1.1G coa2011 shapefile on 8G laptop - ran out of memory at around 62,000 records (out of 181,408). Json size = 273,018,806; 
 	  total available size = 1,486,054,944. Although uses process.nextTick() it is recursive; could rewrite as async queue to reduce 
 	  memory usage. Will add 8GB more RAM. Memory from file processing stage has been released.
+	* Test with more memory: --max-old-space-size==8192 (8GB); ran out at 206,000 records, JSON: 1,509,263,516 (file must be UK not England!) 
 	  
 	Current TODO list aimed at Judy Qualters visit:
 
