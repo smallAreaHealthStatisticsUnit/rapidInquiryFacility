@@ -29,25 +29,58 @@
 		</xs:element>
         <xs:element name="shapeFileList">
 		  <xs:annotation>
-            <xs:documentation>Set of shapefiles selewcted by user.</xs:documentation>
+            <xs:documentation>Set of shapefiles selected by user</xs:documentation>
           </xs:annotation>		
           <xs:complexType>
             <xs:sequence>
               <xs:element name="shapeFiles" maxOccurs="unbounded" minOccurs="1">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element type="xs:string" name="primaryKey"/>
-                    <xs:element type="xs:short" name="areas"/>
-                    <xs:element type="xs:int" name="points"/>
+                    <xs:element type="xs:string" name="primaryKey">
+		              <xs:annotation>
+                        <xs:documentation>Primary key; defaulted to id; auto added if not present</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>				
+                    <xs:element type="xs:short" name="areas">
+		              <xs:annotation>
+                        <xs:documentation>Number of polygonal areas (records) in shape file</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>				
+                    <xs:element type="xs:int" name="points">
+		              <xs:annotation>
+                        <xs:documentation>Number of points in a shape file</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>				
                     <xs:element name="dbfFieldList">
+		              <xs:annotation>
+                        <xs:documentation>List of fields in shape file DBF file</xs:documentation>
+                      </xs:annotation>	
                       <xs:complexType>
                         <xs:sequence>
-                          <xs:element type="xs:string" name="dbfFields" maxOccurs="unbounded" minOccurs="1"/>
+                          <xs:element type="xs:string" name="dbfFields" maxOccurs="unbounded" minOccurs="1">
+		                  <xs:annotation>
+                            <xs:documentation>DBF file field name</xs:documentation>
+                          </xs:annotation>	
+	    	            </xs:element>	
                         </xs:sequence>
                       </xs:complexType>
                     </xs:element>
-                    <xs:element type="xs:string" name="uniqueKey"/>
-                    <xs:element type="xs:byte" name="geolevelId"/>
+                    <xs:element type="xs:string" name="uniqueKey">
+		              <xs:annotation>
+                        <xs:documentation>DBF field name containing the unique code for each area. This is usually a code and is not guaranteed unique 
+						until the geomtric data is converted into multipolygons</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>
+                    <xs:element type="xs:string" name="uniqueName">
+		              <xs:annotation>
+                        <xs:documentation>DBF field name containing the unique name for each area. This is usually a name and is not guaranteed unique</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>
+                    <xs:element type="xs:byte" name="geolevelId" maxOccurs="unbounded" minOccurs="1">
+		              <xs:annotation>
+                        <xs:documentation>Geoelevel ID; lowest resolution: 1</xs:documentation>
+                      </xs:annotation>	
+	                </xs:element>	
                     <xs:element type="xs:string" name="geolevelName"/>
                     <xs:element type="xs:string" name="geolevelDescription"/>
                     <xs:element type="xs:string" name="shapeFileName"/>
@@ -70,10 +103,27 @@
           </xs:annotation>		
           <xs:complexType>
             <xs:sequence>
-              <xs:element type="xs:string" name="projectionName"/>
-              <xs:element type="xs:string" name="proj4"/>
-              <xs:element type="xs:short" name="srid"/>
+              <xs:element type="xs:string" name="projectionName">
+			    <xs:annotation>
+				  <xs:documentation>Name of the projection, derived from the projection file</xs:documentation>
+			    </xs:annotation>
+              </xs:element>
+              <xs:element type="xs:string" name="proj4">
+			    <xs:annotation>
+				  <xs:documentation>Cartogrpahic projection transformation information, derived from the projection file. Used by Leaflet.</xs:documentation>
+			    </xs:annotation>
+              </xs:element>
+              <xs:element type="xs:short" name="srid">
+			    <xs:annotation>
+				  <xs:documentation>A Spatial Reference System Identifier (SRID) is a unique value used to unambiguously identify projected, 
+				  unprojected, and local spatial coordinate system definitions. Usually derived from the projection file, but may need to be entered by the user. 
+				  Will become database column GEODATALOADER_GEOGRAPHIES.SRID. Required by geosptial database geometric datatypes</xs:documentation>
+			    </xs:annotation>
+              </xs:element>
               <xs:element name="boundingBox">
+			    <xs:annotation>
+				  <xs:documentation>Bounding box co-ordinates, derived from the shapefile. Used to convert to SRID 4326 (WGS 84) required for Leaflet</xs:documentation>
+			    </xs:annotation>
                 <xs:complexType>
                   <xs:sequence>
                     <xs:element type="xs:float" name="xmin"/>

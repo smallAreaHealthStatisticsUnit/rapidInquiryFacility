@@ -361,14 +361,15 @@ Test harness refactor; Node.js version working
 		* topojson runs out of memory (works in the samne way as shpConvert;
 		* geo2topojson cannot parse >1G because Buffer.toString() fails, likewise for attempts to remove linefeeds; needs fixing using json stream;
 		This is to see if shpConvert is better writing to a file and then reading in the file; it probably is *not*.
+	* Add XML configuration using xml2js
 		
 	Current TODO list aimed at Judy Qualters visit:
 
-	* Add XML configuration using xml2js
 	* Move shpConvert.html to Node express server; make so does not need network. Also needed for IE
 	* Add topoJSON support
 	* Zip file support. Convert zlib, zip file support to async
 	* Detect area mismatch between shapefiles
+	* Check that minuimum resolution shapefile has only 1 area  
 	* Add tests:
 		i. Unsupported projection files (modify proj data slightly...)
 		ii. Wrong shapefile in set

@@ -61,6 +61,7 @@
         <dbfFields>LEVEL3</dbfFields>
       </dbfFieldList>
       <uniqueKey>To be added from dbfFieldList</uniqueKey>
+      <uniqueName>To be added from dbfFieldList</uniqueName>
       <geolevelId>3</geolevelId>
       <geolevelName>To be added</geolevelName>
       <geolevelDescription>To be added</geolevelDescription>

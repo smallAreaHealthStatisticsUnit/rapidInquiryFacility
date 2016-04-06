@@ -737,6 +737,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 						dbfFields: response.file_list[ngeolevels[i].i].dbf_fields
 					},
 					uniqueKey:						"To be added from dbfFieldList",
+					uniqueName:						"To be added from dbfFieldList",
 					geolevelId: 					ngeolevels[i].geolevel_id,
 					geolevelName: 					"To be added",
 					geolevelDescription: 			"To be added",
