@@ -598,10 +598,6 @@ public final class RIFDataType
 			
 		ArrayList<ValidationRule> otherValidationRules
 			= otherRIFDataType.getValidationRules();
-		System.out.println("RDT dt=="+getDisplayName()+"==val size=="+validationRules.size() + "==other dt=="+otherRIFDataType.getDisplayName()+"==val size=="+otherRIFDataType.getValidationRules().size()+"==");
-		int q = 1;
-		q = q - 1;
-		int x = 6 / q;
 		if (ValidationRule.validationRulesAreEqual(
 			validationRules, 
 			otherValidationRules) == false) {
