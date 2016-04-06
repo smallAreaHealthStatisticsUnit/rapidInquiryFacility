@@ -1,14 +1,9 @@
-package rifServices.businessConceptLayer;
+package rifGenericLibrary.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.system.*;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
-
 
 /**
  *
@@ -161,7 +156,7 @@ final public class User {
 	public String getRecordType() {
 		
 		String recordType
-			= RIFServiceMessages.getMessage("user.label");
+			= RIFGenericLibraryMessages.getMessage("user.label");
 		return recordType;
 	}
 	
@@ -201,8 +196,7 @@ final public class User {
 	 *
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void checkErrors(
-		final ValidationPolicy validationPolicy) 
+	public void checkErrors() 
 		throws RIFServiceException {
 
 		ArrayList<String> errorMessages = new ArrayList<String>();
@@ -211,9 +205,9 @@ final public class User {
 		if (fieldValidationUtility.isEmpty(userID)) {
 			String recordType = getRecordType();
 			String userIDFieldName
-				= RIFServiceMessages.getMessage("user.userID.label");
+				= RIFGenericLibraryMessages.getMessage("user.userID.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					userIDFieldName);
@@ -223,9 +217,9 @@ final public class User {
 		if (fieldValidationUtility.isEmpty(ipAddress)) {
 			String recordType = getRecordType();
 			String ipAddressFieldName
-				= RIFServiceMessages.getMessage("user.ipAddress.label");
+				= RIFGenericLibraryMessages.getMessage("user.ipAddress.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					ipAddressFieldName);
@@ -234,7 +228,9 @@ final public class User {
 		
 		if (errorMessages.size() > 0) {
 			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError.INVALID_USER, errorMessages);
+				= new RIFServiceException(
+					RIFGenericLibraryError.INVALID_USER, 
+					errorMessages);
 			throw rifServiceException;
 		}
 	}
@@ -250,14 +246,14 @@ final public class User {
 		String recordType = getRecordType();
 		if (userID != null) {
 			String userIDFieldName
-				= RIFServiceMessages.getMessage("user.userID.label");
+				= RIFGenericLibraryMessages.getMessage("user.userID.label");
 			FieldValidationUtility fieldValidationUtility = new FieldValidationUtility();	
 			fieldValidationUtility.checkMaliciousCode(recordType, userIDFieldName, userID);
 		}
 		
 		if (ipAddress != null) {
 			String ipAddressFieldName
-				= RIFServiceMessages.getMessage("user.ipAddress.label");
+				= RIFGenericLibraryMessages.getMessage("user.ipAddress.label");
 			FieldValidationUtility fieldValidationUtility = new FieldValidationUtility();	
 			fieldValidationUtility.checkMaliciousCode(recordType, ipAddressFieldName, ipAddress);			
 		}

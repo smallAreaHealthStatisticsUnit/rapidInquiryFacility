@@ -2,15 +2,14 @@ package rifServices.test.services;
 
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.system.RIFServiceError;
-
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -157,7 +156,7 @@ public final class GetYearRange
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.INVALID_USER,
+				RIFGenericLibraryError.INVALID_USER,
 				1);
 		}
 	}

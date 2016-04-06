@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -16,7 +17,6 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.MapAreaSummaryData;
 import rifServices.businessConceptLayer.BoundaryRectangle;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -1272,7 +1272,7 @@ final class SQLMapDataManager
 		
 		ValidationPolicy validationPolicy = getValidationPolicy();
 		
-		user.checkErrors(validationPolicy);
+		user.checkErrors();
 		geography.checkErrors(validationPolicy);
 		geoLevelSelect.checkErrors(validationPolicy);
 		geoLevelView.checkErrors(validationPolicy);

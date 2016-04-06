@@ -5,10 +5,11 @@ import java.util.Date;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.businessConceptLayer.RIFUserRole;
+
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
 
 import java.sql.*;
 

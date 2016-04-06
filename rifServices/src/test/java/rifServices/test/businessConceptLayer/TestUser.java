@@ -1,9 +1,9 @@
 package rifServices.test.businessConceptLayer;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.businessConceptLayer.User;
-import rifServices.system.RIFServiceError;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.test.AbstractRIFTestCase;
 import static org.junit.Assert.*;
 
@@ -114,7 +114,7 @@ public final class TestUser
 	public void acceptValidInstance_COMMON() {
 		User user = User.createCopy(masterUser);
 		try {
-			user.checkErrors(getValidationPolicy());
+			user.checkErrors();
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -129,34 +129,34 @@ public final class TestUser
 
 		User user = User.newInstance("", "11.111.11.228");
 		try {
-			user.checkErrors(getValidationPolicy());
+			user.checkErrors();
 		}
 		catch(RIFServiceException rifServiceException) {
-			this.checkErrorType(rifServiceException, RIFServiceError.INVALID_USER, 1);
+			this.checkErrorType(rifServiceException, RIFGenericLibraryError.INVALID_USER, 1);
 		}
 		
 		user = User.newInstance(null, "11.111.11.228");		
 		try {
-			user.checkErrors(getValidationPolicy());
+			user.checkErrors();
 		}
 		catch(RIFServiceException rifServiceException) {
-			this.checkErrorType(rifServiceException, RIFServiceError.INVALID_USER, 1);
+			this.checkErrorType(rifServiceException, RIFGenericLibraryError.INVALID_USER, 1);
 		}
 
 		user = User.newInstance("kgarwood", "");		
 		try {
-			user.checkErrors(getValidationPolicy());
+			user.checkErrors();
 		}
 		catch(RIFServiceException rifServiceException) {
-			this.checkErrorType(rifServiceException, RIFServiceError.INVALID_USER, 1);
+			this.checkErrorType(rifServiceException, RIFGenericLibraryError.INVALID_USER, 1);
 		}
 
 		user = User.newInstance("kgarwood", null);		
 		try {
-			user.checkErrors(getValidationPolicy());
+			user.checkErrors();
 		}
 		catch(RIFServiceException rifServiceException) {
-			this.checkErrorType(rifServiceException, RIFServiceError.INVALID_USER, 1);
+			this.checkErrorType(rifServiceException, RIFGenericLibraryError.INVALID_USER, 1);
 		}
 	}
 	

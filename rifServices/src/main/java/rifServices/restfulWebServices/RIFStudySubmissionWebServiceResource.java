@@ -1,5 +1,6 @@
 package rifServices.restfulWebServices;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.*;
 

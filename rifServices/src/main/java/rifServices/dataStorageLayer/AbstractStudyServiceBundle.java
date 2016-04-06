@@ -1,12 +1,12 @@
 package rifServices.dataStorageLayer;
 
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.util.FieldValidationUtility;
 

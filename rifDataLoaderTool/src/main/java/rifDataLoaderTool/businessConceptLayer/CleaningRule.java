@@ -4,9 +4,8 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-
-import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
@@ -390,7 +389,7 @@ public final class CleaningRule
 		
 		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameField);
@@ -400,7 +399,7 @@ public final class CleaningRule
 		
 		if (fieldValidationUtility.isEmpty(searchValue)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					searchFieldName);
@@ -409,7 +408,7 @@ public final class CleaningRule
 				
 		if (fieldValidationUtility.isEmpty(replaceValue)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					replaceFieldName);

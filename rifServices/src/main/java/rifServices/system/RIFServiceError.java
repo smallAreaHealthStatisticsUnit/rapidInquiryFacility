@@ -189,8 +189,7 @@ public enum RIFServiceError {
 	/** The non existent health theme. */
 	NON_EXISTENT_HEALTH_THEME,
 	
-	/** The invalid user. */
-	INVALID_USER,
+
 	
 	/** The invalid health theme. */
 	INVALID_HEALTH_THEME,

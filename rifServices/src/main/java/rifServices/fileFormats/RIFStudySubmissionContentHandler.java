@@ -1,14 +1,13 @@
 
 package rifServices.fileFormats;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
-
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 

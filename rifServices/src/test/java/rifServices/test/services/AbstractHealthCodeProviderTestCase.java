@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import org.junit.After;
 import org.junit.Before;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.businessConceptLayer.User;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 /**

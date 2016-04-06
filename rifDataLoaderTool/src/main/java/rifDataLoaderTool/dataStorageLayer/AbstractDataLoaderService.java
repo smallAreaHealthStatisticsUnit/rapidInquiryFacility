@@ -5,12 +5,12 @@ import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifDataLoaderTool.dataStorageLayer.SQLConnectionManager;
-import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.businessConceptLayer.User;
-import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import org.apache.commons.io.FileUtils;
 
@@ -1959,7 +1959,7 @@ abstract class AbstractDataLoaderService
 			"dataSetConfiguration",
 			dataSetConfiguration);
 		
-		rifManager.checkErrors(ValidationPolicy.STRICT);
+		rifManager.checkErrors();
 
 		//validateUser(rifManager);
 		dataSetConfiguration.checkSecurityViolations();

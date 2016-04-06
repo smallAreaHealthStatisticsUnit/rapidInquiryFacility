@@ -2,13 +2,11 @@ package rifDataLoaderTool.dataStorageLayer;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.util.RIFLogger;
 

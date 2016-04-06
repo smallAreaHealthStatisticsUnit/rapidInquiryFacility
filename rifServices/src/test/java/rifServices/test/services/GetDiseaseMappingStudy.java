@@ -1,5 +1,6 @@
 package rifServices.test.services;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.*;
@@ -9,7 +10,9 @@ import rifServices.fileFormats.RIFZipFileWriter;
 
 import java.io.File;
 import java.util.ArrayList;
+
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 /**

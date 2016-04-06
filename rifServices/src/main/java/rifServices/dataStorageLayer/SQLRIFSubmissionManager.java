@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 

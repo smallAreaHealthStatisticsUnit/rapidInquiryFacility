@@ -3,6 +3,7 @@ package rifServices.dataStorageLayer;
 import java.util.ArrayList;
 import java.sql.*;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;

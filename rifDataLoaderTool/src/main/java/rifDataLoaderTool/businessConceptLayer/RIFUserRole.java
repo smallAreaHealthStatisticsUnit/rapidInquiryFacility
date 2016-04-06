@@ -3,7 +3,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
-import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.text.Collator;
 
@@ -85,7 +85,7 @@ public enum RIFUserRole {
 		}
 		
 		String name = getName();
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		return collator.equals(name, userRoleName);
 	}
 	

@@ -2,14 +2,15 @@ package rifServices.test.services;
 
 
 import rifServices.businessConceptLayer.Project;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
+
 import java.util.ArrayList;
 
 /**
@@ -123,7 +124,7 @@ public final class GetProjects
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.INVALID_USER,
+				RIFGenericLibraryError.INVALID_USER,
 				1);
 		}		
 	}

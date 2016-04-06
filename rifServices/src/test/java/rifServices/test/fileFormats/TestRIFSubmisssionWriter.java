@@ -1,11 +1,12 @@
 package rifServices.test.fileFormats;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.fileFormats.*;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
+
 
 
 

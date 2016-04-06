@@ -2,6 +2,7 @@ package rifServices.businessConceptLayer;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 
 /**

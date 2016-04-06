@@ -2,6 +2,7 @@ package rifServices.test.businessConceptLayer;
 
 
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.*;

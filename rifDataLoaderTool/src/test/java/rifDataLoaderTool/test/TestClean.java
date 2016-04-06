@@ -1,14 +1,14 @@
 package rifDataLoaderTool.test;
 
 
-import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 import rifDataLoaderTool.dataStorageLayer.*;
 import rifDataLoaderTool.businessConceptLayer.*;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
 import java.io.File;
 
 /**

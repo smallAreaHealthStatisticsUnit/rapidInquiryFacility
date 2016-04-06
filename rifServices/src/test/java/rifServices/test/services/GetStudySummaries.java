@@ -8,13 +8,15 @@ import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.fileFormats.RIFZipFileWriter;
-
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 
 import java.io.File;
 import java.util.ArrayList;
+
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 /**

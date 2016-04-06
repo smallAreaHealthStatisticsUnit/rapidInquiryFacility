@@ -9,10 +9,10 @@ import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-//import rifDataLoaderTool.fileFormats.RIFDataLoadingResultTheme;
-import rifServices.businessConceptLayer.RIFResultTable;
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
@@ -29,7 +29,7 @@ import java.io.*;
 /**
  * provides functionality common to all manager classes associated with different steps
  * of RIF data loading.  For now, all manager classes are expected to need a method for
- * return tabular data in a {@link rifServices.businessConceptLayer.RIFResultTable}.
+ * return tabular data in a {@link rifGenericLibrary.businessConceptLayer.RIFResultTable}.
  *
  * <hr>
  * Copyright 2014 Imperial College London, developed by the Small Area

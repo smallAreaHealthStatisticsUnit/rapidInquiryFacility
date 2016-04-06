@@ -11,8 +11,8 @@ import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
 import rifDataLoaderTool.fileFormats.LinearWorkflowReader;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
 
 import java.io.File;
 import java.text.Collator;

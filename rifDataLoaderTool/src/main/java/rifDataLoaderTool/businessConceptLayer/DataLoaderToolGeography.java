@@ -4,7 +4,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
@@ -206,7 +206,7 @@ public class DataLoaderToolGeography
 			= RIFDataLoaderToolMessages.getMessage("dataLoaderToolGeography.name.label");
 		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					nameFieldName);
@@ -217,7 +217,7 @@ public class DataLoaderToolGeography
 			= RIFDataLoaderToolMessages.getMessage("shapeFile.name.plural.label");		
 		if (shapeFiles.isEmpty()) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					shapeFilesFieldName);

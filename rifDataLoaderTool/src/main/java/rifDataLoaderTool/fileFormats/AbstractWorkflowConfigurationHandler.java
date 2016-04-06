@@ -3,8 +3,8 @@ package rifDataLoaderTool.fileFormats;
 
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
-import rifServices.fileFormats.XMLUtility;
-import rifServices.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.util.XMLUtility;
+import rifGenericLibrary.util.XMLCommentInjector;
 
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;

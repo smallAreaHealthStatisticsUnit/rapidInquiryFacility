@@ -8,7 +8,7 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifServices.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;

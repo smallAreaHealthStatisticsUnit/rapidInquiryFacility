@@ -1,16 +1,16 @@
 package rifServices.test.services;
 
 import static org.junit.Assert.fail;
-
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
-
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 
 import java.io.File;
 import java.util.ArrayList;
+
 import org.junit.Test;
 
 /**
@@ -181,7 +181,7 @@ public final class SubmitStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.INVALID_USER,
+				RIFGenericLibraryError.INVALID_USER,
 				1);
 		}
 		finally {

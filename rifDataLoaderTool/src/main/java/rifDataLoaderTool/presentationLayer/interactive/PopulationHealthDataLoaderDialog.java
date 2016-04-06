@@ -4,15 +4,14 @@ import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
 import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
-
-import rifServices.businessConceptLayer.User;
-
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.fileFormats.XMLFileFilter;
 import rifGenericLibrary.presentationLayer.*;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;

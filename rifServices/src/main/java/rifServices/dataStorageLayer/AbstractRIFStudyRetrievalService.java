@@ -1,5 +1,7 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.*;

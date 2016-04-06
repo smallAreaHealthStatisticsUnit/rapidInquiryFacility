@@ -6,8 +6,8 @@ import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFConversionFunction;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
 import static org.junit.Assert.*;
 
 import org.junit.Test;

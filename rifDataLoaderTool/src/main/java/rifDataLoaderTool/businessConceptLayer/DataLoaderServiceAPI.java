@@ -1,7 +1,7 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.User;
 
 import java.io.Writer;
 import java.io.File;

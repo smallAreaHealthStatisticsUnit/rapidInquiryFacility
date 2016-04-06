@@ -2,10 +2,10 @@ package rifDataLoaderTool.businessConceptLayer;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -671,7 +671,7 @@ public final class RIFDataType
 		if (fieldValidationUtility.isEmpty(identifier)) {		
 
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					identifierFieldName);
@@ -679,7 +679,7 @@ public final class RIFDataType
 		}
 		else if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameFieldName);
@@ -687,7 +687,7 @@ public final class RIFDataType
 		}
 		else if (fieldValidationUtility.isEmpty(description)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					descriptionFieldName);

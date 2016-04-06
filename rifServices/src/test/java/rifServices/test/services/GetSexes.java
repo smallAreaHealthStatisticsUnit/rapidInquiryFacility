@@ -1,15 +1,15 @@
 package rifServices.test.services;
 
 import rifServices.businessConceptLayer.Sex;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
-
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
+
 import org.junit.Test;
 
 
@@ -144,7 +144,7 @@ public final class GetSexes
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.INVALID_USER,
+				RIFGenericLibraryError.INVALID_USER,
 				1);
 		}
 	}

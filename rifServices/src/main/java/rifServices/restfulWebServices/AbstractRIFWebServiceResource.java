@@ -16,6 +16,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 //import com.fasterxml.jackson.databind.ObjectMapper;
 
 
+
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;

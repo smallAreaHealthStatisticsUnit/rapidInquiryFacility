@@ -2,11 +2,11 @@
 
 package rifServices.fileFormats;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFDateFormat;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 

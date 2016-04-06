@@ -1,9 +1,8 @@
 package rifDataLoaderTool.dataStorageLayer;
 
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-
-import rifServices.businessConceptLayer.User;
 
 import java.io.*;
 import java.sql.Connection;

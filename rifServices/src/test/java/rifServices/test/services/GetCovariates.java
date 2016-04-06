@@ -1,13 +1,16 @@
 package rifServices.test.services;
 
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 
 import java.util.ArrayList;
+
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 
@@ -171,7 +174,7 @@ public final class GetCovariates
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.INVALID_USER, 
+				RIFGenericLibraryError.INVALID_USER, 
 				1);
 		}
 		

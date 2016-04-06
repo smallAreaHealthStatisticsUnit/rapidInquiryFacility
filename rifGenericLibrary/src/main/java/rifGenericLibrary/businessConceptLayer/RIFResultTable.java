@@ -1,4 +1,4 @@
-package rifServices.businessConceptLayer;
+package rifGenericLibrary.businessConceptLayer;
 
 
 import java.util.Arrays;

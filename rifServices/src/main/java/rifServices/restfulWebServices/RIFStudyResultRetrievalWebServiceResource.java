@@ -1,5 +1,7 @@
 package rifServices.restfulWebServices;
 
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
 

@@ -5,14 +5,14 @@ import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.AgeGroupSortingOption;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
-
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-
 import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
+
 import org.junit.Test;
 
 /**
@@ -206,7 +206,7 @@ public final class GetAgeGroups
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.INVALID_USER,
+				RIFGenericLibraryError.INVALID_USER,
 				1);
 		}
 	}

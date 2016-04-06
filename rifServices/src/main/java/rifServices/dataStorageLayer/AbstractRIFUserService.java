@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
@@ -23,7 +24,6 @@ import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
-import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.businessConceptLayer.StudySummary;
 import rifServices.system.RIFServiceError;

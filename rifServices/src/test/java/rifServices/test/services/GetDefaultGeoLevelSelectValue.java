@@ -1,14 +1,14 @@
 package rifServices.test.services;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 
@@ -149,7 +149,7 @@ public final class GetDefaultGeoLevelSelectValue
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.INVALID_USER,
+				RIFGenericLibraryError.INVALID_USER,
 				1);
 		}
 	}

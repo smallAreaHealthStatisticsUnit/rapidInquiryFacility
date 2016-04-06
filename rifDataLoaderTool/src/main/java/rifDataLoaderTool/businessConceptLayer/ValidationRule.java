@@ -5,8 +5,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-
-import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
@@ -355,7 +354,7 @@ public final class ValidationRule
 			
 		if (fieldValidationUtility.isEmpty(validValue)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					validFieldName);

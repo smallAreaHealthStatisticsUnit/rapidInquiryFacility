@@ -2,13 +2,12 @@ package rifServices.test.services;
 
 
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
-
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 
@@ -167,7 +166,7 @@ public final class GetStatusUpdates
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.INVALID_USER, 
+				RIFGenericLibraryError.INVALID_USER, 
 				1);
 		}	
 	}

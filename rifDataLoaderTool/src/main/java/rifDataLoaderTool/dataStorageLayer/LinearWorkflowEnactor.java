@@ -9,7 +9,7 @@ import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.businessConceptLayer.User;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 

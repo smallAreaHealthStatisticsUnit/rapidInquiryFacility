@@ -4,9 +4,10 @@ import java.io.ByteArrayOutputStream;
 
 
 
+
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.businessConceptLayer.User;
 
 
 import rifServices.system.RIFServiceError;

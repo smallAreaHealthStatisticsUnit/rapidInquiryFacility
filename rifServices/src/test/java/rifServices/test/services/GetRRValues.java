@@ -1,14 +1,13 @@
 package rifServices.test.services;
 
 import rifServices.system.RIFServiceError;
-import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.StudySummary;
-import rifServices.businessConceptLayer.RIFResultTable;
-
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 /**
@@ -134,7 +133,7 @@ public final class GetRRValues
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.INVALID_USER,
+				RIFGenericLibraryError.INVALID_USER,
 				1);
 		}
 	}

@@ -1,8 +1,8 @@
 package rifServices.studyDataExtraction;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.test.services.AbstractRIFServiceTestCase;
-import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
 

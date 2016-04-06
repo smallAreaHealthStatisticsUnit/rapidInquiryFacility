@@ -1,14 +1,13 @@
 package rifServices.test.services;
 
-import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.GeoLevelAttributeSource;
 import rifServices.system.RIFServiceError;
-
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 
@@ -158,7 +157,7 @@ public final class GetPyramidDataByYear
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.INVALID_USER, 
+				RIFGenericLibraryError.INVALID_USER, 
 				1);
 		}
 	}

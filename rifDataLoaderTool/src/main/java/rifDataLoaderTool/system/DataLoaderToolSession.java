@@ -3,9 +3,7 @@ package rifDataLoaderTool.system;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-
-import rifServices.businessConceptLayer.User;
-
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
 /**

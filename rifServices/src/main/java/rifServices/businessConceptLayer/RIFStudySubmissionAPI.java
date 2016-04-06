@@ -1,5 +1,6 @@
 package rifServices.businessConceptLayer;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.awt.image.BufferedImage;

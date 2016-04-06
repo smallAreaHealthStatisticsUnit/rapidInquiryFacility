@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
@@ -15,7 +16,6 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Investigation;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 

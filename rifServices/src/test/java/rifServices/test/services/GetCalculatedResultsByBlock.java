@@ -1,15 +1,15 @@
 package rifServices.test.services;
 
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.StudySummary;
-import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.businessConceptLayer.User;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.system.RIFServiceError;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 /**
@@ -175,7 +175,7 @@ public final class GetCalculatedResultsByBlock
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.INVALID_USER, 
+				RIFGenericLibraryError.INVALID_USER, 
 				1);
 		}
 	}

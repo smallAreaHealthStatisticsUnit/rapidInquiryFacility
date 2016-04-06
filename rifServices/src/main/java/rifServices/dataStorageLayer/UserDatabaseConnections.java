@@ -10,10 +10,10 @@ import java.util.Set;
 import java.util.Collections;
 import java.util.Iterator;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 

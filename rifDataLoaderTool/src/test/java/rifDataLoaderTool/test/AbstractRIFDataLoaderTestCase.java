@@ -3,10 +3,9 @@ package rifDataLoaderTool.test;
 
 
 import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
-
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.RIFResultTable;
-import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
 import rifServices.test.AbstractRIFTestCase;
 import rifGenericLibrary.util.FieldValidationUtility;

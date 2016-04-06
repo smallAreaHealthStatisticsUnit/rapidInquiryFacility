@@ -9,12 +9,12 @@ import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.RIFResultTable;
 
 import java.io.*;
 import java.sql.*;

@@ -4,9 +4,8 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-
-import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.io.File;
@@ -405,7 +404,7 @@ public class ShapeFile
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(shapeFileDescription)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					shapeFileDescriptionFieldLabel);
@@ -414,7 +413,7 @@ public class ShapeFile
 		
 		if (fieldValidationUtility.isEmpty(areaIdentifierFieldName)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					areaIdentifierFieldLabel);
@@ -423,7 +422,7 @@ public class ShapeFile
 		
 		if (fieldValidationUtility.isEmpty(nameFieldName)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					nameFieldLabel);

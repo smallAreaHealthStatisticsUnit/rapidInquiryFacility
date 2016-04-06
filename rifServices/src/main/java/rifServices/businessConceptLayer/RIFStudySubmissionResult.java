@@ -1,10 +1,10 @@
 
 package rifServices.businessConceptLayer;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.RIFServiceInformation;
-import rifServices.businessConceptLayer.User;
 
 import java.util.Date;
 import java.util.ArrayList;
