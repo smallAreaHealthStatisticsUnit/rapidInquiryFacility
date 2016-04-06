@@ -248,7 +248,7 @@ final class CheckWorkflowManager
 				queryFormatter);
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addPaddedQueryLine(0, "FROM");
-			queryFormatter.addPaddedQueryLine(1, "duplicate_rows");
+			queryFormatter.addQueryPhrase(1, "duplicate_rows");
 			
 			logSQLQuery(
 				logFileWriter,
@@ -257,7 +257,6 @@ final class CheckWorkflowManager
 						
 			statement 
 				= createPreparedStatement(connection, queryFormatter);
-			System.out.println("CheckworkflowManager == queryFormatter");
 			System.out.println(queryFormatter.generateQuery());
 			statement.executeUpdate();
 
@@ -603,9 +602,6 @@ final class CheckWorkflowManager
 				exportDirectoryPath, 
 				RIFDataLoadingResultTheme.AUDIT_TRAIL,
 				emptyFieldsDataQualityTableName);
-			
-			System.out.println("=================CheckWorkflowManager ==check empty fields FINISHED===");
-
 		}
 		catch(SQLException sqlException) {
 			logSQLException(
