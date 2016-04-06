@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer;
+package rifGenericLibrary.dataStorageLayer;
 
 
 import java.sql.Connection;
@@ -11,11 +11,12 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -209,31 +210,30 @@ public final class UserDatabaseConnections {
 		catch(ClassNotFoundException classNotFoundException) {
 			classNotFoundException.printStackTrace(System.out);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlConnectionManager.error.unableToLoadDatabaseDriver",
-					userID);
+				= RIFGenericLibraryMessages.getMessage(
+					"db.error.unableToLoadDatabaseDriver");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_LOAD_DRIVER,
+					RIFGenericLibraryError.DB_UNABLE_TO_LOAD_DRIVER,
 					errorMessage);
 			throw rifServiceException;			
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlConnectionManager.error.unableToRegisterUser",
+				= RIFGenericLibraryMessages.getMessage(
+					"db.error.unableToRegisterUser",
 					userID);
 			
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-					SQLConnectionManager.class, 
+					UserDatabaseConnections.class, 
 				errorMessage, 
 				sqlException);
 									
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_REGISTER_USER,
+						RIFGenericLibraryError.DB_UNABLE_REGISTER_USER,
 					errorMessage);
 			throw rifServiceException;		
 		}
@@ -307,12 +307,12 @@ public final class UserDatabaseConnections {
 		synchronized(readOnlyConnectionsLock) {
 			if (availableReadOnlyConnections.isEmpty()) {
 				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"sqlConnectionmanager.error.maximumReadConnectionsExceeded",
+					= RIFGenericLibraryMessages.getMessage(
+						"db.error.maximumReadConnectionsExceeded",
 						userID);
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
-						RIFServiceError.MAXIMUM_READ_CONNECTIONS_EXCEEDED, 
+							RIFGenericLibraryError.DB_MAX_READ_CONNECTIONS_EXCEEDED, 
 						errorMessage);
 				throw rifServiceException;
 			}
@@ -357,12 +357,12 @@ public final class UserDatabaseConnections {
 		synchronized(writeOnlyConnectionsLock) {
 			if (availableWriteOnlyConnections.isEmpty()) {
 				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"sqlConnectionmanager.error.maximumReadConnectionsExceeded",
+					= RIFGenericLibraryMessages.getMessage(
+						"db.error.maximumReadConnectionsExceeded",
 						userID);
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
-						RIFServiceError.MAXIMUM_READ_CONNECTIONS_EXCEEDED, 
+						RIFGenericLibraryError.DB_MAX_WRITE_CONNECTIONS_EXCEEDED, 
 						errorMessage);
 				throw rifServiceException;
 			}
@@ -387,12 +387,6 @@ public final class UserDatabaseConnections {
 			usedWriteOnlyConnections.remove(connection);
 		}
 	}
-	
-	
-	
-	
-	
-	
 	
 	private void setAvailableReadOnlyConnections(
 		final Set<Connection> availableReadOnlyConnections) {
