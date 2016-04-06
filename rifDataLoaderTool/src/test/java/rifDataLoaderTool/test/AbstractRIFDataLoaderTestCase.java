@@ -9,7 +9,7 @@ import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
 import rifServices.test.AbstractRIFTestCase;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import org.junit.After;
 import org.junit.Before;

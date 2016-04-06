@@ -4,7 +4,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 
 import java.util.ArrayList;

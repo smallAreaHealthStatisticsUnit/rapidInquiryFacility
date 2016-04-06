@@ -28,7 +28,7 @@ import rifServices.businessConceptLayer.YearRange;
 import rifServices.businessConceptLayer.StudySummary;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 
 /**

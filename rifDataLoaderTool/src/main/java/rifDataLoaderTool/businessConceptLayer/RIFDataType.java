@@ -3,7 +3,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 import java.util.ArrayList;

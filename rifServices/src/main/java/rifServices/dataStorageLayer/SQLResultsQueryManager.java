@@ -11,7 +11,7 @@ import rifServices.businessConceptLayer.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.sql.*;
 import java.util.ArrayList;

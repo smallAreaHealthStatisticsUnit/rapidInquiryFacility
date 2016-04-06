@@ -16,7 +16,7 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;

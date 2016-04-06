@@ -7,7 +7,7 @@ import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifDataLoaderTool.dataStorageLayer.SQLConnectionManager;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;

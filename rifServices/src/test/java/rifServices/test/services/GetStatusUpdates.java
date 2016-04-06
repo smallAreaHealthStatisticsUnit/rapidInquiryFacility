@@ -1,7 +1,7 @@
 package rifServices.test.services;
 
 
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
 

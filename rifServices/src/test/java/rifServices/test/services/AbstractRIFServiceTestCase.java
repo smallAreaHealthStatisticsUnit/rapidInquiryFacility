@@ -5,7 +5,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.test.AbstractRIFTestCase;
 
 
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.TestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.TestRIFStudyServiceBundle;

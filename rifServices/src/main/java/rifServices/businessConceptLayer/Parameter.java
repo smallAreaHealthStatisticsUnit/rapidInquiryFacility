@@ -9,7 +9,7 @@ import rifServices.businessConceptLayer.AbstractRIFConcept;
 
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -8,7 +8,7 @@ import rifServices.system.RIFServiceError;
 
 
 
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
 

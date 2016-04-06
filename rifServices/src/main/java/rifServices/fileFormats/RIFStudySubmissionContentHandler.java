@@ -10,7 +10,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

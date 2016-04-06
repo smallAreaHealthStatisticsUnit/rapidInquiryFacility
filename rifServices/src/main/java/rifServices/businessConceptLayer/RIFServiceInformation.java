@@ -7,7 +7,7 @@ import rifServices.businessConceptLayer.AbstractRIFConcept;
 
 import java.util.ArrayList;
 
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 
 /**

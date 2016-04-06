@@ -5,7 +5,7 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceError;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

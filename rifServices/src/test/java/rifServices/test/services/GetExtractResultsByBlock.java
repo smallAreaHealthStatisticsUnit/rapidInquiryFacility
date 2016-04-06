@@ -5,7 +5,7 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.StudySummary;
 import rifServices.businessConceptLayer.RIFResultTable;
 import rifServices.businessConceptLayer.User;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.system.RIFServiceError;
 
 import static org.junit.Assert.assertNotNull;

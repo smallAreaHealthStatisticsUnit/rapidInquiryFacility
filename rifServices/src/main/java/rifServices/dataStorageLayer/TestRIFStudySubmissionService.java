@@ -14,7 +14,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.taxonomyServices.HealthCodeProviderInterface;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.sql.Connection;
 import java.util.ArrayList;

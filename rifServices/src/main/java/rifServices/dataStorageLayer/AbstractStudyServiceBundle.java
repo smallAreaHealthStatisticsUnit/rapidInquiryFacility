@@ -8,7 +8,7 @@ import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 /**
  *

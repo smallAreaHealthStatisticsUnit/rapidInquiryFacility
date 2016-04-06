@@ -3,7 +3,7 @@ package rifServices.businessConceptLayer;
 import java.util.ArrayList;
 
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 
 /**

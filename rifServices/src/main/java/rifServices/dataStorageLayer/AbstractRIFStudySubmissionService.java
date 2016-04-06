@@ -4,7 +4,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 
 

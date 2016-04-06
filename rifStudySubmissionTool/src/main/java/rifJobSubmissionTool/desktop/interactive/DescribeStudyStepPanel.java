@@ -14,7 +14,7 @@ import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;

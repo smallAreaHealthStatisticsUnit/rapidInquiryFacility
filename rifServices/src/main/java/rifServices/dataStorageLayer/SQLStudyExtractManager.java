@@ -2,7 +2,7 @@ package rifServices.dataStorageLayer;
 
 
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.User;

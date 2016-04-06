@@ -1,7 +1,7 @@
 package rifServices.test.services;
 
 import rifServices.system.RIFServiceError;
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.GeoLevelAttributeSource;
 import rifServices.businessConceptLayer.GeoLevelAttributeTheme;
 import rifServices.businessConceptLayer.User;

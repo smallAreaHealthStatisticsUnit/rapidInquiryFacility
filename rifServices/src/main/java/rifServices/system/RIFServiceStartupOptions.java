@@ -1,6 +1,6 @@
 package rifServices.system;
 
-import rifServices.util.FieldValidationUtility;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFServiceException;
