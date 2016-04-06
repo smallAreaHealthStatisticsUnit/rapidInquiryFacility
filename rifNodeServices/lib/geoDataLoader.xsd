@@ -3,31 +3,34 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element type="xs:string" name="xmlFileName">
-		 <xs:annotation>
+		  <xs:annotation>
             <xs:documentation>XML file name. Derived from the geographyName if set; uuidV1 if not</xs:documentation>
-         </xs:annotation>
+          </xs:annotation>
 		</xs:element>
         <xs:element type="xs:string" name="xmlFileDir">
-		 <xs:annotation>
+		  <xs:annotation>
             <xs:documentation>Directory the XML file was created in</xs:documentation>
-         </xs:annotation>
+          </xs:annotation>
 		</xs:element>
         <xs:element type="xs:string" name="uuidV1">
-		 <xs:annotation>
+		  <xs:annotation>
             <xs:documentation>V1 UUID. Used as geoDataLoader session key</xs:documentation>
-         </xs:annotation>
+          </xs:annotation>
 		</xs:element>
         <xs:element type="xs:string" name="geographyName">
-		 <xs:annotation>
-            <xs:documentation>Name of shapefile set. Will become database column GEODATALOADER_GEOGRAPHIES.GEOGRAPHY_NAME</xs:documentation>
-         </xs:annotation>
+		  <xs:annotation>
+            <xs:documentation>User entered name of shapefile set. Will become database column GEODATALOADER_GEOGRAPHIES.GEOGRAPHY_NAME</xs:documentation>
+          </xs:annotation>
 		</xs:element>
         <xs:element type="xs:string" name="geographyDescription">
-		 <xs:annotation>
-            <xs:documentation>Description of shapefile set. Will become database column GEODATALOADER_GEOGRAPHIES.GEOGRAPHY_DESCRIPTION</xs:documentation>
-         </xs:annotation>
+		  <xs:annotation>
+            <xs:documentation>User entered description of shapefile set. Will become database column GEODATALOADER_GEOGRAPHIES.GEOGRAPHY_DESCRIPTION</xs:documentation>
+          </xs:annotation>
 		</xs:element>
         <xs:element name="shapeFileList">
+		  <xs:annotation>
+            <xs:documentation>Set of shapefiles selewcted by user.</xs:documentation>
+          </xs:annotation>		
           <xs:complexType>
             <xs:sequence>
               <xs:element name="shapeFiles" maxOccurs="unbounded" minOccurs="1">
@@ -62,6 +65,9 @@
           </xs:complexType>
         </xs:element>
         <xs:element name="projection">
+		  <xs:annotation>
+            <xs:documentation>Projection information derived from shapefiles</xs:documentation>
+          </xs:annotation>		
           <xs:complexType>
             <xs:sequence>
               <xs:element type="xs:string" name="projectionName"/>
@@ -81,24 +87,58 @@
           </xs:complexType>
         </xs:element>
         <xs:element name="simplicationList">
+		  <xs:annotation>
+            <xs:documentation>Zoomlevel simplifications applies to shapefiles</xs:documentation>
+          </xs:annotation>				
           <xs:complexType>
             <xs:sequence>
               <xs:element name="simplification" maxOccurs="unbounded" minOccurs="0">
+			    <xs:annotation>
+				  <xs:documentation>Container for simplification; defaults: 6, 8, 11</xs:documentation>
+			    </xs:annotation>				  
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element type="xs:byte" name="zoomLevel"/>
-                    <xs:element type="xs:string" name="points"/>
-                    <xs:element type="xs:string" name="simplifyPrecision"/>
+                    <xs:element type="xs:byte" name="zoomLevel" maxOccurs="19" minOccurs="0">
+			        <xs:annotation>
+				      <xs:documentation>Map zoomlevel</xs:documentation>
+			        </xs:annotation>					
+                    </xs:element>
+                    <xs:element type="xs:string" name="points">
+			        <xs:annotation>
+				      <xs:documentation>To be defined; may bvecome an average proproprtion of points retained</xs:documentation>
+			        </xs:annotation>					
+                    </xs:element>
+                    <xs:element type="xs:string" name="simplifyPrecision">
+			        <xs:annotation>
+				      <xs:documentation>Precision threshold for Visvalingam simplification</xs:documentation>
+			        </xs:annotation>					
+                    </xs:element>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element type="xs:string" name="defaultStudyArea"/>
-        <xs:element type="xs:string" name="defaultComparisonArea"/>
-        <xs:element type="xs:string" name="hierarchyTableName"/>
-        <xs:element type="xs:string" name="hierarchyTableData"/>
+        <xs:element type="xs:string" name="defaultStudyArea">
+		  <xs:annotation>
+            <xs:documentation>Default study area. RIF specific; optional, automatically set to the highest resolution shapefile. Will become database column GEODATALOADER_GEOGRAPHIES.DEFAULT_STUDY_AREA</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element type="xs:string" name="defaultComparisonArea">
+		  <xs:annotation>
+            <xs:documentation>Default compariason area. RIF specific; optional, automatically set to the second lowest resolution shapefile. Will become database column GEODATALOADER_GEOGRAPHIES.DEFAULT_CONMPARISON_AREA</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element type="xs:string" name="hierarchyTableName">
+		  <xs:annotation>
+            <xs:documentation>Name of hierarchy table. RIF specific; optional, automatically set to &lt;geographyName&gt;_HIERARCHY</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element type="xs:string" name="hierarchyTableData">
+		  <xs:annotation>
+            <xs:documentation>Data for hirarchy table</xs:documentation>
+          </xs:annotation>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
