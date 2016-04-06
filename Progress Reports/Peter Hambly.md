@@ -356,9 +356,15 @@ Test harness refactor; Node.js version working
 	  total available size = 1,486,054,944. Although uses process.nextTick() it is recursive; could rewrite as async queue to reduce 
 	  memory usage. Will add 8GB more RAM. Memory from file processing stage has been released.
 	* Test with more memory: --max-old-space-size==8192 (8GB); ran out at 206,000 records, JSON: 1,509,263,516 (file must be UK not England!) 
-	  
+    * Tests showed that:
+		* shpcat can convert coa2011 to json; it puts lines in it (so it can be parsed by record) but this breaks JSON.parse();
+		* topojson runs out of memory (works in the samne way as shpConvert;
+		* geo2topojson cannot parse >1G because Buffer.toString() fails, likewise for attempts to remove linefeeds; needs fixing using json stream;
+		This is to see if shpConvert is better writing to a file and then reading in the file; it probably is *not*.
+		
 	Current TODO list aimed at Judy Qualters visit:
 
+	* Add XML configuration using xml2js
 	* Move shpConvert.html to Node express server; make so does not need network. Also needed for IE
 	* Add topoJSON support
 	* Zip file support. Convert zlib, zip file support to async
