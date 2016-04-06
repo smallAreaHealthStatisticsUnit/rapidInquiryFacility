@@ -78,19 +78,60 @@
 	    	        </xs:element>
                     <xs:element type="xs:byte" name="geolevelId" maxOccurs="unbounded" minOccurs="1">
 		              <xs:annotation>
-                        <xs:documentation>Geoelevel ID; lowest resolution: 1</xs:documentation>
+                        <xs:documentation>Geoelevel ID; lowest resolution: 1. Automatically generated</xs:documentation>
                       </xs:annotation>	
 	                </xs:element>	
-                    <xs:element type="xs:string" name="geolevelName"/>
-                    <xs:element type="xs:string" name="geolevelDescription"/>
-                    <xs:element type="xs:string" name="shapeFileName"/>
-                    <xs:element type="xs:string" name="shapeFileDir"/>
-                    <xs:element type="xs:string" name="lookupTable"/>
-                    <xs:element type="xs:string" name="lookupTableDescriptionColumn"/>
-                    <xs:element type="xs:string" name="lookupTableData"/>
-                    <xs:element type="xs:string" name="shapeFileTable"/>
-                    <xs:element type="xs:string" name="shapeFileAreaIdColumn"/>
-                    <xs:element type="xs:string" name="shapeFileDescriptionColumn"/>
+                    <xs:element type="xs:string" name="geolevelName">
+		              <xs:annotation>
+                        <xs:documentation>Name of geolevel; entered by user</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>
+                    <xs:element type="xs:string" name="geolevelDescription">
+		              <xs:annotation>
+                        <xs:documentation>Description of geolevel; entered by user</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>
+                    <xs:element type="xs:string" name="shapeFileName">
+          		      <xs:annotation>
+                        <xs:documentation>Shape file name</xs:documentation>
+                      </xs:annotation>
+          		    </xs:element>
+                    <xs:element type="xs:string" name="shapeFileDir">
+	          	      <xs:annotation>
+                        <xs:documentation>Directory the shape file was created in</xs:documentation>
+                      </xs:annotation>
+	             	</xs:element>
+                    <xs:element type="xs:string" name="lookupTable">
+		              <xs:annotation>
+                        <xs:documentation>Name of the lookup table. RIF specific; optional, automatically set to &lt;geographyName&gt;_LOOKUP</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>
+                    <xs:element type="xs:string" name="lookupTableDescriptionColumn">
+		              <xs:annotation>
+                        <xs:documentation>Name of the lookup table description. RIF specific; optional, automatically set to &lt;geographyName&gt;_LOOKUP.DESCRIPTION</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>
+                    <xs:element type="xs:string" name="lookupTableData">
+		              <xs:annotation>
+                        <xs:documentation>Lookup table data. RIF specific</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>
+                    <xs:element type="xs:string" name="shapeFileTable">
+		              <xs:annotation>
+                        <xs:documentation>Name of the shapefile table, automatically set to &lt;geographyName&gt;</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>
+                    <xs:element type="xs:string" name="shapeFileAreaIdColumn">
+		              <xs:annotation>
+                        <xs:documentation>DBF field name containing the unique code for each area. This is usually a code and is not guaranteed unique 
+						until the geomtric data is converted into multipolygons</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>
+                    <xs:element type="xs:string" name="shapeFileDescriptionColumn">
+		              <xs:annotation>
+                        <xs:documentation>DBF field name containing the unique name for each area. This is usually a name and is not guaranteed unique</xs:documentation>
+                      </xs:annotation>	
+	    	        </xs:element>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
