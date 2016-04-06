@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<geoDataLoader>
+  <xmlFileName>geoDataLoader.xml</xmlFileName>
+  <xmlFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/f2817550-fc28-11e5-96ba-002564169b33</xmlFileDir>
+  <uuidV1>f2817550-fc28-11e5-96ba-002564169b33</uuidV1>
+  <geometryName>To be added</geometryName>
+  <geometryDescription>To be added</geometryDescription>
+  <shapeFileList>
+    <shapeFiles>
+      <primaryKey>id</primaryKey>
+      <areas>1</areas>
+      <points>12346</points>
+      <dbfFieldList>
+        <dbfFields>Id</dbfFields>
+        <dbfFields>LEVEL1</dbfFields>
+        <dbfFields>Area</dbfFields>
+      </dbfFieldList>
+      <uniqueKey>To be added from dbfFieldList</uniqueKey>
+      <geolevelId>1</geolevelId>
+      <geolevelName>To be added</geolevelName>
+      <geolevelDescription>To be added</geolevelDescription>
+      <shapeFileName>SAHSU_GRD_Level1.shp</shapeFileName>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/f2817550-fc28-11e5-96ba-002564169b33</shapeFileDir>
+      <lookupTable/>
+      <lookupTableDescriptionColumn/>
+      <lookupTableData/>
+      <shapeFileTable>SAHSU_GRD_LEVEL1</shapeFileTable>
+      <shapeFileAreaIdColumn/>
+      <shapeFileDescriptionColumn/>
+    </shapeFiles>
+    <shapeFiles>
+      <primaryKey>id</primaryKey>
+      <areas>17</areas>
+      <points>118998</points>
+      <dbfFieldList>
+        <dbfFields>LEVEL2</dbfFields>
+        <dbfFields>Area</dbfFields>
+        <dbfFields>LEVEL1</dbfFields>
+        <dbfFields>Name</dbfFields>
+      </dbfFieldList>
+      <uniqueKey>To be added from dbfFieldList</uniqueKey>
+      <geolevelId>2</geolevelId>
+      <geolevelName>To be added</geolevelName>
+      <geolevelDescription>To be added</geolevelDescription>
+      <shapeFileName>SAHSU_GRD_Level2.shp</shapeFileName>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/f2817550-fc28-11e5-96ba-002564169b33</shapeFileDir>
+      <lookupTable/>
+      <lookupTableDescriptionColumn/>
+      <lookupTableData/>
+      <shapeFileTable>SAHSU_GRD_LEVEL2</shapeFileTable>
+      <shapeFileAreaIdColumn/>
+      <shapeFileDescriptionColumn/>
+    </shapeFiles>
+    <shapeFiles>
+      <primaryKey>id</primaryKey>
+      <areas>200</areas>
+      <points>253631</points>
+      <dbfFieldList>
+        <dbfFields>LEVEL2</dbfFields>
+        <dbfFields>LEVEL1</dbfFields>
+        <dbfFields>LEVEL3</dbfFields>
+      </dbfFieldList>
+      <uniqueKey>To be added from dbfFieldList</uniqueKey>
+      <geolevelId>3</geolevelId>
+      <geolevelName>To be added</geolevelName>
+      <geolevelDescription>To be added</geolevelDescription>
+      <shapeFileName>SAHSU_GRD_Level3.shp</shapeFileName>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/f2817550-fc28-11e5-96ba-002564169b33</shapeFileDir>
+      <lookupTable/>
+      <lookupTableDescriptionColumn/>
+      <lookupTableData/>
+      <shapeFileTable>SAHSU_GRD_LEVEL3</shapeFileTable>
+      <shapeFileAreaIdColumn/>
+      <shapeFileDescriptionColumn/>
+    </shapeFiles>
+    <shapeFiles>
+      <primaryKey>id</primaryKey>
+      <areas>1230</areas>
+      <points>407439</points>
+      <dbfFieldList>
+        <dbfFields>PERIMETER</dbfFields>
+        <dbfFields>LEVEL4</dbfFields>
+        <dbfFields>LEVEL2</dbfFields>
+        <dbfFields>LEVEL1</dbfFields>
+        <dbfFields>LEVEL3</dbfFields>
+      </dbfFieldList>
+      <uniqueKey>To be added from dbfFieldList</uniqueKey>
+      <geolevelId>4</geolevelId>
+      <geolevelName>To be added</geolevelName>
+      <geolevelDescription>To be added</geolevelDescription>
+      <shapeFileName>SAHSU_GRD_Level4.shp</shapeFileName>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/f2817550-fc28-11e5-96ba-002564169b33</shapeFileDir>
+      <lookupTable/>
+      <lookupTableDescriptionColumn/>
+      <lookupTableData/>
+      <shapeFileTable>SAHSU_GRD_LEVEL4</shapeFileTable>
+      <shapeFileAreaIdColumn/>
+      <shapeFileDescriptionColumn/>
+    </shapeFiles>
+  </shapeFileList>
+  <projection>
+    <projectionName>British_National_Grid</projectionName>
+    <proj4>+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +datum=OSGB36 +units=m +no_defs</proj4>
+    <srid>27700</srid>
+    <boundingBox>
+      <xmin>-7.5462946600376695</xmin>
+      <ymin>52.66328215787268</ymin>
+      <xmax>-5.036247124500997</xmax>
+      <ymax>55.56628679609894</ymax>
+    </boundingBox>
+  </projection>
+  <simplicationList>
+    <simplification>
+      <zoomLevel>6</zoomLevel>
+      <points/>
+      <simplifyPrecision/>
+    </simplification>
+    <simplification>
+      <zoomLevel>8</zoomLevel>
+      <points/>
+      <simplifyPrecision/>
+    </simplification>
+    <simplification>
+      <zoomLevel>11</zoomLevel>
+      <points/>
+      <simplifyPrecision/>
+    </simplification>
+  </simplicationList>
+  <defaultStudyArea/>
+  <defaultComparisonArea/>
+  <hierarchyTableName/>
+  <hierarchyTableData/>
+</geoDataLoader>

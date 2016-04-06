@@ -255,7 +255,31 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	};
 	
 	// Queue functions
+	
+	/*
+	 * Function: 	createXmlFile()
+	 * Parameters:	xmlConfig JSON
+	 * Returns: 	nothing
+	 * Description: Creates XML config file
+	 */
+	var createXmlFile = function(xmlConfig) {
+		var fs = require('fs'),
+		    xml2js = require('xml2js');
+
+		var builder = new xml2js.Builder({
+			rootName: "geoDataLoader" /*,
+			doctype: { // DOES NOT WORK!!!!
+					'ext': "geoDataLoader.xsd"
+			} */
+			});
+		var xmlDoc = builder.buildObject(xmlConfig);
 		
+		console.error("XML config [xml] >>>\n" + xmlDoc + "\n<<< end of XML config [xml]" +
+			"\nXML config [json] >>>\n" + JSON.stringify(xmlConfig, null, 4) + "\n<<< end of json config [xml]");
+			
+		fs.writeFileSync(xmlConfig.xmlFileDir + "/" + xmlConfig.xmlFileName, xmlDoc);
+	}
+	
 	/*
 	 * Function:	readShapeFile()
 	 * Parameters:	Shapefile data object:
@@ -455,11 +479,41 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		//						JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson, null, 2).substring(0, 4000) + "\n\n<<< formatted WGS 84");
 						var dbf_fields = [];
 
+						// Get DBF field names from features[i].properties
 						if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) {
 							for (var key in response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) {
 								dbf_fields.push(key);
 							}						
 						}
+						// Get number of points from features[i].geometry.coordinates arrays; supports:  Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon
+						if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].geometry.coordinates[0]) {
+							var points=0;
+							for (var i=0;i < response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;i++) {
+								for (var j=0;j < response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].geometry.coordinates.length;j++) {
+									var coordinates=response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].geometry.coordinates;
+									if (coordinates[j][0][0]) { // a further dimension
+										for (var k=0;k < coordinates[j].length;k++) {
+											points+=coordinates[j][k].length+1;
+//											if (j<10 && k<10) {
+//												console.error("Feature [" + i + "." + j + "." + k + "] points: " + coordinates[j].length +
+//													JSON.stringify(coordinates[j], null, 2).substring(0, 132));
+//											}
+										}
+									}
+									else {
+										points+=coordinates[j].length+1;
+		//								if (j<10) {								
+		//									console.error("Feature [" + i + "." + j + "] points: " + coordinates.length +
+		//									JSON.stringify(coordinates, null, 2).substring(0, 132));
+		//								}
+									}
+								}
+							}
+							console.error("Total points: " + points);
+							response.file_list[shapefileData["shapefile_no"]-1].points=points;
+						}
+						// Probably need to add geometry collection
+						
 		//					for (var i=0;i < response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;i++) {
 		//							if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].properties) {
 		//								console.error("Feature [" + i + "]: " + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].properties, null, 2));
@@ -591,6 +645,31 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	 * Description: Async module drain function assign a callback at end of processing
 	 */
 	q.drain = function() {
+		var os = require('os');
+		var path = require('path');
+		var dir = os.tmpdir() + "/shpConvert/" + response.fields["uuidV1"];
+		var xmlConfig = {
+			xmlFileName: 			"geoDataLoader.xml",
+			xmlFileDir:				dir,
+			uuidV1: 				response.fields["uuidV1"],
+			geographyName: 			"To be added",
+			geographyDescription: 	"To be added",
+			shapeFileList: {
+				shapeFiles: []
+			},
+			projection: {},
+			simplicationList: {
+				simplification: []
+			},
+			defaultStudyArea: 		undefined,
+			defaultComparisonArea: 	undefined,
+			hierarchyTableName: 	undefined,
+			hierarchyTableData: 	{
+				hierarchyTableRow:	[]
+			}
+		};
+		var httpErrorResponse = require('../lib/httpErrorResponse'); // deal with scope problems
+		
 		try {
 			var msg="All " + response.no_files + " shapefiles have been processed";
 							// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
@@ -605,6 +684,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					i: i,
 					file_name: response.file_list[i].file_name,
 					total_areas: response.file_list[i].total_areas,
+					points:  response.file_list[i].points,
 					geolevel_id: 0
 				};
 				if (bbox[0] != response.file_list[i].boundingBox[0] &&
@@ -643,10 +723,53 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			});
 			for (var i=0; i<ngeolevels.length; i++) {		
 				ngeolevels[i].geolevel_id=i+1;
-				msg+="\nShape file [" + ngeolevels[i].i + "]: " + ngeolevels[i].file_name + "; areas: " + ngeolevels[i].total_areas + 
+				msg+="\nShape file [" + ngeolevels[i].i + "]: " + ngeolevels[i].file_name + 
+					"; areas: " + ngeolevels[i].total_areas + 
+					"; points: " + ngeolevels[i].points + 
 					"; geolevel: " + ngeolevels[i].geolevel_id; 
 				response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
+				
+				xmlConfig.shapeFileList.shapeFiles[i] = {
+					primaryKey:						"id",
+					areas: 							ngeolevels[i].total_areas,
+					points: 						ngeolevels[i].points,
+					dbfFieldList: {
+						dbfFields: response.file_list[ngeolevels[i].i].dbf_fields
+					},
+					uniqueKey:						"To be added from dbfFieldList",
+					geolevelId: 					ngeolevels[i].geolevel_id,
+					geolevelName: 					"To be added",
+					geolevelDescription: 			"To be added",
+					shapeFileName: 					ngeolevels[i].file_name,
+					shapeFileDir: 					dir,
+					lookupTable:					undefined,
+					lookupTableDescriptionColumn:	undefined,
+					lookupTableData: {
+						lookupTableRow:	[]
+					},
+					shapeFileTable:					path.basename(ngeolevels[i].file_name.toUpperCase(), path.extname(ngeolevels[i].file_name.toUpperCase())),
+					shapeFileAreaIdColumn: 			undefined,
+					shapeFileDescriptionColumn: 	undefined
+				}
 			}
+			
+			// XML config setup
+			xmlConfig.projection = {
+				projectionName: 	response.file_list[0].projection_name,
+				proj4: 				response.file_list[0].proj4,
+				srid: 				response.file_list[0].srid,
+				boundingBox: 		response.file_list[0].boundingBox
+			}
+			var defaultZoomLevels = [6,8,11];
+			for (var i=0; i<defaultZoomLevels.length; i++) {	
+				xmlConfig.simplicationList.simplification[i] = {
+					zoomLevel: 			defaultZoomLevels[i],
+					points: 			undefined,
+					simplifyPrecision: 	undefined
+				}
+			}
+			
+			createXmlFile(xmlConfig); // Create XML configuration file
 			
 			// Final processing
 			if (response.no_files == 0) { 

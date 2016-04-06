@@ -1,0 +1,105 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="geoDataLoader">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element type="xs:string" name="xmlFileName">
+		 <xs:annotation>
+            <xs:documentation>XML file name. Derived from the geographyName if set; uuidV1 if not</xs:documentation>
+         </xs:annotation>
+		</xs:element>
+        <xs:element type="xs:string" name="xmlFileDir">
+		 <xs:annotation>
+            <xs:documentation>Directory the XML file was created in</xs:documentation>
+         </xs:annotation>
+		</xs:element>
+        <xs:element type="xs:string" name="uuidV1">
+		 <xs:annotation>
+            <xs:documentation>V1 UUID. Used as geoDataLoader session key</xs:documentation>
+         </xs:annotation>
+		</xs:element>
+        <xs:element type="xs:string" name="geographyName">
+		 <xs:annotation>
+            <xs:documentation>Name of shapefile set. Will become database column GEODATALOADER_GEOGRAPHIES.GEOGRAPHY_NAME</xs:documentation>
+         </xs:annotation>
+		</xs:element>
+        <xs:element type="xs:string" name="geographyDescription">
+		 <xs:annotation>
+            <xs:documentation>Description of shapefile set. Will become database column GEODATALOADER_GEOGRAPHIES.GEOGRAPHY_DESCRIPTION</xs:documentation>
+         </xs:annotation>
+		</xs:element>
+        <xs:element name="shapeFileList">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="shapeFiles" maxOccurs="unbounded" minOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="primaryKey"/>
+                    <xs:element type="xs:short" name="areas"/>
+                    <xs:element type="xs:int" name="points"/>
+                    <xs:element name="dbfFieldList">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:string" name="dbfFields" maxOccurs="unbounded" minOccurs="1"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element type="xs:string" name="uniqueKey"/>
+                    <xs:element type="xs:byte" name="geolevelId"/>
+                    <xs:element type="xs:string" name="geolevelName"/>
+                    <xs:element type="xs:string" name="geolevelDescription"/>
+                    <xs:element type="xs:string" name="shapeFileName"/>
+                    <xs:element type="xs:string" name="shapeFileDir"/>
+                    <xs:element type="xs:string" name="lookupTable"/>
+                    <xs:element type="xs:string" name="lookupTableDescriptionColumn"/>
+                    <xs:element type="xs:string" name="lookupTableData"/>
+                    <xs:element type="xs:string" name="shapeFileTable"/>
+                    <xs:element type="xs:string" name="shapeFileAreaIdColumn"/>
+                    <xs:element type="xs:string" name="shapeFileDescriptionColumn"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="projection">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:string" name="projectionName"/>
+              <xs:element type="xs:string" name="proj4"/>
+              <xs:element type="xs:short" name="srid"/>
+              <xs:element name="boundingBox">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:float" name="xmin"/>
+                    <xs:element type="xs:float" name="ymin"/>
+                    <xs:element type="xs:float" name="xmax"/>
+                    <xs:element type="xs:float" name="ymax"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="simplicationList">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="simplification" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:byte" name="zoomLevel"/>
+                    <xs:element type="xs:string" name="points"/>
+                    <xs:element type="xs:string" name="simplifyPrecision"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element type="xs:string" name="defaultStudyArea"/>
+        <xs:element type="xs:string" name="defaultComparisonArea"/>
+        <xs:element type="xs:string" name="hierarchyTableName"/>
+        <xs:element type="xs:string" name="hierarchyTableData"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
