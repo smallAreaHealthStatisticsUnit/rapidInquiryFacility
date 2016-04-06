@@ -124,7 +124,7 @@ public final class MapAreaSelectionBasket
 	 */
 	public boolean isEmpty() {
 		
-		if (mapAreas.size() == 0) {
+		if (mapAreas.isEmpty()) {
 			return true;
 		}
 		return false;

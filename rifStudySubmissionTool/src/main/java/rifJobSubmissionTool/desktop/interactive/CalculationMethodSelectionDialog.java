@@ -153,7 +153,7 @@ final class CalculationMethodSelectionDialog
 		panelGC.weightx = 1.0;
 		panelGC.weighty = 1.0;
 		
-		if (availableCalculationMethods.size() == 0) {
+		if (availableCalculationMethods.isEmpty()) {
 			String noDataAvailableMessage
 				= RIFJobSubmissionToolMessages.getMessage("calculationMethodSelectionDialog.noOptionsAvailable");
 			NoDataAvailablePanel noDataAvailablePanel

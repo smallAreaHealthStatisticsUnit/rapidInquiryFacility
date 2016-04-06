@@ -173,7 +173,7 @@ final class ParameterContentHandler
 			= RIFServiceMessages.getMessage("parameters.label");
 		int recordHeaderLevel = getRecordHeaderLevel();
 		htmlUtility.writeHeader(recordHeaderLevel, parametersLabel);
-		if (parameters.size() == 0) {
+		if (parameters.isEmpty()) {
 			String none
 				= RIFServiceMessages.getMessage("general.emptyList.none");
 			htmlUtility.writeParagraph(none);

@@ -350,7 +350,7 @@ final class SQLRIFContextManager
 				results.add(result);				
 			}
 			
-			if (results.size() == 0) {
+			if (results.isEmpty()) {
 				//ERROR: There is no numerator denominator pair for this health theme
 				String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -468,7 +468,7 @@ final class SQLRIFContextManager
 			
 			connection.commit();
 			
-			if (results.size() == 0) {
+			if (results.isEmpty()) {
 				//ERROR: There is no numerator denominator pair for this health theme
 				String errorMessage
 					= RIFServiceMessages.getMessage(

@@ -1277,7 +1277,7 @@ final class SQLMapDataManager
 		geoLevelSelect.checkErrors(validationPolicy);
 		geoLevelView.checkErrors(validationPolicy);
 		
-		if (mapAreas.size() == 0) {
+		if (mapAreas.isEmpty()) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.noMapAreasSpecified");

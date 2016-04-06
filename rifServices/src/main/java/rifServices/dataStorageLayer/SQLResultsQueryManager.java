@@ -1675,7 +1675,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				columnNames.add(resultSet.getString(1));
 			}
 			
-			if (columnNames.size() == 0) {
+			if (columnNames.isEmpty()) {
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.UNABLE_TO_GET_GEOMETRY_COLUMN_NAMES, 

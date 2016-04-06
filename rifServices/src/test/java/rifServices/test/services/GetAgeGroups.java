@@ -114,7 +114,7 @@ public final class GetAgeGroups
 					validGeography, 
 					validNDPair, 
 					AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
-			if (ageGroups.size() == 0) {
+			if (ageGroups.isEmpty()) {
 				fail();
 			}
 		}

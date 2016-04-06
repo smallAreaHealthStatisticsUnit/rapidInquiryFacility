@@ -1122,7 +1122,7 @@ public class Investigation
 					healthCodesFieldName);
 			errorMessages.add(errorMessage);
 		}
-		else if (healthCodes.size() == 0) {
+		else if (healthCodes.isEmpty()) {
 			//TOUR_VALIDATION
 			//Example of checking when a collection is empty
 			String errorMessage
@@ -1163,7 +1163,7 @@ public class Investigation
 					ageBandsFieldName);
 			errorMessages.add(errorMessage);
 		}
-		else if (ageBands.size() == 0) {
+		else if (ageBands.isEmpty()) {
 			String errorMessage
 				= RIFServiceMessages.getMessage("investigation.error.noAgeBandsSpecified");
 			errorMessages.add(errorMessage);			
@@ -1243,7 +1243,7 @@ public class Investigation
 						yearIntervalsFieldName);
 				errorMessages.add(errorMessage);
 			}
-			else if (yearIntervals.size() == 0) {
+			else if (yearIntervals.isEmpty()) {
 				String errorMessage
 					= RIFServiceMessages.getMessage("investigation.error.noYearIntervalsSpecified");
 				errorMessages.add(errorMessage);
@@ -1316,7 +1316,7 @@ public class Investigation
 					covariatesFieldName);
 			errorMessages.add(errorMessage);			
 		}
-		else if (covariates.size() == 0) {
+		else if (covariates.isEmpty()) {
 			String errorMessage
 				= RIFServiceMessages.getMessage("investigation.error.noCovariatesSpecified");
 			errorMessages.add(errorMessage);			

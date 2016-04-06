@@ -135,7 +135,7 @@ final class AgeBandContentHandler
     	final ArrayList<AgeBand> ageBands) 
     	throws IOException {
 
-    	if (ageBands.size() == 0) {
+    	if (ageBands.isEmpty()) {
     		return;
     	}
     	

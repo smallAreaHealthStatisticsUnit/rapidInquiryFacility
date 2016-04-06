@@ -333,7 +333,7 @@ final class SpecifyInvestigationsStepPanel
 		
 		ArrayList<DisplayableListItemInterface> listItems
 			= investigationsListPanel.getAllItems();
-		if (listItems.size() == 0) {
+		if (listItems.isEmpty()) {
 			String errorMessage
 				= RIFJobSubmissionToolMessages.getMessage(
 					"specifyInvestigationsStepPanel.error.noInvestigationsSpecified");

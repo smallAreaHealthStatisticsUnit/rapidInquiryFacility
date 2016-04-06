@@ -255,7 +255,7 @@ final class ProjectSelectionPanel
 				projectComboBox.addListItem(project);
 			}
 			
-			if (projects.size() == 0) {
+			if (projects.isEmpty()) {
 				//should rarely ever have no projects
 				//select no item -- which should ensure that the 
 				//active choice part of the combobox is cleared
