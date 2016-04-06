@@ -29,4 +29,5 @@
   	<version>0.0.1-SNAPSHOT</version>
     <relativePath>../rapidInquiryFacility/pom.xml</relativePath>  
   </parent>
+  <version>0.0.1-SNAPSHOT</version>
 </project>
