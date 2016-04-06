@@ -2,10 +2,9 @@ package rifDataLoaderTool.fileFormats;
 
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.XMLCommentInjector;
-
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
@@ -141,15 +140,10 @@ public final class RIFDataLoaderSettingsWriter {
 	    	return result;
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemWritingFileContentsToString");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;			
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileWritingProblemException(
+				file.getAbsolutePath());
 		}
 	}	
 	

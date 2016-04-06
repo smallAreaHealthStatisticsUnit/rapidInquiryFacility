@@ -3,13 +3,17 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
 
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.xml.sax.InputSource;
+
 import java.io.*;
 
 /**
@@ -122,16 +126,9 @@ public final class RIFDataLoaderSettingsReader {
 			saxParser.parse(rifSubmissionFile, rifDataLoaderConfigurationHandler);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemReadingFile",
-					rifSubmissionFile.getName());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException(rifSubmissionFile.getName());
 		}
 	}
 	
@@ -148,16 +145,9 @@ public final class RIFDataLoaderSettingsReader {
 			saxParser.parse(inputSource, rifDataLoaderConfigurationHandler);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemReadingFile",
-					"blah");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException("");
 		}
 	}			
 
@@ -174,16 +164,9 @@ public final class RIFDataLoaderSettingsReader {
 				rifDataLoaderConfigurationHandler);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemReadingFile",
-					"blah");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException("");
 		}
 	}			
 	

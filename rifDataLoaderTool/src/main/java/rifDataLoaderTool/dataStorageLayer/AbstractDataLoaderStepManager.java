@@ -16,6 +16,7 @@ import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 
 import org.postgresql.copy.CopyManager;
@@ -950,13 +951,9 @@ abstract class AbstractDataLoaderStepManager {
 			connection.setAutoCommit(isAutoCommitOn);			
 		}
 		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("general.db.error.unableToSetCommit");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_ADJUST_AUTO_COMMIT,
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createUnableToChangeDBCommitException();
 		}
 		
 	}

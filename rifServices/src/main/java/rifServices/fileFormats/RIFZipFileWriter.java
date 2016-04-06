@@ -4,6 +4,7 @@ package rifServices.fileFormats;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFDateFormat;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
@@ -214,15 +215,10 @@ public final class RIFZipFileWriter {
 			zipOutputStream.close();
 		}
 		catch(IOException exception) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemWritingFile",
-					zipFile.getName());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.FILE_WRITE_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;
+    		RIFServiceExceptionFactory exceptionFactory
+    			= new RIFServiceExceptionFactory();
+    		throw exceptionFactory.createFileWritingProblemException(
+    			zipFile.getAbsolutePath());
 		}		
 	}
 		

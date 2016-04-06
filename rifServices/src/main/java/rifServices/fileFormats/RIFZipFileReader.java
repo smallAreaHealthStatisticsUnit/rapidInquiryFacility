@@ -3,6 +3,8 @@ package rifServices.fileFormats;
 
 
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
+
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
@@ -155,30 +157,20 @@ public final class RIFZipFileReader {
 			saxParser.parse(zipInputStream, jobSubmissionContentHandler);
 		}
 		catch(ParserConfigurationException parserConfigurationException) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("general.io.xmlFileParsingError",
-					currentFileName,
-					zipFileName);
-			RIFServiceException exception 
-				= new RIFServiceException(RIFServiceError.XML_FILE_PARSING_PROBLEM, errorMessage);
-			throw exception;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException(zipFileName);			
 		}
 		catch(SAXException saxException) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("io.error.problemParsingXMLFile",
-					currentFileName,
-					zipFileName);
-			RIFServiceException exception 
-				= new RIFServiceException(RIFServiceError.XML_FILE_PARSING_PROBLEM, errorMessage);
-			throw exception;			
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException(zipFileName);
 		}
 		catch(IOException ioException) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("io.error.problemReadingFile",
-					zipFileName);
-			RIFServiceException exception 
-				= new RIFServiceException(RIFServiceError.FILE_READ_PROBLEM, errorMessage);
-			throw exception;
+    		RIFServiceExceptionFactory exceptionFactory
+    			= new RIFServiceExceptionFactory();
+    		throw exceptionFactory.createFileReadingProblemException(
+    			zipFile.getAbsolutePath());
 		}
 	}
 

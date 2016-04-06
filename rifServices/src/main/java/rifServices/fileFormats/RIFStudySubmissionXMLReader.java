@@ -2,6 +2,7 @@
 package rifServices.fileFormats;
 
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.system.RIFServiceError;
 
 
@@ -123,16 +124,10 @@ public final class RIFStudySubmissionXMLReader {
 			saxParser.parse(rifSubmissionFile, rifStudySubmissionContentHandler);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemReadingFile",
-					rifSubmissionFile.getName());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException(
+				rifSubmissionFile.getName());
 		}
 	}
 	
@@ -149,16 +144,9 @@ public final class RIFStudySubmissionXMLReader {
 			saxParser.parse(inputSource, rifStudySubmissionContentHandler);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemReadingFile",
-					"blah");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException("");			
 		}
 	}			
 
@@ -175,16 +163,9 @@ public final class RIFStudySubmissionXMLReader {
 				rifStudySubmissionContentHandler);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemReadingFile",
-					"blah");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException("");			
 		}
 	}			
 	

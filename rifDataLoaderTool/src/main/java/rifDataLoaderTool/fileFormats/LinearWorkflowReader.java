@@ -3,8 +3,9 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -122,15 +123,10 @@ public final class LinearWorkflowReader {
 				rifWorkflowConfigurationHandler);
 		}
 		catch(Exception exception) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemReadingFile",
-					rifWorkflowConfigurationFile.getName());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException(
+				rifWorkflowConfigurationFile.getName());			
 		}
 	}
 
@@ -147,15 +143,9 @@ public final class LinearWorkflowReader {
 				rifWorkflowConfigurationHandler);			
 		}
 		catch(Exception exception) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemReadingFile",
-					"blah");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException("");
 		}
 	}			
 	

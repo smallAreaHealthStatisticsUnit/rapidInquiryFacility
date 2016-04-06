@@ -70,20 +70,8 @@ package rifServices.system;
 
 public enum RIFServiceError {
 		
-	/** The db unable to load driver. */
-	DB_UNABLE_TO_LOAD_DRIVER,
-
 	DB_UNABLE_TO_MAINTAIN_DEBUG,
-	
-	/** The db unable to grant connection. */
-	DB_UNABLE_TO_GRANT_CONNECTION,
-		
-	/** The db unable register user. */
-	DB_UNABLE_REGISTER_USER,
-	
-	/** The db unable deregister user. */
-	DB_UNABLE_DEREGISTER_USER,
-		
+			
 	/** The db unable check geo level area exists. */
 	DB_UNABLE_CHECK_GEO_LEVEL_AREA_EXISTS,
 	
@@ -121,8 +109,7 @@ public enum RIFServiceError {
 	
 	/** The invalid health code taxonomy. */
 	INVALID_HEALTH_CODE_TAXONOMY,
-	
-	
+		
 	/** The invalid adjustable covariate. */
 	INVALID_ADJUSTABLE_COVARIATE,
 	
@@ -190,7 +177,6 @@ public enum RIFServiceError {
 	NON_EXISTENT_HEALTH_THEME,
 	
 
-	
 	/** The invalid health theme. */
 	INVALID_HEALTH_THEME,
 	
@@ -266,16 +252,10 @@ public enum RIFServiceError {
 	INVALID_STARTUP_OPTIONS,
 	
 	/** The xml file parsing problem. */
-	XML_FILE_PARSING_PROBLEM,
+	//XML_FILE_PARSING_PROBLEM,
 	
 	/** The invalid rif service information. */
 	INVALID_RIF_SERVICE_INFORMATION,
-	
-	/** The file read problem. */
-	FILE_READ_PROBLEM,
-	
-	/** The file write problem. */
-	FILE_WRITE_PROBLEM,
 	
 	/** The xml problem writing health code list. */
 	XML_PROBLEM_WRITING_HEALTH_CODE_LIST,
@@ -315,8 +295,6 @@ public enum RIFServiceError {
 	/** covariate does not exist */
 	NON_EXISTENT_COVARIATE,
 	
-	MAXIMUM_READ_CONNECTIONS_EXCEEDED,
-	MAXIMUM_WRITE_CONNECTIONS_EXCEEDED,
 	NO_ND_PAIR_FOR_NUMERATOR_TABLE_NAME,
 	NO_HEALTH_TAXONOMY_FOR_NAMESPACE,	
 	HEALTH_CODE_NOT_KNOWN_TO_PROVIDER,
@@ -348,7 +326,6 @@ public enum RIFServiceError {
 	INVALID_ZOOM_FACTOR,
 	THRESHOLD_MAP_AREAS_PER_DISPLAY_EXCEEDED, 
 	NON_EXISTENT_STUDY,
-	DB_UNABLE_TO_ADJUST_AUTO_COMMIT,
 	HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
 	UNABLE_TO_PARSE_JSON_SUBMISSION,
 	UNABLE_TO_RETRIEVE_ALL_RELEVANT_MAP_AREAS

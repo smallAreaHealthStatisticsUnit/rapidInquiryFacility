@@ -1,11 +1,12 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.businessConceptLayer.User;
+
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
@@ -344,16 +345,9 @@ public final class SQLConnectionManager
 			registeredUserIDs.add(userID);			
 		}
 		catch(ClassNotFoundException classNotFoundException) {
-			classNotFoundException.printStackTrace(System.out);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlConnectionManager.error.unableToLoadDatabaseDriver",
-					userID);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_LOAD_DRIVER,
-					errorMessage);
-			throw rifServiceException;			
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createUnableLoadDBDriver();
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);
@@ -369,12 +363,10 @@ public final class SQLConnectionManager
 					SQLConnectionManager.class, 
 				errorMessage, 
 				sqlException);
-									
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_REGISTER_USER,
-					errorMessage);
-			throw rifServiceException;
+			
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createUnableToRegisterUser(userID);
 		}
 		
 	}

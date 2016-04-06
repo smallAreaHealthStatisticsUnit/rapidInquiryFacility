@@ -5,8 +5,10 @@ import java.io.ByteArrayOutputStream;
 
 
 
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
 
@@ -131,14 +133,9 @@ public final class RIFStudySubmissionXMLWriter {
     		return result;
 		}
 		catch(Exception exception) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemWritingFileContentsToString");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;			
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileWritingProblemException("");
 		}
 		
 	}
@@ -168,14 +165,9 @@ public final class RIFStudySubmissionXMLWriter {
 	    	return result;
 		}
 		catch(Exception exception) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemWritingFileContentsToString");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;			
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileWritingProblemException("");
 		}
 	}	
 	

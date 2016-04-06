@@ -6,6 +6,8 @@ import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
+
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
@@ -264,17 +266,12 @@ public abstract class AbstractSQLManager {
 		throws RIFServiceException {
 		
 		try {
-			System.out.println("Setting autocommit to=="+isAutoCommitOn+"==");
 			connection.setAutoCommit(isAutoCommitOn);			
 		}
 		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("general.db.error.unableToSetCommit");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_ADJUST_AUTO_COMMIT,
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createUnableToChangeDBCommitException();
 		}
 		
 	}

@@ -2,6 +2,8 @@
 package rifServices.fileFormats;
 
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
+
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
@@ -127,16 +129,9 @@ public final class RIFStudySubmissionHTMLWriter {
     		return htmlReport;    		
     	}
     	catch(Exception exception) {
-    		exception.printStackTrace(System.out);
-    		String errorMessage
-    			= RIFServiceMessages.getMessage(
-    				"io.error.problemGeneratingReport",
-    				rifStudySubmission.getDisplayName());
-    		RIFServiceException rifServiceException
-    			= new RIFServiceException(
-    				RIFServiceError.FILE_WRITE_PROBLEM,
-    				errorMessage);
-    		throw rifServiceException;
+    		RIFServiceExceptionFactory exceptionFactory
+    			= new RIFServiceExceptionFactory();
+    		throw exceptionFactory.createFileWritingProblemException("");
     	}
     }
     
@@ -159,15 +154,9 @@ public final class RIFStudySubmissionHTMLWriter {
         	rifStudySubmissionContentHandler.writeHTML(rifStudySubmission);
     	}  	
 		catch(IOException exception) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemWritingFile",
-					outputFile.getName());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.FILE_WRITE_PROBLEM, 
-					errorMessage);
-			throw rifServiceException;
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileWritingProblemException("");
 		}
     }
     

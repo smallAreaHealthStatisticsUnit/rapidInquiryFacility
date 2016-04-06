@@ -2,12 +2,14 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 
-
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.XMLCommentInjector;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import rifGenericLibrary.util.XMLCommentInjector;
+
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -113,14 +115,9 @@ public class LinearWorkflowWriter {
 		    	return result;
 			}
 			catch(Exception exception) {
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"io.error.problemWritingFileContentsToString");
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.XML_FILE_PARSING_PROBLEM, 
-						errorMessage);
-				throw rifServiceException;			
+				RIFServiceExceptionFactory exceptionFactory
+					= new RIFServiceExceptionFactory();
+				throw exceptionFactory.createFileWritingProblemException("");
 			}
 		}	
 

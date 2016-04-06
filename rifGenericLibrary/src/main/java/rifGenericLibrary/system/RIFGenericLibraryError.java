@@ -63,5 +63,19 @@ public enum RIFGenericLibraryError {
 	EMPTY_API_METHOD_PARAMETER,
 	
 	/** The invalid user. */
-	INVALID_USER
+	INVALID_USER,
+	
+	DB_UNABLE_TO_ADJUST_AUTO_COMMIT,
+	DB_UNABLE_TO_LOAD_DRIVER,
+	DB_MAX_READ_CONNECTIONS_EXCEEDED,
+	DB_MAX_WRITE_CONNECTIONS_EXCEEDED,
+	/** The db unable to grant connection. */
+	DB_UNABLE_TO_GRANT_CONNECTION,		
+	/** The db unable register user. */
+	DB_UNABLE_REGISTER_USER,	
+	/** The db unable deregister user. */
+	DB_UNABLE_DEREGISTER_USER,
+	
+	FILE_PARSING_PROBLEM,
+	FILE_WRITING_PROBLEM,
 }
