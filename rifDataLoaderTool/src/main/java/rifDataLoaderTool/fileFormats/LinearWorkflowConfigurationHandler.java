@@ -5,6 +5,8 @@ package rifDataLoaderTool.fileFormats;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
+
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
@@ -204,7 +206,9 @@ final class LinearWorkflowConfigurationHandler
 // ==========================================
 // Section Override
 // ==========================================
-			
+	public void setRIFDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
+		dataSetConfigurationHandler.setRIFDataTypeFactory(rifDataTypeFactory);		
+	}
 
 	@Override
     public void startElement(

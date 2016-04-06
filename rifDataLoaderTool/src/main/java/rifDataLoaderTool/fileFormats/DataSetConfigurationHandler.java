@@ -3,6 +3,7 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -301,7 +302,9 @@ final class DataSetConfigurationHandler
 		}		
 	}
 	
-	
+	public void setRIFDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
+		dataSetFieldConfigurationHandler.setRIFDataTypeFactory(rifDataTypeFactory);		
+	}	
 	
 	// ==========================================
 	// Section Errors and Validation

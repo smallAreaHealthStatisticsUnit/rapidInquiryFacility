@@ -6,7 +6,6 @@ import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolGeography;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
-import rifDataLoaderTool.businessConceptLayer.RIFDataType;
 
 
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
@@ -251,6 +250,9 @@ final class RIFDataLoaderConfigurationHandler
 				assignDelegatedHandler(rifDataTypeConfigurationHandler);
 			}
 			else if (linearWorkflowConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+				RIFDataTypeFactory rifDataTypeFactory
+					= dataLoaderToolSettings.getRIFDataTypeFactory();
+				linearWorkflowConfigurationHandler.setRIFDataTypeFactory(rifDataTypeFactory);
 				assignDelegatedHandler(linearWorkflowConfigurationHandler);
 			}
 											
@@ -268,7 +270,6 @@ final class RIFDataLoaderConfigurationHandler
 			else {
 				assert false;
 			}
-
 		}
 	}
 	
@@ -323,4 +324,7 @@ final class RIFDataLoaderConfigurationHandler
 			}
 		}
 	}
+	
+	
+	
 }

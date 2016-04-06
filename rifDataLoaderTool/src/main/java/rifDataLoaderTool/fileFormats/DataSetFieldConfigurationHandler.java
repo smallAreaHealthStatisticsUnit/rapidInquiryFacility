@@ -94,7 +94,6 @@ final class DataSetFieldConfigurationHandler
 	// ==========================================
 
 	public DataSetFieldConfigurationHandler() {
-		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
 		rifConversionFunctionFactory = RIFConversionFunctionFactory.newInstance();
 		rifCheckOptionConfigurationHandler
 			= new RIFCheckOptionConfigurationHandler();
@@ -377,6 +376,10 @@ final class DataSetFieldConfigurationHandler
 		else {
 			assert false;
 		}		
+	}
+
+	public void setRIFDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
+		this.rifDataTypeFactory = rifDataTypeFactory;
 	}
 	
 	// ==========================================
