@@ -204,7 +204,6 @@ final class CleanWorkflowManager
 				validationQuery);
 			validationStatement
 				= connection.prepareStatement(validationQuery);
-			System.out.println("CWFM -- printing validation query===");
 			System.out.println(validationQuery);
 			validationStatement.executeUpdate();
 

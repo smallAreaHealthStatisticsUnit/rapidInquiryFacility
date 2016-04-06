@@ -219,8 +219,6 @@ public class LinearWorkflowEnactor {
 				logWriter,
 				dataSetConfiguration);
 			
-			System.out.println("processWorkflowStep 3");
-			
 		}
 		else if (currentWorkflowState == WorkflowState.CLEAN) { 
 			dataLoaderService.cleanConfiguration(

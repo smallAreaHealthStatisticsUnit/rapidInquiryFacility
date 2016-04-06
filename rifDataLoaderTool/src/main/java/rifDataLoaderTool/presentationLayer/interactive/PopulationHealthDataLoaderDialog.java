@@ -273,6 +273,7 @@ class PopulationHealthDataLoaderDialog
 	
 	public void setData(final LinearWorkflow originalLinearWorkflow) {
 		this.originalLinearWorkflow = originalLinearWorkflow;
+		workingCopyLinearWorkflow = LinearWorkflow.createCopy(originalLinearWorkflow);
 		
 		populateFormFromWorkingCopy(originalLinearWorkflow);
 	}
@@ -575,6 +576,8 @@ class PopulationHealthDataLoaderDialog
 		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
 			dataSetConfigurationListPanel.addListItem(dataSetConfiguration);
 		}
+		dataSetConfigurationListPanel.updateUI();
+		
 		if (dataSetConfigurationListPanel.isEmpty()) {
 			dataSetConfigurationListButtonPanel.indicateEmptyState();
 		}
@@ -582,7 +585,8 @@ class PopulationHealthDataLoaderDialog
 			dataSetConfigurationListPanel.selectFirstItem();
 			dataSetConfigurationListButtonPanel.indicatePopulatedState();
 		}
-		dataSetConfigurationListPanel.updateUI();
+		
+		updateButtonStates();
 	}
 	
 

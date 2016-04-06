@@ -185,6 +185,7 @@ final class SQLConnectionManager {
 			}
 		}
 		catch(Exception sqlException) {
+			sqlException.printStackTrace(System.out);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"sqlConnectionManager.error.unableToCreateConnections");

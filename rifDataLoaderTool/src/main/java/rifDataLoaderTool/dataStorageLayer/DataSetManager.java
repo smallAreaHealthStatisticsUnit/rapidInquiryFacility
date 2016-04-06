@@ -264,7 +264,6 @@ final class DataSetManager
 		PreparedStatement deleteDataSetConfigurationStatement = null;
 		try {			
 			
-			System.out.println("DSM delete data set config 1");
 			deleteDataSetConfigurationStatement
 				= createPreparedStatement(
 					connection,
@@ -276,9 +275,7 @@ final class DataSetManager
 				2, 
 				dataSetConfiguration.getVersion());
 			deleteDataSetConfigurationStatement.executeUpdate();
-			
-			System.out.println("DSM delete data set config 2");
-
+	
 			logSQLQuery(logFileWriter, "deleteDataSetConfiguration", deleteDataSetStatementQueryFormatter);
 		}
 		catch(SQLException sqlException) {
