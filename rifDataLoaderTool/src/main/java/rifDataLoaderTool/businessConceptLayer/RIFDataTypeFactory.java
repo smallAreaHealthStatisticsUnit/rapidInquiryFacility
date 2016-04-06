@@ -872,7 +872,6 @@ public class RIFDataTypeFactory {
 	public void setDataTypes(final ArrayList<RIFDataType> dataTypes) {
 		clearDataTypes();
 		for (RIFDataType dataType : dataTypes) {
-			System.out.println("RIFDataTypeFactory setDataTypes id=="+dataType.getIdentifier()+"==name=="+dataType.getName()+"==");
 			dataTypeFromCodes.put(dataType.getIdentifier(), dataType);
 			dataTypeFromNames.put(dataType.getName(), dataType);			
 		}

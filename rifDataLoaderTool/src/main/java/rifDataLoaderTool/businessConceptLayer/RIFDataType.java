@@ -310,7 +310,6 @@ public final class RIFDataType
 			return false;
 		}
 			
-		System.out.println("RIFDataType hasIdenticalContents 1");
 		HashMap<String, RIFDataType> dataTypeFromNameA 
 			= new HashMap<String, RIFDataType>();
 		for (RIFDataType rifDataTypeA : rifDataTypeListA) {
@@ -324,50 +323,33 @@ public final class RIFDataType
 		}
 		
 		ArrayList<String> keysListA = new ArrayList<String>();
-		keysListA.addAll(dataTypeFromNameA.keySet());
-		ArrayList<String> keysListB = new ArrayList<String>();
-		keysListB.addAll(dataTypeFromNameB.keySet());
-		
-		System.out.println("=========================================================");
-		for (String keysListItemA : keysListA) {
-			System.out.println("RIFDataType A=="+keysListItemA+"==");
-		}
-		System.out.println("=========================================================");
-		for (String keysListItemB : keysListB) {
-			System.out.println("RIFDataType B=="+keysListItemB+"==");
-		}
-
-		
+		keysListA.addAll(dataTypeFromNameA.keySet());		
 		for (String keyA : keysListA) {
 			RIFDataType rifDataTypeB
 				= dataTypeFromNameB.get(keyA);
 			if (rifDataTypeB == null) {
-				System.out.println("RIFDataType hasIdenticalContents 2");
-
 				return false;
 			}
 			
 			RIFDataType rifDataTypeA
 				= dataTypeFromNameA.get(keyA);
 			if (rifDataTypeA.hasIdenticalContents(rifDataTypeB) == false) {
-				System.out.println("RIFDataType hasIdenticalContents 3");
 				return false;
 			}
 		}
 		
+		ArrayList<String> keysListB = new ArrayList<String>();
+		keysListB.addAll(dataTypeFromNameB.keySet());
 		for (String keyB : keysListB) {
 			RIFDataType rifDataTypeA
 				= dataTypeFromNameA.get(keyB);
 			if (rifDataTypeA == null) {
-				System.out.println("RIFDataType hasIdenticalContents 4");
 				return false;
 			}
 			
 			RIFDataType rifDataTypeB
 				= dataTypeFromNameB.get(keyB);
 			if (rifDataTypeA.hasIdenticalContents(rifDataTypeB) == false) {
-				System.out.println("RIFDataType hasIdenticalContents 5");
-
 				return false;
 			}
 		}
@@ -375,8 +357,7 @@ public final class RIFDataType
 		return true;
 		
 	}
-	
-	
+		
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -543,34 +524,26 @@ public final class RIFDataType
 			= otherRIFDataType.getDescription();
 		
 		if (Objects.deepEquals(identifier, otherIdentifier) == false) {
-			System.out.println("RDT - hasIdenticalContents 1");
 			return false;
 		}
 		if (Objects.deepEquals(name, otherName) == false) {
-			System.out.println("RDT - hasIdenticalContents 2");
 			return false;
 		}
 		if (Objects.deepEquals(description, otherDescription) == false) {
-			System.out.println("RDT - hasIdenticalContents 3");
 			return false;
 		}		
 	 		
 		RIFFieldActionPolicy otherFieldCleaningPolicy
 			= otherRIFDataType.getFieldCleaningPolicy();
-		if (fieldCleaningPolicy != otherFieldCleaningPolicy) {
-			System.out.println("RDT - hasIdenticalContents 4");
-			
+		if (fieldCleaningPolicy != otherFieldCleaningPolicy) {			
 			return false;
 		}
 		
 		ArrayList<CleaningRule> otherCleaningRules
 			= otherRIFDataType.getCleaningRules();
-		System.out.println("RDT original=="+this.getDisplayName()+"==size=="+cleaningRules.size()+"==other=="+otherRIFDataType.getDisplayName()+"==size=="+otherRIFDataType.getDisplayName()+"==");
 		if (CleaningRule.cleaningRulesAreEqual(
 			cleaningRules, 
-			otherCleaningRules) == false) {
-			System.out.println("RDT - hasIdenticalContents 5 for ==" + otherRIFDataType.getDisplayName()+"==");
-			
+			otherCleaningRules) == false) {			
 			return false;
 		}
 		
@@ -581,27 +554,21 @@ public final class RIFDataType
 		if (Objects.deepEquals(
 			cleaningFunctionName, 
 			otherCleaningFunctionName) == false) {
-			
-			System.out.println("RDT - hasIdenticalContents 6");
-
 			return false;
 		}		
 		
 		RIFFieldActionPolicy otherFieldValidationPolicy
 			= otherRIFDataType.getFieldValidationPolicy();
 		if (fieldValidationPolicy != otherFieldValidationPolicy) {
-			
-			System.out.println("RDT - hasIdenticalContents 7");
-
 			return false;
 		}
 			
 		ArrayList<ValidationRule> otherValidationRules
 			= otherRIFDataType.getValidationRules();
+		
 		if (ValidationRule.validationRulesAreEqual(
 			validationRules, 
 			otherValidationRules) == false) {
-			System.out.println("RDT - hasIdenticalContents 8");
 		
 			return false;
 		}
@@ -611,7 +578,6 @@ public final class RIFDataType
 		if (Objects.deepEquals(
 				validationFunctionName, 
 				otherValidationFunctionName) == false) {
-			System.out.println("RDT - hasIdenticalContents 9 validationFunc=="+validationFunctionName+"==other validation=="+otherValidationFunctionName+"==");
 
 			return false;
 		}		
