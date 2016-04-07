@@ -1,6 +1,6 @@
 <html>
   <head>
-	<script src="jquery-2.2.1.js"></script> 
+	<script src="jquery-2.2.3.js"></script> 
     <link rel="stylesheet" href="leaflet/leaflet.css" />
     <script src="leaflet/leaflet.js"></script>
     <title>Shapefile Uploading Form</title>
@@ -208,52 +208,48 @@ function submitForm() {
 		formData.append('verbose', verbose);
 	}
 	formData.append('my_reference', generateUUID()); // Random reference
-	/*
-	if (output_type) {
-		if (document.getElementById('output_type_geojson').checked) {
-			output_type="shp2GeoJSON";	
-		}		
-		else if (document.getElementById('output_type_topojson').checked) {
-			output_type="shp2TopoJSON";	
-		}		
-		else if (document.getElementById('output_type_wkt').checked) {
-			output_type="shp2WKT";	
-		}
-		console.log('POST method: ' + output_type);
-	} */
 
+	setStatus = function(msg, errm) {
+		if (document.getElementById("status").innerHTML != msg) {
+			var end=new Date().getTime();
+			var elapsed=(end - start)/1000; // in S
+			
+			if (!errm) {
+				document.getElementById("status").innerHTML = msg;
+				console.log("[" + elapsed + "] " + msg);
+			}
+			else {
+				document.getElementById("status").innerHTML = msg + "; " + errm;
+				console.error("[" + elapsed + "] " + msg + "; " + errm);
+			}
+		}
+	}
+	
 	try {
 		request.open('POST', output_type);
 			// Process results
 		if (request.timeout) {
 			request.timeout = timeout;
-			console.log('Timneset set: ' + timeout);
+			console.log('Timout eset set: ' + timeout);
 		}
 	
 		request.onreadystatechange = function() {
-			var end=new Date().getTime();
-			var elapsed=(end - start)/1000; // in S
 			
 			if (request.readyState == 1) { 
-				document.getElementById("status").innerHTML = "Connected...";
-				console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
+				setStatus("Connected...");
 			}
 			else if (request.readyState == 2) { 
-				document.getElementById("status").innerHTML = "Request received...";
-				console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
+				setStatus("Request received...");
 			}		
 			else if (request.readyState == 3) { 
-				document.getElementById("status").innerHTML = "Processing request...";
-				console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
+				setStatus("Processing request...");
 			}
-			else if (request.readyState == 4) { 
-				document.getElementById("status").innerHTML = "Processing response...";
-				console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
+			else if (request.readyState == 4) {
+				setStatus("Processing response..."); 
 				displayResponse(request.response, request.status);
 			}
 			else {		
-				document.getElementById("status").innerHTML = "request.onreadystatechange() unknown state: " + request.readyState;
-				console.error("[" + elapsed + "] " + document.getElementById("status").innerHTML);
+				setStatus("request.onreadystatechange() unknown state: " + request.readyState, "readyState error");
 			}
 		}
 		
@@ -261,16 +257,14 @@ function submitForm() {
 			var end=new Date().getTime();
 			var elapsed=(end - start)/1000; // in S
 			
-			document.getElementById("status").innerHTML = "Processing timed out after " + (timeout/1000) + " seconds";	
-			console.error("[" + elapsed + "] " + document.getElementById("status").innerHTML);	
+			setStatus("Processing timed out after " + (timeout/1000) + " seconds", "timeout error");	
 		}
 	}
 	catch (e) {
 		var end=new Date().getTime();
 		var elapsed=(end - start)/1000; // in S
 			
-		document.getElementById('status').innerHTML = "ERROR! Unable to open for post to: http://127.0.0.1:3000/" + output_type + ": " + e.message;
-		console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
+		setStatus("ERROR! Unable to open for post to: http://127.0.0.1:3000/" + output_type, e.message);
 		return;
 	}
 	
@@ -301,7 +295,7 @@ function submitForm() {
 			}
 		}
 		else {
-			console.error("[" + elapsed + "] " + "ERROR! Uploading files: unable to compute percent complete");
+			console.error("[" + elapsed + "] " + "ERROR! Uploading files: unable to compute percent complete", "UNKNOWN");
 		}
 	}	
 
@@ -318,12 +312,8 @@ function submitForm() {
 				var arrayIndex = 0;		  
 			}
 			reader.onerror = function(err) {
-				var end=new Date().getTime();
-				var elapsed=(end - start)/1000; // in S
-			
-				document.getElementById('status').innerHTML = "ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
-					name + "; " + err; 		
-				console.error("[" + elapsed + "] " + document.getElementById("status").innerHTML);
+				setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
+					name, err); 		
 				return;
 			}
 			totalFileSize+=file.size;
@@ -334,20 +324,12 @@ function submitForm() {
 		}
 	}
 
-	try {
-		var end=new Date().getTime();
-		var elapsed=(end - start)/1000; // in S
-				
-		document.getElementById("status").innerHTML = "Sending to server...";
-		console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
+	try {			
+		setStatus("Sending to server...");
 		request.send(formData);	
 	}
 	catch (e) {
-		var end=new Date().getTime();
-		var elapsed=(end - start)/1000; // in S
-
-		document.getElementById('status').innerHTML = "ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type + ": " + e.message;
-		console.error("[" + elapsed + "] " + document.getElementById("status").innerHTML);
+		setStatus("ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type, e.message);
 		return;
 	}		
 //    request.sendAsBinary(formData); // Bad crash!!
