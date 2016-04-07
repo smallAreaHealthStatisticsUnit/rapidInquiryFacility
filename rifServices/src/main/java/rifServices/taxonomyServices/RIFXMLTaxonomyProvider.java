@@ -1,12 +1,14 @@
 package rifServices.taxonomyServices;
 
 
-import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Parameter;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.io.File;
 import java.text.Collator;
@@ -141,7 +143,7 @@ public final class RIFXMLTaxonomyProvider
 		final String parameterName,
 		final ArrayList<Parameter> parameters) {
 	
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		for (Parameter parameter : parameters) {
 			String currentParameterName
 				= parameter.getName();
@@ -161,7 +163,7 @@ public final class RIFXMLTaxonomyProvider
 	public boolean supportsTaxonomy(
 		final HealthCodeTaxonomy otherHealthCodeTaxonomy) {
 
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		String nameSpace = healthCodeTaxonomy.getNameSpace();		
 		String otherNameSpace = otherHealthCodeTaxonomy.getNameSpace();
@@ -176,7 +178,7 @@ public final class RIFXMLTaxonomyProvider
 	public boolean supportsTaxonomy(
 		final HealthCode healthCode) {
 
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		String nameSpace = healthCodeTaxonomy.getNameSpace();		
 		String otherNameSpace = healthCode.getNameSpace();

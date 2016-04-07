@@ -1,18 +1,19 @@
 package rifServices.businessConceptLayer;
 
 
-import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFComparisonUtility;
 
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 
 /**
@@ -1285,7 +1286,7 @@ public class Investigation
 
 		//Interval can be none.  It just means that all the years will be included
 		//together
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		String noneChoice
 			= RIFServiceMessages.getMessage("general.choices.none");
 		if ((fieldValidationUtility.isEmpty(interval) == false) &&

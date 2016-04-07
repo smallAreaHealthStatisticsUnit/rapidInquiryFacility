@@ -1,8 +1,10 @@
 package rifServices.restfulWebServices;
 
-import rifGenericLibrary.businessConceptLayer.User;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.*;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.businessConceptLayer.User;
 
 import com.sun.jersey.multipart.*;
 
@@ -585,7 +587,7 @@ public class RIFStudySubmissionWebServiceResource
 				= studySubmissionService.getProjects(user);			
 
 			//Convert results to support JSON
-			Collator collator = RIFServiceMessages.getCollator();
+			Collator collator = RIFGenericLibraryMessages.getCollator();
 			Project selectedProject = null;
 			for (Project project : projects) {
 				if (collator.equals(projectName, project.getName())) {

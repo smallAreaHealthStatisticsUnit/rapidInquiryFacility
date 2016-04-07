@@ -10,15 +10,10 @@ import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 
-
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.*;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import rifGenericLibrary.system.*;
 import rifGenericLibrary.util.RIFLogger;
-
-import rifServices.system.RIFServiceMessages;
 
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -173,7 +168,7 @@ abstract class AbstractDataLoaderStepManager {
 						else {
 							Date date = new Date(timeStamp.getTime());
 							String datePhrase
-								= RIFServiceMessages.getDatePhrase(date);
+								= RIFGenericLibraryMessages.getDatePhrase(date);
 							tableData[ithRow][i] = datePhrase;
 						}
 					}
@@ -442,7 +437,7 @@ abstract class AbstractDataLoaderStepManager {
 		if (workflowState.getStateSequenceNumber() >= WorkflowState.CONVERT.getStateSequenceNumber()) {
 			String convertFieldName = dataSetFieldConfiguration.getConvertFieldName();
 			
-			Collator collator = RIFDataLoaderToolMessages.getCollator();			
+			Collator collator = RIFGenericLibraryMessages.getCollator();			
 			if (collator.equals(convertFieldName, "age") ||
 			   collator.equals(convertFieldName, "sex")) {
 				

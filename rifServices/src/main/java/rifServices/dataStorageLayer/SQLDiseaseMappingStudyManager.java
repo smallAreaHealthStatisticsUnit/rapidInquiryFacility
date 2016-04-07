@@ -3,6 +3,12 @@ package rifServices.dataStorageLayer;
 import java.util.ArrayList;
 import java.sql.*;
 
+import rifServices.businessConceptLayer.*;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -10,11 +16,6 @@ import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.*;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-
 
 /**
  *
@@ -157,13 +158,13 @@ final class SQLDiseaseMappingStudyManager
 				Date startDate
 					= resultSet.getDate(3);
 				String startDatePhrase
-					= RIFServiceMessages.getDatePhrase(startDate);
+					= RIFGenericLibraryMessages.getDatePhrase(startDate);
 				project.setStartDate(startDatePhrase);
 				Date endDate
 					= resultSet.getDate(4);
 				if (endDate != null) {
 					String endDatePhrase
-						= RIFServiceMessages.getDatePhrase(endDate);
+						= RIFGenericLibraryMessages.getDatePhrase(endDate);
 					project.setEndDate(endDatePhrase);					
 				}
 				results.add(project);

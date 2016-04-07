@@ -5,15 +5,10 @@ package rifDataLoaderTool.fileFormats;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
-
-
-
-
-
-
-
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -301,7 +296,7 @@ final class ShapeFileConfigurationHandler
 			String totalAreaIdentifiersPhrase
 				= getCurrentFieldValue();
 			Collator collator
-				= RIFDataLoaderToolMessages.getCollator();
+				= RIFGenericLibraryMessages.getCollator();
 			if (collator.equals(
 				totalAreaIdentifiersPhrase, 
 				unknownPhrase)) {

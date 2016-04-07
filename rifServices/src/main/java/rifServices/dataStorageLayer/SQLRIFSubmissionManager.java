@@ -267,7 +267,7 @@ final class SQLRIFSubmissionManager
 				String processingStage = resultSet.getString(2);
 				String currentStatus = resultSet.getString(3);
 				Date timeStamp = resultSet.getDate(4);
-				String datePhrase = RIFServiceMessages.getDatePhrase(timeStamp);
+				String datePhrase = RIFGenericLibraryMessages.getDatePhrase(timeStamp);
 						
 				String statusUpdate
 					= RIFServiceMessages.getMessage(

@@ -2,6 +2,10 @@ package rifGenericLibrary.system;
 
 import java.text.Collator;
 import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 
@@ -101,7 +105,111 @@ public final class RIFGenericLibraryMessages {
     // ==========================================
     // Section Accessors
     // ==========================================
+    
+    public static String getTimeStampForFileName(
+        final Date _date) {
+        	
+        //Safe copy
+        Date date = new Date(_date.getTime());
+        	
+        SimpleDateFormat simpleTimeFormat 
+     	 	= new SimpleDateFormat("dd-MMM-yyyy_HH_mm_ss");
+     	 String result = simpleTimeFormat.format(date);
+     	  return result;
+    }   
 
+    /**
+     * Gets the time phrase.
+     *
+     * @param _date the _date
+     * @return the time phrase
+     */
+    public static String getTimePhrase(
+    	final Date _date) {
+    	
+    	//Safe copy
+    	Date date = new Date(_date.getTime());
+    	
+    	SimpleDateFormat simpleTimeFormat 
+ 	   		= new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss:SSS");
+ 	   	String result = simpleTimeFormat.format(date);
+ 	   	return result;
+    }   
+    
+    /**
+     * Gets the date.
+     *
+     * @param datePhrase the date phrase
+     * @return the date
+     */
+    public static Date getDate(
+    	final String datePhrase) {
+    	
+    	Date result = null;
+    	try {    		
+    		SimpleDateFormat simpleDateFormat 
+   				= new SimpleDateFormat("dd-MMM-yyyy");
+    		result = simpleDateFormat.parse(datePhrase);
+    	}
+    	catch(ParseException parseException) {
+    		//@TODO decide whether to handle this particular
+    		//exception or ignore it   		
+    	}
+		return result;    	
+    }
+    
+    /**
+     * Gets the time.
+     *
+     * @param timePhrase the time phrase
+     * @return the time
+     */
+    public static Date getTime(
+    	final String timePhrase) {    	
+
+    	Date result = null;
+    	try {
+    		SimpleDateFormat simpleTimeFormat 
+    	  		= new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss:SSS");
+    		result = simpleTimeFormat.parse(timePhrase);
+    	}
+    	catch(ParseException parseException) {
+    		//@TODO decide whether to handle this particular
+    		//exception or ignore it
+    	}
+    	
+    	return result;
+    }
+    
+   /**
+    * Gets the date phrase.
+    *
+    * @param _date the _date
+    * @return the date phrase
+    */
+    public static String getDatePhrase(
+    	final Date _date) {
+
+	   //Safe copy
+	   Date date = new Date(_date.getTime());
+	   
+	   SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+	   String result = simpleDateFormat.format(date);
+	   return result;
+   }
+    
+
+   
+   /**
+    * Gets the locale.
+    *
+    * @return the locale
+    */
+   public static Locale getLocale() {
+
+	   return Locale.getDefault();
+   }
+ 
    /**
      * Gets the collator.
      *
@@ -289,7 +397,6 @@ public final class RIFGenericLibraryMessages {
     // Section Mutators
     // ==========================================
 
-	
 	/**
      * Sets the collator.
      *
@@ -299,8 +406,9 @@ public final class RIFGenericLibraryMessages {
     	final Collator _collator) {
 
     	collator = _collator;
-	}
-	
+	}    
+    
+    
     // ==========================================
     // Section Validation
     // ==========================================

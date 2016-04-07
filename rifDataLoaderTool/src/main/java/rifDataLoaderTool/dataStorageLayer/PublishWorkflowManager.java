@@ -5,6 +5,8 @@ import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
@@ -242,7 +244,7 @@ final class PublishWorkflowManager
 			zipFileName.append(publishTableName);
 			zipFileName.append("_");
 			String datePhrase
-				= RIFDataLoaderToolMessages.getTimeStampForFileName(new Date());
+				= RIFGenericLibraryMessages.getTimeStampForFileName(new Date());
 			zipFileName.append(datePhrase);
 			zipFileName.append(".zip");
 			

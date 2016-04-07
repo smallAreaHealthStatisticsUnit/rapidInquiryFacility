@@ -5,12 +5,12 @@ import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-
-
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
 import rifDataLoaderTool.fileFormats.LinearWorkflowReader;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -117,7 +117,7 @@ public class DataLoaderBatchTool {
 				throw rifServiceException;
 			}
 			
-			Collator collator = RIFDataLoaderToolMessages.getCollator();
+			Collator collator = RIFGenericLibraryMessages.getCollator();
 			String operationArgument = commandLineArguments[0].toUpperCase();
 			
 			if (collator.equals(operationArgument, "-RESERVEDFIELDNAMES")) {

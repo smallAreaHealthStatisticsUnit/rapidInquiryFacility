@@ -1,13 +1,13 @@
 package rifServices.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.Project;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-
-
 
 import java.util.ArrayList;
 import java.text.Collator;
@@ -426,7 +426,7 @@ public class Project
 			errorMessages.add(errorMessage);			
 		}
 		else {
-			startDate = RIFServiceMessages.getDate(startDatePhrase);		
+			startDate = RIFGenericLibraryMessages.getDate(startDatePhrase);		
 			if (startDate == null) {
 				String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -457,7 +457,7 @@ public class Project
 		
 		if (fieldValidationUtility.isEmpty(endDatePhrase) == false) {
 //		else {
-			endDate = RIFServiceMessages.getDate(endDatePhrase);		
+			endDate = RIFGenericLibraryMessages.getDate(endDatePhrase);		
 			if (endDate == null) {
 				String errorMessage
 					= RIFServiceMessages.getMessage(

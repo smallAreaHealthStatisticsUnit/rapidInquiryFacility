@@ -1,5 +1,6 @@
 package rifServices.system;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 
 import java.text.Collator;
@@ -162,7 +163,7 @@ public final class RIFServiceStartupProperties {
     		property = property.toUpperCase();
     		
     		Collator collator
-    			= RIFServiceMessages.getCollator();
+    			= RIFGenericLibraryMessages.getCollator();
     		if (collator.equals(property, "postgresql")) {
     			databaseType
     				= DatabaseType.POSTGRESQL;

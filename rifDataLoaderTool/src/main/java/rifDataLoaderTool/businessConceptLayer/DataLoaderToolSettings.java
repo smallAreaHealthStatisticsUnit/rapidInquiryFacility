@@ -78,7 +78,6 @@ public class DataLoaderToolSettings {
 		
 		geographies 
 			= new ArrayList<DataLoaderToolGeography>();
-		
 		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
 		rifDataTypeFactory.populateFactoryWithBuiltInTypes();
 		workflows = new ArrayList<LinearWorkflow>();

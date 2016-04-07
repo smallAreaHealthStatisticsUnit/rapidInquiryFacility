@@ -4,6 +4,8 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
@@ -318,7 +320,7 @@ final class ConvertWorkflowManager
 		 * 
 		 */
 		//there is no function
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		String cleanFieldName = dataSetFieldConfiguration.getCleanFieldName();
 		String convertFieldName = dataSetFieldConfiguration.getConvertFieldName();
 		

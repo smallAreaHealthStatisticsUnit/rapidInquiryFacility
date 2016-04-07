@@ -2,6 +2,8 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.text.Collator;
 
 /**
@@ -120,7 +122,7 @@ public class DataSetFieldNameGenerator {
 		final String baseFieldName,
 		final String[] existingFieldNames) {
 
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		int i = 1;
 		String candidateFieldName = baseFieldName + String.valueOf(i);
 		if (existingFieldNames.length == 0) {

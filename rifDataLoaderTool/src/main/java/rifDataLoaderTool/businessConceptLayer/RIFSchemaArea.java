@@ -2,6 +2,8 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.text.Collator;
 import java.util.ArrayList;
 
@@ -118,7 +120,7 @@ public enum RIFSchemaArea {
 	}
 	
 	public boolean matches(final String candidateCode) {
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		return collator.equals(code, candidateCode);
 	}

@@ -1,20 +1,17 @@
 package rifServices.taxonomyServices;
 
 
-import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Parameter;
-import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
 
-
-
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.text.Collator;
 import java.util.ArrayList;
 import java.io.File;
-import java.io.IOException;
 import java.io.FileReader;
 import java.io.BufferedReader;
 
@@ -161,7 +158,7 @@ public class ICD10TaxonomyService
 		final String parameterName,
 		final ArrayList<Parameter> parameters) {
 		
-		Collator collator = RIFServiceMessages.getCollator();		
+		Collator collator = RIFGenericLibraryMessages.getCollator();		
 		for (Parameter parameter : parameters) {
 			if (collator.equals(parameterName, parameter.getName())) {
 				return parameter;
@@ -215,7 +212,7 @@ public class ICD10TaxonomyService
 		final String otherNameSpace) {
 		
 		String nameSpace = healthCodeTaxonomy.getNameSpace();
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		if (collator.equals(nameSpace, otherNameSpace)) {
 			return true;			
@@ -289,7 +286,7 @@ public class ICD10TaxonomyService
 		final String label,
 		final String nameSpace) {
 		
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		String healthTaxonomyNameSpace 
 			= healthCodeTaxonomy.getNameSpace();

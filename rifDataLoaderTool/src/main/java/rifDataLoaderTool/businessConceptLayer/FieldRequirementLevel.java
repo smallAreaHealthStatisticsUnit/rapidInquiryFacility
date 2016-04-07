@@ -2,6 +2,8 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.text.Collator;
 
 
@@ -101,7 +103,7 @@ public enum FieldRequirementLevel {
 	public static FieldRequirementLevel getValueFromCode(
 		final String code) {
 		
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(code, REQUIRED_BY_RIF.getCode()) == true) {
 			return REQUIRED_BY_RIF;
 		}
@@ -120,7 +122,7 @@ public enum FieldRequirementLevel {
 	public static FieldRequirementLevel getValueFromName(
 		final String name) {
 			
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(name, REQUIRED_BY_RIF.getName()) == true) {
 			return REQUIRED_BY_RIF;
 		}

@@ -2,6 +2,8 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -181,7 +183,7 @@ public class RIFSchemaAreaPropertyManager {
 		
 		ArrayList<String> missingRequiredFieldNames = new ArrayList<String>();
 
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		String[] requiredConvertFieldNames
 			= getRequiredConvertFieldNames(rifSchemaArea);		
@@ -218,7 +220,7 @@ public class RIFSchemaAreaPropertyManager {
 		final String searchItem,
 		final String[] listItems) {
 		
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		for (String listItem : listItems) {
 			if (collator.equals(searchItem, listItem)) {

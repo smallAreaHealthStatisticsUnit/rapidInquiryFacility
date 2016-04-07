@@ -111,7 +111,7 @@ public class PostgreSQLDataLoadingScriptWriter {
 
 			Date currentTime = new Date();
 			String currentTimePhrase
-				= RIFDataLoaderToolMessages.getTimePhrase(currentTime);
+				= RIFGenericLibraryMessages.getTimePhrase(currentTime);
 			String timeStampCommentLine
 				= RIFDataLoaderToolMessages.getMessage(
 					"loadingScriptWriter.comment.timeStamp",

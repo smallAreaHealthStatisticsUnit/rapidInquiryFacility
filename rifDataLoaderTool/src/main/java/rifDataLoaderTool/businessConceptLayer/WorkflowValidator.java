@@ -3,6 +3,7 @@ package rifDataLoaderTool.businessConceptLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.text.Collator;
@@ -432,7 +433,7 @@ public class WorkflowValidator {
 				String expectedDataTypeIdentifier
 					= expectedDataType.getIdentifier();
 				Collator collator
-					= RIFDataLoaderToolMessages.getCollator();
+					= RIFGenericLibraryMessages.getCollator();
 				if (collator.equals(
 					proposedDataTypeIdentifier, 
 					expectedDataTypeIdentifier) == false) {
@@ -602,7 +603,7 @@ public class WorkflowValidator {
 			if (fieldConfiguration == null) {
 				//this can only mean that the field has been synthesised from conversion
 				//For now, the only field to consider is age_sex_group
-				Collator collator = RIFDataLoaderToolMessages.getCollator();
+				Collator collator = RIFGenericLibraryMessages.getCollator();
 				if (collator.equals(requiredFieldName, "age_sex_group") == false) {
 					String errorMessage
 						= RIFDataLoaderToolMessages.getMessage(

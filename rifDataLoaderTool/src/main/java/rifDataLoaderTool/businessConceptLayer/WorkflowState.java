@@ -2,6 +2,8 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.text.Collator;
 import java.util.ArrayList;
 
@@ -216,7 +218,7 @@ public enum WorkflowState {
 	public static WorkflowState getWorkflowStateFromCode(
 		final String code) {
 		
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(code, START.getCode())) {
 			return START;
 		}
@@ -257,7 +259,7 @@ public enum WorkflowState {
 	public static WorkflowState getWorkflowStateFromName(
 		final String name) {
 		
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(name, START.getStateName())) {
 			return START;
 		}

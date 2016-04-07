@@ -3,6 +3,8 @@ package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
@@ -114,7 +116,7 @@ final class HealthCodeContentHandler
 		healthCodes = new ArrayList<HealthCode>();
 		setSingularRecordName("health_code");
 		this.setPluralRecordName("health_codes");
-		collator = RIFServiceMessages.getCollator();
+		collator = RIFGenericLibraryMessages.getCollator();
 		
 		yesAnswer 
 			= RIFServiceMessages.getMessage("general.xml.yes");

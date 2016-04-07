@@ -1,17 +1,17 @@
 package rifServices.businessConceptLayer;
 
-import java.text.Collator;
 
-
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
+
 import java.util.ArrayList;
+import java.text.Collator;
 
 /**
  * This class was developed to reduce the number of parameters that 
@@ -182,7 +182,7 @@ public class StudyResultRetrievalContext {
 	public boolean hasIdenticalContents(
 		final StudyResultRetrievalContext otherStudyRetrievalContext) {
 
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 
 		String otherGeographyName
 			= otherStudyRetrievalContext.getGeographyName();

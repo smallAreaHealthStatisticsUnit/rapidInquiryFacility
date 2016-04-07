@@ -1,11 +1,18 @@
 package rifServices.taxonomyServices;
 
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.HealthCodeTaxonomy;
+import rifServices.businessConceptLayer.Parameter;
+import rifServices.system.RIFServiceError;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,13 +25,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.HealthCode;
-import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.businessConceptLayer.Parameter;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -405,7 +405,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 		final String parameterName,
 		final ArrayList<Parameter> parameters) {
 			
-		Collator collator = RIFServiceMessages.getCollator();		
+		Collator collator = RIFGenericLibraryMessages.getCollator();		
 		for (Parameter parameter : parameters) {
 			if (collator.equals(parameterName, parameter.getName())) {
 				return parameter;
@@ -439,7 +439,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 			return false;
 		}
 		String nameSpace = healthCodeTaxonomy.getNameSpace();
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		return collator.equals(nameSpace, otherNameSpace);
 	}
 	

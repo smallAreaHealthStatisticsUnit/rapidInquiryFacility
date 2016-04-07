@@ -2,6 +2,8 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.text.Collator;
 
 
@@ -101,7 +103,7 @@ public enum FieldChangeAuditLevel {
 	public static FieldChangeAuditLevel getValueFromName(
 		final String code) {
 		
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(
 			code, 
 			NONE.getName()) == true) {
@@ -130,7 +132,7 @@ public enum FieldChangeAuditLevel {
 	public static FieldChangeAuditLevel getValueFromCode(
 		final String code) {
 		
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(
 			code, 
 			NONE.getCode()) == true) {

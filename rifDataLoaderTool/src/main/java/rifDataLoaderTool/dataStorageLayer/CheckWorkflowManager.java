@@ -8,6 +8,8 @@ import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -308,7 +310,7 @@ final class CheckWorkflowManager
 		final DataSetConfiguration dataSetConfiguration) {
 		
 
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 
 		ArrayList<String> filteredDuplicateCriteriaFields
 			= new ArrayList<String>();
@@ -631,7 +633,7 @@ final class CheckWorkflowManager
 		if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
 			(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
 			
-			Collator collator = RIFDataLoaderToolMessages.getCollator();
+			Collator collator = RIFGenericLibraryMessages.getCollator();
 			
 			if (collator.equals(convertFieldName, "age") ||
 				collator.equals(convertFieldName, "sex") ||
@@ -947,7 +949,7 @@ final class CheckWorkflowManager
 		final String convertFieldName) {
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(convertFieldName, "year")) {
 			return true;
 		}
@@ -962,7 +964,7 @@ final class CheckWorkflowManager
 		String convertFieldName
 			= dataSetFieldConfiguration.getConvertFieldName();
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(convertFieldName, "age")) {
 			return true;
 		}

@@ -89,10 +89,6 @@ public final class RIFServiceMessages {
 	/** The Constant resourceBundle. */
     public static final ResourceBundle resourceBundle;
 
-    /** The collator. */
-    private static Collator collator 
-    	= Collator.getInstance(Locale.getDefault());
-
     // ==========================================
     // Section Properties
     // ==========================================
@@ -108,108 +104,6 @@ public final class RIFServiceMessages {
     // ==========================================
     // Section Accessors
     // ==========================================
-
- 
-    /**
-     * Gets the time phrase.
-     *
-     * @param _date the _date
-     * @return the time phrase
-     */
-    public static String getTimePhrase(
-    	final Date _date) {
-    	
-    	//Safe copy
-    	Date date = new Date(_date.getTime());
-    	
-    	SimpleDateFormat simpleTimeFormat 
- 	   		= new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss:SSS");
- 	   	String result = simpleTimeFormat.format(date);
- 	   	return result;
-    }   
-    
-    /**
-     * Gets the date.
-     *
-     * @param datePhrase the date phrase
-     * @return the date
-     */
-    public static Date getDate(
-    	final String datePhrase) {
-    	
-    	Date result = null;
-    	try {    		
-    		SimpleDateFormat simpleDateFormat 
-   				= new SimpleDateFormat("dd-MMM-yyyy");
-    		result = simpleDateFormat.parse(datePhrase);
-    	}
-    	catch(ParseException parseException) {
-    		//@TODO decide whether to handle this particular
-    		//exception or ignore it   		
-    	}
-		return result;    	
-    }
-    
-    /**
-     * Gets the time.
-     *
-     * @param timePhrase the time phrase
-     * @return the time
-     */
-    public static Date getTime(
-    	final String timePhrase) {    	
-
-    	Date result = null;
-    	try {
-    		SimpleDateFormat simpleTimeFormat 
-    	  		= new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss:SSS");
-    		result = simpleTimeFormat.parse(timePhrase);
-    	}
-    	catch(ParseException parseException) {
-    		//@TODO decide whether to handle this particular
-    		//exception or ignore it
-    	}
-    	
-    	return result;
-    }
-    
-   /**
-    * Gets the date phrase.
-    *
-    * @param _date the _date
-    * @return the date phrase
-    */
-    public static String getDatePhrase(
-    	final Date _date) {
-
-	   //Safe copy
-	   Date date = new Date(_date.getTime());
-	   
-	   SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy");
-	   String result = simpleDateFormat.format(date);
-	   return result;
-   }
-    
-   /**
-    * Gets the collator.
-    *
-    * @return the collator
-    */
-   public static Collator getCollator() {
-
-	   Collator result = (Collator) collator.clone();
-	   return result;
-   }
-   
-   /**
-    * Gets the locale.
-    *
-    * @return the locale
-    */
-   public static Locale getLocale() {
-
-	   return Locale.getDefault();
-   }
 
     /**
      * Gets the message.
@@ -483,18 +377,6 @@ public final class RIFServiceMessages {
     // Section Mutators
     // ==========================================
 
-	
-	/**
-     * Sets the collator.
-     *
-     * @param _collator the new collator
-     */
-    public static void setCollator(
-    	final Collator _collator) {
-
-		collator = _collator;
-	}
-	
     public static String getRIFServicesClassRootLocation() {
     	String classPath = System.getProperty("java.class.path");
     	

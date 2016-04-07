@@ -3,6 +3,7 @@ package rifDataLoaderTool.businessConceptLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.text.Collator;
@@ -115,10 +116,8 @@ public class RIFDataTypeFactory {
 	// ==========================================
 
 	private RIFDataTypeFactory() {
-		
 		dataTypeFromCodes = new HashMap<String, RIFDataType>();
-		dataTypeFromNames = new HashMap<String, RIFDataType>();
-		
+		dataTypeFromNames = new HashMap<String, RIFDataType>();	
 	}
 
 
@@ -504,7 +503,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_TEXT_DATA_TYPE.getIdentifier());
@@ -518,7 +517,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_AGE_DATA_TYPE.getIdentifier());		
@@ -532,7 +531,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_SEX_DATA_TYPE.getIdentifier());		
@@ -545,7 +544,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_DOUBLE_DATA_TYPE.getIdentifier());		
@@ -558,7 +557,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_INTEGER_DATA_TYPE.getIdentifier());		
@@ -572,7 +571,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_ASCII_DATA_TYPE.getIdentifier());		
@@ -585,7 +584,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_ICD_DATA_TYPE.getIdentifier());		
@@ -598,7 +597,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_YEAR_DATA_TYPE.getIdentifier());		
@@ -611,7 +610,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_UK_POSTAL_CODE_DATA_TYPE.getIdentifier());		
@@ -624,7 +623,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_QUINTILISE_DATA_TYPE.getIdentifier());		
@@ -637,7 +636,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_DATE_DATA_TYPE.getIdentifier());		

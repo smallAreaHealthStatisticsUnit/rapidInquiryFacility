@@ -1,9 +1,11 @@
 package rifServices.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
@@ -259,7 +261,7 @@ public final class MapAreaAttributeValue
 	public boolean hasIdenticalContents(
 		final MapAreaAttributeValue otherMapAreaAttributeValue) {
 
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 
 		String otherLabel = otherMapAreaAttributeValue.getLabel();
 		if (FieldValidationUtility.hasDifferentNullity(label, otherLabel)) {

@@ -901,7 +901,7 @@ public class DataSetFieldConfiguration
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		
 		String originalRecordLabelText
@@ -1191,7 +1191,7 @@ public class DataSetFieldConfiguration
 			return nullityDifference;
 		}
 		
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(
 			originalFieldValue, 
 			revisedFieldValue)) {

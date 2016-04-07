@@ -1,10 +1,12 @@
 package rifServices.businessConceptLayer;
 
-import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
@@ -173,7 +175,7 @@ public abstract class AbstractRIFConcept
 			return false;
 		}
 
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		String otherIdentifier = otherRIFConcept.getIdentifier();
 

@@ -2,6 +2,8 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
@@ -585,7 +587,7 @@ public class DataSetConfiguration
 		throws RIFServiceException {
 	
 
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		String targetCoreFieldName = targetDataSetFieldConfiguration.getCoreFieldName();
 		
@@ -796,7 +798,7 @@ public class DataSetConfiguration
 		final String convertFieldName) {
 		
 		Collator collator
-			= RIFDataLoaderToolMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			String currentFieldName

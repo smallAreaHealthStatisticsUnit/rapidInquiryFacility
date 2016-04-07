@@ -1,7 +1,6 @@
 
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 
@@ -14,10 +13,12 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
-import rifGenericLibrary.util.FieldValidationUtility;
 
-import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.businessConceptLayer.User;
 
 import java.awt.GridBagConstraints;
@@ -421,7 +422,7 @@ final class AgeSexYearBandPanel
 		
 		String choosePhrase
 			= RIFServiceMessages.getMessage("general.choices.choose");
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(choosePhrase, startYearPhrase) ||
 			collator.equals(choosePhrase, endYearPhrase)) {
 			//either of start or end years is not defined.
@@ -502,7 +503,7 @@ final class AgeSexYearBandPanel
 			String intervalPhrase	
 				= (String) intervalComboBox.getSelectedItem();
 			
-			Collator collator = RIFServiceMessages.getCollator();
+			Collator collator = RIFGenericLibraryMessages.getCollator();
 			if (collator.equals(intervalPhrase, NONE_CHOICE)) {
 				//if there is no interval then we will treat
 				//the lower and upper limits as one single year interval				

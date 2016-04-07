@@ -1,10 +1,12 @@
 
 package rifServices.taxonomyServices;
 
-import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -16,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -125,7 +126,7 @@ final class XMLHealthCodeTaxonomyContentHandler
      */
 	public XMLHealthCodeTaxonomyContentHandler() {
     	isValidRifHealthCodeProvider = false;
-		collator = RIFServiceMessages.getCollator();
+		collator = RIFGenericLibraryMessages.getCollator();
 		parentTerms = new Stack<TaxonomyTerm>();
 		
 		allTerms = new ArrayList<TaxonomyTerm>();
@@ -360,7 +361,7 @@ final class XMLHealthCodeTaxonomyContentHandler
 		final String label,
 		final String nameSpace) {
 		
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		String healthTaxonomyNameSpace 
 			= healthCodeTaxonomy.getNameSpace();

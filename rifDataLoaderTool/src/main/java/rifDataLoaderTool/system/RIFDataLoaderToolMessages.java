@@ -105,53 +105,9 @@ public final class RIFDataLoaderToolMessages {
     // ==========================================
     // Section Accessors
     // ==========================================
-
-    /**
-     * Gets the time phrase.
-     *
-     * @param _date the _date
-     * @return the time phrase
-     */
-    public static String getTimePhrase(
-    	final Date _date) {
-    	
-    	//Safe copy
-    	Date date = new Date(_date.getTime());
-    	
-    	SimpleDateFormat simpleTimeFormat 
- 	   		= new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss:SSS");
- 	   	String result = simpleTimeFormat.format(date);
- 	   	return result;
-    }   
-    
-    public static String getTimeStampForFileName(
-        final Date _date) {
-        	
-        //Safe copy
-        Date date = new Date(_date.getTime());
-        	
-        SimpleDateFormat simpleTimeFormat 
-     	 	= new SimpleDateFormat("dd-MMM-yyyy_HH_mm_ss");
-     	 String result = simpleTimeFormat.format(date);
-     	  return result;
-    }   
+ 
 
     
-   /**
-     * Gets the collator.
-     *
-     * @return the collator
-     */
-    public static Collator getCollator() {
-    	
-	  if ( collator == null) {
-		 collator = Collator.getInstance();
-	  } //end if ()
-	  
-	  Collator result = (Collator) collator.clone();
-	  return result;
-   }
-
     /**
      * Gets the message.
      *

@@ -2,6 +2,8 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.text.Collator;
 
 /**
@@ -92,7 +94,7 @@ public enum FieldPurpose {
 	public static FieldPurpose getValueFromCode(
 		final String code) {
 		
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(code, COVARIATE.getCode())) {
 			return COVARIATE;
 		}
@@ -123,7 +125,7 @@ public enum FieldPurpose {
 	
 	
 	public static FieldPurpose getFieldPurposeFromName(final String name) {
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(COVARIATE.getName(), name)) {
 			return COVARIATE;
 		}

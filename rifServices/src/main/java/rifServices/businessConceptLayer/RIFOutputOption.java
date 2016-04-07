@@ -2,6 +2,8 @@
 package rifServices.businessConceptLayer;
 
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
@@ -113,7 +115,7 @@ public enum RIFOutputOption {
 	public static RIFOutputOption getOptionFromPhrase(
 		final String phrase) {
 
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		String dataPhrase
 			= RIFServiceMessages.getMessage("rifOutputOption.data.label");

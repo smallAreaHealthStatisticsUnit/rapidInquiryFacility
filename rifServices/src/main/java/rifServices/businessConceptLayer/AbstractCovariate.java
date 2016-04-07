@@ -1,8 +1,10 @@
 package rifServices.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.AbstractRIFConcept;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.text.Collator;
@@ -236,7 +238,7 @@ abstract public class AbstractCovariate
 	public boolean hasIdenticalContents(
 		final AbstractCovariate otherCovariate) {
 
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		String otherName = otherCovariate.getName();
 		String otherMinimumValue = otherCovariate.getMinimumValue();

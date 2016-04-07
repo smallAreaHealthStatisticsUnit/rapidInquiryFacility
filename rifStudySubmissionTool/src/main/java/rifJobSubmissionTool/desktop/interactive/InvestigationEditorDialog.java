@@ -18,7 +18,7 @@ import rifServices.businessConceptLayer.YearRange;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 
-
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.presentationLayer.OrderedListComboBox;
@@ -557,7 +557,7 @@ final class InvestigationEditorDialog
 			= ageSexYearBandPanel.getIntervalValue();	
 		String noneChoice
 			= RIFServiceMessages.getMessage("general.choices.none");			
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(interval, noneChoice)) {
 			investigation.setInterval(null);
 		}

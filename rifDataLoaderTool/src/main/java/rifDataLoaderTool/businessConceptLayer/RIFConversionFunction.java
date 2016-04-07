@@ -3,6 +3,8 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.FieldValidationUtility;
 
@@ -198,7 +200,7 @@ public class RIFConversionFunction {
 	private String getCleanFieldNameFromActualParameterName(
 		final String actualParameterName) {
 			
-		Collator collator = RIFDataLoaderToolMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		for (DataSetFieldConfiguration actualParameterValue : actualParameterValues) {
 			String convertFieldName
 				= actualParameterValue.getConvertFieldName();
@@ -266,7 +268,7 @@ public class RIFConversionFunction {
 			errorMessages.add(errorMessage);
 		}
 		else {		
-			Collator collator = RIFDataLoaderToolMessages.getCollator();
+			Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 			for (int i = 0; i < formalParameterNames.size(); i++) {		
 				String currentFormalParameterName

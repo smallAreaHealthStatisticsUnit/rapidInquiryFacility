@@ -6,7 +6,8 @@ import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
-import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
@@ -230,7 +231,7 @@ final public class RIFStudySubmissionContentHandler
 		}
 		else {
 			String jobSubmissionDatePhrase 
-				= RIFServiceMessages.getTimePhrase(jobSubmissionTime);
+				= RIFGenericLibraryMessages.getTimePhrase(jobSubmissionTime);
 			xmlUtility.writeField(
 				recordName,
 				"job_submission_date", 
@@ -340,7 +341,7 @@ final public class RIFStudySubmissionContentHandler
 			else if (equalsFieldName(qualifiedName, "job_submission_date")) {
 				String jobSubmissionTimePhrase
 					= getCurrentFieldValue();
-				Collator collator = RIFServiceMessages.getCollator();
+				Collator collator = RIFGenericLibraryMessages.getCollator();
 				
 				currentRIFJobSubmission.setJobSubmissionTime(new Date());
 
@@ -348,7 +349,7 @@ final public class RIFStudySubmissionContentHandler
 				if (fieldValidationUtility.isEmpty(jobSubmissionTimePhrase) == false) {
 					if (collator.equals(jobSubmissionTimePhrase, "") == false) {
 						Date jobSubmissionTime
-							= RIFServiceMessages.getTime(jobSubmissionTimePhrase);
+							= RIFGenericLibraryMessages.getTime(jobSubmissionTimePhrase);
 						currentRIFJobSubmission.setJobSubmissionTime(jobSubmissionTime);
 					}
 				}
@@ -412,7 +413,7 @@ final public class RIFStudySubmissionContentHandler
 		}
 		else if (equalsFieldName(qualifiedName, "job_submission_date")) {
 			Date jobSubmissionTime
-				= RIFServiceMessages.getTime(getCurrentFieldValue());
+				= RIFGenericLibraryMessages.getTime(getCurrentFieldValue());
 			currentRIFJobSubmission.setJobSubmissionTime(jobSubmissionTime);
 		}
 		else {

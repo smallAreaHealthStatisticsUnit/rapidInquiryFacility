@@ -1,10 +1,5 @@
 package rifServices.dataStorageLayer;
 
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.HealthCode;
@@ -17,6 +12,13 @@ import rifServices.system.RIFServiceStartupOptions;
 import rifServices.taxonomyServices.HealthCodeProviderInterface;
 import rifServices.taxonomyServices.ICD10ClaMLTaxonomyProvider;
 import rifServices.taxonomyServices.RIFXMLTaxonomyProvider;
+
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 
 import java.util.ArrayList;
 import java.io.File;
@@ -533,7 +535,7 @@ final class HealthOutcomeManager {
 	private HealthCodeProviderInterface getRelevantHealthCodeProvider(
 		final String nameSpace) {
 		
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		for (HealthCodeProviderInterface healthCodeProvider : healthCodeProviders) {
 			HealthCodeTaxonomy healthCodeTaxonomy
 				= healthCodeProvider.getHealthCodeTaxonomy();

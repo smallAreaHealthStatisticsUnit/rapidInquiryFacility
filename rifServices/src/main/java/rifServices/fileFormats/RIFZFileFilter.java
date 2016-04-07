@@ -3,6 +3,8 @@ package rifServices.fileFormats;
 
 import rifServices.system.RIFServiceMessages;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.text.Collator;
 import java.io.File;
 import java.util.Locale;
@@ -123,7 +125,7 @@ public final class RIFZFileFilter
     	int fileExtensionDotIndex
     		= currentFilePath.lastIndexOf(".");
     	
-    	Locale locale = RIFServiceMessages.getLocale();
+    	Locale locale = RIFGenericLibraryMessages.getLocale();
     	String desiredExtension = "." + RIFZ_EXTENSION.toLowerCase(locale);
     	if (fileExtensionDotIndex == -1) {
     		//the file doesn't have a file extension so add one
@@ -132,7 +134,7 @@ public final class RIFZFileFilter
     	}
     	else {
     		String upperCasePath 
-    			= currentFilePath.toUpperCase(RIFServiceMessages.getLocale());
+    			= currentFilePath.toUpperCase(RIFGenericLibraryMessages.getLocale());
     		if (upperCasePath.endsWith(desiredExtension.toUpperCase(locale)) == false) {
     			resultingPath.append(desiredExtension);
     		} 		
@@ -162,7 +164,7 @@ public final class RIFZFileFilter
 			= upperCasePathName.substring(dotPosition+1);
 		
 		Collator collator
-			= RIFServiceMessages.getCollator();
+			= RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(RIFZ_EXTENSION, currentExtension) == true) {
 			return true;
 		}

@@ -1,12 +1,11 @@
 package rifDataLoaderTool.test;
 
-
-
 import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
+
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import org.junit.After;
@@ -203,7 +202,7 @@ public abstract class AbstractRIFDataLoaderTestCase {
 			return false;
 		}
 		
-		Collator collator = RIFServiceMessages.getCollator();
+		Collator collator = RIFGenericLibraryMessages.getCollator();
 		for (int ithRow = 0; ithRow < expectedResults.length; ithRow++) {
 			int numberOfColumns = expectedResults[ithRow].length;
 			if (actualResults[ithRow].length != expectedResults[ithRow].length) {
