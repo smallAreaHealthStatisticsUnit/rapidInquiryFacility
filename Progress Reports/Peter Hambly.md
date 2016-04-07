@@ -368,7 +368,7 @@ Test harness refactor; Node.js version working
 	* Move shpConvert.html to Node express server; make so does not need network. Also needed for IE
 	* Add topoJSON support
 	* Zip file support. Convert zlib, zip file support to async
-	* Check that minuimum resolution shapefile has only 1 area  
+	* Check that minimum resolution shapefile has only 1 area  
     * Large file support (coa2011)
 	
 	Maybe list:

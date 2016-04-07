@@ -432,145 +432,159 @@ function displayResponse(responseText, status) {
 	}
 	else {
 		msg+="<p>Shape files processed: " + response.no_files;
-		if (response.file_list) {
+		if (!response.file_list) {
+			msg+="; no file list";	
+		}
+		else {
 			if (response.no_files > 0) {
-				msg+="<table border=\"1\" style=\"width:100%\">" + 
-				"<tr><th>No.</th><th>File</th><th>GeoJSON length</th>" +
-				"<th>File size</th><th>Areas</th><th>Geojson convert time (S)</th>" +
-				"<th>Geo level</th><th>Area (Km<sup>2</sup>)</th>" + 
-				"<th>SRID</th>" +
-				"</tr>";
-				if (response.file_list[0].boundingBox) {
-					if (!map) {
-						map=createMap(response.file_list[0].boundingBox);
-					}
-					else {
-						var centre=map.getCenter();
-							
-						console.log("Centre: " + centre.lat + ", " + centre.lng);
-//						if (+centre.lat.toFixed(4) == +y_avg.toFixed(4) && 
-//							+centre.lng.toFixed(4) == +x_avg.toFixed(4)) {
-//							console.log("Map centre has not changed");
-//						}
-//						else {
-							map.eachLayer(function (layer) {
-								console.log('Remove tileLayer');
-								map.removeLayer(layer);
-							});
-							console.log('Remove map');
-							map.remove(); // Known leaflet bug:
-										  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-							
-							map=createMap(response.file_list[0].boundingBox);				
-//						}	
-					}				
+				if (!response.file_list[0]) {
+					msg+="; problem with file list";
+					console.error("First file in list (size: " + response.no_files + ") is not defined");	
 				}
 				else {
-					console.error("response.file_list[0].boundingBox is not defined");				
-				}
-				
-				var layerColours = [ // Some advice needed here!!!
-					"#ff0000", // Red
-					"#0000ff", // Blue
-					"#00ff00", // Green
-					"#ff00c8", // Magenta
-					"#ffb700", // Orange
-					"#f0f0f0", // Light grey
-					"#0f0f0f"  // Onyx (nearly black)
-					];
-				
-				var layerAddOrder = [];
-				
-/*
-Add shapefiles starting from the highest resolution first:
-
-Add data to geoJSONLayer[0]; shapefile [3]: SAHSU_GRD_Level4.shp
-Add data to geoJSONLayer[1]; shapefile [2]: SAHSU_GRD_Level3.shp
-Add data to geoJSONLayer[2]; shapefile [1]: SAHSU_GRD_Level2.shp
-Add data to geoJSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
-*/
-			
-				for (var i=0; i < response.no_files; i++) {	//. Re-order by geolevel_id	
-					layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;		
-				}
-				
-				for (var i=0; i < response.no_files; i++) {	// Now processe					
-					var weight=(response.no_files - i); // i.e. Lower numbers - high resolution have most weight
-					var color=layerColours[i];	
-// Chroma.js - to be added (Node module)
-//					var colorScale = chroma  
-//						.scale(['#D5E3FF', '#003171'])
-//						.domain([0,1]);	
-					var opacity;
-					var fillOpacity;
-//					if (response.file_list[i].geolevel_id != response.no_files) { 
-					if (i > 0) { // All but the first are transparent
-						opacity=0;		
-						fillOpacity=0;
-					}
-					else { // First - i.e. max geolevel
-						opacity=1;
-						fillOpacity=0.4;				
-					}
-//					if (!color || response.file_list[i].geolevel_id == 1) {
-					if (!color || i == (response.no_files - 1)) { // if >7 layers or lowest resolution (last layer) - make it black
-						color="#000000"; // Black
-						weight=response.no_files;
-					}
-			
-					if (!response.file_list[layerAddOrder[i]] || !response.file_list[layerAddOrder[i]].file_name) {
-						console.error("layerAddOrder problem: Add data to geoJSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE");
-					}
-					console.log("Add data to geoJSONLayer[" + i + "]; shapefile [" + layerAddOrder[i] + "]: " +
-						response.file_list[layerAddOrder[i]].file_name +
-						"; colour: " + color + "; weight: " + weight + "; opacity: " + opacity + "; fillOpacity: " + fillOpacity);
-						
-					msg+="<tr style=\"color:" + color + "\"><td>" + (i+1) + "</td><td>" + response.file_list[layerAddOrder[i]].file_name + "</td><td>";
-					if (response.file_list[i].geojson) {			
-						try {
-							var geojson = JSON.stringify(response.file_list[i].geojson);
-							if (response.file_list[i].boundingBox && map) {
-			
-								if (geoJSONLayer[i]) {	
-									console.log('Remove geoJSONLayer' + i + ']');
-									map.removeLayer(geoJSONLayer[i]);
-								}		
-								
-								console.log('New geoJSONLayer[' + i + '], color: ' + color);	
-								document.getElementById("status").innerHTML = "Adding geoJSONLayer[" + i + "]...";	
-								geoJSONLayer[i] = L.geoJson(undefined, 
-									{style: 
-										{color: 	color,
-										 fillColor: "#ccf4ff",
-										 weight: 	weight, // i.e. Lower numbers have most weight
-										 opacity: 	1,
-										 fillOpacity: fillOpacity}
-									}).addTo(map);
-								geoJSONLayer[i].addData(response.file_list[layerAddOrder[i]].geojson);									
-							}
+					msg+="<table border=\"1\" style=\"width:100%\">" + 
+					"<tr><th>No.</th><th>File</th><th>GeoJSON length</th>" +
+					"<th>File size</th><th>Areas</th><th>Geojson convert time (S)</th>" +
+					"<th>Geo level</th><th>Area (Km<sup>2</sup>)</th>" + 
+					"<th>SRID</th>" +
+					"</tr>";			
 							
-							msg+=fileSize(geojson.length);
-						} catch (e) {  							
-							msg+="GeoJSON conversion error: " + e.message;
-							responseErrors++;
-						}
+					if (!response.file_list[0].boundingBox) {
+						msg+="; no bounding Box";
+						console.log('bounding Box is not defined');	
 					}
 					else {
-						msg+="ERROR! no GeoJSON returned";
-						responseErrors++;
-					}
-					msg+="</td><td>" + 
-						(fileSize(response.file_list[i].file_size) || "Not Set") + "</td><td>" + 
-						response.file_list[i].total_areas + "</td><td>" +
-						(response.file_list[i].geojson_time || "Not converted") + "</td><td>" + 
-						(response.file_list[i].geolevel_id || "N/A") + "</td><td>" + 
-						(response.file_list[i].uncompress_size || "N/A") + "</td><td>" +
-						(response.file_list[i].srid || "No SRID") + "</td>" +
-						"</tr>";
+						if (!map) {
+							map=createMap(response.file_list[0].boundingBox);
+						}
+						else {
+							var centre=map.getCenter();
+								
+							console.log("Centre: " + centre.lat + ", " + centre.lng);
+	//						if (+centre.lat.toFixed(4) == +y_avg.toFixed(4) && 
+	//							+centre.lng.toFixed(4) == +x_avg.toFixed(4)) {
+	//							console.log("Map centre has not changed");
+	//						}
+	//						else {
+								map.eachLayer(function (layer) {
+									console.log('Remove tileLayer');
+									map.removeLayer(layer);
+								});
+								console.log('Remove map');
+								map.remove(); // Known leaflet bug:
+											  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+								
+								map=createMap(response.file_list[0].boundingBox);				
+	//						}	
+						}							
+					
+						var layerColours = [ // Some advice needed here!!!
+							"#ff0000", // Red
+							"#0000ff", // Blue
+							"#00ff00", // Green
+							"#ff00c8", // Magenta
+							"#ffb700", // Orange
+							"#f0f0f0", // Light grey
+							"#0f0f0f"  // Onyx (nearly black)
+							];
+						
+						var layerAddOrder = [];
+						
+	/*
+	Add shapefiles starting from the highest resolution first:
 
-				} // end of for loop
-			}
-			msg+="</table>";
+	Add data to geoJSONLayer[0]; shapefile [3]: SAHSU_GRD_Level4.shp
+	Add data to geoJSONLayer[1]; shapefile [2]: SAHSU_GRD_Level3.shp
+	Add data to geoJSONLayer[2]; shapefile [1]: SAHSU_GRD_Level2.shp
+	Add data to geoJSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
+	*/
+					
+						for (var i=0; i < response.no_files; i++) {	//. Re-order by geolevel_id	
+							layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;		
+						}
+						
+						for (var i=0; i < response.no_files; i++) {	// Now processe					
+							var weight=(response.no_files - i); // i.e. Lower numbers - high resolution have most weight
+							var color=layerColours[i];	
+		// Chroma.js - to be added (Node module)
+		//					var colorScale = chroma  
+		//						.scale(['#D5E3FF', '#003171'])
+		//						.domain([0,1]);	
+							var opacity;
+							var fillOpacity;
+		//					if (response.file_list[i].geolevel_id != response.no_files) { 
+							if (i > 0) { // All but the first are transparent
+								opacity=0;		
+								fillOpacity=0;
+							}
+							else { // First - i.e. max geolevel
+								opacity=1;
+								fillOpacity=0.4;				
+							}
+		//					if (!color || response.file_list[i].geolevel_id == 1) {
+							if (!color || i == (response.no_files - 1)) { // if >7 layers or lowest resolution (last layer) - make it black
+								color="#000000"; // Black
+								weight=response.no_files;
+							}
+					
+							if (!response.file_list[layerAddOrder[i]] || !response.file_list[layerAddOrder[i]].file_name) {
+								console.error("layerAddOrder problem: Add data to geoJSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE");
+							}
+							console.log("Add data to geoJSONLayer[" + i + "]; shapefile [" + layerAddOrder[i] + "]: " +
+								response.file_list[layerAddOrder[i]].file_name +
+								"; colour: " + color + "; weight: " + weight + "; opacity: " + opacity + "; fillOpacity: " + fillOpacity);
+								
+							msg+="<tr style=\"color:" + color + "\"><td>" + (i+1) + "</td><td>" + response.file_list[layerAddOrder[i]].file_name + "</td><td>";
+							if (response.file_list[i].geojson) {			
+								try {
+									var geojson = JSON.stringify(response.file_list[i].geojson);
+									if (response.file_list[i].boundingBox && map) {
+					
+										if (geoJSONLayer[i]) {	
+											console.log('Remove geoJSONLayer' + i + ']');
+											map.removeLayer(geoJSONLayer[i]);
+										}		
+										
+										console.log('New geoJSONLayer[' + i + '], color: ' + color);	
+										document.getElementById("status").innerHTML = "Adding geoJSONLayer[" + i + "]...";	
+										geoJSONLayer[i] = L.geoJson(undefined, 
+											{style: 
+												{color: 	color,
+												 fillColor: "#ccf4ff",
+												 weight: 	weight, // i.e. Lower numbers have most weight
+												 opacity: 	1,
+												 fillOpacity: fillOpacity}
+											}).addTo(map);
+										geoJSONLayer[i].addData(response.file_list[layerAddOrder[i]].geojson);									
+									}
+									
+									msg+=fileSize(geojson.length);
+								} catch (e) {  							
+									msg+="GeoJSON conversion error: " + e.message;
+									responseErrors++;
+								}
+							}
+							else {
+								msg+="ERROR! no GeoJSON returned";
+								responseErrors++;
+							}
+							msg+="</td><td>" + 
+								(fileSize(response.file_list[i].file_size) || "Not Set") + "</td><td>" + 
+								response.file_list[i].total_areas + "</td><td>" +
+								(response.file_list[i].geojson_time || "Not converted") + "</td><td>" + 
+								(response.file_list[i].geolevel_id || "N/A") + "</td><td>" + 
+								(response.file_list[i].uncompress_size || "N/A") + "</td><td>" +
+								(response.file_list[i].srid || "No SRID") + "</td>" +
+								"</tr>";
+
+						} // end of for loop
+
+					} // response.file_list[0].boundingBox					
+					msg+="</table>";			
+				} // response.file_list[0] exists
+				
+
+			} // response.no_files > 0
 			if (response.file_list[0].srid) {
 				console.log("SRID: " + response.file_list[0].srid);
 			}	
@@ -585,15 +599,10 @@ Add data to geoJSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 							"ymin: " + response.file_list[0].boundingBox.ymin + ", " +
 							"xmax: " + response.file_list[0].boundingBox.xmax + ", " +
 							"ymax: " + response.file_list[0].boundingBox.ymax + "]");
-			}
+			}			
 		}
-		else {
-			msg+="; no file list";
-		}
-		msg+="</p>";
 	}
-
-
+	msg+="</p>";
 
 	if (response.fields) {
 		var fieldCount=0;

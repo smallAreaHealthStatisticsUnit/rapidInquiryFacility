@@ -705,7 +705,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				}
 			}
 			if (bbox_errors > 0) {
-				file_errors+=bbox_errors;
+				response.file_errors+=bbox_errors;
 			}
 			else {
 				msg+="\nAll bounding boxes are the same";
@@ -723,6 +723,10 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			});
 			for (var i=0; i<ngeolevels.length; i++) {		
 				ngeolevels[i].geolevel_id=i+1;
+				if (i == 0 && ngeolevels.length > 1 && ngeolevels[i].total_areas != 1) { // Geolevel 1 - Check that minimum resolution shapefile has only 1 area
+					msg+="\nERROR: geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)"
+					response.file_errors++;
+				}
 				msg+="\nShape file [" + ngeolevels[i].i + "]: " + ngeolevels[i].file_name + 
 					"; areas: " + ngeolevels[i].total_areas + 
 					"; points: " + ngeolevels[i].points + 
