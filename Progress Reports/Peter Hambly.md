@@ -368,21 +368,30 @@ Test harness refactor; Node.js version working
 	* Move shpConvert.html to Node express server; make so does not need network. Also needed for IE
 	* Add topoJSON support
 	* Zip file support. Convert zlib, zip file support to async
-	* Detect area mismatch between shapefiles
 	* Check that minuimum resolution shapefile has only 1 area  
-	* Add tests:
-		i. Unsupported projection files (modify proj data slightly...)
-		ii. Wrong shapefile in set
-	* WKT support
-	* Database connection; clean, check OK and ST_Union() for PK 
-	* Area support. Add to shapefile checks
+    * Large file support (coa2011)
 	
 	Maybe list:
 	
 	* Simplify...
-	* Status update using my_reference
-	* Hover support for name at highest resolution
+	* Hover support for area name at highest resolution
 	* Replace traditional html with JQuery-UI
+	* Area_id and description support. 	
+	* Hover support for area name at highest resolution
+	* Add area_id and id uniqueness tests to shapefile checks
+	
+	* WKT support
+	* Database connection; clean, check OK and ST_Union() for PK 	
+	* Id generator
+	* Detect area mismatch between shapefiles	
+	
+	* Add tests:
+		i. Unsupported projection files (modify proj data slightly...)
+		ii. Wrong shapefile in set
+		iii. No shapefile with only 1 area if > 1 shapefile
+		iv. Area mismatch between shapefiles
+		
+	* Status update using my_reference; timeout recovery	
 	
 #### 20th April - Judy Qualters - CDC Visit
 	

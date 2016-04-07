@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <geoDataLoader>
   <xmlFileName>geoDataLoader.xml</xmlFileName>
-  <xmlFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/f2817550-fc28-11e5-96ba-002564169b33</xmlFileDir>
-  <uuidV1>f2817550-fc28-11e5-96ba-002564169b33</uuidV1>
-  <geometryName>To be added</geometryName>
-  <geometryDescription>To be added</geometryDescription>
+  <xmlFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/120b6e10-fc8f-11e5-b5f4-002564169b33</xmlFileDir>
+  <uuidV1>120b6e10-fc8f-11e5-b5f4-002564169b33</uuidV1>
+  <geographyName>To be added by user</geographyName>
+  <geographyDescription>To be added by user</geographyDescription>
   <shapeFileList>
     <shapeFiles>
       <primaryKey>id</primaryKey>
@@ -15,18 +15,19 @@
         <dbfFields>LEVEL1</dbfFields>
         <dbfFields>Area</dbfFields>
       </dbfFieldList>
-      <uniqueKey>To be added from dbfFieldList</uniqueKey>
+      <uniqueKey>To be added by user from dbfFieldList</uniqueKey>
+      <uniqueName>To be added by user from dbfFieldList</uniqueName>
       <geolevelId>1</geolevelId>
-      <geolevelName>To be added</geolevelName>
-      <geolevelDescription>To be added</geolevelDescription>
+      <geolevelName>To be added by user</geolevelName>
+      <geolevelDescription>To be added by user</geolevelDescription>
       <shapeFileName>SAHSU_GRD_Level1.shp</shapeFileName>
-      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/f2817550-fc28-11e5-96ba-002564169b33</shapeFileDir>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/120b6e10-fc8f-11e5-b5f4-002564169b33</shapeFileDir>
       <lookupTable/>
       <lookupTableDescriptionColumn/>
       <lookupTableData/>
       <shapeFileTable>SAHSU_GRD_LEVEL1</shapeFileTable>
-      <shapeFileAreaIdColumn/>
-      <shapeFileDescriptionColumn/>
+      <shapeFileAreaIdColumn>To be added by user from dbfFieldList</shapeFileAreaIdColumn>
+      <shapeFileDescriptionColumn>To be added by user from dbfFieldList</shapeFileDescriptionColumn>
     </shapeFiles>
     <shapeFiles>
       <primaryKey>id</primaryKey>
@@ -38,18 +39,19 @@
         <dbfFields>LEVEL1</dbfFields>
         <dbfFields>Name</dbfFields>
       </dbfFieldList>
-      <uniqueKey>To be added from dbfFieldList</uniqueKey>
+      <uniqueKey>To be added by user from dbfFieldList</uniqueKey>
+      <uniqueName>To be added by user from dbfFieldList</uniqueName>
       <geolevelId>2</geolevelId>
-      <geolevelName>To be added</geolevelName>
-      <geolevelDescription>To be added</geolevelDescription>
+      <geolevelName>To be added by user</geolevelName>
+      <geolevelDescription>To be added by user</geolevelDescription>
       <shapeFileName>SAHSU_GRD_Level2.shp</shapeFileName>
-      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/f2817550-fc28-11e5-96ba-002564169b33</shapeFileDir>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/120b6e10-fc8f-11e5-b5f4-002564169b33</shapeFileDir>
       <lookupTable/>
       <lookupTableDescriptionColumn/>
       <lookupTableData/>
       <shapeFileTable>SAHSU_GRD_LEVEL2</shapeFileTable>
-      <shapeFileAreaIdColumn/>
-      <shapeFileDescriptionColumn/>
+      <shapeFileAreaIdColumn>To be added by user from dbfFieldList</shapeFileAreaIdColumn>
+      <shapeFileDescriptionColumn>To be added by user from dbfFieldList</shapeFileDescriptionColumn>
     </shapeFiles>
     <shapeFiles>
       <primaryKey>id</primaryKey>
@@ -60,19 +62,19 @@
         <dbfFields>LEVEL1</dbfFields>
         <dbfFields>LEVEL3</dbfFields>
       </dbfFieldList>
-      <uniqueKey>To be added from dbfFieldList</uniqueKey>
-      <uniqueName>To be added from dbfFieldList</uniqueName>
+      <uniqueKey>To be added by user from dbfFieldList</uniqueKey>
+      <uniqueName>To be added by user from dbfFieldList</uniqueName>
       <geolevelId>3</geolevelId>
-      <geolevelName>To be added</geolevelName>
-      <geolevelDescription>To be added</geolevelDescription>
+      <geolevelName>To be added by user</geolevelName>
+      <geolevelDescription>To be added by user</geolevelDescription>
       <shapeFileName>SAHSU_GRD_Level3.shp</shapeFileName>
-      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/f2817550-fc28-11e5-96ba-002564169b33</shapeFileDir>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/120b6e10-fc8f-11e5-b5f4-002564169b33</shapeFileDir>
       <lookupTable/>
       <lookupTableDescriptionColumn/>
       <lookupTableData/>
       <shapeFileTable>SAHSU_GRD_LEVEL3</shapeFileTable>
-      <shapeFileAreaIdColumn/>
-      <shapeFileDescriptionColumn/>
+      <shapeFileAreaIdColumn>To be added by user from dbfFieldList</shapeFileAreaIdColumn>
+      <shapeFileDescriptionColumn>To be added by user from dbfFieldList</shapeFileDescriptionColumn>
     </shapeFiles>
     <shapeFiles>
       <primaryKey>id</primaryKey>
@@ -85,18 +87,19 @@
         <dbfFields>LEVEL1</dbfFields>
         <dbfFields>LEVEL3</dbfFields>
       </dbfFieldList>
-      <uniqueKey>To be added from dbfFieldList</uniqueKey>
+      <uniqueKey>To be added by user from dbfFieldList</uniqueKey>
+      <uniqueName>To be added by user from dbfFieldList</uniqueName>
       <geolevelId>4</geolevelId>
-      <geolevelName>To be added</geolevelName>
-      <geolevelDescription>To be added</geolevelDescription>
+      <geolevelName>To be added by user</geolevelName>
+      <geolevelDescription>To be added by user</geolevelDescription>
       <shapeFileName>SAHSU_GRD_Level4.shp</shapeFileName>
-      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/f2817550-fc28-11e5-96ba-002564169b33</shapeFileDir>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/120b6e10-fc8f-11e5-b5f4-002564169b33</shapeFileDir>
       <lookupTable/>
       <lookupTableDescriptionColumn/>
       <lookupTableData/>
       <shapeFileTable>SAHSU_GRD_LEVEL4</shapeFileTable>
-      <shapeFileAreaIdColumn/>
-      <shapeFileDescriptionColumn/>
+      <shapeFileAreaIdColumn>To be added by user from dbfFieldList</shapeFileAreaIdColumn>
+      <shapeFileDescriptionColumn>To be added by user from dbfFieldList</shapeFileDescriptionColumn>
     </shapeFiles>
   </shapeFileList>
   <projection>

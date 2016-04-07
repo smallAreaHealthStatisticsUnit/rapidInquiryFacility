@@ -652,8 +652,8 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			xmlFileName: 			"geoDataLoader.xml",
 			xmlFileDir:				dir,
 			uuidV1: 				response.fields["uuidV1"],
-			geographyName: 			"To be added",
-			geographyDescription: 	"To be added",
+			geographyName: 			"To be added by user",
+			geographyDescription: 	"To be added by user",
 			shapeFileList: {
 				shapeFiles: []
 			},
@@ -736,11 +736,11 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					dbfFieldList: {
 						dbfFields: response.file_list[ngeolevels[i].i].dbf_fields
 					},
-					uniqueKey:						"To be added from dbfFieldList",
-					uniqueName:						"To be added from dbfFieldList",
+					uniqueKey:						"To be added by user from dbfFieldList",
+					uniqueName:						"To be added by user from dbfFieldList",
 					geolevelId: 					ngeolevels[i].geolevel_id,
-					geolevelName: 					"To be added",
-					geolevelDescription: 			"To be added",
+					geolevelName: 					"To be added by user",
+					geolevelDescription: 			"To be added by user",
 					shapeFileName: 					ngeolevels[i].file_name,
 					shapeFileDir: 					dir,
 					lookupTable:					undefined,
@@ -749,8 +749,8 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 						lookupTableRow:	[]
 					},
 					shapeFileTable:					path.basename(ngeolevels[i].file_name.toUpperCase(), path.extname(ngeolevels[i].file_name.toUpperCase())),
-					shapeFileAreaIdColumn: 			undefined,
-					shapeFileDescriptionColumn: 	undefined
+					shapeFileAreaIdColumn: 			"To be added by user from dbfFieldList",
+					shapeFileDescriptionColumn: 	"To be added by user from dbfFieldList"
 				}
 			}
 			
