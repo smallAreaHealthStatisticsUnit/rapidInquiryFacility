@@ -204,6 +204,7 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/chroma-js/package.json \
 	node_modules/jszip/package.json \
 	node_modules/express/package.json \
+	node_modules/morgan/package.json \
 	node_modules/topojson/package.json \
 	node_modules/request-debug/package.json \
 	node_modules/connect-busboy/package.json

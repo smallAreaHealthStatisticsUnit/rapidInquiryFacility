@@ -52,6 +52,7 @@
 const express = require('express'),
     busboy = require('connect-busboy'),
 	helmet = require('helmet'),
+    morgan = require('morgan'),
     nodeGeoSpatialServices = require('./lib/nodeGeoSpatialServices'),
     simplify = require('./routes/simplify'),
     zipfile = require('./routes/zipfile');
@@ -87,10 +88,8 @@ app.use(function(err, req, res, next) {
 });  
  */
 
- /*
-app.use( 				// For parsing incoming HTML form data.
-	busboy());
- */	
+app.use(morgan('combined')); // Logging
+ 
 app.use(
 	helmet()); // Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!
 
@@ -104,7 +103,7 @@ app.use( 				// For parsing incoming HTML form data.
 		defCharset: 'binary'
 	}));
 
-	// Add headers
+// Add headers
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect - cross-origin HTTP request (CORS) rules
@@ -125,6 +124,9 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
+
+// Serving static files
+app.use(express.static('dataLoader'));
 
 /*
  * Services supported:

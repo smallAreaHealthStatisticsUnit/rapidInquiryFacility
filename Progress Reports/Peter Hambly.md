@@ -362,21 +362,19 @@ Test harness refactor; Node.js version working
 		* geo2topojson cannot parse >1G because Buffer.toString() fails, likewise for attempts to remove linefeeds; needs fixing using json stream;
 		This is to see if shpConvert is better writing to a file and then reading in the file; it probably is *not*.
 	* Add XML configuration using xml2js
+	* Check that minimum resolution shapefile has only 1 area  
+	* Move shpConvert.html to Node express static server; make so does not need network, and use relative paths. Also needed for IE
 		
 	Current TODO list aimed at Judy Qualters visit:
-
-	* Move shpConvert.html to Node express server; make so does not need network. Also needed for IE
 	* Add topoJSON support
 	* Zip file support. Convert zlib, zip file support to async
-	* Check that minimum resolution shapefile has only 1 area  
     * Large file support (coa2011)
 	
 	Maybe list:
 	
 	* Simplify...
-	* Hover support for area name at highest resolution
 	* Replace traditional html with JQuery-UI
-	* Area_id and description support. 	
+	* Area_id and description support
 	* Hover support for area name at highest resolution
 	* Add area_id and id uniqueness tests to shapefile checks
 	
