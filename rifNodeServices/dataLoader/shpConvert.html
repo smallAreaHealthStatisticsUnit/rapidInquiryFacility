@@ -188,6 +188,7 @@ function submitForm() {
 	var request = new XMLHttpRequest();
 	request.timeout = timeout
     var formData = new FormData();
+	var start = new Date().getTime();
 	
 	if (files.length == 0) {
 		document.getElementById('status').innerHTML = "ERROR! No files selected, unable to upload.";
@@ -225,38 +226,69 @@ function submitForm() {
 		request.open('POST', 'http://127.0.0.1:3000/' + output_type);
 			// Process results
 		request.onreadystatechange = function() {
+			var end=new Date().getTime();
+			var elapsed=(end - start)/1000; // in S
+			
 			if (request.readyState == 1) { 
 				document.getElementById("status").innerHTML = "Connected...";
+				console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 			}
 			else if (request.readyState == 2) { 
 				document.getElementById("status").innerHTML = "Request received...";
+				console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 			}		
 			else if (request.readyState == 3) { 
 				document.getElementById("status").innerHTML = "Processing request...";
+				console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 			}
 			else if (request.readyState == 4) { 
+				document.getElementById("status").innerHTML = "Processing response...";
+				console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 				displayResponse(request.response, request.status);
 			}
 			else {		
 				document.getElementById("status").innerHTML = "request.onreadystatechange() unknown state: " + request.readyState;
+				console.error("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 			}
-		request.ontimeout = function() {
-			document.getElementById("status").innerHTML = "Processing timed out after " + (timeout/1000) + " seconds";		
 		}
-	};
+		
+		request.ontimeout = function() {
+			var end=new Date().getTime();
+			var elapsed=(end - start)/1000; // in S
+			
+			document.getElementById("status").innerHTML = "Processing timed out after " + (timeout/1000) + " seconds";	
+			console.error("[" + elapsed + "] " + document.getElementById("status").innerHTML);	
+		}
 	}
 	catch (e) {
+		var end=new Date().getTime();
+		var elapsed=(end - start)/1000; // in S
+			
 		document.getElementById('status').innerHTML = "ERROR! Unable to open for post to: http://127.0.0.1:3000/" + output_type + ": " + e.message;
+		console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 		return;
 	}
 	
 	// 
 	request.upload.onprogress = function(evt) {
+		var end=new Date().getTime();
+		var elapsed=(end - start)/1000; // in S
+			
 		if (evt.lengthComputable) {
 			var percentComplete = Math.round(evt.loaded * 100 / evt.total);
 			if (percentComplete == 100) {
-				document.getElementById('status').innerHTML = "Uploaded file " + fileno + "/" + files.length + ": " + 
-					percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize);			
+				var end=new Date().getTime();
+				var elapsed=(end - start)/1000; // in S
+		
+				if (fileno != files.length) {
+					document.getElementById('status').innerHTML = "Uploaded file " + fileno + "/" + files.length + ": " + 
+						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize);	
+				}
+				else {
+					document.getElementById('status').innerHTML = "Uploaded all " + files.length + " files " + 
+						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize) + "; sending to server...";	
+				}
+				console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 			}
 			else {
 				document.getElementById('status').innerHTML = "Uploading file " + fileno + "/" + files.length + ": " + 
@@ -264,7 +296,7 @@ function submitForm() {
 			}
 		}
 		else {
-			console.log("ERROR! Uploading files: unable to compute percent complete");
+			console.error("[" + elapsed + "] " + "ERROR! Uploading files: unable to compute percent complete");
 		}
 	}	
 
@@ -281,8 +313,12 @@ function submitForm() {
 				var arrayIndex = 0;		  
 			}
 			reader.onerror = function(err) {
+				var end=new Date().getTime();
+				var elapsed=(end - start)/1000; // in S
+			
 				document.getElementById('status').innerHTML = "ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
 					name + "; " + err; 		
+				console.error("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 				return;
 			}
 			totalFileSize+=file.size;
@@ -293,13 +329,20 @@ function submitForm() {
 		}
 	}
 
-	document.getElementById("status").innerHTML = "Sending to server...";
 	try {
+		var end=new Date().getTime();
+		var elapsed=(end - start)/1000; // in S
+				
+		document.getElementById("status").innerHTML = "Sending to server...";
+		console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 		request.send(formData);	
 	}
 	catch (e) {
-		console.error("ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type + ": " + e.message);
+		var end=new Date().getTime();
+		var elapsed=(end - start)/1000; // in S
+
 		document.getElementById('status').innerHTML = "ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type + ": " + e.message;
+		console.error("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 		return;
 	}		
 //    request.sendAsBinary(formData); // Bad crash!!
@@ -446,14 +489,12 @@ Add data to geoJSONLayer[1]; shapefile [2]: SAHSU_GRD_Level3.shp
 Add data to geoJSONLayer[2]; shapefile [1]: SAHSU_GRD_Level2.shp
 Add data to geoJSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 */
-				for (var i=0; i < response.no_files; i++) {
-					layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;			
-				} // end of for loop
+			
+				for (var i=0; i < response.no_files; i++) {	//. Re-order by geolevel_id	
+					layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;		
+				}
 				
-				for (var i=0; i < response.no_files; i++) {		
-					console.log("Add data to geoJSONLayer[" + i + "]; shapefile [" + layerAddOrder[i] + "]: " +
-						response.file_list[layerAddOrder[i]].file_name);
-						
+				for (var i=0; i < response.no_files; i++) {	// Now processe					
 					var weight=(response.no_files - i); // i.e. Lower numbers - high resolution have most weight
 					var color=layerColours[i];	
 // Chroma.js - to be added (Node module)
@@ -476,7 +517,15 @@ Add data to geoJSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 						color="#000000"; // Black
 						weight=response.no_files;
 					}
-					msg+="<tr style=\"color:" + color + "\"><td>" + (i+1) + "</td><td>" + response.file_list[i].file_name + "</td><td>";
+			
+					if (!response.file_list[layerAddOrder[i]] || !response.file_list[layerAddOrder[i]].file_name) {
+						console.error("layerAddOrder problem: Add data to geoJSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE");
+					}
+					console.log("Add data to geoJSONLayer[" + i + "]; shapefile [" + layerAddOrder[i] + "]: " +
+						response.file_list[layerAddOrder[i]].file_name +
+						"; colour: " + color + "; weight: " + weight + "; opacity: " + opacity + "; fillOpacity: " + fillOpacity);
+						
+					msg+="<tr style=\"color:" + color + "\"><td>" + (i+1) + "</td><td>" + response.file_list[layerAddOrder[i]].file_name + "</td><td>";
 					if (response.file_list[i].geojson) {			
 						try {
 							var geojson = JSON.stringify(response.file_list[i].geojson);
