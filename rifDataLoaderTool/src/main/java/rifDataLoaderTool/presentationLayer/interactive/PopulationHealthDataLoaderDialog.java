@@ -1,12 +1,17 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.system.*;
+
+
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
 import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
+
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.fileFormats.XMLFileFilter;
+import rifGenericLibrary.fileFormats.DirectoryFileFilter;
 import rifGenericLibrary.presentationLayer.*;
 
 import javax.swing.*;
@@ -106,6 +111,10 @@ class PopulationHealthDataLoaderDialog
 	private LinearWorkflow workingCopyLinearWorkflow;
 	private File currentlySelectedFile;	
 	
+	private File exportDirectory;
+	private JTextField exportDirectoryPathTextField;
+	private JButton browseExportDirectoryButton;
+	
 	//GUI Components				
 	private JComboBox<String> startingStateComboBox;
 	private JComboBox<String> stoppingStateComboBox;	
@@ -139,10 +148,7 @@ class PopulationHealthDataLoaderDialog
 
 	public void initialiseService() 
 		throws RIFServiceException {
-		
-
-		//dataLoaderService = new ProductionDataLoaderService();			
-		//dataLoaderService.initialiseService();		
+	
 	}
 	
 	private JPanel createMainPanel() {
@@ -161,7 +167,11 @@ class PopulationHealthDataLoaderDialog
 			panelGC);
 
 		panelGC.gridy++;
-				
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		panel.add(createExportDirectoryPanel() , panelGC);
+		
+		panelGC.gridy++;
 		String dataSetListPanelTitleText
 			= RIFDataLoaderToolMessages.getMessage(
 				"dataSetConfiguration.name.plural.label");
@@ -267,9 +277,49 @@ class PopulationHealthDataLoaderDialog
 		return panel;
 	}
 	
+	private JPanel createExportDirectoryPanel() {
+		
+		UserInterfaceFactory userInterfaceFactory
+			= getUserInterfaceFactory();
+		JPanel panel = userInterfaceFactory.createPanel();
+		GridBagConstraints panelGC
+			= userInterfaceFactory.createGridBagConstraints();
+		
+		String exportDirectoryPathLabelText
+			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.exportDirectory.label");
+		JLabel exportDirectoryPathLabel
+			= userInterfaceFactory.createLabel(exportDirectoryPathLabelText);
+		panel.add(exportDirectoryPathLabel, panelGC);
+		
+		panelGC.gridx++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		exportDirectoryPathTextField
+			= userInterfaceFactory.createNonEditableTextField();
+		userInterfaceFactory.setEditableAppearance(
+			exportDirectoryPathTextField, 
+			false);
+		panel.add(exportDirectoryPathTextField, panelGC);
+		
+		panelGC.gridx++;
+		panelGC.fill = GridBagConstraints.NONE;
+		panelGC.weightx = 0;
+		String browseButtonText
+			= RIFGenericLibraryMessages.getMessage("buttons.browse.label");
+		browseExportDirectoryButton
+			= userInterfaceFactory.createButton(browseButtonText);
+		browseExportDirectoryButton.addActionListener(this);
+		panel.add(browseExportDirectoryButton, panelGC);
+		panel.setBorder(LineBorder.createGrayLineBorder());
+		return panel;
+	}
+	
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+	
 	
 	public void setData(final LinearWorkflow originalLinearWorkflow) {
 		this.originalLinearWorkflow = originalLinearWorkflow;
@@ -277,7 +327,29 @@ class PopulationHealthDataLoaderDialog
 		
 		populateFormFromWorkingCopy(originalLinearWorkflow);
 	}
-	
+
+	private void browseExportDirectory() {
+		UserInterfaceFactory userInterfaceFactory
+			= getUserInterfaceFactory();
+		JFileChooser fileChooser
+			= userInterfaceFactory.createFileChooser();
+		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		
+		DirectoryFileFilter directoryFileFilter
+			= new DirectoryFileFilter();
+		fileChooser.setFileFilter(directoryFileFilter);
+		int result
+			= fileChooser.showOpenDialog(getDialog());
+		if (result != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
+		
+		System.out.println("PHDLD - 1");
+		exportDirectory = fileChooser.getSelectedFile();
+		exportDirectoryPathTextField.setText(exportDirectory.getAbsolutePath());
+		updateButtonStates();
+	}
+		
 	private boolean saveWorkflow() {
 
 		boolean saveWasSuccessful = false;
@@ -313,7 +385,6 @@ class PopulationHealthDataLoaderDialog
 				currentlySelectedFile = new File(filePath);
 			}
 			
-			//writeCurrentDataToFile();			
 			saveWasSuccessful = true;
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -372,10 +443,11 @@ class PopulationHealthDataLoaderDialog
 				= new LinearWorkflowEnactor(
 					rifManager, 
 					dataLoaderService);
+			linearWorkflowEnactor.setExportDirectory(exportDirectory);
 						
 			File dummyFile = new File("C://rif_scripts//test_data//blah.log");
-			
 			linearWorkflowEnactor.runWorkflow(
+				exportDirectory,
 				dummyFile, 
 				null, 
 				currentlySelectedFile,
@@ -621,7 +693,12 @@ class PopulationHealthDataLoaderDialog
 	}
 
 	private void updateButtonStates() {
-		if (dataSetConfigurationListPanel.isEmpty()) {
+		
+		if (exportDirectory == null) {
+			dataSetConfigurationListButtonPanel.disableAllButtons();
+			runWorkflowButton.setEnabled(false);
+		}
+		else if (dataSetConfigurationListPanel.isEmpty()) {
 			dataSetConfigurationListButtonPanel.indicateEmptyState();
 			runWorkflowButton.setEnabled(false);
 		}
@@ -642,6 +719,9 @@ class PopulationHealthDataLoaderDialog
 	public void actionPerformed(ActionEvent event) {
 		Object button = event.getSource();
 		
+		if (button == browseExportDirectoryButton) {
+			browseExportDirectory();
+		}
 		if (dataSetConfigurationListButtonPanel.isAddButton(button)) {
 			addDataSetConfiguration();
 		}
