@@ -99,6 +99,7 @@ public class TestClean extends AbstractRIFDataLoaderTestCase {
 					rifManager, 
 					dataLoaderService);
 			workflowEnactor.runWorkflow(
+				getExportDirectory(),					
 				testLogFile,
 				null,
 				null,

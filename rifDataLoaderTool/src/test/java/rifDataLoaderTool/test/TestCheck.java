@@ -104,7 +104,9 @@ public class TestCheck extends AbstractRIFDataLoaderTestCase {
 
 			LinearWorkflowEnactor linearWorkflowEnactor
 				= new LinearWorkflowEnactor(rifManager, dataLoaderService);
-			linearWorkflowEnactor.runWorkflow(linearWorkflow);
+			linearWorkflowEnactor.runWorkflow(
+				getExportDirectory(),
+				linearWorkflow);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();			

@@ -100,6 +100,7 @@ public class TestGenerateReports extends AbstractRIFDataLoaderTestCase {
 				rifManager, 
 				dataLoaderService);
 			workflowEnactor.runWorkflow(
+				getExportDirectory(),					
 				testLogFile,
 				null,
 				null,

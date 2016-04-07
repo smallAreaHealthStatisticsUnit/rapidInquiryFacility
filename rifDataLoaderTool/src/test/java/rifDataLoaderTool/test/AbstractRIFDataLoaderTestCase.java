@@ -7,12 +7,11 @@ import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
-import rifServices.test.AbstractRIFTestCase;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import org.junit.After;
 import org.junit.Before;
-
+import java.io.File;
 import java.text.Collator;
 
 
@@ -78,6 +77,8 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	
 	private User rifManager;
 	
+	private File exportDirectory;
+	
 	private TestDataLoaderService dataLoaderService;
 
 	/** The test user. */
@@ -100,6 +101,7 @@ public abstract class AbstractRIFDataLoaderTestCase {
 
 	public AbstractRIFDataLoaderTestCase() {
 
+		exportDirectory = new File("C://rif_scratch");
 		validAdministrationUser = User.newInstance("kgarwood", "11.111.11.228");
 		nonExistentAdministrationUser = User.newInstance("nobody", "11.111.11.228");
 		emptyAdministrationUser = User.newInstance(null, "11.111.11.228");
@@ -143,6 +145,10 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public File getExportDirectory() {
+		return exportDirectory;
+	}
+	
 	protected User getRIFManager() {
 		return rifManager;		
 	}
