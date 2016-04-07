@@ -1,11 +1,9 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifDataLoaderTool.dataStorageLayer.SQLConnectionManager;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -135,7 +133,6 @@ abstract class AbstractDataLoaderService
 		
 	private ArrayList<DataSetConfiguration> dataSetConfigurations;
 	
-	private String exportDirectoryPath;
 	
 	
 	// ==========================================
@@ -146,7 +143,6 @@ abstract class AbstractDataLoaderService
 					
 		dataSetConfigurations 
 			= new ArrayList<DataSetConfiguration>();
-		exportDirectoryPath = "C:" + File.separator + "rif_scratch";
 	}
 	
 	public void initialiseService() 
@@ -356,6 +352,7 @@ abstract class AbstractDataLoaderService
 	public void setupConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 
@@ -367,20 +364,26 @@ abstract class AbstractDataLoaderService
 		//Step 1: Create all the directories
 		ensureTemporaryDirectoriesExist(
 			rifManager, 
+			exportDirectory,
 			dataSetConfiguration); 		
 		//Step 2: Copy original data file
 		
 		try {			
 	
+			String dataSetExportDirectoryPath
+				= generateDataSetExportDirectoryPath(
+					exportDirectory,
+					dataSetConfiguration);
+
 			
 			File sourceFile = new File(dataSetConfiguration.getFilePath());		
 			String fileName = sourceFile.getName();
 			Path sourcePath = sourceFile.toPath();
 
 			StringBuilder destinationFilePath = new StringBuilder();
-			destinationFilePath.append(generateDataSetExportDirectoryPath(dataSetConfiguration));
+			destinationFilePath.append(dataSetExportDirectoryPath);
 			destinationFilePath.append(File.separator);
-			destinationFilePath.append(RIFDataLoadingResultTheme.ORIGINAL_DATA);
+			destinationFilePath.append(RIFDataLoadingResultTheme.ARCHIVE_ORIGINAL_DATA.getSubDirectoryName());
 			destinationFilePath.append(File.separator);
 			destinationFilePath.append(fileName);
 			File destinationFile = new File(destinationFilePath.toString());
@@ -486,23 +489,11 @@ abstract class AbstractDataLoaderService
 		throws RIFServiceException {
 		
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public void addFileToDataSetResults(
 		final User _rifManager,
 		final Writer logWriter,
+		final File exportDirectory,
 		final File originalFile,
 		final RIFDataLoadingResultTheme rifDataLoadingResultTheme,
 		final DataSetConfiguration dataSetConfiguration)
@@ -522,10 +513,15 @@ abstract class AbstractDataLoaderService
 			return;
 		}
 		
+		String dataSetExportDirectoryPath
+			= generateDataSetExportDirectoryPath(
+				exportDirectory,
+				dataSetConfiguration);		
+		
 		try {
 			
 			StringBuilder auditTrailPath = new StringBuilder();
-			auditTrailPath.append(generateDataSetExportDirectoryPath(dataSetConfiguration));
+			auditTrailPath.append(dataSetExportDirectoryPath);
 			auditTrailPath.append(File.separator);
 			auditTrailPath.append(rifDataLoadingResultTheme.getSubDirectoryName());
 			auditTrailPath.append(File.separator);
@@ -551,6 +547,7 @@ abstract class AbstractDataLoaderService
 	public void extractConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,	
+		final File exportDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -596,10 +593,16 @@ abstract class AbstractDataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 						rifManager);
 
+			
+			String dataSetExportDirectoryPath
+				= generateDataSetExportDirectoryPath(
+					exportDirectory,
+					dataSetConfiguration);		
+						
 			extractWorkflowManager.extractConfiguration(
 				connection, 
 				logFileWriter,
-				generateDataSetExportDirectoryPath(dataSetConfiguration),
+				dataSetExportDirectoryPath,
 				dataSetConfiguration);
 
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -769,7 +772,8 @@ abstract class AbstractDataLoaderService
 		
 	public void cleanConfiguration(
 		final User _rifManager,
-		final Writer logFileWriter,		
+		final Writer logFileWriter,
+		final File exportDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -806,11 +810,17 @@ abstract class AbstractDataLoaderService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
-		
+
+			
+			String dataSetExportDirectoryPath
+				= generateDataSetExportDirectoryPath(
+					exportDirectory,
+					dataSetConfiguration);		
+			
 			cleanWorkflowManager.cleanConfiguration(
 				connection, 
 				logFileWriter,
-				generateDataSetExportDirectoryPath(dataSetConfiguration),
+				dataSetExportDirectoryPath,
 				dataSetConfiguration);
 						
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -901,6 +911,7 @@ abstract class AbstractDataLoaderService
 	public void combineConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,		
+		final File exportDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -935,11 +946,16 @@ abstract class AbstractDataLoaderService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
-							
+			
+			String dataSetExportDirectoryPath
+				= generateDataSetExportDirectoryPath(
+					exportDirectory,
+					dataSetConfiguration);		
+			
 			combineWorkflowManager.combineConfiguration(
 				connection, 
 				logFileWriter,
-				generateDataSetExportDirectoryPath(dataSetConfiguration),
+				dataSetExportDirectoryPath,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -958,7 +974,8 @@ abstract class AbstractDataLoaderService
 	
 	public void splitConfiguration(
 		final User _rifManager,
-		final Writer logFileWriter,		
+		final Writer logFileWriter,
+		final File exportDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -993,11 +1010,16 @@ abstract class AbstractDataLoaderService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
-							
+			
+			String dataSetExportDirectoryPath
+				= generateDataSetExportDirectoryPath(
+					exportDirectory,
+					dataSetConfiguration);		
+			
 			splitWorkflowManager.splitConfiguration(
 				connection, 
 				logFileWriter,
-				generateDataSetExportDirectoryPath(dataSetConfiguration),
+				dataSetExportDirectoryPath,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1016,7 +1038,8 @@ abstract class AbstractDataLoaderService
 	
 	public void convertConfiguration(
 		final User _rifManager,
-		final Writer logFileWriter,		
+		final Writer logFileWriter,
+		final File exportDirectory,
 		final DataSetConfiguration _dataSetConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
@@ -1051,11 +1074,15 @@ abstract class AbstractDataLoaderService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
-								
+			
+			String dataSetExportDirectoryPath
+				= generateDataSetExportDirectoryPath(
+					exportDirectory,
+					dataSetConfiguration);
 			convertWorkflowManager.convertConfiguration(
 				connection, 
 				logFileWriter,
-				generateDataSetExportDirectoryPath(dataSetConfiguration),
+				dataSetExportDirectoryPath,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1074,7 +1101,8 @@ abstract class AbstractDataLoaderService
 
 	public void optimiseConfiguration(
 		final User _rifManager,
-		final Writer logFileWriter,		
+		final Writer logFileWriter,
+		final File exportDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -1109,10 +1137,16 @@ abstract class AbstractDataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
 
+			
+			String dataSetExportDirectoryPath
+				= generateDataSetExportDirectoryPath(
+					exportDirectory,
+					dataSetConfiguration);		
+
 			optimiseWorkflowManager.optimiseConfiguration(
 				connection, 
 				logFileWriter,
-				generateDataSetExportDirectoryPath(dataSetConfiguration),
+				dataSetExportDirectoryPath,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1132,7 +1166,8 @@ abstract class AbstractDataLoaderService
 
 	public void checkConfiguration(
 		final User _rifManager,
-		final Writer logFileWriter,		
+		final Writer logFileWriter,
+		final File exportDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -1165,11 +1200,15 @@ abstract class AbstractDataLoaderService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
-
+		
+			String dataSetExportDirectoryPath
+				= generateDataSetExportDirectoryPath(
+					exportDirectory,
+					dataSetConfiguration);			
 			checkWorkflowManager.checkConfiguration(
 				connection, 
 				logFileWriter,
-				generateDataSetExportDirectoryPath(dataSetConfiguration),
+				dataSetExportDirectoryPath,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1189,7 +1228,8 @@ abstract class AbstractDataLoaderService
 
 	public void publishConfiguration(
 		final User _rifManager,
-		final Writer logFileWriter,		
+		final Writer logFileWriter,
+		final File exportDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -1223,10 +1263,16 @@ abstract class AbstractDataLoaderService
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
 
+			
+			String dataSetExportDirectoryPath
+				= generateDataSetExportDirectoryPath(
+					exportDirectory,
+					dataSetConfiguration);			
+			
 			publishWorkflowManager.publishConfiguration(
 				connection,
 				logFileWriter,
-				generateDataSetExportDirectoryPath(dataSetConfiguration),
+				dataSetExportDirectoryPath,
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1242,13 +1288,12 @@ abstract class AbstractDataLoaderService
 			throw rifServiceException;
 		}
 		
-		publishWorkflowManager.zipReportsAndCleanupTemporaryFiles(
+		publishWorkflowManager.createZipArchiveFileAndCleanupTemporaryFiles(
 			logFileWriter,
-			exportDirectoryPath,
+			exportDirectory.getAbsoluteFile(),
 			dataSetConfiguration);		
+		
 	}
-
-	
 
 	public void generateResultReports(
 		final User _rifManager,
@@ -1818,6 +1863,7 @@ abstract class AbstractDataLoaderService
 	
 	protected void ensureTemporaryDirectoriesExist(
 		final User _rifManager,
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 				
@@ -1831,7 +1877,9 @@ abstract class AbstractDataLoaderService
 		String coreDataSetName = dataSetConfiguration.getName();
 		try {			
 			String mainScratchDirectoryPath
-				= generateDataSetExportDirectoryPath(dataSetConfiguration);
+				= generateDataSetExportDirectoryPath(
+					exportDirectory,
+					dataSetConfiguration);
 			
 			File temporaryDirectory = new File(mainScratchDirectoryPath.toString());
 			if (temporaryDirectory.exists() == false) {
@@ -1840,11 +1888,11 @@ abstract class AbstractDataLoaderService
 			}
 			
 		
-			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ORIGINAL_DATA);
-			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.AUDIT_TRAIL);
-			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.RESULTS);
-			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.STAGES);
-			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.OTHER);
+			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_ORIGINAL_DATA);
+			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL);
+			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_RESULTS);
+			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_STAGES);
+			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_OTHER);
 		}
 		catch(IOException ioException) {
 			logException(
@@ -1881,14 +1929,13 @@ abstract class AbstractDataLoaderService
 		
 	}
 	
-	
-	
 	private String generateDataSetExportDirectoryPath(
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration) {
 		
 		String coreDataSetName = dataSetConfiguration.getName();
 		StringBuilder dataSetExportDirectoryPath = new StringBuilder();
-		dataSetExportDirectoryPath.append(exportDirectoryPath);
+		dataSetExportDirectoryPath.append(exportDirectory.getAbsolutePath());
 		dataSetExportDirectoryPath.append(File.separator);
 		dataSetExportDirectoryPath.append(coreDataSetName);
 		
