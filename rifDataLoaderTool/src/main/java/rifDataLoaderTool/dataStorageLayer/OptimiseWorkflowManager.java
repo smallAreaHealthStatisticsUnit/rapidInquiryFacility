@@ -151,7 +151,7 @@ final class OptimiseWorkflowManager
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.STAGES, 
+			RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
 			optimiseTableName);
 		
 		updateLastCompletedWorkState(

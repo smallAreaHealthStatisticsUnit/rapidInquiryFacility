@@ -52,12 +52,13 @@ package rifDataLoaderTool.businessConceptLayer;
 
 public enum RIFDataLoadingResultTheme {
 
-	ORIGINAL_EXTRACT("original_extract_query"),
-	ORIGINAL_DATA("original_data"),
-	STAGES("processing_stages"),
-	AUDIT_TRAIL("audit_trail"),
-	RESULTS("results"),
-	OTHER("other");
+	ARCHIVE_ORIGINAL_EXTRACT("original_extract_query"),
+	ARCHIVE_ORIGINAL_DATA("original_data"),
+	ARCHIVE_STAGES("processing_stages"),
+	ARCHIVE_AUDIT_TRAIL("audit_trail"),
+	ARCHIVE_RESULTS("results"),
+	ARCHIVE_OTHER("other"),
+	MAIN_RESULTS(".");
 	
 	private String subDirectoryName;
 	

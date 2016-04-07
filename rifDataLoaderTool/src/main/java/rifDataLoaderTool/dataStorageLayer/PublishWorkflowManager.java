@@ -120,11 +120,16 @@ final class PublishWorkflowManager
 			checkTableName, 
 			publishTableName);
 		
+		
+		
+		/*
+		 * Exporting Part I: Generate the archive data file 
+		 */
 		exportTable(
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.RESULTS,
+			RIFDataLoadingResultTheme.ARCHIVE_RESULTS,
 			publishTableName);
 		
 		//Generate the script that is supposed to be specific to SQL Server or PostgreSQL
@@ -133,6 +138,7 @@ final class PublishWorkflowManager
 		File dataLoadingScriptFile
 			= createDataLoadingScriptFileName(
 				exportDirectoryPath, 
+				RIFDataLoadingResultTheme.ARCHIVE_RESULTS,
 				dataSetConfiguration);
 		scriptWriter.writeFile(
 			dataLoadingScriptFile, 
@@ -148,6 +154,7 @@ final class PublishWorkflowManager
 	
 	private File createDataLoadingScriptFileName(
 		final String exportDirectoryPath,
+		final RIFDataLoadingResultTheme dataLoadingResultTheme,
 		final DataSetConfiguration dataSetConfiguration) {
 		
 		String coreDataSetName = dataSetConfiguration.getName();
@@ -158,8 +165,10 @@ final class PublishWorkflowManager
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(exportDirectoryPath);
 		buffer.append(File.separator);
-		buffer.append(RIFDataLoadingResultTheme.RESULTS.getSubDirectoryName());
-		buffer.append(File.separator);
+		if (dataLoadingResultTheme != RIFDataLoadingResultTheme.MAIN_RESULTS) {
+			buffer.append(dataLoadingResultTheme.getSubDirectoryName());
+			buffer.append(File.separator);			
+		}
 		buffer.append("run_");
 		buffer.append(publishTableName);
 		buffer.append(".sql");
@@ -200,9 +209,9 @@ final class PublishWorkflowManager
 	 * @param dataSetConfiguration
 	 * @throws RIFServiceException
 	 */
-	public void zipReportsAndCleanupTemporaryFiles(
+	public void createZipArchiveFileAndCleanupTemporaryFiles(
 		final Writer logFileWriter,
-		final String mainExportDirectoryPath,
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 
@@ -217,7 +226,7 @@ final class PublishWorkflowManager
 			 * been stored.  eg: C:\loading_jobs\cancer_data_2001
 			 */
 			StringBuilder loadJobDirectoryPath = new StringBuilder();
-			loadJobDirectoryPath.append(mainExportDirectoryPath);
+			loadJobDirectoryPath.append(exportDirectory.getAbsolutePath());
 			loadJobDirectoryPath.append(File.separator);
 			loadJobDirectoryPath.append(coreDataSetName);
 			File loadJobDirectory = new File(loadJobDirectoryPath.toString());
@@ -226,7 +235,7 @@ final class PublishWorkflowManager
 			/*
 			 * Eg: num_cancer_data_2001_22042015.zip
 			 */
-			zipFileName.append(mainExportDirectoryPath);
+			zipFileName.append(exportDirectory.getAbsolutePath());
 			zipFileName.append(File.separator);			
 			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
 			String publishTableName = rifSchemaArea.getPublishedTableName(coreDataSetName);
@@ -246,6 +255,18 @@ final class PublishWorkflowManager
 			zipOutputStream.flush();
 			zipOutputStream.close();
 			
+			//Make a copy of the main result file used to generate the archive
+			//zip file and put it in the main export directory
+			
+			StringBuilder temporaryResultsDirectoryPath = new StringBuilder();
+			temporaryResultsDirectoryPath.append(loadJobDirectoryPath.toString());
+			temporaryResultsDirectoryPath.append(File.separator);
+			temporaryResultsDirectoryPath.append(RIFDataLoadingResultTheme.ARCHIVE_RESULTS.getSubDirectoryName());
+			File temporaryResultsDirectory 
+				= new File(temporaryResultsDirectoryPath.toString());
+			FileUtils.copyDirectory(temporaryResultsDirectory, exportDirectory);
+
+			//Cleanup temporary directory used for zipping
 			FileUtils.deleteDirectory(loadJobDirectory);			
 		}
 		catch(IOException ioException) {

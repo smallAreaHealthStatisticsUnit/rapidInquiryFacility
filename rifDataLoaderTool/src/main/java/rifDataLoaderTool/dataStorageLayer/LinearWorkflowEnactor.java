@@ -76,6 +76,7 @@ public class LinearWorkflowEnactor {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private File exportDirectory;
 	
 	private File logFile;
 	private File reportFile;
@@ -111,18 +112,26 @@ public class LinearWorkflowEnactor {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void setExportDirectory(final File exportDirectory) {
+		
+		this.exportDirectory = exportDirectory;
+	}
+	
 	public void runWorkflow(
+		final File exportDirectory,
 		final LinearWorkflow linearWorkflow) 
 		throws RIFServiceException {
 
 		runWorkflow(
 			null, 
+			exportDirectory,
 			null, 
 			null,
 			linearWorkflow);
 	}
 	
 	public void runWorkflow(
+		final File exportDirectory,
 		final File logOutputFile,
 		final File reportFile,
 		final File linearWorkflowFile,
@@ -205,18 +214,21 @@ public class LinearWorkflowEnactor {
 			dataLoaderService.setupConfiguration(
 				rifManager, 
 				logWriter, 
+				exportDirectory,
 				dataSetConfiguration);
 			
 			dataLoaderService.addFileToDataSetResults(
 				rifManager,
 				logWriter,
+				exportDirectory,
 				linearWorkflowFile,
-				RIFDataLoadingResultTheme.AUDIT_TRAIL,
+				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				dataSetConfiguration);
 			
 			dataLoaderService.extractConfiguration(
 				rifManager, 
 				logWriter,
+				exportDirectory,
 				dataSetConfiguration);
 			
 		}
@@ -224,30 +236,35 @@ public class LinearWorkflowEnactor {
 			dataLoaderService.cleanConfiguration(
 				rifManager, 
 				logWriter,
+				exportDirectory,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.CONVERT) { 
 			dataLoaderService.convertConfiguration(
 				rifManager, 
 				logWriter,
+				exportDirectory,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.OPTIMISE) { 
 			dataLoaderService.optimiseConfiguration(
 				rifManager,
 				logWriter,
+				exportDirectory,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.CHECK) { 
 			dataLoaderService.checkConfiguration(
 				rifManager,
 				logWriter,
+				exportDirectory,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.PUBLISH) { 
 			dataLoaderService.publishConfiguration(
 				rifManager,
 				logWriter,
+				exportDirectory,
 				dataSetConfiguration);			
 		}
 

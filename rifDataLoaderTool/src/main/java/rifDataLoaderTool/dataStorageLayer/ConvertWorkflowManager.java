@@ -173,7 +173,7 @@ final class ConvertWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.STAGES, 
+				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
 				convertedTableName);
 			
 			updateLastCompletedWorkState(

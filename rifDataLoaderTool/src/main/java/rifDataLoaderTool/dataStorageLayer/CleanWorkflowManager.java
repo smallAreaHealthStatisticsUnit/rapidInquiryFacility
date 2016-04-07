@@ -175,7 +175,7 @@ final class CleanWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.STAGES, 
+				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName));			
 			
 			
@@ -211,7 +211,7 @@ final class CleanWorkflowManager
 					connection, 
 					logFileWriter, 
 					exportDirectoryPath, 
-					RIFDataLoadingResultTheme.STAGES, 
+					RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
 					RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName));			
 			
 			checkTotalRowsMatch(
@@ -244,7 +244,7 @@ final class CleanWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.STAGES, 
+				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
 				RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName));			
 			
 			
@@ -283,7 +283,7 @@ final class CleanWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.STAGES, 
+				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
 				finalCleaningTableName);			
 
 			

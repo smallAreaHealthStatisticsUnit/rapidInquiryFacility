@@ -210,7 +210,7 @@ final class ExtractWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.STAGES, 
+				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
 				targetExtractTable);
 			
 			updateLastCompletedWorkState(

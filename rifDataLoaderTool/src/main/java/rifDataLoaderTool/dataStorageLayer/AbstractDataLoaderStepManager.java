@@ -9,15 +9,16 @@ import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+
+
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
+
+import rifServices.system.RIFServiceMessages;
 
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -572,7 +573,24 @@ abstract class AbstractDataLoaderStepManager {
 	}
 	
 	
-	
+	protected File createExportTableFile(
+		final String exportDirectoryPath,
+		final RIFDataLoadingResultTheme rifDataLoaderResultTheme,
+		final String tableName) {
+		
+		StringBuilder exportFileName = new StringBuilder();
+		exportFileName.append(exportDirectoryPath);
+		exportFileName.append(File.separator);
+		if (rifDataLoaderResultTheme != RIFDataLoadingResultTheme.MAIN_RESULTS) {
+			exportFileName.append(rifDataLoaderResultTheme.getSubDirectoryName());		
+			exportFileName.append(File.separator);
+		}
+		exportFileName.append(tableName);
+		exportFileName.append(".csv");
+		
+		File file = new File(exportFileName.toString());
+		return file;
+	}
 	
 	protected void exportTable(
 		final Connection connection, 
@@ -585,10 +603,20 @@ abstract class AbstractDataLoaderStepManager {
 		StringBuilder exportFileName = new StringBuilder();
 		exportFileName.append(exportDirectoryPath);
 		exportFileName.append(File.separator);
-		exportFileName.append(rifDataLoaderResultTheme.getSubDirectoryName());		
-		exportFileName.append(File.separator);
+		if (rifDataLoaderResultTheme != RIFDataLoadingResultTheme.MAIN_RESULTS) {
+			exportFileName.append(rifDataLoaderResultTheme.getSubDirectoryName());		
+			exportFileName.append(File.separator);
+		}
+
 		exportFileName.append(tableName);
 		exportFileName.append(".csv");
+		
+		File exportTableFile
+			= createExportTableFile(
+				exportDirectoryPath,
+				rifDataLoaderResultTheme,
+				tableName);
+						
 		BufferedWriter writer = null;		
 		try {
 			SQLExportTableToCSVQueryFormatter queryFormatter
@@ -596,7 +624,7 @@ abstract class AbstractDataLoaderStepManager {
 			queryFormatter.setTableToExport(tableName);
 			queryFormatter.setOutputFileName(exportFileName.toString());
 			
-			writer = new BufferedWriter(new FileWriter(exportFileName.toString()));		
+			writer = new BufferedWriter(new FileWriter(exportTableFile));		
 			
 			CopyManager copyManager = new CopyManager((BaseConnection) connection);
 			copyManager.copyOut(queryFormatter.generateQuery(), writer);

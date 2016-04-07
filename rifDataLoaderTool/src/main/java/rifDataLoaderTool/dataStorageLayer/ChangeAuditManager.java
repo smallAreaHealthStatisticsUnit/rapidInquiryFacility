@@ -239,7 +239,7 @@ final class ChangeAuditManager
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.AUDIT_TRAIL, 
+			RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL, 
 			auditValidationFailuresTable);
 	}
 	
@@ -377,7 +377,7 @@ final class ChangeAuditManager
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.AUDIT_TRAIL, 
+			RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL, 
 			auditTableName);
 
 	}

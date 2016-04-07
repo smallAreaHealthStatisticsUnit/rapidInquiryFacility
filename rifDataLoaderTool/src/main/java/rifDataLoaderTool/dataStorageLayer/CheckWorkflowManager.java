@@ -136,7 +136,7 @@ final class CheckWorkflowManager
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.STAGES, 
+			RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
 			checkTableName);
 		
 		updateLastCompletedWorkState(
@@ -283,7 +283,7 @@ final class CheckWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.STAGES, 
+				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
 				checkTableName);
 			
 		}
@@ -600,7 +600,7 @@ final class CheckWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.AUDIT_TRAIL,
+				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				emptyFieldsDataQualityTableName);
 		}
 		catch(SQLException sqlException) {
@@ -920,7 +920,7 @@ final class CheckWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.AUDIT_TRAIL,
+				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				emptyPerYearFieldsDataQualityTableName);
 			
 		}
