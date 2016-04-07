@@ -186,9 +186,7 @@ function submitForm() {
 	var timeout = 300*1000 // 300,000 ms; 5 minutes
 	
 	var request = new XMLHttpRequest();
-	if (request.timeout) {
-		request.timeout = timeout;
-	}
+
     var formData = new FormData();
 	var start = new Date().getTime();
 	
@@ -227,6 +225,11 @@ function submitForm() {
 	try {
 		request.open('POST', output_type);
 			// Process results
+		if (request.timeout) {
+			request.timeout = timeout;
+			console.log('Timneset set: ' + timeout);
+		}
+	
 		request.onreadystatechange = function() {
 			var end=new Date().getTime();
 			var elapsed=(end - start)/1000; // in S
