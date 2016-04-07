@@ -76,6 +76,7 @@ public interface DataLoaderServiceAPI {
 	public void setupConfiguration(
 		final User rifManager,
 		final Writer logWriter,
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
 	
@@ -102,6 +103,7 @@ public interface DataLoaderServiceAPI {
 	public void addFileToDataSetResults(
 		final User rifManager,
 		final Writer logWriter,
+		final File exportDirectory,		
 		final File file,
 		final RIFDataLoadingResultTheme rifDataLoadingResultTheme,
 		final DataSetConfiguration dataSetConfiguration)
@@ -110,48 +112,56 @@ public interface DataLoaderServiceAPI {
 	public void extractConfiguration(
 		final User rifManager,
 		final Writer logWriter,
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException;
 
 	public void cleanConfiguration(
 		final User rifManager,
 		final Writer logWriter,		
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException;	
 	
 	public void convertConfiguration(
 		final User rifManager,
 		final Writer logWriter,		
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
 
 	public void splitConfiguration(
 		final User rifManager,
 		final Writer logWriter,
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
 	
 	public void combineConfiguration(
 		final User rifManager,
 		final Writer logWriter,
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
 	
 	public void optimiseConfiguration(
 		final User rifManager,
 		final Writer logWriter,
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
 
 	public void checkConfiguration(
 		final User rifManager,
 		final Writer logWriter,
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
 
 	public void publishConfiguration(
 		final User rifManager,
 		final Writer logWriter,
+		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
 	
