@@ -5,7 +5,6 @@ import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.test.services.AbstractRIFServiceTestCase;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -176,8 +175,6 @@ public final class RIFStudySubmissionServiceCalls
 			}
 
 			long finishTime = System.currentTimeMillis();	
-			double duration = finishTime - startTime;
-			double averageRoundTripTime = (duration/(double) NUMBER_REPETITIONS);
 			
 			printPerformanceResult(
 				"getGeographies",

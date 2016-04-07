@@ -1,12 +1,10 @@
 package rifDataLoaderTool.fileFormats;
 
-
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 
 import java.io.*;
 

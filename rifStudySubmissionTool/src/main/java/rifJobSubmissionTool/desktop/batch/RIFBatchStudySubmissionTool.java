@@ -14,8 +14,6 @@ import java.net.UnknownHostException;
 
 import javax.swing.*;
 
-import java.awt.GridBagConstraints;
-
 /**
  *
  *
@@ -134,19 +132,6 @@ public final class RIFBatchStudySubmissionTool {
 		String dialogTitle
 			= RIFJobSubmissionToolMessages.getMessage("rifJobSubmissionTool.title");
 		dialog = userInterfaceFactory.createDialog(dialogTitle);
-	}
-
-	private void buildUI() {
-		JPanel panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC 
-			= userInterfaceFactory.createGridBagConstraints();
-		
-		//JLabel sourceDirectoryLabelText
-		//	= RIFJobSubmissionToolMessages.getMessage("");
-		
-		//panel.add()
-		
-		
 	}
 	
 	// ==========================================

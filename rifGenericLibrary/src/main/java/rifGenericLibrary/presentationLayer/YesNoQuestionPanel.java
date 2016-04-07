@@ -66,7 +66,6 @@ public final class YesNoQuestionPanel {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String questionText;
 	
 	private UserInterfaceFactory userInterfaceFactory;
 	private boolean useYesAsDefaultChoice;
@@ -84,7 +83,6 @@ public final class YesNoQuestionPanel {
 		final UserInterfaceFactory userInterfaceFactory,
 		final boolean useYesAsDefaultChoice) {
 		
-		this.questionText = questionText;
 		this.userInterfaceFactory = userInterfaceFactory;
 		this.useYesAsDefaultChoice = useYesAsDefaultChoice;
 		

@@ -1,8 +1,5 @@
 package rifGenericLibrary.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * This is a class used for error logging and provides a facade to the underlying
  * SL4J logging facilities.  The class has been developed as part of a temporary

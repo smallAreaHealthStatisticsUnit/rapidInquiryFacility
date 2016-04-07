@@ -90,9 +90,7 @@ public class AbstractRIFService {
 	
 	protected RIFServiceResources rifServiceResources;
 	private boolean isInitialised;
-	
-	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
-	
+		
 	// ==========================================
 	// Section Construction
 	// ==========================================

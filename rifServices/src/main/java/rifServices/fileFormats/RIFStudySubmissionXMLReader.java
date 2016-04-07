@@ -3,10 +3,7 @@ package rifServices.fileFormats;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
-import rifServices.system.RIFServiceError;
 
-
-import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
 import javax.xml.parsers.SAXParser;

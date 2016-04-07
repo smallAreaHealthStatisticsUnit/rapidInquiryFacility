@@ -1,18 +1,11 @@
 package rifServices.restfulWebServices;
 
-import rifServices.system.RIFServiceMessages;
-import rifServices.businessConceptLayer.*;
-
 import com.sun.jersey.multipart.*;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.servlet.http.HttpServletRequest;
-
-import java.text.Collator;
-import java.util.ArrayList;
 import java.io.*;
-import javax.servlet.http.*;
 
 
 /**

@@ -2,7 +2,7 @@ package rifServices.test.services;
 
 import rifServices.system.RIFServiceError;
 import rifServices.businessConceptLayer.StudySummary;
-import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;

@@ -2,7 +2,6 @@ package rifServices.test;
 
 
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.system.RIFServiceError;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 

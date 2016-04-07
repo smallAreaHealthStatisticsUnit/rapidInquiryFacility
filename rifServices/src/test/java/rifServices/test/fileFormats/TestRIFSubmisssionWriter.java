@@ -11,9 +11,6 @@ import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 
 
 import org.json.*;
-
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import java.io.*;

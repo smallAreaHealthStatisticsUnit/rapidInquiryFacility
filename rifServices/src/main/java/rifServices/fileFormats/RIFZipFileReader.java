@@ -6,8 +6,6 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 
 import org.xml.sax.SAXException;
 

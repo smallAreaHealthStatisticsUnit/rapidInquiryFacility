@@ -9,11 +9,8 @@ import rifServices.system.RIFServiceError;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-
 import org.junit.Test;
 
 /**

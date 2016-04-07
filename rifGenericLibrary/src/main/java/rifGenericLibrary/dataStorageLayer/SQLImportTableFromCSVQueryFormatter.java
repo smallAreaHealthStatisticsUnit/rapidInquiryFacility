@@ -1,8 +1,5 @@
 package rifGenericLibrary.dataStorageLayer;
 
-import java.util.ArrayList;
-
-
 /**
  *
  *

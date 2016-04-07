@@ -10,7 +10,6 @@ import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthTheme;

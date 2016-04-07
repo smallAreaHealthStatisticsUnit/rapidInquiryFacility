@@ -182,10 +182,12 @@ public class AbstractRIFServiceTestCase
 	private GeoLevelAttributeSource nonExistentGeoLevelAttributeSource;
 	private GeoLevelAttributeSource maliciousGeoLevelAttributeSource;
 	
+	/*
 	private GeoLevelAttributeTheme validGeoLevelAttributeTheme;
 	private GeoLevelAttributeTheme emptyGeoLevelAttributeTheme;
 	private GeoLevelAttributeTheme nonExistentGeoLevelAttributeTheme;
 	private GeoLevelAttributeTheme maliciousGeoLevelAttributeTheme;
+	*/
 	
 	private String validGeoLevelSourceAttribute;
 	private String emptyGeoLevelSourceAttribute;

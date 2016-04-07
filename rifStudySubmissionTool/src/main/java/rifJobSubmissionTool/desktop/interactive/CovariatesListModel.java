@@ -73,7 +73,7 @@ import javax.swing.AbstractListModel;
 
 
 final class CovariatesListModel 
-	extends AbstractListModel {
+	extends AbstractListModel<String> {
 
 // ==========================================
 // Section Constants
@@ -176,7 +176,7 @@ final class CovariatesListModel
 	}
 	
 
-	public Object getElementAt(
+	public String getElementAt(
 		int index) {		
 
 		AbstractCovariate covariate = covariates.get(index);

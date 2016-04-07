@@ -2,10 +2,9 @@
 package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
+
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
-import rifServices.system.RIFServiceMessages;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;

@@ -3,7 +3,6 @@ package rifServices.businessConceptLayer;
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.FieldValidationUtility;

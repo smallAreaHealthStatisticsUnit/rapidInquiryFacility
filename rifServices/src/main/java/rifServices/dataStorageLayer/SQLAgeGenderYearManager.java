@@ -2,9 +2,6 @@ package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
-
-
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;

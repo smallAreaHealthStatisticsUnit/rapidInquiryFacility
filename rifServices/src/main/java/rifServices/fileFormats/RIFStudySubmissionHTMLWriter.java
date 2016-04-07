@@ -1,12 +1,10 @@
 
 package rifServices.fileFormats;
 
+import rifServices.businessConceptLayer.RIFStudySubmission;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
-
-import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

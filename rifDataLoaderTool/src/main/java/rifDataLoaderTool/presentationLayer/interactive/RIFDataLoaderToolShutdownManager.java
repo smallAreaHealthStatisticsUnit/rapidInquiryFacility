@@ -8,7 +8,6 @@ import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.system.RIFServiceException;
 
-import javax.swing.JDialog;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JOptionPane;

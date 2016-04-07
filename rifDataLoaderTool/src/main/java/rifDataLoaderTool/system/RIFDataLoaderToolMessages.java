@@ -2,8 +2,6 @@ package rifDataLoaderTool.system;
 
 import java.text.Collator;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.ResourceBundle;
 
 

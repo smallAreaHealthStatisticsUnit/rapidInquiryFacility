@@ -325,7 +325,6 @@ class ShapeFileEditorPanel
 			ArrayList<String> origFieldNames = originalShapeFile.getShapeFileFieldNames();
 			ArrayList<String> currFieldNames = currentShapeFile.getShapeFileFieldNames();
 
-			System.out.println("setData orig shape files=="+origFieldNames.size()+"==current shape files=="+currFieldNames.size()+"==");			
 		}
 		
 		if (currentShapeFile != null) {		
@@ -523,10 +522,10 @@ class ShapeFileEditorPanel
 		return formShapeFile;
 	}
 
-	private ArrayList<String> getComboBoxListChoices(final JComboBox comboBox) {
+	private ArrayList<String> getComboBoxListChoices(final JComboBox<String> comboBox) {
 		ArrayList<String> results = new ArrayList<String>();
 		
-		ComboBoxModel comboBoxModel = comboBox.getModel();
+		ComboBoxModel<String> comboBoxModel = comboBox.getModel();
 		int numberOfChoices = comboBoxModel.getSize();
 		for (int i = 0; i < numberOfChoices; i++) {
 			results.add((String) comboBoxModel.getElementAt(i));

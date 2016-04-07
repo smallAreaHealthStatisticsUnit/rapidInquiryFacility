@@ -3,15 +3,11 @@ package rifServices.studyDataExtraction;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.test.services.AbstractRIFServiceTestCase;
-import rifServices.businessConceptLayer.RIFStudySubmission;
 
 
-import rifServices.system.RIFServiceError;
 import rifServices.dataStorageLayer.TestRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.TestRIFStudySubmissionService;
 import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
 
 import org.junit.Test;
 
