@@ -3,7 +3,6 @@ package rifDataLoaderTool.presentationLayer.interactive;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolGeography;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
@@ -69,22 +68,6 @@ import java.util.ArrayList;
 
 class GeographyListEditingDialog 
 	extends OKCloseButtonDialog {
-
-	
-	public static void main(String[] arguments) {
-		
-		ProductionDataLoaderService dataLoaderService
-			= new ProductionDataLoaderService();
-		DataLoaderToolSession session
-			= new DataLoaderToolSession(dataLoaderService);
-		
-		GeographyListEditingDialog dialog
-			= new GeographyListEditingDialog(session);
-		dialog.doSystemExitOnClose();
-		dialog.show();
-		
-		
-	}
 	
 	// ==========================================
 	// Section Constants
@@ -189,6 +172,7 @@ class GeographyListEditingDialog
 			listPanel.addListItem(dataLoaderGeography);
 		}
 		listPanel.updateUI();
+		listPanel.selectFirstItem();
 	}
 	
 	
