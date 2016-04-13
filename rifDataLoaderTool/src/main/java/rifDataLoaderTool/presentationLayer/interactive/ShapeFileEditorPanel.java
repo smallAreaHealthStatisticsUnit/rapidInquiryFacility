@@ -3,17 +3,14 @@ package rifDataLoaderTool.presentationLayer.interactive;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.ShapeFile;
-
+import rifDataLoaderTool.businessConceptLayer.Projection;
 import rifGenericLibrary.util.FieldValidationUtility;
-
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.awt.*;
-
 import javax.swing.*;
-
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -86,6 +83,8 @@ class ShapeFileEditorPanel
 
 	//GUI Components	
 	private JList<String> shapeFileComponentList;	
+	private JTextField projectionTextField;
+	
 	private ShapeFilePropertyPreviewTablePanel shapeFilePropertyPreviewTablePanel;
 	private DefaultListModel<String> shapeFileComponentListModel;
 	private JPanel panel;
@@ -111,7 +110,6 @@ class ShapeFileEditorPanel
 		final DataLoaderToolSession session) {
 		
 		this.session = session;
-	
 		buildUI();
 	}
 	
@@ -139,6 +137,12 @@ class ShapeFileEditorPanel
 		panelGC.fill = GridBagConstraints.BOTH;
 		panelGC.weighty = 0.30;
 		panel.add(createShapeFileComponentPanel(), panelGC);
+		
+		panelGC.gridy++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		panelGC.weighty = 0;
+		panel.add(createProjectionNameFieldPanel(), panelGC);
 		
 		panelGC.gridy++;
 		panelGC.gridx = 0;
@@ -218,8 +222,9 @@ class ShapeFileEditorPanel
 			shapeFileComponentListTitleLabel, 
 			panelGC);		
 
-		panelGC.gridy++;		
+		panelGC.gridy++;
 		panelGC.weightx = 1;
+		panelGC.weighty = 1;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		String instructionsText
 			= RIFDataLoaderToolMessages.getMessage("shapeFileEditorPanel.shapeFileComponents.instructions");
@@ -241,6 +246,31 @@ class ShapeFileEditorPanel
 		return panel;
 	}
 		
+	private JPanel createProjectionNameFieldPanel() {
+		UserInterfaceFactory userInterfaceFactory 
+			= session.getUserInterfaceFactory();
+		JPanel panel = userInterfaceFactory.createPanel();
+		GridBagConstraints panelGC
+			= userInterfaceFactory.createGridBagConstraints();
+		
+		String projectionText
+			= RIFDataLoaderToolMessages.getMessage("shapeFile.projection.label");
+		JLabel projectionLabel
+			= userInterfaceFactory.createLabel(projectionText);
+		panel.add(projectionLabel, panelGC);
+		
+		panelGC.gridx++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		projectionTextField
+			= userInterfaceFactory.createNonEditableTextField();
+		userInterfaceFactory.setEditableAppearance(projectionTextField, false);
+		panel.add(projectionTextField, panelGC);		
+		
+		return panel;
+	}
+	
+	
 	private JPanel createDescriptionPanel() {
 		UserInterfaceFactory userInterfaceFactory 
 			= session.getUserInterfaceFactory();
@@ -316,24 +346,9 @@ class ShapeFileEditorPanel
 	
 	public void setData(final ShapeFile originalShapeFile) {
 		this.originalShapeFile = originalShapeFile;
-		
-		
+				
 		currentShapeFile		
 			= ShapeFile.createCopy(originalShapeFile);
-	
-		if (originalShapeFile != null) {			
-			ArrayList<String> origFieldNames = originalShapeFile.getShapeFileFieldNames();
-			ArrayList<String> currFieldNames = currentShapeFile.getShapeFileFieldNames();
-
-		}
-		
-		if (currentShapeFile != null) {		
-			String baseName
-				= currentShapeFile.getBaseFilePath();
-			ArrayList<String> fieldChoices
-				= originalShapeFile.getShapeFileFieldNames();
-		}
-		
 		shapeFilePropertyPreviewTablePanel.showNoPreview();
 		populateForm(currentShapeFile);
 		
@@ -369,7 +384,6 @@ class ShapeFileEditorPanel
 		shapeFileComponentListModel.clear();
 
 		if (shapeFile == null) {
-			System.out.println("ShapeFileEditorPanel populateForm shapeFile is NULL");
 			String shapeFileTitleLabelText
 				= RIFDataLoaderToolMessages.getMessage(
 					"shapeFileEditorPanel.emptyTitle");
@@ -389,7 +403,6 @@ class ShapeFileEditorPanel
 			nameFieldComboBox.setEnabled(false);
 		}
 		else {
-			System.out.println("ShapeFileEditorPanel populateForm shapeFile is NOT NULL");
 			String shapeFileTitleLabelText
 				= RIFDataLoaderToolMessages.getMessage(
 					"shapeFileEditorPanel.nonemptyTitle",
@@ -426,8 +439,10 @@ class ShapeFileEditorPanel
 			updateNameFieldComboBox(
 				shapeFileFieldChoices, 
 				nameFieldName);	
+			projectionTextField.setText(shapeFile.getProjection());
 		}
 		updateTotalAreaIdentifiersCount(shapeFile);
+		
 	}
 	
 	private void updateNameFieldComboBox(
@@ -500,7 +515,6 @@ class ShapeFileEditorPanel
 		
 		formShapeFile.setShapeFileFieldNames(
 			getComboBoxListChoices(areaIdentifierFieldComboBox));
-		System.out.println("ShapeFileEditorPanel getShapeFileFromForm there are=="+formShapeFile.getShapeFileFieldNames().size()+"==shape file fields");
 		String areaIdentifierFieldName
 			= (String) areaIdentifierFieldComboBox.getSelectedItem();
 		if (areaIdentifierFieldName.equals(pleaseChooseMessage)) {
@@ -534,30 +548,9 @@ class ShapeFileEditorPanel
 		return results;
 	}
 	
-	private void getShapeFileInfoButton() {
+	private void getShapeFileInfo() {
 		try {
-		
-			int totalAreaIdentifiers
-				= shapeFilePropertyPreviewTablePanel.getTotalAreaIdentifiers(currentShapeFile);
-			currentShapeFile.setTotalAreaIdentifiers(totalAreaIdentifiers);
-			updateTotalAreaIdentifiersCount(currentShapeFile);
-			
-			ArrayList<String> fieldNames
-				= shapeFilePropertyPreviewTablePanel.showPreviewAndRetrieveFieldNames(currentShapeFile);
-			currentShapeFile.setShapeFileFieldNames(fieldNames);
-			//update combo box choices for area identifier and name fields
-			//we want to preserve the currently selected text for it	
-			String currentlySelectedAreaIdentifierField
-				= (String) areaIdentifierFieldComboBox.getSelectedItem();
-			updateAreaIdentifierFieldComboBox(
-				fieldNames, 
-				currentlySelectedAreaIdentifierField);
-			
-			String currentlySelectedNameField
-				= (String) nameFieldComboBox.getSelectedItem();
-			updateNameFieldComboBox(
-				fieldNames, 
-				currentlySelectedNameField);
+			shapeFilePropertyPreviewTablePanel.showPreviewData(currentShapeFile);	
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
@@ -603,7 +596,9 @@ class ShapeFileEditorPanel
 		
 		ShapeFile shapeFileFromForm
 			= getShapeFileFromForm();
-		shapeFileFromForm.checkErrors();
+		if (shapeFileFromForm != null) {
+			shapeFileFromForm.checkErrors();			
+		}
 	}
 	
 	// ==========================================
@@ -615,7 +610,7 @@ class ShapeFileEditorPanel
 		Object button = event.getSource();
 		
 		if (button == getShapeFileInfoButton) {
-			getShapeFileInfoButton();
+			getShapeFileInfo();
 		}		
 	}
 	

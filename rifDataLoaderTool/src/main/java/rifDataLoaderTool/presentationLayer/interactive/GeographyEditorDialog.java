@@ -1,10 +1,12 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
+import rifDataLoaderTool.businessConceptLayer.Projection;
 import rifDataLoaderTool.businessConceptLayer.ShapeFile;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolGeography;
-import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
+import rifDataLoaderTool.fileFormats.ShapeFileMetaDataExtractor;
+
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
@@ -18,7 +20,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.awt.event.*;
-
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 
@@ -76,77 +77,6 @@ class GeographyEditorDialog
 	extends OKCloseButtonDialog 
 	implements ListSelectionListener {
 
-	public static void main(String[] arguments) {
-
-		ArrayList<ShapeFile> shapeFiles = new ArrayList<ShapeFile>();
-		
-		ShapeFile englandRegion = ShapeFile.newInstance();
-		englandRegion.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_region.shp");
-		englandRegion.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_region.shx");
-		englandRegion.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_region.dbf");
-		englandRegion.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_region.prj");
-
-		ArrayList<String> englandRegionShapeFileFieldNames = new ArrayList<String>();
-		englandRegionShapeFileFieldNames.add("gid");
-		englandRegionShapeFileFieldNames.add("region");
-		englandRegionShapeFileFieldNames.add("reg2011");
-		englandRegionShapeFileFieldNames.add("xcentroid");
-		englandRegionShapeFileFieldNames.add("ycentroid");
-		englandRegionShapeFileFieldNames.add("age20_24");
-		englandRegionShapeFileFieldNames.add("age25_29");	
-		englandRegion.setShapeFileFieldNames(englandRegionShapeFileFieldNames);
-		shapeFiles.add(englandRegion);
-				
-		ShapeFile englandDistrict = ShapeFile.newInstance();
-		englandDistrict.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_district.shp");		
-		englandDistrict.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_district.shx");
-		englandDistrict.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_district.dbf");		
-		englandDistrict.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_district.prj");		
-
-		ArrayList<String> englandDistrictShapeFileFieldNames = new ArrayList<String>();
-		englandDistrictShapeFileFieldNames.add("gid");
-		englandDistrictShapeFileFieldNames.add("district");
-		englandDistrictShapeFileFieldNames.add("dist2011");
-		englandDistrictShapeFileFieldNames.add("xcentroid");
-		englandDistrictShapeFileFieldNames.add("ycentroid");
-		englandDistrictShapeFileFieldNames.add("age20_24");
-		englandDistrictShapeFileFieldNames.add("age25_29");		
-		englandDistrict.setShapeFileFieldNames(englandDistrictShapeFileFieldNames);
-		shapeFiles.add(englandDistrict);
-		
-		ShapeFile englandWard = ShapeFile.newInstance();
-		englandWard.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_ward.shp");		
-		englandWard.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_ward.shx");		
-		englandWard.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_ward.dbf");		
-		englandWard.addShapeFileComponentPath("C:\\rif_scripts\\shape_files\\england\\england_ward.prj");		
-		ArrayList<String> englandWardShapeFileFieldNames = new ArrayList<String>();
-		englandWardShapeFileFieldNames.add("gid");
-		englandWardShapeFileFieldNames.add("ward");
-		englandWardShapeFileFieldNames.add("ward2011");
-		englandWardShapeFileFieldNames.add("xcentroid");
-		englandWardShapeFileFieldNames.add("ycentroid");
-		englandWardShapeFileFieldNames.add("age20_24");
-		englandWardShapeFileFieldNames.add("age25_29");		
-		englandWard.setShapeFileFieldNames(englandWardShapeFileFieldNames);
-		shapeFiles.add(englandWard);		
-		
-		DataLoaderToolGeography geography
-			= DataLoaderToolGeography.newInstance();
-		//geography.setShapeFiles(shapeFiles);
-		
-		ProductionDataLoaderService dataLoaderService
-			= new ProductionDataLoaderService();
-		DataLoaderToolSession session
-			= new DataLoaderToolSession(dataLoaderService);
-		
-		GeographyEditorDialog dialog
-			= new GeographyEditorDialog(session);
-		dialog.doSystemExitOnClose();
-		dialog.setData(geography);
-		dialog.show();
-		
-	}
-	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -191,7 +121,7 @@ class GeographyEditorDialog
 		setInstructionText(instructionsText);
 		
 		setMainPanel(createMainPanel());
-		setSize(700, 600);		
+		setSize(1000, 700);		
 		buildUI();
 	}
 
@@ -317,19 +247,14 @@ class GeographyEditorDialog
 		for (ShapeFile shapeFile : shapeFiles) {
 			shapeFileListPanel.addListItem(shapeFile);
 		}
-
-		System.out.println("GeographyEditorDialog populateForm 1");
 		
 		shapeFileListPanel.addListSelectionListener(this);
 		previouslySelectedIndex = -1;
 		
 		shapeFileListPanel.updateUI();			
 		if (shapeFileListPanel.isEmpty() == false) {
-			System.out.println("GeographyEditorDialog populateForm 2");
 			shapeFileListPanel.selectFirstItem();
 		}
-		System.out.println("GeographyEditorDialog populateForm 3");
-
 	}
 	
 	public DataLoaderToolGeography getGeographyFromForm() {
@@ -352,28 +277,50 @@ class GeographyEditorDialog
 	
 	
 	private void addShapeFile() {
-		UserInterfaceFactory userInterfaceFactory
-			= getUserInterfaceFactory();
-		ShapeFileSelectionDialog shapeFileSelectionDialog
-			= new ShapeFileSelectionDialog(userInterfaceFactory);
-		shapeFileSelectionDialog.show();
-		if (shapeFileSelectionDialog.isCancelled()) {
-			return;
+
+		try {
+			
+			UserInterfaceFactory userInterfaceFactory
+				= getUserInterfaceFactory();
+			ShapeFileSelectionDialog shapeFileSelectionDialog
+				= new ShapeFileSelectionDialog(userInterfaceFactory);
+			shapeFileSelectionDialog.show();
+		
+			if (shapeFileSelectionDialog.isCancelled()) {
+				return;
+			}
+
+			shapeFileListPanel.removeListSelectionListener(this);
+			ArrayList<ShapeFile> selectedShapeFiles
+				= shapeFileSelectionDialog.getSelectedShapeFiles();
+			for (ShapeFile selectedShapeFile : selectedShapeFiles) {
+				ShapeFileMetaDataExtractor extractor
+					= ShapeFileMetaDataExtractor.newInstance();
+				extractor.extractMetaDataAndSampleDBFRows(selectedShapeFile);
+				selectedShapeFile.setTotalAreaIdentifiers(
+					extractor.getTotalAreaIdentifiers());
+				ArrayList<String> shapeFileFieldNames
+					= extractor.getShapeFileFieldNames();
+				selectedShapeFile.setShapeFileFieldNames(shapeFileFieldNames);
+				String projectionName
+					= extractor.getProjectionName();
+				selectedShapeFile.setProjection(projectionName);
+			}
+		
+			for (ShapeFile selectedShapeFile : selectedShapeFiles) {
+				shapeFileListPanel.addListItem(selectedShapeFile);
+			}
+
+			shapeFileListPanel.updateUI();
+			shapeFileListPanel.addListSelectionListener(this);
+			shapeFileListPanel.selectFirstItem();
+		
+			updateShapeFileListButtons();
+		
 		}
-		
-		shapeFileListPanel.removeListSelectionListener(this);
-		ArrayList<ShapeFile> selectedShapeFiles
-			= shapeFileSelectionDialog.getSelectedShapeFiles();
-		for (ShapeFile selectedShapeFile : selectedShapeFiles) {
-			shapeFileListPanel.addListItem(selectedShapeFile);
-		}
-		
-		shapeFileListPanel.updateUI();
-		shapeFileListPanel.addListSelectionListener(this);
-		shapeFileListPanel.selectFirstItem();
-		//shapeFileListPanel.setSelectedItem(selectedShapeFile);
-		
-		updateShapeFileListButtons();
+		catch(RIFServiceException rifServiceException) {
+			ErrorDialog.showError(getDialog(), rifServiceException.getErrorMessages());
+		}		
 	}
 	
 	private void deleteSelectedShapeFiles() {
@@ -428,6 +375,7 @@ class GeographyEditorDialog
 		
 		return changesMade;
 	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation

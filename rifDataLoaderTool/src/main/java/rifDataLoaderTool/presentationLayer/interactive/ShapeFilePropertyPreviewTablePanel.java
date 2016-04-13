@@ -1,10 +1,9 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.ShapeFile;
-import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
+import rifDataLoaderTool.fileFormats.ShapeFileMetaDataExtractor;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.NoDataAvailablePanel;
 import rifGenericLibrary.system.RIFServiceException;
@@ -12,8 +11,8 @@ import rifGenericLibrary.system.RIFServiceException;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.table.*;
+
 import java.awt.GridBagConstraints;
-import java.util.*;
 
 /**
  *
@@ -149,24 +148,21 @@ class ShapeFilePropertyPreviewTablePanel {
 		scrollPane.setViewportView(noPreviewDataPanel.getPanel());		
 		panel.updateUI();
 	}
-	
-	public int getTotalAreaIdentifiers(final ShapeFile shapeFile) 
-		throws RIFServiceException {
 		
-		DataLoaderServiceAPI dataLoaderService = session.getDataLoaderService();
-		return dataLoaderService.getTotalAreaIdentifiers(shapeFile);
-	}
-	
-	public ArrayList<String> showPreviewAndRetrieveFieldNames(final ShapeFile shapeFile) 
+	public void showPreviewData(final ShapeFile shapeFile)
 		throws RIFServiceException {
-				
-		DataLoaderServiceAPI dataLoaderService = session.getDataLoaderService();
+			
+		ShapeFileMetaDataExtractor extractor
+			= ShapeFileMetaDataExtractor.newInstance();		
+		extractor.extractSampleDBFRows(shapeFile);
+		
 		String[] columnNames
-			= dataLoaderService.getShapeFileFieldNames(shapeFile);
-		String[][] previewData
-			= dataLoaderService.getShapeFileFieldPreviewData(shapeFile);
+			= extractor.getShapeFileFieldNames().toArray(new String[0]);
+		String[][] sampleData
+			= extractor.getSampleData();
+		
 		DefaultTableModel tableModel = new DefaultTableModel();
-		tableModel.setDataVector(previewData, columnNames);
+		tableModel.setDataVector(sampleData, columnNames);
 		
 		UserInterfaceFactory userInterfaceFactory
 			= session.getUserInterfaceFactory();		
@@ -174,14 +170,6 @@ class ShapeFilePropertyPreviewTablePanel {
 		
 		scrollPane.setViewportView(table);		
 		panel.updateUI();
-		
-		
-		ArrayList<String> results = new ArrayList<String>();
-		for (String columnName : columnNames) {
-			results.add(columnName);
-		}
-		
-		return results;
 	}
 	
 	public JPanel getPanel() {

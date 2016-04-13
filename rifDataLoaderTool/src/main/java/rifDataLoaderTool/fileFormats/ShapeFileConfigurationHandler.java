@@ -5,7 +5,6 @@ package rifDataLoaderTool.fileFormats;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
@@ -98,7 +97,7 @@ final class ShapeFileConfigurationHandler
 	private ArrayList<ShapeFile> shapeFiles;
 	private ShapeFile currentShapeFile;
 	private String unknownPhrase;
-	
+		
 // ==========================================
 // Section Construction
 // ==========================================
@@ -110,7 +109,7 @@ final class ShapeFileConfigurationHandler
 		setSingularRecordName("shape_file");
 		
 		shapeFiles = new ArrayList<ShapeFile>();
-		
+
 		String shapeFileComment
 			= RIFDataLoaderToolMessages.getMessage("shapeFile.toolTipText");
 		setComment(
@@ -216,7 +215,13 @@ final class ShapeFileConfigurationHandler
 				recordType, 
 				"shape_file_name_field", 
 				shapeFile.getNameFieldName());				
-						
+
+
+			xmlUtility.writeField(
+				recordType, 
+				"shape_file_projection", 
+				shapeFile.getProjection());				
+			
 			ArrayList<String> shapeFileFieldNames
 				= shapeFile.getShapeFileFieldNames();
 			for (String shapeFileFieldName : shapeFileFieldNames) {
@@ -225,7 +230,6 @@ final class ShapeFileConfigurationHandler
 					"shape_file_field_name", 
 					shapeFileFieldName);				
 			}
-			
 			xmlUtility.writeRecordEndTag(recordType);
 		}
 		xmlUtility.writeRecordEndTag(getPluralRecordName());
@@ -257,7 +261,16 @@ final class ShapeFileConfigurationHandler
 		}
 		else if (isSingularRecordName(qualifiedName)) {
 			currentShapeFile = ShapeFile.newInstance();
-		}		
+		}
+		else if (isDelegatedHandlerAssigned()) {
+			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
+				= getCurrentDelegatedHandler();
+			currentDelegatedHandler.startElement(
+				nameSpaceURI, 
+				localName, 
+				qualifiedName, 
+				attributes);
+		}
 
 	}
 	
@@ -291,6 +304,9 @@ final class ShapeFileConfigurationHandler
 		}	
 		else if (equalsFieldName("shape_file_field_name", qualifiedName)) {
 			currentShapeFile.addShapeFileFieldName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("shape_file_projection", qualifiedName)) {
+			currentShapeFile.setProjection(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("shape_file_total_area_identifiers", qualifiedName)) {
 			String totalAreaIdentifiersPhrase

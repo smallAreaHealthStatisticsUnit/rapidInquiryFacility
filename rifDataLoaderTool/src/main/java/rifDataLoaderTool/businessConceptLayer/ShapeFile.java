@@ -82,6 +82,7 @@ public class ShapeFile
 	private ArrayList<String> shapeFileFieldNames;
 	private HashMap<ShapeFileComponent, String> filePathForShapeFileComponent;
 	
+	private String projection;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -95,7 +96,9 @@ public class ShapeFile
 				
 		shapeFileFieldNames = new ArrayList<String>();
 		areaIdentifierFieldName = "";
-		nameFieldName = "";		
+		nameFieldName = "";
+		
+		projection = "";
 	}
 
 	public static ShapeFile newInstance() {
@@ -127,7 +130,8 @@ public class ShapeFile
 			sourceShapeFile.getAreaIdentifierFieldName());
 		destinationShapeFile.setNameFieldName(
 			sourceShapeFile.getNameFieldName());
-
+		destinationShapeFile.setProjection(
+			sourceShapeFile.getProjection());
 		ArrayList<String> originalShapeFileFieldNames
 			= sourceShapeFile.getShapeFileFieldNames();
 		for (String originalShapeFileFieldName : originalShapeFileFieldNames) {
@@ -139,6 +143,7 @@ public class ShapeFile
 		for (String originalShapeFileComponentPath : originalShapeFileComponentPaths) {
 			destinationShapeFile.addShapeFileComponentPath(originalShapeFileComponentPath);
 		}		
+		
 	}
 	
 	// ==========================================
@@ -151,6 +156,14 @@ public class ShapeFile
 	
 	public void setTotalAreaIdentifiers(final int totalAreaIdentifiers) {
 		this.totalAreaIdentifiers = totalAreaIdentifiers;
+	}
+	
+	public String getProjection() {
+		return projection;
+	}
+	
+	public void setProjection(final String projection) {
+		this.projection = projection;
 	}
 	
 	public static boolean hasIdenticalContents(
@@ -229,7 +242,8 @@ public class ShapeFile
 			= otherShapeFile.getAreaIdentifierFieldName();
 		String otherNameFieldName
 			= otherShapeFile.getNameFieldName();
-		
+		String otherProjection
+			= otherShapeFile.getProjection();
 		if (totalAreaIdentifiers != otherTotalAreaIdentifiers) {
 			return false;
 		}
@@ -250,6 +264,13 @@ public class ShapeFile
 		if (Objects.deepEquals(
 			nameFieldName, 
 			otherNameFieldName) == false) {
+
+			return false;
+		}
+
+		if (Objects.deepEquals(
+			projection, 
+			otherProjection) == false) {
 
 			return false;
 		}
@@ -279,8 +300,9 @@ public class ShapeFile
 				return false;
 			}
 		}
-
+		
 		return true;
+		
 	}
 		
 	public String getShapeFileDescription() {
