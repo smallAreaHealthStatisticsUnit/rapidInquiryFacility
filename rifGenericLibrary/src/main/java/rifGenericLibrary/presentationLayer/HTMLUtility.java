@@ -305,6 +305,19 @@ public final class HTMLUtility {
 	}
 	
 	/**
+	 * Write paragraph.
+	 *
+	 * @param text the text
+	 */
+	public void writeText(
+		final String text) {
+
+		printStream.print(text);
+		printStream.flush();
+	}
+		
+	
+	/**
 	 * Begin bulleted list.
 	 */
 	public void beginBulletedList() {

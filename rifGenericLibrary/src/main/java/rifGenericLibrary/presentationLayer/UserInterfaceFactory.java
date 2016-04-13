@@ -335,9 +335,10 @@ public final class UserInterfaceFactory {
     	JPanel panel = createPanel();
     	panel.setOpaque(false);
     	GridBagConstraints panelGC = createGridBagConstraints();
-    	panelGC.fill = GridBagConstraints.BOTH;
+    	panelGC.fill = GridBagConstraints.HORIZONTAL;
     	panelGC.weightx = 1;
-    	panelGC.weighty = 1;
+    	panelGC.weighty = 0;
+    	//panelGC.weighty = 1;
     	JEditorPane editorPane = createHTMLEditorPane(); 
     	editorPane.putClientProperty("Nimbus.Overrides", uiDefaults);
     	editorPane.putClientProperty("Nimbus.Overrides.InheritDefaults", true);
@@ -698,8 +699,8 @@ public final class UserInterfaceFactory {
 		final String labelName) {
 
 		JLabel label = createLabel(labelName);
-		label.setForeground(INSTRUCTION_LABEL_COLOUR);
-		setBoldFont(label);
+		//label.setForeground(INSTRUCTION_LABEL_COLOUR);
+		setItalicFont(label);
 		return label;		
 	}
 	
@@ -892,6 +893,18 @@ public final class UserInterfaceFactory {
 		
 		Font font = component.getFont();
 		font = font.deriveFont(Font.BOLD);
+		component.setFont(font);
+	}
+	
+	/**
+	 * Sets the italic font.
+	 *
+	 * @param component the new italic font
+	 */
+	public void setItalicFont(Component component) {
+		
+		Font font = component.getFont();
+		font = font.deriveFont(Font.ITALIC);
 		component.setFont(font);
 	}
 	
