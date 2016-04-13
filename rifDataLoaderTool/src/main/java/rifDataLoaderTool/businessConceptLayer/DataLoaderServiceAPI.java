@@ -1,5 +1,6 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifDataLoaderTool.fileFormats.ShapeFileMetaDataExtractor;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -79,15 +80,7 @@ public interface DataLoaderServiceAPI {
 		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
-	
-	public String[] getShapeFileFieldNames(final ShapeFile shapeFile)
-		throws RIFServiceException;
-	public int getTotalAreaIdentifiers(final ShapeFile shapeFile)
-		throws RIFServiceException;
-	
-	public String[][] getShapeFileFieldPreviewData(final ShapeFile shapeFile)
-		throws RIFServiceException;	
-	
+				
 	public String[] getCleaningFunctionNames() 
 		throws RIFServiceException;
 	public String getDescriptionForCleaningFunction(final String cleaningFunctionName) 

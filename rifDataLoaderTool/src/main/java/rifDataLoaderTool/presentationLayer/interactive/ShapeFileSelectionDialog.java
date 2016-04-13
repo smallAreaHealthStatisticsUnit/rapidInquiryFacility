@@ -8,13 +8,11 @@ import rifDataLoaderTool.fileFormats.ShapeFileScanner;
 import rifGenericLibrary.presentationLayer.*;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.fileFormats.ZipFileUtility;
 
 import java.awt.event.ActionEvent;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -258,38 +256,6 @@ class ShapeFileSelectionDialog
 	// ==========================================
 	// Section Override
 	// ==========================================
-	
-	@Override
-	public void okAction() 
-		throws RIFServiceException {
-		
-		File destinationZipFile = null;
-		try {
-			//obtain the currently selected Shape File
-			ShapeFile shapeFile
-				= (ShapeFile) shapeFileListPanel.getSelectedItem();
-			if (shapeFile != null) {
-				destinationZipFile
-					= createDestinationZipFile(shapeFile.getBaseFilePath());
-				String[] shapeFileComponents = shapeFile.getFilePaths();
-			
-				ZipFileUtility zipFileUtility = new ZipFileUtility();
-				zipFileUtility.writeZipFile(
-					destinationZipFile, 
-					shapeFileComponents);
-			}		
-		}
-		catch(IOException exception) {
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"shapeFileSelectionDialog.error.unableToLoadShapeFile",
-					destinationZipFile.getName());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(errorMessage);
-			throw rifServiceException;
-		}
-	}
-
 
 }
 
