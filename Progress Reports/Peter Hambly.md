@@ -368,7 +368,7 @@ Test harness refactor; Node.js version working
 #### 11th to 15th April
 
 	* Read coa2011.shp: 227,759 recoerds, 203,930,998 points. Required 11G memory; broke shpConvertWriteFile() as expected, 
-	  needs to write in blocks; JSON size: 1666,421,470 ~ 1.
+	  needs to write in blocks; JSON size: 1666,421,470 ~ 16GB.
 	
 	Current TODO list aimed at Judy Qualters visit:
 	* Add topoJSON support
