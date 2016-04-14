@@ -173,6 +173,7 @@ class GeographyListEditingDialog
 		}
 		listPanel.updateUI();
 		listPanel.selectFirstItem();
+		updateListEditingButtonStates();
 	}
 	
 	
