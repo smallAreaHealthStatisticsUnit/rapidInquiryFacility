@@ -134,6 +134,7 @@ public class ShapeFile
 			sourceShapeFile.getProjection());
 		ArrayList<String> originalShapeFileFieldNames
 			= sourceShapeFile.getShapeFileFieldNames();
+		destinationShapeFile.clearShapeFileFieldNames();
 		for (String originalShapeFileFieldName : originalShapeFileFieldNames) {
 			destinationShapeFile.addShapeFileFieldName(originalShapeFileFieldName);
 		}
@@ -325,6 +326,12 @@ public class ShapeFile
 		this.shapeFileFieldNames = shapeFileFieldNames;
 	}
 	
+	public void clearShapeFileFieldNames() {
+		shapeFileFieldNames.clear();
+	}
+	
+	
+	
 	public String getAreaIdentifierFieldName() {
 		return areaIdentifierFieldName;
 	}
@@ -483,6 +490,14 @@ public class ShapeFile
 		String qixFieldName
 			= RIFDataLoaderToolMessages.getMessage("shapeFile.qix.label");
 		*/
+
+		if (fieldValidationUtility.isEmpty(nameFieldName) == false) {
+			if (Objects.deepEquals(nameFieldName, areaIdentifierFieldName)) {
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage("shapeFile.error.identicalNameAndAreaIDFields");
+				errorMessages.add(errorMessage);
+			}
+		}
 		
 		//check if any of them are null
 		checkFile(
