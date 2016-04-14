@@ -285,25 +285,44 @@ exports.convert = function(req, res) {
 				
 /*
  * Function: 	req.busboy.on('file').stream.on:('data') callback function
- * Parameters:	None
+ * Parameters:	Data
  * Description: Data processor. Push data onto d.file.chunks[] array. Binary safe.
  *				Emit message every 10M
  */
 				stream.on('data', function(data) {
-					d.file.chunks.push(data); 
-					d.file.partial_chunk_size+=data.length;
-					d.file.chunks_length+=data.length;
+					var nbuf;
+					if (d.file.extension == "json" || d.file.extension == "js") {
+						nbuf=new Buffer(data.toString().replace(/\r?\n|\r/g, "")); // Remove any CRLF
+						d.file.chunks.push(nbuf); 
+						d.file.partial_chunk_size+=nbuf.length;
+						d.file.chunks_length+=nbuf.length;	
+					}
+					else {
+						d.file.chunks.push(data); 
+						d.file.partial_chunk_size+=data.length;
+						d.file.chunks_length+=data.length;						
+					}
+
 					if (d.file.partial_chunk_size > 10*1024*1024) { // 10 Mb
-						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-							(d.file.file_encoding || "N/A") + 
-							'; read [' + d.file.chunks.length + '] ' + d.file.partial_chunk_size + ', ' + d.file.chunks_length + ' total';
+						
+						if (d.file.extension == "json" || d.file.extension == "js") {
+							response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+								(d.file.file_encoding || "N/A") + 
+								'; read [' + d.file.chunks.length + '] ' + d.file.partial_chunk_size + ', ' + d.file.chunks_length + ' total; ' +
+								"crlf replaced: " + (data.length - nbuf.length);
+						}
+						else {
+							response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+								(d.file.file_encoding || "N/A") + 
+								'; read [' + d.file.chunks.length + '] ' + d.file.partial_chunk_size + ', ' + d.file.chunks_length + ' total';
+						}
 						d.file.partial_chunk_size=0;
 					}
 				});
 				
 /*
  * Function: 	req.busboy.on('file').stream.on:('error') callback function
- * Parameters:	None
+ * Parameters:	Error
  * Description: EOF processor. Concatenate d.file.chunks[] array, uncompress if needed.
  */
 				stream.on('error', function(err) {

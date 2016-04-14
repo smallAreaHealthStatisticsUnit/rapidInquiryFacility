@@ -289,6 +289,25 @@ geo2TopoJSONFile=function(d, ofields, topojson_options, stderr, response) {
 		// Re-route topoJSON stderr to stderr.str
 		stderr.disable();
 		
+/* coa2011.js fails with:
+
+Your input file 1: coa11.json; size: 1674722608; does not seem to contain valid JSON: 
+Caught error: toString failedStack >>>
+Error: toString failed
+    at Buffer.toString (buffer.js:382:11)
+    at Object.geo2TopoJSONFile (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\geo2TopoJSON.js:292:49)
+    at Busboy.<anonymous> (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServices.js:571:24)
+    at emitNone (events.js:72:20)
+    at Busboy.emit (events.js:166:7)
+    at Busboy.emit (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\connect-busboy\node_modules\busboy\lib\main.js:31:35)
+    at C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\connect-busboy\node_modules\busboy\lib\types\multipart.js:52:13
+    at doNTCallback0 (node.js:419:9)
+    at process._tickCallback (node.js:348:13)
+<< End of stack:
+
+Streaming parser needed; or it needs toString()ing in sections
+
+ */		
 		d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
 		
 		var lstart = new Date().getTime();			
