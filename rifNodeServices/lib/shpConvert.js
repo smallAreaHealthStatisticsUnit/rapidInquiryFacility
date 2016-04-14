@@ -314,7 +314,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		var featureList = [];
 			
 		if (shapefileData["lstart"]) {
-			return; //Run > once - this should never occur
+			serverLog.serverError2(__file, __line, "readShapeFile", "Called > once: " + shapefileData["shapeFileName"], undefined, undefined);//Run > once - this should never occur
 		}
 		else {
 			shapefileData["lstart"]=new Date().getTime()

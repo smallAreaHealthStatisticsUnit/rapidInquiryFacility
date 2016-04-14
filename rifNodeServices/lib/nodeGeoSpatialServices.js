@@ -99,6 +99,12 @@ exports.convert = function(req, res) {
 
 		res.setHeader("Content-Type", "text/plain");
 		
+// Set timeout for 10 minutes
+		req.setTimeout(10*60*1000, function() {
+			serverLog.serverError2(__file, __line, "exports.convert", "Message timed out at: " + req.timeout, undefined, undefined);	
+			req.abort();
+		}); // 10 minutes
+		
 // Add stderr hook to capture debug output from topoJSON	
 		var stderr = stderrHook.stderrHook(function(output, obj) { 
 			output.str += obj.str;
