@@ -345,9 +345,10 @@ class ShapeFileEditorPanel
 	
 	public void setData(final ShapeFile originalShapeFile) {
 		this.originalShapeFile = originalShapeFile;
-				
+
 		currentShapeFile		
 			= ShapeFile.createCopy(originalShapeFile);
+		
 		shapeFilePropertyPreviewTablePanel.showNoPreview();
 		populateForm(currentShapeFile);
 		
@@ -363,7 +364,7 @@ class ShapeFileEditorPanel
 		boolean changesSaved
 			= !originalShapeFile.hasIdenticalContents(shapeFileFromForm);
 		if (changesSaved == true) {
-			ShapeFile.copyInto(shapeFileFromForm, originalShapeFile); 
+			ShapeFile.copyInto(shapeFileFromForm, originalShapeFile); 			
 		}
 		
 		return changesSaved;
@@ -405,7 +406,7 @@ class ShapeFileEditorPanel
 			String shapeFileTitleLabelText
 				= RIFDataLoaderToolMessages.getMessage(
 					"shapeFileEditorPanel.nonemptyTitle",
-					originalShapeFile.getDisplayName());
+					shapeFile.getDisplayName());
 			currentShapeFileTitleLabel.setText(shapeFileTitleLabelText);
 		
 			getShapeFileInfoButton.setEnabled(true);
@@ -414,27 +415,27 @@ class ShapeFileEditorPanel
 				shapeFileDescriptionTextField, 
 				true);
 			shapeFileDescriptionTextField.setText(
-				originalShapeFile.getShapeFileDescription());				
+				shapeFile.getShapeFileDescription());				
 		
 			ArrayList<String> shapeFileComponentPaths
-				= originalShapeFile.getShapeFileComponentPaths();
+				= shapeFile.getShapeFileComponentPaths();
 			for (String shapeFileComponentPath : shapeFileComponentPaths) {
 				shapeFileComponentListModel.addElement(shapeFileComponentPath);				
 			}
 		
 			ArrayList<String> shapeFileFieldChoices
-				= originalShapeFile.getShapeFileFieldNames();		
+				= shapeFile.getShapeFileFieldNames();		
 		
 			areaIdentifierFieldComboBox.setEnabled(true);			
 			String areaIdentifierFieldName
-				= originalShapeFile.getAreaIdentifierFieldName();
+				= shapeFile.getAreaIdentifierFieldName();
 			updateAreaIdentifierFieldComboBox(
 				shapeFileFieldChoices, 
 				areaIdentifierFieldName);
 			
 			nameFieldComboBox.setEnabled(true);
 			String nameFieldName
-				= originalShapeFile.getNameFieldName();
+				= shapeFile.getNameFieldName();
 			updateNameFieldComboBox(
 				shapeFileFieldChoices, 
 				nameFieldName);	
@@ -447,57 +448,52 @@ class ShapeFileEditorPanel
 	private void updateNameFieldComboBox(
 		final ArrayList<String> nameFieldChoices, 
 		final String selectedNameFieldName) {
-		
-		DefaultComboBoxModel<String> nameFieldComboBoxModel
-			= (DefaultComboBoxModel<String>) nameFieldComboBox.getModel();
-		nameFieldComboBoxModel.removeAllElements();
-		
+	
+
+		ArrayList<String> shapeFileFieldNames = new ArrayList<String>();
+		shapeFileFieldNames.addAll(nameFieldChoices);
+
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(selectedNameFieldName)) {
-			nameFieldComboBoxModel.addElement(pleaseChooseMessage);
-		}
-		
-		String[] choices = (String[]) nameFieldChoices.toArray(new String[0]);		
-		for (String choice : choices) {
-			nameFieldComboBoxModel.addElement(choice);
-		}
-		
+			shapeFileFieldNames.add(0, pleaseChooseMessage);
+		}		
+		DefaultComboBoxModel<String> nameFieldComboBoxModel
+			= new DefaultComboBoxModel<String>(shapeFileFieldNames.toArray(new String[0]));
+		nameFieldComboBox.setModel(nameFieldComboBoxModel);		
+		nameFieldComboBox.updateUI();
 		if (fieldValidationUtility.isEmpty(selectedNameFieldName)) {
-			nameFieldComboBoxModel.addElement(pleaseChooseMessage);
+			nameFieldComboBox.setSelectedItem(pleaseChooseMessage);
 		}
 		else {
-			nameFieldComboBoxModel.setSelectedItem(selectedNameFieldName);			
+			nameFieldComboBox.setSelectedItem(selectedNameFieldName);			
 		}
-		nameFieldComboBox.updateUI();
 	}
 	
 	private void updateAreaIdentifierFieldComboBox(
 		final ArrayList<String> fieldChoices, 
 		final String selectedAreaIdentifierFieldName) {
 
-		DefaultComboBoxModel<String> areaIdentifierFieldComboBoxModel
-			= (DefaultComboBoxModel<String>) areaIdentifierFieldComboBox.getModel();
-		areaIdentifierFieldComboBoxModel.removeAllElements();
+		ArrayList<String> shapeFileFieldNames = new ArrayList<String>();
+		shapeFileFieldNames.addAll(fieldChoices);
 
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(selectedAreaIdentifierFieldName)) {
-			areaIdentifierFieldComboBoxModel.addElement(pleaseChooseMessage);
+			shapeFileFieldNames.add(0, pleaseChooseMessage);
 		}		
+		DefaultComboBoxModel<String> areaIdentifierFieldComboBoxModel
+			= new DefaultComboBoxModel<String>(shapeFileFieldNames.toArray(new String[0]));
+		areaIdentifierFieldComboBox.setModel(areaIdentifierFieldComboBoxModel);		
+		areaIdentifierFieldComboBox.updateUI();
 		
-		String[] choices = (String[]) fieldChoices.toArray(new String[0]);		
-		for (String choice : choices) {
-			areaIdentifierFieldComboBoxModel.addElement(choice);
-		}
-
 		if (fieldValidationUtility.isEmpty(selectedAreaIdentifierFieldName)) {
-			areaIdentifierFieldComboBoxModel.setSelectedItem(pleaseChooseMessage);
+			areaIdentifierFieldComboBox.setSelectedItem(pleaseChooseMessage);
 		}
 		else {
-			areaIdentifierFieldComboBoxModel.setSelectedItem(selectedAreaIdentifierFieldName);			
-		}		
-		areaIdentifierFieldComboBox.updateUI();
+			areaIdentifierFieldComboBox.setSelectedItem(selectedAreaIdentifierFieldName);			
+		}
+		
 	}
 	
 	
@@ -507,13 +503,13 @@ class ShapeFileEditorPanel
 		if (formShapeFile == null) {
 			return null;
 		}
-		
+					
 		formShapeFile.setShapeFileDescription(
 			shapeFileDescriptionTextField.getText().trim());
 		
-		
-		formShapeFile.setShapeFileFieldNames(
-			getComboBoxListChoices(areaIdentifierFieldComboBox));
+		ArrayList<String> currentFormChoices
+			= getComboBoxListChoices(areaIdentifierFieldComboBox);
+		formShapeFile.setShapeFileFieldNames(currentFormChoices);
 		String areaIdentifierFieldName
 			= (String) areaIdentifierFieldComboBox.getSelectedItem();
 		if (areaIdentifierFieldName.equals(pleaseChooseMessage)) {
@@ -531,7 +527,7 @@ class ShapeFileEditorPanel
 		else {
 			formShapeFile.setNameFieldName(selectedNameFieldName);			
 		}
-				
+		
 		return formShapeFile;
 	}
 
@@ -541,7 +537,10 @@ class ShapeFileEditorPanel
 		ComboBoxModel<String> comboBoxModel = comboBox.getModel();
 		int numberOfChoices = comboBoxModel.getSize();
 		for (int i = 0; i < numberOfChoices; i++) {
-			results.add((String) comboBoxModel.getElementAt(i));
+			String currentChoice = (String) comboBoxModel.getElementAt(i);
+			if (currentChoice.equals(pleaseChooseMessage) == false) {
+				results.add((String) comboBoxModel.getElementAt(i));				
+			}
 		}
 		
 		return results;
@@ -570,7 +569,6 @@ class ShapeFileEditorPanel
 			
 			int totalAreaIdentifiers
 				= shapeFile.getTotalAreaIdentifiers();
-			System.out.println("Update Total Area Id Count=="+totalAreaIdentifiers+"==");
 			if (totalAreaIdentifiers == ShapeFile.UNKNOWN_TOTAL_AREA_IDENTIFIERS) {
 				String totalAreaIdentifiersLabelText
 					= RIFDataLoaderToolMessages.getMessage(

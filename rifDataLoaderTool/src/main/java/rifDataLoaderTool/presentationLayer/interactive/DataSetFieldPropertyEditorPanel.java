@@ -6,6 +6,7 @@ import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.presentationLayer.*;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -86,11 +87,9 @@ class DataSetFieldPropertyEditorPanel
 	private Color CONVERT_COLOUR = new Color(180, 180, 180);
 	private Color OPTIMISE_COLOUR = new Color(150, 150, 150);
 	private Color CHECK_COLOUR = new Color(120, 120, 120);
-	private Color PUBLISH_COLOUR = new Color(100, 100, 100);
 	
-	private JDialog parentDialog;
 	private JPanel panel;
-	private JPanel fieldPanel;
+
 
 	private JLabel titleLabel;
 	
@@ -103,7 +102,7 @@ class DataSetFieldPropertyEditorPanel
 	private JComboBox<String> fieldRequirementLevelComboBox;
 	
 	
-	private JTextField cleanTextField;
+	private JComboBox<String> cleanComboBox;
 	private JComboBox<String> fieldChangeAuditLevelComboBox;
 	private JCheckBox isRequiredField;
 	
@@ -120,6 +119,9 @@ class DataSetFieldPropertyEditorPanel
 	
 	private boolean changesMade;
 	
+	private String pleaseChooseMessage;
+
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -129,12 +131,14 @@ class DataSetFieldPropertyEditorPanel
 		final DataLoaderToolSession session) {
 
 		this.session = session;
-		this.parentDialog = parentDialog;
+
+		pleaseChooseMessage
+			= RIFDataLoaderToolMessages.getMessage("shapeFileEditorPanel.pleaseChoose");
+
 		
 		UserInterfaceFactory userInterfaceFactory
 			= session.getUserInterfaceFactory();
 		panel = userInterfaceFactory.createPanel();
-		fieldPanel = userInterfaceFactory.createGridLayoutPanel(6, 2);
 	
 		changesMade = false;
 		
@@ -262,16 +266,6 @@ class DataSetFieldPropertyEditorPanel
 		
 	}
 
-	private void populateFieldPanel() {
-		fieldPanel.removeAll();
-		
-
-		
-		
-		
-		
-	}
-	
 	private JPanel createLoadAttributesPanel() {		
 		UserInterfaceFactory userInterfaceFactory
 			= session.getUserInterfaceFactory();
@@ -433,10 +427,11 @@ class DataSetFieldPropertyEditorPanel
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
-		cleanTextField
-			= userInterfaceFactory.createTextField();
-		cleanTextField.addCaretListener(this);
-		panel.add(cleanTextField, panelGC);
+		cleanComboBox
+			= userInterfaceFactory.createComboBox();
+		cleanComboBox.setEditable(true);
+		//cleanComboBox.addCaretListener(this);
+		panel.add(cleanComboBox, panelGC);
 
 
 		panelGC.gridy++;
@@ -682,7 +677,7 @@ class DataSetFieldPropertyEditorPanel
 			 = workingCopyDataSetFieldConfiguration.getFieldRequirementLevel();
 		fieldRequirementLevelComboBox.setSelectedItem(fieldRequirementLevel.getName());
 
-		cleanTextField.setText(workingCopyDataSetFieldConfiguration.getCleanFieldName());
+		updateCleanFieldName(fieldPurpose);
 		
 		if (fieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) {
 			isRequiredField.setSelected(true);
@@ -722,6 +717,49 @@ class DataSetFieldPropertyEditorPanel
 			workingCopyDataSetFieldConfiguration.isDuplicateIdentificationField());
 		optimiseUsingIndexCheckBox.setSelected(
 			workingCopyDataSetFieldConfiguration.optimiseUsingIndex());		
+	}
+	
+	private void updateCleanFieldName(final FieldPurpose fieldPurpose) {
+		//Setting the clean field values
+		String cleanField
+			= workingCopyDataSetFieldConfiguration.getCleanFieldName();
+
+		if (fieldPurpose == FieldPurpose.GEOGRAPHICAL_RESOLUTION) {
+			//restrict values to a combo box of fields to the names of geographical resolution
+			//fields
+			cleanComboBox.setEditable(false);
+
+			DataLoaderToolSettings dataLoaderToolSettings
+				= session.getDataLoaderToolSettings();
+			ArrayList<String> geographicalResolutionFieldNames
+				= dataLoaderToolSettings.getGeographicalResolutionFields();
+							
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();		
+			if (fieldValidationUtility.isEmpty(cleanField)) {
+				//if no value has been chosen prompt them to make a choice
+					
+				geographicalResolutionFieldNames.add(0, pleaseChooseMessage);				
+				DefaultComboBoxModel<String> defaultComboBoxModel
+					= new DefaultComboBoxModel<String>(geographicalResolutionFieldNames.toArray(new String[0]));
+				cleanComboBox.setModel(defaultComboBoxModel);
+			}
+			else {
+				DefaultComboBoxModel<String> defaultComboBoxModel
+					= new DefaultComboBoxModel<String>(new String[0]);
+				cleanComboBox.setModel(defaultComboBoxModel);
+				cleanComboBox.setSelectedItem(cleanField);
+			}
+			}
+			else {
+				//let user specify whatever clean field name they want
+				cleanComboBox.setEditable(true);
+				
+				DefaultComboBoxModel<String> defaultComboBoxModel
+					= new DefaultComboBoxModel<String>(new String[0]);
+				cleanComboBox.setModel(defaultComboBoxModel);
+				cleanComboBox.setSelectedItem(cleanField);
+			}
 	}
 	
 	public void updateUI() {
@@ -820,11 +858,12 @@ class DataSetFieldPropertyEditorPanel
 		RIFDataType currentlySelectedRIFDataType
 			= dataTypeFactory.getDataTypeFromName(currentlySelectedRIFDataTypeName);
 		dataSetFieldConfigurationFromForm.setRIFDataType(currentlySelectedRIFDataType);
-		
-		
+				
 		//Set Clean stage attributes
+		String selectedCleanFieldItem
+			= (String) cleanComboBox.getSelectedItem();
 		dataSetFieldConfigurationFromForm.setCleanFieldName(
-			cleanTextField.getText().trim());			
+			selectedCleanFieldItem.trim());			
 		dataSetFieldConfigurationFromForm.setEmptyValueAllowed(
 			!isRequiredField.isSelected());
 		String currentlySelectedChangeAuditLevelName
@@ -960,6 +999,13 @@ class DataSetFieldPropertyEditorPanel
 		else if (source == fieldRequirementLevelComboBox) {
 			updateFormFromRequirementLevelChange();
 
+		}
+		else if (source == fieldPurposeComboBox) {
+			String currentFieldPurposeText
+				= (String) fieldPurposeComboBox.getSelectedItem();
+			FieldPurpose currentFieldPurpose
+				= FieldPurpose.getFieldPurposeFromName(currentFieldPurposeText);
+			updateCleanFieldName(currentFieldPurpose);
 		}
 		
 		changesMade = true;

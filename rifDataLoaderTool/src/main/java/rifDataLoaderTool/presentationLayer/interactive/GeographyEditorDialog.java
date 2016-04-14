@@ -1,6 +1,5 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
-import rifDataLoaderTool.businessConceptLayer.Projection;
 import rifDataLoaderTool.businessConceptLayer.ShapeFile;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -305,9 +304,6 @@ class GeographyEditorDialog
 				String projectionName
 					= extractor.getProjectionName();
 				selectedShapeFile.setProjection(projectionName);
-			}
-		
-			for (ShapeFile selectedShapeFile : selectedShapeFiles) {
 				shapeFileListPanel.addListItem(selectedShapeFile);
 			}
 
@@ -397,12 +393,12 @@ class GeographyEditorDialog
 		}
 		
 		try {
+			currentShapeFile 
+				= (ShapeFile) shapeFileListPanel.getSelectedItem();
 			if (previouslySelectedIndex != -1) {
 				shapeFileEditorPanel.validateForm();
 				shapeFileEditorPanel.saveChanges();
 			}
-			currentShapeFile 
-				= (ShapeFile) shapeFileListPanel.getSelectedItem();
 			shapeFileEditorPanel.setData(currentShapeFile);	
 			previouslySelectedIndex = event.getLastIndex();
 		}
