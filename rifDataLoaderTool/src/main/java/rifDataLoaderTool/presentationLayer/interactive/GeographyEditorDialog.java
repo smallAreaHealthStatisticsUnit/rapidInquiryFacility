@@ -2,10 +2,10 @@ package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.ShapeFile;
 import rifDataLoaderTool.system.DataLoaderToolSession;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolGeography;
 import rifDataLoaderTool.fileFormats.ShapeFileMetaDataExtractor;
-
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
@@ -19,6 +19,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.awt.event.*;
+
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 
@@ -434,10 +435,56 @@ class GeographyEditorDialog
 	@Override
 	public void okAction() 
 		throws RIFServiceException {
-			ShapeFile currentShapeFile
+			ShapeFile currentlyEditedShapeFile
 				= shapeFileEditorPanel.getShapeFileFromForm();
-			currentShapeFile.checkErrors();
+			currentlyEditedShapeFile.checkErrors();
 		
+			//Now go through all of the ones in the list.  There may be some shape
+			//files that the user imported but didn't manage to click on to properly
+			//complete.
+			ArrayList<DisplayableListItemInterface> listItems
+				= shapeFileListPanel.getAllItems();
+			String currentlyEditedShapeFileBaseName 
+				= currentlyEditedShapeFile.getDisplayName();
+			ArrayList<String> displayNamesOfItemsToFix = new ArrayList<String>();
+			for (DisplayableListItemInterface listItem : listItems) {
+				ShapeFile shapeFile = (ShapeFile) listItem;
+				String currentShapeFileBaseName
+					= shapeFile.getDisplayName();
+				try {
+					if (currentlyEditedShapeFileBaseName.equals(currentShapeFileBaseName) == false) {
+						//we've already validated the currently edited shape file 
+						//so don't do it again here when we go through all of them
+						shapeFile.checkErrors();
+					}
+				}
+				catch(RIFServiceException rifServiceException) {
+					rifServiceException.printErrors();
+					displayNamesOfItemsToFix.add(shapeFile.getDisplayName());
+				}
+			}
+
+			int numberOfItemsToFix = displayNamesOfItemsToFix.size();
+			if (numberOfItemsToFix > 0) {
+				StringBuilder listOfItemsPhrase = new StringBuilder();
+				
+				for (int i = 0; i < numberOfItemsToFix; i++) {
+					if (i != 0) {
+						listOfItemsPhrase.append(",");
+					}
+					listOfItemsPhrase.append(displayNamesOfItemsToFix.get(i));
+				}	
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"shapeFile.error.fixErrorsInMultipleItems",
+						listOfItemsPhrase.toString());
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFDataLoaderToolError.INVALID_SHAPE_FILE, 
+						errorMessage);
+				throw rifServiceException;
+			}
+			
 			DataLoaderToolGeography geographyFromForm
 				= getGeographyFromForm();
 			geographyFromForm.checkErrors();			
