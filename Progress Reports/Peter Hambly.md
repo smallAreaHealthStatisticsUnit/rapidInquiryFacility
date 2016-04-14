@@ -365,6 +365,11 @@ Test harness refactor; Node.js version working
 	* Check that minimum resolution shapefile has only 1 area  
 	* Move shpConvert.html to Node express static server; make so does not need network, and use relative paths. Also needed for IE
 		
+#### 11th to 15th April
+
+	* Read coa2011.shp: 227,759 recoerds, 203,930,998 points. Required 11G memory; broke shpConvertWriteFile() as expected, 
+	  needs to write in blocks; JSON size: 1666,421,470 ~ 1.
+	
 	Current TODO list aimed at Judy Qualters visit:
 	* Add topoJSON support
 	* Zip file support. Convert zlib, zip file support to async

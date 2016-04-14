@@ -248,7 +248,6 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	      srs = require('srs'),
 	      async = require('async');
 		  
-	var shapefile_no=0;
 	var rval = {
 		file_errors: 0,
 		msg: ""
@@ -314,6 +313,12 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		const v8 = require('v8');
 		var featureList = [];
 			
+		if (shapefileData["lstart"]) {
+			return; //Run > once - this should never occur
+		}
+		else {
+			shapefileData["lstart"]=new Date().getTime()
+		}
 		/*
 	 	 * Function: 	shapefileReader()
 		 * Parameters:	Error, record (header/feature/end) from shapefile
@@ -612,7 +617,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			crss["EPSG:" + mySrs.srid] = mySrs.proj4;
 		}
 		serverLog.serverLog2(__file, __line, "readShapeFile", 
-					"In readShapeFile(), call shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
+					"In readShapeFile(), call[" + shapefileData["shapefile_no"] + "] shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
 					
 		// Now read shapefile
 
@@ -847,8 +852,17 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 		}
 	} // End of shpConvertFieldProcessor().q.drain()	
 
+	var shapefile_count=0;
+	var shapefile_total=0;
+
 	for (var key in shpList) {
-		shapefile_no++;
+		shapefile_total++;
+	}
+//	serverLog.serverLog2(__file, __line, "readShapeFile", 
+//		"In readShapeFile(), queue items: " + shapefile_total);	
+	for (var key in shpList) {
+		shapefile_count++;
+		var shapefile_no=shapefile_count;
 
 //
 // Check if geometryColumn field is defined - NOT NEEDED - LIBRARY HANDLES IT
@@ -871,7 +885,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				serverLog: serverLog, 
 				req: req,
 				res: res, 
-				lstart: new Date().getTime(), 
+				lstart: undefined, 
 				uuidV1: ofields["uuidV1"], 
 				shapefile_options: shapefile_options, 
 				response: response, 
@@ -901,6 +915,9 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			response.file_errors+=rval.file_errors;
 
 			// Add to queue			
+
+			serverLog.serverLog2(__file, __line, "readShapeFile", 
+				"In readShapeFile(), queue shapefile [" + shapefile_no + "/" + shapefile_total + "]: " + shapefileData["shapeFileName"]);			
 			q.push(shapefileData, function(err) {
 				if (err) {
 					var msg='ERROR! in readShapeFile()';
@@ -1133,6 +1150,9 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 		fileData.i=i;
 		response.message+="\nQueued file for shpConvertFileProcessor[" + fileData["i"] + "]: " + fileData.d.file.file_name;
 		// Add to queue			
+//		serverLog.serverLog2(__file, __line, "shpConvert", 
+//		"In shpConvertFileProcessor(), queue[" + fileData["i"] + "]: " + fileData.d.file.file_name);
+
 		q.push(fileData, function(err) {
 			if (err) {
 //				var msg='ERROR! [' + fileData["uuidV1"] + '] in shapefile read: ' + fileData.d.file.file_name;

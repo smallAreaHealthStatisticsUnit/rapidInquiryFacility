@@ -169,9 +169,9 @@ for (var i=0; i<services.length; i++) { // Call common method
  
 //app.use(express.static(__dirname + '/public'));
   
-app.listen(3000);
-
-console.error(theDate.toString() + '\nexpressServer.js: RIF Node web services listening on 127.0.0.1 port 3000...');
+var server=app.listen(3000);
+server.timeout=10*60*1000; // 10 minutes
+console.error(theDate.toString() + '\nexpressServer.js: RIF Node web services listening on 127.0.0.1 port 3000, timeout 10 minutes...');
 
 const v8 = require('v8');
 if (global.gc) {

@@ -168,6 +168,11 @@ function fileSize(file_size) {
 	}
 	return niceFileSize;
 }
+
+function isIE() {
+	var myNav = navigator.userAgent.toLowerCase();
+	return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
+}
 	
 /*
  * Function: 	submitForm()
@@ -183,7 +188,7 @@ function submitForm() {
 	var files = files_elem.files;
 	var fileno = 0;
 	var totalFileSize = 0;
-	var timeout = 300*1000 // 300,000 ms; 5 minutes
+	var timeout = 600*1000 // 600,000 ms; 10 minutes
 	
 	var request = new XMLHttpRequest();
 
@@ -228,10 +233,6 @@ function submitForm() {
 	try {
 		request.open('POST', output_type);
 			// Process results
-		if (request.timeout) {
-			request.timeout = timeout;
-			console.log('Timout eset set: ' + timeout);
-		}
 	
 		request.onreadystatechange = function() {
 			
@@ -252,13 +253,27 @@ function submitForm() {
 				setStatus("request.onreadystatechange() unknown state: " + request.readyState, "readyState error");
 			}
 		}
-		
-		request.ontimeout = function() {
+
+		if (isIE() && request.timeout) {
+			request.timeout = timeout;
+			console.log('IE Timeout set: ' + timeout);
+		}
+		else {
+			request.timeout = timeout;
+			console.log('Timeout set: ' + timeout);
+		}
+		request.ontimeout = function(e) {
 			var end=new Date().getTime();
 			var elapsed=(end - start)/1000; // in S
 			
-			setStatus("Processing timed out after " + (timeout/1000) + " seconds", "timeout error");	
+			if (e) {
+				setStatus("Processing timed out after " + (timeout/1000) + " seconds", e.message);	
+			}
+			else {
+				setStatus("Processing timed out after " + (timeout/1000) + " seconds", "timeout error");	
+			}
 		}
+		
 	}
 	catch (e) {
 		var end=new Date().getTime();
@@ -280,14 +295,13 @@ function submitForm() {
 				var elapsed=(end - start)/1000; // in S
 		
 				if (fileno != files.length) {
-					document.getElementById('status').innerHTML = "Uploaded file " + fileno + "/" + files.length + ": " + 
-						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize);	
+					setStatus("Uploaded file " + fileno + "/" + files.length + ": " + 
+						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize));	
 				}
 				else {
-					document.getElementById('status').innerHTML = "Uploaded all " + files.length + " files " + 
-						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize) + "; sending to server...";	
+					setStatus("Uploaded all " + files.length + " files " + 
+						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize) + "; sending to server...");	
 				}
-				console.log("[" + elapsed + "] " + document.getElementById("status").innerHTML);
 			}
 			else {
 				document.getElementById('status').innerHTML = "Uploading file " + fileno + "/" + files.length + ": " + 
@@ -327,6 +341,7 @@ function submitForm() {
 	try {			
 		setStatus("Sending to server...");
 		request.send(formData);	
+		return;
 	}
 	catch (e) {
 		setStatus("ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type, e.message);
