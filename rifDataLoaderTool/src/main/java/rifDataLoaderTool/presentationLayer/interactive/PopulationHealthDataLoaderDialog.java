@@ -167,11 +167,6 @@ class PopulationHealthDataLoaderDialog
 			panelGC);
 
 		panelGC.gridy++;
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 1;
-		panel.add(createExportDirectoryPanel() , panelGC);
-		
-		panelGC.gridy++;
 		String dataSetListPanelTitleText
 			= RIFDataLoaderToolMessages.getMessage(
 				"dataSetConfiguration.name.plural.label");
@@ -206,7 +201,7 @@ class PopulationHealthDataLoaderDialog
 		dataSetConfigurationListButtonPanel.includeEditButton(null);
 		dataSetConfigurationListButtonPanel.includeDeleteButton(null);	
 		String runWorkflowButtonText
-			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.buttons.run.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.run.label");
 		runWorkflowButton
 			= userInterfaceFactory.createButton(runWorkflowButtonText);
 		runWorkflowButton.addActionListener(this);
@@ -219,7 +214,14 @@ class PopulationHealthDataLoaderDialog
 			dataSetConfigurationListButtonPanel.getPanel(),
 			panelGC);
 		
-		panel.setBorder(LineBorder.createGrayLineBorder());
+		panelGC.gridy++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		panel.add(
+			createRunWorkflowPanel(), 
+			panelGC);
+				
+		//panel.setBorder(LineBorder.createGrayLineBorder());
 		return panel;
 	}
 	
@@ -277,44 +279,56 @@ class PopulationHealthDataLoaderDialog
 		return panel;
 	}
 	
-	private JPanel createExportDirectoryPanel() {
+
+	private JPanel createRunWorkflowPanel() {
 		
-		UserInterfaceFactory userInterfaceFactory
-			= getUserInterfaceFactory();
+		//Now work on a small inner panel that shows:
+		//Export Directory   |                            | [Browse...] [Run]
+		UserInterfaceFactory userInterfaceFactory = getUserInterfaceFactory();
 		JPanel panel = userInterfaceFactory.createPanel();
-		GridBagConstraints panelGC
+		GridBagConstraints panelGC 
 			= userInterfaceFactory.createGridBagConstraints();
+		panelGC.fill = GridBagConstraints.NONE;
+		panelGC.weightx = 0;
 		
-		String exportDirectoryPathLabelText
-			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.exportDirectory.label");
-		JLabel exportDirectoryPathLabel
-			= userInterfaceFactory.createLabel(exportDirectoryPathLabelText);
-		panel.add(exportDirectoryPathLabel, panelGC);
-		
+		String runWorkflowText
+			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.runWorkflow.exportDirectory.label");
+		JLabel runWorkflowLabel
+			= userInterfaceFactory.createLabel(runWorkflowText);
+		panel.add(runWorkflowLabel, panelGC);
+
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
 		exportDirectoryPathTextField
 			= userInterfaceFactory.createNonEditableTextField();
-		userInterfaceFactory.setEditableAppearance(
-			exportDirectoryPathTextField, 
-			false);
+		userInterfaceFactory.setEditableAppearance(exportDirectoryPathTextField, false);
 		panel.add(exportDirectoryPathTextField, panelGC);
 		
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
+		panelGC.weightx = 0;		
 		String browseButtonText
 			= RIFGenericLibraryMessages.getMessage("buttons.browse.label");
 		browseExportDirectoryButton
 			= userInterfaceFactory.createButton(browseButtonText);
 		browseExportDirectoryButton.addActionListener(this);
 		panel.add(browseExportDirectoryButton, panelGC);
+
+		panelGC.gridx++;
+		String runWorkflowButtonText
+			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.runWorkflow.exportDirectory.label");
+		runWorkflowButton
+			= userInterfaceFactory.createButton(runWorkflowButtonText);
+		runWorkflowButton.addActionListener(this);
+		panel.add(runWorkflowButton, panelGC);
+		
 		panel.setBorder(LineBorder.createGrayLineBorder());
+		
 		return panel;
+		
 	}
-	
-	
+		
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -344,7 +358,6 @@ class PopulationHealthDataLoaderDialog
 			return;
 		}
 		
-		System.out.println("PHDLD - 1");
 		exportDirectory = fileChooser.getSelectedFile();
 		exportDirectoryPathTextField.setText(exportDirectory.getAbsolutePath());
 		updateButtonStates();
@@ -396,31 +409,6 @@ class PopulationHealthDataLoaderDialog
 		return saveWasSuccessful;
 		
 	}
-	
-	/*
-	private void writeCurrentDataToFile() 
-		throws RIFServiceException {
-				
-		LinearWorkflowWriter linearWorkflowWriter
-			= new LinearWorkflowWriter();
-
-		String currentStartingWorkflowStateName
-			= (String) startingStateComboBox.getSelectedItem();
-		WorkflowState currentStartWorkflowState
-			= WorkflowState.getWorkflowStateFromName(
-				currentStartingWorkflowStateName);
-		originalLinearWorkflow.setStartWorkflowState(currentStartWorkflowState);
-		String currentStoppingWorkflowStateName
-			= (String) startingStateComboBox.getSelectedItem();
-		WorkflowState currentStoppingWorkflowState
-			= WorkflowState.getWorkflowStateFromName(
-				currentStoppingWorkflowStateName);
-		originalLinearWorkflow.setStopWorkflowState(currentStoppingWorkflowState);
-		linearWorkflowWriter.write(
-			originalLinearWorkflow, 
-			currentlySelectedFile);		
-	}
-	*/
 	
 	private void runWorkflow() {
 		try {
@@ -568,7 +556,6 @@ class PopulationHealthDataLoaderDialog
 		boolean saveChanges
 			= !originalDataSetConfiguration.hasIdenticalContents(revisedDataSetConfiguration);
 		if (saveChanges) {
-			System.out.println("PHDLD -- editDataSet 1");
 			session.setSaveChanges(true);
 			
 			String oldDisplayName
@@ -695,17 +682,19 @@ class PopulationHealthDataLoaderDialog
 	private void updateButtonStates() {
 		
 		if (exportDirectory == null) {
-			dataSetConfigurationListButtonPanel.disableAllButtons();
-			runWorkflowButton.setEnabled(false);
-		}
-		else if (dataSetConfigurationListPanel.isEmpty()) {
-			dataSetConfigurationListButtonPanel.indicateEmptyState();
 			runWorkflowButton.setEnabled(false);
 		}
 		else {
-			dataSetConfigurationListButtonPanel.indicatePopulatedState();
 			runWorkflowButton.setEnabled(true);
 		}
+		
+		if (dataSetConfigurationListPanel.isEmpty()) {
+			dataSetConfigurationListButtonPanel.indicateEmptyState();
+		}
+		else {
+			dataSetConfigurationListButtonPanel.indicatePopulatedState();			
+		}
+
 	}
 
 	// ==========================================
