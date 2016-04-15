@@ -136,7 +136,13 @@ function setupMap() {
 	if (h && w) {
 		var old_w=document.getElementById('map').style.width;
 		var old_h=document.getElementById('map').style.height;
-		var new_w=w-700;
+		var new_w
+		if (w > 1500) {
+			new_w=w-850;
+		} 
+		else {
+			new_w=w-500;
+		}
 		var new_h=h-150;
 		var new_status_width=w-new_w-50;
 	
@@ -147,7 +153,7 @@ function setupMap() {
 		
 		document.getElementById('status').innerHTML = "Size h x w: " + h + "+" + w +
 			"; map size old: " + old_h + "+" + old_w + ", new: " + new_h + "+" + new_w +
-			"; new_status_width: " + new_status_width;
+			"; new status width: " + new_status_width
 	}
 }
 	
@@ -464,10 +470,12 @@ function displayResponse(responseText, status) {
 				}
 				else {
 					msg+="<table border=\"1\" style=\"width:100%\">" + 
-					"<tr><th>No.</th><th>File</th><th>JSON length</th>" +
-					"<th>File size</th><th>Areas</th><th>Geojson convert time (S)</th>" +
-					"<th>Geo level</th><th>Area (Km<sup>2</sup>)</th>" + 
-					"<th>SRID</th>" +
+					"<tr>" +
+					"<th>File</th>" + 
+					"<th>Size</th>" +
+					"<th>JSON length</th>" +
+					"<th>Areas</th>" + 
+					"<th>Geo level</th>" +
 					"</tr>";			
 							
 					if (!response.file_list[0].boundingBox) {
@@ -521,6 +529,10 @@ function displayResponse(responseText, status) {
 	*/
 					
 						for (var i=0; i < response.no_files; i++) {	//. Re-order by geolevel_id	
+							console.log("File[" + (i+1) + "]: " + response.no_files-response.file_list[i].file_name +
+								"; geolevel: " +  response.no_files-response.file_list[i].geolevel_id +
+								"; size: " +  response.no_files-response.file_list[i].file_size +
+								"; areas: " +  response.no_files-response.file_list[i].total_areas);
 							layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;		
 						}
 						
@@ -555,7 +567,8 @@ function displayResponse(responseText, status) {
 								response.file_list[layerAddOrder[i]].file_name +
 								"; colour: " + color + "; weight: " + weight + "; opacity: " + opacity + "; fillOpacity: " + fillOpacity);
 								
-							msg+="<tr style=\"color:" + color + "\"><td>" + (i+1) + "</td><td>" + response.file_list[layerAddOrder[i]].file_name + "</td><td>";
+							msg+="<tr style=\"color:" + color + "\"><td>" + response.file_list[layerAddOrder[i]].file_name + "</td>" +
+									"<td>" + (fileSize(response.file_list[layerAddOrder[i]].file_size) || "Not Set") + "</td>";
 							if (response.file_list[layerAddOrder[i]].topojson) {			
 								try {
 //									var topojson = JSON.stringify(response.file_list[i].topojson);
@@ -579,7 +592,8 @@ function displayResponse(responseText, status) {
 										JSONLayer[i].addData(response.file_list[layerAddOrder[i]].topojson);									
 									}
 									
-									msg+=fileSize(response.file_list[layerAddOrder[i]].topojson_length) + "/" + fileSize(response.file_list[layerAddOrder[i]].geojson_length);
+									msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].topojson_length) + "/" + 
+										fileSize(response.file_list[layerAddOrder[i]].geojson_length) + "</td>";
 								} catch (e) {  							
 									msg+="TopoJSON conversion error: " + e.message;
 									responseErrors++;
@@ -608,7 +622,7 @@ function displayResponse(responseText, status) {
 										JSONLayer[i].addData(response.file_list[layerAddOrder[i]].geojson);									
 									}
 									
-									msg+=fileSize(response.file_list[layerAddOrder[i]].geojson_length);
+									msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].geojson_length) + "</td>";
 								} catch (e) {  							
 									msg+="GeoJSON conversion error: " + e.message;
 									responseErrors++;
@@ -618,13 +632,8 @@ function displayResponse(responseText, status) {
 								msg+="ERROR! no GeoJSON/topoJSON returned";
 								responseErrors++;
 							}
-							msg+="</td><td>" + 
-								(fileSize(response.file_list[i].file_size) || "Not Set") + "</td><td>" + 
-								response.file_list[i].total_areas + "</td><td>" +
-								(response.file_list[i].geojson_time || "Not converted") + "</td><td>" + 
-								(response.file_list[i].geolevel_id || "N/A") + "</td><td>" + 
-								(response.file_list[i].uncompress_size || "N/A") + "</td><td>" +
-								(response.file_list[i].srid || "No SRID") + "</td>" +
+							msg+="<td>" + response.file_list[layerAddOrder[i]].total_areas + "</td>" +
+								"<td>" + (response.file_list[layerAddOrder[i]].geolevel_id || "N/A") + "</td>" + 
 								"</tr>";
 
 						} // end of for loop

@@ -364,7 +364,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			var topojson_options = {
 				verbose:      true,
 				quantization: 1e6,	
-				simplify: 1.451e-11
+				simplify: 1.451e-11 // For zoomlevel 9
 			}; 		
 
 // Add stderr hook to capture debug output from topoJSON	
@@ -847,6 +847,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				srid: 				response.file_list[0].srid,
 				boundingBox: 		response.file_list[0].boundingBox
 			}
+			ofields["srid"]=response.file_list[0].srid;
 			var defaultZoomLevels = [6,8,11];
 			for (var i=0; i<defaultZoomLevels.length; i++) {	
 				xmlConfig.simplicationList.simplification[i] = {
