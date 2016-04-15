@@ -382,8 +382,9 @@ RangeError: Invalid string length
 	
 	* Added CRLF removal support. coa2011.js (from Mike Bostock shapefile to JSON program) now fails converting to a string; 
 	  a streaming parser is needed; Strings (not buffers) limited to 256M (-1 byte)
-	* Added topoJSON support, with a quick bodge sterians calulation for zoomlevel 9 (1 pixel = 300m x 300m = 1.4512882642054046732729181896167e-11 steradians 
+	* Added topoJSON support, with a quick bodge sterians calulation for zoomlevel 9 (1 pixel = 300m x 300m = 1.451e-11 steradians 
 	  This takes no account of latitude; will calculate accurately using PostGIS rif40_geo_pkg.rif40_zoom_levels() function 
+	  Current US map is 1:500,000 and is OK at zoomlevel 11; zoomlevel 9 is 1:1 million; JSON compression is 2.09MB comparsed to: 28.55MB so is not out by much
 	
 	Current TODO list aimed at Judy Qualters visit:
 	* Zip file support. Convert zlib, zip file support to async

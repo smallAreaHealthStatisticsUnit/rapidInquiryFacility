@@ -364,7 +364,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 			var topojson_options = {
 				verbose:      true,
 				quantization: 1e4,	
-				simplify: 1.4512882642054046732729181896167e-11 // Too coarse!!!!
+				simplify: 1.451e-11 // Too coarse!!!!
 			}; 		
 
 // Add stderr hook to capture debug output from topoJSON	
