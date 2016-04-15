@@ -368,7 +368,18 @@ Test harness refactor; Node.js version working
 #### 11th to 15th April
 
 	* Read coa2011.shp: 227,759 recoerds, 203,930,998 points. Required 11G memory; broke shpConvertWriteFile() as expected, 
-	  needs to write in blocks; JSON size: 1666,421,470 ~ 16GB.
+	  needs to write in blocks; JSON size: 1666,421,470 ~ 16GB. shpConvertWriteFile() needs to write in sections (i.e. per record)
+	  max 10.2G memory (11G limit on laptop)
+```	  
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:565
+						shpConvertWriteFile(shapefileData["jsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
+						                                                        ^
+RangeError: Invalid string length
+    at Object.stringify (native)
+    at C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:565:63
+    at FSReqWrap.oncomplete (fs.js:82:15)
+```
+	
 	* Added CRLF removal support. coa2011.js (from Mike Bostock shapefile to JSON program) now fails converting to a string; 
 	  a streaming parser is needed; Strings (not buffers) limited to 256M (-1 byte)
 	
