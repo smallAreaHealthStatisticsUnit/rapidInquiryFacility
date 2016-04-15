@@ -3,6 +3,9 @@
 	<script src="jquery-2.2.3.js"></script> 
     <link rel="stylesheet" href="leaflet/leaflet.css" />
     <script src="leaflet/leaflet.js"></script>
+    <script src="topojson.min.js"></script>
+    <link rel="stylesheet" href="leaflet.zoomdisplay.css" />
+    <script src="leaflet.zoomdisplay.js"></script>
     <title>Shapefile Uploading Form</title>
   </head>
   <body onload="setupMap();">
@@ -104,7 +107,23 @@ button {
 						
 var map;
 var tileLayer;
-var geoJSONLayer;
+var JSONLayer;
+
+// Extend Leaflet to use topoJSON
+L.topoJson = L.GeoJSON.extend({  
+  addData: function(jsonData) {    
+    if (jsonData.type === "Topology") {
+      for (key in jsonData.objects) {
+        geojson = topojson.feature(jsonData, jsonData.objects[key]);
+        L.GeoJSON.prototype.addData.call(this, geojson);
+      }
+    }    
+    else {
+      L.GeoJSON.prototype.addData.call(this, jsonData);
+    }
+  }  
+});
+// Copyright (c) 2013 Ryan Clark
 
 function setupMap() {	
 	var w = window.innerWidth
@@ -375,7 +394,7 @@ function createMap(boundingBox) {
 		document.getElementById("status").innerHTML = "Creating basemap...";															
 		console.log('New tileLayer');
 		tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-			maxZoom: 11,
+			maxZoom: 9,
 			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
 				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 				'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
@@ -408,7 +427,7 @@ function displayResponse(responseText, status) {
 	var response;
 	var msg="";
 	var responseErrors=0;
-	var geoJSONLayer=[];
+	var JSONLayer=[];
 	
 	document.getElementById("status").innerHTML = "Processing response from server...";
 	try {
@@ -445,7 +464,7 @@ function displayResponse(responseText, status) {
 				}
 				else {
 					msg+="<table border=\"1\" style=\"width:100%\">" + 
-					"<tr><th>No.</th><th>File</th><th>GeoJSON length</th>" +
+					"<tr><th>No.</th><th>File</th><th>JSON length</th>" +
 					"<th>File size</th><th>Areas</th><th>Geojson convert time (S)</th>" +
 					"<th>Geo level</th><th>Area (Km<sup>2</sup>)</th>" + 
 					"<th>SRID</th>" +
@@ -495,10 +514,10 @@ function displayResponse(responseText, status) {
 	/*
 	Add shapefiles starting from the highest resolution first:
 
-	Add data to geoJSONLayer[0]; shapefile [3]: SAHSU_GRD_Level4.shp
-	Add data to geoJSONLayer[1]; shapefile [2]: SAHSU_GRD_Level3.shp
-	Add data to geoJSONLayer[2]; shapefile [1]: SAHSU_GRD_Level2.shp
-	Add data to geoJSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
+	Add data to JSONLayer[0]; shapefile [3]: SAHSU_GRD_Level4.shp
+	Add data to JSONLayer[1]; shapefile [2]: SAHSU_GRD_Level3.shp
+	Add data to JSONLayer[2]; shapefile [1]: SAHSU_GRD_Level2.shp
+	Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 	*/
 					
 						for (var i=0; i < response.no_files; i++) {	//. Re-order by geolevel_id	
@@ -530,26 +549,26 @@ function displayResponse(responseText, status) {
 							}
 					
 							if (!response.file_list[layerAddOrder[i]] || !response.file_list[layerAddOrder[i]].file_name) {
-								console.error("layerAddOrder problem: Add data to geoJSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE");
+								console.error("layerAddOrder problem: Add data to JSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE");
 							}
-							console.log("Add data to geoJSONLayer[" + i + "]; shapefile [" + layerAddOrder[i] + "]: " +
+							console.log("Add data to JSONLayer[" + i + "]; shapefile [" + layerAddOrder[i] + "]: " +
 								response.file_list[layerAddOrder[i]].file_name +
 								"; colour: " + color + "; weight: " + weight + "; opacity: " + opacity + "; fillOpacity: " + fillOpacity);
 								
 							msg+="<tr style=\"color:" + color + "\"><td>" + (i+1) + "</td><td>" + response.file_list[layerAddOrder[i]].file_name + "</td><td>";
-							if (response.file_list[i].geojson) {			
+							if (response.file_list[layerAddOrder[i]].topojson) {			
 								try {
-									var geojson = JSON.stringify(response.file_list[i].geojson);
+//									var topojson = JSON.stringify(response.file_list[i].topojson);
 									if (response.file_list[i].boundingBox && map) {
 					
-										if (geoJSONLayer[i]) {	
-											console.log('Remove geoJSONLayer' + i + ']');
-											map.removeLayer(geoJSONLayer[i]);
+										if (JSONLayer[i]) {	
+											console.log('Remove topoJSONLayer' + i + ']');
+											map.removeLayer(JSONLayer[i]);
 										}		
 										
-										console.log('New geoJSONLayer[' + i + '], color: ' + color);	
-										document.getElementById("status").innerHTML = "Adding geoJSONLayer[" + i + "]...";	
-										geoJSONLayer[i] = L.geoJson(undefined, 
+										console.log('New topoJSONLayer[' + i + '], color: ' + color);	
+										document.getElementById("status").innerHTML = "Adding topoJSONLayer[" + i + "]...";	
+										JSONLayer[i] = new L.topoJson(undefined, 
 											{style: 
 												{color: 	color,
 												 fillColor: "#ccf4ff",
@@ -557,17 +576,46 @@ function displayResponse(responseText, status) {
 												 opacity: 	1,
 												 fillOpacity: fillOpacity}
 											}).addTo(map);
-										geoJSONLayer[i].addData(response.file_list[layerAddOrder[i]].geojson);									
+										JSONLayer[i].addData(response.file_list[layerAddOrder[i]].topojson);									
 									}
 									
-									msg+=fileSize(geojson.length);
+									msg+=fileSize(response.file_list[layerAddOrder[i]].topojson_length) + "/" + fileSize(response.file_list[layerAddOrder[i]].geojson_length);
+								} catch (e) {  							
+									msg+="TopoJSON conversion error: " + e.message;
+									responseErrors++;
+								}
+							}
+							else if (response.file_list[layerAddOrder[i]].geojson) {			
+								try {
+//									var geojson = JSON.stringify(response.file_list[i].geojson);
+									if (response.file_list[i].boundingBox && map) {
+					
+										if (JSONLayer[i]) {	
+											console.log('Remove JSONLayer' + i + ']');
+											map.removeLayer(JSONLayer[i]);
+										}		
+										
+										console.log('New JSONLayer[' + i + '], color: ' + color);	
+										document.getElementById("status").innerHTML = "Adding JSONLayer[" + i + "]...";	
+										JSONLayer[i] = L.geoJson(undefined, 
+											{style: 
+												{color: 	color,
+												 fillColor: "#ccf4ff",
+												 weight: 	weight, // i.e. Lower numbers have most weight
+												 opacity: 	1,
+												 fillOpacity: fillOpacity}
+											}).addTo(map);
+										JSONLayer[i].addData(response.file_list[layerAddOrder[i]].geojson);									
+									}
+									
+									msg+=fileSize(response.file_list[layerAddOrder[i]].geojson_length);
 								} catch (e) {  							
 									msg+="GeoJSON conversion error: " + e.message;
 									responseErrors++;
 								}
 							}
 							else {
-								msg+="ERROR! no GeoJSON returned";
+								msg+="ERROR! no GeoJSON/topoJSON returned";
 								responseErrors++;
 							}
 							msg+="</td><td>" + 

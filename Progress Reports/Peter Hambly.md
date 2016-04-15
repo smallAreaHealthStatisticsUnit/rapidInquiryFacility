@@ -368,7 +368,7 @@ Test harness refactor; Node.js version working
 #### 11th to 15th April
 
 	* Read coa2011.shp: 227,759 recoerds, 203,930,998 points. Required 11G memory; broke shpConvertWriteFile() as expected, 
-	  needs to write in blocks; JSON size: 1666,421,470 ~ 16GB. shpConvertWriteFile() needs to write in sections (i.e. per record)
+	  needs to write in blocks; JSON size: 1,666,421,470 ~ 16GB. shpConvertWriteFile() needs to write in sections (i.e. per record)
 	  max 10.2G memory (11G limit on laptop)
 ```	  
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:565
@@ -382,15 +382,16 @@ RangeError: Invalid string length
 	
 	* Added CRLF removal support. coa2011.js (from Mike Bostock shapefile to JSON program) now fails converting to a string; 
 	  a streaming parser is needed; Strings (not buffers) limited to 256M (-1 byte)
+	* Add topoJSON support
 	
 	Current TODO list aimed at Judy Qualters visit:
-	* Add topoJSON support
 	* Zip file support. Convert zlib, zip file support to async
     * Large file support (coa2011)
 	
 	Maybe list:
 	
 	* Simplify...
+	* Feature catalog support; see: cb_2014_us_county_500k.shp.ea.iso.xml. This contains most of the names etc.
 	* Replace traditional html with JQuery-UI
 	* Area_id and description support
 	* Hover support for area name at highest resolution
