@@ -381,18 +381,21 @@ RangeError: Invalid string length
 ```
 	
 	* Added CRLF removal support. coa2011.js (from Mike Bostock shapefile to JSON program) now fails converting to a string; 
-	  a streaming parser is needed; Strings (not buffers) limited to 256M (-1 byte)
+	  a streaming parser is needed; Strings (not buffers) limited to 256M (-1 byte)! This is causing much grief and will probably be fixed soon; 
+	  not fixed in Node 5.10; buffers are good for at least 1.5G.
 	* Added topoJSON support, with a quick bodge sterians calulation for zoomlevel 9 (1 pixel = 300m x 300m = 1.451e-11 steradians 
 	  This takes no account of latitude; will calculate accurately using PostGIS rif40_geo_pkg.rif40_zoom_levels() function 
-	  Current US map is 1:500,000 and is OK at zoomlevel 11; zoomlevel 9 is 1:1 million; JSON compression is 2.09MB comparsed to: 28.55MB so is not out by much
+	  Current US map is 1:500,000 and is OK at zoomlevel 11; zoomlevel 9 is 1:1 million; JSON compression is 5.06MB compared to: 28.55MB
+	  Quantization set to 1e6; 1e4 was far too coarse; 83% compression.
+	* SAHSUland works in IE, firefox and Chrome; IE is very slow. US to counties works in Chrome and IE. UK census output areas will only work in Firefox
 	
 	Current TODO list aimed at Judy Qualters visit:
 	* Zip file support. Convert zlib, zip file support to async
-    * Large file support (coa2011)
+    * Large file support (coa2011) - shpConvertWriteFile() needs to write in sections (i.e. per record), remove geoJSON (this will help IE)
 	
 	Maybe list:
 	
-	* Simplify...
+	* Simplify: accurate Steradians calulations
 	* Feature catalog support; see: cb_2014_us_county_500k.shp.ea.iso.xml. This contains most of the names etc.
 	* Replace traditional html with JQuery-UI
 	* Area_id and description support

@@ -363,8 +363,8 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 // Default geo2TopoJSON options (see topology Node.js module)
 			var topojson_options = {
 				verbose:      true,
-				quantization: 1e4,	
-				simplify: 1.451e-11 // Too coarse!!!!
+				quantization: 1e6,	
+				simplify: 1.451e-11
 			}; 		
 
 // Add stderr hook to capture debug output from topoJSON	
