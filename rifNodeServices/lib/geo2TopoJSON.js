@@ -217,6 +217,66 @@ geo2TopoJSONFieldProcessor=function(fieldname, val, topojson_options, ofields, r
 }
 
 /*
+ * Function:	bigToSstring()
+ * Parameters:	Buffer
+ * Returns:		Buffer converted to string
+ * Description: Convert buffer to string in sections avoiding below error...
+ */
+bigToSstring=function(data, response) {
+	try {		
+		var str="";
+		var nstr;
+//		var strArray = [];
+		var pos=0;
+		var i=0;
+		var len=1024*1024; // 1MB chunks
+	
+		do {
+			i++;
+//			strArray.push(data.slice(pos, pos+len).toString());
+			str+=data.slice(pos, pos+len).toString();
+			nstr=str;
+			str=nstr;
+			nstr=undefined;
+//			console.error("strArray: " + strArray.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i);
+			console.error("str: " + str.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i);
+			pos+=len;		
+		}
+		while (pos < data.length);
+
+//		console.error("End strArray: " + strArray.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i);
+//		str=strArray.join("");
+		console.error("End str: " + str.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i);
+	} catch (e) {                            // Catch conversion errors
+		var msg="Unable to convert buffer to string\nCaught error: " + e.message + "\nStack >>>\n" + e.stack + "\n<< End of stack";
+		msg+="\nYour input file " + d.no_files + ": " + 
+			d.file.file_name + "; size: " + d.file.file_data.length + 
+			"\nstr: " + str.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i + 
+			";\n" + msg + ": \n" + "Debug message:\n" + response.message + "\n\n" ;
+		if (d.file.file_data.length > 0) { // Add first 240 chars of file to message
+			var truncated_data=d.file.file_data.toString('ascii', 0, 240);
+			if (!/^[\x00-\x7F]*$/.test(truncated_data)) { // Test if not ascii
+				truncated_data=d.file.file_data.toString('hex', 0, 240); // Binary: display as hex
+			}
+			if (truncated_data.length < d.file.file_data.length) {
+				msg=msg + "\nTruncated data:\n" + truncated_data + "\n";
+			}
+			else {
+				msg=msg + "\nData:\n" + truncated_data + "\n";
+			}
+		}
+			
+		response.file_errors++;					// Increment file error count		
+		response.message = msg + "\n" + response.message;	
+		response.error = e.message;
+				
+		return undefined;
+	} 	
+	
+	return str;
+}
+
+/*
  * Function:	geo2TopoJSONFile()
  * Parameters:	d object (temporary processing data, 
 				ofields [field parameters array],
@@ -256,6 +316,8 @@ geo2TopoJSONFile=function(d, ofields, topojson_options, stderr, response) {
 	var msg="File [" + d.no_files + "]: " + d.file.file_name;
 	
 	response.message = response.message + '\nProcessing ' + msg;	
+	response.no_files=d.no_files;			// Add number of files process to response
+	response.fields=ofields;				// Add return fields	
 	try {	
 		d.file.jsonData = undefined;
 		// Set up file list reponse now, in case of exception
@@ -286,9 +348,6 @@ geo2TopoJSONFile=function(d, ofields, topojson_options, stderr, response) {
 //		response.message = response.message + msg;	
 //		d.file.file_data=str;
 		
-		// Re-route topoJSON stderr to stderr.str
-		stderr.disable();
-		
 /* coa2011.js fails with:
 
 Your input file 1: coa11.json; size: 1674722608; does not seem to contain valid JSON: 
@@ -307,8 +366,16 @@ Error: toString failed
 
 Streaming parser needed; or it needs toString()ing in sections
 
- */		
-		d.file.jsonData = JSON.parse(d.file.file_data.toString()); // Parse file stream data to JSON
+ */		var str=bigToSstring(d.file.file_data, response);
+		if (!str) {
+				return; // String convert failed
+		}
+				
+		d.file.jsonData = JSON.parse(str); // Parse file stream data to JSON
+		str=undefined;
+		
+		// Re-route topoJSON stderr to stderr.str
+		stderr.disable();
 		
 		var lstart = new Date().getTime();			
 		d.file.topojson = topojson.topology({   // Convert geoJSON to topoJSON
@@ -361,7 +428,7 @@ Streaming parser needed; or it needs toString()ing in sections
 		else {
 			msg="does not seem to contain valid TopoJSON: ";
 		}
-		msg+="\nCaught error: " + e.message + "Stack >>>\n" + e.stack + "\n<< End of stack";
+		msg+="\nCaught error: " + e.message + "\nStack >>>\n" + e.stack + "\n<< End of stack";
 		msg+="\nYour input file " + d.no_files + ": " + 
 			d.file.file_name + "; size: " + d.file.file_data.length + 
 			"; " + msg + ": \n" + "Debug message:\n" + response.message + "\n\n" + 
@@ -378,9 +445,7 @@ Streaming parser needed; or it needs toString()ing in sections
 				msg=msg + "\nData:\n" + truncated_data + "\n";
 			}
 		}
-	
-		response.no_files=d.no_files;			// Add number of files process to response
-		response.fields=ofields;				// Add return fields		
+		
 		response.file_errors++;					// Increment file error count		
 		response.message = msg + "\n" + response.message;	
 		response.error = e.message;
