@@ -370,7 +370,7 @@ Test harness refactor; Node.js version working
 	* Read coa2011.shp: 227,759 recoerds, 203,930,998 points. Required 11G memory; broke shpConvertWriteFile() as expected, 
 	  needs to write in blocks; JSON size: 1666,421,470 ~ 16GB.
 	* Added CRLF removal support. coa2011.js (from Mike Bostock shapefile to JSON program) now fails converting to a string; 
-	  either a streaming parser is needed; or it needs toString()ing in sections.
+	  a streaming parser is needed; Strings (not buffers) limited to 256M (-1 byte)
 	
 	Current TODO list aimed at Judy Qualters visit:
 	* Add topoJSON support

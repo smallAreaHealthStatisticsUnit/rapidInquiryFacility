@@ -201,8 +201,14 @@ if (v8.getHeapSpaceStatistics) { // Currently not exposed, altough in manual; --
 	console.error('Memory heap space >>>');
 	for (var i=0; i<heapSpace.length; i++) {
 		var heap=heapSpace[i];
+		var heapName;
 		for (var key in heap) {
-			console.error("[" + i + "]: " + key + ": " + heap[key]);
+			if (key == "space_name") {
+				heapName = heap[key];
+			}
+			else {
+				console.error("[" + heapName + "]: " + key + ": " + heap[key]);
+			}
 		}
 	}
 	console.error('<<< End of memory heap space.');

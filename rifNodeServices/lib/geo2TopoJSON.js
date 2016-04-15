@@ -230,7 +230,8 @@ bigToSstring=function(data, response) {
 		var pos=0;
 		var i=0;
 		var len=1024*1024; // 1MB chunks
-	
+		var kStringMaxLength = process.binding('buffer').kStringMaxLength;
+	  
 		do {
 			i++;
 //			strArray.push(data.slice(pos, pos+len).toString());
@@ -239,19 +240,28 @@ bigToSstring=function(data, response) {
 			str=nstr;
 			nstr=undefined;
 //			console.error("strArray: " + strArray.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i);
-			console.error("str: " + str.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i);
+//			console.error("str: " + str.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i);
 			pos+=len;		
 		}
 		while (pos < data.length);
 
 //		console.error("End strArray: " + strArray.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i);
 //		str=strArray.join("");
-		console.error("End str: " + str.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i);
+//		console.error("End str: " + str.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i);
 	} catch (e) {                            // Catch conversion errors
-		var msg="Unable to convert buffer to string\nCaught error: " + e.message + "\nStack >>>\n" + e.stack + "\n<< End of stack";
+		var msg;
+		
+		if (e.message == "Invalid string length" && data.length > kStringMaxLength) {
+			msg="Unable to convert buffer to string\nCaught error: " + e.message + 
+				"; maximum string length: " + kStringMaxLength + " is exceeded by data buffer length: " + data.length + 
+				"\nStack >>>\n" + e.stack + "\n<< End of stack";
+		}
+		else {
+			msg="Unable to convert buffer to string\nCaught error: " + e.message + "\nStack >>>\n" + e.stack + "\n<< End of stack";	
+		}
 		msg+="\nYour input file " + d.no_files + ": " + 
 			d.file.file_name + "; size: " + d.file.file_data.length + 
-			"\nstr: " + str.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i + 
+//			"\nstr: " + str.length + "; data: " + data.length + "; pos: " + pos + "; i: " + i + "; maximum string length: " + kStringMaxLength +
 			";\n" + msg + ": \n" + "Debug message:\n" + response.message + "\n\n" ;
 		if (d.file.file_data.length > 0) { // Add first 240 chars of file to message
 			var truncated_data=d.file.file_data.toString('ascii', 0, 240);
