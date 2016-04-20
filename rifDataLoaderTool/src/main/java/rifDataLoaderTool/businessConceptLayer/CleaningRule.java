@@ -241,7 +241,6 @@ public final class CleaningRule
 		final ArrayList<CleaningRule> listBCleaningRules) {
 		
 		if (listACleaningRules.size() != listBCleaningRules.size()) {
-			System.out.println("CleaningRule cleaningRulesAreEqual sizeA=="+listACleaningRules.size()+"==sizeB=="+listBCleaningRules.size()+"==");
 			return false;
 		}
 		

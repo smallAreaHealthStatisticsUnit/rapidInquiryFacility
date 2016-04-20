@@ -116,7 +116,6 @@ public class ShapeFileMetaDataExtractor {
 	
 	public void extractMetaDataAndSampleDBFRows(final ShapeFile shapeFile) 
 		throws RIFServiceException {
-		
 		extractMetaDataFromPRJFile(shapeFile);
 		extractMetaDataFromDBFFile(shapeFile);
 	}
@@ -160,6 +159,7 @@ public class ShapeFileMetaDataExtractor {
 					prjText.toString());		
 		}
 		catch(IOException ioException) {
+			ioException.printStackTrace(System.out);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileReadingProblemException(shapeFilePRJFile.getName());
@@ -281,7 +281,9 @@ public class ShapeFileMetaDataExtractor {
 			
 				DbaseFileReader.Row rowReader = dbfFileReader.readRow();
 				for (int i = 0; i < numberOfFields; i++) {
-					shapeFilePreviewData[ithSampleRow][i] = (String) rowReader.read(i);
+					//shapeFilePreviewData[ithSampleRow][i] = (String) rowReader.read(i);
+
+					shapeFilePreviewData[ithSampleRow][i] = String.valueOf(rowReader.read(i));
 				}
 				ithSampleRow++;
 			}
@@ -291,6 +293,7 @@ public class ShapeFileMetaDataExtractor {
 			dbfFileReader.close();
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileReadingProblemException(shapeFileComponentPath);

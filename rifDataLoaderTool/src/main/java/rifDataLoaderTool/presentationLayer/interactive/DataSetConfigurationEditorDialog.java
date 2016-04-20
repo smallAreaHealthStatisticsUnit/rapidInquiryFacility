@@ -3,11 +3,8 @@ package rifDataLoaderTool.presentationLayer.interactive;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.*;
 import rifDataLoaderTool.system.*;
-
-import rifGenericLibrary.fileFormats.CSVFileFilter;
 import rifGenericLibrary.presentationLayer.*;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.awt.event.ActionEvent;
 import java.awt.*;
@@ -16,8 +13,6 @@ import java.util.ArrayList;
 import javax.swing.event.*;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-
-import java.io.*;
 
 
 
@@ -121,18 +116,14 @@ class DataSetConfigurationEditorDialog
 	private DataLoaderToolSession session;
 	private DataSetConfiguration originalDataSetConfiguration;
 	private DataSetConfiguration workingCopyDataSetConfiguration;
-	private File selectedInputFile;
 		
 	//GUI Components	
 	private OrderedListPanel dataSetFieldListPanel;
 	private ListEditingButtonPanel dataSetFieldListButtonPanel;	
 	private JScrollPane currentFieldScrollPane;	
-	private JTextField nameTextField;
-	private JTextField versionTextField;
-	private JTextArea descriptionTextArea;
-	private JTextField filePathTextField;		
-	private JButton browseButton;	
-	private JComboBox<String> rifSchemaAreasComboBox;
+	
+	private DataSetPropertyEditorPanel dataSetPropertyEditorPanel;
+	
 	private DataSetFieldPropertyEditorPanel dataSetFieldPropertyEditorPanel;
 	private int previouslySelectedIndex;
 	private boolean isRollbackSelectionHappening;
@@ -186,10 +177,16 @@ class DataSetConfigurationEditorDialog
 		dataSetFieldListPanel.addListSelectionListener(this);
 		dataSetFieldListPanel.addListDataListener(this);
 		
+		dataSetPropertyEditorPanel
+			= new DataSetPropertyEditorPanel(
+				userInterfaceFactory,
+				false);
+		
 		dataSetFieldPropertyEditorPanel
 			= new DataSetFieldPropertyEditorPanel(
 				getDialog(), 
-				session);
+				session,
+				false);
 
 		JPanel panel
 			= userInterfaceFactory.createPanel();
@@ -197,184 +194,20 @@ class DataSetConfigurationEditorDialog
 			= userInterfaceFactory.createGridBagConstraints();
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
-		panel.add(createUpperPanel(), panelGC);
+		panel.add(dataSetPropertyEditorPanel.getPanel(), panelGC);
 		
 		panelGC.gridy++;
 		panelGC.fill = GridBagConstraints.BOTH;
 		panelGC.weighty = 1;
 		
 		panel.add(
-			createCentralPanel(), 
+			createLowerPanel(), 
 			panelGC);
 		
 		return panel;
 	}
 	
-	private JPanel createUpperPanel() {
-
-		UserInterfaceFactory userInterfaceFactory
-			= session.getUserInterfaceFactory();
-		GridBagConstraints panelGC
-			= userInterfaceFactory.createGridBagConstraints();
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 1;
-		JPanel panel
-			= userInterfaceFactory.createPanel();
-
-		panel.add(
-			createGeneralPropertiesPanel(), 
-			panelGC);
-		
-		panelGC.gridy++;
-		
-		GridBagConstraints chooseFilePanelGC
-			= userInterfaceFactory.createGridBagConstraints();
-		JPanel chooseFilePanel
-			= userInterfaceFactory.createPanel();
-		String filePathLabelText
-			= RIFDataLoaderToolMessages.getMessage("dataSetConfiguration.filePath.label");		
-		JLabel filePathLabel
-			= userInterfaceFactory.createLabel(filePathLabelText);
-		String filePathToolTip
-			= RIFDataLoaderToolMessages.getMessage("dataSetConfiguration.filePath.toolTip");		
-		filePathLabel.setToolTipText(filePathToolTip);
-		
-		chooseFilePanel.add(
-			filePathLabel, 
-			chooseFilePanelGC);
-		
-		chooseFilePanelGC.gridx++;
-		chooseFilePanelGC.fill = GridBagConstraints.HORIZONTAL;
-		chooseFilePanelGC.weightx = 1;
-		filePathTextField
-			= userInterfaceFactory.createNonEditableTextField();		
-		chooseFilePanel.add(
-			filePathTextField,
-			chooseFilePanelGC);
-		
-		chooseFilePanelGC.gridx++;
-		chooseFilePanelGC.fill = GridBagConstraints.NONE;
-		chooseFilePanelGC.weightx = 0;
-		
-		String browseButtonText
-			= RIFGenericLibraryMessages.getMessage(
-				"buttons.browse.label");
-		browseButton
-			= userInterfaceFactory.createButton(browseButtonText);
-		browseButton.addActionListener(this);
-		chooseFilePanel.add(
-			browseButton, 
-			chooseFilePanelGC);
-		
-		panelGC.gridy++;
-		panel.add(chooseFilePanel, panelGC);
-		
-		panel.setBorder(LineBorder.createGrayLineBorder());
-		
-		return panel;
-	}
-	
-	private JPanel createGeneralPropertiesPanel() {
-
-		UserInterfaceFactory userInterfaceFactory
-			= session.getUserInterfaceFactory();
-		GridBagConstraints panelGC
-			= userInterfaceFactory.createGridBagConstraints();
-		JPanel panel
-			= userInterfaceFactory.createPanel();
-		
-		String nameFieldLabelText
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.name.label");
-		JLabel nameFieldLabel
-			= userInterfaceFactory.createLabel(nameFieldLabelText);
-		String nameFieldToolTip
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.name.toolTip");
-		nameFieldLabel.setToolTipText(nameFieldToolTip);
-		
-		panel.add(nameFieldLabel, panelGC);		
-		panelGC.gridx++;
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 1;
-		nameTextField
-			= userInterfaceFactory.createTextField();
-		panel.add(nameTextField, panelGC);
-		
-		panelGC.gridy++;
-			
-		panelGC.gridx = 0;
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;		
-		String versionFieldLabelText
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.version.label");
-		JLabel versionFieldLabel
-			= userInterfaceFactory.createLabel(versionFieldLabelText);
-		String versionFieldToolTip
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.version.toolTip");
-		versionFieldLabel.setToolTipText(versionFieldToolTip);
-		
-		panel.add(versionFieldLabel, panelGC);		
-		panelGC.gridx++;
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 1;
-		versionTextField
-			= userInterfaceFactory.createTextField();
-		panel.add(versionTextField, panelGC);
-		
-		panelGC.gridy++;		
-		panelGC.gridx = 0;
-		panelGC.fill = GridBagConstraints.NONE;
-		String descriptionFieldLabelText
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.description.label");
-		JLabel descriptionFieldLabel
-			= userInterfaceFactory.createLabel(descriptionFieldLabelText);
-		String descriptionFieldToolTip
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.description.toolTip");
-		descriptionFieldLabel.setToolTipText(descriptionFieldToolTip);
-		
-		panel.add(descriptionFieldLabel, panelGC);
-		panelGC.gridx++;
-		panelGC.fill = GridBagConstraints.BOTH;
-		panelGC.weightx = 1;
-		panelGC.weighty = 1;
-		descriptionTextArea
-			= userInterfaceFactory.createTextArea();
-		panel.add(
-			descriptionTextArea, 
-			panelGC);
-		
-		panelGC.gridy++;
-		panelGC.gridx = 0;		
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
-		String rifSchemaAreasLabelText
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.rifSchemaArea.label");
-		JLabel rifSchemaAreasLabel
-			= userInterfaceFactory.createLabel(rifSchemaAreasLabelText);
-		String rifSchemaAreasToolTip
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.rifSchemaArea.toolTip");		
-		rifSchemaAreasLabel.setToolTipText(rifSchemaAreasToolTip);
-		panel.add(rifSchemaAreasLabel, panelGC);	
-		panelGC.gridx++;
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 1;		
-		rifSchemaAreasComboBox
-			= userInterfaceFactory.createComboBox(RIFSchemaArea.getAllSchemaNames());
-		rifSchemaAreasComboBox.addActionListener(this);
-		panel.add(rifSchemaAreasComboBox, panelGC);
-
-		return panel;
-	}
-	
-	
-	private JPanel createCentralPanel() {
+	private JPanel createLowerPanel() {
 
 		UserInterfaceFactory userInterfaceFactory
 			= session.getUserInterfaceFactory();
@@ -474,16 +307,7 @@ class DataSetConfigurationEditorDialog
 	private void populateFormFromWorkingCopy(
 		final DataSetConfiguration dataSetConfiguration) {
 		
-		nameTextField.setText(dataSetConfiguration.getName());
-		versionTextField.setText(dataSetConfiguration.getVersion());
-		descriptionTextArea.setText(dataSetConfiguration.getDescription());
-		filePathTextField.setText(dataSetConfiguration.getFilePath());
-		
-		RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
-		rifSchemaAreasComboBox.removeActionListener(this);
-		rifSchemaAreasComboBox.setSelectedItem(rifSchemaArea.getName());
-		rifSchemaAreasComboBox.addActionListener(this);
-		
+		dataSetPropertyEditorPanel.populateForm(dataSetConfiguration);
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
 			= dataSetConfiguration.getFieldConfigurations();
 		
@@ -513,15 +337,10 @@ class DataSetConfigurationEditorDialog
 		DataSetConfiguration dataSetConfigurationFromForm
 			= DataSetConfiguration.createCopy(originalDataSetConfiguration);
 		
-		//capture the general fields
-		dataSetConfigurationFromForm.setName(nameTextField.getText().trim());
-		dataSetConfigurationFromForm.setVersion(versionTextField.getText().trim());
-		dataSetConfigurationFromForm.setDescription(descriptionTextArea.getText().trim());
-		dataSetConfigurationFromForm.setFilePath(filePathTextField.getText().trim());
+		dataSetPropertyEditorPanel.populateDataSetConfigurationFromForm(dataSetConfigurationFromForm);
 		
 		//the fields are already accounted for 
-		dataSetConfigurationFromForm.clearFieldConfigurations();
-		
+		dataSetConfigurationFromForm.clearFieldConfigurations();		
 		ArrayList<DisplayableListItemInterface> currentFields
 			= dataSetFieldListPanel.getListItems();
 		for (DisplayableListItemInterface currentField : currentFields) {
@@ -545,25 +364,6 @@ class DataSetConfigurationEditorDialog
 			originalDataSetConfiguration);
 		
 		return changesMade;
-	}
-	
-	private void browseForInputFile() {
-		UserInterfaceFactory userInterfaceFactory
-			= session.getUserInterfaceFactory();
-		JFileChooser fileChooser
-			= userInterfaceFactory.createFileChooser();
-		CSVFileFilter csvFileFilter
-			= new CSVFileFilter();
-		fileChooser.setFileFilter(csvFileFilter);
-		int result
-			= fileChooser.showOpenDialog(getDialog());
-		if (result != JFileChooser.APPROVE_OPTION) {
-			return;
-		}
-		
-		selectedInputFile
-			= fileChooser.getSelectedFile();
-		filePathTextField.setText(selectedInputFile.getAbsolutePath());
 	}
 	
 	private void addDataSetFieldConfiguration() {
@@ -596,10 +396,6 @@ class DataSetConfigurationEditorDialog
 		
 		String dialogTitle
 			= RIFDataLoaderToolMessages.getMessage("dataSetConfigurationEditorDialog.copyDataSetFieldConfiguration.title");
-		String instructionsText
-			= RIFDataLoaderToolMessages.getMessage("dataSetConfigurationEditorDialog.copyDataSetFieldConfiguration.instructions");
-		String fieldName
-			= RIFDataLoaderToolMessages.getMessage("dataSetConfigurationEditorDialog.copyDataSetFieldConfiguration.fieldName");		
 		ArrayList<String> existingListItemNames
 			= dataSetFieldListPanel.getDisplayNames();
 
@@ -664,11 +460,8 @@ class DataSetConfigurationEditorDialog
 	public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
 		
-		if (source == rifSchemaAreasComboBox) {
+		if (dataSetPropertyEditorPanel.isSchemaAreaComboBox(source)) {
 			dataSetFieldPropertyEditorPanel.updateUI();
-		}
-		else if (source == browseButton) {
-			browseForInputFile();
 		}
 		else if (dataSetFieldListButtonPanel.isAddButton(source)) {
 			addDataSetFieldConfiguration();

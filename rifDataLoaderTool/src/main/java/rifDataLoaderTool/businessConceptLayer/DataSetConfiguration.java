@@ -94,7 +94,8 @@ import java.util.Objects;
  */
 
 public class DataSetConfiguration 
-	extends AbstractRIFDataLoaderToolConcept {
+	extends AbstractRIFDataLoaderToolConcept 
+	implements DescriptiveConfigurationItem {
 
 	// ==========================================
 	// Section Constants
@@ -114,6 +115,7 @@ public class DataSetConfiguration
 	private ArrayList<DataSetFieldConfiguration> fieldConfigurations;
 	public WorkflowState currentWorkflowState;
 	private boolean fileHasFieldNamesDefined;
+	private boolean isHint;
 	
 	// ==========================================
 	// Section Construction
@@ -126,6 +128,7 @@ public class DataSetConfiguration
 		fieldConfigurations = new ArrayList<DataSetFieldConfiguration>();
 		filePath = "";
 		fileHasFieldNamesDefined = false;
+		isHint = false;
 	}
 	
 	
@@ -225,8 +228,7 @@ public class DataSetConfiguration
 		destinationDataSetConfiguration.setNewRecord(
 			sourceDataSetConfiguration.isNewRecord());
 		destinationDataSetConfiguration.setName(
-			sourceDataSetConfiguration.getName());
-		
+			sourceDataSetConfiguration.getName());		
 		destinationDataSetConfiguration.setVersion(
 			sourceDataSetConfiguration.getVersion());
 		destinationDataSetConfiguration.setFilePath(
@@ -239,7 +241,8 @@ public class DataSetConfiguration
 			sourceDataSetConfiguration.getCurrentWorkflowState());
 		destinationDataSetConfiguration.setRIFSchemaArea(
 			sourceDataSetConfiguration.getRIFSchemaArea());
-		
+		destinationDataSetConfiguration.setIsHint(
+			sourceDataSetConfiguration.isHint());
 		ArrayList<DataSetFieldConfiguration> originalFieldConfigurations
 			= sourceDataSetConfiguration.getFieldConfigurations();
 		ArrayList<DataSetFieldConfiguration> cloneFieldConfigurations
@@ -515,6 +518,14 @@ public class DataSetConfiguration
 		return true;
 	}
 	
+	public boolean isHint() {
+		return isHint;
+	}
+	
+	public void setIsHint(final boolean isHint) {
+		this.isHint = isHint;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -666,7 +677,7 @@ public class DataSetConfiguration
 		if (fieldValidationUtility.isEmpty(name)) {
 			String nameFieldLabel
 				= RIFDataLoaderToolMessages.getMessage(
-					"dataSetFieldConfiguration.name.label");
+					"dataSetConfiguration.name.label");
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"general.validation.emptyRequiredField",
@@ -782,12 +793,17 @@ public class DataSetConfiguration
 			= new ArrayList<DataSetFieldConfiguration>();
 		
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			FieldChangeAuditLevel currentFieldChangeAuditLevel
-				= fieldConfiguration.getFieldChangeAuditLevel();
+			FieldRequirementLevel fieldRequirementLevel
+				= fieldConfiguration.getFieldRequirementLevel();
+			if (fieldRequirementLevel != fieldRequirementLevel.IGNORE_FIELD) {
+				FieldChangeAuditLevel currentFieldChangeAuditLevel
+					= fieldConfiguration.getFieldChangeAuditLevel();
 			
-			if (currentFieldChangeAuditLevel == fieldChangeAuditLevel) {
-				changeAuditFields.add(fieldConfiguration);				
+				if (currentFieldChangeAuditLevel == fieldChangeAuditLevel) {
+					changeAuditFields.add(fieldConfiguration);				
+				}
 			}
+
 		}
 		
 		return changeAuditFields;
@@ -1033,9 +1049,14 @@ public class DataSetConfiguration
 	
 	public String getDisplayName() {
 		StringBuilder buffer = new StringBuilder();
-		buffer.append(name);
-		buffer.append("-");
-		buffer.append(version);
+		if (isHint) {
+			buffer.append(name);
+		}
+		else {
+			buffer.append(name);
+			buffer.append("-");
+			buffer.append(version);			
+		}
 		return buffer.toString();		
 	}
 	

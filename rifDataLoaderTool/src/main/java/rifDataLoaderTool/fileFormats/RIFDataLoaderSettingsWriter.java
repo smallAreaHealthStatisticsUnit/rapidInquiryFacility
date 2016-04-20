@@ -1,12 +1,13 @@
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-
+import rifDataLoaderTool.businessConceptLayer.*;
+import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 import java.io.*;
+import java.util.ArrayList;
 
 
 /**
@@ -74,23 +75,6 @@ import java.io.*;
  */
 
 public final class RIFDataLoaderSettingsWriter {
-	public static void main(String[] arguments) {
-		
-		System.out.println("RIF Data Loader Tool settings writer");
-		File outputFile = new File("C://rif_scratch//test_data_loader_tool.xml");
-		DataLoaderToolSettings dataLoaderToolSettings
-			= new DataLoaderToolSettings();
-				
-		RIFDataLoaderSettingsWriter writer
-			= new RIFDataLoaderSettingsWriter();
-		try {
-			writer.writeFile(outputFile, dataLoaderToolSettings);			
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-		}
-	}
-	
 	
 	// ==========================================
 	// Section Constants
@@ -138,6 +122,7 @@ public final class RIFDataLoaderSettingsWriter {
 	    	return result;
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileWritingProblemException(

@@ -615,6 +615,14 @@ public final class RIFDataType
 		}
 	
 	}
+
+	public boolean hasSameIdentifier(final RIFDataType otherRIFDataType) {
+		if (otherRIFDataType == null) {
+			return false;
+		}
+
+		return Objects.deepEquals(identifier, otherRIFDataType.getIdentifier());
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

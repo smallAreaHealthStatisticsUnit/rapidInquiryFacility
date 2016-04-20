@@ -86,7 +86,7 @@ class WorkflowStateLabelPanel
 		if (toolTip != null) {
 			label.setToolTipText(toolTip);
 		}
-		add(label, BorderLayout.WEST);
+		add(label, BorderLayout.NORTH);
 	}
 
 	// ==========================================

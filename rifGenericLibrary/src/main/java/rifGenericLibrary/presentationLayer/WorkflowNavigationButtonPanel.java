@@ -212,7 +212,6 @@ public final class WorkflowNavigationButtonPanel
 	public void addActionListener(
 		final ActionListener actionListener) {
 	
-		System.out.println("WorkflowNavigationButtonPnael - Adding action listener 1");
 		super.addActionListener(actionListener);
 		startAgainButton.addActionListener(actionListener);		
 		submitButton.addActionListener(actionListener);

@@ -178,7 +178,7 @@ public class RIFSchemaAreaPropertyManager {
 	public String[] getMissingRequiredConvertFieldNames(
 		final RIFSchemaArea rifSchemaArea,
 		final String[] convertFieldNames) {
-		
+
 		ArrayList<String> missingRequiredFieldNames = new ArrayList<String>();
 
 		Collator collator = RIFGenericLibraryMessages.getCollator();

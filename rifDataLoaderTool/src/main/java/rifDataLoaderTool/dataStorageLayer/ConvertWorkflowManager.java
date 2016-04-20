@@ -140,8 +140,8 @@ final class ConvertWorkflowManager
 			queryFormatter.addQueryPhrase(1, "SELECT");
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryLine(2, "data_set_id,");
-			queryFormatter.addQueryLine(2, "row_number");
-			
+			queryFormatter.addQueryPhrase(2, "row_number");
+
 			processFieldsWithoutConversions(
 				queryFormatter,
 				2,
@@ -164,7 +164,7 @@ final class ConvertWorkflowManager
 				logFileWriter,
 				"convert_configuration", 
 				queryFormatter);
-						
+			
 			statement	
 				= createPreparedStatement(
 					connection, 
@@ -271,13 +271,13 @@ final class ConvertWorkflowManager
 		 */
 	
 		if ((dataSetConfiguration.getRIFSchemaArea() == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
-			(dataSetConfiguration.getRIFSchemaArea() == RIFSchemaArea.HEALTH_NUMERATOR_DATA)) {
+			(dataSetConfiguration.getRIFSchemaArea() == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
 			
 			DataSetFieldConfiguration ageFieldConfiguration
 				= dataSetConfiguration.getFieldHavingConvertFieldName("age");
 			DataSetFieldConfiguration sexFieldConfiguration
 				= dataSetConfiguration.getFieldHavingConvertFieldName("sex");
-
+			
 			if ((ageFieldConfiguration != null) &&
 				(sexFieldConfiguration != null)) {
 				

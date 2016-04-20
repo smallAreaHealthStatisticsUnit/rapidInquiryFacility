@@ -9,6 +9,7 @@ import rifGenericLibrary.presentationLayer.*;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 
 import java.awt.*;
@@ -81,7 +82,8 @@ class DataSetFieldPropertyEditorPanel
 	private DataSetConfiguration originalDataSetConfiguration;
 	private DataSetFieldConfiguration originalDataSetFieldConfiguration;
 	private DataSetFieldConfiguration workingCopyDataSetFieldConfiguration;
-		
+	private boolean isRenderingForConfigurationHintsFeature;	
+	
 	private Color EXTRACT_COLOUR = new Color(220, 220, 220);
 	private Color CLEAN_COLOUR = new Color(200, 200, 200);
 	private Color CONVERT_COLOUR = new Color(180, 180, 180);
@@ -95,26 +97,19 @@ class DataSetFieldPropertyEditorPanel
 	
 	private JComboBox<String> rifDataTypeComboBox;
 	
-
+	private JTextField coreNameTextField;
 	private JTextField loadTextField;
 	private JTextField descriptionTextField;
 	private JComboBox<String> fieldPurposeComboBox;
 	private JComboBox<String> fieldRequirementLevelComboBox;
-	
-	
 	private JComboBox<String> cleanComboBox;
 	private JComboBox<String> fieldChangeAuditLevelComboBox;
-	private JCheckBox isRequiredField;
-	
-	
+	private JCheckBox isRequiredField;		
 	private JComboBox<String> convertComboBox;
-	private JTextField conversionFunctionTextField;
-	
-	
+	private JTextField conversionFunctionTextField;		
 	private JCheckBox includePercentEmptyCheckBox;
 	private JCheckBox includePercentEmptyPerYearCheckBox;
-	private JCheckBox usedToIdentifyDuplicatesCheckBox;
-	
+	private JCheckBox usedToIdentifyDuplicatesCheckBox;	
 	private JCheckBox optimiseUsingIndexCheckBox;
 	
 	private boolean changesMade;
@@ -128,10 +123,12 @@ class DataSetFieldPropertyEditorPanel
 
 	public DataSetFieldPropertyEditorPanel(
 		final JDialog parentDialog,
-		final DataLoaderToolSession session) {
+		final DataLoaderToolSession session,
+		final boolean isRenderingForConfigurationHintsFeature) {
 
 		this.session = session;
-
+		this.isRenderingForConfigurationHintsFeature 
+			= isRenderingForConfigurationHintsFeature;
 		pleaseChooseMessage
 			= RIFDataLoaderToolMessages.getMessage("shapeFileEditorPanel.pleaseChoose");
 
@@ -153,21 +150,88 @@ class DataSetFieldPropertyEditorPanel
 		panelGC.ipadx = 10;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;		
 		panelGC.weightx = 1;
-		
-		String dataSetFieldPanelTitle
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetFieldConfigurationEditorPanel.title");
-		titleLabel = userInterfaceFactory.createHTMLLabel(1, dataSetFieldPanelTitle);
-		panel.add(titleLabel, panelGC);
-		
+
+		if (isRenderingForConfigurationHintsFeature == false) {
+			//Only put a title if we're editing definitions of data set configuration
+			//fields, not when we're defining hints.
+			String dataSetFieldPanelTitle
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetFieldConfigurationEditorPanel.title");
+			titleLabel = userInterfaceFactory.createHTMLLabel(1, dataSetFieldPanelTitle);
+			panel.add(titleLabel, panelGC);
+		}
+
 		panelGC.gridy++;
+		panel.add(createCoreFieldAttributesPanel(), panelGC);		
+
+		panelGC.gridy++;
+		panel.add(userInterfaceFactory.createSeparator(), panelGC);
+		panelGC.gridy++;
+		panel.add(
+			createWorkflowPropertiesPanel(), 
+			panelGC);
+		enableActionListeners(true);		
+	}
+
+	private JPanel createCoreFieldAttributesPanel() {
+		UserInterfaceFactory userInterfaceFactory
+			= session.getUserInterfaceFactory();
+		JPanel panel = userInterfaceFactory.createPanel();
+		GridBagConstraints panelGC
+			 = userInterfaceFactory.createGridBagConstraints();
 		
-		JPanel fieldPanel = userInterfaceFactory.createPanel();
-		GridBagConstraints fieldPanelGC
+		coreNameTextField
+			= userInterfaceFactory.createTextField();
+		if (isRenderingForConfigurationHintsFeature) {
+			String coreFieldNameText
+				= RIFDataLoaderToolMessages.getMessage("configurationHint.regularExpressionPattern.label");
+			JLabel coreFieldNameLabel
+				= userInterfaceFactory.createLabel(coreFieldNameText);
+			panel.add(coreFieldNameLabel, panelGC);
+			panelGC.gridx++;
+			panelGC.weightx = 1;
+			panelGC.fill = GridBagConstraints.HORIZONTAL;
+			panel.add(coreNameTextField, panelGC);
+			panel.setBorder(LineBorder.createGrayLineBorder());
+		
+			panelGC.gridy++;
+		}
+		
+		panelGC.gridx = 0;		
+		panelGC.fill = GridBagConstraints.NONE;
+		panelGC.weightx = 0;
+		String descriptionLabelText
+			= RIFDataLoaderToolMessages.getMessage(
+				"dataSetFieldConfiguration.coreFieldDescription.label");
+		JLabel descriptionLabel
+			= userInterfaceFactory.createLabel(descriptionLabelText);
+		String descriptionToolTip
+			= RIFDataLoaderToolMessages.getMessage(
+				"dataSetFieldConfiguration.coreFieldDescription.toolTip");
+		descriptionLabel.setToolTipText(
+			userInterfaceFactory.createHTMLToolTipText(descriptionToolTip));
+		
+		panel.add(descriptionLabel, panelGC);
+		panelGC.gridx++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		descriptionTextField
+			= userInterfaceFactory.createTextField();
+		panel.add(descriptionTextField, panelGC);
+		
+		return panel;
+	}
+	
+	private JPanel createWorkflowPropertiesPanel() {
+		UserInterfaceFactory userInterfaceFactory
+			= session.getUserInterfaceFactory();
+				
+		JPanel panel = userInterfaceFactory.createPanel();
+		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
-		fieldPanelGC.fill = GridBagConstraints.BOTH;
-		fieldPanelGC.weighty = 1;
-		fieldPanelGC.weightx = 0.3;		
+		panelGC.fill = GridBagConstraints.BOTH;
+		panelGC.weighty = 1;
+		panelGC.weightx = 0.3;		
 		String extractPhaseLabelText
 			= RIFDataLoaderToolMessages.getMessage("workflowState.extract.phaseLabel");
 		String extractPhaseToolTip
@@ -178,15 +242,15 @@ class DataSetFieldPropertyEditorPanel
 				extractPhaseLabelText,
 				extractPhaseToolTip,
 				EXTRACT_COLOUR);
-		fieldPanel.add(loadLabelPanel, fieldPanelGC);
-		fieldPanelGC.gridx++;
-		fieldPanelGC.fill = GridBagConstraints.BOTH;
-		fieldPanelGC.weightx = 0.7;		
-		fieldPanel.add(createLoadAttributesPanel(), fieldPanelGC);
+		panel.add(loadLabelPanel, panelGC);
+		panelGC.gridx++;
+		panelGC.fill = GridBagConstraints.BOTH;
+		panelGC.weightx = 0.7;		
+		panel.add(createLoadAttributesPanel(), panelGC);
 		
-		fieldPanelGC.gridy++;
-		fieldPanelGC.gridx = 0;		
-		fieldPanelGC.weightx = 0.3;		
+		panelGC.gridy++;
+		panelGC.gridx = 0;		
+		panelGC.weightx = 0.3;		
 		String cleanPhaseLabelText
 			= RIFDataLoaderToolMessages.getMessage("workflowState.clean.phaseLabel");
 		String cleanPhaseToolTip
@@ -197,15 +261,15 @@ class DataSetFieldPropertyEditorPanel
 				cleanPhaseLabelText,
 				cleanPhaseToolTip,
 				CLEAN_COLOUR);
-		fieldPanel.add(cleanLabelPanel, fieldPanelGC);
-		fieldPanelGC.gridx++;
-		fieldPanelGC.weightx = 0.7;
-		fieldPanel.add(createCleanAttributesPanel(), fieldPanelGC);
+		panel.add(cleanLabelPanel, panelGC);
+		panelGC.gridx++;
+		panelGC.weightx = 0.7;
+		panel.add(createCleanAttributesPanel(), panelGC);
 				
-		fieldPanelGC.gridy++;
+		panelGC.gridy++;
 		
-		fieldPanelGC.gridx = 0;
-		fieldPanelGC.weightx = 0.3;		
+		panelGC.gridx = 0;
+		panelGC.weightx = 0.3;		
 		String convertPhaseLabelText
 			= RIFDataLoaderToolMessages.getMessage("workflowState.convert.phaseLabel");
 		String convertPhaseToolTip
@@ -216,16 +280,16 @@ class DataSetFieldPropertyEditorPanel
 				convertPhaseLabelText,
 				convertPhaseToolTip,
 				CONVERT_COLOUR);
-		fieldPanel.add(convertLabelPanel, fieldPanelGC);
-		fieldPanelGC.gridx++;
-		fieldPanelGC.weightx = 0.7;
-		fieldPanel.add(createConvertAttributesPanel(), fieldPanelGC);
+		panel.add(convertLabelPanel, panelGC);
+		panelGC.gridx++;
+		panelGC.weightx = 0.7;
+		panel.add(createConvertAttributesPanel(), panelGC);
 
 		
-		fieldPanelGC.gridy++;
+		panelGC.gridy++;
 
-		fieldPanelGC.gridx = 0;
-		fieldPanelGC.weightx = 0.3;		
+		panelGC.gridx = 0;
+		panelGC.weightx = 0.3;		
 		String optimisePhaseLabelText
 			= RIFDataLoaderToolMessages.getMessage("workflowState.optimise.phaseLabel");
 		String optimisePhaseToolTip
@@ -236,16 +300,14 @@ class DataSetFieldPropertyEditorPanel
 				optimisePhaseLabelText,
 				optimisePhaseToolTip,
 				OPTIMISE_COLOUR);
-		fieldPanel.add(optimiseLabelPanel, fieldPanelGC);
-		fieldPanelGC.gridx++;
-		fieldPanelGC.weightx = 0.7;
-		fieldPanel.add(createOptimiseAttributesPanel(), fieldPanelGC);
-		
-		
-		fieldPanelGC.gridy++;
-
-		fieldPanelGC.gridx = 0;
-		fieldPanelGC.weightx = 0.3;		
+		panel.add(optimiseLabelPanel, panelGC);
+		panelGC.gridx++;
+		panelGC.weightx = 0.7;
+		panel.add(createOptimiseAttributesPanel(), panelGC);
+			
+		panelGC.gridy++;
+		panelGC.gridx = 0;
+		panelGC.weightx = 0.3;		
 		String checkPhaseLabelText
 			= RIFDataLoaderToolMessages.getMessage("workflowState.check.phaseLabel");
 		String checkPhaseToolTip
@@ -256,16 +318,14 @@ class DataSetFieldPropertyEditorPanel
 				checkPhaseLabelText,
 				checkPhaseToolTip,
 				CHECK_COLOUR);
-		fieldPanel.add(checkLabelPanel, fieldPanelGC);
-		fieldPanelGC.gridx++;
-		fieldPanelGC.weightx = 0.7;
-		fieldPanel.add(createCheckAttributesPanel(), fieldPanelGC);
+		panel.add(checkLabelPanel, panelGC);
+		panelGC.gridx++;
+		panelGC.weightx = 0.7;
+		panel.add(createCheckAttributesPanel(), panelGC);
 		
-
-		panel.add(fieldPanel, panelGC);
-		
+		return panel;
 	}
-
+	
 	private JPanel createLoadAttributesPanel() {		
 		UserInterfaceFactory userInterfaceFactory
 			= session.getUserInterfaceFactory();
@@ -296,8 +356,9 @@ class DataSetFieldPropertyEditorPanel
 		loadTextField.addCaretListener(this);
 		panel.add(loadTextField, panelGC);
 
-		panelGC.gridy++;
 		
+		
+		panelGC.gridy++;
 		panelGC.gridx = 0;		
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
@@ -322,8 +383,7 @@ class DataSetFieldPropertyEditorPanel
 		panel.add(fieldPurposeComboBox, panelGC);
 
 		panelGC.gridy++;
-
-		
+	
 		panelGC.gridx = 0;		
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
@@ -348,30 +408,6 @@ class DataSetFieldPropertyEditorPanel
 		fieldRequirementLevelComboBox.setBackground(EXTRACT_COLOUR);
 		fieldRequirementLevelComboBox.addActionListener(this);
 		panel.add(fieldRequirementLevelComboBox, panelGC);
-
-		panelGC.gridy++;
-		
-		panelGC.gridx = 0;		
-		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;
-		String descriptionLabelText
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetFieldConfiguration.coreFieldDescription.label");
-		JLabel descriptionLabel
-			= userInterfaceFactory.createLabel(descriptionLabelText);
-		String descriptionToolTip
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetFieldConfiguration.coreFieldDescription.toolTip");
-		descriptionLabel.setToolTipText(
-			userInterfaceFactory.createHTMLToolTipText(descriptionToolTip));
-		
-		panel.add(descriptionLabel, panelGC);
-		panelGC.gridx++;
-		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 1;
-		descriptionTextField
-			= userInterfaceFactory.createTextField();
-		panel.add(descriptionTextField, panelGC);
 		
 		return panel;
 	}
@@ -644,6 +680,7 @@ class DataSetFieldPropertyEditorPanel
 	}
 	*/
 	
+	
 	public void setData(
 		final DataSetConfiguration originalDataSetConfiguration,
 		final DataSetFieldConfiguration originalDataSetFieldConfiguration) {
@@ -653,71 +690,136 @@ class DataSetFieldPropertyEditorPanel
 
 		workingCopyDataSetFieldConfiguration
 			= DataSetFieldConfiguration.createCopy(originalDataSetFieldConfiguration);
-		
-		populateFormFromWorkingCopy();
+		populateForm(workingCopyDataSetFieldConfiguration);
 		
 		changesMade = false;
 	}
 
-	private void populateFormFromWorkingCopy() {
-
-		RIFDataType rifDataType
-			= workingCopyDataSetFieldConfiguration.getRIFDataType();
-		
-		rifDataTypeComboBox.setSelectedItem(rifDataType.getName());
-		loadTextField.setText(workingCopyDataSetFieldConfiguration.getLoadFieldName());
-		descriptionTextField.setText(workingCopyDataSetFieldConfiguration.getCoreFieldDescription());
-		
-		FieldPurpose fieldPurpose = workingCopyDataSetFieldConfiguration.getFieldPurpose();
-		if (fieldPurpose != null) {
-			fieldPurposeComboBox.setSelectedItem(fieldPurpose.getName());			
-		}
-			
-		FieldRequirementLevel fieldRequirementLevel
-			 = workingCopyDataSetFieldConfiguration.getFieldRequirementLevel();
-		fieldRequirementLevelComboBox.setSelectedItem(fieldRequirementLevel.getName());
-
-		updateCleanFieldName(fieldPurpose);
-		
-		if (fieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) {
-			isRequiredField.setSelected(true);
-		}
-		else {
-			isRequiredField.setSelected(!workingCopyDataSetFieldConfiguration.isEmptyValueAllowed());			
-		}
-		FieldChangeAuditLevel currentFieldChangeAuditLevel
-			= workingCopyDataSetFieldConfiguration.getFieldChangeAuditLevel();
-		fieldChangeAuditLevelComboBox.setSelectedItem(currentFieldChangeAuditLevel.getName());
-
-		convertComboBox.setSelectedItem(workingCopyDataSetFieldConfiguration.getConvertFieldName());
-		RIFConversionFunction rifConversionFunction
-			= workingCopyDataSetFieldConfiguration.getConvertFunction();
-		if (rifConversionFunction == null) {
-			conversionFunctionTextField.setText("");			
-		}
-		else {
-			conversionFunctionTextField.setText(rifConversionFunction.getFunctionName());			
-		}
-		
-		includePercentEmptyCheckBox.setSelected(false);
-		includePercentEmptyPerYearCheckBox.setSelected(false);
-
-		ArrayList<RIFCheckOption> checkOptions
-			= workingCopyDataSetFieldConfiguration.getCheckOptions();
-		for (RIFCheckOption checkOption : checkOptions) {
-			if (checkOption == RIFCheckOption.PERCENT_EMPTY) {
-				includePercentEmptyCheckBox.setSelected(true);
-			}
-			else if (checkOption == RIFCheckOption.PERCENT_EMPTY_PER_YEAR) {
-				includePercentEmptyPerYearCheckBox.setSelected(true);
-			}
-		}
-		
-		usedToIdentifyDuplicatesCheckBox.setSelected(
-			workingCopyDataSetFieldConfiguration.isDuplicateIdentificationField());
-		optimiseUsingIndexCheckBox.setSelected(
-			workingCopyDataSetFieldConfiguration.optimiseUsingIndex());		
+	public DataSetFieldConfiguration getData() {
+		return originalDataSetFieldConfiguration;
 	}
+	
+	public void setIsEnabled(final boolean isEnabled) {
+		coreNameTextField.setEnabled(isEnabled);
+		loadTextField.setEnabled(isEnabled);
+		rifDataTypeComboBox.setEnabled(isEnabled);
+		descriptionTextField.setEnabled(isEnabled);
+		fieldPurposeComboBox.setEnabled(isEnabled);
+		fieldRequirementLevelComboBox.setEnabled(isEnabled);
+		cleanComboBox.setEnabled(isEnabled);
+		fieldChangeAuditLevelComboBox.setEnabled(isEnabled);
+		isRequiredField.setEnabled(isEnabled);
+		convertComboBox.setEnabled(isEnabled);
+		conversionFunctionTextField.setEnabled(isEnabled);
+		includePercentEmptyCheckBox.setEnabled(isEnabled);
+		includePercentEmptyPerYearCheckBox.setEnabled(isEnabled);
+		includePercentEmptyPerYearCheckBox.setEnabled(isEnabled);
+		usedToIdentifyDuplicatesCheckBox.setEnabled(isEnabled);
+		optimiseUsingIndexCheckBox.setEnabled(isEnabled);			
+	}
+	
+	private void populateForm(final DataSetFieldConfiguration dataSetFieldConfiguration) {
+
+		if (dataSetFieldConfiguration == null) {
+			setIsEnabled(false);
+		}
+		else {
+			setIsEnabled(true);
+			
+			//remove any action listeners that may cause things to change
+			enableActionListeners(false);
+
+			coreNameTextField.setText(dataSetFieldConfiguration.getCoreFieldName());
+			descriptionTextField.setText(dataSetFieldConfiguration.getCoreFieldDescription());
+
+			String fieldName = dataSetFieldConfiguration.getCoreFieldName();
+			RIFDataType rifDataType
+				= dataSetFieldConfiguration.getRIFDataType();
+			rifDataTypeComboBox.setSelectedItem(rifDataType.getName());
+			loadTextField.setText(dataSetFieldConfiguration.getLoadFieldName());
+		
+			FieldPurpose fieldPurpose = dataSetFieldConfiguration.getFieldPurpose();
+			if (fieldPurpose != null) {
+				fieldPurposeComboBox.setSelectedItem(fieldPurpose.getName());			
+			}
+			
+			FieldRequirementLevel fieldRequirementLevel
+			 	= dataSetFieldConfiguration.getFieldRequirementLevel();
+			fieldRequirementLevelComboBox.setSelectedItem(fieldRequirementLevel.getName());
+
+			updateCleanFieldName(fieldPurpose);
+		
+			if (fieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) {
+				isRequiredField.setSelected(true);
+			}
+			else {
+				isRequiredField.setSelected(!dataSetFieldConfiguration.isEmptyValueAllowed());			
+			}
+			FieldChangeAuditLevel currentFieldChangeAuditLevel
+				= dataSetFieldConfiguration.getFieldChangeAuditLevel();
+			fieldChangeAuditLevelComboBox.setSelectedItem(currentFieldChangeAuditLevel.getName());
+
+			convertComboBox.setSelectedItem(dataSetFieldConfiguration.getConvertFieldName());
+			RIFConversionFunction rifConversionFunction
+				= dataSetFieldConfiguration.getConvertFunction();
+			if (rifConversionFunction == null) {
+				conversionFunctionTextField.setText("");			
+			}
+			else {
+				conversionFunctionTextField.setText(rifConversionFunction.getFunctionName());			
+			}
+		
+			includePercentEmptyCheckBox.setSelected(false);
+			includePercentEmptyPerYearCheckBox.setSelected(false);
+
+			ArrayList<RIFCheckOption> checkOptions
+				= dataSetFieldConfiguration.getCheckOptions();
+			for (RIFCheckOption checkOption : checkOptions) {
+				if (checkOption == RIFCheckOption.PERCENT_EMPTY) {
+					includePercentEmptyCheckBox.setSelected(true);
+				}
+				else if (checkOption == RIFCheckOption.PERCENT_EMPTY_PER_YEAR) {
+					includePercentEmptyPerYearCheckBox.setSelected(true);
+				}
+			}
+		
+			usedToIdentifyDuplicatesCheckBox.setSelected(
+				dataSetFieldConfiguration.isDuplicateIdentificationField());
+			optimiseUsingIndexCheckBox.setSelected(
+				dataSetFieldConfiguration.optimiseUsingIndex());		
+			
+			enableActionListeners(true);
+		}
+	}
+	
+	private void enableActionListeners(final boolean actionListenersEnabled) {
+		if (actionListenersEnabled) {
+			fieldPurposeComboBox.addActionListener(this);
+			fieldRequirementLevelComboBox.addActionListener(this);
+			rifDataTypeComboBox.addActionListener(this);
+			fieldChangeAuditLevelComboBox.addActionListener(this);
+			convertComboBox.addActionListener(this);	
+			optimiseUsingIndexCheckBox.addActionListener(this);
+			includePercentEmptyCheckBox.addActionListener(this);
+			includePercentEmptyCheckBox.addActionListener(this);
+			includePercentEmptyPerYearCheckBox.addActionListener(this);
+			usedToIdentifyDuplicatesCheckBox.addActionListener(this);
+		}
+		else {
+			fieldPurposeComboBox.removeActionListener(this);
+			fieldRequirementLevelComboBox.removeActionListener(this);
+			rifDataTypeComboBox.removeActionListener(this);
+			fieldChangeAuditLevelComboBox.removeActionListener(this);
+			convertComboBox.removeActionListener(this);	
+			optimiseUsingIndexCheckBox.removeActionListener(this);
+			includePercentEmptyCheckBox.removeActionListener(this);
+			includePercentEmptyCheckBox.removeActionListener(this);
+			includePercentEmptyPerYearCheckBox.removeActionListener(this);
+			usedToIdentifyDuplicatesCheckBox.removeActionListener(this);
+		}
+		
+	}
+	
 	
 	private void updateCleanFieldName(final FieldPurpose fieldPurpose) {
 		//Setting the clean field values
@@ -738,7 +840,7 @@ class DataSetFieldPropertyEditorPanel
 				= new FieldValidationUtility();		
 			if (fieldValidationUtility.isEmpty(cleanField)) {
 				//if no value has been chosen prompt them to make a choice
-					
+				
 				geographicalResolutionFieldNames.add(0, pleaseChooseMessage);				
 				DefaultComboBoxModel<String> defaultComboBoxModel
 					= new DefaultComboBoxModel<String>(geographicalResolutionFieldNames.toArray(new String[0]));
@@ -746,20 +848,20 @@ class DataSetFieldPropertyEditorPanel
 			}
 			else {
 				DefaultComboBoxModel<String> defaultComboBoxModel
-					= new DefaultComboBoxModel<String>(new String[0]);
+					= new DefaultComboBoxModel<String>(geographicalResolutionFieldNames.toArray(new String[0]));
 				cleanComboBox.setModel(defaultComboBoxModel);
 				cleanComboBox.setSelectedItem(cleanField);
 			}
-			}
-			else {
-				//let user specify whatever clean field name they want
-				cleanComboBox.setEditable(true);
+		}
+		else {
+			//let user specify whatever clean field name they want
+			cleanComboBox.setEditable(true);
 				
-				DefaultComboBoxModel<String> defaultComboBoxModel
-					= new DefaultComboBoxModel<String>(new String[0]);
-				cleanComboBox.setModel(defaultComboBoxModel);
-				cleanComboBox.setSelectedItem(cleanField);
-			}
+			DefaultComboBoxModel<String> defaultComboBoxModel
+				= new DefaultComboBoxModel<String>(new String[0]);
+			cleanComboBox.setModel(defaultComboBoxModel);
+			cleanComboBox.setSelectedItem(cleanField);
+		}
 	}
 	
 	public void updateUI() {
@@ -828,15 +930,25 @@ class DataSetFieldPropertyEditorPanel
 	}
 	
 	public DataSetFieldConfiguration getDataSetFieldConfigurationFromForm() {
-
+		if (originalDataSetFieldConfiguration == null) {
+			return null;
+		}
+		
 		DataSetFieldConfiguration dataSetFieldConfigurationFromForm
 			= DataSetFieldConfiguration.createCopy(originalDataSetFieldConfiguration);
 
 		//Copy original field values that are not displayed
 		dataSetFieldConfigurationFromForm.setCoreDataSetName(
 			originalDataSetFieldConfiguration.getCoreDataSetName());
-		dataSetFieldConfigurationFromForm.setCoreFieldName(
-			originalDataSetFieldConfiguration.getCoreFieldName());
+		
+		if (isRenderingForConfigurationHintsFeature) {
+			dataSetFieldConfigurationFromForm.setCoreFieldName(
+				coreNameTextField.getText().trim());
+		}
+		else {
+			dataSetFieldConfigurationFromForm.setCoreFieldName(
+				originalDataSetFieldConfiguration.getCoreFieldName());			
+		}
 		
 		//Set Load stage attributes
 		dataSetFieldConfigurationFromForm.setLoadFieldName(
@@ -862,8 +974,13 @@ class DataSetFieldPropertyEditorPanel
 		//Set Clean stage attributes
 		String selectedCleanFieldItem
 			= (String) cleanComboBox.getSelectedItem();
-		dataSetFieldConfigurationFromForm.setCleanFieldName(
-			selectedCleanFieldItem.trim());			
+		if (selectedCleanFieldItem == null) {
+			dataSetFieldConfigurationFromForm.setCleanFieldName("");
+		}
+		else {
+			dataSetFieldConfigurationFromForm.setCleanFieldName(
+				selectedCleanFieldItem.trim());			
+		}
 		dataSetFieldConfigurationFromForm.setEmptyValueAllowed(
 			!isRequiredField.isSelected());
 		String currentlySelectedChangeAuditLevelName
@@ -896,7 +1013,10 @@ class DataSetFieldPropertyEditorPanel
 	}
 		
 	public boolean saveChanges() {
-	
+		if (originalDataSetFieldConfiguration == null) {
+			return false;
+		}
+		
 		DataSetFieldConfiguration dataSetFieldConfigurationFromForm
 			= getDataSetFieldConfigurationFromForm();
 
@@ -907,10 +1027,10 @@ class DataSetFieldPropertyEditorPanel
 		
 		//Replace the parent data set's old copy of the field configuration
 		//with the one we have scraped from the data entry form	
+		
 		DataSetFieldConfiguration.copyInto(
 			dataSetFieldConfigurationFromForm, 
-			originalDataSetFieldConfiguration);	
-		
+			originalDataSetFieldConfiguration);			
 		return saveChanges;
 	}
 	
@@ -938,11 +1058,14 @@ class DataSetFieldPropertyEditorPanel
 
 			RIFSchemaArea rifSchemaArea
 				= originalDataSetConfiguration.getRIFSchemaArea();
-			if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA ||
-				rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA) {
-				includePercentEmptyPerYearCheckBox.setSelected(true);
-				includePercentEmptyPerYearCheckBox.setEnabled(false);
-			}		
+			if (rifSchemaArea != null) {				
+				if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA ||
+					rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA) {
+					includePercentEmptyPerYearCheckBox.setSelected(true);
+					includePercentEmptyPerYearCheckBox.setEnabled(false);
+				}		
+			}
+
 		}
 		else {
 			if (fieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD) {
@@ -972,13 +1095,21 @@ class DataSetFieldPropertyEditorPanel
 	public void validateForm() 
 		throws RIFServiceException {
 		
-		DataSetFieldConfiguration dataSetFieldConfigurationFromForm
-			= getDataSetFieldConfigurationFromForm();		
-		dataSetFieldConfigurationFromForm.checkErrors();
-		originalDataSetConfiguration.checkDuplicateFieldNames(
-			dataSetFieldConfigurationFromForm);
+		if (isRenderingForConfigurationHintsFeature == false) {
+			/**
+			 * We won't bother validating hints.  We just want users to define
+			 * bits and pieces of them so that their properties can be used to
+			 * set the properties of CSV fields.  If any properties are set wrong
+			 * they will appear when user starts to check the properties of individual
+			 * fields in the Data Set Editor
+			 */
+			DataSetFieldConfiguration dataSetFieldConfigurationFromForm
+				= getDataSetFieldConfigurationFromForm();		
+			dataSetFieldConfigurationFromForm.checkErrors();
+			originalDataSetConfiguration.checkDuplicateFieldNames(
+				dataSetFieldConfigurationFromForm);
+		}
 	}
-	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

@@ -196,7 +196,7 @@ final class CheckWorkflowManager
 			
 
 			String[] duplicateCriteriaFields
-				=getDuplicateIdentificationFieldNames(dataSetConfiguration);
+				= getDuplicateIdentificationFieldNames(dataSetConfiguration);
 			
 			for (int i = 0; i < duplicateCriteriaFields.length; i++) {
 				if (i != 0) {
@@ -259,7 +259,6 @@ final class CheckWorkflowManager
 						
 			statement 
 				= createPreparedStatement(connection, queryFormatter);
-			System.out.println(queryFormatter.generateQuery());
 			statement.executeUpdate();
 
 			addPrimaryKey(

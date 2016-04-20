@@ -351,6 +351,7 @@ final class ChangeAuditManager
 				= createPreparedStatement(
 					connection, 
 					queryFormatter);
+			
 			statement.executeUpdate();
 
 		}

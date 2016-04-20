@@ -80,15 +80,8 @@ public enum RIFSchemaArea {
 	POPULATION_DENOMINATOR_DATA(
 		"rifSchemaArea.populationDenominatorData.label", 
 		"population_denominator_data",
-		"pop_"),
-	GEOMETRY_DATA(
-		"rifSchemaArea.geometryData.label", 
-		"geometry_data",
-		"geom_"),
-	CONTEXTUAL_MAP_DATA(
-		"rifSchemaArea.contextualMapData.label", 
-		"contextual_map_data",
-		"cont_geom_");
+		"pop_");
+
 		
 	private String propertyName;
 	private String code;
@@ -119,12 +112,19 @@ public enum RIFSchemaArea {
 		return buffer.toString();
 	}
 	
-	public boolean matches(final String candidateCode) {
+	private boolean matchesName(final String schemaAreaName) {
+		Collator collator = RIFGenericLibraryMessages.getCollator();
+		String name = getName();
+		
+		return collator.equals(name, schemaAreaName);
+	}
+
+	private boolean matchesCode(final String candidateCode) {
 		Collator collator = RIFGenericLibraryMessages.getCollator();
 		
 		return collator.equals(code, candidateCode);
 	}
-
+	
 	public static ArrayList<RIFSchemaArea> getAllSchemaAreas() {
 		
 		ArrayList<RIFSchemaArea> rifSchemaAreas 
@@ -134,8 +134,6 @@ public enum RIFSchemaArea {
 		rifSchemaAreas.add(HEALTH_THEMES);
 		rifSchemaAreas.add(HEALTH_NUMERATOR_DATA);
 		rifSchemaAreas.add(POPULATION_DENOMINATOR_DATA);
-		rifSchemaAreas.add(GEOMETRY_DATA);
-		rifSchemaAreas.add(CONTEXTUAL_MAP_DATA);
 		
 		return rifSchemaAreas;
 	}
@@ -149,8 +147,6 @@ public enum RIFSchemaArea {
 		rifSchemaAreaNames.add(HEALTH_THEMES.getName());
 		rifSchemaAreaNames.add(HEALTH_NUMERATOR_DATA.getName());
 		rifSchemaAreaNames.add(POPULATION_DENOMINATOR_DATA.getName());
-		rifSchemaAreaNames.add(GEOMETRY_DATA.getName());
-		rifSchemaAreaNames.add(CONTEXTUAL_MAP_DATA.getName());
 		
 		String[] results
 			= rifSchemaAreaNames.toArray(new String[0]);
@@ -159,30 +155,49 @@ public enum RIFSchemaArea {
 	
 	
 	public static RIFSchemaArea getSchemaAreaFromName(
+		final String candidateName) {
+		
+		RIFSchemaArea result = null;
+		
+		if (COVARIATE_DATA.matchesName(candidateName)) {
+			result = COVARIATE_DATA;
+		}
+		else if (HEALTH_CODE_DATA.matchesName(candidateName)) {
+			result = HEALTH_CODE_DATA;
+		}
+		else if (HEALTH_THEMES.matchesName(candidateName)) {
+			result = HEALTH_THEMES;
+		}
+		else if (HEALTH_NUMERATOR_DATA.matchesName(candidateName)) {
+			result = HEALTH_NUMERATOR_DATA;
+		}
+		else if (POPULATION_DENOMINATOR_DATA.matchesName(candidateName)) {
+			result = POPULATION_DENOMINATOR_DATA;
+		}
+
+		return result;		
+	}
+
+	
+	public static RIFSchemaArea getSchemaAreaFromCode(
 		final String candidateCode) {
 		
 		RIFSchemaArea result = null;
 		
-		if (COVARIATE_DATA.matches(candidateCode)) {
+		if (COVARIATE_DATA.matchesCode(candidateCode)) {
 			result = COVARIATE_DATA;
 		}
-		else if (HEALTH_CODE_DATA.matches(candidateCode)) {
+		else if (HEALTH_CODE_DATA.matchesCode(candidateCode)) {
 			result = HEALTH_CODE_DATA;
 		}
-		else if (HEALTH_THEMES.matches(candidateCode)) {
+		else if (HEALTH_THEMES.matchesCode(candidateCode)) {
 			result = HEALTH_THEMES;
 		}
-		else if (HEALTH_NUMERATOR_DATA.matches(candidateCode)) {
+		else if (HEALTH_NUMERATOR_DATA.matchesCode(candidateCode)) {
 			result = HEALTH_NUMERATOR_DATA;
 		}
-		else if (POPULATION_DENOMINATOR_DATA.matches(candidateCode)) {
+		else if (POPULATION_DENOMINATOR_DATA.matchesCode(candidateCode)) {
 			result = POPULATION_DENOMINATOR_DATA;
-		}
-		else if (GEOMETRY_DATA.matches(candidateCode)) {
-			result = GEOMETRY_DATA;
-		}
-		else if (CONTEXTUAL_MAP_DATA.matches(candidateCode)) {
-			result = GEOMETRY_DATA;
 		}
 
 		return result;		

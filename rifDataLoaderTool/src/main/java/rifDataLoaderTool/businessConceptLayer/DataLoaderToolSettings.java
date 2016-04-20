@@ -1,6 +1,5 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-
 import java.util.ArrayList;
 
 /**
@@ -66,6 +65,7 @@ public class DataLoaderToolSettings {
 	private ArrayList<DataLoaderToolGeography> geographies;
 	private RIFDataTypeFactory rifDataTypeFactory;
 	private ArrayList<LinearWorkflow> workflows;
+	private ConfigurationHints configurationHints;
 	
 	// ==========================================
 	// Section Construction
@@ -81,12 +81,28 @@ public class DataLoaderToolSettings {
 		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
 		rifDataTypeFactory.populateFactoryWithBuiltInTypes();
 		workflows = new ArrayList<LinearWorkflow>();
+		configurationHints
+			= new ConfigurationHints();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-		
+	
+	public ArrayList<String> getGeographicalResolutionFields() {
+		ArrayList<String> results = new ArrayList<String>();
+		for (DataLoaderToolGeography geography : geographies) {
+			ArrayList<ShapeFile> shapeFiles
+				= geography.getShapeFiles();
+			for (ShapeFile shapeFile : shapeFiles) {
+				String geographicalResolutionName
+					= shapeFile.getDatabaseFieldName();
+				results.add(geographicalResolutionName);
+			}
+		}
+		return results;		
+	}
+	
 	public RIFDatabaseConnectionParameters getDatabaseConnectionParameters() {		
 		return databaseConnectionParameters;
 	}
@@ -141,6 +157,13 @@ public class DataLoaderToolSettings {
 		return false;
 	}
 	
+	public ConfigurationHints getConfigurationHints() {
+		return configurationHints;		
+	}
+		
+	public void setConfigurationHints(final ConfigurationHints configurationHints) {
+		this.configurationHints = configurationHints;
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

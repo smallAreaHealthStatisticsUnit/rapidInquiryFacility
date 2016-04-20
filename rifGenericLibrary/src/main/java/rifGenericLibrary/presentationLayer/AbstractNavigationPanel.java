@@ -137,10 +137,8 @@ public abstract class AbstractNavigationPanel {
 		final Object item) {
 			
 		if (item == null) {
-			System.out.println("AbstractNavigationPanel isNextButton 1");
 			return false;
 		}
-		System.out.println("AbstractNavigationPanel isNextButton 2=="+nextButton.equals(item)+"==");
 		return nextButton.equals(item);
 	}
 		

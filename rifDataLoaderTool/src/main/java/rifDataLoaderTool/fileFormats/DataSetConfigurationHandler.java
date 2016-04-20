@@ -84,11 +84,14 @@ final class DataSetConfigurationHandler
 	
 	private DataSetConfiguration currentDataSetConfiguration;
 	
+	private boolean isSerialisingHints;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public DataSetConfigurationHandler() {
+		isSerialisingHints = false;
 		
 		dataSetFieldConfigurationHandler
 			= new DataSetFieldConfigurationHandler();
@@ -132,6 +135,10 @@ final class DataSetConfigurationHandler
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	public void setIsSerialisingHints(final boolean isSerialisingHints) {
+		this.isSerialisingHints = isSerialisingHints;
+	}
+	
 	public ArrayList<DataSetConfiguration> getDataSetConfigurations() {
 		return dataSetConfigurations;
 	}
@@ -171,10 +178,14 @@ final class DataSetConfigurationHandler
 				"file_has_field_names_defined", 
 				String.valueOf(dataSetConfiguration.fileHasFieldNamesDefined()));
 			
-			xmlUtility.writeField(
-				getSingularRecordName(), 
-				"rif_schema_area", 
-				dataSetConfiguration.getRIFSchemaArea().getCode());
+			RIFSchemaArea rifSchemaArea
+				= dataSetConfiguration.getRIFSchemaArea();
+			if (rifSchemaArea != null) {				
+				xmlUtility.writeField(
+					getSingularRecordName(), 
+					"rif_schema_area", 
+					dataSetConfiguration.getRIFSchemaArea().getCode());
+			}
 			
 			xmlUtility.writeField(
 				getSingularRecordName(), 
@@ -249,6 +260,7 @@ final class DataSetConfigurationHandler
 			deactivate();
 		}
 		else if (isSingularRecordName(qualifiedName) == true) {
+			currentDataSetConfiguration.setIsHint(isSerialisingHints);
 			dataSetConfigurations.add(currentDataSetConfiguration);
 		}		
 		else if (isDelegatedHandlerAssigned()) {
@@ -290,7 +302,7 @@ final class DataSetConfigurationHandler
 			currentDataSetConfiguration.setFileHasFieldNamesDefined(fileHasFieldNamesDefined);
 		}
 		else if (equalsFieldName("rif_schema_area", qualifiedName)) {
-			RIFSchemaArea rifSchemaArea = RIFSchemaArea.getSchemaAreaFromName(getCurrentFieldValue());
+			RIFSchemaArea rifSchemaArea = RIFSchemaArea.getSchemaAreaFromCode(getCurrentFieldValue());
 			currentDataSetConfiguration.setRIFSchemaArea(rifSchemaArea);
 		}
 		else if (equalsFieldName("current_workflow_state", qualifiedName)) {

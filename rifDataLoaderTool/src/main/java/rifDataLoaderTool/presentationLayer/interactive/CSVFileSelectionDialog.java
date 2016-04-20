@@ -2,9 +2,7 @@ package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.system.*;
 
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.*;
 
 import rifGenericLibrary.fileFormats.CSVFileFilter;
 import rifGenericLibrary.fileFormats.CSVFilePreviewReader;
@@ -21,6 +19,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  *
@@ -270,10 +269,16 @@ class CSVFileSelectionDialog
 		DataSetConfiguration originalDataSetConfiguration
 			= DataSetConfiguration.newInstance(
 				coreDataSetName, 
-				csvFieldNames);
-		
+				csvFieldNames);		
 		originalDataSetConfiguration.setFilePath(selectedCSVFile.getAbsolutePath());
-		
+		DataLoaderToolSettings settings
+			= session.getDataLoaderToolSettings();
+		ConfigurationHints configurationHints
+			= settings.getConfigurationHints();
+		configurationHints.applyHintsToDataSetConfiguration(
+			originalDataSetConfiguration);
+			
+		/*
 		DataSetConfigurationHints dataSetConfigurationHints
 			= new DataSetConfigurationHints();
 		DataLoaderToolSettings dataLoaderToolSettings
@@ -285,7 +290,7 @@ class CSVFileSelectionDialog
 			originalDataSetConfiguration, 
 			csvFieldNames, 
 			csvPreviewData);
-		
+		*/
 		return originalDataSetConfiguration;
 	}
 	

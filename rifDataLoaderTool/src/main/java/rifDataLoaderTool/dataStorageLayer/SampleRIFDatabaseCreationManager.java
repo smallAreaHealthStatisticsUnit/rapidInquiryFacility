@@ -124,12 +124,6 @@ public class SampleRIFDatabaseCreationManager {
 			urlText.append("/");
 			String databaseURL = urlText.toString();	
 			
-			System.out.println("db url=="+ urlText.toString() + "==");
-			
-			//Properties databaseProperties = new Properties();
-			//databaseProperties.setProperty("user", userID);
-			//databaseProperties.setProperty("password", password);
-			
 			connection
 				= DriverManager.getConnection(databaseURL, userID, password);
 			SQLGeneralQueryFormatter queryFormatter
@@ -188,21 +182,13 @@ public class SampleRIFDatabaseCreationManager {
 			
 			connection
 				= DriverManager.getConnection(databaseURL, userID, password);
-			
-
-			System.out.println("About to create database tables 1...");
 
 			createCovariatesTable(connection);
 			createDataSetConfigurationsTable(connection);
 			createAuditChangesTable(connection);
 			createAuditFailedValidationTable(connection);		
-			
-			System.out.println("About to create database tables 2...");
-			
 		}
 		catch(Exception exception) {
-			System.out.println("About to create database tables 3...");
-			
 			exception.printStackTrace(System.out);
 			String errorMessage	
 				= RIFDataLoaderToolMessages.getMessage(

@@ -428,7 +428,7 @@ public class WorkflowValidator {
 				= schemaAreaPropertyManager.getExpectedRIFDataType(
 					rifSchemaArea, 
 					fieldName);
-			
+			/*
 			if (expectedDataType != null) {
 				String expectedDataTypeIdentifier
 					= expectedDataType.getIdentifier();
@@ -437,6 +437,9 @@ public class WorkflowValidator {
 				if (collator.equals(
 					proposedDataTypeIdentifier, 
 					expectedDataTypeIdentifier) == false) {
+
+					System.out.println("WFV rifSchema=="+rifSchemaArea.getName()+"==field name=="+fieldName+"==");
+					System.out.println("WFV validateConvert==proposed=="+proposedDataTypeIdentifier+"=="+expectedDataTypeIdentifier+"==");
 					
 					//The schema properties manager thinks that this field
 					//should have a different data type than the one
@@ -449,7 +452,8 @@ public class WorkflowValidator {
 							proposedDataType.getDisplayName());
 					errorMessages.add(errorMessage);
 				}
-			}			
+			}
+			*/			
 		}
 		
 		/*

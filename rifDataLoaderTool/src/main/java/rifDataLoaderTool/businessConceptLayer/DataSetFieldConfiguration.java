@@ -70,7 +70,8 @@ import java.util.Objects;
  */
 
 public class DataSetFieldConfiguration 
-	extends AbstractRIFDataLoaderToolConcept {
+	extends AbstractRIFDataLoaderToolConcept 
+	implements DescriptiveConfigurationItem {
 
 	// ==========================================
 	// Section Constants
@@ -80,6 +81,8 @@ public class DataSetFieldConfiguration
 	// Section Properties
 	// ==========================================
 
+	private boolean isHint;
+	
 	private boolean isNewRecord;
 	
 	/**
@@ -245,6 +248,7 @@ public class DataSetFieldConfiguration
 		final String coreFieldName) {
 			
 		this.isNewRecord = true;
+		this.isHint = false;
 		this.coreDataSetName = parentRecordName;
 			
 		this.coreFieldName = coreFieldName;
@@ -288,6 +292,9 @@ public class DataSetFieldConfiguration
 	public static DataSetFieldConfiguration createCopy(
 		final DataSetFieldConfiguration originalConfiguration) {
 	
+		if (originalConfiguration == null) {
+			return null;
+		}
 		DataSetFieldConfiguration cloneConfiguration
 			= new DataSetFieldConfiguration("", "");
 		copyInto(originalConfiguration, cloneConfiguration);
@@ -300,6 +307,7 @@ public class DataSetFieldConfiguration
 		final DataSetFieldConfiguration destinationConfiguration) {
 	
 		destinationConfiguration.setNewRecord(sourceConfiguration.isNewRecord());
+		destinationConfiguration.setIsHint(sourceConfiguration.isHint());
 		destinationConfiguration.setCoreDataSetName(
 				sourceConfiguration.getCoreDataSetName());
 		destinationConfiguration.setCoreFieldDescription(sourceConfiguration.getCoreFieldDescription());
@@ -364,6 +372,14 @@ public class DataSetFieldConfiguration
 	
 	public void setNewRecord(boolean isNewRecord) {
 		this.isNewRecord = isNewRecord;		
+	}
+	
+	public boolean isHint() {
+		return isHint;
+	}
+
+	public void setIsHint(final boolean isHint) {
+		this.isHint = isHint;
 	}
 	
 	public String getCoreDataSetName() {
@@ -1234,6 +1250,10 @@ public class DataSetFieldConfiguration
 
 	public String getDisplayName() {		
 		return coreFieldName;
+	}
+	
+	public String getDescription() {
+        return coreFieldDescription;		
 	}
 	
 	// ==========================================

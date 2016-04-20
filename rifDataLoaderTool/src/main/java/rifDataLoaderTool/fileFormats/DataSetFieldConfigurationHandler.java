@@ -82,6 +82,7 @@ final class DataSetFieldConfigurationHandler
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private boolean isSerialisingHints;
 	private RIFCheckOptionConfigurationHandler rifCheckOptionConfigurationHandler;
 	
 	private RIFDataTypeFactory rifDataTypeFactory;
@@ -94,6 +95,7 @@ final class DataSetFieldConfigurationHandler
 	// ==========================================
 
 	public DataSetFieldConfigurationHandler() {
+		isSerialisingHints = false;
 		rifConversionFunctionFactory = RIFConversionFunctionFactory.newInstance();
 		rifCheckOptionConfigurationHandler
 			= new RIFCheckOptionConfigurationHandler();
@@ -118,6 +120,10 @@ final class DataSetFieldConfigurationHandler
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public void setIsSerialisingHints(final boolean isSerialisingHints) {
+		this.isSerialisingHints = isSerialisingHints;
+	}
 	
 	public ArrayList<DataSetFieldConfiguration> getDataSetFieldConfigurations() {
 		return dataSetFieldConfigurations;
@@ -292,6 +298,7 @@ final class DataSetFieldConfigurationHandler
 			deactivate();
 		}
 		else if (isSingularRecordName(qualifiedName)) {
+			currentDataSetFieldConfiguration.setIsHint(isSerialisingHints);
 			dataSetFieldConfigurations.add(currentDataSetFieldConfiguration);
 		}		
 		else if (isDelegatedHandlerAssigned()) {
@@ -317,9 +324,7 @@ final class DataSetFieldConfigurationHandler
 				
 				//handler just finished				
 				unassignDelegatedHandler();		
-			}
-	
-		
+			}		
 		}
 		else if (equalsFieldName("core_field_name", qualifiedName)) {
 			currentDataSetFieldConfiguration.setCoreFieldName(
@@ -331,6 +336,7 @@ final class DataSetFieldConfigurationHandler
 		}
 		else if (equalsFieldName("rif_data_type", qualifiedName)) {
 			String dataTypeName = getCurrentFieldValue();
+			String fieldName = currentDataSetFieldConfiguration.getCoreFieldName();
 			RIFDataType rifDataType 
 				= rifDataTypeFactory.getDataTypeFromCode(dataTypeName);
 			currentDataSetFieldConfiguration.setRIFDataType(rifDataType);
@@ -358,6 +364,12 @@ final class DataSetFieldConfigurationHandler
 				Boolean.valueOf(getCurrentFieldValue()));
 		}
 		else if (equalsFieldName("field_purpose", qualifiedName)) {
+			String fieldName = currentDataSetFieldConfiguration.getCoreFieldName();
+			String fieldPurposePhrase
+				= getCurrentFieldValue();
+			
+			FieldPurpose fieldPurpose
+				= FieldPurpose.getValueFromCode(getCurrentFieldValue());	
 			currentDataSetFieldConfiguration.setFieldPurpose(
 				FieldPurpose.getValueFromCode(getCurrentFieldValue()));
 		}

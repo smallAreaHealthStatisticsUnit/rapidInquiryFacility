@@ -172,6 +172,8 @@ public class PostgreSQLDataTypeValidationUtility {
 		createPrimaryKeyQueryFormatter.setPrimaryKeyPhrase("data_set_id, row_number");
 		queryFormatter.addQuery(createPrimaryKeyQueryFormatter);
 
+		System.out.println(queryFormatter.generateQuery());
+		
 		return queryFormatter.generateQuery();
 	}
 	
@@ -227,7 +229,7 @@ public class PostgreSQLDataTypeValidationUtility {
 			//just allow load field value to pass
 			queryFormatter.addQueryPhrase(
 				baseIndentationLevel, 
-				loadFieldName);
+				cleanFieldName); //xxx
 		}
 		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_RULES) {
 			/*
@@ -251,22 +253,22 @@ public class PostgreSQLDataTypeValidationUtility {
 
 				for (ValidationRule validationRule : validationRules) {
 					queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
-					queryFormatter.addQueryPhrase(loadFieldName);
+					queryFormatter.addQueryPhrase(cleanFieldName);//xxx
 					queryFormatter.addQueryPhrase(" ~ ");
 					queryFormatter.addQueryPhrase("'");
 					queryFormatter.addQueryPhrase(validationRule.getValidValue());
 					queryFormatter.addQueryPhrase("'");
 					queryFormatter.addQueryPhrase(" THEN ");
-					queryFormatter.addQueryPhrase(loadFieldName);
+					queryFormatter.addQueryPhrase(cleanFieldName);//xxx
 					queryFormatter.padAndFinishLine();
 				}
 			
 				if (dataSetFieldConfiguration.isEmptyValueAllowed()) {
 					queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
-					queryFormatter.addQueryPhrase(loadFieldName);
+					queryFormatter.addQueryPhrase(cleanFieldName);//xxx
 					queryFormatter.addQueryPhrase(" ='' ");
 					queryFormatter.addQueryPhrase("THEN ");
-					queryFormatter.addQueryPhrase(loadFieldName);
+					queryFormatter.addQueryPhrase(cleanFieldName);//xxx
 					String allowBlankValuesMessage
 						= RIFDataLoaderToolMessages.getMessage(
 							"sqlQuery.comment.allowBlankValues");

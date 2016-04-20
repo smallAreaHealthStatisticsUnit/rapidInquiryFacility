@@ -1,12 +1,7 @@
 
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolGeography;
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
-
+import rifDataLoaderTool.businessConceptLayer.*;
 
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
@@ -96,9 +91,12 @@ final class RIFDataLoaderConfigurationHandler
 // Section Properties
 // ==========================================
 	private DataLoaderToolSettings dataLoaderToolSettings;
+	private RIFDataTypeFactory rifDataTypeFactory;
+	private ConfigurationHints configurationHints;
 	
 	private DatabaseConnectionConfigurationHandler databaseConnectionConfigurationHandler;
 	private GeographyConfigurationHandler geographyConfigurationHandler;
+	private ConfigurationHintsHandler configurationHintsHandler;
 	private RIFDataTypeConfigurationHandler rifDataTypeConfigurationHandler;
 	private LinearWorkflowConfigurationHandler linearWorkflowConfigurationHandler;
 		
@@ -110,10 +108,16 @@ final class RIFDataLoaderConfigurationHandler
      */
 	public RIFDataLoaderConfigurationHandler() {
 		dataLoaderToolSettings = new DataLoaderToolSettings();
+		//rifDataTypeFactory = RIFDataTypeFactory.newInstance();
+		//rifDataTypeFactory.populateFactoryWithBuiltInTypes();
+		configurationHints = new ConfigurationHints();
+		
 		
 		setSingularRecordName("rif_data_loader_settings");
 		rifDataTypeConfigurationHandler = new RIFDataTypeConfigurationHandler();
-		
+		configurationHintsHandler = new ConfigurationHintsHandler();
+		configurationHintsHandler.setDataTypeFactory(rifDataTypeFactory);
+		configurationHintsHandler.setConfigurationHints(configurationHints);
 		databaseConnectionConfigurationHandler
 			= new DatabaseConnectionConfigurationHandler();
 
@@ -141,7 +145,10 @@ final class RIFDataLoaderConfigurationHandler
 			commentInjector);	
 		rifDataTypeConfigurationHandler.initialise(
 			outputStream, 
-			commentInjector);		
+			commentInjector);	
+		configurationHintsHandler.initialise(
+			outputStream, 
+			commentInjector);
 		geographyConfigurationHandler.initialise(
 			outputStream, 
 			commentInjector);
@@ -159,6 +166,7 @@ final class RIFDataLoaderConfigurationHandler
 		databaseConnectionConfigurationHandler.initialise(outputStream);
 		geographyConfigurationHandler.initialise(outputStream);
 		rifDataTypeConfigurationHandler.initialise(outputStream);
+		configurationHintsHandler.initialise(outputStream);		
 		linearWorkflowConfigurationHandler.initialise(outputStream);
 	}
 		
@@ -191,6 +199,8 @@ final class RIFDataLoaderConfigurationHandler
 			dataLoaderToolSettings.getGeographies());
 		rifDataTypeConfigurationHandler.writeXML(
 			dataLoaderToolSettings.getRIFDataTypeFactory());
+		configurationHintsHandler.writeXML(
+			dataLoaderToolSettings.getConfigurationHints());
 		
 		//@TODO In future, we will have the Data Loader Tool
 		//support multiple work flows
@@ -198,9 +208,6 @@ final class RIFDataLoaderConfigurationHandler
 			= dataLoaderToolSettings.getWorkflows();
 		linearWorkflowConfigurationHandler.writeXML(workFlows);			
 		xmlUtility.writeRecordEndTag(recordType);	
-		
-		System.out.println("RDLConfigHandler writeXML 4");
-
 		
 	}	
 		
@@ -249,10 +256,14 @@ final class RIFDataLoaderConfigurationHandler
 			else if (rifDataTypeConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(rifDataTypeConfigurationHandler);
 			}
+			else if (configurationHintsHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+				configurationHintsHandler.setDataTypeFactory(
+					rifDataTypeConfigurationHandler.getRIFDataTypeFactory());
+				assignDelegatedHandler(configurationHintsHandler);
+			}
 			else if (linearWorkflowConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
-				RIFDataTypeFactory rifDataTypeFactory
-					= dataLoaderToolSettings.getRIFDataTypeFactory();
-				linearWorkflowConfigurationHandler.setRIFDataTypeFactory(rifDataTypeFactory);
+				linearWorkflowConfigurationHandler.setRIFDataTypeFactory(
+					rifDataTypeConfigurationHandler.getRIFDataTypeFactory());
 				assignDelegatedHandler(linearWorkflowConfigurationHandler);
 			}
 											
@@ -303,9 +314,11 @@ final class RIFDataLoaderConfigurationHandler
 					dataLoaderToolSettings.setGeographies(geographies);
 				}
 				else if (currentDelegatedHandler == rifDataTypeConfigurationHandler) {
-					RIFDataTypeFactory rifDataTypeFactory
-						= rifDataTypeConfigurationHandler.getRIFDataTypeFactory();
-					dataLoaderToolSettings.setRIFDataTypeFactory(rifDataTypeFactory);
+					dataLoaderToolSettings.setRIFDataTypeFactory(
+						rifDataTypeConfigurationHandler.getRIFDataTypeFactory());
+				}
+				else if (currentDelegatedHandler == configurationHintsHandler) {
+					dataLoaderToolSettings.setConfigurationHints(configurationHints);
 				}
 				else if (currentDelegatedHandler == linearWorkflowConfigurationHandler) {
 					ArrayList<LinearWorkflow> linearWorkflows
@@ -323,8 +336,5 @@ final class RIFDataLoaderConfigurationHandler
 				assert false;				
 			}
 		}
-	}
-	
-	
-	
+	}	
 }

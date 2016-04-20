@@ -344,8 +344,17 @@ public final class ListEditingButtonPanel {
 	
 	public void addActionListener(ActionListener actionListener) {
 		actionListeners.add(actionListener);
+		refreshActionListenersForButtons();
 	}
 
+	
+	private void refreshActionListenersForButtons() {
+		
+		for (JButton buttonToInclude : buttonsToInclude) {
+			setActionListenersForButton(buttonToInclude);
+		}
+	}
+	
 	public void setActionListenersForButton(JButton button) {
 		for (ActionListener actionListener : actionListeners) {
 			button.removeActionListener(actionListener);

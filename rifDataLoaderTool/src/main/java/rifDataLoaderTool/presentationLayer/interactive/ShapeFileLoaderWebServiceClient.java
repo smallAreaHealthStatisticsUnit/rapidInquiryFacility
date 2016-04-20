@@ -113,10 +113,6 @@ public class ShapeFileLoaderWebServiceClient {
 		if (clientResponse.getStatus() != 200) {
 			throw new RuntimeException("Failed : HTTP error code" + clientResponse.getStatus());
 		}
-		
-		String output = clientResponse.getEntity(String.class);
-		System.out.println("WOO HOO! output from service =="+output+"==");
-		
 	}
 
 	

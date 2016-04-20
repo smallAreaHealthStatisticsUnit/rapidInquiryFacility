@@ -163,7 +163,8 @@ final class CleanWorkflowManager
 			PostgreSQLDataTypeSearchReplaceUtility searchReplaceUtility
 				= new PostgreSQLDataTypeSearchReplaceUtility();
 			String searchReplaceQuery
-				= searchReplaceUtility.generateSearchReplaceTableStatement(dataSetConfiguration);			
+				= searchReplaceUtility.generateSearchReplaceTableStatement(dataSetConfiguration);
+			
 			logSQLQuery(
 				logFileWriter, 
 				"createCleaningSearchReplaceTable", 
@@ -204,7 +205,6 @@ final class CleanWorkflowManager
 				validationQuery);
 			validationStatement
 				= connection.prepareStatement(validationQuery);
-			System.out.println(validationQuery);
 			validationStatement.executeUpdate();
 
 			exportTable(

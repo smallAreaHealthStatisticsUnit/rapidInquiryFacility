@@ -1873,11 +1873,12 @@ abstract class AbstractDataLoaderService
 		throws RIFServiceException {
 		
 		//@TODO: make this come from the database
-		String[] cleaningFunctionNames = new String[4];
+		String[] cleaningFunctionNames = new String[5];
 		cleaningFunctionNames[0] = "clean_uk_postal_code";
 		cleaningFunctionNames[1] = "clean_icd_code";
 		cleaningFunctionNames[2] = "clean_sex";
 		cleaningFunctionNames[3] = "clean_age";
+		cleaningFunctionNames[4] = "clean_year";
 		
 		return cleaningFunctionNames;
 	}

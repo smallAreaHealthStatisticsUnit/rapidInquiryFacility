@@ -48,7 +48,7 @@ $$
 DECLARE
 	cleaned_icd_code TEXT;
 BEGIN
-	cleaned_icd_code := original_icd_code || 'c';
+	cleaned_icd_code := REPLACE(original_icd_code, '.', '');
 	RETURN cleaned_icd_code;
 END;
 $$   LANGUAGE plpgsql;
@@ -217,6 +217,26 @@ BEGIN
 END;
 $$   LANGUAGE plpgsql;
 --SELECT date_matches_format('05/20/1995', 'MM/DD/YYYY');
+
+CREATE OR REPLACE FUNCTION clean_year(
+	year_value TEXT)
+	RETURNS TEXT AS 
+$$
+DECLARE
+	result TEXT;
+BEGIN
+
+	IF length(year_value) = 2 THEN 
+   		SELECT to_char(to_date(year_value, 'YY'), 'YYYY') INTO result;
+   	ELSE
+   		result := year_value;
+   	END IF;
+
+    RETURN result;
+END;
+$$   LANGUAGE plpgsql;
+--SELECT date_matches_format('05/20/1995', 'MM/DD/YYYY');
+
 
 
 

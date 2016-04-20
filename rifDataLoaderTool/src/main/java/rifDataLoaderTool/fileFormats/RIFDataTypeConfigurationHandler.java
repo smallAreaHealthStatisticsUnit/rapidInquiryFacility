@@ -218,6 +218,10 @@ final public class RIFDataTypeConfigurationHandler
 		
 	}
 	
+	public void setRIFDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
+		this.rifDataTypeFactory = rifDataTypeFactory;
+	}
+	
 // ==========================================
 // Section Errors and Validation
 // ==========================================
@@ -293,7 +297,6 @@ final public class RIFDataTypeConfigurationHandler
 		else if (isSingularRecordName(qualifiedName)) {
 			try {
 				rifDataTypeFactory.registerCustomDataType(currentRIFDataType, false);	
-				currentRIFDataType = RIFDataType.newInstance();
 			}
 			catch(RIFServiceException rifServiceException) {
 				errorMessages.addAll(rifServiceException.getErrorMessages());

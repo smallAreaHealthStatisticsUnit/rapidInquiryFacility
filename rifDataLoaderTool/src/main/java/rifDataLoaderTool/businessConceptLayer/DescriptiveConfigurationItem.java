@@ -1,13 +1,12 @@
-package rifDataLoaderTool.test;
+package rifDataLoaderTool.businessConceptLayer;
 
-import java.io.File;
-import org.junit.Test;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 /**
  *
  *
  * <hr>
- * Copyright 2015 Imperial College London, developed by the Small Area
+ * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -53,46 +52,10 @@ import org.junit.Test;
  *
  */
 
-public class TestCSVFilePreviewReader extends AbstractRIFDataLoaderTestCase {
+public interface DescriptiveConfigurationItem extends
+		DisplayableListItemInterface {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	public TestCSVFilePreviewReader() {
-
-	}
-
-	@Test
-	public void test1() {
-		
-		
-	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
-
+	public String getDescription();
 }
 
 

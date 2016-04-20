@@ -330,7 +330,13 @@ public class ShapeFile
 		shapeFileFieldNames.clear();
 	}
 	
-	
+	public String getDatabaseFieldName() {
+		String result 
+			= shapeFileDescription.toLowerCase();
+		result
+			= result.replaceAll(" ", "_");
+		return result;
+	}
 	
 	public String getAreaIdentifierFieldName() {
 		return areaIdentifierFieldName;

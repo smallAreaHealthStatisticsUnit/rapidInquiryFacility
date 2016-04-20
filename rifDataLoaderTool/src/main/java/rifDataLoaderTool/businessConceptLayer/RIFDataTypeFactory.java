@@ -793,7 +793,7 @@ public class RIFDataTypeFactory {
 
 		//Validate fields of data type
 		String candidateDataTypeName
-			= candidateDataType.getName();	
+			= candidateDataType.getName();
 		
 		ArrayList<String> keys = new ArrayList<String>();
 		keys.addAll(dataTypeFromNames.keySet());

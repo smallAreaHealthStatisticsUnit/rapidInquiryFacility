@@ -746,6 +746,7 @@ public final class UserInterfaceFactory {
 		JTextField textField = createTextField();
 		textField.setEditable(false);
 		textField.setBackground( (new JLabel()).getBackground());
+		this.setEditableAppearance(textField, false);
 		return textField;
 	}
 	
@@ -964,6 +965,11 @@ public final class UserInterfaceFactory {
 		return dialog;
 	}
 
+	public JSeparator createSeparator() {
+		JSeparator separator = new JSeparator();
+		return separator;		
+	}
+	
 	public JDialog createDialog() {
 			
 		JDialog dialog = new JDialog();

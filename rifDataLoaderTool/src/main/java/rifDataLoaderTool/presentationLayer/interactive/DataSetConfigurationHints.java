@@ -233,11 +233,7 @@ class DataSetConfigurationHints {
 			return RIFSchemaArea.HEALTH_CODE_DATA;
 		}
 		else if (valueInHints(coreDataSetName, covariateTableHints)) {
-			System.out.println("Data Set Configuration Hints - it's a covariate table");
 			return RIFSchemaArea.COVARIATE_DATA;
-		}
-		else if (valueInHints(coreDataSetName, geoSpatialTableHints)) {
-			return RIFSchemaArea.GEOMETRY_DATA;
 		}
 		else {
 			return RIFSchemaArea.HEALTH_NUMERATOR_DATA;

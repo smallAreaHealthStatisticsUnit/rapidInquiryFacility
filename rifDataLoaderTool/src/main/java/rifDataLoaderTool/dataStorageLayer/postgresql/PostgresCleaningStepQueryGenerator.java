@@ -201,6 +201,7 @@ public final class PostgresCleaningStepQueryGenerator
 				queryFormatter,
 				2,
 				currentDataSetFieldConfiguration);
+			
 		}
 
 		queryFormatter.finishLine();
@@ -218,7 +219,6 @@ public final class PostgresCleaningStepQueryGenerator
 		queryFormatter.addQueryPhrase(searchReplaceTableName);
 		queryFormatter.addQueryPhrase(" ADD PRIMARY KEY (data_set_id, row_number);");
 		
-		
 		return queryFormatter.generateQuery();
 	}
 
@@ -226,27 +226,27 @@ public final class PostgresCleaningStepQueryGenerator
 		final SQLGeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
-			
+
 		String loadTableFieldName
 			= dataSetFieldConfiguration.getLoadFieldName();
 		String cleanedTableFieldName
 			= dataSetFieldConfiguration.getCleanFieldName();
-
+		
 		RIFDataType rifDataType 
 			= dataSetFieldConfiguration.getRIFDataType();
-		RIFFieldActionPolicy RIFFieldActionPolicy
+		RIFFieldActionPolicy fieldActionPolicy
 			= rifDataType.getFieldCleaningPolicy();
 		
 		
-		if (RIFFieldActionPolicy == RIFFieldActionPolicy.DO_NOTHING) {
+		if (fieldActionPolicy == fieldActionPolicy.DO_NOTHING) {
 			//pass the value back as is
 			queryFormatter.addQueryPhrase(
 				baseIndentationLevel,
 				loadTableFieldName);
 			queryFormatter.addQueryPhrase(" AS ");
-			queryFormatter.addQueryPhrase(cleanedTableFieldName);
+			queryFormatter.addQueryPhrase(cleanedTableFieldName);					
 		}
-		else if (RIFFieldActionPolicy == RIFFieldActionPolicy.USE_RULES) {
+		else if (fieldActionPolicy == fieldActionPolicy.USE_RULES) {
 			//construct a case statement with an ordered list of cleaning rules
 			
 			ArrayList<CleaningRule> cleaningRules
@@ -267,11 +267,12 @@ public final class PostgresCleaningStepQueryGenerator
 				queryFormatter.padAndFinishLine();
 				
 				for (CleaningRule cleaningRule : cleaningRules) {
+
 					addWhenCleaningRuleAppliesStatement(
 						queryFormatter,
 						baseIndentationLevel + 1,
 						dataSetFieldConfiguration,
-						cleaningRule);
+						cleaningRule);					
 				}
 				
 				//if none of the cleaning rules apply then 
@@ -287,6 +288,7 @@ public final class PostgresCleaningStepQueryGenerator
 					baseIndentationLevel,
 					"END AS ");
 				queryFormatter.addQueryPhrase(cleanedTableFieldName);
+								
 			}
 		}
 		else {
@@ -307,7 +309,6 @@ public final class PostgresCleaningStepQueryGenerator
 			queryFormatter.addQueryPhrase(") AS ");
 			queryFormatter.addQueryPhrase(cleanedTableFieldName);
 		}
-		
 	}
 	
 	public String generateValidationTableQuery(

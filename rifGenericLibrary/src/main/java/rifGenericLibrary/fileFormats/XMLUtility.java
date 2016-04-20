@@ -206,14 +206,11 @@ public final class XMLUtility {
 
 		if (recordComment != null) {			
 			if (commentInjector.isFirstRecordOccurrence(recordName) == true) {	
-				System.out.println("XMLUtility first occurrence of =="+recordName+"== detected by=="+counter+"==");
 				String comment = commentInjector.getRecordComment(recordName);
 				commentInjector.setFirstRecordOccurrence(recordName);
 				writeComment(comment);
 			}
-			else {
-				System.out.println("XMLUtility some other occurrence of =="+recordName+"== detected by=="+counter+"==");				
-			}
+
 		}
 			
 		printStream.flush();		

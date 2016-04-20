@@ -240,9 +240,16 @@ public class PostgreSQLDataTypeSearchReplaceUtility {
 		
 		if (fieldCleaningPolicy == RIFFieldActionPolicy.DO_NOTHING) {
 			//just allow load field value to pass
+			
+			queryFormatter.addQueryPhrase(baseIndentationLevel, loadFieldName);
+			queryFormatter.addQueryPhrase(" AS ");
+			queryFormatter.addQueryPhrase(cleanFieldName);			
+
+/*			
 			queryFormatter.addQueryPhrase(
 				baseIndentationLevel, 
 				loadFieldName);
+*/				
 		}
 		else if (fieldCleaningPolicy == RIFFieldActionPolicy.USE_RULES) {
 			/*

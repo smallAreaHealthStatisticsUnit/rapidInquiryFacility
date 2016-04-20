@@ -117,7 +117,8 @@ class PopulationHealthDataLoaderDialog
 	
 	//GUI Components				
 	private JComboBox<String> startingStateComboBox;
-	private JComboBox<String> stoppingStateComboBox;	
+	private JComboBox<String> stoppingStateComboBox;
+	private JButton defineConfigurationHintsButton;
 	private OrderedListPanel dataSetConfigurationListPanel;
 	private ListEditingButtonPanel dataSetConfigurationListButtonPanel;	
 	private JButton runWorkflowButton;	
@@ -154,14 +155,20 @@ class PopulationHealthDataLoaderDialog
 	private JPanel createMainPanel() {
 		UserInterfaceFactory userInterfaceFactory
 			= session.getUserInterfaceFactory();
-		
-		//set the title of the dialog
-		
+
 		JPanel panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
+
+		//set the title of the dialog
+		
+		//String instructionsText
+		//	= RIFDataLoaderToolMessages.getMessage("");
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
+		panel.add(createConfigurationHintsPanel(), panelGC);
+
+		panelGC.gridy++;		
 		panel.add(
 			createStartStopWorkflowStatePanel(),
 			panelGC);
@@ -200,12 +207,7 @@ class PopulationHealthDataLoaderDialog
 		dataSetConfigurationListButtonPanel.includeCopyButton(null);
 		dataSetConfigurationListButtonPanel.includeEditButton(null);
 		dataSetConfigurationListButtonPanel.includeDeleteButton(null);	
-		String runWorkflowButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.run.label");
-		runWorkflowButton
-			= userInterfaceFactory.createButton(runWorkflowButtonText);
-		runWorkflowButton.addActionListener(this);
-		dataSetConfigurationListButtonPanel.addSpecialisedButton(runWorkflowButton);
+
 		dataSetConfigurationListButtonPanel.rightJustifyButtons();
 		dataSetConfigurationListButtonPanel.indicateEmptyState();
 		dataSetConfigurationListButtonPanel.addActionListener(this);
@@ -222,6 +224,39 @@ class PopulationHealthDataLoaderDialog
 			panelGC);
 				
 		//panel.setBorder(LineBorder.createGrayLineBorder());
+		return panel;
+	}
+	
+	private JPanel createConfigurationHintsPanel() {
+
+		UserInterfaceFactory userInterfaceFactory
+			= getUserInterfaceFactory();
+		JPanel panel = userInterfaceFactory.createPanel();
+		GridBagConstraints panelGC
+			= userInterfaceFactory.createGridBagConstraints();
+		
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		String configurationHintInstructionsText
+			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.configurationHints.instructions");
+		JPanel configurationInstructionPanel
+			= userInterfaceFactory.createHTMLInstructionPanel(configurationHintInstructionsText);
+		panel.add(configurationInstructionPanel, panelGC);
+
+		panelGC.gridy++;
+		panelGC.fill = GridBagConstraints.NONE;
+		panelGC.weightx = 0;
+		panelGC.anchor = GridBagConstraints.SOUTHEAST;
+		String defineHintsButtonText
+			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.configurationHints.button.label");
+		defineConfigurationHintsButton
+			= userInterfaceFactory.createButton(defineHintsButtonText);
+		defineConfigurationHintsButton.addActionListener(this);
+		panel.add(defineConfigurationHintsButton, panelGC);
+		
+		
+		
+		
 		return panel;
 	}
 	
@@ -317,7 +352,7 @@ class PopulationHealthDataLoaderDialog
 
 		panelGC.gridx++;
 		String runWorkflowButtonText
-			= RIFDataLoaderToolMessages.getMessage("populationHealthDataLoaderDialog.runWorkflow.exportDirectory.label");
+			= RIFGenericLibraryMessages.getMessage("buttons.run.label");
 		runWorkflowButton
 			= userInterfaceFactory.createButton(runWorkflowButtonText);
 		runWorkflowButton.addActionListener(this);
@@ -333,8 +368,6 @@ class PopulationHealthDataLoaderDialog
 	// Section Accessors and Mutators
 	// ==========================================
 
-	
-	
 	public void setData(final LinearWorkflow originalLinearWorkflow) {
 		this.originalLinearWorkflow = originalLinearWorkflow;
 		workingCopyLinearWorkflow = LinearWorkflow.createCopy(originalLinearWorkflow);
@@ -342,6 +375,31 @@ class PopulationHealthDataLoaderDialog
 		populateFormFromWorkingCopy(originalLinearWorkflow);
 	}
 
+	private void defineConfigurationHints() {
+		//xxx
+		DataLoaderToolSettings settings
+			= session.getDataLoaderToolSettings();
+		ConfigurationHints configurationHints
+			= settings.getConfigurationHints();
+		
+		ConfigurationHintsEditorDialog configurationHintsEditorDialog
+			= new ConfigurationHintsEditorDialog(session);
+		configurationHintsEditorDialog.setData(configurationHints);
+		configurationHintsEditorDialog.show();
+		if (configurationHintsEditorDialog.isCancelled()) {
+			return;
+		}
+		
+		ArrayList<DataSetConfiguration> currentDataSetConfigurationHints
+			= configurationHintsEditorDialog.getDataSetConfigurationHints();
+		
+		configurationHints.setDataSetConfigurationHints(currentDataSetConfigurationHints);
+		ArrayList<DataSetFieldConfiguration> currentDataSetFieldConfigurations
+			= configurationHintsEditorDialog.getDataSetFieldConfigurationHints();
+
+		configurationHints.setDataSetFieldConfigurationHints(currentDataSetFieldConfigurations);
+	}
+	
 	private void browseExportDirectory() {
 		UserInterfaceFactory userInterfaceFactory
 			= getUserInterfaceFactory();
@@ -486,7 +544,7 @@ class PopulationHealthDataLoaderDialog
 			revisedDataSetConfiguration, 
 			originalDataSetConfiguration);
 		
-		originalLinearWorkflow.addDataSetConfiguration(originalDataSetConfiguration);
+		workingCopyLinearWorkflow.addDataSetConfiguration(originalDataSetConfiguration);
 		dataSetConfigurationListPanel.addListItem(originalDataSetConfiguration);
 		dataSetConfigurationListPanel.updateUI();
 		dataSetConfigurationListPanel.setSelectedItem(originalDataSetConfiguration);
@@ -708,6 +766,9 @@ class PopulationHealthDataLoaderDialog
 	public void actionPerformed(ActionEvent event) {
 		Object button = event.getSource();
 		
+		if (button == defineConfigurationHintsButton) {
+			defineConfigurationHints();
+		}
 		if (button == browseExportDirectoryButton) {
 			browseExportDirectory();
 		}

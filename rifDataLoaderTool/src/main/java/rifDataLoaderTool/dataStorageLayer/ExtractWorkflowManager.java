@@ -220,7 +220,7 @@ final class ExtractWorkflowManager
 				WorkflowState.EXTRACT);
 		}
 		catch(SQLException sqlException) {
-			
+			sqlException.printStackTrace(System.out);
 			logSQLException(
 				logFileWriter,
 				sqlException);
@@ -271,6 +271,7 @@ final class ExtractWorkflowManager
 				fileReader);
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			logException(
 				logFileWriter,
 				exception);

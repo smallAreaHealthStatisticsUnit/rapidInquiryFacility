@@ -113,9 +113,10 @@ public final class SQLCreateTableQueryFormatter
 		final boolean isNullAllowed) {
 		
 		StringBuilder textFieldType = new StringBuilder();
-		textFieldType.append("VARCHAR(");
-		textFieldType.append(String.valueOf(textFieldLength));
-		textFieldType.append(")");
+		textFieldType.append("TEXT");
+		//textFieldType.append("VARCHAR(");
+		//textFieldType.append(String.valueOf(textFieldLength));
+		//textFieldType.append(")");
 		
 		addFieldDeclaration(
 			fieldName,

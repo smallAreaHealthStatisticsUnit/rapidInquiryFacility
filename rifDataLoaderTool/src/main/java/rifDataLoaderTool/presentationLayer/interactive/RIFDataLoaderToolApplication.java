@@ -1,6 +1,7 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.*;
+
 import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -15,7 +16,6 @@ import rifGenericLibrary.system.RIFServiceException;
 
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -380,9 +380,6 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 			
 			RIFDatabaseConnectionParameters dbSettings
 				= settings.getDatabaseConnectionParameters();
-			if (dbSettings == null) {
-				System.out.println("DB Settings were null!");
-			}
 			dialog.setData(dbSettings);
 			dialog.show();
 	}

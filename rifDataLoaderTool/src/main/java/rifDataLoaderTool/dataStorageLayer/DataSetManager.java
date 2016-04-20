@@ -279,7 +279,6 @@ final class DataSetManager
 			logSQLQuery(logFileWriter, "deleteDataSetConfiguration", deleteDataSetStatementQueryFormatter);
 		}
 		catch(SQLException sqlException) {
-			System.out.println("Failed to delete!!");
 			logSQLException(
 				logFileWriter,
 				sqlException);

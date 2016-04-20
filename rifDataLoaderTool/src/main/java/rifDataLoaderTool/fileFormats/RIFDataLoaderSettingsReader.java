@@ -1,7 +1,8 @@
 
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+import rifDataLoaderTool.businessConceptLayer.*;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
@@ -11,6 +12,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.InputSource;
 
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  *
@@ -78,6 +80,19 @@ import java.io.*;
 
 
 public final class RIFDataLoaderSettingsReader {
+	
+	public static void main(String[] args) {
+		
+		RIFDataLoaderSettingsReader reader
+			= new RIFDataLoaderSettingsReader();
+		File file = new File("C://rif_scratch//test_data_loader_tool.xml");
+		try {
+			reader.readFile(file);			
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+		}
+	}
 // ==========================================
 // Section Constants
 // ==========================================

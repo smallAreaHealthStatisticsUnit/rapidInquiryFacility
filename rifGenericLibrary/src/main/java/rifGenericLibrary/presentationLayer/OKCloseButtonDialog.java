@@ -184,7 +184,6 @@ public abstract class OKCloseButtonDialog
 			dialog.setVisible(false);
 			isCancelled = false;
 			if (doSystemExitOnClose) {
-				System.out.println("OKCloseButtonDialog ok exit");
 				System.exit(0);
 			}
 		}
@@ -211,7 +210,6 @@ public abstract class OKCloseButtonDialog
 		isCancelled = true;
 		dialog.setVisible(false);
 		if (doSystemExitOnClose) {			
-			System.out.println("OKCloseButtonDialog ok exit");
 			System.exit(0);
 		}		
 	}
