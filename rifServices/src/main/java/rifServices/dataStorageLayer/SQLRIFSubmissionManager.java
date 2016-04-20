@@ -373,7 +373,6 @@ final class SQLRIFSubmissionManager
 			
 			connection.commit();
 
-			System.out.println("Just added a study with id=="+result+"==");
 			runStudy(connection, result);
 			
 			return result;
@@ -402,7 +401,6 @@ final class SQLRIFSubmissionManager
 		throws RIFServiceException {
 		
 		
-		System.out.println("About to run study=="+studyID+"==");
 		String result = null;
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -469,7 +467,6 @@ final class SQLRIFSubmissionManager
 		throws RIFServiceException {
 		
 		
-		System.out.println("About to run study=="+studyID+"==");
 		String result = null;
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -754,7 +751,6 @@ final class SQLRIFSubmissionManager
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			for (Investigation investigation : investigations) {		
-				System.out.println("5555555555555555555555About to add record to rif40_investigations with inv name=="+investigation.getTitle() + "==");
 				
 				//extracting field values that will be used for the query
 				
@@ -837,9 +833,7 @@ final class SQLRIFSubmissionManager
 					ithQueryParameter++, 
 					minAgeGroupParameter);
 				
-				System.out.println("111About to add record to rif40_investigations with inv name=="+investigation.getTitle() + "==");
 				statement.executeUpdate();
-				System.out.println("112About to add record to rif40_investigations with inv name=="+investigation.getTitle() + "==");
 				
 				addCovariatesToStudy(
 					connection,
@@ -1171,11 +1165,6 @@ final class SQLRIFSubmissionManager
 				Double minimumCovariateValue = getMinMaxCovariateValueResultSet.getDouble(1);
 				Double maximumCovariateValue = getMinMaxCovariateValueResultSet.getDouble(2);
 				getMinMaxCovariateValueResultSet.close();
-				
-				System.out.println("addCovariatesToStudy geographyName=="+geographyName+"==");
-				System.out.println("addCovariatesToStudy name=="+covariate.getName()+"==");
-				System.out.println("addCovariatesToStudy minimumValue=="+minimumCovariateValue+"==");
-				System.out.println("addCovariatesToStudy maximumValue=="+maximumCovariateValue+"==");
 
 				logSQLQuery(
 					"addCovariateValue", 
@@ -1222,9 +1211,7 @@ final class SQLRIFSubmissionManager
 		ResultSet getOutcomeGroupNameResultSet = null;
 		PreparedStatement addHealthCodeStatement = null;
 		try {
-			
-			System.out.println("SQLRIFSubmissionManager addHealthOutcomes 1");
-			
+						
 			SQLSelectQueryFormatter getOutcomeGroupNameQueryFormatter
 				= new SQLSelectQueryFormatter();
 			getOutcomeGroupNameQueryFormatter.addSelectField("outcome_group_name");
@@ -1257,10 +1244,7 @@ final class SQLRIFSubmissionManager
 				= getOutcomeGroupNameResultSet.getString(1);
 			String fieldName
 				= getOutcomeGroupNameResultSet.getString(2);
-			
-			System.out.println("SQLRIFSubmissionManager addHealthOutcomes 2");
-			
-			
+
 			//determine what kinds of codes the numerator table supports
 			
 			ArrayList<HealthCode> healthCodes

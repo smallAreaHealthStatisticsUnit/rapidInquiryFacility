@@ -285,7 +285,6 @@ final class SQLDiseaseMappingStudyManager
 		//analysis the geoLevelToMap of the comparison area has no meaning.
 		GeoLevelToMap geoLevelToMap
 			= diseaseMappingStudyArea.getGeoLevelToMap();		
-		System.out.println("The geolevelselect for the study area is=="+geoLevelToMap.getName()+"==");
 
 		//Check non-existent items in the investigations
 		ArrayList<Investigation> investigations

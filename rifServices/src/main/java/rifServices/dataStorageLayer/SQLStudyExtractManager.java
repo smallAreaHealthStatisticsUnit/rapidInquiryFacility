@@ -311,9 +311,7 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		extractFileName.append(File.separator);
 		extractFileName.append(baseStudyName);
 		extractFileName.append(".csv");
-		
-		System.out.println("SQLStudyExtract writeExtractFiles=="+extractFileName.toString()+"==");
-		
+				
 		dumpDatabaseTableToCSVFile(
 			connection,
 			submissionZipOutputStream,
@@ -533,7 +531,6 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 			statement.setString(1, tableName);
 			resultSet = statement.executeQuery();
 			
-			System.out.println("dumpDatabaseTableToCSVFile outputFilePath=="+outputFilePath+"==");
 			ZipEntry zipEntry = new ZipEntry(outputFilePath);
 			submissionZipOutputStream.putNextEntry(zipEntry);
 			

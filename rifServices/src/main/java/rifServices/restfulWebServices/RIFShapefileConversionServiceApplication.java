@@ -119,7 +119,6 @@ public class RIFShapefileConversionServiceApplication extends Application {
 	@Override
 	public Set<Class<?>> getClasses() {
 		
-		System.out.println("Registering RIF shape file conversion application");
 		Set<Class<?>> set = new HashSet<Class<?>>();
 		set.add(RIFShapefileConversionServiceResource.class);
 		//set.add(MultiPartFeature.class);

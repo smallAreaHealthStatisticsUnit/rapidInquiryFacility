@@ -195,9 +195,7 @@ public class RIFStudySubmissionWebServiceResource
 	public Response getGeographies(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
-
 		
-		System.out.println("Testing");
 		return super.getGeographies(
 			servletRequest,
 			userID);
@@ -889,7 +887,6 @@ public class RIFStudySubmissionWebServiceResource
 				= Geography.newInstance(geographyName, "");
 			GeoLevelToMap geoLevelToMap
 				= GeoLevelToMap.newInstance(geoLevelToMapName);
-			System.out.println("RIFStudySubmissionWebService - getCovariates -"+geoLevelToMapName+"==");
 			
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
@@ -1307,7 +1304,6 @@ public class RIFStudySubmissionWebServiceResource
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();
 			
-			System.out.println("zzzAbout to call get codes for matching text with nameSpace=="+nameSpace+"==searchText=="+searchText+"==isContextSensitive=="+isCaseSensitive+"==");
 			HealthCodeTaxonomy healthCodeTaxonomy
 				= studySubmissionService.getHealthCodeTaxonomyFromNameSpace(
 					user, 

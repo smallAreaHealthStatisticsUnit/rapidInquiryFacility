@@ -116,15 +116,11 @@ final class HealthOutcomeManager {
 		healthCodeProviders = new ArrayList<HealthCodeProviderInterface>();
 		
 		
-		System.out.println("HealthOutcomeManager constructor 1");
 		String targetPathValue
 			= rifServiceStartupOptions.getRIFServiceResourcePath();
 		if (targetPathValue == null) {
-			System.out.println("HealthOutcomeManager constructor 2");
 			targetPathValue = RIFServiceMessages.getRIFServicesClassRootLocation();
 		}
-
-		System.out.println("HealthOutcomeManager constructor 3");
 
 		//initialise each health code provider
 		try {			
@@ -132,7 +128,6 @@ final class HealthOutcomeManager {
 			icd9CodesFileLocation.append(targetPathValue);
 			icd9CodesFileLocation.append(File.separator);
 			icd9CodesFileLocation.append("ExampleICD9Codes.xml");
-			System.out.println("HealthOutcomeManager constructor 4 icd10=="+icd9CodesFileLocation.toString()+"==");
 
 			RIFXMLTaxonomyProvider icd9TaxonomyProvider = new RIFXMLTaxonomyProvider();
 			ArrayList<Parameter> parameters = new ArrayList<Parameter>();
@@ -150,16 +145,12 @@ final class HealthOutcomeManager {
 				"constructor", 
 				rifServiceException);
 		}
-
-		System.out.println("HealthOutcomeManager constructor 5");
 				
 		try {			
 			StringBuilder icd10CodesFileLocation = new StringBuilder();
 			icd10CodesFileLocation.append(targetPathValue);
 			icd10CodesFileLocation.append(File.separator);
 			icd10CodesFileLocation.append("ExampleICD10Codes.xml");
-
-			System.out.println("HealthOutcomeManager icd10=="+icd10CodesFileLocation.toString()+"==");
 			
 			RIFXMLTaxonomyProvider icd10TaxonomyProvider = new RIFXMLTaxonomyProvider();
 			ArrayList<Parameter> parameters = new ArrayList<Parameter>();

@@ -108,7 +108,6 @@ public final class GetGeoLevelFullExtentForStudy
 			StudyResultRetrievalContext validStudyResultRetrievalContext
 				= cloneValidResultContext();
 			validStudyResultRetrievalContext.setGeoLevelSelectName("LEVEL4");
-			System.out.println("Geography=="+validStudyResultRetrievalContext.getGeographyName()+"==GeoLevelSelect=="+validStudyResultRetrievalContext.getGeoLevelSelectName()+"==");
 			BoundaryRectangle boundaryRectangle
 				= rifStudyRetrievalService.getGeoLevelFullExtentForStudy(
 					validUser, 

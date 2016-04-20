@@ -197,7 +197,6 @@ public Response submitShapeFiles(
 		@FormDataParam("userID") String userID,
 		@FormDataParam("fileField") InputStream inputStream) {
 
-		System.out.println("submitShapeFiles userID is =="+userID+"==");
 		String result = "test";
 
 /*		

@@ -295,20 +295,16 @@ class AbstractStudyServiceBundle {
 			if (rifServiceSecurityException.getSecurityThreatType() == RIFServiceSecurityException.SecurityThreatType.MALICIOUS_CODE) {
 				//gives opportunity to log security issue and deregister user
 				
-				System.out.println("AbstractRIFService logException encountered a MALICIOUS CODE threat");
 				sqlConnectionManager.addUserIDToBlock(user);
 				sqlConnectionManager.logout(user);
 				userDeregistered = true;			
 			}
 			else {
-				System.out.println("AbstractRIFService logException encountered a SUSPICIOUS BEHAVIOUR threat");
 				//suspiciuous behaviour.  
 				//log suspicious event and see whether this particular user is associated with
 				//a number of suspicious events that exceeds a threshold.
 				sqlConnectionManager.logSuspiciousUserEvent(user);
-				if (sqlConnectionManager.userExceededMaximumSuspiciousEvents(user)) {
-					System.out.println("AbstractRIFService logException encountered a SUSPICIOUS BEHAVIOUR threat -- max times exceeded");
-					
+				if (sqlConnectionManager.userExceededMaximumSuspiciousEvents(user)) {					
 					sqlConnectionManager.addUserIDToBlock(user);
 					sqlConnectionManager.logout(user);
 					userDeregistered = true;			

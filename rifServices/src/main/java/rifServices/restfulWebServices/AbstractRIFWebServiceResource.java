@@ -1155,9 +1155,7 @@ abstract class AbstractRIFWebServiceResource {
 		final HttpServletRequest servletRequest,
 		final String userID,
 		final String studyID) { 
-		
-		System.out.println("getStudySubmission stub userID==" + userID + "==studyID=="+studyID+"==");
-		
+				
 		String result = "";
 		
 		try {
@@ -1208,17 +1206,7 @@ abstract class AbstractRIFWebServiceResource {
 		
 		String result = "";
 		
-		try {
-			
-			System.out.println("submitStudy userID=="+userID+"==format=="+format+"==");
-			if (servletRequest == null) {
-				System.out.println("submitStudy - servletRequest was null");
-			}
-			else {
-				System.out.println("submitStudy - servletRequest was not null");				
-			}
-
-			
+		try {			
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			
@@ -1270,27 +1258,15 @@ abstract class AbstractRIFWebServiceResource {
 			StringBuilder buffer = new StringBuilder();
 			String currentInputLine 
 				= reader.readLine();	
-			System.out.println("==About to print first line of JSON===");
-			System.out.println(currentInputLine);
-			System.out.println("==Finished first line of JSON===");
 			while (currentInputLine != null) {
 				buffer.append(currentInputLine);
 				currentInputLine = reader.readLine();
 			}
 			reader.close();
 			
-			String phrase = buffer.toString();
-			System.out.println("BEGIN phrase==");
-			System.out.println(phrase);
-			System.out.println("END phrase==");
-					
 			JSONObject jsonObject = new JSONObject(buffer.toString());
 			
 			String xml = XML.toString(jsonObject);
-			System.out.println("BEGIN XML result==");
-			System.out.println(xml);
-			System.out.println("END XML result==");
-
 			InputStream xmlInputStream 
 				= new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));			
 			return getRIFSubmissionFromXMLSource(xmlInputStream);			
@@ -1335,7 +1311,6 @@ abstract class AbstractRIFWebServiceResource {
 			ipAddress = servletRequest.getRemoteAddr();	  
 		}
 			
-		System.out.println("ARWSR createUser userID=="+userID+"==ipAddress=="+ipAddress+"==");
 		User user = User.newInstance(userID, ipAddress);
 		
 		return user;
@@ -1493,7 +1468,6 @@ abstract class AbstractRIFWebServiceResource {
 		message.append("session id:=="+sessionID+"==\n");
 		message.append("==================================================\n");
 		//message.append("IP address:=="+ipAdress+"")
-		//System.out.println("study submission login browserType=="+browserType+"==mime type=="+mimeTypes+"== session id=="+ sessionID + "==ipAddress=="+ipAddress+"==");
 		System.out.println(message.toString());
 		
 	}

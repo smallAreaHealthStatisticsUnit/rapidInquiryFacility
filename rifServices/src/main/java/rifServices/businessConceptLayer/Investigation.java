@@ -641,7 +641,6 @@ public class Investigation
 				
 				String sexFieldName
 					= RIFServiceMessages.getMessage("sex.label");
-				System.out.println("inv sex 2");
 				String difference
 					= RIFServiceMessages.getMessage(
 						"differences.fieldsDiffer",
@@ -651,17 +650,8 @@ public class Investigation
 						anotherInvestigation.getDisplayName(),
 						anotherSex.getName());
 				differences.add(difference);
-			}	
-			else {
-				System.out.println("inv sex 3");
-				
 			}
 		}
-		else {
-			System.out.println("inv sex 4");
-
-		}
-
 		
 		//compare health theme values
 		if (RIFComparisonUtility.identifyFieldNullityDifferences(

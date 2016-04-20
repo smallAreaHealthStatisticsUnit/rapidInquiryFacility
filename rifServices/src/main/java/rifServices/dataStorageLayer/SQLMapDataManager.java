@@ -458,7 +458,6 @@ final class SQLMapDataManager
 		//	= geographicalArea.getGeoLevelSelect();
 		GeoLevelToMap geoLevelToMap
 			= geographicalArea.getGeoLevelToMap();
-		System.out.println("GeoLevelToMap=="+geoLevelToMap.getName()+"==");
 		
 		
 		ArrayList<MapArea> selectedMapAreas
@@ -485,7 +484,6 @@ final class SQLMapDataManager
 					connection,
 					geography,
 					geoLevelToMap.getName());
-			System.out.println("GeoLevelToMap=="+geoLevelToMap.getName()+"==GeoLevelToMapName=="+geoLevelToMapTableName+"==");
 			
 			/*
 			 * Example:
@@ -568,9 +566,6 @@ final class SQLMapDataManager
 				= createPreparedStatement(
 					connection, 
 					queryFormatter);
-
-			System.out.println("SQLMapDataManager getAllRelevantMapAreas 3");
-			
 			
 			resultSet = statement.executeQuery();
 			while (resultSet.next()) {
@@ -587,9 +582,6 @@ final class SQLMapDataManager
 				allRelevantMapAreas.add(mapArea);
 				
 			}
-			System.out.println("SQLMapDataManager getAllRelevantMapAreas 4");
-			
-			
 		}
 		catch(SQLException sqlException) {
 			logException(sqlException);

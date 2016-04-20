@@ -317,7 +317,6 @@ final public class RIFStudySubmissionContentHandler
 				assignDelegatedHandler(projectContentHandler);
 			}
 			else if (diseaseMappingStudyContentHandler.isSingularRecordTypeApplicable(qualifiedName)) {
-				System.out.println("RIFJobSubmissionContentHandler diseaseMappingStudy 3==");
 				assignDelegatedHandler(diseaseMappingStudyContentHandler);
 			}
 			else if (calculationMethodContentHandler.isPluralRecordTypeApplicable(qualifiedName)) {

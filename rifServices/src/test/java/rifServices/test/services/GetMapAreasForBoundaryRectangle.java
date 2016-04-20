@@ -189,7 +189,6 @@ public final class GetMapAreasForBoundaryRectangle
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect 
 				= cloneValidGeoLevelSelect();
-			System.out.println("common case=="+validGeoLevelSelect.getName()+"==");
 			BoundaryRectangle validBoundaryRectangle
 				= cloneValidBoundaryRectangle();
 		
@@ -199,7 +198,6 @@ public final class GetMapAreasForBoundaryRectangle
 					validGeography, 
 					validGeoLevelSelect, 
 					validBoundaryRectangle);
-			System.out.println("Result=="+result+"==");
 			
 			//@TODO: Develop a utility that extract gids from JSON stream and orders them.
 		}
@@ -462,13 +460,11 @@ public final class GetMapAreasForBoundaryRectangle
 			BoundaryRectangle validBoundaryRectangle
 				= cloneValidBoundaryRectangle();
 
-			System.out.println("GetMapAreasForBoundRect - sec1");
 			rifStudySubmissionService.getMapAreasForBoundaryRectangle(
 				validUser, 
 				validGeography, 
 				maliciousGeoLevelSelect, 
 				validBoundaryRectangle);			
-			System.out.println("GetMapAreasForBoundRect - sec2");
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {

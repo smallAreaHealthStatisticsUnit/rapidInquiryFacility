@@ -654,9 +654,6 @@ public final class GetDiseaseMappingStudy
 
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
-			if (validOutputFile == null) {
-				System.out.println("Valid output file is NULL");
-			}
 			rifStudySubmissionService.submitStudy(
 				validUser, 
 				nonExistentStudySubmission, 

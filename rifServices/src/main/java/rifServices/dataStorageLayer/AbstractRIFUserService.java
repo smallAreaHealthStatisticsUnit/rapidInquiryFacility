@@ -1354,7 +1354,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
-			System.out.println("AbstractRIFUserService - getCovariates 1 geoLevelToMap=="+geoLevelToMap.getName()+"==");
 			//Delegate operation to a specialised manager class		
 			SQLCovariateManager sqlCovariateManager
 				= rifServiceResources.getSqlCovariateManager();

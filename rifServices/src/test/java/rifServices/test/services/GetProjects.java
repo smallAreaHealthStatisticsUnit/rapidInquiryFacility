@@ -105,9 +105,6 @@ public final class GetProjects
 			User validUser = cloneValidUser();
 			ArrayList<Project> results
 				= rifStudySubmissionService.getProjects(validUser);
-			for (Project result : results) {
-				System.out.println("result:=="+result.getDisplayName()+"==");
-			}
 			assertEquals(2, results.size());
 		}
 		catch(RIFServiceException rifServcieException) {

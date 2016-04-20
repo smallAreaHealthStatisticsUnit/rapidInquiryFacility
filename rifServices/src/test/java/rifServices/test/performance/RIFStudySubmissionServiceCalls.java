@@ -217,15 +217,6 @@ public final class RIFStudySubmissionServiceCalls
 			long finishTime = System.currentTimeMillis();	
 			double duration = (finishTime - startTime) / 1000; //in milliseconds
 			double averageRoundTripTime = (duration/(double) NUMBER_REPETITIONS );
-			
-			System.out.println("getTiles duration=="+duration+"==averageRoundTripTime=="+averageRoundTripTime+"==");
-
-			/*
-			printPerformanceResult(
-				"getTiles",
-				startTime,
-				finishTime);
-			*/
 		}
 		catch(RIFServiceException rifServiceException) {
 			
