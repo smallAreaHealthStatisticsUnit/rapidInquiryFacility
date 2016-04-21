@@ -8,8 +8,42 @@ import java.text.Collator;
 
 
 /**
- *
- *
+ * Describes whether a CSV field is a required field, an extra field
+ * or if it should be ignored.  If the setting is 
+ * <code>REQUIRED_BY_RIF</code>, then some aspect of the RIF database
+ * schema requires the field.  Examples of required fields include:
+ * <ul>
+ * <li>
+ * numerator and denominator table fields require at least one 
+ * field that has a {@link rifDataLoaderTool.businessConceptLayer.FieldPurpose}
+ * of <code>GEOGRAPHICAL_RESOLUTION</code>, one field with a 
+ * {@link rifDataLoaderTool.businessConceptLayer.RIFDataType} of 
+ * <code>RIF_SEX_DATA_TYPE</code> and another field of type
+ * <code>RIF_AGE_DATA_TYPE</code>.
+ * </li>
+ * <li>
+ * data sets that are meant to have a 
+ * {@link rifDataLoaderTool.businessConceptLayer.RIFSchemaArea}
+ * of <code>HEALTH_NUMERATOR_DATA</code> or <code>HEALTH_CODE_DATA</code>
+ * must have at least one field that has a <code>FieldPurpose</code>
+ * of <code>HEALTH_CODE</code>.
+ * </li>
+ * </ul>
+ * 
+ * <p>
+ * Some administrators may want to include a data field which
+ * is not necessary for RIF operations but which is useful for studies
+ * in their projects.  For example, a field called <code>ethnicity</code>
+ * may be useful in numerator and denominator tables, even if it is not
+ * processed by the RIF's extract facilities.
+ * </p>
+ * 
+ * <p>
+ * Many fields that are imported from a CSV may have no use at all in
+ * the RIF.  If they are marked as <code>IGNORE_FIELD</code> then they
+ * will be extracted from the file but will not be processed any further.
+ * </p>
+ * 
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 

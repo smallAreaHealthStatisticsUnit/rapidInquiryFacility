@@ -46,6 +46,63 @@ import java.util.Objects;
  * configurations, each of which have their own properties.
  * </p>
  *
+ * <p>
+ * This class, like 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration},
+ * is used in two contexts: to define a configurable aspect of a CSV file and
+ * to define a hint that can be used to automatically configure aspects of a CSV
+ * file.
+ * </p>
+ * 
+ * <p>
+ * When the {@link rifDataLoaderTool.presentationLayer.interactive.CSVFileSelectionDialog}
+ * class imports a CSV file, it creates an instance of a 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetConfiguration} that describes
+ * the configuration options that will be used to transform the CSV file into a data
+ * set that can be used by the RIF.
+ * </p>
+ * <p>
+ * Initially we just let an end-user fill in the configuration options for each field
+ * of the data set configuration.  However, we soon realised that when a file had a 
+ * large number of fields, it would be impractical for users to set every configuration
+ * option.
+ * </p>
+ * 
+ * <p>
+ * When it is used as a configuration hint, the data set configuration is used help
+ * set configuration options automatically.  Its name becomes a regular expression 
+ * which is compared against the name of a given data set configuration.  If there
+ * is a match, the field values in the hint are copied into the respective fields
+ * of the data set configuration.
+ * </p>
+ * 
+ * <p>
+ * For example, consider a CSV file called "cancer_data.csv" that needs to be imported
+ * into the RIF.  The CSVFileSelectionDialog will allow the user to specify the file.
+ * The dialog will then use the file base name "cancer_data" and the names of its 
+ * fields to generate a skeleton instance of a DataSetConfiguration class.
+ * </p>
+ * <p>
+ * Now consider a hint that isan instance of
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetConfiguration} where the name
+ * is <code>^cancer*</code> and it has its {@link rifDataLoadertool.businessConceptLayer.RIFSchemaArea}
+ * set to <code>HEALTH_NUMERATOR_DATA</code>.
+ * 
+ * <p>
+ * After the <code>cancer_data</code> <code>DataSetConfiguration</code> has been
+ * created, a {@link rifDataLoaderTool.businessConceptLayer.ConfigurationHints} object
+ * is used to match "cancer_data" with the regular expression <code>^cancer*</code>.
+ * After the hint is applied, the <code>cancer_data</code> data set configuration will
+ * have a <code>RIFSchemaArea</code> that is set to <code>HEALTH_NUMERATOR_DATA</code>.
+ * </p>
+ * 
+ * <p>
+ * Therefore, this class is used in two contexts: one in which it represents
+ * a complete set of configuration options for a data set and another where it is
+ * used to define fragments of configuration settings that are applied based on 
+ * matches of regular expressions with the name of another configuration.
+ * </p>
+ *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 

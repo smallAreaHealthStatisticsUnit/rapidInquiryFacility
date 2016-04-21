@@ -3,8 +3,45 @@ package rifDataLoaderTool.businessConceptLayer;
 import java.util.ArrayList;
 
 /**
- *
- *
+ * This is the business class that embodies all the configuration options and
+ * work flows that are needed by the Data Loader Tool to process data that
+ * are destined to populate the RIF production database.
+ * 
+ * <p>
+ * The class covers five main areas:
+ * <ul>
+ * <li>
+ * <b>database connection parameters</b>: these are used to help the data
+ * loader tool create and connect with a temporary database that it will use
+ * to process data sets
+ * </li>
+ * <li>
+ * <b>geographies</b>: these describe the geospatial data sets that provide
+ * the RIF with maps made at different resolutions (eg: in the UK they may
+ * be ward, region, district)
+ * </li>
+ * <li>
+ * <b>data type definitions</b>: these don't define data types as they would
+ * appear in a database.  Instead, a data type defines a cleaning and validation
+ * policy which would be used to transform a data field from how it would appear
+ * in an original data set to how it would appear in a data set that was ready
+ * to be loaded into the RIF production database
+ * </li>
+ * <li>
+ * <b>work flows</b>: a workflow describes a collection of settings that will
+ * transforma a data set so that it may be ready to be loaded into the RIF
+ * production database.
+ * </li>
+ * <li>
+ * <b>configuration hints</b>: are used to link patterns found in the names and
+ * field names of CSV files with sets of configuration options.  When the name
+ * of a file or a file field matches a hint, a set of configuration settings are
+ * applied.  Hints are used to help reduce the amount of manual labour that a
+ * user needs to do to configure a lot of file fields.
+ * </li>
+ * </ul>
+ * </p>
+ * 
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -89,6 +126,12 @@ public class DataLoaderToolSettings {
 	// Section Accessors and Mutators
 	// ==========================================
 	
+	/**
+	 * A convenience routine which generates the names of geographical
+	 * resolutions.  The method is used to let users map fields they
+	 * mark as being geographical resolution 
+	 * (see {@link rifDataLoaderTool.businessConceptLayer.FieldPurpose}).
+	 */
 	public ArrayList<String> getGeographicalResolutionFields() {
 		ArrayList<String> results = new ArrayList<String>();
 		for (DataLoaderToolGeography geography : geographies) {

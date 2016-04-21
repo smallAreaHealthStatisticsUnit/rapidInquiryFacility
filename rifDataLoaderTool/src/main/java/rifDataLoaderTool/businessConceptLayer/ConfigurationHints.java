@@ -8,7 +8,46 @@ import java.util.regex.Matcher;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 /**
- *
+ * <p>
+ * The purpose of ConfigurationHints is to greatly reduce the number of 
+ * configuration options which need to be explicitly set by end-users.
+ * </p>
+ * 
+ * <p>
+ * When users of the data loader tool import a CSV file, they will find approximately
+ * a dozen separate configuration options which help govern the journey the data field
+ * makes from its original data set to a final processed data set that is ready to be
+ * loaded into the RIF production database.  To import a CSV file of 10 fields, it
+ * would present the user with over 120 configurable options.  In the UK, numerator
+ * files such as the Hospital Episode Statistics (HES) data sets can have well over
+ * a hundred fields, which would present the user with over 1200 separate configurable
+ * options.
+ * </p>
+ * 
+ * <p>
+ * In order to practically handle tables with a large number of fields, the Data 
+ * Loader Tool has a Configuration Hints option.  The hints feature re-uses 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetConfiguration} and
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration} to 
+ * match the names of input files and input file fields with fragments of configuration.
+ * </p>
+ * 
+ * <p>
+ * For example, suppose a file is named "numerator_cancer_cases".  A hint might be
+ * "^numerator_*", which, if it matches the name of the file, would make 
+ * this class assume that the RIFSchema field of the 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetConfiguration} should be
+ * "health numerator data". When the data set configuration is created to hold 
+ * properties of the file, ConfigurationHints would set the RIF Schema Area 
+ * automatically based on the fact that the file name matched the name of a hint
+ * which indicates the RIF schema area should be a numerator.
+ * </p>
+ * 
+ * <p>
+ * As another example, a CSV field may be named "birth_date" and a hint might be
+ * "*_date*".  The hint may indicate that the RIFDataType should be set to Date
+ * or another data type that can validate and clean a date field..
+ * </p> 
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
@@ -62,9 +101,21 @@ public class ConfigurationHints {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	
+	/**
+	 * Hints for general data set configuration fields
+	 * (eg: version, name, description).  They store regular expressions that
+	 * attempt to match the name of the imported CSV file.
+	 */
 	private ArrayList<String> dataSetCoreNamePatterns;
 	private HashMap<String, DataSetConfiguration> dataSetConfigurationFromPattern;
 	
+	/**
+	 * Hints for the fields of a 
+	 * {@link dataLoaderTool.businessConceptLayer.DataSetConfiguration}
+	 * (eg: data type, requirement level, audit level).  They store regular
+	 * expressions that attempt to match the name of a CSV file.
+	 */
 	private ArrayList<String> dataSetFieldCoreNamePatterns;
 	private HashMap<String, DataSetFieldConfiguration> dataSetFieldConfigurationFromPattern;
 		
@@ -161,6 +212,16 @@ public class ConfigurationHints {
 	
 	public void applyHintsToDataSetConfiguration(final DataSetConfiguration dataSetConfiguration) {
 		
+		/*
+		 * This is done in two steps.  First, we want to scan a data set
+		 * configuration to check whether there are any patterns that could be
+		 * assigned which could help set general properties of the data set
+		 * such as the schema area, description and version.
+		 * 
+		 * Then we go through each field of the skeleton template produced by
+		 * the CSV import and use the field name to assign other properties
+		 * (eg: field purpose, requirement level, clean field name, etc)
+		 */
 		applyGeneralDataSetHint(dataSetConfiguration);
 		String coreDataSetName = dataSetConfiguration.getName();
 		ArrayList<DataSetFieldConfiguration> fields
@@ -246,7 +307,12 @@ public class ConfigurationHints {
 		dataSetFieldToConfigure.setCoreFieldName(coreDataSetFieldName);
 		dataSetFieldToConfigure.setLoadFieldName(coreDataSetFieldName);
 	}
-	
+	/**
+	 * Applies a set of bespoke rules which cater to special fields such 
+	 * as the age/sex conversion field, the year data type or the 
+	 * geographical resolution fields.
+	 * @param fieldConfiguration
+	 */
 	private void applyOtherDataSetFieldNameRules(final DataSetFieldConfiguration fieldConfiguration) {
 		FieldRequirementLevel fieldRequirementLevel
 			= fieldConfiguration.getFieldRequirementLevel();

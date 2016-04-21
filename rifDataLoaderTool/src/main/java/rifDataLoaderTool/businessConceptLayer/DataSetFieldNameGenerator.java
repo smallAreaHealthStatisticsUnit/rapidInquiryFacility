@@ -7,8 +7,14 @@ import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import java.text.Collator;
 
 /**
- *
- *
+ * Generates names for different fields in 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetConfiguration} and 
+ *{@link rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration}.
+ * In most cases, the names will be derived based on the names and field names
+ * of CSV files.  However, the Data Loader Tool editor allows users to add
+ * additonal fields to a DataSetConfiguration.  When the new field is created,
+ * it will be given defaults based on values that are generated from the routines
+ * in this class.
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 

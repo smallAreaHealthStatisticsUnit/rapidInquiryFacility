@@ -7,7 +7,21 @@ import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import java.text.Collator;
 
 /**
- *
+ * Describes the meaning of a CSV field as it will relate to the RIF.  
+ * Knowing the meaning of a field can help set default configuration properties
+ * in data sets and detect problems in them as well.
+ * 
+ * <p>
+ * <b>An aid to setting configuration options</b>.  If a field is a 
+ * <code>GEOGRAPHICAL_RESOLUTION</code> then its <code>cleanFieldName</code>
+ * value must be the name of one of the geographical resolutions that will
+ * be supported by the RIF.  For example, if a CSV field "district_cde" is
+ * assigned a purpose of <code>GEOGRAPHICAL_RESOLUTION</code>, then users may
+ * be prompted to specify whether "district_cde" maps to the name "district",
+ * "region", or "ward".  After data cleaning, the field "district_cde" may
+ * be renamed "district" so that its name exactly corresponds with a "district"
+ * field that is defined in a shape file.
+ * </p>
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area

@@ -3,7 +3,27 @@ package rifDataLoaderTool.businessConceptLayer;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 /**
- *
+ * An interface that was designed to render items in a table with 
+ * "display name" and "description" columns rather than a list with
+ * just a "display name" value.  For convenience, it extends the interface
+ * that is already used to generally describe things in a list.  
+ * 
+ * <p>
+ * The interface was originally created to help support the data loader tool's
+ * configuration hints feature.  Normally, the name of a 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetConfiguration} or a 
+ * {@link rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration} is
+ * sufficient to let a viewer pick an item they want from a list.  
+ * </p>
+ *  
+ * <p>
+ * When these classes are used to support hints, their display names are usually
+ * cryptic-looking regular expression patterns whose meaning or purpose may not
+ * be immediately obvious.  In order to help users identify a hint by the meaning
+ * rather than the syntax of the hint expression, we needed to have a table view
+ * that could show both the expression and a description for it.
+ * </p>
+ * 
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area

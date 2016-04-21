@@ -3,7 +3,31 @@ package rifDataLoaderTool.businessConceptLayer;
 import java.util.ArrayList;
 
 /**
- *
+ * A base class that anticipates two future kinds of workflow will share
+ * common behaviour: 
+ * <ul>
+ * <li>
+ * {@link rifDataLoaderTool.businessConceptLayer.BranchedWorkflow} and
+ * </li>
+ * <li>
+ * {@link rifDataLoaderTool.businessConceptLayer.LinearWorkflow}.
+ * </li>
+ * </ul>
+ * 
+ * <p>
+ * Development priorities have favoured developing the linear work flow class
+ * and the branched workflow class at a later date.  A linear work flow is
+ * adequate to process most CSV files.  Large files are sometimes split or 
+ * merged and these will likely involve using a branched work flow.
+ * </p>
+ * 
+ * <p>
+ * In future, we may decide to require projects to split or combine large
+ * files as a pre- or post- procesing activity.  If this happens, then there 
+ * will be no need for the Data Loader Tool to support a branched work flow.
+ * </p>
+ * 
+ * 
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area

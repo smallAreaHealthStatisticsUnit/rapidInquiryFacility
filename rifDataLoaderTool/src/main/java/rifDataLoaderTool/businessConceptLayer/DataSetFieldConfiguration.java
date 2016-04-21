@@ -22,6 +22,27 @@ import java.util.Objects;
  * <code>optimise_using_index</code> will only be relevant if the data set reaches
  * the Optimise step of a {@link rifDataLoaderTool.businessConceptLayer.LinearWorkflow}
  *
+ * <p>
+ * This class is used in two context: as a set of configuration options for a CSV
+ * field and as a configuration hint that is used to help set those options.  When
+ * it is used as a set of configurations, its core field name will have a name
+ * taken from a CSV field.  When it is used as a configuration hint, the name
+ * will represent a regular expression pattern.  When the name of a hint is matched
+ * with the name of a set of configurations, settings in the hint will be copied into
+ * the configuration options.
+ * </p>
+ * 
+ * <p>
+ * For example, "age" may be the core field name assigned to a 
+ * <code>DataSetFieldConfiguration</code> that comes from a CSV file.  A hint
+ * with the core field name "^age$" may be used to find a match with any field
+ * which starts with an "a", followed by a a "g", followed by and "e" and then
+ * terminates.  In the matching process, settings in the hint 
+ * <code>DataSetFieldConfiguration</code> will be used to set corresponding
+ * fields in the <code>DataSetFieldConfiguration</code> that describes the 
+ * configuration options that will be used for the field "age".
+ * </p>
+ * 
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 

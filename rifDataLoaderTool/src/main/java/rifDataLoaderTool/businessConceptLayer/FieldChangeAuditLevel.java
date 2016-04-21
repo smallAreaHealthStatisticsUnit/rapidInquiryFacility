@@ -8,8 +8,62 @@ import java.text.Collator;
 
 
 /**
- *
- *
+ * Describes different extents to which the Data Loader Tool will audit
+ * changes made to a field.  The three levels that are supported are 
+ * described in the following table:
+ * 
+ * <p>
+ * </p>
+ * 
+ * <table>
+ * <tr>
+ * <th>Level</th>
+ * <th>Description</th>
+ * </tr>
+ * 
+ * <tr>
+ * <td>
+ * <code>NONE</code>
+ * </td>
+ * <td>
+ * Do not record anything when a field value is changed.  This is often useful
+ * when either it isn't important to know how a field changes or it is expected
+ * to change the format but not the meaning of all of a field's values.  For 
+ * example, consider a postal code field where all the entries use lower case
+ * letters but a project wants to use only upper case characters.  Changing a 
+ * postal code from "n1 9fz" to "N1 9FZ" may change the format but it won't change
+ * the meaning.  If it is expected that a change will affect thousands of field values
+ * then database administrators may prefer not to flood their change logs with useless
+ * information.
+ * </td>
+ * </tr>
+ * </td>
+ * 
+ * <tr>
+ * <td>
+ * <code>INCLUDE_FIELD_NAME_ONLY</code>
+ * </td>
+ * <td>
+ * Records a change of the form "X" where X represents the field name.  For example,
+ * consider a field "ethnicity" where many specialised ethnicity codes are merged into
+ * fewer categories.  Administrators may want to know that a patient's age has been
+ * mapped, but not that their age has been mapped from 23 to 20-25.  This setting is
+ * useful when it is useful to know that a field has been changed but prevent sensitive
+ * information from being written to a log file.
+ * </td>
+ * </tr>
+ * <tr>
+ * <code>INCLUDE_FIELD_CHANGE_DESCRIPTION</code>
+ * <td>
+ * Using this settings, a field change will be recorded with a message of the form:
+ * <code>"Field X was changed from Y to Z"</code>.  We suggest you use this setting for 
+ * non-sensitive fields where only a few values are expected to be changed through
+ * cleaning routines.
+ * </td>
+ * <td>
+ * </td>
+ * </tr>
+ * 
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 

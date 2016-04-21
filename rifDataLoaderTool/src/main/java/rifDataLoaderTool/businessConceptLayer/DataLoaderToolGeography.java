@@ -11,7 +11,14 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 /**
- *
+ * This is the concept of a Geography as the Data Loader Tool would understand
+ * it, rather than the {@link rifServices.businessConceptLayer.Geography}
+ * concept that is used within the web-based epidemiology applications.
+ * <p>
+ * Here, a geography has a name (eg: England) and then a collection of shape
+ * files which cover the same area but at different resolutions (eg: England
+ * districts, wards, regions).
+ * </p>
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
