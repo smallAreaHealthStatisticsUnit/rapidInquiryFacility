@@ -1,6 +1,5 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.fileFormats.ShapeFileMetaDataExtractor;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -9,7 +8,19 @@ import java.io.File;
 import java.util.ArrayList;
 
 /**
- *
+ * Defines the methods in the desktop front end (see most of the classes in the
+ * <code> rifDataLoaderTool.presentationLayer</code> package use).  The
+ * methods are designed to help make it easier to do automated testing on the
+ * business logic without requiring an interactive user interface.  The other
+ * benefit is that having the API will make it easier to eventually substitute
+ * a Java Swing front end with another kind of front end - such as a web application
+ * or some other desktop widget library.
+ * 
+ * <p>
+ * The API also helps to mask calls the data loader tool may have to make to 
+ * the Shape File conversion service.  This specialised service will be responsible
+ * for converting shape files into a topJSON format.
+ * </p>
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
@@ -59,7 +70,7 @@ import java.util.ArrayList;
  */
 
 public interface DataLoaderServiceAPI {
-	public void initialiseService()
+	public void initialiseService(final DataLoaderToolSettings dataLoaderToolSettings)
 		throws RIFServiceException;
 	
 	public void login(
