@@ -61,6 +61,7 @@ public class RIFDatabaseConnectionParameters {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private String databaseDriverClassName;
 	private DatabaseType databaseType;
 	private String databaseDriverPrefix;
 	private String databaseName;
@@ -75,6 +76,7 @@ public class RIFDatabaseConnectionParameters {
 	private RIFDatabaseConnectionParameters() {
 		databaseType = DatabaseType.POSTGRESQL;
 		
+		databaseDriverClassName = "org.postgresql.Driver";
 		databaseDriverPrefix = "jdbc:postgresql";
 		databaseName = "tmp_sahsu_db";
 		portName = "5432";
@@ -91,10 +93,19 @@ public class RIFDatabaseConnectionParameters {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public String getDatabaseDriverClassName() {
+		return databaseDriverClassName;
+	}
+
+	public void setDatabaseDriverClassName(String databaseDriverClassName) {
+		this.databaseDriverClassName = databaseDriverClassName;
+	}
+		
 	public DatabaseType getDatabaseType() {
 		return databaseType;
 	}
-	
+
 	public void setDatabaseType(DatabaseType databaseType) {
 		this.databaseType = databaseType;
 	}
