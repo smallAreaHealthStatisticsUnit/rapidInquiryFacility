@@ -1,7 +1,6 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
 
 import rifGenericLibrary.presentationLayer.*;
@@ -78,7 +77,6 @@ class InitialiseDemoDatabaseDialog
 	private RIFDatabaseConnectionParameters databaseConnectionParameters;
 	
 	//GUI Components
-	private UserInterfaceFactory userInterfaceFactory;	
 	private JTextField databaseNameTextField;
 	private JTextField portTextField;
 	private JTextField hostTextField;		
@@ -102,7 +100,9 @@ class InitialiseDemoDatabaseDialog
 		setSize(350, 220);
 	}
 
-	private JPanel createMainPanel() {		
+	private JPanel createMainPanel() {
+		UserInterfaceFactory userInterfaceFactory
+			= getUserInterfaceFactory();
 		JPanel panel = userInterfaceFactory.createPanel();
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
@@ -122,7 +122,11 @@ class InitialiseDemoDatabaseDialog
 		return panel;
 	}
 	
-	private JPanel createFieldPanel() {		
+	private JPanel createFieldPanel() {	
+
+		UserInterfaceFactory userInterfaceFactory
+			= getUserInterfaceFactory();
+		
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
 		JPanel panel = userInterfaceFactory.createPanel();
@@ -265,11 +269,6 @@ class InitialiseDemoDatabaseDialog
 		populateForm();
 	}
 	
-	public void setDataLoaderStartupOptions(
-		final RIFDataLoaderStartupOptions rifDataLoaderStartupOptions) {
-		
-	}
-
 	private void populateForm() {
 		
 		databaseNameTextField.setText(

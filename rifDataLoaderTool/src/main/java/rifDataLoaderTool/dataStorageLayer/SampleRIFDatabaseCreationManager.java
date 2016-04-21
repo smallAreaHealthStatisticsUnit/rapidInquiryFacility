@@ -1,15 +1,17 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
+
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
-import rifDataLoaderTool.system.RIFDataLoaderStartupOptions;
 
 import java.io.File;
 import java.io.FileReader;
@@ -82,16 +84,16 @@ public class SampleRIFDatabaseCreationManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDataLoaderStartupOptions startupOptions;
+	private DataLoaderToolSettings dataLoaderToolSettings;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public SampleRIFDatabaseCreationManager(
-		final RIFDataLoaderStartupOptions startupOptions) {
+		final DataLoaderToolSettings dataLoaderToolSettings) {
 
-		this.startupOptions = startupOptions;
+		this.dataLoaderToolSettings = dataLoaderToolSettings;
 	}
 	
 	// ==========================================
@@ -113,15 +115,17 @@ public class SampleRIFDatabaseCreationManager {
 			String userID = (String) userLoginResourceBundle.getObject("userID");
 			String password = (String) userLoginResourceBundle.getObject("password");
 			
-			
+			RIFDatabaseConnectionParameters dbParameters
+				= dataLoaderToolSettings.getDatabaseConnectionParameters();
 			StringBuilder urlText = new StringBuilder();
-			urlText.append(startupOptions.getJDBCDriverPrefix());
+			urlText.append(dbParameters.getDatabaseDriverPrefix());
 			urlText.append(":");
 			urlText.append("//");
-			urlText.append(startupOptions.getHost());
+			urlText.append(dbParameters.getHostName());
 			urlText.append(":");
-			urlText.append(startupOptions.getPort());
-			urlText.append("/");
+			urlText.append(dbParameters.getPortName());
+			urlText.append("/");			
+			
 			String databaseURL = urlText.toString();	
 			
 			connection
@@ -129,11 +133,11 @@ public class SampleRIFDatabaseCreationManager {
 			SQLGeneralQueryFormatter queryFormatter
 				= new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryPhrase("DROP DATABASE IF EXISTS ");
-			queryFormatter.addQueryPhrase(startupOptions.getDatabaseName());
+			queryFormatter.addQueryPhrase(dbParameters.getDatabaseName());
 			queryFormatter.addQueryPhrase(";");
 			queryFormatter.finishLine();
 			queryFormatter.addQueryPhrase("CREATE DATABASE ");
-			queryFormatter.addQueryPhrase(startupOptions.getDatabaseName());
+			queryFormatter.addQueryPhrase(dbParameters.getDatabaseName());
 			queryFormatter.addQueryPhrase(";");
 			queryFormatter.finishLine();
 
@@ -169,14 +173,16 @@ public class SampleRIFDatabaseCreationManager {
 		Connection connection = null;		
 		try {
 			StringBuilder urlText = new StringBuilder();
-			urlText.append(startupOptions.getJDBCDriverPrefix());
+			RIFDatabaseConnectionParameters dbParameters
+				= dataLoaderToolSettings.getDatabaseConnectionParameters();
+			urlText.append(dbParameters.getDatabaseDriverPrefix());
 			urlText.append(":");
 			urlText.append("//");
-			urlText.append(startupOptions.getHost());
+			urlText.append(dbParameters.getHostName());
 			urlText.append(":");
-			urlText.append(startupOptions.getPort());
+			urlText.append(dbParameters.getPortName());
 			urlText.append("/");
-			urlText.append(startupOptions.getDatabaseName());
+			urlText.append(dbParameters.getDatabaseName());
 			String databaseURL = urlText.toString();			
 			
 			

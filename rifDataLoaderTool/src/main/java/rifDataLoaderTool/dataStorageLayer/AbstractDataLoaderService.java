@@ -113,6 +113,7 @@ abstract class AbstractDataLoaderService
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private DataLoaderToolSettings dataLoaderToolSettings;
 	
 	private SQLConnectionManager sqlConnectionManager;
 	private DataSetManager dataSetManager;
@@ -145,9 +146,13 @@ abstract class AbstractDataLoaderService
 			= new ArrayList<DataSetConfiguration>();
 	}
 	
-	public void initialiseService() 
+	public void initialiseService(final DataLoaderToolSettings dataLoaderToolSettings) 
 		throws RIFServiceException {
 
+		this.dataLoaderToolSettings = dataLoaderToolSettings;
+		RIFDatabaseConnectionParameters dbParameters
+			= dataLoaderToolSettings.getDatabaseConnectionParameters();
+		
 		//RIFServiceStartupOptions rifServiceStartupOptions
 		//	= RIFServiceStartupOptions.newInstance(false, true);
 		
@@ -156,6 +161,7 @@ abstract class AbstractDataLoaderService
 		String host = "localhost";
 		String port = "5432";
 		String databaseName = "tmp_sahsu_db";
+
 		sqlConnectionManager
 			= new SQLConnectionManager(
 				databaseDriverName,
@@ -163,6 +169,15 @@ abstract class AbstractDataLoaderService
 				host,
 				port,
 				databaseName);
+
+		sqlConnectionManager
+			= new SQLConnectionManager(
+				dbParameters.getDatabaseDriverClassName(),
+				dbParameters.getDatabaseDriverPrefix(),
+				dbParameters.getHostName(),
+				dbParameters.getPortName(),
+				databaseName);
+		
 		sqlConnectionManager.initialiseConnectionQueue();
 
 		dataSetManager = new DataSetManager();

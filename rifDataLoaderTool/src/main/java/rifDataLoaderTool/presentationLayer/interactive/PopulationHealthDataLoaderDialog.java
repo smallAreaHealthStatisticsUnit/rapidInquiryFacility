@@ -482,8 +482,12 @@ class PopulationHealthDataLoaderDialog
 			
 			DataLoaderServiceAPI dataLoaderService
 				= session.getDataLoaderService();
-			dataLoaderService = new ProductionDataLoaderService();			
-			dataLoaderService.initialiseService();	
+			dataLoaderService = new ProductionDataLoaderService();	
+			
+			DataLoaderToolSettings dataLoaderToolSettings
+				= session.getDataLoaderToolSettings();
+			
+			dataLoaderService.initialiseService(dataLoaderToolSettings);	
 
 			LinearWorkflowEnactor linearWorkflowEnactor
 				= new LinearWorkflowEnactor(
