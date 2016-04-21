@@ -96,7 +96,7 @@ final class RIFDataLoaderConfigurationHandler
 	
 	private DatabaseConnectionConfigurationHandler databaseConnectionConfigurationHandler;
 	private GeographyConfigurationHandler geographyConfigurationHandler;
-	private ConfigurationHintsHandler configurationHintsHandler;
+	private HintsConfigurationHandler configurationHintsHandler;
 	private RIFDataTypeConfigurationHandler rifDataTypeConfigurationHandler;
 	private LinearWorkflowConfigurationHandler linearWorkflowConfigurationHandler;
 		
@@ -115,7 +115,7 @@ final class RIFDataLoaderConfigurationHandler
 		
 		setSingularRecordName("rif_data_loader_settings");
 		rifDataTypeConfigurationHandler = new RIFDataTypeConfigurationHandler();
-		configurationHintsHandler = new ConfigurationHintsHandler();
+		configurationHintsHandler = new HintsConfigurationHandler();
 		configurationHintsHandler.setDataTypeFactory(rifDataTypeFactory);
 		configurationHintsHandler.setConfigurationHints(configurationHints);
 		databaseConnectionConfigurationHandler
