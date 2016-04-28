@@ -99,7 +99,10 @@ shpConvertFieldProcessor=function(fieldname, val, shapefile_options, ofields, re
  *				shapefile options
  * Returns:		Nothing
  * Description: Generate UUID if required, process all files into ShpList
- *				Check which files and extensions are present, convert shapefiles to geoJSON, simplify etc		
+ *				Check which files and extensions are present, convert shapefiles to geoJSON, simplify etc	
+ *
+ *				Calls shpConvertFileProcessor() in a queue to process each component file
+ *				On queue end, call: shpConvertCheckFiles() - check which files and extensions are present, convert shapefile to geoJSON, simplify etc			  
  */	 
 shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {							
 	var shpList = {};
@@ -405,7 +408,7 @@ So write in pieces...
  *				uuidV1, HTTP request object, callback
  * Returns:		Rval object { file_errors, msg, total shapefiles }
  * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save shapefile to temporary directory
- *				Called once per file
+ *				Called once per file from shapeFileComponentQueue
  */
 shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, shapeFileComponentQueueCallback) {
 		
@@ -516,14 +519,19 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
 	}
 }
 	
-	
 /*
  * Function:	shpConvertCheckFiles()
  * Parameters:	Shapefile list, response object, total shapefiles, ofields [field parameters array], 
  *				RIF logging object, express HTTP request object, express HTTP response object, shapefile options
  * Returns:		Rval object { file_errors, msg }
  * Description: Check which files and extensions are present, convert shapefiles to geoJSON
- * 				Called after all shapefile compoents have been saved to disk
+ * 				Called after all shapefile components have been saved to disk
+ *
+ * create shapeFileQueue to process each shapefile, call readShapeFile to read shapefile, process bounding box, convert to WGS84 if required
+ * On end of shapeFileQueue:
+ *				Re-order shapefiles by total areas; check all bounding boxes are the same
+ * 				Setup and write XML config
+ *				Process errors and retiurn response
  */
 shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, req, res, shapefile_options) {
 	const os = require('os'),
@@ -848,6 +856,12 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 					response.file_list[shapefileData["shapefile_no"]-1].topojson_length=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson).length;
 	//					response.file_list[shapefileData["shapefile_no"]-1].geojson.features=undefined;
 				}
+			
+//		var end=new Date().getTime();
+
+//		shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
+//		shapefileData["writeTime"]=(end - shapefileData["lstart"])/1000; // in S	
+				
 				shpConvertWriteFile(shapefileData["jsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
 					shapefileData["serverLog"], shapefileData["uuidV1"], shapefileData["req"], response, shapefileData["callback"]);
 				// shpConvertWriteFile runs callback
@@ -885,7 +899,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	 *				time to write file,
 	 *				JSON file name with path, response object, shapefile number
 	 * Returns:		Nothing
-	 * Description: Read shapefile
+	 * Description: Read shapefile, process bounding box, convert to WGS84 if required
 	 */
 	var readShapeFile = function(shapefileData) {
 		
@@ -993,8 +1007,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 
 	// Set up async queue; 1 worker
 	var shapeFileQueue = async.queue(function(shapefileData, shapeFileQueueCallback) {
-	
-//		var end=new Date().getTime();
+
 		
 		// Wait for shapefile to appear
 		// This continues processing, return control to core calling function
@@ -1004,14 +1017,16 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 		shapefileData["callback"]=shapeFileQueueCallback; // Register callback for readShapeFile
 		shapefileData["serverLog"]=serverLog;
 
-//		shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
-//		shapefileData["writeTime"]=(end - shapefileData["lstart"])/1000; // in S	
 		readShapeFile(shapefileData); // Does callback();
 	}, 1 /* Single threaded - shapefileData needs to become an object */); // End of async.queue()
 
 	/* 
 	 * Function: 	shpConvertFieldProcessor().q.drain()
 	 * Description: Async module drain function assign a callback at end of processing
+	 *
+	 *				Re-order shapefiles by total areas; check all bounding boxes are the same
+	 * 				Setup and write XML config
+	 *				Process errors and retiurn response
 	 */
 	shapeFileQueue.drain = function() {
 		var os = require('os');
@@ -1043,7 +1058,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 			var msg="All " + response.no_files + " shapefiles have been processed";
 							// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
 
-			// Re-order shapefiles by total areas
+			// Re-order shapefiles by total areas; check all bounding boxes are the same
 			var geolevels = [];
 			var bbox=response.file_list[0].boundingBox;
 			var bbox_errors=0;
