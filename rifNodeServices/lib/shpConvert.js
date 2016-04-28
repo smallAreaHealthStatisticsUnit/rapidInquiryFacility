@@ -233,11 +233,242 @@ shpConvertFieldProcessor=function(fieldname, val, shapefile_options, ofields, re
 }
 
 /*
+ * Function:	shpConvertFileProcessor()
+ * Parameters:	d object (temporary processing data), Shapefile list, total shapefiles, response object, 
+ *				uuidV1, HTTP request object, callback
+ * Returns:		Rval object { file_errors, msg, total shapefiles }
+ * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save shapefile to temporary directory
+ *				Called once per file
+ */
+shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, shapeFileComponentQueueCallback) {
+		
+	/*
+	 * Function:	createTemporaryDirectory()
+	 * Parameters:	Directory component array [$TEMP/shpConvert, <uuidV1>, <fileNoext>]
+	 * Returns:		Final directory (e.g. $TEMP/shpConvert/<uuidV1>/<fileNoext>)
+	 * Description: Create temporary directory (for shapefiles)
+	 */
+	createTemporaryDirectory = function(dirArray, response, req) {
+		const fs = require('fs');
+
+		var tdir;
+		for (var i = 0; i < dirArray.length; i++) {  
+			if (!tdir) {
+				tdir=dirArray[i];
+			}
+			else {
+				tdir+="/" + dirArray[i];
+			}	
+			try {
+				var stats=fs.statSync(tdir);
+			} catch (e) { 
+				if (e.code == 'ENOENT') {
+					try {
+						fs.mkdirSync(tdir);
+						response.message += "\nmkdir: " + tdir;
+					} catch (e) { 
+						serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
+							"ERROR: Cannot create directory: " + tdir + "; error: " + e.message, req);
+//							shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
+					}			
+				}
+				else {
+					serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
+						"ERROR: Cannot access directory: " + tdir + "; error: " + e.message, req);
+//						 shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 					
+				}
+			}
+		}
+		return tdir;
+	} /* End of createTemporaryDirectory() */;
+	
+	const os = require('os'),
+	      fs = require('fs'),
+	      path = require('path');
+ 
+	var extName = path.extname(d.file.file_name);
+	var fileNoext = path.basename(d.file.file_name, extName);
+	var extName2 = path.extname(fileNoext); /* undefined if .shp, dbf etc; */
+	if (extName == ".xml") {
+		while (extName2) { 		// deal with funny ESRI XML files: .shp.xml, .shp.iso.xml, .shp.ea.iso.xml 
+			extName=extName2 + extName;
+			fileNoext = path.basename(d.file.file_name, extName);
+			extName2 = path.extname(fileNoext); 
+		}
+	}
+
+//	
+// Shapefile checks
+//	
+	if (!shpList[fileNoext]) { // Use file name without the extension as an index into the shapefile lisy
+		shpList[fileNoext] = {
+			fileName: d.file.file_name,
+			transfer_time: 0,
+			hasShp: false,
+			hasPrj: false,
+			hasDbf: false
+		};
+	}
+	shpList[fileNoext].transfer_time=d.file.transfer_time;
+	
+	// Check for shp, dbf and prj extensions
+	if (extName == '.shp') {
+		shpList[fileNoext].hasShp=true;
+		response.message+="\nhasShp for file: " + shpList[fileNoext].fileName;
+	}
+	else if (extName == '.prj') {
+		shpList[fileNoext].hasPrj=true;
+		response.message+="\nhasPrj for file: " + shpList[fileNoext].fileName;
+	}
+	else if (extName == '.dbf') {
+		shpList[fileNoext].hasDbf=true;
+		response.message+="\nhasDbf for file: " + shpList[fileNoext].fileName;
+	}
+	else {
+		response.message+="\nIgnore extension: " + extName + " for file: " + shpList[fileNoext].fileName;
+	}
+	
+//	
+// Create directory: $TEMP/shpConvert/<uuidV1>/<fileNoext> as required
+//
+	var dirArray=[os.tmpdir() + "/shpConvert", uuidV1, fileNoext];
+	dir=createTemporaryDirectory(dirArray, response, req);
+	
+//	
+// Write file to directory
+//	
+	var file=dir + "/" + fileNoext + extName;
+	if (fs.existsSync(file)) { // Exists
+		serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
+			"ERROR: Cannot write file, already exists: " + file, req);
+//			shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
+	}
+	else {
+		shpConvertWriteFile(file, d.file.file_data, serverLog, uuidV1, req, response, shapeFileComponentQueueCallback);
+//		response.message += "\nSaving file: " + file;
+	}
+}
+	
+/*
+ * Function:	shpConvert()
+ * Parameters:	Ofields array, files array, response object, HTTP request object, HTTP response object
+ *				shapefile options
+ * Returns:		Nothing
+ * Description: Generate UUID if required, process all files into ShpList
+ *				Check which files and extensions are present, convert shapefiles to geoJSON, simplify etc		
+ */	 
+shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {							
+	var shpList = {};
+	var shpTotal=0;		
+
+	const serverLog = require('../lib/serverLog'),
+	      httpErrorResponse = require('../lib/httpErrorResponse'),
+		  async = require('async'); 
+
+	if (!req) {
+		throw new Error("No HTTP request object [out of scope]");
+	}		  
+	if (!res) {
+		throw new Error("No HTTP response object [out of scope]");
+	}
+	if (!ofields["uuidV1"]) { // Generate UUID
+		ofields["uuidV1"]=serverLog.generateUUID();
+	}
+
+	// Set up async queue; 1 worker
+	var shapeFileComponentQueue = async.queue(function(fileData, shapeFileComponentQueueCallback) {
+		shpConvertFileProcessor(fileData["d"], fileData["shpList"], fileData["shpTotal"], fileData["response"], fileData["uuidV1"], fileData["req"], shapeFileComponentQueueCallback);	
+	}, 1 /* Single threaded - fileData needs to become an object */); // End of async.queue()
+	
+	/*
+	 * Function:	shapeFileComponentQueue.drain()
+	 * Parameters: 	None
+	 * Returns:		N/A; calls shpConvertCheckFiles() to check which files and extensions are present, convert shapefile to geoJSON, simplify etc
+	 * Description: Async queue drain function; mwhen when all shapefile components have been processed 
+	 */
+	shapeFileComponentQueue.drain = function() {
+		shpTotal=Object.keys(shpList).length;
+		
+		// Free up memory
+		for (var i = 0; i < response.no_files; i++) {
+//			response.message+="\nFreeing " + d_files.d_list[i].file.file_size + " bytes for file: " + d_files.d_list[i].file.file_name;
+			d_files.d_list[i].file.file_data=undefined;
+			if (global.gc && d_files.d_list[i].file.file_size > (1024*1024*500)) { // GC if file > 500M
+				serverLog.serverLog2(__file, __line, "Force garbage collection for file: " + d_files.d_list[i].file.file_name, fileData["req"]);
+				global.gc();
+			}
+		}
+	
+		if (!shpTotal || shpTotal == 0) {
+			var msg="ERROR! no shapefiles found";
+			response.file_errors++;	
+			response.message = msg + "\n" + response.message;
+		
+			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvert", 
+				serverLog, 500, req, res, msg, undefined, response);			
+		}
+		response.no_files=shpTotal;				// Add number of files process to response
+		response.fields=ofields;				// Add return fields	
+		
+		// Call: shpConvertCheckFiles() - check which files and extensions are present, convert shapefile to geoJSON, simplify etc						
+		rval=shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
+			req, res, shapefile_options);
+		if (rval.file_errors > 0 ) {
+			response.file_errors+=rval.file_errors;	
+			response.message = rval.msg + "\n" + response.message;
+		
+			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvert", 
+				serverLog, 500, req, res, rval.msg, undefined, response);							
+		}		
+	} // End of shapeFileComponentQueue.drain()
+		
+	for (var i = 0; i < response.no_files; i++) {
+		var fileData = {
+			d:			d_files.d_list[i],
+			shpList: 	shpList,
+			shpTotal: 	shpList.length,
+			response: 	response,
+			uuidV1: 	ofields["uuidV1"],
+			i: 			0,
+			req: 		req
+		}
+		
+		fileData.i=i;
+		response.message+="\nQueued file for shpConvertFileProcessor[" + fileData["i"] + "]: " + fileData.d.file.file_name;
+		// Add to queue			
+//		serverLog.serverLog2(__file, __line, "shpConvert", 
+//		"In shpConvertFileProcessor(), queue[" + fileData["i"] + "]: " + fileData.d.file.file_name);
+
+		shapeFileComponentQueue.push(fileData, function(err) {
+			if (err) {
+//				var msg='ERROR! [' + fileData["uuidV1"] + '] in shapefile read: ' + fileData.d.file.file_name;
+				var msg="Error! in shpConvertFileProcessor()";
+				
+				response.message+="\n" + msg;	
+				response.file_errors++;
+				serverLog.serverLog2(__file, __line, "shpConvertFileProcessor().shapeFileComponentQueue.push()", msg, 
+					fileData["req"], err);	
+			} // End of err		
+			// else {
+				// response.message+="\nCompleted processing file[" + fileData["i"] + "]: " + fileData.d.file.file_name;
+				//
+				// Release memory
+				//fileData.d.file.file_data=undefined; // NO DONT - STILL IN USE i = i == end of loop; as is fileData
+			// }
+		});	
+										
+	} // End of for loop	
+	
+} // End of shpConvert()
+	
+
+/*
  * Function:	shpConvertCheckFiles()
  * Parameters:	Shapefile list, response object, total shapefiles, ofields [field parameters array], 
  *				RIF logging object, express HTTP request object, express HTTP response object, shapefile options
  * Returns:		Rval object { file_errors, msg }
  * Description: Check which files and extensions are present, convert shapefiles to geoJSON
+ * 				Called after all shapefile compoents have been saved to disk
  */
 shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, req, res, shapefile_options) {
 	const os = require('os'),
@@ -1029,236 +1260,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 
 	return rval;
 }
-	
-/*
- * Function:	shpConvertFileProcessor()
- * Parameters:	d object (temporary processing data), Shapefile list, total shapefiles, response object, 
- *				uuidV1, HTTP request object, callback
- * Returns:		Rval object { file_errors, msg, total shapefiles }
- * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save shapefile to temporary directory
- *				Called once per file
- */
-shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, shapeFileComponentQueueCallback) {
 		
-	/*
-	 * Function:	createTemporaryDirectory()
-	 * Parameters:	Directory component array [$TEMP/shpConvert, <uuidV1>, <fileNoext>]
-	 * Returns:		Final directory (e.g. $TEMP/shpConvert/<uuidV1>/<fileNoext>)
-	 * Description: Create temporary directory (for shapefiles)
-	 */
-	createTemporaryDirectory = function(dirArray, response, req) {
-		const fs = require('fs');
-
-		var tdir;
-		for (var i = 0; i < dirArray.length; i++) {  
-			if (!tdir) {
-				tdir=dirArray[i];
-			}
-			else {
-				tdir+="/" + dirArray[i];
-			}	
-			try {
-				var stats=fs.statSync(tdir);
-			} catch (e) { 
-				if (e.code == 'ENOENT') {
-					try {
-						fs.mkdirSync(tdir);
-						response.message += "\nmkdir: " + tdir;
-					} catch (e) { 
-						serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
-							"ERROR: Cannot create directory: " + tdir + "; error: " + e.message, req);
-//							shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
-					}			
-				}
-				else {
-					serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
-						"ERROR: Cannot access directory: " + tdir + "; error: " + e.message, req);
-//						 shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 					
-				}
-			}
-		}
-		return tdir;
-	} /* End of createTemporaryDirectory() */;
-	
-	const os = require('os'),
-	      fs = require('fs'),
-	      path = require('path');
- 
-	var extName = path.extname(d.file.file_name);
-	var fileNoext = path.basename(d.file.file_name, extName);
-	var extName2 = path.extname(fileNoext); /* undefined if .shp, dbf etc; */
-	if (extName == ".xml") {
-		while (extName2) { 		// deal with funny ESRI XML files: .shp.xml, .shp.iso.xml, .shp.ea.iso.xml 
-			extName=extName2 + extName;
-			fileNoext = path.basename(d.file.file_name, extName);
-			extName2 = path.extname(fileNoext); 
-		}
-	}
-
-//	
-// Shapefile checks
-//	
-	if (!shpList[fileNoext]) { // Use file name without the extension as an index into the shapefile lisy
-		shpList[fileNoext] = {
-			fileName: d.file.file_name,
-			transfer_time: 0,
-			hasShp: false,
-			hasPrj: false,
-			hasDbf: false
-		};
-	}
-	shpList[fileNoext].transfer_time=d.file.transfer_time;
-	
-	// Check for shp, dbf and prj extensions
-	if (extName == '.shp') {
-		shpList[fileNoext].hasShp=true;
-		response.message+="\nhasShp for file: " + shpList[fileNoext].fileName;
-	}
-	else if (extName == '.prj') {
-		shpList[fileNoext].hasPrj=true;
-		response.message+="\nhasPrj for file: " + shpList[fileNoext].fileName;
-	}
-	else if (extName == '.dbf') {
-		shpList[fileNoext].hasDbf=true;
-		response.message+="\nhasDbf for file: " + shpList[fileNoext].fileName;
-	}
-	else {
-		response.message+="\nIgnore extension: " + extName + " for file: " + shpList[fileNoext].fileName;
-	}
-	
-//	
-// Create directory: $TEMP/shpConvert/<uuidV1>/<fileNoext> as required
-//
-	var dirArray=[os.tmpdir() + "/shpConvert", uuidV1, fileNoext];
-	dir=createTemporaryDirectory(dirArray, response, req);
-	
-//	
-// Write file to directory
-//	
-	var file=dir + "/" + fileNoext + extName;
-	if (fs.existsSync(file)) { // Exists
-		serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
-			"ERROR: Cannot write file, already exists: " + file, req);
-//			shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
-	}
-	else {
-		shpConvertWriteFile(file, d.file.file_data, serverLog, uuidV1, req, response, shapeFileComponentQueueCallback);
-//		response.message += "\nSaving file: " + file;
-	}
-}
-	
-/*
- * Function:	shpConvert()
- * Parameters:	Ofields array, files array, response object, HTTP request object, HTTP response object
- *				shapefile options
- * Returns:		Nothing
- * Description: Generate UUID if required, process all files into ShpList
- *				Check which files and extensions are present, convert shapefiles to geoJSON, simplify etc		
- */	 
-shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {							
-	var shpList = {};
-	var shpTotal=0;		
-
-	const serverLog = require('../lib/serverLog'),
-	      httpErrorResponse = require('../lib/httpErrorResponse'),
-		  async = require('async'); 
-
-	if (!req) {
-		throw new Error("No HTTP request object [out of scope]");
-	}		  
-	if (!res) {
-		throw new Error("No HTTP response object [out of scope]");
-	}
-	if (!ofields["uuidV1"]) { // Generate UUID
-		ofields["uuidV1"]=serverLog.generateUUID();
-	}
-
-	// Set up async queue; 1 worker
-	var shapeFileComponentQueue = async.queue(function(fileData, shapeFileComponentQueueCallback) {
-		shpConvertFileProcessor(fileData["d"], fileData["shpList"], fileData["shpTotal"], fileData["response"], fileData["uuidV1"], fileData["req"], shapeFileComponentQueueCallback);	
-	}, 1 /* Single threaded - fileData needs to become an object */); // End of async.queue()
-	
-	/*
-	 * Function:	shapeFileComponentQueue.drain()
-	 * Parameters: 	None
-	 * Returns:		N/A; calls shpConvertCheckFiles() to check which files and extensions are present, convert shapefile to geoJSON, simplify etc
-	 * Description: Async queue drain function; mwhen when all shapefile components have been processed 
-	 */
-	shapeFileComponentQueue.drain = function() {
-		shpTotal=Object.keys(shpList).length;
-		
-		// Free up memory
-		for (var i = 0; i < response.no_files; i++) {
-//			response.message+="\nFreeing " + d_files.d_list[i].file.file_size + " bytes for file: " + d_files.d_list[i].file.file_name;
-			d_files.d_list[i].file.file_data=undefined;
-			if (global.gc && d_files.d_list[i].file.file_size > (1024*1024*500)) { // GC if file > 500M
-				serverLog.serverLog2(__file, __line, "Force garbage collection for file: " + d_files.d_list[i].file.file_name, fileData["req"]);
-				global.gc();
-			}
-		}
-	
-		if (!shpTotal || shpTotal == 0) {
-			var msg="ERROR! no shapefiles found";
-			response.file_errors++;	
-			response.message = msg + "\n" + response.message;
-		
-			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvert", 
-				serverLog, 500, req, res, msg, undefined, response);			
-		}
-		response.no_files=shpTotal;				// Add number of files process to response
-		response.fields=ofields;				// Add return fields	
-		
-		// Check which files and extensions are present, convert shapefile to geoJSON, simplify etc						
-		rval=shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
-			req, res, shapefile_options);
-		if (rval.file_errors > 0 ) {
-			response.file_errors+=rval.file_errors;	
-			response.message = rval.msg + "\n" + response.message;
-		
-			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvert", 
-				serverLog, 500, req, res, rval.msg, undefined, response);							
-		}		
-	} // End of shapeFileComponentQueue.drain()
-		
-	for (var i = 0; i < response.no_files; i++) {
-		var fileData = {
-			d:			d_files.d_list[i],
-			shpList: 	shpList,
-			shpTotal: 	shpList.length,
-			response: 	response,
-			uuidV1: 	ofields["uuidV1"],
-			i: 			0,
-			req: 		req
-		}
-		
-		fileData.i=i;
-		response.message+="\nQueued file for shpConvertFileProcessor[" + fileData["i"] + "]: " + fileData.d.file.file_name;
-		// Add to queue			
-//		serverLog.serverLog2(__file, __line, "shpConvert", 
-//		"In shpConvertFileProcessor(), queue[" + fileData["i"] + "]: " + fileData.d.file.file_name);
-
-		shapeFileComponentQueue.push(fileData, function(err) {
-			if (err) {
-//				var msg='ERROR! [' + fileData["uuidV1"] + '] in shapefile read: ' + fileData.d.file.file_name;
-				var msg="Error! in shpConvertFileProcessor()";
-				
-				response.message+="\n" + msg;	
-				response.file_errors++;
-				serverLog.serverLog2(__file, __line, "shpConvertFileProcessor().shapeFileComponentQueue.push()", msg, 
-					fileData["req"], err);	
-			} // End of err		
-			// else {
-				// response.message+="\nCompleted processing file[" + fileData["i"] + "]: " + fileData.d.file.file_name;
-				//
-				// Release memory
-				//fileData.d.file.file_data=undefined; // NO DONT - STILL IN USE i = i == end of loop; as is fileData
-			// }
-		});	
-										
-	} // End of for loop	
-						
-} // End of shpConvert()
-	
 // Export
 module.exports.shpConvert = shpConvert;
 module.exports.shpConvertFieldProcessor = shpConvertFieldProcessor;
