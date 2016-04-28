@@ -124,7 +124,9 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 
 	// Set up async queue; 1 worker
 	var shapeFileComponentQueue = async.queue(function(fileData, shapeFileComponentQueueCallback) {
-		shpConvertFileProcessor(fileData["d"], fileData["shpList"], fileData["shpTotal"], fileData["response"], fileData["uuidV1"], fileData["req"], shapeFileComponentQueueCallback);	
+		shpConvertFileProcessor(fileData["d"], fileData["shpList"], fileData["shpTotal"], fileData["response"], fileData["uuidV1"], 
+			fileData["req"], fileData["serverLog"], fileData["httpErrorResponse"],
+			shapeFileComponentQueueCallback);	
 	}, 1 /* Single threaded - fileData needs to become an object */); // End of async.queue()
 	
 	/*
@@ -158,7 +160,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 		response.fields=ofields;				// Add return fields	
 		
 		// Call: shpConvertCheckFiles() - check which files and extensions are present, convert shapefile to geoJSON, simplify etc						
-		rval=shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
+		rval=shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, httpErrorResponse,
 			req, res, shapefile_options);
 		if (rval.file_errors > 0 ) {
 			response.file_errors+=rval.file_errors;	
@@ -177,7 +179,9 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 			response: 	response,
 			uuidV1: 	ofields["uuidV1"],
 			i: 			0,
-			req: 		req
+			req: 		req,
+			serverLog: 	serverLog,
+			httpErrorResponse: 	httpErrorResponse
 		}
 		
 		fileData.i=i;
@@ -222,7 +226,8 @@ module.exports.shpConvertFieldProcessor = shpConvertFieldProcessor;
 scopeChecker = function(fFile, sLine, array) {
 	var errors=0;
 	var undefinedKeys="";
-			
+	var msg="";
+	
 	for (var key in array) {
 		if (!array[key]) {
 			undefinedKeys+=key + ", ";
@@ -234,27 +239,33 @@ scopeChecker = function(fFile, sLine, array) {
 	}
 	if (array["serverLog"]) { // Check error and logging in scope
 		if (typeof array["serverLog"].serverError2 != "function") {
-			msg+="serverLog.serverError2 is not a function";
+			msg+="\nserverLog.serverError2 is not a function";
 			errors++;
 		}
 		if (typeof array["serverLog"].serverLog2 != "function") {
-			msg+="serverLog.serverLog2 is not a function";
+			msg+="\nserverLog.serverLog2 is not a function";
 			errors++;
 		}
 		if (typeof array["serverLog"].serverError != "function") {
-			msg+="serverLog.serverError is not a function";
+			msg+="\nserverLog.serverError is not a function";
 			errors++;
 		}
 		if (typeof array["serverLog"].serverLog != "function") {
-			msg+="serverLog.serverLog is not a function";
+			msg+="\nserverLog.serverLog is not a function";
 			errors++;
 		}		
 	}
+	if (array["httpErrorResponse"]) { // Check httpErrorResponse in scope
+		if (typeof array["httpErrorResponse"].httpErrorResponse != "function") {
+			msg+="\httpErrorResponse.httpErrorResponse is not a function";
+			errors++;
+		}
+	}		
 	
 	if (errors > 0) {
-		if (array["serverLog"] && array["req"]) {
-			serverLog.serverError2(fFile, sLine, "shapefileReader", 
-				msg, req, undefined);
+		if (array["serverLog"] && array["req"] && typeof array["serverLog"].serverLog2 == "function") {
+			array["serverLog"].serverError2(fFile, sLine, "scopeChecker", 
+				msg, array["req"], undefined);
 		}
 		else {
 			throw new Error(msg);
@@ -273,23 +284,19 @@ shpConvertWriteFile=function(file, data, serverLog, uuidV1, req, response, callb
 	const fs = require('fs');
 	const path = require('path');
 
-	if (!serverLog) {
-		throw new Error("No serverLog object");
-	}
-	else if (!serverLog.serverError2) {
-		serverLog = require('../lib/serverLog'); // deal with scope problems
-	}	
-	else if (typeof serverLog.serverError2 != "function") {
-		throw new Error("serverLog.serverError2 is not a function");
-	}
+	scopeChecker(__file, __line, {	
+		file: file,		
+		data: data,		
+		callback: callback,		
+		uuidV1: uuidV1,
+		req: req,
+		response: response,
+		message: response.message,
+		serverLog: serverLog
+	});
 	
 	var baseName=path.basename(file);
 
-	if (!callback) {
-		serverLog.serverError2(__file, __line, "shpConvertWriteFile", 
-			'ERROR! no callback for file: ' + baseName, req);
-	}
-	
 	// This needs to be done asynchronously, so save as <file>.tmp
 	var wStream=fs.createWriteStream(file + '.tmp', // Do nice async non blocking IO
 		{
@@ -405,12 +412,12 @@ So write in pieces...
 /*
  * Function:	shpConvertFileProcessor()
  * Parameters:	d object (temporary processing data), Shapefile list, total shapefiles, response object, 
- *				uuidV1, HTTP request object, callback
+ *				uuidV1, HTTP request object, serverLog object, httpErrorResponse object, callback
  * Returns:		Rval object { file_errors, msg, total shapefiles }
  * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save shapefile to temporary directory
  *				Called once per file from shapeFileComponentQueue
  */
-shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, shapeFileComponentQueueCallback) {
+shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, serverLog, httpErrorResponse, shapeFileComponentQueueCallback) {
 		
 	/*
 	 * Function:	createTemporaryDirectory()
@@ -522,7 +529,7 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
 /*
  * Function:	shpConvertCheckFiles()
  * Parameters:	Shapefile list, response object, total shapefiles, ofields [field parameters array], 
- *				RIF logging object, express HTTP request object, express HTTP response object, shapefile options
+ *				RIF logging object, httpErrorResponse object, express HTTP request object, express HTTP response object, shapefile options
  * Returns:		Rval object { file_errors, msg }
  * Description: Check which files and extensions are present, convert shapefiles to geoJSON
  * 				Called after all shapefile components have been saved to disk
@@ -533,7 +540,7 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
  * 				Setup and write XML config
  *				Process errors and retiurn response
  */
-shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, req, res, shapefile_options) {
+shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, httpErrorResponse, req, res, shapefile_options) {
 	const os = require('os'),
 	      path = require('path'),
 	      fs = require('fs'),
@@ -647,6 +654,8 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 		var msg;
 		var recNo=shapefileData["featureList"].length+1;
 		var lRec=JSON.stringify(record);
+		var serverLog=shapefileData["serverLog"];
+		var httpErrorResponse=shapefileData["httpErrorResponse"];		
 		
 		shapefileData["recLen"]+=lRec.length;
 		lRec=undefined;
@@ -741,6 +750,8 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	 */		
 	var shapefileReadLastRecord = function(record, shapefileData, response) {
 		var msg;
+		var serverLog=shapefileData["serverLog"];
+		var httpErrorResponse=shapefileData["httpErrorResponse"];
 		
 		response.file_list[shapefileData["shapefile_no"]-1].geojson.features=shapefileData["featureList"];
 		shapefileData["featureList"]=undefined;
@@ -902,7 +913,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	 * Description: Read shapefile, process bounding box, convert to WGS84 if required
 	 */
 	var readShapeFile = function(shapefileData) {
-		
+			
 		/*
 		 * Function: 	shapefileReader()
 		 * Parameters:	Error, record (header/feature/end) from shapefile
@@ -928,13 +939,16 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				req: shapefileData["req"],
 				response: response,
 				message: response.message,
-				serverLog: serverLog,
-				httpErrorResponse: httpErrorResponse
+				serverLog: shapefileData["serverLog"],
+				httpErrorResponse: shapefileData["httpErrorResponse"]
 			});
+	
+			var serverLog=shapefileData["serverLog"];
+			var httpErrorResponse=shapefileData["httpErrorResponse"];
 			
 			if (err) {
 				msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile reader.read: ' + shapefileData["shapeFileName"];
-				serverLog.serverError2(__file, __line, "shapefileReader", 
+				shapefileData["serverLog"].serverError2(__file, __line, "shapefileReader", 
 					msg, shapefileData["req"], err);						
 			}
 			else if (record.bbox) { // Header						
@@ -993,7 +1007,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 			shapefileData["crss"]["EPSG:" + shapefileData["mySrs"].srid] = shapefileData["mySrs"].proj4;
 		}
 		serverLog.serverLog2(__file, __line, "readShapeFile", 
-					"In readShapeFile(), call[" + shapefileData["shapefile_no"] + "] shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
+			"In readShapeFile(), call[" + shapefileData["shapefile_no"] + "] shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
 					
 		// Now read shapefile
 
@@ -1015,7 +1029,6 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 //		response.message+="\nWaiting for shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;
 		response.message+="\nasync.queue() for write shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;	
 		shapefileData["callback"]=shapeFileQueueCallback; // Register callback for readShapeFile
-		shapefileData["serverLog"]=serverLog;
 
 		readShapeFile(shapefileData); // Does callback();
 	}, 1 /* Single threaded - shapefileData needs to become an object */); // End of async.queue()
@@ -1052,7 +1065,6 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				hierarchyTableRow:	[]
 			}
 		};
-		var httpErrorResponse = require('../lib/httpErrorResponse'); // deal with scope problems
 		
 		try {
 			var msg="All " + response.no_files + " shapefiles have been processed";
@@ -1263,6 +1275,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				jsonFileName: dir + "/" + key + ".json",
 				waits: 0, 
 				serverLog: serverLog, 
+				httpErrorResponse: httpErrorResponse,
 				req: req,
 				res: res, 
 				lstart: undefined, 
