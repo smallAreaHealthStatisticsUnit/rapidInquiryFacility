@@ -707,14 +707,14 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	// End of queue functions
 
 	// Set up async queue; 1 worker
-	var q = async.queue(function(shapefileData, callback) {
+	var shapeFileQueue = async.queue(function(shapefileData, shapeFileQueueCallback) {
 	
 		// Wait for shapefile to appear
 		// This continues processing, return control to core calling function
 			
 //		response.message+="\nWaiting for shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;
 		response.message+="\nasync.queue() for write shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;	
-		shapefileData["callback"]=callback; // Regisgter callback for readShapeFile
+		shapefileData["callback"]=shapeFileQueueCallback; // Register callback for readShapeFile
 		shapefileData["serverLog"]=serverLog;
 
 //		shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
@@ -726,7 +726,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 	 * Function: 	shpConvertFieldProcessor().q.drain()
 	 * Description: Async module drain function assign a callback at end of processing
 	 */
-	q.drain = function() {
+	shapeFileQueue.drain = function() {
 		var os = require('os');
 		var path = require('path');
 		var dir = os.tmpdir() + "/shpConvert/" + response.fields["uuidV1"];
@@ -871,14 +871,14 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				return;						
 			}
 			else if (response.field_errors == 0 && response.file_errors == 0) { // OK
-				msg+="\nshpConvertFieldProcessor().q.drain() OK";
+				msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
 				response.message = response.message + "\n" + msg;
 				
 				if (!shapefile_options.verbose) {
 					response.message="";	
 				}
 				else {		
-					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
 						"Diagnostics enabled; diagnostics >>>\n" +
 						response.message + "\n<<< End of diagnostics");	
 				}
@@ -890,7 +890,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 					res.end();	
 				}
 				else {
-					serverLog.serverError2(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+					serverLog.serverError2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
 						"FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", 
 						req);
 				}				
@@ -899,33 +899,33 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 				msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
 					" and file processing ERRORS! " + response.file_errors + "\n" + msg;
 				response.message = msg + "\n" + response.message;						
-				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
 					serverLog, 500, req, res, msg, undefined, response);				  
 			}				
 			else if (response.field_errors > 0) {
 				msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
 				response.message = msg + "\n" + response.message;
-				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
 					serverLog, 500, req, res, msg, undefined, response);				  
 			}	
 			else if (response.file_errors > 0) {
 				msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
 				response.message = msg + "\n" + response.message;					
-				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
 					serverLog, 500, req, res, msg, undefined, response);				  
 			}	
 			else {
 				msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
 					" and file processing ERRORS! " + response.file_errors + "\n" + msg;
 				response.message = msg + "\n" + response.message;						
-				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
 					serverLog, 500, req, res, msg, undefined, response);
 			}		
 		}
 		catch (e) {
 			msg+='\nCaught exception: ' + e.message;
 			response.message = msg + "\n" + response.message;						
-			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().q.drain()", 
+			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
 				serverLog, 500, req, res, msg, undefined, response);
 		}
 	} // End of shpConvertFieldProcessor().q.drain()	
@@ -996,13 +996,13 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
 
 			serverLog.serverLog2(__file, __line, "readShapeFile", 
 				"In readShapeFile(), queue shapefile [" + shapefile_no + "/" + shapefile_total + "]: " + shapefileData["shapeFileName"]);			
-			q.push(shapefileData, function(err) {
+			shapeFileQueue.push(shapefileData, function(err) {
 				if (err) {
 					var msg='ERROR! in readShapeFile()';
 						
 					response.message+="\n" + msg;	
 					response.file_errors++;
-					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().q.push()", msg, 
+					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", msg, 
 						shapefileData["req"], err);	
 				} // End of err		
 //				else {
@@ -1038,7 +1038,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, r
  * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save shapefile to temporary directory
  *				Called once per file
  */
-shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, callback) {
+shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, shapeFileComponentQueueCallback) {
 		
 	/*
 	 * Function:	createTemporaryDirectory()
@@ -1067,13 +1067,13 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
 					} catch (e) { 
 						serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
 							"ERROR: Cannot create directory: " + tdir + "; error: " + e.message, req);
-//							callback();		// Not needed - serverError2() raises exception 
+//							shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
 					}			
 				}
 				else {
 					serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
 						"ERROR: Cannot access directory: " + tdir + "; error: " + e.message, req);
-//						 mcallback();		// Not needed - serverError2() raises exception 					
+//						 shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 					
 				}
 			}
 		}
@@ -1139,10 +1139,10 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
 	if (fs.existsSync(file)) { // Exists
 		serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
 			"ERROR: Cannot write file, already exists: " + file, req);
-//			callback();		// Not needed - serverError2() raises exception 
+//			shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
 	}
 	else {
-		shpConvertWriteFile(file, d.file.file_data, serverLog, uuidV1, req, response, callback);
+		shpConvertWriteFile(file, d.file.file_data, serverLog, uuidV1, req, response, shapeFileComponentQueueCallback);
 //		response.message += "\nSaving file: " + file;
 	}
 }
@@ -1153,8 +1153,8 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
  *				shapefile options
  * Returns:		Nothing
  * Description: Generate UUID if required, process all files into ShpList
- *				Check which files and extensions are present, convert shapefiles to geoJSON		
- */	
+ *				Check which files and extensions are present, convert shapefiles to geoJSON, simplify etc		
+ */	 
 shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {							
 	var shpList = {};
 	var shpTotal=0;		
@@ -1174,11 +1174,17 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 	}
 
 	// Set up async queue; 1 worker
-	var q = async.queue(function(fileData, callback) {
-		shpConvertFileProcessor(fileData["d"], fileData["shpList"], fileData["shpTotal"], fileData["response"], fileData["uuidV1"], fileData["req"], callback);	
+	var shapeFileComponentQueue = async.queue(function(fileData, shapeFileComponentQueueCallback) {
+		shpConvertFileProcessor(fileData["d"], fileData["shpList"], fileData["shpTotal"], fileData["response"], fileData["uuidV1"], fileData["req"], shapeFileComponentQueueCallback);	
 	}, 1 /* Single threaded - fileData needs to become an object */); // End of async.queue()
 	
-	q.drain = function() {
+	/*
+	 * Function:	shapeFileComponentQueue.drain()
+	 * Parameters: 	None
+	 * Returns:		N/A; calls shpConvertCheckFiles() to check which files and extensions are present, convert shapefile to geoJSON, simplify etc
+	 * Description: Async queue drain function; mwhen when all shapefile components have been processed 
+	 */
+	shapeFileComponentQueue.drain = function() {
 		shpTotal=Object.keys(shpList).length;
 		
 		// Free up memory
@@ -1202,7 +1208,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 		response.no_files=shpTotal;				// Add number of files process to response
 		response.fields=ofields;				// Add return fields	
 		
-		// Check which files and extensions are present, convert shapefiles to geoJSON						
+		// Check which files and extensions are present, convert shapefile to geoJSON, simplify etc						
 		rval=shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, 
 			req, res, shapefile_options);
 		if (rval.file_errors > 0 ) {
@@ -1212,7 +1218,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvert", 
 				serverLog, 500, req, res, rval.msg, undefined, response);							
 		}		
-	}
+	} // End of shapeFileComponentQueue.drain()
 		
 	for (var i = 0; i < response.no_files; i++) {
 		var fileData = {
@@ -1231,14 +1237,14 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 //		serverLog.serverLog2(__file, __line, "shpConvert", 
 //		"In shpConvertFileProcessor(), queue[" + fileData["i"] + "]: " + fileData.d.file.file_name);
 
-		q.push(fileData, function(err) {
+		shapeFileComponentQueue.push(fileData, function(err) {
 			if (err) {
 //				var msg='ERROR! [' + fileData["uuidV1"] + '] in shapefile read: ' + fileData.d.file.file_name;
 				var msg="Error! in shpConvertFileProcessor()";
 				
 				response.message+="\n" + msg;	
 				response.file_errors++;
-				serverLog.serverLog2(__file, __line, "shpConvertFileProcessor().q.push()", msg, 
+				serverLog.serverLog2(__file, __line, "shpConvertFileProcessor().shapeFileComponentQueue.push()", msg, 
 					fileData["req"], err);	
 			} // End of err		
 			// else {
@@ -1251,7 +1257,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 										
 	} // End of for loop	
 						
-}
+} // End of shpConvert()
 	
 // Export
 module.exports.shpConvert = shpConvert;

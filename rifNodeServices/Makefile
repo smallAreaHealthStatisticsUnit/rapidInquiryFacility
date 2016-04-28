@@ -189,12 +189,14 @@ endif
 #
 # Module list, module package.json for dependency control
 #
+# Now needs C++ V1.1 compliant compiler - MS VS 2010 is not...	
+#	node_modules/pg-native/package.json \ 
+#
 MODULE_JSON=node_modules/request/package.json \
 	node_modules/form-data/package.json \
 	node_modules/magic-globals/package.json \
 	node_modules/helmet/package.json \
 	node_modules/pg/package.json \
-#	node_modules/pg-native/package.json \ 	# Now needs C++ V1.1 compliant compiler - MS VS 2010 is not...
 	node_modules/msnodesqlv8/package.json \
 	node_modules/srs/package.json \
 	node_modules/xml2js/package.json \

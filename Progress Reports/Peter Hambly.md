@@ -388,8 +388,14 @@ RangeError: Invalid string length
 	  Current US map is 1:500,000 and is OK at zoomlevel 11; zoomlevel 9 is 1:1 million; JSON compression is 5.06MB compared to: 28.55MB
 	  Quantization set to 1e6; 1e4 was far too coarse; 83% compression.
 	* SAHSUland works in IE, firefox and Chrome; IE is very slow. US to counties works in Chrome and IE. UK census output areas will only work in Firefox
+		
+#### 20th April - Judy Qualters - CDC Visit
+
+   * Demo of shpConvert
+		
+#### 25th to 29th April
 	
-	Current TODO list aimed at Judy Qualters visit:
+	Current TODO list:
 	* Zip file support. Convert zlib, zip file support to async
     * Large file support (coa2011) - shpConvertWriteFile() needs to write in sections (i.e. per record), remove geoJSON (this will help IE)
 	
@@ -414,8 +420,7 @@ RangeError: Invalid string length
 		iv. Area mismatch between shapefiles
 		
 	* Status update using my_reference; timeout recovery	
-	
-#### 20th April - Judy Qualters - CDC Visit
+
 	
 ##	General RIF database Todo:
 
