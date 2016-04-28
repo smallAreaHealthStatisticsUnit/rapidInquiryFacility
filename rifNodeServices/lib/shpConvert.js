@@ -212,7 +212,9 @@ module.exports.shpConvertFieldProcessor = shpConvertFieldProcessor;
 // Local functions:
 
 /*
- * Scope checker function
+ * Function: 	scopeChecker()
+ * Parameters:	file, line called from, named array object to scope checked
+ * Description: Scope checker function. Throws error if not in scope
  */
 scopeChecker = function(fFile, sLine, array) {
 	var errors=0;
