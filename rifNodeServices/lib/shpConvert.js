@@ -178,7 +178,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 		}
 		
 		fileData.i=i;
-		response.message+="\nQueued file for shpConvertFileProcessor[" + fileData["i"] + "]: " + fileData.d.file.file_name;
+		response.message+="\nQueued (shapeFileComponentQueue) file for shpConvertFileProcessor[" + fileData["i"] + "]: " + fileData.d.file.file_name;
 		// Add to queue			
 //		serverLog.serverLog2(__file, __line, "shpConvert", 
 //		"In shpConvertFileProcessor(), shapeFileComponentQueue[" + fileData["i"] + "]: " + fileData.d.file.file_name);
@@ -607,6 +607,100 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	} // End of simplifyGeoJSON()
 	
 	/*
+	 * Function:	shapefileReadNextRecord()
+	 * Parameters:	shapefile record, shape file data object, response object, reader function 
+	 * Description:	Read next shapefile record, call reader function
+	 */
+	var shapefileReadNextRecord = function(record, shapefileData, response, shapefileReader) {
+		var recNo=shapefileData["featureList"].length+1;
+		var lRec=JSON.stringify(record);
+		shapefileData["recLen"]+=lRec.length;
+		lRec=undefined;
+		
+		var doTrace=false;
+		
+		msg="shapefile read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"];
+		if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1) { // Print read record diagnostics every 1000 shapefile records
+			doTrace=true;
+			if (shapefileData["recLen"] > 50*1024*1024) { // 50 MB
+				serverLog.serverLog2(__file, __line, "readShapeFile", "In shapefileReadNextRecord(), " + msg, shapefileData["req"]);
+			}
+			response.message+="\n" + msg;
+		}
+
+		if (shapefileData["mySrs"].srid != "4326") { // Re-project to 4326
+			try {
+				msg="\nshapefile read [" + recNo	+ "] call reproject.toWgs84() for: " + shapefileData["fileNoExt"];
+				if (shapefileData["featureList"].length == 0) { // Re-project BBOX with no features (or you will shrink it to the first feature!)
+					msg+="\nBounding box conversion from (" + shapefileData["mySrs"].srid + "): " +
+						"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
+						"ymin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1] + ", " +
+						"xmax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2] + ", " +
+						"ymax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3] + "]; to\n";
+						
+					var min=reproject.toWgs84(
+						{"type":"Point","coordinates":[
+							response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0], 
+							response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1]]}, 
+						"EPSG:" + shapefileData["mySrs"].srid, 
+						shapefileData["crss"]);
+					response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0]=min.coordinates[0];
+					response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1]=min.coordinates[1];
+					var max=reproject.toWgs84(
+						{"type":"Point","coordinates":[
+							response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2], 
+							response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3]]}, 
+						"EPSG:" + shapefileData["mySrs"].srid, 
+						shapefileData["crss"]);
+					response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2]=max.coordinates[0];
+					response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3]=max.coordinates[1];							
+
+					msg+=
+						"Bounding box (4326): " + 
+						"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
+						"ymin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1] + ", " +
+						"xmax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2] + ", " +
+						"ymax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3] + "];";
+				}
+				shapefileData["featureList"].push(
+					reproject.toWgs84(
+						{type: "FeatureCollection", bbox: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox, features: [record]}, 
+						"EPSG:" + shapefileData["mySrs"].srid, 
+						shapefileData["crss"]).features[0]
+					);
+			}
+			catch (e) {
+				serverLog.serverError2(__file, __line, "shapefileReadNextRecord", 
+					"[" + recNo + "]; reproject.toWgs84() failed [" + shapefileData["uuidV1"] + 
+					"] File: " + shapefileData["shapeFileName"] + "\n" + 
+					"\nProjection data:\n" + shapefileData["prj"] + "\n<<<" +
+					"\nCRSS database >>>\n" + JSON.stringify(shapefileData["crss"], null, 2) + "\n<<<" +
+					"\nGeoJSON sample >>>\n" + JSON.stringify(shapefileData["featureList"], null, 2).substring(0, 600) + "\n<<<", 
+					shapefileData["req"], e);	
+			}
+		}
+		else {
+			shapefileData["featureList"].push(record); 		// Add feature to collection
+		}
+
+		record=undefined;	
+		// Force garbage collection
+		if (global.gc && shapefileData["recLen"] > (1024*1024*500) && ((recNo/10000)-Math.floor(recNo/10000)) == 0) { // GC if json > 500M;  every 10K records
+			global.gc();
+			var heap=v8.getHeapStatistics();
+			msg+="\nMemory heap >>>";
+			for (var key in heap) {
+				msg+="\n" + key + ": " + heap[key];
+			}
+			msg+="\n<<< End of memory heap";
+			serverLog.serverLog2(__file, __line, "shapefileReader", "OK [" + shapefileData["uuidV1"] + 
+				"] Force garbage collection shapefile at read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"] + msg, shapefileData["req"]);					
+		}
+
+		process.nextTick(shapefileData["reader"].readRecord, shapefileReader); 	// Read next record
+	} // End of shapefileReadNextRecord()
+				
+	/*
 	 * Function:	readShapeFile()
 	 * Parameters:	Shapefile data object:
 	 *					Shapefile name with path, 
@@ -655,10 +749,11 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				crss: shapefileData["crss"],
 				shapefile_no: shapefileData["shapefile_no"],
 				featureList: shapefileData["featureList"],
+				file_list: response.file_list[shapefileData["shapefile_no"]-1],
+				reproject: reproject,
 				req: shapefileData["req"],
 				response: response,
 				message: response.message,
-				file_list: response.file_list[shapefileData["shapefile_no"]-1],
 				serverLog: serverLog,
 				httpErrorResponse: httpErrorResponse
 			});
@@ -681,93 +776,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				process.nextTick(shapefileData["reader"].readRecord, shapefileReader);	// Read next record (first data record)
 			}
 			else if (record !== shapefile.end) {
-				var recNo=shapefileData["featureList"].length+1;
-				var lRec=JSON.stringify(record);
-				shapefileData["recLen"]+=lRec.length;
-				lRec=undefined;
-				
-				var doTrace=false;
-				
-				msg="shapefile read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"];
-				if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1) { // Print read record diagnostics every 1000 shapefile records
-					doTrace=true;
-					if (shapefileData["recLen"] > 50*1024*1024) { // 50 MB
-						serverLog.serverLog2(__file, __line, "readShapeFile", "In shapefileReader(), " + msg, shapefileData["req"]);
-					}
-					response.message+="\n" + msg;
-				}
-
-				if (shapefileData["mySrs"].srid != "4326") { // Re-project to 4326
-					try {
-						msg="\nshapefile read [" + recNo	+ "] call reproject.toWgs84() for: " + shapefileData["fileNoExt"];
-						if (shapefileData["featureList"].length == 0) { // Re-project BBOX with no features (or you will shrink it to the first feature!)
-							msg+="\nBounding box conversion from (" + shapefileData["mySrs"].srid + "): " +
-								"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
-								"ymin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1] + ", " +
-								"xmax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2] + ", " +
-								"ymax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3] + "]; to\n";
-								
-							var min=reproject.toWgs84(
-								{"type":"Point","coordinates":[
-									response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0], 
-									response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1]]}, 
-								"EPSG:" + shapefileData["mySrs"].srid, 
-								shapefileData["crss"]);
-							response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0]=min.coordinates[0];
-							response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1]=min.coordinates[1];
-							var max=reproject.toWgs84(
-								{"type":"Point","coordinates":[
-									response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2], 
-									response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3]]}, 
-								"EPSG:" + shapefileData["mySrs"].srid, 
-								shapefileData["crss"]);
-							response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2]=max.coordinates[0];
-							response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3]=max.coordinates[1];							
-
-							msg+=
-								"Bounding box (4326): " + 
-								"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
-								"ymin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1] + ", " +
-								"xmax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2] + ", " +
-								"ymax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3] + "];";
-						}
-						shapefileData["featureList"].push(
-							reproject.toWgs84(
-								{type: "FeatureCollection", bbox: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox, features: [record]}, 
-								"EPSG:" + shapefileData["mySrs"].srid, 
-								shapefileData["crss"]).features[0]
-							);
-					}
-					catch (e) {
-						serverLog.serverError2(__file, __line, "readShapeFile", 
-							"[" + recNo + "]; reproject.toWgs84() failed [" + shapefileData["uuidV1"] + 
-							"] File: " + shapefileData["shapeFileName"] + "\n" + 
-							"\nProjection data:\n" + shapefileData["prj"] + "\n<<<" +
-							"\nCRSS database >>>\n" + JSON.stringify(shapefileData["crss"], null, 2) + "\n<<<" +
-							"\nGeoJSON sample >>>\n" + JSON.stringify(shapefileData["featureList"], null, 2).substring(0, 600) + "\n<<<", 
-							shapefileData["req"], e);	
-	//						callback();	// Not needed - serverError2() raises exception 
-					}
-				}
-				else {
-					shapefileData["featureList"].push(record); 		// Add feature to collection
-				}
-
-				record=undefined;	
-				// Force garbage collection
-				if (global.gc && shapefileData["recLen"] > (1024*1024*500) && ((recNo/10000)-Math.floor(recNo/10000)) == 0) { // GC if json > 500M;  every 10K records
-					global.gc();
-					var heap=v8.getHeapStatistics();
-					msg+="\nMemory heap >>>";
-					for (var key in heap) {
-						msg+="\n" + key + ": " + heap[key];
-					}
-					msg+="\n<<< End of memory heap";
-					serverLog.serverLog2(__file, __line, "shapefileReader", "OK [" + shapefileData["uuidV1"] + 
-						"] Force garbage collection shapefile at read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"] + msg, shapefileData["req"]);					
-				}
-
-				process.nextTick(shapefileData["reader"].readRecord, shapefileReader); 	// Read next record
+				shapefileReadNextRecord(record, shapefileData, response, shapefileReader);
 			}
 			else { // At shapefile.end
 				response.file_list[shapefileData["shapefile_no"]-1].geojson.features=shapefileData["featureList"];
