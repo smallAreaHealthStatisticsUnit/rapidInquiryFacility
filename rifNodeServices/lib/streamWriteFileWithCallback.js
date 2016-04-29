@@ -50,7 +50,7 @@
  * Returns:		Writeable stream
  * Description: Create writable stream for large file writes using 1MB chunks; e.g. GeoJSON, topoJSON, shapefiles 
  * 				Install error and stream end handlers.
- *				At end, close stream, rename <file>.tmp to <file>, call callback if defined
+ *				At end, close stream, rename <file>.tmp to <file>, call callback if defined; undefine data if data set
  */ 
 createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, response, callback) {
 
@@ -58,8 +58,7 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 	var msg;
 	
 	scopeChecker(__file, __line, {	
-		file: file,		
-		data: data,				
+		file: file,			
 		uuidV1: uuidV1,
 		req: req,
 		response: response,	
@@ -90,22 +89,20 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 			var len=fs.statSync(file).size;
 			msg="Saved file: " + baseName + "; size: " + len + " bytes";
 			response.message+="\n" + msg;
-			if (len != data.length) {
+			if (data && len != data.length) {
 				serverLog.serverError2(__file, __line, "streamWriteFileWithCallback", 
 					'ERROR! [' + uuidV1 + '] file: ' + baseName + ' is the wrong size, expecting: ' + data.length + ' got: ' + len +
 					'\n\nDiagnostics >>>\n' + response.message + '\n<<<= End of diagnostics\n', req);				
 			}
-			else {
-				
+			else if (data) {
 				data=undefined; // Be nice. Could force GC at this point		
 				if (global.gc && len > (1024*1024*500)) { // GC is file > 500M
 					serverLog.serverLog2(__file, __line, "streamWriteFileWithCallback", "OK [" + uuidV1 + "] " + msg + "\nForce garbage collection", req);
 					global.gc();
 				}
-				else {
-					serverLog.serverLog2(__file, __line, "streamWriteFileWithCallback", "OK [" + uuidV1 + "] " + msg, req);
-				}
 			}
+			serverLog.serverLog2(__file, __line, "streamWriteFileWithCallback", "OK [" + uuidV1 + "] " + msg, req);
+
 			if (callback) { 
 				callback();	
 			}
@@ -202,12 +199,12 @@ So write in pieces...
 			i++;
 			buf=data.slice(pos, pos+len);
 			ok=wStream.write(buf, 'binary');
-			response.message+="\nWrote " + buf.length + " bytes to file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
-				"; len: " + len + "; data.length: " + data.length + "; ok: " + ok;
+//			response.message+="\nWrote " + buf.length + " bytes to file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
+//				"; len: " + len + "; data.length: " + data.length + "; ok: " + ok;
 			pos+=len;	
 			if (pos >= data.length) {
-				response.message+="\nEnd write file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
-					"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece;	
+//				response.message+="\nEnd write file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
+//					"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece;	
 				if (lastPiece === true) {
 					wStream.end(); // Signal end of stream
 				}
@@ -224,6 +221,89 @@ So write in pieces...
 	} // End of _myWrite()
 
 } // End of streamWriteFileWithCallback
+	
+/*
+ * Function:	streamWriteFilePieceWithCallback()
+ * Parameters:	file name with path, data, writeable stream, RIF logging object, uuidV1 
+ *				express HTTP request object, response object, lastPiece (true/false), callback
+ * Returns:		Text of field processing log
+ * Description: Write large file in 1MB chunks using a stream; e.g. GeoJSON, topoJSON, shapefiles 
+ */ 
+streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1, req, response, lastPiece, callback) {
+
+	var isWriteableStream = function (obj) {
+		var stream = require('stream');
 		
+		return obj instanceof stream.Stream &&
+			typeof (obj._write === 'function') &&
+			typeof (obj._writeableState === 'object');
+	}
+
+	scopeChecker(__file, __line, {	
+		file: file,		
+		data: data,			
+		wStream: wStream,
+		uuidV1: uuidV1,
+		req: req,
+		response: response,
+		message: response.message,
+		serverLog: serverLog,
+		lastPiece: lastPiece
+	});
+	if (lastPiece !== true && lastPiece !== false) {
+ 		serverLog.serverError2(__file, __line, "streamWriteFilePieceWithCallback", "Invalid value for lastPiece: " + lastPiece, req, undefined);
+	}
+	if (!isWriteableStream(wStream)) {
+ 		serverLog.serverError2(__file, __line, "streamWriteFilePieceWithCallback", "Invalid writeable wStream: " + JSON.stringify(wStream, null, 4), req, undefined);
+	}
+	
+	const path = require('path');
+	var baseName=path.basename(file);
+	
+	var pos=0;
+	var len=1024*1024; // 1MB chunks
+	var i=0;
+	var drains=0;
+	
+	_myWrite(); // Do first write
+
+	/*
+	 * Function: 	_myWrite()
+	 * Parameters:	None
+	 * Returns: 	nothing
+	 * Description: Write out Buffer to stream in 1MB pieces; waiting for IO drain
+	 */
+	function _myWrite() {
+		var ok=true;
+		
+		do {
+			i++;
+			buf=data.slice(pos, pos+len);
+			ok=wStream.write(buf, 'binary');
+//			response.message+="\nWrote " + buf.length + " bytes to file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
+//				"; len: " + len + "; data.length: " + data.length + "; ok: " + ok;
+			pos+=len;	
+			if (pos >= data.length) {
+//				response.message+="\nEnd write file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
+//					"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece;	
+				if (lastPiece === true) {
+					wStream.end(); // Signal end of stream
+				}
+			}		
+		}
+		while (pos < data.length && ok);
+		
+		if (pos < data.length) { // Wait for drain event
+			drains++;
+			response.message+="\nWait for stream drain: " + drains + " for file: " + baseName + " [" + i + "] pos: " + pos + 
+				"; len: " + len + "; data.length: " + data.length;		
+			wStream.once('drain', _myWrite); // When drained, call myWrite() again
+		}
+	} // End of _myWrite()
+
+} // End of streamWriteFilePieceWithCallback
+	
 // Export
 module.exports.streamWriteFileWithCallback = streamWriteFileWithCallback;
+module.exports.createWriteStreamWithCallback = createWriteStreamWithCallback;
+module.exports.streamWriteFilePieceWithCallback = streamWriteFilePieceWithCallback;

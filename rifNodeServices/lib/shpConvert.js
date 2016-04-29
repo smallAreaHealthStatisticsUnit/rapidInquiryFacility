@@ -229,7 +229,7 @@ scopeChecker = function(fFile, sLine, array) {
 	var msg="";
 	
 	for (var key in array) {
-		if (!array[key]) {
+		if (typeof array[key] == "undefined") {
 			undefinedKeys+=key + ", ";
 			errors++;
 		}
@@ -745,6 +745,52 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				response.file_list[shapefileData["shapefile_no"]-1].dbf_fields=dbf_fields;
 				
 				response.message+="\nCompleted processing shapefile[" + shapefileData["shapefile_no"] + "]: " + shapefileData["shapeFileName"];
+					
+// Write geoJSON file feature by feature
+				var wStream=streamWriteFileWithCallback.createWriteStreamWithCallback(shapefileData["jsonFileName"], 
+					undefined /* data: do not undefine! */, 
+					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, undefined /* callback */);
+				var lastPiece=false;
+				var header="{\"type\":\"FeatureCollection\",\"bbox\":" + 
+						JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) + ",\"features\":[";	
+				var footer="]}";
+				// Write header
+//				response.message+="\nWrite header"; 
+				streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
+					header, 
+					wStream,
+					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, lastPiece, undefined /* callback */);
+				async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features 	/* col */, 
+					function (value, index, callback) {		
+							try {
+								var feature=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
+//								response.message+="\nWrite feature: " + index + "; length: " + feature.length;
+								streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
+									feature, 
+									wStream,
+									serverLog, shapefileData["uuidV1"], shapefileData["req"], response, lastPiece, undefined /* callback */);
+								callback();
+							} catch (e) {
+								return callback(e);
+							}
+					}, 
+					function (err) {																	/* Callback at end */
+						if (err) {
+							serverLog.serverError2(__file, __line, "streamWriteFilePieceWithCallback", err.message, req, undefined);
+						}
+						else { // Write footer
+							lastPiece=true;
+//							response.message+="\nWrite footer"; 
+							streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
+								footer, 
+								wStream,
+								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, lastPiece, undefined /* callback */);
+						}
+					});
+					
+				streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
+					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, undefined /* callback */);
+				// No callback	
 				
 				// Create topoJSON
 				simplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response);
@@ -760,8 +806,9 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 
 //		shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
 //		shapefileData["writeTime"]=(end - shapefileData["lstart"])/1000; // in S	
-				
-				streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
+
+// Write topoJSON file				
+				streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson), 
 					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, shapefileData["callback"]);
 				// streamWriteFileWithCallback runs callback
 			}
@@ -1170,6 +1217,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				dbfFileName: dir + "/" + key + ".dbf", 
 				projFileName: dir + "/" + key + ".prj", 
 				jsonFileName: dir + "/" + key + ".json",
+				topojsonFileName: dir + "/" + key + ".topojson",
 				waits: 0, 
 				req: req,
 				res: res, 
