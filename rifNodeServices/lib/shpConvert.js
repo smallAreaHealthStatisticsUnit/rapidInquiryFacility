@@ -797,8 +797,8 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 						}
 					});
 					
-				streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
-					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, undefined /* callback */);
+//				streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
+//					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, undefined /* callback */);
 				// No callback	
 				
 				// Create topoJSON
