@@ -407,7 +407,7 @@ So write in pieces...
 		}
 	} // End of myWrite()
 
-}
+} // End of shpConvertWriteFile
 		
 /*
  * Function:	shpConvertFileProcessor()
@@ -418,6 +418,11 @@ So write in pieces...
  *				Called once per file from shapeFileComponentQueue
  */
 shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, serverLog, httpErrorResponse, shapeFileComponentQueueCallback) {
+		
+	scopeChecker(__file, __line, {
+		serverLog: serverLog,
+		httpErrorResponse: httpErrorResponse
+	});	
 		
 	/*
 	 * Function:	createTemporaryDirectory()
@@ -553,7 +558,12 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, h
 		file_errors: 0,
 		msg: ""
 	};
-	
+
+	scopeChecker(__file, __line, {
+		serverLog: serverLog,
+		httpErrorResponse: httpErrorResponse
+	});	
+		
 	// Queue functions
 	
 	/*
@@ -563,6 +573,12 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, h
 	 * Description: Creates XML config file
 	 */
 	var createXmlFile = function(xmlConfig) {
+		
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse
+		});	
+		
 		var fs = require('fs'),
 		    xml2js = require('xml2js');
 
@@ -574,7 +590,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, h
 			});
 		var xmlDoc = builder.buildObject(xmlConfig);
 		
-		console.error("XML config [xml] >>>\n" + xmlDoc + "\n<<< end of XML config [xml]" +
+		serverLog.serverLog2(__file, __line, "XML config [xml] >>>\n" + xmlDoc + "\n<<< end of XML config [xml]" +
 			"\nXML config [json] >>>\n" + JSON.stringify(xmlConfig, null, 4) + "\n<<< end of json config [xml]");
 			
 		fs.writeFileSync(xmlConfig.xmlFileDir + "/" + xmlConfig.xmlFileName, xmlDoc);
@@ -654,8 +670,10 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 		var msg;
 		var recNo=shapefileData["featureList"].length+1;
 		var lRec=JSON.stringify(record);
-		var serverLog=shapefileData["serverLog"];
-		var httpErrorResponse=shapefileData["httpErrorResponse"];		
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse
+		});		
 		
 		shapefileData["recLen"]+=lRec.length;
 		lRec=undefined;
@@ -750,8 +768,11 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	 */		
 	var shapefileReadLastRecord = function(record, shapefileData, response) {
 		var msg;
-		var serverLog=shapefileData["serverLog"];
-		var httpErrorResponse=shapefileData["httpErrorResponse"];
+		
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse
+		});
 		
 		response.file_list[shapefileData["shapefile_no"]-1].geojson.features=shapefileData["featureList"];
 		shapefileData["featureList"]=undefined;
@@ -874,7 +895,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 //		shapefileData["writeTime"]=(end - shapefileData["lstart"])/1000; // in S	
 				
 				shpConvertWriteFile(shapefileData["jsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
-					shapefileData["serverLog"], shapefileData["uuidV1"], shapefileData["req"], response, shapefileData["callback"]);
+					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, shapefileData["callback"]);
 				// shpConvertWriteFile runs callback
 			}
 			else {
@@ -913,7 +934,12 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	 * Description: Read shapefile, process bounding box, convert to WGS84 if required
 	 */
 	var readShapeFile = function(shapefileData) {
-			
+		
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse
+		});
+		
 		/*
 		 * Function: 	shapefileReader()
 		 * Parameters:	Error, record (header/feature/end) from shapefile
@@ -939,12 +965,9 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				req: shapefileData["req"],
 				response: response,
 				message: response.message,
-				serverLog: shapefileData["serverLog"],
-				httpErrorResponse: shapefileData["httpErrorResponse"]
+				serverLog: serverLog,
+				httpErrorResponse: httpErrorResponse
 			});
-	
-			var serverLog=shapefileData["serverLog"];
-			var httpErrorResponse=shapefileData["httpErrorResponse"];
 			
 			if (err) {
 				msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile reader.read: ' + shapefileData["shapeFileName"];
@@ -1021,10 +1044,11 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 
 	// Set up async queue; 1 worker
 	var shapeFileQueue = async.queue(function(shapefileData, shapeFileQueueCallback) {
-
 		
-		// Wait for shapefile to appear
-		// This continues processing, return control to core calling function
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse
+		});
 			
 //		response.message+="\nWaiting for shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;
 		response.message+="\nasync.queue() for write shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;	
@@ -1042,6 +1066,12 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	 *				Process errors and retiurn response
 	 */
 	shapeFileQueue.drain = function() {
+		
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse
+		});
+		
 		var os = require('os');
 		var path = require('path');
 		var dir = os.tmpdir() + "/shpConvert/" + response.fields["uuidV1"];
@@ -1274,8 +1304,6 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				projFileName: dir + "/" + key + ".prj", 
 				jsonFileName: dir + "/" + key + ".json",
 				waits: 0, 
-				serverLog: serverLog, 
-				httpErrorResponse: httpErrorResponse,
 				req: req,
 				res: res, 
 				lstart: undefined, 
