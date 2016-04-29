@@ -132,11 +132,11 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 /*
  * Function:	streamWriteFileWithCallback()
  * Parameters:	file name with path, data, RIF logging object, uuidV1 
- *				express HTTP request object, response object, callback
+ *				express HTTP request object, response object, lastPiece (true/false), callback
  * Returns:		Text of field processing log
  * Description: Write large file in 1MB chunks using a stream; e.g. GeoJSON, topoJSON, shapefiles 
  */ 
-streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, response, callback) {
+streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, response, lastPiece, callback) {
 
 	scopeChecker(__file, __line, {	
 		file: file,		
@@ -145,13 +145,21 @@ streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, respons
 		req: req,
 		response: response,
 		message: response.message,
-		serverLog: serverLog
+		serverLog: serverLog,
+		lastPiece: lastPiece
 	});
+	if (lastPiece !== true && lastPiece !== false) {
+ 		serverLog.serverError2(__file, __line, "streamWriteFileWithCallback", "Invalid value for lastPiece: " + lastPiece, req, undefined)
+	}
 	
 	const path = require('path');
 	var baseName=path.basename(file);
 
 	// This needs to be done asynchronously, so save as <file>.tmp
+	
+	// Create writable stream for large file writes using 1MB chunks; e.g. GeoJSON, topoJSON, shapefiles 
+	// Install error and stream end handlers.
+	// At end, close stream, rename <file>.tmp to <file>, call callback if defined
 	var wStream=createWriteStreamWithCallback(file, data, serverLog, uuidV1, req, response, callback);
 	
 /* 1.3G SOA 2011 file uploads in firefox (NOT chrome) but gives:
@@ -179,15 +187,15 @@ So write in pieces...
 	var i=0;
 	var drains=0;
 	
-	myWrite(); // Do first write
+	_myWrite(); // Do first write
 
 	/*
-	 * Function: 	myWrite()
+	 * Function: 	_myWrite()
 	 * Parameters:	None
 	 * Returns: 	nothing
 	 * Description: Write out Buffer to stream in 1MB pieces; waiting for IO drain
 	 */
-	function myWrite() {
+	function _myWrite() {
 		var ok=true;
 		
 		do {
@@ -199,8 +207,10 @@ So write in pieces...
 			pos+=len;	
 			if (pos >= data.length) {
 				response.message+="\nEnd write file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
-					"; len: " + len + "; data.length: " + data.length;			
-				wStream.end(); // Signal end of stream
+					"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece;	
+				if (lastPiece === true) {
+					wStream.end(); // Signal end of stream
+				}
 			}		
 		}
 		while (pos < data.length && ok);
@@ -209,9 +219,9 @@ So write in pieces...
 			drains++;
 			response.message+="\nWait for stream drain: " + drains + " for file: " + baseName + " [" + i + "] pos: " + pos + 
 				"; len: " + len + "; data.length: " + data.length;		
-			wStream.once('drain', myWrite); // When drained, call myWrite() again
+			wStream.once('drain', _myWrite); // When drained, call myWrite() again
 		}
-	} // End of myWrite()
+	} // End of _myWrite()
 
 } // End of streamWriteFileWithCallback
 		

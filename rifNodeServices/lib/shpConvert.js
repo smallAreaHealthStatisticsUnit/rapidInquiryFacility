@@ -392,7 +392,7 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
 //			shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
 	}
 	else {
-		streamWriteFileWithCallback.streamWriteFileWithCallback(file, d.file.file_data, serverLog, uuidV1, req, response, shapeFileComponentQueueCallback);
+		streamWriteFileWithCallback.streamWriteFileWithCallback(file, d.file.file_data, serverLog, uuidV1, req, response, true /* lastPiece */, shapeFileComponentQueueCallback);
 //		response.message += "\nSaving file: " + file;
 	}
 }
@@ -762,7 +762,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 //		shapefileData["writeTime"]=(end - shapefileData["lstart"])/1000; // in S	
 				
 				streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
-					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, shapefileData["callback"]);
+					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, shapefileData["callback"]);
 				// streamWriteFileWithCallback runs callback
 			}
 			else {
