@@ -45,42 +45,44 @@
 // Peter Hambly, SAHSU
 
 /*
- * Function:	streamWriteFileWithCallback()
- * Parameters:	file name with path, data, RIF logging object, uuidV1 
- *				express HTTP request object, response object, callback
- * Returns:		Text of field processing log
- * Description: Write large file in 1MB checkunk using a stream; e.g. GeoJSON, topoJSON, shapefiles 
+ * Function:	createWriteStreamWithCallback()
+ * Parameters:	file name with path, data, RIF logging object, uuidV1, response object, callback
+ * Returns:		Writeable stream
+ * Description: Create writable stream for large file writes using 1MB chunks; e.g. GeoJSON, topoJSON, shapefiles 
+ * 				Install error and stream end handlers.
+ *				At end, close stream, rename <file>.tmp to <file>, call callback if defined
  */ 
-streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, response, callback) {
-	const fs = require('fs');
-	const path = require('path');
+createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, response, callback) {
 
+	const fs = require('fs');
+	var msg;
+	
 	scopeChecker(__file, __line, {	
 		file: file,		
-		data: data,			
+		data: data,				
 		uuidV1: uuidV1,
 		req: req,
-		response: response,
+		response: response,	
 		message: response.message,
 		serverLog: serverLog
 	});
-	
+
 	// Check callback
 	if (callback) {
 		if (typeof callback != "function") {
-			throw new Error("Callback in use but is not a function: " + typeof callback)
+			serverLog.serverError2(__file, __line, "streamWriteFileWithCallback", "Callback in use but is not a function: " + typeof callback, req, undefined)
 		}
 	}
-	
-	var baseName=path.basename(file);
 
-	// This needs to be done asynchronously, so save as <file>.tmp
-	var wStream=fs.createWriteStream(file + '.tmp', // Do nice async non blocking IO
-		{
-			encoding: 'binary',
-			mode: 0o600,
-		});
-	var msg;
+	const path = require('path');
+	var baseName=path.basename(file);
+	
+	// Create stream as <file>.tmp so can be renamed at the end
+	var wStream=fs.createWriteStream(file + '.tmp', // Do nice async non blocking IO in 1MB chunks
+	{
+		encoding: 'binary',
+		mode: 0o600,
+	});
 	
 	wStream.on('finish', function() {
 		try { // And do an atomic rename when complete
@@ -124,6 +126,33 @@ streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, respons
 		}
 	}); 
 	
+	return wStream;
+}
+
+/*
+ * Function:	streamWriteFileWithCallback()
+ * Parameters:	file name with path, data, RIF logging object, uuidV1 
+ *				express HTTP request object, response object, callback
+ * Returns:		Text of field processing log
+ * Description: Write large file in 1MB chunks using a stream; e.g. GeoJSON, topoJSON, shapefiles 
+ */ 
+streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, response, callback) {
+
+	scopeChecker(__file, __line, {	
+		file: file,		
+		data: data,			
+		uuidV1: uuidV1,
+		req: req,
+		response: response,
+		message: response.message,
+		serverLog: serverLog
+	});
+	
+	const path = require('path');
+	var baseName=path.basename(file);
+
+	// This needs to be done asynchronously, so save as <file>.tmp
+	var wStream=createWriteStreamWithCallback(file, data, serverLog, uuidV1, req, response, callback);
 	
 /* 1.3G SOA 2011 file uploads in firefox (NOT chrome) but gives:
 
