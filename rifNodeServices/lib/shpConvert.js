@@ -239,25 +239,25 @@ scopeChecker = function(fFile, sLine, array) {
 	}
 	if (array["serverLog"]) { // Check error and logging in scope
 		if (typeof array["serverLog"].serverError2 != "function") {
-			msg+="\nserverLog.serverError2 is not a function";
+			msg+="\nserverLog.serverError2 is not a function: " + typeof array["serverLog"];
 			errors++;
 		}
 		if (typeof array["serverLog"].serverLog2 != "function") {
-			msg+="\nserverLog.serverLog2 is not a function";
+			msg+="\nserverLog.serverLog2 is not a function: " + typeof array["serverLog"];
 			errors++;
 		}
 		if (typeof array["serverLog"].serverError != "function") {
-			msg+="\nserverLog.serverError is not a function";
+			msg+="\nserverLog.serverError is not a function: " + typeof array["serverLog"];
 			errors++;
 		}
 		if (typeof array["serverLog"].serverLog != "function") {
-			msg+="\nserverLog.serverLog is not a function";
+			msg+="\nserverLog.serverLog is not a function: " + typeof array["serverLog"];
 			errors++;
 		}		
 	}
 	if (array["httpErrorResponse"]) { // Check httpErrorResponse in scope
 		if (typeof array["httpErrorResponse"].httpErrorResponse != "function") {
-			msg+="\httpErrorResponse.httpErrorResponse is not a function";
+			msg+="\httpErrorResponse.httpErrorResponse is not a function: " + typeof array["httpErrorResponse"];
 			errors++;
 		}
 	}		
@@ -286,14 +286,20 @@ shpConvertWriteFile=function(file, data, serverLog, uuidV1, req, response, callb
 
 	scopeChecker(__file, __line, {	
 		file: file,		
-		data: data,		
-		callback: callback,		
+		data: data,			
 		uuidV1: uuidV1,
 		req: req,
 		response: response,
 		message: response.message,
 		serverLog: serverLog
 	});
+	
+	// Check callback
+	if (callback) {
+		if (typeof callback != "function") {
+			throw new Error("Callback in use but is not a function: " + typeof callback)
+		}
+	}
 	
 	var baseName=path.basename(file);
 
