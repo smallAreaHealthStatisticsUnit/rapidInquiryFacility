@@ -760,10 +760,19 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 					header, 
 					wStream,
 					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, lastPiece, undefined /* callback */);
+				var z=0;
+				var feature;
 				async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features 	/* col */, 
 					function (value, index, callback) {		
 							try {
-								var feature=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
+								
+								z++;
+								if (z > 1) {
+									feature="," + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
+								}
+								else {
+									feature=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
+								}
 //								response.message+="\nWrite feature: " + index + "; length: " + feature.length;
 								streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
 									feature, 
