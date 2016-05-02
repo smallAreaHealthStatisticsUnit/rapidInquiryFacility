@@ -465,7 +465,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, h
 	
 	/*
 	 * Function:	simplifyGeoJSON()
-	 * Parameters:	shapefile (base for geojson etc), response
+	 * Parameters:	shapefile (base for geojson etc), response, shapefileData object
 	 * Returns:		Nothing
 	 * Description:	Simplify geoJSOn to topoJAON optimised for zoomlevel 9
 	 
@@ -499,7 +499,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	For zoomlevel 9 the area at the equator is  78272 x 77748 = 6.085 square km and a pixel is 306 x 304 = 0.093 square km
 	In steradians = (0.093 / (510,072,000 * 12.56637) [area of earth] = 1.4512882642054046732729181896167e-11 steradians
 	 */
-	var simplifyGeoJSON = function(shapefile, response) {
+	var simplifyGeoJSON = function(shapefile, response, shapefileData) {
 		var topojson = require('topojson'),
 			stderrHook = require('../lib/stderrHook');
 			
@@ -525,7 +525,23 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 		
 		response.message+="\nConvert to topojson:\n" + stderr.str();  // Get stderr as a string	
 		stderr.clean();						// Clean down stderr string
-		stderr.restore();                   // Restore normal stderr functionality 			
+		stderr.restore();                   // Restore normal stderr functionality 		
+		
+	// This need to be replaced with write record by record and then do the callback here
+	// We can then also remove the geojson
+		if (response.file_list[shapefileData["shapefile_no"]-1].topojson) {
+			response.file_list[shapefileData["shapefile_no"]-1].topojson_length=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson).length;
+//					response.file_list[shapefileData["shapefile_no"]-1].geojson.features=undefined;
+		}
+			
+//		var end=new Date().getTime();
+
+//		shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
+//		shapefileData["writeTime"]=(end - shapefileData["lstart"])/1000; // in S	
+
+// Write topoJSON file				
+		streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson), 
+			serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, shapefileData["callback"]);		
 	} // End of simplifyGeoJSON()
 	
 	/*
@@ -747,79 +763,85 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				response.message+="\nCompleted processing shapefile[" + shapefileData["shapefile_no"] + "]: " + shapefileData["shapeFileName"];
 					
 // Write geoJSON file feature by feature
-				var wStream=streamWriteFileWithCallback.createWriteStreamWithCallback(shapefileData["jsonFileName"], 
-					undefined /* data: do not undefine! */, 
-					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, undefined /* callback */);
-				var lastPiece=false;
 				var header="{\"type\":\"FeatureCollection\",\"bbox\":" + 
 						JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) + ",\"features\":[";	
 				var footer="]}";
-				// Write header
-//				response.message+="\nWrite header"; 
-				streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
-					header, 
-					wStream,
-					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, lastPiece, undefined /* callback */);
 				var z=0;
-				var feature;
-				async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features 	/* col */, 
-					function (value, index, callback) {		
-							try {
-								
+				var y=0;
+				var feature="";
+				var wStream;
+				var numFeatures=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;
+				async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features	/* col */, 
+					function (value, index, seriesCallback) {		
+							try {						
 								z++;
-								if (z > 1) {
-									feature="," + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
-								}
-								else {
+								y++;
+								if (z == 1) {
+									// Write header
+									response.message+="\nWrite header for: " + shapefileData["jsonFileName"]; 
+									wStream=streamWriteFileWithCallback.createWriteStreamWithCallback(shapefileData["jsonFileName"], 
+										undefined /* data: do not undefine! */, 
+										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, undefined /* No callback! */);			
+									wStream.write(header, 'binary');	// Write header						
 									feature=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
 								}
-//								response.message+="\nWrite feature: " + index + "; length: " + feature.length;
-								streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
-									feature, 
-									wStream,
-									serverLog, shapefileData["uuidV1"], shapefileData["req"], response, lastPiece, undefined /* callback */);
-								callback();
+								else {
+									feature+="," + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
+								}
+								if (z == numFeatures) {
+									console.error("Write final feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length);
+									response.message+="\nWrite final feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length;
+									streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
+										feature, 
+										wStream,
+										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, false /* lastPiece */, seriesCallback);
+									feature="";									
+								}
+								else if (feature.length > 1024*1024*50) {
+									console.error("Write feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length);
+									response.message+="\nWrite feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length;
+									streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
+										feature, 
+										wStream,
+										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, false /* lastPiece */, seriesCallback);
+									feature="";
+								}
+								else if (y > 1000) {
+									y=0;
+									process.nextTick(seriesCallback); // Avoid Maximum call stack size exceeded;
+								}
+								else {
+									seriesCallback();
+								}
 							} catch (e) {
-								return callback(e);
+								return seriesCallback(e);
 							}
 					}, 
 					function (err) {																	/* Callback at end */
 						if (err) {
-							serverLog.serverError2(__file, __line, "streamWriteFilePieceWithCallback", err.message, req, undefined);
+							serverLog.serverError2(__file, __line, "streamWriteFilePieceWithCallbackasync.forEachOfSeries", err.message, req, undefined);
 						}
-						else { // Write footer
-							lastPiece=true;
-//							response.message+="\nWrite footer"; 
+						else { // Write header
+							response.message+="\nWrite footer for: " + shapefileData["jsonFileName"]; 
 							streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
-								footer, 
-								wStream,
-								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, lastPiece, undefined /* callback */);
+									footer, 
+									wStream,
+									serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, undefined /* callback */);
+// For testing					
+							streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", 
+								JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
+								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, 
+								undefined /* callback */);	
+						
+							// Create topoJSON
+							simplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response, shapefileData);
+
+							// No shapefile processing callback	
+							// streamWriteFileWithCallback in simplifyGeoJSON() runs callback				
 						}
 					});
-					
-//				streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
-//					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, undefined /* callback */);
-				// No callback	
-				
-				// Create topoJSON
-				simplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response);
-				
-	// This need to be replaced with write record by record and then do the callback here
-	// We can then also remove the geojson
-				if (response.file_list[shapefileData["shapefile_no"]-1].topojson) {
-					response.file_list[shapefileData["shapefile_no"]-1].topojson_length=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson).length;
-	//					response.file_list[shapefileData["shapefile_no"]-1].geojson.features=undefined;
-				}
-			
-//		var end=new Date().getTime();
+//					simplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response, shapefileData);
 
-//		shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
-//		shapefileData["writeTime"]=(end - shapefileData["lstart"])/1000; // in S	
-
-// Write topoJSON file				
-				streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson), 
-					serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, shapefileData["callback"]);
-				// streamWriteFileWithCallback runs callback
 			}
 			else {
 				serverLog.serverError2(__file, __line, "shapefileReadLastRecord", 

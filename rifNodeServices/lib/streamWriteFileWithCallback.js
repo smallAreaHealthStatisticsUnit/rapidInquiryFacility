@@ -69,7 +69,7 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 	// Check callback
 	if (callback) {
 		if (typeof callback != "function") {
-			serverLog.serverError2(__file, __line, "streamWriteFileWithCallback", "Callback in use but is not a function: " + typeof callback, req, undefined)
+			serverLog.serverError2(__file, __line, "createWriteStreamWithCallback", "Callback in use but is not a function: " + typeof callback, req, undefined)
 		}
 	}
 
@@ -84,41 +84,64 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 	});
 	
 	wStream.on('finish', function() {
+		scopeChecker(__file, __line, {	
+			file: file,			
+			uuidV1: uuidV1,
+			req: req,
+			response: response,	
+			message: response.message,
+			serverLog: serverLog
+		});
+		
+		// Check callback
+		if (callback) {
+			if (typeof callback != "function") {
+				serverLog.serverError2(__file, __line, "createWriteStreamWithCallback", "Callback in use but is not a function: " + typeof callback, req, undefined)
+			}
+		}
+	
 		try { // And do an atomic rename when complete
 			fs.renameSync(file + '.tmp', file);
 			var len=fs.statSync(file).size;
 			msg="Saved file: " + baseName + "; size: " + len + " bytes";
+			if (callback) { 
+				msg+="; with callback";
+			}
 			response.message+="\n" + msg;
 			if (data && len != data.length) {
-				serverLog.serverError2(__file, __line, "streamWriteFileWithCallback", 
+				serverLog.serverError2(__file, __line, "createWriteStreamWithCallback.wStream.on('finish')", 
 					'ERROR! [' + uuidV1 + '] file: ' + baseName + ' is the wrong size, expecting: ' + data.length + ' got: ' + len +
 					'\n\nDiagnostics >>>\n' + response.message + '\n<<<= End of diagnostics\n', req);				
 			}
-			else if (data) {
-				data=undefined; // Be nice. Could force GC at this point		
-				if (global.gc && len > (1024*1024*500)) { // GC is file > 500M
-					serverLog.serverLog2(__file, __line, "streamWriteFileWithCallback", "OK [" + uuidV1 + "] " + msg + "\nForce garbage collection", req);
-					global.gc();
-				}
-			}
-			serverLog.serverLog2(__file, __line, "streamWriteFileWithCallback", "OK [" + uuidV1 + "] " + msg, req);
+//			else if (data) {
+//				data=undefined; // Be nice. Could force GC at this point		
+//				if (global.gc && len > (1024*1024*500)) { // GC is file > 500M
+//					serverLog.serverLog2(__file, __line, "createWriteStreamWithCallback.wStream.on('finish')", "OK [" + uuidV1 + "] " + msg + "\nForce garbage collection", req);
+//					global.gc();
+//				}
+//			}
 
 			if (callback) { 
+				serverLog.serverLog2(__file, __line, "createWriteStreamWithCallback.wStream.on('finish')", "OK [" + uuidV1 + "] " + msg + " (with callback)", req);
 				callback();	
 			}
+			else {	
+				serverLog.serverLog2(__file, __line, "createWriteStreamWithCallback.wStream.on('finish')", "OK [" + uuidV1 + "] " + msg + " (no callback)", req);
+			}
 		} catch (e) { 
-			serverLog.serverError2(__file, __line, "streamWriteFileWithCallback", 
-				'ERROR! [' + uuidV1 + '] renaming file: ' + file + '.tmp', req, e);
+			serverLog.serverError2(__file, __line, "createWriteStreamWithCallback.wStream.on('finish')", 
+				'ERROR! [' + uuidV1 + '] renaming file: ' + file + '.tmp' + ";\nsize: " + len + " bytes" +
+				";\nDiagnostics>>>\n" + response.message + "\n<<< End of diagnostics\n", req, e);
 		}
 	});
 	wStream.on('error', function (err) {
 		try {
 			fs.unlinkSync(file + '.tmp');
-			serverLog.serverError2(__file, __line, "streamWriteFileWithCallback", 
+			serverLog.serverError2(__file, __line, "createWriteStreamWithCallback.wStream.on('error')", 
 				'ERROR! [' + uuidV1 + '] writing file: ' + file + '.tmp', req, err);
 		}
 		catch (e) { 
-			serverLog.serverError2(__file, __line, "streamWriteFileWithCallback", 
+			serverLog.serverError2(__file, __line, "createWriteStreamWithCallback.wStream.on('error')", 
 				'ERROR! [' + uuidV1 + '] deleting file (after fs.writeFile error: ' + e.message + '): ' + file + '.tmp', req, e);
 		}
 	}); 
@@ -256,6 +279,12 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 	if (!isWriteableStream(wStream)) {
  		serverLog.serverError2(__file, __line, "streamWriteFilePieceWithCallback", "Invalid writeable wStream: " + JSON.stringify(wStream, null, 4), req, undefined);
 	}
+	// Check callback
+	if (callback) {
+		if (typeof callback != "function") {
+			serverLog.serverError2(__file, __line, "streamWriteFilePieceWithCallback", "Callback in use but is not a function: " + typeof callback, req, undefined)
+		}
+	}
 	
 	const path = require('path');
 	var baseName=path.basename(file);
@@ -267,6 +296,12 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 	
 	_myWrite(); // Do first write
 
+	function _postDrain() {
+		response.message+="\nPost stream drain: " + drains + " for file: " + baseName + " [" + i + "] pos: " + pos + 
+				"; len: " + len + "; data.length: " + data.length;		
+		_myWrite(); // Do next write
+	}
+	
 	/*
 	 * Function: 	_myWrite()
 	 * Parameters:	None
@@ -280,14 +315,23 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 			i++;
 			buf=data.slice(pos, pos+len);
 			ok=wStream.write(buf, 'binary');
-//			response.message+="\nWrote " + buf.length + " bytes to file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
-//				"; len: " + len + "; data.length: " + data.length + "; ok: " + ok;
+			response.message+="\nWrote " + buf.length + " bytes to file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
+				"; len: " + len + "; data.length: " + data.length + "; ok: " + ok;
 			pos+=len;	
 			if (pos >= data.length) {
-//				response.message+="\nEnd write file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
-//					"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece;	
 				if (lastPiece === true) {
+					response.message+="\nEnd write file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
+						"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece + "; ok: " + ok + "; no callback: " + typeof(callback);	
 					wStream.end(); // Signal end of stream
+				}
+				else if (callback) {
+					response.message+="\nEnd write file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
+						"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece + "; ok: " + ok + "; callback: " + typeof(callback);	
+					callback();					
+				}
+				else {
+					response.message+="\nEnd write file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
+						"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece + "; ok: " + ok + "; no callback defined";	
 				}
 			}		
 		}
@@ -296,8 +340,8 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 		if (pos < data.length) { // Wait for drain event
 			drains++;
 			response.message+="\nWait for stream drain: " + drains + " for file: " + baseName + " [" + i + "] pos: " + pos + 
-				"; len: " + len + "; data.length: " + data.length;		
-			wStream.once('drain', _myWrite); // When drained, call myWrite() again
+				"; len: " + len + "; data.length: " + data.length + "; ok: " + ok;		
+			wStream.once('drain', _postDrain); // When drained, call myWrite() again
 		}
 	} // End of _myWrite()
 
