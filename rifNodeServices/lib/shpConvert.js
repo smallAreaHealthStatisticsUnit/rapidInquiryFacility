@@ -771,6 +771,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				var feature="";
 				var wStream;
 				var numFeatures=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;
+				var lstart=new Date().getTime();
 				async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features	/* col */, 
 					function (value, index, seriesCallback) {		
 							try {						
@@ -781,7 +782,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 									response.message+="\nWrite header for: " + shapefileData["jsonFileName"]; 
 									wStream=streamWriteFileWithCallback.createWriteStreamWithCallback(shapefileData["jsonFileName"], 
 										undefined /* data: do not undefine! */, 
-										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, undefined /* No callback! */);			
+										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, numFeatures, undefined /* No callback! */);			
 									wStream.write(header, 'binary');	// Write header						
 									feature=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
 								}
@@ -794,7 +795,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 									streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
 										feature, 
 										wStream,
-										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, false /* lastPiece */, seriesCallback);
+										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, false /* lastPiece */, lstart, seriesCallback);
 									feature="";									
 								}
 								else if (feature.length > 1024*1024*50) {
@@ -803,7 +804,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 									streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
 										feature, 
 										wStream,
-										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, false /* lastPiece */, seriesCallback);
+										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, false /* lastPiece */, lstart, seriesCallback);
 									feature="";
 								}
 								else if (y > 1000) {
@@ -826,7 +827,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 							streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
 									footer, 
 									wStream,
-									serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, undefined /* callback */);
+									serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, lstart, undefined /* callback */);
 // For testing					
 							streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", 
 								JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
