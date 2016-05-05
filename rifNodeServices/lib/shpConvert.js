@@ -392,7 +392,7 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
 //			shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
 	}
 	else {
-		streamWriteFileWithCallback.streamWriteFileWithCallback(file, d.file.file_data, serverLog, uuidV1, req, response, true /* lastPiece */, shapeFileComponentQueueCallback);
+		streamWriteFileWithCallback.streamWriteFileWithCallback(file, d.file.file_data, serverLog, uuidV1, req, response, shapeFileComponentQueueCallback);
 //		response.message += "\nSaving file: " + file;
 	}
 }
@@ -541,7 +541,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 
 // Write topoJSON file				
 		streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson), 
-			serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, shapefileData["callback"]);		
+			serverLog, shapefileData["uuidV1"], shapefileData["req"], response, shapefileData["callback"]);		
 	} // End of simplifyGeoJSON()
 	
 	/*
@@ -795,7 +795,8 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 									streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
 										feature, 
 										wStream,
-										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, false /* lastPiece */, lstart, seriesCallback);
+										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
+										false /* lastPiece */, lstart, seriesCallback);
 									feature="";									
 								}
 								else if (feature.length > 1024*1024*50) {
@@ -804,7 +805,8 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 									streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
 										feature, 
 										wStream,
-										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, false /* lastPiece */, lstart, seriesCallback);
+										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
+										false /* lastPiece */, lstart, seriesCallback);
 									feature="";
 								}
 								else if (y > 1000) {
@@ -827,11 +829,12 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 							streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
 									footer, 
 									wStream,
-									serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, lstart, undefined /* callback */);
+									serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
+									true /* lastPiece */, lstart, undefined /* callback */);
 // For testing					
 							streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", 
 								JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
-								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, true /* lastPiece */, 
+								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
 								undefined /* callback */);	
 						
 							// Create topoJSON

@@ -107,10 +107,12 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 		try { // And do an atomic rename when complete
 			fs.renameSync(file + '.tmp', file);
 			var len=fs.statSync(file).size;
-			var mbytesPerSec=len/(elapsedTime*1024*1024);
-			mbytesPerSec=Math.round(mbytesPerSec * 100) / 100;
-			msg="[" + elapsedTime + "s] OK [" + uuidV1 + "] Saved file: " + baseName + "; size: " + len + " bytes; " +
-				mbytesPerSec + " MB/S";
+			msg="[" + elapsedTime + "s] OK [" + uuidV1 + "] Saved file: " + baseName + "; size: " + len + " bytes";
+			if (elapsedTime > 0) {
+				var mbytesPerSec=len/(elapsedTime*1024*1024);
+				mbytesPerSec=Math.round(mbytesPerSec * 100) / 100;
+				msg+="; " + mbytesPerSec + " MB/S";
+			}
 			if (data && len != data.length) {
 				serverLog.serverError2(__file, __line, "createWriteStreamWithCallback.wStream.on('finish')", 
 					'ERROR! [' + uuidV1 + '] file: ' + baseName + ' is the wrong size, expecting: ' + data.length + ' got: ' + len +
@@ -124,16 +126,16 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 //				}
 //			}
 
-			if (records) {
+			if (records && elapsedTime > 0) {
 				msg+="; " + Math.round(records/elapsedTime) + " records/S";
 			}
 			
 			if (callback) { 
-				msg+=" (with callback)";
+				msg+="; (with callback)";
 				callback();	
 			}
 			else {	
-				msg+=" (no callback)";
+				msg+="; (no callback)";
 			}
 			response.message+="\n" + msg;
 //			serverLog.serverLog2(__file, __line, "createWriteStreamWithCallback.wStream.on('finish')", 
@@ -162,11 +164,11 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 /*
  * Function:	streamWriteFileWithCallback()
  * Parameters:	file name with path, data, RIF logging object, uuidV1 
- *				express HTTP request object, response object, lastPiece (true/false), callback
+ *				express HTTP request object, response object, callback
  * Returns:		Text of field processing log
  * Description: Write large file in 1MB chunks using a stream; e.g. GeoJSON, topoJSON, shapefiles 
  */ 
-streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, response, lastPiece, callback) {
+streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, response, callback) {
 
 	scopeChecker(__file, __line, {	
 		file: file,		
@@ -175,90 +177,26 @@ streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, respons
 		req: req,
 		response: response,
 		message: response.message,
-		serverLog: serverLog,
-		lastPiece: lastPiece
+		serverLog: serverLog
 	});
-	if (lastPiece !== true && lastPiece !== false) {
- 		serverLog.serverError2(__file, __line, "streamWriteFileWithCallback", "Invalid value for lastPiece: " + lastPiece, req, undefined)
-	}
 	
-	const path = require('path');
-	var baseName=path.basename(file);
+	var lstart = new Date().getTime();
 
 	// This needs to be done asynchronously, so save as <file>.tmp
 	
 	// Create writable stream for large file writes using 1MB chunks; e.g. GeoJSON, topoJSON, shapefiles 
 	// Install error and stream end handlers.
 	// At end, close stream, rename <file>.tmp to <file>, call callback if defined
-	var wStream=createWriteStreamWithCallback(file, data, serverLog, uuidV1, req, response, undefined /* Records */,  callback);
+	var wStream=createWriteStreamWithCallback(file, data, serverLog, uuidV1, req, response, undefined /* Records */, callback);
 	
-/* 1.3G SOA 2011 file uploads in firefox (NOT chrome) but gives:
-
-Error(Error): toString failed
-Stack>>>
-Error: toString failed
-    at Buffer.toString (buffer.js:382:11)
-    at streamWriteFileWithCallback (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:59:35)
-    at Object.shpConvertFileProcessor (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:505:3)
-    at Busboy.<anonymous> (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServices.js:524:27)
-    at emitNone (events.js:72:20)
-    at Busboy.emit (events.js:166:7)
-    at Busboy.emit (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\connect-busboy\node_modules\busboy\lib\main.js:31:35)
-    at C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\connect-busboy\node_modules\busboy\lib\types\multipart.js:52:13
-    at doNTCallback0 (node.js:419:9)
-    at process._tickCallback (node.js:348:13)<<<
+	streamWriteFilePieceWithCallback(file, data, wStream, serverLog, uuidV1, req, response, true /* lastPiece */, lstart, callback);
 	
-This does mean it converted to shapefile to geojson...
-
-So write in pieces...
- */	
-	var pos=0;
-	var len=1024*1024; // 1MB chunks
-	var i=0;
-	var drains=0;
-	
-	_myWrite(); // Do first write
-
-	/*
-	 * Function: 	_myWrite()
-	 * Parameters:	None
-	 * Returns: 	nothing
-	 * Description: Write out Buffer to stream in 1MB pieces; waiting for IO drain
-	 */
-	function _myWrite() {
-		var ok=true;
-		
-		do {
-			i++;
-			buf=data.slice(pos, pos+len);
-			ok=wStream.write(buf, 'binary');
-//			response.message+="\nWrote " + buf.length + " bytes to file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
-//				"; len: " + len + "; data.length: " + data.length + "; ok: " + ok;
-			pos+=len;	
-			if (pos >= data.length) {
-//				response.message+="\nEnd write file: " + baseName + "; recurse [" + i + "] pos: " + pos + 
-//					"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece;	
-				if (lastPiece === true) {
-					wStream.end(); // Signal end of stream
-				}
-			}		
-		}
-		while (pos < data.length && ok);
-		
-		if (pos < data.length) { // Wait for drain event
-			drains++;
-			response.message+="\nWait for stream drain: " + drains + " for file: " + baseName + " [" + i + "] pos: " + pos + 
-				"; len: " + len + "; data.length: " + data.length;		
-			wStream.once('drain', _myWrite); // When drained, call myWrite() again
-		}
-	} // End of _myWrite()
-
 } // End of streamWriteFileWithCallback
 	
 /*
  * Function:	streamWriteFilePieceWithCallback()
  * Parameters:	file name with path, data, writeable stream, RIF logging object, uuidV1 
- *				express HTTP request object, response object, lastPiece (true/false), start timn, callback
+ *				express HTTP request object, response object, lastPiece (true/false), start time, callback
  * Returns:		Text of field processing log
  * Description: Write large file in 1MB chunks using a stream; e.g. GeoJSON, topoJSON, shapefiles 
  */ 
@@ -304,15 +242,21 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 	var len=1024*1024; // 1MB chunks
 	var i=0;
 	var drains=0;
+	var drainElapsedTime=0;
+	var drainMsg;
+	
 	
 	_myWrite(); // Do first write
 
 	function _postDrain() {
 		var end = new Date().getTime();
 		var elapsedTime=(end - lstart)/1000; // in S
-				
-		response.message+="\n[" + elapsedTime + "s] Post stream drain: " + drains + " for file: " + baseName + " [" + i + "] pos: " + pos + 
-				"; len: " + len + "; data.length: " + data.length;		
+		
+		if (elapsedTime > drainElapsedTime)	{	
+			drainMsg+="\n[" + elapsedTime + "s] Stream drained: " + drains + " for file: " + baseName + " [" + i + "] pos: " + pos + 
+				"; len: " + len + "; data.length: " + data.length;
+			drainElapsedTime=elapsedTime;
+		}
 		_myWrite(); // Do next write
 	}
 	
@@ -335,7 +279,7 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 			if (pos >= data.length) { // Piece has been written 
 				var end = new Date().getTime();
 				var elapsedTime=(end - lstart)/1000; // in S
-			
+				response.message+="\n" + drainMsg;
 				if (lastPiece === true) {
 					response.message+="\n[" + elapsedTime + "s] End write file: " + baseName + "; [" + i + "] new pos: " + pos + 
 						"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece + "; ok: " + ok + "; no callback: " + typeof(callback);	
@@ -362,16 +306,13 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 		}
 		while (pos < data.length && ok);
 		
-		if (!ok) { // Wait for drain event
+		if (pos < data.length && !ok) { // Wait for drain event
 								 // i.e. ok == false: This return value is strictly advisory. You MAY continue to write, even if it returns false.
 								 // However, writes will be buffered in memory
 			var end = new Date().getTime();
 			var elapsedTime=(end - lstart)/1000; // in S
 			
-			drains++;
-			
-			response.message+="\n[" + elapsedTime + "s] Wait for stream drain: " + drains + " for file: " + baseName + " [" + i + "] pos: " + pos + 
-				"; len: " + len + "; data.length: " + data.length + "; ok: " + ok;		
+			drains++;		
 			wStream.once('drain', _postDrain); // When drained, call myWrite() again
 		}
 	} // End of _myWrite()
