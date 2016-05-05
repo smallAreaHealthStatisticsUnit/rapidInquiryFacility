@@ -254,6 +254,8 @@ Test harness refactor; Node.js version working
 #### 18th January to 5th February
 	
 	5. Compressed attachments using zlib; multi attachment support; browser verification
+
+### February
 	
 #### 8th to 17th February
 
@@ -398,13 +400,16 @@ RangeError: Invalid string length
 		
 #### 25th to 29th April
 	
-	Current TODO list:
-	* Zip file support. Convert zlib, zip file support to async
     * Large file support (coa2011) - shpConvertWriteFile() needs to write in sections (i.e. per record), remove geoJSON (this will help IE)
 	
 ### May
 
 #### 3rd to 6th May
+
+	* Code refactor, optimization, instrumentation
+	
+	Current TODO list:
+	* Zip file support. Convert zlib, zip file support to async
 	
 	Maybe list:
 	

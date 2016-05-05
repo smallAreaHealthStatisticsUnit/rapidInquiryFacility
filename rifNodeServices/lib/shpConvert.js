@@ -220,11 +220,11 @@ module.exports.shpConvertFieldProcessor = shpConvertFieldProcessor;
 
 /*
  * Function: 	scopeChecker()
- * Parameters:	file, line called from, named array object to scope checked
+ * Parameters:	file, line called from, named array object to scope checked mandatory, optional array
  * Description: Scope checker function. Throws error if not in scope
  */
-scopeChecker = function(fFile, sLine, array) {
-	var errors=0;
+scopeChecker = function(fFile, sLine, array, optionalArray) {
+	var errors=0;optionalArray
 	var undefinedKeys="";
 	var msg="";
 	
@@ -260,7 +260,25 @@ scopeChecker = function(fFile, sLine, array) {
 			msg+="\httpErrorResponse.httpErrorResponse is not a function: " + typeof array["httpErrorResponse"];
 			errors++;
 		}
-	}		
+	}	
+	// Check callback
+	if (array["callback"]) { // Check callback is a function if in scope
+		if (typeof array["callback"] != "function") {
+			serverLog.serverError2(__file, __line, "createWriteStreamWithCallback", 
+				"Mandatory callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
+				typeof callback, req, undefined);
+			errors++;	
+		}
+	}	
+	// Check callback
+	if (optionalArray && optionalArray["callback"]) { // Check callback is a function if in scope
+		if (typeof optionalArray["callback"] != "function") {
+			serverLog.serverError2(__file, __line, "createWriteStreamWithCallback", 
+				"optional callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
+				typeof callback, req, undefined);
+			errors++;	
+		}
+	}	
 	
 	if (errors > 0) {
 		if (array["serverLog"] && array["req"] && typeof array["serverLog"].serverLog2 == "function") {
@@ -392,7 +410,8 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
 //			shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
 	}
 	else {
-		streamWriteFileWithCallback.streamWriteFileWithCallback(file, d.file.file_data, serverLog, uuidV1, req, response, shapeFileComponentQueueCallback);
+		streamWriteFileWithCallback.streamWriteFileWithCallback(file, d.file.file_data, serverLog, uuidV1, req, response, 
+			undefined /* Records */, shapeFileComponentQueueCallback);
 //		response.message += "\nSaving file: " + file;
 	}
 }
@@ -529,9 +548,10 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 		
 	// This need to be replaced with write record by record and then do the callback here
 	// We can then also remove the geojson
+		var records=response.file_list[shapefileData["shapefile_no"]-1].geojson.features;
 		if (response.file_list[shapefileData["shapefile_no"]-1].topojson) {
 			response.file_list[shapefileData["shapefile_no"]-1].topojson_length=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson).length;
-//					response.file_list[shapefileData["shapefile_no"]-1].geojson.features=undefined;
+				response.file_list[shapefileData["shapefile_no"]-1].geojson.features=undefined;
 		}
 			
 //		var end=new Date().getTime();
@@ -541,7 +561,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 
 // Write topoJSON file				
 		streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson), 
-			serverLog, shapefileData["uuidV1"], shapefileData["req"], response, shapefileData["callback"]);		
+			serverLog, shapefileData["uuidV1"], shapefileData["req"], response, records, shapefileData["callback"]);		
 	} // End of simplifyGeoJSON()
 	
 	/*
@@ -796,7 +816,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 									feature+="," + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
 								}
 								if (z == numFeatures) {
-									console.error("Write final feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length);
+//									console.error("Write final feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length);
 									response.message+="\nWrite final feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length;
 									streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
 										feature, 
@@ -806,7 +826,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 									feature="";									
 								}
 								else if (feature.length > 1024*1024*50) {
-									console.error("Write feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length);
+//									console.error("Write feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length);
 									response.message+="\nWrite feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length;
 									streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
 										feature, 
@@ -834,10 +854,11 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 							response.message+="\nWrite footer for: " + shapefileData["jsonFileName"]; 
 // For testing					
 							var testFunc = function testFunc() {
-								console.error("Creating: " + shapefileData["jsonFileName"] + ".2");
+//								console.error("Creating: " + shapefileData["jsonFileName"] + ".2");
 								streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", 
 									JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
 									serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
+									numFeatures /* records */,
 									undefined /* callback */);
 							}		
 								
