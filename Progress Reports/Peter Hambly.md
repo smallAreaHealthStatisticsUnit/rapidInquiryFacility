@@ -314,6 +314,7 @@ Test harness refactor; Node.js version working
 	
 	GeoNode is essentially Open Google Earth/Maps with an emphasis on accessibility via easy to use interfaces and good metadata.
 	
+### March
 
 #### 28th February to 11th March
 	
@@ -346,6 +347,8 @@ Test harness refactor; Node.js version working
 	  Also added file size checks after coa2011 tests. Hilarious bug where I was writing out ther whole buffer rather 
 	  than a 1MB chunk tried to create a 1TB coa2011 shapefile. Desktop very unhappy; laptop with SSDs filled them up very quickly 
 	  but without distress...
+	  
+### April 
 	
 #### 4th to 8th April 	
 
@@ -398,6 +401,10 @@ RangeError: Invalid string length
 	Current TODO list:
 	* Zip file support. Convert zlib, zip file support to async
     * Large file support (coa2011) - shpConvertWriteFile() needs to write in sections (i.e. per record), remove geoJSON (this will help IE)
+	
+### May
+
+#### 3rd to 6th May
 	
 	Maybe list:
 	

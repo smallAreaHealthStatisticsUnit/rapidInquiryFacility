@@ -131,7 +131,7 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 			}
 			
 			if (callback) { 
-				msg+="; (with callback)";
+				msg+="; (with callback(" + typeof(callback) + "): " + (callback.name || "anonymous");
 				callback();	
 			}
 			else {	
@@ -189,7 +189,8 @@ streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, respons
 	// At end, close stream, rename <file>.tmp to <file>, call callback if defined
 	var wStream=createWriteStreamWithCallback(file, data, serverLog, uuidV1, req, response, undefined /* Records */, callback);
 	
-	streamWriteFilePieceWithCallback(file, data, wStream, serverLog, uuidV1, req, response, true /* lastPiece */, lstart, callback);
+	streamWriteFilePieceWithCallback(file, data, wStream, serverLog, uuidV1, req, response, true /* lastPiece */, lstart, 
+		undefined /* no callback, callback called from steam.end() */);
 	
 } // End of streamWriteFileWithCallback
 	
@@ -243,7 +244,7 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 	var i=0;
 	var drains=0;
 	var drainElapsedTime=0;
-	var drainMsg;
+	var drainMsg="";
 	
 	
 	_myWrite(); // Do first write
@@ -279,20 +280,21 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 			if (pos >= data.length) { // Piece has been written 
 				var end = new Date().getTime();
 				var elapsedTime=(end - lstart)/1000; // in S
-				response.message+="\n" + drainMsg;
+				if (drainMsg) {
+					response.message+="\n" + drainMsg;
+				}
 				if (lastPiece === true) {
 					response.message+="\n[" + elapsedTime + "s] End write file: " + baseName + "; [" + i + "] new pos: " + pos + 
-						"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece + "; ok: " + ok + "; no callback: " + typeof(callback);	
+						"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece + "; ok: " + ok;	
 					wStream.end(); // Signal end of stream
 				}
-				else if (callback) {
-					response.message+="\n[" + elapsedTime + "s] End write file: " + baseName + "; [" + i + "] new pos: " + pos + 
-						"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece + "; ok: " + ok + "; callback: " + typeof(callback);	
+				
+				if (callback) {
+					response.message+="; callback(" + typeof(callback) + "): " + (callback.name || "anonymous");	
 					callback();					
 				}
 				else {
-					response.message+="\n[" + elapsedTime + "s] End write file: " + baseName + "; [" + i + "] new pos: " + pos + 
-						"; len: " + len + "; data.length: " + data.length + "; lastPiece: " + lastPiece + "; ok: " + ok + "; no callback defined";	
+					response.message+="; no callback defined";	
 				}
 			}
 			else if (i == 1 || j > 10) { // Log first, then every 10 writes
