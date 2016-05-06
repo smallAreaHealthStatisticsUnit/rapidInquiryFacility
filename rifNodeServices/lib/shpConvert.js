@@ -519,6 +519,16 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	In steradians = (0.093 / (510,072,000 * 12.56637) [area of earth] = 1.4512882642054046732729181896167e-11 steradians
 	 */
 	var simplifyGeoJSON = function(shapefile, response, shapefileData) {
+		scopeChecker(__file, __line, {
+			shapefile: shapefile,
+			topojsonFileName: shapefileData["topojsonFileName"],
+			response: response,
+			shapefileData: shapefileData,
+			geojson: shapefile.geojson,
+			features: shapefile.geojson.features,
+			file_no: response.file_list[shapefileData["shapefile_no"]-1]
+		});	
+		
 		var topojson = require('topojson'),
 			stderrHook = require('../lib/stderrHook');
 			
@@ -529,6 +539,11 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 			simplify: 1.451e-11 // For zoomlevel 9
 		}; 		
 
+		var records
+		if (shapefile.geojson.features) {
+			records=shapefile.geojson.features.length;
+		}
+		
 // Add stderr hook to capture debug output from topoJSON	
 		var stderr = stderrHook.stderrHook(function(output, obj) { 
 			output.str += obj.str;
@@ -548,10 +563,10 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 		
 	// This need to be replaced with write record by record and then do the callback here
 	// We can then also remove the geojson
-		var records=response.file_list[shapefileData["shapefile_no"]-1].geojson.features;
+
 		if (response.file_list[shapefileData["shapefile_no"]-1].topojson) {
-			response.file_list[shapefileData["shapefile_no"]-1].topojson_length=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson).length;
-				response.file_list[shapefileData["shapefile_no"]-1].geojson.features=undefined;
+			response.file_list[shapefileData["shapefile_no"]-1].topojson_length=JSON.stringify(shapefile.topojson).length;
+				shapefile.geojson.features=undefined;
 		}
 			
 //		var end=new Date().getTime();
@@ -560,7 +575,8 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 //		shapefileData["writeTime"]=(end - shapefileData["lstart"])/1000; // in S	
 
 // Write topoJSON file				
-		streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson), 
+		streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], 
+			JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson), 
 			serverLog, shapefileData["uuidV1"], shapefileData["req"], response, records, shapefileData["callback"]);		
 	} // End of simplifyGeoJSON()
 	

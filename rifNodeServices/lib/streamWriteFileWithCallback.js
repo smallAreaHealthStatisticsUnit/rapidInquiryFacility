@@ -99,7 +99,7 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 		try { // And do an atomic rename when complete
 			fs.renameSync(file + '.tmp', file);
 			var len=fs.statSync(file).size;
-			msg="[" + elapsedTime + "s] OK [" + uuidV1 + "] Saved file: " + baseName + "; size: " + len + " bytes";
+			msg="[" + elapsedTime + "s] OK Saved file: " + baseName + "; size: " + len + " bytes";
 			if (elapsedTime > 0) {
 				var mbytesPerSec=len/(elapsedTime*1024*1024);
 				mbytesPerSec=Math.round(mbytesPerSec * 100) / 100;
@@ -149,7 +149,15 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 				'ERROR! [' + uuidV1 + '] deleting file (after fs.writeFile error: ' + e.message + '): ' + file + '.tmp', req, e);
 		}
 	}); 
-	
+	msg="Created stream for file: " + file; 
+	if (callback) { 
+		msg+="; with callback(" + typeof(callback) + "): " + (callback.name || "anonymous");	
+	}
+	else {	
+		msg+="; (no callback)";
+	}
+	response.message+="\n" + msg;
+			
 	return wStream;
 }
 
