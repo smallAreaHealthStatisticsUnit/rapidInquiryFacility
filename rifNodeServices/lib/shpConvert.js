@@ -124,9 +124,13 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 
 	// Set up async queue; 1 worker
 	var shapeFileComponentQueue = async.queue(function(fileData, shapeFileComponentQueueCallback) {
+		var shapeFileComponentQueueCallbackFunc = function shapeFileComponentQueueCallbackFunc() {
+			shapeFileComponentQueueCallback();
+		}
+		
 		shpConvertFileProcessor(fileData["d"], fileData["shpList"], fileData["shpTotal"], fileData["response"], fileData["uuidV1"], 
 			fileData["req"], fileData["serverLog"], fileData["httpErrorResponse"],
-			shapeFileComponentQueueCallback);	
+			shapeFileComponentQueueCallbackFunc);	
 	}, 1 /* Single threaded - fileData needs to become an object */); // End of async.queue()
 	
 	/*
@@ -462,7 +466,9 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, h
 		
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
-			httpErrorResponse: httpErrorResponse
+			httpErrorResponse: httpErrorResponse,		
+			response: response,
+			message: response.message
 		});	
 		
 		var fs = require('fs'),
@@ -476,8 +482,8 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, h
 			});
 		var xmlDoc = builder.buildObject(xmlConfig);
 		
-		serverLog.serverLog2(__file, __line, "XML config [xml] >>>\n" + xmlDoc + "\n<<< end of XML config [xml]" +
-			"\nXML config [json] >>>\n" + JSON.stringify(xmlConfig, null, 4) + "\n<<< end of json config [xml]");
+		response.message+="\nCreated XML config [xml] >>>\n" + xmlDoc + "\n<<< end of XML config [xml]" +
+			"\nXML config [json] >>>\n" + JSON.stringify(xmlConfig, null, 4) + "\n<<< end of json config [xml]";
 			
 		fs.writeFileSync(xmlConfig.xmlFileDir + "/" + xmlConfig.xmlFileName, xmlDoc);
 	} // End of createXmlFile()
@@ -538,6 +544,12 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 			stderrHook = require('../lib/stderrHook');
 			
 // Default geo2TopoJSON options (see topology Node.js module)
+/* For US data:
+
+bounds: -179.148909 -14.548699000000001 179.77847 71.36516200000001 (spherical)
+pre-quantization: 39.9m (0.000359°) 9.55m (0.0000859°)
+topology: 1579 arcs, 247759 points
+ */
 		if (!topojson_options) {
 			topojson_options = {
 				verbose:      true,
@@ -575,11 +587,6 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 			response.file_list[shapefileData["shapefile_no"]-1].topojson_length=JSON.stringify(shapefile.topojson).length;
 				shapefile.geojson.features=undefined;
 		}
-			
-//		var end=new Date().getTime();
-
-//		shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
-//		shapefileData["writeTime"]=(end - shapefileData["lstart"])/1000; // in S	
 
 // Write topoJSON file				
 		streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], 
@@ -722,7 +729,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 			
 			if (response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) { // Check bounding box present
 				var msg="File: " + shapefileData["shapeFileName"] + 
-					"\nwritten after: " + shapefileData["writeTime"] + " S; total time: " + shapefileData["elapsedTime"] + 
+					"\nTotal time to process shapefile: " + shapefileData["elapsedTime"] + 
 					" S\nBounding box [" +
 					"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
 					"ymin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1] + ", " +
@@ -783,7 +790,9 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				}
 				msg+="\n" + dbf_fields.length + " fields: " + JSON.stringify(dbf_fields) + "; areas: " + 
 					response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;
-
+				if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length && shapefileData["elapsedTime"] > 0) {
+					msg+="; processed: " + Math.round(response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length/shapefileData["elapsedTime"]) + " records/S";
+				}
 				response.message+="\n" + msg;
 
 				// Convert to geoJSON and return
@@ -1093,7 +1102,9 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 
 	// Set up async queue; 1 worker
 	var shapeFileQueue = async.queue(function(shapefileData, shapeFileQueueCallback) {
-		
+		var shapeFileQueueCallbackFunc = function shapeFileQueueCallbackFunc() {
+			shapeFileQueueCallback();
+		}
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
 			httpErrorResponse: httpErrorResponse
@@ -1101,7 +1112,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 			
 //		response.message+="\nWaiting for shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;
 		response.message+="\nasync.queue() for write shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;	
-		shapefileData["callback"]=shapeFileQueueCallback; // Register callback for readShapeFile
+		shapefileData["callback"]=shapeFileQueueCallbackFunc; // Register callback for readShapeFile
 
 		readShapeFile(shapefileData); // Does callback();
 	}, 1 /* Single threaded - shapefileData needs to become an object */); // End of async.queue()
@@ -1266,17 +1277,16 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 			else if (response.field_errors == 0 && response.file_errors == 0) { // OK
 				msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
 				response.message = response.message + "\n" + msg;
+								
+				serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
+					"Diagnostics enabled; diagnostics >>>\n" +
+					response.message + "\n<<< End of diagnostics");	
+						
+				if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
+					if (!shapefile_options.verbose) {
+						response.message="";	
+					}
 				
-				if (!shapefile_options.verbose) {
-					response.message="";	
-				}
-				else {		
-					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
-						"Diagnostics enabled; diagnostics >>>\n" +
-						response.message + "\n<<< End of diagnostics");	
-				}
-			
-				if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
 					var output = JSON.stringify(response);// Convert output response to JSON 
 	// Need to test res was not finished by an expection to avoid "write after end" errors			
 					res.write(output);                  // Write output  
