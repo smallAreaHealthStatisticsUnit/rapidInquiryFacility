@@ -123,7 +123,7 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 			}
 			
 			if (callback) { 
-				msg+="; with callback(" + typeof(callback) + "): " + (callback.name || "anonymous");
+				msg+=";\nRun callback(" + typeof(callback) + "): " + (callback.name || "anonymous");
 				callback();	
 			}
 			else {	
@@ -290,7 +290,7 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 				}
 				
 				if (callback) {
-					response.message+="; callback(" + typeof(callback) + "): " + (callback.name || "anonymous");	
+					response.message+=";\nRun callback(" + typeof(callback) + "): " + (callback.name || "anonymous");	
 					callback();					
 				}
 				else {
