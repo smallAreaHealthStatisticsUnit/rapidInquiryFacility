@@ -113,13 +113,24 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		if (err) { // Add error to message
 			l_response.error = err.message;
 		}
-		if (g_response) { // Add diagnostic
+		if (g_response && g_response.message) { // Add diagnostic
 			serverLog.serverLog2(file, line, calling_function, g_response.message, req, err);
 			l_response.diagnostic += "\n\n" + g_response.message;
+			
+			if (g_response.fields && g_response.fields["diagnosticFileDir"] && g_response.fields["diagnosticFileName"]) {
+				fs.writeFileSync(g_response.fields["diagnosticFileDir"] + "/" + g_response.fields["diagnosticFileName"], 
+					g_response.message);
+			}
 		}
 		else { 
 			serverLog.serverLog2(file, line, calling_function, "(No diagnostic)", req, err);
 		}
+		
+		if (response.diagnosticsTimer) { // Disable the diagnostic file write timer
+			clearInterval(response.diagnosticsTimer);
+			response.diagnosticsTimer=undefined;
+		}
+		
 		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 			res.status(status);		
 			var output = JSON.stringify(l_response);// Convert output response to JSON 		

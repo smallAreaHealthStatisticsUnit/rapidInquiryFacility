@@ -122,6 +122,33 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 		ofields["uuidV1"]=serverLog.generateUUID();
 	}
 
+	const os = require('os'),
+	      fs = require('fs');
+		  
+//	
+// Create directory: $TEMP/shpConvert/<uuidV1> as required
+//
+	var dirArray=[os.tmpdir() + "/shpConvert", ofields["uuidV1"]];
+	ofields["diagnosticFileDir"]=createTemporaryDirectory(dirArray, response, req);
+	
+//	
+// Write diagnostics file
+//	
+	ofields["diagnosticFileName"]="diagnostics.log";
+	if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"])) { // Exists
+		serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
+			"ERROR: Cannot write diagnostics file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], req);
+	}
+	else {
+		response.message+="\nCreating diagnostics file: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"];
+		response.fields=ofields;
+		fs.writeFileSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], 
+			response.message);
+	}
+	var dstart = new Date().getTime();
+	// Re-create every second
+	response.diagnosticsTimer=setInterval(recreateDiagnosticsLog /* Callback */, 1000 /* delay mS */, response, serverLog, httpErrorResponse, dstart);
+
 	// Set up async queue; 1 worker
 	var shapeFileComponentQueue = async.queue(function(fileData, shapeFileComponentQueueCallback) {
 		var shapeFileComponentQueueCallbackFunc = function shapeFileComponentQueueCallbackFunc() {
@@ -294,6 +321,74 @@ scopeChecker = function(fFile, sLine, array, optionalArray) {
 		}
 	}	
 }
+
+/*
+ * Function:	recreateDiagnosticsLog()
+ * Parameters:	response, serverLog, httpErrorResponse objects
+ * Returns:		Nothing
+ * Description: Re-create diagnostics file
+ */
+recreateDiagnosticsLog = function recreateDiagnosticsLog(response, serverLog, httpErrorResponse, dstart) {
+	const os = require('os'),
+	      fs = require('fs');
+		  
+	scopeChecker(__file, __line, {
+		serverLog: serverLog,
+		httpErrorResponse: httpErrorResponse,
+		response: response,
+		fields: response.fields,
+		message: response.message,
+		dstart: dstart
+	});
+	
+	var dend = new Date().getTime();
+	var elapsedTime=(dend - dstart)/1000; // in S
+	if (response.fields["diagnosticFileDir"] && response.fields["diagnosticFileName"]) {
+		response.message+="\n[" + response.fields["uuidV1"] + "+" + elapsedTime + " S] Re-creating diagnostics file: " + response.fields["diagnosticFileName"];
+		fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["diagnosticFileName"], 
+			response.message);	
+	}
+}	
+
+/*
+ * Function:	createTemporaryDirectory()
+ * Parameters:	Directory component array [$TEMP/shpConvert, <uuidV1>, <fileNoext>]
+ * Returns:		Final directory (e.g. $TEMP/shpConvert/<uuidV1>/<fileNoext>)
+ * Description: Create temporary directory (for shapefiles)
+ */
+createTemporaryDirectory = function(dirArray, response, req) {
+	const fs = require('fs');
+
+	var tdir;
+	for (var i = 0; i < dirArray.length; i++) {  
+		if (!tdir) {
+			tdir=dirArray[i];
+		}
+		else {
+			tdir+="/" + dirArray[i];
+		}	
+		try {
+			var stats=fs.statSync(tdir);
+		} catch (e) { 
+			if (e.code == 'ENOENT') {
+				try {
+					fs.mkdirSync(tdir);
+					response.message += "\nmkdir: " + tdir;
+				} catch (e) { 
+					serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
+						"ERROR: Cannot create directory: " + tdir + "; error: " + e.message, req);
+//							shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
+				}			
+			}
+			else {
+				serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
+					"ERROR: Cannot access directory: " + tdir + "; error: " + e.message, req);
+//						 shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 					
+			}
+		}
+	}
+	return tdir;
+} /* End of createTemporaryDirectory() */
 	
 /*
  * Function:	shpConvertFileProcessor()
@@ -311,46 +406,6 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
 	});	
 		
 	var streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback');
-		  
-	/*
-	 * Function:	createTemporaryDirectory()
-	 * Parameters:	Directory component array [$TEMP/shpConvert, <uuidV1>, <fileNoext>]
-	 * Returns:		Final directory (e.g. $TEMP/shpConvert/<uuidV1>/<fileNoext>)
-	 * Description: Create temporary directory (for shapefiles)
-	 */
-	createTemporaryDirectory = function(dirArray, response, req) {
-		const fs = require('fs');
-
-		var tdir;
-		for (var i = 0; i < dirArray.length; i++) {  
-			if (!tdir) {
-				tdir=dirArray[i];
-			}
-			else {
-				tdir+="/" + dirArray[i];
-			}	
-			try {
-				var stats=fs.statSync(tdir);
-			} catch (e) { 
-				if (e.code == 'ENOENT') {
-					try {
-						fs.mkdirSync(tdir);
-						response.message += "\nmkdir: " + tdir;
-					} catch (e) { 
-						serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
-							"ERROR: Cannot create directory: " + tdir + "; error: " + e.message, req);
-//							shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
-					}			
-				}
-				else {
-					serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
-						"ERROR: Cannot access directory: " + tdir + "; error: " + e.message, req);
-//						 shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 					
-				}
-			}
-		}
-		return tdir;
-	} /* End of createTemporaryDirectory() */;
 	
 	const os = require('os'),
 	      fs = require('fs'),
@@ -1276,12 +1331,20 @@ topology: 1579 arcs, 247759 points
 			}
 			else if (response.field_errors == 0 && response.file_errors == 0) { // OK
 				msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
+				if (response.diagnosticsTimer) { // Disable the diagnostic file write timer
+					msg+="\nDisable the diagnostic file write timer";
+					clearInterval(response.diagnosticsTimer);
+					response.diagnosticsTimer=undefined;
+				}	
 				response.message = response.message + "\n" + msg;
-								
+				
 				serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
-					"Diagnostics enabled; diagnostics >>>\n" +
+					"Diagnostics >>>\n" +
 					response.message + "\n<<< End of diagnostics");	
-						
+				if (response.fields && response.fields["diagnosticFileDir"] && response.fields["diagnosticFileName"]) {
+					fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["diagnosticFileName"], 
+						response.message);
+				}		
 				if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
 					if (!shapefile_options.verbose) {
 						response.message="";	
