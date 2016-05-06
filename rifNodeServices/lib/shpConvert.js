@@ -690,7 +690,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	/*
 	 * Function:	shapefileReadNextRecord()
 	 * Parameters:	shapefile record, shape file data object, response object 
-	 * Description:	Read last shapefile record, call reader function
+	 * Description:	Read last shapefile record, call writeGeoJsonbyFeature function to end shapefile process async queue item
 	 */		
 	var shapefileReadLastRecord = function(record, shapefileData, response) {
 		var msg;
@@ -804,114 +804,14 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 				response.file_list[shapefileData["shapefile_no"]-1].dbf_fields=dbf_fields;
 				
 				response.message+="\nCompleted processing shapefile[" + shapefileData["shapefile_no"] + "]: " + shapefileData["shapeFileName"];
-					
-// Write geoJSON file feature by feature
-				var header="{\"type\":\"FeatureCollection\",\"bbox\":" + 
-						JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) + ",\"features\":[";	
-				var footer="]}";
-				var z=0;
-				var y=0;
-				var feature="";
-				var wStream;
-				var numFeatures=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;
-				var lstart=new Date().getTime();
-				
-				async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features	/* col */, 
-					function (value, index, seriesCallback) {
-							var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
-								seriesCallback(e);
-							}
-							
-							try {						
-								z++;
-								y++;
-								if (z == 1) {
-									// Write header
-									response.message+="\nWrite header for: " + shapefileData["jsonFileName"]; 
-									wStream=streamWriteFileWithCallback.createWriteStreamWithCallback(shapefileData["jsonFileName"], 
-										undefined /* data: do not undefine! */, 
-										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, numFeatures, 
-										undefined /* callback at stream end! */);			
-									wStream.write(header, 'binary');	// Write header						
-									feature=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
-								}
-								else {
-									feature+="," + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
-								}
-								if (z == numFeatures) {
-//									console.error("Write final feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length);
-									response.message+="\nWrite final feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length;
-									streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
-										feature, 
-										wStream,
-										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
-										false /* lastPiece */, lstart, seriesCallbackFunc);
-									feature="";									
-								}
-								else if (feature.length > 1024*1024*50) {
-//									console.error("Write feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length);
-									response.message+="\nWrite feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length;
-									streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
-										feature, 
-										wStream,
-										serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
-										false /* lastPiece */, lstart, seriesCallbackFunc);
-									feature="";
-								}
-								else if (y > 1000) {
-									y=0;
-									process.nextTick(seriesCallbackFunc); // Avoid Maximum call stack size exceeded;
-								}
-								else {
-									seriesCallbackFunc();
-								}
-							} catch (e) {
-								return seriesCallbackFunc(e);
-							}
-					}, 
-					function (err) {																	/* Callback at end */
-						if (err) {
-							serverLog.serverError2(__file, __line, "streamWriteFilePieceWithCallbackasync.forEachOfSeries", err.message, req, undefined);
-						}
-						else { // Write header
-							response.message+="\nWrite footer for: " + shapefileData["jsonFileName"]; 
-
-							var shapeFileQueueCallbackFunc = function shapeFileQueueCallbackFunc() {
-							// No shapefile processing callback	
-							// streamWriteFileWithCallback in simplifyGeoJSON() runs shapeFileQueueCallback callback		
-							// This is in turn run from the topoFunction callback at stream end!
-								scopeChecker(__file, __line, {	
-									callback: shapefileData["callback"],
-									message: response.message
-								});
-								response.message+=";\nRun shapeFileQueueCallback callback()";
-								shapefileData["callback"]();								
-							}	
-							var topoFunction=function topoFunction() {
-								// Create topoJSON
-								simplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response, shapefileData, 
-									undefined /* topojson_options */, shapeFileQueueCallbackFunc /* Callback */);							
-							}							
-// For testing					
-							var testFunc = function testFunc() {
-//								console.error("Creating: " + shapefileData["jsonFileName"] + ".2");
-								streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", 
-									JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
-									serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
-									numFeatures /* records */,
-									topoFunction /* callback */);
-							}
-							
-							streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
-									footer, 
-									wStream,
-									serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
-									true /* lastPiece */, lstart, testFunc /* callback */);
-									
-
-						}
-					});
-
+	
+				writeGeoJsonbyFeature(shapefileData, response);	// Write geoJSON file feature by feature	
+					// Runs callbacks:
+					// * streamWriteFilePieceWithCallback (footer) calls:
+					// 	 * testFunc; calls:
+					//     * topoFunction; calls:
+					//       * shapeFileQueueCallbackFunc which run shapeFileQueueCallback
+					// Nothing is now run at stream end!
 			}
 			else {
 				serverLog.serverError2(__file, __line, "shapefileReadLastRecord", 
@@ -920,7 +820,141 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 			}		
 		});
 	} // End of shapefileReadLastRecord()
-			
+	
+	/*
+	 * Function:	writeGeoJsonbyFeature()
+	 * Parameters:
+	 * Description:	Write geoJSON file feature by feature
+	 
+	 				Runs callbacks:
+					* streamWriteFilePieceWithCallback (footer) calls:
+					  * testFunc; calls:
+					     * topoFunction; calls:
+					       * shapeFileQueueCallbackFunc which run shapeFileQueueCallback
+					Nothing is now run at stream end!
+	 */ 	
+	var writeGeoJsonbyFeature = function (shapefileData, response) {
+		
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse,
+			shapefileData: shapefileData,
+			response: response,
+			file_no: response.file_list[shapefileData["shapefile_no"]-1],
+			geojson: response.file_list[shapefileData["shapefile_no"]-1].geojson,
+			bbox: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox
+		});
+		
+		var header="{\"type\":\"FeatureCollection\",\"bbox\":" + 
+				JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) + ",\"features\":[";	
+		var footer="]}";
+		var z=0;
+		var y=0;
+		var feature="";
+		var wStream;
+		var numFeatures=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;
+		var lstart=new Date().getTime();
+	
+		async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features	/* col */, 
+			function (value, index, seriesCallback) {
+					var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
+						seriesCallback(e);
+					}
+					
+					try {						
+						z++;
+						y++;
+						if (z == 1) {
+							// Write header
+							response.message+="\nWrite header for: " + shapefileData["jsonFileName"]; 
+							wStream=streamWriteFileWithCallback.createWriteStreamWithCallback(shapefileData["jsonFileName"], 
+								undefined /* data: do not undefine! */, 
+								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, numFeatures, 
+								undefined /* No callbacks at stream end! */);			
+							wStream.write(header, 'binary');	// Write header						
+							feature=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
+						}
+						else {
+							feature+="," + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
+						}
+						if (z == numFeatures) {
+//									console.error("Write final feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length);
+							response.message+="\nWrite final feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length;
+							streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
+								feature, 
+								wStream,
+								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
+								false /* lastPiece */, lstart, seriesCallbackFunc);
+							feature="";									
+						}
+						else if (feature.length > 1024*1024*50) {
+//									console.error("Write feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length);
+							response.message+="\nWrite feature at index: " + index + "/" + numFeatures + "; feature length: " + feature.length;
+							streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
+								feature, 
+								wStream,
+								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
+								false /* lastPiece */, lstart, seriesCallbackFunc);
+							feature="";
+						}
+						else if (y > 1000) {
+							y=0;
+							process.nextTick(seriesCallbackFunc); // Avoid Maximum call stack size exceeded;
+						}
+						else {
+							seriesCallbackFunc();
+						}
+					} catch (e) {
+						return seriesCallbackFunc(e);
+					}
+			}, 
+			function (err) {																	/* Callback at end */
+				if (err) {
+					serverLog.serverError2(__file, __line, "streamWriteFilePieceWithCallbackasync.forEachOfSeries", err.message, req, undefined);
+				}
+				else { // Write footer
+					// Callbacks:
+					// * streamWriteFilePieceWithCallback (footer) calls:
+					// 	 * testFunc; calls:
+					//     * topoFunction; calls:
+					//       * shapeFileQueueCallbackFunc which run shapeFileQueueCallback
+					// Nothing is now run at stream end!
+					
+					var shapeFileQueueCallbackFunc = function shapeFileQueueCallbackFunc() {
+						scopeChecker(__file, __line, {	
+							callback: shapefileData["callback"],
+							message: response.message
+						});
+						response.message+=";\nRun shapeFileQueueCallback callback()";
+						shapefileData["callback"]();								
+					}	
+					var topoFunction=function topoFunction() {
+						// Create topoJSON
+						simplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response, shapefileData, 
+							undefined /* topojson_options */, shapeFileQueueCallbackFunc /* Callback */);							
+					}							
+// For testing					
+					var testFunc = function testFunc() {
+//								console.error("Creating: " + shapefileData["jsonFileName"] + ".2");
+						streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", 
+							JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
+							serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
+							numFeatures /* records */,
+							topoFunction /* callback */);
+					}			
+
+					response.message+="\nWrite footer for: " + shapefileData["jsonFileName"]; 
+					streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
+							footer, 
+							wStream,
+							serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
+							true /* lastPiece */, lstart, topoFunction /* testFunc */ /* callback */);
+							
+
+				}
+			}); // End of async feature loop
+	} // End of writeGeoJsonbyFeature()
+		
 	/*
 	 * Function:	readShapeFile()
 	 * Parameters:	Shapefile data object:

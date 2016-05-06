@@ -110,13 +110,13 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 					'ERROR! [' + uuidV1 + '] file: ' + baseName + ' is the wrong size, expecting: ' + data.length + ' got: ' + len +
 					'\n\nDiagnostics >>>\n' + response.message + '\n<<<= End of diagnostics\n', req);				
 			}
-//			else if (data) {
-//				data=undefined; // Be nice. Could force GC at this point		
-//				if (global.gc && len > (1024*1024*500)) { // GC is file > 500M
-//					serverLog.serverLog2(__file, __line, "createWriteStreamWithCallback.wStream.on('finish')", "OK [" + uuidV1 + "] " + msg + "\nForce garbage collection", req);
-//					global.gc();
-//				}
-//			}
+			else if (data) {
+				data=undefined; // Be nice. Could force GC at this point		
+				if (global.gc && len > (1024*1024*500)) { // GC is file > 500M
+					serverLog.serverLog2(__file, __line, "createWriteStreamWithCallback.wStream.on('finish')", "OK [" + uuidV1 + "] " + msg + "\nForce garbage collection", req);
+					global.gc();
+				}
+			}
 
 			if (records && elapsedTime > 0) {
 				msg+="; " + Math.round(records/elapsedTime) + " records/S";
@@ -168,6 +168,7 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
  *				number of records (may be undefined), callback  (may be undefined)
  * Returns:		Text of field processing log
  * Description: Write large file in 1MB chunks using a stream; e.g. GeoJSON, topoJSON, shapefiles 
+ * 				Data will be undefined at the end
  */ 
 streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, response, records, callback) {
 
