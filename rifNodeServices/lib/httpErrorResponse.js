@@ -118,6 +118,8 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			l_response.diagnostic += "\n\n" + g_response.message;
 			
 			if (g_response.fields && g_response.fields["diagnosticFileDir"] && g_response.fields["diagnosticFileName"]) {
+				var fs = require('fs');
+				
 				fs.writeFileSync(g_response.fields["diagnosticFileDir"] + "/" + g_response.fields["diagnosticFileName"], 
 					g_response.message);
 			}
@@ -126,9 +128,9 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			serverLog.serverLog2(file, line, calling_function, "(No diagnostic)", req, err);
 		}
 		
-		if (response.diagnosticsTimer) { // Disable the diagnostic file write timer
-			clearInterval(response.diagnosticsTimer);
-			response.diagnosticsTimer=undefined;
+		if (g_response && g_response.diagnosticsTimer) { // Disable the diagnostic file write timer
+			clearInterval(g_response.diagnosticsTimer);
+			g_response.diagnosticsTimer=undefined;
 		}
 		
 		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
