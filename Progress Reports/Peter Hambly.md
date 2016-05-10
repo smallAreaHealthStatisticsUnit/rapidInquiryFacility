@@ -411,6 +411,7 @@ RangeError: Invalid string length
 #### 9th to 13th May
 	
 	Control of data delete on stream write
+	Scopechecker exception tester; test all async queues 
 	
 	Planned: status, status+diagnostics+scopechecker to top level, scopechecker exception tester 
 	

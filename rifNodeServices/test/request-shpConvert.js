@@ -58,6 +58,9 @@
 // 8: Level 1 shapefile; missing sbx file;
 // 9: Level 1 shapefile;  missing sbn, sbx files;
 // 10: Level 1 shapefile; missing .shp.xml file;
+// 11: test exception in streamWriteFileWithCallback();
+// 12: test exception in streamWriteFilePieceWithCallback();	
+// 13: test exception in readShapeFile();		
 //
 var FormData = require('form-data');
 var fs = require('fs');
@@ -65,7 +68,7 @@ var path = require('path');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 10;
+var max_nRequests = 13;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all shpConvert tests');
@@ -105,12 +108,27 @@ var MakeRequest = function(){
 	
 // test 5 missing prj file - FAILS
 // test 6 missing dbf file - FAILS
-	
+// test 11 test exception in streamWriteFileWithCallback()
+// test 12 test exception in streamWriteFilePieceWithCallback()		
+// test 13 test exception in readShapeFile()		
+
 	if (nRequests > 4) { 
 		idx=1; // Do case 1
 		if ((nRequests == 5)||(nRequests == 6)) {
 			formData.expected_to_pass="false";
 		}
+		else if (nRequests == 11) {
+			formData.expected_to_pass="false";
+			formData.exception="streamWriteFileWithCallback";
+		}
+		else if (nRequests == 12) {
+			formData.expected_to_pass="false";
+			formData.exception="streamWriteFilePieceWithCallback";
+		}	
+		else if (nRequests == 13) {
+			formData.expected_to_pass="false";
+			formData.exception="readShapeFile";
+		}		
 	}
 	else {
 		formData["my_test"]+=" (" + idx + " shapefiles)";
@@ -162,7 +180,7 @@ var MakeRequest = function(){
 			}	
 			else if ((nRequests == 10)&&(extList[j] == ".shp.xml")) {
 				formData.my_test=nRequests + ": missing .shp.xml file";				
-			}				
+			}							
 			else if (fs.existsSync(extFile)) {
 				msg+=",\n" + extFile;
 				formData.attachments.push(fs.createReadStream(extFile));
@@ -170,6 +188,19 @@ var MakeRequest = function(){
 				console.log("extFile[" + noFiles + "]: " + extFile);
 			}
 		}
+
+// test 11 test exception in streamWriteFileWithCallback()		
+		if (nRequests == 11) {
+			formData.my_test=nRequests + ": test exception in streamWriteFileWithCallback()";				
+		}	
+// test 12 test exception in streamWriteFilePieceWithCallback()		
+		if (nRequests == 12) {
+			formData.my_test=nRequests + ": test exception in streamWriteFilePieceWithCallback()";				
+		}			
+// test 13 test exception in readShapeFile()	
+		if (nRequests == 12) {
+			formData.my_test=nRequests + ": test exception in readShapeFile()";				
+		}				
 	}
 	
 // Test case: fields

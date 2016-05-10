@@ -151,13 +151,19 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 
 	// Set up async queue; 1 worker
 	var shapeFileComponentQueue = async.queue(function(fileData, shapeFileComponentQueueCallback) {
-		var shapeFileComponentQueueCallbackFunc = function shapeFileComponentQueueCallbackFunc() {
-			shapeFileComponentQueueCallback();
+		var shapeFileComponentQueueCallbackFunc = function shapeFileComponentQueueCallbackFunc(err) {
+			shapeFileComponentQueueCallback(err);
 		}
 		
-		shpConvertFileProcessor(fileData["d"], fileData["shpList"], fileData["shpTotal"], fileData["response"], fileData["uuidV1"], 
-			fileData["req"], fileData["serverLog"], fileData["httpErrorResponse"],
-			shapeFileComponentQueueCallbackFunc);	
+		try {
+			shpConvertFileProcessor(fileData["d"], fileData["shpList"], fileData["shpTotal"], fileData["response"], fileData["uuidV1"], 
+				fileData["req"], fileData["serverLog"], fileData["httpErrorResponse"],
+				shapeFileComponentQueueCallbackFunc);	
+		}
+		catch (e) {
+			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvert", 
+				serverLog, 500, req, res, "async.queue(): Unhandled exception in shpConvertFileProcessor()", e, response);			
+		}
 	}, 1 /* Single threaded - fileData needs to become an object */); // End of async.queue()
 	
 	/*
@@ -256,15 +262,28 @@ module.exports.shpConvertFieldProcessor = shpConvertFieldProcessor;
  * Description: Scope checker function. Throws error if not in scope
  *				Tests: serverError2(), serverError(), serverLog2(), serverLog() are functions; serverLog module is in scope
  *				Checks if callback is a function if in scope
+ *				Raise a test exception if the calling function matches the exception field value
+ * 				For this to work the function name must be defined, i.e.:
+ *
+ *					scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) { ... 
+ *				Not:
+ *					scopeChecker = function(fFile, sLine, array, optionalArray) { ... 
+ *				Add the ofields (formdata fields) array must be included
  */
-scopeChecker = function(fFile, sLine, array, optionalArray) {
+scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) {
 	var errors=0;optionalArray
-	var undefinedKeys="";
+	var undefinedKeys;
 	var msg="";
+	var calling_function = arguments.callee.caller.name || '(anonymous)';
 	
 	for (var key in array) {
 		if (typeof array[key] == "undefined") {
-			undefinedKeys+=key + ", ";
+			if (!undefinedKeys) {
+				undefinedKeys=key;
+			}
+			else {
+				undefinedKeys+=", " + key;
+			}
 			errors++;
 		}
 	}
@@ -314,7 +333,18 @@ scopeChecker = function(fFile, sLine, array, optionalArray) {
 				typeof callback;
 			errors++;
 		}
-	}	
+	}
+
+	// Raise a test exception if the calling function matches the exception field value 
+	if (array["ofields"] && typeof array["ofields"] !== "undefined") {
+		if (array["ofields"].exception == calling_function) { 
+			msg+="\nRaise test exception in: " + array["ofields"].exception;
+			errors++;
+		}
+//		else {
+//			console.error("scopeChecker() ignore: " + array["ofields"].exception + "; calling function: " + calling_function);
+//		}
+	}
 	
 	// Raise exception if errors
 	if (errors > 0) {
@@ -931,10 +961,8 @@ topology: 1579 arcs, 247759 points
 	
 		async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features	/* col */, 
 			function (value, index, seriesCallback) {
-					var serverLog=require('../lib/serverLog'); // Force serverLog to be in scope
 			
 					var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
-						var serverLog=require('../lib/serverLog'); // Force serverLog to be in scope
 						seriesCallback(e);
 					}
 					
@@ -1059,11 +1087,12 @@ topology: 1579 arcs, 247759 points
 	 * Returns:		Nothing
 	 * Description: Read shapefile, process bounding box, convert to WGS84 if required
 	 */
-	var readShapeFile = function(shapefileData) {
+	var readShapeFile = function readShapeFile(shapefileData) {
 		
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
-			httpErrorResponse: httpErrorResponse
+			httpErrorResponse: httpErrorResponse,
+			ofields: response.fields	// For exception testing
 		});
 		
 		/*
@@ -1170,19 +1199,25 @@ topology: 1579 arcs, 247759 points
 
 	// Set up async queue; 1 worker
 	var shapeFileQueue = async.queue(function(shapefileData, shapeFileQueueCallback) {
-		var shapeFileQueueCallbackFunc = function shapeFileQueueCallbackFunc() {
-			shapeFileQueueCallback();
+		var shapeFileQueueCallbackFunc = function shapeFileQueueCallbackFunc(err) {
+			shapeFileQueueCallback(err);
 		}
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
 			httpErrorResponse: httpErrorResponse
 		});
 			
-//		response.message+="\nWaiting for shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;
-		response.message+="\nasync.queue() for write shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;	
-		shapefileData["callback"]=shapeFileQueueCallbackFunc; // Register callback for readShapeFile
+		try {
+	//		response.message+="\nWaiting for shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;
+			response.message+="\nasync.queue() for write shapefile [" + shapefileData.shapefile_no + "]: " + shapefileData.shapeFileName;	
+			shapefileData["callback"]=shapeFileQueueCallbackFunc; // Register callback for readShapeFile
 
-		readShapeFile(shapefileData); // Does callback();
+			readShapeFile(shapefileData); // Does callback();
+		}
+		catch (e) {
+			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvert", 
+				serverLog, 500, req, res, "async.queue(): Unhandled exception in readShapeFile()", e, response);			
+		}
 	}, 1 /* Single threaded - shapefileData needs to become an object */); // End of async.queue()
 
 	/* 

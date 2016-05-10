@@ -170,7 +170,7 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
  * Description: Write large file in 1MB chunks using a stream; e.g. GeoJSON, topoJSON, shapefiles 
  * 				Data will be undefined at the end
  */ 
-streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, response, records, deleteData, callback) {
+streamWriteFileWithCallback=function streamWriteFileWithCallback(file, data, serverLog, uuidV1, req, response, records, deleteData, callback) {
 
 	scopeChecker(__file, __line, {	
 		file: file,		
@@ -179,7 +179,8 @@ streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, respons
 		req: req,
 		response: response,
 		message: response.message,
-		serverLog: serverLog
+		serverLog: serverLog,
+		ofields: response.fields	// For exception testing
 	} /* Manadatory */,
 	{
 		callback: callback
@@ -212,7 +213,7 @@ streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, respons
  * Returns:		Text of field processing log
  * Description: Write large file in 1MB chunks using a stream; e.g. GeoJSON, topoJSON, shapefiles 
  */ 
-streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1, req, response, lastPiece, lstart, callback) {
+streamWriteFilePieceWithCallback=function streamWriteFilePieceWithCallback(file, data, wStream, serverLog, uuidV1, req, response, lastPiece, lstart, callback) {
 
 	var isWriteableStream = function (obj) {
 		var stream = require('stream');
@@ -232,7 +233,8 @@ streamWriteFilePieceWithCallback=function(file, data, wStream, serverLog, uuidV1
 		message: response.message,
 		serverLog: serverLog,
 		lstart: lstart,
-		lastPiece: lastPiece
+		lastPiece: lastPiece,
+		ofields: response.fields	// For exception testing
 	} /* Manadatory */,
 	{
 		callback: callback
