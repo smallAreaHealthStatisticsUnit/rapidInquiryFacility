@@ -251,8 +251,11 @@ module.exports.shpConvertFieldProcessor = shpConvertFieldProcessor;
 
 /*
  * Function: 	scopeChecker()
- * Parameters:	file, line called from, named array object to scope checked mandatory, optional array
+ * Parameters:	file, line called from, named array object to scope checked mandatory, 
+ * 				optional array (used to check optional callbacks)
  * Description: Scope checker function. Throws error if not in scope
+ *				Tests: serverError2(), serverError(), serverLog2(), serverLog() are functions; serverLog module is in scope
+ *				Checks if callback is a function if in scope
  */
 scopeChecker = function(fFile, sLine, array, optionalArray) {
 	var errors=0;optionalArray
@@ -268,7 +271,7 @@ scopeChecker = function(fFile, sLine, array, optionalArray) {
 	if (errors > 0) {
 		msg+=errors + " variable(s) not in scope: " + undefinedKeys;
 	}
-	if (array["serverLog"]) { // Check error and logging in scope
+	if (array["serverLog"] && typeof array["serverLog"] !== "undefined") { // Check error and logging in scope
 		if (typeof array["serverLog"].serverError2 != "function") {
 			msg+="\nserverLog.serverError2 is not a function: " + typeof array["serverLog"];
 			errors++;
@@ -286,6 +289,10 @@ scopeChecker = function(fFile, sLine, array, optionalArray) {
 			errors++;
 		}		
 	}
+	else if (array["serverLog"] && typeof array["serverLog"] == "undefined") {	
+		msg+="\nserverLog module is not in scope: " + array["serverLog"];
+		errors++;
+	}
 	if (array["httpErrorResponse"]) { // Check httpErrorResponse in scope
 		if (typeof array["httpErrorResponse"].httpErrorResponse != "function") {
 			msg+="\httpErrorResponse.httpErrorResponse is not a function: " + typeof array["httpErrorResponse"];
@@ -295,28 +302,29 @@ scopeChecker = function(fFile, sLine, array, optionalArray) {
 	// Check callback
 	if (array["callback"]) { // Check callback is a function if in scope
 		if (typeof array["callback"] != "function") {
-			serverLog.serverError2(__file, __line, "createWriteStreamWithCallback", 
-				"Mandatory callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
-				typeof callback, req, undefined);
-			errors++;	
+			msg+="\nMandatory callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
+				typeof callback;
+			errors++;
 		}
 	}	
-	// Check callback
+	// Check optional callback
 	if (optionalArray && optionalArray["callback"]) { // Check callback is a function if in scope
 		if (typeof optionalArray["callback"] != "function") {
-			serverLog.serverError2(__file, __line, "createWriteStreamWithCallback", 
-				"optional callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
-				typeof callback, req, undefined);
-			errors++;	
+			msg+="\noptional callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
+				typeof callback;
+			errors++;
 		}
 	}	
 	
+	// Raise exception if errors
 	if (errors > 0) {
+		// Prefereably by serverLog.serverError2()
 		if (array["serverLog"] && array["req"] && typeof array["serverLog"].serverLog2 == "function") {
 			array["serverLog"].serverError2(fFile, sLine, "scopeChecker", 
 				msg, array["req"], undefined);
 		}
 		else {
+			msg+="\nForced to RAISE exception; serverLog.serverError2() not in scope";
 			throw new Error(msg);
 		}
 	}	
@@ -923,7 +931,10 @@ topology: 1579 arcs, 247759 points
 	
 		async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features	/* col */, 
 			function (value, index, seriesCallback) {
+					var serverLog=require('../lib/serverLog'); // Force serverLog to be in scope
+			
 					var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
+						var serverLog=require('../lib/serverLog'); // Force serverLog to be in scope
 						seriesCallback(e);
 					}
 					

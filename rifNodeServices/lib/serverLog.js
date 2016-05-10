@@ -142,9 +142,14 @@ serverError = function(msg, req, err) {
 	var file=__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0];
 	var line=__stack[2].getLineNumber();
 	
-	if (response && response.diagnosticsTimer) { // Disable the diagnostic file write timer
-		clearInterval(response.diagnosticsTimer);
-		response.diagnosticsTimer=undefined;
+	try {
+		if (response && response.diagnosticsTimer) { // Disable the diagnostic file write timer
+			clearInterval(response.diagnosticsTimer);
+			response.diagnosticsTimer=undefined;
+		}
+	}
+	catch (e) {
+		serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, response not in scope", req, e);
 	}
 		
 	serverLog2(file, line, calling_function, msg, req, err);
@@ -158,9 +163,14 @@ serverError = function(msg, req, err) {
 
 serverError2 = function(file, line, calling_function, msg, req, err) {	
 
-	if (response && response.diagnosticsTimer) { // Disable the diagnostic file write timer
-		clearInterval(response.diagnosticsTimer);
-		response.diagnosticsTimer=undefined;
+	try {
+		if (response && response.diagnosticsTimer) { // Disable the diagnostic file write timer
+			clearInterval(response.diagnosticsTimer);
+			response.diagnosticsTimer=undefined;
+		}
+	}
+	catch (e) {
+		serverLog2(file, line, calling_function, "WARNING! Unable to disable the diagnostic file write timer, response not in scope", req, e);
 	}
 	
 	serverLog2(file, line, calling_function, msg, req, err);
