@@ -411,9 +411,9 @@ RangeError: Invalid string length
 #### 9th to 13th May
 	
 	Control of data delete on stream write
-	Scopechecker exception tester; test all async queues 
+	Scopechecker exception tester; test all async queues; to top level 
 	
-	Planned: status, status+diagnostics+scopechecker to top level, scopechecker exception tester 
+	Planned: status, status+diagnostics+scopechecker to top level
 	
 	Current TODO list:
 	* Zip file support. Convert zlib, zip file support to async
