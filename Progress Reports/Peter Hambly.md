@@ -410,15 +410,16 @@ RangeError: Invalid string length
 	
 #### 9th to 13th May
 	
-	Control of data delete on stream write
-	Scopechecker exception tester; test all async queues; to top level 
+	* Control of data delete on stream write
+	* Scopechecker exception tester; test all async queues; to top level 
+	* Moved diagnostics to top level
 	
-	Planned: status, status+diagnostics+scopechecker to top level
+	Planned: status, status
 	
 	Current TODO list:
 	* Zip file support. Convert zlib, zip file support to async
 	
-	Maybe list:
+	Then list:
 	
 	* Simplify: accurate Steradians calulations
 	* Feature catalog support; see: cb_2014_us_county_500k.shp.ea.iso.xml. This contains most of the names etc.
@@ -434,7 +435,7 @@ RangeError: Invalid string length
 	
 	* Add tests:
 		i. Unsupported projection files (modify proj data slightly...)
-		ii. Wrong shapefile in set
+		ii. Wrong shapefile (by bounds) in set
 		iii. No shapefile with only 1 area if > 1 shapefile
 		iv. Area mismatch between shapefiles
 		

@@ -597,7 +597,37 @@ exports.convert = function(req, res) {
 			req.busboy.on('finish', function() {
 				try {
 					var msg="";
+
+					const os = require('os'),
+						  fs = require('fs');
+
+					if (!ofields["uuidV1"]) { // Generate UUID
+						ofields["uuidV1"]=serverLog.generateUUID();
+					}		  
+//	
+// Create directory: $TEMP/shpConvert/<uuidV1> as required
+//
+					var dirArray=[os.tmpdir() + "/shpConvert", ofields["uuidV1"]];
+					ofields["diagnosticFileDir"]=createTemporaryDirectory(dirArray, response, req);
 					
+//	
+// Write diagnostics file
+//	
+					ofields["diagnosticFileName"]="diagnostics.log";
+					if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"])) { // Exists
+						serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
+							"ERROR: Cannot write diagnostics file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], req);
+					}
+					else {
+						response.message+="\nCreating diagnostics file: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"];
+						response.fields=ofields;
+						fs.writeFileSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], 
+							response.message);
+					}
+					var dstart = new Date().getTime();
+					// Re-create every second
+					response.diagnosticsTimer=setInterval(recreateDiagnosticsLog /* Callback */, 1000 /* delay mS */, response, serverLog, httpErrorResponse, dstart);
+	
 					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
 
 						for (var i = 0; i < response.no_files; i++) {	
@@ -737,10 +767,25 @@ exports.convert = function(req, res) {
 						if (req.url == '/shpConvert') { // Processed by shpConvertCheckFiles() - uses async
 						}
 						else if (req.url == '/geo2TopoJSON') {	
-							response.fields=ofields;				// Add return fields	
+							if (response.diagnosticsTimer) { // Disable the diagnostic file write timer
+								msg+="\nDisable the diagnostic file write timer";
+								clearInterval(response.diagnosticsTimer);
+								response.diagnosticsTimer=undefined;
+							}		
+							serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", 
+								"Diagnostics >>>\n" +
+								response.message + "\n<<< End of diagnostics");	
+							if (response.fields && response.fields["diagnosticFileDir"] && response.fields["diagnosticFileName"]) {
+								fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["diagnosticFileName"], 
+									response.message);
+							}								
+							response.fields=ofields;				// Add return fields not already present	
 							if (response.field_errors == 0 && response.file_errors == 0) { // OK
 								serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
-								if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed					
+								if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
+									if (!response.fields.verbose) {
+										response.message="";	
+									}								
 									var output = JSON.stringify(response);// Convert output response to JSON 
 				// Need to test res was not finished by an expection to avoid "write after end" errors			
 									res.write(output);                  // Write output  

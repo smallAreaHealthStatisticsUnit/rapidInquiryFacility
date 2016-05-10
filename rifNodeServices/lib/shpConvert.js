@@ -118,36 +118,6 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 	if (!res) {
 		throw new Error("No HTTP response object [out of scope]");
 	}
-	if (!ofields["uuidV1"]) { // Generate UUID
-		ofields["uuidV1"]=serverLog.generateUUID();
-	}
-
-	const os = require('os'),
-	      fs = require('fs');
-		  
-//	
-// Create directory: $TEMP/shpConvert/<uuidV1> as required
-//
-	var dirArray=[os.tmpdir() + "/shpConvert", ofields["uuidV1"]];
-	ofields["diagnosticFileDir"]=createTemporaryDirectory(dirArray, response, req);
-	
-//	
-// Write diagnostics file
-//	
-	ofields["diagnosticFileName"]="diagnostics.log";
-	if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"])) { // Exists
-		serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
-			"ERROR: Cannot write diagnostics file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], req);
-	}
-	else {
-		response.message+="\nCreating diagnostics file: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"];
-		response.fields=ofields;
-		fs.writeFileSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], 
-			response.message);
-	}
-	var dstart = new Date().getTime();
-	// Re-create every second
-	response.diagnosticsTimer=setInterval(recreateDiagnosticsLog /* Callback */, 1000 /* delay mS */, response, serverLog, httpErrorResponse, dstart);
 
 	// Set up async queue; 1 worker
 	var shapeFileComponentQueue = async.queue(function(fileData, shapeFileComponentQueueCallback) {
@@ -1289,7 +1259,7 @@ topology: 1579 arcs, 247759 points
 						response.message);
 				}		
 				if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
-					if (!shapefile_options.verbose) {
+					if (!response.fields.verbose) {
 						response.message="";	
 					}
 				
