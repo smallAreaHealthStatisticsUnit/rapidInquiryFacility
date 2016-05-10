@@ -165,12 +165,12 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
  * Function:	streamWriteFileWithCallback()
  * Parameters:	file name with path, data, RIF logging object, uuidV1 
  *				express HTTP request object, response object, 
- *				number of records (may be undefined), callback  (may be undefined)
+ *				number of records (may be undefined), delete data (by undefining) at stream end, callback (may be undefined)
  * Returns:		Text of field processing log
  * Description: Write large file in 1MB chunks using a stream; e.g. GeoJSON, topoJSON, shapefiles 
  * 				Data will be undefined at the end
  */ 
-streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, response, records, callback) {
+streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, response, records, deleteData, callback) {
 
 	scopeChecker(__file, __line, {	
 		file: file,		
@@ -192,7 +192,13 @@ streamWriteFileWithCallback=function(file, data, serverLog, uuidV1, req, respons
 	// Create writable stream for large file writes using 1MB chunks; e.g. GeoJSON, topoJSON, shapefiles 
 	// Install error and stream end handlers.
 	// At end, close stream, rename <file>.tmp to <file>, call callback if defined
-	var wStream=createWriteStreamWithCallback(file, data, serverLog, uuidV1, req, response, records, callback);
+	var wStream;
+	if (deleteData && deleteData == true) {
+		wStream=createWriteStreamWithCallback(file, data /* Delete at end */, serverLog, uuidV1, req, response, records, callback);
+	}
+	else {
+		wStream=createWriteStreamWithCallback(file, undefined /* Do not delete at end */, serverLog, uuidV1, req, response, records, callback);
+	}
 	
 	streamWriteFilePieceWithCallback(file, data, wStream, serverLog, uuidV1, req, response, true /* lastPiece */, lstart, 
 		undefined /* no callback, callback called from steam.end() */);

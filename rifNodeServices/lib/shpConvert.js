@@ -469,8 +469,9 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
 //			shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
 	}
 	else {
+		// Also delete file data after the file is written to free memory
 		streamWriteFileWithCallback.streamWriteFileWithCallback(file, d.file.file_data, serverLog, uuidV1, req, response, 
-			undefined /* Records */, shapeFileComponentQueueCallback);
+			undefined /* Records */, true /* delete data (by undefining) at stream end */, shapeFileComponentQueueCallback);
 //		response.message += "\nSaving file: " + file;
 	}
 }
@@ -643,10 +644,11 @@ topology: 1579 arcs, 247759 points
 				shapefile.geojson.features=undefined;
 		}
 
-// Write topoJSON file				
+// Write topoJSON file; do NOT delete it				
 		streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], 
 			JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson), 
-			serverLog, shapefileData["uuidV1"], shapefileData["req"], response, records, callback);		
+			serverLog, shapefileData["uuidV1"], shapefileData["req"], response, records, 
+			false /* do not delete data (by undefining) at stream end */, callback);		
 	} // End of simplifyGeoJSON()
 	
 	/*
@@ -933,7 +935,7 @@ topology: 1579 arcs, 247759 points
 							response.message+="\nWrite header for: " + shapefileData["jsonFileName"]; 
 							wStream=streamWriteFileWithCallback.createWriteStreamWithCallback(shapefileData["jsonFileName"], 
 								undefined /* data: do not undefine! */, 
-								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, numFeatures, 
+								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, numFeatures, false /* do not delete data (by undefining) at stream end */, 
 								undefined /* No callbacks at stream end! */);			
 							wStream.write(header, 'binary');	// Write header						
 							feature=JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[index]);
@@ -1003,7 +1005,7 @@ topology: 1579 arcs, 247759 points
 						streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", 
 							JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
 							serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
-							numFeatures /* records */,
+							numFeatures /* records */, false /* do not delete data (by undefining) at stream end */,
 							topoFunction /* callback */);
 					}			
 

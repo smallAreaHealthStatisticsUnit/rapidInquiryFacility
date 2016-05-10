@@ -407,7 +407,12 @@ RangeError: Invalid string length
 #### 3rd to 6th May
 
 	* Code refactor, optimization, instrumentation
-	data delete, status, status+diagnostics+scopechecker to top level, scopechecker exception tester 
+	
+#### 9th to 13th May
+	
+	Control of data delete on stream write
+	
+	Planned: status, status+diagnostics+scopechecker to top level, scopechecker exception tester 
 	
 	Current TODO list:
 	* Zip file support. Convert zlib, zip file support to async
