@@ -70,12 +70,13 @@ var util = require('util'),
 	stderrHook = require('../lib/stderrHook'),
     httpErrorResponse = require('../lib/httpErrorResponse'),
     serverLog = require('../lib/serverLog'),
+	
 /*
  * Function: 	TempData() 
  * Parameters:  NONE
  * Description: Construction for TempData
  */
-     TempData = function() {
+     TempData = function TempData() {
 		
 		this.file = '';
 		this.file_list = [];
@@ -85,111 +86,229 @@ var util = require('util'),
         return this; 
      }; // End of globals
 
-/*
- * Function: 	scopeChecker()
- * Parameters:	file, line called from, named array object to scope checked mandatory, 
- * 				optional array (used to check optional callbacks)
- * Description: Scope checker function. Throws error if not in scope
- *				Tests: serverError2(), serverError(), serverLog2(), serverLog() are functions; serverLog module is in scope
- *				Checks if callback is a function if in scope
- *				Raise a test exception if the calling function matches the exception field value
- * 				For this to work the function name must be defined, i.e.:
- *
- *					scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) { ... 
- *				Not:
- *					scopeChecker = function(fFile, sLine, array, optionalArray) { ... 
- *				Add the ofields (formdata fields) array must be included
- */
-scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) {
-	var errors=0;optionalArray
-	var undefinedKeys;
-	var msg="";
-	var calling_function = arguments.callee.caller.name || '(anonymous)';
-	
-	for (var key in array) {
-		if (typeof array[key] == "undefined") {
-			if (!undefinedKeys) {
-				undefinedKeys=key;
+	/*
+	 * Function: 	scopeChecker()
+	 * Parameters:	file, line called from, named array object to scope checked mandatory, 
+	 * 				optional array (used to check optional callbacks)
+	 * Description: Scope checker function. Throws error if not in scope
+	 *				Tests: serverError2(), serverError(), serverLog2(), serverLog() are functions; serverLog module is in scope
+	 *				Checks if callback is a function if in scope
+	 *				Raise a test exception if the calling function matches the exception field value
+	 * 				For this to work the function name must be defined, i.e.:
+	 *
+	 *					scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) { ... 
+	 *				Not:
+	 *					scopeChecker = function(fFile, sLine, array, optionalArray) { ... 
+	 *				Add the ofields (formdata fields) array must be included
+	 */
+	scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) {
+		var errors=0;optionalArray
+		var undefinedKeys;
+		var msg="";
+		var calling_function = arguments.callee.caller.name || '(anonymous)';
+		
+		for (var key in array) {
+			if (typeof array[key] == "undefined") {
+				if (!undefinedKeys) {
+					undefinedKeys=key;
+				}
+				else {
+					undefinedKeys+=", " + key;
+				}
+				errors++;
+			}
+		}
+		if (errors > 0) {
+			msg+=errors + " variable(s) not in scope: " + undefinedKeys;
+		}
+		if (array["serverLog"] && typeof array["serverLog"] !== "undefined") { // Check error and logging in scope
+			if (typeof array["serverLog"].serverError2 != "function") {
+				msg+="\nserverLog.serverError2 is not a function: " + typeof array["serverLog"];
+				errors++;
+			}
+			if (typeof array["serverLog"].serverLog2 != "function") {
+				msg+="\nserverLog.serverLog2 is not a function: " + typeof array["serverLog"];
+				errors++;
+			}
+			if (typeof array["serverLog"].serverError != "function") {
+				msg+="\nserverLog.serverError is not a function: " + typeof array["serverLog"];
+				errors++;
+			}
+			if (typeof array["serverLog"].serverLog != "function") {
+				msg+="\nserverLog.serverLog is not a function: " + typeof array["serverLog"];
+				errors++;
+			}		
+		}
+		else if (array["serverLog"] && typeof array["serverLog"] == "undefined") {	
+			msg+="\nserverLog module is not in scope: " + array["serverLog"];
+			errors++;
+		}
+		if (array["httpErrorResponse"]) { // Check httpErrorResponse in scope
+			if (typeof array["httpErrorResponse"].httpErrorResponse != "function") {
+				msg+="\httpErrorResponse.httpErrorResponse is not a function: " + typeof array["httpErrorResponse"];
+				errors++;
+			}
+		}	
+		// Check callback
+		if (array["callback"]) { // Check callback is a function if in scope
+			if (typeof array["callback"] != "function") {
+				msg+="\nMandatory callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
+					typeof callback;
+				errors++;
+			}
+		}	
+		// Check optional callback
+		if (optionalArray && optionalArray["callback"]) { // Check callback is a function if in scope
+			if (typeof optionalArray["callback"] != "function") {
+				msg+="\noptional callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
+					typeof callback;
+				errors++;
+			}
+		}
+
+		// Raise a test exception if the calling function matches the exception field value 
+		if (array["ofields"] && typeof array["ofields"] !== "undefined") {
+			if (array["ofields"].exception == calling_function) { 
+				msg+="\nRaise test exception in: " + array["ofields"].exception;
+				errors++;
+			}
+	//		else {
+	//			console.error("scopeChecker() ignore: " + array["ofields"].exception + "; calling function: " + calling_function);
+	//		}
+		}
+		
+		// Raise exception if errors
+		if (errors > 0) {
+			// Prefereably by serverLog.serverError2()
+			if (array["serverLog"] && array["req"] && typeof array["serverLog"].serverLog2 == "function") {
+				array["serverLog"].serverError2(fFile, sLine, "scopeChecker", 
+					msg, array["req"], undefined);
 			}
 			else {
-				undefinedKeys+=", " + key;
+				msg+="\nForced to RAISE exception; serverLog.serverError2() not in scope";
+				throw new Error(msg);
 			}
-			errors++;
-		}
-	}
-	if (errors > 0) {
-		msg+=errors + " variable(s) not in scope: " + undefinedKeys;
-	}
-	if (array["serverLog"] && typeof array["serverLog"] !== "undefined") { // Check error and logging in scope
-		if (typeof array["serverLog"].serverError2 != "function") {
-			msg+="\nserverLog.serverError2 is not a function: " + typeof array["serverLog"];
-			errors++;
-		}
-		if (typeof array["serverLog"].serverLog2 != "function") {
-			msg+="\nserverLog.serverLog2 is not a function: " + typeof array["serverLog"];
-			errors++;
-		}
-		if (typeof array["serverLog"].serverError != "function") {
-			msg+="\nserverLog.serverError is not a function: " + typeof array["serverLog"];
-			errors++;
-		}
-		if (typeof array["serverLog"].serverLog != "function") {
-			msg+="\nserverLog.serverLog is not a function: " + typeof array["serverLog"];
-			errors++;
-		}		
-	}
-	else if (array["serverLog"] && typeof array["serverLog"] == "undefined") {	
-		msg+="\nserverLog module is not in scope: " + array["serverLog"];
-		errors++;
-	}
-	if (array["httpErrorResponse"]) { // Check httpErrorResponse in scope
-		if (typeof array["httpErrorResponse"].httpErrorResponse != "function") {
-			msg+="\httpErrorResponse.httpErrorResponse is not a function: " + typeof array["httpErrorResponse"];
-			errors++;
-		}
-	}	
-	// Check callback
-	if (array["callback"]) { // Check callback is a function if in scope
-		if (typeof array["callback"] != "function") {
-			msg+="\nMandatory callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
-				typeof callback;
-			errors++;
-		}
-	}	
-	// Check optional callback
-	if (optionalArray && optionalArray["callback"]) { // Check callback is a function if in scope
-		if (typeof optionalArray["callback"] != "function") {
-			msg+="\noptional callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
-				typeof callback;
-			errors++;
-		}
-	}
+		}	
+	} // End of scopeChecker()
 
-	// Raise a test exception if the calling function matches the exception field value 
-	if (array["ofields"] && typeof array["ofields"] !== "undefined") {
-		if (array["ofields"].exception == calling_function) { 
-			msg+="\nRaise test exception in: " + array["ofields"].exception;
-			errors++;
+	/*
+	 * Function: 	responseProcessing()
+	 * Parameters:	Express HTTP request object, HTTP response object, internal response object, serverLog, httpErrorResponse object, ofields object
+	 * Description: Send express HTTP response
+	 */
+	var responseProcessing = function responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields) {
+		var msg;
+		
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse,
+			req: req,
+			res: res,
+			response: response,
+			ofields: ofields
+		});
+		
+		if (response.diagnosticsTimer) { // Disable the diagnostic file write timer
+			msg+="\nDisable the diagnostic file write timer";
+			clearInterval(response.diagnosticsTimer);
+			response.diagnosticsTimer=undefined;
+		}		
+		serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", 
+			"Diagnostics >>>\n" +
+			response.message + "\n<<< End of diagnostics");	
+		if (response.fields && response.fields["diagnosticFileDir"] && response.fields["diagnosticFileName"]) {
+			fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["diagnosticFileName"], 
+				response.message);
+		}								
+		response.fields=ofields;				// Add return fields not already present	
+		if (response.field_errors == 0 && response.file_errors == 0) { // OK
+			serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
+			if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
+				if (!response.fields.verbose) {
+					response.message="";	
+				}								
+				var output = JSON.stringify(response);// Convert output response to JSON 
+	// Need to test res was not finished by an expection to avoid "write after end" errors			
+				res.write(output);                  // Write output  
+				res.end();	
+			}
+			else {
+				serverLog.serverLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
+			}	
+	//					console.error(util.inspect(req));
+	//					console.error(JSON.stringify(req.headers, null, 4));
 		}
-//		else {
-//			console.error("scopeChecker() ignore: " + array["ofields"].exception + "; calling function: " + calling_function);
-//		}
-	}
-	
-	// Raise exception if errors
-	if (errors > 0) {
-		// Prefereably by serverLog.serverError2()
-		if (array["serverLog"] && array["req"] && typeof array["serverLog"].serverLog2 == "function") {
-			array["serverLog"].serverError2(fFile, sLine, "scopeChecker", 
-				msg, array["req"], undefined);
+		else if (response.field_errors > 0 && response.file_errors > 0) {
+			msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
+				" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+			response.message = msg + "\n" + response.message;						
+			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+				serverLog, 500, req, res, msg, undefined, response);				  
+		}				
+		else if (response.field_errors > 0) {
+			msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
+			response.message = msg + "\n" + response.message;
+			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+				serverLog, 500, req, res, msg, undefined, response);				  
+		}	
+		else if (response.file_errors > 0) {
+			msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
+			response.message = msg + "\n" + response.message;					
+			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+				serverLog, 500, req, res, msg, undefined, response);				  
+		}	
+		else {
+			msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
+				" and file processing ERRORS! " + response.file_errors + "\n" + msg;
+			response.message = msg + "\n" + response.message;						
+			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+				serverLog, 500, req, res, msg, undefined, response);
+		}
+	} // End of responseProcessing
+
+	/*
+	 * Function: 	setupDiagnostics()
+	 * Parameters:	Express HTTP request object, ofields object, internal response object, serverLog, httpErrorResponse object
+	 * Description: Send express HTTP response
+	 */	
+	var setupDiagnostics = function setupDiagnostics(req, ofields, response, serverLog, httpErrorResponse) {
+		
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse,
+			req: req,
+			response: response,
+			ofields: ofields
+		});
+		
+		if (!ofields["uuidV1"]) { // Generate UUID
+			ofields["uuidV1"]=serverLog.generateUUID();
+		}		  
+//	
+// Create directory: $TEMP/shpConvert/<uuidV1> as required
+//
+		var dirArray=[os.tmpdir() + "/shpConvert", ofields["uuidV1"]];
+		ofields["diagnosticFileDir"]=createTemporaryDirectory(dirArray, response, req);
+		
+//	
+// Write diagnostics file
+//	
+		ofields["diagnosticFileName"]="diagnostics.log";
+		if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"])) { // Exists
+			serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
+				"ERROR: Cannot write diagnostics file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], req);
 		}
 		else {
-			msg+="\nForced to RAISE exception; serverLog.serverError2() not in scope";
-			throw new Error(msg);
+			response.message+="\nCreating diagnostics file: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"];
+			response.fields=ofields;
+			fs.writeFileSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], 
+				response.message);
 		}
-	}	
-} // End of scopeChecker()
-
+		var dstart = new Date().getTime();
+		// Re-create every second
+		response.diagnosticsTimer=setInterval(recreateDiagnosticsLog /* Callback */, 1000 /* delay mS */, response, serverLog, httpErrorResponse, dstart);
+	} // End of setupDiagnostics
+	
 /*
  * Function: 	exports.convert()
  * Parameters:	Express HTTP request object, response object
@@ -598,35 +717,7 @@ exports.convert = function(req, res) {
 				try {
 					var msg="";
 
-					const os = require('os'),
-						  fs = require('fs');
-
-					if (!ofields["uuidV1"]) { // Generate UUID
-						ofields["uuidV1"]=serverLog.generateUUID();
-					}		  
-//	
-// Create directory: $TEMP/shpConvert/<uuidV1> as required
-//
-					var dirArray=[os.tmpdir() + "/shpConvert", ofields["uuidV1"]];
-					ofields["diagnosticFileDir"]=createTemporaryDirectory(dirArray, response, req);
-					
-//	
-// Write diagnostics file
-//	
-					ofields["diagnosticFileName"]="diagnostics.log";
-					if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"])) { // Exists
-						serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
-							"ERROR: Cannot write diagnostics file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], req);
-					}
-					else {
-						response.message+="\nCreating diagnostics file: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"];
-						response.fields=ofields;
-						fs.writeFileSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], 
-							response.message);
-					}
-					var dstart = new Date().getTime();
-					// Re-create every second
-					response.diagnosticsTimer=setInterval(recreateDiagnosticsLog /* Callback */, 1000 /* delay mS */, response, serverLog, httpErrorResponse, dstart);
+					setupDiagnostics(req, ofields, response, serverLog, httpErrorResponse);
 	
 					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
 
@@ -767,62 +858,7 @@ exports.convert = function(req, res) {
 						if (req.url == '/shpConvert') { // Processed by shpConvertCheckFiles() - uses async
 						}
 						else if (req.url == '/geo2TopoJSON') {	
-							if (response.diagnosticsTimer) { // Disable the diagnostic file write timer
-								msg+="\nDisable the diagnostic file write timer";
-								clearInterval(response.diagnosticsTimer);
-								response.diagnosticsTimer=undefined;
-							}		
-							serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", 
-								"Diagnostics >>>\n" +
-								response.message + "\n<<< End of diagnostics");	
-							if (response.fields && response.fields["diagnosticFileDir"] && response.fields["diagnosticFileName"]) {
-								fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["diagnosticFileName"], 
-									response.message);
-							}								
-							response.fields=ofields;				// Add return fields not already present	
-							if (response.field_errors == 0 && response.file_errors == 0) { // OK
-								serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
-								if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
-									if (!response.fields.verbose) {
-										response.message="";	
-									}								
-									var output = JSON.stringify(response);// Convert output response to JSON 
-				// Need to test res was not finished by an expection to avoid "write after end" errors			
-									res.write(output);                  // Write output  
-									res.end();	
-								}
-								else {
-									serverLog.serverLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
-								}	
-			//					console.error(util.inspect(req));
-			//					console.error(JSON.stringify(req.headers, null, 4));
-							}
-							else if (response.field_errors > 0 && response.file_errors > 0) {
-								msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
-									" and file processing ERRORS! " + response.file_errors + "\n" + msg;
-								response.message = msg + "\n" + response.message;						
-								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-									serverLog, 500, req, res, msg, undefined, response);				  
-							}				
-							else if (response.field_errors > 0) {
-								msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
-								response.message = msg + "\n" + response.message;
-								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-									serverLog, 500, req, res, msg, undefined, response);				  
-							}	
-							else if (response.file_errors > 0) {
-								msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
-								response.message = msg + "\n" + response.message;					
-								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-									serverLog, 500, req, res, msg, undefined, response);				  
-							}	
-							else {
-								msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
-									" and file processing ERRORS! " + response.file_errors + "\n" + msg;
-								response.message = msg + "\n" + response.message;						
-								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-									serverLog, 500, req, res, msg, undefined, response);
-							}
+							responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
 						}
 					}
 					else {

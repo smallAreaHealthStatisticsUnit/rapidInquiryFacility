@@ -95,10 +95,11 @@ var MakeRequest = function(){
 	var contentType = 'application/json';
 	var id=nRequests;
 	var idx=nRequests;
-	
+	var serverLog = require('../lib/serverLog');
+		  
 	var formData = {
 		my_test: nRequests + ": Defaults",
-		my_reference: nRequests,
+		uuidV1: serverLog.generateUUID(),
 		attachments: [				
 		],
 		expected_to_pass: "true", 
