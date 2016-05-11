@@ -260,7 +260,7 @@ var util = require('util'),
 			clearInterval(response.diagnosticsTimer);
 			response.diagnosticsTimer=undefined;
 		}		
-		serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", 
+		serverLog.serverLog2(__file, __line, "responseProcessing", 
 			"Diagnostics >>>\n" +
 			response.message + "\n<<< End of diagnostics");	
 		if (response.fields && response.fields["diagnosticFileDir"] && response.fields["diagnosticFileName"]) {
@@ -272,7 +272,7 @@ var util = require('util'),
 		
 			addStatus(__file, __line, response, "END", 200 /* HTTP OK */, serverLog, req); // Add status
 			
-			serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
+			serverLog.serverLog2(__file, __line, "responseProcessing", msg, req);	
 			if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
 				if (!response.fields.verbose) {
 					response.message="";	
@@ -283,7 +283,7 @@ var util = require('util'),
 				res.end();	
 			}
 			else {
-				serverLog.serverLog("FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
+				serverLog.serverLog(__file, __line, "FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
 			}	
 	//					console.error(util.inspect(req));
 	//					console.error(JSON.stringify(req.headers, null, 4));
@@ -292,26 +292,26 @@ var util = require('util'),
 			msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + 
 				" and file processing ERRORS! " + response.file_errors + "\n" + msg;
 			response.message = msg + "\n" + response.message;						
-			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+			httpErrorResponse.httpErrorResponse(__file, __line, "rresponseProcessing", 
 				serverLog, 500, req, res, msg, undefined, response);				  
 		}				
 		else if (response.field_errors > 0) {
 			msg+="\nFAIL! Field processing ERRORS! " + response.field_errors + "\n" + msg;
 			response.message = msg + "\n" + response.message;
-			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+			httpErrorResponse.httpErrorResponse(__file, __line, "responseProcessing", 
 				serverLog, 500, req, res, msg, undefined, response);				  
 		}	
 		else if (response.file_errors > 0) {
 			msg+="\nFAIL! File processing ERRORS! " + response.file_errors + "\n" + msg;
 			response.message = msg + "\n" + response.message;					
-			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+			httpErrorResponse.httpErrorResponse(__file, __line, "responseProcessing", 
 				serverLog, 500, req, res, msg, undefined, response);				  
 		}	
 		else {
 			msg+="\nUNCERTAIN! Field processing ERRORS! " + response.field_errors + 
 				" and file processing ERRORS! " + response.file_errors + "\n" + msg;
 			response.message = msg + "\n" + response.message;						
-			httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+			httpErrorResponse.httpErrorResponse(__file, __line, "responseProcessing", 
 				serverLog, 500, req, res, msg, undefined, response);
 		}
 	} // End of responseProcessing
@@ -328,6 +328,7 @@ var util = require('util'),
 			httpErrorResponse: httpErrorResponse,
 			req: req,
 			response: response,
+			status: response.status,
 			ofields: ofields,
 			os: os,
 			fs: fs
@@ -343,11 +344,17 @@ var util = require('util'),
 		ofields["diagnosticFileDir"]=createTemporaryDirectory(dirArray, response, req);
 		
 //	
-// Write diagnostics file
+// Setup file names
 //	
 		ofields["diagnosticFileName"]="diagnostics.log";
+		ofields["statusFileName"]="status.json";
+		ofields["responseFileName"]="response.json";
+		
+//	
+// Write diagnostics file
+//			
 		if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"])) { // Exists
-			serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
+			serverLog.serverError2(__file, __line, "setupDiagnostics", 
 				"ERROR: Cannot write diagnostics file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], req);
 		}
 		else {
@@ -356,6 +363,21 @@ var util = require('util'),
 			fs.writeFileSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], 
 				response.message);
 		}
+		
+//
+// Write status file
+//
+		if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["statusFileName"])) { // Exists
+			serverLog.serverError2(__file, __line, "setupDiagnostics", 
+				"ERROR: Cannot write status file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["statusFileName"], req);
+		}
+		else {
+			response.message+="\n[" + response.fields["uuidV1"] + "] Creating status file: " + response.fields["statusFileName"];
+			var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
+			fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"], 
+				statusText);	
+		}
+	
 		var dstart = new Date().getTime();
 		// Re-create every second
 		response.diagnosticsTimer=setInterval(recreateDiagnosticsLog /* Callback */, 1000 /* delay mS */, response, serverLog, httpErrorResponse, dstart);
@@ -400,6 +422,7 @@ var util = require('util'),
 			sfile: sfile,
 			sline: sline,
 			status: response.status,
+			message: response.message,
 			httpStatus: httpStatus,
 			req: req
 		});	
@@ -441,6 +464,14 @@ var util = require('util'),
 		}
 		
 		serverLog.serverLog2(__file, __line, "addStatus", msg, req);
+		
+		if (response.fields["uuidV1"] && response.fields["diagnosticFileDir"] && response.fields["statusFileName"]) { // Can save state
+			response.message+="\n[" + response.fields["uuidV1"] + "+" + response.status[response.status.length-1].etime + " S] Re-creating status file: " + response.fields["statusFileName"];
+			var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
+			fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"], 
+				statusText);	
+		}		
+		
 	} // End of addStatus
 	
 /*

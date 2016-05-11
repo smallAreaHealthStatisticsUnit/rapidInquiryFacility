@@ -414,8 +414,9 @@ RangeError: Invalid string length
 	* Scopechecker exception tester; test all async queues; to top level 
 	* Moved diagnostics to top level
 	* Top level refactor
+	* Status trace
 	
-	Planned: status
+	Planned: add more status, function name to status, save response, merge responseProcessing
 	
 	Current TODO list:
 	* Zip file support. Convert zlib, zip file support to async
