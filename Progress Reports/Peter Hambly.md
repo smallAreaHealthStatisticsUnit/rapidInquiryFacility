@@ -416,7 +416,7 @@ RangeError: Invalid string length
 	* Top level refactor
 	* Status trace
 	
-	Planned: add more status, function name to status, save response, merge responseProcessing
+	Planned: add more status, save response, merge responseProcessing
 	
 	Current TODO list:
 	* Zip file support. Convert zlib, zip file support to async

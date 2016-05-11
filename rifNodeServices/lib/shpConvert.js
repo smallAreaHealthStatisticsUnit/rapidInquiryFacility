@@ -1025,7 +1025,7 @@ topology: 1579 arcs, 247759 points
 	 * 				Setup and write XML config
 	 *				Process errors and retiurn response
 	 */
-	shapeFileQueue.drain = function() {
+	shapeFileQueue.drain = function shapeFileQueueDrain() {
 		
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
