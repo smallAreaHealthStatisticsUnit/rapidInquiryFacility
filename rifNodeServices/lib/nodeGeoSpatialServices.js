@@ -416,11 +416,15 @@ var util = require('util'),
 	 * Description: Add status to response status array
 	 */	
 	addStatus = function addStatus(sfile, sline, response, status, httpStatus, serverLog, req) {
+		var calling_function = arguments.callee.caller.name || '(anonymous)';
+		const path = require('path');
+		
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
 			response: response,
 			sfile: sfile,
 			sline: sline,
+			calling_function: calling_function,
 			status: response.status,
 			message: response.message,
 			httpStatus: httpStatus,
@@ -448,8 +452,9 @@ var util = require('util'),
 		response.status[response.status.length]= {
 				statusText: status,
 				httpStatus: httpStatus,
-				sfile: sfile,
+				sfile: path.basename(sfile),
 				sline: sline,
+				calling_function: calling_function,
 				stime: new Date().getTime(),
 				etime: 0
 			}
@@ -459,7 +464,7 @@ var util = require('util'),
 		}
 		else {				
 			response.status[response.status.length-1].etime=(response.status[response.status.length-1].stime - response.status[0].stime)/1000; // in S
-			msg="[" + sfile + ":" + sline + "] +" + response.status[response.status.length-1].etime + "S new state: " + 
+			msg="[" + sfile + ":" + sline + ":" + calling_function + "()] +" + response.status[response.status.length-1].etime + "S new state: " + 
 			response.status[response.status.length-1].statusText + "; code: " + response.status[response.status.length-1].httpStatus;
 		}
 		
@@ -479,7 +484,7 @@ var util = require('util'),
  * Parameters:	Express HTTP request object, response object
  * Description:	Express web server handler function for topoJSON conversion
  */
-exports.convert = function(req, res) {
+exports.convert = function exportsConvert(req, res) {
 
 	try {
 		
