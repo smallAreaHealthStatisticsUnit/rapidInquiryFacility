@@ -413,6 +413,7 @@ RangeError: Invalid string length
 	* Control of data delete on stream write
 	* Scopechecker exception tester; test all async queues; to top level 
 	* Moved diagnostics to top level
+	* Top level refactor
 	
 	Planned: status
 	

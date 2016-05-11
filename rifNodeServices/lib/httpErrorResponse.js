@@ -132,6 +132,28 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			clearInterval(g_response.diagnosticsTimer);
 			g_response.diagnosticsTimer=undefined;
 		}
+	
+		if (g_response && g_response.status && addStatus && typeof addStatus == "function") { // Add error status
+			try {
+				addStatus(file, line, g_response, "ERROR", status /* HTTP status */, serverLog, req);  // Add error status
+				l_response.status = g_response.status;
+			}
+			catch (e) {		
+				serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): caught exception in addStatus()", req, e);
+			}
+		}
+		else if (!g_response) {	
+			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no g_response; unable to addStatus()", req, undefined /* No exception */);	
+		}
+		else if (!g_response.status) {	
+			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no g_response.status; unable to addStatus()", req, undefined /* No exception */);	
+		}
+		else if (!addStatus) {	
+			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no addStatus() function; unable to addStatus()", req, undefined /* No exception */);
+		}
+		else if (typeof addStatus != "function") {	
+			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): addStatus() is not a function; unable to addStatus()", req, undefined /* No exception */);
+		}
 		
 		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 			res.status(status);		
@@ -156,6 +178,6 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		}		
 		return;
 	}
-}
+} // End of httpErrorResponse() 
 
 module.exports.httpErrorResponse = httpErrorResponse;	

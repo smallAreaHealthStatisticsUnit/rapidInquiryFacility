@@ -269,6 +269,9 @@ var util = require('util'),
 		}								
 		response.fields=ofields;				// Add return fields not already present	
 		if (response.field_errors == 0 && response.file_errors == 0) { // OK
+		
+			addStatus(__file, __line, response, "END", 200 /* HTTP OK */, serverLog, req); // Add status
+			
 			serverLog.serverLog2(__file, __line, "req.busboy.on:('finish')", msg, req);	
 			if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
 				if (!response.fields.verbose) {
@@ -383,13 +386,69 @@ var util = require('util'),
 				response.message);	
 		}
 	} // End of recreateDiagnosticsLog	
+
+	/*
+	 * Function:	addStatus()
+	 * Parameters:	file, line called from, response object, textual status, http status code, serverLog object, Express HTTP request object
+	 * Returns:		Nothing
+	 * Description: Add status to response status array
+	 */	
+	addStatus = function addStatus(sfile, sline, response, status, httpStatus, serverLog, req) {
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			response: response,
+			sfile: sfile,
+			sline: sline,
+			status: response.status,
+			httpStatus: httpStatus,
+			req: req
+		});	
+		var msg;
+
+		// Check status, httpStatus
+		switch (httpStatus) {
+			case 200: /* HTTP OK */
+				break;
+			case 405: /* HTTP service not suuport */
+				break;				
+			case 500: /* HTTP error */
+				break;
+			case 501: /* HTTP general exception trap */
+				break;				
+			default:
+				msg="addStatus() invalid httpStatus: " + httpStatus;
+				response.message+="\n" + msg;
+				throw new Error(msg);
+				break;
+		}
+		
+		response.status[response.status.length]= {
+				statusText: status,
+				httpStatus: httpStatus,
+				sfile: sfile,
+				sline: sline,
+				stime: new Date().getTime(),
+				etime: 0
+			}
+			
+		if (response.status.length == 1) {	
+			msg="[" + sfile + ":" + sline + "] Initial state: " + status + "; code: " + httpStatus;
+		}
+		else {				
+			response.status[response.status.length-1].etime=(response.status[response.status.length-1].stime - response.status[0].stime)/1000; // in S
+			msg="[" + sfile + ":" + sline + "] +" + response.status[response.status.length-1].etime + "S new state: " + 
+			response.status[response.status.length-1].statusText + "; code: " + response.status[response.status.length-1].httpStatus;
+		}
+		
+		serverLog.serverLog2(__file, __line, "addStatus", msg, req);
+	} // End of addStatus
 	
 /*
  * Function: 	exports.convert()
  * Parameters:	Express HTTP request object, response object
  * Description:	Express web server handler function for topoJSON conversion
  */
-exports.convert = function exports.convert(req, res) {
+exports.convert = function(req, res) {
 
 	try {
 		
@@ -432,11 +491,13 @@ exports.convert = function exports.convert(req, res) {
 			file_errors: 0,
 			file_list: [],
 			message: '',               
-			fields: [] 
+			fields: [],
+			status: []
 		};
 		var d_files = { 
 			d_list: []
 		}
+		addStatus(__file, __line, response, "INIT", 200 /* HTTP OK */, serverLog, req);  // Add initial status
 		
 /*
  * Services supported:

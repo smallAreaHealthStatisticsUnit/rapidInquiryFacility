@@ -1176,6 +1176,9 @@ topology: 1579 arcs, 247759 points
 			}
 			else if (response.field_errors == 0 && response.file_errors == 0) { // OK
 				msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
+				
+				addStatus(__file, __line, response, "END", 200 /* HTTP OK */, serverLog, req); // Add status
+			
 				if (response.diagnosticsTimer) { // Disable the diagnostic file write timer
 					msg+="\nDisable the diagnostic file write timer";
 					clearInterval(response.diagnosticsTimer);

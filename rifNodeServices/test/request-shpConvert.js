@@ -275,7 +275,7 @@ var postIt = function(debug) {
 				if (jsonData.diagnostic) {
 					console.error('\nServer diagnostic >>>' + jsonData.diagnostic + '\n<<< End of server diagnostic');
 				}
-				for (i = 0; i < jsonData.no_files; i++) {	
+				for (var i = 0; i < jsonData.no_files; i++) {	
 					 console.error("File [" + (i+1) + ":" + file_list[i].file_name + "]");
 				}
 				console.error('\nEnd of upload #' + ofields["my_reference"] + '\n');
@@ -304,9 +304,22 @@ var postIt = function(debug) {
 					failed++;
 					console.error('[statusCode != 200] WARNING! test failed, no reference returned');
 				}
-			}					
+			}	
+
+			if (jsonData.status) {
+				console.error("State trace >>>");
+				for (var i = 0; i < jsonData.status.length; i++) {	
+					console.error("[" + jsonData.status[i].sfile + ":" + jsonData.status[i].sline + "] +" + 
+						jsonData.status[i].etime + "S new state: " + jsonData.status[i].statusText + "; code: " + jsonData.status[i].httpStatus);
+				}
+				console.error("<<< End of state trace.");
+			}
+			else {
+				console.error("WARNING: No state information!");
+			}
+			
 		}
-		else { // No HTTP status
+		else { // No HTTP error status
 			var expected_to_pass=true;
 			try {			
 				var jsonData = JSON.parse(body);
@@ -317,7 +330,8 @@ var postIt = function(debug) {
 				console.error('\nUpload #' + ofields["my_reference"] + '\nServer debug >>>' + jsonData.message + 
 					'\n<<< End of server debug\n\nfiles processed: ' + jsonData.no_files +
 					'; fields: ' + JSON.stringify(ofields, null, 4));
-				for (i = 0; i < jsonData.no_files; i++) {	
+
+				for (var i = 0; i < jsonData.no_files; i++) {	
 					if (file_list[i].topojson) {
 						var topojson = JSON.stringify(file_list[i].topojson);
 						console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] - topojson length: " + topojson.length +
@@ -362,15 +376,27 @@ var postIt = function(debug) {
 				if (ofields["my_reference"]) {
 					resultArray[ofields["my_reference"]]=true;
 				}		
-				console.error('[No HTTP status] GOOD! test passed as expected');				
+				console.error('[No HTTP error status] GOOD! test passed as expected');				
 				passed++;
 			}
 			else {
 				if (ofields["my_reference"]) {
 					resultArray[ofields["my_reference"]]=false;
 				}				
-				console.error('[No HTTP status] WARNING! test passed when expected to fail');			
+				console.error('[No HTTP error status] WARNING! test passed when expected to fail');			
 				failed++;
+			}
+				
+			if (jsonData.status) {
+				console.error("State trace >>>");
+				for (var i = 0; i < jsonData.status.length; i++) {	
+					console.error("[" + jsonData.status[i].sfile + ":" + jsonData.status[i].sline + "] +" + 
+						jsonData.status[i].etime + "S new state: " + jsonData.status[i].statusText + "; code: " + jsonData.status[i].httpStatus);
+				}
+				console.error("<<< End of state trace.");
+			}
+			else {
+				console.error("WARNING: No state information!");
 			}
 		}
 	});
