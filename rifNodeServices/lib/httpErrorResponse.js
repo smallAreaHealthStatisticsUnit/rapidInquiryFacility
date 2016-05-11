@@ -157,12 +157,21 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		
 		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 			res.status(status);		
-			var output = JSON.stringify(l_response);// Convert output response to JSON 		
+			var output = JSON.stringify(l_response);// Convert output response to JSON 	
+
+			if (g_response.fields["diagnosticFileDir"] && g_response.fields["responseFileName"]) { // Save to response file
+				fs.writeFileSync(g_response.fields["diagnosticFileDir"] + "/" + g_response.fields["responseFileName"], 
+					output);	
+			}
+			else if (!g_response.fields["responseFileName"]) { // Do not raise errors - you will recurse and it will not be devine
+				serverLog.serverLog(__file, __line, "httpErrorResponse", "FATAL ERROR! Unable to rsave response file; no responseFileName", req);
+			}
+				
 			res.write(output);
 			res.end();	
 		}
-		else {
-			serverLog.serverLog("FATAL! Unable to return error to user - httpErrorResponse() already processed", req, err);
+		else { // Do not raise errors - likewise
+			serverLog.serverLog(__file, __line, "httpErrorResponse", "FATAL ERROR! Unable to return error to user - httpErrorResponse() already processed", req, err);
 		}
 
 	} catch (e) {                            // Catch conversion errors
@@ -174,7 +183,7 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			res.end();	
 		}
 		else {
-			serverLog.serverLog("FATAL! Unable to return error to user - httpErrorResponse() already processed", req, e);
+			serverLog.serverLog(__file, __line, "httpErrorResponse", "FATAL! Unable to return error to user - httpErrorResponse() already processed", req, e);
 		}		
 		return;
 	}
