@@ -276,14 +276,24 @@ var util = require('util'),
 			if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
 				if (!response.fields.verbose) {
 					response.message="";	
-				}								
+				}	
+
 				var output = JSON.stringify(response);// Convert output response to JSON 
+				
+				if (response.fields["diagnosticFileDir"] && response.fields["responseFileName"]) { // Save to response file
+					fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["responseFileName"], 
+						output);	
+				}
+				else if (!response.fields["responseFileName"]) {	
+					serverLog.serverError(__file, __line, "responseProcessing", "Unable to rsave response file; no responseFileName", req);
+				}
+		
 	// Need to test res was not finished by an expection to avoid "write after end" errors			
 				res.write(output);                  // Write output  
 				res.end();	
 			}
 			else {
-				serverLog.serverLog(__file, __line, "FATAL! Unable to return OK reponse to user - httpErrorResponse() already processed", req);
+				serverLog.serverError(__file, __line, "responseProcessing", "Unable to return OK reponse to user - httpErrorResponse() already processed", req);
 			}	
 	//					console.error(util.inspect(req));
 	//					console.error(JSON.stringify(req.headers, null, 4));

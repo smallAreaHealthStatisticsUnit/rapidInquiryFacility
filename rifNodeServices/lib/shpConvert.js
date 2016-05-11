@@ -1199,6 +1199,15 @@ topology: 1579 arcs, 247759 points
 					}
 				
 					var output = JSON.stringify(response);// Convert output response to JSON 
+					
+					if (response.fields["diagnosticFileDir"] && response.fields["responseFileName"]) { // Save to response file
+						fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["responseFileName"], 
+							output);	
+					}
+					else if (!response.fields["responseFileName"]) {	
+						serverLog.serverError(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", "Unable to rsave response file; no responseFileName", req);
+					}
+				
 	// Need to test res was not finished by an expection to avoid "write after end" errors			
 					res.write(output);                  // Write output  
 					res.end();	
