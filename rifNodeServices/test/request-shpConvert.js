@@ -99,6 +99,7 @@ var MakeRequest = function(){
 		  
 	var formData = {
 		my_test: nRequests + ": Defaults",
+		my_reference: nRequests,
 		uuidV1: serverLog.generateUUID(),
 		attachments: [				
 		],

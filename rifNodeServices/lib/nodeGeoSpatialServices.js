@@ -185,12 +185,59 @@ var util = require('util'),
 					msg, array["req"], undefined);
 			}
 			else {
-				msg+="\nForced to RAISE exception; serverLog.serverError2() not in scope";
+				msg+="\nscopeChecker() Forced to RAISE exception; serverLog.serverError2() not in scope";
 				throw new Error(msg);
 			}
 		}	
 	} // End of scopeChecker()
+	
+	/*
+	 * Function:	createTemporaryDirectory()
+	 * Parameters:	Directory component array [$TEMP/shpConvert, <uuidV1>, <fileNoext>], internal response object, Express HTTP request object
+	 * Returns:		Final directory (e.g. $TEMP/shpConvert/<uuidV1>/<fileNoext>)
+	 * Description: Create temporary directory (for shapefiles)
+	 */
+	createTemporaryDirectory = function createTemporaryDirectory(dirArray, response, req) {
+		
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			dirArray: dirArray,
+			req: req,
+			response: response,
+			fs: fs
+		});
 
+		var tdir;
+		for (var i = 0; i < dirArray.length; i++) {  
+			if (!tdir) {
+				tdir=dirArray[i];
+			}
+			else {
+				tdir+="/" + dirArray[i];
+			}	
+			try {
+				var stats=fs.statSync(tdir);
+			} catch (e) { 
+				if (e.code == 'ENOENT') {
+					try {
+						fs.mkdirSync(tdir);
+						response.message += "\nmkdir: " + tdir;
+					} catch (e) { 
+						serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
+							"ERROR: Cannot create directory: " + tdir + "; error: " + e.message, req);
+	//							shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
+					}			
+				}
+				else {
+					serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
+						"ERROR: Cannot access directory: " + tdir + "; error: " + e.message, req);
+	//						 shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 					
+				}
+			}
+		}
+		return tdir;
+	} /* End of createTemporaryDirectory() */
+	
 	/*
 	 * Function: 	responseProcessing()
 	 * Parameters:	Express HTTP request object, HTTP response object, internal response object, serverLog, httpErrorResponse object, ofields object
@@ -278,7 +325,9 @@ var util = require('util'),
 			httpErrorResponse: httpErrorResponse,
 			req: req,
 			response: response,
-			ofields: ofields
+			ofields: ofields,
+			os: os,
+			fs: fs
 		});
 		
 		if (!ofields["uuidV1"]) { // Generate UUID
@@ -308,13 +357,39 @@ var util = require('util'),
 		// Re-create every second
 		response.diagnosticsTimer=setInterval(recreateDiagnosticsLog /* Callback */, 1000 /* delay mS */, response, serverLog, httpErrorResponse, dstart);
 	} // End of setupDiagnostics
+
+	/*
+	 * Function:	recreateDiagnosticsLog()
+	 * Parameters:	response, serverLog, httpErrorResponse objects
+	 * Returns:		Nothing
+	 * Description: Re-create diagnostics file
+	 */
+	recreateDiagnosticsLog = function recreateDiagnosticsLog(response, serverLog, httpErrorResponse, dstart) {			  
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse,
+			response: response,
+			fields: response.fields,
+			message: response.message,
+			dstart: dstart,
+			fs: fs
+		});
+		
+		var dend = new Date().getTime();
+		var elapsedTime=(dend - dstart)/1000; // in S
+		if (response.fields["diagnosticFileDir"] && response.fields["diagnosticFileName"]) {
+			response.message+="\n[" + response.fields["uuidV1"] + "+" + elapsedTime + " S] Re-creating diagnostics file: " + response.fields["diagnosticFileName"];
+			fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["diagnosticFileName"], 
+				response.message);	
+		}
+	} // End of recreateDiagnosticsLog	
 	
 /*
  * Function: 	exports.convert()
  * Parameters:	Express HTTP request object, response object
  * Description:	Express web server handler function for topoJSON conversion
  */
-exports.convert = function(req, res) {
+exports.convert = function exports.convert(req, res) {
 
 	try {
 		
