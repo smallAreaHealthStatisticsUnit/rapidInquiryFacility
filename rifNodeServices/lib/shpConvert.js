@@ -965,25 +965,40 @@ topology: 1579 arcs, 247759 points
 			"EPSG:4326": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
 			"EPSG:3857": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs"
 		};
-		/*
-		SELECT '"'||auth_name||':'||auth_srid||'"="'||proj4text||'";' as text FROM spatial_ref_sys
+		
+		/*		
+		Add missing crss projections; created using PostGIS: 
+		CREATE OR REPLACE VIEW missing_crss_projections AS
+		SELECT '    shapefileData["crss"]["'||auth_name||':'||auth_srid||'"]="'||RTRIM(proj4text)||'";' as text FROM spatial_ref_sys
 		 WHERE auth_srid NOT IN (2400, 3006, 4326, 3857)
-		 LIMIT 10;
+		   AND auth_name = 'EPSG';
+		\copy (SELECT * FROM missing_crss_projections) to missing_crss_projections.csv
+		
+		Copy into ../lib/missing_crss_projections.json
 		*/
+		var missing_crss_projections=require('../lib/missing_crss_projections');
+		missing_crss_projections.missing_crss_projections(shapefileData);
+		
 		if (shapefileData["prj"]) {
 			shapefileData["mySrs"]=srs.parse(shapefileData["prj"]);
-			if (!shapefileData["mySrs"].srid) { // Add exceptions
+			if (!shapefileData["mySrs"].srid) { // Add exceptions not spotted by srs.parse
 				if (shapefileData["mySrs"].name == "British_National_Grid") {
 					shapefileData["mySrs"].srid="27700";
 				}
 				else { // Error
 					serverLog.serverError2(__file, __line, "readShapeFile", 
-						"ERROR! no SRID for projection data: " + shapefileData["prj"] + " in shapefile: " +
+						"ERROR! no SRID for projection: " + shapefileData["mySrs"].name || "(no name)" + "; data: " + shapefileData["prj"] + " in shapefile: " +
 						shapefileData["shapeFileName"], shapefileData["req"]);	
 //						callback();	// Not needed - serverError2() raises exception 
 				}
 			}
-			shapefileData["crss"]["EPSG:" + shapefileData["mySrs"].srid] = shapefileData["mySrs"].proj4;
+			if (!shapefileData["crss"]["EPSG:" + shapefileData["mySrs"].srid]) { // Add missing projections to table
+				serverLog.serverLog2(__file, __line, "readShapeFile", 
+					"WARNING! Added SRID: " + shapefileData["mySrs"].srid + " for projection: " + (shapefileData["mySrs"].name || "(no name)") + 
+					";\ndata: " + shapefileData["prj"] + " in shapefile: " +
+					shapefileData["shapeFileName"], shapefileData["req"]);					
+				shapefileData["crss"]["EPSG:" + shapefileData["mySrs"].srid] = shapefileData["mySrs"].proj4;
+			}
 		}
 		serverLog.serverLog2(__file, __line, "readShapeFile", 
 			"In readShapeFile(), call[" + shapefileData["shapefile_no"] + "] shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);

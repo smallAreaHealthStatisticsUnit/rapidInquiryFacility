@@ -417,6 +417,7 @@ RangeError: Invalid string length
 	* Status trace
 	* Save final response
 	* Merge responseProcessing
+	* Added complete set of SRIDs
 
 	Current TODO list:
 	
@@ -431,7 +432,6 @@ RangeError: Invalid string length
 	* Area_id and description support
 	* Hover support for area name at highest resolution
 	* Add area_id and id uniqueness tests to shapefile checks
-	* Complete set of SRID
 	* WKT support
 	* Database connection; clean, check OK and ST_Union() for PK 	
 	* Id generator
