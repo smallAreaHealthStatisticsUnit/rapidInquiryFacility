@@ -132,7 +132,9 @@ serverLog2 = function(file, line, calling_function, msg, req, err) {
 		error_tracer="\n\nError(" + err.name + "): " + err.message + "\nStack>>>\n" + err.stack + "<<<";
 	}
 	
-	console.error(theDate.toString() + "\n[" + file_trace + request_tracer + "]\n" + msg + error_tracer);
+	console.error("\n* LOG START *********************************************************************\n\n" +
+		theDate.toString() + "\n[" + file_trace + request_tracer + "]\n" + msg + error_tracer +
+		"\n\n* LOG END ***********************************************************************\n");
 }
 
 // Likewise for error; except RAISE the error

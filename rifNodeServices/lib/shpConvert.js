@@ -965,10 +965,14 @@ topology: 1579 arcs, 247759 points
 			"EPSG:4326": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
 			"EPSG:3857": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs"
 		};
-		
+		/*
+		SELECT '"'||auth_name||':'||auth_srid||'"="'||proj4text||'";' as text FROM spatial_ref_sys
+		 WHERE auth_srid NOT IN (2400, 3006, 4326, 3857)
+		 LIMIT 10;
+		*/
 		if (shapefileData["prj"]) {
 			shapefileData["mySrs"]=srs.parse(shapefileData["prj"]);
-			if (!shapefileData["mySrs"].srid) { // 
+			if (!shapefileData["mySrs"].srid) { // Add exceptions
 				if (shapefileData["mySrs"].name == "British_National_Grid") {
 					shapefileData["mySrs"].srid="27700";
 				}
@@ -1174,10 +1178,15 @@ topology: 1579 arcs, 247759 points
 					serverLog, 500, req, res, msg, undefined, response);							
 				return;						
 			}
-			else if (response.field_errors == 0 && response.file_errors == 0) { // OK
+			else { 				
+				msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
+				response.message = response.message + "\n" + msg;
+				responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
+				
+			/* if (response.field_errors == 0 && response.file_errors == 0) { // OK
 				msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
 				
-				addStatus(__file, __line, response, "END", 200 /* HTTP OK */, serverLog, req); // Add status
+				addStatus(__file, __line, response, "END", 200 /- HTTP OK -/, serverLog, req); // Add status
 			
 				if (response.diagnosticsTimer) { // Disable the diagnostic file write timer
 					msg+="\nDisable the diagnostic file write timer";
@@ -1243,7 +1252,8 @@ topology: 1579 arcs, 247759 points
 				response.message = msg + "\n" + response.message;						
 				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
 					serverLog, 500, req, res, msg, undefined, response);
-			}		
+			}*/
+			}
 		}
 		catch (e) {
 			msg+='\nCaught exception: ' + e.message;

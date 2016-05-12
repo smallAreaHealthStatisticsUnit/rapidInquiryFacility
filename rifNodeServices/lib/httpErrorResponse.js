@@ -175,16 +175,24 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		}
 
 	} catch (e) {                            // Catch conversion errors
-		var n_msg="Error response processing ERROR!\n\n" + msg;				  
-		serverLog.serverLog(n_msg, req, e);
-		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
-			res.status(501);			
-			res.write(n_msg);
-			res.end();	
+		try {
+			var n_msg="Error response processing ERROR!\n\n" + msg;				  
+			serverLog.serverLog(n_msg, req, e);
+			if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
+				res.status(501);			
+				res.write(n_msg);
+				res.end();	
+			}
+			else {
+				serverLog.serverLog(__file, __line, "httpErrorResponse", "FATAL! Unable to return error to user - httpErrorResponse() already processed", req, e);
+			}
 		}
-		else {
-			serverLog.serverLog(__file, __line, "httpErrorResponse", "FATAL! Unable to return error to user - httpErrorResponse() already processed", req, e);
-		}		
+		catch (e2) {
+			console.error("\n* LOG START *********************************************************************\n" +
+				+ "\nhttpErrorResponse() FATAL Error in exception handler; message >>>\n" + n_msg + "\n<<< End of message." +
+				"\n\n* LOG END ***********************************************************************\n");
+			throw new Error("httpErrorResponse() FATAL Error in exception handler");
+		}	
 		return;
 	}
 } // End of httpErrorResponse() 

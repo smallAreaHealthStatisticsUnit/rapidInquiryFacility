@@ -243,8 +243,8 @@ var util = require('util'),
 	 * Parameters:	Express HTTP request object, HTTP response object, internal response object, serverLog, httpErrorResponse object, ofields object
 	 * Description: Send express HTTP response
 	 */
-	var responseProcessing = function responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields) {
-		var msg;
+	responseProcessing = function responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields) {
+		var msg="";
 		
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
@@ -285,7 +285,7 @@ var util = require('util'),
 						output);	
 				}
 				else if (!response.fields["responseFileName"]) {	
-					serverLog.serverError(__file, __line, "responseProcessing", "Unable to rsave response file; no responseFileName", req);
+					serverLog.serverError(__file, __line, "responseProcessing", "Unable to save response file; no responseFileName", req);
 				}
 		
 	// Need to test res was not finished by an expection to avoid "write after end" errors			

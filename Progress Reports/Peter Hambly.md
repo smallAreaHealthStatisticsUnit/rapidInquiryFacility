@@ -416,10 +416,11 @@ RangeError: Invalid string length
 	* Top level refactor
 	* Status trace
 	* Save final response
-	
-	Planned: add more status, merge responseProcessing
-	
+	* Merge responseProcessing
+
 	Current TODO list:
+	
+	* Add more status
 	* Zip file support. Convert zlib, zip file support to async
 	
 	Then list:
@@ -430,7 +431,7 @@ RangeError: Invalid string length
 	* Area_id and description support
 	* Hover support for area name at highest resolution
 	* Add area_id and id uniqueness tests to shapefile checks
-	
+	* Complete set of SRID
 	* WKT support
 	* Database connection; clean, check OK and ST_Union() for PK 	
 	* Id generator
