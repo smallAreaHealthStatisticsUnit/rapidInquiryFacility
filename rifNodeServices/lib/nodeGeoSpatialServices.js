@@ -350,7 +350,7 @@ var util = require('util'),
 //	
 // Create directory: $TEMP/shpConvert/<uuidV1> as required
 //
-		var dirArray=[os.tmpdir() + "/shpConvert", ofields["uuidV1"]];
+		var dirArray=[os.tmpdir() + req.url, ofields["uuidV1"]];
 		ofields["diagnosticFileDir"]=createTemporaryDirectory(dirArray, response, req);
 		
 //	
