@@ -422,7 +422,7 @@ RangeError: Invalid string length
 	Current TODO list:
 	
 	* Add more status
-	* Zip file support. Convert zlib, zip file support to async
+	* Zip file support using JSZip. Convert zlib, zip file support to async
 	
 	Then list:
 	
@@ -432,10 +432,11 @@ RangeError: Invalid string length
 	* Area_id and description support
 	* Hover support for area name at highest resolution
 	* Add area_id and id uniqueness tests to shapefile checks
-	* WKT support
+	* WKT support using Geojson2Wkt
 	* Database connection; clean, check OK and ST_Union() for PK 	
 	* Id generator
 	* Detect area mismatch between shapefiles	
+	* Add startup parameterisation (db, if, port etc)
 	
 	* Add tests:
 		i. Unsupported projection files (modify proj data slightly...)

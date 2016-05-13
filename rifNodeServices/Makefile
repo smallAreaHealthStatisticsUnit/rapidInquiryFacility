@@ -193,10 +193,12 @@ endif
 #	node_modules/pg-native/package.json \ 
 #
 MODULE_JSON=node_modules/request/package.json \
+	node_modules/JSZip/package.json \
 	node_modules/form-data/package.json \
 	node_modules/magic-globals/package.json \
 	node_modules/helmet/package.json \
 	node_modules/pg/package.json \
+	node_modules/pg-native/package.json \
 	node_modules/msnodesqlv8/package.json \
 	node_modules/srs/package.json \
 	node_modules/xml2js/package.json \
@@ -212,6 +214,7 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/morgan/package.json \
 	node_modules/topojson/package.json \
 	node_modules/request-debug/package.json \
+	node_modules/geojson2wkt/package.json \
 	node_modules/connect-busboy/package.json
 #
 MODULES=$(patsubst %/package.json,%,$(MODULE_JSON))
