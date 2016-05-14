@@ -436,7 +436,7 @@ RangeError: Invalid string length
 	* Database connection; clean, check OK and ST_Union() for PK 	
 	* Id generator
 	* Detect area mismatch between shapefiles	
-	* Add startup parameterisation (db, if, port etc)
+	* Add startup parameterisation (db, if, port etc) using cjson
 	
 	* Add tests:
 		i. Unsupported projection files (modify proj data slightly...)
