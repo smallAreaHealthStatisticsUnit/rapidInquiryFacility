@@ -489,7 +489,7 @@ var util = require('util'),
 		}		
 		
 	} // End of addStatus
-	
+							
 /*
  * Function: 	exports.convert()
  * Parameters:	Express HTTP request object, response object
@@ -648,7 +648,91 @@ exports.convert = function exportsConvert(req, res) {
  * Description:	File attachment processing function  
  */				  
 			req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
-				
+
+				/*
+				 * Function: 	fileCompressionProcessing()
+				 * Parameters:	d [data] object, internal response object, serverLog object, d_files flist list object, data buffer (received file)
+				 * Description:	Call file processing; handle zlib, gz and zip files
+				 */	
+				var fileCompressionProcessing = function fileCompressionProcessing(d, response, serverLog, d_files, buf) {
+					var msg;
+					
+					d.file.file_data="";
+					var lstart = new Date().getTime();
+					if (d.file.file_encoding === "gzip") {
+						try {
+							d.file.file_data=zlib.gunzipSync(buf);
+						}
+						catch (e) {
+							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+							d.file.file_error=msg;	
+							response.message=msg + "\n" + response.message;
+							response.no_files=d.no_files;			// Add number of files process to response
+							response.fields=ofields;				// Add return fields		
+							response.file_errors++;					// Increment file error count	
+							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
+							d_files.d_list[d.no_files-1] = d;							
+							return;
+						}	
+						end = new Date().getTime();		
+						d.file.uncompress_time=(end - lstart)/1000; // in S		
+						d.file.uncompress_size=d.file.file_data.length;								
+						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+							d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
+							"; from buf: " + buf.length, req; 
+					}	
+					else if (d.file.file_encoding === "zlib") {	
+						try {
+							d.file.file_data=zlib.inflateSync(buf);
+						}
+						catch (e) {
+							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+							d.file.file_error=msg;	
+							response.message=msg + "\n" + response.message;
+							response.no_files=d.no_files;			// Add number of files process to response
+							response.fields=ofields;				// Add return fields	
+							response.file_errors++;					// Increment file error count	
+							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
+							d_files.d_list[d.no_files-1] = d;				
+							return;											
+						}
+						end = new Date().getTime();	
+						d.file.uncompress_time=(end - lstart)/1000; // in S		
+						d.file.uncompress_size=d.file.file_data.length;		
+						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
+							d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
+							"; from buf: " + buf.length, req; 
+					}
+					else if (d.file.file_encoding === "zip") {
+						msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
+							d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
+						d.file.file_error=msg;			
+						response.message=msg + "\n" + response.message;
+						response.no_files=d.no_files;			// Add number of files process to response
+						response.fields=ofields;				// Add return fields	
+						response.file_errors++;					// Increment file error count	
+						serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
+						d_files.d_list[d.no_files-1] = d;				
+						return;							
+					}
+					else {
+						d.file.file_data=buf;
+						if (d.file.file_encoding) {
+							response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
+								"; encoding: " + d.file.file_encoding +
+								"; uncompressed data: " + d.file.file_data.length, req;
+						}
+						else {
+							response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
+								"; uncompressed data: " + d.file.file_data.length, req; 
+						}								
+					}
+										
+					d_files.d_list[d.no_files-1] = d;
+				} // End of fileCompressionProcessing()
+			
 				var d = new TempData(); // This is local to the post requests; the field processing cannot see it
 			
 				d.file = { // File return data type
@@ -778,81 +862,8 @@ exports.convert = function exportsConvert(req, res) {
 						return;
 					}
 					
-					d.file.file_data="";
-					var lstart = new Date().getTime();
-					if (d.file.file_encoding === "gzip") {
-						try {
-							d.file.file_data=zlib.gunzipSync(buf);
-						}
-						catch (e) {
-							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-							d.file.file_error=msg;	
-							response.message=msg + "\n" + response.message;
-							response.no_files=d.no_files;			// Add number of files process to response
-							response.fields=ofields;				// Add return fields		
-							response.file_errors++;					// Increment file error count	
-							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
-							d_files.d_list[d.no_files-1] = d;							
-							return;
-						}	
-						end = new Date().getTime();		
-						d.file.uncompress_time=(end - lstart)/1000; // in S		
-						d.file.uncompress_size=d.file.file_data.length;								
-						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-							d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
-							"; from buf: " + buf.length, req; 
-					}	
-					else if (d.file.file_encoding === "zlib") {	
-						try {
-							d.file.file_data=zlib.inflateSync(buf);
-						}
-						catch (e) {
-							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-							d.file.file_error=msg;	
-							response.message=msg + "\n" + response.message;
-							response.no_files=d.no_files;			// Add number of files process to response
-							response.fields=ofields;				// Add return fields	
-							response.file_errors++;					// Increment file error count	
-							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
-							d_files.d_list[d.no_files-1] = d;				
-							return;											
-						}
-						end = new Date().getTime();	
-						d.file.uncompress_time=(end - lstart)/1000; // in S		
-						d.file.uncompress_size=d.file.file_data.length;		
-						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-							d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
-							"; from buf: " + buf.length, req; 
-					}
-					else if (d.file.file_encoding === "zip") {
-						msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-							d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
-						d.file.file_error=msg;			
-						response.message=msg + "\n" + response.message;
-						response.no_files=d.no_files;			// Add number of files process to response
-						response.fields=ofields;				// Add return fields	
-						response.file_errors++;					// Increment file error count	
-						serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
-						d_files.d_list[d.no_files-1] = d;				
-						return;							
-					}
-					else {
-						d.file.file_data=buf;
-						if (d.file.file_encoding) {
-							response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
-								"; encoding: " + d.file.file_encoding +
-								"; uncompressed data: " + d.file.file_data.length, req;
-						}
-						else {
-							response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
-								"; uncompressed data: " + d.file.file_data.length, req; 
-						}								
-					}
-					
-					d_files.d_list[d.no_files-1] = d;	
-					buf=undefined;
+					fileCompressionProcessing(d, response, serverLog, d_files, buf); // Call file processing; handle zlib, gz and zip files	
+					buf=undefined;	// Release memory
 				}); // End of EOF processor
 					
 			}); // End of file attachment processing function: req.busboy.on('file')
