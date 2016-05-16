@@ -8,7 +8,7 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - missing_crss_projections - add missing crss projections
+// Rapid Enquiry Facility (RIF) - addMissingCrssProjections.js - add missing crss projections
 //
 // Copyright:
 //
@@ -45,7 +45,7 @@
 // Peter Hambly, SAHSU
 
 /*
- * Function:	missing_crss_projections()
+ * Function:	addMissingCrssProjections()
  * Parameters:	shapefileData object
  * Returns:		Nothing
  * Description: Add missing crss projections; created using PostGIS: 
@@ -58,7 +58,7 @@
 		
 		Copy into ../lib/missing_crss_projections.json
  */
-var missing_crss_projections = function missing_crss_projections(shapefileData) {
+var addMissingCrssProjections = function addMissingCrssProjections(shapefileData) {
 	
 	scopeChecker(__file, __line, {
 		shapefileData: shapefileData,
@@ -3972,6 +3972,6 @@ var missing_crss_projections = function missing_crss_projections(shapefileData) 
     shapefileData["crss"]["EPSG:32761"]="+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +k=0.994 +x_0=2000000 +y_0=2000000 +datum=WGS84 +units=m +no_defs";
     shapefileData["crss"]["EPSG:32766"]="+proj=tmerc +lat_0=0 +lon_0=36 +k=0.9996 +x_0=500000 +y_0=10000000 +datum=WGS84 +units=m +no_defs";
 
-} // End of missing_crss_projections()
+} // End of addMissingCrssProjections()
 
-module.exports.missing_crss_projections = missing_crss_projections;
+module.exports.addMissingCrssProjections = addMissingCrssProjections;

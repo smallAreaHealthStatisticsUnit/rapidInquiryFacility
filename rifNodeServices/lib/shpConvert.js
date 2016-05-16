@@ -976,8 +976,8 @@ topology: 1579 arcs, 247759 points
 		
 		Copy into ../lib/missing_crss_projections.json
 		*/
-		var missing_crss_projections=require('../lib/missing_crss_projections');
-		missing_crss_projections.missing_crss_projections(shapefileData);
+		var addMissingCrssProjections=require('../lib/addMissingCrssProjections');
+		addMissingCrssProjections.addMissingCrssProjections(shapefileData);
 		
 		if (shapefileData["prj"]) {
 			shapefileData["mySrs"]=srs.parse(shapefileData["prj"]);

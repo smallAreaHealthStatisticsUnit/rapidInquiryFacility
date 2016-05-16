@@ -418,6 +418,8 @@ RangeError: Invalid string length
 	* Save final response
 	* Merge responseProcessing
 	* Added complete set of SRIDs
+		
+#### 16th to 20th May
 
 	Current TODO list:
 	
@@ -433,7 +435,7 @@ RangeError: Invalid string length
 	* Hover support for area name at highest resolution
 	* Add area_id and id uniqueness tests to shapefile checks
 	* WKT support using Wellknown
-	* Database connection; clean, check OK and ST_Union() for PK 	
+	* Database connection; clean, check OK and ST_Union() for PK [Thought: can ST_Union be domne in geoJSON: as it is a geomtery collection. Also check wellknown] 	
 	* Id generator
 	* Detect area mismatch between shapefiles	
 	* Add startup parameterisation (db, if, port etc) using cjson
