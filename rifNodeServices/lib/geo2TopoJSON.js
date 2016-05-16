@@ -92,7 +92,18 @@
  * myPropertyTransform() function id fields set to: ["eval(console.error(JSON.stringify(req, null, 4)))"]; 1 field(s)
  * FIELD PROCESSING ERROR! Invalid property-transform field: d.properties.eval(console.error(JSON.stringify(req, null, 4))) does not exist in geoJSON;
  */
-geo2TopoJSONFieldProcessor=function(fieldname, val, topojson_options, ofields, response, req, serverLog) {
+geo2TopoJSONFieldProcessor=function geo2TopoJSONFieldProcessor(fieldname, val, topojson_options, ofields, response, req, serverLog) {
+	
+	scopeChecker(__file, __line, {
+		fieldname: fieldname,
+		val: val,
+		ofields: ofields,
+		topojson_options: topojson_options,
+		req: req,
+		response: response,
+		serverLog: serverLog
+	});	
+	
 	var msg,
 	    text = "",
 
@@ -221,8 +232,15 @@ geo2TopoJSONFieldProcessor=function(fieldname, val, topojson_options, ofields, r
  * Parameters:	Buffer
  * Returns:		Buffer converted to string
  * Description: Convert buffer to string in sections avoiding below error...
+ *				It does not avoid the error, but it does demonstate the 256M limit JSON to string conversion limit nicely
  */
-bigToSstring=function(data, response) {
+bigToSstring=function bigToSstring(data, response) {
+	
+	scopeChecker(__file, __line, {
+		data: data,
+		response: response
+	});	
+	
 	try {		
 		var str="";
 		var nstr;
@@ -284,7 +302,7 @@ bigToSstring=function(data, response) {
 	} 	
 	
 	return str;
-}
+} // End of bigToSstring()
 
 /*
  * Function:	geo2TopoJSONFile()
@@ -320,8 +338,16 @@ bigToSstring=function(data, response) {
  *				response.file_errors,
  *				response.error 
  */
-geo2TopoJSONFile=function(d, ofields, topojson_options, stderr, response) {
+geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr, response) {
 	var topojson = require('topojson');
+
+	scopeChecker(__file, __line, {
+		d: d,
+		ofields: ofields,
+		topojson_options: topojson_options,
+		stderr: stderr,
+		response: response
+	});	
 	
 	var msg="File [" + d.no_files + "]: " + d.file.file_name;
 	
@@ -462,7 +488,7 @@ Streaming parser needed; or it needs toString()ing in sections
 				
 		return;
 	} 	
-}
+} // End of geo2TopoJSONFile
 
 module.exports.geo2TopoJSONFieldProcessor = geo2TopoJSONFieldProcessor;
 module.exports.geo2TopoJSONFile = geo2TopoJSONFile;	
