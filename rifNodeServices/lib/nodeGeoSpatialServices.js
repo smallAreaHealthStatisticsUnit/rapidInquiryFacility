@@ -400,7 +400,8 @@ var util = require('util'),
 	 * Returns:		Nothing
 	 * Description: Re-create diagnostics file
 	 */
-	recreateDiagnosticsLog = function recreateDiagnosticsLog(response, serverLog, httpErrorResponse, dstart) {			  
+	recreateDiagnosticsLog = function recreateDiagnosticsLog(response, serverLog, httpErrorResponse, dstart) {		
+	
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
 			httpErrorResponse: httpErrorResponse,
@@ -505,13 +506,13 @@ exports.convert = function exportsConvert(req, res) {
 		res.setHeader("Content-Type", "text/plain");
 		
 // Set timeout for 10 minutes
-		req.setTimeout(10*60*1000, function() {
+		req.setTimeout(10*60*1000, function myTimeoutFunction() {
 			serverLog.serverError2(__file, __line, "exports.convert", "Message timed out at: " + req.timeout, undefined, undefined);	
 			req.abort();
 		}); // 10 minutes
 		
 // Add stderr hook to capture debug output from topoJSON	
-		var stderr = stderrHook.stderrHook(function(output, obj) { 
+		var stderr = stderrHook.stderrHook(function myStderrHook(output, obj) { 
 			output.str += obj.str;
 		});
 		
@@ -610,7 +611,7 @@ exports.convert = function exportsConvert(req, res) {
  * Parameters:	None
  * Description:	Processor if the files limit has been reached  
  */				  
-			req.busboy.on('filesLimit', function() {
+			req.busboy.on('filesLimit', function filesLimit() {
 				var msg="FAIL! Files limit reached: " + response.no_files;
 				response.message=msg + "\n" + response.message;
 				response.file_errors++;				// Increment file error count	
@@ -622,7 +623,7 @@ exports.convert = function exportsConvert(req, res) {
  * Parameters:	None
  * Description:	Processor if the fields limit has been reached  
  */				  
-			req.busboy.on('fieldsLimit', function() {	
+			req.busboy.on('fieldsLimit', function fieldsLimit() {	
 				var msg="FAIL! fields limit reached: " + (response.fields.length+1);
 				response.fields=ofields;				// Add return fields	
 				response.message=msg + "\n" + response.message;
@@ -635,7 +636,7 @@ exports.convert = function exportsConvert(req, res) {
  * Parameters:	None
  * Description:	Processor if the parts limit has been reached  
  */				  
-			req.busboy.on('partsLimit', function() {
+			req.busboy.on('partsLimit', function partsLimit() {
 				var msg="FAIL! Parts limit reached.";
 				response.message=msg + "\n" + response.message;
 				response.file_errors++;				// Increment file error count			
@@ -647,7 +648,7 @@ exports.convert = function exportsConvert(req, res) {
  * Parameters:	fieldname, stream, filename, encoding, mimetype
  * Description:	File attachment processing function  
  */				  
-			req.busboy.on('file', function(fieldname, stream, filename, encoding, mimetype) {
+			req.busboy.on('file', function fileAttachmentProcessing(fieldname, stream, filename, encoding, mimetype) {
 
 				/*
 				 * Function: 	fileCompressionProcessing()
@@ -657,6 +658,14 @@ exports.convert = function exportsConvert(req, res) {
 				var fileCompressionProcessing = function fileCompressionProcessing(d, response, serverLog, d_files, buf) {
 					var msg;
 					
+					scopeChecker(__file, __line, {
+						d: d,
+						response: response,
+						serverLog: serverLog,
+						d_files: d_files,
+						buf: buf
+					});
+			
 					d.file.file_data="";
 					var lstart = new Date().getTime();
 					if (d.file.file_encoding === "gzip") {
@@ -780,7 +789,7 @@ exports.convert = function exportsConvert(req, res) {
  * Description: Data processor. Push data onto d.file.chunks[] array. Binary safe.
  *				Emit message every 10M
  */
-				stream.on('data', function(data) {
+				stream.on('data', function onStreamData(data) {
 					var nbuf;
 					if (d.file.extension == "json" || d.file.extension == "js") {
 						nbuf=new Buffer(data.toString().replace(/\r?\n|\r/g, "")); // Remove any CRLF
@@ -809,14 +818,15 @@ exports.convert = function exportsConvert(req, res) {
 						}
 						d.file.partial_chunk_size=0;
 					}
-				});
+				} // End of req.busboy.on('file').stream.on:('data') callback function
+				);
 				
 /*
  * Function: 	req.busboy.on('file').stream.on:('error') callback function
  * Parameters:	Error
  * Description: EOF processor. Concatenate d.file.chunks[] array, uncompress if needed.
  */
-				stream.on('error', function(err) {
+				stream.on('error', function onStreamError(err) {
 					var msg="FAIL! Strream error; file [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
 							d.file.file_encoding + 
 							'; read [' + d.file.chunks.length + '] ' + d.file.partial_chunk_size + ', ' + d.file.chunks_length + ' total';
@@ -831,14 +841,15 @@ exports.convert = function exportsConvert(req, res) {
 					response.file_errors++;					// Increment file error count	
 					serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);							
 					d_files.d_list[d.no_files-1] = d;		
-				});				
+				} // End of req.busboy.on('file').stream.on:('error') callback function
+				);				
 
 /*
  * Function: 	req.busboy.on('file').stream.on:('end') callback function
  * Parameters:	None
  * Description: EOF processor. Concatenate d.file.chunks[] array, uncompress if needed.
  */
-				stream.on('end', function() {
+				stream.on('end', function onStreamEnd() {
 					
 					var msg;
 					var buf=Buffer.concat(d.file.chunks); 	// Safe binary concat
@@ -866,7 +877,8 @@ exports.convert = function exportsConvert(req, res) {
 					buf=undefined;	// Release memory
 				}); // End of EOF processor
 					
-			}); // End of file attachment processing function: req.busboy.on('file')
+			} // End of req.busboy.on('file').stream.on:('end') callback function
+			); // End of file attachment processing function: req.busboy.on('file')
 			  
 /*
  * Function: 	req.busboy.on('field') callback function
@@ -875,7 +887,7 @@ exports.convert = function exportsConvert(req, res) {
  *
  *			 	verbose: 	Produces debug returned as part of reponse.message
  */ 
-			req.busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
+			req.busboy.on('field', function fieldProcessing(fieldname, val, fieldnameTruncated, valTruncated) {
 				var text="\nField: " + fieldname + "[" + val + "]; ";
 				
 				// Handle truncation
@@ -907,7 +919,7 @@ exports.convert = function exportsConvert(req, res) {
  * Parameters:	None
  * Description:	End of request - complete response		  
  */ 
-			req.busboy.on('finish', function() {
+			req.busboy.on('finish', function onBusboyFinish() {
 				try {
 					var msg="";
 
@@ -1074,7 +1086,8 @@ exports.convert = function exportsConvert(req, res) {
 						serverLog, 500, req, res, 'Caught unexpected error (possibly async)', e, undefined /* My response */);
 					return;
 				}
-			});
+			} // End of req.busboy.on('finish')
+			);
 
 			req.pipe(req.busboy); // Pipe request stream to busboy form data handler
 			  
