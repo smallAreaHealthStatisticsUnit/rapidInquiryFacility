@@ -310,7 +310,7 @@ var postIt = function(debug) {
 				console.error("State trace >>>");
 				for (var i = 0; i < jsonData.status.length; i++) {	
 					console.error("[" + jsonData.status[i].sfile + ":" + jsonData.status[i].sline + ":" + jsonData.status[i].calling_function + "()] +" + 
-						jsonData.status[i].etime + "S new state: " + jsonData.status[i].statusText + "; code: " + jsonData.status[i].httpStatus);
+						jsonData.status[i].etime + "S\nNew state: " + jsonData.status[i].statusText + "; code: " + jsonData.status[i].httpStatus);
 				}
 				console.error("<<< End of state trace.");
 			}
@@ -391,7 +391,7 @@ var postIt = function(debug) {
 				console.error("State trace >>>");
 				for (var i = 0; i < jsonData.status.length; i++) {	
 					console.error("[" + jsonData.status[i].sfile + ":" + jsonData.status[i].sline + ":" + jsonData.status[i].calling_function + "()] +" + 
-						jsonData.status[i].etime + "S new state: " + jsonData.status[i].statusText + "; code: " + jsonData.status[i].httpStatus);
+						jsonData.status[i].etime + "S\nNew state: " + jsonData.status[i].statusText + "; code: " + jsonData.status[i].httpStatus);
 				}
 				console.error("<<< End of state trace.");
 			}

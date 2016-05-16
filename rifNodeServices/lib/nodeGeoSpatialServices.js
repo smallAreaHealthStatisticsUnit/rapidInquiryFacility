@@ -652,10 +652,11 @@ exports.convert = function exportsConvert(req, res) {
 
 				/*
 				 * Function: 	fileCompressionProcessing()
-				 * Parameters:	d [data] object, internal response object, serverLog object, d_files flist list object, data buffer (received file)
+				 * Parameters:	d [data] object, internal response object, serverLog object, d_files flist list object, data buffer (received file),
+				 *				HTTP request object
 				 * Description:	Call file processing; handle zlib, gz and zip files
 				 */	
-				var fileCompressionProcessing = function fileCompressionProcessing(d, response, serverLog, d_files, buf) {
+				var fileCompressionProcessing = function fileCompressionProcessing(d, response, serverLog, d_files, buf, req) {
 					var msg;
 					
 					scopeChecker(__file, __line, {
@@ -663,9 +664,13 @@ exports.convert = function exportsConvert(req, res) {
 						response: response,
 						serverLog: serverLog,
 						d_files: d_files,
-						buf: buf
+						buf: buf,
+						req: req
 					});
-			
+
+					addStatus(__file, __line, response, "file Compression Processing: " + d.file.file_name, 
+						200 /* HTTP OK */, serverLog, req);  // Add file compression processing status
+					
 					d.file.file_data="";
 					var lstart = new Date().getTime();
 					if (d.file.file_encoding === "gzip") {
@@ -736,7 +741,8 @@ exports.convert = function exportsConvert(req, res) {
 						else {
 							response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
 								"; uncompressed data: " + d.file.file_data.length, req; 
-						}								
+						}
+								
 					}
 										
 					d_files.d_list[d.no_files-1] = d;
@@ -873,7 +879,7 @@ exports.convert = function exportsConvert(req, res) {
 						return;
 					}
 					
-					fileCompressionProcessing(d, response, serverLog, d_files, buf); // Call file processing; handle zlib, gz and zip files	
+					fileCompressionProcessing(d, response, serverLog, d_files, buf, req); // Call file processing; handle zlib, gz and zip files	
 					buf=undefined;	// Release memory
 				}); // End of EOF processor
 					
@@ -924,6 +930,7 @@ exports.convert = function exportsConvert(req, res) {
 					var msg="";
 
 					setupDiagnostics(req, ofields, response, serverLog, httpErrorResponse);
+					addStatus(__file, __line, response, "Busboy Finish", 200 /* HTTP OK */, serverLog, req);  // Add onBusboyFinish status
 	
 					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
 

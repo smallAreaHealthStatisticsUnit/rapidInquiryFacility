@@ -611,7 +611,7 @@ topology: 1579 arcs, 247759 points
 	 * Parameters:	shapefile record, shape file data object, response object 
 	 * Description:	Read last shapefile record, call writeGeoJsonbyFeature function to end shapefile process async queue item
 	 */		
-	var shapefileReadLastRecord = function(record, shapefileData, response) {
+	var shapefileReadLastRecord = function shapefileReadLastRecord(record, shapefileData, response) {
 		var msg;
 		
 		scopeChecker(__file, __line, {
@@ -628,7 +628,10 @@ topology: 1579 arcs, 247759 points
 		}
 		response.file_list[shapefileData["shapefile_no"]-1].geojson_length=shapefileData["recLen"];
 		response.message+="\n" + msg;
-		shapefileData["reader"].close(function(err) {
+		addStatus(__file, __line, response, "shapefile Read Complete: " + shapefileData["shapeFileBaseName"], 
+			200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
+
+			shapefileData["reader"].close(function(err) {
 			if (err) {
 				var msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile reader.close: ' + shapefileData["shapeFileName"];
 				serverLog.serverError2(__file, __line, "shapefileReadLastRecord", 
@@ -638,7 +641,7 @@ topology: 1579 arcs, 247759 points
 			
 			var end = new Date().getTime();
 			shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
-			
+
 			if (response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) { // Check bounding box present
 				var msg="File: " + shapefileData["shapeFileName"] + 
 					"\nTotal time to process shapefile: " + shapefileData["elapsedTime"] + 
@@ -1323,6 +1326,7 @@ topology: 1579 arcs, 247759 points
 		if (shpList[key].hasShp && shpList[key].hasPrj && shpList[key].hasDbf) {
 			var dir=os.tmpdir() + "/shpConvert/" + ofields["uuidV1"] + "/" + key;
 			var shapefileData = {
+				shapeFileBaseName: key + ".shp", 
 				shapeFileName: dir + "/" + key + ".shp", 
 				dbfFileName: dir + "/" + key + ".dbf", 
 				projFileName: dir + "/" + key + ".prj", 
