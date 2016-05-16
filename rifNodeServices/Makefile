@@ -215,7 +215,7 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/topojson/package.json \
 	node_modules/request-debug/package.json \
 	node_modules/cjson/package.json \
-	node_modules/geojson2wkt/package.json \
+	node_modules/wellknown/package.json \
 	node_modules/connect-busboy/package.json
 #
 MODULES=$(patsubst %/package.json,%,$(MODULE_JSON))

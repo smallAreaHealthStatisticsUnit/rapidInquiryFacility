@@ -432,7 +432,7 @@ RangeError: Invalid string length
 	* Area_id and description support
 	* Hover support for area name at highest resolution
 	* Add area_id and id uniqueness tests to shapefile checks
-	* WKT support using Geojson2Wkt
+	* WKT support using Wellknown
 	* Database connection; clean, check OK and ST_Union() for PK 	
 	* Id generator
 	* Detect area mismatch between shapefiles	
