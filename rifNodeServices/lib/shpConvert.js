@@ -55,7 +55,18 @@
  *
  *				verbose: 	Set Topojson.Topology() ???? option if true. 
  */ 
-shpConvertFieldProcessor=function(fieldname, val, shapefile_options, ofields, response, req, rifLog) {
+shpConvertFieldProcessor=function shpConvertFieldProcessor(fieldname, val, shapefile_options, ofields, response, req, serverLog) {
+	
+	scopeChecker(__file, __line, {
+		fieldname: fieldname,
+		val: val,
+		ofields: ofields,
+		shapefile_options: shapefile_options,
+		req: req,
+		response: response,
+		serverLog: serverLog
+	});	
+	
 	var msg;
 	var text="";
 	
@@ -91,7 +102,7 @@ shpConvertFieldProcessor=function(fieldname, val, shapefile_options, ofields, re
 	}	
 	
 	return text;
-}
+} // End of shpConvertFieldProcessor()
 
 /*
  * Function:	shpConvert()
@@ -104,7 +115,16 @@ shpConvertFieldProcessor=function(fieldname, val, shapefile_options, ofields, re
  *				Calls shpConvertFileProcessor() in a queue to process each component file
  *				On queue end, call: shpConvertCheckFiles() - check which files and extensions are present, convert shapefile to geoJSON, simplify etc			  
  */	 
-shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {							
+shpConvert = function shpConvert(ofields, d_files, response, req, res, shapefile_options) {	
+
+	scopeChecker(__file, __line, {
+		ofields: ofields,
+		shapefile_options: shapefile_options,
+		req: req,
+		res: res,
+		response: response
+	});	
+	
 	var shpList = {};
 	var shpTotal=0;		
 
@@ -142,7 +162,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 	 * Returns:		N/A; calls shpConvertCheckFiles() to check which files and extensions are present, convert shapefile to geoJSON, simplify etc
 	 * Description: Async queue drain function; mwhen when all shapefile components have been processed 
 	 */
-	shapeFileComponentQueue.drain = function() {
+	shapeFileComponentQueue.drain = function shapeFileComponentQueueDrain() {
 		shpTotal=Object.keys(shpList).length;
 		
 		// Free up memory
@@ -197,7 +217,7 @@ shpConvert = function(ofields, d_files, response, req, res, shapefile_options) {
 //		serverLog.serverLog2(__file, __line, "shpConvert", 
 //		"In shpConvertFileProcessor(), shapeFileComponentQueue[" + fileData["i"] + "]: " + fileData.d.file.file_name);
 
-		shapeFileComponentQueue.push(fileData, function(err) {
+		shapeFileComponentQueue.push(fileData, function shapeFileComponentQueuePush(err) {
 			if (err) {
 //				var msg='ERROR! [' + fileData["uuidV1"] + '] in shapefile read: ' + fileData.d.file.file_name;
 				var msg="Error! in shpConvertFileProcessor()";
@@ -233,7 +253,7 @@ module.exports.shpConvertFieldProcessor = shpConvertFieldProcessor;
  * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save shapefile to temporary directory
  *				Called once per file from shapeFileComponentQueue
  */
-shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, serverLog, httpErrorResponse, shapeFileComponentQueueCallback) {
+shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal, response, uuidV1, req, serverLog, httpErrorResponse, shapeFileComponentQueueCallback) {
 		
 	scopeChecker(__file, __line, {
 		serverLog: serverLog,
@@ -325,7 +345,7 @@ shpConvertFileProcessor = function(d, shpList, shpTotal, response, uuidV1, req, 
  * 				Setup and write XML config
  *				Process errors and retiurn response
  */
-shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, httpErrorResponse, req, res, shapefile_options) {
+shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, httpErrorResponse, req, res, shapefile_options) {
 	const os = require('os'),
 	      path = require('path'),
 	      fs = require('fs'),
@@ -353,7 +373,7 @@ shpConvertCheckFiles=function(shpList, response, shpTotal, ofields, serverLog, h
 	 * Returns: 	nothing
 	 * Description: Creates XML config file
 	 */
-	var createXmlFile = function(xmlConfig) {
+	var createXmlFile = function createXmlFile(xmlConfig) {
 		
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
@@ -417,7 +437,7 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 	For zoomlevel 9 the area at the equator is  78272 x 77748 = 6.085 square km and a pixel is 306 x 304 = 0.093 square km
 	In steradians = (0.093 / (510,072,000 * 12.56637) [area of earth] = 1.4512882642054046732729181896167e-11 steradians
 	 */
-	var simplifyGeoJSON = function(shapefile, response, shapefileData, topojson_options, callback) {
+	var simplifyGeoJSON = function simplifyGeoJSON(shapefile, response, shapefileData, topojson_options, callback) {
 		scopeChecker(__file, __line, {
 			shapefile: shapefile,
 			topojsonFileName: shapefileData["topojsonFileName"],
