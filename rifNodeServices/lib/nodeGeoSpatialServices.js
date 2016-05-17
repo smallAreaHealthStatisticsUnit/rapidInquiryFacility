@@ -669,7 +669,7 @@ exports.convert = function exportsConvert(req, res) {
 						req: req
 					});
 
-					addStatus(__file, __line, response, "file Compression Processing: " + d.file.file_name, 
+					addStatus(__file, __line, response, "Processing file: " + d.file.file_name, 
 						200 /* HTTP OK */, serverLog, req);  // Add file compression processing status
 					
 					d.file.file_data="";
