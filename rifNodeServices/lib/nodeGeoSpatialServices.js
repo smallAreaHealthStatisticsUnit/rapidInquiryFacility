@@ -480,14 +480,15 @@ var util = require('util'),
 			response.status[response.status.length-1].statusText + "; code: " + response.status[response.status.length-1].httpStatus;
 		}
 		
-		serverLog.serverLog2(__file, __line, "addStatus", msg, req);
-		
 		if (response.fields["uuidV1"] && response.fields["diagnosticFileDir"] && response.fields["statusFileName"]) { // Can save state
 			response.message+="\n[" + response.fields["uuidV1"] + "+" + response.status[response.status.length-1].etime + " S] Re-creating status file: " + response.fields["statusFileName"];
 			var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
 			fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"], 
 				statusText);	
 		}		
+		else {		
+			serverLog.serverLog2(__file, __line, "addStatus", msg, req);
+		}
 		
 	} // End of addStatus
 							
