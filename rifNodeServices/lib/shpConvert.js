@@ -511,7 +511,7 @@ topology: 1579 arcs, 247759 points
 	 * Parameters:	shapefile record, shape file data object, response object, reader function 
 	 * Description:	Read next shapefile record, call reader function
 	 */
-	var shapefileReadNextRecord = function(record, shapefileData, response, shapefileReader) {
+	var shapefileReadNextRecord = function shapefileReadNextRecord(record, shapefileData, response, shapefileReader) {
 		var msg;
 		var recNo=shapefileData["featureList"].length+1;
 		var lRec=JSON.stringify(record);
@@ -524,12 +524,29 @@ topology: 1579 arcs, 247759 points
 		lRec=undefined;
 		
 		var doTrace=false;
-		
-		msg="shapefile read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"];
-		if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1) { // Print read record diagnostics every 1000 shapefile records
+
+		var end = new Date().getTime();
+		var elapsedTime=(end - shapefileData["lstart"])/1000; // in S	
+		if (!shapefileData["elapsedTime"]) {
+			shapefileData["elapsedTime"]=elapsedTime;
+		}
+			
+		if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1 || elapsedTime > (shapefileData["elapsedTime"] + 1)) { 
+			// Print read record diagnostics every 1000 shapefile records or second
 			doTrace=true;
-			if (shapefileData["recLen"] > 50*1024*1024) { // 50 MB
-				serverLog.serverLog2(__file, __line, "readShapeFile", "In shapefileReadNextRecord(), " + msg, shapefileData["req"]);
+						
+			if (shapefileData["recLen"] > 100*1024*1024) { // Write a log message every 100 MB
+				serverLog.serverLog2(__file, __line, "readShapeFile", "+" + shapefileData["elapsedTime"] + "S; In shapefileReadNextRecord(), " + msg, shapefileData["req"]);
+			}
+			if (elapsedTime > (shapefileData["elapsedTime"] + 1)) { // Add status every 1S
+				msg="+" + elapsedTime + "S; shapefile read/statuus log [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"];
+				shapefileData["elapsedTime"]=elapsedTime;
+				addStatus(__file, __line, response, "+" + shapefileData["elapsedTime"] + "S; Reading shapefile: " + shapefileData["shapeFileBaseName"] +
+					"; record: " + shapefileData["recLen"], 
+					200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
+			}
+			else {
+				msg="+" + elapsedTime + "S; shapefile read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"];
 			}
 			response.message+="\n" + msg;
 		}
@@ -561,8 +578,7 @@ topology: 1579 arcs, 247759 points
 					response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2]=max.coordinates[0];
 					response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3]=max.coordinates[1];							
 
-					msg+=
-						"Bounding box (4326): " + 
+					msg+="Bounding box (4326): " + 
 						"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
 						"ymin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1] + ", " +
 						"xmax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2] + ", " +
@@ -623,25 +639,28 @@ topology: 1579 arcs, 247759 points
 		shapefileData["featureList"]=undefined;
 		var recNo=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;				
 		msg="shapefile read [" + recNo	+ "] completed for: " + shapefileData["fileNoExt"] + "; geoJSON length: " + shapefileData["recLen"];
-		if (shapefileData["recLen"] > 50*1024*1024) { // 50 MB
-			serverLog.serverLog2(__file, __line, "shapefileReadLastRecord", "In shapefileReader(), " + msg, shapefileData["req"]);
-		}
-		response.file_list[shapefileData["shapefile_no"]-1].geojson_length=shapefileData["recLen"];
-		response.message+="\n" + msg;
-		addStatus(__file, __line, response, "shapefile Read Complete: " + shapefileData["shapeFileBaseName"], 
-			200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 
-			shapefileData["reader"].close(function(err) {
+
+		shapefileData["reader"].close(function readerClose(err) {
 			if (err) {
 				var msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile reader.close: ' + shapefileData["shapeFileName"];
 				serverLog.serverError2(__file, __line, "shapefileReadLastRecord", 
 					msg, shapefileData["req"], err);							
 			}	
-			shapefileData["reader"]=undefined; // Release for gc
+			shapefileData["reader"]=undefined; // Release for gc			var end = new Date().getTime();
 			
-			var end = new Date().getTime();
+			var end = new Date().getTime();			
 			shapefileData["elapsedTime"]=(end - shapefileData["lstart"])/1000; // in S
 
+			if (shapefileData["recLen"] > 50*1024*1024) { // 50 MB
+				serverLog.serverLog2(__file, __line, "shapefileReadLastRecord", "+" + shapefileData["elapsedTime"] + "S; In shapefileReader(), " + msg, shapefileData["req"]);
+			}
+			response.file_list[shapefileData["shapefile_no"]-1].geojson_length=shapefileData["recLen"];
+			response.message+="\n" + msg;
+			addStatus(__file, __line, response, "Read shapefile: " + shapefileData["shapeFileBaseName"] +
+				" has " + shapefileData["recLen"] + " records", 
+				200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
+			
 			if (response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) { // Check bounding box present
 				var msg="File: " + shapefileData["shapeFileName"] + 
 					"\nTotal time to process shapefile: " + shapefileData["elapsedTime"] + 
@@ -789,6 +808,10 @@ topology: 1579 arcs, 247759 points
 					try {						
 						z++;
 						y++;
+//						var end = new Date().getTime();
+//						var elapsedTime=(end - lstart)/1000; // in S	
+//						addStatus(__file, __line, response, "JSON save took: " + elapsedTime + "S", 
+//							200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 						if (z == 1) {
 							// Write header
 							response.message+="\nWrite header for: " + shapefileData["jsonFileName"]; 
@@ -854,6 +877,11 @@ topology: 1579 arcs, 247759 points
 						shapefileData["callback"]();								
 					}	
 					var topoFunction=function topoFunction() {
+						
+						var end = new Date().getTime();
+						var elapsedTime=(end - lstart)/1000; // in S	
+						addStatus(__file, __line, response, "JSON save took: " + elapsedTime + "S", 
+							200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 						// Create topoJSON
 						simplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response, shapefileData, 
 							undefined /* topojson_options */, shapeFileQueueCallbackFunc /* Callback */);							
