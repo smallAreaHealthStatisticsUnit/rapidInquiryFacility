@@ -465,13 +465,13 @@ SQL Server porting expected to start in July.
 	
 ##	General RIF database Todo:
 
-	12. Documentation [in progress];
-	13. JSON injection protection [will be a regexp];
-	14. Connection timeout (connect/post connect) limits - as previous;
-	15. Integration to build, severeal options:
-		i.   Replace topojson_convert.js;
-		ii.  New node program to rteplace existing functionality;
-		iii. Awaiting data loader.
+1. Documentation [in progress];
+2. JSON injection protection [will be a regexp];
+3. Connection timeout (connect/post connect) limits - as previous;
+4. Integration to build, severeal options:
+   i.   Replace topojson_convert.js;
+   ii.  New node program to replace existing functionality;
+   iii. Awaiting data loader.
 	
 ## 2016 Plans: 
 
