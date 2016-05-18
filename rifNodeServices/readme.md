@@ -25,12 +25,12 @@ At the end of the extract workflow step there are two types of files:
   * An array of features, containing:
     * area id name and area id, other data from the DBF file;
     * Multi polygon features;
- * Meta data stored as an XML file, containing:
-   * Projection information:
-     * SRID of the shapefile (e.g. 27700 for the UK);
-     * PROJ4 projection information for the geoJSON data (i.e. SRID 4326 – WGS84);
-   * Shapefiles, field names, shapefile description;
-   * Meta-data extracted from the shape files.
+* Meta data stored as an XML file, containing:
+  * Projection information:
+    * SRID of the shapefile (e.g. 27700 for the UK);
+    * PROJ4 projection information for the geoJSON data (i.e. SRID 4326 – WGS84);
+  * Shapefiles, field names, shapefile description;
+  * Meta-data extracted from the shape files.
 	 
 The geoJSON is also converted to well-known text and saved in the native geospatial datatype in the database (MS SQL Server or Postgres).
 The multi polygons are created as the geoJSON is being assembled feature by feature (i.e. unioned together) and ensure that the area ids are unique. In addition, each polygon will be checked to ensure the start co-ordinate = the end co-ordinate (i.e. it is not a line string). Extract of necessity therefore performs low level conversions because of the need to conserve memory. A 1.5Gbyes shapefile requires 9-10 Gbytes of memory when represented as JSON.
