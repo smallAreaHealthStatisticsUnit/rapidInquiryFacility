@@ -271,109 +271,109 @@ Test harness refactor; Node.js version working
 	
 #### 19th to 25th February
 
-	Analysis of current geospatial presentation, design meeting with Kev. Principle decision - to build a self contained Node 
-    service (NodeGeoSpatialServices). 
-	
-	NodeGeoSpatialServices:
-	
-	NodeGeoSpatialServices integrates a number of Node modules as web services to provide remote web services to:
-	
-	* Convert shapefiles to GeoJSON;
-	* Validate, clean and simplify converted shapefile data suitable for use in maptiles;
-	* Convert GeoJSON to a) TopoJSON and b) Well known text;
-	* Create hierarchy tables;
-	* Create maptiles;
-	* Create polygonal and population weighted centroids.
-	
-	NodeGeoSpatialServices will require PostGres and PostGIS in the server for access to OGSS functionality. It will also be 
-	designed to be portable to SQL server.
-	
-	The inputs to NodeGeoSpatialServices will be one or more shapefiles; the outputs a set of maptiles and a set of  
-	portable geospatial data.
+Analysis of current geospatial presentation, design meeting with Kev. Principle decision - to build a self contained Node 
+service (NodeGeoSpatialServices). 
 
-	The NodeGeoSpatialServices client would normally store data either in flat files (e.g. maptiles) or a GeoSpatial database
-	(e.g. PostGIS). The client is not required to carry out any additional geosptial processing. Since multiple processing 
-	steps are envisaged thence the server will need to maintain state. It will do this by saving data as GeoJson in a file or in 
-	a PostGIS table. This will reduce the data be transferred to a minimum.
-	
-	It is not intended at present to support:
+NodeGeoSpatialServices:
 
-	* Shapefile formats not supported by Node SHP/MapShaper;
-	* To convert a) TopoJSON and b) Well known text to GeoJSON;
-	* To convert a) TopoJSON or b) GeoSON to shapefiles.
-	
-	This is technically possible, but requires GDAL.
-	
-	Population weighted centroids requires population data and additional non standard processing (i.e. there is no OGSS 
-	standard function) in PostGIS.
-	
-	NodeGeoSpatialServices should not be confused with GeoNode (http://geonode.org/)
-	
-	GeoNode is a platform for the management and publication of geospatial data. It brings together mature and stable open-source 
-	software projects under a consistent and easy-to-use interface allowing users, with little training, to quickly and easily 
-	share data and create interactive maps.	
-	
-	GeoNode is essentially Open Google Earth/Maps with an emphasis on accessibility via easy to use interfaces and good metadata.
-	
+NodeGeoSpatialServices integrates a number of Node modules as web services to provide remote web services to:
+
+* Convert shapefiles to GeoJSON;
+* Validate, clean and simplify converted shapefile data suitable for use in maptiles;
+* Convert GeoJSON to a) TopoJSON and b) Well known text;
+* Create hierarchy tables;
+* Create maptiles;
+* Create polygonal and population weighted centroids.
+
+NodeGeoSpatialServices will require PostGres and PostGIS in the server for access to OGSS functionality. It will also be 
+designed to be portable to SQL server.
+
+The inputs to NodeGeoSpatialServices will be one or more shapefiles; the outputs a set of maptiles and a set of  
+portable geospatial data.
+
+The NodeGeoSpatialServices client would normally store data either in flat files (e.g. maptiles) or a GeoSpatial database
+(e.g. PostGIS). The client is not required to carry out any additional geosptial processing. Since multiple processing 
+steps are envisaged thence the server will need to maintain state. It will do this by saving data as GeoJson in a file or in 
+a PostGIS table. This will reduce the data be transferred to a minimum.
+
+It is not intended at present to support:
+
+* Shapefile formats not supported by Node SHP/MapShaper;
+* To convert a) TopoJSON and b) Well known text to GeoJSON;
+* To convert a) TopoJSON or b) GeoSON to shapefiles.
+
+This is technically possible, but requires GDAL.
+
+Population weighted centroids requires population data and additional non standard processing (i.e. there is no OGSS 
+standard function) in PostGIS.
+
+NodeGeoSpatialServices should not be confused with GeoNode (http://geonode.org/)
+
+GeoNode is a platform for the management and publication of geospatial data. It brings together mature and stable open-source 
+software projects under a consistent and easy-to-use interface allowing users, with little training, to quickly and easily 
+share data and create interactive maps.	
+
+GeoNode is essentially Open Google Earth/Maps with an emphasis on accessibility via easy to use interfaces and good metadata.
+
 ### March
 
 #### 28th February to 11th March
 	
-	* Code refactor for multiple services;
-	* shp2GeoJSON service;
-	* Portable make_bighwelloworld.js script;
-	* Async file save;
-	* UUID generation;
-	* Shapefile to geoJSON converion;
-	* Project planning
+* Code refactor for multiple services;
+* shp2GeoJSON service;
+* Portable make_bighwelloworld.js script;
+* Async file save;
+* UUID generation;
+* Shapefile to geoJSON converion;
+* Project planning
 	
 #### 14th to 18th March	
 	
-	* shp2GeoJSON.html HTML 5 browser tester; works in Chrome and firefox.  1.3G coa2011 shapefile cracks chrome; also breaks 
-	  the synchronous file write in Node. Code needs restructuring to be fully async with streaming everywhere.
-	* Leaflet display of returned data
-	* Basic projection support (converted to 4326 for leaflet)
+* shp2GeoJSON.html HTML 5 browser tester; works in Chrome and firefox.  1.3G coa2011 shapefile cracks chrome; also breaks 
+  the synchronous file write in Node. Code needs restructuring to be fully async with streaming everywhere.
+* Leaflet display of returned data
+* Basic projection support (converted to 4326 for leaflet)
 
 #### 21st to 24th March
 
-    * Multiple shapefile support (using Async module)
-	* Full leaflet support
-	* UI tidy; cross browser fix. Decided to use JQuery-UI going forwards
+* Multiple shapefile support (using Async module)
+* Full leaflet support
+* UI tidy; cross browser fix. Decided to use JQuery-UI going forwards
 	
 #### 26th March to 1st April
 	
-	* Rename shp2geojson to shpConvert, remove store parameter
-	* Geeolevel detection: numbers of areas, names of fields 
-	* Async write support: shpConvertFileProcessor(), shpConvertWriteFile() (still to test on coa2011 - times out). 
-	  Also added file size checks after coa2011 tests. Hilarious bug where I was writing out ther whole buffer rather 
-	  than a 1MB chunk tried to create a 1TB coa2011 shapefile. Desktop very unhappy; laptop with SSDs filled them up very quickly 
-	  but without distress...
+* Rename shp2geojson to shpConvert, remove store parameter
+* Geeolevel detection: numbers of areas, names of fields 
+* Async write support: shpConvertFileProcessor(), shpConvertWriteFile() (still to test on coa2011 - times out). 
+  Also added file size checks after coa2011 tests. Hilarious bug where I was writing out ther whole buffer rather 
+  than a 1MB chunk tried to create a 1TB coa2011 shapefile. Desktop very unhappy; laptop with SSDs filled them up very quickly 
+  but without distress...
 	  
 ### April 
 	
 #### 4th to 8th April 	
 
-    * Completed garbage collection tracing and improvements to reduce memory footprint
-	* Created shapefile reader function. Reads shapefile record by record; converting to WGS84 if required to minimise meory footprint
-	* Added check that all bounding boxes are the same
-	* Tested 1.1G coa2011 shapefile on 8G laptop - ran out of memory at around 62,000 records (out of 181,408). Json size = 273,018,806; 
-	  total available size = 1,486,054,944. Although uses process.nextTick() it is recursive; could rewrite as async queue to reduce 
-	  memory usage. Will add 8GB more RAM. Memory from file processing stage has been released.
-	* Test with more memory: --max-old-space-size==8192 (8GB); ran out at 206,000 records, JSON: 1,509,263,516 (file must be UK not England!) 
-    * Tests showed that:
-		* shpcat can convert coa2011 to json; it puts lines in it (so it can be parsed by record) but this breaks JSON.parse();
-		* topojson runs out of memory (works in the samne way as shpConvert;
-		* geo2topojson cannot parse >1G because Buffer.toString() fails, likewise for attempts to remove linefeeds; needs fixing using json stream;
-		This is to see if shpConvert is better writing to a file and then reading in the file; it probably is *not*.
-	* Add XML configuration using xml2js
-	* Check that minimum resolution shapefile has only 1 area  
-	* Move shpConvert.html to Node express static server; make so does not need network, and use relative paths. Also needed for IE
+* Completed garbage collection tracing and improvements to reduce memory footprint
+* Created shapefile reader function. Reads shapefile record by record; converting to WGS84 if required to minimise meory footprint
+* Added check that all bounding boxes are the same
+* Tested 1.1G coa2011 shapefile on 8G laptop - ran out of memory at around 62,000 records (out of 181,408). Json size = 273,018,806; 
+  total available size = 1,486,054,944. Although uses process.nextTick() it is recursive; could rewrite as async queue to reduce 
+  memory usage. Will add 8GB more RAM. Memory from file processing stage has been released.
+* Test with more memory: --max-old-space-size==8192 (8GB); ran out at 206,000 records, JSON: 1,509,263,516 (file must be UK not England!) 
+* Tests showed that:
+	* shpcat can convert coa2011 to json; it puts lines in it (so it can be parsed by record) but this breaks JSON.parse();
+	* topojson runs out of memory (works in the samne way as shpConvert;
+	* geo2topojson cannot parse >1G because Buffer.toString() fails, likewise for attempts to remove linefeeds; needs fixing using json stream;
+	This is to see if shpConvert is better writing to a file and then reading in the file; it probably is *not*.
+* Add XML configuration using xml2js
+* Check that minimum resolution shapefile has only 1 area  
+* Move shpConvert.html to Node express static server; make so does not need network, and use relative paths. Also needed for IE
 		
 #### 11th to 15th April
 
-	* Read coa2011.shp: 227,759 recoerds, 203,930,998 points. Required 11G memory; broke shpConvertWriteFile() as expected, 
-	  needs to write in blocks; JSON size: 1,666,421,470 ~ 16GB. shpConvertWriteFile() needs to write in sections (i.e. per record)
-	  max 10.2G memory (11G limit on laptop)
+* Read coa2011.shp: 227,759 recoerds, 203,930,998 points. Required 11G memory; broke shpConvertWriteFile() as expected, 
+  needs to write in blocks; JSON size: 1,666,421,470 ~ 16GB. shpConvertWriteFile() needs to write in sections (i.e. per record)
+  max 10.2G memory (11G limit on laptop)
 	  
 ```	  
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:565
@@ -385,83 +385,83 @@ RangeError: Invalid string length
     at FSReqWrap.oncomplete (fs.js:82:15)
 ```
 	
-	* Added CRLF removal support. coa2011.js (from Mike Bostock shapefile to JSON program) now fails converting to a string; 
-	  a streaming parser is needed; Strings (not buffers) limited to 256M (-1 byte)! This is causing much grief and will probably be fixed soon; 
-	  not fixed in Node 5.10; buffers are good for at least 1.5G.
-	* Added topoJSON support, with a quick bodge sterians calulation for zoomlevel 9 (1 pixel = 300m x 300m = 1.451e-11 steradians 
-	  This takes no account of latitude; will calculate accurately using PostGIS rif40_geo_pkg.rif40_zoom_levels() function 
-	  Current US map is 1:500,000 and is OK at zoomlevel 11; zoomlevel 9 is 1:1 million; JSON compression is 5.06MB compared to: 28.55MB
-	  Quantization set to 1e6; 1e4 was far too coarse; 83% compression.
-	* SAHSUland works in IE, firefox and Chrome; IE is very slow. US to counties works in Chrome and IE. UK census output areas will only work in Firefox
+* Added CRLF removal support. coa2011.js (from Mike Bostock shapefile to JSON program) now fails converting to a string; 
+  a streaming parser is needed; Strings (not buffers) limited to 256M (-1 byte)! This is causing much grief and will probably be fixed soon; 
+  not fixed in Node 5.10; buffers are good for at least 1.5G.
+* Added topoJSON support, with a quick bodge sterians calulation for zoomlevel 9 (1 pixel = 300m x 300m = 1.451e-11 steradians 
+  This takes no account of latitude; will calculate accurately using PostGIS rif40_geo_pkg.rif40_zoom_levels() function 
+  Current US map is 1:500,000 and is OK at zoomlevel 11; zoomlevel 9 is 1:1 million; JSON compression is 5.06MB compared to: 28.55MB
+  Quantization set to 1e6; 1e4 was far too coarse; 83% compression.
+* SAHSUland works in IE, firefox and Chrome; IE is very slow. US to counties works in Chrome and IE. UK census output areas will only work in Firefox
 		
 #### 20th April - Judy Qualters - CDC Visit
 
-   * Demo of shpConvert
+* Demo of shpConvert
 		
 #### 25th to 29th April
 	
-    * Large file support (coa2011) - shpConvertWriteFile() needs to write in sections (i.e. per record), remove geoJSON (this will help IE)
+* Large file support (coa2011) - shpConvertWriteFile() needs to write in sections (i.e. per record), remove geoJSON (this will help IE)
 	
 ### May
 
 #### 3rd to 6th May
 
-	* Code refactor, optimization, instrumentation
+* Code refactor, optimization, instrumentation
 	
 #### 9th to 13th May
 	
-	* Control of data delete on stream write
-	* Scopechecker exception tester; test all async queues; to top level 
-	* Moved diagnostics to top level
-	* Top level refactor
-	* Status trace
-	* Save final response
-	* Merge responseProcessing
-	* Added complete set of SRIDs
+* Control of data delete on stream write
+* Scopechecker exception tester; test all async queues; to top level 
+* Moved diagnostics to top level
+* Top level refactor
+* Status trace
+* Save final response
+* Merge responseProcessing
+* Added complete set of SRIDs
 		
 #### 16th to 20th May
 
-	* Add more status
-	* Data loader documentation
+* Add more status
+* Data loader documentation
+
+#### Current TODO list (May):
+
+* Zip file support using JSZip. Convert zlib, zip file support to async
+* Simplify: test pre-quantisation at 10e6/10e7 with and without simplification to 9.01x10-13 steradians. 	
+* Zoomlevel 1-11 support; topojson now becomes an array
+* Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
+* Re-test COA2011 memory and timeout issues are solved.	
+
+#### June list (some likely to be moved into July):
+
+* Replace traditional html with JQuery-UI
+* Add support for XML config file so shpConvert can do all processing without further input; Area_id and description support; .SHP.EA.ISO.XML 
+* Database connection; clean, check OK and ST_Union(); area support [and checks] and perimeter support [checking simplification]; PK support 
+  [Thought: can ST_Union be done in geoJSON: as it is a geomtery collection. Also check wellknown] 	
+* Add area_id and id uniqueness tests to shapefile checks and tests
+* Hover support for area name at highest resolution
+* WKT support using Wellknown
+* Id generator
+* Detect area mismatch between shapefiles	
+* Add startup parameterisation (db, if, port etc) using cjson
+* Test json file
+* Change audit trail: Unions, linestring to polygon conversions, ST_invalid => ST_MakeValid geomtery validators; 
+* Add tests:
+	i. Unsupported projection files (modify proj data slightly...)
+	ii. Wrong shapefile (by bounds) in set
+	iii. No shapefile with only 1 area if > 1 shapefile
+	iv. Total area mismatch between shapefiles
 	
-	Current TODO list (May):
-	
-	* Zip file support using JSZip. Convert zlib, zip file support to async
-	* Simplify: test pre-quantisation at 10e6/10e7 with and without simplification to 9.01x10-13 steradians. 	
-	* Zoomlevel 1-11 support; topojson now becomes an array
-	* Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
-    * Re-test COA2011 memory and timeout issues are solved.	
-	
-	June list (some likely to be moved into July):
-	
-	* Replace traditional html with JQuery-UI
-	* Add support for XML config file so shpConvert can do all processing without further input; Area_id and description support; .SHP.EA.ISO.XML 
-	* Database connection; clean, check OK and ST_Union(); area support [and checks] and perimeter support [checking simplification]; PK support 
-	  [Thought: can ST_Union be done in geoJSON: as it is a geomtery collection. Also check wellknown] 	
-	* Add area_id and id uniqueness tests to shapefile checks and tests
-	* Hover support for area name at highest resolution
-	* WKT support using Wellknown
-	* Id generator
-	* Detect area mismatch between shapefiles	
-	* Add startup parameterisation (db, if, port etc) using cjson
-	* Test json file
-	* Change audit trail: Unions, linestring to polygon conversions, ST_invalid => ST_MakeValid geomtery validators; 
-	* Add tests:
-		i. Unsupported projection files (modify proj data slightly...)
-		ii. Wrong shapefile (by bounds) in set
-		iii. No shapefile with only 1 area if > 1 shapefile
-		iv. Total area mismatch between shapefiles
-		
-    July list:
-	
-	* Map tile generator
-	* Geolevel intersction generator
-	
-	August List:
-	
-	* Remaining get methods
-	
-	SQL Server porting expected to start in July.
+#### July list:
+
+* Map tile generator
+* Geolevel intersction generator
+
+#### August List:
+
+* Remaining get methods
+
+SQL Server porting expected to start in July.
 	
 ##	General RIF database Todo:
 
