@@ -121,15 +121,22 @@ serverLog2 = function(file, line, calling_function, msg, req, err) {
 	
 	// Add request tracer if present
 	if (req && req.get) {
-		request_tracer=";\n url: " + req.url + 
+		request_tracer=";\nUrl: " + req.url + 
 					"; ip: " + req.ip;
 		if (req.get('Content-Encoding')) {
 			request_tracer+="; Content-Encoding: " + req.get('Content-Encoding');
 		}
 	}
+	else {
+		request_tracer=";\nNo url/ip";
+	}
+	
 	// Add error tracer if present
 	if (err && err.message && err.stack) {
 		error_tracer="\n\nError(" + err.name + "): " + err.message + "\nStack>>>\n" + err.stack + "<<<";
+	}
+	else {
+		error_tracer="\n\nNo errors"
 	}
 	
 	console.error("\n* LOG START *********************************************************************\n\n" +

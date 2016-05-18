@@ -1065,8 +1065,8 @@ topology: 1579 arcs, 247759 points
 				shapefileData["crss"]["EPSG:" + shapefileData["mySrs"].srid] = shapefileData["mySrs"].proj4;
 			}
 		}
-		serverLog.serverLog2(__file, __line, "readShapeFile", 
-			"In readShapeFile(), call[" + shapefileData["shapefile_no"] + "] shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
+//		serverLog.serverLog2(__file, __line, "readShapeFile", 
+//			"In readShapeFile(), call[" + shapefileData["shapefile_no"] + "] shapefile.read() for: " + shapefileData["shapeFileName"], shapefileData["req"]);
 					
 		// Now read shapefile
 
@@ -1420,8 +1420,8 @@ topology: 1579 arcs, 247759 points
 
 			// Add to queue			
 
-			serverLog.serverLog2(__file, __line, "readShapeFile", 
-				"In readShapeFile(), shapeFileQueue shapefile [" + shapefile_no + "/" + shapefile_total + "]: " + shapefileData["shapeFileName"]);			
+//			serverLog.serverLog2(__file, __line, "readShapeFile", 
+//				"In readShapeFile(), shapeFileQueue shapefile [" + shapefile_no + "/" + shapefile_total + "]: " + shapefileData["shapeFileName"]);			
 			shapeFileQueue.push(shapefileData, function(err) {
 				if (err) {
 					var msg='ERROR! in readShapeFile()';

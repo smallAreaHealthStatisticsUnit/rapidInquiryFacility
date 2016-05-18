@@ -423,6 +423,8 @@ RangeError: Invalid string length
 
 * Add more status
 * Data loader documentation
+* CDC webinar
+* Single log entry per run
 
 #### Current TODO list (May):
 

@@ -257,18 +257,17 @@ var util = require('util'),
 		});
 		
 		if (response.diagnosticsTimer) { // Disable the diagnostic file write timer
-			msg+="\nDisable the diagnostic file write timer";
+			response.message+="\nDisable the diagnostic file write timer";
 			clearInterval(response.diagnosticsTimer);
 			response.diagnosticsTimer=undefined;
 		}		
 		serverLog.serverLog2(__file, __line, "responseProcessing", 
 			"Diagnostics >>>\n" +
-			response.message + "\n<<< End of diagnostics");	
+			response.message + "\n<<< End of diagnostics", req);	
 		if (response.fields && response.fields["diagnosticFileDir"] && response.fields["diagnosticFileName"]) {
 			fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["diagnosticFileName"], 
 				response.message);
 		}	
-		ofields["diagnosticFileDir"]=undefined;	// Remove diagnosticFileDir as it reveals OS type
 		if (!ofields["my_reference"]) { 
 			ofields["my_reference"]=undefined;
 		}		
@@ -277,7 +276,9 @@ var util = require('util'),
 		
 			addStatus(__file, __line, response, "END", 200 /* HTTP OK */, serverLog, req); // Add status
 			
-			serverLog.serverLog2(__file, __line, "responseProcessing", msg, req);	
+			response.fields["diagnosticFileDir"]=undefined;	// Remove diagnosticFileDir as it reveals OS type
+		
+//			serverLog.serverLog2(__file, __line, "responseProcessing", msg, req);	
 			if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
 				if (!response.fields.verbose) {
 					response.message="";	
@@ -333,12 +334,16 @@ var util = require('util'),
 
 	/*
 	 * Function: 	setupDiagnostics()
-	 * Parameters:	Express HTTP request object, ofields object, internal response object, serverLog, httpErrorResponse object
+	 * Parameters:	File, line called from, Express HTTP request object, ofields object, internal response object, serverLog, httpErrorResponse object
 	 * Description: Send express HTTP response
 	 */	
-	var setupDiagnostics = function setupDiagnostics(req, ofields, response, serverLog, httpErrorResponse) {
-		
+	var setupDiagnostics = function setupDiagnostics(lfile, lline, req, ofields, response, serverLog, httpErrorResponse) {
+
+		var calling_function = arguments.callee.caller.name || '(anonymous)';
+	
 		scopeChecker(__file, __line, {
+			lfile: lfile,
+			lline: lline,
 			serverLog: serverLog,
 			httpErrorResponse: httpErrorResponse,
 			req: req,
@@ -373,11 +378,12 @@ var util = require('util'),
 // Write diagnostics file
 //			
 		if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"])) { // Exists
-			serverLog.serverError2(__file, __line, "setupDiagnostics", 
+			serverLog.serverError2(lfile, lline, calling_function, 
 				"ERROR: Cannot write diagnostics file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], req);
 		}
 		else {
-			response.message+="\nCreating diagnostics file: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"];
+			response.message+="\n[" + lfile + ":" + lline + "; function: " + calling_function + "()] Creating diagnostics file: " + 
+				ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"];
 			response.fields=ofields;
 			fs.writeFileSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], 
 				response.message);
@@ -387,7 +393,7 @@ var util = require('util'),
 // Write status file
 //
 		if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["statusFileName"])) { // Exists
-			serverLog.serverError2(__file, __line, "setupDiagnostics", 
+			serverLog.serverError2(lfile, lline, calling_function, 
 				"ERROR: Cannot write status file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["statusFileName"], req);
 		}
 		else {
@@ -493,10 +499,11 @@ var util = require('util'),
 			var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
 			fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"], 
 				statusText);	
-		}		
-		else {		
-			serverLog.serverLog2(__file, __line, "addStatus", msg, req);
 		}
+// Do not log it - it will be - trust me
+//		else { 		
+//			serverLog.serverLog2(__file, __line, "addStatus", msg, req);
+//		}
 		
 	} // End of addStatus
 							
@@ -920,6 +927,10 @@ exports.convert = function exportsConvert(req, res) {
 					text+="verbose mode enabled";
 					ofields[fieldname]="true";
 				}
+				if ((fieldname == 'uuidV1')&&(!response.fields["diagnosticFileDir"])) { // Start the diagnostics log as soon as possible
+					ofields[fieldname]=val;
+					setupDiagnostics(__file, __line, req, ofields, response, serverLog, httpErrorResponse);
+				}
 				if (req.url == '/geo2TopoJSON') {
 					text+=geo2TopoJSON.geo2TopoJSONFieldProcessor(fieldname, val, topojson_options, ofields, response, req, serverLog);
 				}
@@ -938,7 +949,9 @@ exports.convert = function exportsConvert(req, res) {
 				try {
 					var msg="";
 
-					setupDiagnostics(req, ofields, response, serverLog, httpErrorResponse);
+					if (!response.fields["diagnosticFileDir"]) {
+						setupDiagnostics(__file, __line, req, ofields, response, serverLog, httpErrorResponse);
+					}
 					addStatus(__file, __line, response, "Busboy Finish", 200 /* HTTP OK */, serverLog, req);  // Add onBusboyFinish status
 	
 					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
