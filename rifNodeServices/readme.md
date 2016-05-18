@@ -33,16 +33,18 @@ At the end of the extract workflow step there are two types of files:
   * Meta-data extracted from the shape files.
 	 
 The geoJSON is also converted to well-known text and saved in the native geospatial datatype in the database (MS SQL Server or Postgres).
-The multi polygons are created as the geoJSON is being assembled feature by feature (i.e. unioned together) and ensure that the area ids are unique. In addition, each polygon will be checked to ensure the start co-ordinate = the end co-ordinate (i.e. it is not a line string). Extract of necessity therefore performs low level conversions because of the need to conserve memory. A 1.5Gbyes shapefile requires 9-10 Gbytes of memory when represented as JSON.
+The multi polygons are created as the geoJSON is being assembled feature by feature (i.e. unioned together) and ensure that the area ids are unique. 
+In addition, each polygon will be checked to ensure the start co-ordinate = the end co-ordinate (i.e. it is not a line string). Extract of necessity therefore performs low level conversions because of the need to conserve memory. A 1.5Gbyes shapefile requires 9-10 Gbytes of memory when represented as JSON.
 
 ### Transform
 
 Transform is a series of nested loops that clean and convert two of more shapefiles into the following deliverables per shape file:
-•	The geoJSON is simplified and converted to topoJSON. This is to that the information displayed in leaflet at each map zoomlevel is the optimised to the pixel size of the (largest) screen. As a minimum zoomelevels 6,8 and 11 will be supported. A key test is that the whole world (zoomlevel 1) for the USA must display in a second or so. This may result in more zoomlevels being required;
-•	The topoJSON is converted back to geoJSON and thence to well-known text and then saved in the native geospatial datatype in the database (MS SQL Server or Postgres);
-•	The shapefiles are ordered by resolution using the total areas in a shapefile;
-•	 The shapefiles are geometrically intersected to create a table using the geospatial database. This tells the RIF who contains what e.g. for a census block group; which tract county and state is it in;
-•	In the database maptiles are generated for each zoomlevels; these are then converted to well-known text, geoJSON and finally topoJSON and saved as files and in the database. In the RIF they are only stored in the database.
+
+* The geoJSON is simplified and converted to topoJSON. This is to that the information displayed in leaflet at each map zoomlevel is the optimised to the pixel size of the (largest) screen. As a minimum zoomelevels 6,8 and 11 will be supported. A key test is that the whole world (zoomlevel 1) for the USA must display in a second or so. This may result in more zoomlevels being required;
+* The topoJSON is converted back to geoJSON and thence to well-known text and then saved in the native geospatial datatype in the database (MS SQL Server or Postgres);
+* The shapefiles are ordered by resolution using the total areas in a shapefile;
+* The shapefiles are geometrically intersected to create a table using the geospatial database. This tells the RIF who contains what e.g. for a census block group; which tract county and state is it in;
+* In the database maptiles are generated for each zoomlevels; these are then converted to well-known text, geoJSON and finally topoJSON and saved as files and in the database. In the RIF they are only stored in the database.
 
 #### TopoJSON Conversion
 
