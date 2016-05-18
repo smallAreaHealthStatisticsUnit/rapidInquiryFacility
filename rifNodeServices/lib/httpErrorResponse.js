@@ -102,6 +102,10 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 					};
 				}
 			}
+			g_response.fields["diagnosticFileDir"]=undefined;	// Remove diagnosticFileDir as it reveals OS type
+			if (!g_response.fields["my_reference"]) { 
+				g_response.fields["my_reference"]=undefined;
+			}
 			l_response.fields = g_response.fields;
 		}
 		if (msg) {

@@ -267,7 +267,11 @@ var util = require('util'),
 		if (response.fields && response.fields["diagnosticFileDir"] && response.fields["diagnosticFileName"]) {
 			fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["diagnosticFileName"], 
 				response.message);
-		}								
+		}	
+		ofields["diagnosticFileDir"]=undefined;	// Remove diagnosticFileDir as it reveals OS type
+		if (!ofields["my_reference"]) { 
+			ofields["my_reference"]=undefined;
+		}		
 		response.fields=ofields;				// Add return fields not already present	
 		if (response.field_errors == 0 && response.file_errors == 0) { // OK
 		
@@ -347,7 +351,11 @@ var util = require('util'),
 		
 		if (!ofields["uuidV1"]) { // Generate UUID
 			ofields["uuidV1"]=serverLog.generateUUID();
-		}		  
+		}		
+//		if (!ofields["my_reference"]) { // Use UUID
+//			ofields["my_reference"]=ofields["uuidV1"];
+//		}
+		
 //	
 // Create directory: $TEMP/shpConvert/<uuidV1> as required
 //

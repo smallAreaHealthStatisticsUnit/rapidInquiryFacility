@@ -434,8 +434,11 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 		 18 |        0 |  68719476736 |           0.0014 |              0.60 |          0.60 |          0.59 |      153 |      152 |          0.0000054 | 1 in 2,271
 		 19 |        0 | 274877906944 |          0.00069 |              0.30 |          0.30 |          0.30 |       76 |       76 |          0.0000027 | 1 in 1,135
 		 
-	For zoomlevel 9 the area at the equator is  78272 x 77748 = 6.085 square km and a pixel is 306 x 304 = 0.093 square km
+	For zoomlevel 9 the area at the equator is  78272 x 77748 = 6,085 square km and a pixel is 306 x 304 = 0.093 square km
 	In steradians = (0.093 / (510,072,000 * 12.56637) [area of earth] = 1.4512882642054046732729181896167e-11 steradians
+		 
+	For zoomlevel 11 the area at the equator is  19568 x 19437 = 380.3 square km and a pixel is 76 x 76 = 0.005776 square km
+	In steradians = (0.005776 / (510,072,000 * 12.56637) [area of earth] = 9.011266999968199e-13 steradians	
 	 */
 	var simplifyGeoJSON = function simplifyGeoJSON(shapefile, response, shapefileData, topojson_options, callback) {
 		scopeChecker(__file, __line, {
@@ -465,7 +468,7 @@ topology: 1579 arcs, 247759 points
 			topojson_options = {
 				verbose:      true,
 				quantization: 1e6,	
-				simplify: 1.451e-11 // For zoomlevel 9
+				simplify: 9.011e-13 // For zoomlevel 11
 			}; 		
 		}
 		

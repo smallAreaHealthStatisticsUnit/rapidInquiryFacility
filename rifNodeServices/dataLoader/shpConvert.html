@@ -237,7 +237,7 @@ function submitForm() {
 		console.log('Verbose mode: ' + verbose);
 		formData.append('verbose', verbose);
 	}
-	formData.append('my_reference', generateUUID()); // Random reference
+	formData.append('uuidV1', generateUUID()); // Random reference
 
 	setStatus = function(msg, errm) {
 		if (document.getElementById("status").innerHTML != msg) {

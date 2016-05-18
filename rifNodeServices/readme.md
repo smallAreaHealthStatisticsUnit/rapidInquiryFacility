@@ -7,6 +7,86 @@
 **[Install rifNodeServices](#Installing-rifNodeServices)**   
 **[Testing rifNodeServices](#Testing-rifNodeServices)**  
 
+## Workflow 
+
+### Extract
+
+The start of the extraction is a meta data XML file so that the loading can do all processing without further input. The user has to define the area id and area id name fields per shapefile and its name. Where present this is in the .SHP.EA.ISO.XML
+Extract and save geospatial data from two  or more shape files by file extension:
+* .PRJ: projection information. The RIF should support all projections in PostGIS. In some cases, this may fail where the same projection is used by multiple SRIDs (e.g. UK and EIRE) and is therefore dependent on the embedded projection name field being recognised. The workaround for this is to manually embed the SRID in the .PRJ projection file;
+* .SHP: geospatial data; normally one polygon per record. Areas with multiple polygons (e.g. Islands) are on multiple rows. Shapefile data is processed record by record so that very large shapefiles can be processed; this causes both the extract and transform phases to be a series of nested loops to minimise the memory consumption. Shapefile data is converted from the proprietary ESRI format to a geoJSON collection. Each area id is a JSON feature. Leaflet (the JavaScript map display library) works with data projected in WGS84 (GPS) and the geoJSON is therefore projected at this point and then saved in blocks of area ids;
+* .DBF: area id names and area ids, other data in DBF file (e.g. total males, total females, average income) The DBF field data are embedded within each geoJSON feature;
+* .SHP.EA.ISO.XML: meta-data related to the shape file (field names, shapefile description). If this file is not present, the information must be supplied by the user;
+* Meta-data extracted from the shape file (the number of areas, the bounding box co-ordinates of the mapped area, resolution order of the shapefiles – lowest is 1).
+
+At the end of the extract workflow step there are two types of files:
+* One geoJSON feature collection per shapefile containing:
+  * The bounding box co-ordinates of the mapped area
+  * An array of features, containing:
+    * area id name and area id, other data from the DBF file;
+    * Multi polygon features;
+ * Meta data stored as an XML file, containing:
+   * Projection information:
+     * SRID of the shapefile (e.g. 27700 for the UK);
+     * PROJ4 projection information for the geoJSON data (i.e. SRID 4326 – WGS84);
+   * Shapefiles, field names, shapefile description;
+   * Meta-data extracted from the shape files.
+	 
+The geoJSON is also converted to well-known text and saved in the native geospatial datatype in the database (MS SQL Server or Postgres).
+The multi polygons are created as the geoJSON is being assembled feature by feature (i.e. unioned together) and ensure that the area ids are unique. In addition, each polygon will be checked to ensure the start co-ordinate = the end co-ordinate (i.e. it is not a line string). Extract of necessity therefore performs low level conversions because of the need to conserve memory. A 1.5Gbyes shapefile requires 9-10 Gbytes of memory when represented as JSON.
+
+### Transform
+
+Transform is a series of nested loops that clean and convert two of more shapefiles into the following deliverables per shape file:
+•	The geoJSON is simplified and converted to topoJSON. This is to that the information displayed in leaflet at each map zoomlevel is the optimised to the pixel size of the (largest) screen. As a minimum zoomelevels 6,8 and 11 will be supported. A key test is that the whole world (zoomlevel 1) for the USA must display in a second or so. This may result in more zoomlevels being required;
+•	The topoJSON is converted back to geoJSON and thence to well-known text and then saved in the native geospatial datatype in the database (MS SQL Server or Postgres);
+•	The shapefiles are ordered by resolution using the total areas in a shapefile;
+•	 The shapefiles are geometrically intersected to create a table using the geospatial database. This tells the RIF who contains what e.g. for a census block group; which tract county and state is it in;
+•	In the database maptiles are generated for each zoomlevels; these are then converted to well-known text, geoJSON and finally topoJSON and saved as files and in the database. In the RIF they are only stored in the database.
+
+#### TopoJSON Conversion
+
+TopoJSON conversion is the process of identifying the shared boundaries between the different areas in geospatial data; these are called arcs.
+To allow this to reliably take place the points must be reduced to a known precision. This process is called pre-quantisation. A typical example would be 1x106 for the United States at zoomlevel 11. E.g. (see: http://wiki.openstreetmap.org/wiki/Zoom_levels); at zoomlevel 11; 1:250,000 scale, each pixel on the screen is 76m on the ground, so each the smallest X or Y co-ordinate must be no more than 1 millionth of the largest.
+
+##### Simplification
+
+A good example is at: https://bost.ocks.org/mike/simplify/. The topoJSON conversion is set to use Visvalingam’s algorithm which progressively removes points with the least-perceptible change. This then optimises the map for each of the higher zoomlevels.
+This method removes the possibility of slivers in a map layer; it will only work across all shapefiles if they have the same initial quantisation (i.e. scale). Often they do not (the US being a good example) so when the shapefiles are overlaid in Leaflet slivers occur between the shapefiles (or layers). The RIF only ever display one shapefile layer (or geolevel) at a time so this is not a problem in practice.   
+The choice of the simplification parameter is either in Steradians or as a percentage of the previous simplification. For zoomlevel 11 the area at the equator is 19.568 x 19.437 = 380.3 square km and a pixel is 76 x 76 = 0.005776 square km; in steradians this is (0.005776 / (510,072,000 * 12.56637) [area of earth in steradians] = 9.01x10-13 steradians. From zoomlevel 11 to 10, the simplification percentage is 25% as each level 10 tile contains 4 level 11 tiles.
+This can be checked from the topoJSON output for US counties. In this case the X and Y resolution is less than 76m:
+```
+bounds: -179.148909 -14.548699000000001 179.77847 71.36516200000001 (spherical)
+pre-quantization: 39.9m (0.000359°) 9.55m (0.0000859°)
+topology: 11154 arcs, 631792 points
+```
+
+In the below example Seattle at Nation (in black), State (in blue) and County (in read) level, state and county are mapped at the same scale (1:500,000) and overlap perfectly (in purple) but Nation is at 1:5 million and is slivered with respect to the state and county levels. The nation level (in back) also shows signs of over simplification as it is only suitable for zoomlevel 8 or 9 at best.
+ 
+This does need some more work; in practice we will probably not simplify that aggressively and may not simplify zoomlevel 11 at all
+
+### Checks
+
+The following checks are carried out on the data at the extract phase:
+* A minimum of two shapefiles;
+* Some polygons are missing the final point (which should be the same as the first); i.e. are line strings; forcibly polygonise as long as the points are less than (to be specified: likely 20-100m) distance apart;
+* All projection files are the same;
+* The projection file is valid and is supported;
+* Co-ordinates are valid for the projection;
+* Bounding box is valid for the projection.
+
+The last two points are effectively tested by the re-projections are can be re-tested in the database during the transform phase.
+
+The following checks are carried out on the data at the transform phase:
+* Check that the database geometry (multi polygon) is valid (using STInvalid()), try to fix using ST_MakeValid();
+* All shapefiles in the set have the same bounding box;
+* Areal (total area) mismatch between shapefiles;
+* Perimeter lengths between zoomlevels indicate more simplification than expected (4x).
+
+The change audit trail will be provided: Unions, linestring to polygon conversions, geometry (i.e. multi polygon) validators;
+
+Ideally we should warn if the scale of map <= 1:250,000; but this information is not present in a parseable form in the .SHP.EA.ISO.XML file. Resolution checks therefore need to be done visually (in Leaflet) and by hand (from the meta data), see the above examples.
+
 ## toTopojson web service
 
 The toTopojson service converts GeoJSON files upto 100MB in size to TopoJSON:

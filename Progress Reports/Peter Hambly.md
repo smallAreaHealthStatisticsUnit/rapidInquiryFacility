@@ -421,33 +421,47 @@ RangeError: Invalid string length
 		
 #### 16th to 20th May
 
-	Current TODO list:
-	
 	* Add more status
+	* Data loader documentation
+	
+	Current TODO list (May):
+	
 	* Zip file support using JSZip. Convert zlib, zip file support to async
+	* Simplify: test pre-quantisation at 10e6/10e7 with and without simplification to 9.01x10-13 steradians. 	
+	* Zoomlevel 1-11 support; topojson now becomes an array
+	* Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
+    * Re-test COA2011 memory and timeout issues are solved.	
 	
-	Then list:
+	June list (some likely to be moved into July):
 	
-	* Simplify: accurate Steradians calulations
-	* Feature catalog support; see: cb_2014_us_county_500k.shp.ea.iso.xml. This contains most of the names etc.
 	* Replace traditional html with JQuery-UI
-	* Area_id and description support
+	* Add support for XML config file so shpConvert can do all processing without further input; Area_id and description support; .SHP.EA.ISO.XML 
+	* Database connection; clean, check OK and ST_Union(); area support [and checks] and perimeter support [checking simplification]; PK support 
+	  [Thought: can ST_Union be done in geoJSON: as it is a geomtery collection. Also check wellknown] 	
+	* Add area_id and id uniqueness tests to shapefile checks and tests
 	* Hover support for area name at highest resolution
-	* Add area_id and id uniqueness tests to shapefile checks
 	* WKT support using Wellknown
-	* Database connection; clean, check OK and ST_Union() for PK [Thought: can ST_Union be domne in geoJSON: as it is a geomtery collection. Also check wellknown] 	
 	* Id generator
 	* Detect area mismatch between shapefiles	
 	* Add startup parameterisation (db, if, port etc) using cjson
-	
+	* Test json file
+	* Change audit trail: Unions, linestring to polygon conversions, ST_invalid => ST_MakeValid geomtery validators; 
 	* Add tests:
 		i. Unsupported projection files (modify proj data slightly...)
 		ii. Wrong shapefile (by bounds) in set
 		iii. No shapefile with only 1 area if > 1 shapefile
-		iv. Area mismatch between shapefiles
+		iv. Total area mismatch between shapefiles
 		
-	* Status update using my_reference; timeout recovery	
-
+    July list:
+	
+	* Map tile generator
+	* Geolevel intersction generator
+	
+	August List:
+	
+	* Remaining get methods
+	
+	SQL Server porting expected to start in July.
 	
 ##	General RIF database Todo:
 
