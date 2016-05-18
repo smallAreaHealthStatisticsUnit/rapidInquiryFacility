@@ -66,7 +66,7 @@ topology: 11154 arcs, 631792 points
 
 In the below example Seattle at Nation (in black), State (in blue) and County (in read) level, state and county are mapped at the same scale (1:500,000) and overlap perfectly (in purple) but Nation is at 1:5 million and is slivered with respect to the state and county levels. The nation level (in back) also shows signs of over simplification as it is only suitable for zoomlevel 8 or 9 at best.
  
-![Seattle image](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/tree/master/rifNodeServices/Seattle.png raw=true "Seattle simplification example") 
+![Seattle image](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/tree/master/rifNodeServices/Seattle.png?raw=true "Seattle simplification example") 
 
 This does need some more work; in practice we will probably not simplify that aggressively and may not simplify zoomlevel 11 at all
 
