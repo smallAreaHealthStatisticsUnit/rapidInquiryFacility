@@ -55,6 +55,7 @@ To allow this to reliably take place the points must be reduced to a known preci
 
 A good example is at: https://bost.ocks.org/mike/simplify/. The topoJSON conversion is set to use Visvalingam’s algorithm which progressively removes points with the least-perceptible change. This then optimises the map for each of the higher zoomlevels.
 This method removes the possibility of slivers in a map layer; it will only work across all shapefiles if they have the same initial quantisation (i.e. scale). Often they do not (the US being a good example) so when the shapefiles are overlaid in Leaflet slivers occur between the shapefiles (or layers). The RIF only ever display one shapefile layer (or geolevel) at a time so this is not a problem in practice.   
+
 The choice of the simplification parameter is either in Steradians or as a percentage of the previous simplification. For zoomlevel 11 the area at the equator is 19.568 x 19.437 = 380.3 square km and a pixel is 76 x 76 = 0.005776 square km; in steradians this is (0.005776 / (510,072,000 * 12.56637) [area of earth in steradians] = 9.01x10-13 steradians. From zoomlevel 11 to 10, the simplification percentage is 25% as each level 10 tile contains 4 level 11 tiles.
 This can be checked from the topoJSON output for US counties. In this case the X and Y resolution is less than 76m:
 ```
@@ -65,6 +66,8 @@ topology: 11154 arcs, 631792 points
 
 In the below example Seattle at Nation (in black), State (in blue) and County (in read) level, state and county are mapped at the same scale (1:500,000) and overlap perfectly (in purple) but Nation is at 1:5 million and is slivered with respect to the state and county levels. The nation level (in back) also shows signs of over simplification as it is only suitable for zoomlevel 8 or 9 at best.
  
+![Seattle image](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/tree/master/rifNodeServices/Seattle.png) 
+
 This does need some more work; in practice we will probably not simplify that aggressively and may not simplify zoomlevel 11 at all
 
 ### Checks

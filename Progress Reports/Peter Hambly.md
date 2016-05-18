@@ -242,14 +242,14 @@ Test harness refactor; Node.js version working
  
 #### 8th to 15th January
   
-* Port to Postgres 9.5
-* RIF Node Services - build enviornment
-* RIF Node Services - topoJSON convertor
+* Port to Postgres 9.5;
+* RIF Node Services - build enviornment;
+* RIF Node Services - topoJSON convertor;
 
-	1. Restructure of code;
-	2. Convert to test_6_sahsu_4_level4_0_0_0.js (level 4, zoomnlevel 0 sahusland example, 3.6M);
-	3. Convert to support form fields as parameteres and return;
-	4. Return debug output from topoJSON module;
+  * Restructure of code;
+  * Convert to test_6_sahsu_4_level4_0_0_0.js (level 4, zoomnlevel 0 sahusland example, 3.6M);
+  * Convert to support form fields as parameteres and return;
+  * Return debug output from topoJSON module;
 
 #### 18th January to 5th February
 	
@@ -308,7 +308,7 @@ Test harness refactor; Node.js version working
 	Population weighted centroids requires population data and additional non standard processing (i.e. there is no OGSS 
 	standard function) in PostGIS.
 	
-	NodeGeoSpatialServices should not be confused with GeoNode (http://geonode.org/): 
+	NodeGeoSpatialServices should not be confused with GeoNode (http://geonode.org/)
 	
 	GeoNode is a platform for the management and publication of geospatial data. It brings together mature and stable open-source 
 	software projects under a consistent and easy-to-use interface allowing users, with little training, to quickly and easily 
@@ -375,6 +375,7 @@ Test harness refactor; Node.js version working
 	* Read coa2011.shp: 227,759 recoerds, 203,930,998 points. Required 11G memory; broke shpConvertWriteFile() as expected, 
 	  needs to write in blocks; JSON size: 1,666,421,470 ~ 16GB. shpConvertWriteFile() needs to write in sections (i.e. per record)
 	  max 10.2G memory (11G limit on laptop)
+	  
 ```	  
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:565
 						shpConvertWriteFile(shapefileData["jsonFileName"], JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
