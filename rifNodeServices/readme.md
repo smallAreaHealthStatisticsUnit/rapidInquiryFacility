@@ -16,10 +16,12 @@ The RIF web front end uses leaflet, which requires map tiles; these are squares 
   for most practical purposes; this RIF uses 0-11;
 * The Web Mercator (WGS84, as used by GPS) projection is used, with latitude limits of around 85 degrees. Can needs to be taken during simplification with 
   Northern latitudes in the USA because of the distortions in the Mercator projection (e.g. the size of Greenland); with each pixel being much shorter in
-  length than in latitudes near to the equator
+  length than in latitudes near to the equator.
+  
 The de facto OpenStreetMap standard, known as Slippy Map Tilenames or XYZ, follows these and adds more:
-* An X and Y numbering scheme; with Z for the zoomlevels
-* PNG images for tiles. In this case Leaflet uses topoJSON
+* An X and Y numbering scheme; with Z for the zoomlevels;
+* PNG images for tiles. In this case Leaflet uses topoJSON.
+
 Images are served through a REST API, with a URL like http://.../Z/X/Y.png, where Z is the zoom level, and X and Y identify the tile.
 
 ### Extract
@@ -98,6 +100,7 @@ This does need some more work; in practice we will probably not simplify that ag
 
 The following checks are carried out on the data at the extract phase:
 * A minimum of two shapefiles;
+* The .DNF and .SHP files are present;
 * Some polygons are missing the final point (which should be the same as the first); i.e. are line strings; forcibly polygonise as long as the points are less than (to be specified: likely 20-100m) distance apart;
 * All projection files are the same;
 * The projection file is valid and is supported;
