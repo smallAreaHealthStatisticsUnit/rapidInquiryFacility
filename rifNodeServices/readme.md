@@ -9,12 +9,32 @@
 
 ## Workflow 
 
+The RIF web front end uses leaflet, which requires map tiles; these are squares that follow certain Google Maps conventions:
+* Tiles are 256x256 pixels;
+* At the outer most zoom level, 0, the entire world can be rendered in a single map tile;
+* Each zoom level doubles in both dimensions, so a single tile is replaced by 4 tiles when zooming in. This means that about 22 zoom levels are sufficient
+  for most practical purposes; this RIF uses 0-11;
+* The Web Mercator (WGS84, as used by GPS) projection is used, with latitude limits of around 85 degrees. Can needs to be taken during simplification with 
+  Northern latitudes in the USA because of the distortions in the Mercator projection (e.g. the size of Greenland); with each pixel being much shorter in
+  length than in latitudes near to the equator
+The de facto OpenStreetMap standard, known as Slippy Map Tilenames or XYZ, follows these and adds more:
+* An X and Y numbering scheme; with Z for the zoomlevels
+* PNG images for tiles. In this case Leaflet uses topoJSON
+Images are served through a REST API, with a URL like http://.../Z/X/Y.png, where Z is the zoom level, and X and Y identify the tile.
+
 ### Extract
 
-The start of the extraction is a meta data XML file so that the loading can do all processing without further input. The user has to define the area id and area id name fields per shapefile and its name. Where present this is in the .SHP.EA.ISO.XML
+The start of the map extraction is a meta data XML file so that the loading can do all processing without further input. The user has to 
+define the area id and area id name fields, and their descriptions, per shapefile and its name. The field names are present in the .SHP.EA.ISO.XML file.
+
 Extract and save geospatial data from two  or more shape files by file extension:
-* .PRJ: projection information. The RIF should support all projections in PostGIS. In some cases, this may fail where the same projection is used by multiple SRIDs (e.g. UK and EIRE) and is therefore dependent on the embedded projection name field being recognised. The workaround for this is to manually embed the SRID in the .PRJ projection file;
-* .SHP: geospatial data; normally one polygon per record. Areas with multiple polygons (e.g. Islands) are on multiple rows. Shapefile data is processed record by record so that very large shapefiles can be processed; this causes both the extract and transform phases to be a series of nested loops to minimise the memory consumption. Shapefile data is converted from the proprietary ESRI format to a geoJSON collection. Each area id is a JSON feature. Leaflet (the JavaScript map display library) works with data projected in WGS84 (GPS) and the geoJSON is therefore projected at this point and then saved in blocks of area ids;
+* .PRJ: projection information. The RIF should support all projections in PostGIS. In some cases, this may fail where the same projection is used by 
+   multiple SRIDs (e.g. UK and EIRE) and is therefore dependent on the embedded projection name field being recognised. The workaround for this is to 
+   manually embed the SRID in the .PRJ projection file;
+* .SHP: geospatial data; normally one polygon per record. Areas with multiple polygons (e.g. Islands) are on multiple rows. Shapefile data is processed 
+  record by record so that very large shapefiles can be processed; this causes both the extract and transform phases to be a series of nested loops to 
+  minimise the memory consumption. Shapefile data is converted from the proprietary ESRI format to a geoJSON collection. Each area id is a JSON feature. 
+  Leaflet (the JavaScript map display library) works with data projected in WGS84 (GPS) and the geoJSON is therefore projected at this point and then saved in blocks of area ids;
 * .DBF: area id names and area ids, other data in DBF file (e.g. total males, total females, average income) The DBF field data are embedded within each geoJSON feature;
 * .SHP.EA.ISO.XML: meta-data related to the shape file (field names, shapefile description). If this file is not present, the information must be supplied by the user;
 * Meta-data extracted from the shape file (the number of areas, the bounding box co-ordinates of the mapped area, resolution order of the shapefiles – lowest is 1).
@@ -40,11 +60,15 @@ In addition, each polygon will be checked to ensure the start co-ordinate = the 
 
 Transform is a series of nested loops that clean and convert two of more shapefiles into the following deliverables per shape file:
 
-* The geoJSON is simplified and converted to topoJSON. This is to that the information displayed in leaflet at each map zoomlevel is the optimised to the pixel size of the (largest) screen. As a minimum zoomelevels 6,8 and 11 will be supported. A key test is that the whole world (zoomlevel 1) for the USA must display in a second or so. This may result in more zoomlevels being required;
+* The geoJSON is simplified and converted to topoJSON. This is to that the information displayed in leaflet at each map zoomlevel is the optimised 
+  to the pixel size of the (largest) screen. As a minimum zoomelevels 6,8 and 11 will be supported. A key test is that the whole world (zoomlevel 1, 
+  two tiles) for the USA must display in a second or so. This may result in more zoomlevels being required;
 * The topoJSON is converted back to geoJSON and thence to well-known text and then saved in the native geospatial datatype in the database (MS SQL Server or Postgres);
 * The shapefiles are ordered by resolution using the total areas in a shapefile;
-* The shapefiles are geometrically intersected to create a table using the geospatial database. This tells the RIF who contains what e.g. for a census block group; which tract county and state is it in;
-* In the database maptiles are generated for each zoomlevels; these are then converted to well-known text, geoJSON and finally topoJSON and saved as files and in the database. In the RIF they are only stored in the database.
+* The shapefiles are geometrically intersected to create a table using the geospatial database. This tells the RIF who contains what e.g. for a 
+  census block group; which tract county and state is it in;
+* In the database maptiles are generated for each zoomlevels; these are then converted to well-known text, geoJSON and finally topoJSON and saved as 
+  files and in the database. In the RIF they are only stored in the database.
 
 #### TopoJSON Conversion
 
