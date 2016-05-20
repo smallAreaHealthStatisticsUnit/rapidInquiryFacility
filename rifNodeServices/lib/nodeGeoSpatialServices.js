@@ -758,6 +758,9 @@ exports.convert = function exportsConvert(req, res) {
 					else if (d.file.extension === "lz77") {
 							d.file.file_encoding="zlib";
 					}
+					else if (d.file.extension === "zip") {
+							d.file.file_encoding="zip";
+					}					
 				}
 				
 /*
@@ -928,7 +931,10 @@ exports.convert = function exportsConvert(req, res) {
 						serverLog: serverLog,
 						d_files: d_files,
 						req: req,
-						callback: callback
+						zlib: zlib,
+						JSZip: JSZip,
+						callback: callback,
+						async: async
 					});
 					
 					var lstart = new Date().getTime();
@@ -943,7 +949,7 @@ exports.convert = function exportsConvert(req, res) {
 								d.file.file_error=msg;	
 								response.message=msg + "\n" + response.message;
 								response.file_errors++;					// Increment file error count	
-								serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);	// Not an error; handled after all files are processed					
+								serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
 	//							d_files.d_list[index-1] = d;							
 								callback(err);
 							}
@@ -973,7 +979,7 @@ exports.convert = function exportsConvert(req, res) {
 								d.file.file_error=msg;	
 								response.message=msg + "\n" + response.message;
 								response.file_errors++;					// Increment file error count	
-								serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);	// Not an error; handled after all files are processed					
+								serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
 	//							d_files.d_list[index-1] = d;								
 								callback(err);
 							}
@@ -993,20 +999,79 @@ exports.convert = function exportsConvert(req, res) {
 						});
 					}
 					else if (d.file.file_encoding === "zip") {
-//						addStatus(__file, __line, response, "Processing zip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
-//							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status						
-						
-						msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
-							d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
-						d.file.file_error=msg;			
-						response.message=msg + "\n" + response.message;	
-						response.file_errors++;					// Increment file error count	
-						serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);	// Not an error; handled after all files are processed					
-//						d_files.d_list[index-1] = d;				
-						callback();							
+						addStatus(__file, __line, response, "Processing zip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
+							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
+						var zip=new JSZip(d.file.file_data);
+						var noZipFiles=0;
+						msg="";
+						async.forEachOfSeries(zip.files /* col */, 
+							function zipProcessingSeries(zipFileName, index, seriesCallback) { // Process zip file and uncompress			
+			
+								var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
+									seriesCallback(e);
+								}
+									
+								scopeChecker(__file, __line, {
+									zip: zip,
+									zipFileName: zipFileName,
+									index: index,
+									response: response,
+									serverLog: serverLog,
+									d_files: d_files,
+									d_list: d_files.d_list,
+									req: req,
+									ofields: ofields
+								});
+							
+								noZipFiles++;	
+								var fileContainedInZipFile=zip.files[index];	
+								/*
+								var chunk=[];
+								zipStream=fileContainedInZipFile.generateInternalStream({type:"uint8array"})
+								zipStream.on("data", function fileContainedInZipFileData(data) {	
+									chunks.push(data);
+								});
+								zipStream.on("error", function (e) {			
+									seriesCallbackFunc(e);												
+								})
+								zipStream.on("end", function () {
+									var buf=Buffer.concat(chunks); 	// Safe binary concat
+									msg+="Zip file[" + noZipFiles + "]: " + zipFileName + "; date: " + fileContainedInZipFile.date + 
+										"; relativePath: " + fileContainedInZipFile.relativePath + 
+										"; size: " + buf.length + " bytes\n";
+									seriesCallbackFunc();									
+								}); 	*/		
+								var buf=fileContainedInZipFile.asBinary(); // Causes Error(RangeError): Invalid string length with >255M files!!! (as expected)
+								msg+="Zip file[" + noZipFiles + "]: " + zipFileName + "; date: " + fileContainedInZipFile.date + 
+									"; relativePath: " + fileContainedInZipFile.name + 
+									"; size: " + buf.length + " bytes\n";
+								seriesCallbackFunc();										
+							}, 
+							function zipProcessingSeriesEnd(err) {	
+								if (err) {
+									msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+										d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+									d.file.file_error=msg;	
+									response.message=msg + "\n" + response.message;
+									response.file_errors++;					// Increment file error count	
+									serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed		
+									callback(e);
+								}
+								else {
+									msg+="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+										d.file.extension + "; number of files: " + noZipFiles;
+									d.file.file_error=msg;			
+									response.message=msg + "\n" + response.message;	
+									response.file_errors++;					// Increment file error count	
+									serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
+			//						d_files.d_list[index-1] = d;				
+									callback();		
+								}
+							}); // End of async zip file processing				
 					}
 					else {
-						addStatus(__file, __line, response, "Processed file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
+						addStatus(__file, __line, response, "Processed file [" + (index+1) + "]: " + d.file.file_name + 
+							"; size: " + d.file.file_data.length + " bytes" + "; file_encoding: " + d.file.file_encoding || "(no encoding)", 
 							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
 						callback();												
 					}
