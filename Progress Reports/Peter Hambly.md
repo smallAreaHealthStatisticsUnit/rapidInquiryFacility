@@ -425,12 +425,13 @@ RangeError: Invalid string length
 * Data loader documentation
 * CDC webinar
 * Single log entry per run
+* Zip support: compressed file processing moved to an async loop in req.busboy.on('finish'). This will make the input file processing fully async.
 
 #### Current TODO list (May):
 
 * Zip file support using JSZip. Convert zlib, zip file support to async
 * Simplify: test pre-quantisation at 10e6/10e7 with and without simplification to 9.01x10-13 steradians. 	
-* Zoomlevel 1-11 support; topojson now becomes an array
+* Zoomlevel 1-11 support; topojson now becomes an array, single topoJSON function
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
 * Re-test COA2011 memory and timeout issues are solved.	
 

@@ -159,7 +159,7 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): addStatus() is not a function; unable to addStatus()", req, undefined /* No exception */);
 		}
 		
-		if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
+		if (!res.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 			res.status(status);		
 			var output = JSON.stringify(l_response);// Convert output response to JSON 	
 
@@ -182,7 +182,7 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		try {
 			var n_msg="Error response processing ERROR!\n\n" + msg;				  
 			serverLog.serverLog(n_msg, req, e);
-			if (!req.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
+			if (!res.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 				res.status(501);			
 				res.write(n_msg);
 				res.end();	

@@ -243,6 +243,51 @@ var util = require('util'),
 	 * Function: 	responseProcessing()
 	 * Parameters:	Express HTTP request object, HTTP response object, internal response object, serverLog, httpErrorResponse object, ofields object
 	 * Description: Send express HTTP response
+	 *
+	 * geo2TopoJSON response object - no errors:
+	 *                    
+	 * no_files: 		Numeric, number of files    
+	 * field_errors: 	Number of errors in processing fields
+	 * file_list: 		Array file objects:
+	 *						file_name: File name
+	 *						topojson: TopoJSON created from file geoJSON,
+	 *						topojson_stderr: Debug from TopoJSON module,
+	 *						topojson_runtime: Time to convert geoJSON to topoJSON (S),
+	 *						file_size: Transferred file size in bytes,
+	 *						transfer_time: Time to transfer file (S),
+	 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+	 *						uncompress_size: Size of uncompressed file in bytes
+	 * message: 		Processing messages, including debug from topoJSON               
+	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
+	 *
+	 * shpConvert response object - no errors, store=false
+	 *                    
+	 * no_files: 		Numeric, number of files    
+	 * field_errors: 	Number of errors in processing fields
+	 * file_list: 		Array file objects:
+	 *						file_name: File name
+	 *						file_size: Transferred file size in bytes,
+	 *						transfer_time: Time to transfer file (S),
+	 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+	 *						uncompress_size: Size of uncompressed file in bytes
+	 * message: 		Processing messages, including debug from topoJSON               
+	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
+	 *  
+	 * shpConvert response object - no errors, store=true [Processed by shpConvertCheckFiles()]
+	 *  	 
+	 * no_files: 		Numeric, number of files    
+	 * field_errors: 	Number of errors in processing fields
+	 * file_list: 		Array file objects:
+	 *						file_name: File name
+	 *						geojson: GeoJSON created from shapefile,
+	 *						file_size: Transferred file size in bytes,
+	 *						transfer_time: Time to transfer files (S),
+	 *						geojson_time: Time to convert to geojson (S),
+	 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+	 *						uncompress_size: Size of uncompressed file in bytes
+	 * message: 		Processing messages              
+	 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 	 
+	 *
 	 */
 	responseProcessing = function responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields) {
 		var msg="";
@@ -260,10 +305,7 @@ var util = require('util'),
 			response.message+="\nDisable the diagnostic file write timer";
 			clearInterval(response.diagnosticsTimer);
 			response.diagnosticsTimer=undefined;
-		}		
-		serverLog.serverLog2(__file, __line, "responseProcessing", 
-			"Diagnostics >>>\n" +
-			response.message + "\n<<< End of diagnostics", req);	
+		}			
 		if (response.fields && response.fields["diagnosticFileDir"] && response.fields["diagnosticFileName"]) {
 			fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["diagnosticFileName"], 
 				response.message);
@@ -279,7 +321,10 @@ var util = require('util'),
 			response.fields["diagnosticFileDir"]=undefined;	// Remove diagnosticFileDir as it reveals OS type
 		
 //			serverLog.serverLog2(__file, __line, "responseProcessing", msg, req);	
-			if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
+			if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
+				serverLog.serverLog2(__file, __line, "responseProcessing", 
+					"Diagnostics >>>\n" +
+					response.message + "\n<<< End of diagnostics", req);
 				if (!response.fields.verbose) {
 					response.message="";	
 				}	
@@ -295,10 +340,18 @@ var util = require('util'),
 				}
 		
 	// Need to test res was not finished by an expection to avoid "write after end" errors			
-				res.write(output);                  // Write output  
-				res.end();	
+				try {
+					res.write(output);                  // Write output  
+					res.end();	
+				}
+				catch(e) {
+					serverLog.serverError(__file, __line, "responseProcessing", "Error in sending response to client", req, e);
+				}
 			}
 			else {
+				serverLog.serverLog2(__file, __line, "responseProcessing", 
+					"Diagnostics >>>\n" +
+					response.message + "\n<<< End of diagnostics", req);
 				serverLog.serverError(__file, __line, "responseProcessing", "Unable to return OK reponse to user - httpErrorResponse() already processed", req);
 			}	
 	//					console.error(util.inspect(req));
@@ -665,104 +718,6 @@ exports.convert = function exportsConvert(req, res) {
  * Description:	File attachment processing function  
  */				  
 			req.busboy.on('file', function fileAttachmentProcessing(fieldname, stream, filename, encoding, mimetype) {
-
-				/*
-				 * Function: 	fileCompressionProcessing()
-				 * Parameters:	d [data] object, internal response object, serverLog object, d_files flist list object, data buffer (received file),
-				 *				HTTP request object
-				 * Description:	Call file processing; handle zlib, gz and zip files
-				 */	
-				var fileCompressionProcessing = function fileCompressionProcessing(d, response, serverLog, d_files, buf, req) {
-					var msg;
-					
-					scopeChecker(__file, __line, {
-						d: d,
-						response: response,
-						serverLog: serverLog,
-						d_files: d_files,
-						buf: buf,
-						req: req
-					});
-
-					addStatus(__file, __line, response, "Processing file: " + d.file.file_name, 
-						200 /* HTTP OK */, serverLog, req);  // Add file compression processing status
-					
-					d.file.file_data="";
-					var lstart = new Date().getTime();
-					if (d.file.file_encoding === "gzip") {
-						try {
-							d.file.file_data=zlib.gunzipSync(buf);
-						}
-						catch (e) {
-							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-							d.file.file_error=msg;	
-							response.message=msg + "\n" + response.message;
-							response.no_files=d.no_files;			// Add number of files process to response
-							response.fields=ofields;				// Add return fields		
-							response.file_errors++;					// Increment file error count	
-							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
-							d_files.d_list[d.no_files-1] = d;							
-							return;
-						}	
-						end = new Date().getTime();		
-						d.file.uncompress_time=(end - lstart)/1000; // in S		
-						d.file.uncompress_size=d.file.file_data.length;								
-						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-							d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
-							"; from buf: " + buf.length, req; 
-					}	
-					else if (d.file.file_encoding === "zlib") {	
-						try {
-							d.file.file_data=zlib.inflateSync(buf);
-						}
-						catch (e) {
-							msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-							d.file.file_error=msg;	
-							response.message=msg + "\n" + response.message;
-							response.no_files=d.no_files;			// Add number of files process to response
-							response.fields=ofields;				// Add return fields	
-							response.file_errors++;					// Increment file error count	
-							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
-							d_files.d_list[d.no_files-1] = d;				
-							return;											
-						}
-						end = new Date().getTime();	
-						d.file.uncompress_time=(end - lstart)/1000; // in S		
-						d.file.uncompress_size=d.file.file_data.length;		
-						response.message+="\nFile [" + d.no_files + "]: " + d.file.file_name + "; encoding: " +
-							d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
-							"; from buf: " + buf.length, req; 
-					}
-					else if (d.file.file_encoding === "zip") {
-						msg="FAIL! File [" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-							d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
-						d.file.file_error=msg;			
-						response.message=msg + "\n" + response.message;
-						response.no_files=d.no_files;			// Add number of files process to response
-						response.fields=ofields;				// Add return fields	
-						response.file_errors++;					// Increment file error count	
-						serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);						
-						d_files.d_list[d.no_files-1] = d;				
-						return;							
-					}
-					else {
-						d.file.file_data=buf;
-						if (d.file.file_encoding) {
-							response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
-								"; encoding: " + d.file.file_encoding +
-								"; uncompressed data: " + d.file.file_data.length, req;
-						}
-						else {
-							response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
-								"; uncompressed data: " + d.file.file_data.length, req; 
-						}
-								
-					}
-										
-					d_files.d_list[d.no_files-1] = d;
-				} // End of fileCompressionProcessing()
 			
 				var d = new TempData(); // This is local to the post requests; the field processing cannot see it
 			
@@ -894,8 +849,18 @@ exports.convert = function exportsConvert(req, res) {
 //							serverLog, 500, req, res, msg, undefined, response);						
 						return;
 					}
-					
-					fileCompressionProcessing(d, response, serverLog, d_files, buf, req); // Call file processing; handle zlib, gz and zip files	
+					d.file.file_data=buf;
+					if (d.file.file_encoding) {
+						response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
+							"; encoding: " + d.file.file_encoding +
+							"; uncompressed data: " + d.file.file_data.length + " bytes", req;
+					}
+					else {
+						response.message+="\nFile received OK [" + d.no_files + "]: " + d.file.file_name + 
+							"; uncompressed data: " + d.file.file_data.length + " bytes", req; 
+					}										
+					d_files.d_list[d.no_files-1] = d;
+
 					buf=undefined;	// Release memory
 				}); // End of EOF processor
 					
@@ -946,6 +911,134 @@ exports.convert = function exportsConvert(req, res) {
  * Description:	End of request - complete response		  
  */ 
 			req.busboy.on('finish', function onBusboyFinish() {
+
+				/*
+				 * Function: 	fileCompressionProcessing()
+				 * Parameters:	d [data] object, internal response object, serverLog object, d_files flist list object,
+				 *				HTTP request object, callback
+				 * Description:	Call file processing; handle zlib, gz and zip files
+				 */	
+				var fileCompressionProcessing = function fileCompressionProcessing(d, index, response, serverLog, d_files, req, callback) {
+					var msg;
+					
+					scopeChecker(__file, __line, {
+						d: d,
+						index: index,
+						response: response,
+						serverLog: serverLog,
+						d_files: d_files,
+						req: req,
+						callback: callback
+					});
+					
+					var lstart = new Date().getTime();
+					if (d.file.file_encoding === "gzip") {
+						addStatus(__file, __line, response, "Processing gzip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
+							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status						
+						try {
+							d.file.file_data=zlib.gunzipSync(d.file.file_data);
+						}
+						catch (e) {
+							msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+							d.file.file_error=msg;	
+							response.message=msg + "\n" + response.message;
+							response.file_errors++;					// Increment file error count	
+							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);	// Not an error; handled after all files are processed					
+//							d_files.d_list[index-1] = d;							
+//							callback(); // Use calling function try/catch
+						}	
+						end = new Date().getTime();		
+						d.file.uncompress_time=(end - lstart)/1000; // in S		
+						d.file.uncompress_size=d.file.file_data.length;								
+						response.message+="\nFile [" + (index+1) + "]: " + d.file.file_name + "; encoding: " +
+							d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
+							"; from buffer: " + d.file.file_data.length, req; 
+					}	
+					else if (d.file.file_encoding === "zlib") {	
+						addStatus(__file, __line, response, "Processing zlib file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
+							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status						
+					
+						try {
+							d.file.file_data=zlib.inflateSync(d.file.file_data);
+						}
+						catch (e) {
+							msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+							d.file.file_error=msg;	
+							response.message=msg + "\n" + response.message;
+							response.file_errors++;					// Increment file error count	
+							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);	// Not an error; handled after all files are processed					
+//							d_files.d_list[index-1] = d;			
+//							callback(); // Use calling function try/catch							
+						}
+						end = new Date().getTime();	
+						d.file.uncompress_time=(end - lstart)/1000; // in S		
+						d.file.uncompress_size=d.file.file_data.length;		
+						response.message+="\nFile [" + (index+1) + "]: " + d.file.file_name + "; encoding: " +
+							d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
+							"; from buffer: " + d.file.file_data.length, req; 
+					}
+					else if (d.file.file_encoding === "zip") {
+//						addStatus(__file, __line, response, "Processing zip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
+//							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status						
+						
+						msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+							d.file.extension + "; file_encoding: " + d.file.file_encoding + " not supported";
+						d.file.file_error=msg;			
+						response.message=msg + "\n" + response.message;	
+						response.file_errors++;					// Increment file error count	
+						serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);	// Not an error; handled after all files are processed					
+//						d_files.d_list[index-1] = d;				
+						callback();							
+					}
+					else {
+						addStatus(__file, __line, response, "Processed file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
+							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status														
+					}
+					callback();
+				} // End of fileCompressionProcessing()
+				
+				var urlSpecific = function urlSpecific(ofields, d_files, response, req, res, shapefile_options, topojson_options, stderr) {	
+					// Run url specific code	
+			
+					scopeChecker(__file, __line, {
+						response: response,
+						serverLog: serverLog,
+						d_files: d_files,
+						req: req,
+						httpErrorResponse: httpErrorResponse
+					});
+				
+					if (req.url == '/geo2TopoJSON') {			
+						for (var i = 0; i < response.no_files; i++) {
+							var d=d_files.d_list[i];
+							// Call GeoJSON to TopoJSON converter
+							d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);	
+							if (!d) {
+//								httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile", serverLog, 
+//									500, req, res, msg, response.error, response);							
+								return; 
+							}								
+						} // End of for loop
+					}			
+					else if (req.url == '/shpConvert') { // Note which files and extensions are present, 
+																						// generate serial if required, save 
+						if (!shpConvert.shpConvert(ofields, d_files, response, req, res, shapefile_options)) {
+							return;
+						}
+					}
+				} // End of urlSpecific()	
+						
+				scopeChecker(__file, __line, {
+					response: response,
+					serverLog: serverLog,
+					d_files: d_files,
+					d_list: d_files.d_list,
+					req: req,
+					ofields: ofields
+				});
+					
 				try {
 					var msg="";
 
@@ -955,151 +1048,124 @@ exports.convert = function exportsConvert(req, res) {
 					addStatus(__file, __line, response, "Busboy Finish", 200 /* HTTP OK */, serverLog, req);  // Add onBusboyFinish status
 	
 					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
-
-						for (var i = 0; i < response.no_files; i++) {	
-							d=d_files.d_list[i];
-							if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
-								msg="FAIL! File [" + (i+1) + "/?]: entry not found, no file list" + 
-									"; httpErrorResponse.httpErrorResponse() NOT already processed";						
-								if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
-									response.message = msg + "\n" + response.message;
-									response.no_files=0;					// Add number of files process to response
-									response.fields=ofields;				// Add return fields
-									response.file_errors++;					// Increment file error count
-									httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-										serverLog, 500, req, res, msg, undefined, response);				
+						const async = require('async');
+						
+						response.no_files=d_files.d_list.length; // Add number of files process to response
+						response.fields=ofields;				// Add return fields	
+										
+						async.forEachOfSeries(d_files.d_list /* col */, 
+							function fileCompressionProcessingSeries(d, index, seriesCallback) { // Process file list for compressed file and uncompress them				
+			
+								var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
+									seriesCallback(e);
 								}
-								else {
-									serverLog.serverLog2(__file, __line, "req.busboy.on('finish')", req, msg, undefined);
+									
+								scopeChecker(__file, __line, {
+									d: d,
+									index: index,
+									response: response,
+									serverLog: serverLog,
+									d_files: d_files,
+									d_list: d_files.d_list,
+									req: req,
+									ofields: ofields
+								});
+				
+								try {			
+									fileCompressionProcessing(d, index, response, serverLog, d_files, req, seriesCallbackFunc); 
+										// Call file processing; handle zlib, gz and zip files								
+								} catch (e) {
+									return seriesCallbackFunc(e);
 								}
-								return;							
-							}
-							else if (!d.file) {
-								msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: object not found in list" + 
-									"\n";
-								response.message = msg + "\n" + response.message;
-								response.no_files=d.no_files;			// Add number of files process to response
-								response.fields=ofields;				// Add return fields	
-								response.file_errors++;					// Increment file error count	
-								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-									serverLog, 500, req, res, msg, undefined, response);							
-								return;			
-							}
-							else if (d.file.file_error) {
-								msg=d.file.file_error;
-								response.message = msg + "\n" + response.message;
-								response.no_files=d.no_files;			// Add number of files process to response
-								response.fields=ofields;				// Add return fields
-								response.file_errors++;					// Increment file error count	
-								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-									serverLog, 500, req, res, msg, undefined, response);							
-								return;							
-							}
-							else if (d.file.file_data.length == 0) {
-								msg="FAIL! File [" + (i+1) + "/" + d.no_files + "]: " + d.file.file_name + "; extension: " + 
-									d.file.extension + "; file size is zero" + 
-									"\n";
-								response.no_files=d.no_files;			// Add number of files process to response
-								response.fields=ofields;				// Add return fields
-								response.file_errors++;					// Increment file error count	
-								httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-									serverLog, 500, req, res, msg, undefined, response);							
-								return;
-							}	
-						} // End of for loop	
+							}, 
+							function fileCompressionProcessingSeriesEnd(err) {																	/* Callback at end */
+								var msg;
 								
-						if (response.no_files == 0) { 
-							msg="FAIL! No files attached\n";						
-							response.message = msg + "\n" + response.message;
-							response.fields=ofields;				// Add return fields
-							response.file_errors++;					// Increment file error count	
-							httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-								serverLog, 500, req, res, msg, undefined, response);							
-							return;						
-						}
-						else if (!ofields["my_reference"]) {
-							msg+="[No my_reference] Processed: " + response.no_files + " files";
-						}
-						else {
-							msg+="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files";
-						}
-							
-						// url specific code	
-						if (req.url == '/geo2TopoJSON') {			
-							for (var i = 0; i < response.no_files; i++) {
-								d=d_files.d_list[i];
-								// Call GeoJSON to TopoJSON converter
-								d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);	
-								if (!d) {
-									httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile", serverLog, 
-										500, req, res, msg, response.error, response);							
-									return; 
-								}								
-							} // End of for loop
-						}			
-						else if (req.url == '/shpConvert') { // Note which files and extensions are present, 
-																							// generate serial if required, save 
-							if (!shpConvert.shpConvert(ofields, d_files, response, req, res, shapefile_options)) {
-								return;
-							}
-						}	
+								if (err) {
+									serverLog.serverError2(__file, __line, "fileCompressionProcessingSeries.forEachOfSeries", err.message, req, undefined);
+								}
+								else { // Async forEachOfSeries loop complete
+									for (var i = 0; i < response.no_files; i++) { // Process file list for errors	
+										var d=d_files.d_list[i];
+											
+										if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
+											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: entry not found, no file list" + 
+												"; httpErrorResponse.httpErrorResponse() NOT already processed";						
+											if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
+												response.message = msg + "\n" + response.message;
+												response.no_files=0;					// Add number of files process to response
+												response.file_errors++;					// Increment file error count
+												httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+													serverLog, 500, req, res, msg, undefined, response);				
+											}
+											else {
+												serverLog.serverLog2(__file, __line, "req.busboy.on('finish')", req, msg, undefined);
+											}
+											return;							
+										}
+										else if (!d.file) {
+											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: object not found in list" + 
+												"\n";
+											response.message = msg + "\n" + response.message;
+											response.file_errors++;					// Increment file error count	
+											httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+												serverLog, 500, req, res, msg, undefined, response);							
+											return;			
+										}
+										else if (d.file.file_error) {
+											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: " + d.file.file_name + "; extension: " + 
+												d.file.extension + "; error >>>\n" + d.file.file_error + "\n<<<";
+											response.message = msg + "\n" + response.message;
+											response.file_errors++;					// Increment file error count	
+											httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+												serverLog, 500, req, res, msg, undefined, response);							
+											return;							
+										}
+										else if (d.file.file_data.length == 0) {
+											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: " + d.file.file_name + "; extension: " + 
+												d.file.extension + "; file size is zero" + 
+												"\n";
+											response.message = msg + "\n" + response.message;
+											response.file_errors++;					// Increment file error count	
+											httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+												serverLog, 500, req, res, msg, undefined, response);							
+											return;
+										}	
+									} // End of for loop	
+
+									if (response.no_files == 0) { 
+										msg="FAIL! No files attached\n";						
+										response.message = msg + "\n" + response.message;
+										response.file_errors++;					// Increment file error count	
+										httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+											serverLog, 500, req, res, msg, undefined, response);							
+										return;						
+									}
+									else if (!ofields["my_reference"]) {
+										msg+="[No my_reference] Processed: " + response.no_files + " files";
+									}
+									else {
+										msg+="[my_reference: " + ofields["my_reference"] + "] Processed: " + response.no_files + " files";
+									}		
+
+									urlSpecific(ofields, d_files, response, req, res, shapefile_options, topojson_options, stderr);
+										// Run url specific code
+
+									// Final processing										
+									if (req.url == '/shpConvert') { // Processed by shpConvertCheckFiles() - uses async
+									}
+									else if (req.url == '/geo2TopoJSON') {	
+										responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
+									}										
+								}
+						}); // End of async file processing loop					
 					
-		/*
-		 * geo2TopoJSON response object - no errors:
-		 *                    
-		 * no_files: 		Numeric, number of files    
-		 * field_errors: 	Number of errors in processing fields
-		 * file_list: 		Array file objects:
-		 *						file_name: File name
-		 *						topojson: TopoJSON created from file geoJSON,
-		 *						topojson_stderr: Debug from TopoJSON module,
-		 *						topojson_runtime: Time to convert geoJSON to topoJSON (S),
-		 *						file_size: Transferred file size in bytes,
-		 *						transfer_time: Time to transfer file (S),
-		 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
-		 *						uncompress_size: Size of uncompressed file in bytes
-		 * message: 		Processing messages, including debug from topoJSON               
-		 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
-		 *
-		 * shpConvert response object - no errors, store=false
-		 *                    
-		 * no_files: 		Numeric, number of files    
-		 * field_errors: 	Number of errors in processing fields
-		 * file_list: 		Array file objects:
-		 *						file_name: File name
-		 *						file_size: Transferred file size in bytes,
-		 *						transfer_time: Time to transfer file (S),
-		 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
-		 *						uncompress_size: Size of uncompressed file in bytes
-		 * message: 		Processing messages, including debug from topoJSON               
-		 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
-		 *  
-		 * shpConvert response object - no errors, store=true [Processed by shpConvertCheckFiles()]
-		 *  	 
-		 * no_files: 		Numeric, number of files    
-		 * field_errors: 	Number of errors in processing fields
-		 * file_list: 		Array file objects:
-		 *						file_name: File name
-		 *						geojson: GeoJSON created from shapefile,
-		 *						file_size: Transferred file size in bytes,
-		 *						transfer_time: Time to transfer files (S),
-		 *						geojson_time: Time to convert to geojson (S),
-		 *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
-		 *						uncompress_size: Size of uncompressed file in bytes
-		 * message: 		Processing messages              
-		 * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 	 
-		 */ 				
-						// Final processing
-						if (req.url == '/shpConvert') { // Processed by shpConvertCheckFiles() - uses async
-						}
-						else if (req.url == '/geo2TopoJSON') {	
-							responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
-						}
 					}
 					else {
 						var msg="ERROR! " + req.url + " service not not yet supported";
-						if (d && d.no_files) {
-							response.no_files=d.no_files;			// Add number of files process to response
+		
+						if (d_files && _files.d_list) {
+							response.no_files=d_files.d_list.length; // Add number of files process to response
 						}
 						if (ofields) {
 							response.fields=ofields;				// Add return fields

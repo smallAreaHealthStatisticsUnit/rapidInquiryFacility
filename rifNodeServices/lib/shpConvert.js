@@ -788,7 +788,8 @@ topology: 1579 arcs, 247759 points
 			response: response,
 			file_no: response.file_list[shapefileData["shapefile_no"]-1],
 			geojson: response.file_list[shapefileData["shapefile_no"]-1].geojson,
-			bbox: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox
+			bbox: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox,
+			async: async
 		});
 		
 		var header="{\"type\":\"FeatureCollection\",\"bbox\":" + 
@@ -965,7 +966,7 @@ topology: 1579 arcs, 247759 points
 		 *
 		 *				Must be within the scope of readShapeFile() because of process.nextTick()
 		 */
-		var shapefileReader = function(err, record) {
+		var shapefileReader = function shapefileReader(err, record) {
 
 			var msg;
 			
@@ -1422,7 +1423,7 @@ topology: 1579 arcs, 247759 points
 
 //			serverLog.serverLog2(__file, __line, "readShapeFile", 
 //				"In readShapeFile(), shapeFileQueue shapefile [" + shapefile_no + "/" + shapefile_total + "]: " + shapefileData["shapeFileName"]);			
-			shapeFileQueue.push(shapefileData, function(err) {
+			shapeFileQueue.push(shapefileData, function shapeFileQueuePush(err) {
 				if (err) {
 					var msg='ERROR! in readShapeFile()';
 						
