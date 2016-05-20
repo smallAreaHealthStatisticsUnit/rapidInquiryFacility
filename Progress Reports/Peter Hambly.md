@@ -426,6 +426,7 @@ RangeError: Invalid string length
 * CDC webinar
 * Single log entry per run
 * Zip support: compressed file processing moved to an async loop in req.busboy.on('finish'). This will make the input file processing fully async.
+* Convert zlib file support to async
 
 #### Current TODO list (May):
 

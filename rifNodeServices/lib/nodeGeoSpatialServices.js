@@ -934,50 +934,63 @@ exports.convert = function exportsConvert(req, res) {
 					var lstart = new Date().getTime();
 					if (d.file.file_encoding === "gzip") {
 						addStatus(__file, __line, response, "Processing gzip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
-							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status						
-						try {
-							d.file.file_data=zlib.gunzipSync(d.file.file_data);
-						}
-						catch (e) {
-							msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
+							
+						zlib.gunzip(d.file.file_data, function gunzipFileCallback(err, result) {
+							if (err) {	
+								msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
 								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-							d.file.file_error=msg;	
-							response.message=msg + "\n" + response.message;
-							response.file_errors++;					// Increment file error count	
-							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);	// Not an error; handled after all files are processed					
-//							d_files.d_list[index-1] = d;							
-//							callback(); // Use calling function try/catch
-						}	
-						end = new Date().getTime();		
-						d.file.uncompress_time=(end - lstart)/1000; // in S		
-						d.file.uncompress_size=d.file.file_data.length;								
-						response.message+="\nFile [" + (index+1) + "]: " + d.file.file_name + "; encoding: " +
-							d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
-							"; from buffer: " + d.file.file_data.length, req; 
+								d.file.file_error=msg;	
+								response.message=msg + "\n" + response.message;
+								response.file_errors++;					// Increment file error count	
+								serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);	// Not an error; handled after all files are processed					
+	//							d_files.d_list[index-1] = d;							
+								callback(err);
+							}
+							else {		
+								d.file.file_data=result;
+								addStatus(__file, __line, response, "Processed gzip file [" + (index+1) + "]: " + d.file.file_name + "; new size: " + d.file.file_data.length + " bytes", 
+									200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
+									
+								var end = new Date().getTime();	
+								d.file.uncompress_time=(end - lstart)/1000; // in S		
+								d.file.uncompress_size=d.file.file_data.length;								
+								response.message+="\nFile [" + (index+1) + "]: " + d.file.file_name + "; encoding: " +
+									d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
+									"; from buffer: " + d.file.file_data.length, req; 	
+								callback();								
+							}	
+						});
 					}	
 					else if (d.file.file_encoding === "zlib") {	
 						addStatus(__file, __line, response, "Processing zlib file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
 							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status						
-					
-						try {
-							d.file.file_data=zlib.inflateSync(d.file.file_data);
-						}
-						catch (e) {
-							msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
-								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-							d.file.file_error=msg;	
-							response.message=msg + "\n" + response.message;
-							response.file_errors++;					// Increment file error count	
-							serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);	// Not an error; handled after all files are processed					
-//							d_files.d_list[index-1] = d;			
-//							callback(); // Use calling function try/catch							
-						}
-						end = new Date().getTime();	
-						d.file.uncompress_time=(end - lstart)/1000; // in S		
-						d.file.uncompress_size=d.file.file_data.length;		
-						response.message+="\nFile [" + (index+1) + "]: " + d.file.file_name + "; encoding: " +
-							d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
-							"; from buffer: " + d.file.file_data.length, req; 
+
+						zlib.inflate(d.file.file_data, function inflateFileCallback(err, result) {
+							if (err) {
+								msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+									d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+								d.file.file_error=msg;	
+								response.message=msg + "\n" + response.message;
+								response.file_errors++;					// Increment file error count	
+								serverLog.serverLog2(__file, __line, "req.busboy.on('file').stream.on('error')", msg, req);	// Not an error; handled after all files are processed					
+	//							d_files.d_list[index-1] = d;								
+								callback(err);
+							}
+							else {	
+								d.file.file_data=result;
+								addStatus(__file, __line, response, "Processed zlib file [" + (index+1) + "]: " + d.file.file_name + "; new size: " + d.file.file_data.length + " bytes", 
+									200 /* HTTP OK */, serverLog, req);  // Add file compression processing status
+									
+								var end = new Date().getTime();	
+								d.file.uncompress_time=(end - lstart)/1000; // in S		
+								d.file.uncompress_size=d.file.file_data.length;		
+								response.message+="\nFile [" + (index+1) + "]: " + d.file.file_name + "; encoding: " +
+									d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
+									"; from buffer: " + d.file.file_data.length, req; 
+								callback();								
+							}	
+						});
 					}
 					else if (d.file.file_encoding === "zip") {
 //						addStatus(__file, __line, response, "Processing zip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
@@ -994,11 +1007,17 @@ exports.convert = function exportsConvert(req, res) {
 					}
 					else {
 						addStatus(__file, __line, response, "Processed file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
-							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status														
+							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
+						callback();												
 					}
-					callback();
 				} // End of fileCompressionProcessing()
-				
+
+				/*
+				 * Function: 	urlSpecific()
+				 * Parameters:	ofields object, d_files flist list object, internal response object,
+				 *				HTTP request object, HTTP response object, shapefile_options, topojson_options, stderr object
+				 * Description:	Call URL specific processing
+				 */					
 				var urlSpecific = function urlSpecific(ofields, d_files, response, req, res, shapefile_options, topojson_options, stderr) {	
 					// Run url specific code	
 			
@@ -1015,7 +1034,7 @@ exports.convert = function exportsConvert(req, res) {
 							var d=d_files.d_list[i];
 							// Call GeoJSON to TopoJSON converter
 							d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);	
-							if (!d) {
+							if (!d) { // Error handled in responseProcessing()
 //								httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile", serverLog, 
 //									500, req, res, msg, response.error, response);							
 								return; 
@@ -1071,18 +1090,27 @@ exports.convert = function exportsConvert(req, res) {
 									ofields: ofields
 								});
 				
-								try {			
-									fileCompressionProcessing(d, index, response, serverLog, d_files, req, seriesCallbackFunc); 
-										// Call file processing; handle zlib, gz and zip files								
-								} catch (e) {
-									return seriesCallbackFunc(e);
-								}
+								fileCompressionProcessing(d, index, response, serverLog, d_files, req, seriesCallbackFunc); 
+									// Call file processing; handle zlib, gz and zip files								
 							}, 
 							function fileCompressionProcessingSeriesEnd(err) {																	/* Callback at end */
 								var msg;
-								
-								if (err) {
-									serverLog.serverError2(__file, __line, "fileCompressionProcessingSeries.forEachOfSeries", err.message, req, undefined);
+
+								scopeChecker(__file, __line, {
+									response: response,
+									serverLog: serverLog,
+									d_files: d_files,
+									d_list: d_files.d_list,
+									req: req,
+									ofields: ofields
+								});
+								if (err) { // Handle errors
+									msg="Error in async series end function";						
+									response.message = msg + "\n" + response.message;
+									response.no_files=0;					// Add number of files process to response
+									response.file_errors++;					// Increment file error count
+									httpErrorResponse.httpErrorResponse(__file, __line, "fileCompressionProcessingSeriesEnd", 
+										serverLog, 500, req, res, msg, err, response);											
 								}
 								else { // Async forEachOfSeries loop complete
 									for (var i = 0; i < response.no_files; i++) { // Process file list for errors	
@@ -1091,16 +1119,11 @@ exports.convert = function exportsConvert(req, res) {
 										if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
 											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: entry not found, no file list" + 
 												"; httpErrorResponse.httpErrorResponse() NOT already processed";						
-											if (!req.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
-												response.message = msg + "\n" + response.message;
-												response.no_files=0;					// Add number of files process to response
-												response.file_errors++;					// Increment file error count
-												httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-													serverLog, 500, req, res, msg, undefined, response);				
-											}
-											else {
-												serverLog.serverLog2(__file, __line, "req.busboy.on('finish')", req, msg, undefined);
-											}
+											response.message = msg + "\n" + response.message;
+											response.no_files=0;					// Add number of files process to response
+											response.file_errors++;					// Increment file error count
+											httpErrorResponse.httpErrorResponse(__file, __line, "fileCompressionProcessingSeriesEnd", 
+												serverLog, 500, req, res, msg, undefined, response);				
 											return;							
 										}
 										else if (!d.file) {
@@ -1108,7 +1131,7 @@ exports.convert = function exportsConvert(req, res) {
 												"\n";
 											response.message = msg + "\n" + response.message;
 											response.file_errors++;					// Increment file error count	
-											httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+											httpErrorResponse.httpErrorResponse(__file, __line, "fileCompressionProcessingSeriesEnd", 
 												serverLog, 500, req, res, msg, undefined, response);							
 											return;			
 										}
@@ -1117,7 +1140,7 @@ exports.convert = function exportsConvert(req, res) {
 												d.file.extension + "; error >>>\n" + d.file.file_error + "\n<<<";
 											response.message = msg + "\n" + response.message;
 											response.file_errors++;					// Increment file error count	
-											httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+											httpErrorResponse.httpErrorResponse(__file, __line, "fileCompressionProcessingSeriesEnd", 
 												serverLog, 500, req, res, msg, undefined, response);							
 											return;							
 										}
@@ -1127,7 +1150,7 @@ exports.convert = function exportsConvert(req, res) {
 												"\n";
 											response.message = msg + "\n" + response.message;
 											response.file_errors++;					// Increment file error count	
-											httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+											httpErrorResponse.httpErrorResponse(__file, __line, "fileCompressionProcessingSeriesEnd", 
 												serverLog, 500, req, res, msg, undefined, response);							
 											return;
 										}	
@@ -1137,7 +1160,7 @@ exports.convert = function exportsConvert(req, res) {
 										msg="FAIL! No files attached\n";						
 										response.message = msg + "\n" + response.message;
 										response.file_errors++;					// Increment file error count	
-										httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+										httpErrorResponse.httpErrorResponse(__file, __line, "fileCompressionProcessingSeriesEnd", 
 											serverLog, 500, req, res, msg, undefined, response);							
 										return;						
 									}
