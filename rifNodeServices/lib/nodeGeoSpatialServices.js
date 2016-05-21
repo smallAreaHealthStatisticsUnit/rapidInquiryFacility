@@ -936,6 +936,7 @@ exports.convert = function exportsConvert(req, res) {
 						callback: callback,
 						async: async
 					});
+					const path = require('path');
 					
 					var lstart = new Date().getTime();
 					if (d.file.file_encoding === "gzip") {
@@ -1003,6 +1004,7 @@ exports.convert = function exportsConvert(req, res) {
 							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
 						var zip=new JSZip(d.file.file_data);
 						var noZipFiles=0;
+						var zipUncompressedSize=0;
 						msg="";
 						async.forEachOfSeries(zip.files /* col */, 
 							function zipProcessingSeries(zipFileName, index, seriesCallback) { // Process zip file and uncompress			
@@ -1025,26 +1027,23 @@ exports.convert = function exportsConvert(req, res) {
 							
 								noZipFiles++;	
 								var fileContainedInZipFile=zip.files[index];	
-								/*
-								var chunk=[];
-								zipStream=fileContainedInZipFile.generateInternalStream({type:"uint8array"})
-								zipStream.on("data", function fileContainedInZipFileData(data) {	
-									chunks.push(data);
-								});
-								zipStream.on("error", function (e) {			
-									seriesCallbackFunc(e);												
-								})
-								zipStream.on("end", function () {
-									var buf=Buffer.concat(chunks); 	// Safe binary concat
-									msg+="Zip file[" + noZipFiles + "]: " + zipFileName + "; date: " + fileContainedInZipFile.date + 
-										"; relativePath: " + fileContainedInZipFile.relativePath + 
-										"; size: " + buf.length + " bytes\n";
-									seriesCallbackFunc();									
-								}); 	*/		
-								var buf=fileContainedInZipFile.asBinary(); // Causes Error(RangeError): Invalid string length with >255M files!!! (as expected)
-								msg+="Zip file[" + noZipFiles + "]: " + zipFileName + "; date: " + fileContainedInZipFile.date + 
-									"; relativePath: " + fileContainedInZipFile.name + 
-									"; size: " + buf.length + " bytes\n";
+								if (fileContainedInZipFile.dir) {
+									msg+="Zip file[" + noZipFiles + "]: directory: " + fileContainedInZipFile.name + "\n";
+								}
+								else {
+	//								console.error("fileContainedInZipFile object: " + JSON.stringify(fileContainedInZipFile, null, 4));
+									msg+="Zip file[" + noZipFiles + "]: " +  path.basename(fileContainedInZipFile.name) + "; relativePath: " + fileContainedInZipFile.name + 
+										"; date: " + fileContainedInZipFile.date + "\n";  
+									if (fileContainedInZipFile._data) {
+										zipUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+										msg+="Decompress from: " + fileContainedInZipFile._data.compressedSize + " to: " +  fileContainedInZipFile._data.uncompressedSize;
+									}
+									else {
+										throw Error("No fileContainedInZipFile._data for file in zip: " + fileContainedInZipFile.name);
+									}
+									var buf=zip.files[index].asNodeBuffer(); // No longer causes Error(RangeError): Invalid string length with >255M files!!! (as expected)
+									msg+="; size: " + buf.length + " bytes\n";
+								}
 								seriesCallbackFunc();										
 							}, 
 							function zipProcessingSeriesEnd(err) {	
@@ -1058,8 +1057,8 @@ exports.convert = function exportsConvert(req, res) {
 									callback(e);
 								}
 								else {
-									msg+="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
-										d.file.extension + "; number of files: " + noZipFiles;
+									msg+="FAIL! Zipfile [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+										d.file.extension + "; number of files: " + noZipFiles + "; Uncompressed size: " + zipUncompressedSize;
 									d.file.file_error=msg;			
 									response.message=msg + "\n" + response.message;	
 									response.file_errors++;					// Increment file error count	
