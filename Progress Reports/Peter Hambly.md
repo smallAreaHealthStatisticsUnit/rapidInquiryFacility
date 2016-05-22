@@ -428,6 +428,7 @@ RangeError: Invalid string length
 * Zip support: compressed file processing moved to an async loop in req.busboy.on('finish'). This will make the input file processing fully async.
 * Convert zlib file support to async
 * Test JSZip with async loop; tested OK with Node buffer and large files. Documentation is particularily rubbish for such a well used module
+* Confirmed JSZip is still on 2.6; will wait 3.0 for full async code; current code is synchronous!!!!
 
 #### Current TODO list (May):
 

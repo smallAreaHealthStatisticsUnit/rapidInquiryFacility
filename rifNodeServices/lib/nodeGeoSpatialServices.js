@@ -64,7 +64,6 @@ var util = require('util'),
     os = require('os'),
     fs = require('fs'),
 	zlib = require('zlib'),
-	JSZip = require('JSZip'),
 	path = require('path'),
     geo2TopoJSON = require('../lib/geo2TopoJSON'),
     shpConvert = require('../lib/shpConvert'),
@@ -924,6 +923,7 @@ exports.convert = function exportsConvert(req, res) {
 				var fileCompressionProcessing = function fileCompressionProcessing(d, index, response, serverLog, d_files, req, callback) {
 					var msg;
 					
+					const JSZip = require('JSZip');
 					scopeChecker(__file, __line, {
 						d: d,
 						index: index,
@@ -1001,13 +1001,33 @@ exports.convert = function exportsConvert(req, res) {
 					}
 					else if (d.file.file_encoding === "zip") {
 						addStatus(__file, __line, response, "Processing zip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
-							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
-						var zip=new JSZip(d.file.file_data);
+							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status	
+
+						var zip=new JSZip(d.file.file_data, {} /* Options */);
+						var zip2=JSZip();
+						
+// This should work but does not... (needs jszip 3.0.0; current version is synchronous at 2.6.0; see jszip-async.js in tests directory)
+//						var zip = new JSZip();
+						console.error("zip2 object: " + JSON.stringify(zip2, null, 4))
+//						zip.loadAsync(d.file.file_data, {} );
+// Neither does this...
+// var zip=new JSZip().loadAsync(d.file.file_data, {} /* Options */);
+// Or this
+/* 						
+						JSZip.loadAsync(d.file.file_data, {} /- Options -/).async("string", function zipPercent(meta) {
+    console.error("Generating the content, we are at " + meta.percent.toFixed(2) + " %");
+}).then(function success(content) {
+	conzole.error("Done");
+    // use the content
+}, function error(e) {
+    // handle the error
+});
+ */
 						var noZipFiles=0;
 						var zipUncompressedSize=0;
 						msg="";
 						async.forEachOfSeries(zip.files /* col */, 
-							function zipProcessingSeries(zipFileName, index, seriesCallback) { // Process zip file and uncompress			
+							function zipProcessingSeries(zipFileName, ZipIndex, seriesCallback) { // Process zip file and uncompress			
 			
 								var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
 									seriesCallback(e);
@@ -1017,6 +1037,7 @@ exports.convert = function exportsConvert(req, res) {
 									zip: zip,
 									zipFileName: zipFileName,
 									index: index,
+									ZipIndex: ZipIndex,
 									response: response,
 									serverLog: serverLog,
 									d_files: d_files,
@@ -1026,7 +1047,7 @@ exports.convert = function exportsConvert(req, res) {
 								});
 							
 								noZipFiles++;	
-								var fileContainedInZipFile=zip.files[index];	
+								var fileContainedInZipFile=zip.files[ZipIndex];	
 								if (fileContainedInZipFile.dir) {
 									msg+="Zip file[" + noZipFiles + "]: directory: " + fileContainedInZipFile.name + "\n";
 								}
@@ -1037,11 +1058,16 @@ exports.convert = function exportsConvert(req, res) {
 									if (fileContainedInZipFile._data) {
 										zipUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
 										msg+="Decompress from: " + fileContainedInZipFile._data.compressedSize + " to: " +  fileContainedInZipFile._data.uncompressedSize;
+										
+										addStatus(__file, __line, response, "Expanded zip file [" + (index+1) + "." + noZipFiles + "]: " + 
+											d.file.file_name + "//:" + path.basename(fileContainedInZipFile.name), 
+											200 /* HTTP OK */, serverLog, req);  // Add file compression processing status	
+							
 									}
 									else {
 										throw Error("No fileContainedInZipFile._data for file in zip: " + fileContainedInZipFile.name);
 									}
-									var buf=zip.files[index].asNodeBuffer(); // No longer causes Error(RangeError): Invalid string length with >255M files!!! (as expected)
+									var buf=zip.files[ZipIndex].asNodeBuffer(); // No longer causes Error(RangeError): Invalid string length with >255M files!!! (as expected)
 									msg+="; size: " + buf.length + " bytes\n";
 								}
 								seriesCallbackFunc();										
@@ -1057,7 +1083,11 @@ exports.convert = function exportsConvert(req, res) {
 									callback(e);
 								}
 								else {
-									msg+="FAIL! Zipfile [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+
+									addStatus(__file, __line, response, "Processed zip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
+										200 /* HTTP OK */, serverLog, req);  // Add file compression processing status	
+							
+									msg+="Processed Zipfile [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
 										d.file.extension + "; number of files: " + noZipFiles + "; Uncompressed size: " + zipUncompressedSize;
 									d.file.file_error=msg;			
 									response.message=msg + "\n" + response.message;	
