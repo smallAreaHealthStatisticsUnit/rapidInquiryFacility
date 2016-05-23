@@ -142,6 +142,33 @@ public class RIFDatabaseConnectionParameters {
 		this.portName = portName;
 	}
 
+	
+	public String getDatabaseServerURL() {
+		StringBuilder urlText = new StringBuilder();
+		urlText.append(databaseDriverPrefix);
+		urlText.append(":");
+		urlText.append("//");
+		urlText.append(hostName);
+		urlText.append(":");
+		urlText.append(portName);
+		urlText.append("/");
+		return urlText.toString();
+	}
+	
+	
+	public String getDatabaseURL() {
+		StringBuilder urlText = new StringBuilder();
+		urlText.append(databaseDriverPrefix);
+		urlText.append(":");
+		urlText.append("//");
+		urlText.append(hostName);
+		urlText.append(":");
+		urlText.append(portName);
+		urlText.append("/");
+		urlText.append(databaseName);	
+		return urlText.toString();
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
