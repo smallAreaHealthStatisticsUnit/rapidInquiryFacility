@@ -131,28 +131,13 @@ final class SQLConnectionManager {
 	 * @param rifServiceStartupOptions the rif service startup options
 	 */
 	public SQLConnectionManager(
-		final String databaseDriverClassName,
-		final String databaseDriverPrefix,
-		final String host,
-		final String port,
-		final String databaseName) {
+		final String databaseURL) {
 			
 		registeredUserIDs = new HashSet<String>();
 		userIDsToBlock = new HashSet<String>();
 		writeConnections = new ConnectionQueue();
 
-		StringBuilder urlText = new StringBuilder();
-		urlText.append(databaseDriverPrefix);
-		urlText.append(":");
-		urlText.append("//");
-		urlText.append(host);
-		urlText.append(":");
-		urlText.append(port);
-		urlText.append("/");
-		urlText.append(databaseName);
-
-		databaseURL = urlText.toString();
-		
+		this.databaseURL = databaseURL;		
 	}
 	
 	// ==========================================
@@ -471,6 +456,46 @@ final class SQLConnectionManager {
 		registeredUserIDs.clear();
 	}
 	
+
+	
+	public Connection createDatabaseConnection(
+		final String databaseCreationURL,
+		final String userID,
+		final String password,
+		final boolean isAutoCommitOn)
+		throws SQLException,
+		RIFServiceException {
+		
+		Connection connection = null;
+		try {
+			
+			Properties databaseProperties = new Properties();
+			
+			if (userID != null) {
+				databaseProperties.setProperty("user", userID);
+				databaseProperties.setProperty("password", password);
+			}
+			//databaseProperties.setProperty("ssl", "true");
+			//databaseProperties.setProperty("logUnclosedConnections", "true");
+			databaseProperties.setProperty("prepareThreshold", "3");
+			//KLG: @TODO this introduces a porting issue
+			//int logLevel = org.postgresql.Driver.DEBUG;
+			//databaseProperties.setProperty("loglevel", String.valueOf(logLevel));
+			
+			connection
+				= DriverManager.getConnection(databaseURL, databaseProperties);
+			connection.setReadOnly(false);				
+			connection.setAutoCommit(true);
+		}
+		finally {
+
+		}
+
+		return connection;
+
+	}
+		
+	
 	
 	public Connection createConnection(
 		final String userID,
@@ -497,7 +522,7 @@ final class SQLConnectionManager {
 			
 			connection
 				= DriverManager.getConnection(databaseURL, databaseProperties);
-			connection.setReadOnly(false);				
+			connection.setReadOnly(false);
 			connection.setAutoCommit(true);
 		}
 		finally {
