@@ -71,39 +71,6 @@ class DataSetConfigurationEditorDialog
 	implements ListSelectionListener,
 	ListDataListener {
 
-	
-	public static void main(String[] arguments) {
-		SampleDataGenerator sampleDataGenerator
-			= new SampleDataGenerator();
-		
-		LinearWorkflow workflow
-			= sampleDataGenerator.createSahsulandNumeratorWorkflow();
-
-		ArrayList<DataSetConfiguration> dataSetConfigurations
-			= workflow.getDataSetConfigurations();
-		
-		ProductionDataLoaderService service
-			= new ProductionDataLoaderService();
-		DataLoaderToolSession session
-			= new DataLoaderToolSession(service);
-		
-		RIFDataTypeFactory rifDataTypeFactory
-			= session.getRIFDataTypeFactory();
-		ArrayList<RIFDataType> dataTypes
-			= rifDataTypeFactory.getRegisteredDataTypes();
-		
-		DataSetConfiguration dataSetConfiguration
-			= dataSetConfigurations.get(0);
-		
-		DataSetConfigurationEditorDialog dialog
-			= new DataSetConfigurationEditorDialog(session);
-		dialog.setData(dataSetConfigurations.get(0));
-		dialog.doSystemExitOnClose();
-		dialog.show();
-		
-		
-	}
-	
 	// ==========================================
 	// Section Constants
 	// ==========================================

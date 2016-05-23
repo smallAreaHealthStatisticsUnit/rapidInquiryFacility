@@ -82,17 +82,6 @@ class DataTypeEditorDialog
 	extends OKCloseButtonDialog
 	implements ListSelectionListener {
 
-	
-	public static void main(String[] arguments) {
-		ProductionDataLoaderService service
-			= new ProductionDataLoaderService();
-		DataLoaderToolSession session
-			= new DataLoaderToolSession(service);
-		DataTypeEditorDialog dialog
-			= new DataTypeEditorDialog(session);
-		dialog.show();
-	}
-	
 	// ==========================================
 	// Section Constants
 	// ==========================================
