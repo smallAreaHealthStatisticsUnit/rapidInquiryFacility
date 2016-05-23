@@ -76,15 +76,20 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 
 	public static final void main(final String[] arguments) {
 		
-
-		ProductionDataLoaderService dataLoaderService
-			= new ProductionDataLoaderService();
-		DataLoaderToolSession session 
-			= new DataLoaderToolSession(dataLoaderService);
-		RIFDataLoaderToolApplication rifDataLoaderToolApplication
-			= new RIFDataLoaderToolApplication(session);
-		rifDataLoaderToolApplication.show();
+		//try {
+			DataLoaderToolSession session 
+				= new DataLoaderToolSession();
+			ProductionDataLoaderService dataLoaderService
+				= new ProductionDataLoaderService();
+			session.setDataLoaderService(dataLoaderService);
 		
+			RIFDataLoaderToolApplication rifDataLoaderToolApplication
+				= new RIFDataLoaderToolApplication(session);
+			rifDataLoaderToolApplication.show();
+		//}
+		//catch(RIFServiceException rifServiceException) {
+		//	rifServiceException.printErrors();
+		//}
 	}
 	
 	
@@ -272,6 +277,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 
 			dataLoaderToolSettings = reader.getDataLoaderToolSettings();		
 			session.setDataLoaderToolSettings(dataLoaderToolSettings);
+			session.initialiseService();
 			
 			updateButtonStates(dataLoaderToolSettings);
 			
