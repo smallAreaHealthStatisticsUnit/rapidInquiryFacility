@@ -88,7 +88,7 @@ class DataCleaningPolicyEditingPanel
 		String[] cleaningFunctionNames = new String[0];
 		try {
 			cleaningFunctionNames
-				= dataLoaderService.getCleaningFunctionNames();
+				= dataLoaderService.getCleaningFunctionNames(session.getRIFManager());
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(

@@ -92,11 +92,11 @@ public interface DataLoaderServiceAPI {
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
 				
-	public String[] getCleaningFunctionNames() 
+	public String[] getCleaningFunctionNames(final User rifManager) 
 		throws RIFServiceException;
 	public String getDescriptionForCleaningFunction(final String cleaningFunctionName) 
 		throws RIFServiceException;
-	public String[] getValidationFunctionNames() 
+	public String[] getValidationFunctionNames(final User rifManager) 
 		throws RIFServiceException;
 	public String getDescriptionForValidationFunction(final String validationFunctionName) 
 		throws RIFServiceException;
