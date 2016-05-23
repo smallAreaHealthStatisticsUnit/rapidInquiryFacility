@@ -1,10 +1,13 @@
 package rifDataLoaderTool.system;
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
+
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  *
@@ -79,13 +82,13 @@ public class DataLoaderToolSession {
 	// Section Construction
 	// ==========================================
 
-	public DataLoaderToolSession(final DataLoaderServiceAPI dataLoaderService) {
+	public DataLoaderToolSession() {
 		saveChanges = false;
 		userInterfaceFactory = new UserInterfaceFactory();		
 		this.dataLoaderService = dataLoaderService;
 		
 		dataLoaderToolSettings = new DataLoaderToolSettings();
-		rifManager = User.newInstance("rifManager", "xxx");
+		rifManager = User.newInstance("kgarwood", "xxx");
 	}
 
 	// ==========================================
@@ -93,6 +96,17 @@ public class DataLoaderToolSession {
 	// ==========================================
 	public DataLoaderServiceAPI getDataLoaderService() {
 		return dataLoaderService;
+	}
+	
+	public void setDataLoaderService(final DataLoaderServiceAPI dataLoaderService) {
+		
+		this.dataLoaderService = dataLoaderService;
+	}
+	
+	public void initialiseService() 
+		throws RIFServiceException {
+
+		dataLoaderService.initialiseService(dataLoaderToolSettings);		
 	}
 	
 	public UserInterfaceFactory getUserInterfaceFactory() {

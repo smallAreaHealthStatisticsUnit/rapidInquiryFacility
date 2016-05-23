@@ -82,7 +82,8 @@ class PopulationHealthDataLoaderDialog
 			ProductionDataLoaderService service
 				= new ProductionDataLoaderService();
 			DataLoaderToolSession session
-				= new DataLoaderToolSession(service);
+				= new DataLoaderToolSession();
+			session.setDataLoaderService(service);
 			PopulationHealthDataLoaderDialog populationHealthDataLoaderDialog
 				= new PopulationHealthDataLoaderDialog(session);
 			populationHealthDataLoaderDialog.initialiseService();
