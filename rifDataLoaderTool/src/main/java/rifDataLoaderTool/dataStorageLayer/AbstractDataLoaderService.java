@@ -9,6 +9,8 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 
 import org.apache.commons.io.FileUtils;
 
@@ -144,41 +146,7 @@ abstract class AbstractDataLoaderService
 					
 		dataSetConfigurations 
 			= new ArrayList<DataSetConfiguration>();
-	}
-	
-	public void initialiseService(final DataLoaderToolSettings dataLoaderToolSettings) 
-		throws RIFServiceException {
-
-		this.dataLoaderToolSettings = dataLoaderToolSettings;
-		RIFDatabaseConnectionParameters dbParameters
-			= dataLoaderToolSettings.getDatabaseConnectionParameters();
 		
-		//RIFServiceStartupOptions rifServiceStartupOptions
-		//	= RIFServiceStartupOptions.newInstance(false, true);
-		
-		String databaseDriverName = "org.postgresql.Driver";
-		String databaseDriverPrefix = "jdbc:postgresql";
-		String host = "localhost";
-		String port = "5432";
-		String databaseName = "tmp_sahsu_db";
-
-		sqlConnectionManager
-			= new SQLConnectionManager(
-				databaseDriverName,
-				databaseDriverPrefix,
-				host,
-				port,
-				databaseName);
-
-		sqlConnectionManager
-			= new SQLConnectionManager(
-				dbParameters.getDatabaseDriverClassName(),
-				dbParameters.getDatabaseDriverPrefix(),
-				dbParameters.getHostName(),
-				dbParameters.getPortName(),
-				databaseName);
-		
-		sqlConnectionManager.initialiseConnectionQueue();
 
 		dataSetManager = new DataSetManager();
 		extractWorkflowManager
@@ -217,6 +185,20 @@ abstract class AbstractDataLoaderService
 		
 		reportManager
 			= new PostgreSQLReportManager();
+	}
+	
+	public void initialiseService(final DataLoaderToolSettings dataLoaderToolSettings) 
+		throws RIFServiceException {
+
+		this.dataLoaderToolSettings = dataLoaderToolSettings;
+		RIFDatabaseConnectionParameters dbParameters
+			= dataLoaderToolSettings.getDatabaseConnectionParameters();
+		
+		sqlConnectionManager
+			= new SQLConnectionManager(
+				dbParameters.getDatabaseURL());
+		
+		sqlConnectionManager.initialiseConnectionQueue();
 	}
 	
 	public void shutdownService() 
@@ -1884,9 +1866,68 @@ abstract class AbstractDataLoaderService
 		return dataSetExportDirectoryPath.toString();		
 	}
 	
-	public String[] getCleaningFunctionNames() 
+	
+	public String[] getCleaningFunctionNames(final User _rifManager) 
+			throws RIFServiceException {
+	
+		return getDatabaseFunctionNames(_rifManager, "^clean.*");
+	}
+	
+	public String[] getDatabaseFunctionNames(
+		final User _rifManager,
+		final String functionNamePattern) 
 		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return new String[0];
+		}
 		
+		ArrayList<String> results = new ArrayList<String>();
+		ResultSet resultSet = null;
+		PreparedStatement statement = null;
+		try {
+			SQLGeneralQueryFormatter queryFormatter 
+				= new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryLine(0, "SELECT");
+			queryFormatter.addQueryLine(1, "pg_proc.proname AS function_name");
+			queryFormatter.addQueryLine(0, "FROM");
+			queryFormatter.addQueryLine(1, "pg_proc");
+			queryFormatter.addQueryLine(0, "INNER JOIN pg_namespace ON ");
+			queryFormatter.addQueryLine(1, "pg_proc.pronamespace = pg_namespace.oid");
+			queryFormatter.addQueryLine(0, "WHERE");
+			queryFormatter.addQueryPhrase(1, "pg_namespace = 'public' AND ");
+			queryFormatter.addQueryPhrase("pg_proc.proname ~ ? ");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryLine(0, "ORDER BY");
+			queryFormatter.addQueryLine(1, "pg_proc.proname");
+			
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(
+					rifManager);
+			System.out.println("ADLS queryFormatter=="+queryFormatter.generateQuery()+"==");
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			String functionFilterExpression = "^clean.*";
+			statement.setString(1, functionFilterExpression);
+			
+			
+			resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				results.add(resultSet.getString(1));
+			}
+			
+		}
+		catch(SQLException sqlException) {
+			sqlException.printStackTrace(System.out);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+		}
+		
+		return results.toArray(new String[0]);
+		
+		/*
 		//@TODO: make this come from the database
 		String[] cleaningFunctionNames = new String[5];
 		cleaningFunctionNames[0] = "clean_uk_postal_code";
@@ -1896,7 +1937,12 @@ abstract class AbstractDataLoaderService
 		cleaningFunctionNames[4] = "clean_year";
 		
 		return cleaningFunctionNames;
+		*/
+		
 	}
+
+	
+	
 	
 	public String getDescriptionForCleaningFunction(
 		final String cleaningFunctionName) 
@@ -1906,9 +1952,12 @@ abstract class AbstractDataLoaderService
 		return "Description of " + cleaningFunctionName;
 	}
 	
-	public String[] getValidationFunctionNames() 
+	public String[] getValidationFunctionNames(final User _rifManager) 
 		throws RIFServiceException {
 
+		return getDatabaseFunctionNames(_rifManager, "^is_valid.*");
+
+		/*
 		//@TODO: make this come from the database
 		String[] validationFunctionNames = new String[4];
 		validationFunctionNames[0] = "is_valid_uk_postal_code";
@@ -1916,6 +1965,7 @@ abstract class AbstractDataLoaderService
 		validationFunctionNames[2] = "is_valid_sex";
 		validationFunctionNames[3] = "is_valid_age";
 		return validationFunctionNames;
+		*/
 	}
 
 	public String getDescriptionForValidationFunction(
