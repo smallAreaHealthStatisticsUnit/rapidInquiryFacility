@@ -88,7 +88,7 @@ class DataValidationPolicyEditingPanel
 		String[] validationFunctionNames = new String[0];
 		try {
 			validationFunctionNames
-				= dataLoaderService.getValidationFunctionNames();
+				= dataLoaderService.getValidationFunctionNames(session.getRIFManager());
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
