@@ -70,23 +70,6 @@ import java.util.ArrayList;
 public class ConfigurationHintsEditorDialog 
 	extends OKCloseButtonDialog 
 	implements ListSelectionListener {
-
-	public static void main(String[] arguments) {
-		ProductionDataLoaderService service
-			= new ProductionDataLoaderService();
-		DataLoaderToolSession session = new DataLoaderToolSession(service);
-		ConfigurationHintsEditorDialog dialog
-			= new ConfigurationHintsEditorDialog(session);
-		DataLoaderToolSettings settings
-			= session.getDataLoaderToolSettings();
-		ConfigurationHints configurationHints
-			= settings.getConfigurationHints();
-		dialog.setData(configurationHints);
-		dialog.doSystemExitOnClose();
-		dialog.show();
-		
-	}
-	
 	
 	// ==========================================
 	// Section Constants
