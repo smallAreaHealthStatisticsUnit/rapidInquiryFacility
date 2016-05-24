@@ -691,6 +691,7 @@ exports.convert = function exportsConvert(req, res) {
 		if (!((req.url == '/shpConvert') ||
 			  (req.url == '/simplifyGeoJSON') ||
 			  (req.url == '/geo2TopoJSON') ||
+			  (req.url == '/getStatus') ||
 			  (req.url == '/geoJSONtoWKT') ||
 			  (req.url == '/createHierarchy') ||
 			  (req.url == '/createCentroids') ||

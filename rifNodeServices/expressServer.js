@@ -131,9 +131,13 @@ app.use(express.static('dataLoader'));
 /*
  * Services supported:
  * 
- * shp2GeoJSON: Upload then convert shapefile to geoJSON;
+ * shpConvert: Upload then convert shapefiles to geoJSON;
  * simplifyGeoJSON: Load, validate, aggregate, clean and simplify converted shapefile data;
+ * getStatus: Get status (and result if complete) from geo2TopoJSON and shpConvert
  * geo2topoJSON: Convert geoJSON to TopoJSON;
+ *
+ * Services not yet supported:
+ *
  * geoJSON2WKT: Convert geoJSON to Well Known Text (WKT);
  * createHierarchy: Create hierarchical geospatial intersection of all the shapefiles;
  * createCentroids: Create centroids for all shapefiles;
@@ -145,6 +149,7 @@ app.use(express.static('dataLoader'));
 var services=["/shpConvert",
 			  "/simplifyGeoJSON",
 			  "/geo2TopoJSON",
+			  "/getStatus",
 			  "/geoJSON2WKT",
 			  "/createHierarchy",
 			  "/createCentroids",

@@ -1,0 +1,161 @@
+<html>
+<head>
+    <script src="jquery-2.2.3.js"></script> 
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+    <script src="leaflet/leaflet.js"></script>
+    <script src="topojson.min.js"></script>
+    <link rel="stylesheet" href="leaflet.zoomdisplay.css" />
+    <script src="leaflet.zoomdisplay.js"></script>
+    <script src="jquery.form.js"></script> 
+    <script src="nodeGeoSpatialServices.js"></script> 
+ 
+    <script> 
+        // wait for the DOM to be loaded 
+// prepare the form when the DOM is ready 
+$(document).ready(function() { 
+    var options = { 
+        target:        '#geo2TopoJSON',   // target element(s) to be updated with server response 
+        beforeSubmit:  showRequest,  // pre-submit callback 
+        success:       processJson,  // post-submit callback 
+ 
+        // other available options: 
+        //url:       url         // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        dataType:    'json'        // 'xml', 'script', or 'json' (expected server response type) 
+        //clearForm: true        // clear all form fields after successful submit 
+        //resetForm: true        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        //timeout:   3000 
+    }; 
+ 
+    // bind form using 'ajaxForm' 
+    $('#geo2TopoJSON').ajaxForm(options); 
+}); 
+ 
+// pre-submit callback 
+function showRequest(formData, jqForm, options) { 
+    // formData is an array; here we use $.param to convert it to a string to display it 
+    // but the form plugin does this for you automatically when it submits the data 
+    var queryString = $.param(formData); 
+ 
+    // jqForm is a jQuery object encapsulating the form element.  To access the 
+    // DOM element for the form do this: 
+    // var formElement = jqForm[0]; 
+	if (!setupMap) {
+		console.error("setupMap() not defined: errors in nodeGeoSpatialServices.js");
+		return false;
+	}
+    console.log('About to submit: \n\n' + queryString); 
+ 
+    // here we could return false to prevent the form from being submitted; 
+    // returning anything other than false will allow the form submit to continue 
+    return true; 
+} 
+ 
+// post-submit callback 
+function processJson(data, status) { 
+    // 'data' is the json object returned from the server 
+	if (!data) {
+		console.error("FATAL: processJson(): data undefined");
+	}
+
+	if (status == "success") {
+		displayResponse(data, 200);
+	}
+	else {
+		displayResponse(data, status);
+	}
+}	
+
+    </script>
+<title>GeoJSON to TOpoJSON Uploading Form</title>
+</head>
+  <body onload="setupMap();">
+    <div id="header">
+      <h4>Shapefile Upload</h4>
+    </div>
+  <div id="nav">
+<form id="geo2TopoJSON" action="http://127.0.0.1:3000/geo2TopoJSON" method="POST"
+      enctype="multipart/form-data">
+Select a file/files to upload: <input type="file" name="file" size="50" />
+<input type="submit" value="Upload File(s)" />
+<input type="checkbox" name="verbose" value="true">Verbose<br>
+</form>
+  </div>
+  <div id="workarea">
+	<div id="status"></div>
+	<div id="map"></div>
+	<div id="footer">
+	  Copyright &copy; UK Small Area Health Statistics Unit
+	</div>
+   </div>
+    <style>
+#header {
+    background-color:black;
+	width: 100%;
+    height: 30px;
+    color:white;
+    padding:0px; 
+    text-align:center;
+}
+#header.h4 {
+}
+#nav {
+    line-height:30px;
+    background-color:#eeeeee;
+    height: 60px;
+	width: 100%
+    float:left;
+    padding-left:5px; 
+    padding-right:5px; 
+}
+#status {
+    width:600px;
+    float:left;
+    padding:5px; 
+}
+#footer {
+    background-color:#eeeeee;
+    color:black;
+    clear:both;
+    text-align:center;
+    padding:5px; 
+    height: 14px;
+    vertical-align:bottom;
+}
+#save {
+    float:right;
+    padding:5px; 
+    margin: 0 0 10px 10px;
+}
+#map {
+	width:550px; 
+	height:550px; 
+    float:right;
+}
+#conversion {
+    float:right;
+}
+table {
+    color:rgb(0, 200, 255);
+    font-family: courier;
+    font-size:75%;
+}
+button {
+    text-rendering: auto;
+    color: initial;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-transform: none;
+    text-indent: 0px;
+    text-shadow: none;
+    display: inline-block;
+    text-align: start;
+    margin: 0em 0em 0em 0em;
+    font: 12px Arial;
+	border-radius: 12px;
+}
+    </style>
+  </body>
+</html>
