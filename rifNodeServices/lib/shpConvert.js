@@ -277,35 +277,40 @@ shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal,
 		}
 	}
 
+	if (extName == ".zip") { // Ignore zip files; process contents
+		response.message+="\nIgnore zip file; process contents (loaded as individual files when zip file unpacked): " + d.file.file_name;	
+	}
+	else {
 //	
 // Shapefile checks
 //	
-	if (!shpList[fileNoext]) { // Use file name without the extension as an index into the shapefile lisy
-		shpList[fileNoext] = {
-			fileName: d.file.file_name,
-			transfer_time: 0,
-			hasShp: false,
-			hasPrj: false,
-			hasDbf: false
-		};
-	}
-	shpList[fileNoext].transfer_time=d.file.transfer_time;
-	
-	// Check for shp, dbf and prj extensions
-	if (extName == '.shp') {
-		shpList[fileNoext].hasShp=true;
-		response.message+="\nhasShp for file: " + shpList[fileNoext].fileName;
-	}
-	else if (extName == '.prj') {
-		shpList[fileNoext].hasPrj=true;
-		response.message+="\nhasPrj for file: " + shpList[fileNoext].fileName;
-	}
-	else if (extName == '.dbf') {
-		shpList[fileNoext].hasDbf=true;
-		response.message+="\nhasDbf for file: " + shpList[fileNoext].fileName;
-	}
-	else {
-		response.message+="\nIgnore extension: " + extName + " for file: " + shpList[fileNoext].fileName;
+		if (!shpList[fileNoext]) { // Use file name without the extension as an index into the shapefile lisy
+			shpList[fileNoext] = {
+				fileName: d.file.file_name,
+				transfer_time: 0,
+				hasShp: false,
+				hasPrj: false,
+				hasDbf: false
+			};
+		}
+		shpList[fileNoext].transfer_time=d.file.transfer_time;
+		
+		// Check for shp, dbf and prj extensions
+		if (extName == '.shp') {
+			shpList[fileNoext].hasShp=true;
+			response.message+="\nhasShp for file: " + shpList[fileNoext].fileName;
+		}
+		else if (extName == '.prj') {
+			shpList[fileNoext].hasPrj=true;
+			response.message+="\nhasPrj for file: " + shpList[fileNoext].fileName;
+		}
+		else if (extName == '.dbf') {
+			shpList[fileNoext].hasDbf=true;
+			response.message+="\nhasDbf for file: " + shpList[fileNoext].fileName;
+		}
+		else {
+			response.message+="\nIgnore extension: " + extName + " for file: " + shpList[fileNoext].fileName;
+		}
 	}
 	
 //	

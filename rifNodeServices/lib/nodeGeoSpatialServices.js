@@ -1062,7 +1062,7 @@ exports.convert = function exportsConvert(req, res) {
 										"; date: " + fileContainedInZipFile.date + "\n";  
 									if (fileContainedInZipFile._data) {
 										zipUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
-										msg+="Decompress from: " + fileContainedInZipFile._data.uncompressedSize + " to: " +  fileContainedInZipFile._data.compressedSize;
+										msg+="Decompress from: " + fileContainedInZipFile._data.compressedSize + " to: " +  fileContainedInZipFile._data.uncompressedSize;
 										d2.file.file_size=fileContainedInZipFile._data.compressedSize;
 										d2.file.file_uncompress_size=fileContainedInZipFile._data.uncompressedSize;
 										d2.file.file_data=new Buffer.from(zip.files[ZipIndex].asNodeBuffer()); 
@@ -1159,7 +1159,7 @@ exports.convert = function exportsConvert(req, res) {
 							var d=d_files.d_list[i];
 							// Call GeoJSON to TopoJSON converter
 							if (d.file.extension == "zip") { // Ignore zip file
-								response.message+="\nIgnore zip file; process contents: " + d.file.file_name;
+								response.message+="\nIgnore zip file; process contents (loaded as individual files when zip file unpacked): " + d.file.file_name;
 							}
 							else {
 								d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);

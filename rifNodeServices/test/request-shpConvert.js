@@ -60,7 +60,8 @@
 // 10: Level 1 shapefile; missing .shp.xml file;
 // 11: test exception in streamWriteFileWithCallback();
 // 12: test exception in streamWriteFilePieceWithCallback();	
-// 13: test exception in readShapeFile();		
+// 13: test exception in readShapeFile();	
+// 14: sahsuland zip file	
 //
 var FormData = require('form-data');
 var fs = require('fs');
@@ -68,7 +69,7 @@ var path = require('path');
 
 // Process Args
 var nRequests = process.argv[2];
-var max_nRequests = 13;
+var max_nRequests = 14;
 if (!nRequests) {
 	nRequests = 0;
 	console.log('Processing all shpConvert tests');
@@ -112,9 +113,10 @@ var MakeRequest = function(){
 // test 6 missing dbf file - FAILS
 // test 11 test exception in streamWriteFileWithCallback()
 // test 12 test exception in streamWriteFilePieceWithCallback()		
-// test 13 test exception in readShapeFile()		
+// test 13 test exception in readShapeFile()	
+// test 14 sahsuland zip file	
 
-	if (nRequests > 4) { 
+	if (nRequests > 4 && nRequests != 14) { 
 		idx=1; // Do case 1
 		if ((nRequests == 5)||(nRequests == 6)) {
 			formData.expected_to_pass="false";
@@ -131,6 +133,19 @@ var MakeRequest = function(){
 			formData.expected_to_pass="false";
 			formData.exception="readShapeFile";
 		}		
+	}
+	else if (nRequests == 14) {
+		idx=0;
+		var inputShapeFile = './data/sahsuland.zip';
+		if (msg) {
+			msg+=",\n" + inputShapeFile;
+		}
+		else {
+			msg=inputShapeFile;
+		}
+	
+		formData.attachments.push(fs.createReadStream(inputShapeFile));
+		noFiles++;		
 	}
 	else {
 		formData["my_test"]+=" (" + idx + " shapefiles)";
