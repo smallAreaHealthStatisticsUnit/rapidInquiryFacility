@@ -558,7 +558,66 @@ var util = require('util'),
 //		}
 		
 	} // End of addStatus
-							
+	
+	/*
+	 * Function:	createD()
+	 * Parameters:	filename, encoding, mimetype, response object, HTTP request object
+	 * Returns:		D object
+	 * Description: Create D object. Should really be an object!!!
+	 */		
+	var createD = function createD(filename, encoding, mimetype, response, req) {
+
+		scopeChecker(__file, __line, {
+			response: response,
+			filename: filename,
+			req: req
+		});	
+		
+		var d = new TempData(); // This is local to the post requests; the field processing cannot see it
+
+		d.file = { // File return data type
+			file_name: "",
+			temp_file_name: "",
+			file_encoding: "",	
+			file_error: "",
+			extension: "",
+			jsonData: "",
+			file_data: "",
+			chunks: [],
+			partial_chunk_size: 0,
+			chunks_length: 0,
+			file_size: 0,
+			transfer_time: '',
+			uncompress_time: undefined,
+			uncompress_size: undefined,
+			lstart: ''
+		};
+
+		// This will need a mutex if > 1 thread is being processed at the same time
+		response.no_files++;	// Increment file counter
+		d.no_files=response.no_files; // Local copy
+		
+		d.file.file_name = filename;
+		d.file.temp_file_name = os.tmpdir()  + "/" + filename;
+		d.file.file_encoding=req.get('Content-Encoding');
+		d.file.extension = filename.split('.').pop();
+		d.file.lstart=new Date().getTime();
+		
+		if (!d.file.file_encoding) {
+			if (d.file.extension === "gz") {
+					d.file.file_encoding="gzip";
+			}
+			else if (d.file.extension === "lz77") {
+					d.file.file_encoding="zlib";
+			}
+			else if (d.file.extension === "zip") {
+					d.file.file_encoding="zip";
+			}					
+		}
+		
+		return d;
+	} // End of createD
+			
 /*
  * Function: 	exports.convert()
  * Parameters:	Express HTTP request object, response object
@@ -717,50 +776,8 @@ exports.convert = function exportsConvert(req, res) {
  * Description:	File attachment processing function  
  */				  
 			req.busboy.on('file', function fileAttachmentProcessing(fieldname, stream, filename, encoding, mimetype) {
-			
-				var d = new TempData(); // This is local to the post requests; the field processing cannot see it
-			
-				d.file = { // File return data type
-					file_name: "",
-					temp_file_name: "",
-					file_encoding: "",	
-					file_error: "",
-					extension: "",
-					jsonData: "",
-					file_data: "",
-					chunks: [],
-					partial_chunk_size: 0,
-					chunks_length: 0,
-//					topojson: "",
-//					topojson_stderr: "",
-					file_size: 0,
-					transfer_time: '',
-					uncompress_time: undefined,
-					uncompress_size: undefined,
-					lstart: ''
-				};
-
-				// This will need a mutex if > 1 thread is being processed at the same time
-				response.no_files++;	// Increment file counter
-				d.no_files=response.no_files; // Local copy
 				
-				d.file.file_name = filename;
-				d.file.temp_file_name = os.tmpdir()  + "/" + filename;
-				d.file.file_encoding=req.get('Content-Encoding');
-				d.file.extension = filename.split('.').pop();
-				d.file.lstart=new Date().getTime();
-				
-				if (!d.file.file_encoding) {
-					if (d.file.extension === "gz") {
-							d.file.file_encoding="gzip";
-					}
-					else if (d.file.extension === "lz77") {
-							d.file.file_encoding="zlib";
-					}
-					else if (d.file.extension === "zip") {
-							d.file.file_encoding="zip";
-					}					
-				}
+				var d=createD(filename, encoding, mimetype, response, req); // Create D object
 				
 /*
  * Function: 	req.busboy.on('file').stream.on:('data') callback function
@@ -939,6 +956,8 @@ exports.convert = function exportsConvert(req, res) {
 					const path = require('path');
 					
 					var lstart = new Date().getTime();
+					var new_no_files=0;
+						
 					if (d.file.file_encoding === "gzip") {
 						addStatus(__file, __line, response, "Processing gzip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
 							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
@@ -1004,27 +1023,9 @@ exports.convert = function exportsConvert(req, res) {
 							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status	
 
 						var zip=new JSZip(d.file.file_data, {} /* Options */);
-						var zip2=JSZip();
-						
-// This should work but does not... (needs jszip 3.0.0; current version is synchronous at 2.6.0; see jszip-async.js in tests directory)
-//						var zip = new JSZip();
-						console.error("zip2 object: " + JSON.stringify(zip2, null, 4))
-//						zip.loadAsync(d.file.file_data, {} );
-// Neither does this...
-// var zip=new JSZip().loadAsync(d.file.file_data, {} /* Options */);
-// Or this
-/* 						
-						JSZip.loadAsync(d.file.file_data, {} /- Options -/).async("string", function zipPercent(meta) {
-    console.error("Generating the content, we are at " + meta.percent.toFixed(2) + " %");
-}).then(function success(content) {
-	conzole.error("Done");
-    // use the content
-}, function error(e) {
-    // handle the error
-});
- */
 						var noZipFiles=0;
 						var zipUncompressedSize=0;
+						
 						msg="";
 						async.forEachOfSeries(zip.files /* col */, 
 							function zipProcessingSeries(zipFileName, ZipIndex, seriesCallback) { // Process zip file and uncompress			
@@ -1040,42 +1041,67 @@ exports.convert = function exportsConvert(req, res) {
 									ZipIndex: ZipIndex,
 									response: response,
 									serverLog: serverLog,
+									d: d,
 									d_files: d_files,
 									d_list: d_files.d_list,
 									req: req,
 									ofields: ofields
 								});
-							
+																
 								noZipFiles++;	
 								var fileContainedInZipFile=zip.files[ZipIndex];	
 								if (fileContainedInZipFile.dir) {
 									msg+="Zip file[" + noZipFiles + "]: directory: " + fileContainedInZipFile.name + "\n";
 								}
 								else {
-	//								console.error("fileContainedInZipFile object: " + JSON.stringify(fileContainedInZipFile, null, 4));
-									msg+="Zip file[" + noZipFiles + "]: " +  path.basename(fileContainedInZipFile.name) + "; relativePath: " + fileContainedInZipFile.name + 
+//									console.error("fileContainedInZipFile object: " + JSON.stringify(fileContainedInZipFile, null, 4));
+									var d2=createD(path.basename(fileContainedInZipFile.name), undefined /* encoding */, undefined /* mimetype */, 
+										response, req); // Create D object for each zip file file
+
+									msg+="Zip file[" + noZipFiles + "]: " + d2.file.file_name + "; relativePath: " + fileContainedInZipFile.name + 
 										"; date: " + fileContainedInZipFile.date + "\n";  
 									if (fileContainedInZipFile._data) {
 										zipUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
-										msg+="Decompress from: " + fileContainedInZipFile._data.compressedSize + " to: " +  fileContainedInZipFile._data.uncompressedSize;
+										msg+="Decompress from: " + fileContainedInZipFile._data.uncompressedSize + " to: " +  fileContainedInZipFile._data.compressedSize;
+										d2.file.file_size=fileContainedInZipFile._data.compressedSize;
+										d2.file.file_uncompress_size=fileContainedInZipFile._data.uncompressedSize;
+										d2.file.file_data=new Buffer.from(zip.files[ZipIndex].asNodeBuffer()); 
+											// No longer causes Error(RangeError): Invalid string length with >255M files!!! (as expected)
+											// However it is in ???
+											
+										if (d2.file.file_data.length != d2.file.file_uncompress_size) { // Check length is as expected
+											throw new Error("Zip file[" + noZipFiles + "]: " + d2.file.file_name + "; expecting length: " + 
+												 d2.file.file_uncompress_size + ";  got: " + d2.file.file_data.length);
+										}
+//										if (d.file.extension == "json" || d.file.extension == "js") {
+//											nbuf=new Buffer(d2.file.file_data.toString().replace(/\r?\n|\r/g, "")); // Remove any CRLF
+//											d2.file.file_data=nbuf;
+//										}
+										msg+="; size: " + d2.file.file_data.length + " bytes\n";
+									
+										var end = new Date().getTime();	
+										d2.file.uncompress_time=(end - lstart)/1000; // in S	
 										
-										addStatus(__file, __line, response, "Expanded zip file [" + (index+1) + "." + noZipFiles + "]: " + 
-											d.file.file_name + "//:" + path.basename(fileContainedInZipFile.name), 
-											200 /* HTTP OK */, serverLog, req);  // Add file compression processing status	
-							
+										new_no_files++;
+//										console.error("A: response.no_files: " + response.no_files + "; new_no_files: " + new_no_files + "\nData >>>\n" +
+//											d2.file.file_data.toString().substring(0, 200) + "\n<<<\n");
+										d.no_files=response.no_files;
+										d_files.d_list[response.no_files-1] = d2;
+										
+										addStatus(__file, __line, response, "Expanded and added zip file [" + (index+1) + "." + noZipFiles + "]: " + 
+											d.file.file_name + "//:" + d2.file.file_name + " to file list [" + response.no_files+new_no_files + "]", 
+											200 /* HTTP OK */, serverLog, req);  // Add file compression processing status								
 									}
 									else {
-										throw Error("No fileContainedInZipFile._data for file in zip: " + fileContainedInZipFile.name);
+										throw new Error("No fileContainedInZipFile._data for file in zip: " + fileContainedInZipFile.name);
 									}
-									var buf=zip.files[ZipIndex].asNodeBuffer(); // No longer causes Error(RangeError): Invalid string length with >255M files!!! (as expected)
-									msg+="; size: " + buf.length + " bytes\n";
 								}
 								seriesCallbackFunc();										
 							}, 
 							function zipProcessingSeriesEnd(err) {	
 								if (err) {
 									msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
-										d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+										d.file.extension + "; file_encoding: " + d.file.file_encoding + " unzip exception";
 									d.file.file_error=msg;	
 									response.message=msg + "\n" + response.message;
 									response.file_errors++;					// Increment file error count	
@@ -1083,16 +1109,21 @@ exports.convert = function exportsConvert(req, res) {
 									callback(e);
 								}
 								else {
-
-									addStatus(__file, __line, response, "Processed zip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
+//									console.error("B: response.no_files: " + response.no_files +
+//											"; last new file[" + (response.no_files-1) + "]: " + d_files.d_list[response.no_files-1].file.file_name + 
+//											"\nData >>>\n" + d_files.d_list[response.no_files-1].file.file_data.toString().substring(0, 200) + "\n<<<\n");
+									
+									addStatus(__file, __line, response, "Processed zip file [" + (index+1) + "]: " + d.file.file_name + 
+										"; size: " + d.file.file_data.length + " bytes" + 
+										"; added: " + new_no_files + " file(s)", 
 										200 /* HTTP OK */, serverLog, req);  // Add file compression processing status	
-							
+									
 									msg+="Processed Zipfile [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
 										d.file.extension + "; number of files: " + noZipFiles + "; Uncompressed size: " + zipUncompressedSize;
-									d.file.file_error=msg;			
+			//						d.file.file_error=msg;			
 									response.message=msg + "\n" + response.message;	
-									response.file_errors++;					// Increment file error count	
-									serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
+			//						response.file_errors++;					// Increment file error count; now supported - no longer an error	
+			//						serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
 			//						d_files.d_list[index-1] = d;				
 									callback();		
 								}
@@ -1127,7 +1158,12 @@ exports.convert = function exportsConvert(req, res) {
 						for (var i = 0; i < response.no_files; i++) {
 							var d=d_files.d_list[i];
 							// Call GeoJSON to TopoJSON converter
-							d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);	
+							if (d.file.extension == "zip") { // Ignore zip file
+								response.message+="\nIgnore zip file; process contents: " + d.file.file_name;
+							}
+							else {
+								d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);
+							}
 							if (!d) { // Error handled in responseProcessing()
 //								httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile", serverLog, 
 //									500, req, res, msg, response.error, response);							
@@ -1207,10 +1243,14 @@ exports.convert = function exportsConvert(req, res) {
 										serverLog, 500, req, res, msg, err, response);											
 								}
 								else { // Async forEachOfSeries loop complete
+									
 									for (var i = 0; i < response.no_files; i++) { // Process file list for errors	
-										var d=d_files.d_list[i];
+										var d3=d_files.d_list[i];
+//										console.error("C[" + i + "]: response.no_files: " + response.no_files + "; d3.no_files: " + d3.no_files + 
+//											"; " + d3.file.file_name + 
+//											"\nData >>>\n" + d3.file.file_data.toString().substring(0, 200) + "\n<<<\n");
 											
-										if (!d) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
+										if (!d3) { // File could not be processed, httpErrorResponse.httpErrorResponse() already processed
 											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: entry not found, no file list" + 
 												"; httpErrorResponse.httpErrorResponse() NOT already processed";						
 											response.message = msg + "\n" + response.message;
@@ -1220,7 +1260,7 @@ exports.convert = function exportsConvert(req, res) {
 												serverLog, 500, req, res, msg, undefined, response);				
 											return;							
 										}
-										else if (!d.file) {
+										else if (!d3.file) {
 											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: object not found in list" + 
 												"\n";
 											response.message = msg + "\n" + response.message;
@@ -1229,18 +1269,18 @@ exports.convert = function exportsConvert(req, res) {
 												serverLog, 500, req, res, msg, undefined, response);							
 											return;			
 										}
-										else if (d.file.file_error) {
-											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: " + d.file.file_name + "; extension: " + 
-												d.file.extension + "; error >>>\n" + d.file.file_error + "\n<<<";
+										else if (d3.file.file_error) {
+											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: " + d3.file.file_name + "; extension: " + 
+												d3.file.extension + "; error >>>\n" + d3.file.file_error + "\n<<<";
 											response.message = msg + "\n" + response.message;
 											response.file_errors++;					// Increment file error count	
 											httpErrorResponse.httpErrorResponse(__file, __line, "fileCompressionProcessingSeriesEnd", 
 												serverLog, 500, req, res, msg, undefined, response);							
 											return;							
 										}
-										else if (d.file.file_data.length == 0) {
-											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: " + d.file.file_name + "; extension: " + 
-												d.file.extension + "; file size is zero" + 
+										else if (d3.file.file_data.length == 0) {
+											msg="FAIL! File [" + (i+1) + "/" + response.no_files + "]: " + d3.file.file_name + "; extension: " + 
+												d3.file.extension + "; file size is zero" + 
 												"\n";
 											response.message = msg + "\n" + response.message;
 											response.file_errors++;					// Increment file error count	
@@ -1294,8 +1334,24 @@ exports.convert = function exportsConvert(req, res) {
 					}
 	//				console.error("req.busboy.on('finish') " + msg);					
 				} catch(e) {
-					httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-						serverLog, 500, req, res, 'Caught unexpected error (possibly async)', e, undefined /* My response */);
+					if (response) {
+						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+							serverLog, 500, req, res, 'Caught unexpected error (possibly async)', e, response);
+					}
+					else {
+						var l_response = {                 // Set output response    
+							error: e.message,
+							no_files: 0,    
+							field_errors: 0,
+							file_errors: 0,
+							file_list: [],
+							message: '',  
+							diagnostic: '',
+							fields: [] 
+						};
+						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+							serverLog, 500, req, res, 'Caught unexpected error (possibly async)', e, l_response /* Nominal response */);
+					}
 					return;
 				}
 			} // End of req.busboy.on('finish')
@@ -1312,9 +1368,19 @@ exports.convert = function exportsConvert(req, res) {
 			return;		  
 		}
 		
-	} catch (e) {                            // Catch syntax errors
+	} catch (e) {                          // Catch syntax errors
+		var l_response = {                 // Set output response    
+			error: e.message,
+			no_files: 0,    
+			field_errors: 0,
+			file_errors: 0,
+			file_list: [],
+			message: '',  
+			diagnostic: '',
+			fields: [] 
+		}	
 		var msg="General processing ERROR!";				  
-		httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert catch()", serverLog, 500, req, res, msg, e);		
+		httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert catch()", serverLog, 500, req, res, msg, e, l_response /* Nominal response */);		
 		return;
 	}
 	  

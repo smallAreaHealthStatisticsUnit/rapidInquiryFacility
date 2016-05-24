@@ -268,8 +268,7 @@ var MakeRequest = function(){
 	else if (nRequests == 12) {
 		formData["verbose"]="true";
 		formData["zoomLevel"]=0;	
-		formData["my_test"]="12: Invalid zip file (not supported)";	
-		formData["expected_to_pass"]="false"; 		
+		formData["my_test"]="12: Zip file (now supported): with geoJSON";
 	}
 	else if (nRequests == 13) {
 		formData["verbose"]="true";

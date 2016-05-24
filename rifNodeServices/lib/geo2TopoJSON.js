@@ -475,10 +475,10 @@ Streaming parser needed; or it needs toString()ing in sections
 				truncated_data=d.file.file_data.toString('hex', 0, 240); // Binary: display as hex
 			}
 			if (truncated_data.length < d.file.file_data.length) {
-				msg=msg + "\nTruncated data:\n" + truncated_data + "\n";
+				msg=msg + "\nTruncated data(" + truncated_data.length + "/" + d.file.file_data.length + "):\n" + truncated_data + "\n";
 			}
 			else {
-				msg=msg + "\nData:\n" + truncated_data + "\n";
+				msg=msg + "\nData (" + d.file.file_data.length + "):\n" + truncated_data + "\n";
 			}
 		}
 		

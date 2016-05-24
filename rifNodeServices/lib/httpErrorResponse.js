@@ -163,11 +163,11 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			res.status(status);		
 			var output = JSON.stringify(l_response);// Convert output response to JSON 	
 
-			if (g_response.fields["diagnosticFileDir"] && g_response.fields["responseFileName"]) { // Save to response file
+			if (g_response && g_response.fields["diagnosticFileDir"] && g_response.fields["responseFileName"]) { // Save to response file
 				fs.writeFileSync(g_response.fields["diagnosticFileDir"] + "/" + g_response.fields["responseFileName"], 
 					output);	
 			}
-			else if (!g_response.fields["responseFileName"]) { // Do not raise errors - you will recurse and it will not be devine
+			else if (g_response && !g_response.fields["responseFileName"]) { // Do not raise errors - you will recurse and it will not be devine
 				serverLog.serverLog(__file, __line, "httpErrorResponse", "FATAL ERROR! Unable to rsave response file; no responseFileName", req);
 			}
 				
