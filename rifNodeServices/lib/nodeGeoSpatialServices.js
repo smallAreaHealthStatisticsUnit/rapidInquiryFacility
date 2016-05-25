@@ -1066,18 +1066,16 @@ exports.convert = function exportsConvert(req, res) {
 										msg+="Decompress from: " + fileContainedInZipFile._data.compressedSize + " to: " +  fileContainedInZipFile._data.uncompressedSize;
 										d2.file.file_size=fileContainedInZipFile._data.compressedSize;
 										d2.file.file_uncompress_size=fileContainedInZipFile._data.uncompressedSize;
-										d2.file.file_data=new Buffer.from(zip.files[ZipIndex].asNodeBuffer()); 
+										d2.file.file_data=zip.files[ZipIndex].asNodeBuffer(); 
 											// No longer causes Error(RangeError): Invalid string length with >255M files!!! (as expected)
-											// However it is in ???
 											
 										if (d2.file.file_data.length != d2.file.file_uncompress_size) { // Check length is as expected
 											throw new Error("Zip file[" + noZipFiles + "]: " + d2.file.file_name + "; expecting length: " + 
 												 d2.file.file_uncompress_size + ";  got: " + d2.file.file_data.length);
 										}
-//										if (d.file.extension == "json" || d.file.extension == "js") {
-//											nbuf=new Buffer(d2.file.file_data.toString().replace(/\r?\n|\r/g, "")); // Remove any CRLF
-//											d2.file.file_data=nbuf;
-//										}
+										if (d.file.extension == "json" || d.file.extension == "js") {
+											d2.file.file_data.toString().replace(/\r?\n|\r/g, ""); // Remove any CRLF
+										}
 										msg+="; size: " + d2.file.file_data.length + " bytes\n";
 									
 										var end = new Date().getTime();	
@@ -1163,6 +1161,7 @@ exports.convert = function exportsConvert(req, res) {
 								response.message+="\nIgnore zip file; process contents (loaded as individual files when zip file unpacked): " + d.file.file_name;
 							}
 							else {
+								response.message+= "\nProcessing file [" + (i+1) + "/" + response.no_files + "]: " + d.file.file_name;
 								d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);
 							}
 							if (!d) { // Error handled in responseProcessing()

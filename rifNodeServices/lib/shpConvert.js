@@ -1187,7 +1187,7 @@ topology: 1579 arcs, 247759 points
 				msg+="\nAll bounding boxes are the same";
 			}
 			
-			var ngeolevels = geolevels.sort(function (a, b) {
+			var ngeolevels = geolevels.sort(function (a, b) { // Sort function
 				if (a.total_areas > b.total_areas) {
 					return 1;
 				}

@@ -321,7 +321,7 @@ bigToSstring=function bigToSstring(data, response) {
  *				d.file.topojson,
  *				d.file.topojson_stderr,
  *				response.message,
- *				reponse.file_list[d.no_files-1] set to file object:
+ *				response.file_list[d.no_files-1] set to file object:
  *						file_name: File name
  *						topojson: TopoJSON created from file geoJSON,
  *						topojson_stderr: Debug from TopoJSON module,
@@ -348,15 +348,13 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 		stderr: stderr,
 		response: response
 	});	
+	var msg="";
 	
-	var msg="File [" + d.no_files + "]: " + d.file.file_name;
-	
-	response.message = response.message + '\nProcessing ' + msg;	
-	response.no_files=d.no_files;			// Add number of files process to response
+//	response.no_files=d.no_files;			// Add number of files process to response
 	response.fields=ofields;				// Add return fields	
 	try {	
 		d.file.jsonData = undefined;
-		// Set up file list reponse now, in case of exception
+		// Set up file list response now, in case of exception
 		
 /* Response array file objects:
  *						file_name: File name
@@ -431,12 +429,16 @@ Streaming parser needed; or it needs toString()ing in sections
 
 		var end = new Date().getTime();
 		response.file_list[d.no_files-1].topojson_runtime=(end - lstart)/1000; // in S			
-		response.file_list[d.no_files-1].file_size=d.file.file_size;
+		response.file_list[d.no_files-1].file_size=d.file.file_size;		
+		response.file_list[d.no_files-1].geojson_length=d.file.file_size;	
+		response.file_list[d.no_files-1].topojson_length=d.file.file_size;
 		response.file_list[d.no_files-1].transfer_time=d.file.transfer_time;
 		response.file_list[d.no_files-1].uncompress_time=d.file.uncompress_time;
 		response.file_list[d.no_files-1].uncompress_size=d.file.uncompress_size;
 		
-		msg+= "; runtime: " + "; topoJSON length: " + JSON.stringify(d.file.topojson).length + "]"
+		response.file_list[d.no_files-1].topojson_length=JSON.stringify(d.file.topojson).length;
+		
+		msg+= "Runtime: " + "; topoJSON length: " + response.file_list[d.no_files-1].topojson_length + "]"
 		if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message	
 // This will need a mutex if > 1 thread is being processed at the same time	
 			response.message = response.message + "\n" + msg + " OK:\nTopoJson.topology() stderr >>>\n" + 

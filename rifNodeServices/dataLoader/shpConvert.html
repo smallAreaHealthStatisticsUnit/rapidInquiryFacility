@@ -6,7 +6,7 @@
     <script src="topojson.min.js"></script>
     <link rel="stylesheet" href="leaflet.zoomdisplay.css" />
     <script src="leaflet.zoomdisplay.js"></script>
-    <script src="nodeGeoSpatialServices.js"></script> 
+    <script src="nodeGeoSpatialFrontEnd.js"></script> 
 	
     <title>Shapefile Uploading Form</title>
   </head>
@@ -180,7 +180,7 @@ function submitForm() {
 			}
 			else if (request.readyState == 4) {
 				setStatus("Processing response..."); 
-				displayResponse(request.response, request.status);
+				displayResponse(request.response, request.status, "Shapefile");
 			}
 			else {		
 				setStatus("request.onreadystatechange() unknown state: " + request.readyState, "readyState error");
