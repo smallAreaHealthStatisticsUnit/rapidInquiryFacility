@@ -61,10 +61,23 @@ function errorHandler(error) {
 	else {
 		console.error("errorHandler(): No error returned");
 	}
+	
+	if (map) {
+		map.eachLayer(function (layer) {
+			console.log('Remove tileLayer');
+			map.removeLayer(layer);
+		});
+		console.log('Remove map');
+		map.remove(); // Known leaflet bug:
+					  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+		map = undefined;
+		document.getElementById("map").innerHTML = "";			 
+		console.log('Remove map element'); 
+	}										  
 }
 
 function uploadProgressHandler(event, position, total, percentComplete) {
-	var msg="Uploading file(s): " +
+	var msg="Uploading: " +
 			percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
 	document.getElementById('status').innerHTML = msg;
 	console.log(msg);

@@ -229,16 +229,17 @@ geo2TopoJSONFieldProcessor=function geo2TopoJSONFieldProcessor(fieldname, val, t
 
 /*
  * Function:	bigToSstring()
- * Parameters:	Buffer
+ * Parameters:	Buffer, internal reposnse object, d object
  * Returns:		Buffer converted to string
  * Description: Convert buffer to string in sections avoiding below error...
  *				It does not avoid the error, but it does demonstate the 256M limit JSON to string conversion limit nicely
  */
-bigToSstring=function bigToSstring(data, response) {
+bigToSstring=function bigToSstring(data, response, d) {
 	
 	scopeChecker(__file, __line, {
 		data: data,
-		response: response
+		response: response,
+		d: d
 	});	
 	
 	try {		
@@ -249,7 +250,7 @@ bigToSstring=function bigToSstring(data, response) {
 		var i=0;
 		var len=1024*1024; // 1MB chunks
 		var kStringMaxLength = process.binding('buffer').kStringMaxLength;
-	  
+		
 		do {
 			i++;
 //			strArray.push(data.slice(pos, pos+len).toString());
@@ -400,13 +401,95 @@ Error: toString failed
 
 Streaming parser needed; or it needs toString()ing in sections
 
- */		var str=bigToSstring(d.file.file_data, response);
-		if (!str) {
-				return; // String convert failed
+ */
+ 
+
+		featureOffset = [0];
+		var newOffset;
+		var offset=0;
+		do {
+//			newOffset=d.file.file_data.indexOf(",type\":\"Feature\"", offset);
+		
+			newOffset=d.file.file_data.indexOf('{"type":"Feature",', offset);
+			if (newOffset >= 0) {
+				featureOffset.push(newOffset);
+				offset=newOffset+1;
+			}
+		} while (newOffset >= 0);
+		
+		var OffsetLen;
+		var parseAble;
+		var parseError;
+		var parsedJson=[]
+		for (var i=0; i<featureOffset.length; i++) {
+			if (featureOffset[i+1] && i == 0) {
+				OffsetLen=featureOffset[i+1];
+			}
+			else if (featureOffset[i+1]) {
+				OffsetLen=featureOffset[i+1]-1;
+			}
+			else {
+				OffsetLen=d.file.file_data.length-2;
+			}
+			var buf=d.file.file_data.slice(featureOffset[i], OffsetLen);
+			parseError="";
+			var str=buf.toString('ascii', 0, 60);
+			var str2=buf.toString('ascii', buf.length-60);
+			try {
+				if (i == 0 ) {
+					str=buf.toString()+"]}";
+					parsedJson[i]=JSON.parse(str);
+				}
+				else {
+					parsedJson[i]=JSON.parse(buf.toString());					
+				}
+				parseAble=true;
+			}
+			catch (e) {
+				parseError=e.message;
+				parseAble=false;
+			}
+			if (i<4 || i>(featureOffset.length-4)) {
+				if (str.length < 60) {
+					console.error("Feature [" + i + "] start: " + featureOffset[i] + "; end: " + OffsetLen + "; Feature length: " + buf.length + 
+						"; parseAble: " + parseAble + ": " + parseError + 
+						"\n>>>" + str + "<<<");
+				}
+				else {
+					console.error("Feature [" + i + "] start: " + featureOffset[i] + "; end: " + OffsetLen + "; Feature length: " + buf.length + 
+						"; parseAble: " + parseAble + ": " + parseError + 
+						"\n>>>" + str + "<<< ... >>>" + str2 + "<<<");
+				}
+			}
 		}
-				
-		d.file.jsonData = JSON.parse(str); // Parse file stream data to JSON
-		str=undefined;
+		console.error("Features detected: " + (featureOffset.length-1) + "; data length: " + d.file.file_data.length + "; parsed: " +  parsedJson.length);
+		
+		var myFeatureCollection;
+		if (featureOffset.length == parsedJson.length) {
+			myFeatureCollection=parsedJson[0];
+			for (var i=1; i<parsedJson.length; i++) {
+				myFeatureCollection.features[i-1]=parsedJson[i];
+			}			
+		}
+		
+		/*
+		var str=bigToSstring(d.file.file_data, response, d);
+		if (!str) {
+			if (myFeatureCollection) {
+				d.file.jsonData=myFeatureCollection;
+			}
+			else {
+				return; // String convert failed
+			}
+		} */
+		var kStringMaxLength = process.binding('buffer').kStringMaxLength;
+		if (myFeatureCollection) {
+			d.file.jsonData=myFeatureCollection;
+		}		
+		else {		
+			d.file.jsonData = JSON.parse(str); // Parse file stream data to JSON
+			str=undefined;
+		}
 		
 		// Re-route topoJSON stderr to stderr.str
 		stderr.disable();

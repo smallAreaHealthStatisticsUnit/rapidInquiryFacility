@@ -433,6 +433,8 @@ RangeError: Invalid string length
 #### 23rd to 27th May
 
 * Zip file support using JSZip implemented using 2.6 interface; minimal changes for 3.0
+* geotoTopoJSON.html converted to use Ajax POST; common front end code with ShpConvert.html
+* Jquery.form.js http://malsup.com/jquery/form/ ajaxForm POST appears to have fixed memory crash problems in Chrome with very large files
 
 #### Current TODO list (June):
 
