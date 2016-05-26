@@ -435,10 +435,11 @@ RangeError: Invalid string length
 * Zip file support using JSZip implemented using 2.6 interface; minimal changes for 3.0
 * geotoTopoJSON.html converted to use Ajax POST; common front end code with ShpConvert.html
 * Jquery.form.js http://malsup.com/jquery/form/ ajaxForm POST appears to have fixed memory crash problems in Chrome with very large files
+* Fixed json parser in geo2topoJSON to handle files > 255M
 
 #### Current TODO list (June):
 
-* Fix json parser in geo2topoJSON to handle files > 255M; create geo2TopoJSON.geo2TopoJSON()
+* Create geo2TopoJSON.geo2TopoJSON()
 * Simplify: test pre-quantisation at 10e6/10e7 with and without simplification to 9.01x10-13 steradians. 	
 * Zoomlevel 1-11 support; topojson now becomes an array, single topoJSON function
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
