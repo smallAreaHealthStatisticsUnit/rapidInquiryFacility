@@ -14,10 +14,12 @@
 // prepare the form when the DOM is ready 
 $(document).ready(function() { 
     var options = { 
-        target:        '#geo2TopoJSON',   // target element(s) to be updated with server response 
-        beforeSubmit:  showRequest,  // pre-submit callback 
-        success:       processJson,  // post-submit callback 
- 
+        target:        '#geo2TopoJSON',   	// target element(s) to be updated with server response 
+        beforeSubmit:  showRequest,  		// pre-submit callback 
+        success:       processJson,  		// post-submit callback 
+		error:		   errorHandler, 		// Error handler callback
+		uploadProgress: uploadProgressHandler,	// uploadProgress handler
+		
         // other available options: 
         //url:       url         // override for form's 'action' attribute 
         //type:      type        // 'get' or 'post', override for form's 'method' attribute 
@@ -33,6 +35,41 @@ $(document).ready(function() {
     $('#geo2TopoJSON').ajaxForm(options); 
 }); 
  
+function errorHandler(error) {
+	if (error) {
+		console.error(JSON.stringify(error, null, 4));
+		var msg="<h1>Send Failed; http status: ";
+		if (error.status) {
+			msg+=error.status;
+		}
+		else {
+			msg+="(no error status)";
+		}
+		msg+="</h1></br>Message:";
+		if (error.responseJSON.message) {
+			msg+=error.responseJSON.message;
+		}
+		else {
+			msg+="(no error message)";
+		}
+		if (error.responseJSON.diagnostic) {
+			msg+="<p>Processing diagnostic:</br><pre>" + error.responseJSON.diagnostic + "</pre></p>";
+		}	
+		
+		document.getElementById("status").innerHTML = msg;
+	}
+	else {
+		console.error("errorHandler(): No error returned");
+	}
+}
+
+function uploadProgressHandler(event, position, total, percentComplete) {
+	var msg="Uploading file(s): " +
+			percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
+	document.getElementById('status').innerHTML = msg;
+	console.log(msg);
+}
+
 // pre-submit callback 
 function showRequest(formData, jqForm, options) { 
     // formData is an array; here we use $.param to convert it to a string to display it 
@@ -46,7 +83,7 @@ function showRequest(formData, jqForm, options) {
 		console.error("setupMap() not defined: errors in nodeGeoSpatialServices.js");
 		return false;
 	}
-    console.log('About to submit: \n\n' + queryString); 
+    console.log('About to submit: \n\n' + JSON.stringify(queryString, null, 4)); 
  
     // here we could return false to prevent the form from being submitted; 
     // returning anything other than false will allow the form submit to continue 

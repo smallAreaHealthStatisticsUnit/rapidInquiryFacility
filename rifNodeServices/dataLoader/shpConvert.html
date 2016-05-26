@@ -146,22 +146,6 @@ function submitForm() {
 		formData.append('verbose', verbose);
 	}
 	formData.append('uuidV1', generateUUID()); // Random reference
-
-	setStatus = function(msg, errm) {
-		if (document.getElementById("status").innerHTML != msg) {
-			var end=new Date().getTime();
-			var elapsed=(end - start)/1000; // in S
-			
-			if (!errm) {
-				document.getElementById("status").innerHTML = msg;
-				console.log("[" + elapsed + "] " + msg);
-			}
-			else {
-				document.getElementById("status").innerHTML = msg + "; " + errm;
-				console.error("[" + elapsed + "] " + msg + "; " + errm);
-			}
-		}
-	}
 	
 	try {
 		request.open('POST', output_type);

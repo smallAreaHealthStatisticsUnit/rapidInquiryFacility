@@ -366,38 +366,68 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 								"ymax: " + response.file_list[i].boundingBox[3] + "];");
 						}						
 					}
-					for (var i=0; i < response.no_files; i++) {	//. Re-order by geolevel_id						
-						if (response.file_list[i].geolevel_id) { // Geolevel ID present in data
-							console.log("File[" + (i+1) + "]: " + response.file_list[i].file_name +
-								"; geolevel: " +  response.no_files-response.file_list[i].geolevel_id +
-								"; size: " +  response.no_files-response.file_list[i].file_size +
-								"; areas: " +  response.no_files-response.file_list[i].total_areas);
+					
+					var ngeolevels = geolevels.sort(function (a, b) { // Sort function
+						if (a.total_areas > b.total_areas) {
+							return 1;
+						}
+						if (a.total_areas < b.total_areas) {
+							return -1;
+						}
+						// a must be equal to b
+						return 0;
+					});
+							
+					for (var i=0; i < response.no_files; i++) {	// Create sorted ngeolevels array for geolevel_id for re=order (if required)		
+							ngeolevels[i].geolevel_id=i+1;						
+//							console.log("ngeolevels[" + i + "]: " + JSON.stringify(ngeolevels[i], null, 4));
+					}
+					
+					for (var i=0; i < response.no_files; i++) {	// Re-order by geolevel_id	if required	
+						var j=ngeolevels[i].i;
+						if (response.file_list[j].geolevel_id) { // Geolevel ID present in data
+							console.log("File[" + j + "]: " + response.file_list[j].file_name +
+								"; geolevel: " + response.file_list[j].geolevel_id +
+								"; size: " + response.file_list[j].file_size +
+								"; areas: " + response.file_list[j].total_areas);
+						}
+						else {
+							response.file_list[j].geolevel_id = ngeolevels[i].geolevel_id;
+							if (response.file_list[j].geolevel_id) {
+								console.log("File[" + j + "]: " + response.file_list[j].file_name +
+									"; deduced geolevel: " + response.file_list[j].geolevel_id +
+									"; size: " + (response.file_list[j].file_size || "not defined") +
+									"; areas: " +  response.file_list[j].total_areas);
+							}
+							else {
+								msg+="</br>ERROR! File[" + j + "]: " + response.file_list[j].file_name +
+									"; deduced geolevel is undefined; ngeolevels[" + ij+ "]: " + JSON.stringify(ngeolevels[i], null, 4);
+								console.log("ERROR! File[" + j + "]: " + response.file_list[j].file_name +
+									"; deduced geolevel is undefined; ngeolevels[" + j + "]: " + JSON.stringify(ngeolevels[i], null, 4));	
+							}
+						}
+					}
+					
+//					for (var i=0; i < response.no_files; i++) {	// Display now re-ordered geolevels array		
+//							console.log("geolevels[" + i + "]: " + JSON.stringify(geolevels[i], null, 4));
+//					}
+					
+					for (var i=0; i < response.no_files; i++) {	//. Re-order by geolevel_id		
+						if (response.file_list[i].geolevel_id) {
 							layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;	
 						}
 						else {
-							var ngeolevels = geolevels.sort(function (a, b) { // Sort function
-								if (a.total_areas > b.total_areas) {
-									return 1;
-								}
-								if (a.total_areas < b.total_areas) {
-									return -1;
-								}
-								// a must be equal to b
-								return 0;
-							});
-	
-							ngeolevels[i].geolevel_id=i+1;
-							response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;				
-							console.log("File[" + (i+1) + "]: " + response.file_list[i].file_name +
-								"; deduced geolevel: " +  (i+1) +
-								"; size: " + (response.no_files-response.file_list[i].file_size || "not defined") +
-								"; areas: " +  response.no_files-response.file_list[i].total_areas);
-							layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;	
+							msg+="</br>ERROR! [" + i + "]; layerAddOrder[] response.no_files-response.file_list[i].geolevel_id is undefined";
+							console.log("ERROR! [" + i + "]; layerAddOrder[] response.no_files-response.file_list[i].geolevel_id is undefined");			
 						}
 					}
 					if (layerAddOrder.length == 0) {
 						msg+="</br>ERROR! layerAddOrder[] array is zero sized; response.no_files: " + response.no_files
 						console.log('ERROR! layerAddOrder[] array is zero sized; response.no_files: ' + response.no_files);						
+					}
+					else if (layerAddOrder.length != response.no_files) {
+						msg+="</br>ERROR! layerAddOrder[] array: " + layerAddOrder.length + "; response.no_files: " + response.no_files;
+						console.log("ERROR! layerAddOrder[] array: " + layerAddOrder.length + "; response.no_files: " + response.no_files);						
 					}
 					
 					for (var i=0; i < response.no_files; i++) {	// Now processe					
