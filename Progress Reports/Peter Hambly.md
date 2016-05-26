@@ -475,6 +475,7 @@ RangeError: Invalid string length
 * Remaining get methods
 
 SQL Server porting expected to start in July.
+Note: no bounding box (bbox) in tiles.
 	
 ##	General RIF database Todo:
 

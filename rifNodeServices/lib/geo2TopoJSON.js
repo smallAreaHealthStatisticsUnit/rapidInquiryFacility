@@ -321,7 +321,8 @@ jsonParse = function jsonParse(data, response) {
 	var lstart = new Date().getTime();	
 	var myFeatureCollection;
 	
-	if (data.indexOf('{"type":"FeatureCollection","features":[', 0) == 0) { // Its a feature collection
+	if ((data.indexOf('{"type":"FeatureCollection","features":[', 0) == 0) || 
+	    (data.indexOf('{"type":"FeatureCollection","bbox":', 0) == 0)) { // Its a feature collection
 		response.message+="\nParsing feature collection; data length: " + data.length;
 			
 		var featureOffset = [0];
@@ -352,7 +353,7 @@ jsonParse = function jsonParse(data, response) {
 		}
 		
 		for (var i=0; i< parsedJson.length; i++) { // Parse using featureOffset and offsetEnd
-			var buf=data.slice( parsedJson[i].featureOffset, parsedJson[i].offsetEnd);
+			var buf=data.slice(parsedJson[i].featureOffset, parsedJson[i].offsetEnd);
 			var str=buf.toString('ascii', 0, 60);
 			var str2=buf.toString('ascii', buf.length-60);
 			try {
@@ -384,15 +385,16 @@ jsonParse = function jsonParse(data, response) {
 				else {
 					response.message+="\nFeature [" + i + "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
 						"; Feature length: " + buf.length + 
-						"\n>>>" + str + "<<< ... >>>" + str2 + "<<<";
+						"\n>>>" + str.substring(0, 60) + "<<< ... >>>" + str2 + "<<<";
 				}
 			}
 			else if (((i/1000)-Math.floor(i/1000)) == 0 || parsedJson[i].parseTime > (totalParseTime + 1)) { 
 				totalParseTime=parsedJson[i].ParseTime;
-				response.message+="\nFeature [" + i	+ "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
+				var msg="Feature [" + i	+ "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
 					"; Feature length: " + buf.length + 
-					"; parseAble: " + parsedJson[i].parseAble +
-					"\n>>>" + str + "<<< ... >>>" + str2 + "<<<";				
+					"\n>>>" + str + "<<< ... >>>" + str2 + "<<<";
+				console.error(msg);
+				response.message+="\n" + msg;				
 			}
 		}
 
@@ -410,6 +412,9 @@ jsonParse = function jsonParse(data, response) {
 			throw new Error("Feature collection parse failed: " + (featureOffset.length - parsedJson.length) + "/" + featureOffset.length + " features failed to parse");
 		}
 	}
+	else {
+		response.message+="\nNot a feature collection, parse may fail>>>\n" + data.toString('ascii', 0, 240) + "\n<<<\n";
+	}
 	
 	var kStringMaxLength = process.binding('buffer').kStringMaxLength;
 	if (myFeatureCollection) {
@@ -419,7 +424,8 @@ jsonParse = function jsonParse(data, response) {
 		return JSON.parse(data.toString()); // Parse file stream data to JSON
 	}	
 	else {
-		throw new Error("Cannot parse string: not a feature collection and too long: " + data.length + " for JSON.parse(data.toString()); limit: " + kStringMaxLength);
+		throw new Error("Cannot parse string: not a feature collection and too long: " + data.length + 
+			" for JSON.parse(data.toString()); limit: " + kStringMaxLength + "bytes");
 	}
 }
 
