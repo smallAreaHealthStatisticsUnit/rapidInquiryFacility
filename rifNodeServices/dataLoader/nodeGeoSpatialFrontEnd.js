@@ -47,6 +47,7 @@
 var map;
 var tileLayer;
 var JSONLayer;
+var start;
 
 // Extend Leaflet to use topoJSON
 L.topoJson = L.GeoJSON.extend({  
@@ -136,6 +137,22 @@ function fileSize(file_size) {
 function isIE() {
 	var myNav = navigator.userAgent.toLowerCase();
 	return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
+}
+	
+setStatus = function(msg, errm) {
+	if (document.getElementById("status").innerHTML != msg) {
+		var end=new Date().getTime();
+		var elapsed=(end - start)/1000; // in S
+		
+		if (!errm) {
+			document.getElementById("status").innerHTML = msg;
+			console.log("[" + elapsed + "] " + msg);
+		}
+		else {
+			document.getElementById("status").innerHTML = msg + "; " + errm;
+			console.error("[" + elapsed + "] " + msg + "; " + errm);
+		}
+	}
 }
 	
 function createMap(boundingBox) {
@@ -235,8 +252,8 @@ function displayResponse(responseText, status, formName) {
 					console.error("ERROR! First file in list (size: " + response.no_files + ") is not defined");	
 				}
 				else if (!response.file_list[0].file_name) {
-					msg+="</br>File bane of first file in list (size: " + response.no_files + ") is not defined";
-					console.error("ERROR! File bane of first file in list (size: " + response.no_files + ") is not defined");
+					msg+="</br>File nane of first file in list (size: " + response.no_files + ") is not defined";
+					console.error("ERROR! File nane of first file in list (size: " + response.no_files + ") is not defined");
 				}	
 				else {
 					msg+="<table border=\"1\" style=\"width:100%\">" + 
@@ -249,7 +266,11 @@ function displayResponse(responseText, status, formName) {
 					"</tr>";			
 
 					for (var i=0; i < response.no_files; i++) {						
-						if (!response.file_list[i].boundingBox) {
+						if (!response.file_list[i]) {
+							msg+="</br>File [" + i + "] is not defined";
+							console.error("ERROR! File [" + i + "] is not defined");
+						}
+						else if (!response.file_list[i].boundingBox) {
 							if (response.file_list[i].topojson && 
 								response.file_list[i].topojson.objects && 
 								response.file_list[i].topojson.objects.collection && 
@@ -548,20 +569,22 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 				msg+="</br>ERROR! response.no_files == 0"; 
 				console.error("ERROR! response.no_files == 0");
 			}
-			if (response.file_list[0].srid) {
-				console.log("SRID: " + response.file_list[0].srid);
-			}	
+			if (response.file_list[0]) {
+				if (response.file_list[0].srid) {
+					console.log("SRID: " + response.file_list[0].srid);
+				}	
+					
+				if (response.file_list[0].projection_name) {
+					console.log("Projection name: " + response.file_list[0].projection_name);
+				}	
 				
-			if (response.file_list[0].projection_name) {
-				console.log("Projection name: " + response.file_list[0].projection_name);
-			}	
-			
-			if (response.file_list[0].boundingBox) {
-				console.log("Bounding box [" +
-							"xmin: " + response.file_list[0].boundingBox.xmin + ", " +
-							"ymin: " + response.file_list[0].boundingBox.ymin + ", " +
-							"xmax: " + response.file_list[0].boundingBox.xmax + ", " +
-							"ymax: " + response.file_list[0].boundingBox.ymax + "]");
+				if (response.file_list[0].boundingBox) {
+					console.log("Bounding box [" +
+								"xmin: " + response.file_list[0].boundingBox.xmin + ", " +
+								"ymin: " + response.file_list[0].boundingBox.ymin + ", " +
+								"xmax: " + response.file_list[0].boundingBox.xmax + ", " +
+								"ymax: " + response.file_list[0].boundingBox.ymax + "]");
+				}	
 			}			
 		}
 	}

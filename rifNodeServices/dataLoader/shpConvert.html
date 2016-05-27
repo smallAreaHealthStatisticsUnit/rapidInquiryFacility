@@ -126,7 +126,7 @@ function submitForm() {
 	var request = new XMLHttpRequest();
 
     var formData = new FormData();
-	var start = new Date().getTime();
+	start = new Date().getTime();
 	
 	if (files.length == 0) {
 		document.getElementById('status').innerHTML = "ERROR! No files selected, unable to upload.";

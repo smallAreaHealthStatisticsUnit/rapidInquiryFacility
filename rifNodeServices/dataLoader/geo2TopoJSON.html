@@ -88,7 +88,9 @@ function showRequest(formData, jqForm, options) {
     // formData is an array; here we use $.param to convert it to a string to display it 
     // but the form plugin does this for you automatically when it submits the data 
     var queryString = $.param(formData); 
- 
+	
+	start = new Date().getTime();
+	
     // jqForm is a jQuery object encapsulating the form element.  To access the 
     // DOM element for the form do this: 
     // var formElement = jqForm[0]; 

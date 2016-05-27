@@ -493,7 +493,14 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
  *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
  *						uncompress_size: Size of uncompressed file in bytes
  */
-		response.file_list[d.no_files-1] = {
+		var idx;
+		if (!response.file_list) {
+			idx=0;
+		}
+		else {
+			idx=response.file_list.length;
+		}
+		response.file_list[idx] = {
 			file_name: d.file.file_name,
 			topojson: '',
 			topojson_stderr: '',
@@ -560,24 +567,25 @@ Streaming parser needed; or it needs toString()ing in sections
 
 // Add file stderr and topoJSON to my response
 // This will need a mutex if > 1 thread is being processed at the same time
-		response.file_list[d.no_files-1].topojson=d.file.topojson;
-		response.file_list[d.no_files-1].topojson_stderr=d.file.topojson_stderr;
+		response.file_list[idx].topojson=d.file.topojson;
+		response.file_list[idx].topojson_stderr=d.file.topojson_stderr;
 
 		var end = new Date().getTime();
-		response.file_list[d.no_files-1].topojson_runtime=(end - lstart)/1000; // in S			
-		response.file_list[d.no_files-1].file_size=d.file.file_size;		
-		response.file_list[d.no_files-1].geojson_length=d.file.file_size;	
-		response.file_list[d.no_files-1].topojson_length=d.file.file_size;
-		response.file_list[d.no_files-1].transfer_time=d.file.transfer_time;
-		response.file_list[d.no_files-1].uncompress_time=d.file.uncompress_time;
-		response.file_list[d.no_files-1].uncompress_size=d.file.uncompress_size;
+		response.file_list[idx].topojson_runtime=(end - lstart)/1000; // in S			
+		response.file_list[idx].file_size=d.file.file_size;		
+		response.file_list[idx].geojson_length=d.file.file_size;	
+		response.file_list[idx].topojson_length=d.file.file_size;
+		response.file_list[idx].transfer_time=d.file.transfer_time;
+		response.file_list[idx].uncompress_time=d.file.uncompress_time;
+		response.file_list[idx].uncompress_size=d.file.uncompress_size;
 		
-		response.file_list[d.no_files-1].topojson_length=JSON.stringify(d.file.topojson).length;
+		response.file_list[idx].topojson_length=JSON.stringify(d.file.topojson).length;
 		
-		msg+= "Runtime: " + "; topoJSON length: " + response.file_list[d.no_files-1].topojson_length + "]"
+		msg+= "File [" +  idx + "]: runtime: " + "; topoJSON length: " + response.file_list[idx].topojson_length + "]";
+		console.error(msg);
 		if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message	
 // This will need a mutex if > 1 thread is being processed at the same time	
-			response.message = response.message + "\n" + msg + " OK:\nTopoJson.topology() stderr >>>\n" + 
+			response.message+="\n" + msg + " OK:\nTopoJson.topology() stderr >>>\n" + 
 				d.file.topojson_stderr + "<<< TopoJson.topology() stderr";
 //			serverLog.serverLog(msg + "TopoJson.topology() stderr >>>\n"  + 
 //				d.file.topojson_stderr + "<<< TopoJson.topology() stderr", 
@@ -585,7 +593,7 @@ Streaming parser needed; or it needs toString()ing in sections
 		}
 		else {
 // This will need a mutex if > 1 thread is being processed at the same time
-			response.message = response.message + "\n" + msg + " OK";
+			response.message+="\n" + msg + " OK";
 //			serverLog.serverLog("TopoJson.topology() no stderr; " + msg, 
 //				req);		
 		}			
@@ -603,7 +611,7 @@ Streaming parser needed; or it needs toString()ing in sections
 			msg="does not seem to contain valid TopoJSON: ";
 		}
 		msg+="\nCaught error: " + e.message + "\nStack >>>\n" + e.stack + "\n<< End of stack";
-		msg+="\nYour input file " + d.no_files + ": " + 
+		msg+="\nYour input file [" + idx + "]: " + 
 			d.file.file_name + "; size: " + d.file.file_data.length + 
 			"; " + msg + ": \n" + "Debug message:\n" + response.message + "\n\n" + 
 			"stderr >>>\n" + d.file.topojson_stderr + "\n<<< end of stderr";

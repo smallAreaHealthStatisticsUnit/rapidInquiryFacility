@@ -352,22 +352,6 @@ var MakeRequest = function(){
 		console.error("GZIP: " + JSON.stringify(formData, null, 4));
 	}	
 }
-
-setStatus = function(msg, errm) {
-	if (document.getElementById("status").innerHTML != msg) {
-		var end=new Date().getTime();
-		var elapsed=(end - start)/1000; // in S
-		
-		if (!errm) {
-			document.getElementById("status").innerHTML = msg;
-			console.log("[" + elapsed + "] " + msg);
-		}
-		else {
-			document.getElementById("status").innerHTML = msg + "; " + errm;
-			console.error("[" + elapsed + "] " + msg + "; " + errm);
-		}
-	}
-}
 	
 /*
  * Function: postIt()
