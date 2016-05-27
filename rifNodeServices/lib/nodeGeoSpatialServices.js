@@ -329,7 +329,7 @@ var util = require('util'),
 				}	
 
 				var output = JSON.stringify(response);// Convert output response to JSON 
-				
+
 				if (response.fields["diagnosticFileDir"] && response.fields["responseFileName"]) { // Save to response file
 					fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["responseFileName"], 
 						output);	
@@ -342,6 +342,12 @@ var util = require('util'),
 				try {
 					res.write(output);                  // Write output  
 					res.end();	
+
+					if (response.fields.verbose) {
+						serverLog.serverLog2(__file, __line, "responseProcessing", 
+							"Response sent; size: " + output.length + " bytes", req);					
+					}
+									
 				}
 				catch(e) {
 					serverLog.serverError(__file, __line, "responseProcessing", "Error in sending response to client", req, e);
@@ -1162,7 +1168,7 @@ exports.convert = function exportsConvert(req, res) {
 							}
 							else {
 								response.message+= "\nProcessing file [" + (i+1) + "/" + response.no_files + "]: " + d.file.file_name;
-								d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response);
+								d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response, serverLog, req);
 							}
 							if (!d) { // Error handled in responseProcessing()
 //								httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile", serverLog, 

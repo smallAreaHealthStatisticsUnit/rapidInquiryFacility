@@ -463,7 +463,7 @@ jsonParse = function jsonParse(data, response) {
  *				response.file_errors,
  *				response.error 
  */
-geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr, response) {
+geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr, response, serverLog, req) {
 	var topojson = require('topojson');
 
 	scopeChecker(__file, __line, {
@@ -471,7 +471,9 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 		ofields: ofields,
 		topojson_options: topojson_options,
 		stderr: stderr,
-		response: response
+		response: response,
+		serverLog: serverLog,
+		req: req
 	});	
 	var msg="";
 	
@@ -539,6 +541,18 @@ Streaming parser needed; or it needs toString()ing in sections
 			}, topojson_options);				
 		stderr.enable(); 				   // Re-enable stderr
 		str=undefined;
+		
+		if (global.gc &&d.file.jsonData.length > (1024*1024*500) ) { // GC if json > 500M; 
+			global.gc();
+			var heap=v8.getHeapStatistics();
+			msg+="\nMemory heap >>>";
+			for (var key in heap) {
+				msg+="\n" + key + ": " + heap[key];
+			}
+			msg+="\n<<< End of memory heap";
+			serverLog.serverLog2(__file, __line, "geo2TopoJSONFile", "Force garbage collection");					
+		}
+		d.file.jsonData=undefined;			// Release memory
 		
 		d.file.topojson_stderr=stderr.str();  // Get stderr as a string	
 		stderr.clean();						// Clean down stderr string
