@@ -367,7 +367,7 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 						}						
 					}
 					
-					var ngeolevels = geolevels.sort(function (a, b) { // Sort function
+					var ngeolevels = geolevels.sort(function (a, b) { // Sort function: sort geolevels by area
 						if (a.total_areas > b.total_areas) {
 							return 1;
 						}
@@ -379,8 +379,12 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 					});
 							
 					for (var i=0; i < response.no_files; i++) {	// Create sorted ngeolevels array for geolevel_id for re=order (if required)		
-							ngeolevels[i].geolevel_id=i+1;						
+						ngeolevels[i].geolevel_id=i+1;						
 //							console.log("ngeolevels[" + i + "]: " + JSON.stringify(ngeolevels[i], null, 4));
+						if (i == 0 && ngeolevels.length > 1 && ngeolevels[i].total_areas != 1) { // Geolevel 1 - Check that minimum resolution shapefile has only 1 area
+							msg+="</br>ERROR! geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)";
+							console.log("ERROR! geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)");
+						}
 					}
 					
 					for (var i=0; i < response.no_files; i++) {	// Re-order by geolevel_id	if required	

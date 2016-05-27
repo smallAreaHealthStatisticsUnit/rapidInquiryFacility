@@ -1187,7 +1187,7 @@ topology: 1579 arcs, 247759 points
 				msg+="\nAll bounding boxes are the same";
 			}
 			
-			var ngeolevels = geolevels.sort(function (a, b) { // Sort function
+			var ngeolevels = geolevels.sort(function (a, b) { // Sort function: sort geolevels by area
 				if (a.total_areas > b.total_areas) {
 					return 1;
 				}
@@ -1197,16 +1197,21 @@ topology: 1579 arcs, 247759 points
 				// a must be equal to b
 				return 0;
 			});
-			for (var i=0; i<ngeolevels.length; i++) {		
+			
+			for (var i=0; i<ngeolevels.length; i++) { // Create sorted ngeolevels array for geolevel_id for re=order (if required)		
 				ngeolevels[i].geolevel_id=i+1;
 				if (i == 0 && ngeolevels.length > 1 && ngeolevels[i].total_areas != 1) { // Geolevel 1 - Check that minimum resolution shapefile has only 1 area
-					msg+="\nERROR: geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)"
+					msg+="\nERROR: geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)";
 					response.file_errors++;
 				}
+			}
+			
+			for (var i=0; i<ngeolevels.length; i++) {	
 				msg+="\nShape file [" + ngeolevels[i].i + "]: " + ngeolevels[i].file_name + 
 					"; areas: " + ngeolevels[i].total_areas + 
 					"; points: " + ngeolevels[i].points + 
 					"; geolevel: " + ngeolevels[i].geolevel_id; 
+					
 				response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
 				
 				xmlConfig.shapeFileList.shapeFiles[i] = {
