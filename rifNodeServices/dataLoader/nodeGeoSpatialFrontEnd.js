@@ -266,7 +266,188 @@ function setupBoundingBox(response) {
 		}
 	}	
 }
-					
+
+/*
+ * Function: 	createTable()
+ * Parameters: 	Response JSON, layerColours array, layerAddOrder array
+ * Returns: 	Table as HTML
+ * Description:	Create results table 
+ */
+function createTable(response, layerColours, layerAddOrder) {
+	
+	var msg="<table border=\"1\" style=\"width:100%\">" + 
+		"<tr>" +
+		"<th>File</th>" + 
+		"<th>Size</th>" +
+		"<th>Geo/Topo JSON length</th>" +
+		"<th>Areas</th>" + 
+		"<th>Geo level</th>" +
+		"</tr>";	
+	for (var i=0; i < response.no_files; i++) {	
+		msg+="<tr style=\"color:" + layerColours[i] + "\"><td>" + response.file_list[layerAddOrder[i]].file_name + "</td>" +
+				"<td>" + (fileSize(response.file_list[layerAddOrder[i]].file_size) || "N/A") + "</td>";
+		if (response.file_list[layerAddOrder[i]].topojson) {	
+			msg+="<td>" + (fileSize(response.file_list[layerAddOrder[i]].topojson_length) || "N/A ") + "/" + 
+				(fileSize(response.file_list[layerAddOrder[i]].geojson_length) || " N/A") + "</td>";	
+		}
+		else if (response.file_list[layerAddOrder[i]].geojson) {	
+			msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].geojson_length) + "</td>";							
+		}		
+		msg+="<td>" + response.file_list[layerAddOrder[i]].total_areas + "</td>" +
+			"<td>" + (response.file_list[layerAddOrder[i]].geolevel_id || "N/A") + "</td>" + 
+			"</tr>";								
+	}		
+	msg+="</table>";	
+
+	return msg;
+}	
+
+/*
+ * Function: 	setupLayers()
+ * Parameters: 	Response JSON
+ * Returns: 	layerAddOrder array
+ * Description:	Setup layers and geolevels
+ * 				Total areas not defined; deduce from topojson or geojson
+ * 				Check bounding box
+ * 				Sort geolevels by area
+ *				Create sorted ngeolevels array for geolevel_id for re-order (if required)
+ *				For geolevel 1 - Check that minimum resolution shapefile has only 1 area
+ * 				Re-order by geolevel_id if required	; creating layerAddOrder array
+ */
+function setupLayers(response) {
+	
+	var layerAddOrder = [];			
+
+/*
+Add shapefiles starting from the highest resolution first:
+
+Add data to JSONLayer[0]; shapefile [3]: SAHSU_GRD_Level4.shp
+Add data to JSONLayer[1]; shapefile [2]: SAHSU_GRD_Level3.shp
+Add data to JSONLayer[2]; shapefile [1]: SAHSU_GRD_Level2.shp
+Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
+*/
+	var geolevels = [];
+	var bbox=response.file_list[0].boundingBox;
+	
+	for (var i=0; i < response.no_files; i++) {	
+		if (!response.file_list[i].total_areas) { // Total areas not defined; deduce from topojson or geojson
+			if (response.file_list[i].topojson && 
+				response.file_list[i].topojson.objects && 
+				response.file_list[i].topojson.objects.collection && 
+				response.file_list[i].topojson.objects.collection.geometries) {
+				response.file_list[i].total_areas=response.file_list[i].topojson.objects.collection.geometries.length;
+
+			}
+			else if (response.file_list[i].geojson && 
+					 response.file_list[i].topojson.features) {
+				response.file_list[i].total_areas=response.file_list[i].topojson.features.length;
+			}		
+			else {
+				setStatus("Some total areas were not defined", new Error("Unable to deduce total areas for layer: " + i));
+			}	
+		}	
+		geolevels[i] = { // Initialise geolevels[] array if required to create geolevels
+			i: i,
+			file_name: response.file_list[i].file_name,
+			total_areas: response.file_list[i].total_areas,
+			points:  response.file_list[i].points,
+			geolevel_id: 0
+		};				
+
+		if (bbox[0] != response.file_list[i].boundingBox[0] &&
+			bbox[1] != response.file_list[i].boundingBox[1] &&
+			bbox[2] != response.file_list[i].boundingBox[2] &&
+			bbox[3] != response.file_list[i].boundingBox[3]) { // Bounding box checks
+			bbox_errors++;
+			msg+="\nERROR: Bounding box " + i + ": [" +
+				"xmin: " + response.file_list[i].boundingBox[0] + ", " +
+				"ymin: " + response.file_list[i].boundingBox[1] + ", " +
+				"xmax: " + response.file_list[i].boundingBox[2] + ", " +
+				"ymax: " + response.file_list[i].boundingBox[3] + "];" +
+				"\n is not the same as the first bounding box: " + 
+				"xmin: " + response.file_list[i].boundingBox[0] + ", " +
+				"ymin: " + response.file_list[i].boundingBox[1] + ", " +
+				"xmax: " + response.file_list[i].boundingBox[2] + ", " +
+				"ymax: " + response.file_list[i].boundingBox[3] + "];";
+			console.error("\nERROR: Bounding box " + i + ": [" +
+				"xmin: " + response.file_list[i].boundingBox[0] + ", " +
+				"ymin: " + response.file_list[i].boundingBox[1] + ", " +
+				"xmax: " + response.file_list[i].boundingBox[2] + ", " +
+				"ymax: " + response.file_list[i].boundingBox[3] + "];" +
+				"\n is not the same as the first bounding box: " + 
+				"xmin: " + response.file_list[i].boundingBox[0] + ", " +
+				"ymin: " + response.file_list[i].boundingBox[1] + ", " +
+				"xmax: " + response.file_list[i].boundingBox[2] + ", " +
+				"ymax: " + response.file_list[i].boundingBox[3] + "];");
+		}						
+	}
+	
+	var ngeolevels = geolevels.sort(function (a, b) { // Sort function: sort geolevels by area
+		if (a.total_areas > b.total_areas) {
+			return 1;
+		}
+		if (a.total_areas < b.total_areas) {
+			return -1;
+		}
+		// a must be equal to b
+		return 0;
+	});
+			
+	for (var i=0; i < response.no_files; i++) {	// Create sorted ngeolevels array for geolevel_id for re-order (if required)		
+		ngeolevels[i].geolevel_id=i+1;						
+//							console.log("ngeolevels[" + i + "]: " + JSON.stringify(ngeolevels[i], null, 4));
+		if (i == 0 && ngeolevels.length > 1 && ngeolevels[i].total_areas != 1) { // Geolevel 1 - Check that minimum resolution shapefile has only 1 area
+			setStatus("Check that minimum resolution shapefile has only 1 area", 
+				new Error("geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)"));
+		}
+	}
+	
+	for (var i=0; i < response.no_files; i++) {	// Re-order by geolevel_id if required	
+		var j=ngeolevels[i].i;
+		if (response.file_list[j].geolevel_id) { // Geolevel ID present in data
+			console.log("File[" + j + "]: " + response.file_list[j].file_name +
+				"; geolevel: " + response.file_list[j].geolevel_id +
+				"; size: " + response.file_list[j].file_size +
+				"; areas: " + response.file_list[j].total_areas);
+		}
+		else {
+			response.file_list[j].geolevel_id = ngeolevels[i].geolevel_id;
+			if (response.file_list[j].geolevel_id) {
+				console.log("File[" + j + "]: " + response.file_list[j].file_name +
+					"; deduced geolevel: " + response.file_list[j].geolevel_id +
+					"; size: " + (response.file_list[j].file_size || "not defined") +
+					"; areas: " +  response.file_list[j].total_areas);
+			}
+			else {
+				setStatus("Geo level reorder", new Error("File[" + j + "]: " + response.file_list[j].file_name +
+					"; deduced geolevel is undefined; ngeolevels[" + ij+ "]: " + JSON.stringify(ngeolevels[i], null, 4)));
+			}
+		}
+	}
+	
+//					for (var i=0; i < response.no_files; i++) {	// Display now re-ordered geolevels array		
+//							console.log("geolevels[" + i + "]: " + JSON.stringify(geolevels[i], null, 4));
+//					}
+	
+	for (var i=0; i < response.no_files; i++) {	// Re-order by geolevel_id; creating layerAddOrder array		
+		if (response.file_list[i].geolevel_id) {
+			console.log("Re-order: layerAddOrder[" + (response.no_files-response.file_list[i].geolevel_id) + "]=" + i);
+			layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;	
+		}
+		else {
+			setStatus("Geo level reorder", new Error("Geo level [" + i + "]; layerAddOrder[] response.no_files-response.file_list[i].geolevel_id is undefined"));
+		}
+	}
+	if (layerAddOrder.length == 0) {
+		setStatus("Geo level reorder", new Error("layerAddOrder[] array is zero sized; response.no_files: " + response.no_files));
+	}
+	else if (layerAddOrder.length != response.no_files) {
+		setStatus("Geo level reorder", new Error("layerAddOrder[] array: " + layerAddOrder.length + "; response.no_files: " + response.no_files));
+	}
+	
+	return layerAddOrder;
+}
+				
 /*
  * Function: 	displayResponse()
  * Parameters: 	Response text (JSON as a string), status code, form name (textual)
@@ -356,142 +537,19 @@ function displayResponse(responseText, status, formName) {
 						"#f0f0f0", // Light grey
 						"#0f0f0f"  // Onyx (nearly black)
 						];
-					
-					var layerAddOrder = [];			
-
-/*
-Add shapefiles starting from the highest resolution first:
-
-Add data to JSONLayer[0]; shapefile [3]: SAHSU_GRD_Level4.shp
-Add data to JSONLayer[1]; shapefile [2]: SAHSU_GRD_Level3.shp
-Add data to JSONLayer[2]; shapefile [1]: SAHSU_GRD_Level2.shp
-Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
-*/
-					var geolevels = [];
-					var bbox=response.file_list[0].boundingBox;
-					
-					for (var i=0; i < response.no_files; i++) {	
-						if (!response.file_list[i].total_areas) { // Total areas not defined; deduce from topojson or geojson
-							if (response.file_list[i].topojson && 
-							    response.file_list[i].topojson.objects && 
-							    response.file_list[i].topojson.objects.collection && 
-							    response.file_list[i].topojson.objects.collection.geometries) {
-								response.file_list[i].total_areas=response.file_list[i].topojson.objects.collection.geometries.length;
-
-							}
-							else if (response.file_list[i].geojson && 
-							         response.file_list[i].topojson.features) {
-							    response.file_list[i].total_areas=response.file_list[i].topojson.features.length;
-							}						
-						}	
-						geolevels[i] = { // Initialise geolevels[] array if required to create geolevels
-							i: i,
-							file_name: response.file_list[i].file_name,
-							total_areas: response.file_list[i].total_areas,
-							points:  response.file_list[i].points,
-							geolevel_id: 0
-						};				
-
-						if (bbox[0] != response.file_list[i].boundingBox[0] &&
-							bbox[1] != response.file_list[i].boundingBox[1] &&
-							bbox[2] != response.file_list[i].boundingBox[2] &&
-							bbox[3] != response.file_list[i].boundingBox[3]) { // Bounding box checks
-							bbox_errors++;
-							msg+="\nERROR: Bounding box " + i + ": [" +
-								"xmin: " + response.file_list[i].boundingBox[0] + ", " +
-								"ymin: " + response.file_list[i].boundingBox[1] + ", " +
-								"xmax: " + response.file_list[i].boundingBox[2] + ", " +
-								"ymax: " + response.file_list[i].boundingBox[3] + "];" +
-								"\n is not the same as the first bounding box: " + 
-								"xmin: " + response.file_list[i].boundingBox[0] + ", " +
-								"ymin: " + response.file_list[i].boundingBox[1] + ", " +
-								"xmax: " + response.file_list[i].boundingBox[2] + ", " +
-								"ymax: " + response.file_list[i].boundingBox[3] + "];";
-							console.error("\nERROR: Bounding box " + i + ": [" +
-								"xmin: " + response.file_list[i].boundingBox[0] + ", " +
-								"ymin: " + response.file_list[i].boundingBox[1] + ", " +
-								"xmax: " + response.file_list[i].boundingBox[2] + ", " +
-								"ymax: " + response.file_list[i].boundingBox[3] + "];" +
-								"\n is not the same as the first bounding box: " + 
-								"xmin: " + response.file_list[i].boundingBox[0] + ", " +
-								"ymin: " + response.file_list[i].boundingBox[1] + ", " +
-								"xmax: " + response.file_list[i].boundingBox[2] + ", " +
-								"ymax: " + response.file_list[i].boundingBox[3] + "];");
-						}						
-					}
-					
-					var ngeolevels = geolevels.sort(function (a, b) { // Sort function: sort geolevels by area
-						if (a.total_areas > b.total_areas) {
-							return 1;
-						}
-						if (a.total_areas < b.total_areas) {
-							return -1;
-						}
-						// a must be equal to b
-						return 0;
-					});
-							
-					for (var i=0; i < response.no_files; i++) {	// Create sorted ngeolevels array for geolevel_id for re=order (if required)		
-						ngeolevels[i].geolevel_id=i+1;						
-//							console.log("ngeolevels[" + i + "]: " + JSON.stringify(ngeolevels[i], null, 4));
-						if (i == 0 && ngeolevels.length > 1 && ngeolevels[i].total_areas != 1) { // Geolevel 1 - Check that minimum resolution shapefile has only 1 area
-							setStatus("Check that minimum resolution shapefile has only 1 area", 
-								new Error("geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)"));
-						}
-					}
-					
-					for (var i=0; i < response.no_files; i++) {	// Re-order by geolevel_id	if required	
-						var j=ngeolevels[i].i;
-						if (response.file_list[j].geolevel_id) { // Geolevel ID present in data
-							console.log("File[" + j + "]: " + response.file_list[j].file_name +
-								"; geolevel: " + response.file_list[j].geolevel_id +
-								"; size: " + response.file_list[j].file_size +
-								"; areas: " + response.file_list[j].total_areas);
-						}
-						else {
-							response.file_list[j].geolevel_id = ngeolevels[i].geolevel_id;
-							if (response.file_list[j].geolevel_id) {
-								console.log("File[" + j + "]: " + response.file_list[j].file_name +
-									"; deduced geolevel: " + response.file_list[j].geolevel_id +
-									"; size: " + (response.file_list[j].file_size || "not defined") +
-									"; areas: " +  response.file_list[j].total_areas);
-							}
-							else {
-								setStatus("Geo level reorder", new Error("File[" + j + "]: " + response.file_list[j].file_name +
-									"; deduced geolevel is undefined; ngeolevels[" + ij+ "]: " + JSON.stringify(ngeolevels[i], null, 4)));
-							}
-						}
-					}
-					
-//					for (var i=0; i < response.no_files; i++) {	// Display now re-ordered geolevels array		
-//							console.log("geolevels[" + i + "]: " + JSON.stringify(geolevels[i], null, 4));
-//					}
-					
-					for (var i=0; i < response.no_files; i++) {	// Re-order by geolevel_id		
-						if (response.file_list[i].geolevel_id) {
-							console.log("Re-order: layerAddOrder[" + (response.no_files-response.file_list[i].geolevel_id) + "]=" + i);
-							layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;	
-						}
-						else {
-							setStatus("Geo level reorder", new Error("Geo level [" + i + "]; layerAddOrder[] response.no_files-response.file_list[i].geolevel_id is undefined"));
-						}
-					}
-					if (layerAddOrder.length == 0) {
-						setStatus("Geo level reorder", new Error("layerAddOrder[] array is zero sized; response.no_files: " + response.no_files));
-					}
-					else if (layerAddOrder.length != response.no_files) {
-						setStatus("Geo level reorder", new Error("layerAddOrder[] array: " + layerAddOrder.length + "; response.no_files: " + response.no_files));
-					}
-					
+					var layerAddOrder = setupLayers(response);
+	
 					for (var i=0; i < response.no_files; i++) {	// Now processe					
 						var weight=(response.no_files - i); // i.e. Lower numbers - high resolution have most weight;	
+						
 	// Chroma.js - to be added (Node module)
 	//					var colorScale = chroma  
 	//						.scale(['#D5E3FF', '#003171'])
 	//						.domain([0,1]);	
+	
 						var opacity;
 						var fillOpacity;
-	//					if (response.file_list[i].geolevel_id != response.no_files) { 
+						
 						if (i > 0) { // All but the first are transparent
 							opacity=0;		
 							fillOpacity=0;
@@ -500,7 +558,7 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 							opacity=1;
 							fillOpacity=0.4;				
 						}
-	//					if (!layerColours[i] || response.file_list[i].geolevel_id == 1) {
+						
 						if (!layerColours[i] || i == (response.no_files - 1)) { // if >7 layers or lowest resolution (last layer) - make it black
 							layerColours[i]="#000000"; // Black
 							weight=response.no_files;
@@ -510,13 +568,12 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 							setStatus("Geo level reorder", new Error("layerAddOrder problem: Adding data to JSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE"));
 						}
 						else {
-							console.log("Add data to JSONLayer[" + i + "/" + (response.no_files - 1) + "]; file [" + layerAddOrder[i] + "]: " +
+							console.log("Add data to JSONLayer[" + i + "/" + (response.no_files - 1) + "]; file layer [" + layerAddOrder[i] + "]: " +
 								response.file_list[layerAddOrder[i]].file_name +
 								"; colour: " + layerColours[i] + "; weight: " + weight + "; opacity: " + opacity + "; fillOpacity: " + fillOpacity);
 
 							if (response.file_list[layerAddOrder[i]].topojson) {			
 								try {
-	//									var topojson = JSON.stringify(response.file_list[i].topojson);
 									if (response.file_list[i].boundingBox && map) {
 					
 										if (JSONLayer[i]) {	
@@ -524,7 +581,7 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 											map.removeLayer(JSONLayer[i]);
 										}		
 										
-										document.getElementById("status").innerHTML = "Adding topoJSONLayer[" + i + "]...";	
+										setStatus("Adding topoJSONLayer[" + i + "/" + (response.no_files - 1) + "]...");	
 										JSONLayer[i] = new L.topoJson(undefined, 
 											{style: 
 												{color: 	layerColours[i],
@@ -542,7 +599,6 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 							}
 							else if (response.file_list[layerAddOrder[i]].geojson) {			
 								try {
-	//									var geojson = JSON.stringify(response.file_list[i].geojson);
 									if (response.file_list[i].boundingBox && map) {
 					
 										if (JSONLayer[i]) {	
@@ -550,8 +606,7 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 											map.removeLayer(JSONLayer[i]);
 										}		
 										
-										console.log('New JSONLayer[' + i + '], color: ' + layerColours[i]);	
-										document.getElementById("status").innerHTML = "Adding JSONLayer[" + i + "]...";	
+										setStatus("Adding geoJSONLayer[" + i + "/" + (response.no_files - 1) + "]...");	
 										JSONLayer[i] = L.geoJson(undefined, 
 											{style: 
 												{color: 	layerColours[i],
@@ -573,29 +628,8 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 						}
 					} // end of for loop
 	
-					msg+="<table border=\"1\" style=\"width:100%\">" + 
-						"<tr>" +
-						"<th>File</th>" + 
-						"<th>Size</th>" +
-						"<th>Geo/Topo JSON length</th>" +
-						"<th>Areas</th>" + 
-						"<th>Geo level</th>" +
-						"</tr>";	
-					for (var i=0; i < response.no_files; i++) {	
-						msg+="<tr style=\"color:" + layerColours[i] + "\"><td>" + response.file_list[layerAddOrder[i]].file_name + "</td>" +
-								"<td>" + (fileSize(response.file_list[layerAddOrder[i]].file_size) || "N/A") + "</td>";
-						if (response.file_list[layerAddOrder[i]].topojson) {	
-							msg+="<td>" + (fileSize(response.file_list[layerAddOrder[i]].topojson_length) || "N/A ") + "/" + 
-								(fileSize(response.file_list[layerAddOrder[i]].geojson_length) || " N/A") + "</td>";	
-						}
-						else if (response.file_list[layerAddOrder[i]].geojson) {	
-							msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].geojson_length) + "</td>";							
-						}		
-						msg+="<td>" + response.file_list[layerAddOrder[i]].total_areas + "</td>" +
-							"<td>" + (response.file_list[layerAddOrder[i]].geolevel_id || "N/A") + "</td>" + 
-							"</tr>";								
-					}		
-					msg+="</table>";			
+					msg+=createTable(response, layerColours, layerAddOrder);
+				
 				} // response.file_list[0] exists
 				
 
