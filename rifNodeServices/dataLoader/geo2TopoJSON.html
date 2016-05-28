@@ -46,7 +46,14 @@ function errorHandler(error) {
 		else {
 			msg+="(no error status)";
 		}
-		msg+="</h1></br>Message:";
+		msg+="</h1>";
+		if (error.responseJSON.error) {
+			msg+="</br>Error text: " + error.responseJSON.error;
+		}
+		else {
+			console.log("No error text in JSON response");
+		}		
+		msg+="</br>Message:";
 		if (error.responseJSON.message) {
 			msg+=error.responseJSON.message;
 		}
@@ -108,10 +115,15 @@ type: "",
 webkitRelativePath: ""} .. then inherited
 
 */	
+	var fileCount=0;
 	for (var i=0; i<formData.length; i++) {
 		var value=formData[i].value;
-		if (formData[i].type == "file") {
+		if (formData[i].type == "file" && !value.name) {
+			;
+		}
+		else if (formData[i].type == "file") {
 			console.log("Formdata file[" + i + "]: " + value.name + "; size: " + value.size + "; last modified: " + value.lastModifiedDate);
+			fileCount++;
 		}
 		else if (formData[i].type == "checkbox") {
 			if (formData[i].required) {
@@ -125,17 +137,22 @@ webkitRelativePath: ""} .. then inherited
 			console.log("Formdata other [" + i + "]: " + JSON.stringify(formData[i].value, null, 4));
 		}
 	}
-	
-	start = new Date().getTime();
+	if (fileCount == 0) {
+		document.getElementById("status").innerHTML = "<h1>No files selected</h1>"
+		console.log("FATAL! No files selected");
+		return false;
+	}
 	
     // jqForm is a jQuery object encapsulating the form element.  To access the 
     // DOM element for the form do this: 
     // var formElement = jqForm[0]; 
 	if (!setupMap) {
-		console.error("setupMap() not defined: errors in nodeGeoSpatialServices.js");
+		document.getElementById("status").innerHTML = "<h1>setupMap() not defined: errors in nodeGeoSpatialServices.js</h1>"
+		console.log("FATAL! setupMap() not defined: errors in nodeGeoSpatialServices.js");
 		return false;
 	}
     console.log('About to submit: \n\n' + JSON.stringify(queryString, null, 4)); 
+	start = new Date().getTime();
  
     // here we could return false to prevent the form from being submitted; 
     // returning anything other than false will allow the form submit to continue 
@@ -146,14 +163,21 @@ webkitRelativePath: ""} .. then inherited
 function processJson(data, status) { 
     // 'data' is the json object returned from the server 
 	if (!data) {
+		document.getElementById("status").innerHTML = "FATAL: processJson(): data undefined";
 		console.error("FATAL: processJson(): data undefined");
 	}
 
-	if (status == "success") {
-		displayResponse(data, 200, "GeoJSON");
+	try {
+		if (status == "success") {
+			displayResponse(data, 200, "GeoJSON");
+		}
+		else {
+			displayResponse(data, status, "GeoJSON");
+		}
 	}
-	else {
-		displayResponse(data, status, "GeoJSON");
+	catch (e) {
+		document.getElementById("status").innerHTML = "<h1>FATAL: Caught exception in displayResponse()</h1><h2>Error message: " + e.message + "</h2>";
+		console.error("FATAL: Caught exception in displayResponse(): " + e.message);	
 	}
 }	
 

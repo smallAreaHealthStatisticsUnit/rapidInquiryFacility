@@ -65,6 +65,12 @@ L.topoJson = L.GeoJSON.extend({
 });
 // Copyright (c) 2013 Ryan Clark
 
+/*
+ * Function: 	setupMap()
+ * Parameters: 	None
+ * Returns: 	Nothing
+ * Description:	Setup map width for Leaflet 
+ */
 function setupMap() {	
 	var w = window.innerWidth
 		|| document.documentElement.clientWidth
@@ -116,7 +122,12 @@ function generateUUID() { // Post by briguy37 on stackoverflow
     return uuid;
 }
 
-// Display file size nicely	
+/*
+ * Function: 	fileSize()
+ * Parameters: 	File size
+ * Returns: 	Nicely formatted file size
+ * Description:	Display file size nicely	
+ */
 function fileSize(file_size) {
 	var niceFileSize;
 	if (!file_size) {
@@ -134,12 +145,24 @@ function fileSize(file_size) {
 	return niceFileSize;
 }
 
+/*
+ * Function: 	isIE()
+ * Parameters: 	None
+ * Returns: 	Nothing
+ * Description:	Test for IE nightmare 
+ */
 function isIE() {
 	var myNav = navigator.userAgent.toLowerCase();
 	return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
 }
 	
-setStatus = function(msg, errm) {
+/*
+ * Function: 	setStatus()
+ * Parameters: 	Status message, error message (optional), diagnostic (optional)
+ * Returns: 	Nothing
+ * Description:	Set status. Optional error message raised as an exception to halt processing 
+ */	
+function setStatus(msg, errm, diagnostic) {
 	if (document.getElementById("status").innerHTML != msg) {
 		var end=new Date().getTime();
 		var elapsed=(end - start)/1000; // in S
@@ -149,14 +172,21 @@ setStatus = function(msg, errm) {
 			console.log("[" + elapsed + "] " + msg);
 		}
 		else {
-			document.getElementById("status").innerHTML = msg + "; " + errm;
-			console.error("[" + elapsed + "] " + msg + "; " + errm);
+			document.getElementById("status").innerHTML = "<h1>" + msg + "</h1><h2>Error message: " + errm + "</h2>" +
+				"<p>Processing diagnostic:</br><pre>" + diagnostic + "</pre></p>";
+			throw new Error("[" + elapsed + "] " + msg + "; " + errm);
 		}
 	}
 }
 	
+/*
+ * Function: 	createMap()
+ * Parameters: 	Bounding box
+ * Returns: 	map
+ * Description:	Create map, add Openstreetmap basemap and scale
+ */	
 function createMap(boundingBox) {
-	console.log('New map');	
+	console.log('Create Leaflet map');	
 	var map = new L.map('map');
 	var msg;
 	
@@ -167,16 +197,18 @@ function createMap(boundingBox) {
 		);
 	}
 	catch (e) {
-		msg="Unable to create map: " + e.message;
-		console.error(msg);
-		document.getElementById("status").innerHTML = msg;	
-		map.remove(); 
-		return undefined;
+		try {
+			map.remove();
+		}
+		catch (e2) {
+			console.log("WARNING! Unable to remove map during error recovery");
+		}
+		setStatus("Unable to create map", e.message);
 	}
 	
 	try {
-		document.getElementById("status").innerHTML = "Creating basemap...";															
-		console.log('New tileLayer');
+		setStatus("Creating basemap...");															
+		console.log("Create basemap tileLayer: https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png");
 		tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 			maxZoom: 9,
 			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -192,18 +224,52 @@ function createMap(boundingBox) {
 		return map;
 	}
 	catch (e) {
-		msg="Unable to add tile layer to map: " + e.message;
-		console.error(msg);
-		document.getElementById("status").innerHTML = msg;	
-		map.remove(); 
-		return undefined;
+		try {
+			map.remove();
+		}
+		catch (e2) {
+			console.log("WARNING! Unable to remove map during error recovery");
+		}		
+		setStatus("Unable to add tile layer to map", e.message);
 	}
-
 }
 
 /*
+ * Function: 	setupBoundingBox()
+ * Parameters: 	Response JSON
+ * Returns: 	Nothing
+ * Description:	Setup bounding boxes - use response common bounding box (shapefiles only); then topoJSON; then whole world
+ *				Map uses index 0 (first one!) 
+ */
+function setupBoundingBox(response) {
+	for (var i=0; i < response.no_files; i++) {						
+		if (!response.file_list[i]) {
+			setStatus("Unable to setup bounding boxes", new Error("File [" + i + "/" + (response.no_files - 1) + "] is not defined"));
+		}
+		else if (!response.file_list[i].boundingBox) {
+			if (response.file_list[i].topojson && 
+				response.file_list[i].topojson.objects && 
+				response.file_list[i].topojson.objects.collection && 
+				response.file_list[i].topojson.objects.collection.bbox) {
+				console.log("File [" + i + "]: Using topojson bounding box");	
+				
+				response.file_list[i].boundingBox={
+					xmin: response.file_list[i].topojson.objects.collection.bbox[0], 
+					ymin: response.file_list[i].topojson.objects.collection.bbox[1], 
+					xmax: response.file_list[i].topojson.objects.collection.bbox[2], 
+					ymax: response.file_list[i].topojson.objects.collection.bbox[3]};										
+			}
+			else {
+				console.log("WARNING! File [" + i + "/" + (response.no_files - 1) + "]: bounding box is not defined; using whole world as bounding box");								
+				response.file_list[i].boundingBox={xmin: -180, ymin: -85, xmax: 180, ymax: 85};
+			}
+		}
+	}	
+}
+					
+/*
  * Function: 	displayResponse()
- * Parameters: 	Response text (JSON as a string), status code
+ * Parameters: 	Response text (JSON as a string), status code, form name (textual)
  * Returns: 	Nothing
  * Description:	Display reponse from submit form
  */
@@ -213,7 +279,7 @@ function displayResponse(responseText, status, formName) {
 	var responseErrors=0;
 	var JSONLayer=[];
 	
-	document.getElementById("status").innerHTML = "Processing response from server...";
+	setStatus("Processing response from server...");
 	if (responseText != null && typeof responseText == 'object') { // Already JSON
 		response=responseText;
 	}
@@ -222,76 +288,43 @@ function displayResponse(responseText, status, formName) {
 			response=JSON.parse(responseText);
 		} catch (e) {  
 			if (responseText) {
-				document.getElementById("status").innerHTML = "<h1>Send Failed</h1><h2>Error parsing response: " +  
-					e.message +"</h2><p>Reponse:" + responseText + "</p>";
+				setStatus("Send Failed, error parsing response", e, responseText);
 			}
-			else {
-				document.getElementById("status").innerHTML = "<h1>Send Failed</h1><h2>Error parsing response: " +  
-					e.message +"</h2><p>no response from server</p>";
+			else {		
+				setStatus("Send Failed, no response from server", e);
 			}
 			return;
 		}
 	}
 	
-	if (response.error) {
-		msg+="<p>Error message" + response.error + "</p>"
+	if (response.error) { // Should be handled by on-error hander
+		setStatus("Status: " + status + "; unexpected error message, in JSON", new(response.error), response.diagnostic);
 	}
 
 	if (!response.no_files) {
-		msg+="<p>ERROR! No processed files returned</p>";
+		setStatus("Error in processing file list", new Error("no files returned"));
 	}
 	else {
 		msg+="<p>Files processed: " + response.no_files;
-		if (!response.file_list) {
-			msg+="; no file list";	
+		if (!response.file_list) {	
+			setStatus("Error in processing file list", new Error("no file list"));
 		}
 		else {
-			if (response.no_files > 0) {
+			if (response.no_files == 0) {
+				setStatus("Error in processing file list", new Error("response.no_files == 0"));
+			}			
+			else {
 				if (!response.file_list[0]) {
-					msg+="</br>First file in list (size: " + response.no_files + ") is not defined";
-					console.error("ERROR! First file in list (size: " + response.no_files + ") is not defined");	
+					setStatus("Error in processing file list", new Error("First file in list (size: " + response.no_files + ") is not defined"));
 				}
 				else if (!response.file_list[0].file_name) {
-					msg+="</br>File nane of first file in list (size: " + response.no_files + ") is not defined";
-					console.error("ERROR! File nane of first file in list (size: " + response.no_files + ") is not defined");
+					setStatus("Error in processing file list", new Error("File nane of first file in list (size: " + response.no_files + ") is not defined"));
 				}	
-				else {
-					msg+="<table border=\"1\" style=\"width:100%\">" + 
-					"<tr>" +
-					"<th>File</th>" + 
-					"<th>Size</th>" +
-					"<th>Geo/Topo JSON length</th>" +
-					"<th>Areas</th>" + 
-					"<th>Geo level</th>" +
-					"</tr>";			
-
-					for (var i=0; i < response.no_files; i++) {						
-						if (!response.file_list[i]) {
-							msg+="</br>File [" + i + "] is not defined";
-							console.error("ERROR! File [" + i + "] is not defined");
-						}
-						else if (!response.file_list[i].boundingBox) {
-							if (response.file_list[i].topojson && 
-								response.file_list[i].topojson.objects && 
-								response.file_list[i].topojson.objects.collection && 
-								response.file_list[i].topojson.objects.collection.bbox) {
-								console.log("File [" + i + "]: Using topojson bounding box");	
-								
-								response.file_list[i].boundingBox={
-									xmin: response.file_list[i].topojson.objects.collection.bbox[0], 
-									ymin: response.file_list[i].topojson.objects.collection.bbox[1], 
-									xmax: response.file_list[i].topojson.objects.collection.bbox[2], 
-									ymax: response.file_list[i].topojson.objects.collection.bbox[3]};										
-							}
-							else {
-								console.log("File [" + i + "]: bounding box is not defined; using whole world as bounding box");								
-								response.file_list[i].boundingBox={xmin: -180, ymin: -85, xmax: 180, ymax: 85};
-							}
-						}
-					}
+				else {	
+					setupBoundingBox(response);
 			
 					if (!map) {
-						map=createMap(response.file_list[0].boundingBox);
+						map=createMap(response.file_list[0].boundingBox); // Create map using first bounding box in file list
 					}
 					else {
 						var centre=map.getCenter();
@@ -324,8 +357,7 @@ function displayResponse(responseText, status, formName) {
 						"#0f0f0f"  // Onyx (nearly black)
 						];
 					
-					var layerAddOrder = [];
-					
+					var layerAddOrder = [];			
 
 /*
 Add shapefiles starting from the highest resolution first:
@@ -403,8 +435,8 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 						ngeolevels[i].geolevel_id=i+1;						
 //							console.log("ngeolevels[" + i + "]: " + JSON.stringify(ngeolevels[i], null, 4));
 						if (i == 0 && ngeolevels.length > 1 && ngeolevels[i].total_areas != 1) { // Geolevel 1 - Check that minimum resolution shapefile has only 1 area
-							msg+="</br>ERROR! geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)";
-							console.log("ERROR! geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)");
+							setStatus("Check that minimum resolution shapefile has only 1 area", 
+								new Error("geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)"));
 						}
 					}
 					
@@ -425,10 +457,8 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 									"; areas: " +  response.file_list[j].total_areas);
 							}
 							else {
-								msg+="</br>ERROR! File[" + j + "]: " + response.file_list[j].file_name +
-									"; deduced geolevel is undefined; ngeolevels[" + ij+ "]: " + JSON.stringify(ngeolevels[i], null, 4);
-								console.log("ERROR! File[" + j + "]: " + response.file_list[j].file_name +
-									"; deduced geolevel is undefined; ngeolevels[" + j + "]: " + JSON.stringify(ngeolevels[i], null, 4));	
+								setStatus("Geo level reorder", new Error("File[" + j + "]: " + response.file_list[j].file_name +
+									"; deduced geolevel is undefined; ngeolevels[" + ij+ "]: " + JSON.stringify(ngeolevels[i], null, 4)));
 							}
 						}
 					}
@@ -437,27 +467,24 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 //							console.log("geolevels[" + i + "]: " + JSON.stringify(geolevels[i], null, 4));
 //					}
 					
-					for (var i=0; i < response.no_files; i++) {	//. Re-order by geolevel_id		
+					for (var i=0; i < response.no_files; i++) {	// Re-order by geolevel_id		
 						if (response.file_list[i].geolevel_id) {
+							console.log("Re-order: layerAddOrder[" + (response.no_files-response.file_list[i].geolevel_id) + "]=" + i);
 							layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;	
 						}
 						else {
-							msg+="</br>ERROR! [" + i + "]; layerAddOrder[] response.no_files-response.file_list[i].geolevel_id is undefined";
-							console.log("ERROR! [" + i + "]; layerAddOrder[] response.no_files-response.file_list[i].geolevel_id is undefined");			
+							setStatus("Geo level reorder", new Error("Geo level [" + i + "]; layerAddOrder[] response.no_files-response.file_list[i].geolevel_id is undefined"));
 						}
 					}
 					if (layerAddOrder.length == 0) {
-						msg+="</br>ERROR! layerAddOrder[] array is zero sized; response.no_files: " + response.no_files
-						console.log('ERROR! layerAddOrder[] array is zero sized; response.no_files: ' + response.no_files);						
+						setStatus("Geo level reorder", new Error("layerAddOrder[] array is zero sized; response.no_files: " + response.no_files));
 					}
 					else if (layerAddOrder.length != response.no_files) {
-						msg+="</br>ERROR! layerAddOrder[] array: " + layerAddOrder.length + "; response.no_files: " + response.no_files;
-						console.log("ERROR! layerAddOrder[] array: " + layerAddOrder.length + "; response.no_files: " + response.no_files);						
+						setStatus("Geo level reorder", new Error("layerAddOrder[] array: " + layerAddOrder.length + "; response.no_files: " + response.no_files));
 					}
 					
 					for (var i=0; i < response.no_files; i++) {	// Now processe					
-						var weight=(response.no_files - i); // i.e. Lower numbers - high resolution have most weight
-						var color=layerColours[i];	
+						var weight=(response.no_files - i); // i.e. Lower numbers - high resolution have most weight;	
 	// Chroma.js - to be added (Node module)
 	//					var colorScale = chroma  
 	//						.scale(['#D5E3FF', '#003171'])
@@ -473,23 +500,20 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 							opacity=1;
 							fillOpacity=0.4;				
 						}
-	//					if (!color || response.file_list[i].geolevel_id == 1) {
-						if (!color || i == (response.no_files - 1)) { // if >7 layers or lowest resolution (last layer) - make it black
-							color="#000000"; // Black
+	//					if (!layerColours[i] || response.file_list[i].geolevel_id == 1) {
+						if (!layerColours[i] || i == (response.no_files - 1)) { // if >7 layers or lowest resolution (last layer) - make it black
+							layerColours[i]="#000000"; // Black
 							weight=response.no_files;
 						}
 				
 						if (!response.file_list[layerAddOrder[i]] || !response.file_list[layerAddOrder[i]].file_name) {
-							msg+="</br>ERROR! layerAddOrder problem: Adding data to JSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE";
-							console.error("ERROR layerAddOrder problem: Adding data to JSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE");
+							setStatus("Geo level reorder", new Error("layerAddOrder problem: Adding data to JSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE"));
 						}
 						else {
-							console.log("Add data to JSONLayer[" + i + "]; file [" + layerAddOrder[i] + "]: " +
+							console.log("Add data to JSONLayer[" + i + "/" + (response.no_files - 1) + "]; file [" + layerAddOrder[i] + "]: " +
 								response.file_list[layerAddOrder[i]].file_name +
-								"; colour: " + color + "; weight: " + weight + "; opacity: " + opacity + "; fillOpacity: " + fillOpacity);
-								
-							msg+="<tr style=\"color:" + color + "\"><td>" + response.file_list[layerAddOrder[i]].file_name + "</td>" +
-									"<td>" + (fileSize(response.file_list[layerAddOrder[i]].file_size) || "N/A") + "</td>";
+								"; colour: " + layerColours[i] + "; weight: " + weight + "; opacity: " + opacity + "; fillOpacity: " + fillOpacity);
+
 							if (response.file_list[layerAddOrder[i]].topojson) {			
 								try {
 	//									var topojson = JSON.stringify(response.file_list[i].topojson);
@@ -500,11 +524,10 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 											map.removeLayer(JSONLayer[i]);
 										}		
 										
-										console.log('New topoJSONLayer[' + i + '], color: ' + color);	
 										document.getElementById("status").innerHTML = "Adding topoJSONLayer[" + i + "]...";	
 										JSONLayer[i] = new L.topoJson(undefined, 
 											{style: 
-												{color: 	color,
+												{color: 	layerColours[i],
 												 fillColor: "#ccf4ff",
 												 weight: 	weight, // i.e. Lower numbers have most weight
 												 opacity: 	1,
@@ -512,12 +535,9 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 											}).addTo(map);
 										JSONLayer[i].addData(response.file_list[layerAddOrder[i]].topojson);									
 									}
-									
-									msg+="<td>" + (fileSize(response.file_list[layerAddOrder[i]].topojson_length) || "N/A ") + "/" + 
-										(fileSize(response.file_list[layerAddOrder[i]].geojson_length) || " N/A") + "</td>";
+						
 								} catch (e) {  							
-									msg+="TopoJSON conversion error: " + e.message;
-									responseErrors++;
+									setStatus("TopoJSON conversion error", e);
 								}
 							}
 							else if (response.file_list[layerAddOrder[i]].geojson) {			
@@ -530,11 +550,11 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 											map.removeLayer(JSONLayer[i]);
 										}		
 										
-										console.log('New JSONLayer[' + i + '], color: ' + color);	
+										console.log('New JSONLayer[' + i + '], color: ' + layerColours[i]);	
 										document.getElementById("status").innerHTML = "Adding JSONLayer[" + i + "]...";	
 										JSONLayer[i] = L.geoJson(undefined, 
 											{style: 
-												{color: 	color,
+												{color: 	layerColours[i],
 												 fillColor: "#ccf4ff",
 												 weight: 	weight, // i.e. Lower numbers have most weight
 												 opacity: 	1,
@@ -543,32 +563,44 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 										JSONLayer[i].addData(response.file_list[layerAddOrder[i]].geojson);									
 									}
 									
-									msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].geojson_length) + "</td>";
-								} catch (e) {  							
-									msg+="GeoJSON conversion error: " + e.message;
-									responseErrors++;
+								} catch (e) {  	
+									setStatus("GeoJSON conversion error", e);	
 								}
 							}
 							else {
-								msg+="ERROR! no GeoJSON/topoJSON returned";
-								responseErrors++;
-							}
-							msg+="<td>" + response.file_list[layerAddOrder[i]].total_areas + "</td>" +
-								"<td>" + (response.file_list[layerAddOrder[i]].geolevel_id || "N/A") + "</td>" + 
-								"</tr>";
+								setStatus("Add data to JSONLayer[" + i + "/" + (response.no_files - 1) + "]", new Error("ERROR! no GeoJSON/topoJSON returned"));
+							}						
 						}
-
 					} // end of for loop
-				
+	
+					msg+="<table border=\"1\" style=\"width:100%\">" + 
+						"<tr>" +
+						"<th>File</th>" + 
+						"<th>Size</th>" +
+						"<th>Geo/Topo JSON length</th>" +
+						"<th>Areas</th>" + 
+						"<th>Geo level</th>" +
+						"</tr>";	
+					for (var i=0; i < response.no_files; i++) {	
+						msg+="<tr style=\"color:" + layerColours[i] + "\"><td>" + response.file_list[layerAddOrder[i]].file_name + "</td>" +
+								"<td>" + (fileSize(response.file_list[layerAddOrder[i]].file_size) || "N/A") + "</td>";
+						if (response.file_list[layerAddOrder[i]].topojson) {	
+							msg+="<td>" + (fileSize(response.file_list[layerAddOrder[i]].topojson_length) || "N/A ") + "/" + 
+								(fileSize(response.file_list[layerAddOrder[i]].geojson_length) || " N/A") + "</td>";	
+						}
+						else if (response.file_list[layerAddOrder[i]].geojson) {	
+							msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].geojson_length) + "</td>";							
+						}		
+						msg+="<td>" + response.file_list[layerAddOrder[i]].total_areas + "</td>" +
+							"<td>" + (response.file_list[layerAddOrder[i]].geolevel_id || "N/A") + "</td>" + 
+							"</tr>";								
+					}		
 					msg+="</table>";			
 				} // response.file_list[0] exists
 				
 
 			} // response.no_files > 0
-			else {
-				msg+="</br>ERROR! response.no_files == 0"; 
-				console.error("ERROR! response.no_files == 0");
-			}
+			
 			if (response.file_list[0]) {
 				if (response.file_list[0].srid) {
 					console.log("SRID: " + response.file_list[0].srid);

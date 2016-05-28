@@ -164,7 +164,13 @@ function submitForm() {
 			}
 			else if (request.readyState == 4) {
 				setStatus("Processing response..."); 
-				displayResponse(request.response, request.status, "Shapefile");
+				try {
+					displayResponse(request.response, request.status, "Shapefile");
+				}
+				catch (e) {
+					document.getElementById("status").innerHTML = "<h1>FATAL: Caught exception in displayResponse()</h1><h2>Error message: " + e.message + "</h2>";
+					console.error("FATAL: Caught exception in displayResponse(): " + e.message);	
+				}
 			}
 			else {		
 				setStatus("request.onreadystatechange() unknown state: " + request.readyState, "readyState error");
