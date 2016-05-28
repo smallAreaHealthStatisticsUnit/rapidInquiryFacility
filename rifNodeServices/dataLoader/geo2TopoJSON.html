@@ -10,12 +10,12 @@
     <script src="nodeGeoSpatialFrontEnd.js"></script> 
  
     <script> 
-        // wait for the DOM to be loaded 
-// prepare the form when the DOM is ready 
+// wait for the DOM to be loaded 
+// prepare the JQuery form when the DOM is ready 
 $(document).ready(function() { 
     var options = { 
         target:        '#geo2TopoJSON',   	// target element(s) to be updated with server response 
-        beforeSubmit:  showRequest,  		// pre-submit callback 
+        beforeSubmit:  checkRequest,  		// pre-submit callback 
         success:       processJson,  		// post-submit callback 
 		error:		   errorHandler, 		// Error handler callback
 		uploadProgress: uploadProgressHandler,	// uploadProgress handler
@@ -37,64 +37,14 @@ $(document).ready(function() {
 	
 	console.log("Ready");
 }); 
- 
-function errorHandler(error) {
-	if (error) {
-		console.error(JSON.stringify(error, null, 4));
-		var msg="<h1>Send Failed; http status: ";
-		if (error.status) {
-			msg+=error.status;
-		}
-		else {
-			msg+="(no error status)";
-		}
-		msg+="</h1>";
-		if (error.responseJSON.error) {
-			msg+="</br>Error text: " + error.responseJSON.error;
-		}
-		else {
-			console.log("No error text in JSON response");
-		}		
-		msg+="</br>Message:";
-		if (error.responseJSON.message) {
-			msg+=error.responseJSON.message;
-		}
-		else {
-			msg+="(no error message)";
-		}
-		if (error.responseJSON.diagnostic) {
-			msg+="<p>Processing diagnostic:</br><pre>" + error.responseJSON.diagnostic + "</pre></p>";
-		}	
-		
-		document.getElementById("status").innerHTML = msg;
-	}
-	else {
-		console.error("errorHandler(): No error returned");
-	}
-	
-	if (map) {
-		map.eachLayer(function (layer) {
-			console.log('Remove tileLayer');
-			map.removeLayer(layer);
-		});
-		console.log('Remove map');
-		map.remove(); // Known leaflet bug:
-					  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-		map = undefined;
-		document.getElementById("map").innerHTML = "";			 
-		console.log('Remove map element'); 
-	}										  
-}
 
-function uploadProgressHandler(event, position, total, percentComplete) {
-	var msg="Uploading: " +
-			percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
-	document.getElementById('status').innerHTML = msg;
-	console.log(msg);
-}
-
-// pre-submit callback 
-function showRequest(formData, jqForm, options) { 
+/*
+ * Function: 	checkRequest()
+ * Parameters:  formData, jqForm, options
+ * Returns: 	true/false. False prevents form submitting!
+ * Description:	Pre-submit callback handler for JQuery form
+ */
+function checkRequest(formData, jqForm, options) { 
     // formData is an array; here we use $.param to convert it to a string to display it 
     // but the form plugin does this for you automatically when it submits the data 
 		 	
@@ -121,7 +71,7 @@ webkitRelativePath: ""} .. then inherited
 	for (var i=0; i<formData.length; i++) {
 		var value=formData[i].value;
 		if (formData[i].type == "file" && !value.name) {
-			;
+			console.log("Formdata: null file");
 		}
 		else if (formData[i].type == "file") {
 			console.log("Formdata file[" + i + "]: " + value.name + "; size: " + value.size + "; last modified: " + value.lastModifiedDate);
@@ -161,7 +111,13 @@ webkitRelativePath: ""} .. then inherited
     return true; 
 } 
  
-// post-submit callback 
+/*
+ * Function: 	processJson()
+ * Parameters:  data, status
+ * Returns: 	Nothing
+ * Description:	Post-submit callback for JQuery form
+ * 				Do not use setStatus or you become devine 
+ */
 function processJson(data, status) { 
     // 'data' is the json object returned from the server 
 	if (!data) {
@@ -182,7 +138,6 @@ function processJson(data, status) {
 		console.error("FATAL: Caught exception in displayResponse(): " + e.message);	
 	}
 }	
-
     </script>
 <title>GeoJSON to TOpoJSON Uploading Form</title>
 </head>

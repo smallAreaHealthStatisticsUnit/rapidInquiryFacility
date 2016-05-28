@@ -169,11 +169,20 @@ function setStatus(msg, errm, diagnostic) {
 		
 		if (!errm) {
 			document.getElementById("status").innerHTML = msg;
+			if (diagnostic) {
+				document.getElementById("status").innerHTML = 
+					document.getElementById("status").innerHTML + 
+					"<p>Processing diagnostic:</br><pre>" + diagnostic + "</pre></p>";
+			}
 			console.log("[" + elapsed + "] " + msg);
 		}
 		else {
-			document.getElementById("status").innerHTML = "<h1>" + msg + "</h1><h2>Error message: " + errm + "</h2>" +
-				"<p>Processing diagnostic:</br><pre>" + diagnostic + "</pre></p>";
+			document.getElementById("status").innerHTML = "<h1>" + msg + "</h1><h2>Error message: " + errm + "</h2>";
+			if (diagnostic) {
+				document.getElementById("status").innerHTML = 
+					document.getElementById("status").innerHTML + 
+					"<p>Processing diagnostic:</br><pre>" + diagnostic + "</pre></p>";
+			}
 			throw new Error("[" + elapsed + "] " + msg + "; " + errm);
 		}
 	}
@@ -457,7 +466,6 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 function displayResponse(responseText, status, formName) {
 	var response;
 	var msg="";
-	var responseErrors=0;
 	var JSONLayer=[];
 	
 	setStatus("Processing response from server...");
@@ -678,21 +686,80 @@ function displayResponse(responseText, status, formName) {
 		msg+="<p>Processing diagnostic:</br><pre>" + response.diagnostic + "</pre></p>";
 	}	
 	
-	if (status == 200 && responseErrors == 0 && map) {	
-		document.getElementById("status").innerHTML = "<h1>" + formName + " processed OK</h1>" + msg;
+	if (status == 200 && map) {	
+		setStatus("<h1>" + formName + " processed OK</h1>", undefined, msg);
 	}
-	else if (status == 200 && responseErrors > 0 && map) {	
-		document.getElementById("status").innerHTML = "<h1>" + formName + " processed OK; but with " + 
-			responseErrors + " error(s) in response</h1>" + msg;
-	}
-	else if (status == 200 && responseErrors > 0 && !map) {	
-		document.getElementById("status").innerHTML = "<h1>" + formName + " processed OK; but with " + 
-			responseErrors + " error(s) in response; no map was produced</h1>" + '<h2>Error: ' + document.getElementById("status").innerHTML + '</h2>' +  msg;
-	}	
-	else if (status == 200 && responseErrors == 0 && !map) {	
-		document.getElementById("status").innerHTML = "<h1>" + formName + " processed OK; no map was produced</h1>" + '<h2>Error: ' + document.getElementById("status").innerHTML + '</h2>' + msg;
+	else if (status == 200 && !map) {	
+		setStatus(formName + " processing OK", new Error("No map was produced"), msg);
 	}	
 	else {
-		document.getElementById("status").innerHTML = "<h1>Send Failed; http status: " + status + "</h1></br>Message:" + msg;
+		setStatus("Send Failed", new Error("Unexpected http status: " + status), "Message:" + msg);
 	}
 }	
+
+function errorHandler(error) {
+	if (error) {
+		console.error(JSON.stringify(error, null, 4));
+		var msg="<h1>Send Failed; http status: ";
+		if (error.status) {
+			msg+=error.status;
+		}
+		else {
+			msg+="(no error status)";
+		}
+		msg+="</h1>";
+		if (error.responseJSON.error) {
+			msg+="</br>Error text: " + error.responseJSON.error;
+		}
+		else {
+			console.log("No error text in JSON response");
+		}		
+		msg+="</br>Message:";
+		if (error.responseJSON.message) {
+			msg+=error.responseJSON.message;
+		}
+		else {
+			msg+="(no error message)";
+		}
+		if (error.responseJSON.diagnostic) {
+			msg+="<p>Processing diagnostic:</br><pre>" + error.responseJSON.diagnostic + "</pre></p>";
+		}	
+		
+		document.getElementById("status").innerHTML = msg;
+	}
+	else {
+		console.error("errorHandler(): No error returned");
+	}
+	
+	if (map) {
+		map.eachLayer(function (layer) {
+			console.log('Remove tileLayer');
+			map.removeLayer(layer);
+		});
+		console.log('Remove map');
+		map.remove(); // Known leaflet bug:
+					  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+		map = undefined;
+		document.getElementById("map").innerHTML = "";			 
+		console.log('Remove map element'); 
+	}										  
+}
+
+/*
+ * Function: 	uploadProgressHandler()
+ * Parameters:  event, position, total, percentComplete
+ * Returns: 	Nothing
+ * Description:	Upload progress handler for JQuery form
+ */
+function uploadProgressHandler(event, position, total, percentComplete) {
+	var msg;
+	
+	if (percentComplete == 100) {
+		msg="Uploaded: " + percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
+	}
+	else {
+		msg="Uploading: " + percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
+	}
+	document.getElementById('status').innerHTML = msg;
+	console.log(msg);
+}

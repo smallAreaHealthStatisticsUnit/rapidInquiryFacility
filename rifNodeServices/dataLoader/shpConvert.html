@@ -1,35 +1,158 @@
 <html>
-  <head>
-	<script src="jquery-2.2.3.js"></script> 
+<head>
+    <script src="jquery-2.2.3.js"></script> 
     <link rel="stylesheet" href="leaflet/leaflet.css" />
     <script src="leaflet/leaflet.js"></script>
     <script src="topojson.min.js"></script>
     <link rel="stylesheet" href="leaflet.zoomdisplay.css" />
     <script src="leaflet.zoomdisplay.js"></script>
+    <script src="jquery.form.js"></script> 
     <script src="nodeGeoSpatialFrontEnd.js"></script> 
+ 
+    <script> 
+// wait for the DOM to be loaded 
+// prepare the JQuery form when the DOM is ready 
+$(document).ready(function() { 
+    var options = { 
+        target:        '#shpConvert',   	// target element(s) to be updated with server response 
+        beforeSubmit:  checkRequest,  		// pre-submit callback 
+        success:       processJson,  		// post-submit callback 
+		error:		   errorHandler, 		// Error handler callback
+		uploadProgress: uploadProgressHandler,	// uploadProgress handler
+		data: 			{uuidV1: "1"}, 		// Add randomised reference		
+        // other available options: 
+        //url:       url         // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        dataType:    'json'        // 'xml', 'script', or 'json' (expected server response type) 
+        //clearForm: true        // clear all form fields after successful submit 
+        //resetForm: true        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        //timeout:   3000 
+		
+    }; 
 	
-    <title>Shapefile Uploading Form</title>
-  </head>
+    // bind form using 'ajaxForm' 
+    $('#shpConvert').ajaxForm(options); 
+	
+	console.log("Ready");
+}); 
+
+var fileCount=0;
+	
+/*
+ * Function: 	checkRequest()
+ * Parameters:  formData, jqForm, options
+ * Returns: 	true/false. False prevents form submitting!
+ * Description:	Pre-submit callback handler for JQuery form
+ */
+function checkRequest(formData, jqForm, options) { 
+    // formData is an array; here we use $.param to convert it to a string to display it 
+    // but the form plugin does this for you automatically when it submits the data 
+		 	
+	options.data.uuidV1=generateUUID();
+	console.log("uuidV1: " + options.data.uuidV1);
+	
+    var queryString = $.param(formData); 
+/*
+formData: Array[4]
+0:
+Object {
+name: "file"
+type: "file"
+value: File Object {
+lastModified: 1464097549540
+lastModifiedDate: Tue May 24 2016 14:45:49 GMT+0100 (GMT Daylight Time)
+name: "SAHSU_GRD_Level4.json"
+size: 5562945
+type: "",
+webkitRelativePath: ""} .. then inherited
+
+*/	
+	for (var i=0; i<formData.length; i++) {
+		var value=formData[i].value;
+		if (formData[i].type == "file" && !value.name) {
+			console.log("Formdata: null file");
+		}
+		else if (formData[i].type == "file") {
+			console.log("Formdata file[" + i + "]: " + value.name + "; size: " + value.size + "; last modified: " + value.lastModifiedDate);
+			fileCount++;
+		}
+		else if (formData[i].type == "checkbox") {
+			if (formData[i].required) {
+				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
+			}
+			else {
+				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
+			}
+		}
+		else {
+			console.log("Formdata other [" + i + "]: " + JSON.stringify(formData[i].value, null, 4));
+		}
+	}
+	if (fileCount == 0) {
+		document.getElementById("status").innerHTML = "<h1>No files selected</h1>"
+		console.log("FATAL! No files selected");
+		return false;
+	}
+	
+    // jqForm is a jQuery object encapsulating the form element.  To access the 
+    // DOM element for the form do this: 
+    // var formElement = jqForm[0]; 
+	if (!setupMap) {
+		document.getElementById("status").innerHTML = "<h1>setupMap() not defined: errors in nodeGeoSpatialServices.js</h1>"
+		console.log("FATAL! setupMap() not defined: errors in nodeGeoSpatialServices.js");
+		return false;
+	}
+    console.log('About to submit: \n\n' + JSON.stringify(queryString, null, 4)); 
+	start = new Date().getTime();
+ 
+    // here we could return false to prevent the form from being submitted; 
+    // returning anything other than false will allow the form submit to continue 
+    return true; 
+} 
+ 
+/*
+ * Function: 	processJson()
+ * Parameters:  data, status
+ * Returns: 	Nothing
+ * Description:	Post-submit callback for JQuery form
+ * 				Do not use setStatus or you become devine 
+ */
+function processJson(data, status) { 
+    // 'data' is the json object returned from the server 
+	if (!data) {
+		document.getElementById("status").innerHTML = "FATAL: processJson(): data undefined";
+		console.error("FATAL: processJson(): data undefined");
+	}
+
+	try {
+		if (status == "success") {
+			displayResponse(data, 200, "Shapefile");
+		}
+		else {
+			displayResponse(data, status, "Shapefile");
+		}
+	}
+	catch (e) {
+		document.getElementById("status").innerHTML = "<h1>FATAL: Caught exception in displayResponse()</h1><h2>Error message: " + e.message + "</h2>";
+		console.error("FATAL: Caught exception in displayResponse(): " + e.message);	
+	}
+}	
+    </script>
+<title>Shapefile to TopoJSON Convertor</title>
+</head>
   <body onload="setupMap();">
     <div id="header">
       <h4>Shapefile Upload</h4>
     </div>
   <div id="nav">
-	<form action="/shpConvert" method="POST" id="shpConvert"
-		  enctype="multipart/form-data">
-	  Select a set/sets of shapefile files to upload: <input type="file" id="files" size="50" multiple="multiple" />
-	  <!-- Use multi file submit -->
-
-      <input type="submit" id="submit_handle" style="display: none"> 
-	  <div id="conversion"><!--
-	  Select conversion:
-	  <input type="radio" id="output_type_geojson" name="output_type" value="shp2GeoJSON" checked>GeoJSON
-	  <input type="radio" id="output_type_topojson" name="output_type" value="shp2TopoJSON">TopoJSON
-	  <input type="radio" id="output_type_wkt" name="output_type" value="shp2WKT">Well Known text (WKT) --></div></br>
-	  Diagnostics:
-	  <input type="checkbox" id="verbose" value="true">
-	  <button type="button" id="save" onclick="submitForm()">Upload Files</button></br>	  
-	</form>
+<form id="shpConvert" action="http://127.0.0.1:3000/shpConvert" method="POST"
+      enctype="multipart/form-data">
+Select a file/files to upload: <input type="file" name="file" size="50" multiple="multiple" />
+<input type="submit" value="Upload File(s)" />
+<input type="checkbox" name="verbose" value="true">Verbose<br>
+</form>
   </div>
   <div id="workarea">
 	<div id="status"></div>
@@ -105,177 +228,5 @@ button {
 	border-radius: 12px;
 }
     </style>
-    <script>
-						
-/*
- * Function: 	submitForm()
- * Parameters: 	None
- * Returns: 	Nothing
- * Description:	Submit form button
- */
-function submitForm() {
-
-	var files_elem=document.getElementById('files');
-	var verbose=document.getElementById('verbose').checked;
-	var output_type="shpConvert";
-	var files = files_elem.files;
-	var fileno = 0;
-	var totalFileSize = 0;
-	var timeout = 600*1000 // 600,000 ms; 10 minutes
-	
-	var request = new XMLHttpRequest();
-
-    var formData = new FormData();
-	start = new Date().getTime();
-	
-	if (files.length == 0) {
-		document.getElementById('status').innerHTML = "ERROR! No files selected, unable to upload.";
-		return;
-	}
-	
-	// Remove old map layers
-	if (map) {
-		map.eachLayer(function (layer) {
-			console.log('Remove tileLayer');
-			map.removeLayer(layer);
-		});
-	}
-	
-	if (verbose) { // i.e. diagnostics
-		console.log('Verbose mode: ' + verbose);
-		formData.append('verbose', verbose);
-	}
-	formData.append('uuidV1', generateUUID()); // Random reference
-	
-	try {
-		request.open('POST', output_type);
-			// Process results
-	
-		request.onreadystatechange = function() {
-			
-			if (request.readyState == 1) { 
-				setStatus("Connected...");
-			}
-			else if (request.readyState == 2) { 
-				setStatus("Request received...");
-			}		
-			else if (request.readyState == 3) { 
-				setStatus("Processing request...");
-			}
-			else if (request.readyState == 4) {
-				setStatus("Processing response..."); 
-				try {
-					displayResponse(request.response, request.status, "Shapefile");
-				}
-				catch (e) {
-					document.getElementById("status").innerHTML = "<h1>FATAL: Caught exception in displayResponse()</h1><h2>Error message: " + e.message + "</h2>";
-					console.error("FATAL: Caught exception in displayResponse(): " + e.message);	
-				}
-			}
-			else {		
-				setStatus("request.onreadystatechange() unknown state: " + request.readyState, "readyState error");
-			}
-		}
-
-		if (isIE() && request.timeout) {
-			request.timeout = timeout;
-			console.log('IE Timeout set: ' + timeout);
-		}
-		else {
-			request.timeout = timeout;
-			console.log('Timeout set: ' + timeout);
-		}
-		request.ontimeout = function(e) {
-			var end=new Date().getTime();
-			var elapsed=(end - start)/1000; // in S
-			
-			if (e) {
-				setStatus("Processing timed out after " + (timeout/1000) + " seconds", e.message);	
-			}
-			else {
-				setStatus("Processing timed out after " + (timeout/1000) + " seconds", "timeout error");	
-			}
-		}
-		
-	}
-	catch (e) {
-		var end=new Date().getTime();
-		var elapsed=(end - start)/1000; // in S
-			
-		setStatus("ERROR! Unable to open for post to: http://127.0.0.1:3000/" + output_type, e.message);
-		return;
-	}
-	
-	// 
-	request.upload.onprogress = function(evt) {
-		var end=new Date().getTime();
-		var elapsed=(end - start)/1000; // in S
-			
-		if (evt.lengthComputable) {
-			var percentComplete = Math.round(evt.loaded * 100 / evt.total);
-			if (percentComplete == 100) {
-				var end=new Date().getTime();
-				var elapsed=(end - start)/1000; // in S
-		
-				if (fileno != files.length) {
-					setStatus("Uploaded file " + fileno + "/" + files.length + ": " + 
-						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize));	
-				}
-				else {
-					setStatus("Uploaded all " + files.length + " files " + 
-						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize) + "; sending to server...");	
-				}
-			}
-			else {
-				document.getElementById('status').innerHTML = "Uploading file " + fileno + "/" + files.length + ": " + 
-					percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize);
-			}
-		}
-		else {
-			console.error("[" + elapsed + "] " + "ERROR! Uploading files: unable to compute percent complete", "UNKNOWN");
-		}
-	}	
-
-	// Process submitted files
-	for (var fileno = 0; fileno < files.length; ++fileno) {
-		var file=files[fileno];
-		if (file !== null) {
-				
-			var name = file.name;
-			var reader = new FileReader();
-
-			reader.onload = function(event) {
-				var arrayBuf = new Uint8Array(event.target.result);
-				var arrayIndex = 0;		  
-			}
-			reader.onerror = function(err) {
-				setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
-					name, err); 		
-				return;
-			}
-			totalFileSize+=file.size;
-			formData.append('file[]', file, name);
-			console.log('Loading file [' + fileno + ']: ' + name + "; " + fileSize(file.size));	
-			
-			reader.readAsArrayBuffer(file);
-		}
-	}
-
-	try {			
-		setStatus("Sending to server...");
-		request.send(formData);	
-		return;
-	}
-	catch (e) {
-		setStatus("ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type, e.message);
-		return;
-	}		
-//    request.sendAsBinary(formData); // Bad crash!!
-  
-
-}
-
-</script>
-
   </body>
 </html>
