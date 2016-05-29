@@ -623,7 +623,46 @@ var util = require('util'),
 		
 		return d;
 	} // End of createD
+
+/*
+ * Function: 	getQuantization() 
+ * Parameters:  Level
+ * Description: Set quantization (the maximum number of differentiable values along each dimension) by zoomLevel
+ *
+ * Zoomlevel		Quantization
+ * ---------		------------
+ *
+ * <=6				1,500
+ * 7				3,000
+ * 8				5,000
+ * 9				10,000
+ * 10				100,000
+ * 11				1,000,0000
+ * 
+ * Modified in the light of experience to increase quantisations: e.g. 10**6 for US zoomlevel 11.
+ */
+var getQuantization = function getQuantization(lvl) {
 			
+	if (lvl <= 6) {
+		return 1500;
+	} 
+	else if (lvl == 7) {
+		return 3000;
+	} 
+	else if (lvl == 8) {
+		return 5000;
+	} 
+	else if (lvl == 9) {
+		return 1e4;
+	} 
+	else if (lvl == 10) {
+		return 1e5;
+	} 
+	else {
+		return 1e6; // Default
+	}
+};
+				
 /*
  * Function: 	exports.convert()
  * Parameters:	Express HTTP request object, response object
@@ -720,15 +759,14 @@ exports.convert = function exportsConvert(req, res) {
 				my_reference: '', 
 				verbose: false
 			}
+			var topojson_options = {
+				verbose: true		
+			};				
 			if (req.url == '/geo2TopoJSON') {
 				// Default geo2TopoJSON options (see topology Node.js module)
-				var topojson_options = {
-					verbose: false,
-					quantization: 1e4		
-				};	
-				ofields.zoomLevel=0; 
-				ofields.quantization=topojson_options.quantization;
-				ofields.projection=topojson_options.projection;
+//				ofields.zoomLevel=0; 
+//				ofields.quantization=topojson_options.quantization;
+//				ofields.projection=topojson_options.projection;
 			}
 			else if (req.url == '/shpConvert') {
 				// Default shpConvert options (see shapefile Node.js module)
@@ -901,6 +939,7 @@ exports.convert = function exportsConvert(req, res) {
  *			 	verbose: 	Produces debug returned as part of reponse.message
  */ 
 			req.busboy.on('field', function fieldProcessing(fieldname, val, fieldnameTruncated, valTruncated) {
+		
 				var text="\nField: " + fieldname + "[" + val + "]; ";
 				
 				// Handle truncation
@@ -913,15 +952,29 @@ exports.convert = function exportsConvert(req, res) {
 					response.field_errors++;
 				}
 				
-				// Process fields
+				// Process common fields
 				if ((fieldname == 'verbose')&&(val == 'true')) {
 					text+="verbose mode enabled";
 					ofields[fieldname]="true";
+				}	
+				else if (fieldname == 'quantization') {
+				   ofields["quantization"]=val;
+				   text+="Initial quantization: " + topojson_options.quantization;
+				}				
+				else if (fieldname == 'zoomLevel') {
+				   topojson_options.quantization = getQuantization(val);
+				   ofields["zoomLevel"]=val;
+				   if (!ofields["quantization"]) {
+						ofields["quantization"]=topojson_options.quantization;
+				   }
+				   text+="Initial zoomelvel: " + ofields["zoomLevel"] + "; quantization: " + topojson_options.quantization;
 				}
-				if ((fieldname == 'uuidV1')&&(!response.fields["diagnosticFileDir"])) { // Start the diagnostics log as soon as possible
+				else if ((fieldname == 'uuidV1')&&(!response.fields["diagnosticFileDir"])) { // Start the diagnostics log as soon as possible
 					ofields[fieldname]=val;
 					setupDiagnostics(__file, __line, req, ofields, response, serverLog, httpErrorResponse);
 				}
+				
+				// Call URL specific code
 				if (req.url == '/geo2TopoJSON') {
 					text+=geo2TopoJSON.geo2TopoJSONFieldProcessor(fieldname, val, topojson_options, ofields, response, req, serverLog);
 				}
@@ -1205,6 +1258,15 @@ exports.convert = function exportsConvert(req, res) {
 					}
 					addStatus(__file, __line, response, "Busboy Finish", 200 /* HTTP OK */, serverLog, req);  // Add onBusboyFinish status
 	
+					// Set any required parameters not yet set
+					if (!ofields["quantization"]) {
+						   topojson_options.quantization = getQuantization(11); // For zoomlevel 11
+						   if (!ofields["quantization"]) {
+								ofields["quantization"]=topojson_options.quantization;
+						   }
+						   response.message+="\nInitial quantization: " + topojson_options.quantization;
+					}
+				
 					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
 						const async = require('async');
 						

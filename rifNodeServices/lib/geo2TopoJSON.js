@@ -104,47 +104,11 @@ geo2TopoJSONFieldProcessor=function geo2TopoJSONFieldProcessor(fieldname, val, t
 		serverLog: serverLog
 	});	
 	
-	var msg,
-	    text = "",
-
-/*
- * Function: 	getQuantization() 
- * Parameters:  Level
- * Description: Set quantization (the maximum number of differentiable values along each dimension) by zoomLevel
- *
- * Zoomlevel		Quantization
- * ---------		------------
- *
- * <=6				400
- * 7				700
- * 8				1500
- * 9				3000
- * 10				5000
- * >10				10000
- */
-        getQuantization = function(lvl) {
-         if (lvl <= 6) {
-            return 400;
-         } else if (lvl == 7) {
-            return 700;
-         } else if (lvl == 8) {
-            return 1500;
-         } else if (lvl == 9) {
-            return 3000;
-         } else if (lvl == 10) {
-            return 5000;
-         } else {
-            return 10000; // Default
-         }
-        };
+	var msg;
+	var text = "";
 	
 	if ((fieldname == 'verbose')&&(val == 'true')) {
 		topojson_options.verbose = true;
-	}
-	else if (fieldname == 'zoomLevel') {
-	   topojson_options.quantization = getQuantization(val);
-	   text+="Quantization set to: " + topojson_options.quantization;
-	   ofields["quantization"]=topojson_options.quantization;
 	}
 	else if (fieldname == 'projection') {
 	   topojson_options.projection = val;

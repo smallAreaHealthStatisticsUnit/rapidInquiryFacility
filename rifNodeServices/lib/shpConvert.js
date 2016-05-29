@@ -472,10 +472,13 @@ topology: 1579 arcs, 247759 points
 		if (!topojson_options) {
 			topojson_options = {
 				verbose:      true,
-				quantization: 1e6,	
-				simplify: 9.011e-13 // For zoomlevel 11
+				quantization: 1e6
 			}; 		
 		}
+		if (!topojson_options.simplify) {
+			topojson_options.simplify=9.011e-13; // For zoomlevel 11
+		}
+		response.message+="\nTopoJSON options: " + JSON.stringify(topojson_options, null, 4);
 		
 		var records
 		if (shapefile.geojson.features) {
