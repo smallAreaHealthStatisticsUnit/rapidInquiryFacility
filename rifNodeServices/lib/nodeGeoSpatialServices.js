@@ -70,6 +70,7 @@ var util = require('util'),
 	stderrHook = require('../lib/stderrHook'),
     httpErrorResponse = require('../lib/httpErrorResponse'),
     serverLog = require('../lib/serverLog'),
+	simplifyGeoJSON=require('../lib/simplifyGeoJSON'),
 	
 /*
  * Function: 	TempData() 
@@ -102,7 +103,7 @@ var util = require('util'),
 	 *				Add the ofields (formdata fields) array must be included
 	 */
 	scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) {
-		var errors=0;optionalArray
+		var errors=0;
 		var undefinedKeys;
 		var msg="";
 		var calling_function = arguments.callee.caller.name || '(anonymous)';
@@ -625,45 +626,6 @@ var util = require('util'),
 	} // End of createD
 
 /*
- * Function: 	getQuantization() 
- * Parameters:  Level
- * Description: Set quantization (the maximum number of differentiable values along each dimension) by zoomLevel
- *
- * Zoomlevel		Quantization
- * ---------		------------
- *
- * <=6				1,500
- * 7				3,000
- * 8				5,000
- * 9				10,000
- * 10				100,000
- * 11				1,000,0000
- * 
- * Modified in the light of experience to increase quantisations: e.g. 10**6 for US zoomlevel 11.
- */
-var getQuantization = function getQuantization(lvl) {
-			
-	if (lvl <= 6) {
-		return 1500;
-	} 
-	else if (lvl == 7) {
-		return 3000;
-	} 
-	else if (lvl == 8) {
-		return 5000;
-	} 
-	else if (lvl == 9) {
-		return 1e4;
-	} 
-	else if (lvl == 10) {
-		return 1e5;
-	} 
-	else {
-		return 1e6; // Default
-	}
-};
-				
-/*
  * Function: 	exports.convert()
  * Parameters:	Express HTTP request object, response object
  * Description:	Express web server handler function for topoJSON conversion
@@ -962,7 +924,7 @@ exports.convert = function exportsConvert(req, res) {
 				   text+="Initial quantization: " + topojson_options.quantization;
 				}				
 				else if (fieldname == 'zoomLevel') {
-				   topojson_options.quantization = getQuantization(val);
+				   topojson_options.quantization = simplifyGeoJSON.getQuantization(val);
 				   ofields["zoomLevel"]=val;
 				   if (!ofields["quantization"]) {
 						ofields["quantization"]=topojson_options.quantization;
@@ -1260,18 +1222,22 @@ exports.convert = function exportsConvert(req, res) {
 	
 					// Set any required parameters not yet set
 					if (!ofields["quantization"]) {
-						   topojson_options.quantization = getQuantization(11); // For zoomlevel 11
+						   topojson_options.quantization = simplifyGeoJSON.getQuantization(11); // For zoomlevel 11
 						   if (!ofields["quantization"]) {
 								ofields["quantization"]=topojson_options.quantization;
 						   }
 						   response.message+="\nInitial quantization: " + topojson_options.quantization;
 					}
-				
+					if (!ofields["zooomlevel"] && topojson_options.quantization == 1e6) { // For zoomlevel 11
+						ofields["zooomlevel"]=11;
+						   response.message+="\nInitial zooomlevel: " + ofields["zooomlevel"];
+					}
+					
 					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
 						const async = require('async');
 						
 						response.no_files=d_files.d_list.length; // Add number of files process to response
-						response.fields=ofields;				// Add return fields	
+						response.fields=ofields;				 // Add return fields	
 										
 						async.forEachOfSeries(d_files.d_list /* col */, 
 							function fileCompressionProcessingSeries(d, index, seriesCallback) { // Process file list for compressed file and uncompress them				
