@@ -68,6 +68,8 @@
  * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  */		
 httpErrorResponse=function(file, line, calling_function, serverLog, status, req, res, msg, err, g_response) {
+	const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
+	
 	var l_response = {                 // Set output response    
 		error: '',
 		no_files: 0,    
@@ -137,9 +139,10 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			g_response.diagnosticsTimer=undefined;
 		}
 	
-		if (g_response && g_response.status && addStatus && typeof addStatus == "function") { // Add error status
+		if (g_response && g_response.status && nodeGeoSpatialServicesCommon && 
+		    nodeGeoSpatialServicesCommon.addStatus && typeof nodeGeoSpatialServicesCommon.addStatus == "function") { // Add error status
 			try {
-				addStatus(file, line, g_response, "ERROR", status /* HTTP status */, serverLog, req);  // Add error status
+				nodeGeoSpatialServicesCommon.addStatus(file, line, g_response, "ERROR", status /* HTTP status */, serverLog, req);  // Add error status
 				l_response.status = g_response.status;
 			}
 			catch (e) {		
@@ -152,10 +155,14 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		else if (!g_response.status) {	
 			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no g_response.status; unable to addStatus()", req, undefined /* No exception */);	
 		}
-		else if (!addStatus) {	
+		else if (!nodeGeoSpatialServicesCommon) {	
+			serverLog.serverLog2(file, line, calling_function, 
+				"WARNING: httpErrorResponse(): no nodeGeoSpatialServicesCommon module for addStatus() function; unable to addStatus()", req, undefined /* No exception */);
+		}
+		else if (!nodeGeoSpatialServicesCommon.addStatus) {	
 			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no addStatus() function; unable to addStatus()", req, undefined /* No exception */);
 		}
-		else if (typeof addStatus != "function") {	
+		else if (typeof nodeGeoSpatialServicesCommon.addStatus != "function") {	
 			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): addStatus() is not a function; unable to addStatus()", req, undefined /* No exception */);
 		}
 		

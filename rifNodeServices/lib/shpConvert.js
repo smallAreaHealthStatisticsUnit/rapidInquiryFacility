@@ -130,6 +130,7 @@ shpConvert = function shpConvert(ofields, d_files, response, req, res, shapefile
 
 	const serverLog = require('../lib/serverLog'),
 	      httpErrorResponse = require('../lib/httpErrorResponse'),
+	      nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
 		  async = require('async'); 
 
 	if (!req) {
@@ -148,7 +149,7 @@ shpConvert = function shpConvert(ofields, d_files, response, req, res, shapefile
 		try {
 			shpConvertFileProcessor(fileData["d"], fileData["shpList"], fileData["shpTotal"], fileData["response"], fileData["uuidV1"], 
 				fileData["req"], fileData["serverLog"], fileData["httpErrorResponse"],
-				shapeFileComponentQueueCallbackFunc);	
+				shapeFileComponentQueueCallbackFunc, fileData["nodeGeoSpatialServicesCommon"]);	
 		}
 		catch (e) {
 			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvert", 
@@ -208,7 +209,8 @@ shpConvert = function shpConvert(ofields, d_files, response, req, res, shapefile
 			i: 			0,
 			req: 		req,
 			serverLog: 	serverLog,
-			httpErrorResponse: 	httpErrorResponse
+			httpErrorResponse: 	httpErrorResponse,
+			nodeGeoSpatialServicesCommon: nodeGeoSpatialServicesCommon
 		}
 		
 		fileData.i=i;
@@ -248,16 +250,18 @@ module.exports.shpConvertFieldProcessor = shpConvertFieldProcessor;
 /*
  * Function:	shpConvertFileProcessor()
  * Parameters:	d object (temporary processing data), Shapefile list, total shapefiles, response object, 
- *				uuidV1, HTTP request object, serverLog object, httpErrorResponse object, callback
+ *				uuidV1, HTTP request object, serverLog object, httpErrorResponse object, callback, nodeGeoSpatialServicesCommon object
  * Returns:		Rval object { file_errors, msg, total shapefiles }
  * Description: Note which files and extensions are present, generate RFC412v1 UUID if required, save shapefile to temporary directory
  *				Called once per file from shapeFileComponentQueue
  */
-shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal, response, uuidV1, req, serverLog, httpErrorResponse, shapeFileComponentQueueCallback) {
+shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal, response, uuidV1, req, serverLog, httpErrorResponse, 
+							shapeFileComponentQueueCallback, nodeGeoSpatialServicesCommon) {
 		
 	scopeChecker(__file, __line, {
 		serverLog: serverLog,
-		httpErrorResponse: httpErrorResponse
+		httpErrorResponse: httpErrorResponse,
+		nodeGeoSpatialServicesCommon: nodeGeoSpatialServicesCommon
 	});	
 		
 	var streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback');
@@ -317,7 +321,7 @@ shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal,
 // Create directory: $TEMP/shpConvert/<uuidV1>/<fileNoext> as required
 //
 	var dirArray=[os.tmpdir() + "/shpConvert", uuidV1, fileNoext];
-	dir=createTemporaryDirectory(dirArray, response, req);
+	dir=nodeGeoSpatialServicesCommon.createTemporaryDirectory(dirArray, response, req, serverLog);
 	
 //	
 // Write file to directory
@@ -411,6 +415,9 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	 * Description:	Read next shapefile record, call reader function
 	 */
 	var shapefileReadNextRecord = function shapefileReadNextRecord(record, shapefileData, response, shapefileReader) {
+		
+		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
+		
 		var msg;
 		var recNo=shapefileData["featureList"].length+1;
 		var lRec=JSON.stringify(record);
@@ -442,7 +449,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			if (elapsedReadTime > (shapefileData["elapsedReadTime"] + 1)) { // Add status every 1S
 				msg="+" + elapsedReadTime + "S; shapefile read/statuus log [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"];
 				shapefileData["elapsedReadTime"]=elapsedReadTime;
-				addStatus(__file, __line, response, "[+" + shapefileData["elapsedReadTime"] + "s] Reading shapefile: " + shapefileData["shapeFileBaseName"] +
+				nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "[+" + shapefileData["elapsedReadTime"] + "s] Reading shapefile: " + shapefileData["shapeFileBaseName"] +
 					"; record: " + shapefileData["recLen"], 
 					200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 			}
@@ -529,6 +536,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	 * Description:	Read last shapefile record, call writeGeoJsonbyFeature function to end shapefile process async queue item
 	 */		
 	var shapefileReadLastRecord = function shapefileReadLastRecord(record, shapefileData, response) {
+		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
+		
 		var msg;
 		
 		scopeChecker(__file, __line, {
@@ -558,7 +567,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			}
 			response.file_list[shapefileData["shapefile_no"]-1].geojson_length=shapefileData["recLen"];
 			response.message+="\n" + msg;
-			addStatus(__file, __line, response, "Read shapefile: " + shapefileData["shapeFileBaseName"] +
+			nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Read shapefile: " + shapefileData["shapeFileBaseName"] +
 				"; " + shapefileData["recLen"] + " records", 
 				200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 			
@@ -678,6 +687,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 					Nothing is now run at stream end!
 	 */ 	
 	var writeGeoJsonbyFeature = function writeGeoJsonbyFeature(shapefileData, response) {
+		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
 		
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
@@ -729,7 +739,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						}
 						else if (elapsedJsonSaveTime > shapefileData["elapsedJsonSaveTime"] + 1) { // Update JSON save status every second
 							shapefileData["elapsedJsonSaveTime"]=elapsedJsonSaveTime;						
-							addStatus(__file, __line, response, "[+" + elapsedJsonSaveTime+ "s] Saved JSON feature: "  + z, 
+							nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "[+" + elapsedJsonSaveTime+ "s] Saved JSON feature: "  + z, 
 								200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 						}
 						if (z == 1) {
@@ -796,7 +806,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						
 						var end = new Date().getTime();
 						var elapsedTime=(end - lstart)/1000; // in S	
-						addStatus(__file, __line, response, "TopoJSON creation and save: " + shapefileData["topojsonFileBaseName"] + " took: " + elapsedTime + "S", 
+						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "TopoJSON creation and save: " + shapefileData["topojsonFileBaseName"] + " took: " + elapsedTime + "S", 
 							200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 						response.message+=";\nRun shapeFileQueueCallback callback()";
 						shapefileData["callback"]();								
@@ -805,7 +815,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						
 						var end = new Date().getTime();
 						var elapsedTime=(end - lstart)/1000; // in S	
-						addStatus(__file, __line, response, "JSON save: " + shapefileData["jsonFileBaseName"] + " took: " + elapsedTime + "S", 
+						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "JSON save: " + shapefileData["jsonFileBaseName"] + " took: " + elapsedTime + "S", 
 							200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 						// Create topoJSON
 						simplifyGeoJSON.simplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response, shapefileData, 
@@ -862,6 +872,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	 */
 	var readShapeFile = function readShapeFile(shapefileData) {
 		
+		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
+		
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
 			httpErrorResponse: httpErrorResponse,
@@ -894,7 +906,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 				response: response,
 				message: response.message,
 				serverLog: serverLog,
-				httpErrorResponse: httpErrorResponse
+				httpErrorResponse: httpErrorResponse,
+				nodeGeoSpatialServicesCommon: nodeGeoSpatialServicesCommon
 			});
 			
 			if (err) {
@@ -991,6 +1004,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 
 	// Set up async queue; 1 worker
 	var shapeFileQueue = async.queue(function(shapefileData, shapeFileQueueCallback) {
+		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
+		
 		var shapeFileQueueCallbackFunc = function shapeFileQueueCallbackFunc(err) {
 			shapeFileQueueCallback(err);
 		}
@@ -1021,6 +1036,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	 *				Process errors and retiurn response
 	 */
 	shapeFileQueue.drain = function shapeFileQueueDrain() {
+		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
 		
 		scopeChecker(__file, __line, {
 			serverLog: serverLog,
@@ -1177,7 +1193,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			else { 				
 				msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
 				response.message = response.message + "\n" + msg;
-				responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
+				nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
 			}
 		}
 		catch (e) {
