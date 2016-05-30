@@ -257,16 +257,18 @@ function setupBoundingBox(response) {
 		}
 		else if (!response.file_list[i].boundingBox) {
 			if (response.file_list[i].topojson && 
-				response.file_list[i].topojson.objects && 
-				response.file_list[i].topojson.objects.collection && 
-				response.file_list[i].topojson.objects.collection.bbox) {
+				response.file_list[i].topojson[0] && 
+				response.file_list[i].topojson[0].topojson && 
+				response.file_list[i].topojson[0].topojson.objects && 
+				response.file_list[i].topojson[0].topojson.objects.collection && 
+				response.file_list[i].topojson[0].topojson.objects.collection.bbox) {
 				console.log("File [" + i + "]: Using topojson bounding box");	
 				
 				response.file_list[i].boundingBox={
-					xmin: response.file_list[i].topojson.objects.collection.bbox[0], 
-					ymin: response.file_list[i].topojson.objects.collection.bbox[1], 
-					xmax: response.file_list[i].topojson.objects.collection.bbox[2], 
-					ymax: response.file_list[i].topojson.objects.collection.bbox[3]};										
+					xmin: response.file_list[i].topojson[0].topojson.objects.collection.bbox[0], 
+					ymin: response.file_list[i].topojson[0].topojson.objects.collection.bbox[1], 
+					xmax: response.file_list[i].topojson[0].topojson.objects.collection.bbox[2], 
+					ymax: response.file_list[i].topojson[0].topojson.objects.collection.bbox[3]};										
 			}
 			else {
 				console.log("WARNING! File [" + i + "/" + (response.no_files - 1) + "]: bounding box is not defined; using whole world as bounding box");								
@@ -295,8 +297,8 @@ function createTable(response, layerColours, layerAddOrder) {
 	for (var i=0; i < response.no_files; i++) {	
 		msg+="<tr style=\"color:" + layerColours[i] + "\"><td>" + response.file_list[layerAddOrder[i]].file_name + "</td>" +
 				"<td>" + (fileSize(response.file_list[layerAddOrder[i]].file_size) || "N/A") + "</td>";
-		if (response.file_list[layerAddOrder[i]].topojson) {	
-			msg+="<td>" + (fileSize(response.file_list[layerAddOrder[i]].topojson_length) || "N/A ") + "/" + 
+		if (response.file_list[layerAddOrder[i]].topojson && response.file_list[layerAddOrder[i]].topojson[0].topojson_length) {	
+			msg+="<td>" + (fileSize(response.file_list[layerAddOrder[i]].topojson[0].topojson_length) || "N/A ") + "/" + 
 				(fileSize(response.file_list[layerAddOrder[i]].geojson_length) || " N/A") + "</td>";	
 		}
 		else if (response.file_list[layerAddOrder[i]].geojson) {	
@@ -341,15 +343,18 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 	for (var i=0; i < response.no_files; i++) {	
 		if (!response.file_list[i].total_areas) { // Total areas not defined; deduce from topojson or geojson
 			if (response.file_list[i].topojson && 
-				response.file_list[i].topojson.objects && 
-				response.file_list[i].topojson.objects.collection && 
-				response.file_list[i].topojson.objects.collection.geometries) {
-				response.file_list[i].total_areas=response.file_list[i].topojson.objects.collection.geometries.length;
+				response.file_list[i].topojson[0] && 
+				response.file_list[i].topojson[0].topojson && 
+				response.file_list[i].topojson[0].topojson.objects && 
+				response.file_list[i].topojson[0].topojson.objects.collection && 
+				response.file_list[i].topojson[0].topojson.objects.collection.geometries) {
+				response.file_list[i].total_areas=response.file_list[i].topojson[0].topojson.objects.collection.geometries.length;
 
 			}
 			else if (response.file_list[i].geojson && 
-					 response.file_list[i].topojson.features) {
-				response.file_list[i].total_areas=response.file_list[i].topojson.features.length;
+					 response.file_list[i].topojson[0].topojson &&
+					 response.file_list[i].topojson[0].topojson.features) {
+				response.file_list[i].total_areas=response.file_list[i].topojson[0].topojson.features.length;
 			}		
 			else {
 				setStatus("Some total areas were not defined", new Error("Unable to deduce total areas for layer: " + i));
@@ -580,7 +585,7 @@ function displayResponse(responseText, status, formName) {
 								response.file_list[layerAddOrder[i]].file_name +
 								"; colour: " + layerColours[i] + "; weight: " + weight + "; opacity: " + opacity + "; fillOpacity: " + fillOpacity);
 
-							if (response.file_list[layerAddOrder[i]].topojson) {			
+							if (response.file_list[layerAddOrder[i]].topojson && response.file_list[layerAddOrder[i]].topojson[0].topojson) {			
 								try {
 									if (response.file_list[i].boundingBox && map) {
 					
@@ -598,7 +603,7 @@ function displayResponse(responseText, status, formName) {
 												 opacity: 	1,
 												 fillOpacity: fillOpacity}
 											}).addTo(map);
-										JSONLayer[i].addData(response.file_list[layerAddOrder[i]].topojson);									
+										JSONLayer[i].addData(response.file_list[layerAddOrder[i]].topojson[0].topojson);									
 									}
 						
 								} catch (e) {  							

@@ -783,7 +783,19 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 							seriesCallbackFunc();
 						}
 					} catch (e) {
-						return seriesCallbackFunc(e);
+						// !!!!!! DOES NOT WORK AS EXPECTED
+						serverLog.serverLog2(__file, __line, "writeGeoJsonbyFeatureSeries", e.message, req, undefined);	
+						try {
+						seriesCallbackFunc(e);
+						}
+						catch (err) {
+							
+						console.error("XXXXXX ERROR: " + e.message + "\n" + e.stack);
+						serverLog.serverLog2(__file, __line, "writeGeoJsonbyFeatureSeries", err.message, req, undefined);	
+						throw e;
+						}
+//						throw e;
+//						return seriesCallbackFunc(e);
 					}
 			}, 
 			function (err) {																	/* Callback at end */
@@ -819,7 +831,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 							200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 						// Create topoJSON
 						simplifyGeoJSON.shapefileSimplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response, shapefileData, 
-							undefined /* topojson_options */, shapeFileQueueCallbackFunc /* Callback */);							
+							shapefileData["topojson_options"], shapeFileQueueCallbackFunc /* Callback */);							
 					}							
 // For testing					
 					var testFunc = function testFunc() {
@@ -1258,7 +1270,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 				prj: undefined,
 				reader: undefined,
 				elapsedReadTime: undefined,
-				elapsedJsonSaveTime: undefined
+				elapsedJsonSaveTime: undefined,
+				topojson_options: ofields["topojson_options"]
 			}
 		
 			shapefileData["fileNoExt"] = path.basename(shapefileData["shapeFileName"]);	

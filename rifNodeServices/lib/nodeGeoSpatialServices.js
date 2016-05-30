@@ -742,10 +742,11 @@ exports.convert = function exportsConvert(req, res) {
 						   }
 						   response.message+="\nInitial quantization: " + topojson_options.quantization;
 					}
-					if (!ofields["zooomlevel"] && topojson_options.quantization == 1e6) { // For zoomlevel 11
-						ofields["zooomlevel"]=11;
-						   response.message+="\nInitial zooomlevel: " + ofields["zooomlevel"];
+					if (!ofields["zoomlevel"] && topojson_options.quantization == 1e6) { // For zoomlevel 11
+						ofields["zoomlevel"]=11;
+						   response.message+="\nInitial zooomlevel: " + ofields["zoomlevel"];
 					}
+					ofields["topojson_options"]=topojson_options;
 					
 					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
 						const async = require('async');

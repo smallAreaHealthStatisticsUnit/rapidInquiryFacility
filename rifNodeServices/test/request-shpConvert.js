@@ -298,7 +298,7 @@ var postIt = function(debug) {
 			} catch (e) {                            // Catch message not in JSON errors			
 				console.error('Upload failed with HTTP status: ' + httpResponse.statusCode + 
 					"\n\nError(" + e.name + "): " + e.message + "\nStack>>>\n" + e.stack + "<<<" +
-					"\nMessage body>>>\n" + body + "\n<<< End of message body\n");
+					"\nMessage body (600 chars) >>>\n" + body.substring(0, 600) + "\n<<< End of message body\n");
 				failed++;
 				return;
 			}
@@ -347,8 +347,8 @@ var postIt = function(debug) {
 					'; fields: ' + JSON.stringify(ofields, null, 4));
 
 				for (var i = 0; i < jsonData.no_files; i++) {	
-					if (file_list[i].topojson) {
-						var topojson = JSON.stringify(file_list[i].topojson);
+					if (file_list[i].topojson[0].topojson) {
+						var topojson = JSON.stringify(file_list[i].topojson[0].topojson);
 						console.error("File [" + (i+1) + ":" + file_list[i].file_name + "] - topojson length: " + topojson.length +
 							"; file size: " + file_list[i].file_size + 
 							"; transfer time: " + file_list[i].transfer_time + " S" + 
@@ -385,7 +385,7 @@ var postIt = function(debug) {
 			} catch (e) {                            // Catch message not in JSON errors			
 				console.error('Upload failed with client exception: ' +
 					"\n\nError(" + e.name + "): " + e.message + "\nStack>>>\n" + e.stack + "<<<" +
-					"\nMessage body>>>\n" + body + "\n<<< End of message body\n");
+					"\nMessage body (600 chars) >>>\n" + body.substring(0, 600) + "\n<<< End of message body\n");
 			}	
 			if (expected_to_pass == "true") {
 				if (ofields["my_reference"]) {

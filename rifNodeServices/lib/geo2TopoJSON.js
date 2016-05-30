@@ -343,11 +343,11 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 		
 		// Call parser that can process multi GB collections
 		d.file.jsonData=simplifyGeoJSON.jsonParse(d.file.file_data, response);
-
-		var lstart = new Date().getTime();			
+		
 		d.file.topojson=simplifyGeoJSON.toTopoJSON(d.file.jsonData, topojson_options, response);
 		
 		if (global.gc &&d.file.jsonData.length > (1024*1024*500) ) { // GC if json > 500M; 
+			d.file.jsonData=undefined;			// Release memory		
 			global.gc();
 			var heap=v8.getHeapStatistics();
 			msg+="\nMemory heap >>>";
@@ -357,25 +357,12 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 			msg+="\n<<< End of memory heap";
 			serverLog.serverLog2(__file, __line, "geo2TopoJSONFile", "Force garbage collection");					
 		}
-		d.file.jsonData=undefined;			// Release memory
-
-// Add file stderr and topoJSON to my response
-// This will need a mutex if > 1 thread is being processed at the same time
 		response.file_list[idx].topojson=d.file.topojson;
-// remove!!		response.file_list[idx].topojson_stderr=d.file.topojson_stderr;
-
-		var end = new Date().getTime();
-		response.file_list[idx].topojson_runtime=(end - lstart)/1000; // in S			
 		response.file_list[idx].file_size=d.file.file_size;		
 		response.file_list[idx].geojson_length=d.file.file_size;	
-		response.file_list[idx].topojson_length=d.file.file_size;
 		response.file_list[idx].transfer_time=d.file.transfer_time;
 		response.file_list[idx].uncompress_time=d.file.uncompress_time;
-		response.file_list[idx].uncompress_size=d.file.uncompress_size;
-		
-		response.file_list[idx].topojson_length=JSON.stringify(d.file.topojson).length;
-		
-		response.message+= "File [" +  idx + "]: runtime: " + "; topoJSON length: " + response.file_list[idx].topojson_length + "]";		
+		response.file_list[idx].uncompress_size=d.file.uncompress_size;		
 															   
 		return d.file.topojson;								   
 	} catch (e) {                            // Catch conversion errors

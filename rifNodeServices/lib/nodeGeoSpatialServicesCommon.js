@@ -182,8 +182,12 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 	}	
 	if (!ofields["my_reference"]) { 
 		ofields["my_reference"]=undefined;
-	}		
+	}	
+	if (ofields["topojson_options"]) { // Remove topojson_options
+		ofields["topojson_options"]=undefined;
+	}	
 	response.fields=ofields;				// Add return fields not already present	
+
 	if (response.field_errors == 0 && response.file_errors == 0) { // OK
 	
 		addStatus(__file, __line, response, "END", 200 /* HTTP OK */, serverLog, req); // Add status
