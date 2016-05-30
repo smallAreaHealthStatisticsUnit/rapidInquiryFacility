@@ -192,130 +192,6 @@ geo2TopoJSONFieldProcessor=function geo2TopoJSONFieldProcessor(fieldname, val, t
 }
 
 /*
- * Function:	jsonParse()
- * Parameters:	Buffer, internal reposnse object
- * Returns:		Buffer parsed to JSON
- * Description: Parses buffer as a feature collection feature by feature to avoid toString() errors where the string is over 255MB
- */
-jsonParse = function jsonParse(data, response) {
-
-	scopeChecker(__file, __line, {
-		data: data,
-		response: response
-	});	
-	
-	var lstart = new Date().getTime();	
-	var myFeatureCollection;
-	
-	if ((data.indexOf('{"type":"FeatureCollection","features":[', 0) == 0) || 
-	    (data.indexOf('{"type":"FeatureCollection","bbox":', 0) == 0)) { // Its a feature collection
-		response.message+="\nParsing feature collection; data length: " + data.length;
-			
-		var featureOffset = [0];
-		var newOffset;
-		var offset=0;
-		do { // Look for feature collection start: {"type":"Feature"
-			newOffset=data.indexOf('{"type":"Feature",', offset);
-			if (newOffset >= 0) {
-				featureOffset.push(newOffset);
-				offset=newOffset+1;
-			}
-		} while (newOffset >= 0);
-		
-		var parseAble;
-		var parseError;
-		var parsedJson=[];
-		var totalParseTime=0;
-		for (var i=0; i<featureOffset.length; i++) {
-			parsedJson[i] = {
-				json: undefined,
-				featureOffset: featureOffset[i],
-				offsetEnd: undefined,
-				parseError: undefined,
-				parseTime: undefined
-			};
-			// Look for end of feature collection end: ]]}}
-			parsedJson[i].offsetEnd=data.indexOf(']]}}', featureOffset[i])+4;
-		}
-		
-		for (var i=0; i< parsedJson.length; i++) { // Parse using featureOffset and offsetEnd
-			var buf=data.slice(parsedJson[i].featureOffset, parsedJson[i].offsetEnd);
-			var str=buf.toString('ascii', 0, 60);
-			var str2=buf.toString('ascii', buf.length-60);
-			try {
-				if (i == 0) { // Add end of feature collection
-					str=buf.toString()+"]}";
-					parsedJson[i].json=JSON.parse(str);
-				}
-				else {
-					parsedJson[i].json=JSON.parse(buf.toString());					
-				}
-			}
-			catch (e) {
-				parsedJson[i].parseError=e.message;
-			}
-			
-			var now = new Date().getTime();
-			parsedJson[i].parseTime=(now - lstart)/1000; // in S	
-			if (parseError) {
-				response.message+="\nWarning feature [" + i + "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
-					"; Feature length: " + buf.length + 
-					"; could not be parsed: " + parseError + "\n>>>\n" + buf.toString('ascii', 0, 240) + "\n<<<\n";
-			}
-			else if (i<4 || i>(featureOffset.length-4)) {
-				if (str.length < 60) {
-					response.message+="\nFeature [" + i + "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
-						"; Feature length: " + buf.length + 
-						"\n>>>" + str + "<<<";
-				}
-				else {
-					response.message+="\nFeature [" + i + "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
-						"; Feature length: " + buf.length + 
-						"\n>>>" + str.substring(0, 60) + "<<< ... >>>" + str2 + "<<<";
-				}
-			}
-			else if (((i/1000)-Math.floor(i/1000)) == 0 || parsedJson[i].parseTime > (totalParseTime + 1)) { 
-				totalParseTime=parsedJson[i].ParseTime;
-				var msg="Feature [" + i	+ "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
-					"; Feature length: " + buf.length + 
-					"\n>>>" + str + "<<< ... >>>" + str2 + "<<<";
-				console.error(msg);
-				response.message+="\n" + msg;				
-			}
-		}
-
-		var end = new Date().getTime();
-		var ParseTime=(end - lstart)/1000; // in S			
-		if (featureOffset.length == parsedJson.length) {
-			response.message+="\nFeature collection parse complete; features detected: " + (featureOffset.length-1) + 
-				"; data length: " + data.length + "; took: " + ParseTime + " S";
-			myFeatureCollection=parsedJson[0].json;
-			for (var i=1; i<parsedJson.length; i++) {
-				myFeatureCollection.features[i-1]=parsedJson[i].json;
-			}			
-		}
-		else {
-			throw new Error("Feature collection parse failed: " + (featureOffset.length - parsedJson.length) + "/" + featureOffset.length + " features failed to parse");
-		}
-	}
-	else {
-		response.message+="\nNot a feature collection, parse may fail>>>\n" + data.toString('ascii', 0, 240) + "\n<<<\n";
-	}
-	
-	var kStringMaxLength = process.binding('buffer').kStringMaxLength;
-	if (myFeatureCollection) {
-		return(myFeatureCollection);
-	}		
-	else if (data.length < kStringMaxLength) {		
-		return JSON.parse(data.toString()); // Parse file stream data to JSON
-	}	
-	else {
-		throw new Error("Cannot parse string: not a feature collection and too long: " + data.length + 
-			" for JSON.parse(data.toString()); limit: " + kStringMaxLength + "bytes");
-	}
-}
-
-/*
  * Function:	geo2TopoJSONFiles()
  * Parameters:	d _files object, 
 				ofields [field parameters array],
@@ -419,7 +295,7 @@ geo2TopoJSONFiles=function geo2TopoJSONFiles(d_files, ofields, topojson_options,
  *				response.error 
  */						
 geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr, response, serverLog, req) {
-	var topojson = require('topojson');
+	var simplifyGeoJSON = require('../lib/simplifyGeoJSON');
 
 	scopeChecker(__file, __line, {
 		d: d,
@@ -458,7 +334,6 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 		response.file_list[idx] = {
 			file_name: d.file.file_name,
 			topojson: '',
-			topojson_stderr: '',
 			topojson_runtime: '',
 			file_size: '',
 			transfer_time: '',
@@ -466,43 +341,11 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 			uncompress_size: undefined
 		};
 		
-//		var str=d.file.file_data.replace(/(\r\n|\n|\r)/gm, "");		
-//		msg="\nSTR(" + str.length + "): " + d.file.file_data.toString('ascii', 0, 240) + "\nSTR replaced: " + str.toString('ascii', 0, 240);
-//		response.message = response.message + msg;	
-//		d.file.file_data=str;
-		
-/* coa2011.js fails with:
-
-Your input file 1: coa11.json; size: 1674722608; does not seem to contain valid JSON: 
-Caught error: toString failedStack >>>
-Error: toString failed
-    at Buffer.toString (buffer.js:382:11)
-    at Object.geo2TopoJSONFile (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\geo2TopoJSON.js:292:49)
-    at Busboy.<anonymous> (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServices.js:571:24)
-    at emitNone (events.js:72:20)
-    at Busboy.emit (events.js:166:7)
-    at Busboy.emit (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\connect-busboy\node_modules\busboy\lib\main.js:31:35)
-    at C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\connect-busboy\node_modules\busboy\lib\types\multipart.js:52:13
-    at doNTCallback0 (node.js:419:9)
-    at process._tickCallback (node.js:348:13)
-<< End of stack:
-
-Streaming parser needed; or it needs toString()ing in sections
-
- */
-		
 		// Call parser that can process multi GB collections
-		d.file.jsonData=jsonParse(d.file.file_data, response);
-		
-		// Re-route topoJSON stderr to stderr.str
-		stderr.disable();
-		
+		d.file.jsonData=simplifyGeoJSON.jsonParse(d.file.file_data, response);
+
 		var lstart = new Date().getTime();			
-		d.file.topojson = topojson.topology({   // Convert geoJSON to topoJSON
-			collection: d.file.jsonData
-			}, topojson_options);				
-		stderr.enable(); 				   // Re-enable stderr
-		str=undefined;
+		d.file.topojson=simplifyGeoJSON.toTopoJSON(d.file.jsonData, topojson_options, response);
 		
 		if (global.gc &&d.file.jsonData.length > (1024*1024*500) ) { // GC if json > 500M; 
 			global.gc();
@@ -515,15 +358,11 @@ Streaming parser needed; or it needs toString()ing in sections
 			serverLog.serverLog2(__file, __line, "geo2TopoJSONFile", "Force garbage collection");					
 		}
 		d.file.jsonData=undefined;			// Release memory
-		
-		d.file.topojson_stderr=stderr.str();  // Get stderr as a string	
-		stderr.clean();						// Clean down stderr string
-		stderr.restore();                  // Restore normal stderr functionality 
 
 // Add file stderr and topoJSON to my response
 // This will need a mutex if > 1 thread is being processed at the same time
 		response.file_list[idx].topojson=d.file.topojson;
-		response.file_list[idx].topojson_stderr=d.file.topojson_stderr;
+// remove!!		response.file_list[idx].topojson_stderr=d.file.topojson_stderr;
 
 		var end = new Date().getTime();
 		response.file_list[idx].topojson_runtime=(end - lstart)/1000; // in S			
@@ -536,22 +375,7 @@ Streaming parser needed; or it needs toString()ing in sections
 		
 		response.file_list[idx].topojson_length=JSON.stringify(d.file.topojson).length;
 		
-		msg+= "File [" +  idx + "]: runtime: " + "; topoJSON length: " + response.file_list[idx].topojson_length + "]";
-		console.error(msg);
-		if (d.file.topojson_stderr.length > 0) {  // Add topoJSON stderr to message	
-// This will need a mutex if > 1 thread is being processed at the same time	
-			response.message+="\n" + msg + " OK:\nTopoJson.topology() stderr >>>\n" + 
-				d.file.topojson_stderr + "<<< TopoJson.topology() stderr";
-//			serverLog.serverLog(msg + "TopoJson.topology() stderr >>>\n"  + 
-//				d.file.topojson_stderr + "<<< TopoJson.topology() stderr", 
-//				req);
-		}
-		else {
-// This will need a mutex if > 1 thread is being processed at the same time
-			response.message+="\n" + msg + " OK";
-//			serverLog.serverLog("TopoJson.topology() no stderr; " + msg, 
-//				req);		
-		}			
+		response.message+= "File [" +  idx + "]: runtime: " + "; topoJSON length: " + response.file_list[idx].topojson_length + "]";		
 															   
 		return d.file.topojson;								   
 	} catch (e) {                            // Catch conversion errors

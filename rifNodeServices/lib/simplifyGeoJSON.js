@@ -226,6 +226,131 @@ topology: 1579 arcs, 247759 points
 	return convertedTopojson;
 } // end of toTopoJSON()
 
+/*
+ * Function:	jsonParse()
+ * Parameters:	Buffer, internal reposnse object
+ * Returns:		Buffer parsed to JSON
+ * Description: Parses buffer as a feature collection feature by feature to avoid toString() errors where the string is over 255MB
+ */
+var jsonParse = function jsonParse(data, response) {
+
+	scopeChecker(__file, __line, {
+		data: data,
+		response: response
+	});	
+	
+	var lstart = new Date().getTime();	
+	var myFeatureCollection;
+	
+	if ((data.indexOf('{"type":"FeatureCollection","features":[', 0) == 0) || 
+	    (data.indexOf('{"type":"FeatureCollection","bbox":', 0) == 0)) { // Its a feature collection
+		response.message+="\nParsing feature collection; data length: " + data.length;
+			
+		var featureOffset = [0];
+		var newOffset;
+		var offset=0;
+		do { // Look for feature collection start: {"type":"Feature"
+			newOffset=data.indexOf('{"type":"Feature",', offset);
+			if (newOffset >= 0) {
+				featureOffset.push(newOffset);
+				offset=newOffset+1;
+			}
+		} while (newOffset >= 0);
+		
+		var parseAble;
+		var parseError;
+		var parsedJson=[];
+		var totalParseTime=0;
+		for (var i=0; i<featureOffset.length; i++) {
+			parsedJson[i] = {
+				json: undefined,
+				featureOffset: featureOffset[i],
+				offsetEnd: undefined,
+				parseError: undefined,
+				parseTime: undefined
+			};
+			// Look for end of feature collection end: ]]}}
+			parsedJson[i].offsetEnd=data.indexOf(']]}}', featureOffset[i])+4;
+		}
+		
+		for (var i=0; i< parsedJson.length; i++) { // Parse using featureOffset and offsetEnd
+			var buf=data.slice(parsedJson[i].featureOffset, parsedJson[i].offsetEnd);
+			var str=buf.toString('ascii', 0, 60);
+			var str2=buf.toString('ascii', buf.length-60);
+			try {
+				if (i == 0) { // Add end of feature collection
+					str=buf.toString()+"]}";
+					parsedJson[i].json=JSON.parse(str);
+				}
+				else {
+					parsedJson[i].json=JSON.parse(buf.toString());					
+				}
+			}
+			catch (e) {
+				parsedJson[i].parseError=e.message;
+			}
+			
+			var now = new Date().getTime();
+			parsedJson[i].parseTime=(now - lstart)/1000; // in S	
+			if (parseError) {
+				response.message+="\nWarning feature [" + i + "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
+					"; Feature length: " + buf.length + 
+					"; could not be parsed: " + parseError + "\n>>>\n" + buf.toString('ascii', 0, 240) + "\n<<<\n";
+			}
+			else if (i<4 || i>(featureOffset.length-4)) {
+				if (str.length < 60) {
+					response.message+="\nFeature [" + i + "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
+						"; Feature length: " + buf.length + 
+						"\n>>>" + str + "<<<";
+				}
+				else {
+					response.message+="\nFeature [" + i + "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
+						"; Feature length: " + buf.length + 
+						"\n>>>" + str.substring(0, 60) + "<<< ... >>>" + str2 + "<<<";
+				}
+			}
+			else if (((i/1000)-Math.floor(i/1000)) == 0 || parsedJson[i].parseTime > (totalParseTime + 1)) { 
+				totalParseTime=parsedJson[i].ParseTime;
+				var msg="Feature [" + i	+ "/" + (featureOffset.length-1) + "] start: " + parsedJson[i].featureOffset + "; end: " + parsedJson[i].offsetEnd + 
+					"; Feature length: " + buf.length + 
+					"\n>>>" + str + "<<< ... >>>" + str2 + "<<<";
+				console.error(msg);
+				response.message+="\n" + msg;				
+			}
+		}
+
+		var end = new Date().getTime();
+		var ParseTime=(end - lstart)/1000; // in S			
+		if (featureOffset.length == parsedJson.length) {
+			response.message+="\nFeature collection parse complete; features detected: " + (featureOffset.length-1) + 
+				"; data length: " + data.length + "; took: " + ParseTime + " S";
+			myFeatureCollection=parsedJson[0].json;
+			for (var i=1; i<parsedJson.length; i++) {
+				myFeatureCollection.features[i-1]=parsedJson[i].json;
+			}			
+		}
+		else {
+			throw new Error("Feature collection parse failed: " + (featureOffset.length - parsedJson.length) + "/" + featureOffset.length + " features failed to parse");
+		}
+	}
+	else {
+		response.message+="\nNot a feature collection, parse may fail>>>\n" + data.toString('ascii', 0, 240) + "\n<<<\n";
+	}
+	
+	var kStringMaxLength = process.binding('buffer').kStringMaxLength;
+	if (myFeatureCollection) {
+		return(myFeatureCollection);
+	}		
+	else if (data.length < kStringMaxLength) {		
+		return JSON.parse(data.toString()); // Parse file stream data to JSON
+	}	
+	else {
+		throw new Error("Cannot parse string: not a feature collection and too long: " + data.length + 
+			" for JSON.parse(data.toString()); limit: " + kStringMaxLength + "bytes");
+	}
+} // End of jsonParse()
+
+module.exports.jsonParse = jsonParse;
 module.exports.toTopoJSON = toTopoJSON;
 module.exports.shapefileSimplifyGeoJSON = shapefileSimplifyGeoJSON;
 module.exports.getQuantization = getQuantization;
