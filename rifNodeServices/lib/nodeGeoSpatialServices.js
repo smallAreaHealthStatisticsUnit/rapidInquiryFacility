@@ -704,25 +704,10 @@ exports.convert = function exportsConvert(req, res) {
 					});
 				
 					if (req.url == '/geo2TopoJSON') {
-						var no_files=0;
-						for (var i = 0; i < response.no_files; i++) {
-							var d=d_files.d_list[i];
-							// Call GeoJSON to TopoJSON converter
-							if (d.file.extension == "zip") { // Ignore zip file
-								response.message+="\nIgnore zip file; process contents (loaded as individual files when zip file unpacked): " + d.file.file_name;
-							}
-							else {
-								no_files++;
-								response.message+= "\nProcessing file [" + (i+1) + "/" + response.no_files + "]: " + d.file.file_name;
-								d=geo2TopoJSON.geo2TopoJSONFile(d, ofields, topojson_options, stderr, response, serverLog, req);
-							}
-							if (!d) { // Error handled in responseProcessing()
-//								httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile", serverLog, 
-//									500, req, res, msg, response.error, response);							
-								return; 
-							}								
-						} // End of for loop
-						response.no_files=no_files;
+						
+						if (!geo2TopoJSON.geo2TopoJSONFiles(d_files, ofields, topojson_options, stderr, response, serverLog, req)) {
+							return;
+						}
 					}			
 					else if (req.url == '/shpConvert') { // Note which files and extensions are present, 
 																						// generate serial if required, save 

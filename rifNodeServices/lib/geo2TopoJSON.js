@@ -316,8 +316,77 @@ jsonParse = function jsonParse(data, response) {
 }
 
 /*
+ * Function:	geo2TopoJSONFiles()
+ * Parameters:	d _files object, 
+				ofields [field parameters array],
+				TopoJSON topology processing topojson_options, 
+				my response object
+ * Returns:		d files object/Nothing on failure
+ * Description: TopoJSON processing for files (geo2TopoJSON service):
+ *				- converts string to JSON
+ *				- calls topojson.topology() using topojson_options
+ * 				- Add file name, stderr and topoJSON to my response
+ *
+ * Modifies/creates:
+ *				d.file.jsonData,
+ *				d.file.topojson,
+ *				d.file.topojson_stderr,
+ *				response.message,
+ *				response.file_list[d.no_files-1] set to file object:
+ *						file_name: File name
+ *						topojson: TopoJSON created from file geoJSON,
+ *						topojson_stderr: Debug from TopoJSON module,
+ *						topojson_runtime: Time to convert geoJSON to topoJSON (S),
+ *						file_size: Transferred file size in bytes,
+ *						transfer_time: Time to transfer file (S),
+ *						uncompress_time: Time to uncompress file (S)/undefined if file not compressed,
+ *						uncompress_size: Size of uncompressed file in bytes 
+ *
+ * On error sets:
+ *				response.message,
+ *				response.no_files,
+ *				response.fields,
+ *				response.file_errors,
+ *				response.error 
+ */
+geo2TopoJSONFiles=function geo2TopoJSONFiles(d_files, ofields, topojson_options, stderr, response, serverLog, req) {
+	
+	scopeChecker(__file, __line, {
+		d_files: d_files,
+		ofields: ofields,
+		topojson_options: topojson_options,
+		stderr: stderr,
+		response: response,
+		serverLog: serverLog,
+		req: req
+	});	
+	
+	var no_files=0;
+	for (var i = 0; i < response.no_files; i++) {
+		var d=d_files.d_list[i];
+		// Call GeoJSON to TopoJSON converter
+		if (d.file.extension == "zip") { // Ignore zip file
+			response.message+="\nIgnore zip file; process contents (loaded as individual files when zip file unpacked): " + d.file.file_name;
+		}
+		else {
+			no_files++;
+			response.message+= "\nProcessing file [" + (i+1) + "/" + response.no_files + "]: " + d.file.file_name;
+			d=geo2TopoJSONFile(d, ofields, topojson_options, stderr, response, serverLog, req);
+		}
+		if (!d) { // Error handled in responseProcessing()
+//								httpErrorResponse.httpErrorResponse(__file, __line, "geo2TopoJSON.geo2TopoJSONFile", serverLog, 
+//									500, req, res, msg, response.error, response);							
+			return undefined; 
+		}								
+	} // End of for loop
+	response.no_files=no_files;
+	
+	return d_files;
+}
+
+/*
  * Function:	geo2TopoJSONFile()
- * Parameters:	d object (temporary processing data, 
+ * Parameters:	d object (temporary processing data), 
 				ofields [field parameters array],
 				TopoJSON topology processing topojson_options, 
 				my response object
@@ -348,7 +417,7 @@ jsonParse = function jsonParse(data, response) {
  *				response.fields,
  *				response.file_errors,
  *				response.error 
- */
+ */						
 geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr, response, serverLog, req) {
 	var topojson = require('topojson');
 
@@ -523,4 +592,4 @@ Streaming parser needed; or it needs toString()ing in sections
 } // End of geo2TopoJSONFile
 
 module.exports.geo2TopoJSONFieldProcessor = geo2TopoJSONFieldProcessor;
-module.exports.geo2TopoJSONFile = geo2TopoJSONFile;	
+module.exports.geo2TopoJSONFiles = geo2TopoJSONFiles;	
