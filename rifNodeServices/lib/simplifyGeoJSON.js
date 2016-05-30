@@ -43,7 +43,12 @@
 // Author:
 //
 // Peter Hambly, SAHSU
-
+	
+const topojson = require('topojson'),
+	  stderrHook = require('../lib/stderrHook'),
+	  serverLog = require('../lib/serverLog'),
+	  streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback');
+		
 /*
  * Function:	shapefileSimplifyGeoJSON()
  * Parameters:	shapefile (base for geojson etc), response, shapefileData object, 
@@ -86,6 +91,8 @@ For zoomlevel 11 the area at the equator is  19568 x 19437 = 380.3 square km and
 In steradians = (0.005776 / (510,072,000 * 12.56637) [area of earth] = 9.011266999968199e-13 steradians	
  */
 var shapefileSimplifyGeoJSON = function shapefileSimplifyGeoJSON(shapefile, response, shapefileData, topojson_options, callback) {
+	 const streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback');
+		  
 	scopeChecker(__file, __line, {
 		shapefile: shapefile,
 		topojsonFileName: shapefileData["topojsonFileName"],
@@ -99,50 +106,12 @@ var shapefileSimplifyGeoJSON = function shapefileSimplifyGeoJSON(shapefile, resp
 		callback: callback
 	} /* Optional */);	
 	
-	var topojson = require('topojson'),
-		stderrHook = require('../lib/stderrHook'),
-		serverLog = require('../lib/serverLog'),
-		streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback');
-		
-// Default geo2TopoJSON options (see topology Node.js module)
-/* For US data:
-
-bounds: -179.148909 -14.548699000000001 179.77847 71.36516200000001 (spherical)
-pre-quantization: 39.9m (0.000359°) 9.55m (0.0000859°)
-topology: 1579 arcs, 247759 points
-*/
-	if (!topojson_options) {
-		topojson_options = {
-			verbose:      true,
-			quantization: 1e6
-		}; 		
-	}
-	if (!topojson_options.simplify && topojson_options.quantization == 1e6) { // For zoomlevel 11
-		topojson_options.simplify=9.011e-13; // For zoomlevel 11
-	}
-	response.message+="\nTopoJSON options: " + JSON.stringify(topojson_options, null, 4);
-	
-	var records
+	var records;
 	if (shapefile.geojson.features) {
 		records=shapefile.geojson.features.length;
-	}
+	}	
 	
-// Add stderr hook to capture debug output from topoJSON	
-	var stderr = stderrHook.stderrHook(function(output, obj) { 
-		output.str += obj.str;
-	});
-
-	// Re-route topoJSON stderr to stderr.str
-	stderr.disable();
-	
-	shapefile.topojson = topojson.topology({   // Convert geoJSON to topoJSON
-		collection: shapefile.geojson
-		}, topojson_options);				
-	stderr.enable(); 				   // Re-enable stderr
-	
-	response.message+="\nConvert to topojson:\n" + stderr.str();  // Get stderr as a string	
-	stderr.clean();						// Clean down stderr string
-	stderr.restore();                   // Restore normal stderr functionality 		
+	shapefile.topojson=toTopoJSON(shapefile.geojson, topojson_options, response);
 	
 // This need to be replaced with write record by record and then do the callback here
 // We can then also remove the geojson
@@ -197,6 +166,58 @@ var getQuantization = function getQuantization(lvl) {
 		return 1e6; // Default
 	}
 };
+
+var toTopoJSON = function toTopoJSON(geojson, topojson_options, response) {
+	const topojson = require('topojson'),
+		  stderrHook = require('../lib/stderrHook'),
+		  serverLog = require('../lib/serverLog');
+
+	 scopeChecker(__file, __line, {
+		response: response,
+		geojson: geojson
+	});
+
+// Add stderr hook to capture debug output from topoJSON	
+	var stderr = stderrHook.stderrHook(function stderrHookOutput(output, obj) { 
+		output.str += obj.str;
+	});
+	
+// Default geo2TopoJSON options (see topology Node.js module)
+/* For US data:
+
+bounds: -179.148909 -14.548699000000001 179.77847 71.36516200000001 (spherical)
+pre-quantization: 39.9m (0.000359°) 9.55m (0.0000859°)
+topology: 1579 arcs, 247759 points
+*/
+	if (!topojson_options) {
+		topojson_options = {
+			verbose:      true,
+			quantization: 1e6
+		}; 		
+		response.message+="\nDefault topoJSON options: " + JSON.stringify(topojson_options, null, 4);
+	}
+	else if (!topojson_options.simplify && topojson_options.quantization == 1e6) { // For zoomlevel 11
+		topojson_options.simplify=9.011e-13; // For zoomlevel 11
+		response.message+="\nTopoJSON options (simplify defaulted): " + JSON.stringify(topojson_options, null, 4);
+	}
+	else {
+		response.message+="\nTopoJSON options: " + JSON.stringify(topojson_options, null, 4);
+	}
+	
+		// Re-route topoJSON stderr to stderr.str
+	stderr.disable();
+
+	var convertedTopojson = topojson.topology({   // Convert geoJSON to topoJSON
+		collection: geojson
+		}, topojson_options);				
+	stderr.enable(); 				   // Re-enable stderr
+	
+	response.message+="\nConvert to topojson:\n" + stderr.str();  // Get stderr as a string	
+	stderr.clean();						// Clean down stderr string
+	stderr.restore();                   // Restore normal stderr functionality 	
+	
+	return convertedTopojson;
+}
 
 module.exports.shapefileSimplifyGeoJSON = shapefileSimplifyGeoJSON;
 module.exports.getQuantization = getQuantization;
