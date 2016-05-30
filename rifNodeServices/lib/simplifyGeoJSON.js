@@ -131,6 +131,7 @@ var shapefileSimplifyGeoJSON = function shapefileSimplifyGeoJSON(shapefile, resp
 /*
  * Function: 	getQuantization() 
  * Parameters:  Level
+ * Returns: 	Quantization
  * Description: Set quantization (the maximum number of differentiable values along each dimension) by zoomLevel
  *
  * Zoomlevel		Quantization
@@ -167,6 +168,12 @@ var getQuantization = function getQuantization(lvl) {
 	}
 };
 
+/*
+ * Function: 	toTopoJSON() 
+ * Parameters:  geoJOSN, topoJSON convertor options, internal response object
+ * Returns: 	TopoJSON
+ * Description: Convert geoJSON to topoJSON
+ */
 var toTopoJSON = function toTopoJSON(geojson, topojson_options, response) {
 	const topojson = require('topojson'),
 		  stderrHook = require('../lib/stderrHook'),
@@ -217,8 +224,9 @@ topology: 1579 arcs, 247759 points
 	stderr.restore();                   // Restore normal stderr functionality 	
 	
 	return convertedTopojson;
-}
+} // end of toTopoJSON()
 
+module.exports.toTopoJSON = toTopoJSON;
 module.exports.shapefileSimplifyGeoJSON = shapefileSimplifyGeoJSON;
 module.exports.getQuantization = getQuantization;
 
