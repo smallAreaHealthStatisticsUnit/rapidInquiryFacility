@@ -818,7 +818,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "JSON save: " + shapefileData["jsonFileBaseName"] + " took: " + elapsedTime + "S", 
 							200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 						// Create topoJSON
-						simplifyGeoJSON.simplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response, shapefileData, 
+						simplifyGeoJSON.shapefileSimplifyGeoJSON(response.file_list[shapefileData["shapefile_no"]-1], response, shapefileData, 
 							undefined /* topojson_options */, shapeFileQueueCallbackFunc /* Callback */);							
 					}							
 // For testing					

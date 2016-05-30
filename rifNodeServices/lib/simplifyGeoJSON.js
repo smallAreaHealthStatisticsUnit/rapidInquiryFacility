@@ -45,7 +45,7 @@
 // Peter Hambly, SAHSU
 
 /*
- * Function:	simplifyGeoJSON()
+ * Function:	shapefileSimplifyGeoJSON()
  * Parameters:	shapefile (base for geojson etc), response, shapefileData object, 
  *				topojson options (may be undefined), callback (may be undefined)
  * Returns:		Nothing
@@ -85,7 +85,7 @@ In steradians = (0.093 / (510,072,000 * 12.56637) [area of earth] = 1.4512882642
 For zoomlevel 11 the area at the equator is  19568 x 19437 = 380.3 square km and a pixel is 76 x 76 = 0.005776 square km
 In steradians = (0.005776 / (510,072,000 * 12.56637) [area of earth] = 9.011266999968199e-13 steradians	
  */
-var simplifyGeoJSON = function simplifyGeoJSON(shapefile, response, shapefileData, topojson_options, callback) {
+var shapefileSimplifyGeoJSON = function shapefileSimplifyGeoJSON(shapefile, response, shapefileData, topojson_options, callback) {
 	scopeChecker(__file, __line, {
 		shapefile: shapefile,
 		topojsonFileName: shapefileData["topojsonFileName"],
@@ -157,7 +157,7 @@ topology: 1579 arcs, 247759 points
 		JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson), 
 		serverLog, shapefileData["uuidV1"], shapefileData["req"], response, records, 
 		false /* do not delete data (by undefining) at stream end */, callback);		
-} // End of simplifyGeoJSON()
+} // End of shapefileSimplifyGeoJSON()
 
 /*
  * Function: 	getQuantization() 
@@ -198,7 +198,7 @@ var getQuantization = function getQuantization(lvl) {
 	}
 };
 
-module.exports.simplifyGeoJSON = simplifyGeoJSON;
+module.exports.shapefileSimplifyGeoJSON = shapefileSimplifyGeoJSON;
 module.exports.getQuantization = getQuantization;
 
 // Eof
