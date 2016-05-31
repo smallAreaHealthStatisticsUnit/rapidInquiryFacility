@@ -268,7 +268,7 @@ topology: 1579 arcs, 247759 points
 var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_options, response, convertedTopojson, stderr, serverLog, fileName) {
 		  
 	topojson_options.simplify=undefined;		
-	topojson_options["simplify-proportion"]=0.25;
+	topojson_options["retain-proportion"]=0.25; // --simplify-proportion option!
 		
 	for (i=(convertedTopojson[0].zoomlevel-1); i>=6; i--) {
 
@@ -284,44 +284,43 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 			topojson_stderr: undefined,
 			zoomlevel: i
 		};
-		
-		try {
-			var nGeojson;
-			
-			if (!convertedTopojson[(convertedTopojson.length-2)]) {
-				throw new Error("Create topojson zoomlevel[" + i + "] no convertedTopojson[] element: " + (convertedTopojson.length-2));
-			}			
-			else if (!convertedTopojson[(convertedTopojson.length-2)].topojson) {
-				throw new Error("Create topojson zoomlevel[" + i + "] no convertedTopojson[] topojson object: " + (convertedTopojson.length-2));
-			}		
-			else if (!convertedTopojson[(convertedTopojson.length-2)].topojson.objects) {
-				throw new Error("Create topojson zoomlevel[" + i + "] no convertedTopojson[] topojson.objects object: " + (convertedTopojson.length-2));
-			}
-			var j=0;
-			for (key in convertedTopojson[(convertedTopojson.length-2)].topojson.objects) {
-				j++;
-				if (j == 1) {
-					nGeojson = topojson.feature(convertedTopojson[(convertedTopojson.length-2)].topojson, convertedTopojson[(convertedTopojson.length-2)].topojson.objects[key]);
-					if (i == 10) {
-						response.message+="Zoomlevel [" + i + "] " + key + " Truncated geoJSON >>>\n" + JSON.stringify(nGeojson, null, 4).substring(0, 600) + "\n<<< End of JSON";
-					}
+
+		var nGeojson;		
+		if (!convertedTopojson[(convertedTopojson.length-2)]) {
+			throw new Error("Create topojson zoomlevel[" + i + "] no convertedTopojson[] element: " + (convertedTopojson.length-2));
+		}			
+		else if (!convertedTopojson[(convertedTopojson.length-2)].topojson) {
+			throw new Error("Create topojson zoomlevel[" + i + "] no convertedTopojson[] topojson object: " + (convertedTopojson.length-2));
+		}		
+		else if (!convertedTopojson[(convertedTopojson.length-2)].topojson.objects) {
+			throw new Error("Create topojson zoomlevel[" + i + "] no convertedTopojson[] topojson.objects object: " + (convertedTopojson.length-2));
+		}
+		var j=0;
+		for (key in convertedTopojson[(convertedTopojson.length-2)].topojson.objects) {
+			j++;
+			if (j == 1) {
+				nGeojson = topojson.feature(convertedTopojson[(convertedTopojson.length-2)].topojson, convertedTopojson[(convertedTopojson.length-2)].topojson.objects[key]);
+				if (i == 10) {
+					response.message+="Zoomlevel [" + i + "] " + key + " Truncated geoJSON >>>\n" + JSON.stringify(nGeojson, null, 4).substring(0, 600) + "\n<<< End of JSON";
 				}
-			}							
-			if (j > 1) {
-				throw new Error("Create topojson zoomlevel[" + i + "] topojson.objects length > 1: "  + j);
 			}
-				// convert the previous topojson to geojson
-			if (nGeojson) {
+		}							
+		if (j > 1) {
+			throw new Error("Create topojson zoomlevel[" + i + "] topojson.objects length > 1: "  + j);
+		} 
+		var nTopojson=JSON.parse(JSON.stringify(convertedTopojson[(convertedTopojson.length-2)].topojson));
+			
+		try { // convert the previous topojson to geojson
+			if (nTopojson) {
 				convertedTopojson[(convertedTopojson.length-1)].geojson_length= JSON.stringify(nGeojson, null, 4).length;
 				response.message+="\nCreate topojson zoomlevel[" + i + "] geojson size: " + convertedTopojson[(convertedTopojson.length-1)].geojson_length + 
 					" created from zoomlevel: " +
 					convertedTopojson[(convertedTopojson.length-2)].zoomlevel;						
-				convertedTopojson[(convertedTopojson.length-1)].topojson=topojson.topology({   // Convert geoJSON to topoJSON
-						collection: nGeojson
-						}, topojson_options);						
+				convertedTopojson[(convertedTopojson.length-1)].topojson=topojson.simplify(  // Simplify topoJSON
+						nTopojson, topojson_options);						
 			}
 			else {	
-				throw new Error("Create topojson zoomlevel[" + i + "] no geojson created from topojson convertedTopojson[" + (convertedTopojson.length-2) + 
+				throw new Error("Create topojson zoomlevel[" + i + "] no nTopojson cloned from topojson convertedTopojson[" + (convertedTopojson.length-2) + 
 					"]; length: " + convertedTopojson[(convertedTopojson.length-2)].topojson_length);
 			}
 		}
@@ -336,11 +335,18 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		convertedTopojson[(convertedTopojson.length-1)].topojson_runtime=(end - lstart)/1000; // in S	
 		convertedTopojson[(convertedTopojson.length-1)].topojson_length=JSON.stringify(convertedTopojson[(convertedTopojson.length-1)].topojson).length;	
 		stderr.enable(); 				   // Re-enable stderr
-		convertedTopojson[(convertedTopojson.length-1)].topojson_stderr=stderr.str();			
-		response.message+="\nTopoJSON options for zoomlevel[" + i + "] " + JSON.stringify(topojson_options, null, 4) + 
-			"\nCreated topojson for zoomlevel[" + i + "]; size: " + convertedTopojson[(convertedTopojson.length-1)].topojson_length + 
-			"; took: " + convertedTopojson[(convertedTopojson.length-1)].topojson_runtime + 
-			"S;  diagnostics\n" + convertedTopojson[(convertedTopojson.length-1)].topojson_stderr;  // Get stderr as a string
+		convertedTopojson[(convertedTopojson.length-1)].topojson_stderr=stderr.str();	
+		if (i == 10) {
+			response.message+="\nTopoJSON options for zoomlevel[" + i + "] " + JSON.stringify(topojson_options, null, 4) + 
+				"\nCreated topojson for zoomlevel[" + i + "]; size: " + convertedTopojson[(convertedTopojson.length-1)].topojson_length + 
+				"; took: " + convertedTopojson[(convertedTopojson.length-1)].topojson_runtime + 
+				"S;  diagnostics\n" + convertedTopojson[(convertedTopojson.length-1)].topojson_stderr;  // Get stderr as a string
+		}
+		else {
+			response.message+="\nCreated topojson for zoomlevel[" + i + "]; size: " + convertedTopojson[(convertedTopojson.length-1)].topojson_length + 
+				"; took: " + convertedTopojson[(convertedTopojson.length-1)].topojson_runtime + 
+				"S;  diagnostics\n" + convertedTopojson[(convertedTopojson.length-1)].topojson_stderr;  // Get stderr as a string
+		}			
 
 		addStatus(__file, __line, response, fileName + ": simplified topojson for zoomlevel[" + i + "] took: " + convertedTopojson[(convertedTopojson.length-1)].topojson_runtime + "S", 
 			200 /* HTTP OK */, serverLog, undefined /* req */);  // Add end of shapefile read status			
