@@ -833,7 +833,7 @@ This error in actually originating from the error handler function
 					//       * shapeFileQueueCallbackFunc which run shapeFileQueueCallback
 					// Nothing is now run at stream end!
 					
-					var shapeFileQueueCallbackFunc = function shapeFileQueueCallbackFunc() {
+					var shapeFileQueueCallbackFunc = function shapeFileQueueCallbackFunc(e) {
 						scopeChecker(__file, __line, {	
 							callback: shapefileData["callback"],
 							message: response.message
@@ -841,15 +841,25 @@ This error in actually originating from the error handler function
 						
 						var end = new Date().getTime();
 						var elapsedTime=(end - lstart)/1000; // in S	
+						if (e) {
+							nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "TopoJSON creation and save failed: " + shapefileData["topojsonFileBaseName"] + " took: " + elapsedTime + "S", 
+								500 /* HTTP Failure */, serverLog, req);  // Add end of shapefile read status	
+						}
 						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "TopoJSON creation and save: " + shapefileData["topojsonFileBaseName"] + " took: " + elapsedTime + "S", 
 							200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 						response.message+=";\nRun shapeFileQueueCallback callback()";
-						shapefileData["callback"]();								
+						shapefileData["callback"](e);								
 					}	
-					var topoFunction=function topoFunction() {
+					var topoFunction=function topoFunction(e) {
 						
 						var end = new Date().getTime();
 						var elapsedTime=(end - lstart)/1000; // in S	
+						
+						if (e) {
+							nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "JSON save failed: " + shapefileData["jsonFileBaseName"] + " took: " + elapsedTime + "S", 
+								500 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status					
+							shapeFileQueueCallbackFunc(e);		
+						}
 						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "JSON save: " + shapefileData["jsonFileBaseName"] + " took: " + elapsedTime + "S", 
 							200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 						// Create topoJSON
@@ -857,7 +867,11 @@ This error in actually originating from the error handler function
 							shapefileData["topojson_options"], shapeFileQueueCallbackFunc /* Callback */);							
 					}							
 // For testing					
-					var testFunc = function testFunc() {
+					var testFunc = function testFunc(e) {
+						
+						if (e) {
+							throw e;
+						}
 //								console.error("Creating: " + shapefileData["jsonFileName"] + ".2");
 						streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", 
 							JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
@@ -867,13 +881,18 @@ This error in actually originating from the error handler function
 					}			
 
 					response.message+="\nWrite footer for: " + shapefileData["jsonFileName"]; 
-					streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
-							footer, 
-							wStream,
-							serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
-							true /* lastPiece */, lstart, topoFunction /* testFunc */ /* callback */);
-							
-
+					try {
+						streamWriteFileWithCallback.streamWriteFilePieceWithCallback(shapefileData["jsonFileName"], 
+								footer, 
+								wStream,
+								serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
+								true /* lastPiece */, lstart, topoFunction /* testFunc */ /* callback */);
+					}
+					catch (e) {			
+						serverLog.serverLog2(__file, __line, "writeGeoJsonbyFeatureSeriesEnd", 
+							"Unexpected error in: streamWriteFilePieceWithCallback() handler", req, e);
+						shapeFileQueueCallbackFunc(e);
+					}
 				}
 			}); // End of async feature loop
 	} // End of writeGeoJsonbyFeature()

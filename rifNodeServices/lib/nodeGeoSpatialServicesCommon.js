@@ -397,7 +397,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 	switch (httpStatus) {
 		case 200: /* HTTP OK */
 			break;
-		case 405: /* HTTP service not suuport */
+		case 405: /* HTTP service not supported */
 			break;				
 		case 500: /* HTTP error */
 			break;
