@@ -190,11 +190,11 @@ function setStatus(msg, errm, diagnostic) {
 	
 /*
  * Function: 	createMap()
- * Parameters: 	Bounding box
+ * Parameters: 	Bounding box, number of Zoomlevels
  * Returns: 	map
  * Description:	Create map, add Openstreetmap basemap and scale
  */	
-function createMap(boundingBox) {
+function createMap(boundingBox, noZoomlevels) {
 	console.log('Create Leaflet map');	
 	var map = new L.map('map');
 	var msg;
@@ -214,6 +214,26 @@ function createMap(boundingBox) {
 		}
 		setStatus("Unable to create map", e.message);
 	}
+	
+	try {
+		if (noZoomlevels > 0) {
+			map.on('zoomend', function (e) {
+				zoomBasedLayerchange(e);
+			});
+		}
+		else {
+			conmsole.log("Zoomlevel based layer support disabled; only one zoomlevel of data present");
+		}
+	}
+	catch (e) {
+		try {
+			map.remove();
+		}
+		catch (e2) {
+			console.log("WARNING! Unable to remove map during error recovery");
+		}
+		setStatus("Unable to add zoomend event to map", e.message);
+	}		
 	
 	try {
 		setStatus("Creating basemap...");															
@@ -516,9 +536,15 @@ function displayResponse(responseText, status, formName) {
 				}	
 				else {	
 					setupBoundingBox(response);
-			
+					var noZoomlevels;
+					if (response.file_list[0] && response.file_list[0].topojson[0]) {
+						noZoomlevels=response.file_list[0].topojson.length;
+					}
+					else {
+						setStatus("Error in map setup", new Error("Unable to determine the number of zoomlevels"));
+					}
 					if (!map) {
-						map=createMap(response.file_list[0].boundingBox); // Create map using first bounding box in file list
+						map=createMap(response.file_list[0].boundingBox, noZoomlevels); // Create map using first bounding box in file list
 					}
 					else {
 						var centre=map.getCenter();
@@ -537,7 +563,7 @@ function displayResponse(responseText, status, formName) {
 							map.remove(); // Known leaflet bug:
 										  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
 							
-							map=createMap(response.file_list[0].boundingBox);				
+							map=createMap(response.file_list[0].boundingBox, noZoomlevels);				
 //						}	
 					}	
 					
@@ -552,7 +578,7 @@ function displayResponse(responseText, status, formName) {
 						];
 					var layerAddOrder = setupLayers(response);
 	
-					for (var i=0; i < response.no_files; i++) {	// Now processe					
+					for (var i=0; i < response.no_files; i++) {	// Now process the files					
 						var weight=(response.no_files - i); // i.e. Lower numbers - high resolution have most weight;	
 						
 	// Chroma.js - to be added (Node module)
@@ -593,17 +619,20 @@ function displayResponse(responseText, status, formName) {
 											console.log('Remove topoJSONLayer' + i + ']');
 											map.removeLayer(JSONLayer[i]);
 										}		
-										
-										setStatus("Adding topoJSONLayer[" + i + "/" + (response.no_files - 1) + "]...");	
-										JSONLayer[i] = new L.topoJson(undefined, 
-											{style: 
-												{color: 	layerColours[i],
-												 fillColor: "#ccf4ff",
-												 weight: 	weight, // i.e. Lower numbers have most weight
-												 opacity: 	1,
-												 fillOpacity: fillOpacity}
-											}).addTo(map);
-										JSONLayer[i].addData(response.file_list[layerAddOrder[i]].topojson[0].topojson);									
+
+										setTimeout(function myAddLayer(j) { // Force async
+											var idx=JSONLayer.length;
+											JSONLayer[idx] = new L.topoJson(undefined, 
+												{style: 
+													{color: 	layerColours[j],
+													 fillColor: "#ccf4ff",
+													 weight: 	weight, // i.e. Lower numbers have most weight
+													 opacity: 	1,
+													 fillOpacity: fillOpacity}
+												}).addTo(map);
+											JSONLayer[idx].addData(response.file_list[layerAddOrder[j]].topojson[0].topojson);											
+										}, 100, i);										
+										setStatus("Added topoJSONLayer[" + i + "/" + (response.no_files - 1) + "] zoomlevel: " +  map.getZoom() + " ...");	
 									}
 						
 								} catch (e) {  							
@@ -618,17 +647,20 @@ function displayResponse(responseText, status, formName) {
 											console.log('Remove JSONLayer' + i + ']');
 											map.removeLayer(JSONLayer[i]);
 										}		
-										
-										setStatus("Adding geoJSONLayer[" + i + "/" + (response.no_files - 1) + "]...");	
-										JSONLayer[i] = L.geoJson(undefined, 
+											
+										setTimeout(function myAddLayer(j) { // Force async
+											var idx=JSONLayer.length;
+										JSONLayer[idx] = L.geoJson(undefined, 
 											{style: 
-												{color: 	layerColours[i],
+												{color: 	layerColours[j],
 												 fillColor: "#ccf4ff",
 												 weight: 	weight, // i.e. Lower numbers have most weight
 												 opacity: 	1,
 												 fillOpacity: fillOpacity}
 											}).addTo(map);
-										JSONLayer[i].addData(response.file_list[layerAddOrder[i]].geojson);									
+										JSONLayer[idx].addData(response.file_list[layerAddOrder[j]].geojson);									
+										}, 100, i);		
+										setStatus("Added geoJSONLayer[" + i + "/" + (response.no_files - 1) + "] zoomlevel: " +  map.getZoom() + " ...");									
 									}
 									
 								} catch (e) {  	
@@ -713,20 +745,20 @@ function errorHandler(error) {
 			msg+="(no error status)";
 		}
 		msg+="</h1>";
-		if (error.responseJSON.error) {
+		if (error.responseJSON && error.responseJSON.error) {
 			msg+="</br>Error text: " + error.responseJSON.error;
 		}
 		else {
 			console.log("No error text in JSON response");
 		}		
 		msg+="</br>Message:";
-		if (error.responseJSON.message) {
+		if (error.responseJSON && error.responseJSON.message) {
 			msg+=error.responseJSON.message;
 		}
 		else {
 			msg+="(no error message)";
 		}
-		if (error.responseJSON.diagnostic) {
+		if (error.responseJSON && error.responseJSON.diagnostic) {
 			msg+="<p>Processing diagnostic:</br><pre>" + error.responseJSON.diagnostic + "</pre></p>";
 		}	
 		
@@ -767,4 +799,31 @@ function uploadProgressHandler(event, position, total, percentComplete) {
 	}
 	document.getElementById('status').innerHTML = msg;
 	console.log(msg);
+}
+
+/*
+ * Function: 	zoomBasedLayerchange()
+ * Parameters:  Error object
+ * Returns: 	Nothing
+ * Description:	Change all map layer to optimised topoJSON for that zoomlevel 
+ */
+function zoomBasedLayerchange(err) {
+	if (err == null) {
+		console.error(err.message);
+	}
+	
+//    $("#zoomlevel").html(map.getZoom());
+    var currentZoom = map.getZoom();
+    console.log("New zoomlevel: " + currentZoom);
+    switch (currentZoom) {
+/*        case 11:
+            clean_map();
+            coorsLayer.addTo(map); //show Coors Field
+            $("#layername").html("Coors Field");
+            break; */
+
+        default:
+            // do nothing
+            break;
+    }
 }
