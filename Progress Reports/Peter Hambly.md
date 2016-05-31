@@ -447,8 +447,9 @@ RangeError: Invalid string length
 
 * Front end multi zoomlevel support
 * Async map display
-* Add simplify to zoomlevcel 11
+* Add simplify to zoomlevel 11, spherical simplify limit (in Steraradians)
 * max/min zoomlevel
+* Add intra zoomlevel simplify percentage target parameter
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
 * Re-test COA2011: json memory and timeout issues are solved
 

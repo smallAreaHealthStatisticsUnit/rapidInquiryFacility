@@ -492,25 +492,28 @@ function displayResponse(responseText, status, formName) {
 	
 	/*
 	 * Function: 	jsonAddLayer()
-	 * Parameters: 	style, JSONLayer, json, isGeoJSON
+	 * Parameters: 	index (into JSONLayer array), layer style, JSONLayer array , geo/topojson, isGeoJSON boolean
 	 * Returns: 	Nothing
 	 * Description:	Add geo/topoJSON layer to map
 	 */	
-	function jsonAddLayer(style, JSONLayer, json, isGeoJSON) { 
+	function jsonAddLayer(i, style, JSONLayer, json, isGeoJSON) { 
+		var end=new Date().getTime();
+		var elapsed=(end - start)/1000; // in S
+		
 		try {	
-			var idx=JSONLayer.length;
-			if (isGeoJSON) {
-				JSONLayer[idx] = L.geoJson(undefined, 
+			if (isGeoJSON) { // Use the right function
+				JSONLayer[i] = L.geoJson(undefined, 
 					style).addTo(map);
 			}
 			else {
-				JSONLayer[idx] = new L.topoJson(undefined, 
+				JSONLayer[i] = new L.topoJson(undefined, 
 					style).addTo(map);
 			}
-			JSONLayer[idx].addData(json);	
+			JSONLayer[i].addData(json);	
+			console.log("[" + elapsed + "] Added JSONLayer[" + i + "] zoomlevel: " +  map.getZoom());
 		}
 		catch (e) {
-			console.error("Error adding JSON to map" + e.message);
+			console.error("Error adding JSON layer [" + i + "] to map: " + e.message);
 		}
 	}
 										
@@ -647,6 +650,7 @@ function displayResponse(responseText, status, formName) {
 
 										setTimeout(jsonAddLayer, 	// Force async
 											100+(i*1000*0), 		// Timeout
+											i, 						// jsonAddLayer() parameters
 											{style: 
 												{color: 	layerColours[i],
 												 fillColor: "#ccf4ff",
@@ -675,6 +679,7 @@ function displayResponse(responseText, status, formName) {
 											
 										setTimeout(jsonAddLayer, 	// Force async
 											100+(i*1000*0), 		// Timeout
+											i, 						// jsonAddLayer() parameters
 											{style: 
 												{color: 	layerColours[i],
 												 fillColor: "#ccf4ff",
