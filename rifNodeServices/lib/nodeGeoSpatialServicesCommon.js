@@ -378,7 +378,6 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 	var calling_function = arguments.callee.caller.name || '(anonymous)';
 	const path = require('path'),
 		  fs = require('fs');
-
 		
 	scopeChecker(__file, __line, {
 		serverLog: serverLog,
@@ -388,8 +387,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 		calling_function: calling_function,
 		status: response.status,
 		message: response.message,
-		httpStatus: httpStatus,
-		req: req
+		httpStatus: httpStatus
 	});	
 	var msg;
 
@@ -430,7 +428,8 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 	}
 	
 	if (response.fields["uuidV1"] && response.fields["diagnosticFileDir"] && response.fields["statusFileName"]) { // Can save state
-		response.message+="\n[" + response.fields["uuidV1"] + "+" + response.status[response.status.length-1].etime + " S] Re-creating status file: " + response.fields["statusFileName"];
+		response.message+="\n[" + response.fields["uuidV1"] + "+" + response.status[response.status.length-1].etime + 
+			" S] Re-creating status file: " + response.fields["statusFileName"];
 		var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
 		fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"], 
 			statusText);	

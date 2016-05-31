@@ -344,7 +344,7 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 		// Call parser that can process multi GB collections
 		d.file.jsonData=simplifyGeoJSON.jsonParse(d.file.file_data, response);
 		
-		d.file.topojson=simplifyGeoJSON.toTopoJSON(d.file.jsonData, topojson_options, response);
+		d.file.topojson=simplifyGeoJSON.toTopoJSON(d.file.jsonData, topojson_options, response, d.file.file_name);
 		
 		if (global.gc &&d.file.jsonData.length > (1024*1024*500) ) { // GC if json > 500M; 
 			d.file.jsonData=undefined;			// Release memory		
