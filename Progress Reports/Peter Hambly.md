@@ -438,12 +438,13 @@ RangeError: Invalid string length
 * Fixed json parser in geo2topoJSON to handle files > 255M; parsed 1,674,722,608 bytes to JSON; topoSJON: 73,988,023 bytes; Chrome died, 
   firefox hung (probably because of the swapping). Really needs batch mode because Node will not release the meory before sending the 
   response back to the client. Node NODE_MAX_MEMORY=7168 (MB!)
+* Simplify: test pre-quantisation at 10e6/10e7 with and without simplification to 9.01x10-13 steradians. 	
+* Zoomlevel 1-11 support; topojson now becomes an array, single topoJSON function. Notes: a) simplify-proportion not working; b) performance 
+  issues because of this; c) being run on too many files in geo2TopoJSON. 
+* Create geo2TopoJSON.geo2TopoJSON()
 
 #### Current TODO list (June):
 
-* Create geo2TopoJSON.geo2TopoJSON()
-* Simplify: test pre-quantisation at 10e6/10e7 with and without simplification to 9.01x10-13 steradians. 	
-* Zoomlevel 1-11 support; topojson now becomes an array, single topoJSON function
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
 * Re-test COA2011: json memory and timeout issues are solved
 
