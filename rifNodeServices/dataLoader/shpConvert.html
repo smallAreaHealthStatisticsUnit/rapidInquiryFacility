@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="leaflet.zoomdisplay.css" />
     <script src="leaflet.zoomdisplay.js"></script>
     <script src="jquery.form.js"></script> 
+    <script src="angular.min.js"></script> 
     <script src="nodeGeoSpatialFrontEnd.js"></script> 
- 
+
     <script> 
 // wait for the DOM to be loaded 
 // prepare the JQuery form when the DOM is ready 
@@ -104,7 +105,7 @@ webkitRelativePath: ""} .. then inherited
 		console.log("FATAL! setupMap() not defined: errors in nodeGeoSpatialServices.js");
 		return false;
 	}
-    console.log('About to submit: \n\n' + JSON.stringify(queryString, null, 4)); 
+    console.log('About to submit: ' + JSON.stringify(queryString, null, 4)); 
 	start = new Date().getTime();
  
     // here we could return false to prevent the form from being submitted; 
@@ -139,28 +140,34 @@ function processJson(data, status) {
 		console.error("FATAL: Caught exception in displayResponse(): " + e.message);	
 	}
 }	
+
+/*
+ * Angular controller
+ */
+var app = angular.module('shpConvert', []);
+app.controller('shpConvertCtrl', function shpConvertCtrl($scope) {
+
+});
+
     </script>
 <title>Shapefile to TopoJSON Convertor</title>
 </head>
   <body onload="setupMap();">
-    <div id="header">
-      <h4>Shapefile Upload</h4>
+    <div ng-app="shpConvert" ng-controller="shpConvertCtrl">
+      <div id="header">
+        <h4>Shapefile Upload</h4>
+      </div>
+      <div id="nav">
+        <form id="shpConvert" action="http://127.0.0.1:3000/shpConvert" method="POST"
+              enctype="multipart/form-data">Select a file/files to upload: <input type="file" name="file" size="50" multiple="multiple" />
+          <input type="submit" value="Upload File(s)" />
+          <input type="checkbox" name="verbose" value="true">Verbose<br>
+        </form>
+      </div>
+	  <div id="status"></div>
+	  <div id="map"></div>
+	  <div id="footer">Copyright &copy; UK Small Area Health Statistics Unit</div>
     </div>
-  <div id="nav">
-<form id="shpConvert" action="http://127.0.0.1:3000/shpConvert" method="POST"
-      enctype="multipart/form-data">
-Select a file/files to upload: <input type="file" name="file" size="50" multiple="multiple" />
-<input type="submit" value="Upload File(s)" />
-<input type="checkbox" name="verbose" value="true">Verbose<br>
-</form>
-  </div>
-  <div id="workarea">
-	<div id="status"></div>
-	<div id="map"></div>
-	<div id="footer">
-	  Copyright &copy; UK Small Area Health Statistics Unit
-	</div>
-   </div>
     <style>
 #header {
     background-color:black;

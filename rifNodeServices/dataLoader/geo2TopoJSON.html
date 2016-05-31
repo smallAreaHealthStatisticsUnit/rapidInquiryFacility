@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="leaflet.zoomdisplay.css" />
     <script src="leaflet.zoomdisplay.js"></script>
     <script src="jquery.form.js"></script> 
+    <script src="angular.min.js"></script> 
     <script src="nodeGeoSpatialFrontEnd.js"></script> 
  
     <script> 
@@ -138,28 +139,35 @@ function processJson(data, status) {
 		console.error("FATAL: Caught exception in displayResponse(): " + e.message);	
 	}
 }	
+
+/*
+ * Angular controller
+ */
+var app = angular.module('geo2TopoJSON', []);
+app.controller('geo2TopoJSONCtrl', function geo2TopoJSONCtrl($scope) {
+
+});
+
     </script>
 <title>GeoJSON to TOpoJSON Uploading Form</title>
 </head>
   <body onload="setupMap();">
-    <div id="header">
-      <h4>WGS84 GeoJSON Upload</h4>
+    <div ng-app="geo2TopoJSON" ng-controller="geo2TopoJSONCtrl">
+      <div id="header">
+        <h4>WGS84 GeoJSON Upload</h4>
+      </div>
+      <div id="nav">
+        <form id="geo2TopoJSON" action="http://127.0.0.1:3000/geo2TopoJSON" method="POST"
+              enctype="multipart/form-data">Select a file/files to upload: <input type="file" name="file" size="50" multiple="multiple" />
+          <input type="submit" value="Upload File(s)" />
+          <input type="checkbox" name="verbose" value="true">Verbose<br>
+        </form>
+      </div>
+	  <div id="status"></div>
+	  <div id="map"></div>
+	  <div id="footer">Copyright &copy; UK Small Area Health Statistics Unit
+	  </div>
     </div>
-  <div id="nav">
-<form id="geo2TopoJSON" action="http://127.0.0.1:3000/geo2TopoJSON" method="POST"
-      enctype="multipart/form-data">
-Select a file/files to upload: <input type="file" name="file" size="50" multiple="multiple" />
-<input type="submit" value="Upload File(s)" />
-<input type="checkbox" name="verbose" value="true">Verbose<br>
-</form>
-  </div>
-  <div id="workarea">
-	<div id="status"></div>
-	<div id="map"></div>
-	<div id="footer">
-	  Copyright &copy; UK Small Area Health Statistics Unit
-	</div>
-   </div>
     <style>
 #header {
     background-color:black;
