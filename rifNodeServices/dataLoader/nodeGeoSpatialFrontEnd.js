@@ -489,6 +489,31 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
  * Description:	Display reponse from submit form
  */
 function displayResponse(responseText, status, formName) {
+	
+	/*
+	 * Function: 	jsonAddLayer()
+	 * Parameters: 	style, JSONLayer, json, isGeoJSON
+	 * Returns: 	Nothing
+	 * Description:	Add geo/topoJSON layer to map
+	 */	
+	function jsonAddLayer(style, JSONLayer, json, isGeoJSON) { 
+		try {	
+			var idx=JSONLayer.length;
+			if (isGeoJSON) {
+				JSONLayer[idx] = L.geoJson(undefined, 
+					style).addTo(map);
+			}
+			else {
+				JSONLayer[idx] = new L.topoJson(undefined, 
+					style).addTo(map);
+			}
+			JSONLayer[idx].addData(json);	
+		}
+		catch (e) {
+			console.error("Error adding JSON to map" + e.message);
+		}
+	}
+										
 	var response;
 	var msg="";
 	var JSONLayer=[];
@@ -620,19 +645,19 @@ function displayResponse(responseText, status, formName) {
 											map.removeLayer(JSONLayer[i]);
 										}		
 
-										setTimeout(function myAddLayer(j) { // Force async
-											var idx=JSONLayer.length;
-											JSONLayer[idx] = new L.topoJson(undefined, 
-												{style: 
-													{color: 	layerColours[j],
-													 fillColor: "#ccf4ff",
-													 weight: 	weight, // i.e. Lower numbers have most weight
-													 opacity: 	1,
-													 fillOpacity: fillOpacity}
-												}).addTo(map);
-											JSONLayer[idx].addData(response.file_list[layerAddOrder[j]].topojson[0].topojson);											
-										}, 100, i);										
-										setStatus("Added topoJSONLayer[" + i + "/" + (response.no_files - 1) + "] zoomlevel: " +  map.getZoom() + " ...");	
+										setTimeout(jsonAddLayer, 	// Force async
+											100+(i*1000*0), 		// Timeout
+											{style: 
+												{color: 	layerColours[i],
+												 fillColor: "#ccf4ff",
+												 weight: 	weight, // i.e. Lower numbers have most weight
+												 opacity: 	1,
+												 fillOpacity: fillOpacity}
+											},
+											JSONLayer, 
+											response.file_list[layerAddOrder[i]].topojson[0].topojson,
+											false /* isGeoJSON */);																		
+										setStatus("Adding topoJSONLayer[" + i + "/" + (response.no_files - 1) + "] zoomlevel: " +  map.getZoom() + " ...");	
 									}
 						
 								} catch (e) {  							
@@ -648,21 +673,20 @@ function displayResponse(responseText, status, formName) {
 											map.removeLayer(JSONLayer[i]);
 										}		
 											
-										setTimeout(function myAddLayer(j) { // Force async
-											var idx=JSONLayer.length;
-										JSONLayer[idx] = L.geoJson(undefined, 
+										setTimeout(jsonAddLayer, 	// Force async
+											100+(i*1000*0), 		// Timeout
 											{style: 
-												{color: 	layerColours[j],
+												{color: 	layerColours[i],
 												 fillColor: "#ccf4ff",
 												 weight: 	weight, // i.e. Lower numbers have most weight
 												 opacity: 	1,
 												 fillOpacity: fillOpacity}
-											}).addTo(map);
-										JSONLayer[idx].addData(response.file_list[layerAddOrder[j]].geojson);									
-										}, 100, i);		
-										setStatus("Added geoJSONLayer[" + i + "/" + (response.no_files - 1) + "] zoomlevel: " +  map.getZoom() + " ...");									
+											}, 
+											JSONLayer, 
+											response.file_list[layerAddOrder[i]].geojson,
+											true /* isGeoJSON */);		
+										setStatus("Adding geoJSONLayer[" + i + "/" + (response.no_files - 1) + "] zoomlevel: " +  map.getZoom() + " ...");									
 									}
-									
 								} catch (e) {  	
 									setStatus("GeoJSON conversion error", e);	
 								}
