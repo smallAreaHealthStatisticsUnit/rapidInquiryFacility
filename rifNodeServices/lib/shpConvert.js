@@ -714,9 +714,11 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	
 		async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features	/* col */, 
 			function writeGeoJsonbyFeatureSeries(value, index, seriesCallback) {
-			
+					var inCallback=false;
+					
 					var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
 						try {
+							inCallback=true;
 							seriesCallback(e);
 						}
 						catch (e2) {	
@@ -782,25 +784,46 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						else {
 							seriesCallbackFunc();
 						}
-					} catch (e) {
-						// !!!!!! DOES NOT WORK AS EXPECTED
-						serverLog.serverLog2(__file, __line, "writeGeoJsonbyFeatureSeries", e.message, req, undefined);	
-						try {
-						seriesCallbackFunc(e);
+					}
+/*
+Use inCallback boollean to avoid:
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:813
+						throw err;
+						^
+
+Error: Callback was already called.
+    at C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\async\dist\async.js:839:36
+    at seriesCallbackFunc (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:720:8)
+    at writeGeoJsonbyFeatureSeries (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:807:7)
+    at replenish (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\async\dist\async.js:873:21)
+    at C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\async\dist\async.js:883:15
+    at eachOfLimit (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\async\dist\async.js:4015:26)
+    at Object.<anonymous> (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\async\dist\async.js:929:20)
+    at writeGeoJsonbyFeature (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:715:9)
+    at readerClose (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\shpConvert.js:661:5)
+    at FSReqWrap.oncomplete (fs.js:82:15)
+	
+This error in actually originating from the error handler function	
+ */
+					catch (e) {
+						if (inCallback) {
+							serverLog.serverError2(__file, __line, "writeGeoJsonbyFeatureSeries", e.message, req, e);
 						}
-						catch (err) {
-							
-						console.error("XXXXXX ERROR: " + e.message + "\n" + e.stack);
-						serverLog.serverLog2(__file, __line, "writeGeoJsonbyFeatureSeries", err.message, req, undefined);	
-						throw e;
+						else {
+							try {
+								seriesCallbackFunc(e);
+							}
+							catch (err) {
+								serverLog.serverError2(__file, __line, "writeGeoJsonbyFeatureSeries", "First error: " + e.message, req, err);	
+
+							}
 						}
-//						throw e;
-//						return seriesCallbackFunc(e);
 					}
 			}, 
-			function (err) {																	/* Callback at end */
+			function writeGeoJsonbyFeatureSeriesEnd(err) {																	/* Callback at end */
 				if (err) {
-					serverLog.serverError2(__file, __line, "streamWriteFilePieceWithCallbackasync.forEachOfSeries", err.message, req, undefined);
+					serverLog.serverError2(__file, __line, "writeGeoJsonbyFeatureSeriesEnd", err.message, req, undefined);
 				}
 				else { // Write footer
 					// Callbacks:
