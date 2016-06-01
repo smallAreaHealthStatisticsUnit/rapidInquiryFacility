@@ -443,6 +443,10 @@ RangeError: Invalid string length
   issues because of this; c) being run on too many files in geo2TopoJSON. 
 * Create geo2TopoJSON.geo2TopoJSON()
 
+#### 31st May to 3rd June
+
+* Async map loading, full screen. Still not displaying layer by layer
+
 #### Current TODO list (June):
 
 * Front end multi zoomlevel support
