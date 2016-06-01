@@ -48,7 +48,8 @@ var map;
 var tileLayer;
 var JSONLayer;
 var start;
-
+var jsonAddLayerParamsArray=[];
+					
 // Extend Leaflet to use topoJSON
 L.topoJson = L.GeoJSON.extend({  
   addData: function(jsonData) {    
@@ -97,9 +98,9 @@ function setupMap() {
 		document.getElementById('status').style.height=new_h;
 		document.getElementById('status').style.width=new_status_width;
 		
-		document.getElementById('status').innerHTML = "Size h x w: " + h + "+" + w +
+		console.log("Size h x w: " + h + "+" + w +
 			"; map size old: " + old_h + "+" + old_w + ", new: " + new_h + "+" + new_w +
-			"; new status width: " + new_status_width
+			"; new status width: " + new_status_width);
 	}
 }
 	
@@ -237,8 +238,15 @@ function createMap(boundingBox, noZoomlevels) {
 	
 	try {
 		if (noZoomlevels > 0) {
-			map.on('zoomend', function (e) {
-				zoomBasedLayerchange(e);
+			map.on('zoomend', function (event) {
+				zoomBasedLayerchange(event);
+			});
+			map.eachLayer(function(layer) {
+				if (!layer.on) return;
+				layer.on({
+					loading: function(event) { console.log("Loading: " + layer); },
+					load: function(event) { console.log("Loaded: " + layer); }
+				}, this);
 			});
 		}
 		else {
@@ -509,54 +517,6 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
  * Description:	Display reponse from submit form
  */
 function displayResponse(responseText, status, formName) {
-	
-	/*
-	 * Function: 	jsonAddLayer()
-	 * Parameters: 	jsonAddLayerParams { index (into JSONLayer array), layer style, JSONLayer array , geo/topojson, isGeoJSON boolean }
-	 * Returns: 	Nothing
-	 * Description:	Remove then add geo/topoJSON layer to map
-	 */	
-	function jsonAddLayer(jsonAddLayerParams) { 
-		var end=new Date().getTime();
-		var elapsed=(end - start)/1000; // in S
-		console.log("[" + elapsed + "] Adding data to JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
-			"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
-			jsonAddLayerParams.file_name +
-			"; colour: " + jsonAddLayerParams.style.color + "; weight: " + jsonAddLayerParams.style.weight + 
-			"; opacity: " + jsonAddLayerParams.style.opacity + "; fillOpacity: " + jsonAddLayerParams.style.fillOpacity);
-								
-		try {
-			if (jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]) {	
-				console.log("[" + elapsed + "] Remove topoJSONLayer" + jsonAddLayerParams.i + "]");
-				map.removeLayer(jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]);
-			}	
-			try {	
-				if (jsonAddLayerParams.isGeoJSON) { // Use the right function
-					jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = L.geoJson(undefined, 
-						jsonAddLayerParams.style).addTo(map);
-				}
-				else {
-					jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = new L.topoJson(undefined, 
-						jsonAddLayerParams.style).addTo(map);
-				}
-				jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(jsonAddLayerParams.json);	
-				end=new Date().getTime();
-				elapsed=(end - start)/1000; // in S
-				console.log("[" + elapsed + "] Added JSONLayer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + 
-					"]: " + jsonAddLayerParams.file_name + "; zoomlevel: " +  map.getZoom());
-			}
-			catch (e) {
-				end=new Date().getTime();
-				elapsed=(end - start)/1000; // in S
-				console.error("[" + elapsed + "] Error adding JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "] to map: " + e.message);
-			}			
-		}			
-		catch (e) {
-			end=new Date().getTime();
-			elapsed=(end - start)/1000; // in S
-			console.error("[" + elapsed + "] Error removing JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "]  map: " + e.message);
-		}	
-	}
 										
 	var response;
 	var msg="";
@@ -646,7 +606,6 @@ function displayResponse(responseText, status, formName) {
 						"#0f0f0f"  // Onyx (nearly black)
 						];
 					var layerAddOrder = setupLayers(response);
-					var jsonAddLayerParamsArray=[];
 							
 					for (var i=0; i < response.no_files; i++) {	// Now process the files					
 						var weight=(response.no_files - i); // i.e. Lower numbers - high resolution have most weight;	
@@ -789,6 +748,60 @@ function displayResponse(responseText, status, formName) {
 	}
 }	
 
+/*
+ * Function: 	jsonAddLayer()
+ * Parameters: 	jsonAddLayerParams { index (into JSONLayer array), layer style, JSONLayer array , geo/topojson, isGeoJSON boolean }
+ * Returns: 	Nothing
+ * Description:	Remove then add geo/topoJSON layer to map
+ */	
+function jsonAddLayer(jsonAddLayerParams) { 
+	var end=new Date().getTime();
+	var elapsed=(end - start)/1000; // in S
+	console.log("[" + elapsed + "] Adding data to JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+		"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
+		jsonAddLayerParams.file_name +
+		"; colour: " + jsonAddLayerParams.style.color + "; weight: " + jsonAddLayerParams.style.weight + 
+		"; opacity: " + jsonAddLayerParams.style.opacity + "; fillOpacity: " + jsonAddLayerParams.style.fillOpacity);
+							
+	try {
+		if (jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]) {	
+			console.log("[" + elapsed + "] Remove topoJSONLayer" + jsonAddLayerParams.i + "]");
+			map.removeLayer(jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]);
+		}	
+		try {	
+			if (jsonAddLayerParams.isGeoJSON) { // Use the right function
+				jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = L.geoJson(undefined, 
+					jsonAddLayerParams.style).addTo(map);
+			}
+			else {
+				jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = new L.topoJson(undefined, 
+					jsonAddLayerParams.style).addTo(map);
+			}
+			jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(jsonAddLayerParams.json);	
+			end=new Date().getTime();
+			elapsed=(end - start)/1000; // in S
+			console.log("[" + elapsed + "] Added JSONLayer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + 
+				"]: " + jsonAddLayerParams.file_name + "; zoomlevel: " +  map.getZoom());
+		}
+		catch (e) {
+			end=new Date().getTime();
+			elapsed=(end - start)/1000; // in S
+			console.error("[" + elapsed + "] Error adding JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "] to map: " + e.message);
+		}			
+	}			
+	catch (e) {
+		end=new Date().getTime();
+		elapsed=(end - start)/1000; // in S
+		console.error("[" + elapsed + "] Error removing JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "]  map: " + e.message);
+	}	
+}
+	
+/*
+ * Function: 	errorHandler()
+ * Parameters:  JQuery form error object
+ * Returns: 	Nothing
+ * Description: Error handler
+ */	
 function errorHandler(error) {
 	if (error) {
 		console.error(JSON.stringify(error, null, 4));
@@ -858,18 +871,15 @@ function uploadProgressHandler(event, position, total, percentComplete) {
 
 /*
  * Function: 	zoomBasedLayerchange()
- * Parameters:  Error object
+ * Parameters:  Event object
  * Returns: 	Nothing
  * Description:	Change all map layer to optimised topoJSON for that zoomlevel 
  */
-function zoomBasedLayerchange(err) {
-	if (err == null) {
-		console.error(err.message);
-	}
+function zoomBasedLayerchange(event) {
 	
 //    $("#zoomlevel").html(map.getZoom());
     var currentZoom = map.getZoom();
-    console.log("New zoomlevel: " + currentZoom);
+    console.log("New zoomlevel: " + currentZoom + "; event: " + event.type);
     switch (currentZoom) {
 /*        case 11:
             clean_map();

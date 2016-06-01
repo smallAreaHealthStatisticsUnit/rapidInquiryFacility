@@ -10,7 +10,11 @@
 <!--    <script src="angular.min.js"></script> -->
     <script src="async.js"></script> 
     <script src="nodeGeoSpatialFrontEnd.js"></script> 
- 
+    <script src="Control.FullScreen.js"></script>
+	<link rel="stylesheet" href="Control.FullScreen.css" />
+	<script src="Control.Loading.js"></script>
+	<link rel="stylesheet" href="Control.Loading.css" />
+	
     <script> 
 // wait for the DOM to be loaded 
 // prepare the JQuery form when the DOM is ready 
@@ -36,7 +40,8 @@ $(document).ready(function() {
 	
     // bind form using 'ajaxForm' 
     $('#geo2TopoJSON').ajaxForm(options); 
-	
+
+	document.getElementById("status").innerHTML = "Ready.";	
 	console.log("Ready");
 }); 
 
