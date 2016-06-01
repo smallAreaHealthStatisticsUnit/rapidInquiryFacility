@@ -196,9 +196,29 @@ function setStatus(msg, errm, diagnostic) {
  */	
 function createMap(boundingBox, noZoomlevels) {
 	console.log('Create Leaflet map');	
-	var map = new L.map('map');
-	var msg;
+	var map = new L.map('map' , {
+			zoom: 9,
+			// Tell the map to use a fullsreen control
+			fullscreenControl: true
+		} 
+	);
 	
+	try {
+		var loadingControl = L.Control.loading({
+			separate: true
+		});
+		map.addControl(loadingControl);
+	}
+	catch (e) {
+		try {
+			map.remove();
+		}
+		catch (e2) {
+			console.log("WARNING! Unable to remove map during error recovery");
+		}
+		setStatus("Unable to add loading control to map", e.message);
+	}
+		
 	try {
 		map.fitBounds([
 			[boundingBox.ymin, boundingBox.xmin],
@@ -492,29 +512,50 @@ function displayResponse(responseText, status, formName) {
 	
 	/*
 	 * Function: 	jsonAddLayer()
-	 * Parameters: 	index (into JSONLayer array), layer style, JSONLayer array , geo/topojson, isGeoJSON boolean
+	 * Parameters: 	jsonAddLayerParams { index (into JSONLayer array), layer style, JSONLayer array , geo/topojson, isGeoJSON boolean }
 	 * Returns: 	Nothing
-	 * Description:	Add geo/topoJSON layer to map
+	 * Description:	Remove then add geo/topoJSON layer to map
 	 */	
-	function jsonAddLayer(i, style, JSONLayer, json, isGeoJSON) { 
+	function jsonAddLayer(jsonAddLayerParams) { 
 		var end=new Date().getTime();
 		var elapsed=(end - start)/1000; // in S
-		
-		try {	
-			if (isGeoJSON) { // Use the right function
-				JSONLayer[i] = L.geoJson(undefined, 
-					style).addTo(map);
+		console.log("[" + elapsed + "] Adding data to JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+			"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
+			jsonAddLayerParams.file_name +
+			"; colour: " + jsonAddLayerParams.style.color + "; weight: " + jsonAddLayerParams.style.weight + 
+			"; opacity: " + jsonAddLayerParams.style.opacity + "; fillOpacity: " + jsonAddLayerParams.style.fillOpacity);
+								
+		try {
+			if (jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]) {	
+				console.log("[" + elapsed + "] Remove topoJSONLayer" + jsonAddLayerParams.i + "]");
+				map.removeLayer(jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]);
+			}	
+			try {	
+				if (jsonAddLayerParams.isGeoJSON) { // Use the right function
+					jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = L.geoJson(undefined, 
+						jsonAddLayerParams.style).addTo(map);
+				}
+				else {
+					jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = new L.topoJson(undefined, 
+						jsonAddLayerParams.style).addTo(map);
+				}
+				jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(jsonAddLayerParams.json);	
+				end=new Date().getTime();
+				elapsed=(end - start)/1000; // in S
+				console.log("[" + elapsed + "] Added JSONLayer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + 
+					"]: " + jsonAddLayerParams.file_name + "; zoomlevel: " +  map.getZoom());
 			}
-			else {
-				JSONLayer[i] = new L.topoJson(undefined, 
-					style).addTo(map);
-			}
-			JSONLayer[i].addData(json);	
-			console.log("[" + elapsed + "] Added JSONLayer[" + i + "] zoomlevel: " +  map.getZoom());
-		}
+			catch (e) {
+				end=new Date().getTime();
+				elapsed=(end - start)/1000; // in S
+				console.error("[" + elapsed + "] Error adding JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "] to map: " + e.message);
+			}			
+		}			
 		catch (e) {
-			console.error("Error adding JSON layer [" + i + "] to map: " + e.message);
-		}
+			end=new Date().getTime();
+			elapsed=(end - start)/1000; // in S
+			console.error("[" + elapsed + "] Error removing JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "]  map: " + e.message);
+		}	
 	}
 										
 	var response;
@@ -605,7 +646,8 @@ function displayResponse(responseText, status, formName) {
 						"#0f0f0f"  // Onyx (nearly black)
 						];
 					var layerAddOrder = setupLayers(response);
-	
+					var jsonAddLayerParamsArray=[];
+							
 					for (var i=0; i < response.no_files; i++) {	// Now process the files					
 						var weight=(response.no_files - i); // i.e. Lower numbers - high resolution have most weight;	
 						
@@ -635,78 +677,62 @@ function displayResponse(responseText, status, formName) {
 							setStatus("Geo level reorder", new Error("layerAddOrder problem: Adding data to JSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE"));
 						}
 						else {
-							console.log("Add data to JSONLayer[" + i + "/" + (response.no_files - 1) + "]; file layer [" + layerAddOrder[i] + "]: " +
-								response.file_list[layerAddOrder[i]].file_name +
-								"; colour: " + layerColours[i] + "; weight: " + weight + "; opacity: " + opacity + "; fillOpacity: " + fillOpacity);
 
 							if (response.file_list[layerAddOrder[i]].topojson && response.file_list[layerAddOrder[i]].topojson[0].topojson) {			
-								try {
-									if (response.file_list[i].boundingBox && map) {
-					
-										if (JSONLayer[i]) {	
-											console.log('Remove topoJSONLayer' + i + ']');
-											map.removeLayer(JSONLayer[i]);
-										}		
-
-										setTimeout(jsonAddLayer, 	// Force async
-											100+(i*1000*0), 		// Timeout
-											i, 						// jsonAddLayer() parameters
-											{style: 
-												{color: 	layerColours[i],
-												 fillColor: "#ccf4ff",
-												 weight: 	weight, // i.e. Lower numbers have most weight
-												 opacity: 	1,
-												 fillOpacity: fillOpacity}
-											},
-											JSONLayer, 
-											response.file_list[layerAddOrder[i]].topojson[0].topojson,
-											false /* isGeoJSON */);																		
-										setStatus("Adding topoJSONLayer[" + i + "/" + (response.no_files - 1) + "] zoomlevel: " +  map.getZoom() + " ...");	
-									}
-						
-								} catch (e) {  							
-									setStatus("TopoJSON conversion error", e);
-								}
+							
+								jsonAddLayerParamsArray[i]={ // jsonAddLayer() parameters
+									i: i,	
+									no_files: (response.no_files - 1),
+									file_name: response.file_list[layerAddOrder[i]].file_name,							
+									layerAddOrder: layerAddOrder[i],		
+									style: 
+										{color: 	layerColours[i],
+										 fillColor: "#ccf4ff",
+										 weight: 	weight, // i.e. Lower numbers have most weight
+										 opacity: 	1,
+										 fillOpacity: fillOpacity
+									},
+									JSONLayer: JSONLayer, 
+									json: response.file_list[layerAddOrder[i]].topojson[0].topojson,
+									isGeoJSON: false /* isGeoJSON */
+								};
 							}
 							else if (response.file_list[layerAddOrder[i]].geojson) {			
-								try {
-									if (response.file_list[i].boundingBox && map) {
-					
-										if (JSONLayer[i]) {	
-											console.log('Remove JSONLayer' + i + ']');
-											map.removeLayer(JSONLayer[i]);
-										}		
-											
-										setTimeout(jsonAddLayer, 	// Force async
-											100+(i*1000*0), 		// Timeout
-											i, 						// jsonAddLayer() parameters
-											{style: 
-												{color: 	layerColours[i],
-												 fillColor: "#ccf4ff",
-												 weight: 	weight, // i.e. Lower numbers have most weight
-												 opacity: 	1,
-												 fillOpacity: fillOpacity}
-											}, 
-											JSONLayer, 
-											response.file_list[layerAddOrder[i]].geojson,
-											true /* isGeoJSON */);		
-										setStatus("Adding geoJSONLayer[" + i + "/" + (response.no_files - 1) + "] zoomlevel: " +  map.getZoom() + " ...");									
-									}
-								} catch (e) {  	
-									setStatus("GeoJSON conversion error", e);	
-								}
+										
+								jsonAddLayerParamsArray[i]={ // jsonAddLayer() parameters
+									i: i,
+									no_files: (response.no_files - 1),
+									file_name: response.file_list[layerAddOrder[i]].file_name,							
+									layerAddOrder: layerAddOrder[i],		
+									style: 
+										{color: 	layerColours[i],
+										 fillColor: "#ccf4ff",
+										 weight: 	weight, // i.e. Lower numbers have most weight
+										 opacity: 	1,
+										 fillOpacity: fillOpacity
+									}, 
+									JSONLayer: JSONLayer, 
+									json: response.file_list[layerAddOrder[i]].geojson,
+									isGeoJSON: true /* isGeoJSON */
+								};												
 							}
 							else {
 								setStatus("Add data to JSONLayer[" + i + "/" + (response.no_files - 1) + "]", new Error("ERROR! no GeoJSON/topoJSON returned"));
 							}						
 						}
 					} // end of for loop
-	
+
 					msg+=createTable(response, layerColours, layerAddOrder);
-				
+					
+					setTimeout(function jsonAddLayerAsync() {
+							async.each(jsonAddLayerParamsArray, jsonAddLayer, function asyncEachErrorHandler(err) {
+								// if any of the saves produced an error, err would equal that error
+								console.error(err.message);
+							});
+						}, 100);
+						
 				} // response.file_list[0] exists
 				
-
 			} // response.no_files > 0
 			
 			if (response.file_list[0]) {
