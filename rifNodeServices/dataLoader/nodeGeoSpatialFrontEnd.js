@@ -196,7 +196,11 @@ function setStatus(msg, errm, diagnostic) {
  * Description:	Create map, add Openstreetmap basemap and scale
  */	
 function createMap(boundingBox, noZoomlevels) {
-	console.log('Create Leaflet map');	
+
+	var end=new Date().getTime();
+	var elapsed=(end - start)/1000; // in S
+									
+	console.log("[" + elapsed + "] Create Leaflet map");	
 	var map = new L.map('map' , {
 			zoom: 9,
 			// Tell the map to use a fullsreen control
@@ -217,7 +221,7 @@ function createMap(boundingBox, noZoomlevels) {
 		catch (e2) {
 			console.log("WARNING! Unable to remove map during error recovery");
 		}
-		setStatus("Unable to add loading control to map", e.message);
+		throw new Error("Unable to add loading control to map: " + e.message);
 	}
 		
 	try {
@@ -233,7 +237,7 @@ function createMap(boundingBox, noZoomlevels) {
 		catch (e2) {
 			console.log("WARNING! Unable to remove map during error recovery");
 		}
-		setStatus("Unable to create map", e.message);
+		throw new Error("Unable to create map: " + e.message);
 	}
 	
 	try {
@@ -250,7 +254,7 @@ function createMap(boundingBox, noZoomlevels) {
 			});
 		}
 		else {
-			conmsole.log("Zoomlevel based layer support disabled; only one zoomlevel of data present");
+			console.log("Zoomlevel based layer support disabled; only one zoomlevel of data present");
 		}
 	}
 	catch (e) {
@@ -260,12 +264,13 @@ function createMap(boundingBox, noZoomlevels) {
 		catch (e2) {
 			console.log("WARNING! Unable to remove map during error recovery");
 		}
-		setStatus("Unable to add zoomend event to map", e.message);
+		throw new Error("Unable to add zoomend event to map: " +  e.message);
 	}		
 	
 	try {
-		setStatus("Creating basemap...");															
-		console.log("Create basemap tileLayer: https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png");
+		end=new Date().getTime();
+		elapsed=(end - start)/1000; // in S		
+		console.log("[" + elapsed + "] Creating basemap...");															
 		tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 			maxZoom: 9,
 			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -276,7 +281,9 @@ function createMap(boundingBox, noZoomlevels) {
 		tileLayer.addTo(map);	
 		L.control.scale().addTo(map); // Add scale
 	
-		console.log('Added tileLayer and scale to map');	
+		end=new Date().getTime();
+		elapsed=(end - start)/1000; // in S		
+		console.log("[" + elapsed + "] Added tileLayer and scale to map");	
 	
 		return map;
 	}
@@ -287,7 +294,7 @@ function createMap(boundingBox, noZoomlevels) {
 		catch (e2) {
 			console.log("WARNING! Unable to remove map during error recovery");
 		}		
-		setStatus("Unable to add tile layer to map", e.message);
+		throw new Error("Unable to add tile layer to map: " + e.message);
 	}
 }
 
@@ -572,29 +579,6 @@ function displayResponse(responseText, status, formName) {
 					else {
 						setStatus("Error in map setup", new Error("Unable to determine the number of zoomlevels"));
 					}
-					if (!map) {
-						map=createMap(response.file_list[0].boundingBox, noZoomlevels); // Create map using first bounding box in file list
-					}
-					else {
-						var centre=map.getCenter();
-							
-						console.log("Centre: " + centre.lat + ", " + centre.lng);
-//						if (+centre.lat.toFixed(4) == +y_avg.toFixed(4) && 
-//							+centre.lng.toFixed(4) == +x_avg.toFixed(4)) {
-//							console.log("Map centre has not changed");
-//						}
-//						else {
-							map.eachLayer(function (layer) {
-								console.log('Remove tileLayer');
-								map.removeLayer(layer);
-							});
-							console.log('Remove map');
-							map.remove(); // Known leaflet bug:
-										  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-							
-							map=createMap(response.file_list[0].boundingBox, noZoomlevels);				
-//						}	
-					}	
 					
 					var layerColours = [ // Some advice needed here!!!
 						"#ff0000", // Red
@@ -652,7 +636,10 @@ function displayResponse(responseText, status, formName) {
 										 fillOpacity: fillOpacity
 									},
 									JSONLayer: JSONLayer, 
-									json: response.file_list[layerAddOrder[i]].topojson[0].topojson,
+									jsonZoomlevel: true,		/* json key supports multi zoomlevels */
+									json: {
+										11: response.file_list[layerAddOrder[i]].topojson[0].topojson
+									},
 									isGeoJSON: false /* isGeoJSON */
 								};
 							}
@@ -671,6 +658,7 @@ function displayResponse(responseText, status, formName) {
 										 fillOpacity: fillOpacity
 									}, 
 									JSONLayer: JSONLayer, 
+									jsonZoomlevel: true,		/* json key supports multi zoomlevels */
 									json: response.file_list[layerAddOrder[i]].geojson,
 									isGeoJSON: true /* isGeoJSON */
 								};												
@@ -682,13 +670,62 @@ function displayResponse(responseText, status, formName) {
 					} // end of for loop
 
 					msg+=createTable(response, layerColours, layerAddOrder);
-					
-					setTimeout(function jsonAddLayerAsync() {
-							async.each(jsonAddLayerParamsArray, jsonAddLayer, function asyncEachErrorHandler(err) {
-								// if any of the saves produced an error, err would equal that error
-								console.error(err.message);
-							});
-						}, 100);
+
+					setTimeout(
+						function createMapAsync() {
+							if (!map) {
+								map=createMap(response.file_list[0].boundingBox, noZoomlevels); // Create map using first bounding box in file list
+							}
+							else {
+								var centre=map.getCenter();
+									
+								console.log("Centre: " + centre.lat + ", " + centre.lng);
+		//						if (+centre.lat.toFixed(4) == +y_avg.toFixed(4) && 
+		//							+centre.lng.toFixed(4) == +x_avg.toFixed(4)) {
+		//							console.log("Map centre has not changed");
+		//						}
+		//						else {
+									map.eachLayer(function (layer) {
+										console.log('Remove tileLayer');
+										map.removeLayer(layer);
+									});
+									console.log('Remove map');
+									map.remove(); // Known leaflet bug:
+												  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+									
+									map=createMap(response.file_list[0].boundingBox, noZoomlevels);				
+		//						}	
+							}	
+							
+							map.whenReady(
+								function whenMapIsReady() { 
+									var end=new Date().getTime();
+									var elapsed=(end - start)/1000; // in S
+									console.log("[" + elapsed + "] Basemap completed; zoomlevel: " +  map.getZoom());	
+
+									setTimeout(		
+										function asyncEachSeries() {
+											async.eachSeries(jsonAddLayerParamsArray, 
+												function asyncEachSeriesHandler(item, callback) {
+													jsonAddLayer(item, callback); 
+												}, 
+												function asyncEachSeriesError(err) {
+													var end=new Date().getTime();
+													var elapsed=(end - start)/1000; // in S
+													if (err) {
+														console.error("[" + elapsed + "] asyncEachErrorHandler: " + err.message);								
+													}
+													else {
+														console.log("[" + elapsed + "] " + response.no_files + " layers processed OK.");
+													}
+												} // End of asyncEachSeriesError()
+											);						
+										}, // End of asyncEachSeries()
+										1000);									
+								} // End of whenMapIsReady()
+							);
+						}, // End of createMapAsync()
+						100);
 						
 				} // response.file_list[0] exists
 				
@@ -737,31 +774,37 @@ function displayResponse(responseText, status, formName) {
 		msg+="<p>Processing diagnostic:</br><pre>" + response.diagnostic + "</pre></p>";
 	}	
 	
-	if (status == 200 && map) {	
+	if (status == 200) {	
 		setStatus("<h1>" + formName + " processed OK</h1>", undefined, msg);
-	}
-	else if (status == 200 && !map) {	
-		setStatus(formName + " processing OK", new Error("No map was produced"), msg);
 	}	
 	else {
 		setStatus("Send Failed", new Error("Unexpected http status: " + status), "Message:" + msg);
 	}
 }	
-
+											
 /*
  * Function: 	jsonAddLayer()
- * Parameters: 	jsonAddLayerParams { index (into JSONLayer array), layer style, JSONLayer array , geo/topojson, isGeoJSON boolean }
+ * Parameters: 	jsonAddLayerParams object, keys: { 
+ *					index (into JSONLayer array), 
+ *					no_files,
+ *					file name,							
+ *					layerAddOrder array,
+ *					layer style, 
+ *					JSONLayer array, 
+ *					jsonZoomlevel - json key supports multi zoomlevels,
+ *					json - geo/topojson object, 
+ *					isGeoJSON boolean }, async callback
  * Returns: 	Nothing
  * Description:	Remove then add geo/topoJSON layer to map
  */	
-function jsonAddLayer(jsonAddLayerParams) { 
+function jsonAddLayer(jsonAddLayerParams, callback) { 
 	var end=new Date().getTime();
 	var elapsed=(end - start)/1000; // in S
 	console.log("[" + elapsed + "] Adding data to JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
 		"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
 		jsonAddLayerParams.file_name +
 		"; colour: " + jsonAddLayerParams.style.color + "; weight: " + jsonAddLayerParams.style.weight + 
-		"; opacity: " + jsonAddLayerParams.style.opacity + "; fillOpacity: " + jsonAddLayerParams.style.fillOpacity);
+		"; opacity: " + jsonAddLayerParams.style.opacity + "; fillOpacity: " + jsonAddLayerParams.style.fillOpacity + "; zoomlevel: " +  map.getZoom());
 							
 	try {
 		if (jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]) {	
@@ -775,26 +818,62 @@ function jsonAddLayer(jsonAddLayerParams) {
 			}
 			else {
 				jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = new L.topoJson(undefined, 
-					jsonAddLayerParams.style).addTo(map);
+					jsonAddLayerParams.style).addTo(map);					
 			}
-			jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(jsonAddLayerParams.json);	
-			end=new Date().getTime();
-			elapsed=(end - start)/1000; // in S
-			console.log("[" + elapsed + "] Added JSONLayer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + 
-				"]: " + jsonAddLayerParams.file_name + "; zoomlevel: " +  map.getZoom());
+			
+			if (jsonAddLayerParams.json) {
+				if (jsonAddLayerParams.jsonZoomlevel) {
+					jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(
+						jsonZoomlevelData(
+							jsonAddLayerParams.json, map.getZoom())
+						);	
+				}
+				else {
+					jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(jsonAddLayerParams.json);		
+				}
+				map.whenReady(function jsonAddLayerReady() { 
+						end=new Date().getTime();
+						elapsed=(end - start)/1000; // in S
+						console.log("[" + elapsed + "] Added JSONLayer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + 
+							"]: " + jsonAddLayerParams.file_name + "; zoomlevel: " +  map.getZoom());
+				//		console.log("Callback: " + jsonAddLayerParams.i);
+						callback();
+					}, this); 
+			}
+			else {
+				throw new Error("jsonAddLayer(): jsonAddLayerParams.json is not defined.");
+			}	
+
 		}
 		catch (e) {
 			end=new Date().getTime();
 			elapsed=(end - start)/1000; // in S
-			console.error("[" + elapsed + "] Error adding JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "] to map: " + e.message);
+			throw new Error("[" + elapsed + "] Error adding JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "] to map: " + e.message);
 		}			
 	}			
 	catch (e) {
 		end=new Date().getTime();
 		elapsed=(end - start)/1000; // in S
-		console.error("[" + elapsed + "] Error removing JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "]  map: " + e.message);
+		callback(new Error("[" + elapsed + "] Error removing JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "]  map: " + e.message));
 	}	
-}
+} // End of jsonAddLayer()
+
+/*
+ * Function: 	jsonZoomlevelData()
+ * Parameters:  Json zoom level object:  { <numeric zoomlevel>: <json>, ... }
+ * Returns: 	[Topo]json object
+ * Description: Get JSON data from zoomlevel
+ */
+function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel) {
+	
+	if (jsonZoomlevels) {	
+		return jsonZoomlevels["11"];
+	}
+	else {
+		throw new Error("jsonZoomlevelData(): jsonZoomlevels is not defined");
+	}
+
+} // End of jsonZoomlevelData()
 	
 /*
  * Function: 	errorHandler()
