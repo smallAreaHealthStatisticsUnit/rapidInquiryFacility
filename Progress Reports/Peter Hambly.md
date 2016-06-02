@@ -446,11 +446,11 @@ RangeError: Invalid string length
 #### 31st May to 3rd June
 
 * Async map loading, full screen. Still not displaying layer by layer
+* Front end multi zoomlevel support. Old layers being left behind, over simplification (as expected)
+* Async map display
 
 #### Current TODO list (June):
 
-* Front end multi zoomlevel support
-* Async map display
 * Add simplify to zoomlevel 11, spherical simplify limit (in Steraradians)
 * max/min zoomlevel
 * Add intra zoomlevel simplify percentage target parameter

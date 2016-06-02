@@ -80,7 +80,7 @@ scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) {
 	if (errors > 0) {
 		msg+=errors + " variable(s) not in scope: " + undefinedKeys;
 	}
-	if (array["serverLog"] && typeof array["serverLog"] !== "undefined") { // Check error and logging in scope
+	if (array && array["serverLog"] && typeof array["serverLog"] !== "undefined") { // Check error and logging in scope
 		if (typeof array["serverLog"].serverError2 != "function") {
 			msg+="\nserverLog.serverError2 is not a function: " + typeof array["serverLog"];
 			errors++;
@@ -98,18 +98,18 @@ scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) {
 			errors++;
 		}		
 	}
-	else if (array["serverLog"] && typeof array["serverLog"] == "undefined") {	
+	else if (array && array["serverLog"] && typeof array["serverLog"] == "undefined") {	
 		msg+="\nserverLog module is not in scope: " + array["serverLog"];
 		errors++;
 	}
-	if (array["httpErrorResponse"]) { // Check httpErrorResponse in scope
+	if (array && array["httpErrorResponse"]) { // Check httpErrorResponse in scope
 		if (typeof array["httpErrorResponse"].httpErrorResponse != "function") {
 			msg+="\httpErrorResponse.httpErrorResponse is not a function: " + typeof array["httpErrorResponse"];
 			errors++;
 		}
 	}	
 	// Check callback
-	if (array["callback"]) { // Check callback is a function if in scope
+	if (array && array["callback"]) { // Check callback is a function if in scope
 		if (typeof array["callback"] != "function") {
 			msg+="\nMandatory callback (" + typeof(callback) + "): " + (callback.name || "anonymous") + " is in use but is not a function: " + 
 				typeof callback;
@@ -126,7 +126,7 @@ scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) {
 	}
 
 	// Raise a test exception if the calling function matches the exception field value 
-	if (array["ofields"] && typeof array["ofields"] !== "undefined") {
+	if (array && array["ofields"] && typeof array["ofields"] !== "undefined") {
 		if (array["ofields"].exception == calling_function) { 
 			msg+="\nRaise test exception in: " + array["ofields"].exception;
 			errors++;
