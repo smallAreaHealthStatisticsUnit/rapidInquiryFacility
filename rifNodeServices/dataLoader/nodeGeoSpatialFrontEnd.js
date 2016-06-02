@@ -623,7 +623,7 @@ function displayResponse(responseText, status, formName) {
 
 							if (response.file_list[layerAddOrder[i]].topojson && response.file_list[layerAddOrder[i]].topojson[0].topojson) {			
 							
-								jsonAddLayerParamsArray[i]={ // jsonAddLayer() parameters
+								jsonAddLayerParamsArray[(response.no_files - i - 1)]={ // jsonAddLayer() parameters
 									i: i,	
 									no_files: (response.no_files - 1),
 									file_name: response.file_list[layerAddOrder[i]].file_name,							
@@ -645,7 +645,7 @@ function displayResponse(responseText, status, formName) {
 							}
 							else if (response.file_list[layerAddOrder[i]].geojson) {			
 										
-								jsonAddLayerParamsArray[i]={ // jsonAddLayer() parameters
+								jsonAddLayerParamsArray[(response.no_files - i - 1)]={ // jsonAddLayer() parameters
 									i: i,
 									no_files: (response.no_files - 1),
 									file_name: response.file_list[layerAddOrder[i]].file_name,							
@@ -697,17 +697,17 @@ function displayResponse(responseText, status, formName) {
 		//						}	
 							}	
 							
-							map.whenReady(
+							map.whenReady( // Basemap is ready
 								function whenMapIsReady() { 
 									var end=new Date().getTime();
 									var elapsed=(end - start)/1000; // in S
 									console.log("[" + elapsed + "] Basemap completed; zoomlevel: " +  map.getZoom());	
 
-									setTimeout(		
-										function asyncEachSeries() {
+									setTimeout(	// Make async	
+										function asyncEachSeries() { // Process map layers using async in order
 											async.eachSeries(jsonAddLayerParamsArray, 
 												function asyncEachSeriesHandler(item, callback) {
-													jsonAddLayer(item, callback); 
+													setTimeout(jsonAddLayer, 200, item, JSONLayer, callback); // Put a slight delay in for Leaflet to allow the map to redraw
 												}, 
 												function asyncEachSeriesError(err) {
 													var end=new Date().getTime();
@@ -721,7 +721,7 @@ function displayResponse(responseText, status, formName) {
 												} // End of asyncEachSeriesError()
 											);						
 										}, // End of asyncEachSeries()
-										1000);									
+										300);									
 								} // End of whenMapIsReady()
 							);
 						}, // End of createMapAsync()
@@ -793,11 +793,11 @@ function displayResponse(responseText, status, formName) {
  *					JSONLayer array, 
  *					jsonZoomlevel - json key supports multi zoomlevels,
  *					json - geo/topojson object, 
- *					isGeoJSON boolean }, async callback
+ *					isGeoJSON boolean }, JSONLayer array, async callback
  * Returns: 	Nothing
  * Description:	Remove then add geo/topoJSON layer to map
  */	
-function jsonAddLayer(jsonAddLayerParams, callback) { 
+function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback) { 
 	var end=new Date().getTime();
 	var elapsed=(end - start)/1000; // in S
 	console.log("[" + elapsed + "] Adding data to JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
@@ -813,13 +813,14 @@ function jsonAddLayer(jsonAddLayerParams, callback) {
 		}	
 		try {	
 			if (jsonAddLayerParams.isGeoJSON) { // Use the right function
-				jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = L.geoJson(undefined, 
+				JSONLayer[jsonAddLayerParams.i] = L.geoJson(undefined /* Geojson options */, 
 					jsonAddLayerParams.style).addTo(map);
 			}
 			else {
-				jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = new L.topoJson(undefined, 
+				JSONLayer[jsonAddLayerParams.i] = new L.topoJson(undefined /* Topojson options */, 
 					jsonAddLayerParams.style).addTo(map);					
 			}
+			jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = JSONLayer[jsonAddLayerParams.i];
 			
 			if (jsonAddLayerParams.json) {
 				if (jsonAddLayerParams.jsonZoomlevel) {
@@ -830,7 +831,15 @@ function jsonAddLayer(jsonAddLayerParams, callback) {
 				}
 				else {
 					jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(jsonAddLayerParams.json);		
+				}				
+		
+				for (var j=0; j<=jsonAddLayerParams.no_files; j++) {
+					if (JSONLayer[j]  && j != jsonAddLayerParams.i ) {
+						console.log("Map layer: " + jsonAddLayerParams.i + "; bring layer: " + j + " to front");
+						JSONLayer[j].bringToFront();
+					}
 				}
+			
 				map.whenReady(function jsonAddLayerReady() { 
 						end=new Date().getTime();
 						elapsed=(end - start)/1000; // in S
