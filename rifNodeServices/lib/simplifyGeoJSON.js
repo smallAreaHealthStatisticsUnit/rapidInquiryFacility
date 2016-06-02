@@ -296,7 +296,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 			throw new Error("Create topojson zoomlevel[" + i + "] no convertedTopojson[] topojson.objects object: " + (convertedTopojson.length-2));
 		}
 		var j=0;
-		for (key in convertedTopojson[(convertedTopojson.length-2)].topojson.objects) {
+		for (var key in convertedTopojson[(convertedTopojson.length-2)].topojson.objects) {
 			j++;
 			if (j == 1) {
 				nGeojson = topojson.feature(convertedTopojson[(convertedTopojson.length-2)].topojson, convertedTopojson[(convertedTopojson.length-2)].topojson.objects[key]);

@@ -620,9 +620,13 @@ function displayResponse(responseText, status, formName) {
 							setStatus("Geo level reorder", new Error("layerAddOrder problem: Adding data to JSONLayer[" + i + "]; layerAddOrder[" + layerAddOrder[i] + "]: NO FILE"));
 						}
 						else {
-
 							if (response.file_list[layerAddOrder[i]].topojson && response.file_list[layerAddOrder[i]].topojson[0].topojson) {			
-							
+					
+								var topojsonZoomlevels = {};
+								for (var k=0; k< response.file_list[layerAddOrder[i]].topojson.length; k++) {
+									topojsonZoomlevels[response.file_list[layerAddOrder[i]].topojson[k].zoomlevel] = response.file_list[layerAddOrder[i]].topojson[k].topojson;
+								}
+					
 								jsonAddLayerParamsArray[(response.no_files - i - 1)]={ // jsonAddLayer() parameters
 									i: i,	
 									no_files: (response.no_files - 1),
@@ -637,9 +641,7 @@ function displayResponse(responseText, status, formName) {
 									},
 									JSONLayer: JSONLayer, 
 									jsonZoomlevel: true,		/* json key supports multi zoomlevels */
-									json: {
-										11: response.file_list[layerAddOrder[i]].topojson[0].topojson
-									},
+									json: topojsonZoomlevels,
 									isGeoJSON: false /* isGeoJSON */
 								};
 							}
@@ -826,7 +828,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback) {
 				if (jsonAddLayerParams.jsonZoomlevel) {
 					jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(
 						jsonZoomlevelData(
-							jsonAddLayerParams.json, map.getZoom())
+							jsonAddLayerParams.json, map.getZoom(), jsonAddLayerParams.i)
 						);	
 				}
 				else {
@@ -869,17 +871,77 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback) {
 
 /*
  * Function: 	jsonZoomlevelData()
- * Parameters:  Json zoom level object:  { <numeric zoomlevel>: <json>, ... }
+ * Parameters:  Json zoom level object:  { <numeric zoomlevel>: <json>, ... }, map zoomlevel, layer number
  * Returns: 	[Topo]json object
- * Description: Get JSON data from zoomlevel
+ * Description: Get JSON data for zoomlevel using the best key
  */
-function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel) {
+function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
+	var json;
+	var firstKey;
+	var maxZoomlevel;
+	var minZoomlevel;
 	
 	if (jsonZoomlevels) {	
-		return jsonZoomlevels["11"];
+		for (var key in jsonZoomlevels) {
+			if (!firstKey) { // Save first key so there is one good match!
+				firstKey=key;
+			}
+			
+			if (minZoomlevel == undefined) {
+				minZoomlevel=key;
+			}
+			else if (key < minZoomlevel) {
+				minZoomlevel=key;
+			}
+			if (maxZoomlevel == undefined) {
+				maxZoomlevel=key;
+			}
+			else if (key > maxZoomlevel) {
+				maxZoomlevel=key;
+			}		
+			
+			if (key == mapZoomlevel) {
+				json=jsonZoomlevels[key];
+				break;
+			}
+			else {
+				console.log("Layer [" + layerNum + "]: key: " + key + "; no match for zoomlevel: " + mapZoomlevel + 
+					"; maxZoomlevel key: " + maxZoomlevel + "; minZoomlevel key: " + minZoomlevel);
+			}
+		}
+		
+		if (json == undefined && mapZoomlevel > maxZoomlevel) {
+			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using maxZoomlevel key: " + maxZoomlevel);
+			json=jsonZoomlevels[maxZoomlevel];
+		}	
+		
+		if (json == undefined && mapZoomlevel < minZoomlevel) {
+			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using minZoomlevel key: " + minZoomlevel);
+			json=jsonZoomlevels[minZoomlevel];
+		}
+		
+		if (json == undefined && minZoomlevel) {
+			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using minZoomlevel key: " + minZoomlevel);
+			json=jsonZoomlevels[minZoomlevel];
+		}
+		
+		if (json == undefined && firstKey) {
+			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using first key: " + firstKey);
+			json=jsonZoomlevels[firstKey];
+		}
+		
+		if (json == undefined) {
+			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using default zoomlevel: 11");
+			json=jsonZoomlevels["11"];
+		}
+		
+		if (!json) {
+			throw new Error("jsonZoomlevelData(): Layer [" + layerNum + "]: no json available");
+		}
+		return json;
 	}
 	else {
-		throw new Error("jsonZoomlevelData(): jsonZoomlevels is not defined");
+		throw new Error("jsonZoomlevelData(): Layer [" + layerNum + "]: jsonZoomlevels is not defined");
 	}
 
 } // End of jsonZoomlevelData()
