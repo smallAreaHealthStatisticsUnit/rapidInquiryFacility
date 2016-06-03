@@ -228,7 +228,7 @@ topology: 1579 arcs, 247759 points
 		topojson_runtime: undefined,
 		topojson_options: topojson_options,
 		topojson_stderr: undefined,
-		zoomlevel: response.fields["zoomlevel"]
+		zoomlevel: response.fields["max_zoomlevel"]
 	};
 	
 //	convertedTopojson[0].geojson_length=undefined;
