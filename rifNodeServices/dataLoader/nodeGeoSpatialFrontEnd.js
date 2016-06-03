@@ -589,7 +589,6 @@ function displayResponse(responseText, status, formName) {
 										
 	var response;
 	var msg="";
-	var JSONLayer=[];
 	
 	setStatus("Processing response from server...");
 	if (responseText != null && typeof responseText == 'object') { // Already JSON
@@ -885,7 +884,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 				callback: callback,
 				start: start,
 				map: map,
-//				JSONLayerElement: JSONLayer[jsonAddLayerParams.i],
+				JSONLayerElement: JSONLayer[jsonAddLayerParams.i],
 				AddParamsJSONLayerElement: jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]
 			});
 		}
