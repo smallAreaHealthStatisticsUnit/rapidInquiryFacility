@@ -799,7 +799,7 @@ exports.convert = function exportsConvert(req, res) {
 						nodeGeoSpatialServicesCommon.setupDiagnostics(__file, __line, req, ofields, response, serverLog, httpErrorResponse);
 					}
 					nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Busboy Finish", 200 /* HTTP OK */, serverLog, req);  // Add onBusboyFinish status
-	
+					
 					// Set any required parameters not yet set
 					if (!ofields["quantization"]) {
 						   topojson_options.quantization = simplifyGeoJSON.getQuantization(11); // For zoomlevel 11
@@ -855,7 +855,28 @@ exports.convert = function exportsConvert(req, res) {
 						   response.message+="\nInitial default min zooomlevel: " + ofields["min_zoomlevel"];
 					}
 					
+					if (ofields["min_zoomlevel"] > ofields["max_zoomlevel"]) {
+						response.message+="\nFAIL! min_zoomlevel: " + min_zoomlevel + " > max_zoomlevel: " + max_zoomlevel;
+						response.field_errors++;	
+					}
+					
 					ofields["topojson_options"]=topojson_options;
+					
+					// Check for errors before more file processing
+					if (response.file_errors > 0) { 
+						msg="FAIL! File errors detected: " + response.file_errors;						
+						response.message = msg + "\n" + response.message;	
+						httpErrorResponse.httpErrorResponse(__file, __line, "onBusboyFinish", 
+							serverLog, 500, req, res, msg, undefined, response);							
+						return;						
+					}	
+					else if (response.field_errors > 0) { 
+						msg="FAIL! Field errors detected: " + response.file_errors;						
+						response.message = msg + "\n" + response.message;
+						httpErrorResponse.httpErrorResponse(__file, __line, "onBusboyFinish", 
+							serverLog, 500, req, res, msg, undefined, response);							
+						return;						
+					}
 					
 					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
 						const async = require('async');
