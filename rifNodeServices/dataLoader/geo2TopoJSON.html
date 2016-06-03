@@ -146,6 +146,10 @@ function processJson(data, status) {
 	}
 }	
 
+function updateSimplificationFactorInput(val) {
+      document.getElementById('simplificationFactorInput').value=val; 
+}
+
 /*
  * Angular controller
  */
@@ -164,8 +168,18 @@ function processJson(data, status) {
       <div id="nav">
         <form id="geo2TopoJSON" action="http://127.0.0.1:3000/geo2TopoJSON" method="POST"
               enctype="multipart/form-data">Select a file/files to upload: <input type="file" name="file" size="50" multiple="multiple" />
-          <input type="submit" value="Upload File(s)" />
-          <input type="checkbox" name="verbose" value="true">Verbose<br>
+          &nbsp;Simplification factor: <input id="simplificationFactor" name="simplificationFactor" type="range" defaultValue="0.25" value="0.25" min="0.1" max="1" step="0.05" onchange="updateSimplificationFactorInput(this.value);" />
+		  <input type="text" id="simplificationFactorInput" value="0.25" readonly size="4">
+		  &nbsp;Quantization: <select id="quantization" name="quantization" form="geo2TopoJSON">
+		    <option value="100000000">1 in 100 million</option>
+		    <option value="10000000">1 in 10 million</option>
+		    <option value="1000000" selected="selected">1 in 1 million</option>
+		    <option value="100000">1 in 100,000</option>
+		    <option value="10000">1 in 10,000</option>
+		    <option value="1000">1 in 1,000</option>
+		  </select>	
+          &nbsp;Diagnostics<input id="diagnostics" type="checkbox" name="verbose" value="true">			  
+          <input id="submit" type="submit" value="Upload File(s)" />
         </form>
       </div>
 	  <div id="status"></div>
@@ -183,6 +197,9 @@ function processJson(data, status) {
     text-align:center;
 }
 #header.h4 {
+}
+#submit {
+	float: right;
 }
 #nav {
     line-height:30px;
