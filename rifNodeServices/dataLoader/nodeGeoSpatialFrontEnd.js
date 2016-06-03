@@ -304,7 +304,7 @@ function createMap(boundingBox, noZoomlevels) {
 	try {
 		if (noZoomlevels > 0) {
 			map.on('zoomend', function zoomendEvent(event) {
-				zoomBasedLayerchange(event);
+				changeJsonLayers(event);
 			});
 			/*
 			map.eachLayer(function(layer) {
@@ -758,39 +758,9 @@ function displayResponse(responseText, status, formName) {
 									
 									map=createMap(response.file_list[0].boundingBox, noZoomlevels);				
 		//						}	
-							}	
-							
-							map.whenReady( // Basemap is ready
-								function whenMapIsReady() { 
-									var end=new Date().getTime();
-									var elapsed=(end - start)/1000; // in S
-									console.log("[" + elapsed + "] Basemap completed; zoomlevel: " +  map.getZoom());	
+							}							
+							changeJsonLayers();
 
-									setTimeout(	// Make async	
-										function asyncEachSeries() { // Process map layers using async in order
-											async.eachSeries(jsonAddLayerParamsArray, 
-												function asyncEachSeriesHandler(item, callback) {
-													function asyncEachSeriesCallback(e) {
-														callback(e);
-													}
-													setTimeout(jsonAddLayer, 200, item, JSONLayer, asyncEachSeriesCallback, true /* initialRun */); 
-														// Put a slight delay in for Leaflet to allow the map to redraw
-												}, 
-												function asyncEachSeriesError(err) {
-													var end=new Date().getTime();
-													var elapsed=(end - start)/1000; // in S
-													if (err) {
-														console.error("[" + elapsed + "] asyncEachErrorHandler: " + err.message);								
-													}
-													else {
-														console.log("[" + elapsed + "] " + response.no_files + " layers processed OK.");
-													}
-												} // End of asyncEachSeriesError()
-											);						
-										}, // End of asyncEachSeries()
-										300);									
-								} // End of whenMapIsReady()
-							);
 						}, // End of createMapAsync()
 						100);
 						
@@ -1026,7 +996,7 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
 		}
 		
 		if (json) {
-			console.log("Layer [" + layerNum + "]: json maatch for zoomlevel: " + mapZoomlevel + 
+			console.log("Layer [" + layerNum + "]: json match for zoomlevel: " + mapZoomlevel + 
 				"; maxZoomlevel key: " + maxZoomlevel + "; minZoomlevel key: " + minZoomlevel);
 			return json;
 		}
@@ -1141,21 +1111,12 @@ function uploadProgressHandler(event, position, total, percentComplete) {
 }
 
 /*
- * Function: 	zoomBasedLayerchange()
+ * Function: 	changeJsonLayers()
  * Parameters:  Event object
  * Returns: 	Nothing
- * Description:	Change all map layer to optimised topoJSON for that zoomlevel 
+ * Description:	Change all map layers to optimised topoJSON for that zoomlevel 
  */
-function zoomBasedLayerchange(event) {
-	
-	try {
-		scopeChecker({
-			event: event
-		});
-	}
-	catch(e) {
-		console.error("whenMapIsReady(): caught: " + e.message + "\nStack: " + e.stack);
-	}
+function changeJsonLayers(event) {
 	
 	map.whenReady( // Basemap is ready
 		function whenMapIsReady() { 
@@ -1172,8 +1133,17 @@ function zoomBasedLayerchange(event) {
 							
 			var end=new Date().getTime();
 			var elapsed=(end - start)/1000; // in S
-			console.log("[" + elapsed + "] New zoomlevel: " +  map.getZoom() + "; event: " + event.type);	
-
+			var initialRun;
+			
+			if (event) {
+				console.log("[" + elapsed + "] New zoomlevel: " +  map.getZoom() + "; event: " + event.type);	
+				initialRun=false;
+			}
+			else {
+				console.log("[" + elapsed + "] Initial zoomlevel: " +  map.getZoom());	
+				initialRun=true;
+			}			
+			
 			setTimeout(	// Make async	
 				function asyncEachSeries() { // Process map layers using async in order
 					try {
@@ -1205,7 +1175,7 @@ function zoomBasedLayerchange(event) {
 								asyncEachSeriesCallback(e);
 							}
 
-							setTimeout(jsonAddLayer, 200, item, JSONLayer, asyncEachSeriesCallback, false /* initialRun */); 
+							setTimeout(jsonAddLayer, 200, item, JSONLayer, asyncEachSeriesCallback, initialRun); 
 								// Put a slight delay in for Leaflet to allow the map to redraw
 						}, 
 						function asyncEachSeriesError(err) {
@@ -1235,4 +1205,4 @@ function zoomBasedLayerchange(event) {
 				100);									
 		} // End of whenMapIsReady()
 	);
-} // End of zoomBasedLayerchange()
+} // End of changeJsonLayers()
