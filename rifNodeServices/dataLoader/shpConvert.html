@@ -92,9 +92,25 @@ webkitRelativePath: ""} .. then inherited
 			else {
 				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
 			}
+		}		
+		else if (formData[i].type == "range") {
+			if (formData[i].required) {
+				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
+			}
+			else {
+				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
+			}
+		}
+		else if (formData[i].type == "select-one") {
+			if (formData[i].required) {
+				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
+			}
+			else {
+				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
+			}
 		}
 		else {
-			console.log("Formdata other [" + i + "]: " + JSON.stringify(formData[i].value, null, 4));
+			console.log("Formdata other [" + i + "]: " + JSON.stringify(formData[i], null, 4));
 		}
 	}
 	if (fileCount == 0) {
@@ -112,7 +128,7 @@ webkitRelativePath: ""} .. then inherited
 		return false;
 	}
     console.log('About to submit: ' + JSON.stringify(queryString, null, 4)); 
-	start = new Date().getTime();
+	nodeGeoSpatialFrontEndInit();
  
     // here we could return false to prevent the form from being submitted; 
     // returning anything other than false will allow the form submit to continue 
@@ -169,15 +185,30 @@ function updateSimplificationFactorInput(val) {
       <div id="nav">
         <form id="shpConvert" action="http://127.0.0.1:3000/shpConvert" method="POST"
               enctype="multipart/form-data">Select a file/files to upload: <input type="file" name="file" size="50" multiple="multiple" />
-          &nbsp;Simplification factor: <input id="simplificationFactor" name="simplificationFactor" type="range" defaultValue="0.25" value="0.25" min="0.1" max="1" step="0.05" onchange="updateSimplificationFactorInput(this.value);" />
-		  <input type="text" id="simplificationFactorInput" value="0.25" readonly size="4">
-		  &nbsp;Quantization: <select id="quantization" name="quantization" form="shpConvert">
+          &nbsp;Simplification factor: <input id="simplificationFactor" name="simplificationFactor" type="range" defaultValue="0.75" value="0.75" min="0.1" max="1" step="0.05" onchange="updateSimplificationFactorInput(this.value);" />
+		  <input type="text" id="simplificationFactorInput" value="0.75" readonly size="4">
+<!--
+ *
+ * Zoomlevel		Quantization
+ * ---------		------------
+ *
+ * <=6				1,500
+ * 7				3,000
+ * 8				5,000
+ * 9				10,000
+ * 10				100,000
+ * 11				1,000,0000
+ *
+ -->
+		  &nbsp;Quantization: <select id="quantizationSelect" name="quantization" form="shpConvert">
 		    <option value="100000000">1 in 100 million</option>
 		    <option value="10000000">1 in 10 million</option>
 		    <option value="1000000" selected="selected">1 in 1 million</option>
 		    <option value="100000">1 in 100,000</option>
 		    <option value="10000">1 in 10,000</option>
-		    <option value="1000">1 in 1,000</option>
+		    <option value="5000">1 in 5,000</option>
+		    <option value="3000">1 in 3,000</option>
+		    <option value="1500">1 in 1,500</option>
 		  </select>	
           &nbsp;Diagnostics<input id="diagnostics" type="checkbox" name="verbose" value="true">
           <input id="submit" type="submit" value="Upload File(s)" />&nbsp;

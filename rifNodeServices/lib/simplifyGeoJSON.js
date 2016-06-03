@@ -267,9 +267,20 @@ topology: 1579 arcs, 247759 points
  */
 var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_options, response, convertedTopojson, stderr, serverLog, fileName) {
 		  
-	topojson_options.simplify=undefined;		
-	topojson_options["retain-proportion"]=0.25; // --simplify-proportion option!
-		
+	 scopeChecker(__file, __line, {
+		response: response
+	});
+	
+	topojson_options.simplify=undefined;	
+	if (response.fields && response.fields["simplificationFactor"]) { // simplificationFactor field: Topojson --simplify-proportion option!
+		topojson_options["retain-proportion"]=response.fields["simplificationFactor"]; 
+		response.message+="\nUsing simplification factor: " + topojson_options["retain-proportion"];
+	}
+	else {
+		topojson_options["retain-proportion"]=0.75; 
+		response.message+="\nUsing default simplification factor: " + topojson_options["retain-proportion"];
+	}
+	
 	for (i=(convertedTopojson[0].zoomlevel-1); i>=6; i--) {
 
 		stderr.disable();	// Re-route topoJSON stderr to stderr.str
@@ -300,8 +311,8 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 			j++;
 			if (j == 1) {
 				nGeojson = topojson.feature(convertedTopojson[(convertedTopojson.length-2)].topojson, convertedTopojson[(convertedTopojson.length-2)].topojson.objects[key]);
-				if (i == 10) {
-					response.message+="Zoomlevel [" + i + "] " + key + " Truncated geoJSON >>>\n" + JSON.stringify(nGeojson, null, 4).substring(0, 600) + "\n<<< End of JSON";
+				if (i == (convertedTopojson[0].zoomlevel-1)) {
+					response.message+="\nZoomlevel [" + i + "] " + key + " Truncated geoJSON >>>\n" + JSON.stringify(nGeojson, null, 4).substring(0, 600) + "\n<<< End of JSON";
 				}
 			}
 		}							
@@ -336,7 +347,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		convertedTopojson[(convertedTopojson.length-1)].topojson_length=JSON.stringify(convertedTopojson[(convertedTopojson.length-1)].topojson).length;	
 		stderr.enable(); 				   // Re-enable stderr
 		convertedTopojson[(convertedTopojson.length-1)].topojson_stderr=stderr.str();	
-		if (i == 10) {
+		if (i == (convertedTopojson[0].zoomlevel-1)) {
 			response.message+="\nTopoJSON options for zoomlevel[" + i + "] " + JSON.stringify(topojson_options, null, 4) + 
 				"\nCreated topojson for zoomlevel[" + i + "]; size: " + convertedTopojson[(convertedTopojson.length-1)].topojson_length + 
 				"; took: " + convertedTopojson[(convertedTopojson.length-1)].topojson_runtime + 

@@ -66,6 +66,16 @@ L.topoJson = L.GeoJSON.extend({
 });
 // Copyright (c) 2013 Ryan Clark
 
+/*
+ * Function: 	nodeGeoSpatialFrontEndInit()
+ * Parameters:	None
+ * Description: Initialise globals
+ */
+function nodeGeoSpatialFrontEndInit() {
+	JSONLayer=[];
+	start=new Date().getTime();
+	jsonAddLayerParamsArray=[];
+}
 
 /*
  * Function: 	scopeChecker()
@@ -965,7 +975,7 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
 	var firstKey;
 	var maxZoomlevel;
 	var minZoomlevel;
-	
+
 	if (jsonZoomlevels) {	
 		for (var key in jsonZoomlevels) {
 			if (firstKey == undefined) { // Save first key so there is one good match!
@@ -1007,7 +1017,7 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
 		}	
 		
 		if (json == undefined && mapZoomlevel < minZoomlevel) {
-			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using minZoomlevel key: " + minZoomlevel);
+			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; mapZoomlevel < minZoomlevel; using minZoomlevel key: " + minZoomlevel);
 			json=jsonZoomlevels[minZoomlevel];
 		}
 		

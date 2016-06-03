@@ -445,16 +445,52 @@ exports.convert = function exportsConvert(req, res) {
 					ofields[fieldname]="true";
 				}	
 				else if (fieldname == 'quantization') {
-				   ofields["quantization"]=val;
-				   text+="Initial quantization: " + topojson_options.quantization;
+					if (val && isNaN(val)) {
+						text+="\FIELD PROCESSING ERROR! value is not a number: " + val;
+						response.field_errors++;					
+					}
+					else if (val && (val < 1500 || val > 1e9)) {			
+						text+="\FIELD PROCESSING ERROR! value is not between 1500 and 1e9: " + val;
+						response.field_errors++;						
+					}
+					else if (val) {
+					   ofields["quantization"]=val;
+					   topojson_options.quantization = val;
+					   text+="Initial quantization: " + topojson_options.quantization;
+					}
+					else {
+						text+="\FIELD PROCESSING ERROR! value is null";
+						response.field_errors++;
+					}
+				}
+				else if (fieldname == 'simplificationFactor') {
+					if (val && isNaN(val)) {
+						text+="\FIELD PROCESSING ERROR! value is not a number: " + val;
+						response.field_errors++;					
+					}
+					else if (val && (val < 0.1 || val > 1)) {			
+						text+="\FIELD PROCESSING ERROR! value is not between 0.1 and 1: " + val;
+						response.field_errors++;						
+					}
+					else if (val) {
+					   ofields["simplificationFactor"]=val;
+					   topojson_options.quantization = val;
+					   text+="Simplification factor: " + topojson_options.quantization;
+					}
+					else {
+						text+="\FIELD PROCESSING ERROR! value is null";
+						response.field_errors++;
+					}
 				}				
 				else if (fieldname == 'zoomLevel') {
-				   topojson_options.quantization = simplifyGeoJSON.getQuantization(val);
-				   ofields["zoomLevel"]=val;
-				   if (!ofields["quantization"]) {
-						ofields["quantization"]=topojson_options.quantization;
-				   }
-				   text+="Initial zoomelvel: " + ofields["zoomLevel"] + "; quantization: " + topojson_options.quantization;
+					if (val) {
+						topojson_options.quantization = simplifyGeoJSON.getQuantization(val);
+						ofields["zoomLevel"]=val;
+						if (!ofields["quantization"]) {
+							text+="Initial zoomelvel: " + ofields["zoomLevel"] + "; quantization: " + topojson_options.quantization;
+							ofields["quantization"]=topojson_options.quantization;
+						}
+					}
 				}
 				else if ((fieldname == 'uuidV1')&&(!response.fields["diagnosticFileDir"])) { // Start the diagnostics log as soon as possible
 					ofields[fieldname]=val;
@@ -740,11 +776,48 @@ exports.convert = function exportsConvert(req, res) {
 						   if (!ofields["quantization"]) {
 								ofields["quantization"]=topojson_options.quantization;
 						   }
-						   response.message+="\nInitial quantization: " + topojson_options.quantization;
+						   response.message+="\nDefault initial quantization: " + topojson_options.quantization;
 					}
-					if (!ofields["zoomlevel"] && topojson_options.quantization == 1e6) { // For zoomlevel 11
+/*
+ * Set zoomlevel
+ *
+ * Zoomlevel		Quantization
+ * ---------		------------
+ *
+ * <=6				1,500
+ * 7				3,000
+ * 8				5,000
+ * 9				10,000
+ * 10				100,000
+ * 11				1,000,0000
+ */
+					if (!ofields["zoomlevel"] && topojson_options.quantization >= 1e6) { // For zoomlevel 11
 						ofields["zoomlevel"]=11;
-						   response.message+="\nInitial zooomlevel: " + ofields["zoomlevel"];
+						   response.message+="\nInitial zooomlevel: " + ofields["zoomlevel"] + "; quantization: " + topojson_options.quantization;
+					}
+					else if (!ofields["zoomlevel"] && topojson_options.quantization >= 1e5) { // For zoomlevel 10
+						ofields["zoomlevel"]=10;
+						   response.message+="\nInitial zooomlevel: " + ofields["zoomlevel"] + "; quantization: " + topojson_options.quantization;
+					}
+					else if (!ofields["zoomlevel"] && topojson_options.quantization >= 1e4) { // For zoomlevel 9
+						ofields["zoomlevel"]=9;
+						   response.message+="\nInitial zooomlevel: " + ofields["zoomlevel"] + "; quantization: " + topojson_options.quantization;
+					}
+					else if (!ofields["zoomlevel"] && topojson_options.quantization >= 5000) { // For zoomlevel 8
+						ofields["zoomlevel"]=8;
+						   response.message+="\nInitial zooomlevel: " + ofields["zoomlevel"] + "; quantization: " + topojson_options.quantization;
+					}
+					else if (!ofields["zoomlevel"] && topojson_options.quantization >= 3000) { // For zoomlevel 7
+						ofields["zoomlevel"]=7;
+						   response.message+="\nInitial zooomlevel: " + ofields["zoomlevel"] + "; quantization: " + topojson_options.quantization;
+					}
+					else if (!ofields["zoomlevel"] && topojson_options.quantization >= 1500) { // For zoomlevel 6
+						ofields["zoomlevel"]=6;
+						   response.message+="\nInitial zooomlevel: " + ofields["zoomlevel"] + "; quantization: " + topojson_options.quantization;
+					}					
+					else if (!ofields["zoomlevel"]) {
+						ofields["zoomlevel"]=11;
+						   response.message+="\nInitial default zooomlevel: " + ofields["zoomlevel"] + "; quantization: " + topojson_options.quantization;
 					}
 					ofields["topojson_options"]=topojson_options;
 					
