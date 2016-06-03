@@ -86,7 +86,7 @@ scopeChecker = function scopeChecker(array, optionalArray) {
 	var errors=0;
 	var undefinedKeys;
 	var msg="";
-	var calling_function = /* arguments.callee.caller.name || */ '(anonymous)';
+	var calling_function = scopeChecker.name || '(anonymous)';
 	
 	for (var key in array) {
 		if (typeof array[key] == "undefined") {
@@ -122,6 +122,7 @@ scopeChecker = function scopeChecker(array, optionalArray) {
 	
 	// Raise exception if errors
 	if (errors > 0) {
+		console.log("scopeChecker() ERROR: " + msg);
 		throw new Error(msg);
 	}	
 } // End of scopeChecker()
@@ -773,7 +774,8 @@ function displayResponse(responseText, status, formName) {
 													function asyncEachSeriesCallback(e) {
 														callback(e);
 													}
-													setTimeout(jsonAddLayer, 200, item, JSONLayer, asyncEachSeriesCallback); // Put a slight delay in for Leaflet to allow the map to redraw
+													setTimeout(jsonAddLayer, 200, item, JSONLayer, asyncEachSeriesCallback, true /* initialRun */); 
+														// Put a slight delay in for Leaflet to allow the map to redraw
 												}, 
 												function asyncEachSeriesError(err) {
 													var end=new Date().getTime();
@@ -860,44 +862,69 @@ function displayResponse(responseText, status, formName) {
  *					jsonZoomlevel - json key supports multi zoomlevels,
  *					json - geo/topojson object, 
  *					isGeoJSON boolean }, 
- *					JSONLayer array, async callback
+ *					JSONLayer array, async callback, initialRun (boolean)
  * Returns: 	Nothing
  * Description:	Remove then add geo/topoJSON layer to map
  */	
-function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback) { 
+function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) { 
 
 	try {
-		scopeChecker({
-			jsonAddLayerParams: jsonAddLayerParams,
-			JSONLayer: JSONLayer,
-			callback: callback,
-			start: start,
-			map: map
-		});
+		if (initialRun) {
+			scopeChecker({
+				jsonAddLayerParams: jsonAddLayerParams,
+				JSONLayer: JSONLayer,
+				callback: callback,
+				start: start,
+				map: map
+			});
+		}
+		else {
+			scopeChecker({
+				jsonAddLayerParams: jsonAddLayerParams,
+				JSONLayer: JSONLayer,
+				callback: callback,
+				start: start,
+				map: map,
+//				JSONLayerElement: JSONLayer[jsonAddLayerParams.i],
+				AddParamsJSONLayerElement: jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]
+			});
+		}
 	}
 	catch (e) {
+		console.log("jsonAddLayer() scopeChecker ERROR: " + e.message);
 		callback(e);
+		return;
 	}
 	
 	var end=new Date().getTime();
 	var elapsed=(end - start)/1000; // in S
-	console.log("[" + elapsed + "] Adding data to JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+	var verb="Modifying data in";
+	var msg;
+	
+	if (initialRun) {
+		verb="Adding data to";
+	}
+	console.log("[" + elapsed + "] " + verb + " JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
 		"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
 		jsonAddLayerParams.file_name +
 		"; colour: " + jsonAddLayerParams.style.color + "; weight: " + jsonAddLayerParams.style.weight + 
 		"; opacity: " + jsonAddLayerParams.style.opacity + "; fillOpacity: " + jsonAddLayerParams.style.fillOpacity + "; zoomlevel: " +  map.getZoom());
 							
 	try {
-		if (JSONLayer[jsonAddLayerParams.i]) {	
+		if (jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]) {	
 			console.log("[" + elapsed + "] Removing topoJSONLayer data: " + jsonAddLayerParams.i);
-			JSONLayer[jsonAddLayerParams.i].clearLayers();
+			jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].clearLayers();
 			console.log("[" + elapsed + "] Removed topoJSONLayer data: " + jsonAddLayerParams.i);
 		}
 	}
 	catch (e) {
 		end=new Date().getTime();
 		elapsed=(end - start)/1000; // in S
-		callback(new Error("[" + elapsed + "] Error removing JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "]  map: " + e.message));
+		
+		msg="[" + elapsed + "] Error removing JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "]  map: " + e.message;
+		console.log("jsonAddLayer() ERROR: " + msg);
+		callback(new Error(msg));
+		return;
 	}			
 		
 	try {	
@@ -941,13 +968,18 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback) {
 				}, this); 
 		}
 		else {
-			callback(new Error("jsonAddLayer(): jsonAddLayerParams.json is not defined."));
+			msg="jsonAddLayer(): jsonAddLayerParams.json is not defined.";
+			console.log("jsonAddLayer() ERROR: " + msg);
+			callback(new Error(msg));
 		}	
 	}
 	catch (e) {
 		end=new Date().getTime();
 		elapsed=(end - start)/1000; // in S
-		callback(new Error("[" + elapsed + "] Error adding JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "] to map: " + e.message));
+		
+		msg="[" + elapsed + "] Error adding JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "] to map: " + e.message;
+		console.log("jsonAddLayer() ERROR: " + msg);
+		callback(new Error(msg));
 	}			
 		
 } // End of jsonAddLayer()
@@ -1123,7 +1155,7 @@ function zoomBasedLayerchange(event) {
 		});
 	}
 	catch(e) {
-		console.error("whenMapIsReady(): caught: " + e.message);
+		console.error("whenMapIsReady(): caught: " + e.message + "\nStack: " + e.stack);
 	}
 	
 	map.whenReady( // Basemap is ready
@@ -1135,7 +1167,7 @@ function zoomBasedLayerchange(event) {
 				});
 			}
 			catch(e) {
-				console.error("whenMapIsReady(): caught: " + e.message);
+				console.error("whenMapIsReady(): caught: " + e.message + "\nStack: " + e.stack);
 				return;
 			}
 							
@@ -1174,7 +1206,8 @@ function zoomBasedLayerchange(event) {
 								asyncEachSeriesCallback(e);
 							}
 
-							setTimeout(jsonAddLayer, 200, item, JSONLayer, asyncEachSeriesCallback); // Put a slight delay in for Leaflet to allow the map to redraw
+							setTimeout(jsonAddLayer, 200, item, JSONLayer, asyncEachSeriesCallback, false /* initialRun */); 
+								// Put a slight delay in for Leaflet to allow the map to redraw
 						}, 
 						function asyncEachSeriesError(err) {
 							
@@ -1188,14 +1221,14 @@ function zoomBasedLayerchange(event) {
 								var end=new Date().getTime();
 								var elapsed=(end - start)/1000; // in S
 								if (err) {
-									console.error("[" + elapsed + "] asyncEachErrorHandler: " + err.message);								
+									console.error("[" + elapsed + "] asyncEachErrorHandler: " + err.message + "\nStack: " + err.stack);								
 								}
 								else {
 									console.log("[" + elapsed + "] " + jsonAddLayerParamsArray[0].no_files + " layers processed OK.");
 								}
 							}
 							catch(e) {
-								console.error("asyncEachSeriesError(): caught: " + e.message);
+								console.error("asyncEachSeriesError(): caught: " + e.message + "\nStack: " + e.stack);
 							}
 						} // End of asyncEachSeriesError()
 					);						
