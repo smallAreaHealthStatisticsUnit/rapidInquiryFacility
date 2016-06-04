@@ -127,7 +127,7 @@ scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) {
 
 	// Raise a test exception if the calling function matches the exception field value 
 	if (array && array["ofields"] && typeof array["ofields"] !== "undefined") {
-		if (array["ofields"].exception == calling_function) { 
+		if (array["ofields"].exception && array["ofields"].exception == calling_function) { 
 			msg+="\nRaise test exception in: " + array["ofields"].exception;
 			errors++;
 		}

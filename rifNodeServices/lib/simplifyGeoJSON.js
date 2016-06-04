@@ -281,7 +281,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		response.message+="\nUsing default simplification factor: " + topojson_options["retain-proportion"];
 	}
 	
-	for (i=(convertedTopojson[0].zoomlevel-1); i>=6; i--) {
+	for (i=(convertedTopojson[0].zoomlevel-1); i>=6; i--) { // Convert to async!
 
 		stderr.disable();	// Re-route topoJSON stderr to stderr.str
 
@@ -296,7 +296,8 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 			zoomlevel: i
 		};
 
-		var nGeojson;		
+		var nGeojson;	
+		var end;		
 		if (!convertedTopojson[(convertedTopojson.length-2)]) {
 			throw new Error("Create topojson zoomlevel[" + i + "] no convertedTopojson[] element: " + (convertedTopojson.length-2));
 		}			
@@ -310,7 +311,17 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		for (var key in convertedTopojson[(convertedTopojson.length-2)].topojson.objects) {
 			j++;
 			if (j == 1) {
+
+				
+				end = new Date().getTime();
+				response.message+="\n+"  + ((end - lstart)/1000) + "S" + fileName + ": created geojson from zoomlevel topojson: " + 
+					convertedTopojson[(convertedTopojson.length-2)].zoomlevel;
 				nGeojson = topojson.feature(convertedTopojson[(convertedTopojson.length-2)].topojson, convertedTopojson[(convertedTopojson.length-2)].topojson.objects[key]);
+				
+				end = new Date().getTime();
+				addStatus(__file, __line, response, fileName + ": created geojson from zoomlevel topojson: " + 
+					convertedTopojson[(convertedTopojson.length-2)].zoomlevel + "; took: " + ((end - lstart)/1000) + "S", 
+					200 /* HTTP OK */, serverLog, undefined /* req */);  // Add created geojson from zoomlevel topojson status	
 				if (i == (convertedTopojson[0].zoomlevel-1)) {
 					response.message+="\nZoomlevel [" + i + "] " + key + " Truncated geoJSON >>>\n" + JSON.stringify(nGeojson, null, 4).substring(0, 600) + "\n<<< End of JSON";
 				}
@@ -319,7 +330,25 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		if (j > 1) {
 			throw new Error("Create topojson zoomlevel[" + i + "] topojson.objects length > 1: "  + j);
 		} 
-		var nTopojson=JSON.parse(JSON.stringify(convertedTopojson[(convertedTopojson.length-2)].topojson));
+		
+				
+		end = new Date().getTime();
+		response.message+="\n+"  + ((end - lstart)/1000) + "S" + fileName + ": clone topojson[stage 1: stringify]: " + 
+			convertedTopojson[(convertedTopojson.length-2)].zoomlevel;
+		var nTopojsonStr=JSON.stringify( // Clone
+				convertedTopojson[(convertedTopojson.length-2)].topojson);				
+		end = new Date().getTime();
+		addStatus(__file, __line, response, fileName + ": clone topojson[stage 1: stringify]: " + 
+			convertedTopojson[(convertedTopojson.length-2)].zoomlevel + "; took: " + ((end - lstart)/1000) + "S", 
+			200 /* HTTP OK */, serverLog, undefined /* req */);  // Add clone 1 status		
+		response.message+="\n+"  + ((end - lstart)/1000) + "S" + fileName + ": clone topojson[stage 2: parse]: " + 
+			convertedTopojson[(convertedTopojson.length-2)].zoomlevel;				
+		var nTopojson=JSON.parse(nTopojsonStr);
+		end = new Date().getTime();
+		addStatus(__file, __line, response, fileName + ": clone topojson[stage 2: parse]: " + 
+			convertedTopojson[(convertedTopojson.length-2)].zoomlevel + "; took: " + ((end - lstart)/1000) + "S", 
+			200 /* HTTP OK */, serverLog, undefined /* req */);  // Add clone 2 status				
+		nTopojsonStr=undefined;
 			
 		try { // convert the previous topojson to geojson
 			if (nTopojson) {
@@ -359,8 +388,9 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 				"S;  diagnostics\n" + convertedTopojson[(convertedTopojson.length-1)].topojson_stderr;  // Get stderr as a string
 		}			
 
-		addStatus(__file, __line, response, fileName + ": simplified topojson for zoomlevel[" + i + "] took: " + convertedTopojson[(convertedTopojson.length-1)].topojson_runtime + "S", 
-			200 /* HTTP OK */, serverLog, undefined /* req */);  // Add end of shapefile read status			
+		addStatus(__file, __line, response, fileName + ": simplified topojson for zoomlevel[" + i + "] took: " + 
+			convertedTopojson[(convertedTopojson.length-1)].topojson_runtime + "S", 
+			200 /* HTTP OK */, serverLog, undefined /* req */);  // Add zoomlevel topojson simplify status			
 			
 		stderr.clean();						// Clean down stderr string
 		stderr.restore();                   // Restore normal stderr functionality 					

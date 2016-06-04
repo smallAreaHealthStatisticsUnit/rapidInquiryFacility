@@ -347,6 +347,8 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 		d.file.topojson=simplifyGeoJSON.toTopoJSON(d.file.jsonData, topojson_options, response, d.file.file_name);
 		
 		if (global.gc &&d.file.jsonData.length > (1024*1024*500) ) { // GC if json > 500M; 
+			const v8 = require('v8');
+		
 			d.file.jsonData=undefined;			// Release memory		
 			global.gc();
 			var heap=v8.getHeapStatistics();

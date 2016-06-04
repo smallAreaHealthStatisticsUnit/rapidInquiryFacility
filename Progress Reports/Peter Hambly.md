@@ -454,6 +454,7 @@ RangeError: Invalid string length
 #### Current TODO list (June):
 
 * Add simplify to zoomlevel 11, spherical simplify limit (in Steraradians)
+* Duplicate file names in zip files. Flattening of directory structure causes duplicates which are not detected.
 * max/min zoomlevel
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
 * Re-test COA2011: json memory and timeout issues are solved

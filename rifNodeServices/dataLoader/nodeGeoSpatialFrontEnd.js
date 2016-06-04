@@ -1053,11 +1053,20 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
  * Returns: 	Nothing
  * Description: Error handler
  */	
-function errorHandler(error) {
+function errorHandler(error, ajaxOptions, thrownError) {
 	if (error) {
 		console.error(JSON.stringify(error, null, 4));
 		var msg="<h1>Send Failed; http status: ";
-		if (error.status) {
+		
+		if (error.status == undefined && thrownError) {
+			var msg = "errorHandler() Ajax exception: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
+			document.getElementById("status").innerHTML = msg;
+			if (ajaxOptions) {
+				console.log("errorHandler(): ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
+			}
+			console.error(msg);
+		}
+		else if (error.status) {
 			msg+=error.status;
 		}
 		else {
@@ -1083,8 +1092,16 @@ function errorHandler(error) {
 		
 		document.getElementById("status").innerHTML = msg;
 	}
+	else if (thrownError) {
+		var msg = "errorHandler() Ajax exception: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
+		document.getElementById("status").innerHTML = msg;
+		if (ajaxOptions) {
+			console.log("errorHandler(): ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
+		}
+		console.error(msg);
+	}
 	else {
-		console.error("errorHandler(): No error returned");
+		console.error("errorHandler(): No error or thrownError returned");
 	}
 	
 	if (map) {
@@ -1099,7 +1116,7 @@ function errorHandler(error) {
 		document.getElementById("map").innerHTML = "";			 
 		console.log('Remove map element'); 
 	}										  
-}
+} // End of errorHandler()
 
 /*
  * Function: 	uploadProgressHandler()

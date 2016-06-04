@@ -39,7 +39,12 @@ $(document).ready(function documentReady() {
     }; 
 	
     // bind form using 'ajaxForm' 
-    $('#shpConvert').ajaxForm(options); 
+	try {
+		$('#shpConvert').ajaxForm(options); 
+	}
+	catch (e) {
+		console.error("Caught error in ajaxForm(): " + e.message);
+	}
 	
 	document.getElementById("status").innerHTML = "Ready.";
 	console.log("Ready");

@@ -442,21 +442,17 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1 || elapsedReadTime > (shapefileData["elapsedReadTime"] + 1)) { 
 			// Print read record diagnostics every 1000 shapefile records or second
 			doTrace=true;
-						
+	
+			msg="Reading shapefile record [" + recNo + "]; file: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"];						
 			if (shapefileData["recLen"] > 100*1024*1024) { // Write a log message every 100 MB
-				serverLog.serverLog2(__file, __line, "readShapeFile", "+" + shapefileData["elapsedReadTime"] + "S; In shapefileReadNextRecord(), " + msg, shapefileData["req"]);
+				serverLog.serverLog2(__file, __line, "readShapeFile", "+" + shapefileData["elapsedReadTime"] + "S; " + msg, shapefileData["req"]);
 			}
 			if (elapsedReadTime > (shapefileData["elapsedReadTime"] + 1)) { // Add status every 1S
-				msg="+" + elapsedReadTime + "S; shapefile read/statuus log [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"];
 				shapefileData["elapsedReadTime"]=elapsedReadTime;
-				nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "[+" + shapefileData["elapsedReadTime"] + "s] Reading shapefile: " + shapefileData["shapeFileBaseName"] +
-					"; record: " + shapefileData["recLen"], 
+				nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, 
 					200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 			}
-			else {
-				msg="+" + elapsedReadTime + "S; shapefile read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"];
-			}
-			response.message+="\n" + msg;
+			response.message+="\n+" + shapefileData["elapsedReadTime"] + "S; " + msg;
 		}
 
 		if (shapefileData["mySrs"].srid != "4326") { // Re-project to 4326
@@ -516,6 +512,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		record=undefined;	
 		// Force garbage collection
 		if (global.gc && shapefileData["recLen"] > (1024*1024*500) && ((recNo/10000)-Math.floor(recNo/10000)) == 0) { // GC if json > 500M;  every 10K records
+			const v8 = require('v8');
+			
 			global.gc();
 			var heap=v8.getHeapStatistics();
 			msg+="\nMemory heap >>>";
@@ -552,23 +550,25 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 
 
 		shapefileData["reader"].close(function readerClose(err) {
+			var msg;
+			
 			if (err) {
-				var msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile reader.close: ' + shapefileData["shapeFileName"];
-				serverLog.serverError2(__file, __line, "shapefileReadLastRecord", 
+				msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile reader.close: ' + shapefileData["shapeFileName"];
+				serverLog.serverError2(__file, __line, "readerClose", 
 					msg, shapefileData["req"], err);							
 			}	
 			shapefileData["reader"]=undefined; // Release for gc			var end = new Date().getTime();
 			
 			var end = new Date().getTime();			
 			shapefileData["elapsedReadTime"]=(end - shapefileData["lstart"])/1000; // in S
-
+			msg="Read shapefile: " + shapefileData["shapeFileBaseName"] +
+				"; " + shapefileData["recLen"] + " records";
 			if (shapefileData["recLen"] > 50*1024*1024) { // 50 MB
-				serverLog.serverLog2(__file, __line, "shapefileReadLastRecord", "+" + shapefileData["elapsedReadTime"] + "S; In shapefileReader(), " + msg, shapefileData["req"]);
+				serverLog.serverLog2(__file, __line, "readerClose", "+" + shapefileData["elapsedReadTime"] + "S; " + msg, shapefileData["req"]);
 			}
 			response.file_list[shapefileData["shapefile_no"]-1].geojson_length=shapefileData["recLen"];
-			response.message+="\n" + msg;
-			nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Read shapefile: " + shapefileData["shapeFileBaseName"] +
-				"; " + shapefileData["recLen"] + " records", 
+			response.message+="\n+" + shapefileData["elapsedReadTime"] + "S; " + msg;
+			nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, 
 				200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
 			
 			if (response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) { // Check bounding box present
@@ -990,8 +990,6 @@ This error in actually originating from the error handler function
 		} // End of shapefileReader() function
 					
 		var msg;
-		
-		const v8 = require('v8');	
 			
 		if (shapefileData["lstart"]) {
 			serverLog.serverError2(__file, __line, "readShapeFile", "Called > once: " + shapefileData["shapeFileName"], undefined, undefined);//Run > once - this should never occur
@@ -1025,7 +1023,7 @@ This error in actually originating from the error handler function
 		if (shapefileData["prj"]) {
 			shapefileData["mySrs"]=srs.parse(shapefileData["prj"]);
 			if (!shapefileData["mySrs"].srid) { // Add exceptions not spotted by srs.parse
-				if (shapefileData["mySrs"].name == "British_National_Grid") {
+				if (shapefileData["mySrs"].name.match(/British_National_Grid/)) {
 					shapefileData["mySrs"].srid="27700";
 				}
 				else { // Error

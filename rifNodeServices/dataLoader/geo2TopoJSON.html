@@ -39,7 +39,12 @@ $(document).ready(function() {
     }; 
 	
     // bind form using 'ajaxForm' 
-    $('#geo2TopoJSON').ajaxForm(options); 
+	try {
+		$('#geo2TopoJSON').ajaxForm(options); 
+	}
+	catch (e) {
+		console.error("Caught error in ajaxForm(): " + e.message);
+	}	
 
 	document.getElementById("status").innerHTML = "Ready.";	
 	console.log("Ready");
