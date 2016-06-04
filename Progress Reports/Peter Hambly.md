@@ -453,6 +453,7 @@ RangeError: Invalid string length
 
 #### Current TODO list (June):
 
+* Status in write JSON file
 * Add simplify to zoomlevel 11, spherical simplify limit (in Steraradians)
 * Duplicate file names in zip files. Flattening of directory structure causes duplicates which are not detected.
 * max/min zoomlevel

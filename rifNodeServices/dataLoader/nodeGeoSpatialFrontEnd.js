@@ -1059,8 +1059,8 @@ function errorHandler(error, ajaxOptions, thrownError) {
 		var msg="<h1>Send Failed; http status: ";
 		
 		if (error.status == undefined && thrownError) {
-			var msg = "errorHandler() Ajax exception: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
-			document.getElementById("status").innerHTML = msg;
+			msg = "errorHandler() Ajax exception from JQuery Form: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
+			document.getElementById("status").innerHTML = "<h1>Send Failed;</h1>" + msg;
 			if (ajaxOptions) {
 				console.log("errorHandler(): ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
 			}
@@ -1069,8 +1069,11 @@ function errorHandler(error, ajaxOptions, thrownError) {
 		else if (error.status) {
 			msg+=error.status;
 		}
+		else if (thrownError) {
+			msg+="errorHandler() Ajax exception from JQuery Form: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
+		}	
 		else {
-			msg+="(no error status)";
+			msg+="(no error status or thrownError returned)";
 		}
 		msg+="</h1>";
 		if (error.responseJSON && error.responseJSON.error) {
@@ -1093,8 +1096,8 @@ function errorHandler(error, ajaxOptions, thrownError) {
 		document.getElementById("status").innerHTML = msg;
 	}
 	else if (thrownError) {
-		var msg = "errorHandler() Ajax exception: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
-		document.getElementById("status").innerHTML = msg;
+		msg = "errorHandler() Ajax exception from JQuery Form: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
+		document.getElementById("status").innerHTML = "<h1>Send Failed;</h1>" + msg;
 		if (ajaxOptions) {
 			console.log("errorHandler(): ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
 		}

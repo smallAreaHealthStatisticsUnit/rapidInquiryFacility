@@ -314,7 +314,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 
 				
 				end = new Date().getTime();
-				response.message+="\n+"  + ((end - lstart)/1000) + "S" + fileName + ": created geojson from zoomlevel topojson: " + 
+				response.message+="\n+"  + ((end - lstart)/1000) + " S; " + fileName + ": created geojson from zoomlevel topojson: " + 
 					convertedTopojson[(convertedTopojson.length-2)].zoomlevel;
 				nGeojson = topojson.feature(convertedTopojson[(convertedTopojson.length-2)].topojson, convertedTopojson[(convertedTopojson.length-2)].topojson.objects[key]);
 				
@@ -333,7 +333,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		
 				
 		end = new Date().getTime();
-		response.message+="\n+"  + ((end - lstart)/1000) + "S" + fileName + ": clone topojson[stage 1: stringify]: " + 
+		response.message+="\n+"  + ((end - lstart)/1000) + " S; " + fileName + ": clone topojson[stage 1: stringify]: " + 
 			convertedTopojson[(convertedTopojson.length-2)].zoomlevel;
 		var nTopojsonStr=JSON.stringify( // Clone
 				convertedTopojson[(convertedTopojson.length-2)].topojson);				
@@ -341,7 +341,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		addStatus(__file, __line, response, fileName + ": clone topojson[stage 1: stringify]: " + 
 			convertedTopojson[(convertedTopojson.length-2)].zoomlevel + "; took: " + ((end - lstart)/1000) + "S", 
 			200 /* HTTP OK */, serverLog, undefined /* req */);  // Add clone 1 status		
-		response.message+="\n+"  + ((end - lstart)/1000) + "S" + fileName + ": clone topojson[stage 2: parse]: " + 
+		response.message+="\n+"  + ((end - lstart)/1000) + " S; " + fileName + ": clone topojson[stage 2: parse]: " + 
 			convertedTopojson[(convertedTopojson.length-2)].zoomlevel;				
 		var nTopojson=JSON.parse(nTopojsonStr);
 		end = new Date().getTime();
