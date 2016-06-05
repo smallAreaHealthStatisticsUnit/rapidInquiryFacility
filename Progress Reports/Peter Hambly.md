@@ -450,15 +450,16 @@ RangeError: Invalid string length
 * Async map display
 * Add intra zoomlevel simplify percentage target parameter: simplificationFactor
 * Old layers being left behind
+* max/min zoomlevel. Max zoomlevel not enforced in browser until the calucation of quantization and the max zoomnlevel is better; this needs area,
 
 #### Current TODO list (June):
 
-* Status in write JSON file
-* Add simplify to zoomlevel 11, spherical simplify limit (in Steraradians)
-* Duplicate file names in zip files. Flattening of directory structure causes duplicates which are not detected.
-* max/min zoomlevel
+* Status in write JSON file Re-test COA2011: json memory and timeout issues are solved
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
-* Re-test COA2011: json memory and timeout issues are solved
+* Display of zoomlevel contextual information: areas (km), total areas, size, suppressed or not. 
+* Calucation of quantization and the max zoomnlevel using area. Enforcement in browser. Needs turf.
+* Add simplify to zoomlevel 11, spherical simplify limit (in Steraradians).
+* Duplicate file names in zip files. Flattening of directory structure causes duplicates which are not detected
 
 #### June list (some likely to be moved into July):
 
