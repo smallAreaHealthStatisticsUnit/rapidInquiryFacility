@@ -701,7 +701,8 @@ function displayResponse(responseText, status, formName) {
 								jsonAddLayerParamsArray[(response.no_files - i - 1)]={ // jsonAddLayer() parameters
 									i: i,	
 									no_files: (response.no_files - 1),
-									file_name: response.file_list[layerAddOrder[i]].file_name,							
+									file_name: response.file_list[layerAddOrder[i]].file_name,		
+									areas: response.file_list[layerAddOrder[i]].total_areas,									
 									layerAddOrder: layerAddOrder[i],		
 									style: 
 										{color: 	layerColours[i],
@@ -721,7 +722,8 @@ function displayResponse(responseText, status, formName) {
 								jsonAddLayerParamsArray[(response.no_files - i - 1)]={ // jsonAddLayer() parameters
 									i: i,
 									no_files: (response.no_files - 1),
-									file_name: response.file_list[layerAddOrder[i]].file_name,							
+									file_name: response.file_list[layerAddOrder[i]].file_name,		
+									areas: response.file_list[layerAddOrder[i]].total_areas,							
 									layerAddOrder: layerAddOrder[i],		
 									style: 
 										{color: 	layerColours[i],
@@ -848,7 +850,7 @@ function displayResponse(responseText, status, formName) {
 function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) { 
 
 	try {
-		if (initialRun) {
+//		if (initialRun) { // Removed because of suppression
 			scopeChecker({
 				jsonAddLayerParams: jsonAddLayerParams,
 				JSONLayer: JSONLayer,
@@ -856,7 +858,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 				start: start,
 				map: map
 			});
-		}
+/*		}
 		else {
 			scopeChecker({
 				jsonAddLayerParams: jsonAddLayerParams,
@@ -867,7 +869,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 				JSONLayerElement: JSONLayer[jsonAddLayerParams.i],
 				AddParamsJSONLayerElement: jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]
 			});
-		}
+		} */
 	}
 	catch (e) {
 		console.log("jsonAddLayer() scopeChecker ERROR: " + e.message);
@@ -880,6 +882,20 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 	var verb="Modifying data in";
 	var msg;
 	
+	// Suppress for performance
+	if (jsonAddLayerParams.areas > 200 && map.getZoom() < 6) {
+		console.log("[" + elapsed + "] " + "Suppressing (jsonAddLayerParams.areas > 200 && map.getZoom() < 6) JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+			"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
+			jsonAddLayerParams.file_name + "; areas: " + jsonAddLayerParams.areas + "; zoomlevel: " +  map.getZoom());
+		return;
+	}
+	else if (jsonAddLayerParams.areas > 10000) {
+		console.log("[" + elapsed + "] " + "Suppressing (jsonAddLayerParams.areas > 10,000) JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+			"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
+			jsonAddLayerParams.file_name + "; areas: " + jsonAddLayerParams.areas + "; zoomlevel: " +  map.getZoom());
+		return;
+	}
+		
 	if (initialRun) {
 		verb="Adding data to";
 	}
@@ -919,12 +935,10 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 			jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] = JSONLayer[jsonAddLayerParams.i];
 		}
 		
+		var json=jsonZoomlevelData(jsonAddLayerParams.json, map.getZoom(), jsonAddLayerParams.i);
 		if (jsonAddLayerParams.json) {
 			if (jsonAddLayerParams.jsonZoomlevel) {
-				jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(
-					jsonZoomlevelData(
-						jsonAddLayerParams.json, map.getZoom(), jsonAddLayerParams.i)
-					);	
+				jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(json);	
 			}
 			else {
 				jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].addData(jsonAddLayerParams.json);		
@@ -941,7 +955,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 					end=new Date().getTime();
 					elapsed=(end - start)/1000; // in S
 					console.log("[" + elapsed + "] Added JSONLayer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + 
-						"]: " + jsonAddLayerParams.file_name + "; zoomlevel: " +  map.getZoom());
+						"]: " + jsonAddLayerParams.file_name + "; zoomlevel: " +  map.getZoom() /* + "; size: " + sizeof(json) SLOW!!! */);
 			//		console.log("Callback: " + jsonAddLayerParams.i);
 					callback();
 				}, this); 
@@ -979,20 +993,20 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
 	if (jsonZoomlevels) {	
 		for (var key in jsonZoomlevels) {
 			if (firstKey == undefined) { // Save first key so there is one good match!
-				firstKey=key;
+				firstKey=parseInt(key);
 			}
 			
 			if (minZoomlevel == undefined) {
-				minZoomlevel=key;
+				minZoomlevel=parseInt(key);
 			}
 			else if (key < minZoomlevel) {
-				minZoomlevel=key;
+				minZoomlevel=parseInt(key);
 			}
 			if (maxZoomlevel == undefined) {
-				maxZoomlevel=key;
+				maxZoomlevel=parseInt(key);
 			}
 			else if (key > maxZoomlevel) {
-				maxZoomlevel=key;
+				maxZoomlevel=parseInt(key);
 			}		
 			
 			if (key == mapZoomlevel) {
@@ -1010,7 +1024,7 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
 				"; maxZoomlevel key: " + maxZoomlevel + "; minZoomlevel key: " + minZoomlevel);
 			return json;
 		}
-		
+		// no json found for zoomlevel: 3; mapZoomlevel < minZoomlevel; using minZoomlevel key: 10
 		if (json == undefined && mapZoomlevel > maxZoomlevel) {
 			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using maxZoomlevel key: " + maxZoomlevel);
 			json=jsonZoomlevels[maxZoomlevel];
@@ -1039,8 +1053,8 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
 		if (json == undefined) {
 			throw new Error("jsonZoomlevelData(): Layer [" + layerNum + "]: no json available");
 		}		
-		else if (json.len == undefined || json.len == 0) {
-			throw new Error("jsonZoomlevelData(): Layer [" + layerNum + "]: json is zero length");
+		else if (json && Object.keys(json).length == 0) {
+			throw new Error("jsonZoomlevelData(): Layer [" + layerNum + "]: json has no keys");
 		}
 		return json;
 	}
@@ -1226,7 +1240,7 @@ function changeJsonLayers(event) {
 									console.error("[" + elapsed + "] asyncEachErrorHandler: " + err.message + "\nStack: " + err.stack);								
 								}
 								else {
-									console.log("[" + elapsed + "] " + jsonAddLayerParamsArray[0].no_files + " layers processed OK.");
+									console.log("[" + elapsed + "] " + jsonAddLayerParamsArray.length + " layers processed OK.");
 								}
 							}
 							catch(e) {
