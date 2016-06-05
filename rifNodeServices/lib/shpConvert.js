@@ -190,7 +190,7 @@ shpConvert = function shpConvert(ofields, d_files, response, req, res, shapefile
 		// Call: shpConvertCheckFiles() - check which files and extensions are present, convert shapefile to geoJSON, simplify etc						
 		rval=shpConvertCheckFiles(shpList, response, shpTotal, ofields, serverLog, httpErrorResponse,
 			req, res, shapefile_options);
-		if (rval.file_errors > 0 ) {
+		if (rval.file_errors > 0 || response.file_errors) {
 			response.file_errors+=rval.file_errors;	
 			response.message = rval.msg + "\n" + response.message;
 		
@@ -403,8 +403,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			});
 		var xmlDoc = builder.buildObject(xmlConfig);
 		
-		response.message+="\nCreated XML config [xml] >>>\n" + xmlDoc + "\n<<< end of XML config [xml]" +
-			"\nXML config [json] >>>\n" + JSON.stringify(xmlConfig, null, 4) + "\n<<< end of json config [xml]";
+//		response.message+="\nCreated XML config [xml] >>>\n" + xmlDoc + "\n<<< end of XML config [xml]";
+		response.message+="\nXML config as json>>>\n" + JSON.stringify(xmlConfig, null, 4) + "\n<<< end of XM config as json";
 			
 		fs.writeFileSync(xmlConfig.xmlFileDir + "/" + xmlConfig.xmlFileName, xmlDoc);
 	} // End of createXmlFile()
@@ -1338,10 +1338,11 @@ This error in actually originating from the error handler function
 //				"In readShapeFile(), shapeFileQueue shapefile [" + shapefile_no + "/" + shapefile_total + "]: " + shapefileData["shapeFileName"]);			
 			shapeFileQueue.push(shapefileData, function shapeFileQueuePush(err) {
 				if (err) {
-					var msg='ERROR! in readShapeFile()';
+					var msg='ERROR! in readShapeFile(): ' + err.message + "\nStack: " + err.stack;
 						
 					response.message+="\n" + msg;	
-					response.file_errors++;
+					
+					response.file_errors++;					// Increment file error count
 					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", msg, 
 						shapefileData["req"], err);	
 				} // End of err		

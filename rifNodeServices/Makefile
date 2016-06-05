@@ -194,6 +194,7 @@ endif
 #
 MODULE_JSON=node_modules/request/package.json \
 	node_modules/JSZip/package.json \
+	node_modules/clone/package.json \
 	node_modules/form-data/package.json \
 	node_modules/magic-globals/package.json \
 	node_modules/helmet/package.json \
