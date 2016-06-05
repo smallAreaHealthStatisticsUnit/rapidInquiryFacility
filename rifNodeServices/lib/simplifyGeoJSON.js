@@ -46,6 +46,7 @@
 	
 const topojson = require('topojson'),
 	  clone = require('clone'),
+	  sizeof = require('object-sizeof'),
 	  stderrHook = require('../lib/stderrHook'),
 	  serverLog = require('../lib/serverLog'),
 	  streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback');
@@ -238,7 +239,7 @@ topology: 1579 arcs, 247759 points
 			}, topojson_options);
 	var end = new Date().getTime();
 	convertedTopojson[0].topojson_runtime=(end - lstart)/1000; // in S	
-	convertedTopojson[0].topojson_length=JSON.stringify(convertedTopojson[0].topojson).length;	
+	convertedTopojson[0].topojson_length=sizeof(convertedTopojson[0].topojson);	
 	stderr.enable(); 				   // Re-enable stderr
 	convertedTopojson[0].topojson_stderr=stderr.str();
 	response.message+="\nCreated topojson for zoomlevel: " + (convertedTopojson[0].zoomlevel || "N/A") + "; size: " + convertedTopojson[0].topojson_length + 
@@ -270,7 +271,8 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		  
 	 scopeChecker(__file, __line, {
 		response: response,
-		clone: clone
+		clone: clone,
+		sizeof: sizeof
 	});
 	
 	topojson_options.simplify=undefined;	
@@ -299,7 +301,11 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		};
 
 		var nGeojson;	
+		var nGeojsonLen;
+		var nTopojson;
+		var nTopojsonLen;
 		var end;		
+		
 		if (!convertedTopojson[(convertedTopojson.length-2)]) {
 			throw new Error("Create topojson zoomlevel[" + i + "] no convertedTopojson[] element: " + (convertedTopojson.length-2));
 		}			
@@ -319,7 +325,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 				response.message+="\n+"  + ((end - lstart)/1000) + " S; " + fileName + ": created geojson from zoomlevel topojson: " + 
 					convertedTopojson[(convertedTopojson.length-2)].zoomlevel;
 				nGeojson = topojson.feature(convertedTopojson[(convertedTopojson.length-2)].topojson, convertedTopojson[(convertedTopojson.length-2)].topojson.objects[key]);
-				
+				nGeojsonLen=sizeof(nGeojson);
 				end = new Date().getTime();
 				addStatus(__file, __line, response, fileName + ": created geojson from zoomlevel topojson: " + 
 					convertedTopojson[(convertedTopojson.length-2)].zoomlevel + "; took: " + ((end - lstart)/1000) + "S", 
@@ -367,17 +373,25 @@ Stack: RangeError: Invalid string length
 			200 /- HTTP OK -/, serverLog, undefined /- req -/);  // Add clone 2 status				
 		nTopojsonStr=undefined;
  */		
-		response.message+="\n+"  + ((end - lstart)/1000) + " S; " + fileName + ": clone topojson : " + 
-			convertedTopojson[(convertedTopojson.length-2)].zoomlevel;				
-		var nTopojson=clone(convertedTopojson[(convertedTopojson.length-2)].topojson, false /* cicrular references */);
-		end = new Date().getTime();
-		addStatus(__file, __line, response, fileName + ": clone topojson[: " + 
-			convertedTopojson[(convertedTopojson.length-2)].zoomlevel + "; took: " + ((end - lstart)/1000) + "S", 
-			200 /* HTTP OK */, serverLog, undefined /* req */);  // Add clone 2 status				
-			
+ 
+		else if (nGeojson && nGeojsonLen > 0) {		
+			response.message+="\n+"  + ((end - lstart)/1000) + " S; " + fileName + ": clone topojson : " + 
+				convertedTopojson[(convertedTopojson.length-2)].zoomlevel;				
+			nTopojson=clone(convertedTopojson[(convertedTopojson.length-2)].topojson, false /* cicrular references */);
+			nTopojsonLen=sizeof(nTopojson);
+			end = new Date().getTime();
+			addStatus(__file, __line, response, fileName + ": clone topojson[: " + 
+				convertedTopojson[(convertedTopojson.length-2)].zoomlevel + "; took: " + ((end - lstart)/1000) + "S", 
+				200 /* HTTP OK */, serverLog, undefined /* req */);  // Add clone() status				
+		}
+		else {	
+			throw new Error("Create topojson zoomlevel[" + i + "] no geojson created from topojson convertedTopojson[" + (convertedTopojson.length-2) + 
+				"]; length: " + convertedTopojson[(convertedTopojson.length-2)].topojson_length);
+		}
+		
 		try { // convert the previous topojson to geojson
-			if (nTopojson) {
-				convertedTopojson[(convertedTopojson.length-1)].geojson_length= JSON.stringify(nGeojson, null, 4).length; // <=== here
+			if (nTopojson && nTopojsonLen > 0) {
+				convertedTopojson[(convertedTopojson.length-1)].geojson_length=nGeojsonLen;
 				response.message+="\nCreate topojson zoomlevel[" + i + "] geojson size: " + convertedTopojson[(convertedTopojson.length-1)].geojson_length + 
 					" created from zoomlevel: " +
 					convertedTopojson[(convertedTopojson.length-2)].zoomlevel;						
@@ -398,7 +412,7 @@ Stack: RangeError: Invalid string length
 		}
 		var end = new Date().getTime();
 		convertedTopojson[(convertedTopojson.length-1)].topojson_runtime=(end - lstart)/1000; // in S	
-		convertedTopojson[(convertedTopojson.length-1)].topojson_length=JSON.stringify(convertedTopojson[(convertedTopojson.length-1)].topojson).length;	
+		convertedTopojson[(convertedTopojson.length-1)].topojson_length=sizeof(convertedTopojson[(convertedTopojson.length-1)].topojson);	
 		stderr.enable(); 				   // Re-enable stderr
 		convertedTopojson[(convertedTopojson.length-1)].topojson_stderr=stderr.str();	
 		if (i == (convertedTopojson[0].zoomlevel-1)) {

@@ -1036,8 +1036,11 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
 			json=jsonZoomlevels["11"];
 		}
 		
-		if (!json) {
+		if (json == undefined) {
 			throw new Error("jsonZoomlevelData(): Layer [" + layerNum + "]: no json available");
+		}		
+		else if (json.len == undefined || json.len == 0) {
+			throw new Error("jsonZoomlevelData(): Layer [" + layerNum + "]: json is zero length");
 		}
 		return json;
 	}
