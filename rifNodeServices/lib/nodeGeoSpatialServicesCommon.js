@@ -311,30 +311,26 @@ var setupDiagnostics = function setupDiagnostics(lfile, lline, req, ofields, res
 // Write diagnostics file
 //			
 	if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"])) { // Exists
-		serverLog.serverError2(lfile, lline, calling_function, 
-			"ERROR: Cannot write diagnostics file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], req);
+		serverLog.serverLog2(lfile, lline, calling_function, 
+			"WARNING: Diagnostics file already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], req);
 	}
-	else {
-		response.message+="\n[" + lfile + ":" + lline + "; function: " + calling_function + "()] Creating diagnostics file: " + 
-			ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"];
-		response.fields=ofields;
-		fs.writeFileSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], 
-			response.message);
-	}
-	
+	response.message+="\n[" + lfile + ":" + lline + "; function: " + calling_function + "()] Creating diagnostics file: " + 
+		ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"];
+	response.fields=ofields;
+	fs.writeFileSync(ofields["diagnosticFileDir"] + "/" + ofields["diagnosticFileName"], 
+		response.message);
+
 //
 // Write status file
 //
 	if (fs.existsSync(ofields["diagnosticFileDir"] + "/" + ofields["statusFileName"])) { // Exists
-		serverLog.serverError2(lfile, lline, calling_function, 
-			"ERROR: Cannot write status file, already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["statusFileName"], req);
+		serverLog.serverLog2(lfile, lline, calling_function, 
+			"WARNING: Status file already exists: " + ofields["diagnosticFileDir"] + "/" + ofields["statusFileName"], req);
 	}
-	else {
-		response.message+="\n[" + response.fields["uuidV1"] + "] Creating status file: " + response.fields["statusFileName"];
-		var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
-		fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"], 
-			statusText);	
-	}
+	response.message+="\n[" + response.fields["uuidV1"] + "] Creating status file: " + response.fields["statusFileName"];
+	var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
+	fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"], 
+		statusText);	
 
 	var dstart = new Date().getTime();
 	// Re-create every second

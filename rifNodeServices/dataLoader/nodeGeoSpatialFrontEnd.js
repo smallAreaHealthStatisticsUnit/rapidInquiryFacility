@@ -48,6 +48,8 @@ var map;
 var tileLayer;
 var JSONLayer=[];
 var start;
+var uploadTime;
+var serverTime;
 var jsonAddLayerParamsArray=[];
 					
 // Extend Leaflet to use topoJSON
@@ -563,7 +565,9 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 function displayResponse(responseText, status, formName) {
 										
 	var response;
-	var msg="";
+	var msg=""
+	var end=new Date().getTime();
+	serverTime=((end - start)/1000)-uploadTime; // in S;
 	
 	setStatus("Processing response from server...");
 	if (responseText != null && typeof responseText == 'object') { // Already JSON
@@ -781,6 +785,10 @@ function displayResponse(responseText, status, formName) {
 			msg+="</ul></p>";
 		}
 	}	
+	
+	var end=new Date().getTime();
+	var elapsed=(end - start)/1000; // in S
+	msg+="Time taken: " + elapsed + " S; upload time: " + uploadTime + " S; server time: " + serverTime + " S [excluding map draw time]</br>";
 	
 	if (response.message) {
 		msg+="<p>Processing diagnostic messages:</br><div id=\"div_message\" style=\"overflow:scroll; height: 400px;\"><pre>" + response.message + "</pre></div?</p>"
@@ -1057,7 +1065,7 @@ function errorHandler(error, ajaxOptions, thrownError) {
 			msg+="errorHandler() Ajax exception from JQuery Form: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
 		}	
 		else {
-			msg+="(no error status or thrownError returned)";
+			msg+="(no error status or thrownError returned - likely server failure/firefox bug)";
 		}
 		msg+="</h1>";
 		if (error.responseJSON && error.responseJSON.error) {
@@ -1114,8 +1122,10 @@ function errorHandler(error, ajaxOptions, thrownError) {
 function uploadProgressHandler(event, position, total, percentComplete) {
 	var msg;
 	
-	if (percentComplete == 100) {
-		msg="Uploaded: " + percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
+	if (percentComplete == 100 && position == total) {
+		var end=new Date().getTime();
+		uploadTime=(end - start)/1000; // in S
+		msg="Uploaded: " + percentComplete.toString() + '%; ' + fileSize(position) + "; took: " + uploadTime + " S";
 	}
 	else {
 		msg="Uploading: " + percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
