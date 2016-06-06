@@ -352,7 +352,7 @@ function createMap(boundingBox, noZoomlevels) {
 		});
 		tileLayer.addTo(map);	
 		L.control.scale().addTo(map); // Add scale
-	
+		
 		end=new Date().getTime();
 		elapsed=(end - start)/1000; // in S		
 		console.log("[" + elapsed + "] Added tileLayer and scale to map");	
@@ -404,41 +404,6 @@ function setupBoundingBox(response) {
 		}
 	}	
 }
-
-/*
- * Function: 	createTable()
- * Parameters: 	Response JSON, layerColours array, layerAddOrder array
- * Returns: 	Table as HTML
- * Description:	Create results table 
- */
-function createTable(response, layerColours, layerAddOrder) {
-	
-	var msg="<table border=\"1\" style=\"width:100%\">" + 
-		"<tr>" +
-		"<th>File</th>" + 
-		"<th>Size</th>" +
-		"<th>Geo/Topo JSON length</th>" +
-		"<th>Areas</th>" + 
-		"<th>Geo level</th>" +
-		"</tr>";	
-	for (var i=0; i < response.no_files; i++) {	
-		msg+="<tr style=\"color:" + layerColours[i] + "\"><td>" + response.file_list[layerAddOrder[i]].file_name + "</td>" +
-				"<td>" + (fileSize(response.file_list[layerAddOrder[i]].file_size) || "N/A") + "</td>";
-		if (response.file_list[layerAddOrder[i]].topojson && response.file_list[layerAddOrder[i]].topojson[0].topojson_length) {	
-			msg+="<td>" + (fileSize(response.file_list[layerAddOrder[i]].topojson[0].topojson_length) || "N/A ") + "/" + 
-				(fileSize(response.file_list[layerAddOrder[i]].geojson_length) || " N/A") + "</td>";	
-		}
-		else if (response.file_list[layerAddOrder[i]].geojson) {	
-			msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].geojson_length) + "</td>";							
-		}		
-		msg+="<td>" + response.file_list[layerAddOrder[i]].total_areas + "</td>" +
-			"<td>" + (response.file_list[layerAddOrder[i]].geolevel_id || "N/A") + "</td>" + 
-			"</tr>";								
-	}		
-	msg+="</table>";	
-
-	return msg;
-}	
 
 /*
  * Function: 	setupLayers()
@@ -753,7 +718,7 @@ function displayResponse(responseText, status, formName) {
 							}
 							else {
 								var centre=map.getCenter();
-									
+	
 								console.log("Centre: " + centre.lat + ", " + centre.lng);
 		//						if (+centre.lat.toFixed(4) == +y_avg.toFixed(4) && 
 		//							+centre.lng.toFixed(4) == +x_avg.toFixed(4)) {
@@ -770,7 +735,9 @@ function displayResponse(responseText, status, formName) {
 									
 									map=createMap(response.file_list[0].boundingBox, noZoomlevels);				
 		//						}	
-							}							
+							}
+
+							addLegend(map, response, layerColours, layerAddOrder);							
 							changeJsonLayers();
 
 						}, // End of createMapAsync()
@@ -1253,3 +1220,70 @@ function changeJsonLayers(event) {
 		} // End of whenMapIsReady()
 	);
 } // End of changeJsonLayers()
+
+
+/*
+ * Function: 	createTable()
+ * Parameters: 	Response JSON, layerColours array, layerAddOrder array
+ * Returns: 	Table as HTML
+ * Description:	Create results table 
+ */
+function createTable(response, layerColours, layerAddOrder) {
+	
+	var msg="<table border=\"1\" style=\"width:100%\">" + 
+		"<tr>" +
+		"<th>File</th>" + 
+		"<th>Size</th>" +
+		"<th>Geo/Topo JSON length</th>" +
+		"<th>Areas</th>" + 
+		"<th>Geo level</th>" +
+		"</tr>";	
+	for (var i=0; i < response.no_files; i++) {	
+		msg+="<tr style=\"color:" + layerColours[i] + "\"><td>" + response.file_list[layerAddOrder[i]].file_name + "</td>" +
+				"<td>" + (fileSize(response.file_list[layerAddOrder[i]].file_size) || "N/A") + "</td>";
+		if (response.file_list[layerAddOrder[i]].topojson && response.file_list[layerAddOrder[i]].topojson[0].topojson_length) {	
+			msg+="<td>" + (fileSize(response.file_list[layerAddOrder[i]].topojson[0].topojson_length) || "N/A ") + "/" + 
+				(fileSize(response.file_list[layerAddOrder[i]].geojson_length) || " N/A") + "</td>";	
+		}
+		else if (response.file_list[layerAddOrder[i]].geojson) {	
+			msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].geojson_length) + "</td>";							
+		}		
+		msg+="<td>" + response.file_list[layerAddOrder[i]].total_areas + "</td>" +
+			"<td>" + (response.file_list[layerAddOrder[i]].geolevel_id || "N/A") + "</td>" + 
+			"</tr>";								
+	}		
+	msg+="</table>";	
+
+	return msg;
+}	
+
+function addLegend(map, response, layerColours, layerAddOrder) {
+	
+	scopeChecker({
+		response: response,
+		layerColours: layerColours,
+		layerAddOrder: layerAddOrder,
+		L: L,
+		map: map
+	});
+
+	var legend = L.control({position: 'bottomright'});
+			
+	legend.onAdd = function onAddLEgend(map) {
+
+		var div = L.DomUtil.create('div', 'info legend');
+		var labels=[];
+
+		for (var i = 0; i < response.no_files; i++) {
+			labels.push(
+				'<i style="background:' +layerColours[i] + '"></i>' + response.file_list[layerAddOrder[i]].total_areas);
+		}
+
+		div.innerHTML = "<em>Areas</em><br>" + labels.join('<br>');
+		console.log("Add legend: " + div);
+		
+		return div;
+	};
+
+	legend.addTo(map);
+}
