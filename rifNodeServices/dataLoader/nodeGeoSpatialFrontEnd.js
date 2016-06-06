@@ -1221,7 +1221,6 @@ function changeJsonLayers(event) {
 	);
 } // End of changeJsonLayers()
 
-
 /*
  * Function: 	createTable()
  * Parameters: 	Response JSON, layerColours array, layerAddOrder array
@@ -1257,7 +1256,13 @@ function createTable(response, layerColours, layerAddOrder) {
 	return msg;
 }	
 
-function addLegend(map, response, layerColours, layerAddOrder) {
+/*
+ * Function: 	addLegend()
+ * Parameters: 	Map, response JSON, layerColours array, layerAddOrder array
+ * Returns: 	HTML div object
+ * Description:	Add legend to map 
+ */
+ function addLegend(map, response, layerColours, layerAddOrder) {
 	
 	scopeChecker({
 		response: response,
@@ -1270,7 +1275,6 @@ function addLegend(map, response, layerColours, layerAddOrder) {
 	var legend = L.control({position: 'bottomright'});
 			
 	legend.onAdd = function onAddLEgend(map) {
-
 		var div = L.DomUtil.create('div', 'info legend');
 		var labels=[];
 
@@ -1279,9 +1283,8 @@ function addLegend(map, response, layerColours, layerAddOrder) {
 				'<i style="background:' +layerColours[i] + '"></i>' + response.file_list[layerAddOrder[i]].total_areas);
 		}
 
-		div.innerHTML = "<em>Areas</em><br>" + labels.join('<br>');
-		console.log("Add legend: " + div);
-		
+		div.innerHTML = "<h4>Areas</h4>" + labels.join('<br>');
+
 		return div;
 	};
 
