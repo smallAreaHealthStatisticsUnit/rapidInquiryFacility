@@ -566,7 +566,6 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			if (shapefileData["recLen"] > 50*1024*1024) { // 50 MB
 				serverLog.serverLog2(__file, __line, "readerClose", "+" + shapefileData["elapsedReadTime"] + "S; " + msg, shapefileData["req"]);
 			}
-			response.file_list[shapefileData["shapefile_no"]-1].geojson_length=shapefileData["recLen"];
 			response.message+="\n+" + shapefileData["elapsedReadTime"] + "S; " + msg;
 			nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, 
 				200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status

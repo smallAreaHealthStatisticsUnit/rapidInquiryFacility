@@ -424,7 +424,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 	}
 	
 	if (response.fields["uuidV1"] && response.fields["diagnosticFileDir"] && response.fields["statusFileName"]) { // Can save state
-		response.message+="\n[" + response.fields["uuidV1"] + "+" + response.status[response.status.length-1].etime + 
+		response.message+="\n+" + response.status[response.status.length-1].etime + 
 			" S] Re-creating status file: " + response.fields["statusFileName"];
 		var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
 		fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"], 

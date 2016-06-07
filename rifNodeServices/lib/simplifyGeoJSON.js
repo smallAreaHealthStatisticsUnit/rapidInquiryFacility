@@ -189,7 +189,8 @@ var toTopoJSON = function toTopoJSON(geojson, topojson_options, response, fileNa
 
 	 scopeChecker(__file, __line, {
 		response: response,
-		geojson: geojson
+		geojson: geojson,
+		sizeof: sizeof
 	});
 
 // Add stderr hook to capture debug output from topoJSON	
@@ -233,7 +234,7 @@ topology: 1579 arcs, 247759 points
 		zoomlevel: response.fields["max_zoomlevel"]
 	};
 	
-//	convertedTopojson[0].geojson_length=undefined;
+	convertedTopojson[0].geojson_length=sizeof(geojson);
 	convertedTopojson[0].topojson=topojson.topology({   // Convert geoJSON to topoJSON
 			collection: geojson
 			}, topojson_options);

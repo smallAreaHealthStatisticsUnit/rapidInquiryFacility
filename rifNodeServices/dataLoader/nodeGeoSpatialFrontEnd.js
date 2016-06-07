@@ -1243,7 +1243,7 @@ function createTable(response, layerColours, layerAddOrder) {
 		"<tr>" +
 		"<th>File</th>" + 
 		"<th>Size</th>" +
-		"<th>Geo/Topo JSON length</th>" +
+		"<th>Topo/Geo JSON length</th>" +
 		"<th>Areas</th>" + 
 		"<th>Geo level</th>" +
 		"</tr>";	
@@ -1251,8 +1251,10 @@ function createTable(response, layerColours, layerAddOrder) {
 		msg+="<tr style=\"color:" + layerColours[i] + "\"><td>" + response.file_list[layerAddOrder[i]].file_name + "</td>" +
 				"<td>" + (fileSize(response.file_list[layerAddOrder[i]].file_size) || "N/A") + "</td>";
 		if (response.file_list[layerAddOrder[i]].topojson && response.file_list[layerAddOrder[i]].topojson[0].topojson_length) {	
+			var pct=Math.round((100*response.file_list[layerAddOrder[i]].topojson[0].topojson_length)/
+									response.file_list[layerAddOrder[i]].topojson[0].geojson_length);
 			msg+="<td>" + (fileSize(response.file_list[layerAddOrder[i]].topojson[0].topojson_length) || "N/A ") + "/" + 
-				(fileSize(response.file_list[layerAddOrder[i]].geojson_length) || " N/A") + "</td>";	
+				(fileSize(response.file_list[layerAddOrder[i]].topojson[0].geojson_length) || " N/A") + "; " + pct + "%</td>";	
 		}
 		else if (response.file_list[layerAddOrder[i]].geojson) {	
 			msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].geojson_length) + "</td>";							
