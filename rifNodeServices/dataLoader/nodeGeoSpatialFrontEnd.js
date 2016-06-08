@@ -51,6 +51,7 @@ var start;
 var uploadTime;
 var serverTime;
 var jsonAddLayerParamsArray=[];
+var fileCount=0;
 					
 // Extend Leaflet to use topoJSON
 L.topoJson = L.GeoJSON.extend({  
@@ -68,6 +69,174 @@ L.topoJson = L.GeoJSON.extend({
 });
 // Copyright (c) 2013 Ryan Clark
 
+/*
+ * Function: 	formSetup()
+ * Parameters:  formId, formName
+ * Returns: 	Nothing
+ * Description:	Common form setup code 
+ */
+function formSetup(formId, formName) {
+
+	/*
+	 * Function: 	processJson()
+	 * Parameters:  data, status
+	 * Returns: 	Nothing
+	 * Description:	Post-submit callback for JQuery form
+	 * 				Do not use setStatus or you become devine 
+	 */
+	function processJson(data, status) { 
+		// 'data' is the json object returned from the server 
+		if (!data) {
+			document.getElementById("status").innerHTML = "FATAL: processJson(): data undefined: " + formName;
+			console.error("FATAL: processJson(): data undefined: " + formName);
+		}
+
+		try {
+			if (status == "success") {
+				displayResponse(data, 200, formName);
+			}
+			else {
+				displayResponse(data, status, formName);
+			}
+		}
+		catch (e) {
+			document.getElementById("status").innerHTML = "<h1>FATAL: Caught exception in displayResponse()</h1><h2>Error message: " + e.message + "</h2>";
+			console.error("FATAL: Caught exception in displayResponse(): " + e.message);	
+		}
+	}
+
+    var options = { 
+        target:        '#' + formId,   	    // target element(s) to be updated with server response 
+        beforeSubmit:  checkRequest,  		// pre-submit callback 
+        success:       processJson,  		// post-submit callback 
+		error:		   errorHandler, 		// Error handler callback
+		uploadProgress: uploadProgressHandler,	// uploadProgress handler
+		data: 			{uuidV1: "1"}, 		// Add randomised reference		
+        // other available options: 
+        //url:       url         // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        dataType:    'json',        		// 'xml', 'script', or 'json' (expected server response type) 
+		ifrmae: true,						// This is to fix a spurious error Message:{"readyState":0,"responseText":"","status":0,"statusText":"error"} issues with firefox and ajax
+											// Only 
+        //clearForm: true        // clear all form fields after successful submit 
+        //resetForm: true        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        timeout:     180000    // mS - 10 minutes
+		
+    }; 
+	
+    // bind form using 'ajaxForm' 
+	try {
+		$('#' + formId).ajaxForm(options); 
+	}
+	catch (e) {
+		console.error("Caught error in ajaxForm(" + formId + "): " + e.message);
+	}
+	
+	document.getElementById("status").innerHTML = formName + " form ready.";
+	console.log("Ready: " + formId);
+} 	
+	
+/*
+ * Function: 	updateSimplificationFactorInput()
+ * Parameters:  Value
+ * Returns: 	Nothing
+ * Description:	Update simplificationFactorInput box
+ */
+function updateSimplificationFactorInput(val) {
+      document.getElementById('simplificationFactorInput').value=val; 
+}
+	
+/*
+ * Function: 	checkRequest()
+ * Parameters:  formData, jqForm, options
+ * Returns: 	true/false. False prevents form submitting!
+ * Description:	Pre-submit callback handler for JQuery form
+ */
+function checkRequest(formData, jqForm, options) { 
+    // formData is an array; here we use $.param to convert it to a string to display it 
+    // but the form plugin does this for you automatically when it submits the data 
+		 	
+	options.data.uuidV1=generateUUID();
+	console.log("uuidV1: " + options.data.uuidV1);
+	
+    var queryString = $.param(formData); 
+/*
+formData: Array[4]
+0:
+Object {
+name: "file"
+type: "file"
+value: File Object {
+lastModified: 1464097549540
+lastModifiedDate: Tue May 24 2016 14:45:49 GMT+0100 (GMT Daylight Time)
+name: "SAHSU_GRD_Level4.json"
+size: 5562945
+type: "",
+webkitRelativePath: ""} .. then inherited
+
+*/	
+	for (var i=0; i<formData.length; i++) {
+		var value=formData[i].value;
+		if (formData[i].type == "file" && !value.name) {
+			console.log("Formdata: null file");
+		}
+		else if (formData[i].type == "file") {
+			console.log("Formdata file[" + i + "]: " + value.name + "; size: " + value.size + "; last modified: " + value.lastModifiedDate);
+			fileCount++;
+		}
+		else if (formData[i].type == "checkbox") {
+			if (formData[i].required) {
+				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
+			}
+			else {
+				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
+			}
+		}		
+		else if (formData[i].type == "range") {
+			if (formData[i].required) {
+				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
+			}
+			else {
+				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
+			}
+		}
+		else if (formData[i].type == "select-one") {
+			if (formData[i].required) {
+				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
+			}
+			else {
+				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
+			}
+		}
+		else {
+			console.log("Formdata other [" + i + "]: " + JSON.stringify(formData[i], null, 4));
+		}
+	}
+	if (fileCount == 0) {
+		document.getElementById("status").innerHTML = "<h1>No files selected</h1>"
+		console.log("FATAL! No files selected");
+		return false;
+	}
+	
+    // jqForm is a jQuery object encapsulating the form element.  To access the 
+    // DOM element for the form do this: 
+    // var formElement = jqForm[0]; 
+	if (!setupMap) {
+		document.getElementById("status").innerHTML = "<h1>setupMap() not defined: errors in nodeGeoSpatialServices.js</h1>"
+		console.log("FATAL! setupMap() not defined: errors in nodeGeoSpatialServices.js");
+		return false;
+	}
+    console.log('About to submit: ' + JSON.stringify(queryString, null, 4)); 
+	nodeGeoSpatialFrontEndInit();
+ 
+    // here we could return false to prevent the form from being submitted; 
+    // returning anything other than false will allow the form submit to continue 
+    return true; 
+} 
+ 
+ 
 /*
  * Function: 	nodeGeoSpatialFrontEndInit()
  * Parameters:	None
@@ -1302,7 +1471,7 @@ function createTable(response, layerColours, layerAddOrder) {
 				'<i style="background:' +layerColours[i] + '"></i>' + response.file_list[layerAddOrder[i]].total_areas);
 		}
 
-		div.innerHTML = '<i style="background:#FFF"></i><h4>Areas</h4>' + labels.join('<br>');
+		div.innerHTML = '<i style="background:#FFF"></i><em>Areas</em><br>' + labels.join('<br>');
 
 		return div;
 	};

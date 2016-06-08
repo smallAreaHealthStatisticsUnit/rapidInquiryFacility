@@ -195,15 +195,16 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 		response.fields["diagnosticFileDir"]=undefined;	// Remove diagnosticFileDir as it reveals OS type
 	
 //			serverLog.serverLog2(__file, __line, "responseProcessing", msg, req);	
-		if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed	
-			serverLog.serverLog2(__file, __line, "responseProcessing", 
-				"Diagnostics >>>\n" +
-				response.message + "\n<<< End of diagnostics", req);
+		if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
+			var msg=response.message;
 			if (!response.fields.verbose) {
 				response.message="";	
 			}	
-
 			var output = JSON.stringify(response);// Convert output response to JSON 
+			msg+="\nCreated reponse, size: " + output.length; 
+			serverLog.serverLog2(__file, __line, "responseProcessing", 
+				"Diagnostics >>>\n" +
+				msg + "\n<<< End of diagnostics", req);
 
 			if (response.fields["diagnosticFileDir"] && response.fields["responseFileName"]) { // Save to response file
 				fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["responseFileName"], 
@@ -218,7 +219,7 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 				res.write(output);                  // Write output  
 				res.end();	
 
-				if (response.fields.verbose) {
+				if (response.fields.verbose || output.length > (10*1024*1024) /* 10MB */) {
 					serverLog.serverLog2(__file, __line, "responseProcessing", 
 						"Response sent; size: " + output.length + " bytes", req);					
 				}

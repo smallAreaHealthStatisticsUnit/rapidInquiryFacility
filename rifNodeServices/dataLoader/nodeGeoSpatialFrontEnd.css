@@ -1,0 +1,82 @@
+#header {
+    background-color:black;
+	width: 100%;
+    height: 30px;
+    color:white;
+    padding:0px; 
+    text-align:center;
+}
+#header.h4 {
+}
+#nav {
+    line-height:30px;
+    background-color:#eeeeee;
+    height: 60px;
+	width: 100%
+    float:left;
+    padding-left:5px; 
+    padding-right:5px; 
+}
+#status {
+    width:600px;
+    float:left;
+    padding:5px; 
+}
+#footer {
+    background-color:#eeeeee;
+    color:black;
+    clear:both;
+    text-align:center;
+    padding:5px; 
+    height: 14px;
+    vertical-align:bottom;
+}
+#map {
+	width:550px; 
+	height:550px; 
+    float:right;
+}
+#conversion {
+    float:right;
+}
+table {
+    color:rgb(0, 200, 255);
+    font-family: courier;
+    font-size:75%;
+}
+#submit {
+	float:right;
+    margin: 10px 10px 10px 10px;
+    text-rendering: auto;
+    color: initial;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-transform: none;
+    text-indent: 0px;
+    text-shadow: none;
+    display: inline-block;
+    text-align: start;
+    font: 12px Arial;
+	border-radius: 12px;
+}
+.legend {
+	text-align: left;
+	line-height: 18px;
+	background-color: #FFF;
+	color: #555;
+	border-radius: 5px;
+    padding-left: 5px; 
+    padding-right: 5px;
+	padding-bottom: 5px;
+}
+.legend em {
+	margin: 0 0 5px;
+	color: #777;
+}
+.legend i {
+	width: 18px;
+	height: 18px;
+	float: left;
+	margin-right: 8px;
+	opacity: 0.7;
+}
