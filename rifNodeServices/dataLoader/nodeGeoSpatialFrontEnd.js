@@ -112,12 +112,10 @@ function formSetup(formId, formName) {
 		error:		   errorHandler, 		// Error handler callback
 		uploadProgress: uploadProgressHandler,	// uploadProgress handler
 		data: 			{uuidV1: "1"}, 		// Add randomised reference		
+        dataType:    'json',			   	// 'xml', 'script', or 'json' (expected server response type) 
         // other available options: 
         //url:       url         // override for form's 'action' attribute 
         //type:      type        // 'get' or 'post', override for form's 'method' attribute 
-        dataType:    'json',        		// 'xml', 'script', or 'json' (expected server response type) 
-		ifrmae: true,						// This is to fix a spurious error Message:{"readyState":0,"responseText":"","status":0,"statusText":"error"} issues with firefox and ajax
-											// Only 
         //clearForm: true        // clear all form fields after successful submit 
         //resetForm: true        // reset the form after successful submit 
  
@@ -125,6 +123,11 @@ function formSetup(formId, formName) {
         timeout:     180000    // mS - 10 minutes
 		
     }; 
+
+	if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){
+		options.iframe=true;		// This is to fix a spurious error Message:{"readyState":0,"responseText":"","status":0,"statusText":"error"} issues with firefox and ajax
+									// Only
+	}
 	
     // bind form using 'ajaxForm' 
 	try {
