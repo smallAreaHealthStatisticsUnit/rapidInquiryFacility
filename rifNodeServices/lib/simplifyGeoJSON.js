@@ -207,12 +207,14 @@ topology: 1579 arcs, 247759 points
 */
 	if (!topojson_options) {
 		topojson_options = {
-			verbose:      true,
-			quantization: 1e6
-		}; 		
+			verbose:      true
+		};
+		topojson_options["pre-quantization"]=1e6,
+		topojson_options["post-quantization"]=1e6,
+
 		response.message+="\nZoomlevel: " + response.fields["max_zoomlevel"] + "; default topoJSON options: " + JSON.stringify(topojson_options, null, 4);
 	}
-	else if (!topojson_options.simplify && topojson_options.quantization == 1e6) { // For zoomlevel 11
+	else if (!topojson_options.simplify && topojson_options["pre-quantization"] && topojson_options["pre-quantization"] == 1e6) { // For zoomlevel 11
 		topojson_options.simplify=9.011e-13; // For zoomlevel 11
 		response.message+="\nZoomlevel: " + response.fields["max_zoomlevel"] + " topoJSON options (simplify defaulted): " + JSON.stringify(topojson_options, null, 4);
 	}
