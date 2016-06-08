@@ -210,14 +210,14 @@ topology: 1579 arcs, 247759 points
 			verbose:      true,
 			quantization: 1e6
 		}; 		
-		response.message+="\nDefault topoJSON options: " + JSON.stringify(topojson_options, null, 4);
+		response.message+="\nZoomlevel: " + response.fields["max_zoomlevel"] + "; default topoJSON options: " + JSON.stringify(topojson_options, null, 4);
 	}
 	else if (!topojson_options.simplify && topojson_options.quantization == 1e6) { // For zoomlevel 11
 		topojson_options.simplify=9.011e-13; // For zoomlevel 11
-		response.message+="\nTopoJSON options (simplify defaulted): " + JSON.stringify(topojson_options, null, 4);
+		response.message+="\nZoomlevel: " + response.fields["max_zoomlevel"] + " topoJSON options (simplify defaulted): " + JSON.stringify(topojson_options, null, 4);
 	}
 	else {
-		response.message+="\nTopoJSON options: " + JSON.stringify(topojson_options, null, 4);
+		response.message+="\nZoomlevel: " + response.fields["max_zoomlevel"] + " topoJSON options: " + JSON.stringify(topojson_options, null, 4);
 	}
 	
 	stderr.disable();	// Re-route topoJSON stderr to stderr.str
@@ -276,14 +276,15 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		sizeof: sizeof
 	});
 	
-	topojson_options.simplify=undefined;	
+	var nTopojson_options=clone(topojson_options);
+	nTopojson_options.simplify=undefined;	
 	if (response.fields && response.fields["simplificationFactor"]) { // simplificationFactor field: Topojson --simplify-proportion option!
-		topojson_options["retain-proportion"]=response.fields["simplificationFactor"]; 
-		response.message+="\nUsing simplification factor: " + topojson_options["retain-proportion"];
+		nTopojson_options["retain-proportion"]=response.fields["simplificationFactor"]; 
+		response.message+="\nZoomlevel: " + (convertedTopojson[0].zoomlevel-1) + "; using simplification factor: " + nTopojson_options["retain-proportion"];
 	}
 	else {
-		topojson_options["retain-proportion"]=0.75; 
-		response.message+="\nUsing default simplification factor: " + topojson_options["retain-proportion"];
+		nTopojson_options["retain-proportion"]=0.75; 
+		response.message+="\nZoomlevel: " + (convertedTopojson[0].zoomlevel-1) + "; using default simplification factor: " + nTopojson_options["retain-proportion"];
 	}
 	
 	for (i=(convertedTopojson[0].zoomlevel-1); i>=6; i--) { // Convert to async!
@@ -296,7 +297,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 			geojson_length: undefined,
 			topojson_length: undefined,
 			topojson_runtime: undefined,
-			topojson_options: topojson_options,
+			topojson_options: nTopojson_options,
 			topojson_stderr: undefined,
 			zoomlevel: i
 		};
@@ -397,7 +398,7 @@ Stack: RangeError: Invalid string length
 					" created from zoomlevel: " +
 					convertedTopojson[(convertedTopojson.length-2)].zoomlevel;						
 				convertedTopojson[(convertedTopojson.length-1)].topojson=topojson.simplify(  // Simplify topoJSON
-						nTopojson, topojson_options);						
+						nTopojson, nTopojson_options);						
 			}
 			else {	
 				throw new Error("Create topojson zoomlevel[" + i + "] no nTopojson cloned from topojson convertedTopojson[" + (convertedTopojson.length-2) + 
@@ -417,7 +418,7 @@ Stack: RangeError: Invalid string length
 		stderr.enable(); 				   // Re-enable stderr
 		convertedTopojson[(convertedTopojson.length-1)].topojson_stderr=stderr.str();	
 		if (i == (convertedTopojson[0].zoomlevel-1)) {
-			response.message+="\nTopoJSON options for zoomlevel[" + i + "] " + JSON.stringify(topojson_options, null, 4) + 
+			response.message+="\nTopoJSON options for zoomlevel[" + i + "] " + JSON.stringify(nTopojson_options, null, 4) + 
 				"\nCreated topojson for zoomlevel[" + i + "]; size: " + convertedTopojson[(convertedTopojson.length-1)].topojson_length + 
 				"; took: " + convertedTopojson[(convertedTopojson.length-1)].topojson_runtime + 
 				"S;  diagnostics\n" + convertedTopojson[(convertedTopojson.length-1)].topojson_stderr;  // Get stderr as a string

@@ -474,8 +474,7 @@ exports.convert = function exportsConvert(req, res) {
 					}
 					else if (val) {
 					   ofields["simplificationFactor"]=val;
-					   topojson_options.quantization = val;
-					   text+="Simplification factor: " + topojson_options.quantization;
+					   text+="Simplification factor: " + ofields["simplificationFactor"];
 					}
 					else {
 						text+="\FIELD PROCESSING ERROR! value is null";
@@ -829,20 +828,8 @@ exports.convert = function exportsConvert(req, res) {
 						ofields["max_zoomlevel"]=10;
 						   response.message+="\nInitial max zooomlevel: " + ofields["max_zoomlevel"] + "; quantization: " + topojson_options.quantization;
 					}
-					else if (!ofields["max_zoomlevel"] && topojson_options.quantization >= 1e4) { // For zoomlevel 9
+					else if (!ofields["max_zoomlevel"] && topojson_options.quantization < 1e5) { // For zoomlevel 9
 						ofields["max_zoomlevel"]=9;
-						   response.message+="\nInitial max zooomlevel: " + ofields["max_zoomlevel"] + "; quantization: " + topojson_options.quantization;
-					}
-					else if (!ofields["max_zoomlevel"] && topojson_options.quantization >= 5000) { // For zoomlevel 8
-						ofields["max_zoomlevel"]=8;
-						   response.message+="\nInitial max zooomlevel: " + ofields["max_zoomlevel"] + "; quantization: " + topojson_options.quantization;
-					}
-					else if (!ofields["max_zoomlevel"] && topojson_options.quantization >= 3000) { // For zoomlevel 7
-						ofields["max_zoomlevel"]=7;
-						   response.message+="\nInitial max zooomlevel: " + ofields["max_zoomlevel"] + "; quantization: " + topojson_options.quantization;
-					}
-					else if (!ofields["max_zoomlevel"] && topojson_options.quantization >= 1500) { // For zoomlevel 6
-						ofields["max_zoomlevel"]=6;
 						   response.message+="\nInitial max zooomlevel: " + ofields["max_zoomlevel"] + "; quantization: " + topojson_options.quantization;
 					}					
 					else if (!ofields["max_zoomlevel"]) {

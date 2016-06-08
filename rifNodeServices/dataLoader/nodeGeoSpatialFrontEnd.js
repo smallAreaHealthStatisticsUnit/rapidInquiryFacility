@@ -408,7 +408,7 @@ function isIE() {
 function setStatus(msg, errm, diagnostic) {
 	if (document.getElementById("status").innerHTML != msg) {
 		var end=new Date().getTime();
-		var elapsed=(end - start)/1000; // in S
+		var elapsed=(Math.round(end - start))/1000; // in S
 		
 		if (!errm) {
 			document.getElementById("status").innerHTML = msg;
@@ -440,7 +440,7 @@ function setStatus(msg, errm, diagnostic) {
 function createMap(boundingBox, noZoomlevels) {
 
 	var end=new Date().getTime();
-	var elapsed=(end - start)/1000; // in S
+	var elapsed=(Math.round(end - start))/1000; // in S
 									
 	console.log("[" + elapsed + "] Create Leaflet map");	
 	var map = new L.map('map' , {
@@ -512,7 +512,7 @@ function createMap(boundingBox, noZoomlevels) {
 	
 	try {
 		end=new Date().getTime();
-		elapsed=(end - start)/1000; // in S		
+		elapsed=(Math.round(end - start))/1000; // in S		
 		console.log("[" + elapsed + "] Creating basemap...");															
 		tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 			maxZoom: 11,
@@ -525,7 +525,7 @@ function createMap(boundingBox, noZoomlevels) {
 		L.control.scale().addTo(map); // Add scale
 		
 		end=new Date().getTime();
-		elapsed=(end - start)/1000; // in S		
+		elapsed=(Math.round(end - start))/1000; // in S		
 		console.log("[" + elapsed + "] Added tileLayer and scale to map");	
 	
 		return map;
@@ -736,7 +736,7 @@ function displayResponse(responseText, status, formName) {
 	var response;
 	var msg=""
 	var end=new Date().getTime();
-	serverTime=((end - start)/1000)-uploadTime; // in S;
+	serverTime=(Math.round(end - start - (uploadTime*1000), 2))/1000; // in S;
 	
 	setStatus("Processing response from server...");
 	if (responseText != null && typeof responseText == 'object') { // Already JSON
@@ -956,7 +956,7 @@ function displayResponse(responseText, status, formName) {
 	}	
 	
 	var end=new Date().getTime();
-	var elapsed=(end - start)/1000; // in S
+	var elapsed=(Math.round(end - start, 2))/1000; // in S
 	msg+="Time taken: " + elapsed + " S; upload time: " + uploadTime + " S; server time: " + serverTime + " S [excluding map draw time]</br>";
 	
 	if (response.message) {
@@ -1022,7 +1022,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 	}
 	
 	var end=new Date().getTime();
-	var elapsed=(end - start)/1000; // in S
+	var elapsed=(Math.round(end - start))/1000; // in S
 	var verb="Modifying data in";
 	var msg;
 	
@@ -1058,7 +1058,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 	}
 	catch (e) {
 		end=new Date().getTime();
-		elapsed=(end - start)/1000; // in S
+		elapsed=(Math.round(end - start))/1000; // in S
 		
 		msg="[" + elapsed + "] Error removing JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "]  map: " + e.message;
 		console.log("jsonAddLayer() ERROR: " + msg);
@@ -1097,7 +1097,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 		
 			map.whenReady(function jsonAddLayerReady() { 
 					end=new Date().getTime();
-					elapsed=(end - start)/1000; // in S
+					elapsed=(Math.round(end - start))/1000; // in S
 					console.log("[" + elapsed + "] Added JSONLayer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + 
 						"]: " + jsonAddLayerParams.file_name + "; zoomlevel: " +  map.getZoom() /* + "; size: " + sizeof(json) SLOW!!! */);
 			//		console.log("Callback: " + jsonAddLayerParams.i);
@@ -1112,7 +1112,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 	}
 	catch (e) {
 		end=new Date().getTime();
-		elapsed=(end - start)/1000; // in S
+		elapsed=(Math.round(end - start))/1000; // in S
 		
 		msg="[" + elapsed + "] Error adding JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "] to map: " + e.message;
 		console.log("jsonAddLayer() ERROR: " + msg);
@@ -1300,7 +1300,7 @@ function uploadProgressHandler(event, position, total, percentComplete) {
 	
 	if (percentComplete == 100 && position == total) {
 		var end=new Date().getTime();
-		uploadTime=(end - start)/1000; // in S
+		uploadTime=(Math.round(end - start, 2))/1000; // in S
 		msg="Uploaded: " + percentComplete.toString() + '%; ' + fileSize(position) + "; took: " + uploadTime + " S";
 	}
 	else {
@@ -1332,7 +1332,7 @@ function changeJsonLayers(event) {
 			}
 							
 			var end=new Date().getTime();
-			var elapsed=(end - start)/1000; // in S
+			var elapsed=(Math.round(end - start))/1000; // in S
 			var initialRun;
 			
 			if (event) {
@@ -1388,7 +1388,7 @@ function changeJsonLayers(event) {
 								});
 							
 								var end=new Date().getTime();
-								var elapsed=(end - start)/1000; // in S
+								var elapsed=(Math.round(end - start))/1000; // in S
 								if (err) {
 									console.error("[" + elapsed + "] asyncEachErrorHandler: " + err.message + "\nStack: " + err.stack);								
 								}
