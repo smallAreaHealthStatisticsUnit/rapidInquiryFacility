@@ -233,6 +233,8 @@ topology: 1579 arcs, 247759 points
 		topojson_runtime: undefined,
 		topojson_options: topojson_options,
 		topojson_stderr: undefined,
+		topojson_arcs: undefined,
+		topojson_points: undefined,
 		zoomlevel: response.fields["max_zoomlevel"]
 	};
 	
@@ -245,6 +247,12 @@ topology: 1579 arcs, 247759 points
 	convertedTopojson[0].topojson_length=sizeof(convertedTopojson[0].topojson);	
 	stderr.enable(); 				   // Re-enable stderr
 	convertedTopojson[0].topojson_stderr=stderr.str();
+//	if (convertedTopojson[0].topojson.transform) {
+//		console.error("pre-quantization: " + convertedTopojson[0].topojson.transform.scale.map(function(k) { return system.formatDistance(k); }).join(" ") + "\n");
+//	}
+	convertedTopojson[0].topojson_arcs=convertedTopojson[0].topojson.arcs.length;
+	convertedTopojson[0].topojson_points=convertedTopojson[0].topojson.arcs.reduce(function(p, v) { return p + v.length; }, 0);
+	
 	response.message+="\nCreated topojson for zoomlevel: " + (convertedTopojson[0].zoomlevel || "N/A") + "; size: " + convertedTopojson[0].topojson_length + 
 		"; took: " + convertedTopojson[0].topojson_runtime + " S;  diagnostics\n" + convertedTopojson[0].topojson_stderr;  // Get stderr as a string	
 	
@@ -301,6 +309,8 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 			topojson_runtime: undefined,
 			topojson_options: nTopojson_options,
 			topojson_stderr: undefined,
+			topojson_arcs: undefined,
+			topojson_points: undefined,
 			zoomlevel: i
 		};
 
@@ -419,6 +429,9 @@ Stack: RangeError: Invalid string length
 		convertedTopojson[(convertedTopojson.length-1)].topojson_length=sizeof(convertedTopojson[(convertedTopojson.length-1)].topojson);	
 		stderr.enable(); 				   // Re-enable stderr
 		convertedTopojson[(convertedTopojson.length-1)].topojson_stderr=stderr.str();	
+		convertedTopojson[(convertedTopojson.length-1)].topojson_arcs=convertedTopojson[(convertedTopojson.length-1)].topojson.arcs.length;
+		convertedTopojson[(convertedTopojson.length-1)].topojson_points=convertedTopojson[(convertedTopojson.length-1)].topojson.arcs.reduce(
+																			function(p, v) { return p + v.length; }, 0);
 		if (i == (convertedTopojson[0].zoomlevel-1)) {
 			response.message+="\nTopoJSON options for zoomlevel[" + i + "] " + JSON.stringify(nTopojson_options, null, 4) + 
 				"\nCreated topojson for zoomlevel[" + i + "]; size: " + convertedTopojson[(convertedTopojson.length-1)].topojson_length + 
