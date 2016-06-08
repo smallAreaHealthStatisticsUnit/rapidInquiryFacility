@@ -30,7 +30,9 @@ $(document).ready(function() {
         // other available options: 
         //url:       url         // override for form's 'action' attribute 
         //type:      type        // 'get' or 'post', override for form's 'method' attribute 
-        dataType:    'json'        // 'xml', 'script', or 'json' (expected server response type) 
+        dataType:    'json',		        // 'xml', 'script', or 'json' (expected server response type) 
+		ifrmae: true,						// This is to fix a spurious error Message:{"readyState":0,"responseText":"","status":0,"statusText":"error"} issues with firefox and ajax
+											// Only 
         //clearForm: true        // clear all form fields after successful submit 
         //resetForm: true        // reset the form after successful submit 
  

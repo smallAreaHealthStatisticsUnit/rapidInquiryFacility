@@ -1046,8 +1046,15 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
  * Description: Error handler
  */	
 function errorHandler(error, ajaxOptions, thrownError) {
+	
 	if (error) {
-		console.error(JSON.stringify(error, null, 4));
+		console.error("error: " + JSON.stringify(error, null, 4));
+		if (ajaxOptions) {
+			console.error("ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
+		}
+		if (thrownError) {
+			console.error("thrownError: " + JSON.stringify(thrownError, null, 4));
+		}
 		var msg="<h1>Send Failed; http status: ";
 		
 		if (error.status == undefined && thrownError) {
@@ -1295,7 +1302,7 @@ function createTable(response, layerColours, layerAddOrder) {
 				'<i style="background:' +layerColours[i] + '"></i>' + response.file_list[layerAddOrder[i]].total_areas);
 		}
 
-		div.innerHTML = "<h4>Areas</h4>" + labels.join('<br>');
+		div.innerHTML = '<i style="background:#FFF"></i><h4>Areas</h4>' + labels.join('<br>');
 
 		return div;
 	};
