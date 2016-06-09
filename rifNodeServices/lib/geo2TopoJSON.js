@@ -345,7 +345,11 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 		d.file.jsonData=simplifyGeoJSON.jsonParse(d.file.file_data, response);
 		
 		d.file.topojson=simplifyGeoJSON.toTopoJSON(d.file.jsonData, topojson_options, response, d.file.file_name);
-		
+		d.file.total_topojson_length=0;
+		for (var i=0; i<d.file.topojson.length; i++) { // total_topojson_length
+			d.file.total_topojson_length+=(d.file.topojson[i].topojson_length || 0);
+		}
+	
 		if (global.gc &&d.file.jsonData.length > (1024*1024*500) ) { // GC if json > 500M; 
 			const v8 = require('v8');
 		
@@ -362,6 +366,7 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 		response.file_list[idx].topojson=d.file.topojson;
 		response.file_list[idx].file_size=d.file.file_size;		
 		response.file_list[idx].geojson_file_length=d.file.file_size;	
+		response.file_list[idx].total_topojson_length=d.file.total_topojson_length;
 		response.file_list[idx].transfer_time=d.file.transfer_time;
 		response.file_list[idx].uncompress_time=d.file.uncompress_time;
 		response.file_list[idx].uncompress_size=d.file.uncompress_size;		

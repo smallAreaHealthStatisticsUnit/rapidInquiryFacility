@@ -114,6 +114,10 @@ var shapefileSimplifyGeoJSON = function shapefileSimplifyGeoJSON(shapefile, resp
 	}	
 	
 	shapefile.topojson = toTopoJSON(shapefile.geojson, topojson_options, response, shapefileData["topojsonFileBaseName"]);
+	response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length=0;
+	for (var i=0; i<shapefile.topojson.length; i++) { // total_topojson_length
+		response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length+=(shapefile.topojson[i].topojson_length || 0);
+	}
 	
 // This need to be replaced with write record by record and then do the callback here
 // We can then also remove the geojson

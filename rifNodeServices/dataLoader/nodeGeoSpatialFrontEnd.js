@@ -100,8 +100,8 @@ function formSetup(formId, formName) {
 			}
 		}
 		catch (e) {
-			document.getElementById("status").innerHTML = "<h1>FATAL: Caught exception in displayResponse()</h1><h2>Error message: " + e.message + "</h2>";
-			console.error("FATAL: Caught exception in displayResponse(): " + e.message);	
+			document.getElementById("status").innerHTML = "<h1>FATAL: Caught exception in displayResponse()</h1><h2>Error message: " + e.message + "</h2><pre>" + e.stack + "</pre>";
+			console.error("FATAL: Caught exception in displayResponse(): " + e.message + "\n" + e.stack);	
 		}
 	}
 
@@ -124,18 +124,18 @@ function formSetup(formId, formName) {
 		
     }; 
 
-	if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){
-		options.iframe=true;		// This is to fix a spurious error Message:{"readyState":0,"responseText":"","status":0,"statusText":"error"} issues with firefox and ajax
-									// Only
-	}
+//	if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){
+//		options.iframe=true;		// This is to fix a spurious error Message:{"readyState":0,"responseText":"","status":0,"statusText":"error"} issues with firefox and ajax
+//									// Only
+//	}
 	
     // bind form using 'ajaxForm' 
-	try {
+//	try {
 		$('#' + formId).ajaxForm(options); 
-	}
-	catch (e) {
-		console.error("Caught error in ajaxForm(" + formId + "): " + e.message);
-	}
+//	}
+//	catch (e) {
+//		console.error("Caught error in ajaxForm(" + formId + "): " + e.message);
+//	}
 	
 	document.getElementById("status").innerHTML = formName + " form ready.";
 	console.log("Ready: " + formId);
@@ -1422,7 +1422,8 @@ function createTable(response, layerColours, layerAddOrder) {
 		"<tr>" +
 		"<th>File</th>" + 
 		"<th>Size</th>" +
-		"<th>Topo/Geo JSON length</th>" +
+		"<th>Level " + response.file_list[layerAddOrder[0]].topojson[0].zoomlevel + " topo/geo JSON length</th>" +
+		"<th>Total topojson length</th>" + 
 		"<th>Areas</th>" + 
 		"<th>Geo level</th>" +
 		"</tr>";	
@@ -1437,7 +1438,13 @@ function createTable(response, layerColours, layerAddOrder) {
 		}
 		else if (response.file_list[layerAddOrder[i]].geojson) {	
 			msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].geojson_length) + "</td>";							
-		}		
+		}	
+		if (response.file_list[layerAddOrder[i]].total_topojson_length) {
+			msg+="<td>" + fileSize(response.file_list[layerAddOrder[i]].total_topojson_length) + "</td>";
+		}
+		else {
+			msg+="<td>N/A</td>";
+		}
 		msg+="<td>" + response.file_list[layerAddOrder[i]].total_areas + "</td>" +
 			"<td>" + (response.file_list[layerAddOrder[i]].geolevel_id || "N/A") + "</td>" + 
 			"</tr>";								
