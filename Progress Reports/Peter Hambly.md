@@ -460,6 +460,8 @@ RangeError: Invalid string length
 * Perormance improvements
 * Common CSS
 * Add legend, fixed timings
+* Firefox bug traced to: Bug 1274010 - xmlhttprequest post randomly failing - https://bugzilla.mozilla.org/show_bug.cgi?id=1274010
+  Do not use Firefox 47.0. ^ hours to trace and clear Ajax.
 
 #### Current TODO list (June):
 
