@@ -44,7 +44,22 @@ table {
     font-family: courier;
     font-size:75%;
 }
-#submit {
+#shpConvertSubmit {
+	float:right;
+    margin: 10px 10px 10px 10px;
+    text-rendering: auto;
+    color: initial;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-transform: none;
+    text-indent: 0px;
+    text-shadow: none;
+    display: inline-block;
+    text-align: start;
+    font: 12px Arial;
+	border-radius: 12px;
+}
+#geo2TopoJSONSubmit {
 	float:right;
     margin: 10px 10px 10px 10px;
     text-rendering: auto;

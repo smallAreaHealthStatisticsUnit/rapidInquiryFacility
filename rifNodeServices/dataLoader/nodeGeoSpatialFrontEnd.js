@@ -124,22 +124,217 @@ function formSetup(formId, formName) {
 		
     }; 
 
-//	if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){
-//		options.iframe=true;		// This is to fix a spurious error Message:{"readyState":0,"responseText":"","status":0,"statusText":"error"} issues with firefox and ajax
-//									// Only
-//	}
+	if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){
+//		options.error=undefined;
+//		options.iframe=true;		// This was a potential fix a spurious error 
+									// Message:{"readyState":0,"responseText":"","status":0,"statusText":"error"} issues with firefox and ajax
+									// Only. Has no effect other than no upload status
+	}
 	
+	try {
     // bind form using 'ajaxForm' 
-//	try {
-		$('#' + formId).ajaxForm(options); 
-//	}
-//	catch (e) {
-//		console.error("Caught error in ajaxForm(" + formId + "): " + e.message);
-//	}
+//		$('#' + formId).ajaxForm(options); 
+
+
+		if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){
+			document.getElementById(formId + "Submit").addEventListener("click", function xMLHttpRequestSubmitForm(event) {
+				console.log("Event: " + formId + "Submit");
+				event.preventDefault();
+				submitFormXMLHttpRequest(formId, formName);
+		 
+				// !!! Important !!! 
+				// always return false to prevent standard browser submit and page navigation 
+				return false; 
+			});
+		}
+		else {
+// bind to the form's submit event 
+			$('#' + formId).submit(function ajaxSubmitForm() { 
+				// inside event callbacks 'this' is the DOM element so we first 
+				// wrap it in a jQuery object and then invoke ajaxSubmit 
+				$(this).ajaxSubmit(options); 
+		 
+				// !!! Important !!! 
+				// always return false to prevent standard browser submit and page navigation 
+				return false; 
+			}); 
+		}
+	
+	}
+	catch (e) {
+		document.getElementById("status").innerHTML = "Caught error in ajaxSubmit(" + formId + "): " + e.message + "\n" + e.stack;
+		console.error(document.getElementById("status").innerHTML);
+	}
 	
 	document.getElementById("status").innerHTML = formName + " form ready.";
 	console.log("Ready: " + formId);
 } 	
+
+/*
+ * Function: 	submitFormXMLHttpRequest()
+ * Parameters: 	output_type, formName
+ * Returns: 	Nothing
+ * Description:	Submit form button
+ */
+function submitFormXMLHttpRequest(output_type, formName) {
+	var files_elem=document.getElementById('files');
+	var verbose=document.getElementById('diagnostics').checked;
+	
+	var files = files_elem.files;
+	var fileno = 0;
+	var totalFileSize = 0;
+	var timeout = 600*1000 // 600,000 ms; 10 minutes
+	
+	var request = new XMLHttpRequest();
+    var formData = new FormData();
+	
+	nodeGeoSpatialFrontEndInit();
+	
+	if (files.length == 0) {
+		document.getElementById('status').innerHTML = "ERROR! No files selected, unable to upload.";
+		return;
+	}
+	
+
+	if (verbose) { // i.e. diagnostics
+		console.log('Verbose mode: ' + verbose);
+		formData.append('verbose', verbose);
+	}
+	formData.append('uuidV1', generateUUID()); // Random reference
+	
+	try {
+		request.open('POST', output_type);
+			// Process results
+	
+		request.onreadystatechange = function() {
+			
+			if (request.readyState == 1) { 
+				setStatus("Connected...");
+			}
+			else if (request.readyState == 2) { 
+				setStatus("Request received...");
+			}		
+			else if (request.readyState == 3) { 
+				setStatus("Processing request...");
+			}
+			else if (request.readyState == 4) {
+				var end=new Date().getTime();
+				var elapsed=(end - start)/1000; // in S
+			
+				if (request.response) {
+					setStatus("Processing response..."); 
+					displayResponse(request.response, request.status, formName);
+				}
+				else {
+					console.log("[" + elapsed + "] Ignoring null response"); 
+				}
+			}
+			else {		
+				setStatus("request.onreadystatechange() unknown state: " + request.readyState, "readyState error");
+			}
+		}
+		if (isIE() && request.timeout) {
+			request.timeout = timeout;
+			console.log('IE Timeout set: ' + timeout);
+		}
+		else {
+			request.timeout = timeout;
+			console.log('Timeout set: ' + timeout);
+		}
+		request.onabort = function onabortFunc() {
+			var end=new Date().getTime();
+			var elapsed=(end - start)/1000; // in S
+		
+			setStatus("Processing aborted after " + elapsed + " seconds", "timeout error");	
+		}
+		request.onerror = function onerrorFunc(e) {
+			var end=new Date().getTime();
+			var elapsed=(end - start)/1000; // in S
+			
+			if (e) {
+				setStatus("Processing had error after " + elapsed + " seconds", undefined, "Event: " + JSON.stringify(e, null, 4) +
+					"\nResponse headers: " + (request.getAllResponseHeaders() || "N/A") +
+					"\nResponse type: " + (request.responseType || "N/A (DomString)"), undefined);	
+			}
+			else {
+				setStatus("Processing had error after " + elapsed + " seconds", undefined, 
+					"Response headers: " + (request.getAllResponseHeaders() || "N/A") +
+					"\nResponse type: " + (request.responseType || "N/A (DomString)"), undefined);	
+			}
+		}
+		request.ontimeout = function ontimeoutFunc(e) {
+			setStatus("Processing timed out after " + (timeout/1000) + " seconds", "timeout error");	
+		}
+		
+	}
+	catch (e) {
+		setStatus("ERROR! Unable to open for post to: http://127.0.0.1:3000/" + output_type, e.message, undefined, e.stack);
+		return;
+	}
+	
+	// 
+	request.upload.onprogress = function(evt) {
+		var end=new Date().getTime();
+		var elapsed=(end - start)/1000; // in S
+			
+		if (evt.lengthComputable) {
+			var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+			if (percentComplete == 100) {
+				var end=new Date().getTime();
+				var elapsed=(end - start)/1000; // in S
+		
+				if (fileno != files.length) {
+					setStatus("Uploaded file " + fileno + "/" + files.length + ": " + 
+						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize));	
+				}
+				else {
+					setStatus("Uploaded all " + files.length + " files " + 
+						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize) + "; sending to server...");	
+				}
+			}
+			else {
+				document.getElementById('status').innerHTML = "Uploading file " + fileno + "/" + files.length + ": " + 
+					percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize);
+			}
+		}
+		else {
+			console.error("[" + elapsed + "] " + "ERROR! Uploading files: unable to compute percent complete", "UNKNOWN");
+		}
+	}	
+	// Process submitted files
+	for (var fileno = 0; fileno < files.length; ++fileno) {
+		var file=files[fileno];
+		if (file !== null) {
+				
+			var name = file.name;
+			var reader = new FileReader();
+			reader.onload = function(event) {
+				var arrayBuf = new Uint8Array(event.target.result);
+				var arrayIndex = 0;		  
+			}
+			reader.onerror = function(err) {
+				setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
+					name, err.message, undefined, err.stack); 		
+				return;
+			}
+			totalFileSize+=file.size;
+			formData.append('file[]', file, name);
+			console.log('Loading file [' + fileno + ']: ' + name + "; " + fileSize(file.size));	
+			
+			reader.readAsArrayBuffer(file);
+		}
+	}
+	try {			
+		setStatus("Sending to server...");
+		request.send(formData);	
+		return;
+	}
+	catch (e) {
+		setStatus("ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type, e.message, undefined, e.stack);
+		return;
+	}		
+//    request.sendAsBinary(formData); // Bad crash!!  
+}
 	
 /*
  * Function: 	updateSimplificationFactorInput()
@@ -404,11 +599,11 @@ function isIE() {
 	
 /*
  * Function: 	setStatus()
- * Parameters: 	Status message, error message (optional), diagnostic (optional)
+ * Parameters: 	Status message, error message (optional), diagnostic (optional), stack (optional)
  * Returns: 	Nothing
  * Description:	Set status. Optional error message raised as an exception to halt processing 
  */	
-function setStatus(msg, errm, diagnostic) {
+function setStatus(msg, errm, diagnostic, stack) {
 	if (document.getElementById("status").innerHTML != msg) {
 		var end=new Date().getTime();
 		var elapsed=(Math.round(end - start))/1000; // in S
@@ -424,11 +619,19 @@ function setStatus(msg, errm, diagnostic) {
 		}
 		else {
 			document.getElementById("status").innerHTML = "<h1>" + msg + "</h1><h2>Error message: " + errm + "</h2>";
+			if (stack) {
+				document.getElementById("status").innerHTML = 
+					document.getElementById("status").innerHTML + 
+					"<p>Stack:</br><pre>" + stack + "</pre></p>";
+				console.log("[" + elapsed + "] Stack: " + stack);
+			}
 			if (diagnostic) {
 				document.getElementById("status").innerHTML = 
 					document.getElementById("status").innerHTML + 
 					"<p>Processing diagnostic:</br><pre>" + diagnostic + "</pre></p>";
+				console.log("[" + elapsed + "] Diagnostic: " + diagnostic);
 			}
+			
 			throw new Error("[" + elapsed + "] " + msg + "; " + errm);
 		}
 	}
@@ -745,15 +948,20 @@ function displayResponse(responseText, status, formName) {
 	if (responseText != null && typeof responseText == 'object') { // Already JSON
 		response=responseText;
 	}
+	else if (responseText == undefined) {
+		setStatus("Send Failed, no response from server", undefined, "Status: " +
+			JSON.stringify(status, null, 4));
+	}
 	else { // Parse it
 		try {
 			response=JSON.parse(responseText);
 		} catch (e) {  
 			if (responseText) {
-				setStatus("Send Failed, error parsing response", e, responseText);
+				setStatus("Send Failed, error parsing response", e, responseText, e.stack);
 			}
 			else {		
-				setStatus("Send Failed, no response from server", e);
+				setStatus("Send Failed, no response from server", e, "Status: " +
+						JSON.stringify(status, null, 4), e.stack);
 			}
 			return;
 		}
