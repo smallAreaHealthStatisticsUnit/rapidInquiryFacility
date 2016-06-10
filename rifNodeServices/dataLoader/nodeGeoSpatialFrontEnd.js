@@ -295,10 +295,10 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	}	
 	formData.append('uuidV1', generateUUID()); // Random reference
 
-		// Display the key/value pairs
-	for(var pair of formData.entries()) {
-		console.log("Key: " + pair[0] + '='+ pair[1]); 
-	}
+	// Display the key/value pairs
+//	for (var pair of formData.entries()) { // Breaks in IE!
+//		console.log("Key: " + pair[0] + '='+ pair[1]); 
+//	}
 
 	try {
 		request.open('POST', output_type);
@@ -1587,7 +1587,7 @@ function uploadProgressHandler(event, position, total, percentComplete) {
 	if (percentComplete == 100 && position == total) {
 		var end=new Date().getTime();
 		uploadTime=(Math.round(end - start, 2))/1000; // in S
-		msg="Uploaded: " + percentComplete.toString() + '%; ' + fileSize(position) + "; took: " + uploadTime + " S";
+		msg="Uploaded: " + percentComplete.toString() + '%; ' + fileSize(position) + "; took: " + uploadTime + " S; sending request to server";
 	}
 	else {
 		msg="Uploading: " + percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
