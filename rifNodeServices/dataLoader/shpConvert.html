@@ -16,6 +16,7 @@
 	<script src="Control.Loading.js"></script>
 	<link rel="stylesheet" href="Control.Loading.css" />
 	<script type="text/javascript" src="sizeof.js"></script>
+	<script type="text/javascript" src="jszip.js"></script>
 		
     <script> 
 // wait for the DOM to be loaded 
@@ -41,7 +42,7 @@ $(document).ready(function documentReady() {
       </div>
       <div id="nav">
         <form id="shpConvert" action="http://127.0.0.1:3000/shpConvert" method="POST"
-              enctype="multipart/form-data">Select a file/files to upload: <input id="files" type="file" name="file" size="50" multiple="multiple" />
+              enctype="multipart/form-data">Select a file/files to upload: <input id="files" type="file" name="file_list" size="50" multiple="multiple" />
           &nbsp;Simplification factor: <input id="simplificationFactor" name="simplificationFactor" type="range" defaultValue="0.75" value="0.75" min="0.1" max="1" step="0.05" onchange="updateSimplificationFactorInput(this.value);" />
 		  <input type="text" id="simplificationFactorInput" value="0.75" readonly size="4">
 <!--

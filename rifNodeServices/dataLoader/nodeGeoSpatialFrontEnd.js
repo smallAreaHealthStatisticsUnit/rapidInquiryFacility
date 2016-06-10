@@ -51,7 +51,7 @@ var start;
 var uploadTime;
 var serverTime;
 var jsonAddLayerParamsArray=[];
-var fileCount=0;
+var initHtml;
 					
 // Extend Leaflet to use topoJSON
 L.topoJson = L.GeoJSON.extend({  
@@ -124,18 +124,33 @@ function formSetup(formId, formName) {
 		
     }; 
 
-	if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){
+//	if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){
 //		options.error=undefined;
 //		options.iframe=true;		// This was a potential fix a spurious error 
 									// Message:{"readyState":0,"responseText":"","status":0,"statusText":"error"} issues with firefox and ajax
 									// Only. Has no effect other than no upload status
-	}
+//	}
 	
 	try {
-    // bind form using 'ajaxForm' 
-//		$('#' + formId).ajaxForm(options); 
-
-
+		files_elem=document.getElementById('files'); // Set up file checker
+		var files = files_elem.files;
+	
+		function shpConvertInputHandler() {
+			var fileList = this.files;
+			
+			console.log("shpConvertInput() event files: " + JSON.stringify(fileList, null, 4));
+			shpConvertInput(fileList);
+		}
+		
+		files_elem.addEventListener("change", shpConvertInputHandler, false);
+		if  (files.length > 0) { // Already set
+			console.log("shpConvertInput() already set");
+			setTimeout(function() {
+				document.getElementById("status").innerHTML = document.getElementById("status").innerHTML + "<br>" + "Please wait for " + files.length + " file(s) to load";
+				shpConvertInput(files);
+			}, 500);
+		}
+		
 		if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){
 			document.getElementById(formId + "Submit").addEventListener("click", function xMLHttpRequestSubmitForm(event) {
 				console.log("Event: " + formId + "Submit");
@@ -166,9 +181,87 @@ function formSetup(formId, formName) {
 		console.error(document.getElementById("status").innerHTML);
 	}
 	
-	document.getElementById("status").innerHTML = formName + " form ready.";
+	document.getElementById("status").innerHTML = document.getElementById("status").innerHTML + "<br>" + formName + " form ready.";
+	initHtml=document.getElementById("status").innerHTML;
 	console.log("Ready: " + formId);
 } 	
+
+/*
+ * Function: 	shpConvertInput()
+ * Parameters: 	files object
+ * Returns: 	Nothing
+ * Description:	Lots
+ */
+function shpConvertInput(files) {
+	var totalFileSize=0;
+	
+	document.getElementById("status").innerHTML=initHtml;
+	// Process inputted files
+	for (var fileno = 0; fileno < files.length; ++fileno) {
+		var file=files[fileno];
+		if (file !== null) {
+				
+			var name = file.name;	
+			var ext = name.substring(name.lastIndexOf('.') + 1).toLowerCase();
+			var reader = new FileReader();
+			var savHtlml=document.getElementById("status").innerHTML;
+
+			if (ext == "zip") {				
+				document.getElementById("status").innerHTML =
+					savHtlml + '<br>Loading and unzipping file [' + (fileno+1) + ']: ' + name + "; " + fileSize(file.size);	
+			}
+			else {				
+				document.getElementById("status").innerHTML =
+					savHtlml + '<br>Loading file [' + (fileno+1) + ']: ' + name + "; " + fileSize(file.size);	
+			}
+
+			var lstart=new Date().getTime();				
+			reader.onloadend = function(event) {
+				var arrayBuf = new Uint8Array(event.target.result);
+				var arrayIndex = 0;		  
+				
+				if (ext == "zip") {					
+					var zip=new JSZip(arrayBuf, {} /* Options */);
+					var noZipFiles=0;
+					var totalUncompressedSize=0;
+					var zipMsg="";
+					for (var ZipIndex in zip.files) {
+						noZipFiles++;
+						var fileContainedInZipFile=zip.files[ZipIndex];
+						
+						if (fileContainedInZipFile.dir) {
+							zipMsg+="<br>Zip file[" + noZipFiles + "]: directory: " + fileContainedInZipFile.name;
+						}
+						else {
+							zipMsg+="<br>Zip file[" + noZipFiles + "]: file: " + fileContainedInZipFile.name + 
+								"; unzipped from: " + fileSize(fileContainedInZipFile._data.compressedSize) + " to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
+							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+						}
+					}
+					document.getElementById("status").innerHTML =
+						document.getElementById("status").innerHTML + '<br>Loaded and unzipped file: ' + name + 
+							"; from: " + fileSize(file.size) + " to: " + fileSize(totalUncompressedSize) + "; in: " + elapsed + " S" + zipMsg;	
+				}
+				else {
+					document.getElementById("status").innerHTML =
+						document.getElementById("status").innerHTML + '<br>Loaded file: ' + name + "; " + fileSize(file.size) + " in: " + elapsed + " S";	
+				}				
+			}
+			reader.onerror = function(err) {
+				setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
+					name, err, undefined, err.stack); 		
+				return;
+			}
+			totalFileSize+=file.size;
+			
+			reader.readAsArrayBuffer(file);
+			
+			var end=new Date().getTime();
+			var elapsed=(end - lstart)/1000; // in S			
+		}
+	} 
+	
+}
 
 /*
  * Function: 	submitFormXMLHttpRequest()
@@ -178,9 +271,9 @@ function formSetup(formId, formName) {
  */
 function submitFormXMLHttpRequest(output_type, formName) {
 	var files_elem=document.getElementById('files');
+	var files = files_elem.files;
 	var verbose=document.getElementById('diagnostics').checked;
 	
-	var files = files_elem.files;
 	var fileno = 0;
 	var totalFileSize = 0;
 	var timeout = 600*1000 // 600,000 ms; 10 minutes
@@ -202,31 +295,6 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	}	
 	formData.append('uuidV1', generateUUID()); // Random reference
 
-		// Process submitted files
-		/*
-	for (var fileno = 0; fileno < files.length; ++fileno) {
-		var file=files[fileno];
-		if (file !== null) {
-				
-			var name = file.name;
-			var reader = new FileReader();
-			reader.onload = function(event) {
-				var arrayBuf = new Uint8Array(event.target.result);
-				var arrayIndex = 0;		  
-			}
-			reader.onerror = function(err) {
-				setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
-					name, err, undefined, err.stack); 		
-				return;
-			}
-			totalFileSize+=file.size;
-			formData.append('file[]', file, name);
-			console.log('Loading file [' + fileno + ']: ' + name + "; " + fileSize(file.size));	
-			
-			reader.readAsArrayBuffer(file);
-		}
-	} */
-	
 		// Display the key/value pairs
 	for(var pair of formData.entries()) {
 		console.log("Key: " + pair[0] + '='+ pair[1]); 
@@ -355,7 +423,7 @@ function checkRequest(formData, jqForm, options) {
 	options.data.uuidV1=generateUUID();
 	console.log("uuidV1: " + options.data.uuidV1);
 	var queryString = $.param(formData); 
-
+	var fileCount=0;
 		
 /*
 formData: Array[4]

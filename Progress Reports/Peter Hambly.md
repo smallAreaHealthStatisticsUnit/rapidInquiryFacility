@@ -462,9 +462,11 @@ RangeError: Invalid string length
 * Add legend, fixed timings
 * Firefox bug traced to: Bug 1274010 - xmlhttprequest post randomly failing - https://bugzilla.mozilla.org/show_bug.cgi?id=1274010
   Do not use Firefox 47.0. ^ hours to trace and clear Ajax.
+* Added file list load and unzip (start of support for XML config file)
 
 #### Current TODO list (June):
 
+* Add support for XML config file so shpConvert can do all processing without further input; Area_id and description support; .SHP.EA.ISO.XML 
 * Default geolevel_name, area_id, area_name
 * Add all fields to topojson
 * Add geolevel, goelevel name to legend
@@ -482,7 +484,6 @@ RangeError: Invalid string length
 
 * Replace traditional html with JQuery-UI
 * Add convertedTopojson array meta data to topojson config
-* Add support for XML config file so shpConvert can do all processing without further input; Area_id and description support; .SHP.EA.ISO.XML 
 * Database connection; clean, check OK and ST_Union(); area support [and checks]; PK support 
   ST_Union can be done in geoJSON using turf: as it is a geomtery collection. Also check wellknown] 	
 * Add area_id and id uniqueness tests to shapefile checks and tests
