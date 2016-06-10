@@ -186,27 +186,57 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	var timeout = 600*1000 // 600,000 ms; 10 minutes
 	
 	var request = new XMLHttpRequest();
-    var formData = new FormData();
+    var formData = new FormData(document.getElementById(output_type));
 	
 	nodeGeoSpatialFrontEndInit();
 	
 	if (files.length == 0) {
-		document.getElementById('status').innerHTML = "ERROR! No files selected, unable to upload.";
+		document.getElementById("status").innerHTML = "<h1>No files selected</h1>"
+		console.log("FATAL! No files selected");
 		return;
 	}
 	
-
 	if (verbose) { // i.e. diagnostics
 		console.log('Verbose mode: ' + verbose);
 		formData.append('verbose', verbose);
-	}
+	}	
 	formData.append('uuidV1', generateUUID()); // Random reference
+
+		// Process submitted files
+		/*
+	for (var fileno = 0; fileno < files.length; ++fileno) {
+		var file=files[fileno];
+		if (file !== null) {
+				
+			var name = file.name;
+			var reader = new FileReader();
+			reader.onload = function(event) {
+				var arrayBuf = new Uint8Array(event.target.result);
+				var arrayIndex = 0;		  
+			}
+			reader.onerror = function(err) {
+				setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
+					name, err, undefined, err.stack); 		
+				return;
+			}
+			totalFileSize+=file.size;
+			formData.append('file[]', file, name);
+			console.log('Loading file [' + fileno + ']: ' + name + "; " + fileSize(file.size));	
+			
+			reader.readAsArrayBuffer(file);
+		}
+	} */
 	
+		// Display the key/value pairs
+	for(var pair of formData.entries()) {
+		console.log("Key: " + pair[0] + '='+ pair[1]); 
+	}
+
 	try {
 		request.open('POST', output_type);
 			// Process results
 	
-		request.onreadystatechange = function() {
+		request.onreadystatechange = function onreadystatechangeFunc() {
 			
 			if (request.readyState == 1) { 
 				setStatus("Connected...");
@@ -230,9 +260,10 @@ function submitFormXMLHttpRequest(output_type, formName) {
 				}
 			}
 			else {		
-				setStatus("request.onreadystatechange() unknown state: " + request.readyState, "readyState error");
+				setStatus("request.onreadystatechange() unknown state: " + request.readyState, new Error("readyState error"));
 			}
 		}
+		
 		if (isIE() && request.timeout) {
 			request.timeout = timeout;
 			console.log('IE Timeout set: ' + timeout);
@@ -241,12 +272,14 @@ function submitFormXMLHttpRequest(output_type, formName) {
 			request.timeout = timeout;
 			console.log('Timeout set: ' + timeout);
 		}
+		
 		request.onabort = function onabortFunc() {
 			var end=new Date().getTime();
 			var elapsed=(end - start)/1000; // in S
 		
-			setStatus("Processing aborted after " + elapsed + " seconds", "timeout error");	
+			setStatus("Processing aborted after " + elapsed + " seconds", new Error("timeout error"));	
 		}
+		
 		request.onerror = function onerrorFunc(e) {
 			var end=new Date().getTime();
 			var elapsed=(end - start)/1000; // in S
@@ -262,75 +295,38 @@ function submitFormXMLHttpRequest(output_type, formName) {
 					"\nResponse type: " + (request.responseType || "N/A (DomString)"), undefined);	
 			}
 		}
-		request.ontimeout = function ontimeoutFunc(e) {
+		request.ontimeout = function ontimeoutFunc(evt) {
 			setStatus("Processing timed out after " + (timeout/1000) + " seconds", "timeout error");	
 		}
 		
 	}
 	catch (e) {
-		setStatus("ERROR! Unable to open for post to: http://127.0.0.1:3000/" + output_type, e.message, undefined, e.stack);
+		setStatus("ERROR! Unable to open for post to: http://127.0.0.1:3000/" + output_type, e, undefined, e.stack);
 		return;
 	}
 	
 	// 
-	request.upload.onprogress = function(evt) {
+	request.upload.onprogress = function onprogressFunc(evt) {
+		
 		var end=new Date().getTime();
 		var elapsed=(end - start)/1000; // in S
 			
 		if (evt.lengthComputable) {
 			var percentComplete = Math.round(evt.loaded * 100 / evt.total);
-			if (percentComplete == 100) {
-				var end=new Date().getTime();
-				var elapsed=(end - start)/1000; // in S
-		
-				if (fileno != files.length) {
-					setStatus("Uploaded file " + fileno + "/" + files.length + ": " + 
-						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize));	
-				}
-				else {
-					setStatus("Uploaded all " + files.length + " files " + 
-						percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize) + "; sending to server...");	
-				}
-			}
-			else {
-				document.getElementById('status').innerHTML = "Uploading file " + fileno + "/" + files.length + ": " + 
-					percentComplete.toString() + '%' + "; total: " + fileSize(totalFileSize);
-			}
+			uploadProgressHandler(evt, evt.loaded, evt.total, percentComplete);
 		}
 		else {
-			console.error("[" + elapsed + "] " + "ERROR! Uploading files: unable to compute percent complete", "UNKNOWN");
+			setStatus("[" + elapsed + "] " + "ERROR! Uploading files: unable to compute percent complete", new Error("UNKNOWN error in onprogressFunc()"));
 		}
 	}	
-	// Process submitted files
-	for (var fileno = 0; fileno < files.length; ++fileno) {
-		var file=files[fileno];
-		if (file !== null) {
-				
-			var name = file.name;
-			var reader = new FileReader();
-			reader.onload = function(event) {
-				var arrayBuf = new Uint8Array(event.target.result);
-				var arrayIndex = 0;		  
-			}
-			reader.onerror = function(err) {
-				setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
-					name, err.message, undefined, err.stack); 		
-				return;
-			}
-			totalFileSize+=file.size;
-			formData.append('file[]', file, name);
-			console.log('Loading file [' + fileno + ']: ' + name + "; " + fileSize(file.size));	
-			
-			reader.readAsArrayBuffer(file);
-		}
-	}
+
 	try {			
 		setStatus("Sending to server...");
 		request.send(formData);	
 		return;
 	}
 	catch (e) {
-		setStatus("ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type, e.message, undefined, e.stack);
+		setStatus("ERROR! Unable to post to: http://127.0.0.1:3000/" + output_type, e, undefined, e.stack);
 		return;
 	}		
 //    request.sendAsBinary(formData); // Bad crash!!  
@@ -358,8 +354,9 @@ function checkRequest(formData, jqForm, options) {
 		 	
 	options.data.uuidV1=generateUUID();
 	console.log("uuidV1: " + options.data.uuidV1);
-	
-    var queryString = $.param(formData); 
+	var queryString = $.param(formData); 
+
+		
 /*
 formData: Array[4]
 0:
@@ -599,14 +596,18 @@ function isIE() {
 	
 /*
  * Function: 	setStatus()
- * Parameters: 	Status message, error message (optional), diagnostic (optional), stack (optional)
+ * Parameters: 	Status message, error object (optional), diagnostic (optional), alternate stack (optional)
  * Returns: 	Nothing
  * Description:	Set status. Optional error message raised as an exception to halt processing 
  */	
-function setStatus(msg, errm, diagnostic, stack) {
+function setStatus(msg, err, diagnostic, stack) {
 	if (document.getElementById("status").innerHTML != msg) {
 		var end=new Date().getTime();
 		var elapsed=(Math.round(end - start))/1000; // in S
+		var errm
+		if (err) {
+			errm=err.message;
+		}
 		
 		if (!errm) {
 			document.getElementById("status").innerHTML = msg;
@@ -624,6 +625,12 @@ function setStatus(msg, errm, diagnostic, stack) {
 					document.getElementById("status").innerHTML + 
 					"<p>Stack:</br><pre>" + stack + "</pre></p>";
 				console.log("[" + elapsed + "] Stack: " + stack);
+			}
+			else if (err && err.stack) {
+				document.getElementById("status").innerHTML = 
+					document.getElementById("status").innerHTML + 
+					"<p>Stack:</br><pre>" + err.stack + "</pre></p>";
+				console.log("[" + elapsed + "] err.Stack: " + stack);
 			}
 			if (diagnostic) {
 				document.getElementById("status").innerHTML = 
@@ -949,7 +956,7 @@ function displayResponse(responseText, status, formName) {
 		response=responseText;
 	}
 	else if (responseText == undefined) {
-		setStatus("Send Failed, no response from server", undefined, "Status: " +
+		setStatus("Send Failed, no response from server", new Error("no response from server"), "Status: " +
 			JSON.stringify(status, null, 4));
 	}
 	else { // Parse it
