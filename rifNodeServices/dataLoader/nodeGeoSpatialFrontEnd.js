@@ -217,6 +217,10 @@ function shpConvertInput(files) {
 
 			var lstart=new Date().getTime();				
 			reader.onloadend = function(event) {
+					
+				var end=new Date().getTime();
+				var elapsed=(end - lstart)/1000; // in S			
+			
 				var arrayBuf = new Uint8Array(event.target.result);
 				var arrayIndex = 0;		  
 				
@@ -228,13 +232,35 @@ function shpConvertInput(files) {
 					for (var ZipIndex in zip.files) {
 						noZipFiles++;
 						var fileContainedInZipFile=zip.files[ZipIndex];
+						var zipExt = fileContainedInZipFile.name.substring(fileContainedInZipFile.name.indexOf('.', 1) + 1).toLowerCase();
+						var zipName = fileContainedInZipFile.name.substring(fileContainedInZipFile.name.lastIndexOf('/') + 1).toLowerCase();
 						
 						if (fileContainedInZipFile.dir) {
-							zipMsg+="<br>Zip file[" + noZipFiles + "]: directory: " + fileContainedInZipFile.name;
+							zipMsg+="<br>Zip [" + noZipFiles + "]: directory: " + fileContainedInZipFile.name;
+						}
+						else if (zipExt == 'shp.ea.iso.xml') {
+							zipMsg+="<br>Zip [" + noZipFiles + "]: " + zipName + 
+								"; ESRI extended attributes file";
+							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+						}
+						else if (zipExt == 'shp') {
+							unzipPct=Math.round(fileContainedInZipFile._data.uncompressedSize*100/fileContainedInZipFile._data.compressedSize)
+							zipMsg+="<br>Zip [" + noZipFiles + "]: shapefile file: " + zipName + 
+								"; expanded: " + unzipPct + 
+								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
+							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+						}
+						else if (zipExt == 'dbf') {
+							unzipPct=Math.round(fileContainedInZipFile._data.uncompressedSize*100/fileContainedInZipFile._data.compressedSize)
+							zipMsg+="<br>Zip [" + noZipFiles + "]: dBase file: " + zipName + 
+								"; expanded: " + unzipPct + 
+								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
+							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
 						}
 						else {
-							zipMsg+="<br>Zip file[" + noZipFiles + "]: file: " + fileContainedInZipFile.name + 
-								"; unzipped from: " + fileSize(fileContainedInZipFile._data.compressedSize) + " to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
+//							zipMsg+="<br>Zip file[" + noZipFiles + "]: file: " + zipName + 
+//								"; expanded: " + unzipPct + 
+//								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize) + "; extension: " + zipExt;
 							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
 						}
 					}
@@ -256,8 +282,6 @@ function shpConvertInput(files) {
 			
 			reader.readAsArrayBuffer(file);
 			
-			var end=new Date().getTime();
-			var elapsed=(end - lstart)/1000; // in S			
 		}
 	} 
 	
