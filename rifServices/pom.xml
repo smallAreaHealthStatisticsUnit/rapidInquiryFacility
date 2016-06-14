@@ -11,15 +11,24 @@
   <groupId>rapidInquiryFacility</groupId>
   <artifactId>rifServices</artifactId>
   
-  <!--
+
   <packaging>war</packaging>
-  -->
+
+  
+  <!--
   <packaging>jar</packaging>
+   -->
   
   <name>RIF Middleware</name>
   <url>https://localhost:8443</url>
   <description>Contains the code for the middleware used by the tools of the RIF Tool Suite</description>
   <dependencies>
+
+	<dependency>
+    	<groupId>javax.mail</groupId>
+    	<artifactId>mail</artifactId>
+    	<version>1.4</version>
+	</dependency>
 
 	<dependency>
     	<groupId>org.apache.commons</groupId>
@@ -137,5 +146,9 @@
 
   	</dependencies>
   </dependencyManagement>
+  
+  <build>
+  <finalName>rifServices</finalName>
+  </build>
   
 </project>
