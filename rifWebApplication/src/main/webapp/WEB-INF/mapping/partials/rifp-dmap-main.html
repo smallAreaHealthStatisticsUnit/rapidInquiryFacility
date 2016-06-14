@@ -1,0 +1,120 @@
+<!-- 
+HTML partial for ui-router
+Mapping
+-->
+
+<link href="css/diseaseMapping.css" rel="stylesheet" media="screen" />
+
+<div id="navigation">
+    <div class='logOutUsername'> 
+        <a class="userName" href='#'> </a><span id="logOut"> log out </span>
+    </div>
+    <div class='nav'>
+        <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Test</a>
+        <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
+        <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
+        <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
+    </div>
+</div>
+
+
+<div id="buttons">
+    <div class='export'>
+        <a href='#'>Export</a>
+    </div>
+    <div class='geoDropsMapping'>
+        <div>
+            <div id='studyId'>
+                <div>Study:</div>
+                <select>
+                    <option>.</option>
+                </select>
+            </div>
+        </div>
+        <div id='invId'>
+            <div>Investigation:</div>
+            <select>
+                <option>.</option>
+            </select>
+        </div>
+        <div id='Resultset'>
+            <div>Result set:</div>
+            <select>
+                <option>.</option>
+            </select>
+        </div>
+        <div id='gendersAvailable'>
+            <div>Gender:</div>
+            <select>
+                <option>.</option>
+            </select>
+        </div>
+        <div id='yearsAvailable'>
+            <div>Years:</div>
+            <select>
+                <option>.</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div ui-layout="{flow : 'column'}" ng-controller ="DiseaseMappingCtrl2">
+    <div ui-layout-container class="html-back" size="25%">
+        <div class='chartOpts'>
+            <div id="studyLabel">
+                <h1 > Study Id  </h1>
+                <h2 id="invLabel" > Inv id  </h2>
+            </div>
+        </div>
+        <div id='studyInfo'>
+            <ul class="resultFigures">
+                <li class="riskFigures"> 
+                    <ul >
+                        <li class="listHeader"> Result figures </li>
+                        <li id='areaLevel' >Area level:<span class="figure">n/a</span></li>	
+                        <li id='totDenom'  >Population:<span class="figure">n/a</span></li>		
+                        <li id='observed' >Observed:<span class="figure">n/a</span></li> 
+                        <li id='expected' >Expected:<span class="figure">n/a</span></li> 
+
+                    </ul>	
+                </li> 
+                <li class="investigationFigures">
+                    <ul>
+                        <li class="listHeader"> Investigation info </li>
+                        <li id='nAreas' >Number of areas:<span class="figure">0.67</span></li>
+                        <li id='covariate' >Covariate adj:<span class="figure">0.67</span></li>
+                        <li id='ageGroup' >Age groups:<span class="figure">0.67</span></li>
+                        <li id='year' >Year(s):<span class="figure">0.67</span></li>
+                    </ul>	
+                </li>	
+            </ul>
+        </div>
+        <div id='mAreaCharts' ng-controller ="DiseaseMappingCtrl2">          
+            <bars-chart chart-data="myData" ></bars-chart>
+        </div>
+    </div>
+    <div ui-layout-container> 
+        <div ui-layout="{flow : 'row'}" >
+            <div ui-layout-container size="75%" class="leaflet-box">
+                <div id="submenuMapping" ng-controller ="DiseaseMappingCtrl">
+                    <div>
+                        <div class='mapOpts'>
+                            <a ng-controller="ChoroplethModalCtrl" ng-click="open()"class='mapOpt' id="choroplethBtn" title="Choropleth map"></a>
+                            <a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap')" class='mapOpt' id="baseMapBtn" title="Base map"></a>	
+                            <a href='#' class='mapOpt' id="clearSelection" title="Clear selection"></a>
+                            <a href='#' class='mapOpt' id="zoomExtent" title="Zoom to extent"></a>
+                            <input type="range" min="0" max="1" step="0.01" value ="0.7"/>
+                        </div>
+                        <a href='#' rel='leanModal' class='settings' title="Settings" id='settingsButton'>
+                            <img src="images/settings.png" alt="settings">
+                        </a>
+                    </div>
+                </div>               
+                <leaflet id="diseasemap" tiles="tiles" width="100%" height="calc(100% - 40px)"></leaflet>     
+            </div>
+            <div ui-layout-container class="js-back" >RR_D3_CHART
+
+            </div>
+        </div>
+    </div>
+</div>

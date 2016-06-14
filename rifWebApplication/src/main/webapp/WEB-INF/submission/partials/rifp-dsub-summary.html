@@ -1,0 +1,19 @@
+<!-- 
+HTML partial for ui-router
+Disease submission modal model summary
+-->
+<div class="modal-body" ng-controller="ModalSummaryCtrl">
+    <div class="msettings">
+        <div class="msettings-ct">
+            <div class="msettings-header">
+                <h2>Study Summary</h2>
+                <a class="modal_close" ng-click="close()"></a>
+            </div>
+            <div class='modalContainer'>
+                <div class="modelViewer">
+                    <pre>{{summary| json}}</pre>         
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

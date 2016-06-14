@@ -1,0 +1,44 @@
+<div class="msettings" ng-controller="ChoroplethModalCtrl">
+    <div class="msettings-ct">
+        <div class="msettings-header">
+            <h2> Choropleth map symbology </h2>
+            <a class="modal_close" ng-click="close()"></a>
+        </div>
+        <form>
+            <div class="brewerswatch-ct">
+                <span class="brewerswatch" ng-repeat="colour in selectedScheme" ng-style="{'background': colour, 'width': (360 / selectedN) + 'px'}"></span>
+            </div>
+            <div class="txt-fld">
+                <label for="colourScale"> Colour scale:</label>
+                <select ng-style="{'text-transform': 'none'}" id='colourScale' ng-options="s for s in mySchemes" ng-model="selectedSchemeName" ng-change="renderSwatch()"></select>
+                <div class='invertWrapper'>
+                    <input type="checkbox" name="inverter" id="invertColors" ng-model="checkboxInvert" ng-change="invertColours()"> 
+                    <label for = "invertColors" id="invertColorsLabel"> Invert </label>
+                </div>
+            </div>
+            <div class="txt-fld">
+                <label for="fieldToMap"> Field to Map:</label>
+                <select id='fieldToMap'></select>
+            </div>
+            <div class="txt-fld">
+                <label for="intervals">Intervals:</label>
+                <select id='intervals' ng-options="n for n in intervalRange" ng-model="selectedN" ng-init="selectedN" ng-change="renderSwatch()" ></select>
+            </div>
+            <div class="txt-fld">
+                <label for="classification">Classification:</label>
+                <select id='classification'>
+                    <option value='quantile'>Quantile</option>
+                    <option value='jenks'>Jenks</option>
+                    <option value='standardDeviation'> Standard Deviation</option>
+                    <option value='logarithmic'>Logarithmic</option>
+                </select>
+                <div class="editBreaks"><a href='#'> edit </a> </div>
+                <div id="breaks"></div>
+            </div>
+
+            <div class="save-fld">
+                <input type="button" value="Apply" ng-click="apply()">
+            </div>
+        </form>
+    </div>
+</div>

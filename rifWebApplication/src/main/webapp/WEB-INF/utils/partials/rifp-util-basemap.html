@@ -1,0 +1,25 @@
+<div class="msettings" ng-controller="BaseMapModalCtrl">
+    <div class="msettings-ct">
+        <div class="msettings-header">
+            <h2>Base Map settings</h2>
+            <a class="modal_close" ng-click="close()"></a>
+        </div>
+        <form>
+            <div class="save-basemap">
+                <input type="checkbox" name="basemap" ng-model="checkboxBaseMap" ng-change="setNoBaseMapCheck(checkboxBaseMap)"> 
+                <label for = "nobasemap"> No basemap </label>
+            </div>
+            <div class="txt-fld" id="basemapselector">
+                <label for="fldSlct">Base map provider</label>
+                <select id='baseMapSlct' ng-model="selectedBaseMap" ng-change="setSelected(selectedBaseMap)" ng-init="selectedBaseMap">
+                    <option ng-repeat="layer in myBaseMaps" value="{{layer}}" >     
+                        {{layer}}
+                    </option>
+                </select>
+            </div>
+            <div class="save-basemap" id="savebasemap">
+                <input ng-click="apply()" type="button" value="Apply">
+            </div>
+        </form>
+    </div>
+</div>

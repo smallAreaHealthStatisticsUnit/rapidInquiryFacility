@@ -1,0 +1,57 @@
+<!-- 
+HTML partial for ui-router
+Disease submission modal study areas (tree #1)
+-->
+<div class="msettings" ng-controller="ModalStatsCtrl">
+    <div class="msettings-ct">
+        <div class="msettings-header">
+            <h2>Bayes Smoothing</h2>
+            <a class="modal_close" ng-click="close()"></a>
+        </div>       
+
+        <div class = "statsInfo">
+            <div class='done' style='' id='statDone' ng-click="submit()"><a>Done</a> </div>
+            <h2>Default</h2>
+            <p> Directly standardised rates, Relative risk ratios, Empirical Bayes </p>
+        </div>
+
+        <div class = "statsInfo">
+            <h2>Optional</h2>
+            <!--<div> Include  spatial smoothing to your analysis by selecting the Bayesian model(s) of interest below. 
+                Prior specification Independent inverse gamma IGamma(0.5,0.0005) priors are assigned to the model parameters &delta;_u^2 and &delta;_v^2. 
+            </div>-->
+            <div id="modelsList" class="modelsAvailable">
+                <form>
+                    <div>
+                        <input ng-model="input.checked" type="radio" name="bayes" value="1" id="bym">
+                        <label for="bym">BYM (bym): Besag, York and Mollie Model</label>
+                    </div>
+                    <div>
+                        <input ng-model="input.bym_c" type="number" id="bym_c"/>
+                        <label for="bym_c">c</label>
+                    </div>
+                    <div>
+                        <input ng-model="input.checked" type="radio" name="bayes" value="2" id="het">
+                        <label for="het">HET (iid): Heterogenous</label>
+                    </div>
+                    <div>
+                        <input ng-model="input.het_a" type="number" id="het_a"/>
+                        <label for="het_a">a</label><br>
+                        <input ng-model="input.het_b" type="number" id="het_b"/>
+                        <label for="het_b">b</label>
+                    </div>
+                    <div>
+                        <input ng-model="input.checked" type="radio" name="bayes" value="3" id="car">
+                        <label for="car">CAR (besag): Conditional autoregressive</label>
+                    </div>
+                    <div>
+                        <input ng-model="input.car_a" type="number" id="car_a"/>
+                        <label for="car_a">a</label>
+                        <a class = "statsManual" href='#' >Statistical Manual </a>
+                    </div>
+                </form>
+            </div>
+        </div> 
+    </div>       
+</div>
+

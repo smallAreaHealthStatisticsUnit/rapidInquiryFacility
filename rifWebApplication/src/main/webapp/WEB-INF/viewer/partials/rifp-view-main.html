@@ -1,0 +1,87 @@
+<!-- 
+HTML partial for ui-router
+Viewer
+-->
+<link href="css/diseaseMapping.css" rel="stylesheet" media="screen" />
+
+<div id="navigation">
+    <div class='logOutUsername'> 
+        <a class="userName" href='#'> </a><span id="logOut"> log out </span>
+    </div>
+    <div class='nav'>
+        <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Test</a>
+        <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
+        <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
+        <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
+    </div>
+</div>
+
+<div id="buttons">
+    <div class='export'>
+        <a href='#'>Export</a>
+    </div>
+    <div class='geoDropsMapping'>
+        <div>
+            <div id='geolevel'>
+                <div>Geolevel:</div>
+                <select>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                </select>
+            </div>
+        </div>
+        <div id='dataSet'>
+            <div>Data set:</div>
+            <select>
+                <option></option>
+            </select>
+        </div>
+        <div id='zoomTo'>
+            <div>Zoom to:</div>
+            <select>
+                <option></option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div ui-layout="{flow : 'column'}" ng-controller="ViewerCtrl2">
+    <div ui-layout-container size="33%"> 
+        <div ui-layout="{flow : 'row'}" >
+            <div ui-layout-container class="js-back">                             
+                ULSRR
+            </div>
+            <div ui-layout-container class="js-back" size="66%">POPULATION
+
+
+            </div>
+        </div>
+    </div>
+
+    <div ui-layout-container> 
+        <div ui-layout="{flow : 'row'}" >
+            <div ui-layout-container class="leaflet-box">            
+                <div id="submenuMapping" ng-controller="ViewerCtrl">
+                    <div>
+                        <div class='mapOpts'>
+                            <a ng-controller="ChoroplethModalCtrl" ng-click="open()"class='mapOpt' id="choroplethBtn" title="Choropleth map"></a>
+                            <a ng-controller="BaseMapModalCtrl" ng-click="open('viewermap')" class='mapOpt' id="baseMapBtn" title="Base map"></a>	
+                            <a href='#' class='mapOpt' id="clearSelection" title="Clear selection"></a>
+                            <a href='#' class='mapOpt' id="zoomExtent" title="Zoom to extent"></a>
+                            <input type="range" min="0" max="1" step="0.01" value ="0.7"/>
+                        </div>
+                        <a href='#' rel='leanModal' class='settings' title="Settings" id='settingsButton'>
+                            <img src="images/settings.png" alt="settings">
+                        </a>
+                    </div>
+                </div>    
+                <leaflet id="viewermap" tiles="tiles" width="100%" height="calc(100% - 40px)"></leaflet>  
+            </div>
+            <div ui-layout-container class="js-back">DATA TABLE
+            </div>
+        </div>
+    </div>
+</div>

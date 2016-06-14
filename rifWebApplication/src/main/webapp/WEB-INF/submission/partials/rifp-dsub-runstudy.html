@@ -1,0 +1,22 @@
+<!-- 
+HTML partial for ui-router
+Disease submission modal to run study
+-->
+<div class="msettingsMedium" ng-controller="ModalRunCtrl">
+    <div class="msettings-ct">
+        <div class="msettings-header">
+            <h2>Run study</h2>
+            <a class="modal_close" ng-click="close()"></a>
+        </div>       
+        <div class='modalContainer runDialog'>
+            <a ng-controller="ModalSummaryCtrl" class='viewSummary' ng-click="open()">View study submission summary </a>
+            <div class='runMenu'>
+                <div id='studyOptions' >
+                    <input ng-model="input.name" ng-change="updateModel()" type="text"  placeholder="Project" id='projectCode' class='dropdownInput editable'>
+                    <textarea ng-model="input.description" ng-change="updateModel()" name='description' id='studyDescription' class='description' placeholder="STUDY DESCRIPTION(optional)"></textarea>   
+                    <button  id='finalRun' class='myButton'> RUN </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

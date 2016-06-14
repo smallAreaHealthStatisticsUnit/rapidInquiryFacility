@@ -1,0 +1,87 @@
+<rif_health_code_provider>
+
+<provider_information>
+<provider_name>OurICD10Provider</provider_name>
+<provider_description>Provides a few ICD10 codes.</provider_description>
+<provider_name_space>icd10</provider_name_space>
+<provider_version>1.0</provider_version>
+</provider_information>
+
+<terms>
+	<term>
+		<term_name>Chapter 02</term_name>
+		<term_description>Chapter 02; Neoplasms</term_description>
+		<term>
+			<term_name>C34</term_name>
+			<term_description>malignant neoplasm of bronchus and lung</term_description>
+			<term>
+				<term_name>C340</term_name>
+				<term_description>main bronchus</term_description>
+			</term>
+			<term>
+				<term_name>C341</term_name>
+				<term_description>upper lobe, bronchus or lung</term_description>
+			</term>
+			<term>
+				<term_name>C342</term_name>
+				<term_description>middle lobe, bronchus or lung</term_description>
+			</term>		
+		</term>
+				
+		<term>
+			<term_name>C81</term_name>
+			<term_description>Hodgkin's disease</term_description>
+			<term>
+				<term_name>C810</term_name>
+				<term_description>lymphocytic predominance</term_description>
+			</term>
+			<term>
+				<term_name>C812</term_name>
+				<term_description>mixed cellularity</term_description>
+			</term>
+			<term>
+				<term_name>C813</term_name>
+				<term_description>lympocytic depletion</term_description>
+			</term>		
+		</term>
+	</term>
+	
+	<term>
+		<term_name>Chapter 10</term_name>
+		<term_description>Chapter 10; Diseases of the respiratory system</term_description>
+		<term>
+			<term_name>J20</term_name>
+			<term_description>Acute bronchitis</term_description>
+			<term>
+				<term_name>J206</term_name>
+				<term_description>Acute bronchitis due to rhinovirus</term_description>
+			</term>
+			<term>
+				<term_name>J207</term_name>
+				<term_description>Acute bronchitis due to echovirus</term_description>
+			</term>
+			<term>
+				<term_name>J209</term_name>
+				<term_description>Acute bronchitis, unspecified</term_description>
+			</term>		
+		</term>
+				
+		<term>
+			<term_name>J45</term_name>
+			<term_description>Asthma</term_description>
+			<term>
+				<term_name>J450</term_name>
+				<term_description>Predominantly allergic asthma</term_description>
+			</term>
+			<term>
+				<term_name>J451</term_name>
+				<term_description>Nonallergenic asthma</term_description>
+			</term>
+			<term>
+				<term_name>J458</term_name>
+				<term_description>Mixed asthma</term_description>
+			</term>		
+		</term>
+	</term>	
+</terms>
+</rif_health_code_provider>

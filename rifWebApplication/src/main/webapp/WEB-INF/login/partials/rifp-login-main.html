@@ -1,0 +1,48 @@
+<!--
+HTML partial for ui-router
+Login menu
+-->
+<div class="world"></div>
+<div class ="login-box">       
+    <div class="msettings">
+        <div class="msettings-ct">
+            <div class="msettings-header">
+                <h2>Rapid Inquiry Facility: RIF4</h2>
+            </div>
+            <form ng-controller="MainCtrl as main">
+                <div class="txt-fld">
+                    <input type="text" placeholder="User name" id="username"  class='dropdownInput username'/>
+                    <input type="password" placeholder="Password" id="password"  class='dropdownInput password' />
+                </div>
+                <div class="save-fld-settings">
+                    <input type="button" value="log in" class='login' id='logInBtn' ui-sref="state1">
+                    <button ng-click="main.login()">Login</button>
+                    <button ng-click="main.isAuthed()">Check Auth</button>
+                </div>
+            </form>
+        </div>
+    </div>        
+</div>
+
+<div id='footer'>
+    <div class="authors">
+        <p class='footerHeadings'>Developed by </p>
+        <p ><a href='http://www.sahsu.org/' target="_blank" >The Small Area Health Statistic Unit</a></p>
+        <p ><a href='http://www.imperial.ac.uk/' target="_blank" >Imperial College London </a></p>
+    </div>    
+    <div class="collaborators">
+        <p class='footerHeadings'> Funded by </p>
+        <p ><a href='http://www.cdc.gov/' target="_blank" >The US Centers for Disease Control and Prevention (CDC) </a></p>
+        <p ><a href='http://www.nihr.ac.uk/' target="_blank" >The National Institute for Health Research Health Protection Research Unit </a> </p>
+    </div>  
+    <div class="otherContributors">
+        <p class='footerHeadings'> Contributors </p>
+        <p ><a href='http://ec.europa.eu/' target="_blank" >The European commission has supported previous RIF versions </a></p>
+        <p ><a href='https://www.gov.uk/government/organisations/public-health-england' target="_blank" >Public Health England (PHE) </a> </p>
+    </div>  
+    <div class="licence">
+        <p class='footerHeadings'> Technical </p>
+        <p ><a href='https://www.gnu.org/licenses/gpl-2.0.html#SEC1' target="_blank" >  GNU General Public License</a></p>
+        <p><a href='https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility' target="_blank" > GitHub code repository </a></p>
+    </div> 
+</div>

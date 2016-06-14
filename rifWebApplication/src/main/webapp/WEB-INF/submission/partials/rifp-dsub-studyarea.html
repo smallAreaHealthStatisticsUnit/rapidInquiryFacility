@@ -1,0 +1,39 @@
+<!-- 
+HTML partial for ui-router
+Disease submission modal study areas (tree #1)
+-->
+<div class="modal-body" ng-controller="ModalStudyAreaCtrl">
+    <div class="msettings">
+        <div class="msettings-ct">
+            <div class="msettings-header">
+                <h2>Study area</h2>
+                <a class="modal_close" ng-click="close()"></a>
+            </div>
+            <div class='modalContainer areasSelectionDialog'>
+                <div class='modalAreaSelectionMenu'>
+                    <div id='selectAtSelection' class='dropdowns availablesWrapper'>
+                        <input type="text" placeholder="Select at" id='selectAt' class='dropdownInput'>
+                        <div id='selectAtAvailable' class='availables'></div>
+                    </div>
+                    <div id='resolutionSelection' class="dropdowns availablesWrapper">
+                        <input type="text" placeholder="Study resolution" id='resolution' class='dropdownInput'>
+                        <div id='resolutionAvailable' class='availables'></div>
+                    </div>
+                </div>                         
+                <div class='modalAreaSelectionContent'>
+                       <submission-map-table></submission-map-table>
+                </div>
+                <div class='done' ng-click="submit()"><a>Done</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--
+<style>
+    .leaflet-container {
+        background-color:rgba(255,0,0,0.0);
+    }
+</style>
+-->

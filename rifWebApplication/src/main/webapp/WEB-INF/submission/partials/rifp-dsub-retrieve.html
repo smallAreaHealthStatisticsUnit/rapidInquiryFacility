@@ -1,0 +1,21 @@
+<!-- 
+HTML partial for ui-router
+Disease submission modal to retrieve study
+-->
+<div class="msettingsSmall" ng-controller="ModalRetrieveCtrl">
+    <div class="msettings-ct">
+        <div class="msettings-header">
+            <h2>Retrieve study</h2>
+            <a class="modal_close" ng-click="close()"></a>
+        </div>       
+        <div class='modalContainer retrieveModalDialog'>
+            <div class='retrieveMenu'>
+                <div id='retrieveSelection' class='dropdowns availablesWrapper'>
+                    <input type="text"  placeholder="Retrieve study parameters" id='retrieveSelection' class='dropdownInput'>
+                    <div id='retrieveAvailable' class='availables' ></div> 
+                </div>
+                <button   id='exportStudyParameters' class='myButton' >EXPORT FILE</button>
+            </div>
+        </div>
+    </div>
+</div>

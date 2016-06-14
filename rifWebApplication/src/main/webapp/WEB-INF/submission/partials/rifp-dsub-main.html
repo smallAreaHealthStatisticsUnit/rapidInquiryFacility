@@ -1,0 +1,96 @@
+<!-- 
+HTML partial for ui-router
+Disease submission main 'trees' menu
+-->
+<div id="navigation">
+    <div class='logOutUsername'> 
+        <a class="userName" href='#'> </a><span id="logOut"> log out </span>
+    </div>
+    <div class='nav'>
+        <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Test </a>
+        <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
+        <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
+        <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
+    </div>
+</div>
+<!-- Four Submission drop downs-->
+<div id="buttons" class='positioning'>
+    <div class='geoDrops'>
+        <div>
+            <div  class='styleUnderline'>
+                <input type="text"  placeholder="Study name" id='studyName' class='dropdownInput editable'>
+            </div>
+        </div>
+        <div>
+            <div class='styleUnderline dropdowns availablesWrapper'>
+                <input type="text"  placeholder="Health theme" id='healthTheme' class='dropdownInput'>
+                <div id='healthThemeAvailables' class='availables' >
+                </div>
+            </div>
+        </div>
+        <div>
+            <div  class='styleUnderline dropdowns availablesWrapper'>
+                <input type="text"  placeholder="Numerator" id='numerator' class='dropdownInput'>
+                <div id='numeratorAvailables' class='availables' ></div>
+            </div>
+        </div>
+        <div>
+            <div  class='styleUnderline dropdowns availablesWrapper'>
+                <input type="text"  placeholder="Denominator" id='denominator' class='dropdownInput'>
+                <div id='denominatorAvailables' class='availables' > </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Four Tree Icons-->
+<div id="content">
+
+    <!-- Study area block -->
+    <div ng-switch on=tree id='studyArea' class='blocks' ng-controller="ModalStudyAreaCtrl">   
+        <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
+        <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>
+        <div class='summary bodyBlock'>
+            Study Area
+        </div>    
+    </div>
+    <!-- Compaison area block -->
+    <div ng-switch on=tree id='comparisonArea' class='blocks' ng-controller="ModalComparisonAreaCtrl">      
+        <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
+        <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>
+        <div class='summary bodyBlock'>
+            Comparison Area
+        </div>  
+    </div>
+    <!-- Investigation parameter block -->
+    <div ng-switch on=tree id='invParameters' class='blocks' ng-controller="ModalParametersCtrl">
+        <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
+        <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>        
+        <div class='summary bodyBlock'>
+            Investigation parameters
+        </div> 
+    </div>
+    <!-- Statistics block -->
+    <div ng-switch on=tree id='statsParameters' class='blocks' ng-controller="ModalStatsCtrl">
+        <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
+        <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>        
+        <div class='summary bodyBlock'>
+            statsitical methods
+        </div> 
+    </div> 
+</div>
+
+<!-- Run and Retrieve buttons-->
+<div class='positioning'>
+    <div id='importExport' >
+        <div id='importExportContainer' class='buttonContainer' ng-controller="ModalRetrieveCtrl">
+            <div id='retrieve' ng-click="open()">Retrieve</div>
+        </div>
+    </div>
+    <div id='runnable'>
+        <div id='runContainer'  class='buttonContainer'>
+            <div ng-controller="ModalRunCtrl" id='run' ng-click="open()">Run study</div>
+            <div ng-controller="ModalRunFileCtrl" id='fromFile' ng-click="open()">Run from file</div>
+        </div>
+    </div>
+</div>
