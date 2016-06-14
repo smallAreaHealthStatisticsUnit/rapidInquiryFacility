@@ -2,6 +2,8 @@ package rifServices.dataStorageLayer;
 
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.system.RIFServiceSecurityException.SecurityThreatType;
@@ -174,7 +176,7 @@ public class AbstractRIFService {
 		
 		//invalid user attempting to use service
 		String errorMessage
-			= RIFServiceMessages.getMessage(
+			= RIFGenericLibraryMessages.getMessage(
 				"user.error.invalidUser",
 				user.getUserID());
 		RIFServiceSecurityException rifServiceSecurityException
