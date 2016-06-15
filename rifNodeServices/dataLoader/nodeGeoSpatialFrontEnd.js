@@ -181,7 +181,13 @@ function formSetup(formId, formName) {
 		console.error(document.getElementById("status").innerHTML);
 	}
 	
-	document.getElementById("status").innerHTML = document.getElementById("status").innerHTML + "<br>" + formName + " form ready.";
+	
+	if (document.getElementById("shapeFileStatus")) { // JQuery-UI version
+		document.getElementById("shapeFileStatus").innerHTML = formName + " form ready.";
+	}
+	else {
+		document.getElementById("status").innerHTML = document.getElementById("status").innerHTML + "<br>" + formName + " form ready.";
+	}
 	initHtml=document.getElementById("status").innerHTML;
 	console.log("Ready: " + formId);
 } 	
@@ -602,34 +608,73 @@ scopeChecker = function scopeChecker(array, optionalArray) {
  * Description:	Setup map width for Leaflet 
  */
 function setupMap() {	
-	var w = window.innerWidth
-		|| document.documentElement.clientWidth
-		|| document.body.clientWidth;
+	if (document.getElementById("tabs")) { // JQuery-UI version
+		console.log("Using JQuery-UI; setup map");
+		var height=document.getElementById('tilemakerbody').offsetHeight-50;
 
-	var h = window.innerHeight
-		|| document.documentElement.clientHeight
-		|| document.body.clientHeight;
-	if (h && w) {
-		var old_w=document.getElementById('map').style.width;
-		var old_h=document.getElementById('map').style.height;
-		var new_w
-		if (w > 1500) {
-			new_w=w-850;
-		} 
-		else {
-			new_w=w-500;
-		}
-		var new_h=h-150;
-		var new_status_width=w-new_w-50;
-	
-		document.getElementById('map').style.width=new_w;
-		document.getElementById('map').style.height=new_h;
-		document.getElementById('status').style.height=new_h;
-		document.getElementById('status').style.width=new_status_width;
+		document.getElementById("maptab").setAttribute("style","display:block;cursor:pointer;cursor:hand;");
+		document.getElementById("maptab").setAttribute("draggable", "true");
+		document.getElementById("maptab").style.display = "block"	;
+		document.getElementById("maptab").style.cursor = "hand";			
+		document.getElementById('maptab').style.height=height + "px";
+
+		document.getElementById("statustab").setAttribute("style","display:block;cursor:pointer;cursor:hand;");
+		document.getElementById("statustab").setAttribute("draggable", "true");
+		document.getElementById("statustab").style.display = "block"	;
+		document.getElementById("statustab").style.cursor = "hand";			
+		document.getElementById('statustab').style.height=height + "px";
+
+		document.getElementById("shapeFileSelectortab").setAttribute("style","display:block;cursor:pointer;cursor:hand;");
+		document.getElementById("shapeFileSelectortab").setAttribute("draggable", "true");
+		document.getElementById("shapeFileSelectortab").style.display = "block"	;
+		document.getElementById("shapeFileSelectortab").style.cursor = "hand";			
+		document.getElementById('shapeFileSelectortab').style.height=height + "px";
 		
-		console.log("Size h x w: " + h + "+" + w +
-			"; map size old: " + old_h + "+" + old_w + ", new: " + new_h + "+" + new_w +
-			"; new status width: " + new_status_width);
+		console.log("Map; h x w: " + document.getElementById('maptab').offsetHeight + "x" + document.getElementById('maptab').offsetWidth);	
+		console.log("Status; h x w: " + document.getElementById('statustab').offsetHeight + "x" + document.getElementById('statustab').offsetWidth);	
+		console.log("shapeFileSelector; h x w: " + document.getElementById('shapeFileSelectortab').offsetHeight + "x" + document.getElementById('shapeFileSelectortab').offsetWidth);			
+	}
+	else {
+		var w = window.innerWidth
+			|| document.documentElement.clientWidth
+			|| document.body.clientWidth;
+
+		var h = window.innerHeight
+			|| document.documentElement.clientHeight
+			|| document.body.clientHeight;
+		if (h && w) {
+			var old_w=document.getElementById('map').style.width;
+			var old_h=document.getElementById('map').style.height;
+			var new_w
+			if (w > 1500) {
+				new_w=w-750;
+			} 
+			else {
+				new_w=w-400;
+			}
+			var new_h=h-150;
+			var new_status_width=w-new_w-50;
+		
+			document.getElementById("status").setAttribute("style","display:block;cursor:pointer;cursor:hand;overflow:auto;");
+			document.getElementById("status").setAttribute("draggable", "true");
+			document.getElementById("status").style.display = "block"	;
+			document.getElementById("status").style.cursor = "hand";
+			document.getElementById('status').style.height=new_h + "px";
+			document.getElementById('status').style.width=new_status_width + "px";
+			
+			document.getElementById("map").setAttribute("style","display:block;cursor:pointer;cursor:hand;");
+			document.getElementById("map").setAttribute("draggable", "true");
+			document.getElementById("map").style.display = "block"	;
+			document.getElementById("map").style.cursor = "hand";		
+			document.getElementById('map').style.width=new_w + "px";
+			document.getElementById('map').style.height=new_h + "px";
+			
+			console.log("Size h x w: " + h + "x" + w +
+				"; map size old: " + old_h + "x" + old_w + ", new: " + new_h + "x" + new_w +
+				"; new status width: " + new_status_width);
+			console.log("Map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
+			console.log("Status; h x w: " + document.getElementById('status').style.height + "x" + document.getElementById('status').style.width);	
+		}
 	}
 }
 	
@@ -747,7 +792,7 @@ function createMap(boundingBox, noZoomlevels) {
 	var end=new Date().getTime();
 	var elapsed=(Math.round(end - start))/1000; // in S
 									
-	console.log("[" + elapsed + "] Create Leaflet map");	
+	console.log("[" + elapsed + "] Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
 	var map = new L.map('map' , {
 			zoom: 11,
 			// Tell the map to use a fullsreen control
@@ -1729,10 +1774,10 @@ function createTable(response, layerColours, layerAddOrder) {
 		"<tr>" +
 		"<th>File</th>" + 
 		"<th>Size</th>" +
-		"<th>Level " + response.file_list[layerAddOrder[0]].topojson[0].zoomlevel + " topo/geo JSON length</th>" +
-		"<th>Total topojson length</th>" + 
+		"<th>Level " + response.file_list[layerAddOrder[0]].topojson[0].zoomlevel + " topo/geo<br>JSON length</th>" +
+		"<th>Total<br>topojson length</th>" + 
 		"<th>Areas</th>" + 
-		"<th>Geo level</th>" +
+		"<th>Geo<br>level</th>" +
 		"</tr>";	
 	for (var i=0; i < response.no_files; i++) {	
 		msg+="<tr style=\"color:" + layerColours[i] + "\"><td>" + response.file_list[layerAddOrder[i]].file_name + "</td>" +

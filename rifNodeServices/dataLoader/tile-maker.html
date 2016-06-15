@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="jquery-2.2.3.js"></script> 
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+    <script src="leaflet/leaflet.js"></script>
+    <script src="topojson.min.js"></script>
+    <link rel="stylesheet" href="leaflet.zoomdisplay.css" />
+    <script src="leaflet.zoomdisplay.js"></script>
+    <script src="jquery.form.js"></script> 
+<!--    <script src="angular.min.js"></script> -->
+    <script src="async.js"></script> 
+    <script src="nodeGeoSpatialFrontEnd.js"></script> 
+	<link rel="stylesheet" href="tile-maker.css" />
+    <script src="Control.FullScreen.js"></script>
+	<link rel="stylesheet" href="Control.FullScreen.css" />
+	<script src="Control.Loading.js"></script>
+	<link rel="stylesheet" href="Control.Loading.css" />
+	<script type="text/javascript" src="sizeof.js"></script>
+	<script type="text/javascript" src="jszip.js"></script>
+    <link href="jquery-ui-1.11.4.custom/jquery-ui.css" rel="stylesheet"/>
+    <script src="jquery-ui-1.11.4.custom/jquery-ui.js"></script>
+	  
+    <script> 
+
+// wait for the DOM to be loaded 
+// prepare the JQuery form when the DOM is ready 
+$(document).ready(function documentReady() { 
+
+	var height="100%";
+	if (document.getElementById('tilemakerbody')) {
+		console.log("Body; h x w: " + document.getElementById('tilemakerbody').offsetHeight + "x" + document.getElementById('tilemakerbody').offsetWidth);
+		height=document.getElementById('tilemakerbody').offsetHeight;
+	}
+	
+	//
+	// Setup tabs
+	//	
+	$(function setupTabs() {
+		$("#tabs").tabs({
+			create: function setupTabsCreated() {
+				console.log("setupTabs().oncreate: Tabs setup");
+				setupMap();
+				formSetup('shpConvert', 'Shapefile');
+			},
+			load: function setupTabsLoaded() {
+				console.log("setupTabs().onload");
+			}			
+//			heightStyle: "fill"
+		}).css({
+			'min-height': height+"px"
+		});
+	});
+});
+
+/*
+ * Angular controller
+ */
+// var app = angular.module('shpConvert', []);
+// app.controller('shpConvertCtrl', function shpConvertCtrl($scope) {
+//});
+
+    </script>
+<title>Tile Maker</title>
+</head>
+  <body id="tilemakerbody">
+ <!--    <div ng-app="shpConvert" ng-controller="shpConvertCtrl"> -->
+   <div id="tilemaker">
+	<div id="tabs">
+         <ul>
+            <li><a href = "#shapeFileSelectortab">Shapefile selector</a></li>
+            <li><a href = "#maptab">Map</a></li>
+            <li><a href = "#statustab">Diagnostics</a></li>
+         </ul>
+		 <div id="shapeFileSelectortab">
+		   <div id="shapeFileSelector">
+			<form id="shpConvert" action="http://127.0.0.1:3000/shpConvert" method="POST"
+				  enctype="multipart/form-data">Select a file/files to upload: <input id="files" type="file" name="file_list" size="50" multiple="multiple" />
+			  &nbsp;Simplification factor: <input id="simplificationFactor" name="simplificationFactor" type="range" defaultValue="0.75" value="0.75" min="0.1" max="1" step="0.05" onchange="updateSimplificationFactorInput(this.value);" />
+			  <input type="text" id="simplificationFactorInput" value="0.75" readonly size="4">
+			  &nbsp;Quantization: <select id="quantizationSelect" name="quantization" form="shpConvert">
+				<option value="100000000">1 in 100 million</option>
+				<option value="10000000">1 in 10 million</option>
+				<option value="1000000" selected="selected">1 in 1 million</option>
+				<option value="100000">1 in 100,000</option>
+				<option value="10000">1 in 10,000</option>
+				<option value="5000">1 in 5,000</option>
+				<option value="3000">1 in 3,000</option>
+				<option value="1500">1 in 1,500</option>
+			  </select>	
+			  &nbsp;Diagnostics<input id="diagnostics" type="checkbox" name="verbose" value="true">
+			  <input id="shpConvertSubmit" type="submit" value="Upload File(s)" />&nbsp;
+			</form>			
+		   </div>	
+		   <div id="shapeFileStatus">		
+		   </div>	
+		 </div>
+		 <div id="maptab">
+		   <div id="map">
+		   </div>
+		 </div>
+		 <div id="statustab">
+	  	   <div id="status">
+		   </div>
+		 </div>
+	  </div>
+	</div>
+ <!--   </div> -->
+  </body>
+</html>
