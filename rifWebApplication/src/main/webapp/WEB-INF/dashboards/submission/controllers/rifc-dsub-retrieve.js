@@ -3,17 +3,14 @@
  * 
  */
 angular.module("RIF")
-        .controller('ModalSummaryCtrl', ['$scope', '$uibModal', 'ModelService',
-            function ($scope, $uibModal, ModelService) {
-
-                $scope.summary = ModelService.get_rif_job_submission();
-
+        .controller('ModalRetrieveCtrl', ['$scope', '$uibModal',
+            function ($scope, $uibModal) {
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
-                        animation: true,
-                        templateUrl: 'submission/partials/rifp-dsub-summary.html',
-                        controller: 'ModalSummaryInstanceCtrl',
-                        windowClass: 'modal-fit',
+                        animation: true, 
+                        templateUrl: 'dashboards/submission/partials/rifp-dsub-retrieve.html',
+                        controller: 'ModalRetrieveInstanceCtrl',
+                        windowClass: 'stats-Modal',
                         backdrop: 'static',
                         keyboard: false
                     });
@@ -22,7 +19,7 @@ angular.module("RIF")
                     });
                 };
             }])
-        .controller('ModalSummaryInstanceCtrl', function ($scope, $uibModalInstance) {
+        .controller('ModalRetrieveInstanceCtrl', function ($scope, $uibModalInstance) {
             $scope.close = function () {
                 $uibModalInstance.dismiss();
             };

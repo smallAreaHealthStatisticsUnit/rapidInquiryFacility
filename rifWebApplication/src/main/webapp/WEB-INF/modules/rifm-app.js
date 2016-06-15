@@ -17,22 +17,22 @@ angular.module("RIF",
                 $stateProvider
                         .state('state0', {
                             url: '/login',
-                            templateUrl: "login/partials/rifp-login-main.html"
+                            templateUrl: "dashboards/login/partials/rifp-login-main.html"
                         })
                         .state('state1', {
                             url: '/submission',
-                            templateUrl: "submission/partials/rifp-dsub-main.html",
+                            templateUrl: "dashboards/submission/partials/rifp-dsub-main.html",
                             controller: function ($scope, $state) {
                                 $scope.$state = $state;
                             }
                         })
                         .state('state2', {
                             url: '/viewer',
-                            templateUrl: "viewer/partials/rifp-view-main.html"
+                            templateUrl: "dashboards/viewer/partials/rifp-view-main.html"
                         })
                         .state('state3', {
                             url: '/mapping',
-                            templateUrl: "mapping/partials/rifp-dmap-main.html"
+                            templateUrl: "dashboards/mapping/partials/rifp-dmap-main.html"
                         })
                         .state('state4', {
                             url: '/test',

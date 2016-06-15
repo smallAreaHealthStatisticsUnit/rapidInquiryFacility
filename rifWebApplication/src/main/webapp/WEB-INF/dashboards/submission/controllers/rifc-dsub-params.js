@@ -241,7 +241,7 @@ angular.module("RIF")
                 };
 
                 //read XML
-                $http.get("ExampleICD10Codes.xml").success(function (xml, status) {
+                $http.get("test/ExampleICD10Codes.xml").success(function (xml, status) {
                     var x2js = new X2JS();
                     var data = x2js.xml_str2json(xml);
                     //Taxonomy code for recap table col#1
@@ -266,7 +266,7 @@ angular.module("RIF")
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
                         animation: false, //$scope.animationsEnabled,
-                        templateUrl: 'submission/partials/rifp-dsub-params.html',
+                        templateUrl: 'dashboards/submission/partials/rifp-dsub-params.html',
                         controller: 'ModalParametersInstanceCtrl',
                         windowClass: 'modal-fit',
                         backdrop: 'static',

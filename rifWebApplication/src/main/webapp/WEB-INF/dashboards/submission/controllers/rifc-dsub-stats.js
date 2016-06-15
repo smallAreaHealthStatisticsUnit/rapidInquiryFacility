@@ -10,7 +10,7 @@ angular.module("RIF")
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
                         animation: true,
-                        templateUrl: 'submission/partials/rifp-dsub-stats.html',
+                        templateUrl: 'dashboards/submission/partials/rifp-dsub-stats.html',
                         controller: 'ModalStatsInstanceCtrl',
                         windowClass: 'stats-Modal',
                         backdrop: 'static',

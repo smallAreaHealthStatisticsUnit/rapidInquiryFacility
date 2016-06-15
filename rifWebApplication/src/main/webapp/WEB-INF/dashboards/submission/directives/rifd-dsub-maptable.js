@@ -15,7 +15,7 @@ angular.module("RIF")
         .directive('submissionMapTable', ['leafletData', 'ModalAreaService', 'LeafletDrawService', 'GISService', 'LeafletBaseMapService', '$timeout',
             function (leafletData, ModalAreaService, LeafletDrawService, GISService, LeafletBaseMapService, $timeout) {
                 return {
-                    templateUrl: 'submission/partials/rifp-dsub-maptable.html',
+                    templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
                     link: function ($scope) {
 
@@ -192,7 +192,7 @@ angular.module("RIF")
                         };
 
                         //Read topoJson with d3
-                        d3.json("eng.json", function (error, data) {
+                        d3.json("test/eng.json", function (error, data) {
                             //populate the table
                             $scope.gridOptions.data = ModalAreaService.fillTable(data);
                             $scope.refresh = false;
