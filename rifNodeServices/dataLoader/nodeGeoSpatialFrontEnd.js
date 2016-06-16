@@ -52,7 +52,8 @@ var uploadTime;
 var serverTime;
 var jsonAddLayerParamsArray=[];
 var initHtml;
-					
+var status;
+		
 // Extend Leaflet to use topoJSON
 L.topoJson = L.GeoJSON.extend({  
   addData: function(jsonData) {    
@@ -184,11 +185,17 @@ function formSetup(formId, formName) {
 	
 	if (document.getElementById("shapeFileStatus")) { // JQuery-UI version
 		document.getElementById("shapeFileStatus").innerHTML = formName + " form ready.";
+		initHtml=document.getElementById("shapeFileStatus").innerHTML;
 	}
 	else {
 		document.getElementById("status").innerHTML = document.getElementById("status").innerHTML + "<br>" + formName + " form ready.";
+		initHtml=document.getElementById("status").innerHTML;
 	}
-	initHtml=document.getElementById("status").innerHTML;
+	
+	if (document.getElementById("tabs") && tabs) { // JQuery-UI version
+		tabs.tabs("refresh" );
+	}
+			
 	console.log("Ready: " + formId);
 } 	
 
@@ -290,6 +297,10 @@ function shpConvertInput(files) {
 			
 		}
 	} 
+
+	if (document.getElementById("tabs") && tabs) { // JQuery-UI version
+		tabs.tabs("refresh" );
+	}
 	
 }
 
@@ -609,30 +620,26 @@ scopeChecker = function scopeChecker(array, optionalArray) {
  */
 function setupMap() {	
 	if (document.getElementById("tabs")) { // JQuery-UI version
-		console.log("Using JQuery-UI; setup map");
-		var height=document.getElementById('tilemakerbody').offsetHeight-50;
+		var tabboxheight=document.getElementById('tabbox').offsetHeight;
+		var height=document.getElementById('tilemakerbody').offsetHeight-(tabboxheight+24);
+		function setHeight(id, lheight) {
+			document.getElementById(id).setAttribute("style","display:block;cursor:pointer;cursor:hand;");
+			document.getElementById(id).setAttribute("draggable", "true");
+			document.getElementById(id).style.display = "block"	;
+			document.getElementById(id).style.cursor = "hand";			
+			document.getElementById(id).style.height=lheight + "px";						
+			
+			console.log(id + " h x w: " + document.getElementById(id).offsetHeight + "x" + document.getElementById(id).offsetWidth);	
+		}
 
-		document.getElementById("maptab").setAttribute("style","display:block;cursor:pointer;cursor:hand;");
-		document.getElementById("maptab").setAttribute("draggable", "true");
-		document.getElementById("maptab").style.display = "block"	;
-		document.getElementById("maptab").style.cursor = "hand";			
-		document.getElementById('maptab').style.height=height + "px";
-
-		document.getElementById("statustab").setAttribute("style","display:block;cursor:pointer;cursor:hand;");
-		document.getElementById("statustab").setAttribute("draggable", "true");
-		document.getElementById("statustab").style.display = "block"	;
-		document.getElementById("statustab").style.cursor = "hand";			
-		document.getElementById('statustab').style.height=height + "px";
-
-		document.getElementById("shapeFileSelectortab").setAttribute("style","display:block;cursor:pointer;cursor:hand;");
-		document.getElementById("shapeFileSelectortab").setAttribute("draggable", "true");
-		document.getElementById("shapeFileSelectortab").style.display = "block"	;
-		document.getElementById("shapeFileSelectortab").style.cursor = "hand";			
-		document.getElementById('shapeFileSelectortab').style.height=height + "px";
-		
-		console.log("Map; h x w: " + document.getElementById('maptab').offsetHeight + "x" + document.getElementById('maptab').offsetWidth);	
-		console.log("Status; h x w: " + document.getElementById('statustab').offsetHeight + "x" + document.getElementById('statustab').offsetWidth);	
-		console.log("shapeFileSelector; h x w: " + document.getElementById('shapeFileSelectortab').offsetHeight + "x" + document.getElementById('shapeFileSelectortab').offsetWidth);			
+		console.log("Using JQuery-UI; setup map; height: " + height + "px; tabboxheight: " + tabboxheight + "px");
+		setHeight("maptab", height);
+		setHeight("map", (height-30));
+		setHeight("statustab", (height-20));
+		setHeight("status", (height-40));
+		setHeight("shapeFileSelectortab", (height-10));
+		setHeight("shapeFileSelector", (height-95));
+		setHeight("shapeFileStatus", 70);			
 	}
 	else {
 		var w = window.innerWidth
@@ -746,17 +753,29 @@ function setStatus(msg, err, diagnostic, stack) {
 			errm=err.message;
 		}
 		
+		if (status == undefined) {
+			if (document.getElementById("tabs") && document.getElementById("shapeFileStatus")) { // JQuery-UI version
+				status=document.getElementById("shapeFileStatus");
+			}
+			else {
+				status=document.getElementById("status");
+			}
+		}
+		
 		if (!errm) {
-			document.getElementById("status").innerHTML = msg;
+			status.innerHTML = msg;
 			if (diagnostic) {
 				document.getElementById("status").innerHTML = 
 					document.getElementById("status").innerHTML + 
 					"<p>Processing diagnostic:</br><pre>" + diagnostic + "</pre></p>";
 			}
+			if (document.getElementById("tabs") && tabs) { // JQuery-UI version
+				tabs.tabs("refresh" );
+			}
 			console.log("[" + elapsed + "] " + msg);
 		}
 		else {
-			document.getElementById("status").innerHTML = "<h1>" + msg + "</h1><h2>Error message: " + errm + "</h2>";
+			status.innerHTML = "<h1>" + msg + "</h1><h2>Error message: " + errm + "</h2>";
 			if (stack) {
 				document.getElementById("status").innerHTML = 
 					document.getElementById("status").innerHTML + 
@@ -775,12 +794,15 @@ function setStatus(msg, err, diagnostic, stack) {
 					"<p>Processing diagnostic:</br><pre>" + diagnostic + "</pre></p>";
 				console.log("[" + elapsed + "] Diagnostic: " + diagnostic);
 			}
-			
+				
+			if (document.getElementById("tabs") && tabs) { // JQuery-UI version
+				tabs.tabs("refresh" );
+			}		
 			throw new Error("[" + elapsed + "] " + msg + "; " + errm);
 		}
 	}
 }
-	
+		
 /*
  * Function: 	createMap()
  * Parameters: 	Bounding box, number of Zoomlevels
@@ -1241,6 +1263,11 @@ function displayResponse(responseText, status, formName) {
 
 					setTimeout(
 						function createMapAsync() {
+													
+							if (document.getElementById("tabs")) { // JQuery-UI version	
+								$( "#tabs" ).tabs( "option", "active", 1 ); // Activate panel 1 (map) so leaflet works (and the user can see the map!)
+							}
+							
 							if (!map) {
 								map=createMap(response.file_list[0].boundingBox, noZoomlevels); // Create map using first bounding box in file list
 							}
@@ -1652,7 +1679,7 @@ function errorHandler(error, ajaxOptions, thrownError) {
  */
 function uploadProgressHandler(event, position, total, percentComplete) {
 	var msg;
-	
+		
 	if (percentComplete == 100 && position == total) {
 		var end=new Date().getTime();
 		uploadTime=(Math.round(end - start, 2))/1000; // in S
@@ -1661,7 +1688,12 @@ function uploadProgressHandler(event, position, total, percentComplete) {
 	else {
 		msg="Uploading: " + percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
 	}
-	document.getElementById('status').innerHTML = msg;
+	if (document.getElementById("tabs")) { // JQuery-UI version
+		document.getElementById("shapeFileStatus").innerHTML = msg;
+	}
+	else {
+		document.getElementById("status").innerHTML = msg;
+	}
 	console.log(msg);
 }
 

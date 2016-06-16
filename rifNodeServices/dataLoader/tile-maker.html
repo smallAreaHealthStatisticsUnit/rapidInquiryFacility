@@ -23,6 +23,8 @@
 	  
     <script> 
 
+var tabs;
+	
 // wait for the DOM to be loaded 
 // prepare the JQuery form when the DOM is ready 
 $(document).ready(function documentReady() { 
@@ -37,16 +39,25 @@ $(document).ready(function documentReady() {
 	// Setup tabs
 	//	
 	$(function setupTabs() {
-		$("#tabs").tabs({
+		tabs=$("#tabs").tabs({
 			create: function setupTabsCreated() {
-				console.log("setupTabs().oncreate: Tabs setup");
+				var ntabs=$('#tabs >ul >li').size();
+				var ltabs=$( ".selector" ).tabs("tabs");
+				
+				console.log("setupTabs().oncreate: " + ntabs + " tabs setup");
 				setupMap();
 				formSetup('shpConvert', 'Shapefile');
+				
+				ltabs.tabs("refresh" );
+				
+				for (var i=(ntabs-1); i>=0; i--) {
+					$( "#tabs" ).tabs( "option", "active", i); // Activate all panels. This sets the height correctly
+				}
 			},
 			load: function setupTabsLoaded() {
 				console.log("setupTabs().onload");
-			}			
-//			heightStyle: "fill"
+			},			
+			heightStyle: "fill"
 		}).css({
 			'min-height': height+"px"
 		});
@@ -67,7 +78,7 @@ $(document).ready(function documentReady() {
  <!--    <div ng-app="shpConvert" ng-controller="shpConvertCtrl"> -->
    <div id="tilemaker">
 	<div id="tabs">
-         <ul>
+         <ul id="tabbox">
             <li><a href = "#shapeFileSelectortab">Shapefile selector</a></li>
             <li><a href = "#maptab">Map</a></li>
             <li><a href = "#statustab">Diagnostics</a></li>
@@ -90,7 +101,7 @@ $(document).ready(function documentReady() {
 			  </select>	
 			  &nbsp;Diagnostics<input id="diagnostics" type="checkbox" name="verbose" value="true">
 			  <input id="shpConvertSubmit" type="submit" value="Upload File(s)" />&nbsp;
-			</form>			
+			</form>		
 		   </div>	
 		   <div id="shapeFileStatus">		
 		   </div>	
