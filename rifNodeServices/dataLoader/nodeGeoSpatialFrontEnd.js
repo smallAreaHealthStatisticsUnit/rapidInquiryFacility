@@ -638,8 +638,9 @@ function setupMap() {
 		setHeight("statustab", (height-20));
 		setHeight("status", (height-40));
 		setHeight("shapeFileSelectortab", (height-10));
-		setHeight("shapeFileSelector", (height-95));
+		setHeight("shapeFileSelector", (height-145));
 		setHeight("shapeFileStatus", 70);			
+		setHeight("progressbar", 40);			
 	}
 	else {
 		var w = window.innerWidth
@@ -1683,12 +1684,16 @@ function uploadProgressHandler(event, position, total, percentComplete) {
 	if (percentComplete == 100 && position == total) {
 		var end=new Date().getTime();
 		uploadTime=(Math.round(end - start, 2))/1000; // in S
-		msg="Uploaded: " + percentComplete.toString() + '%; ' + fileSize(position) + "; took: " + uploadTime + " S; sending request to server";
+		msg="Uploaded files: " + percentComplete.toString() + '%; ' + fileSize(position) + "; took: " + uploadTime + " S; sending request to server and awaiting response";
 	}
 	else {
-		msg="Uploading: " + percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
+		msg="Uploading files: " + percentComplete.toString() + '%; ' + fileSize(position) + "/" + fileSize(total);
 	}
 	if (document.getElementById("tabs")) { // JQuery-UI version
+		progressbar.progressbar("value", percentComplete);
+		if (percentComplete == 100 && position == total) {
+			progressLabel.text( "Upload complete; awaiting server response");
+		}
 		document.getElementById("shapeFileStatus").innerHTML = msg;
 	}
 	else {

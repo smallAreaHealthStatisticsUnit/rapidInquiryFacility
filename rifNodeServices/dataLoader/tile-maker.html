@@ -20,11 +20,13 @@
 	<script type="text/javascript" src="jszip.js"></script>
     <link href="jquery-ui-1.11.4.custom/jquery-ui.css" rel="stylesheet"/>
     <script src="jquery-ui-1.11.4.custom/jquery-ui.js"></script>
-	  
+  
     <script> 
 
 var tabs;
-	
+var progressbar;
+var progressLabel;	
+
 // wait for the DOM to be loaded 
 // prepare the JQuery form when the DOM is ready 
 $(document).ready(function documentReady() { 
@@ -48,11 +50,34 @@ $(document).ready(function documentReady() {
 				setupMap();
 				formSetup('shpConvert', 'Shapefile');
 				
+				$( "#simplificationFactor" ).slider({
+				});
+				
 				ltabs.tabs("refresh" );
+				
+				$(function setupProgress() {
+					progressbar = $( "#progressbar" );
+					progressLabel = $( ".progress-label" );
+
+					progressbar.progressbar({
+						value: 0,
+						
+						create: function setupProgressCreated() {
+							progressLabel.text("");
+							console.log("setupProgress().oncreate: setup");
+						},
+						change: function functionsetupProgessChangeded() {
+							if (progressbar.progressbar( "value" ) > 0) {
+								progressLabel.text( progressbar.progressbar( "value" ) + "%" );
+							}
+						}
+					});
+				});	
 				
 				for (var i=(ntabs-1); i>=0; i--) {
 					$( "#tabs" ).tabs( "option", "active", i); // Activate all panels. This sets the height correctly
 				}
+				
 			},
 			load: function setupTabsLoaded() {
 				console.log("setupTabs().onload");
@@ -62,6 +87,8 @@ $(document).ready(function documentReady() {
 			'min-height': height+"px"
 		});
 	});
+	
+
 });
 
 /*
@@ -86,8 +113,11 @@ $(document).ready(function documentReady() {
 		 <div id="shapeFileSelectortab">
 		   <div id="shapeFileSelector">
 			<form id="shpConvert" action="http://127.0.0.1:3000/shpConvert" method="POST"
-				  enctype="multipart/form-data">Select a file/files to upload: <input id="files" type="file" name="file_list" size="50" multiple="multiple" />
-			  &nbsp;Simplification factor: <input id="simplificationFactor" name="simplificationFactor" type="range" defaultValue="0.75" value="0.75" min="0.1" max="1" step="0.05" onchange="updateSimplificationFactorInput(this.value);" />
+				  enctype="multipart/form-data">
+			  <fieldset>	
+			  <input id="files" type="file" name="file_list" size="50" multiple="multiple"  placeholder="Select a file/files to upload: "/>		  
+			 &nbsp;Simplification factor: <input id="simplificationFactor" name="simplificationFactor" type="range"
+			 defaultValue="0.75" value="0.75" min="0.1" max="1" step="0.05" onchange="updateSimplificationFactorInput(this.value);" />
 			  <input type="text" id="simplificationFactorInput" value="0.75" readonly size="4">
 			  &nbsp;Quantization: <select id="quantizationSelect" name="quantization" form="shpConvert">
 				<option value="100000000">1 in 100 million</option>
@@ -101,10 +131,14 @@ $(document).ready(function documentReady() {
 			  </select>	
 			  &nbsp;Diagnostics<input id="diagnostics" type="checkbox" name="verbose" value="true">
 			  <input id="shpConvertSubmit" type="submit" value="Upload File(s)" />&nbsp;
+			  </fieldset>	  
 			</form>		
 		   </div>	
-		   <div id="shapeFileStatus">		
+		   <div id="shapeFileStatus">
 		   </div>	
+		   <div id="progressbar">
+			 <div class="progress-label">0%</div>
+		   </div>		   
 		 </div>
 		 <div id="maptab">
 		   <div id="map">

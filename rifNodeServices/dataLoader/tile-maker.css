@@ -45,6 +45,17 @@ body {
 #conversion {
     float:right;
 }
+#progressbar {
+	width: 99%;
+}
+.ui-progressbar {
+	position: relative;
+}
+.progress-label {
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, +50%);	
+}
 table {
 /*    color:rgb(0, 200, 255); */
     font-family: courier;
