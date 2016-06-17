@@ -452,7 +452,7 @@ RangeError: Invalid string length
 * Old layers being left behind
 * max/min zoomlevel. Max zoomlevel not enforced in browser until the calucation of quantization and the max zoomnlevel is better; this needs area,
 
-#### 6th to 10 June
+#### 6th to 10th June
 
 * Refactored front end code so there is no duplicate code
 * Potential fix for Firefox ajaxForm size issues
@@ -464,8 +464,16 @@ RangeError: Invalid string length
   Do not use Firefox 47.0. ^ hours to trace and clear Ajax.
 * Added file list load and unzip (start of support for XML config file)
 
+#### 13th to 17th June
+
+* Setup EBS progress for team
+* Data loader design documentation
+* Reserved tile-maker for Node.js geo spatial services  
+* Replaced traditional html with JQuery-UI; added unzip and accordion panels for sorting out 
+
 #### Current TODO list (June):
 
+* Fornt end zip progress; prevent tab chnage udring mapo drawe and aoccordion setup
 * Add support for XML config file so shpConvert can do all processing without further input; Area_id and description support; .SHP.EA.ISO.XML 
 * Default geolevel_name, area_id, area_name
 * Add all fields to topojson
@@ -482,7 +490,6 @@ RangeError: Invalid string length
 
 #### June list (some likely to be moved into July):
 
-* Replace traditional html with JQuery-UI
 * Add convertedTopojson array meta data to topojson config
 * Database connection; clean, check OK and ST_Union(); area support [and checks]; PK support 
   ST_Union can be done in geoJSON using turf: as it is a geomtery collection. Also check wellknown] 	
