@@ -209,7 +209,8 @@ function formSetup(formId, formName) {
  */
 function shpConvertInput(files) {
 	var totalFileSize=0;
-	
+	var fileArray = [];
+				
 	document.getElementById("status").innerHTML=initHtml;
 	// Process inputted files
 	updateCustomFileUploadInput(files.length);
@@ -241,7 +242,12 @@ function shpConvertInput(files) {
 				var arrayBuf = new Uint8Array(event.target.result);
 				var arrayIndex = 0;		  
 				
-				if (ext == "zip") {					
+				if (ext == 'shp') {
+					fileArray.push(name);
+					document.getElementById("status").innerHTML =
+						document.getElementById("status").innerHTML + "<br>Loaded shapefile file: " + name + "; " + fileSize(file.size) + " in: " + elapsed + " S";
+				}
+				else if (ext == "zip") {					
 					var zip=new JSZip(arrayBuf, {} /* Options */);
 					var noZipFiles=0;
 					var totalUncompressedSize=0;
@@ -262,6 +268,7 @@ function shpConvertInput(files) {
 						}
 						else if (zipExt == 'shp') {
 							unzipPct=Math.round(fileContainedInZipFile._data.uncompressedSize*100/fileContainedInZipFile._data.compressedSize)
+							fileArray.push(zipName);
 							zipMsg+="<br>Zip [" + noZipFiles + "]: shapefile file: " + zipName + 
 								"; expanded: " + unzipPct + 
 								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
@@ -280,14 +287,30 @@ function shpConvertInput(files) {
 //								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize) + "; extension: " + zipExt;
 							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
 						}
-					}
+					} // End of for loop
 					document.getElementById("status").innerHTML =
 						document.getElementById("status").innerHTML + '<br>Loaded and unzipped file: ' + name + 
 							"; from: " + fileSize(file.size) + " to: " + fileSize(totalUncompressedSize) + "; in: " + elapsed + " S" + zipMsg;	
-				}
+				}			
 				else {
 					document.getElementById("status").innerHTML =
 						document.getElementById("status").innerHTML + '<br>Loaded file: ' + name + "; " + fileSize(file.size) + " in: " + elapsed + " S";	
+				}	
+				
+				if (document.getElementById("tabs") && tabs) { // JQuery-UI version
+					var newDiv = "";
+					for (var i = 0; i < fileArray.length; i++) {
+						console.log("Added accordion[" + i + "]: " + fileArray[i]);
+						newDiv+= "<h3>" + fileArray[i] + "</h3><div><p>" + fileArray[i] + "</p></div>";
+						$('#accordion').append(newDiv)
+					}
+					document.getElementById("accordion").innerHTML = newDiv;
+					$("#accordion").accordion({
+						active: false,
+						collapsible: true,
+						heightStyle: "fill"
+					});
+					tabs.tabs("refresh" );
 				}				
 			}
 			reader.onerror = function(err) {
@@ -300,12 +323,7 @@ function shpConvertInput(files) {
 			reader.readAsArrayBuffer(file);
 			
 		}
-	} 
-
-	if (document.getElementById("tabs") && tabs) { // JQuery-UI version
-		tabs.tabs("refresh" );
-	}
-	
+	} 	
 }
 
 /*
@@ -657,12 +675,16 @@ function setupMap() {
 		}
 
 		console.log("Using JQuery-UI; setup map; height: " + height + "px; tabboxheight: " + tabboxheight + "px");
+		
+		// Check for min height
+		
 		setHeight("maptab", height);
 		setHeight("map", (height-30));
 		setHeight("statustab", (height-20));
 		setHeight("status", (height-40));
 		setHeight("shapeFileSelectortab", (height-10));
 		setHeight("shapeFileSelector", (height-145));
+		setHeight("accordion", (height-300));
 		setHeight("shapeFileStatus", 70);			
 		setHeight("progressbar", 40);			
 	}

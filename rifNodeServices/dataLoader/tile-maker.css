@@ -45,6 +45,10 @@ body {
 #conversion {
     float:right;
 }
+#accordion {
+	width: 99%;
+	min-height: 200px;
+}
 #progressbar {
 	width: 99%;
 }
@@ -90,21 +94,15 @@ table {
     width: 400px; 
 }
 #shpConvertSubmit {
-/*	float:right;
-    width: 150px; */
-/*    margin: 10px 10px 10px 10px;
-    text-rendering: auto;
-    color: initial;
-    letter-spacing: normal;
-    word-spacing: normal;
-    text-transform: none;
-    text-indent: 0px;
-    text-shadow: none;
-    display: inline-block;
-    text-align: start;
-    font: 12px Arial;
-	border-radius: 12px; */
+    float:right;
+    width: 150px; 
 }
+#accordion .ui-accordion-header {  
+    line-height: 16px;   //reduces height of the header box
+    font-size: 9pt;  
+    width: 100%;  
+    text-indent: 10px;  
+} 
 .legend {
 	text-align: left;
 	line-height: 18px;

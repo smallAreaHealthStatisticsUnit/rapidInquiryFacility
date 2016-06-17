@@ -50,18 +50,23 @@ $(document).ready(function documentReady() {
 				setupMap();
 				formSetup('shpConvert', 'Shapefile');
 				
-				$( "#simplificationFactor" ).slider({
+				
+				$(function initFields() {
+					$( "#simplificationFactor" ).slider({
+					});
+					
+					$( "#quantizationSelect" )
+					  .selectmenu()
+					  .selectmenu( "menuWidget" )
+						.addClass( "overflow" );
+
+					$('input').addClass("ui-corner-all");
+	  
+					$( "#diagnostics, #shpConvertSubmit" ).button();
+
+//					Accordion is initialised dynamically					
 				});
 				
-				$( "#quantizationSelect" )
-				  .selectmenu()
-				  .selectmenu( "menuWidget" )
-					.addClass( "overflow" );
-
-				$('input').addClass("ui-corner-all");
-  
-				$( "#diagnostics, #shpConvertSubmit" ).button();
-
 				ltabs.tabs("refresh" );
 				
 				$(function setupProgress() {
@@ -127,7 +132,7 @@ $(document).ready(function documentReady() {
 			  <label class="customFileUpload">Select a file/files to upload
 			    <input id="files" type="file" name="file_list" size="50" multiple="multiple"/>
 			  </label>
-			  <input type="text" id="customFileUploadInput" value="&nbsp;No files selected" readonly size="14"><br>				  
+			  <input type="text" id="customFileUploadInput" value="&nbsp;No files selected" readonly size="16"><br>				  
 			  <label for="quantization">Quantization:
 			    <select id="quantizationSelect" name="quantization" form="shpConvert">
 					<option value="100000000">1 in 100 million</option>
@@ -147,6 +152,8 @@ $(document).ready(function documentReady() {
 			  </label>
 			  <label for="diagnostics">Diagnostics</label>  
 			  <input id="diagnostics" name="diagnostics" type="checkbox" name="verbose" value="true">
+				  <div id="accordion">
+				  </div>
 			  <input id="shpConvertSubmit" name="shpConvertSubmit" type="submit" value="Upload File(s)" />&nbsp;
 			  </fieldset>	  
 			</form>		
