@@ -141,9 +141,11 @@ function formSetup(formId, formName) {
 			
 			console.log("shpConvertInput() event files: " + JSON.stringify(fileList, null, 4));
 			shpConvertInput(fileList);
-		}
-		
+		}		
 		files_elem.addEventListener("change", shpConvertInputHandler, false);
+	
+
+		
 		if  (files.length > 0) { // Already set
 			console.log("shpConvertInput() already set");
 			setTimeout(function() {
@@ -210,6 +212,8 @@ function shpConvertInput(files) {
 	
 	document.getElementById("status").innerHTML=initHtml;
 	// Process inputted files
+	updateCustomFileUploadInput(files.length);
+	
 	for (var fileno = 0; fileno < files.length; ++fileno) {
 		var file=files[fileno];
 		if (file !== null) {
@@ -449,6 +453,26 @@ function submitFormXMLHttpRequest(output_type, formName) {
  */
 function updateSimplificationFactorInput(val) {
       document.getElementById('simplificationFactorInput').value=val; 
+}
+		
+/*
+ * Function: 	updateCustomFileUploadInput()
+ * Parameters:  Value
+ * Returns: 	Nothing
+ * Description:	Update customFileUploadInput box if it exists
+ */
+function updateCustomFileUploadInput(val) {
+	if (document.getElementById('customFileUploadInput')) {
+		if (val == 0) {
+			document.getElementById('customFileUploadInput').value="No files selected";
+		}
+		else if (val == 1) {
+			document.getElementById('customFileUploadInput').value=val + " file selected";
+		}
+		else {
+			document.getElementById('customFileUploadInput').value=val + " files selected";
+		}
+	}
 }
 	
 /*

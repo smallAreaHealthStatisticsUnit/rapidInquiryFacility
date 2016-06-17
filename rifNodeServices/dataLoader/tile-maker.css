@@ -56,29 +56,43 @@ body {
   left: 50%;
   transform: translate(-50%, +50%);	
 }
+input[type="file"] {
+    display: none;
+}
+#quantizationSelect-button {
+  vertical-align : middle;
+}
+.customFileUpload {
+    display: inline-block;
+    padding: 6px 12px 6px 6px;
+    cursor: pointer;
+	
+	font-family: Lucida Grande,Lucida Sans,Arial,sans-serif;
+	font-size: 1em;
+
+	border: 1px solid #aed0ea;
+	background: #e4f1fb url("jquery-ui-1.11.4.custom/images/ui-bg_glass_100_e4f1fb_1x400.png") 50% 50% repeat-x;
+	font-weight: bold;
+	color: #0070a3;
+	
+	border-radius: 6px;
+	margin-bottom: 6px;
+}
 table {
 /*    color:rgb(0, 200, 255); */
     font-family: courier;
     font-size:75%;
 }
-#shpConvertSubmit {
-	float:right;
-    margin: 10px 10px 10px 10px;
-    text-rendering: auto;
-    color: initial;
-    letter-spacing: normal;
-    word-spacing: normal;
-    text-transform: none;
-    text-indent: 0px;
-    text-shadow: none;
-    display: inline-block;
-    text-align: start;
-    font: 12px Arial;
-	border-radius: 12px;
+#quantizationSelect {
+    width: 200px; 
 }
-#geo2TopoJSONSubmit {
-	float:right;
-    margin: 10px 10px 10px 10px;
+#files {
+    width: 400px; 
+}
+#shpConvertSubmit {
+/*	float:right;
+    width: 150px; */
+/*    margin: 10px 10px 10px 10px;
     text-rendering: auto;
     color: initial;
     letter-spacing: normal;
@@ -89,7 +103,7 @@ table {
     display: inline-block;
     text-align: start;
     font: 12px Arial;
-	border-radius: 12px;
+	border-radius: 12px; */
 }
 .legend {
 	text-align: left;
