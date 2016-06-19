@@ -63,6 +63,9 @@ body {
 input[type="file"] {
     display: none;
 }
+#quantizationSelect {
+    width: 200px; 
+}
 #quantizationSelect-button {
   vertical-align : middle;
 }
@@ -86,9 +89,6 @@ table {
 /*    color:rgb(0, 200, 255); */
     font-family: courier;
     font-size:75%;
-}
-#quantizationSelect {
-    width: 200px; 
 }
 #files {
     width: 400px; 
