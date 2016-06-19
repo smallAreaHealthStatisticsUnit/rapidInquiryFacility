@@ -276,10 +276,14 @@ function shpConvertInput(files) {
 						}
 						else if (zipExt == 'dbf') {
 							unzipPct=Math.round(fileContainedInZipFile._data.uncompressedSize*100/fileContainedInZipFile._data.compressedSize)
+
+							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+							var dbfData=fileContainedInZipFile.asArrayBuffer();
+							var dbfHeader=readDbfHeader(dbfData, zipName);
 							zipMsg+="<br>Zip [" + noZipFiles + "]: dBase file: " + zipName + 
 								"; expanded: " + unzipPct + 
-								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
-							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize) + "; ";							
+							console.log(zipName + ": " + JSON.stringify(dbfHeader, null, 4));
 						}
 						else {
 //							zipMsg+="<br>Zip file[" + noZipFiles + "]: file: " + zipName + 
@@ -1922,4 +1926,115 @@ function createTable(response, layerColours, layerAddOrder) {
 	};
 
 	legend.addTo(map);
+}
+
+/*
+ * Function: 	readDbfHeader()
+ * Parameters: 	File data as array buffer
+ * Returns: 	Object {
+ *					version: <file type>,
+ *					date: <file date>,
+ *					count: <record count>,
+ *					recordBytes: <record length in bytes>,
+ *					fields: {
+ *						name: <field name>,
+ *						type: <type>,
+ *						length: <field length>
+ *					}
+ * Description:	Read DBF file header
+ * 				Derived very loosely from Mike Bostocks's shapefile reader code: https://github.com/mbostock/shapefile/blob/master/dbf.js
+ * 				and the XBase DBF file format: http://www.clicketyclick.dk/databases/xbase/format/dbf.html#DBF_STRUCT
+ 
+ 
+sahsu_grd_level4.dbf: {
+    "version": 3,
+    "date": "2006-07-02T23:00:00.000Z",
+    "count": 1230,
+    "headerBytes": 193,
+    "recordBytes": 61
+}
+
+ */
+
+function readDbfHeader(dbfData, fileName) {
+	
+	function ua2text(ua, j) {
+		var s = '';
+		for (var i = 0; i < ua.length; i++) {
+			if (ua[i] != 0) { // Ignore terminating \0
+				var c=String.fromCharCode(ua[i]);
+				if (c == "") {
+					throw new Error("readDbfHeader().ua2text() DBF file: " + fileName + "; field: " + j + "; unexpected non ascii character: " + ua[i] + " in position: " + i + "Uint8Array: " + ua.toString());
+				}
+				s += c;
+			}
+		}
+		return s;
+	}
+	
+	var header=new Uint8Array(dbfData, 0, 30);
+	var records=new Uint32Array(dbfData, 4, 1);
+	var headerLength=new Uint16Array(dbfData, 8, 1);
+	var recordLength=new Uint16Array(dbfData, 10, 1);
+
+	var dbfHeader={
+		version: header[0],
+		date: new Date(1900 + header[1], header[2] - 1, header[3]), // Bytes 1-3 in format YYMMDD
+		count: records[0],
+		headerBytes: headerLength[0], 
+		noFields: (headerLength[0] - 1 /* Terminator */ - 32 /* Record header */)/32,
+		recordBytes: recordLength[0], 
+		fields: []
+	}
+	for (var i=0; i< dbfHeader.noFields; i++) {
+		var fieldDescriptor=new Uint8Array(dbfData, 32+(i*32), 32);
+		var dataType=String.fromCharCode(fieldDescriptor[11]);
+		var field = {
+			name:  ua2text(new Uint8Array(dbfData, 32+(i*32), 11), i),
+			type: dataType,
+			length: fieldDescriptor[16]
+		};
+		
+		dbfHeader.fields[i] = field;
+	}
+	
+	var terminator=new Uint8Array(dbfData, headerLength[0]-1, 1); 
+	if (terminator != 0x0d) {
+		throw new Error("readDbfHeader() DBF file: " + fileName + "; no terminator (0x0d) found in dbf file at postion: " + headerLength[0]-1);
+	}
+	
+	return dbfHeader;
+	
+/*
+	  
+	var fileReader = file.reader(filename),
+        decode = utf8.test(encoding) ? decodeUtf8 : decoder(encoding || "ISO-8859-1"),
+        fieldDescriptors = [],
+        recordBytes;
+	
+   fileReader.read(32, function(error, fileHeader) {
+
+		var fileType = fileHeader.readUInt8(0), // TODO verify 3
+            fileDate = new Date(1900 + fileHeader.readUInt8(1), fileHeader.readUInt8(2) - 1, fileHeader.readUInt8(3)),
+            recordCount = fileHeader.readUInt32LE(4);
+		recordBytes = fileHeader.readUInt16LE(10);
+		fileReader.read(fileHeader.readUInt16LE(8) - 32, function readFields(error, fields) {
+			var n = 0;
+			while (fields.readUInt8(n) != 0x0d) {
+				fieldDescriptors.push({
+					name: fieldName(decode(fields, n, n + 11)),
+					type: fields.toString("ascii", n + 11, n + 12),
+					length: fields.readUInt8(n + 16)
+				});
+				n += 32;
+			}
+			return {
+			  version: fileType,
+			  date: fileDate,
+			  count: recordCount,
+			  fields: fieldDescriptors
+			}
+		});
+   });
+   */
 }

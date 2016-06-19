@@ -100,7 +100,7 @@ table {
 #accordion .ui-accordion-header {  
     line-height: 16px;   //reduces height of the header box
     font-size: 9pt;  
-    width: 100%;  
+    width: 98%;  
     text-indent: 10px;  
 } 
 .legend {
