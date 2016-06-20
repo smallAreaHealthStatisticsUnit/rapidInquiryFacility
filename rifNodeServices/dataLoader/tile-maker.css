@@ -46,9 +46,15 @@ body {
     float:right;
 }
 #accordion {
-	width: 99%;
-	min-height: 200px;
+	width: 100%;
+	min-height: 100px;
 }
+#accordion .ui-accordion-header {  
+    line-height: 16px;   //reduces height of the header box
+    font-size: 9pt;  
+    width: 97.3%;  
+    text-indent: 10px;  
+} 
 #progressbar {
 	width: 99%;
 }
@@ -98,12 +104,6 @@ table {
     float:right;
     width: 150px; 
 }
-#accordion .ui-accordion-header {  
-    line-height: 16px;   //reduces height of the header box
-    font-size: 9pt;  
-    width: 98%;  
-    text-indent: 10px;  
-} 
 .legend {
 	text-align: left;
 	line-height: 18px;
