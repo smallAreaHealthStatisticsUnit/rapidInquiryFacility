@@ -1,11 +1,12 @@
 html {
   height: 98%;
-/*  overflow: hidden; */
+/*  overflow: hidden; */ /* This is a bad idea - #tilemaker div style works */
 }
 body {
   min-height: 98%;
 }
-#tilemaker {
+
+#tilemaker { /* Prevent browser stupidity - no left srcollbar */
   height: 98%;
 }
 #shapeFileSelectortab {
@@ -22,6 +23,7 @@ body {
 	border-style: outset;	
 	border-radius: 12px;
 }
+/* Diagnostics tab */
 #statustab {
 /*    background-color:#eeeeee; */
     height: 98%;
@@ -35,6 +37,11 @@ body {
 	border-radius: 12px;
 	overflow: scroll;
 }
+table {
+/*    color:rgb(0, 200, 255); */
+    font-family: courier;
+    font-size:75%;
+}
 #maptab {
 /*    background-color:#eeeeee; */
     float: right;
@@ -42,17 +49,21 @@ body {
     padding-left:5px; 
     padding-right:5px; 	
 }
+
 #conversion {
     float:right;
 }
+
+/* JQuery UI objects */
 #accordion {
-	width: 100%;
-	min-height: 100px;
+    line-height: 16px;   /* reduces height of the header box */
+    font-size: 12pt;  
+    text-indent: 10px;  
+	min-height: 50px;
 }
-#accordion .ui-accordion-header {  
-    line-height: 16px;   //reduces height of the header box
-    font-size: 9pt;  
-    width: 97.3%;  
+.ui-accordion-header {  
+    line-height: 16px;   /* reduces height of the header box */
+    font-size: 11pt;  
     text-indent: 10px;  
 } 
 #progressbar {
@@ -66,7 +77,7 @@ body {
   left: 50%;
   transform: translate(-50%, +50%);	
 }
-input[type="file"] {
+input[type="file"] { /* Disable to default file load look, use customFileUpload */
     display: none;
 }
 #quantizationSelect {
@@ -75,7 +86,7 @@ input[type="file"] {
 #quantizationSelect-button {
   vertical-align : middle;
 }
-.customFileUpload {
+.customFileUpload { /* This needs to inhirt the correct JQuery UI class style; the .css() function won't work on form file upload buttons! */
     display: inline-block;
     padding: 6px 12px 6px 6px;
     cursor: pointer;
@@ -91,19 +102,15 @@ input[type="file"] {
 	border-radius: 6px;
 	margin-bottom: 6px;
 }
-table {
-/*    color:rgb(0, 200, 255); */
-    font-family: courier;
-    font-size:75%;
-}
-.ui-button:focus { outline:none !important } /* Remove box artefact in firefox */
-#files {
+.ui-button:focus { outline:none !important } /* Remove dialog box artefact in firefox */
+#files { /* Set file load button message width */ 
     width: 400px; 
 }
-#shpConvertSubmit {
+#shpConvertSubmit { /* Submit button */
     float:right;
     width: 150px; 
 }
+/* Leaflet overrides: lergend box at bottom left */
 .legend {
 	text-align: left;
 	line-height: 18px;

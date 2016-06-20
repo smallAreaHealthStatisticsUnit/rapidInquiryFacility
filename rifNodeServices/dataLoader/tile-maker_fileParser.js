@@ -143,7 +143,9 @@ function shpConvertInput(files) {
 	document.getElementById("status").innerHTML=initHtml;
 	// Process inputted files
 	updateCustomFileUploadInput(files.length);
-	
+	if (document.getElementById("tabs")) { // JQuery-UI version
+		progressLabel.text( "Processing selected files");
+	}	
 	async.forEachOfSeries(files, 
 		function asyncSeriesIteree(file, fileno, callback) {
 			try {
@@ -396,14 +398,14 @@ function createAccordion(fileList) {
 				'<div>\n' +	
 				'  <label for="' + key + '_desc">Description: </label>\n' +  
 				'  <input id="' + key + '_desc" name="' + key + '_desc" type="text"><br>\n' +
-				'  <label for="' + key + '_areaIDList">Area ID\n' +
+				'  <label for="' + key + '_areaIDList">Area ID: \n' +
 				'    <select id="' + key + '_areaID" name="' + key + '_areaIDListname" form="shpConvert">\n' +
 				fieldSelect1 +
 				'    </select>\n' + 
 				'  </label>\n' +							
 				'  <label for="' + key + '_areaID_desc">Area ID description: </label>\n' +  
 				'  <input id="' + key + '_areaID_desc" name="' + key + '_areaID_desc" type="text">\n' +	
-				'  <label for="' + key + '_areaNameList">Area Name\n' +
+				'  <label for="' + key + '_areaNameList">Area Name: \n' +
 				'    <select id="' + key + '_areaName" name="' + key + '_areaNameListname" form="shpConvert">\n' +
 				fieldSelect2 +
 				'    </select>\n' + 
