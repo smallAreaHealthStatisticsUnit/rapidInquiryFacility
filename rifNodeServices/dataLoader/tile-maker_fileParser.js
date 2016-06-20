@@ -8,12 +8,23 @@ function shpConvertInput(files) {
 	var totalFileSize=0;
 	var fileList = {};
 	var xmlDocList = {};
+	var shapefileList = {};
+	var projectionList = {};
 				
 	document.getElementById("status").innerHTML=initHtml;
 	// Process inputted files
 	updateCustomFileUploadInput(files.length);
 	
 	for (var fileno = 0; fileno < files.length; ++fileno) {
+		/*
+		var percentComplete=((fileno/files.length)*100);
+		if (document.getElementById("tabs")) { // JQuery-UI version
+			progressbar.progressbar("value", percentComplete);
+			if (percentComplete == 100) {
+				progressLabel.text( "All selected files processed");
+			}
+		} */
+		
 		var file=files[fileno];
 		if (file !== null) {
 				
@@ -45,14 +56,50 @@ function shpConvertInput(files) {
 				if (ext == 'shp') {
 					document.getElementById("status").innerHTML =
 						document.getElementById("status").innerHTML + "<br>Loaded shapefile file: " + name + "; " + fileSize(file.size) + " in: " + elapsed + " S";
+					if (shapefileList[baseName]) {
+						if (fileList[baseName].fileName) {
+							throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
+						}
+						else {
+							throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".shp already processed");
+						}
+					}		
+					shapefileList[baseName] = {
+						fileSize: file.size
+					}
 				}
+				else if (ext == 'shp.ea.iso.xml') {
+					if (xmlDocList[baseName]) {
+						if (fileList[baseName].fileName) {
+							throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
+						}
+						else {
+							throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".shp.ea.iso.xml already processed");
+						}
+					}	
+					var x2js = new X2JS();					
+					xmlDocList[zipBaseName] = x2js.xml_str2json(fileContainedInZipFile.asText());
+				}					
 				else if (ext == 'dbf') {
+					if (fileList[baseName]) {
+						if (fileList[baseName].fileName) {
+							throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
+						}
+						else {
+							throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".dbf already processed");
+						}
+					}						
 					fileList[baseName] = {
-						fileName: baseName + ".shp",
-						dbfHeader: readDbfHeader(arrayBuf, name),
-						exAML: undefined
+						fileName: 	baseName + ".shp",
+						dbfHeader: 	readDbfHeader(arrayBuf, name),
+						exAML: 		undefined,
+						fileSize: 	undefined
 					};
 				}
+				
+//
+// Zip file processing
+//				
 				else if (ext == "zip") {						
 					var zip=new JSZip(arrayBuf, {} /* Options */);
 					var noZipFiles=0;
@@ -70,6 +117,14 @@ function shpConvertInput(files) {
 						else if (zipExt == 'shp.ea.iso.xml') {
 							zipMsg+="<br>Zip [" + noZipFiles + "]: " + zipName + 
 								"; ESRI extended attributes file";
+							if (xmlDocList[zipBaseName]) {
+								if (fileList[zipBaseName].fileName) {
+									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + fileList[zipBaseName].fileName + " already processed");
+								}
+								else {
+									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + zipBaseName + ".shp.ea.iso.xml already processed");
+								}
+							}						
 							var x2js = new X2JS();
 							xmlDocList[zipBaseName] = x2js.xml_str2json(fileContainedInZipFile.asText());
 							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
@@ -80,16 +135,36 @@ function shpConvertInput(files) {
 								"; expanded: " + unzipPct + 
 								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
 							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+							if (shapefileList[zipBaseName]) {
+								if (fileList[zipBaseName].fileName) {
+									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + fileList[zipBaseName].fileName + " already processed");
+								}
+								else {
+									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + zipBaseName + ".shp already processed");
+								}
+							}
+							shapefileList[zipBaseName] = {
+								fileSize: fileContainedInZipFile._data.uncompressedSize
+							}
 						}
 						else if (zipExt == 'dbf') {
 							unzipPct=Math.round(fileContainedInZipFile._data.uncompressedSize*100/fileContainedInZipFile._data.compressedSize)
 
 							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
 							var dbfData=fileContainedInZipFile.asArrayBuffer();
+							if (fileList[zipBaseName]) {
+								if (fileList[zipBaseName].fileName) {
+									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + fileList[zipBaseName].fileName + " already processed");
+								}
+								else {
+									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + zipBaseName + ".dbf already processed");
+								}
+							}
 							fileList[zipBaseName] = {
-								fileName: zipBaseName + ".shp",
-								dbfHeader: readDbfHeader(dbfData, zipName),
-								exAML: undefined
+								fileName: 	zipBaseName + ".shp",
+								dbfHeader: 	readDbfHeader(dbfData, zipName),
+								exAML: 		undefined,
+								fileSize: 	undefined
 							};
 							
 							zipMsg+="<br>Zip [" + noZipFiles + "]: dBase file: " + zipName + 
@@ -119,7 +194,12 @@ function shpConvertInput(files) {
 					}
 				}
 //				console.log("xmlDocList: " + JSON.stringify(xmlDocList, null, 4));
-					
+				for (var key in fileList) { // Add extended attributes XML doc
+					if (shapefileList[key]) {
+						fileList[key].fileSize=shapefileList[key].fileSize;
+					}
+				}
+				
 				try {
 					createAccordion(fileList);
 				}
@@ -134,7 +214,7 @@ function shpConvertInput(files) {
 				return;
 			}
 			totalFileSize+=file.size;
-			
+	
 			reader.readAsArrayBuffer(file);		
 		}
 	} 	
@@ -181,7 +261,7 @@ function createAccordion(fileList) {
 				}
 			}
 			newDiv+= 
-				'<h3>Shapefile: ' + fileList[key].fileName + '; fields: ' + fileList[key].dbfHeader.noFields + '; records: ' + fileList[key].dbfHeader.count + '</h3>\n' + 
+				'<h3>Shapefile: ' + fileList[key].fileName + '; size: ' + fileSize(fileList[key].fileSize) + '; fields: ' + fileList[key].dbfHeader.noFields + '; records: ' + fileList[key].dbfHeader.count + '</h3>\n' + 
 				'<div>\n' +	
 				'  <label for="' + key + '_desc">Description: </label>\n' +  
 				'  <input id="' + key + '_desc" name="' + key + '_desc" type="text"><br>\n' +
@@ -206,7 +286,11 @@ function createAccordion(fileList) {
 		
 		var html=$.parseHTML(newDiv);
 		if (html) {
-			$( "#accordion" ).html(newDiv);
+			if ($("#accordion").data("ui-accordion")) {
+				$("#accordion").accordion("destroy");   // Removes the accordion bits
+				$("#accordion").empty();                // Clears the contents
+			}
+			$("#accordion").html(newDiv);			// Add new
 		}
 		else {
 			throw new Error("Invalid HTML; newDiv >>>\n" + newDiv + "\n<<<");
