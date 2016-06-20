@@ -386,7 +386,6 @@ function createAccordion(fileList) {
 		}
 		
 		for (var key in fileList) {
-			console.log("Added accordion[" + key + "]: " + fileList[key].fileName);
 			
 			buttonList.push("#" + key + "_desc");
 			selectList.push("#" + key + "_areaID");
@@ -397,6 +396,10 @@ function createAccordion(fileList) {
 			fieldSelect1="";	
 			fieldSelect2="";										
 //			console.log(fileList[key].fileName + ": " + JSON.stringify(fileList[key].dbfHeader.fieldNames, null, 4));
+
+//
+// Create accordion HTML; see: https://jqueryui.com/accordion/
+//
 			for (var i=0; i< fileList[key].dbfHeader.fieldNames.length; i++) {
 				if (i==0) {
 					fieldSelect1+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '" selected="selected">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
@@ -434,7 +437,10 @@ function createAccordion(fileList) {
 				'</div>\n';
 		
 		} // End of for loop
-		
+	
+//
+// Parse accordion HTML to check validity
+//	
 		var html=$.parseHTML(newDiv);
 		if (html) {
 			if ($("#accordion").data("ui-accordion")) {
@@ -448,7 +454,7 @@ function createAccordion(fileList) {
 			throw new Error("Invalid HTML; newDiv >>>\n" + newDiv + "\n<<<");
 		}					
 			
-		for (var key in fileList) {
+		for (var key in fileList) { // Style shapefile descriptions
 			var id = key + "_desc";
 			var item = document.getElementById(id);
 			if (item) {
@@ -460,14 +466,14 @@ function createAccordion(fileList) {
 			}
 		}
 		
-		var  styleArr = ["_areaID", "_areaName"];
+		var  styleArr = ["_areaID", "_areaName"]; // Style areaID, areaName descriptions
 		for (var key in fileList) {
 			for (var j=0; j< styleArr.length; j++) {
 				var id=key + styleArr[j];
 				var item = document.getElementById(id);
 				if (item) {
 					item.style.width = "170px";
-				item.style.textAlign = "left";
+					item.style.textAlign = "left";
 				}
 				else {
 					throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
@@ -475,7 +481,7 @@ function createAccordion(fileList) {
 			}		
 		} // End of for loop
 		
-		$("#accordion").accordion({
+		$("#accordion").accordion({ // Create accordion from HTML
 //			active: false,
 //			collapsible: true,
 			heightStyle: "content"
@@ -486,7 +492,7 @@ function createAccordion(fileList) {
 		  .selectmenu( "menuWidget" )
 			.addClass( "overflow" );
 			
-		var  styleArr2 = ["_areaID-button", "_areaName-button"];
+		var  styleArr2 = ["_areaID-button", "_areaName-button"]; // Style areaID, areaName select lists
 		for (var key in fileList) {
 			for (var j=0; j< styleArr2.length; j++) {
 				var id=key + styleArr2[j];
@@ -500,6 +506,7 @@ function createAccordion(fileList) {
 			}							
 		} // End of for loop
 		tabs.tabs("refresh" );
+		console.log("Added accordion[" + key + "]: " + fileList[key].fileName);
 	} // End of if JQuery-UI version
 }	
 
@@ -569,7 +576,13 @@ sahsu_grd_level4.dbf: {
 
  */
 function readDbfHeader(dbfData, fileName) {
-	
+
+	/*
+	 * Function: 	ua2text()
+	 * Parameters: 	Uint8Array, file name
+	 * Returns: 	Uint8Array rendered as ASCII text
+	 * Description:	Converts Uint8Array to ASCII text, ignoring NULLs
+	 */	
 	function ua2text(ua, j) {
 		var s = '';
 		for (var i = 0; i < ua.length; i++) {
@@ -584,10 +597,10 @@ function readDbfHeader(dbfData, fileName) {
 		return s;
 	}
 	
-	var header=new Uint8Array(dbfData, 0, 30);
-	var records=new Uint32Array(dbfData, 4, 1);
-	var headerLength=new Uint16Array(dbfData, 8, 1);
-	var recordLength=new Uint16Array(dbfData, 10, 1);
+	var header=new Uint8Array(dbfData, 0, 30);			// First 31 bytes of file are the header
+	var records=new Uint32Array(dbfData, 4, 1);			// i.e. a 32 bit number
+	var headerLength=new Uint16Array(dbfData, 8, 1);	// i.e. a 16 bit number
+	var recordLength=new Uint16Array(dbfData, 10, 1);	// i.e. a 16 bit number
 
 	var dbfHeader={
 		version: header[0],
@@ -599,7 +612,8 @@ function readDbfHeader(dbfData, fileName) {
 		fields: [],
 		fieldNames: []
 	}
-	for (var i=0; i< dbfHeader.noFields; i++) {
+	
+	for (var i=0; i< dbfHeader.noFields; i++) { // Now add fields (in 32 bit "rows")
 		var fieldDescriptor=new Uint8Array(dbfData, 32+(i*32), 32);
 		var dataType=String.fromCharCode(fieldDescriptor[11]);
 		var field = {
@@ -613,7 +627,7 @@ function readDbfHeader(dbfData, fileName) {
 		dbfHeader.fields[i] = field;
 	}
 	
-	var terminator=new Uint8Array(dbfData, headerLength[0]-1, 32); 
+	var terminator=new Uint8Array(dbfData, headerLength[0]-1, 32); // This should align on 32 bit boundaries... (header has 31 bytes)
 	if (terminator[0] != 0x0d) {
 		throw new Error("readDbfHeader() DBF file: " + fileName + "; found: " + terminator[0].toString() + "(" + ua2text(terminator) + ")" +
 			"; no terminator (0x0d) found in dbf file at postion: " + (headerLength[0]-1) + 
