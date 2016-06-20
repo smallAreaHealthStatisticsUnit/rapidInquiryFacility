@@ -396,21 +396,21 @@ function createAccordion(fileList) {
 			newDiv+= 
 				'<h3>Shapefile: ' + fileList[key].fileName + '; size: ' + fileSize(fileList[key].fileSize) + '; fields: ' + fileList[key].dbfHeader.noFields + '; records: ' + fileList[key].dbfHeader.count + '</h3>\n' + 
 				'<div>\n' +	
-				'  <label for="' + key + '_desc">Description: </label>\n' +  
+				'  <label for="' + key + '_desc">Shape file description: </label>\n' +  
 				'  <input id="' + key + '_desc" name="' + key + '_desc" type="text"><br>\n' +
 				'  <label for="' + key + '_areaIDList">Area ID: \n' +
 				'    <select id="' + key + '_areaID" name="' + key + '_areaIDListname" form="shpConvert">\n' +
 				fieldSelect1 +
 				'    </select>\n' + 
 				'  </label>\n' +							
-				'  <label for="' + key + '_areaID_desc">Area ID description: </label>\n' +  
+				'  <label for="' + key + '_areaID_desc">Label: </label>\n' +  
 				'  <input id="' + key + '_areaID_desc" name="' + key + '_areaID_desc" type="text">\n' +	
 				'  <label for="' + key + '_areaNameList">Area Name: \n' +
 				'    <select id="' + key + '_areaName" name="' + key + '_areaNameListname" form="shpConvert">\n' +
 				fieldSelect2 +
 				'    </select>\n' + 
 				'  </label>\n' +
-				'  <label for="' + key + '_areaName_desc">Area Name description: </label>\n' +  
+				'  <label for="' + key + '_areaName_desc">Label: </label>\n' +  
 				'  <input id="' + key + '_areaName_desc" name="' + key + '_areaName_desc" type="text"></div>\n' +								
 				'</div>\n';
 		
@@ -435,7 +435,7 @@ function createAccordion(fileList) {
 				var id=key + styleArr[j];
 				var item = document.getElementById(id);
 				if (item) {
-					item.style.width = "200px";
+					item.style.width = "170px";
 				}
 				else {
 					throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");

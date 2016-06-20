@@ -38,7 +38,7 @@ table {
 #maptab {
 /*    background-color:#eeeeee; */
     float: right;
-	width: 100%;
+	width: 100%; 
     padding-left:5px; 
     padding-right:5px; 	
 }
@@ -54,9 +54,18 @@ table {
     text-indent: 10px;  
 	min-height: 50px;
 }
+.ui-tabs .ui-tabs-nav {  
+    line-height: 16px;   /* reduces height of the header box */
+    font-size: 11pt !important;    
+} 
+.ui-accordion {  
+    line-height: 16px;   /* reduces height of the header box */
+    font-size: 11pt !important;  
+    text-indent: 10px;  
+} 
 .ui-accordion-header {  
     line-height: 16px;   /* reduces height of the header box */
-    font-size: 11pt;  
+    font-size: 11pt !important;  
     text-indent: 10px;  
 } 
 #progressbar {
