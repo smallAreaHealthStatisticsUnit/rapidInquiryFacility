@@ -5,6 +5,71 @@
  * Description:	Lots
  */
 function shpConvertInput(files) {
+
+	/*
+	 * Function: 	processFile()
+	 * Parameters: 	File name, file size, base file name (no extension, no directory), zip file name (optional), data (for DBF as arraybuf, for .shp.ea.iso.xml as text)
+	 * Returns: 	Nothing
+	 * Description:	Process file by type: SHP, DBF or .SHP.EA.ISO.XML (extended attributes XML file)
+	 * Uses:		fileList 
+	 *				xmlDocList 
+	 *				shapefileList 
+	 */	
+	function processFile(fileName, fileSizeBytes, baseName, ext, zipFileName, data) {
+		scopeChecker({ // Check - should be in scope!
+			fileList: fileList,
+			xmlDocList: xmlDocList,
+			shapefileList: shapefileList 
+		});
+		
+		var end=new Date().getTime();
+		var elapsed=(end - lstart)/1000; // in S	
+				
+		if (ext == 'shp') {
+			document.getElementById("status").innerHTML =
+				document.getElementById("status").innerHTML + "<br>Loaded shapefile file: " + name + "; " + fileSize(fileSizeBytes) + " in: " + elapsed + " S";
+			if (shapefileList[baseName]) {
+				if (fileList[baseName].fileName) {
+					throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
+				}
+				else {
+					throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".shp already processed");
+				}
+			}		
+			shapefileList[baseName] = {
+				fileSize: fileSizeBytes
+			}
+		}
+		else if (ext == 'shp.ea.iso.xml') {
+			if (xmlDocList[baseName]) {
+				if (fileList[baseName].fileName) {
+					throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
+				}
+				else {
+					throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".shp.ea.iso.xml already processed");
+				}
+			}	
+			var x2js = new X2JS();					
+			xmlDocList[baseName] = x2js.xml_str2json(data);
+		}					
+		else if (ext == 'dbf') {
+			if (fileList[baseName]) {
+				if (fileList[baseName].fileName) {
+					throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
+				}
+				else {
+					throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".dbf already processed");
+				}
+			}						
+			fileList[baseName] = {
+				fileName: 	baseName + ".shp",
+				dbfHeader: 	readDbfHeader(data, name),
+				exAML: 		undefined,
+				fileSize: 	undefined
+			};
+		}
+	} // End of processFile()
+	
 	var totalFileSize=0;
 	var fileList = {};
 	var xmlDocList = {};
@@ -52,49 +117,16 @@ function shpConvertInput(files) {
 				var arrayBuf = new Uint8Array(event.target.result);
 				var arrayIndex = 0;		  
 				
-
-				if (ext == 'shp') {
-					document.getElementById("status").innerHTML =
-						document.getElementById("status").innerHTML + "<br>Loaded shapefile file: " + name + "; " + fileSize(file.size) + " in: " + elapsed + " S";
-					if (shapefileList[baseName]) {
-						if (fileList[baseName].fileName) {
-							throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
-						}
-						else {
-							throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".shp already processed");
-						}
-					}		
-					shapefileList[baseName] = {
-						fileSize: file.size
-					}
+				var data;
+				if (ext == 'shp.ea.iso.xml') {
+					data=arrayBuf.toString();
 				}
-				else if (ext == 'shp.ea.iso.xml') {
-					if (xmlDocList[baseName]) {
-						if (fileList[baseName].fileName) {
-							throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
-						}
-						else {
-							throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".shp.ea.iso.xml already processed");
-						}
-					}	
-					var x2js = new X2JS();					
-					xmlDocList[zipBaseName] = x2js.xml_str2json(fileContainedInZipFile.asText());
-				}					
 				else if (ext == 'dbf') {
-					if (fileList[baseName]) {
-						if (fileList[baseName].fileName) {
-							throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
-						}
-						else {
-							throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".dbf already processed");
-						}
-					}						
-					fileList[baseName] = {
-						fileName: 	baseName + ".shp",
-						dbfHeader: 	readDbfHeader(arrayBuf, name),
-						exAML: 		undefined,
-						fileSize: 	undefined
-					};
+					data=arrayBuf;
+				}
+										
+				if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf') {
+					processFile(file.name, file.size, baseName, ext, undefined /* Zip file name */, data);
 				}
 				
 //
@@ -117,17 +149,7 @@ function shpConvertInput(files) {
 						else if (zipExt == 'shp.ea.iso.xml') {
 							zipMsg+="<br>Zip [" + noZipFiles + "]: " + zipName + 
 								"; ESRI extended attributes file";
-							if (xmlDocList[zipBaseName]) {
-								if (fileList[zipBaseName].fileName) {
-									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + fileList[zipBaseName].fileName + " already processed");
-								}
-								else {
-									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + zipBaseName + ".shp.ea.iso.xml already processed");
-								}
-							}						
-							var x2js = new X2JS();
-							xmlDocList[zipBaseName] = x2js.xml_str2json(fileContainedInZipFile.asText());
-							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+							data=fileContainedInZipFile.asText();
 						}
 						else if (zipExt == 'shp') {
 							unzipPct=Math.round(fileContainedInZipFile._data.uncompressedSize*100/fileContainedInZipFile._data.compressedSize)
@@ -135,48 +157,19 @@ function shpConvertInput(files) {
 								"; expanded: " + unzipPct + 
 								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
 							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
-							if (shapefileList[zipBaseName]) {
-								if (fileList[zipBaseName].fileName) {
-									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + fileList[zipBaseName].fileName + " already processed");
-								}
-								else {
-									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + zipBaseName + ".shp already processed");
-								}
-							}
-							shapefileList[zipBaseName] = {
-								fileSize: fileContainedInZipFile._data.uncompressedSize
-							}
 						}
 						else if (zipExt == 'dbf') {
-							unzipPct=Math.round(fileContainedInZipFile._data.uncompressedSize*100/fileContainedInZipFile._data.compressedSize)
-
-							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
-							var dbfData=fileContainedInZipFile.asArrayBuffer();
-							if (fileList[zipBaseName]) {
-								if (fileList[zipBaseName].fileName) {
-									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + fileList[zipBaseName].fileName + " already processed");
-								}
-								else {
-									throw new Error("Duplicate zipfile file: " + zipName + "; file: " + zipBaseName + ".dbf already processed");
-								}
-							}
-							fileList[zipBaseName] = {
-								fileName: 	zipBaseName + ".shp",
-								dbfHeader: 	readDbfHeader(dbfData, zipName),
-								exAML: 		undefined,
-								fileSize: 	undefined
-							};
-							
-							zipMsg+="<br>Zip [" + noZipFiles + "]: dBase file: " + zipName + 
-								"; expanded: " + unzipPct + 
-								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize) + "; ";		
-//							console.log(zipName + ": " + JSON.stringify(fileList[zipBaseName].dbfHeader, null, 4));
+							data=fileContainedInZipFile.asArrayBuffer();
 						}
 						else {
 //							zipMsg+="<br>Zip file[" + noZipFiles + "]: file: " + zipName + 
 //								"; expanded: " + unzipPct + 
 //								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize) + "; extension: " + zipExt;
 							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+						}
+						
+						if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf') {
+							processFile(zipName, fileContainedInZipFile._data.uncompressedSize, zipBaseName, zipExt, zipName /* Zip file name */, data);
 						}
 					} // End of for loop
 					document.getElementById("status").innerHTML =
