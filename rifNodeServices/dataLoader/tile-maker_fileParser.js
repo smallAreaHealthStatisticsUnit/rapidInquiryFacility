@@ -146,6 +146,7 @@ function shpConvertInput(files) {
 	
 	var lstart;
 	var totalFileSize=0;
+	fileList = {};
 	var xmlDocList = {};
 	var shapefileList = {};
 	var projectionList = {};
@@ -271,6 +272,8 @@ function shpConvertInput(files) {
 							document.getElementById("status").innerHTML =
 								document.getElementById("status").innerHTML + '<br>Loaded and unzipped file: ' + name + 
 									"; from: " + fileSize(file.size) + " to: " + fileSize(totalUncompressedSize) + "; in: " + elapsed + " S" + zipMsg;	
+									
+							zip=undefined;
 						} // End of zip processing			
 						else {
 							document.getElementById("status").innerHTML =
@@ -334,7 +337,7 @@ function shpConvertInput(files) {
 						<gco:CharacterString>The State-County at a scale of 1:500,000</gco:CharacterString>
 					</gmx:scope>
 				 */
-				if (xmlDocList[key].scope && xmlDocList[key].scope.CharacterString && xmlDocList[key].scope.CharacterString.__text) {
+				if (xmlDocList[key] && xmlDocList[key].scope && xmlDocList[key].scope.CharacterString && xmlDocList[key].scope.CharacterString.__text) {
 					fileList[key].description = xmlDocList[key].scope.CharacterString.__text;	// Add scope 
 					
 					if (xmlDocList[key].featureType && xmlDocList[key].featureType.FC_FeatureType && xmlDocList[key].featureType.FC_FeatureType.carrierOfCharacteristics) {
@@ -530,6 +533,10 @@ function createAccordion(fileList) {
 				$( "#" + id ).on( "selectmenuchange", function(event, ui) { // Add change function to aync _desc field
 					updateAreaIdNameDesc(event.target.id, event.target.parentNode.parentNode.id, this.value);
 				});
+				
+				var myId = document.getElementById(id);
+				updateAreaIdNameDesc(myId.id, myId.parentNode.parentNode.id, $( "#" + id ).val()); // Set defaults
+				
 				var item = document.getElementById(id);
 				if (item) {
 					item.style.width = "170px";
