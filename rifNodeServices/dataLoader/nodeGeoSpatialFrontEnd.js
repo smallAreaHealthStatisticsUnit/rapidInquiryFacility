@@ -1282,9 +1282,11 @@ function displayResponse(responseText, status, formName) {
 	}	
 	
 	var end=new Date().getTime();
-	var elapsed=(Math.round(end - start, 2))/1000; // in S
+	var elapsed=(Math.round((end - start)/100))/10; // in S
 	msg+="Time taken: " + elapsed + " S; upload time: " + uploadTime + " S; server time: " + serverTime + " S [excluding map draw time]</br>";
-	
+	if (document.getElementById("progressbar")) { // JQuery-UI version
+		$(".progress-label").text( "Processing completed in " +  elapsed + " S");
+	}
 	if (response.message) {
 		msg+="<p>Processing diagnostic messages:</br><div id=\"div_message\" style=\"overflow:scroll; height: 400px;\"><pre>" + response.message + "</pre></div?</p>"
 	}

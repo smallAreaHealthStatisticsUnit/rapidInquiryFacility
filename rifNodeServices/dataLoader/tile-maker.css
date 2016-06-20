@@ -48,26 +48,23 @@ table {
 }
 
 /* JQuery UI objects */
-#accordion {
-    line-height: 16px;   /* reduces height of the header box */
-    font-size: 12pt;  
-    text-indent: 10px;  
-	min-height: 50px;
-}
 .ui-tabs .ui-tabs-nav {  
-    line-height: 16px;   /* reduces height of the header box */
+    line-height: 16px;   /* reduces height of the tab selector */
     font-size: 11pt !important;    
 } 
-.ui-accordion {  
-    line-height: 16px;   /* reduces height of the header box */
+.ui-accordion-content {  
     font-size: 11pt !important;  
-    text-indent: 10px;  
+	padding: 10px 20px !important;
 } 
 .ui-accordion-header {  
-    line-height: 16px;   /* reduces height of the header box */
+    line-height: 18px;   /* reduces height of the header box */
     font-size: 11pt !important;  
     text-indent: 10px;  
 } 
+
+.my-accordion-fields1 {	/* Add space between field rows */
+	margin-bottom: 5px;
+}
 #progressbar {
 	width: 99.5%;
 }
