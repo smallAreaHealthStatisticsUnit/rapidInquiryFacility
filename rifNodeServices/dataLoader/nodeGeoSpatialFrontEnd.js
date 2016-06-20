@@ -720,7 +720,7 @@ function setStatus(msg, err, diagnostic, stack) {
 			var error=status;
 			if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
 				error=document.getElementById("error");
-				error.innerHTML="<h3>" + errm + "</h3>";
+				error.innerHTML="<h3>" + msg + "</h3><p>" + errm + "</p>";
 			}
 			else {
 				error.innerHTML = "<h1>" + msg + "</h1><h2>Error: " + errm + "</h2>";

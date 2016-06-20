@@ -1,3 +1,50 @@
+// ************************************************************************
+//
+// GIT Header
+//
+// $Format:Git ID: (%h) %ci$
+// $Id: 7ccec3471201c4da4d181af6faef06a362b29526 $
+// Version hash: $Format:%H$
+//
+// Description:
+//
+// Rapid Enquiry Facility (RIF) - File parser functions
+//
+// Copyright:
+//
+// The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+// that rapidly addresses epidemiological and public health questions using 
+// routinely collected health and population data and generates standardised 
+// rates and relative risks for any given health outcome, for specified age 
+// and year ranges, for any given geographical area.
+//
+// Copyright 2014 Imperial College London, developed by the Small Area
+// Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+// is funded by the Public Health England as part of the MRC-PHE Centre for 
+// Environment and Health. Funding for this project has also been received 
+// from the Centers for Disease Control and Prevention.  
+//
+// This file is part of the Rapid Inquiry Facility (RIF) project.
+// RIF is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// RIF is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+// to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+// Boston, MA 02110-1301 USA
+//
+// Author:
+//
+// Peter Hambly, SAHSU
+//
+
 /*
  * Function: 	shpConvertInput()
  * Parameters: 	files object
@@ -28,6 +75,7 @@ function shpConvertInput(files) {
 		var end=new Date().getTime();
 		var elapsed=(end - lstart)/1000; // in S	
 				
+		console.log("Processing file: " + fileName);
 		if (ext == 'shp') {
 			document.getElementById("status").innerHTML =
 				document.getElementById("status").innerHTML + "<br>Loaded shapefile file: " + name + "; " + fileSize(fileSizeBytes) + " in: " + elapsed + " S";
@@ -85,6 +133,7 @@ function shpConvertInput(files) {
 		}
 	} // End of processFile()
 	
+	var lstart;
 	var totalFileSize=0;
 	var fileList = {};
 	var xmlDocList = {};
@@ -95,7 +144,164 @@ function shpConvertInput(files) {
 	// Process inputted files
 	updateCustomFileUploadInput(files.length);
 	
-	for (var fileno = 0; fileno < files.length; ++fileno) {
+//	for (var fileno = 0; fileno < files.length; ++fileno) {
+	async.forEachOfSeries(files, 
+		function asyncSeriesIteree(file, fileno, callback) {
+			try {
+				if (file !== null) {
+						
+					var name = file.name;	
+					var ext = name.substring(name.indexOf('.') + 1).toLowerCase(); 				// Use the first "."
+					var fileName = name.substring(name.lastIndexOf('/') + 1).toLowerCase(); 	// Remove path
+					var baseName = fileName.substring(0, fileName.indexOf('.')).toLowerCase();	// Remove extension, use the first "."
+					
+					var reader = new FileReader();
+					var savHtlml=document.getElementById("status").innerHTML;
+
+					if (ext == "zip") {				
+						document.getElementById("status").innerHTML =
+							savHtlml + '<br>Loading and unzipping file [' + (fileno+1) + ']: ' + name + "; " + fileSize(file.size);	
+					}
+					else {				
+						document.getElementById("status").innerHTML =
+							savHtlml + '<br>Loading file [' + (fileno+1) + ']: ' + name + "; " + fileSize(file.size);	
+					}
+
+					lstart=new Date().getTime();		
+					
+					reader.onloadend = function fileReaderOnloadend(event) {
+						console.log("[" + fileno + "] Loading file: " + name);
+							
+						var end=new Date().getTime();
+						var elapsed=(end - lstart)/1000; // in S			
+					
+						var arrayBuf = new Uint8Array(event.target.result);
+						var arrayIndex = 0;		  
+						
+						var data;
+						if (ext == 'shp.ea.iso.xml') {
+							data=arrayBuf.toString();
+						}
+						if (ext == 'prj') {
+							data=arrayBuf.toString();
+						}
+						else if (ext == 'dbf') {
+							data=arrayBuf;
+						}
+												
+						if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf' || zipExt == 'prj') {
+							processFile(file.name, file.size, baseName, ext, undefined /* Zip file name */, data, fileList);
+						}
+						
+		//
+		// Zip file processing
+		//				
+						else if (ext == "zip") {						
+							var zip=new JSZip(arrayBuf, {} /* Options */);
+							var noZipFiles=0;
+							var totalUncompressedSize=0;
+							var zipMsg="";
+							for (var ZipIndex in zip.files) {
+								noZipFiles++;
+								var fileContainedInZipFile=zip.files[ZipIndex];
+								
+								var zipExt = fileContainedInZipFile.name.substring(fileContainedInZipFile.name.indexOf('.', 1) + 1).toLowerCase();		// Use the first "."
+								var zipName = fileContainedInZipFile.name.substring(fileContainedInZipFile.name.lastIndexOf('/') + 1).toLowerCase();	// Remove path
+								var zipBaseName = zipName.substring(0, zipName.indexOf('.')).toLowerCase();												// Remove extension, use the first "."
+								
+								if (fileContainedInZipFile.dir) {
+									zipMsg+="<br>Zip [" + noZipFiles + "]: directory: " + fileContainedInZipFile.name;
+								}
+								else if (zipExt == 'shp.ea.iso.xml') {
+									zipMsg+="<br>Zip [" + noZipFiles + "]: " + zipName + 
+										"; ESRI extended attributes file";
+									data=fileContainedInZipFile.asText();
+								}
+								else if (zipExt == 'prj') {
+									zipMsg+="<br>Zip [" + noZipFiles + "]: " + zipName + 
+										"; Projection file";
+									data=fileContainedInZipFile.asText();
+								}
+								else if (zipExt == 'shp') {
+									unzipPct=Math.round(fileContainedInZipFile._data.uncompressedSize*100/fileContainedInZipFile._data.compressedSize)
+									zipMsg+="<br>Zip [" + noZipFiles + "]: shapefile file: " + zipName + 
+										"; expanded: " + unzipPct + 
+										"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
+									totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+								}
+								else if (zipExt == 'dbf') {
+									data=fileContainedInZipFile.asArrayBuffer();
+								}
+								else {
+		//							zipMsg+="<br>Zip file[" + noZipFiles + "]: file: " + zipName + 
+		//								"; expanded: " + unzipPct + 
+		//								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize) + "; extension: " + zipExt;
+									totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+								}
+								
+								if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf'|| zipExt == 'prj') {
+									processFile(zipName, fileContainedInZipFile._data.uncompressedSize, zipBaseName, zipExt, zipName /* Zip file name */, data, fileList);
+								}
+							} // End of for loop
+							document.getElementById("status").innerHTML =
+								document.getElementById("status").innerHTML + '<br>Loaded and unzipped file: ' + name + 
+									"; from: " + fileSize(file.size) + " to: " + fileSize(totalUncompressedSize) + "; in: " + elapsed + " S" + zipMsg;	
+						} // End of zip processing			
+						else {
+							document.getElementById("status").innerHTML =
+								document.getElementById("status").innerHTML + '<br>Loaded file: ' + name + "; " + fileSize(file.size) + " in: " + elapsed + " S";	
+						}
+						
+						callback();						
+					} // End of jsZipReaderOnloadend()
+					
+					reader.onerror = function fileReaderOnerror(err) {
+						setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
+							name, err, undefined, err.stack); 		
+						return;
+					}
+					totalFileSize+=file.size;
+			
+					reader.readAsArrayBuffer(file); // Async		
+				}		
+			}
+			catch (e) {
+				callback(e);
+			}
+		}, // End of asyncSeriesIteree() 
+		function asyncSeriesEnd(err) {
+			for (var key in fileList) { // Add extended attributes XML doc
+				if (xmlDocList[key]) {
+					fileList[key].exAML=xmlDocList[key];
+				}
+			}
+		//				console.log("xmlDocList: " + JSON.stringify(xmlDocList, null, 4));
+			for (var key in fileList) { // Add shapefile size
+				if (shapefileList[key]) {
+					fileList[key].fileSize=shapefileList[key].fileSize;
+				}
+				else {
+					throw new Error("Missing shape file: " + fileList[baseName].fileName);						
+				}
+			}
+			for (var key in fileList) { // Add projection
+				if (projectionList[key]) {
+					fileList[key].projection=projectionList[key];
+				}
+				else {
+					throw new Error("Missing projection file: " + fileList[baseName].fileName);						
+				}
+			}	
+						
+			try {
+				createAccordion(fileList);
+			}
+			catch (err) {
+				setStatus("ERROR! Unable to create accordion from list of files", 
+					err, undefined, err.stack); 
+			}
+		} // End of asyncSeriesEnd
+	);		
 		/*
 		var percentComplete=((fileno/files.length)*100);
 		if (document.getElementById("tabs")) { // JQuery-UI version
@@ -104,151 +310,9 @@ function shpConvertInput(files) {
 				progressLabel.text( "All selected files processed");
 			}
 		} */
-		
-		var file=files[fileno];
-		if (file !== null) {
-				
-			var name = file.name;	
-			var ext = name.substring(name.indexOf('.') + 1).toLowerCase(); 				// Use the first "."
-			var fileName = name.substring(name.lastIndexOf('/') + 1).toLowerCase(); 	// Remove path
-			var baseName = fileName.substring(0, fileName.indexOf('.')).toLowerCase();	// Remove extension, use the first "."
-			
-			var reader = new FileReader();
-			var savHtlml=document.getElementById("status").innerHTML;
-
-			if (ext == "zip") {				
-				document.getElementById("status").innerHTML =
-					savHtlml + '<br>Loading and unzipping file [' + (fileno+1) + ']: ' + name + "; " + fileSize(file.size);	
-			}
-			else {				
-				document.getElementById("status").innerHTML =
-					savHtlml + '<br>Loading file [' + (fileno+1) + ']: ' + name + "; " + fileSize(file.size);	
-			}
-
-			var lstart=new Date().getTime();				
-			reader.onloadend = function jsZipReaderOnloadend(event) {
-					
-				var end=new Date().getTime();
-				var elapsed=(end - lstart)/1000; // in S			
-			
-				var arrayBuf = new Uint8Array(event.target.result);
-				var arrayIndex = 0;		  
-				
-				var data;
-				if (ext == 'shp.ea.iso.xml') {
-					data=arrayBuf.toString();
-				}
-				if (ext == 'prj') {
-					data=arrayBuf.toString();
-				}
-				else if (ext == 'dbf') {
-					data=arrayBuf;
-				}
-										
-				if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf' || zipExt == 'prj') {
-					processFile(file.name, file.size, baseName, ext, undefined /* Zip file name */, data);
-				}
-				
-//
-// Zip file processing
-//				
-				else if (ext == "zip") {						
-					var zip=new JSZip(arrayBuf, {} /* Options */);
-					var noZipFiles=0;
-					var totalUncompressedSize=0;
-					var zipMsg="";
-					for (var ZipIndex in zip.files) {
-						noZipFiles++;
-						var fileContainedInZipFile=zip.files[ZipIndex];
-						
-						var zipExt = fileContainedInZipFile.name.substring(fileContainedInZipFile.name.indexOf('.', 1) + 1).toLowerCase();		// Use the first "."
-						var zipName = fileContainedInZipFile.name.substring(fileContainedInZipFile.name.lastIndexOf('/') + 1).toLowerCase();	// Remove path
-						var zipBaseName = zipName.substring(0, zipName.indexOf('.')).toLowerCase();												// Remove extension, use the first "."
-						
-						if (fileContainedInZipFile.dir) {
-							zipMsg+="<br>Zip [" + noZipFiles + "]: directory: " + fileContainedInZipFile.name;
-						}
-						else if (zipExt == 'shp.ea.iso.xml') {
-							zipMsg+="<br>Zip [" + noZipFiles + "]: " + zipName + 
-								"; ESRI extended attributes file";
-							data=fileContainedInZipFile.asText();
-						}
-						else if (zipExt == 'prj') {
-							zipMsg+="<br>Zip [" + noZipFiles + "]: " + zipName + 
-								"; Projection file";
-							data=fileContainedInZipFile.asText();
-						}
-						else if (zipExt == 'shp') {
-							unzipPct=Math.round(fileContainedInZipFile._data.uncompressedSize*100/fileContainedInZipFile._data.compressedSize)
-							zipMsg+="<br>Zip [" + noZipFiles + "]: shapefile file: " + zipName + 
-								"; expanded: " + unzipPct + 
-								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
-							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
-						}
-						else if (zipExt == 'dbf') {
-							data=fileContainedInZipFile.asArrayBuffer();
-						}
-						else {
-//							zipMsg+="<br>Zip file[" + noZipFiles + "]: file: " + zipName + 
-//								"; expanded: " + unzipPct + 
-//								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize) + "; extension: " + zipExt;
-							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
-						}
-						
-						if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf'|| zipExt == 'prj') {
-							processFile(zipName, fileContainedInZipFile._data.uncompressedSize, zipBaseName, zipExt, zipName /* Zip file name */, data);
-						}
-					} // End of for loop
-					document.getElementById("status").innerHTML =
-						document.getElementById("status").innerHTML + '<br>Loaded and unzipped file: ' + name + 
-							"; from: " + fileSize(file.size) + " to: " + fileSize(totalUncompressedSize) + "; in: " + elapsed + " S" + zipMsg;	
-				} // End iof zip processing			
-				else {
-					document.getElementById("status").innerHTML =
-						document.getElementById("status").innerHTML + '<br>Loaded file: ' + name + "; " + fileSize(file.size) + " in: " + elapsed + " S";	
-				}	
-
-				for (var key in fileList) { // Add extended attributes XML doc
-					if (xmlDocList[key]) {
-						fileList[key].exAML=xmlDocList[key];
-					}
-				}
-//				console.log("xmlDocList: " + JSON.stringify(xmlDocList, null, 4));
-				for (var key in fileList) { // Add shapefile size
-					if (shapefileList[key]) {
-						fileList[key].fileSize=shapefileList[key].fileSize;
-					}
-					else {
-						throw new Error("Missing shape file: " + fileList[baseName].fileName);						
-					}
-				}
-				for (var key in fileList) { // Add projection
-					if (projectionList[key]) {
-						fileList[key].projection=projectionList[key];
-					}
-					else {
-						throw new Error("Missing projection file: " + fileList[baseName].fileName);						
-					}
-				}				
-				try {
-					createAccordion(fileList);
-				}
-				catch (err) {
-					setStatus("ERROR! Unable to create accordion from list of files", 
-						err, undefined, err.stack); 
-				}
-			} // End of jsZipReaderOnloadend()
-			
-			reader.onerror = function jsZipReaderOnerror(err) {
-				setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
-					name, err, undefined, err.stack); 		
-				return;
-			}
-			totalFileSize+=file.size;
 	
-			reader.readAsArrayBuffer(file);		
-		}
-	} 	
+//	} // End of file processing loop
+				
 } // End of shpConvertInput()
 
 /*
@@ -264,7 +328,11 @@ function createAccordion(fileList) {
 		var fieldSelect2;	
 		var buttonList = [];
 		var selectList = [];
-						
+				
+		if (fileList == undefined || Object.keys(fileList).length == 0) {
+			throw new Error("No fileList");
+		}
+		
 		for (var key in fileList) {
 			console.log("Added accordion[" + key + "]: " + fileList[key].fileName);
 			
@@ -276,7 +344,7 @@ function createAccordion(fileList) {
 			
 			fieldSelect1="";	
 			fieldSelect2="";										
-			console.log(fileList[key].fileName + ": " + JSON.stringify(fileList[key].dbfHeader.fieldNames, null, 4));
+//			console.log(fileList[key].fileName + ": " + JSON.stringify(fileList[key].dbfHeader.fieldNames, null, 4));
 			for (var i=0; i< fileList[key].dbfHeader.fieldNames.length; i++) {
 				if (i==0) {
 					fieldSelect1+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '" selected="selected">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
@@ -311,8 +379,7 @@ function createAccordion(fileList) {
 				'  <label for="' + key + '_areaName_desc">Area Name description: </label>\n' +  
 				'  <input id="' + key + '_areaName_desc" name="' + key + '_areaName_desc" type="text"></div>\n' +								
 				'</div>\n';
-				console.log(fileList[key].fileName + ": newDiv >>>\n" + newDiv + "\n<<<");
-			$('#accordion').append(newDiv)
+		
 		} // End of for loop
 		
 		var html=$.parseHTML(newDiv);
@@ -321,12 +388,13 @@ function createAccordion(fileList) {
 				$("#accordion").accordion("destroy");   // Removes the accordion bits
 				$("#accordion").empty();                // Clears the contents
 			}
+			console.log(fileList[key].fileName + ": newDiv >>>\n" + newDiv + "\n<<<");
 			$("#accordion").html(newDiv);			// Add new
 		}
 		else {
 			throw new Error("Invalid HTML; newDiv >>>\n" + newDiv + "\n<<<");
-		}	
-		
+		}					
+			
 		var  styleArr = ["_areaID", "_areaName"];
 		for (var key in fileList) {
 			for (var j=0; j< styleArr.length; j++) {
@@ -366,7 +434,7 @@ function createAccordion(fileList) {
 			}							
 		} // End of for loop
 		tabs.tabs("refresh" );
-	}
+	} // End of if JQuery-UI version
 }	
 
 /*
