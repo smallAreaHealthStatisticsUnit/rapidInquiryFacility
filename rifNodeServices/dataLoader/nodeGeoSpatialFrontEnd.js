@@ -224,9 +224,10 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	if (files.length == 0) {
 		if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
 			document.getElementById("error").innerHTML = "<h3>No files selected</h3>";
+			var errorWidth=document.getElementById('tabbox').offsetWidth-300;
 			$( "#error" ).dialog({
 				modal: true,
-				width: 700
+				width: errorWidth
 			});
 		}	
 		else {	
@@ -447,9 +448,10 @@ webkitRelativePath: ""} .. then inherited
 	if (fileCount == 0) {
 		if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
 			document.getElementById("error").innerHTML = "<h3>No files selected</h3>";
+			var errorWidth=document.getElementById('tabbox').offsetWidth-300;
 			$( "#error" ).dialog({
 				modal: true,
-				width: 700
+				width: errorWidth
 			});
 		}	
 		else {	
@@ -738,10 +740,12 @@ function setStatus(msg, err, diagnostic, stack) {
 			} 
 				
 			if (document.getElementById("tabs") && tabs) { // JQuery-UI version
+			
+				var errorWidth=document.getElementById('tabbox').offsetWidth-300;
 				if (errm) {
 					$( "#error" ).dialog({
 						modal: true,
-						width: 700
+						width: errorWidth
 					});
 				}
 				tabs.tabs("refresh" );

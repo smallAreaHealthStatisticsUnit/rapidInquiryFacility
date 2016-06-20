@@ -90,6 +90,7 @@ table {
     font-family: courier;
     font-size:75%;
 }
+.ui-button:focus { outline:none !important } /* Remove box artefact in firefox */
 #files {
     width: 400px; 
 }
