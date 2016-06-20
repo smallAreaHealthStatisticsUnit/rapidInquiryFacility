@@ -8,18 +8,21 @@ function shpConvertInput(files) {
 
 	/*
 	 * Function: 	processFile()
-	 * Parameters: 	File name, file size, base file name (no extension, no directory), zip file name (optional), data (for DBF as arraybuf, for .shp.ea.iso.xml as text)
+	 * Parameters: 	File name, file size, base file name (no extension, no directory), zip file name (optional), 
+	 *				data (for DBF as arraybuf, for .shp.ea.iso.xml and .prj as text)
 	 * Returns: 	Nothing
-	 * Description:	Process file by type: SHP, DBF or .SHP.EA.ISO.XML (extended attributes XML file)
+	 * Description:	Process file by type: SHP, DBF or .SHP.EA.ISO.XML (extended attributes XML file); add to three used objects; detect duplicates
 	 * Uses:		fileList 
 	 *				xmlDocList 
 	 *				shapefileList 
+	 *				projectionList
 	 */	
 	function processFile(fileName, fileSizeBytes, baseName, ext, zipFileName, data) {
 		scopeChecker({ // Check - should be in scope!
 			fileList: fileList,
 			xmlDocList: xmlDocList,
-			shapefileList: shapefileList 
+			shapefileList: shapefileList,
+			projectionList: projectionList			
 		});
 		
 		var end=new Date().getTime();
@@ -30,10 +33,10 @@ function shpConvertInput(files) {
 				document.getElementById("status").innerHTML + "<br>Loaded shapefile file: " + name + "; " + fileSize(fileSizeBytes) + " in: " + elapsed + " S";
 			if (shapefileList[baseName]) {
 				if (fileList[baseName].fileName) {
-					throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
+					throw new Error("Duplicate file: " +  fileName + "; file: " + fileList[baseName].fileName + " already processed");
 				}
 				else {
-					throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".shp already processed");
+					throw new Error("Duplicate file: " +  ffileName + "; file: " + baseName + ".shp already processed");
 				}
 			}		
 			shapefileList[baseName] = {
@@ -43,10 +46,10 @@ function shpConvertInput(files) {
 		else if (ext == 'shp.ea.iso.xml') {
 			if (xmlDocList[baseName]) {
 				if (fileList[baseName].fileName) {
-					throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
+					throw new Error("Duplicate file: " +  fileName + "; file: " + fileList[baseName].fileName + " already processed");
 				}
 				else {
-					throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".shp.ea.iso.xml already processed");
+					throw new Error("Duplicate file: " +  fileName + "; file: " + baseName + ".shp.ea.iso.xml already processed");
 				}
 			}	
 			var x2js = new X2JS();					
@@ -55,18 +58,30 @@ function shpConvertInput(files) {
 		else if (ext == 'dbf') {
 			if (fileList[baseName]) {
 				if (fileList[baseName].fileName) {
-					throw new Error("Duplicate file: " +  file.name + "; file: " + fileList[baseName].fileName + " already processed");
+					throw new Error("Duplicate file: " +  fileName + "; file: " + fileList[baseName].fileName + " already processed");
 				}
 				else {
-					throw new Error("Duplicate file: " +  file.name + "; file: " + baseName + ".dbf already processed");
+					throw new Error("Duplicate file: " +  fileName + "; file: " + baseName + ".dbf already processed");
 				}
 			}						
 			fileList[baseName] = {
 				fileName: 	baseName + ".shp",
 				dbfHeader: 	readDbfHeader(data, name),
 				exAML: 		undefined,
-				fileSize: 	undefined
+				fileSize: 	undefined,
+				projection:	undefined
 			};
+		}
+		else if (ext == 'prj') {
+			if (projectionList[baseName]) {
+				if (fileList[baseName].fileName) {
+					throw new Error("Duplicate file: " +  fileName + "; file: " + fileList[baseName].fileName + " already processed");
+				}
+				else {
+					throw new Error("Duplicate file: " +  fileName + "; file: " + baseName + ".shp.ea.iso.xml already processed");
+				}
+			}		
+			projectionList[baseName]=data;
 		}
 	} // End of processFile()
 	
@@ -94,8 +109,10 @@ function shpConvertInput(files) {
 		if (file !== null) {
 				
 			var name = file.name;	
-			var ext = name.substring(name.indexOf('.') + 1).toLowerCase();
-			var baseName = name.substring(0, name.indexOf('.')).toLowerCase();
+			var ext = name.substring(name.indexOf('.') + 1).toLowerCase(); 				// Use the first "."
+			var fileName = name.substring(name.lastIndexOf('/') + 1).toLowerCase(); 	// Remove path
+			var baseName = fileName.substring(0, fileName.indexOf('.')).toLowerCase();	// Remove extension, use the first "."
+			
 			var reader = new FileReader();
 			var savHtlml=document.getElementById("status").innerHTML;
 
@@ -109,7 +126,7 @@ function shpConvertInput(files) {
 			}
 
 			var lstart=new Date().getTime();				
-			reader.onloadend = function(event) {
+			reader.onloadend = function jsZipReaderOnloadend(event) {
 					
 				var end=new Date().getTime();
 				var elapsed=(end - lstart)/1000; // in S			
@@ -121,11 +138,14 @@ function shpConvertInput(files) {
 				if (ext == 'shp.ea.iso.xml') {
 					data=arrayBuf.toString();
 				}
+				if (ext == 'prj') {
+					data=arrayBuf.toString();
+				}
 				else if (ext == 'dbf') {
 					data=arrayBuf;
 				}
 										
-				if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf') {
+				if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf' || zipExt == 'prj') {
 					processFile(file.name, file.size, baseName, ext, undefined /* Zip file name */, data);
 				}
 				
@@ -140,15 +160,22 @@ function shpConvertInput(files) {
 					for (var ZipIndex in zip.files) {
 						noZipFiles++;
 						var fileContainedInZipFile=zip.files[ZipIndex];
-						var zipExt = fileContainedInZipFile.name.substring(fileContainedInZipFile.name.indexOf('.', 1) + 1).toLowerCase();
-						var zipName = fileContainedInZipFile.name.substring(fileContainedInZipFile.name.lastIndexOf('/') + 1).toLowerCase();
-						var zipBaseName = zipName.substring(0, zipName.indexOf('.')).toLowerCase()
+						
+						var zipExt = fileContainedInZipFile.name.substring(fileContainedInZipFile.name.indexOf('.', 1) + 1).toLowerCase();		// Use the first "."
+						var zipName = fileContainedInZipFile.name.substring(fileContainedInZipFile.name.lastIndexOf('/') + 1).toLowerCase();	// Remove path
+						var zipBaseName = zipName.substring(0, zipName.indexOf('.')).toLowerCase();												// Remove extension, use the first "."
+						
 						if (fileContainedInZipFile.dir) {
 							zipMsg+="<br>Zip [" + noZipFiles + "]: directory: " + fileContainedInZipFile.name;
 						}
 						else if (zipExt == 'shp.ea.iso.xml') {
 							zipMsg+="<br>Zip [" + noZipFiles + "]: " + zipName + 
 								"; ESRI extended attributes file";
+							data=fileContainedInZipFile.asText();
+						}
+						else if (zipExt == 'prj') {
+							zipMsg+="<br>Zip [" + noZipFiles + "]: " + zipName + 
+								"; Projection file";
 							data=fileContainedInZipFile.asText();
 						}
 						else if (zipExt == 'shp') {
@@ -168,7 +195,7 @@ function shpConvertInput(files) {
 							totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
 						}
 						
-						if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf') {
+						if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf'|| zipExt == 'prj') {
 							processFile(zipName, fileContainedInZipFile._data.uncompressedSize, zipBaseName, zipExt, zipName /* Zip file name */, data);
 						}
 					} // End of for loop
@@ -187,12 +214,22 @@ function shpConvertInput(files) {
 					}
 				}
 //				console.log("xmlDocList: " + JSON.stringify(xmlDocList, null, 4));
-				for (var key in fileList) { // Add extended attributes XML doc
+				for (var key in fileList) { // Add shapefile size
 					if (shapefileList[key]) {
 						fileList[key].fileSize=shapefileList[key].fileSize;
 					}
+					else {
+						throw new Error("Missing shape file: " + fileList[baseName].fileName);						
+					}
 				}
-				
+				for (var key in fileList) { // Add projection
+					if (projectionList[key]) {
+						fileList[key].projection=projectionList[key];
+					}
+					else {
+						throw new Error("Missing projection file: " + fileList[baseName].fileName);						
+					}
+				}				
 				try {
 					createAccordion(fileList);
 				}
@@ -200,8 +237,9 @@ function shpConvertInput(files) {
 					setStatus("ERROR! Unable to create accordion from list of files", 
 						err, undefined, err.stack); 
 				}
-			}
-			reader.onerror = function(err) {
+			} // End of jsZipReaderOnloadend()
+			
+			reader.onerror = function jsZipReaderOnerror(err) {
 				setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
 					name, err, undefined, err.stack); 		
 				return;
