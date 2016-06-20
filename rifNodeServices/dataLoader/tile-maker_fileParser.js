@@ -107,108 +107,26 @@ function shpConvertInput(files) {
 					document.getElementById("status").innerHTML =
 						document.getElementById("status").innerHTML + '<br>Loaded and unzipped file: ' + name + 
 							"; from: " + fileSize(file.size) + " to: " + fileSize(totalUncompressedSize) + "; in: " + elapsed + " S" + zipMsg;	
-				}			
+				} // End iof zip processing			
 				else {
 					document.getElementById("status").innerHTML =
 						document.getElementById("status").innerHTML + '<br>Loaded file: ' + name + "; " + fileSize(file.size) + " in: " + elapsed + " S";	
 				}	
-				
-				if (document.getElementById("tabs") && tabs) { // JQuery-UI version
-					var newDiv = "";
-					var fieldSelect1;
-					var fieldSelect2;	
-					var buttonList = [];
-					var selectList = [];
-					
-					for (var key in fileList) {
-						console.log("Added accordion[" + key + "]: " + fileList[key].fileName);
-						
-						buttonList.push("#" + key + "_desc");
-						selectList.push("#" + key + "_areaID");
-						selectList.push("#" + key + "_areaName");
-						buttonList.push("#" + key + "_areaID_desc");
-						buttonList.push("#" + key + "_areaName_desc");
-						
-						fieldSelect1="";	
-						fieldSelect2="";										
-						console.log(zipName + ": " + JSON.stringify(fileList[key].dbfHeader.fieldNames, null, 4));
-						for (var i=0; i< fileList[key].dbfHeader.fieldNames.length; i++) {
-							if (i==0) {
-								fieldSelect1+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '" selected="selected">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
-							}
-							else {
-								fieldSelect1+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
-							}
-							fieldSelect2+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
-						}
-						newDiv+= 
-						    '<h3>Shapefile: ' + fileList[key].fileName + '; fields: ' + fileList[key].dbfHeader.noFields + '; records: ' + fileList[key].dbfHeader.count + '</h3>\n' + 
-							'<div>\n' +	
-							'  <label for="' + key + '_desc">Description: </label>\n' +  
-							'  <input id="' + key + '_desc" name="' + key + '_desc" type="text"><br>\n' +
-							'  <label for="' + key + '_areaIDList">Area ID\n' +
-							'    <select id="' + key + '_areaID" name="' + key + '_areaIDListname" form="shpConvert">\n' +
-							fieldSelect1 +
-							'    </select>\n' + 
-							'  </label>\n' +							
-							'  <label for="' + key + '_areaID_desc">Area ID description: </label>\n' +  
-							'  <input id="' + key + '_areaID_desc" name="' + key + '_areaID_desc" type="text">\n' +	
-							'  <label for="' + key + '_areaNameList">Area Name\n' +
-							'    <select id="' + key + '_areaName" name="' + key + '_areaNameListname" form="shpConvert">\n' +
-//							'      <option value="test" selected="selected">Text</option>' +
-							fieldSelect2 +
-							'    </select>\n' + 
-							'  </label>\n' +
-							'  <label for="' + key + '_areaName_desc">Area Name description: </label>\n' +  
-							'  <input id="' + key + '_areaName_desc" name="' + key + '_areaName_desc" type="text"></div>\n' +								
-							'</div>\n';
-//						console.log("newDiv >>>\n" + newDiv + "\n<<<");
-						$('#accordion').append(newDiv)
-					} // End of for loop
-					document.getElementById("accordion").innerHTML = newDiv;
-										
-					var  styleArr = ["_areaID", "_areaName"];
-					for (var key in fileList) {
-						for (var j=0; j< styleArr.length; j++) {
-							var id=key + styleArr[j];
-							var item = document.getElementById(id);
-							if (item) {
-								item.style.width = "200px";
-							}
-							else {
-								throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
-							}
-						}		
-					} // End of for loop
-					
-					$("#accordion").accordion({
-						active: false,
-						collapsible: true,
-						heightStyle: "fill"
-					});
-					$( buttonList.join(",") ).button();
-					$( selectList.join(",") )
-					  .selectmenu()
-					  .selectmenu( "menuWidget" )
-						.addClass( "overflow" );
-						
-					var  styleArr2 = ["_areaID-button", "_areaName-button"];
-					for (var key in fileList) {
-						for (var j=0; j< styleArr2.length; j++) {
-							var id=key + styleArr2[j];
-							var item = document.getElementById(id);
-							if (item) {		
-								item.style.verticalAlign = "middle";
-							}
-							else {
-								throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
-							}							
-						}							
-					} // End of for loop
-					console.log("xmlDocList: " + JSON.stringify(xmlDocList, null, 4));
-					tabs.tabs("refresh" );
 
-				}				
+				for (var key in fileList) { // Add extended attributes XML doc
+					if (xmlDocList[key]) {
+						fileList[key].exAML=xmlDocList[key];
+					}
+				}
+//				console.log("xmlDocList: " + JSON.stringify(xmlDocList, null, 4));
+					
+				try {
+					createAccordion(fileList);
+				}
+				catch (err) {
+					setStatus("ERROR! Unable to create accordion from list of files", 
+						err, undefined, err.stack); 
+				}
 			}
 			reader.onerror = function(err) {
 				setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
@@ -217,11 +135,124 @@ function shpConvertInput(files) {
 			}
 			totalFileSize+=file.size;
 			
-			reader.readAsArrayBuffer(file);
-			
+			reader.readAsArrayBuffer(file);		
 		}
 	} 	
-}
+} // End of shpConvertInput()
+
+/*
+ * Function: 	createAccordion()
+ * Parameters: 	file list object (processed files from shpConvertInput()
+ * Returns: 	Nothing
+ * Description:	Creates accordion
+ */
+function createAccordion(fileList) {					
+	if (document.getElementById("tabs") && tabs) { // JQuery-UI version
+		var newDiv = "";
+		var fieldSelect1;
+		var fieldSelect2;	
+		var buttonList = [];
+		var selectList = [];
+						
+		for (var key in fileList) {
+			console.log("Added accordion[" + key + "]: " + fileList[key].fileName);
+			
+			buttonList.push("#" + key + "_desc");
+			selectList.push("#" + key + "_areaID");
+			selectList.push("#" + key + "_areaName");
+			buttonList.push("#" + key + "_areaID_desc");
+			buttonList.push("#" + key + "_areaName_desc");
+			
+			fieldSelect1="";	
+			fieldSelect2="";										
+			console.log(fileList[key].fileName + ": " + JSON.stringify(fileList[key].dbfHeader.fieldNames, null, 4));
+			for (var i=0; i< fileList[key].dbfHeader.fieldNames.length; i++) {
+				if (i==0) {
+					fieldSelect1+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '" selected="selected">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
+				}
+				else {
+					fieldSelect1+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
+				}
+				if (fileList[key].dbfHeader.fieldNames[i].toUpperCase() == "NAME") {
+					fieldSelect2+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '" selected="selected">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
+				}
+				else {
+					fieldSelect2+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
+				}
+			}
+			newDiv+= 
+				'<h3>Shapefile: ' + fileList[key].fileName + '; fields: ' + fileList[key].dbfHeader.noFields + '; records: ' + fileList[key].dbfHeader.count + '</h3>\n' + 
+				'<div>\n' +	
+				'  <label for="' + key + '_desc">Description: </label>\n' +  
+				'  <input id="' + key + '_desc" name="' + key + '_desc" type="text"><br>\n' +
+				'  <label for="' + key + '_areaIDList">Area ID\n' +
+				'    <select id="' + key + '_areaID" name="' + key + '_areaIDListname" form="shpConvert">\n' +
+				fieldSelect1 +
+				'    </select>\n' + 
+				'  </label>\n' +							
+				'  <label for="' + key + '_areaID_desc">Area ID description: </label>\n' +  
+				'  <input id="' + key + '_areaID_desc" name="' + key + '_areaID_desc" type="text">\n' +	
+				'  <label for="' + key + '_areaNameList">Area Name\n' +
+				'    <select id="' + key + '_areaName" name="' + key + '_areaNameListname" form="shpConvert">\n' +
+				fieldSelect2 +
+				'    </select>\n' + 
+				'  </label>\n' +
+				'  <label for="' + key + '_areaName_desc">Area Name description: </label>\n' +  
+				'  <input id="' + key + '_areaName_desc" name="' + key + '_areaName_desc" type="text"></div>\n' +								
+				'</div>\n';
+				console.log(fileList[key].fileName + ": newDiv >>>\n" + newDiv + "\n<<<");
+			$('#accordion').append(newDiv)
+		} // End of for loop
+		
+		var html=$.parseHTML(newDiv);
+		if (html) {
+			$( "#accordion" ).html(newDiv);
+		}
+		else {
+			throw new Error("Invalid HTML; newDiv >>>\n" + newDiv + "\n<<<");
+		}	
+		
+		var  styleArr = ["_areaID", "_areaName"];
+		for (var key in fileList) {
+			for (var j=0; j< styleArr.length; j++) {
+				var id=key + styleArr[j];
+				var item = document.getElementById(id);
+				if (item) {
+					item.style.width = "200px";
+				}
+				else {
+					throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
+				}
+			}		
+		} // End of for loop
+		
+		$("#accordion").accordion({
+//			active: false,
+//			collapsible: true,
+			heightStyle: "fill"
+		});
+		$( buttonList.join(",") ).button();
+		$( selectList.join(",") )
+		  .selectmenu()
+		  .selectmenu( "menuWidget" )
+			.addClass( "overflow" );
+			
+		var  styleArr2 = ["_areaID-button", "_areaName-button"];
+		for (var key in fileList) {
+			for (var j=0; j< styleArr2.length; j++) {
+				var id=key + styleArr2[j];
+				var item = document.getElementById(id);
+				if (item) {		
+					item.style.verticalAlign = "middle";
+				}
+				else {
+					throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
+				}							
+			}							
+		} // End of for loop
+		tabs.tabs("refresh" );
+	}
+}	
 
 /*
  * Function: 	readDbfHeader()

@@ -222,7 +222,16 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	nodeGeoSpatialFrontEndInit();
 	
 	if (files.length == 0) {
-		document.getElementById("status").innerHTML = "<h1>No files selected</h1>"
+		if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
+			document.getElementById("error").innerHTML = "<h3>No files selected</h3>";
+			$( "#error" ).dialog({
+				modal: true,
+				width: 700
+			});
+		}	
+		else {	
+			document.getElementById("status").innerHTML = "<h1>No files selected</h1>";
+		}
 		console.log("FATAL! No files selected");
 		return;
 	}
@@ -436,7 +445,16 @@ webkitRelativePath: ""} .. then inherited
 		}
 	}
 	if (fileCount == 0) {
-		document.getElementById("status").innerHTML = "<h1>No files selected</h1>"
+		if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
+			document.getElementById("error").innerHTML = "<h3>No files selected</h3>";
+			$( "#error" ).dialog({
+				modal: true,
+				width: 700
+			});
+		}	
+		else {	
+			document.getElementById("status").innerHTML = "<h1>No files selected</h1>";
+		}		
 		console.log("FATAL! No files selected");
 		return false;
 	}
@@ -697,27 +715,35 @@ function setStatus(msg, err, diagnostic, stack) {
 			console.log("[" + elapsed + "] " + msg);
 		}
 		else {
-			status.innerHTML = "<h1>" + msg + "</h1><h2>Error message: " + errm + "</h2>";
+			var error=status;
+			if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
+				error=document.getElementById("error");
+				error.innerHTML="<h3>" + errm + "</h3>";
+			}
+			else {
+				error.innerHTML = "<h1>" + msg + "</h1><h2>Error: " + errm + "</h2>";
+			}
+			console.log(error.innerHTML);
 			if (stack) {
-				document.getElementById("status").innerHTML = 
-					document.getElementById("status").innerHTML + 
-					"<p>Stack:</br><pre>" + stack + "</pre></p>";
+				error.innerHTML += "<p>Stack:</br><pre>" + stack + "</pre></p>";
 				console.log("[" + elapsed + "] Stack: " + stack);
 			}
 			else if (err && err.stack) {
-				document.getElementById("status").innerHTML = 
-					document.getElementById("status").innerHTML + 
-					"<p>Stack:</br><pre>" + err.stack + "</pre></p>";
+				error.innerHTML += "<p>Stack:</br><pre>" + err.stack + "</pre></p>";
 				console.log("[" + elapsed + "] err.Stack: " + stack);
 			}
 			if (diagnostic) {
-				document.getElementById("status").innerHTML = 
-					document.getElementById("status").innerHTML + 
-					"<p>Processing diagnostic:</br><pre>" + diagnostic + "</pre></p>";
+				error.innerHTML += "<p>Processing diagnostic:</br><pre>" + diagnostic + "</pre></p>";
 				console.log("[" + elapsed + "] Diagnostic: " + diagnostic);
-			}
+			} 
 				
 			if (document.getElementById("tabs") && tabs) { // JQuery-UI version
+				if (errm) {
+					$( "#error" ).dialog({
+						modal: true,
+						width: 700
+					});
+				}
 				tabs.tabs("refresh" );
 			}		
 			throw new Error("[" + elapsed + "] " + msg + "; " + errm);
