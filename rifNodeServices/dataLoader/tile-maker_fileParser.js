@@ -81,7 +81,7 @@ function shpConvertInput(files) {
 				document.getElementById("status").innerHTML + "<br>Loaded shapefile file: " + name + "; " + fileSize(fileSizeBytes) + " in: " + elapsed + " S";
 			if (shapefileList[baseName]) {
 				if (fileList[baseName].fileName) {
-					throw new Error("Duplicate file: " +  fileName + "; file: " + fileList[baseName].fileName + " already processed");
+					throw new Error("Duplicate file: " +  fileName + "; shape file: " + fileList[baseName].fileName + " already processed");
 				}
 				else {
 					throw new Error("Duplicate file: " +  ffileName + "; file: " + baseName + ".shp already processed");
@@ -94,7 +94,7 @@ function shpConvertInput(files) {
 		else if (ext == 'shp.ea.iso.xml') {
 			if (xmlDocList[baseName]) {
 				if (fileList[baseName].fileName) {
-					throw new Error("Duplicate file: " +  fileName + "; file: " + fileList[baseName].fileName + " already processed");
+					throw new Error("Duplicate file: " +  fileName + "; shape file: " + fileList[baseName].fileName + " already processed");
 				}
 				else {
 					throw new Error("Duplicate file: " +  fileName + "; file: " + baseName + ".shp.ea.iso.xml already processed");
@@ -106,7 +106,7 @@ function shpConvertInput(files) {
 		else if (ext == 'dbf') {
 			if (fileList[baseName]) {
 				if (fileList[baseName].fileName) {
-					throw new Error("Duplicate file: " +  fileName + "; file: " + fileList[baseName].fileName + " already processed");
+					throw new Error("Duplicate file: " +  fileName + "; shape file: " + fileList[baseName].fileName + " already processed");
 				}
 				else {
 					throw new Error("Duplicate file: " +  fileName + "; file: " + baseName + ".dbf already processed");
@@ -188,8 +188,15 @@ function shpConvertInput(files) {
 							data=arrayBuf;
 						}
 												
-						if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf' || zipExt == 'prj') {
-							processFile(file.name, file.size, baseName, ext, undefined /* Zip file name */, data, fileList);
+						if (ext == 'shp.ea.iso.xml' || ext == 'shp' || ext == 'dbf' || ext == 'prj') {
+							try {
+								processFile(file.name, file.size, baseName, ext, undefined /* Zip file name */, data, fileList);
+							}
+							catch (e) {
+								console.log("asyncSeriesIteree() WARNING! Caught error in processFile(): " + e.message);
+								callback(e);
+								return;
+							}
 						}
 						
 //
@@ -239,7 +246,14 @@ function shpConvertInput(files) {
 								}
 								
 								if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf'|| zipExt == 'prj') {
-									processFile(zipName, fileContainedInZipFile._data.uncompressedSize, zipBaseName, zipExt, zipName /* Zip file name */, data, fileList);
+									try {
+										processFile(zipName, fileContainedInZipFile._data.uncompressedSize, zipBaseName, zipExt, zipName /* Zip file name */, data, fileList);
+									}
+									catch (e) {
+										console.log("asyncSeriesIteree() WARNING! Caught error in processFile(): " + e.message);
+										callback(e);
+										return;
+									}
 								}
 							} // End of for loop
 							document.getElementById("status").innerHTML =
@@ -262,9 +276,7 @@ function shpConvertInput(files) {
 					} // End of jsZipReaderOnloadend()
 					
 					reader.onerror = function fileReaderOnerror(err) {
-						setStatus("ERROR! Unable to upload file + " + fileno + "/" + files.length + ": " + 
-							name, err, undefined, err.stack); 		
-						return;
+						callback(err);
 					}
 					totalFileSize+=file.size;
 			
@@ -272,10 +284,34 @@ function shpConvertInput(files) {
 				}		
 			}
 			catch (e) {
+				console.log("asyncSeriesIteree() WARNING! Caught error: " + e.message);
 				callback(e);
 			}
 		}, // End of asyncSeriesIteree() 
 		function asyncSeriesEnd(err) {
+			
+			if (err) {
+				try {
+					if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
+						error=document.getElementById("error");
+						error.innerHTML="<h3>Unable to process list of files</h3><p>" + err.message + "</p>";
+						var errorWidth=document.getElementById('tabbox').offsetWidth-300;
+						$( "#error" ).dialog({
+							modal: true,
+							width: errorWidth
+						});
+						tabs.tabs("refresh" );
+					}
+					else {	
+						setStatus("ERROR! Processing list of files", err, undefined, err.stack);
+					}
+				}
+				catch (e) {
+					console.log("Error: " + e.message);
+				}
+				return;
+			}
+			
 			for (var key in fileList) { // Add extended attributes XML doc
 				if (xmlDocList[key]) {
 					fileList[key].exAML=xmlDocList[key];
