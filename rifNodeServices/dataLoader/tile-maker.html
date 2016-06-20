@@ -61,7 +61,11 @@ $(document).ready(function documentReady() {
 					  .selectmenu()
 					  .selectmenu( "menuWidget" )
 						.addClass( "overflow" );
-
+						
+					$( "#quantizationSelect" ).on( "selectmenuchange", function(event, ui) { // Dummy change function for test purposes
+						quantizationSelectChange(this.value);
+					});
+	
 					$('input').addClass("ui-corner-all");
 	  
 					$( "#diagnostics, #shpConvertSubmit" ).button();
@@ -115,6 +119,10 @@ $(document).ready(function documentReady() {
 	});
 
 });
+
+function quantizationSelectChange(value) {
+	console.log("quantizationSelectChange() new value: " + value);
+}	
 
 /*
  * Angular controller

@@ -45,6 +45,8 @@
 // Peter Hambly, SAHSU
 //
 
+var fileList = {};
+	
 /*
  * Function: 	shpConvertInput()
  * Parameters: 	files object
@@ -108,7 +110,7 @@ function shpConvertInput(files) {
 			else {
 				throw new Error("Extended attributes file: " +  fileName + "; shape file: " + fileList[baseName].fileName + " does not contain FC_FeatureCatalogue");	
 			}
-			console.log(JSON.stringify(xmlDocList[baseName], null, 4));
+//			console.log(JSON.stringify(xmlDocList[baseName], null, 4));
 		}					
 		else if (ext == 'dbf') {
 			if (fileList[baseName]) {
@@ -144,7 +146,6 @@ function shpConvertInput(files) {
 	
 	var lstart;
 	var totalFileSize=0;
-	var fileList = {};
 	var xmlDocList = {};
 	var shapefileList = {};
 	var projectionList = {};
@@ -327,7 +328,7 @@ function shpConvertInput(files) {
 				if (xmlDocList[key]) {
 					fileList[key].exAML=xmlDocList[key];
 				}	
-				/* SCope XML fragment:
+				/* Scope XML fragment:
 				
 					<gmx:scope>
 						<gco:CharacterString>The State-County at a scale of 1:500,000</gco:CharacterString>
@@ -335,6 +336,60 @@ function shpConvertInput(files) {
 				 */
 				if (xmlDocList[key].scope && xmlDocList[key].scope.CharacterString && xmlDocList[key].scope.CharacterString.__text) {
 					fileList[key].description = xmlDocList[key].scope.CharacterString.__text;	// Add scope 
+					
+					if (xmlDocList[key].featureType && xmlDocList[key].featureType.FC_FeatureType && xmlDocList[key].featureType.FC_FeatureType.carrierOfCharacteristics) {
+						var carrierOfCharacteristics=xmlDocList[key].featureType.FC_FeatureType.carrierOfCharacteristics;
+						for (var i=0; i<carrierOfCharacteristics.length; i++) {
+							var field;
+							var description;
+							
+							if (carrierOfCharacteristics[i].FC_FeatureAttribute &&
+							    carrierOfCharacteristics[i].FC_FeatureAttribute.memberName &&
+							    carrierOfCharacteristics[i].FC_FeatureAttribute.memberName.LocalName) {
+								field=carrierOfCharacteristics[i].FC_FeatureAttribute.memberName.LocalName.__text;
+							}
+							if (carrierOfCharacteristics[i].FC_FeatureAttribute &&
+							    carrierOfCharacteristics[i].FC_FeatureAttribute.definition &&
+							    carrierOfCharacteristics[i].FC_FeatureAttribute.definition.CharacterString) {
+								description=carrierOfCharacteristics[i].FC_FeatureAttribute.definition.CharacterString.__text
+							}
+							if (fileList[key].dbfHeader.fields && field && description) {
+								for (var j=0; j < fileList[key].dbfHeader.fields.length ; j++) {
+									if (fileList[key].dbfHeader.fields[j].name.toUpperCase() == field.toUpperCase()) {
+										console.log("Feature: " + i + "; Set field: " + field + " description='" + description + "'");
+										fileList[key].dbfHeader.fields[j].description=description;
+									}
+//									else {
+//										console.log("Feature: " + i + "; NO MATCH Field: " + field + "='" + fileList[key].dbfHeader.fields[j].name + "'");
+//									}
+								}
+							}
+							else if (field && description) {
+								console.log("Feature: " + i + " NO DBF header for field: " + field + " description='" + description + "'");
+							}
+						}
+					}
+					/*    
+	"featureType": {
+        "FC_FeatureType": {
+			"carrierOfCharacteristics": [
+			{
+                    "FC_FeatureAttribute": {
+                        "memberName": {
+                            "LocalName": {
+                                "__prefix": "gco",
+                                "__text": "STATEFP"
+                            },
+                            "__prefix": "gfc"
+                        },
+                        "definition": {
+                            "CharacterString": {
+                                "__prefix": "gco",
+                                "__text": "Current state Federal Information Processing Series (FIPS) code"
+                            },
+                            "__prefix": "gfc"
+                        },
+			*/
 				}
 			}
 		//				console.log("xmlDocList: " + JSON.stringify(xmlDocList, null, 4));
@@ -417,18 +472,20 @@ function createAccordion(fileList) {
 			
 			newDiv+= 
 				'<h3>Shapefile: ' + fileList[key].fileName + '; size: ' + fileSize(fileList[key].fileSize) + '; fields: ' + fileList[key].dbfHeader.noFields + '; records: ' + fileList[key].dbfHeader.count + '</h3>\n' + 
-				'<div>\n' +	
+				'<div id="' + key + '">\n' +	
 				'  <label class="my-accordion-fields1" for="' + key + '_desc">Shape file description: </label>\n' +  
 				'  <input class="my-accordion-fields1" id="' + key + '_desc" name="' + key + '_desc" type="text" value="' + fileList[key].description + '"><br>\n' +
 				'  <label class="my-accordion-fields2" for="' + key + '_areaIDList">Area ID: \n' +
-				'    <select class="my-accordion-fields2" id="' + key + '_areaID" name="' + key + '_areaIDListname" form="shpConvert">\n' +
+				'    <select class="my-accordion-fields2" id="' + key + '_areaID" name="' + key + 
+					'_areaIDListname" form="shpConvert">\n' +
 				fieldSelect1 +
 				'    </select>\n' + 
 				'  </label>\n' +							
 				'  <label class="my-accordion-fields2" for="' + key + '_areaID_desc">Label: </label>\n' +  
 				'  <input class="my-accordion-fields2" id="' + key + '_areaID_desc" name="' + key + '_areaID_desc" type="text">\n' +	
 				'  <label class="my-accordion-fields2" for="' + key + '_areaNameList">Area Name: \n' +
-				'    <select class="my-accordion-fields2" id="' + key + '_areaName" name="' + key + '_areaNameListname" form="shpConvert">\n' +
+				'    <select onchange="updateAreaNameDesc(this.value);" class="my-accordion-fields2" id="' + key + '_areaName" name="' + key + 
+					'_areaNameListname" form="shpConvert">\n' +
 				fieldSelect2 +
 				'    </select>\n' + 
 				'  </label>\n' +
@@ -437,7 +494,7 @@ function createAccordion(fileList) {
 				'</div>\n';
 		
 		} // End of for loop
-	
+
 //
 // Parse accordion HTML to check validity
 //	
@@ -466,10 +523,13 @@ function createAccordion(fileList) {
 			}
 		}
 		
-		var  styleArr = ["_areaID", "_areaName"]; // Style areaID, areaName descriptions
+		var  styleArr = ["areaID", "areaName"]; // Style areaID, areaName descriptions
 		for (var key in fileList) {
 			for (var j=0; j< styleArr.length; j++) {
-				var id=key + styleArr[j];
+				var id=key + "_" + styleArr[j];
+				$( "#" + id ).on( "selectmenuchange", function(event, ui) { // Add change function to aync _desc field
+					updateAreaIdNameDesc(event.target.id, event.target.parentNode.parentNode.id, this.value);
+				});
 				var item = document.getElementById(id);
 				if (item) {
 					item.style.width = "170px";
@@ -509,6 +569,31 @@ function createAccordion(fileList) {
 		console.log("Added accordion[" + key + "]: " + fileList[key].fileName);
 	} // End of if JQuery-UI version
 }	
+/*
+ * Function: 	updateAreaIdNameDesc()
+ * Parameters: 	Calling id, parent div id (file key), value
+ * Returns: 	Nothing
+ * Description:	Change event function to aync _desc field
+ */
+function updateAreaIdNameDesc(id, fileKey, value) {
+	if (document.getElementById(id)) {	
+		console.log("updateAreaIdNameDesc() id: " + id + "; file key: " + fileKey + "; new value: " + value);
+		if (fileList[fileKey] && fileList[fileKey].dbfHeader.fields) {
+			for (var j=0; j < fileList[fileKey].dbfHeader.fields.length ; j++) {
+				if (fileList[fileKey].dbfHeader.fields[j].name.toUpperCase() == value.toUpperCase()) {
+					console.log("Get field: " + value + " description='" + fileList[fileKey].dbfHeader.fields[j].description + "'");
+					$( "#" + id + "_desc" ).val(fileList[fileKey].dbfHeader.fields[j].description);
+				}
+			}			
+		}	
+		else {
+			throw new Error("updateAreaIdNameDesc(): invalid fileKey: " + fileKey);
+		}
+	}
+	else {
+		throw new Error("updateAreaIdNameDesc(): invalid id: " + id);
+	}
+}		
 
 /*
  * Function: 	readDbfHeader()
@@ -532,6 +617,7 @@ function createAccordion(fileList) {
  * Example object:
  
 sahsu_grd_level4.dbf: {
+	"description": undefined,
     "version": 3,
     "date": "2006-07-02T23:00:00.000Z",
     "count": 1230,
@@ -542,27 +628,32 @@ sahsu_grd_level4.dbf: {
         {
             "name": "PERIMETER",
             "type": "N",
-            "length": 19
+            "length": 19,
+			"description": undefined
         },
         {
             "name": "LEVEL4",
             "type": "C",
-            "length": 15
+            "length": 15,
+			"description": undefined
         },
         {
             "name": "LEVEL2",
             "type": "C",
-            "length": 6
+            "length": 6,
+			"description": undefined
         },
         {
             "name": "LEVEL1",
             "type": "C",
-            "length": 5
+            "length": 5,
+			"description": undefined
         },
         {
             "name": "LEVEL3",
             "type": "C",
-            "length": 15
+            "length": 15,
+			"description": undefined
         }
     ],
     "fieldNames": [
