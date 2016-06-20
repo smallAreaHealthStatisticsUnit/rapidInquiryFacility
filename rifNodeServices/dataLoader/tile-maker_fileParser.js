@@ -446,7 +446,7 @@ function createAccordion(fileList) {
 		$("#accordion").accordion({
 //			active: false,
 //			collapsible: true,
-			heightStyle: "fill"
+			heightStyle: "content"
 		});
 		$( buttonList.join(",") ).button();
 		$( selectList.join(",") )
