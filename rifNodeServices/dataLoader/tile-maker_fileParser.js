@@ -101,7 +101,14 @@ function shpConvertInput(files) {
 				}
 			}	
 			var x2js = new X2JS();					
-			xmlDocList[baseName] = x2js.xml_str2json(data);
+			var FC_FeatureCatalogue=x2js.xml_str2json(data);
+			if (FC_FeatureCatalogue["FC_FeatureCatalogue"]) {
+				xmlDocList[baseName] = FC_FeatureCatalogue["FC_FeatureCatalogue"];
+			}	
+			else {
+				throw new Error("Extended attributes file: " +  fileName + "; shape file: " + fileList[baseName].fileName + " does not contain FC_FeatureCatalogue");	
+			}
+			console.log(JSON.stringify(xmlDocList[baseName], null, 4));
 		}					
 		else if (ext == 'dbf') {
 			if (fileList[baseName]) {
@@ -114,11 +121,13 @@ function shpConvertInput(files) {
 			}						
 			fileList[baseName] = {
 				fileName: 	baseName + ".shp",
+				description: "",
 				dbfHeader: 	readDbfHeader(data, name),
 				exAML: 		undefined,
 				fileSize: 	undefined,
 				projection:	undefined
 			};
+//			console.log(JSON.stringify(fileList[baseName].dbfHeader, null, 4));
 		}
 		else if (ext == 'prj') {
 			if (projectionList[baseName]) {
@@ -317,6 +326,15 @@ function shpConvertInput(files) {
 			for (var key in fileList) { // Add extended attributes XML doc
 				if (xmlDocList[key]) {
 					fileList[key].exAML=xmlDocList[key];
+				}	
+				/* SCope XML fragment:
+				
+					<gmx:scope>
+						<gco:CharacterString>The State-County at a scale of 1:500,000</gco:CharacterString>
+					</gmx:scope>
+				 */
+				if (xmlDocList[key].scope && xmlDocList[key].scope.CharacterString && xmlDocList[key].scope.CharacterString.__text) {
+					fileList[key].description = xmlDocList[key].scope.CharacterString.__text;	// Add scope 
 				}
 			}
 		//				console.log("xmlDocList: " + JSON.stringify(xmlDocList, null, 4));
@@ -393,11 +411,12 @@ function createAccordion(fileList) {
 					fieldSelect2+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
 				}
 			}
+			
 			newDiv+= 
 				'<h3>Shapefile: ' + fileList[key].fileName + '; size: ' + fileSize(fileList[key].fileSize) + '; fields: ' + fileList[key].dbfHeader.noFields + '; records: ' + fileList[key].dbfHeader.count + '</h3>\n' + 
 				'<div>\n' +	
 				'  <label class="my-accordion-fields1" for="' + key + '_desc">Shape file description: </label>\n' +  
-				'  <input class="my-accordion-fields1" id="' + key + '_desc" name="' + key + '_desc" type="text"><br>\n' +
+				'  <input class="my-accordion-fields1" id="' + key + '_desc" name="' + key + '_desc" type="text" value="' + fileList[key].description + '"><br>\n' +
 				'  <label class="my-accordion-fields2" for="' + key + '_areaIDList">Area ID: \n' +
 				'    <select class="my-accordion-fields2" id="' + key + '_areaID" name="' + key + '_areaIDListname" form="shpConvert">\n' +
 				fieldSelect1 +
@@ -422,7 +441,7 @@ function createAccordion(fileList) {
 				$("#accordion").accordion("destroy");   // Removes the accordion bits
 				$("#accordion").empty();                // Clears the contents
 			}
-			console.log(fileList[key].fileName + ": newDiv >>>\n" + newDiv + "\n<<<");
+//			console.log("newDiv >>>\n" + newDiv + "\n<<<");
 			$("#accordion").html(newDiv);			// Add new
 		}
 		else {
@@ -434,6 +453,7 @@ function createAccordion(fileList) {
 			var item = document.getElementById(id);
 			if (item) {
 				item.style.width = "800px"; // Chrome is out by about -50px
+				item.style.textAlign = "left";
 			}
 			else {
 				throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
@@ -447,6 +467,7 @@ function createAccordion(fileList) {
 				var item = document.getElementById(id);
 				if (item) {
 					item.style.width = "170px";
+				item.style.textAlign = "left";
 				}
 				else {
 					throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
@@ -547,7 +568,6 @@ sahsu_grd_level4.dbf: {
 }
 
  */
-
 function readDbfHeader(dbfData, fileName) {
 	
 	function ua2text(ua, j) {
@@ -585,6 +605,7 @@ function readDbfHeader(dbfData, fileName) {
 		var field = {
 			position: 32+(i*32),
 			name:  ua2text(new Uint8Array(dbfData, 32+(i*32), 11), i),
+			description: "",
 			type: dataType,
 			length: fieldDescriptor[16]
 		};
