@@ -143,8 +143,8 @@ function shpConvertInput(files) {
 	document.getElementById("status").innerHTML=initHtml;
 	// Process inputted files
 	updateCustomFileUploadInput(files.length);
-	if (document.getElementById("tabs")) { // JQuery-UI version
-		progressLabel.text( "Processing selected files");
+	if (document.getElementById("progressbar")) { // JQuery-UI version
+		$(".progress-label").text( "Processing selected files");
 	}	
 	async.forEachOfSeries(files, 
 		function asyncSeriesIteree(file, fileno, callback) {

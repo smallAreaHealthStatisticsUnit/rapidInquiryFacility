@@ -184,10 +184,8 @@ function formSetup(formId, formName) {
 		console.error(document.getElementById("status").innerHTML);
 	}
 	
-	
-	if (document.getElementById("shapeFileStatus")) { // JQuery-UI version
-		document.getElementById("shapeFileStatus").innerHTML = formName + " form ready.";
-		initHtml=document.getElementById("shapeFileStatus").innerHTML;
+	if (document.getElementById("progressbar")) { // JQuery-UI version
+		initHtml="";
 	}
 	else {
 		document.getElementById("status").innerHTML = document.getElementById("status").innerHTML + "<br>" + formName + " form ready.";
@@ -578,9 +576,8 @@ function setupMap() {
 		setHeight("statustab", (height-20));
 		setHeight("status", (height-40));
 		setHeight("shapeFileSelectortab", (height-10));
-		setHeight("shapeFileSelector", (height-145));
-		setHeight("accordion", (height-300));
-		setHeight("shapeFileStatus", 70);			
+		setHeight("shapeFileSelector", (height-55));
+		setHeight("accordion", (height-205));
 		setHeight("progressbar", 40);			
 	}
 	else {
@@ -696,12 +693,7 @@ function setStatus(msg, err, diagnostic, stack) {
 		}
 		
 		if (status == undefined) {
-			if (document.getElementById("tabs") && document.getElementById("shapeFileStatus")) { // JQuery-UI version
-				status=document.getElementById("shapeFileStatus");
-			}
-			else {
-				status=document.getElementById("status");
-			}
+			status=document.getElementById("status");
 		}
 		
 		if (!errm) {
@@ -1645,7 +1637,6 @@ function uploadProgressHandler(event, position, total, percentComplete) {
 		if (percentComplete == 100 && position == total) {
 			progressLabel.text( "Upload complete; awaiting server response");
 		}
-		document.getElementById("shapeFileStatus").innerHTML = msg;
 	}
 	else {
 		document.getElementById("status").innerHTML = msg;

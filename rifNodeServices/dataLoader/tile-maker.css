@@ -16,13 +16,6 @@ body {
     padding-left:5px; 
     padding-right:5px; 
 }
-#shapeFileStatus {
-	width: 99%;
-    float: left;
-	vertical-align: bottom;
-	border-style: outset;	
-	border-radius: 12px;
-}
 /* Diagnostics tab */
 #statustab {
 /*    background-color:#eeeeee; */
@@ -67,7 +60,7 @@ table {
     text-indent: 10px;  
 } 
 #progressbar {
-	width: 99%;
+	width: 99.5%;
 }
 .ui-progressbar {
 	position: relative;
