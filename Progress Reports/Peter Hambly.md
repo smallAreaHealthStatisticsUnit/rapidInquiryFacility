@@ -471,9 +471,14 @@ RangeError: Invalid string length
 * Reserved tile-maker for Node.js geo spatial services  
 * Replaced traditional html with JQuery-UI; added unzip and accordion panels for sorting out 
 
+#### 20th to 24th June
+
+* Completed accordion panel; parsing DBF files for the fields 
+
 #### Current TODO list (June):
 
-* Fornt end zip progress; prevent tab chnage udring mapo drawe and aoccordion setup
+* Front end zip progress; prevent tab change during map draw and aoccordion setup or JQuery UI and Leaflet do bad things unless tkey have focus
+* Fix customFileUpload styling so it uses the correct JQuery UI class style; the .css() function won't work on form file upload buttons
 * Add support for XML config file so shpConvert can do all processing without further input; Area_id and description support; .SHP.EA.ISO.XML 
 * Default geolevel_name, area_id, area_name
 * Add all fields to topojson
