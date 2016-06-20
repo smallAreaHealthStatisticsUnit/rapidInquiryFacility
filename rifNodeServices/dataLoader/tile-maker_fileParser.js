@@ -144,7 +144,6 @@ function shpConvertInput(files) {
 	// Process inputted files
 	updateCustomFileUploadInput(files.length);
 	
-//	for (var fileno = 0; fileno < files.length; ++fileno) {
 	async.forEachOfSeries(files, 
 		function asyncSeriesIteree(file, fileno, callback) {
 			try {
@@ -193,9 +192,9 @@ function shpConvertInput(files) {
 							processFile(file.name, file.size, baseName, ext, undefined /* Zip file name */, data, fileList);
 						}
 						
-		//
-		// Zip file processing
-		//				
+//
+// Zip file processing
+//				
 						else if (ext == "zip") {						
 							var zip=new JSZip(arrayBuf, {} /* Options */);
 							var noZipFiles=0;
@@ -251,7 +250,14 @@ function shpConvertInput(files) {
 							document.getElementById("status").innerHTML =
 								document.getElementById("status").innerHTML + '<br>Loaded file: ' + name + "; " + fileSize(file.size) + " in: " + elapsed + " S";	
 						}
-						
+		
+						var percentComplete=Math.round((((fileno+1)/files.length)*100));
+						if (document.getElementById("tabs")) { // JQuery-UI version
+							progressbar.progressbar("value", percentComplete);
+							if (percentComplete == 100) {
+								progressLabel.text( "All selected files processed");
+							}
+						}		
 						callback();						
 					} // End of jsZipReaderOnloadend()
 					
@@ -302,16 +308,6 @@ function shpConvertInput(files) {
 			}
 		} // End of asyncSeriesEnd
 	);		
-		/*
-		var percentComplete=((fileno/files.length)*100);
-		if (document.getElementById("tabs")) { // JQuery-UI version
-			progressbar.progressbar("value", percentComplete);
-			if (percentComplete == 100) {
-				progressLabel.text( "All selected files processed");
-			}
-		} */
-	
-//	} // End of file processing loop
 				
 } // End of shpConvertInput()
 
