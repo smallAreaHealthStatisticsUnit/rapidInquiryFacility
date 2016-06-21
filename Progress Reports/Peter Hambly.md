@@ -474,13 +474,16 @@ RangeError: Invalid string length
 #### 20th to 24th June
 
 * Completed accordion panel; parsing DBF files for the fields 
-
+* Front end zip progress
+* Tooltips
+* Area_id and description support using .SHP.EA.ISO.XML 
+ 
 #### Current TODO list (June):
 
-* Front end zip progress; prevent tab change during map draw and aoccordion setup or JQuery UI and Leaflet do bad things unless tkey have focus
+* Prevent tab change during map draw and aoccordion setup or JQuery UI and Leaflet do bad things unless tkey have focus
 * Fix customFileUpload styling so it uses the correct JQuery UI class style; the .css() function won't work on form file upload buttons
-* Add support for XML config file so shpConvert can do all processing without further input; Area_id and description support; .SHP.EA.ISO.XML 
-* Default geolevel_name, area_id, area_name
+* Add support for XML config file so shpConvert can do all processing without further input;
+* Set geolevel_name, area_id, area_name from front end
 * Add all fields to topojson
 * Add geolevel, goelevel name to legend
 * Restrict geolevels to a minimum 3, or more if the total topojson_size < ~20-30M (possibly browser dependent). Copy convertedTopojson array, remove restricted geolevels 

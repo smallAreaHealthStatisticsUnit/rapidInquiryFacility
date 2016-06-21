@@ -491,7 +491,8 @@ function createAccordion(fileList) {
 			}
 			
 			newDiv+= 
-				'<h3>Shapefile: ' + fileList[key].fileName + '; size: ' + fileSize(fileList[key].fileSize) + '; fields: ' + fileList[key].dbfHeader.noFields + '; records: ' + fileList[key].dbfHeader.count + '</h3>\n' + 
+				'<h3>Shapefile: ' + fileList[key].fileName + '; size: ' + fileSize(fileList[key].fileSize) + 
+					'; fields: ' + fileList[key].dbfHeader.noFields + '; records: ' + fileList[key].dbfHeader.count + '</h3>\n' + 
 				'<div id="' + key + '">\n' +	
 				'  <label class="my-accordion-fields1" for="' + 
 					key + '_desc" title="Please enter a description of the shapefile">Shape file description:\n' +  
