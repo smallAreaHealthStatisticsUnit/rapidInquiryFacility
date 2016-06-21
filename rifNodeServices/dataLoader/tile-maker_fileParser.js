@@ -443,6 +443,23 @@ function createAccordion(fileList) {
 			throw new Error("No fileList");
 		}
 		
+//
+// Sort file list by size
+// 		
+		var sortFileList=[];
+		for (var key in fileList) {
+			sortFileList.push([key, fileList[key]]);
+		}
+		var nSortFileList=sortFileList.sort(function fileListSort(a, b) {
+			return parseInt(a[1].fileSize) - parseInt(b[1].fileSize);
+		});
+		var nFileList={};
+		for (var i=0; i<nSortFileList.length; i++) {
+			nFileList[nSortFileList[i][0]]=nSortFileList[i][1];
+		}			
+//		console.log("nFileList: " + JSON.stringify(nFileList, null, 4));
+		fileList=nFileList;
+		
 		for (var key in fileList) {
 			
 			buttonList.push("#" + key + "_desc");
@@ -519,12 +536,15 @@ function createAccordion(fileList) {
 			throw new Error("Invalid HTML; newDiv >>>\n" + newDiv + "\n<<<");
 		}					
 
+		var isOpera = (window.navigator.userAgent.indexOf("OPR") > -1);
 		var width="800px";	// Shape file description text entry box
+		if (!!window.chrome && !isOpera) { // Chrome
+			width="850px"; 	// Chrome is out by about -50px
+		}
 		var width2="170px";	// Area ID, area name buttons
 		var width3="170px";	// Area ID, area name description text entry boxes
 //		console.log("accordion width: " + document.getElementById('accordion').offsetWidth);
 		if (document.getElementById('accordion').offsetWidth > 1500) {
-			var isOpera = (window.navigator.userAgent.indexOf("OPR") > -1);
 			if (!!window.chrome && !isOpera) { // Chrome
 				width="1308px";
 				width2="220px";
@@ -541,7 +561,7 @@ function createAccordion(fileList) {
 			var id = key + "_desc";
 			var item = document.getElementById(id);
 			if (item) {
-				item.style.width = width; // Chrome is out by about -50px
+				item.style.width = width;
 				item.style.textAlign = "left";
 			}
 			else {
@@ -621,6 +641,7 @@ function createAccordion(fileList) {
 		console.log("Added accordion[" + key + "]: " + fileList[key].fileName);
 	} // End of if JQuery-UI version
 }	
+
 /*
  * Function: 	updateAreaIdNameDesc()
  * Parameters: 	Calling id, parent div id (file key), value
@@ -629,11 +650,11 @@ function createAccordion(fileList) {
  */
 function updateAreaIdNameDesc(id, fileKey, value) {
 	if (document.getElementById(id)) {	
-		console.log("updateAreaIdNameDesc() id: " + id + "; file key: " + fileKey + "; new value: " + value);
+//		console.log("updateAreaIdNameDesc() id: " + id + "; file key: " + fileKey + "; new value: " + value);
 		if (fileList[fileKey] && fileList[fileKey].dbfHeader.fields) {
 			for (var j=0; j < fileList[fileKey].dbfHeader.fields.length ; j++) {
 				if (fileList[fileKey].dbfHeader.fields[j].name.toUpperCase() == value.toUpperCase()) {
-					console.log("Get field: " + value + " description='" + fileList[fileKey].dbfHeader.fields[j].description + "'");
+//					console.log("Get field: " + value + " description='" + fileList[fileKey].dbfHeader.fields[j].description + "'");
 					$( "#" + id + "_desc" ).val(fileList[fileKey].dbfHeader.fields[j].description);
 				}
 			}			
