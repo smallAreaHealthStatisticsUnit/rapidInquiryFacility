@@ -84,7 +84,16 @@ input[type="file"] { /* Disable to default file load look, use customFileUpload 
 }
 #quantizationSelect-button {
   vertical-align : middle;
+} /*
+.entry {
+    position: relative;
+    right: -200px;
+    width: 500px;
 }
+.entry-tooltip-positioner {
+    position: fixed !important; 
+    left: 100px !important; 
+} */
 .customFileUpload { /* This needs to inherit the correct JQuery UI class style; the .css() function won't work on form file upload buttons! */
     display: inline-block;
     padding: 6px 12px 6px 6px;

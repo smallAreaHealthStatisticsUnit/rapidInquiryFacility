@@ -70,8 +70,12 @@ $(document).ready(function documentReady() {
 	  
 					$( "#diagnostics, #shpConvertSubmit" ).button();	// Diagnostics button
  
-					$( document ).tooltip();							// Enable tooltips
-					
+					$( document ).tooltip({position: { 					// Enable tooltips
+							  my: "right bottom+50"
+						  },
+						  tooltipClass: "entry-tooltip-positioner"
+						  });							
+
 //					Accordion is initialised dynamically					
 				});
 				
@@ -153,8 +157,8 @@ function quantizationSelectChange(value) {
 			  <label title="Please upload one or more shapefiles; these may be in zip format and must contain the .dbf (table data), .shp (geospatial data) and .prj (projection) files" 
 			         class="customFileUpload">Select a file/files to upload
 			    <input id="files" type="file" name="file_list" size="50" multiple="multiple"/>
-			  </label>
-			  <input type="text" id="customFileUploadInput" value="&nbsp;No files selected" readonly size="16"><br>				  
+			    <input type="text" id="customFileUploadInput" value="&nbsp;No files selected" readonly size="16"><br>			
+			  </label>	  
 			  <label title="Quantization: select the reduction in the maximum number of differentiable points along either dimension" for="quantization">Quantization:
 			    <select id="quantizationSelect" name="quantization" form="shpConvert">
 					<option value="100000000">1 in 100 million</option>
