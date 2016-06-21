@@ -476,24 +476,29 @@ function createAccordion(fileList) {
 			newDiv+= 
 				'<h3>Shapefile: ' + fileList[key].fileName + '; size: ' + fileSize(fileList[key].fileSize) + '; fields: ' + fileList[key].dbfHeader.noFields + '; records: ' + fileList[key].dbfHeader.count + '</h3>\n' + 
 				'<div id="' + key + '">\n' +	
-				'  <label class="my-accordion-fields1" for="' + key + '_desc">Shape file description: </label>\n' +  
-				'  <input class="my-accordion-fields1" id="' + key + '_desc" name="' + key + '_desc" type="text" value="' + fileList[key].description + '"><br>\n' +
-				'  <label class="my-accordion-fields2" for="' + key + '_areaIDList">Area ID: \n' +
+				'  <label class="my-accordion-fields1" for="' + 
+					key + '_desc">Shape file description: </label>\n' +  
+				'  <input class="my-accordion-fields1" title="Please enter a description of the shapefile" id="' + 
+					key + '_desc" name="' + key + '_desc" type="text" value="' + fileList[key].description + '"><br>\n' +
+				'  <label title="Please choose an area ID. This is the unique administrative code for area on the map" class="my-accordion-fields2" for="' + 
+					key + '_areaIDList">Area ID: \n' +
 				'    <select class="my-accordion-fields2" id="' + key + '_areaID" name="' + key + 
 					'_areaIDListname" form="shpConvert">\n' +
 				fieldSelect1 +
 				'    </select>\n' + 
 				'  </label>\n' +							
 				'  <label class="my-accordion-fields2" for="' + key + '_areaID_desc">Label: </label>\n' +  
-				'  <input class="my-accordion-fields2" id="' + key + '_areaID_desc" name="' + key + '_areaID_desc" type="text">\n' +	
-				'  <label class="my-accordion-fields2" for="' + key + '_areaNameList">Area Name: \n' +
-				'    <select onchange="updateAreaNameDesc(this.value);" class="my-accordion-fields2" id="' + key + '_areaName" name="' + key + 
+				'  <input class="my-accordion-fields2" title="Please enter a description of the choosen area ID" id="' + 
+					key + '_areaID_desc" name="' + key + '_areaID_desc" type="text">\n' +	
+				'  <label title="Please choose an area name. This is the administrative name corresponding to the area ID" class="my-accordion-fields2" for="' + key + '_areaNameList">Area Name: \n' +
+				'    <select class="my-accordion-fields2" id="' + key + '_areaName" name="' + key + 
 					'_areaNameListname" form="shpConvert">\n' +
 				fieldSelect2 +
 				'    </select>\n' + 
 				'  </label>\n' +
 				'  <label class="my-accordion-fields2" for="' + key + '_areaName_desc">Label: </label>\n' +  
-				'  <input class="my-accordion-fields2" id="' + key + '_areaName_desc" name="' + key + '_areaName_desc" type="text"></div>\n' +								
+				'  <input class="my-accordion-fields2" title="Please enter a description of the choosen area name" id="' + 
+					key + '_areaName_desc" name="' + key + '_areaName_desc" type="text"></div>\n' +								
 				'</div>\n';
 		
 		} // End of for loop
@@ -513,12 +518,30 @@ function createAccordion(fileList) {
 		else {
 			throw new Error("Invalid HTML; newDiv >>>\n" + newDiv + "\n<<<");
 		}					
-			
+
+		var width="800px";	// Shape file description text entry box
+		var width2="170px";	// Area ID, area name buttons
+		var width3="170px";	// Area ID, area name description text entry boxes
+//		console.log("accordion width: " + document.getElementById('accordion').offsetWidth);
+		if (document.getElementById('accordion').offsetWidth > 1500) {
+			var isOpera = (window.navigator.userAgent.indexOf("OPR") > -1);
+			if (!!window.chrome && !isOpera) { // Chrome
+				width="1308px";
+				width2="220px";
+				width3="370px";
+			}
+			else {
+				width="1308px";
+				width2="220px";
+				width3="370px";
+			}
+		}		
+	
 		for (var key in fileList) { // Style shapefile descriptions
 			var id = key + "_desc";
 			var item = document.getElementById(id);
 			if (item) {
-				item.style.width = "800px"; // Chrome is out by about -50px
+				item.style.width = width; // Chrome is out by about -50px
 				item.style.textAlign = "left";
 			}
 			else {
@@ -526,7 +549,7 @@ function createAccordion(fileList) {
 			}
 		}
 		
-		var  styleArr = ["areaID", "areaName"]; // Style areaID, areaName descriptions
+		var  styleArr = ["areaID", "areaName"]; // Add chnage function to select menus
 		for (var key in fileList) {
 			for (var j=0; j< styleArr.length; j++) {
 				var id=key + "_" + styleArr[j];
@@ -536,10 +559,31 @@ function createAccordion(fileList) {
 				
 				var myId = document.getElementById(id);
 				updateAreaIdNameDesc(myId.id, myId.parentNode.parentNode.id, $( "#" + id ).val()); // Set defaults
-				
+			}
+		}
+	
+		var  styleArr = ["areaID", "areaName"]; // Style areaID, areaName
+		for (var key in fileList) {
+			for (var j=0; j< styleArr.length; j++) {
+				var id=key + "_" + styleArr[j];		
 				var item = document.getElementById(id);
 				if (item) {
-					item.style.width = "170px";
+					item.style.width = width2;
+					item.style.textAlign = "left";
+				}
+				else {
+					throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
+				}
+			}		
+		} // End of for loop
+		
+		var  styleArr = ["areaID_desc", "areaName_desc"]; // Style areaID, areaName descriptions
+		for (var key in fileList) {
+			for (var j=0; j< styleArr.length; j++) {
+				var id=key + "_" + styleArr[j];		
+				var item = document.getElementById(id);
+				if (item) {
+					item.style.width = width3;
 					item.style.textAlign = "left";
 				}
 				else {
@@ -557,8 +601,8 @@ function createAccordion(fileList) {
 		$( selectList.join(",") )
 		  .selectmenu()
 		  .selectmenu( "menuWidget" )
-			.addClass( "overflow" );
-			
+			.addClass( "overflow" );		
+				
 		var  styleArr2 = ["_areaID-button", "_areaName-button"]; // Style areaID, areaName select lists
 		for (var key in fileList) {
 			for (var j=0; j< styleArr2.length; j++) {
@@ -572,6 +616,7 @@ function createAccordion(fileList) {
 				}							
 			}							
 		} // End of for loop
+		
 		tabs.tabs("refresh" );
 		console.log("Added accordion[" + key + "]: " + fileList[key].fileName);
 	} // End of if JQuery-UI version
