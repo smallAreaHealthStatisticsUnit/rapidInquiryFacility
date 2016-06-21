@@ -267,6 +267,26 @@ body {
 .chartOpts #updateCharts:hover {
     opacity: 0.6;
 }
+.chartOptsMapping {
+    width: 100%;  
+}
+.chartOptsViewer {
+    width: 35%;  
+    min-width: 390px;  
+    float: left;
+    background-color: #CAE1FF;
+}
+
+.chartOptsViewer a{ 
+    margin:4px 20px;
+}
+.chartOptsViewer #updateCharts{ 
+    background: transparent url("../images/update.png") no-repeat;
+    opacity:0.2;
+}
+.chartOptsViewer #updateCharts:hover{ 
+    opacity:0.6;
+}
 .mapOpts {
     float: left;
 }
@@ -1260,6 +1280,54 @@ div.aSR:hover,
 #buttons .geoDrops>div span {
     text-transform: uppercase
 }
+
+
+
+/*xxx*/
+#buttons{
+    height:55px;
+}
+
+#buttons>div {
+    float:left;
+}
+#buttons .export{
+    margin: 14px 2px 0 8px;
+    min-width: 390px;
+    width: 25%;
+}
+#buttons .export a{
+    margin: 5px 8px;
+    display: block;
+    font-size: 22px;
+    text-transform: uppercase;
+    text-decoration: none;
+    color:#E3E3E3
+}
+#buttons .export a:hover{
+    color: white;
+    background-color: #8DB6CD;
+}
+#buttons .geoDropsMapping{	
+    width: auto;
+}
+#buttons .geoDropsMapping>div{
+    float: left;
+    padding: 6px 8px 0 0;
+    font-size:11px
+}
+#buttons .geoDropsMapping>div select{
+    margin:0;
+}
+#buttons .geoDropsMapping>div span {
+    text-transform:uppercase
+}
+/*xxx*/
+
+
+
+
+
 input[type="text"].dropdownInput {
     padding: 0px;
     width: 100%;
@@ -2361,6 +2429,56 @@ input[type=number]+ label  {
     height:32px;
     float:left
 } 
+
+#submenuMapping{
+    height:40px;
+    background-color: #F5F5F5;
+    border-top:1px solid #E3E3E3;
+    border-bottom:1px solid #E3E3E3;
+}
+
+#submenuMapping div a img{
+    margin:5px 0px;
+}
+
+#submenuMapping div {
+    height: 100%;	
+}
+
+#submenuMapping div a img.active{
+    -moz-opacity: 1;
+    -khtml-opacity: 1;
+    opacity: 1;
+}
+
+#submenuMapping div a.settings {
+    float:right;
+    margin-right: 10px;
+} 
+
+#submenuMapping a {
+    width:32px;
+    height:32px;
+    float:left
+} 
+
+div#studyLabel{
+    text-transform: uppercase; 
+    background-color: #CAE1FF;
+    width: 100%;
+}
+div#studyLabel h1, div#studyLabel h2{
+    padding: 0 4%;
+    text-align:right;
+}
+
+div#studyLabel h1{
+    font-size: 120%;
+}
+
+div#studyLabel h2{
+    /* font-size: 100%; */
+}
 
 /*D3 CSS*/
 .chart {
