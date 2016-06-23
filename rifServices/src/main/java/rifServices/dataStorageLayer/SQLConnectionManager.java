@@ -674,7 +674,13 @@ public final class SQLConnectionManager
 			Properties databaseProperties = new Properties();
 			databaseProperties.setProperty("user", userID);
 			databaseProperties.setProperty("password", password);
-			//databaseProperties.setProperty("ssl", "true");
+			
+			boolean isSSLSupported
+				= rifServiceStartupOptions.getRIFDatabaseProperties().isSSLSupported();
+			if (isSSLSupported) {
+				databaseProperties.setProperty("ssl", "true");
+			}
+
 			//databaseProperties.setProperty("logUnclosedConnections", "true");
 			databaseProperties.setProperty("prepareThreshold", "3");
 			//KLG: @TODO this introduces a porting issue

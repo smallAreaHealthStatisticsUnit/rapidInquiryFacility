@@ -72,6 +72,7 @@ public class RIFDatabaseProperties {
 	// ==========================================
 	private DatabaseType databaseType;
 	private boolean isCaseSensitive;
+	private boolean isSSLSupported;
 
 	
 	// ==========================================
@@ -80,20 +81,24 @@ public class RIFDatabaseProperties {
 
 	private RIFDatabaseProperties(
 		final DatabaseType databaseType,
-		final boolean isCaseSensitive) {
+		final boolean isCaseSensitive,
+		final boolean isSSLSupported) {
 
 		this.databaseType = databaseType;
 		this.isCaseSensitive = isCaseSensitive;
+		this.isSSLSupported = isSSLSupported;
 	}
 
 	public static RIFDatabaseProperties newInstance(
 		final DatabaseType databaseType,
-		final boolean isCaseSensitive) {
+		final boolean isCaseSensitive,
+		final boolean supportsSSL) {
 		
 		RIFDatabaseProperties rifDatabaseProperties
 			= new RIFDatabaseProperties(
 				databaseType,
-				isCaseSensitive);
+				isCaseSensitive,
+				supportsSSL);
 		
 		return rifDatabaseProperties;
 	}
@@ -104,6 +109,10 @@ public class RIFDatabaseProperties {
 	// ==========================================
 	public boolean isCaseSensitive() {
 		return isCaseSensitive;
+	}
+	
+	public boolean isSSLSupported() {
+		return isSSLSupported;
 	}
 	
 	public DatabaseType getDatabaseType() {

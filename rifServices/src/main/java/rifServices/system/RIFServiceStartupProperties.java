@@ -116,6 +116,12 @@ public final class RIFServiceStartupProperties {
 	  return result;
    }
 
+    public static boolean isSSLSupported() {
+    	String property
+    		= getProperty("database.isSSLSupported");
+    	return Boolean.valueOf(property);    	
+    }
+    
     public static String getDatabaseDriverClassName() {
     	return getProperty("database.driverClassName");
     }

@@ -107,6 +107,7 @@ public final class RIFServiceStartupOptions {
 	
 	private DatabaseType databaseType;
 	private boolean isDatabaseCaseSensitive;
+	private boolean sslSupported;
 	
 	private String rifServiceClassDirectoryPath;
 	
@@ -162,7 +163,9 @@ public final class RIFServiceStartupOptions {
 			= RIFServiceStartupProperties.getMaximumMapAreasAllowedForSingleDisplay();
 		
 		isDatabaseCaseSensitive
-			= RIFServiceStartupProperties.isDatabaseCaseSensitive();		
+			= RIFServiceStartupProperties.isDatabaseCaseSensitive();
+		sslSupported
+			= RIFServiceStartupProperties.isSSLSupported();
 	}
 
 	public static RIFServiceStartupOptions newInstance(
@@ -185,7 +188,8 @@ public final class RIFServiceStartupOptions {
 		RIFDatabaseProperties rifDatabaseProperties
 			= RIFDatabaseProperties.newInstance(
 				databaseType, 
-				isDatabaseCaseSensitive);
+				isDatabaseCaseSensitive,
+				sslSupported);
 		
 		return rifDatabaseProperties;
 	}
