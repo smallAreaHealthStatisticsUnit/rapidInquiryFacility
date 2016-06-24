@@ -8,6 +8,7 @@
  * 'selectedPolygon' is monitored using a $watchCollection which renders the selections on changes
  * 
  * TODO: restrict scope
+ * TODO: refactor selectpolygon
  */
 
 /* global L, d3, key, topojson */
@@ -31,16 +32,15 @@ angular.module("RIF")
                         //map max bounds from topojson layer
                         var maxbounds;
 
-                        //selectedPolygon array synchronises the map <-> table selections
-                        $scope.selectedPolygon = [];
-                        $scope.selectedPolygonCount = 0; //total for display
+                        //selectedPolygon array synchronises the map <-> table selections                        
+                        $scope.selectedPolygon = $scope.input.selectedPolygon;
+
+                        //total for display
+                        $scope.selectedPolygonCount = 0;
 
                         //band colour look-up for selected districts
                         $scope.possibleBands = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                         $scope.currentBand = 1; //from dropdown
-
-                        //keeps track of which polygon is colured as what colour
-                        var bandColours = {};
 
                         //d3 polygon rendering, changed by slider
                         $scope.transparency = 0.7;
@@ -137,15 +137,20 @@ angular.module("RIF")
                                     test = GISService.get_pointinpolygon(point[0], shape);
                                 }
                                 if (test) {
-                                    var thisIndex = $scope.selectedPolygon.indexOf(point[1]);
-                                    if (thisIndex === -1) {
-                                        //add district to selection
-                                        $scope.selectedPolygon.push(point[1]);
-                                        //add band number to array look-up
+                                    var thisPoly = point[1];
+                                    var thisPolyID = point[2];
+                                    var bFound = false;
+                                    for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+                                        if ($scope.selectedPolygon[i].id === thisPolyID) {
+                                            bFound = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!bFound) {
                                         if (shape.band === -1) {
-                                            bandColours[point[1]] = $scope.currentBand;
+                                            $scope.selectedPolygon.push({id: thisPolyID, label: thisPoly, band: $scope.currentBand});
                                         } else {
-                                            bandColours[point[1]] = shape.band;
+                                            $scope.selectedPolygon.push({id: thisPolyID, label: thisPoly, band: shape.band});
                                         }
                                     }
                                 }
@@ -168,11 +173,21 @@ angular.module("RIF")
                             bDrawing = false; //re-enable layer events
                         }
 
+                        function renderFeature(feature) {
+                            for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+                                if ($scope.selectedPolygon[i].label === feature) {
+                                    bFound = true;
+                                    var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628', '#f781bf', '#999999'];
+                                    return cb[$scope.selectedPolygon[i].band - 1];
+                                }
+                            }
+                            return '#F5F5F5'; //whitesmoke
+                        }
+
                         //Functions to style topoJson on selection changes
                         function style(feature) {
                             return {
-                                fillColor: ModalAreaService.getColor($scope.selectedPolygon.indexOf(feature.properties.LAD13NM),
-                                        bandColours[feature.properties.LAD13NM]),
+                                fillColor: renderFeature(feature.properties.LAD13NM),
                                 weight: 1,
                                 opacity: 1,
                                 color: 'gray',
@@ -182,8 +197,7 @@ angular.module("RIF")
                         }
                         function handleLayer(layer) {
                             layer.setStyle({
-                                fillColor: ModalAreaService.getColor($scope.selectedPolygon.indexOf(layer.feature.properties.LAD13NM),
-                                        bandColours[layer.feature.properties.LAD13NM]),
+                                fillColor: renderFeature(layer.feature.properties.LAD13NM),
                                 fillOpacity: $scope.transparency
                             });
                         }
@@ -194,7 +208,22 @@ angular.module("RIF")
                         //Read topoJson with d3
                         d3.json("test/eng.json", function (error, data) {
                             //populate the table
+                            for (var i = 0; i < data.objects.lad.geometries.length; i++) {
+                                var thisPoly = data.objects.lad.geometries[i].properties.LAD13NM;
+                                var bFound = false;
+                                for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+                                    if ($scope.selectedPolygon[j].label === thisPoly) {
+                                        data.objects.lad.geometries[i].properties.band = $scope.selectedPolygon[j].band;
+                                        bFound = true;
+                                        break;
+                                    }
+                                }
+                                if (!bFound) {
+                                    data.objects.lad.geometries[i].properties.band = 0;
+                                }
+                            }
                             $scope.gridOptions.data = ModalAreaService.fillTable(data);
+
                             $scope.refresh = false;
                             leafletData.getMap("area").then(function (map) {
                                 latlngList = [];
@@ -205,7 +234,7 @@ angular.module("RIF")
                                     onEachFeature: function (feature, layer) {
                                         //define polygon centroids
                                         var p = layer.getBounds().getCenter();
-                                        latlngList.push([L.latLng([p.lat, p.lng]), feature.properties.LAD13NM]);
+                                        latlngList.push([L.latLng([p.lat, p.lng]), feature.properties.LAD13NM, feature.properties.LAD13CD]);
 
                                         //get as optional marker layer
                                         var circle = new L.CircleMarker([p.lat, p.lng], {
@@ -218,8 +247,6 @@ angular.module("RIF")
                                         });
                                         centroidMarkers.addLayer(circle);
 
-                                        //define initial bands
-                                        bandColours[feature.properties.LAD13NM] = 0;
                                         layer.on('mouseover', function (e) {
                                             //if drawing then return
                                             if (bDrawing) {
@@ -246,13 +273,16 @@ angular.module("RIF")
                                                 return;
                                             }
                                             var thisPoly = e.target.feature.properties.LAD13NM;
-                                            var thisIndex = $scope.selectedPolygon.indexOf(thisPoly);
-                                            if (thisIndex === -1) {
-                                                bandColours[feature.properties.LAD13NM] = $scope.currentBand;
-                                                $scope.selectedPolygon.push(feature.properties.LAD13NM);
-                                            } else {
-                                                bandColours[feature.properties.LAD13NM] = 0;
-                                                $scope.selectedPolygon.splice(thisIndex, 1);
+                                            var bFound = false;
+                                            for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+                                                if ($scope.selectedPolygon[i].label === thisPoly) {
+                                                    bFound = true;
+                                                    $scope.selectedPolygon.splice(i, 1);
+                                                    break;
+                                                }
+                                            }
+                                            if (!bFound) {
+                                                $scope.selectedPolygon.push({id: feature.properties.LAD13CD ,label: feature.properties.LAD13NM, band: $scope.currentBand});
                                             }
                                         });
                                     }
@@ -263,6 +293,7 @@ angular.module("RIF")
                                 map.fitBounds(maxbounds);
                             });
                         });
+
                         //Multiple select with shift
                         //detect shift key (16) down
                         var bShift = false;
@@ -281,16 +312,23 @@ angular.module("RIF")
                                 multiStop = -1;
                             }
                         };
+
                         //Table click event to update selectedPolygon 
                         $scope.rowClick = function (row) {
                             //We are doing a single click select on the table
-                            var thisIndex = $scope.selectedPolygon.indexOf(row.entity.name);
-                            if (thisIndex === -1) {
-                                bandColours[row.entity.name] = $scope.currentBand;
-                                $scope.selectedPolygon.push(row.entity.name);
-                            } else {
-                                bandColours[row.entity.name] = 0;
-                                $scope.selectedPolygon.splice(thisIndex, 1);
+                            //TODO: REFACTOR
+                            var thisPoly = row.entity.label;
+                            var thisPolyID = row.entity.id;
+                            var bFound = false;
+                            for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+                                if ($scope.selectedPolygon[i].id === thisPolyID) {
+                                    bFound = true;
+                                    $scope.selectedPolygon.splice(i, 1);
+                                    break;
+                                }
+                            }
+                            if (!bFound) {
+                                $scope.selectedPolygon.push({id: thisPolyID, label: thisPoly, band: $scope.currentBand});
                             }
 
                             //We are doing a multiple select on the table, shift key is down
@@ -299,53 +337,62 @@ angular.module("RIF")
                                 var myVisibleRows = $scope.gridApi.core.getVisibleRows();
                                 if (multiStart === -1) {
                                     //get index of start multi select in the filtered table
-                                    multiStart = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.name);
+                                    multiStart = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
                                 } else {
                                     //get index of end multi select in the filtered table
-                                    multiStop = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.name);
+                                    multiStop = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
                                     //do the multiple selection
                                     for (var i = Math.min(multiStop, multiStart);
                                             i <= Math.min(multiStop, multiStart) + (Math.abs(multiStop - multiStart)); i++) {
-                                        var thisIndex = $scope.selectedPolygon.indexOf(myVisibleRows[i].entity.name);
-                                        if (thisIndex === -1) {
-                                            $scope.selectedPolygon.push(myVisibleRows[i].entity.name);
+                                        var thisPoly = myVisibleRows[i].entity.label;
+                                        var thisPolyID = myVisibleRows[i].entity.id;
+                                        var bFound = false;
+                                        for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+                                            if ($scope.selectedPolygon[j].id === thisPolyID) {
+                                                bFound = true;
+                                                break;
+                                            }
                                         }
-                                        bandColours[myVisibleRows[i].entity.name] = $scope.currentBand;
+                                        if (!bFound) {
+                                            $scope.selectedPolygon.push({id: thisPolyID, label: thisPoly, band: $scope.currentBand});
+                                        }
                                     }
                                     multiStart = -1;
                                 }
                             }
                         };
+
                         //Clear all selection from map and table
                         $scope.clear = function () {
                             $scope.selectedPolygon = [];
-                            for (var k in bandColours) {
-                                bandColours[k] = 0;
-                            }
+                            $scope.input.selectedPolygon = [];
                         };
+
                         //Select all in map and table
                         $scope.selectAll = function () {
                             $scope.selectedPolygon = [];
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
-                                $scope.selectedPolygon.push($scope.gridOptions.data[i].name);
-                                bandColours[$scope.gridOptions.data[i].name] = $scope.currentBand;
+                                $scope.selectedPolygon.push({id: $scope.gridOptions.data[i].id ,label: $scope.gridOptions.data[i].label, band: $scope.currentBand});
                             }
                         };
+
                         //Reset only the selected band back to 0
                         $scope.clearBand = function () {
-                            for (var i in bandColours) {
-                                if (bandColours[i] === $scope.currentBand) {
-                                    bandColours[i] = 0;
-                                    $scope.selectedPolygon.splice($scope.selectedPolygon.indexOf(i), 1);
+                            var i = $scope.selectedPolygon.length;
+                            while (i--) {
+                                if ($scope.selectedPolygon[i].band === $scope.currentBand) {
+                                    $scope.selectedPolygon.splice(i, 1);
                                 }
                             }
                         };
+
                         //Zoom to layer
                         $scope.zoomToExtent = function () {
                             leafletData.getMap("area").then(function (map) {
                                 map.fitBounds(maxbounds);
                             });
                         };
+
                         //Show-hide centroids
                         $scope.showCentroids = function () {
                             leafletData.getMap("area").then(function (map) {
@@ -370,7 +417,12 @@ angular.module("RIF")
                             //Update table selection
                             $scope.gridApi.selection.clearSelectedRows();
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
-                                $scope.gridOptions.data[i].band = bandColours[$scope.gridOptions.data[i].name];
+                                $scope.gridOptions.data[i].band = 0;
+                                for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+                                    if ($scope.gridOptions.data[i].label === $scope.selectedPolygon[j].label) {
+                                        $scope.gridOptions.data[i].band = $scope.selectedPolygon[j].band;
+                                    }
+                                }
                             }
                         });
                     }

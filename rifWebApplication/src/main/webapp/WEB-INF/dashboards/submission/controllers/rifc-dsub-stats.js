@@ -3,9 +3,9 @@
  * 
  */
 angular.module("RIF")
-        .controller('ModalStatsCtrl', ['$scope', '$uibModal', 'ModelService',
-            function ($scope, $uibModal, ModelService) {
-                $scope.tree = false;
+        .controller('ModalStatsCtrl', ['$scope', '$uibModal', 'StatsStateService', 'SubmissionStateService',
+            function ($scope, $uibModal, StatsStateService, SubmissionStateService) {
+                $scope.tree = SubmissionStateService.get_state().statsTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
@@ -18,24 +18,30 @@ angular.module("RIF")
                     });
                     modalInstance.result.then(function (input) {
                         //TODO: form validation
-                        
-                        ModelService.set_calculationmethod(input);
 
-                        //Change tree icon colour
+                        SubmissionStateService.get_state().statsTree = true;
                         $scope.tree = true;
+
+                        StatsStateService.get_state().checked = input.checked;
+                        StatsStateService.get_state().bym_c = input.bym_c;
+                        StatsStateService.get_state().het_a = input.het_a;
+                        StatsStateService.get_state().het_b = input.het_b;
+                        StatsStateService.get_state().car_a = input.car_a;
+
                         $scope.showWarning("a warning message");
                     });
                 };
             }])
-        .controller('ModalStatsInstanceCtrl', function ($scope, $uibModalInstance) {
+        .controller('ModalStatsInstanceCtrl', function ($scope, $uibModalInstance, StatsStateService) {
             $scope.input = {};
-            $scope.input.checked = "1";
-            $scope.input.bym_c = 10;
-            $scope.input.het_a = 5;
-            $scope.input.het_b = 10;
-            $scope.input.car_a = 5;
-            
+            $scope.input.checked = StatsStateService.get_state().checked;
+            $scope.input.bym_c = StatsStateService.get_state().bym_c;
+            $scope.input.het_a = StatsStateService.get_state().het_a;
+            $scope.input.het_b = StatsStateService.get_state().het_b;
+            $scope.input.car_a = StatsStateService.get_state().car_a;
+
             $scope.close = function () {
+                StatsStateService.reset_state();
                 $uibModalInstance.dismiss();
             };
             $scope.submit = function () {

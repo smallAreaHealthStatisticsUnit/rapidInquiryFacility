@@ -5,9 +5,9 @@
 /* global L */
 
 angular.module("RIF")
-        .controller('ModalComparisonAreaCtrl', ['$scope', '$uibModal', 'ModelService', 
-            function ($scope, $uibModal, ModelService) {
-                $scope.tree = false;
+        .controller('ModalComparisonAreaCtrl', ['$scope', '$uibModal', 'CompAreaStateService', 'SubmissionStateService',
+            function ($scope, $uibModal, CompAreaStateService, SubmissionStateService) {
+                $scope.tree = SubmissionStateService.get_state().comparisonTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
@@ -18,17 +18,33 @@ angular.module("RIF")
                         backdrop: 'static',
                         keyboard: false
                     });
-                    modalInstance.result.then(function () {
+                    modalInstance.result.then(function (input) {
                         //Change tree icon colour
-                        $scope.tree = true;   
+                        if (input.selectedPolygon.length === 0) {
+                            SubmissionStateService.get_state().comparisonTree = false;
+                            $scope.tree = false;
+                        } else {
+                            SubmissionStateService.get_state().comparisonTree = true;
+                            $scope.tree = true;
+                        }
+
+                        //Store what has been selected
+                        CompAreaStateService.get_state().polygonIDs = input.selectedPolygon;  
+                        CompAreaStateService.get_state().selectAt = input.selectAt;
+                        CompAreaStateService.get_state().studyResolution = input.studyResolution;
                     });
                 };
             }])
-        .controller('ModalComparisonAreaInstanceCtrl', function ($scope, $uibModalInstance) {
+        .controller('ModalComparisonAreaInstanceCtrl', function ($scope, $uibModalInstance, CompAreaStateService) {
+            $scope.input = {};
+            $scope.input.selectedPolygon = CompAreaStateService.get_state().polygonIDs;
+            $scope.input.selectAt = CompAreaStateService.get_state().selectAt;         
+            $scope.input.studyResolution = CompAreaStateService.get_state().studyResolution;
+            
             $scope.close = function () {
                 $uibModalInstance.dismiss();
             };
             $scope.submit = function () {
-                $uibModalInstance.close();
+                $uibModalInstance.close($scope.input);
             };
         });

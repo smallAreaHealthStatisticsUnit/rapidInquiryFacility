@@ -78,23 +78,8 @@ angular.module("RIF",
                             url: '/test',
                             templateUrl: "test/rifp-test-main.html"
                         });
-                $urlRouterProvider.otherwise("/submission");  //login
+                $urlRouterProvider.otherwise("/submission");  //login submission
             }])
-        .controller('AlertCtrl', function ($scope, notifications) {
-            //CONTROLLER to handle alert bars and notifications
-            //This is on the main <body> scope in index
-            //Subsequent contollers in data-ui-view are children
-            $scope.hide = false;
-            $scope.showError = function (msg) {
-                notifications.showError({message: 'Error: ' + msg, hide: $scope.hide});
-            };
-            $scope.showWarning = function (msg) {
-                notifications.showWarning({message: 'Warning: ' + msg, hide: $scope.hide});
-            };
-            $scope.showSuccess = function (msg) {
-                notifications.showSuccess({message: 'Success: ' + msg, hide: $scope.hide});
-            };
-        })
         .run(function ($rootScope, $state) {
             $rootScope.$state = $state;
         });

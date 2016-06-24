@@ -20,23 +20,23 @@ angular.module("RIF")
                     };
                     var areaTableColumnDefs = [
                         {field: 'id', enableHiding: false},
-                        {field: 'name', enableHiding: false},
+                        {field: 'label', enableHiding: false},
                         {field: 'band', enableHiding: false}
                     ];
 
                     //Set-up rows to capture click and keypress events
                     function rowTemplate() {
                         return  '<div id="testdiv" tabindex="0" ng-keydown="grid.appScope.keyDown($event)" ng-keyup="grid.appScope.keyUp($event);">' +
-                                '<div style="height: 100%" ng-class="{ ' + 
-                                'band1: row.entity.band===1,' + 
-                                'band2: row.entity.band===2,' + 
-                                'band3: row.entity.band===3,' + 
-                                'band4: row.entity.band===4,' + 
-                                'band5: row.entity.band===5,' + 
-                                'band6: row.entity.band===6,' + 
-                                'band7: row.entity.band===7,' + 
-                                'band8: row.entity.band===8,' + 
-                                'band9: row.entity.band===9' +                               
+                                '<div style="height: 100%" ng-class="{ ' +
+                                'band1: row.entity.band===1,' +
+                                'band2: row.entity.band===2,' +
+                                'band3: row.entity.band===3,' +
+                                'band4: row.entity.band===4,' +
+                                'band5: row.entity.band===5,' +
+                                'band6: row.entity.band===6,' +
+                                'band7: row.entity.band===7,' +
+                                'band8: row.entity.band===8,' +
+                                'band9: row.entity.band===9' +
                                 '}">' +
                                 '<div ng-click="grid.appScope.rowClick(row)">' +
                                 '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>' +
@@ -50,8 +50,8 @@ angular.module("RIF")
                             for (var i = 0; i < data.objects.lad.geometries.length; i++) {
                                 var obj = {
                                     id: data.objects.lad.geometries[i].properties.LAD13CD,
-                                    name: data.objects.lad.geometries[i].properties.LAD13NM,
-                                    band: 0
+                                    label: data.objects.lad.geometries[i].properties.LAD13NM,
+                                    band: data.objects.lad.geometries[i].properties.band
                                 };
                                 rowCollection.push(obj);
                             }
@@ -64,20 +64,10 @@ angular.module("RIF")
                         getAreaTableColumnDefs: function () {
                             return areaTableColumnDefs;
                         },
-                        //set colour of selected map polygons
-                        getColor: function (index, band) {
-                            if (index === -1) {
-                                return '#F5F5F5'; //whitesmoke
-                            } else {
-                                //colorbrewer 9-class set1
-                                var cb = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'];
-                                return cb[band - 1];
-                            }
-                        },
                         //used for table multiple select
-                        matchRowNumber: function (visible, name) {
+                        matchRowNumber: function (visible, id) {
                             for (var i = 0; i < visible.length; i++) {
-                                if (visible[i].entity.name === name) {
+                                if (visible[i].entity.id === id) {
                                     return(i);
                                 }
                             }

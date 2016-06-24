@@ -2,10 +2,10 @@
  * 
  */
 angular.module("RIF")
-        .controller('ModalParametersCtrl', ['$scope', '$uibModal', '$http',
-            function ($scope, $uibModal, $http) {
+        .controller('ModalParametersCtrl', ['$scope', '$uibModal', '$http', 'SubmissionStateService',
+            function ($scope, $uibModal, $http, SubmissionStateService) {
 
-                $scope.tree = false;
+                $scope.tree = SubmissionStateService.get_state().investigationTree;
                 $scope.animationsEnabled = false;
 
                 //input params
@@ -274,6 +274,7 @@ angular.module("RIF")
                     });
                     modalInstance.result.then(function () {
                         //Change tree icon colour
+                        SubmissionStateService.get_state().investigationTree = true;
                         $scope.tree = true;
                     });
                 };

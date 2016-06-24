@@ -14,18 +14,15 @@ angular.module("RIF")
                         backdrop: 'static',
                         keyboard: false
                     });
-                    modalInstance.result.then(function (input) {
-                        //input is returned from Modal instance, not used 
+                    modalInstance.result.then(function () {
                         $scope.showWarning("a warning message");
                     });
                 };
             }])
-        .controller('ModalRunInstanceCtrl', function ($scope, $uibModalInstance, ModelService) {
+        .controller('ModalRunInstanceCtrl', function ($scope, $uibModalInstance, SubmissionStateService) {
             $scope.input = {};
-            $scope.input.description = "";
-            $scope.input.name = "";
-            ModelService.set_description($scope.input.description);
-            ModelService.set_name($scope.input.name);
+            $scope.input.description = SubmissionStateService.get_state().projectDescription;
+            $scope.input.name = SubmissionStateService.get_state().projectName;
 
             $scope.close = function () {
                 $uibModalInstance.dismiss();
@@ -34,7 +31,7 @@ angular.module("RIF")
                 $uibModalInstance.close($scope.input);
             };
             $scope.updateModel = function () {
-                ModelService.set_description($scope.input.description);
-                ModelService.set_name($scope.input.name);
+                SubmissionStateService.get_state().projectDescription = $scope.input.description;
+                SubmissionStateService.get_state().projectName = $scope.input.name;
             };
         });

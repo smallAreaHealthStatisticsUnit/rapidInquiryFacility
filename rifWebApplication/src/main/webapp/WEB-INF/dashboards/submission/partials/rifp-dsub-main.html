@@ -4,7 +4,7 @@ Disease submission main 'trees' menu
 -->
 <div id="navigation">
     <div class='logOutUsername'> 
-        <a class="userName" href='#'> </a><span id="logOut"> log out </span>
+        <a class="userName" href='#'> USERNAME </a><span id="logOut" ui-sref="state0" ng-class="{active: $state.includes('state0')}"> log out </span>
     </div>
     <div class='nav'>
         <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Test </a>
@@ -14,29 +14,29 @@ Disease submission main 'trees' menu
     </div>
 </div>
 <!-- Four Submission drop downs-->
-<div id="buttons" class='positioning'>
+<div id="buttons" class='positioning' ng-controller="SumbmissionCtrl">
     <div class='geoDrops'>
         <div>
             <div  class='styleUnderline'>
-                <input type="text"  placeholder="Study name" id='studyName' class='dropdownInput editable'>
+                <input type="text" ng-model="studyName" id='studyName' class='dropdownInput editable'>
             </div>
         </div>
         <div>
             <div class='styleUnderline dropdowns availablesWrapper'>
-                <input type="text"  placeholder="Health theme" id='healthTheme' class='dropdownInput'>
+                <input type="text" ng-model="healthTheme" id='healthTheme' class='dropdownInput'>
                 <div id='healthThemeAvailables' class='availables' >
                 </div>
             </div>
         </div>
         <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
-                <input type="text"  placeholder="Numerator" id='numerator' class='dropdownInput'>
+                <input type="text" ng-model="numerator" id='numerator' class='dropdownInput'>
                 <div id='numeratorAvailables' class='availables' ></div>
             </div>
         </div>
         <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
-                <input type="text"  placeholder="Denominator" id='denominator' class='dropdownInput'>
+                <input type="text" ng-model="denominator" id='denominator' class='dropdownInput'>
                 <div id='denominatorAvailables' class='availables' > </div>
             </div>
         </div>
