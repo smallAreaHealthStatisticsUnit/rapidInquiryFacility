@@ -13,7 +13,7 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.taxonomyServices.HealthCodeProviderInterface;
+import rifServices.ontologyServices.HealthCodeProviderInterface;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.sql.Connection;

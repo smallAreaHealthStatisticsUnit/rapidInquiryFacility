@@ -1,4 +1,4 @@
-package rifServices.taxonomyServices;
+package rifServices.ontologyServices;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;

@@ -1,10 +1,10 @@
 
-package rifServices.taxonomyServices;
+package rifServices.ontologyServices;
 
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-
+import rifGenericLibrary.ontologyServices.TaxonomyTerm;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 

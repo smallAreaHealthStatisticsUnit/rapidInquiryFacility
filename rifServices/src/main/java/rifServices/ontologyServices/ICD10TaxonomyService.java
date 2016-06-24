@@ -1,11 +1,11 @@
-package rifServices.taxonomyServices;
+package rifServices.ontologyServices;
 
 
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Parameter;
 import rifServices.system.RIFServiceError;
-
+import rifGenericLibrary.ontologyServices.TaxonomyTerm;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 

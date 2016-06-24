@@ -10,7 +10,7 @@ import org.junit.Test;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.Parameter;
-import rifServices.taxonomyServices.ICD10ClaMLTaxonomyProvider;
+import rifServices.ontologyServices.ICD10ClaMLTaxonomyProvider;
 
 /**
  *

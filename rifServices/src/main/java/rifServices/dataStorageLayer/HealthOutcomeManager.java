@@ -9,9 +9,9 @@ import rifServices.businessConceptLayer.Parameter;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.taxonomyServices.HealthCodeProviderInterface;
-import rifServices.taxonomyServices.ICD10ClaMLTaxonomyProvider;
-import rifServices.taxonomyServices.RIFXMLTaxonomyProvider;
+import rifServices.ontologyServices.HealthCodeProviderInterface;
+import rifServices.ontologyServices.ICD10ClaMLTaxonomyProvider;
+import rifServices.ontologyServices.RIFXMLTaxonomyProvider;
 
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.User;

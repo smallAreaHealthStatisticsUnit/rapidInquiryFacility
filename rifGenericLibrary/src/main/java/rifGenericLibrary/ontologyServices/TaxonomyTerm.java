@@ -1,4 +1,4 @@
-package rifServices.taxonomyServices;
+package rifGenericLibrary.ontologyServices;
 
 import java.util.ArrayList;
 
