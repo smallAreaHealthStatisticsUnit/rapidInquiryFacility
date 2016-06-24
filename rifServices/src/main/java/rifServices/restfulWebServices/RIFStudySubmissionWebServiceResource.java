@@ -2,8 +2,8 @@ package rifServices.restfulWebServices;
 
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.*;
-
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.businessConceptLayer.User;
 
 import com.sun.jersey.multipart.*;

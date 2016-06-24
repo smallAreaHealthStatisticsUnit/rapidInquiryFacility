@@ -1,12 +1,12 @@
 
 package rifServices.fileFormats;
 
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.businessConceptLayer.Parameter;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

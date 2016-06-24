@@ -1,12 +1,13 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.CalculationMethodPrior;
-import rifServices.businessConceptLayer.Parameter;
 import rifServices.system.RIFServiceMessages;
 
 import java.text.Collator;
 import java.util.ArrayList;
+
 import javax.swing.table.AbstractTableModel;
 
 

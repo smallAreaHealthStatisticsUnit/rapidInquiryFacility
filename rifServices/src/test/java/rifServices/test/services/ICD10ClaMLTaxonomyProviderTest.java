@@ -4,12 +4,13 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
-import rifServices.businessConceptLayer.Parameter;
 import rifServices.ontologyServices.ICD10ClaMLTaxonomyProvider;
 
 /**

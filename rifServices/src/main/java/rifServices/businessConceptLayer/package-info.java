@@ -229,7 +229,7 @@
  * description: provides information to end-users about what the R plugin does.
  * </li>
  * <li>
- * a collection of {@link rifServices.businessConceptLayer.Parameter} objects: used to help set aspects of 
+ * a collection of {@link rifGenericLibrary.businessConceptLayer.Parameter} objects: used to help set aspects of 
  * the plugin's behaviour
  * </li>
  * </ul>

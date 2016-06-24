@@ -1,9 +1,9 @@
 package rifServices.ontologyServices;
 
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.businessConceptLayer.Parameter;
 
 import java.util.ArrayList;
 

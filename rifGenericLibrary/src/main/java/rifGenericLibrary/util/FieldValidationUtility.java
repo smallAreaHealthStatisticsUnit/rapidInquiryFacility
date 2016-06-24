@@ -606,6 +606,26 @@ public final class FieldValidationUtility {
 		return true;		
 	}
 	
+	/**
+	 * Count errors.
+	 *
+	 * @param rifServiceError the rif service error
+	 * @param errorMessages the error messages
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public void countErrors(
+		final Object rifErrorEnumeration,
+		final ArrayList<String> errorMessages) 
+		throws RIFServiceException {
+
+		if (errorMessages.size() > 0) {
+			RIFServiceException rifServiceException
+				= new RIFServiceException(rifErrorEnumeration, errorMessages);
+			throw rifServiceException;
+		}		
+	}
+	
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

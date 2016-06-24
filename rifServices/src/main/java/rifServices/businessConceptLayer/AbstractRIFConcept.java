@@ -1,7 +1,7 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceError;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
@@ -128,24 +128,6 @@ public abstract class AbstractRIFConcept
 		this.identifier = identifier;
 	}
 
-	/**
-	 * Count errors.
-	 *
-	 * @param rifServiceError the rif service error
-	 * @param errorMessages the error messages
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	protected void countErrors(
-		final RIFServiceError rifServiceError,
-		final ArrayList<String> errorMessages) 
-		throws RIFServiceException {
-
-		if (errorMessages.size() > 0) {
-			RIFServiceException rifServiceException
-				= new RIFServiceException(rifServiceError, errorMessages);
-			throw rifServiceException;
-		}		
-	}
 
 	/**
 	 * Gets the record type.
@@ -215,6 +197,19 @@ public abstract class AbstractRIFConcept
 		final boolean isNewRecord) {
 		
 		this.isNewRecord = isNewRecord;
+	}
+	
+	public void countErrors(
+		final RIFServiceError rifServiceError,
+		final ArrayList<String> errorMessages) 
+		throws RIFServiceException {
+		
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		
+		fieldValidationUtility.countErrors(
+			rifServiceError, 
+			errorMessages);
 	}
 	
 	// ==========================================

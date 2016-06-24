@@ -3,7 +3,7 @@ package rifServices.businessConceptLayer;
 
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
-
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
@@ -608,7 +608,7 @@ private String name;
 		else if (parameters.isEmpty() == false) {
 			for (Parameter parameter : parameters) {
 				try {
-					parameter.checkErrors(validationPolicy);
+					parameter.checkErrors();
 				}
 				catch(RIFServiceException exception) {
 					errorMessages.addAll(exception.getErrorMessages());

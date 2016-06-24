@@ -1,10 +1,10 @@
 package rifServices.test.businessConceptLayer;
 
 
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.businessConceptLayer.Parameter;
 import rifServices.dataStorageLayer.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.test.*;

@@ -1,15 +1,13 @@
 
-package rifServices.businessConceptLayer;
+package rifGenericLibrary.businessConceptLayer;
 
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-//import rifServices.businessConceptLayer.AbstractRIFConcept;
-//import rifServices.system.RIFServiceError;
-//import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -81,7 +79,8 @@ import java.text.Collator;
 
 
 public final class Parameter 
-	extends AbstractRIFConcept {
+	implements DisplayableListItemInterface { 
+	//extends AbstractRIFConcept {
 
 
 // ==========================================
@@ -91,6 +90,7 @@ public final class Parameter
 // ==========================================
 // Section Properties
 // ==========================================
+		
 	/** The name. */
 	private String name;
 	
@@ -115,14 +115,24 @@ public final class Parameter
 		this.value = value;
 	}
 
+	
+	
     /**
      * Instantiates a new parameter.
      */
     private Parameter() {
-		name = "";
-		value = "";
+		init("", "");
     }
 
+    private void init(
+    	final String name, 
+    	final String value) {
+    	
+    	this.name = name;
+    	this.value = value;
+    	
+    }
+    
 	/**
 	 * New instance.
 	 *
@@ -239,9 +249,7 @@ public final class Parameter
 		final Parameter anotherParameter,
 		final ArrayList<String> differences) {
 		
-		super.identifyDifferences(
-			anotherParameter, 
-			differences);		
+		//@TODO
 	}
 	
 	/**
@@ -382,7 +390,7 @@ public final class Parameter
 			}			
 		}
 				
-		return super.hasIdenticalContents(otherParameter);
+		return true;
 	}
 	
 // ==========================================
@@ -392,8 +400,7 @@ public final class Parameter
 	public void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
 		
-		super.checkSecurityViolations();
-				String recordType = getRecordType();
+		String recordType = getRecordType();
 		
 		//Extract field names
 		String nameFieldLabel
@@ -417,8 +424,7 @@ public final class Parameter
 	}
 	
 
-	public void checkErrors(
-		final ValidationPolicy validationPolicy) 
+	public void checkErrors() 
 		throws RIFServiceException {
 					
 		String recordType = getRecordType();
@@ -450,7 +456,7 @@ public final class Parameter
 			errorMessages.add(errorMessage);			
 		}
 		
-		//countErrors(RIFGenericLibraryError.INVALID_PARAMETER, errorMessages);
+		fieldValidationUtility.countErrors(RIFGenericLibraryError.INVALID_PARAMETER, errorMessages);
 
 	}
 	
@@ -503,7 +509,6 @@ public final class Parameter
 // ==========================================
 
 
-	@Override
 	public String getDisplayName() {
 
 		StringBuilder buffer = new StringBuilder();
@@ -518,8 +523,10 @@ public final class Parameter
 // Section Override
 // ==========================================
 	
+	public String getIdentifier() {
+		return name;
+	}
 
-@Override
 	public String getRecordType() {
 		String recordNameLabel
 			= RIFGenericLibraryMessages.getMessage("parameter.label");

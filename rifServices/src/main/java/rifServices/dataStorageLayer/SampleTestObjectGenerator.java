@@ -1,7 +1,7 @@
 package rifServices.dataStorageLayer;
 
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifServices.businessConceptLayer.*;
-
 
 import java.util.ArrayList;
 import java.util.Date;

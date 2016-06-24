@@ -1,12 +1,12 @@
 package rifJobSubmissionTool.desktop.interactive;
 
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifJobSubmissionTool.system.RIFJobSubmissionToolMessages;
 import rifJobSubmissionTool.system.RIFStudySubmissionToolSession;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.CalculationMethodPrior;
-import rifServices.businessConceptLayer.Parameter;
 import rifServices.system.RIFServiceMessages;
 
 import java.awt.*;

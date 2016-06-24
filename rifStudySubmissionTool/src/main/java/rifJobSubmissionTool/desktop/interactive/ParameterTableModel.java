@@ -1,10 +1,11 @@
 
 package rifJobSubmissionTool.desktop.interactive;
 
-import rifServices.businessConceptLayer.Parameter;
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifServices.system.RIFServiceMessages;
 
 import java.util.ArrayList;
+
 import javax.swing.table.AbstractTableModel;
 
 

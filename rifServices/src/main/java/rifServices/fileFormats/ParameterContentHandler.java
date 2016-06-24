@@ -2,8 +2,8 @@
 package rifServices.fileFormats;
 
 
-import rifServices.businessConceptLayer.Parameter;
 import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
 

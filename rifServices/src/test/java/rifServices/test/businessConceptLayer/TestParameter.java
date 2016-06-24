@@ -1,10 +1,10 @@
 package rifServices.test.businessConceptLayer;
 
 
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.businessConceptLayer.Parameter;
 import rifServices.test.AbstractRIFTestCase;
 
 
@@ -116,7 +116,7 @@ public final class TestParameter
 	public void acceptValidInstance_COMMON() {
 		Parameter parameter = Parameter.createCopy(masterParameter);
 		try {
-			parameter.checkErrors(getValidationPolicy());
+			parameter.checkErrors();
 		}
 		catch(RIFServiceException rifServiceException) {
 			fail();
@@ -132,7 +132,7 @@ public final class TestParameter
 		Parameter parameter = Parameter.createCopy(masterParameter);
 		parameter.setName("");
 		try {
-			parameter.checkErrors(getValidationPolicy());
+			parameter.checkErrors();
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -145,7 +145,7 @@ public final class TestParameter
 		parameter = Parameter.createCopy(masterParameter);
 		parameter.setName(null);
 		try {
-			parameter.checkErrors(getValidationPolicy());
+			parameter.checkErrors();
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -158,7 +158,7 @@ public final class TestParameter
 		parameter = Parameter.createCopy(masterParameter);
 		parameter.setValue("");
 		try {
-			parameter.checkErrors(getValidationPolicy());
+			parameter.checkErrors();
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -171,7 +171,7 @@ public final class TestParameter
 		parameter = Parameter.createCopy(masterParameter);
 		parameter.setValue(null);
 		try {
-			parameter.checkErrors(getValidationPolicy());
+			parameter.checkErrors();
 			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -189,14 +189,6 @@ public final class TestParameter
 	public void rejectSecurityViolations_MALICIOUS() {
 		Parameter maliciousParameter
 			= Parameter.createCopy(masterParameter);
-		maliciousParameter.setIdentifier(getTestMaliciousValue());
-		try {
-			maliciousParameter.checkSecurityViolations();
-			fail();
-		}
-		catch(RIFServiceSecurityException rifServiceSecurityException) {
-			//pass
-		}
 
 		maliciousParameter
 			= Parameter.createCopy(masterParameter);
