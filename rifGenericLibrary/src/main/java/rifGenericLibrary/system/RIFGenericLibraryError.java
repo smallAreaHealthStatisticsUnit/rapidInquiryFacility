@@ -78,4 +78,5 @@ public enum RIFGenericLibraryError {
 	
 	FILE_PARSING_PROBLEM,
 	FILE_WRITING_PROBLEM,
+	INVALID_PARAMETER
 }

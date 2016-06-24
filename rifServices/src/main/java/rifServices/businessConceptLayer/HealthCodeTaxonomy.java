@@ -1,10 +1,12 @@
 package rifServices.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.util.ArrayList;
 
@@ -363,7 +365,7 @@ public class HealthCodeTaxonomy
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					nameFieldName);
@@ -372,7 +374,7 @@ public class HealthCodeTaxonomy
 
 		if (fieldValidationUtility.isEmpty(description)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordName,
 						descriptionFieldName);
@@ -381,7 +383,7 @@ public class HealthCodeTaxonomy
 		
 		if (fieldValidationUtility.isEmpty(nameSpace)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordName,
 						nameSpaceFieldName);
@@ -390,7 +392,7 @@ public class HealthCodeTaxonomy
 
 		if (fieldValidationUtility.isEmpty(version)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordName,
 						versionFieldName);

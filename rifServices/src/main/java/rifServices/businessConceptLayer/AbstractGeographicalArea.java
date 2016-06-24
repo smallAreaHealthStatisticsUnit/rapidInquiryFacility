@@ -1,10 +1,12 @@
 
 package rifServices.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.AbstractRIFConcept;
 import rifServices.system.RIFServiceMessages;
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
@@ -436,7 +438,7 @@ protected AbstractGeographicalArea() {
 			String fieldName
 				= RIFServiceMessages.getMessage("geoLevelView.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);
@@ -456,7 +458,7 @@ protected AbstractGeographicalArea() {
 				String fieldName
 					= RIFServiceMessages.getMessage("geoLevelArea.label");
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						fieldName);
 				errorMessages.add(errorMessage);
@@ -476,7 +478,7 @@ protected AbstractGeographicalArea() {
 			String fieldName
 				= RIFServiceMessages.getMessage("geoLevelSelect.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);
@@ -495,7 +497,7 @@ protected AbstractGeographicalArea() {
 			String fieldName
 				= RIFServiceMessages.getMessage("geoLevelToMap.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);			
@@ -515,7 +517,7 @@ protected AbstractGeographicalArea() {
 			String mapAreasFieldLabel
 				= RIFServiceMessages.getMessage("mapArea.plural.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					mapAreasFieldLabel);			

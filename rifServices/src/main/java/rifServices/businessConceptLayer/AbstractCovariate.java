@@ -365,7 +365,7 @@ abstract public class AbstractCovariate
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(name) == true) {
 			String errorMessage 
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					nameLabel);
@@ -385,7 +385,7 @@ abstract public class AbstractCovariate
 		
 			if (fieldValidationUtility.isEmpty(minimumValue)) {				
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField",
 						recordType,
 						minimumFieldNameLabel);
@@ -394,7 +394,7 @@ abstract public class AbstractCovariate
 
 			if (fieldValidationUtility.isEmpty(maximumValue)) {
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField",
 						recordType,
 						maximumFieldNameLabel);

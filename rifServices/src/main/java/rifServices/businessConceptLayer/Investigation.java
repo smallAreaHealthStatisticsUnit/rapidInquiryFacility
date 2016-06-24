@@ -1032,7 +1032,7 @@ public class Investigation
 			String titleFieldName
 				= RIFServiceMessages.getMessage("investigation.title.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					titleFieldName);
@@ -1061,7 +1061,7 @@ public class Investigation
 				= RIFServiceMessages.getMessage("healthTheme.label");
 			
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					healthTheme);
@@ -1082,7 +1082,7 @@ public class Investigation
 			String ndPairLabel
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					ndPairLabel);			
@@ -1107,7 +1107,7 @@ public class Investigation
 			String healthCodesFieldName
 				= RIFServiceMessages.getMessage("healthCode.plural.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					healthCodesFieldName);
@@ -1148,7 +1148,7 @@ public class Investigation
 			String ageBandsFieldName
 				= RIFServiceMessages.getMessage("ageBand.plural.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					ageBandsFieldName);
@@ -1195,7 +1195,7 @@ public class Investigation
 			String sexFieldName
 				= RIFServiceMessages.getMessage("sex.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					sexFieldName);
@@ -1206,7 +1206,7 @@ public class Investigation
 			String yearRangeFieldName
 				= RIFServiceMessages.getMessage("yearRange.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					yearRangeFieldName);
@@ -1228,7 +1228,7 @@ public class Investigation
 				String yearIntervalsFieldName
 					= RIFServiceMessages.getMessage("yearInterval.plural.label");
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField",
 						recordType,
 						yearIntervalsFieldName);
@@ -1301,7 +1301,7 @@ public class Investigation
 			String covariatesFieldName
 				= RIFServiceMessages.getMessage("investigation.covariates.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					covariatesFieldName);

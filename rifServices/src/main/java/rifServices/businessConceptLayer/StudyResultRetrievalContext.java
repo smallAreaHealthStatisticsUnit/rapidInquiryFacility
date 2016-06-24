@@ -263,7 +263,7 @@ public class StudyResultRetrievalContext {
 			String fieldName
 				= RIFServiceMessages.getMessage("studyResultRetrievalContext.geographyName");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);
@@ -274,7 +274,7 @@ public class StudyResultRetrievalContext {
 			String fieldName
 				= RIFServiceMessages.getMessage("studyResultRetrievalContext.geoLevelSelectName");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);
@@ -285,7 +285,7 @@ public class StudyResultRetrievalContext {
 			String fieldName
 				= RIFServiceMessages.getMessage("studyResultRetrievalContext.studyID");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);

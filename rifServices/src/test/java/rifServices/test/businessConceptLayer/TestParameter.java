@@ -1,11 +1,11 @@
 package rifServices.test.businessConceptLayer;
 
 
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.Parameter;
 import rifServices.test.AbstractRIFTestCase;
-import rifServices.system.RIFServiceError;
 
 
 import static org.junit.Assert.*;
@@ -138,7 +138,7 @@ public final class TestParameter
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.INVALID_PARAMETER, 
+				RIFGenericLibraryError.INVALID_PARAMETER, 
 				1);
 		}
 		
@@ -151,7 +151,7 @@ public final class TestParameter
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.INVALID_PARAMETER, 
+				RIFGenericLibraryError.INVALID_PARAMETER, 
 				1);
 		}
 		
@@ -164,7 +164,7 @@ public final class TestParameter
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.INVALID_PARAMETER, 
+				RIFGenericLibraryError.INVALID_PARAMETER, 
 				1);
 		}
 		
@@ -177,7 +177,7 @@ public final class TestParameter
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.INVALID_PARAMETER, 
+				RIFGenericLibraryError.INVALID_PARAMETER, 
 				1);
 		}		
 	}

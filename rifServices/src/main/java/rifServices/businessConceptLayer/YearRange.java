@@ -1,11 +1,12 @@
 
 package rifServices.businessConceptLayer;
 
-
-import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
 import java.text.Collator;
@@ -588,7 +589,7 @@ final public class YearRange
 		//check for nulls
 		if (lowerBound == null) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					lowerBoundFieldName);
@@ -597,7 +598,7 @@ final public class YearRange
 		
 		if (upperBound == null) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					upperBoundFieldName);

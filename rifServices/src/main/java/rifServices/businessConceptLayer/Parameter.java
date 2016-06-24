@@ -4,12 +4,12 @@ package rifServices.businessConceptLayer;
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.businessConceptLayer.AbstractRIFConcept;
-
-
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+//import rifServices.businessConceptLayer.AbstractRIFConcept;
+//import rifServices.system.RIFServiceError;
+//import rifServices.system.RIFServiceMessages;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -397,9 +397,9 @@ public final class Parameter
 		
 		//Extract field names
 		String nameFieldLabel
-			= RIFServiceMessages.getMessage("parameter.name.label");
+			= RIFGenericLibraryMessages.getMessage("parameter.name.label");
 		String valueFieldLabel
-			= RIFServiceMessages.getMessage("parameter.value.label");
+			= RIFGenericLibraryMessages.getMessage("parameter.value.label");
 	
 		//Check for security problems.  Ensure EVERY text field is checked
 		//These checks will throw a security exception and stop further validation
@@ -425,16 +425,16 @@ public final class Parameter
 		
 		//Extract field names
 		String nameFieldLabel
-			= RIFServiceMessages.getMessage("parameter.name.label");
+			= RIFGenericLibraryMessages.getMessage("parameter.name.label");
 		String valueFieldLabel
-			= RIFServiceMessages.getMessage("parameter.value.label");
+			= RIFGenericLibraryMessages.getMessage("parameter.value.label");
 				
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		FieldValidationUtility fieldValidationUtility 
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameFieldLabel);
@@ -443,14 +443,14 @@ public final class Parameter
 			
 		if (fieldValidationUtility.isEmpty(value)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					valueFieldLabel);
 			errorMessages.add(errorMessage);			
 		}
 		
-		countErrors(RIFServiceError.INVALID_PARAMETER, errorMessages);
+		//countErrors(RIFGenericLibraryError.INVALID_PARAMETER, errorMessages);
 
 	}
 	
@@ -491,7 +491,7 @@ public final class Parameter
 			}
 			
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"parameter.error.duplicateParameters", 
 					duplicateParameterListing.toString());
 
@@ -522,7 +522,7 @@ public final class Parameter
 @Override
 	public String getRecordType() {
 		String recordNameLabel
-			= RIFServiceMessages.getMessage("parameter.label");
+			= RIFGenericLibraryMessages.getMessage("parameter.label");
 		return recordNameLabel;
 	}
 

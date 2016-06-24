@@ -4,9 +4,11 @@ package rifServices.businessConceptLayer;
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
 import java.text.Collator;
@@ -622,7 +624,7 @@ final public class YearInterval
 		//check for nulls
 		if (startYear == null) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					startYearFieldName);
@@ -631,7 +633,7 @@ final public class YearInterval
 		
 		if (endYear == null) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					endYearFieldName);

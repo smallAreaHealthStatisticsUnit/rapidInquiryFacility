@@ -3,6 +3,7 @@ package rifServices.system;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 
@@ -531,7 +532,7 @@ public final class RIFServiceStartupOptions {
 			String databaseDriverLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseDriverClassName.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					databaseDriverLabel);
@@ -542,7 +543,7 @@ public final class RIFServiceStartupOptions {
 			String databaseDriverLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseDriverPrefix.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					databaseDriverLabel);
@@ -553,7 +554,7 @@ public final class RIFServiceStartupOptions {
 			String hostLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.host.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					hostLabel);
@@ -564,7 +565,7 @@ public final class RIFServiceStartupOptions {
 			String portLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.port.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					portLabel);
@@ -575,7 +576,7 @@ public final class RIFServiceStartupOptions {
 			String databaseNameLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseName.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					databaseNameLabel);

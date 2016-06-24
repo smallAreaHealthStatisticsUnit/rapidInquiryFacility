@@ -1,14 +1,16 @@
 
 package rifServices.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.util.Date;
 import java.util.ArrayList;
@@ -449,7 +451,7 @@ public final class RIFStudySubmission
 			String studyFieldName
 				= RIFServiceMessages.getMessage("diseaseMappingStudy.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					studyFieldName);
@@ -470,7 +472,7 @@ public final class RIFStudySubmission
 			String ageBandsFieldName
 				= RIFServiceMessages.getMessage("calculationMethod.label.plural");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					ageBandsFieldName);
@@ -528,7 +530,7 @@ public final class RIFStudySubmission
 			String rifOutputOptionsFieldName
 				= RIFServiceMessages.getMessage("rifOutputOption.plural.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					rifOutputOptionsFieldName);

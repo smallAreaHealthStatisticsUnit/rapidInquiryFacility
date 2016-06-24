@@ -1,12 +1,11 @@
 package rifServices.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
 
-
-
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
@@ -264,7 +263,7 @@ public class BoundaryRectangle extends AbstractRIFConcept {
 			= RIFServiceMessages.getMessage("boundaryRectangle.xMax.label");
 		if (fieldValidationUtility.isEmpty(xMax)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					xMaxFieldName);
@@ -288,7 +287,7 @@ public class BoundaryRectangle extends AbstractRIFConcept {
 			= RIFServiceMessages.getMessage("boundaryRectangle.yMax.label");
 		if (fieldValidationUtility.isEmpty(yMax)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					yMaxFieldName);
@@ -313,7 +312,7 @@ public class BoundaryRectangle extends AbstractRIFConcept {
 			= RIFServiceMessages.getMessage("boundaryRectangle.xMin.label");
 		if (fieldValidationUtility.isEmpty(xMin)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					xMinFieldName);
@@ -337,7 +336,7 @@ public class BoundaryRectangle extends AbstractRIFConcept {
 			= RIFServiceMessages.getMessage("boundaryRectangle.yMin.label");
 		if (fieldValidationUtility.isEmpty(yMin)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					yMinFieldName);

@@ -361,7 +361,7 @@ public final class MapAreaAttributeValue
 			String identifierFieldName
 				= RIFServiceMessages.getMessage("general.fieldNames.identifier.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					identifierFieldName);
@@ -376,7 +376,7 @@ public final class MapAreaAttributeValue
 			String labelFieldName
 				= RIFServiceMessages.getMessage("mapArea.label.label");	
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					labelFieldName);

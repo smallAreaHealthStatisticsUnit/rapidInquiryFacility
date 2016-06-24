@@ -1,10 +1,11 @@
 package rifServices.businessConceptLayer;
 
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.util.ArrayList;
 
@@ -213,7 +214,7 @@ public final class ExposureCovariate
 	        String covariateTypeLabel
 		        = RIFServiceMessages.getMessage("covariate.covariateType.label");
             String errorMessage 
-                = RIFServiceMessages.getMessage(
+                = RIFGenericLibraryMessages.getMessage(
                 	"general.validation.emptyRequiredRecordField",
                 	recordType,
                     covariateTypeLabel);

@@ -3,6 +3,8 @@ package rifServices.businessConceptLayer;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
 
@@ -442,7 +444,7 @@ public final class NumeratorDenominatorPair
 			= RIFServiceMessages.getMessage("numeratorDenominatorPair.numeratorTableName.label");		
 		if (fieldValidationUtility.isEmpty(numeratorTableName)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					numeratorTableNameLabel);
@@ -453,7 +455,7 @@ public final class NumeratorDenominatorPair
 			= RIFServiceMessages.getMessage("numeratorDenominatorPair.denominatorTableName.label");		
 		if (fieldValidationUtility.isEmpty(denominatorTableName)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					denominatorTableNameLabel);
@@ -465,7 +467,7 @@ public final class NumeratorDenominatorPair
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.numeratorTableDescription.label");		
 			if (fieldValidationUtility.isEmpty(numeratorTableDescription)) {
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						numeratorTableDescriptionLabel);
@@ -476,7 +478,7 @@ public final class NumeratorDenominatorPair
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.denominatorTableDescription.label");		
 			if (fieldValidationUtility.isEmpty(denominatorTableDescription)) {
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						denominatorTableDescriptionLabel);

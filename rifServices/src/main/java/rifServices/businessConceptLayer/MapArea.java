@@ -490,7 +490,7 @@ public final class MapArea
 			String geographicalIdentifierFieldName
 				= RIFServiceMessages.getMessage("mapArea.geographicalIdentifier.label");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					geographicalIdentifierFieldName);
@@ -507,7 +507,7 @@ public final class MapArea
 			String labelFieldName
 				= RIFServiceMessages.getMessage("mapArea.label.label");	
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					labelFieldName);

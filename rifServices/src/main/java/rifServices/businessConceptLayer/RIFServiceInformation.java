@@ -1,14 +1,14 @@
 
 package rifServices.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept;
 
-import java.util.ArrayList;
-
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
 
+import java.util.ArrayList;
 
 /**
  *
@@ -326,7 +326,7 @@ public final class RIFServiceInformation
 			String serviceNameLabel
 				= RIFServiceMessages.getMessage("rifServiceInformation.name");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					serviceNameLabel);
@@ -337,7 +337,7 @@ public final class RIFServiceInformation
 			String serviceDescriptionLabel
 				= RIFServiceMessages.getMessage("rifServiceInformation.description");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					serviceDescriptionLabel);

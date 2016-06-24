@@ -395,7 +395,7 @@ public class Project
 			= RIFServiceMessages.getMessage("project.name.label");
 		if (fieldValidationUtility.isEmpty(getName())) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameFieldName);
@@ -406,7 +406,7 @@ public class Project
 			= RIFServiceMessages.getMessage("project.description.label");
 		if (fieldValidationUtility.isEmpty(getDescription())) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					descriptionFieldName);
@@ -419,7 +419,7 @@ public class Project
 		Date startDate = null;
 		if (fieldValidationUtility.isEmpty(startDatePhrase)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					startDateFieldName);
@@ -447,7 +447,7 @@ public class Project
 		/*
 		if (fieldValidationUtility.isEmpty(endDatePhrase)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					endDateFieldName);

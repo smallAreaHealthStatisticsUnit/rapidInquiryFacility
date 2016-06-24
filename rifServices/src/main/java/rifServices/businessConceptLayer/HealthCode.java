@@ -1,15 +1,16 @@
 package rifServices.businessConceptLayer;
 
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.text.Collator;
 import java.util.ArrayList;
-
 
 /**
  * Describes a concept that can be used to identify health records of interest.
@@ -489,7 +490,7 @@ public final class HealthCode
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(code)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					codeFieldName);
@@ -498,7 +499,7 @@ public final class HealthCode
 		
 		if (fieldValidationUtility.isEmpty(nameSpace)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordName,
 						nameSpaceFieldName);
@@ -508,7 +509,7 @@ public final class HealthCode
 		if (fieldValidationUtility.isEmpty(description)) {
 
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordName,
 						descriptionFieldName);

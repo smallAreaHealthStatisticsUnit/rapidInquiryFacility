@@ -1,10 +1,12 @@
 package rifServices.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 
 import java.util.ArrayList;
 import java.text.Collator;
@@ -373,7 +375,7 @@ public final class AgeGroup
 		
 		if (fieldValidationUtility.isEmpty(nameFieldValue)) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameFieldName);
@@ -389,7 +391,7 @@ public final class AgeGroup
 			Integer lowerLimitNumber = null;
 			if (fieldValidationUtility.isEmpty(lowerLimitFieldValue)) {
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						lowerLimitFieldName);
@@ -416,7 +418,7 @@ public final class AgeGroup
 			Integer upperLimitNumber = null;
 			if (fieldValidationUtility.isEmpty(upperLimitFieldValue)) {
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						upperLimitFieldName,
