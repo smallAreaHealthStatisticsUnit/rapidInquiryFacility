@@ -11,6 +11,7 @@ body {
 }
 #shapeFileSelectortab {
 /*    background-color:#eeeeee; */
+	font-size: smaller;
 	width: 100%;
     float: left;
     padding-left:5px; 
