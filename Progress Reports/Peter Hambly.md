@@ -480,31 +480,35 @@ RangeError: Invalid string length
  
 #### Current TODO list (June):
 
-* Prevent tab change during map draw and aoccordion setup or JQuery UI and Leaflet do bad things unless tkey have focus
-* Fix customFileUpload styling so it uses the correct JQuery UI class style; the .css() function won't work on form file upload buttons
-* Add support for XML config file so shpConvert can do all processing without further input;
 * Set geolevel_name, area_id, area_name from front end
 * Add all fields to topojson
 * Add geolevel, goelevel name to legend
-* Restrict geolevels to a minimum 3, or more if the total topojson_size < ~20-30M (possibly browser dependent). Copy convertedTopojson array, remove restricted geolevels 
-* Add areaKm2 (using bounding box) as jsonfile property. Needs turf.
-* Calucation of quantization and the max zoomlevel using area. Enforcement in browser. 
-* Hover support for area name, area_km2 and shapefile supplied data at highest resolution
-* Display of zoomlevel contextual information: total topojson size, suppressed or not. 
-* Status in write JSON file Re-test COA2011: json memory and timeout issues are solved
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
-* Add simplify to zoomlevel 11, spherical simplify limit (in Steraradians) [Probably no, only use quantization at max zoomlevel] .
-* Duplicate file names in zip files. Flattening of directory structure causes duplicates which are not detected
-
-#### June list (some likely to be moved into July):
-
-* Add convertedTopojson array meta data to topojson config
 * Database connection; clean, check OK and ST_Union(); area support [and checks]; PK support 
-  ST_Union can be done in geoJSON using turf: as it is a geomtery collection. Also check wellknown] 	
+* ST_Union can be done in geoJSON using turf: as it is a geomtery collection. Also check wellknown.	
 * Add area_id and id uniqueness tests to shapefile checks and tests
 * WKT support using Wellknown
 * Id generator
 * Detect area mismatch between shapefiles	
+
+Parked TODO list:
+
+* Prevent tab change during map draw and aoccordion setup or JQuery UI and Leaflet do bad things unless tkey have focus
+* Fix customFileUpload styling so it uses the correct JQuery UI class style; the .css() function won't work on form file upload buttons
+* Add support for XML config file so shpConvert can do all processing without further input;
+* Restrict geolevels to a minimum 3, or more if the total topojson_size < ~20-30M (possibly browser dependent). 
+* Copy convertedTopojson array, remove restricted geolevels 
+
+* Add areaKm2 (using bounding box) as jsonfile property. Needs turf.
+* Calucation of quantization and the max zoomlevel using area. Enforcement in browser. 
+* Hover support for area name, area_km2 and shapefile supplied data at highest resolution
+
+* Display of zoomlevel contextual information: total topojson size, suppressed or not. 
+* Status in write JSON file Re-test COA2011: json memory and timeout issues are solved
+* Add simplify to zoomlevel 11, spherical simplify limit (in Steraradians) [Probably no, only use quantization at max zoomlevel] .
+* Duplicate file names in zip files. Flattening of directory structure causes duplicates which are not detected
+
+* Add convertedTopojson array meta data to topojson config
 * Add startup parameterisation (db, if, port etc) using cjson
 * Test json file
 * Change audit trail: Unions, linestring to polygon conversions, ST_invalid => ST_MakeValid geomtery validators; 
@@ -514,7 +518,7 @@ RangeError: Invalid string length
 	iii. No shapefile with only 1 area if > 1 shapefile
 	iv. Total area mismatch between shapefiles
 	
-#### July list:
+#### July TODO list:
 
 * Map tile generator
 * Geolevel intersction generator
