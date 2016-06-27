@@ -491,13 +491,12 @@ RangeError: Invalid string length
 * Id generator
 * Detect area mismatch between shapefiles	
 
-Parked TODO list:
+Parked TODO list (as required):
 
 * Prevent tab change during map draw and aoccordion setup or JQuery UI and Leaflet do bad things unless tkey have focus
 * Fix customFileUpload styling so it uses the correct JQuery UI class style; the .css() function won't work on form file upload buttons
 * Add support for XML config file so shpConvert can do all processing without further input;
 * Restrict geolevels to a minimum 3, or more if the total topojson_size < ~20-30M (possibly browser dependent). 
-* Copy convertedTopojson array, remove restricted geolevels 
 
 * Add areaKm2 (using bounding box) as jsonfile property. Needs turf.
 * Calucation of quantization and the max zoomlevel using area. Enforcement in browser. 
