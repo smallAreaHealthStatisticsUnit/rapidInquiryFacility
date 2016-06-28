@@ -2,7 +2,7 @@
 
 ## Front End
 
-* Javascript web platform [Frederico Fabbri](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Federico%20Fabbri.md) until May 2015. [David Morley](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/David%20Morley.md) from June 2016
+* Javascript web platform [Federico Fabbri](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Federico%20Fabbri.md) until May 2015. [David Morley](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/David%20Morley.md) from June 2016
 
 ## Java Middleware and data loader
 
