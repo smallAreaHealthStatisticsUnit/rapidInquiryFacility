@@ -13,4 +13,4 @@
 
 * Postgres, Node, build and integration [Peter Hambly](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Peter%20Hambly.md)
 * Microsoft SQL server [Margaret Douglass](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Margaret%20Douglass.md)
-* * Microsoft SQL server [Brandon Parkes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Brandon%20Parkes.md)
+* Spatial Statistics [Brandon Parkes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Brandon%20Parkes.md)
