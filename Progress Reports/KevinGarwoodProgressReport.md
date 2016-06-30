@@ -114,11 +114,13 @@ be used as part of the RIF database.
    * 
    
 ##Sept to December 2015:
-I was mainly deployed on other projects that don’t relate to the RIF>
+I was mainly deployed on other projects at Imperial College.
 
 ##January to June 2016:
 Whereas my work last year related to helping maintain the middleware to support the front end web applications, my work has shifted to developing the facilities for loading data into the RIF production database.  This has taken a lot of effort and the work is described in great detail at:
 
 [Data Loader Tool Report] (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDesignManual/docs/RIF_ETL_Design_v1.pdf)
+
+Currently, there are two issues I'm dealing with: exploring the network installation issues related to setting up the RIF database; making the taxonomy service report independent from the rest of the RIF code base; and doing production testing of taxonomy services.
 
 
