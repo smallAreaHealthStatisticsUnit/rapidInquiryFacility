@@ -1,10 +1,13 @@
-package rifGenericLibrary.system;
+package rifGenericLibrary.taxonomyServices;
+
+import java.util.ArrayList;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  *
  *
  * <hr>
- * Copyright 2015 Imperial College London, developed by the Small Area
+ * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -50,38 +53,35 @@ package rifGenericLibrary.system;
  *
  */
 
-public enum RIFGenericLibraryError {
-	SECURITY_VIOLATION,
-	DB_UNABLE_TO_CLOSE_CONNECTIONS,
-	DB_UNABLE_CLOSE_RESOURCE,
-	DB_UNABLE_TO_ROLLBACK,
-	DATABASE_QUERY_FAILED, //@TODO Purge this code from RIFServicesError
-	DUPLICATE_LIST_ITEM_NAME,
-	ERRORS_DETECTED_IN_CSV_FILE,
-	UNABLE_TO_WRITE_CSV_ERROR_LOG_FILE,
-	DUPLICATE_ITEM_NAME,
-	EMPTY_API_METHOD_PARAMETER,
+public interface FederatedTaxonomyServiceAPI {
 	
-	/** The invalid user. */
-	INVALID_USER,
 	
-	DB_UNABLE_TO_ADJUST_AUTO_COMMIT,
-	DB_UNABLE_TO_LOAD_DRIVER,
-	DB_MAX_READ_CONNECTIONS_EXCEEDED,
-	DB_MAX_WRITE_CONNECTIONS_EXCEEDED,
-	/** The db unable to grant connection. */
-	DB_UNABLE_TO_GRANT_CONNECTION,		
-	/** The db unable register user. */
-	DB_UNABLE_REGISTER_USER,	
-	/** The db unable deregister user. */
-	DB_UNABLE_DEREGISTER_USER,
+	public ArrayList<TaxonomyServiceProvider> getTaxonomyServiceProviders()
+		throws RIFServiceException;
 	
-	FILE_PARSING_PROBLEM,
-	FILE_WRITING_PROBLEM,
-	NON_EXISTENT_FILE,
-	INVALID_PARAMETER,
-	NON_EXISTENT_PARAMETER,
-	NON_EXISTENT_TAXONOMY_SERVICE,
-	TAXONOMY_SERVICE_INITIALISATION_FAILURE,
-	DEFAULT_XML_TAXONOMY_READ_FILE_ERROR
+	public TaxonomyTerm getTopLevelTerm(
+		final String taxonomyServiceIdentifier)
+		throws RIFServiceException;
+	
+	public ArrayList<TaxonomyTerm> getMatchingTerms(
+		final String taxonomyServiceIdentifier,
+		final String searchText,
+		final boolean isCaseSensitive)
+		throws RIFServiceException;
+	
+	public ArrayList<TaxonomyTerm> getRootTerms(
+		final String taxonomyServiceIdentifier)
+		throws RIFServiceException;	
+	
+	public ArrayList<TaxonomyTerm> getImmediateChildTerms(
+		final String taxonomyServiceIdentifier,
+		final String parentTermIdentifier)
+		throws RIFServiceException;		
+
+	public ArrayList<TaxonomyTerm> getParentTerm(
+		final String taxonomyServiceIdentifier,
+		final String childTermIdentifier,
+		final boolean isCaseSensitive)
+		throws RIFServiceException;			
+	
 }

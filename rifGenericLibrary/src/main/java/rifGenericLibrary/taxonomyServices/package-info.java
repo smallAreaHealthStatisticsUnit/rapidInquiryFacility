@@ -5,8 +5,8 @@
  * the {@link rifServices.ontologyServices.HealthCodeProviderInterface} interface.  The package includes
  * default implementations of ICD 9 and ICD 10 health code sources.  It also includes a generic
  * provider that obtains terms from an XML file.  The 
- * {@link rifServices.ontologyServices.RIFXMLTaxonomyProvider} relies on the reader class
- * {@link rifServices.ontologyServices.XMLHealthCodeTaxonomyContentHandler}.
+ * {@link DefaultXMLTaxonomyService.ontologyServices.RIFXMLTaxonomyProvider} relies on the reader class
+ * {@link DefaultXMLTaxonomyService.ontologyServices.XMLHealthCodeTaxonomyContentHandler}.
  * 
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -46,4 +46,4 @@
  * @author kgarwood
  * @version
  */
-package rifGenericLibrary.ontologyServices;
+package rifGenericLibrary.taxonomyServices;

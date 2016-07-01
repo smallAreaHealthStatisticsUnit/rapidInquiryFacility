@@ -1,11 +1,11 @@
 
-package rifServices.ontologyServices;
+package rifGenericLibrary.taxonomyServices;
 
-import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
 
 import org.xml.sax.Attributes;
@@ -16,8 +16,6 @@ import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -88,9 +86,10 @@ import javax.xml.parsers.SAXParserFactory;
  */
 
 
-final class XMLHealthCodeTaxonomyContentHandler 
-	extends DefaultHandler {
-
+final class DefaultXMLTaxonomyService 
+	extends DefaultHandler
+	implements TaxonomyServiceAPI {
+		
 // ==========================================
 // Section Constants
 // ==========================================
@@ -98,14 +97,15 @@ final class XMLHealthCodeTaxonomyContentHandler
 // ==========================================
 // Section Properties
 // ==========================================
-	/** The is valid rif health code provider. */
-	private boolean isValidRifHealthCodeProvider;
+	
+	private String serviceIdentifier;
+	private String serviceName;
+	private String serviceDescription;
+	private String serviceNameSpace;
+	private String serviceVersion;
 	
 	/** The collator. */
 	private Collator collator;
-	
-	/** The health code taxonomy. */
-	private HealthCodeTaxonomy healthCodeTaxonomy;
 	
 	/** The parent terms. */
 	private Stack<TaxonomyTerm> parentTerms;
@@ -116,8 +116,9 @@ final class XMLHealthCodeTaxonomyContentHandler
 	/** The current field value. */
 	private String currentFieldValue;
 		
-	/** The all terms. */
-	private ArrayList<TaxonomyTerm> allTerms;
+	
+	//private ArrayList<TaxonomyTerm> rootTerms;
+	private TaxonomyTermManager taxonomyTermManager;
 	
 // ==========================================
 // Section Construction
@@ -125,18 +126,16 @@ final class XMLHealthCodeTaxonomyContentHandler
     /**
      * Instantiates a new XML health code taxonomy content handler.
      */
-	public XMLHealthCodeTaxonomyContentHandler() {
-    	isValidRifHealthCodeProvider = false;
+	public DefaultXMLTaxonomyService() {
 		collator = RIFGenericLibraryMessages.getCollator();
 		parentTerms = new Stack<TaxonomyTerm>();
-		
-		allTerms = new ArrayList<TaxonomyTerm>();
+		taxonomyTermManager = new TaxonomyTermManager();
     }
 	
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
-
+	
 	/**
 	 * Read file.
 	 *
@@ -144,99 +143,27 @@ final class XMLHealthCodeTaxonomyContentHandler
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void readFile(
-		final File healthCodeListFile) 
+		final File taxonomyTermsFile) 
 		throws RIFServiceException {
 
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
-			saxParser.parse(healthCodeListFile, this);
+			saxParser.parse(taxonomyTermsFile, this);
 		}
 		catch(Exception exception) {
 			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"io.error.problemReadingHealthCodes",
-					healthCodeListFile.getName());
+				= RIFGenericLibraryMessages.getMessage(
+					"defaultXMLTaxonomyService.error.unableToReadFile",
+					taxonomyTermsFile.getName());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.XML_PROBLEM_READING_HEALTH_CODE_TAXONOMY, 
+					RIFGenericLibraryError.DEFAULT_XML_TAXONOMY_READ_FILE_ERROR, 
 					errorMessage);
 			throw rifServiceException;
 		}
 	}
 	
-	/**
-	 * Gets the health code taxonomy.
-	 *
-	 * @return the health code taxonomy
-	 */
-	public HealthCodeTaxonomy getHealthCodeTaxonomy() {
-		
-		return healthCodeTaxonomy;
-	}
-	
-	/**
-	 * Gets the terms containing phrase.
-	 *
-	 * @param searchPhrase the search phrase
-	 * @return the terms containing phrase
-	 */
-	public ArrayList<TaxonomyTerm> getTermsContainingPhrase(
-		final String searchPhrase,
-		final boolean isCaseSensitive) {
-		
-		/*
-		 * Using regular expressions to do a contains than a string.contains(...)
-		 * feature.  
-		 */
-		
-		Pattern searchPattern;
-		
-		if (isCaseSensitive) {
-			searchPattern
-				= Pattern.compile(".*"+searchPhrase+".*");
-		}
-		else {
-			searchPattern
-				= Pattern.compile(".*"+searchPhrase+".*", Pattern.CASE_INSENSITIVE);
-		}
-				
-		ArrayList<TaxonomyTerm> results = new ArrayList<TaxonomyTerm>();
-		for (TaxonomyTerm term : allTerms) {
-			Matcher patternCodeMatcher
-				= searchPattern.matcher(term.getLabel());
-			if (patternCodeMatcher.matches()) {
-				results.add(term);
-			}
-			else {			
-				Matcher patternDescriptionMatcher
-					= searchPattern.matcher(term.getDescription());
-				if (patternDescriptionMatcher.matches()) {
-					results.add(term);
-				}
-			}
-		}
-		
-		return results;
-	}
-	
-	/**
-	 * Gets the root terms.
-	 *
-	 * @return the root terms
-	 */
-	public ArrayList<TaxonomyTerm> getRootTerms() {
-		
-		ArrayList<TaxonomyTerm> results = new ArrayList<TaxonomyTerm>();
-		for (TaxonomyTerm term : allTerms) {
-			if (term.getParentTerm() == null) {
-				results.add(term);
-			}
-		}
-		
-		return results;
-	}
-      
 	/**
 	 * Gets the current field value.
 	 *
@@ -263,10 +190,12 @@ final class XMLHealthCodeTaxonomyContentHandler
 	 *
 	 * @return the number of terms
 	 */
+/*	
 	public int getNumberOfTerms() {
 		
 		return allTerms.size();
 	}
+*/
 	
 	/**
 	 * Prints the terms.
@@ -307,20 +236,129 @@ final class XMLHealthCodeTaxonomyContentHandler
 		}
 	}
 	
+// ==========================================
+// Section Errors and Validation
+// ==========================================
+
+// ==========================================
+// Section Interfaces
+// ==========================================
+	
+	public void initialiseService(
+		final String defaultResourceDirectoryPath,
+		final TaxonomyServiceConfiguration taxonomyServiceConfiguration) 
+		throws RIFServiceException {
+
+		serviceIdentifier 
+			= taxonomyServiceConfiguration.getServiceIdentifier();
+		serviceName
+			= taxonomyServiceConfiguration.getName();
+		serviceDescription
+			= taxonomyServiceConfiguration.getDescription();
+		serviceVersion
+			= taxonomyServiceConfiguration.getVersion();
+
+		String fileName = "";
+		RIFServiceExceptionFactory exceptionFactory
+			= new RIFServiceExceptionFactory();
+		try {
+			Parameter termFileParameter
+				= Parameter.getParameter(
+					"term_file", 
+					taxonomyServiceConfiguration.getParameters());
+			if (termFileParameter == null) {
+				throw exceptionFactory.createNonExistentParameter("term_file");
+			}
+					
+			String filePath
+				= getFilePath(
+					defaultResourceDirectoryPath,
+					termFileParameter.getValue());
+			File termFile = new File(filePath);
+			if (termFile.exists() == false) {
+				throw exceptionFactory.createNonExistentFile(fileName);
+			}
+	
+			//Parse file containing terms
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(termFile, this);
+			taxonomyTermManager.determineRootTerms();
+
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+			throw exceptionFactory.createFileReadingProblemException(
+				fileName);
+		}
+	}
+
+	private String getFilePath(
+		final String targetPathValue,
+		final String baseFileName) {
+
+		StringBuilder fileName = new StringBuilder();
+		
+		fileName.append(targetPathValue);
+		fileName.append(File.separator);
+		fileName.append(baseFileName);
+		
+		return fileName.toString();
+	}
+		
+		
+	public String getIdentifier() {
+		return serviceIdentifier;
+	}
+	
+	public String getNameSpace() {
+		return serviceNameSpace;
+	}
+	
+	public String getName() {
+		return serviceName;
+	}
+	
+	public String getDescription() {
+		return serviceDescription;
+	}
+	
+	public String getVersion() {
+		return serviceVersion;
+	}
+	
+	
+	/**
+	 * Gets the root terms.
+	 *
+	 * @return the root terms
+	 */
+	public ArrayList<TaxonomyTerm> getRootTerms() {
+		
+		return taxonomyTermManager.getRootTerms();
+	}
+      
+	public ArrayList<TaxonomyTerm> getMatchingTerms(
+		final String searchPhrase,
+		final boolean isCaseSensitive) {
+	
+		return taxonomyTermManager.getMatchingTerms(
+			searchPhrase, 
+			isCaseSensitive);
+	}
 	
 	/**
 	 * Gets the immediate subterms.
 	 *
-	 * @param parentTermLabel the parent term label
+	 * @param parentTermIdentifier the parent term label
 	 * @param parentTermNameSpace the parent term name space
 	 * @return the immediate subterms
 	 */
-	public ArrayList<TaxonomyTerm> getImmediateSubterms(
-		final String parentTermLabel,
-		final String parentTermNameSpace) {
+	public ArrayList<TaxonomyTerm> getImmediateChildTerms(
+		final String parentTermIdentifier) {
 		
 		TaxonomyTerm parentTerm
-			= getTerm(parentTermLabel, parentTermNameSpace);
+			= getTerm(parentTermIdentifier);
 		if (parentTerm == null) {
 			ArrayList<TaxonomyTerm> results = new ArrayList<TaxonomyTerm>();
 			return results;
@@ -329,80 +367,54 @@ final class XMLHealthCodeTaxonomyContentHandler
 		return parentTerm.getSubTerms();		
 	}
 	
+	
 	/**
-	 * Gets the parent health code.
+	 * Gets the parent term
 	 *
 	 * @param childTermLabel the child term label
 	 * @param childTermNameSpace the child term name space
-	 * @return the parent health code
+	 * @return the parent term
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public TaxonomyTerm getParentHealthCode(
-		final String childTermLabel,
-		final String childTermNameSpace)
+	public TaxonomyTerm getParentTerm(
+		final String childTermIdentifier)
 		throws RIFServiceException {
 
 		TaxonomyTerm childTerm
-			= getTerm(childTermLabel, childTermNameSpace);
+			= getTerm(childTermIdentifier);
 		if (childTerm == null) {
 			return null;
 		}
 		
 		return childTerm.getParentTerm();
 	}
+
 	
 	/**
 	 * Gets the term.
 	 *
-	 * @param label the label
+	 * @param termIdentifier the label
 	 * @param nameSpace the name space
 	 * @return the term
 	 */
 	public TaxonomyTerm getTerm(
-		final String label,
-		final String nameSpace) {
+		final String termIdentifier) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
-		
-		String healthTaxonomyNameSpace 
-			= healthCodeTaxonomy.getNameSpace();
-		if (collator.equals(
-			nameSpace, 
-			healthTaxonomyNameSpace) == false) {
-
-			//child health code is from a different name space
-			return null;
-		}
-		
-		TaxonomyTerm targetTerm = null;
-		for (TaxonomyTerm term : allTerms) {			
-			if (collator.equals(term.getLabel(), label)) {
-				targetTerm = term;
-				break;
-			}
-		}
-
-		return targetTerm;
+		return taxonomyTermManager.getTerm(termIdentifier);
 	}
-	
-	/**
-	 * Checks if is valid rif health code provider.
-	 *
-	 * @return true, if is valid rif health code provider
-	 */
-	public boolean isValidRifHealthCodeProvider() {
+
+	public boolean termExists(
+		final String taxonomyTermIdentifier)
+		throws RIFServiceException {
 		
-		return isValidRifHealthCodeProvider;
+		TaxonomyTerm term = getTerm(taxonomyTermIdentifier);
+		if (term == null) {
+			return false;
+		}
+		return true;
 	}
-	
-// ==========================================
-// Section Errors and Validation
-// ==========================================
-
-// ==========================================
-// Section Interfaces
-// ==========================================
-
+				
+				
 // ==========================================
 // Section Override
 // ==========================================
@@ -418,7 +430,9 @@ final class XMLHealthCodeTaxonomyContentHandler
 		final String currentTagName, 
 		final String definedTagName) {
 		
-		if (collator.equals(currentTagName, definedTagName)) {
+		if (collator.equals(
+				currentTagName, 
+				definedTagName)) {
 			return true;
 		}	
 		return false;
@@ -433,13 +447,7 @@ final class XMLHealthCodeTaxonomyContentHandler
 		final Attributes attributes) 
 		throws SAXException {
 		
-		if (matchesTagName(qualifiedName, "rif_health_code_provider")) {
-			isValidRifHealthCodeProvider = true;
-		}
-		if (matchesTagName(qualifiedName, "provider_information")) {
-			healthCodeTaxonomy = HealthCodeTaxonomy.newInstance();		
-		}
-		else if (matchesTagName(qualifiedName, "term")) {
+		if (matchesTagName(qualifiedName, "term")) {
 			currentTerm = TaxonomyTerm.newInstance();
 			parentTerms.push(currentTerm);
 		}
@@ -452,29 +460,32 @@ final class XMLHealthCodeTaxonomyContentHandler
 		final String localName,
 		final String qualifiedName) 
 		throws SAXException {
-		
-		if (matchesTagName(qualifiedName, "provider_name")) {
-			healthCodeTaxonomy.setName(getCurrentFieldValue());
+
+		if (matchesTagName(qualifiedName, "service_identifier")) {
+			serviceIdentifier = getCurrentFieldValue();
 		}
-		else if (matchesTagName(qualifiedName, "provider_description")) {
-			healthCodeTaxonomy.setDescription(getCurrentFieldValue());
+		else if (matchesTagName(qualifiedName, "service_name")) {
+			serviceName = getCurrentFieldValue();
 		}
-		else if (matchesTagName(qualifiedName, "provider_name_space")) {
-			healthCodeTaxonomy.setNameSpace(getCurrentFieldValue());
+		else if (matchesTagName(qualifiedName, "service_description")) {
+			serviceDescription = getCurrentFieldValue();
+		}
+		else if (matchesTagName(qualifiedName, "service_name_space")) {
+			serviceNameSpace = getCurrentFieldValue();
 		}		
-		else if (matchesTagName(qualifiedName, "provider_version")) {
-			healthCodeTaxonomy.setVersion(getCurrentFieldValue());
+		else if (matchesTagName(qualifiedName, "service_version")) {
+			serviceVersion = getCurrentFieldValue();
 		}
 		else if (matchesTagName(qualifiedName, "term")) {
 			TaxonomyTerm finishedTerm = parentTerms.pop();
-			finishedTerm.setNameSpace(healthCodeTaxonomy.getNameSpace());
+			finishedTerm.setNameSpace(serviceNameSpace);
 			if (parentTerms.isEmpty() == false) {
 				TaxonomyTerm parentTerm = parentTerms.peek();
 				parentTerm.addSubTerm(finishedTerm);
 				finishedTerm.setParentTerm(parentTerm);
 			}
 
-			allTerms.add(finishedTerm);
+			taxonomyTermManager.addTerm(finishedTerm);
 		}		
 		else if (matchesTagName(qualifiedName, "term_name")) {
 			currentTerm.setLabel(getCurrentFieldValue());

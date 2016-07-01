@@ -1,4 +1,4 @@
-package rifGenericLibrary.ontologyServices;
+package rifGenericLibrary.taxonomyServices;
 
 import java.util.ArrayList;
 
@@ -252,6 +252,13 @@ final public class TaxonomyTerm {
 		this.parentTerm = parentTerm;
 	}
 	
+	public String getIdentifier() {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(label);
+		buffer.append("-");
+		buffer.append(nameSpace);
+		return buffer.toString();
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

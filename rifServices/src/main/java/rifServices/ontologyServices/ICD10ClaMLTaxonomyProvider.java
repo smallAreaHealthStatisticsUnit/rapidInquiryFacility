@@ -4,9 +4,9 @@ import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.system.RIFServiceError;
 import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.ontologyServices.TaxonomyTerm;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
 
 import java.io.File;
 import java.io.IOException;
