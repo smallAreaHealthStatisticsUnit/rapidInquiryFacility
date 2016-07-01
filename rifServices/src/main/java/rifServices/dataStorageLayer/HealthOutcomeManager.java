@@ -17,6 +17,7 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.ClassFileLocator;
 import rifGenericLibrary.util.RIFLogger;
 
 import java.util.ArrayList;
@@ -118,7 +119,7 @@ final class HealthOutcomeManager {
 		String targetPathValue
 			= rifServiceStartupOptions.getRIFServiceResourcePath();
 		if (targetPathValue == null) {
-			targetPathValue = RIFServiceMessages.getRIFServicesClassRootLocation();
+			targetPathValue = ClassFileLocator.getClassRootLocation("rifServices");
 		}
 
 		//initialise each health code provider

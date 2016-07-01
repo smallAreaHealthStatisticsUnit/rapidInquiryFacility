@@ -3,6 +3,7 @@ package rifGenericLibrary.taxonomyServices;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.ClassFileLocator;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ public class DefaultFederatedTaxonomyService {
 			= new DefaultFederatedTaxonomyService();
 		try {
 			String defaultResourceDirectoryPath
-				= RIFGenericLibraryMessages.getClassRootLocation();
+				= ClassFileLocator.getClassRootLocation("rifGenericLibrary");
 			service.initialise(defaultResourceDirectoryPath);
 			
 			ArrayList<TaxonomyServiceProvider> taxonomyServiceProviders

@@ -372,6 +372,7 @@ public final class RIFServiceMessages {
     // Section Mutators
     // ==========================================
 
+    /*
     public static String getRIFServicesClassRootLocation() {
     	String classPath = System.getProperty("java.class.path");
     	
@@ -401,7 +402,7 @@ public final class RIFServiceMessages {
     	return targetClassesEntry;
     	
     }
-    
+    */
     // ==========================================
     // Section Validation
     // ==========================================

@@ -1,5 +1,6 @@
 package rifGenericLibrary.system;
 
+import java.io.File;
 import java.text.Collator;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -392,7 +393,7 @@ public final class RIFGenericLibraryMessages {
     	
         return resourceBundle;
     }
-
+    
     // ==========================================
     // Section Mutators
     // ==========================================
