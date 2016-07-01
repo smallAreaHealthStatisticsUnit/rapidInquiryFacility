@@ -145,6 +145,29 @@ public class RIFServiceExceptionFactory {
 		return rifServiceException;
 	}		
 	
+	public RIFServiceException createNonExistentFile(final String fileName) {
+		String errorMessage
+			= RIFGenericLibraryMessages.getMessage(
+				"io.error.nonExistentFile",
+				fileName);
+		RIFServiceException rifServiceException
+			= new RIFServiceException(
+				RIFGenericLibraryError.NON_EXISTENT_FILE,
+				errorMessage);
+		return rifServiceException;
+	}		
+	
+	public RIFServiceException createNonExistentParameter(final String parameterName) {
+		String errorMessage
+			= RIFGenericLibraryMessages.getMessage(
+				"parameter.error.nonExistentParameter",
+				parameterName);
+		RIFServiceException rifServiceException
+			= new RIFServiceException(
+				RIFGenericLibraryError.NON_EXISTENT_FILE,
+				errorMessage);
+		return rifServiceException;
+	}		
 	
 	// ==========================================
 	// Section Errors and Validation
