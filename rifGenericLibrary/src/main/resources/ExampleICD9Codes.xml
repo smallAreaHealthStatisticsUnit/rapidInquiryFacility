@@ -1,0 +1,63 @@
+<rif_health_code_provider>
+
+<provider_information>
+<provider_name>ICD 9 Codes</provider_name>
+<provider_name_space>icd9</provider_name_space>
+<provider_description>
+A very small list of ICD 9 codes used in the SAHSU Land example of the Rapid Inquiry Facility.
+</provider_description>
+<provider_version>1.0</provider_version>
+</provider_information>
+
+<terms>
+	<term>
+		<term_name>201</term_name>
+		<term_description>Hodgkin's disease</term_description>
+		<term>
+			<term_name>2010</term_name>
+			<term_description>Hodgkin's paragranuloma</term_description>
+		</term>
+		<term>
+			<term_name>2016</term_name>
+			<term_description>Mixed cellularity</term_description>
+		</term>			
+		<term>
+			<term_name>2017</term_name>
+			<term_description>Lymphocytic Depletion</term_description>
+		</term>			
+	</term>
+
+	<term>
+		<term_name>493</term_name>
+		<term_description>Asthma</term_description>
+		<term>
+			<term_name>4930</term_name>
+			<term_description>Extrinsic Asthma</term_description>
+		</term>			
+		<term>
+			<term_name>4931</term_name>
+			<term_description>Intrinsic Asthma</term_description>
+		</term>			
+	</term>
+	
+	<term>
+		<term_name>188</term_name>
+		<term_description>Malignant neoplasm of bladder</term_description>
+		<term>
+			<term_name>1889</term_name>
+			<term_description>Malignant neoplasm of bladder, part unspecified</term_description>
+		</term>			
+	</term>	
+
+	<term>
+		<term_name>174</term_name>
+		<term_description>Malignant neoplasm of female breast</term_description>
+		<term>
+			<term_name>1749</term_name>
+			<term_description>Malignant neoplasm of breast(female), unspecified</term_description>
+		</term>			
+	</term>	
+	
+	
+</terms>
+</rif_health_code_provider>

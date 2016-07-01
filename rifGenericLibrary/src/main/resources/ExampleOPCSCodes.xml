@@ -1,0 +1,47 @@
+<rif_health_code_provider>
+
+<provider_information>
+<provider_name>OPCS NHS Codes</provider_name>
+<provider_name_space>opcs46</provider_name_space>
+<provider_description>
+A very small list of OPCS codes used in the SAHSU Land example of the Rapid Inquiry Facility.
+</provider_description>
+<provider_version>1.0</provider_version>
+</provider_information>
+
+<terms>
+	<term>
+		<term_name>K20</term_name>
+		<term_description>Refashioning of atrium</term_description>
+		<term>
+			<term_name>K20.1</term_name>
+			<term_description>Correction of persistent sinus venosus</term_description>
+		</term>
+		<term>
+			<term_name>K20.2</term_name>
+			<term_description>Correction of partial anomalous pulmonary venous damage						</term_description>
+		</term>			
+		<term>
+			<term_name>K20.4</term_name>
+			<term_description>Repair of coronary sinus abnormality</term_description>
+		</term>			
+	</term>
+
+	<term>
+		<term_name>A01</term_name>
+		<term_description>Major excision of tissue of brain(Clean)</term_description>
+		<term>
+			<term_name>A01.1</term_name>
+			<term_description>Hemispherectomy						</term_description>
+		</term>			
+		<term>
+			<term_name>A01.2</term_name>
+			<term_description>Total lobectomy of brain					</term_description>
+		</term>			
+		<term>
+			<term_name>A01.3</term_name>
+			<term_description>Partial lobectomy of brain				</term_description>
+		</term>			
+	</term>
+</terms>
+</rif_health_code_provider>
