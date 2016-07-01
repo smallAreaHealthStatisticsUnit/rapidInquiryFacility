@@ -5,6 +5,7 @@ package rifServices.fileFormats;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
 
@@ -82,7 +83,7 @@ import java.util.ArrayList;
 
 
 public final class MapAreaContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants

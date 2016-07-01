@@ -2,6 +2,7 @@
 package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
@@ -76,7 +77,7 @@ import java.io.IOException;
 
 
 final class NumeratorDenominatorPairContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants

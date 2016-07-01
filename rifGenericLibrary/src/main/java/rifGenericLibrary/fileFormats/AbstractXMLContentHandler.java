@@ -1,8 +1,6 @@
 
-package rifServices.fileFormats;
+package rifGenericLibrary.fileFormats;
 
-import rifGenericLibrary.fileFormats.XMLCommentInjector;
-import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
 
@@ -81,7 +79,7 @@ import java.util.ArrayList;
  */
 
 
-abstract class AbstractRIFConceptContentHandler 
+abstract public class AbstractXMLContentHandler 
 	extends DefaultHandler {
 
 
@@ -102,7 +100,7 @@ abstract class AbstractRIFConceptContentHandler
 	private Writer writer;
 	
 	/** The current delegated handler. */
-	private AbstractRIFConceptContentHandler currentDelegatedHandler;
+	private AbstractXMLContentHandler currentDelegatedHandler;
 	
 	/** The current field value. */
 	private String currentFieldValue;
@@ -134,7 +132,7 @@ abstract class AbstractRIFConceptContentHandler
     /**
      * Instantiates a new abstract rif concept content handler.
  	*/
-	public AbstractRIFConceptContentHandler() {
+	public AbstractXMLContentHandler() {
 
 		xmlUtility = new XMLUtility();
 		htmlUtility = new HTMLUtility();
@@ -203,7 +201,7 @@ abstract class AbstractRIFConceptContentHandler
 	/**
 	 * Activate.
 	 */
-	protected void activate() {
+	public void activate() {
 		
 		isActive = true;
 	}
@@ -211,7 +209,7 @@ abstract class AbstractRIFConceptContentHandler
 	/**
 	 * Deactivate.
 	 */
-	protected void deactivate() {
+	public void deactivate() {
 		
 		isActive = false;
 	}
@@ -221,7 +219,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @return the singular record name
 	 */
-	protected String getSingularRecordName() {
+	public String getSingularRecordName() {
 		
 		return singularXMLTag;
 	}
@@ -231,7 +229,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @param xmlTag the new singular record name
 	 */
-	protected void setSingularRecordName(
+	public void setSingularRecordName(
 		final String xmlTag) {
 
 		this.singularXMLTag = xmlTag;
@@ -242,7 +240,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @return the plural record name
 	 */
-	protected String getPluralRecordName() {
+	public String getPluralRecordName() {
 		
 		return pluralXMLTag;
 	}
@@ -252,7 +250,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @param pluralXMLTag the new plural record name
 	 */
-	protected void setPluralRecordName(
+	public void setPluralRecordName(
 		final String pluralXMLTag) {
 		
 		this.pluralXMLTag = pluralXMLTag;
@@ -264,7 +262,7 @@ abstract class AbstractRIFConceptContentHandler
 	 * @param candidateXMLTag the candidate xml tag
 	 * @return true, if is singular record name
 	 */
-	protected boolean isSingularRecordName(
+	public boolean isSingularRecordName(
 		final String candidateXMLTag) {
 
 		if (singularXMLTag.equals(candidateXMLTag) == true) {
@@ -279,7 +277,7 @@ abstract class AbstractRIFConceptContentHandler
 	 * @param candidatePluralXMLTag the candidate plural xml tag
 	 * @return true, if is plural record name
 	 */
-	protected boolean isPluralRecordName(
+	public boolean isPluralRecordName(
 		final String candidatePluralXMLTag) {
 
 		if (pluralXMLTag.equals(candidatePluralXMLTag) == true) {
@@ -295,7 +293,7 @@ abstract class AbstractRIFConceptContentHandler
 	 * @param actualFieldName the actual field name
 	 * @return true, if successful
 	 */
-	protected boolean equalsFieldName(
+	public boolean equalsFieldName(
 		final String expectedFieldName,
 		final String actualFieldName) {
 		
@@ -335,8 +333,8 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @param delegatedHandler the delegated handler
 	 */
-	protected void assignDelegatedHandler(
-		final AbstractRIFConceptContentHandler delegatedHandler) {
+	public void assignDelegatedHandler(
+		final AbstractXMLContentHandler delegatedHandler) {
 
 		this.currentDelegatedHandler = delegatedHandler;
 	}
@@ -346,7 +344,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @return true, if is delegated handler assigned
 	 */
-	protected boolean isDelegatedHandlerAssigned() {
+	public boolean isDelegatedHandlerAssigned() {
 		
 		if (currentDelegatedHandler == null) {
 			return false;
@@ -358,7 +356,7 @@ abstract class AbstractRIFConceptContentHandler
 	/**
 	 * Unassign delegated handler.
 	 */
-	protected void unassignDelegatedHandler() {
+	public void unassignDelegatedHandler() {
 		
 		currentDelegatedHandler = null;
 	}
@@ -368,7 +366,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @return the comment injector
 	 */
-	protected XMLCommentInjector getCommentInjector() {
+	public XMLCommentInjector getCommentInjector() {
 		
 		return commentInjector;
 	}
@@ -378,7 +376,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @return the current field value
 	 */
-	protected String getCurrentFieldValue() {
+	public String getCurrentFieldValue() {
 		
 		return currentFieldValue;
 	}
@@ -388,7 +386,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @param currentFieldValue the new current field value
 	 */
-	protected void setCurrentFieldValue(
+	public void setCurrentFieldValue(
 		final String currentFieldValue) {
 
 		this.currentFieldValue = currentFieldValue;
@@ -399,7 +397,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @return the current delegated handler
 	 */
-	protected AbstractRIFConceptContentHandler getCurrentDelegatedHandler() {
+	public AbstractXMLContentHandler getCurrentDelegatedHandler() {
 		
 		return currentDelegatedHandler;
 	}
@@ -409,8 +407,8 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @param delegatedHandler the new current delegated handler
 	 */
-	protected void setCurrentDelegatedHandler(
-		final AbstractRIFConceptContentHandler delegatedHandler) {
+	public void setCurrentDelegatedHandler(
+		final AbstractXMLContentHandler delegatedHandler) {
 
 		this.currentDelegatedHandler = delegatedHandler;
 	}
@@ -420,7 +418,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @return the XML utility
 	 */
-	protected XMLUtility getXMLUtility() {
+	public XMLUtility getXMLUtility() {
 
 		return xmlUtility;
 	}
@@ -430,7 +428,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @return the HTML utility
 	 */
-	protected HTMLUtility getHTMLUtility() {
+	public HTMLUtility getHTMLUtility() {
 		
 		return htmlUtility;
 	}
@@ -459,7 +457,7 @@ abstract class AbstractRIFConceptContentHandler
 	/**
 	 * Begin html bulleted list.
 	 */
-	protected void beginHTMLBulletedList() {
+	public void beginHTMLBulletedList() {
 		
 		HTMLUtility htmlUtility = getHTMLUtility();
 		htmlUtility.beginBulletedList();		
@@ -470,7 +468,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @param displayableListItem the displayable list item
 	 */
-	protected void writeBulletedDisplayableItem(
+	public void writeBulletedDisplayableItem(
 			
 		final DisplayableListItemInterface displayableListItem) {
 		htmlUtility.writeBulletedItem(displayableListItem.getDisplayName());
@@ -479,7 +477,7 @@ abstract class AbstractRIFConceptContentHandler
 	/**
 	 * End html bulleted list.
 	 */
-	protected void endHTMLBulletedList() {
+	public void endHTMLBulletedList() {
 		
 		HTMLUtility htmlUtility = getHTMLUtility();
 		htmlUtility.endBulletedList();		
@@ -490,7 +488,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @param xmlStartTag the xml start tag
 	 */
-	protected void ignoreXMLStartTag(
+	public void ignoreXMLStartTag(
 		final String xmlStartTag) {
 		
 		ignoredXMLStartTags.add(xmlStartTag);
@@ -502,7 +500,7 @@ abstract class AbstractRIFConceptContentHandler
 	 * @param xmlStartTag the xml start tag
 	 * @return true, if is ignored start tag
 	 */
-	protected boolean isIgnoredStartTag(
+	public boolean isIgnoredStartTag(
 		final String xmlStartTag) {
 
 		return ignoredXMLStartTags.contains(xmlStartTag);
@@ -513,7 +511,7 @@ abstract class AbstractRIFConceptContentHandler
 	 *
 	 * @param xmlEndTag the xml end tag
 	 */
-	protected void ignoreXMLEndTag(String xmlEndTag) {
+	public void ignoreXMLEndTag(String xmlEndTag) {
 		ignoredXMLEndTags.add(xmlEndTag);		
 	}
 
@@ -523,7 +521,7 @@ abstract class AbstractRIFConceptContentHandler
 	 * @param xmlEndTag the xml end tag
 	 * @return true, if is ignored end tag
 	 */
-	protected boolean isIgnoredEndTag(
+	public boolean isIgnoredEndTag(
 		final String xmlEndTag) {
 
 		return ignoredXMLEndTags.contains(xmlEndTag);

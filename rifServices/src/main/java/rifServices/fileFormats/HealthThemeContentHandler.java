@@ -2,6 +2,7 @@
 package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.HealthTheme;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
@@ -76,7 +77,7 @@ import java.util.ArrayList;
 
 
 final class HealthThemeContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants

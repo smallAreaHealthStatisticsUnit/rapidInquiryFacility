@@ -3,6 +3,7 @@ package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
 
@@ -78,7 +79,7 @@ import java.util.ArrayList;
 
 
 final class RIFOutputOptionContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants

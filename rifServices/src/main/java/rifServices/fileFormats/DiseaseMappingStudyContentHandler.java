@@ -7,6 +7,7 @@ import rifServices.businessConceptLayer.ComparisonArea;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.Geography;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
@@ -87,7 +88,7 @@ import java.util.ArrayList;
 
 
 final class DiseaseMappingStudyContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants
@@ -296,7 +297,7 @@ final class DiseaseMappingStudyContentHandler
 			activate();
 		}
 		else if (isDelegatedHandlerAssigned()) {
-			AbstractRIFConceptContentHandler currentDelegatedHandler
+			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			currentDelegatedHandler.startElement(
 				nameSpaceURI, 
@@ -305,7 +306,7 @@ final class DiseaseMappingStudyContentHandler
 				attributes);
 		}
 		else {
-			AbstractRIFConceptContentHandler currentDelegatedHandler
+			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			
 			//check to see if handlers could be assigned to delegate parsing
@@ -356,7 +357,7 @@ final class DiseaseMappingStudyContentHandler
 			deactivate();
 		}
 		else if (isDelegatedHandlerAssigned()) {
-			AbstractRIFConceptContentHandler currentDelegatedHandler
+			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			currentDelegatedHandler.endElement(
 				nameSpaceURI, 

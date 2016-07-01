@@ -6,10 +6,10 @@ import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFOutputOption;
-
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
@@ -91,7 +91,7 @@ import java.util.Date;
 
 
 final public class RIFStudySubmissionContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants
@@ -303,7 +303,7 @@ final public class RIFStudySubmissionContentHandler
 			activate();
 		}
 		else if (isDelegatedHandlerAssigned() == true) {
-			AbstractRIFConceptContentHandler currentDelegatedHandler
+			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			currentDelegatedHandler.startElement(
 				nameSpaceURI, 
@@ -329,7 +329,7 @@ final public class RIFStudySubmissionContentHandler
 			//either delegate or scan for field tags releated to this handler
 			if (isDelegatedHandlerAssigned() == true) {
 				//one of the above cases results in an active delegated handler.  Now delegate
-				AbstractRIFConceptContentHandler currentDelegatedHandler
+				AbstractXMLContentHandler currentDelegatedHandler
 					= getCurrentDelegatedHandler();
 				currentDelegatedHandler.startElement(
 					nameSpaceURI, 
@@ -371,7 +371,7 @@ final public class RIFStudySubmissionContentHandler
 			deactivate();
 		}
 		else if (isDelegatedHandlerAssigned() == true) {
-			AbstractRIFConceptContentHandler currentDelegatedHandler
+			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			currentDelegatedHandler.endElement(
 				nameSpaceURI, 

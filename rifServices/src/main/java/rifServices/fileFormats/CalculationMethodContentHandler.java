@@ -2,6 +2,8 @@
 package rifServices.fileFormats;
 
 import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
+import rifGenericLibrary.fileFormats.ParameterContentHandler;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
@@ -83,7 +85,7 @@ import java.util.ArrayList;
 
 
 final class CalculationMethodContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 
 // ==========================================
@@ -332,7 +334,7 @@ final class CalculationMethodContentHandler
 			calculationMethods.add(currentCalculationMethod);
 		}
 		else if (isDelegatedHandlerAssigned() == true) {
-			AbstractRIFConceptContentHandler currentDelegatedHandler
+			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 
 			currentDelegatedHandler.endElement(nameSpaceURI, localName, qualifiedName);

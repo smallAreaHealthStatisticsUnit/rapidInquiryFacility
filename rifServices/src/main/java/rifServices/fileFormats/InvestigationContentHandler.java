@@ -12,6 +12,7 @@ import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
@@ -92,7 +93,7 @@ import java.util.ArrayList;
 
 
 final class InvestigationContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 
 // ==========================================
@@ -482,7 +483,7 @@ final class InvestigationContentHandler
 			currentInvestigation = Investigation.newInstance();
 		}
 		else if (isDelegatedHandlerAssigned() == true) {
-			AbstractRIFConceptContentHandler currentDelegatedHandler
+			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			currentDelegatedHandler.startElement(
 				nameSpaceURI, 
@@ -517,7 +518,7 @@ final class InvestigationContentHandler
 			//either delegate or scan for field name tags relevant to this handler
 			if (isDelegatedHandlerAssigned() == true) {
 				//delegate handler was found so delegate
-				AbstractRIFConceptContentHandler currentDelegatedHandler
+				AbstractXMLContentHandler currentDelegatedHandler
 					= getCurrentDelegatedHandler();
 				currentDelegatedHandler.startElement(
 					nameSpaceURI, 
@@ -543,7 +544,7 @@ final class InvestigationContentHandler
 			currentInvestigations.add(currentInvestigation);
 		}
 		else if (isDelegatedHandlerAssigned() == true) {
-			AbstractRIFConceptContentHandler currentDelegatedHandler
+			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			currentDelegatedHandler.endElement(
 				nameSpaceURI, 

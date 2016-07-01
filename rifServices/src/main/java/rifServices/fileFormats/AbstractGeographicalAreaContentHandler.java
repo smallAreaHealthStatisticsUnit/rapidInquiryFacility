@@ -7,6 +7,7 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.MapArea;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 
 import org.xml.sax.Attributes;
@@ -84,7 +85,7 @@ import java.util.ArrayList;
 
 
 abstract class AbstractGeographicalAreaContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants
@@ -248,7 +249,7 @@ public AbstractGeographicalAreaContentHandler() {
 			activate();
 		}
 		else if (isDelegatedHandlerAssigned()) {
-			AbstractRIFConceptContentHandler currentContentHandler
+			AbstractXMLContentHandler currentContentHandler
 				= getCurrentDelegatedHandler();
 			currentContentHandler.startElement(nameSpaceURI, localName, qualifiedName, attributes);
 		}
@@ -263,7 +264,7 @@ public AbstractGeographicalAreaContentHandler() {
 			}
 			
 			if (isDelegatedHandlerAssigned()) {
-				AbstractRIFConceptContentHandler currentContentHandler
+				AbstractXMLContentHandler currentContentHandler
 					= getCurrentDelegatedHandler();
 				currentContentHandler.startElement(
 					nameSpaceURI, 
@@ -289,7 +290,7 @@ public AbstractGeographicalAreaContentHandler() {
 			deactivate();
 		}
 		else if (isDelegatedHandlerAssigned()) {
-			AbstractRIFConceptContentHandler currentContentHandler
+			AbstractXMLContentHandler currentContentHandler
 				= getCurrentDelegatedHandler();
 
 			currentContentHandler.endElement(

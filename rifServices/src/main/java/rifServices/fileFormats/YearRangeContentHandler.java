@@ -2,6 +2,7 @@
 package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.YearRange;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
@@ -78,7 +79,7 @@ import java.text.Collator;
 
 
 final class YearRangeContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants

@@ -2,6 +2,7 @@
 package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.YearInterval;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
 
@@ -79,7 +80,7 @@ import java.util.ArrayList;
 
 
 final class YearIntervalContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants

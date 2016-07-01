@@ -3,6 +3,7 @@ package rifServices.fileFormats;
 
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.Geography;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
@@ -81,7 +82,7 @@ import java.io.UnsupportedEncodingException;
 
 
 final class GeographyContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 
 // ==========================================

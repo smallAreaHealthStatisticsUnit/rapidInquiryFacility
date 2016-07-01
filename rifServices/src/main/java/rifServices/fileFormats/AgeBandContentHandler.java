@@ -3,6 +3,7 @@ package rifServices.fileFormats;
 
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.AgeGroup;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
@@ -77,7 +78,7 @@ import java.util.ArrayList;
 
 
 final class AgeBandContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants

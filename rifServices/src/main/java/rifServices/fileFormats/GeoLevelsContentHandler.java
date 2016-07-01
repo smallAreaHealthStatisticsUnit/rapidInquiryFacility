@@ -7,6 +7,7 @@ import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.GeoLevelView;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
 
@@ -81,7 +82,7 @@ import java.io.IOException;
 
 
 final class GeoLevelsContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants

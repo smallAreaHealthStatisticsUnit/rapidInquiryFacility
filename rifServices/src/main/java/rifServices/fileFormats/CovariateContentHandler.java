@@ -6,6 +6,7 @@ import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AdjustableCovariate;
 import rifServices.businessConceptLayer.CovariateType;
 import rifServices.businessConceptLayer.ExposureCovariate;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
@@ -86,7 +87,7 @@ import java.io.UnsupportedEncodingException;
 
 
 public final class CovariateContentHandler 
-	extends AbstractRIFConceptContentHandler {
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants
