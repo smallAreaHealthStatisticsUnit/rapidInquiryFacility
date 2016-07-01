@@ -1,10 +1,9 @@
 
-package rifServices.fileFormats;
+package rifGenericLibrary.fileFormats;
 
 
-import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
 
 import org.xml.sax.Attributes;
@@ -80,8 +79,8 @@ import java.util.ArrayList;
  */
 
 
-final class ParameterContentHandler 
-	extends AbstractRIFConceptContentHandler {
+final public class ParameterContentHandler 
+	extends AbstractXMLContentHandler {
 
 // ==========================================
 // Section Constants
@@ -172,12 +171,12 @@ final class ParameterContentHandler
 		HTMLUtility htmlUtility = getHTMLUtility();
 		
 		String parametersLabel
-			= RIFServiceMessages.getMessage("parameters.label");
+			= RIFGenericLibraryMessages.getMessage("parameters.label");
 		int recordHeaderLevel = getRecordHeaderLevel();
 		htmlUtility.writeHeader(recordHeaderLevel, parametersLabel);
 		if (parameters.isEmpty()) {
 			String none
-				= RIFServiceMessages.getMessage("general.emptyList.none");
+				= RIFGenericLibraryMessages.getMessage("general.emptyList.none");
 			htmlUtility.writeParagraph(none);
 		}
 		else {
@@ -185,9 +184,9 @@ final class ParameterContentHandler
 			
 			//write out header row
 			String nameFieldLabel
-				= RIFServiceMessages.getMessage("parameter.name.label");
+				= RIFGenericLibraryMessages.getMessage("parameter.name.label");
 			String valueFieldLabel
-				= RIFServiceMessages.getMessage("parameter.value.label");
+				= RIFGenericLibraryMessages.getMessage("parameter.value.label");
 			htmlUtility.beginRow();
 			htmlUtility.writeBoldColumnValue(nameFieldLabel);
 			htmlUtility.writeBoldColumnValue(valueFieldLabel);			
@@ -250,10 +249,10 @@ final class ParameterContentHandler
 			parameters.add(currentParameter);
 		}
 		else if (equalsFieldName("name", qualifiedName) == true) {
-			currentParameter.setName(getCurrentFieldValue());
+			currentParameter.setName(getCurrentFieldValue().trim());
 		}
 		else if (equalsFieldName("value", qualifiedName) == true) {
-			currentParameter.setValue(getCurrentFieldValue());						
+			currentParameter.setValue(getCurrentFieldValue().trim());						
 		}
 	}
 
