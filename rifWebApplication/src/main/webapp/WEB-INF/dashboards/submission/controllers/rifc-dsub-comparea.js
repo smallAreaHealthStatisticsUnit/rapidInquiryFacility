@@ -7,7 +7,7 @@
 angular.module("RIF")
         .controller('ModalComparisonAreaCtrl', ['$scope', '$uibModal', 'CompAreaStateService', 'SubmissionStateService',
             function ($scope, $uibModal, CompAreaStateService, SubmissionStateService) {
-                $scope.tree = SubmissionStateService.get_state().comparisonTree;
+                $scope.tree = SubmissionStateService.getState().comparisonTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
@@ -21,26 +21,30 @@ angular.module("RIF")
                     modalInstance.result.then(function (input) {
                         //Change tree icon colour
                         if (input.selectedPolygon.length === 0) {
-                            SubmissionStateService.get_state().comparisonTree = false;
+                            SubmissionStateService.getState().comparisonTree = false;
                             $scope.tree = false;
                         } else {
-                            SubmissionStateService.get_state().comparisonTree = true;
+                            SubmissionStateService.getState().comparisonTree = true;
                             $scope.tree = true;
                         }
 
                         //Store what has been selected
-                        CompAreaStateService.get_state().polygonIDs = input.selectedPolygon;  
-                        CompAreaStateService.get_state().selectAt = input.selectAt;
-                        CompAreaStateService.get_state().studyResolution = input.studyResolution;
+                        CompAreaStateService.getState().polygonIDs = input.selectedPolygon;
+                        CompAreaStateService.getState().selectAt = input.selectAt;
+                        CompAreaStateService.getState().studyResolution = input.studyResolution;
+                        CompAreaStateService.getState().zoomLevel = input.zoomLevel;
+                        CompAreaStateService.getState().view = input.view;
                     });
                 };
             }])
         .controller('ModalComparisonAreaInstanceCtrl', function ($scope, $uibModalInstance, CompAreaStateService) {
             $scope.input = {};
-            $scope.input.selectedPolygon = CompAreaStateService.get_state().polygonIDs;
-            $scope.input.selectAt = CompAreaStateService.get_state().selectAt;         
-            $scope.input.studyResolution = CompAreaStateService.get_state().studyResolution;
-            
+            $scope.input.selectedPolygon = CompAreaStateService.getState().polygonIDs;
+            $scope.input.selectAt = CompAreaStateService.getState().selectAt;
+            $scope.input.studyResolution = CompAreaStateService.getState().studyResolution;
+            $scope.input.zoomLevel = CompAreaStateService.getState().zoomLevel;
+            $scope.input.view = CompAreaStateService.getState().view;
+
             $scope.close = function () {
                 $uibModalInstance.dismiss();
             };

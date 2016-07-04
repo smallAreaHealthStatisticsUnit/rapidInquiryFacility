@@ -1,17 +1,15 @@
 
 <div id="navigation">
     <div class='logOutUsername'> 
-        <a class="userName" href='#'> </a><span id="logOut"> log out </span>
+        <a class="userName" href='#'> USERNAME </a><span id="logOut" ui-sref="state0" ng-class="{active: $state.includes('state0')}"> log out </span>
     </div>
     <div class='nav'>
-        <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Test </a>
+        <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Status </a>
         <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
         <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
         <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
     </div>
 </div>
-
-
 
 <div ui-layout="{flow : 'column'}">
     <div ui-layout-container class="js-back" size="25%"></div>

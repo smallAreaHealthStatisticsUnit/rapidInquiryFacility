@@ -8,14 +8,16 @@ angular.module("RIF")
                     var s = {
                         polygonIDs: [],
                         selectAt: "Select at",
-                        studyResolution: "Study resolution"
+                        studyResolution: "Study resolution",
+                        zoomLevel: -1,
+                        view: [0, 0]
                     };
                     var defaults = JSON.parse(JSON.stringify(s));
                     return {
-                        get_state: function () {
+                        getState: function () {
                             return s;
                         },
-                        reset_state: function () {
+                        resetState: function () {
                             s = defaults;
                         }
                     };

@@ -312,61 +312,6 @@ body {
     background: transparent url("../images/flag_flyaway_blue.png") no-repeat;
 }
 
-.msettings .txt-fld #breaks input {
-    float: left;
-    width: 58px;
-    margin: 5px 10px 5px 0px;
-    font-size: 1.1em;
-    color: #CCC;
-    border: 0;
-    background: #F7F7F7
-}
-.msettings .txt-fld,
-#msettings .save-fld,
-#msettings .save-fld-settings,
-#msettings save-basemap {
-    position: relative;
-    text-align: right;
-}
-.msettings .txt-fld label {
-    display: block;
-    float: left;
-    width: 100px;
-    padding-top: 4px;
-    font-size: 1.1em;
-    text-align: left;
-}
-.msettings .txt-fld select,
-.msettings .txt-fld input[type="text"] {
-    width: 180px;
-    padding: 4px 2px;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    font-size: 1em;
-    background: #F7F7F7;
-    border: 1px solid #cccccc;
-    color: #999999;
-}
-.msettings .txt-fld input[name="numOfRows"] {
-    float: left
-}
-.msettings .txt-fld {
-    padding: 14px 30px;
-    border-bottom: 1px solid #EEE;
-}
-
-.msettings .txt-fld select ,.msettings .txt-fld input[type="text"] ,input[type="password"] {
-    width: 220px;
-    padding: 12px 10px;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    font-size: 1.1em;
-    background: #F7F7F7;
-    border:1px solid #cccccc;
-    color:#999999;
-    position: relative;
-}
-
 .mapOpts .mapOpt {
     width: 32px;
     height: 32px;
@@ -385,7 +330,6 @@ body {
 div.transparency {
     width: 50px !important
 }
-
 
 input[type="range"] {
     -webkit-box-sizing: border-box;
@@ -627,128 +571,6 @@ path.polygon:hover {
     cursor: auto
 }
 
-/*
-   Modal
-*/
-
-.overlay {
-    display: none;
-    position: absolute;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: 99999;
-}
-.msettings {
-    width: 100%;
-    padding-bottom: 0px;
-    display: block;
-    background: #FFF;
-    border-radius: 6px;
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    margin: 0% auto;
-    height: 100%;
-}
-.msettings-ct {
-    width: 100%;
-    height: 100%;
-}
-.msettings-header {
-    padding: 30px 20px;
-    color: #fff;
-    text-transform: uppercase;
-    height: 16px;
-    border-top-right-radius: 6px;
-    border-top-left-radius: 6px;
-    border-bottom: 3px solid #F2F2F2;
-    background: none repeat scroll 0 0 #87CEFA;
-}
-.msettings-header h2 {
-    float: left;
-    font-size: 20px;
-    font-weight: normal;
-}
-.msettings-ct .modalContainer {
-    width: 100%;
-    height: -moz-calc(100% - 80px);
-    /* WebKit */
-
-    height: -webkit-calc(100% - 80px);
-    /* Opera */
-
-    height: -o-calc(100% - 80px);
-    /* Standard */
-
-    height: calc(100% - 80px);
-}
-.areasSelectionDialog{
-    position:relative
-}
-.msettings-header a.modal_close {
-    background: url('../images/close.png');
-    width: 20px;
-    height: 20px;
-    opacity: 0.2;
-}
-.msettings-header a.modal_close:hover {
-    opacity: 0.4;
-}
-.msettings-header .modal_close {
-    float: right;
-}
-.msettings {
-    color: #7D7D7D;    
-}
-.msettings-ct .modalContainer .modalAreaSelectionMenu {
-    width: 94%;
-}
-.msettingsSmall {
-    padding-bottom: 2px;
-    display: block;
-    background: #FFF;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    width: 500px;
-    height: 250px;
-}
-.msettingsSmall input{
-    width: 410px !important;
-    margin: 20px 35px !important;
-    font-size: 18px !important;
-}
-.msettingsMedium input[type="text"] {
-    width: 300px !important;
-    margin: 20px 30px !important;
-}
-.msettingsMedium {
-    padding-bottom: 2px;
-    display: block;
-    background: #FFF;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    width: 500px;
-    height: 400px;
-
-}
-
-.msettingsStats {
-    padding-bottom: 2px;
-    display: block;
-    background: #FFF;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    width: 450px;
-    height: 550px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top:5%;
-}
 
 .statsInfo{
     padding:15px 15px 0px 15px;
@@ -807,24 +629,7 @@ path.polygon:hover {
     position:relative;
     top:1px;
 }
-.modalAreaSelectionMenu>div:last-child {
-    float: left;
-}
-.modalAreaSelectionMenu > div:first-child{
-    float: left;
-}
-.modalAreaSelectionContent {
-    /* Firefox */
-    height: -moz-calc(100% - 100px);
-    /* WebKit */
-    height: -webkit-calc(100% - 100px);
-    /* Opera */
-    height: -o-calc(100% - 100px);
-    /* Standard */
-    height: calc(100% - 100px);
-    margin: 1%  2%;
-    position: relative;
-}
+
 #areaSelectionMap, #comparisonAreaSelectionMap{
     position: absolute;
     margin-left: 34%;
@@ -862,14 +667,6 @@ path.polygon:hover {
     cursor : pointer;
 }
 
-.syncronizeMap {
-    background: url('../images/synctoMap.png')  no-repeat;
-}
-
-.syncronizeTable {
-    background: url('../images/syncToTable.png')  no-repeat;
-}
-
 .clearSelection {
     background: url('../images/clear.png')  no-repeat  ;
 }
@@ -885,9 +682,7 @@ path.polygon:hover {
 /************************/
 /* SUMMARY TABLES *******/
 /************************/
-.modalScrollable{
-    overflow-y: auto;
-}
+
 .summaryStudy{
     margin:0 2%;
 }
@@ -1012,9 +807,7 @@ div.aSR:hover,
     padding: 5px 0;
     cursor: pointer;
 }
-#ageGroupsWrapper .aSR div {
-    width: 49% !important;
-}
+
 .aSR div:first-child {
     border-right: 2px solid #ddd;
     float: left;
@@ -1038,60 +831,7 @@ div.aSR:hover,
     text-align: center;
     line-height: 15px;
 }
-.modalAreaSelectionMenu {
-    height: 80px;
-}
-.msettings-ct .modalContainer .modalAreaSelectionMenu > div {
-    width: 31%;
-    height: 100%;
-    margin: 1% 2%;
-    padding-top: 15px;
-}
-.msettings .modalContainer {
-    width: 100%;
-}
-.msettings #resultsSetOfInterest div#resultsFilter div {
-    height: 20px;
-    min-width: 85px;
-    display: block;
-    float: left
-}
-.msettings #resultsSetOfInterest div#resultsFilter input.colsChoice {
-    float: left;
-    margin: 6px 3px;
-}
-.msettings #resultsSetOfInterest div#resultsFilter label.colsChoiceLbl {
-    width: auto;
-    padding: 2px 8px 0 0px;
-}
 
-
-
-
-.msettings .save-fld,
-.save-fld-settings,
-.save-basemap {
-    padding: 20px 20px;
-}
-.save-fld input,
-.save-fld-settings input,
-.save-basemap input {
-    padding: 2px 11px;
-    color: #7D7D7D;
-}
-.msettings .invertWrapper {
-    height: 20px;
-}
-.msettings #invertColorsLabel {
-    font-size: 10px;
-    float: right;
-    width: auto
-}
-.msettings #invertColors {
-    float: right;
-    width: 25px;
-    margin-top: 8px;
-}
 /* General dropdown styles */
 
 .dropdownBand {
@@ -1360,6 +1100,8 @@ input[type="file"].fileOpener {
 .dropdownInputSmall {
     font-size: 14px !important;
     border-bottom: solid 1px #CAE1FF !important;
+    margin-bottom: 20px !important;
+
 }
 #studyName {
     margin-left: 3%;
@@ -1385,9 +1127,6 @@ input[type="text"].dropdownInput:focus,
     display: none;
     position: absolute;
     z-index: 9999;
-}
-#ageGroupsWrapper .availables {
-    max-height: 100% !important;
 }
 
 .availables div a {
@@ -1578,17 +1317,6 @@ textarea.description {
     border-right: 2px solid #dbdbdb;
     position: relative;
 }
-.healthCodes #icdSelection {
-    background-color: #B4EEB4;
-    max-height: 80px;
-    padding: 2px 15px 5px 7px;
-    margin-top: 10px;
-    overflow: auto;
-}
-.healthCodes #icdSelection div {
-    background-color: white;
-    padding: 1px 0 0 10px;
-}
 .healthCodes > div {
     margin: 4% 4% 0 4%;
     width: 93%;
@@ -1597,91 +1325,7 @@ textarea.description {
 .healthCodes #availableTaxomonomies {
     margin-top: 6%
 }
-.healthCodes #tree {
-    height: -moz-calc(100% - 205px);
-    height: -webkit-calc(100% - 205px);
-    height: -o-calc(100% - 205px);
-    height: calc(100% - 205px);
-    margin-top: 2%;
-    overflow-x: hidden;
-}
-.healthCodes #searchCode {
-    width: 20%;
-    margin-left: 64%;
-    position: absolute;
-    top: 0;
-}
-.healthCodes #searchCode input {
-    font-size: 14px;
-    padding: 2px 10px;
-    text-align: right;
-}
-#searchResults {
-    position: absolute;
-    display: none;
-    height: 90%;
-    width: 96% !important;
-    z-index: 999999999999;
-    background: url('../images/close.png') no-repeat 97% 3%;
-}
-#searchResults .opacityBackground {
-    opacity: 0.8;
-    background-color: #C1CDCD;
-    width: 100%;
-    height: 100%;
-    position: absolute
-}
-#healthResults {
-    margin: 10%;
-    padding: 20px;
-    background-color: white;
-    z-index: 999999;
-    position: absolute;
-    width: 70%;
-    border: 3px solid #87CEFA;
-    overflow: auto;
-    max-height: -moz-calc(80% - 30px);
-    max-height: -webkit-calc(80% - 30px);
-    max-height: -o-calc(80% - 30px);
-    max-height: calc(80% - 30px);
-}
-.healthCodes #tree > div {
-    width: 100%;
-    padding: 2px 10px;
-}
-.healthCodes #tree .subCodes {
-    margin-left: 40px;
-}
-.healthCodes #tree div.healthCodesHeader {
-    font-weight: bold;
-}
-.healthCodes #tree div.healthCodesHeader:hover {
-    cursor: pointer;
-    background-color: rgba(132, 112, 255, 0.2);
-}
-.healthCodes #tree div.noChildElements {
-    font-weight: normal;
-}
-.healthCodes #tree div.noChildElements:hover {
-    cursor: pointer;
-    background-color: rgba(255, 240, 245, 0.8);
-}
-.healthCodes #tree div.icdSelected {
-    background-color: rgba( 152, 251, 152, 0.2);
-}
-.healthCodes #tree div.icdSelected:hover {
-    background-color: rgba( 152, 251, 152, 0.2);
-}
-.healthCodes #tree div.healthCodesHeader {
-    line-height: 15px;
-}
-.healthCodes #tree .childrenContainer {
-    padding: 2px 0 0 20px;
-}
-.healthCodes #tree > div > div > span {
-    padding: 0 5px;
-    font-size: 15px;
-}
+
 .investigationBox {
     overflow: hidden;
     height: 100%;
@@ -1693,30 +1337,39 @@ textarea.description {
     height: 50%;
     position: relative;
 }
-.investigationBox > div#investigationRecap {
-    height: 50%;
+#parameterWrap > div {
+    min-height: 450px;
+}
+#parameterHeader,
+#parameterWrap > div { min-height: 0px; }
+#parameterHeader {
+    min-height: 60px;
+}
+#parameterWrap {
+    height: 100%;
     overflow: hidden;
+    position: relative;
 }
-/*
-#investigationRecap {
-    border-top: 1px solid #dbdbdb;
-}*/
-
-#parameters > div:first-child {
-    margin-top: 5% !important;
+#ParameterLeft {
+    float: left;
+    width: 55%;
+    height: 100%;
 }
-
-
-#parameters > div:not(.done) {
-    width: 38%;
-    margin: 1% 4% 0 4%;
-    display: inline-block;
-    color: #999999;
-
+#ParameterLeft > div:first-child {
+    margin-top: 3% !important;
 }
+#ParameterLeft > div {
+    margin-left: 5%;
+    margin-right: 15%;
+}
+#ParameterRight {
+    float: right;
+    width: 45%;
+    height: 90%;
+    margin-bottom: 50px;
+}  
 
-#covariatesWrapper,
-#ageGroupsWrapper {
+#covariatesWrapper {
     position: relative;
 }
 #ageGroupsWrapper {
@@ -1735,7 +1388,10 @@ textarea.description {
 #ageGroupsLabel {
     font-size: 14px;
     text-transform: uppercase;
-    padding: 10px;
+    padding-top: 13px;
+}
+#covariateLabel {
+    padding-left: 0px;
 }
 
 .covariatesAvailable {
@@ -1770,7 +1426,7 @@ textarea.description {
 #addInvestigation,
 #clearParameters{
     opacity: 0.2;
-    margin: 0 8% 0 0 !important;
+    margin: 0 0% 0 0 !important;
     border-radius: 0px 0px 10px 10px;
     -moz-border-radius: 0px 0px 10px 10px;
     -webkit-border-radius: 0px 0px 10px 10px    
@@ -1806,17 +1462,17 @@ textarea.description {
 #addInvestigation {
     background-color: #00CD00 !important;
     opacity: 0.7 !important;
-    left: 150px;
     padding: 10px 20px;
-    font-size: 16px;
+    font-size: 14px;
+    left: calc(2% + 120px);
 }
 
 #clearParameters {
     background-color: #FF7256;
     opacity: 1;
-    left: 3%;
-    padding: 6px 15px;
+    padding: 10px 20px;
     font-size: 14px;
+    left: 2%;
 }
 
 #addInvestigation:hover,
@@ -1826,22 +1482,6 @@ textarea.description {
     cursor: pointer;
 }
 
-#investigationRecap table {
-    width: 100%
-}
-thead {
-    background-color: #F2F2F2;
-}
-#investigationRecap th,
-td {
-    text-align: left
-}
-#investigationRecap th {
-    padding: 10px;
-    background-color: #F2F2F2;
-    font-weight: bold;
-    text-transform: uppercase;
-}
 .removeInvestigation {
     background: transparent url("images/delete.png") no-repeat center center;
     opacity: 0.3;
@@ -1850,36 +1490,6 @@ td {
 .removeInvestigation:hover {
     opacity: 1;
     cursor: pointer
-}
-#investigationRecap td {
-    padding: 10px;
-}
-#investigationRecap tr.even {
-    background-color: rgba(198, 226, 255, 0.3)
-}
-#investigationRecap tr.odd {
-    background-color: rgba(131, 112, 255, 0.1)
-}
-.taxonomiRow {
-    width: 10% !important;
-}
-.healthOutcomesRow {
-    width: 30%;
-}
-.taxonomiRow div {
-    height: 15px
-}
-.agegroupsRow {
-    width: 15%;
-}
-.yearRow {
-    width: 15%
-}
-.genderRow {
-    width: 10%;
-}
-.covariatesRow {
-    width: 8%
 }
 
 .runDialog {
@@ -1892,146 +1502,6 @@ td {
     font-weight: bold;
 }
 
-/*
-
-ADDED MODALS SUBMISSION
-
-*/
-
-/*!
- * Bootstrap v3.3.6 (http://getbootstrap.com)
- * Copyright 2011-2015 Twitter, Inc.
- * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
- */
-/*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
-
-.modal-fit .modal-dialog {
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    margin: auto;
-    padding: 10px;
-}
-
-.modal-fit .modal-body {
-    height: calc(100vh - 20px);
-    overflow: hidden;
-}
-.modal-open {
-    overflow: hidden;
-}
-.modal {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1050;
-    display: none;
-    overflow: hidden;
-    -webkit-overflow-scrolling: touch;
-    outline: 0;
-}
-.modal.fade .modal-dialog {
-    -webkit-transition: -webkit-transform .3s ease-out;
-    -o-transition:      -o-transform .3s ease-out;
-    transition:         transform .3s ease-out;
-    -webkit-transform: translate(0, -25%);
-    -ms-transform: translate(0, -25%);
-    -o-transform: translate(0, -25%);
-    transform: translate(0, -25%);
-}
-.modal.in .modal-dialog {
-    -webkit-transform: translate(0, 0);
-    -ms-transform: translate(0, 0);
-    -o-transform: translate(0, 0);
-    transform: translate(0, 0);
-}
-.modal-open .modal {
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-.modal-dialog {
-    position: relative;
-    width: auto;
-    margin: 10px;
-}
-.mapping-Modal .modal-dialog{
-    width:400px;
-    height: 400px;
-    position: absolute;
-    top:0; bottom: 0; left: 0; right: 0;
-    margin: auto;
-}
-
-.modal-content {
-    position: relative;
-    background-color: #fff;
-    -webkit-background-clip: padding-box;
-    background-clip: padding-box;
-    border: 1px solid #999;
-    border: 1px solid rgba(0, 0, 0, .2);
-    border-radius: 6px;
-    outline: 0;
-    -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
-    box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
-}
-.modal-backdrop {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1040;
-    background-color: #000;
-}
-.modal-backdrop.fade {
-    filter: alpha(opacity=0);
-    opacity: 0;
-}
-.modal-backdrop.in {
-    filter: alpha(opacity=50);
-    opacity: .5;
-}
-.modal-header {
-    padding: 1px; /* modal border and content */
-    border-bottom: 1px solid #e5e5e5;
-}
-.modal-header .close {
-    margin-top: -2px;
-}
-.modal-title {
-    margin: 0;
-    line-height: 1.42857143;
-}
-.modal-body {
-    position: relative;
-    padding: 0px;
-    border-radius: 6px;
-}
-.modal-footer {
-    padding: 15px;
-    text-align: right;
-    border-top: 1px solid #e5e5e5;
-}
-.modal-footer .btn + .btn {
-    margin-bottom: 0;
-    margin-left: 5px;
-}
-.modal-footer .btn-group .btn + .btn {
-    margin-left: -1px;
-}
-.modal-footer .btn-block + .btn-block {
-    margin-left: 0;
-}
-.modal-scrollbar-measure {
-    position: absolute;
-    top: -9999px;
-    width: 50px;
-    height: 50px;
-    overflow: scroll;
-}
 
 /*
 ADDED, LOGIN SCREEN
@@ -2082,7 +1552,6 @@ div.world{
     border-top-right-radius: 5px;
 }
 
-
 .login{
     border: 0;
     cursor: pointer;
@@ -2121,176 +1590,7 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
     border-bottom: solid 2px #63B8FF;
     outline: none
 }
-
-/* UI-GRID */
-.grid {
-    width: 30%;
-    height: 90%;
-    float: left;
-    position: absolute;
-}
-.grid-ICDtree {
-    width: 30%;
-    height: 85%;
-    float: left;
-    position: absolute;
-}
-.grid-age {
-    margin-top: 30px;
-    margin-left: 10px;
-    margin-right: 10px;
-    width: 100%;
-    height: 90%;
-    float: left;
-}
-.grid-recap {
-    width: 100%;
-    height: 100%;
-    position: inherit;
-    text-transform: uppercase;
-}
-
-.grid-expandable {
-    height: 75%;
-}
-
-.tree0 .ui-grid-cell-contents {
-    color: #262626;
-    background-color:  #b3b3b3;
-    text-transform: uppercase;
-    text-align: left;
-    opacity: 0.8;
-    padding-top: 5px
-}
-.tree1 .ui-grid-cell-contents {
-    color: #262626;
-    background-color: #cccccc;
-    text-transform: uppercase;
-    opacity: 0.8;
-    padding-left: 20px;
-    padding-top: 5px
-}
-.tree2 .ui-grid-cell-contents {
-    color: #262626;
-    background-color: #f2f2f2;
-    text-transform: uppercase;
-    opacity: 0.8;
-    padding-left: 40px;
-    padding-top: 5px
-}
-.tree2selected .ui-grid-cell-contents {
-    color: #262626;
-    background-color: #B4EEB4;
-    text-transform: uppercase;
-    opacity: 0.8;
-    padding-left: 40px;
-    padding-top: 5px
-}
-.ui-grid-canvas {
-    position: relative;
-  /*  padding-top: 0px;*/
-}
-.ui-grid-cell-contents {
-    padding-top: 0px;
-}
-
-
-.band1 .ui-grid-cell-contents {
-    background-color: #e41a1c;
-    color: white;
-    opacity: 0.8;
-}
-.band2 .ui-grid-cell-contents {
-    background-color: #377eb8;
-    color: white;
-    opacity: 0.8;
-}
-.band3 .ui-grid-cell-contents {
-    background-color: #4daf4a;
-    color: white;
-    opacity: 0.8;
-}
-.band4 .ui-grid-cell-contents {
-    background-color: #984ea3;
-    color: white;
-    opacity: 0.8;
-}
-.band5 .ui-grid-cell-contents {
-    background-color: #ff7f00;
-    color: white;
-    opacity: 0.8;
-}
-.band6 .ui-grid-cell-contents {
-    background-color: #ffff33;
-    color: #333333;
-    opacity: 0.8;
-}
-.band7 .ui-grid-cell-contents {
-    background-color: #a65628;
-    color: white;
-    opacity: 0.8;
-}
-.band8 .ui-grid-cell-contents {
-    background-color: #f781bf;
-    color: white;
-    opacity: 0.8;
-}
-.band9 .ui-grid-cell-contents {
-    background-color: #999999;
-    color: white;
-    opacity: 0.8;
-}
-
-
-.recapOdd .ui-grid-cell-contents {
-    background-color: rgba(31, 12, 255, 0.2);
-}
-.recapEven .ui-grid-cell-contents {
-    background-color: rgba(198, 226, 255, 0.8)
-}
-
-.grid-recap .ui-grid-row:nth-child(odd):hover .ui-grid-cell,
-.grid-recap .ui-grid-row:nth-child(even):hover .ui-grid-cell {
-    opacity: 1;
-}
-
-.grid-recap .ui-grid-row .ui-grid-cell {
-    background-color: #fff;
-}
-
-.recapEven .removebtn {
-    width: 100%;
-    height: 100%;
-    background: rgba(198, 226, 255, 0.8);
-    border: none;
-    position: relative;
-}
-.recapOdd .removebtn  {
-    width: 100%;
-    height: 100%;
-    background-color: rgba(31, 12, 255, 0.2);
-    border: none;
-    position: relative;
-}
-.binEven  {
-    background: transparent url("../images/delete.png") no-repeat center center;
-    opacity: 0.7;
-}
-.binOdd  {
-    background: transparent url("../images/delete.png") no-repeat center center;
-    opacity: 0.7;
-}
-.binOdd:hover,
-.binEven:hover {
-    opacity: 1;
-    cursor: pointer
-}
-
-.ui-grid-row:nth-child(odd):hover .ui-grid-cell,
-.ui-grid-row:nth-child(even):hover .ui-grid-cell {
-    opacity: 0.7;
-}
-
+  
 .stats-Modal .modal-dialog{
     width:500px;
     height: 400px;
@@ -2402,7 +1702,6 @@ input[type=number]+ label  {
 #submenuMapping{
     height:40px;
     background-color: #F5F5F5;
-    border-top:1px solid #E3E3E3;
     border-bottom:1px solid #E3E3E3;
 }
 
@@ -2471,26 +1770,3 @@ div#studyLabel h2{
     color: white;
     box-shadow: 2px 2px 2px #666;
 }
-
-/* UI-LAYOUT*/
-.ui-layout-column {
-    position: absolute;
-    top: 115px; 
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: auto;
-}
-.leaflet-box {
-  background : #f2f2f2;
-}
-.js-back{
-  background : #f2f2f2;
-}
-.glyphicon {
-    font-family: none;
-}
-.ui-layout-row > .ui-splitbar {
-    overflow: hidden;
-}
-

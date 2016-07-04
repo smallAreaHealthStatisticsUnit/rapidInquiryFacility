@@ -7,7 +7,7 @@
 angular.module("RIF")
         .controller('ModalStudyAreaCtrl', ['$scope', '$uibModal', 'StudyAreaStateService', 'SubmissionStateService',
             function ($scope, $uibModal, StudyAreaStateService, SubmissionStateService) {
-                $scope.tree = SubmissionStateService.get_state().studyTree;
+                $scope.tree = SubmissionStateService.getState().studyTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
@@ -21,26 +21,29 @@ angular.module("RIF")
                     modalInstance.result.then(function (input) {
                         //Change tree icon colour
                         if (input.selectedPolygon.length === 0) {
-                            SubmissionStateService.get_state().studyTree = false;
+                            SubmissionStateService.getState().studyTree = false;
                             $scope.tree = false;
                         } else {
-                            SubmissionStateService.get_state().studyTree = true;
+                            SubmissionStateService.getState().studyTree = true;
                             $scope.tree = true;
                         }
-
                         //Store what has been selected
-                        StudyAreaStateService.get_state().polygonIDs = input.selectedPolygon;  
-                        StudyAreaStateService.get_state().selectAt = input.selectAt;
-                        StudyAreaStateService.get_state().studyResolution = input.studyResolution;
+                        StudyAreaStateService.getState().polygonIDs = input.selectedPolygon;
+                        StudyAreaStateService.getState().selectAt = input.selectAt;
+                        StudyAreaStateService.getState().studyResolution = input.studyResolution;
+                        StudyAreaStateService.getState().zoomLevel = input.zoomLevel;
+                        StudyAreaStateService.getState().view = input.view;
                     });
                 };
             }])
         .controller('ModalStudyAreaInstanceCtrl', function ($scope, $uibModalInstance, StudyAreaStateService) {
             $scope.input = {};
-            $scope.input.selectedPolygon = StudyAreaStateService.get_state().polygonIDs;
-            $scope.input.selectAt = StudyAreaStateService.get_state().selectAt;         
-            $scope.input.studyResolution = StudyAreaStateService.get_state().studyResolution;
-            
+            $scope.input.selectedPolygon = StudyAreaStateService.getState().polygonIDs;
+            $scope.input.selectAt = StudyAreaStateService.getState().selectAt;
+            $scope.input.studyResolution = StudyAreaStateService.getState().studyResolution;
+            $scope.input.zoomLevel = StudyAreaStateService.getState().zoomLevel;
+            $scope.input.view = StudyAreaStateService.getState().view;
+
             $scope.close = function () {
                 $uibModalInstance.dismiss();
             };

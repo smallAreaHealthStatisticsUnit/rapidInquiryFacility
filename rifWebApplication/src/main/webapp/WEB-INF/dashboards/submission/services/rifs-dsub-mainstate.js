@@ -2,7 +2,7 @@
  * will be used eventually to load studies
  */
 angular.module("RIF")
-        .factory('SubmissionStateService',
+        .factory('SubmissionStateService', 
                 function () {
                     var s = {
                         //these are on the main disease submission page
@@ -15,15 +15,15 @@ angular.module("RIF")
                         numerator: "Numerator",
                         denominator: "Denominator",
                         //these are in the run-study modal
-                        projectName: "Project Name",
-                        projectDescription: "Study Description (Optional)"
+                        projectName: "",
+                        projectDescription: ""
                     };
                     var defaults = JSON.parse(JSON.stringify(s));
                     return {
-                        get_state: function () {
+                        getState: function () {
                             return s;
                         },
-                        reset_state: function () {
+                        resetState: function () {
                             s = defaults;
                         }
                     };

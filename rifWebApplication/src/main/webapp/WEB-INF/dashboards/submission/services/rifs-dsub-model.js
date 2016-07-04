@@ -3,7 +3,8 @@
  * 
  */
 angular.module("RIF")
-        .factory('ModelService', function (StudyAreaStateService, CompAreaStateService, StatsStateService, SubmissionStateService) {
+        .factory('ModelService', function (StudyAreaStateService, CompAreaStateService, StatsStateService,
+                SubmissionStateService, ParameterStateService) {
             updateModel = function () {
                 var model = {
                     "rif_job_submission": {
@@ -13,11 +14,11 @@ angular.module("RIF")
                             return d.toLocaleDateString() + " " + d.toLocaleTimeString();
                         }(),
                         "project": {
-                            "name": SubmissionStateService.get_state().projectName,
-                            "description": SubmissionStateService.get_state().projectDescription
+                            "name": SubmissionStateService.getState().projectName,
+                            "description": SubmissionStateService.getState().projectDescription
                         },
                         "disease_mapping_study": {
-                            "name": SubmissionStateService.get_state().studyName,
+                            "name": SubmissionStateService.getState().studyName,
                             "description": "TODO: UNKNOWN VARIABLE",
                             "geography": {
                                 "name": "TODO: RIF.geography",
@@ -26,43 +27,48 @@ angular.module("RIF")
                             "disease_mapping_study_area": {
                                 "geo_levels": {
                                     "geolevel_select": {
-                                        name: StudyAreaStateService.get_state().selectAt
+                                        name: StudyAreaStateService.getState().selectAt
                                     },
                                     "geolevel_view": {
-                                        name: StudyAreaStateService.get_state().studyResolution //TODO: why are there the same?
+                                        name: StudyAreaStateService.getState().studyResolution //TODO: why are there the same?
                                     },
                                     "geolevel_to_map": {
-                                        name: StudyAreaStateService.get_state().studyResolution
+                                        name: StudyAreaStateService.getState().studyResolution
                                     },
                                     "geolevel_area": "TODO: UNKNOWN VARIABLE"
                                 },
                                 "map_areas": {
-                                    "map_area": StudyAreaStateService.get_state().polygonIDs //TODO: is gid needed when it is the same as id?
+                                    "map_area": StudyAreaStateService.getState().polygonIDs //TODO: is gid needed when it is the same as id?
                                 }
                             },
                             "comparison_area": {
                                 "geo_levels": {
                                     "geolevel_select": {
-                                        name: CompAreaStateService.get_state().selectAt
+                                        name: CompAreaStateService.getState().selectAt
                                     },
                                     "geolevel_view": {
-                                        name: CompAreaStateService.get_state().studyResolution
+                                        name: CompAreaStateService.getState().studyResolution
                                     },
                                     "geolevel_to_map": {
-                                        name: CompAreaStateService.get_state().studyResolution
+                                        name: CompAreaStateService.getState().studyResolution
                                     },
                                     "geolevel_area": "TODO: UNKNOWN VARIABLE"
                                 },
                                 "map_areas": {
-                                    "map_area": CompAreaStateService.get_state().polygonIDs
+                                    "map_area": CompAreaStateService.getState().polygonIDs
                                 }
                             },
-                            "investigations": {
-                                "investigation": "TODO: NULL"
-                            }
+                            "investigations": {"investigation": ParameterStateService.getModelInvestigation()}
                         },
                         "calculation_methods": {
-                            "calculation_method": StatsStateService.get_modelStats()
+                            "calculation_method": StatsStateService.getModelStats()
+                        },
+                        "rif_output_options": {
+                            "rif_output_option": [
+                                "Data",
+                                "Maps",
+                                "Ratios and Rates"
+                            ]
                         }
                     }
                 };

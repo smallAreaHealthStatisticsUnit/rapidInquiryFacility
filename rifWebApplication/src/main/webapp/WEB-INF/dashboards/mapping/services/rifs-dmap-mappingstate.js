@@ -1,13 +1,10 @@
-/* SERVICE to store state of comparison area modal
- * will be used eventually to load studies
+/* SERVICE to store state of mapping tab
+ * 
  */
 angular.module("RIF")
-        .factory('CompAreaStateService',
+        .factory('MappingStateService',
                 function () {
                     var s = {
-                        polygonIDs: [],
-                        selectAt: "Select at",
-                        studyResolution: "Study resolution",
                         zoomLevel: -1,
                         view: [0,0]
                     };

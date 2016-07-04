@@ -7,33 +7,37 @@ angular.module("RIF")
 
 
             }])
-        .controller('ViewerCtrl', ['$scope', 'leafletData', 'LeafletBaseMapService', '$timeout',
-            function ($scope, leafletData, LeafletBaseMapService, $timeout) {
+        .controller('ViewerCtrl', ['$scope', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService',
+            function ($scope, leafletData, LeafletBaseMapService, $timeout, ViewerStateService) {
                 $timeout(function () {
                     leafletData.getMap("viewermap").then(function (map) {
-                        LeafletBaseMapService.set_currentZoomLevel(map.getZoom());
-                        LeafletBaseMapService.set_currentCentre(map.getCenter());
+                        map.on('zoomend', function (e) {
+                            ViewerStateService.getState().zoomLevel = map.getZoom();
+                        });
+                        map.on('moveend', function (e) {
+                            ViewerStateService.getState().view = map.getCenter();
+                        });
                         new L.Control.GeoSearch({
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
                     });
                     $scope.parent.renderMap("viewermap");
                 });
-                
+
                 //get the user defined basemap
                 $scope.parent = {};
-                $scope.parent.thisLayer = LeafletBaseMapService.set_baseMap(LeafletBaseMapService.get_currentBase());
+                $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBase());
                 //called on bootstrap and on modal submit
                 //REFACTOR - OR UNIQUE TO SPECIFIC MAP IDS?
                 $scope.parent.renderMap = function (mapID) {
                     leafletData.getMap(mapID).then(function (map) {
                         map.removeLayer($scope.parent.thisLayer);
-                        if (!LeafletBaseMapService.get_noBaseMap()) {
-                            $scope.parent.thisLayer = LeafletBaseMapService.set_baseMap(LeafletBaseMapService.get_currentBase());
+                        if (!LeafletBaseMapService.getNoBaseMap()) {
+                            $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBase());
                             map.addLayer($scope.parent.thisLayer);
                         }
                         //restore setView
-                        map.setView(LeafletBaseMapService.get_currentCentre(), LeafletBaseMapService.get_currentZoomLevel());
+                        map.setView(ViewerStateService.getState().view, ViewerStateService.getState().zoomLevel);
                         //hack to refresh map
                         setTimeout(function () {
                             map.invalidateSize();

@@ -1,0 +1,181 @@
+/* UI-GRID */
+
+.grid {
+    width: 30%;
+    height: 90%;
+    float: left;
+    position: absolute;
+}
+.grid-ICDtree { 
+    position: relative;
+    width: 90%;
+    height: 85%;
+}
+.grid-ICDtree .ui-grid-cell-contents{ 
+    -webkit-touch-callout: none; 
+    -webkit-user-select: none;  
+    -khtml-user-select: none;    
+    -moz-user-select: none;      
+    -ms-user-select: none;          
+}
+
+.grid-age {
+    width: 90%;
+    position: relative;
+    height: 70%;
+    margin-right: 30px;
+}
+
+.grid-recap {
+    width: 99%;
+    height: 95%;
+    position: inherit;
+    text-transform: uppercase;
+
+}
+.grid-recap .ui-grid-cell-contents {
+    padding-top: 5px;
+}
+
+
+.grid-expandable {
+    height: 75%;
+}
+
+.tree0 .ui-grid-cell-contents {
+    color: #262626;
+    background-color:  #b3b3b3;
+    text-transform: uppercase;
+    text-align: left;
+    opacity: 0.8;
+    padding-top: 5px
+}
+.tree1 .ui-grid-cell-contents {
+    color: #262626;
+    background-color: #cccccc;
+    text-transform: uppercase;
+    opacity: 0.8;
+    padding-left: 20px;
+    padding-top: 5px
+}
+.tree2 .ui-grid-cell-contents {
+    color: #262626;
+    background-color: #f2f2f2;
+    text-transform: uppercase;
+    opacity: 0.8;
+    padding-left: 40px;
+    padding-top: 5px
+}
+.tree2selected .ui-grid-cell-contents {
+    color: #262626;
+    background-color: #B4EEB4;
+    text-transform: uppercase;
+    opacity: 0.8;
+    padding-left: 40px;
+    padding-top: 5px
+}
+.ui-grid-canvas {
+    position: relative;
+    padding-top: 0px;
+}
+.ui-grid-cell-contents {
+    padding-top: 0px;
+}
+
+
+.band1 .ui-grid-cell-contents {
+    background-color: #e41a1c;
+    color: white;
+    opacity: 0.8;
+}
+.band2 .ui-grid-cell-contents {
+    background-color: #377eb8;
+    color: white;
+    opacity: 0.8;
+}
+.band3 .ui-grid-cell-contents {
+    background-color: #4daf4a;
+    color: white;
+    opacity: 0.8;
+}
+.band4 .ui-grid-cell-contents {
+    background-color: #984ea3;
+    color: white;
+    opacity: 0.8;
+}
+.band5 .ui-grid-cell-contents {
+    background-color: #ff7f00;
+    color: white;
+    opacity: 0.8;
+}
+.band6 .ui-grid-cell-contents {
+    background-color: #ffff33;
+    color: #333333;
+    opacity: 0.8;
+}
+.band7 .ui-grid-cell-contents {
+    background-color: #a65628;
+    color: white;
+    opacity: 0.8;
+}
+.band8 .ui-grid-cell-contents {
+    background-color: #f781bf;
+    color: white;
+    opacity: 0.8;
+}
+.band9 .ui-grid-cell-contents {
+    background-color: #999999;
+    color: white;
+    opacity: 0.8;
+}
+
+
+.recapOdd .ui-grid-cell-contents {
+    background-color: rgba(31, 12, 255, 0.2);
+}
+.recapEven .ui-grid-cell-contents {
+    background-color: rgba(198, 226, 255, 0.8)
+}
+.recapToAdd .ui-grid-cell-contents {
+    background-color: #B4EEB4;
+}
+.grid-recap .ui-grid-row:nth-child(odd):hover .ui-grid-cell,
+.grid-recap .ui-grid-row:nth-child(even):hover .ui-grid-cell {
+    opacity: 1;
+}
+.grid-recap .ui-grid-row .ui-grid-cell {
+    background-color: #fff;
+}
+.recapEven .removebtn {
+    width: 100%;
+    height: 100%;
+    background: rgba(198, 226, 255, 0.8);
+    border: none;
+    position: relative;
+}
+.recapOdd .removebtn  {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(31, 12, 255, 0.2);
+    border: none;
+    position: relative;
+}
+.recapToAdd .removebtn  {
+    background-color:  #B4EEB4;
+}
+.binEven  {
+    background: transparent url("../images/delete.png") no-repeat center center;
+}
+.binOdd  {
+    background: transparent url("../images/delete.png") no-repeat center center;
+}
+.binOdd:hover,
+.binEven:hover {
+    opacity: 0.7;
+    cursor: pointer
+}
+
+.ui-grid-row:nth-child(odd):hover .ui-grid-cell,
+.ui-grid-row:nth-child(even):hover .ui-grid-cell {
+    opacity: 0.7;
+}

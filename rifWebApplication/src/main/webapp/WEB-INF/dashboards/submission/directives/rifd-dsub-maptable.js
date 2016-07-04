@@ -13,8 +13,8 @@
 
 /* global L, d3, key, topojson */
 angular.module("RIF")
-        .directive('submissionMapTable', ['leafletData', 'ModalAreaService', 'LeafletDrawService', 'GISService', 'LeafletBaseMapService', '$timeout',
-            function (leafletData, ModalAreaService, LeafletDrawService, GISService, LeafletBaseMapService, $timeout) {
+        .directive('submissionMapTable', ['leafletData', 'leafletMapEvents', 'ModalAreaService', 'LeafletDrawService', 'GISService', 'LeafletBaseMapService', '$timeout',
+            function (leafletData, leafletMapEvents, ModalAreaService, LeafletDrawService, GISService, LeafletBaseMapService, $timeout) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
@@ -22,16 +22,19 @@ angular.module("RIF")
 
                         //Called on DOM render completion to ensure basemap is rendered
                         $timeout(function () {
-                            leafletData.getMap("area").then(function (map) {
-                                LeafletBaseMapService.set_currentZoomLevel(map.getZoom());
-                                LeafletBaseMapService.set_currentCentre(map.getCenter());
-                            });
                             $scope.parent.renderMap("area");
                         });
 
+                        var mapEvents = leafletMapEvents.getAvailableMapEvents();
+                        for (var k in mapEvents) {
+                            var eventName = 'leafletDirectiveMap.' + mapEvents[k];
+                            $scope.$on(eventName, function (event) {
+                                console.log(event.name);
+                            });
+                        }
+
                         //map max bounds from topojson layer
                         var maxbounds;
-
                         //selectedPolygon array synchronises the map <-> table selections                        
                         $scope.selectedPolygon = $scope.input.selectedPolygon;
 
@@ -46,7 +49,7 @@ angular.module("RIF")
                         $scope.transparency = 0.7;
 
                         //district centres for rubberband selection
-                        var latlngList = [];
+                        var latlngList = 0;
                         var centroidMarkers = new L.layerGroup();
                         var bDrawing = false;
                         //Set up table (UI-grid)
@@ -59,17 +62,17 @@ angular.module("RIF")
 
                         //Set the user defined basemap
                         $scope.parent = {};
-                        $scope.parent.thisLayer = LeafletBaseMapService.set_baseMap(LeafletBaseMapService.get_currentBase());
+                        $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBase());
 
                         $scope.parent.renderMap = function (mapID) {
                             leafletData.getMap(mapID).then(function (map) {
                                 map.removeLayer($scope.parent.thisLayer);
-                                if (!LeafletBaseMapService.get_noBaseMap()) {
-                                    $scope.parent.thisLayer = LeafletBaseMapService.set_baseMap(LeafletBaseMapService.get_currentBase());
+                                if (!LeafletBaseMapService.getNoBaseMap()) {
+                                    $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBase());
                                     map.addLayer($scope.parent.thisLayer);
                                 }
                                 //restore setView
-                                map.setView(LeafletBaseMapService.get_currentCentre(), LeafletBaseMapService.get_currentZoomLevel());
+                                map.setView($scope.$parent.input.view, $scope.$parent.input.zoomLevel);
                                 //hack to refresh map
                                 setTimeout(function () {
                                     map.invalidateSize();
@@ -148,9 +151,9 @@ angular.module("RIF")
                                     }
                                     if (!bFound) {
                                         if (shape.band === -1) {
-                                            $scope.selectedPolygon.push({id: thisPolyID, label: thisPoly, band: $scope.currentBand});
+                                            $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
                                         } else {
-                                            $scope.selectedPolygon.push({id: thisPolyID, label: thisPoly, band: shape.band});
+                                            $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: shape.band});
                                         }
                                     }
                                 }
@@ -282,7 +285,7 @@ angular.module("RIF")
                                                 }
                                             }
                                             if (!bFound) {
-                                                $scope.selectedPolygon.push({id: feature.properties.LAD13CD ,label: feature.properties.LAD13NM, band: $scope.currentBand});
+                                                $scope.selectedPolygon.push({id: feature.properties.LAD13CD, gid: feature.properties.LAD13CD, label: feature.properties.LAD13NM, band: $scope.currentBand});
                                             }
                                         });
                                     }
@@ -290,7 +293,18 @@ angular.module("RIF")
                                 $scope.topoLayer.addTo(map);
                                 maxbounds = $scope.topoLayer.getBounds();
                                 $scope.totalPolygonCount = latlngList.length;
-                                map.fitBounds(maxbounds);
+                                if ($scope.$parent.input.zoomLevel === -1) {
+                                    map.fitBounds(maxbounds);
+                                    //Store the current zoom and view on map changes
+                                    map.on('zoomend', function (e) {
+                                        $scope.$parent.input.zoomLevel = map.getZoom();
+                                    });
+                                    map.on('moveend', function (e) {
+                                        $scope.$parent.input.view = map.getCenter();
+                                    });                                    
+                                    $scope.$parent.input.zoomLevel = map.getZoom();
+                                    $scope.$parent.input.view = map.getCenter();
+                                }
                             });
                         });
 
@@ -328,7 +342,7 @@ angular.module("RIF")
                                 }
                             }
                             if (!bFound) {
-                                $scope.selectedPolygon.push({id: thisPolyID, label: thisPoly, band: $scope.currentBand});
+                                $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
                             }
 
                             //We are doing a multiple select on the table, shift key is down
@@ -354,7 +368,7 @@ angular.module("RIF")
                                             }
                                         }
                                         if (!bFound) {
-                                            $scope.selectedPolygon.push({id: thisPolyID, label: thisPoly, band: $scope.currentBand});
+                                            $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
                                         }
                                     }
                                     multiStart = -1;
@@ -364,15 +378,15 @@ angular.module("RIF")
 
                         //Clear all selection from map and table
                         $scope.clear = function () {
-                            $scope.selectedPolygon = [];
-                            $scope.input.selectedPolygon = [];
+                            $scope.selectedPolygon.length = 0;
+                            $scope.input.selectedPolygon.length = 0;
                         };
 
                         //Select all in map and table
                         $scope.selectAll = function () {
-                            $scope.selectedPolygon = [];
+                            $scope.selectedPolygon.length = 0;
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
-                                $scope.selectedPolygon.push({id: $scope.gridOptions.data[i].id ,label: $scope.gridOptions.data[i].label, band: $scope.currentBand});
+                                $scope.selectedPolygon.push({id: $scope.gridOptions.data[i].id, gid: $scope.gridOptions.data[i].id, label: $scope.gridOptions.data[i].label, band: $scope.currentBand});
                             }
                         };
 

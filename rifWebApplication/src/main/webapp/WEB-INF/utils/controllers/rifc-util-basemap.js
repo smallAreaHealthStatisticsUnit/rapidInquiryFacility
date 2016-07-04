@@ -1,19 +1,19 @@
 
 angular.module("RIF")
-        .controller('BaseMapModalCtrl', ['$scope', '$uibModal', 'leafletData', 'LeafletBaseMapService',
-            function ($scope, $uibModal, leafletData, LeafletBaseMapService) {
+        .controller('BaseMapModalCtrl', ['$scope', '$uibModal', 'LeafletBaseMapService',
+            function ($scope, $uibModal, LeafletBaseMapService) {
                 //List of all layers by name for drop-down fill
-                $scope.myBaseMaps = LeafletBaseMapService.get_baseMapList();
-                $scope.selectedBaseMap = LeafletBaseMapService.get_currentBase();
-                $scope.checkboxBaseMap = LeafletBaseMapService.get_noBaseMap();
+                $scope.myBaseMaps = LeafletBaseMapService.getBaseMapList();
+                $scope.selectedBaseMap = LeafletBaseMapService.getCurrentBase();
+                $scope.checkboxBaseMap = LeafletBaseMapService.getNoBaseMap();
 
                 //Update selected layer from drop-down         
                 $scope.setSelected = function (option) {
-                    LeafletBaseMapService.set_currentBase(option);
+                    LeafletBaseMapService.setCurrentBase(option);
                 };
                 //Using basemap?
                 $scope.setNoBaseMapCheck = function (option) {
-                    LeafletBaseMapService.set_noBaseMap(option);
+                    LeafletBaseMapService.setNoBaseMap(option);
                 };
                 //Open the modal
                 $scope.open = function (id) {
@@ -25,12 +25,6 @@ angular.module("RIF")
                         windowClass: 'mapping-Modal'
                     });
                     modalInstance.result.then(function () {
-                        leafletData.getMap($scope.id).then(function (map) {
-                            //store setView
-                            //TODO: refactor and on main navbar change
-                            LeafletBaseMapService.set_currentZoomLevel(map.getZoom());
-                            LeafletBaseMapService.set_currentCentre(map.getCenter());
-                        });
                         $scope.parent.renderMap($scope.id);
                     });
                 };

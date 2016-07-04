@@ -21,8 +21,8 @@ angular.module("RIF")
             }])
         .controller('ModalRunInstanceCtrl', function ($scope, $uibModalInstance, SubmissionStateService) {
             $scope.input = {};
-            $scope.input.description = SubmissionStateService.get_state().projectDescription;
-            $scope.input.name = SubmissionStateService.get_state().projectName;
+            $scope.input.description = SubmissionStateService.getState().projectDescription;
+            $scope.input.name = SubmissionStateService.getState().projectName;
 
             $scope.close = function () {
                 $uibModalInstance.dismiss();
@@ -31,7 +31,7 @@ angular.module("RIF")
                 $uibModalInstance.close($scope.input);
             };
             $scope.updateModel = function () {
-                SubmissionStateService.get_state().projectDescription = $scope.input.description;
-                SubmissionStateService.get_state().projectName = $scope.input.name;
+                SubmissionStateService.getState().projectDescription = $scope.input.description;
+                SubmissionStateService.getState().projectName = $scope.input.name;
             };
         });

@@ -5,8 +5,6 @@ angular.module("RIF")
                 function () {
                     var currentBaseMap = 'OpenStreetMap Mapnik'; //default basemap
                     var noBaseMap = false; //from checkbox                  
-                    var currentCentre = [51.505, -0.09]; //store map view
-                    var currentZoomLevel = 13; //store map view
 
                     //https://leaflet-extras.github.io/leaflet-providers/preview/
                     var basemaps = [];
@@ -158,7 +156,7 @@ angular.module("RIF")
                         })});
                     return {
                         //Get a list of all basemaps available to fill modal selects
-                        get_baseMapList: function () {
+                        getBaseMapList: function () {
                             var layerList = [];
                             for (var i = 0; i < basemaps.length; i++) {
                                 layerList.push(basemaps[i].name);
@@ -166,7 +164,7 @@ angular.module("RIF")
                             return layerList;
                         },
                         //Sets the selected basemap by updating "tile" in leaflet directive
-                        set_baseMap: function (layer) {
+                        setBaseMap: function (layer) {
                             for (var i = 0; i < basemaps.length; i++) {
                                 if (basemaps[i].name === layer) {
                                     return basemaps[i].tile;
@@ -174,32 +172,18 @@ angular.module("RIF")
                             }
                         },
                         //state on current basemap
-                        set_currentBase: function (layer) {
+                        setCurrentBase: function (layer) {
                             currentBaseMap = layer;
                         },
-                        get_currentBase: function () {
+                        getCurrentBase: function () {
                             return currentBaseMap;
                         },
                         //state on map T/F
-                        set_noBaseMap: function (checkBox) {
+                        setNoBaseMap: function (checkBox) {
                             noBaseMap = checkBox;
                         },
-                        get_noBaseMap: function () {
+                        getNoBaseMap: function () {
                             return noBaseMap;
-                        },
-                        //zoomlevel
-                        set_currentZoomLevel: function (zoom) {
-                            currentZoomLevel = zoom;
-                        },
-                        get_currentZoomLevel: function () {
-                            return currentZoomLevel;
-                        },
-                        //map centre
-                        set_currentCentre: function (xy) {
-                            currentCentre = xy;
-                        },
-                        get_currentCentre: function () {
-                            return currentCentre;
-                        }
+                        }                     
                     };
                 });

@@ -46,7 +46,9 @@ angular.module("RIF",
             "ui.grid",
             "ui.grid.selection",
             "ui.grid.resizeColumns",
-            'ui.grid.treeView',
+            "ui.grid.treeView",
+            "ui.grid.edit",
+            "ui.grid.autoResize",
             "ngAnimate",
             "ngNotificationsBar",
             "ui.layout"
@@ -75,8 +77,8 @@ angular.module("RIF",
                             templateUrl: "dashboards/mapping/partials/rifp-dmap-main.html"
                         })
                         .state('state4', {
-                            url: '/test',
-                            templateUrl: "test/rifp-test-main.html"
+                            url: '/status',
+                            templateUrl: "dashboards/status/partials/rifp-status-main.html"
                         });
                 $urlRouterProvider.otherwise("/submission");  //login submission
             }])

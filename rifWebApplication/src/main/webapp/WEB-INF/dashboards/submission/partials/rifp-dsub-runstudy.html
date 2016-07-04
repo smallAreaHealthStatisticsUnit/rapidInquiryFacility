@@ -12,8 +12,8 @@ Disease submission modal to run study
             <a ng-controller="ModalSummaryCtrl" class='viewSummary' ng-click="open()">View study submission summary </a>
             <div class='runMenu'>
                 <div id='studyOptions' >
-                    <input ng-model="input.name" ng-change="updateModel()" type="text" id='projectCode' class='dropdownInput editable'>
-                    <textarea ng-model="input.description" ng-change="updateModel()" name='description' id='studyDescription' class='description'></textarea>   
+                    <input ng-model="input.name" placeholder="Project Name" ng-change="updateModel()" type="text" id='projectCode' class='dropdownInput editable'>
+                    <textarea ng-model="input.description" placeholder="Study Description (Optional)" ng-change="updateModel()" name='description' id='studyDescription' class='description'></textarea>   
                     <button  id='finalRun' class='myButton'> RUN </button>
                 </div>
             </div>

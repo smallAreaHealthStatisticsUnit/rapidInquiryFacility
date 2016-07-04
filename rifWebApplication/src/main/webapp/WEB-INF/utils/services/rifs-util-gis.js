@@ -2,6 +2,7 @@
  * SERVICE for basic GIS operations
  * Point in polygon, Point in circle
  * Used by LeafletDraw selection tools
+ * Could be replaced in future by Turf.js
  * 
  * */
 

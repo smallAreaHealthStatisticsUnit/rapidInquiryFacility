@@ -10,52 +10,128 @@ Disease submission modal investigation parameters (tree #3)
                 <a class="modal_close" ng-click="close()"></a>
             </div>
             <div class='modalContainer'>
+                <div ui-layout="{flow : 'column'}">
+                    <div ui-layout-container class="ICD-back" size="33%">
+                        <div class='availablesWrapper' id='availableTaxomonomies'>
+                            <input type="text"  placeholder="ICD Classification" id='icdClassification' class='dropdownInput'>
+                            <div id='icdClassificationAvailable' class='availables' ></div>
+                        </div>
+                        <div ui-grid="gridOptionsICD" ui-grid-tree-view ui-grid-auto-resize ui-grid-resize-columns class="grid-ICDtree" ng-grid="gridOptionsICD"></div>
+                    </div>
+                    <div ui-layout-container> 
+                        <div ui-layout="{flow : 'row'}" >
+                            <div ui-layout-container class="param-back" size="50%">
+                                <div id="parameterHeader">
+                                    <div class='done' ng-click="submit()"> <a>Done</a></div> 
+                                    <div id='clearParameters' ng-click="clearInvestigations()"> Clear All </div>
+                                    <div id='addInvestigation' ng-click="addInvestigation()"> Add Investigation</div>   
+                                </div>
+                                <div id="parameterWrap">
+                                    <div id="ParameterLeft">
+                                        <div class='availablesWrapper'>
+                                            <input type="text" id='invTitle' class='dropdownInput dropdownInputSmall' ng-model ="title" ng-change="parametersChanged()">
+                                            <div id='startYearAvailable' class='availables' ></div>
+                                        </div>
+                                        <div class='availablesWrapper'>
+                                            <input type="text" id='startYear' class='dropdownInput dropdownInputSmall' ng-model ="startYear" ng-change="parametersChanged()">
+                                            <div id='startYearAvailable' class='availables' ></div>
+                                        </div>
+                                        <div class='availablesWrapper'>
+                                            <input type="text" id='endYear' class='dropdownInput dropdownInputSmall' ng-model ="endYear" ng-change="parametersChanged()">
+                                            <div id='endYearAvailable' class='availables' ></div>
+                                        </div>
+                                        <div class='availablesWrapper'>
+                                            <input type="text" id='yearInterval' class='dropdownInput dropdownInputSmall' ng-model ="yearInterval" ng-change="parametersChanged()">
+                                            <div id='yearInterval' class='availables' ></div>
+                                        </div>
+                                        <div class='availablesWrapper'>
+                                            <input type="text" id='gender' class='dropdownInput dropdownInputSmall' ng-model ="gender" ng-change="parametersChanged()">
+                                            <div id='genderAvailable' class='availables' ></div>
+                                        </div>
+
+                                        <div id='covariatesWrapper'>
+                                            <div id='covariateLabel'>Covariates:</div>
+                                            <div class='availables covariatesAvailable'>
+                                                <div>
+                                                    <input type="checkbox" id="c1" name="cc" />
+                                                    <label for="c1">Check Box 1</label>
+                                                </div>
+                                            </div>
+                                        </div>                               
+                                    </div>
+                                    <div id="ParameterRight">
+                                        <div id='ageGroupsLabel'>Age Groups:</div>
+                                        <div ui-grid="gridOptionsAge" ui-grid-auto-resize ui-grid-resize-columns class="grid-age"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div ui-layout-container class=" recap-back" >                
+                                <div ui-grid="gridOptionsRecap"  ui-grid-edit ui-grid-auto-resize ui-grid-resize-columns class="grid-recap" ng-grid="gridOptionsRecap"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--
                 <div class='healthCodes'>
                     <div class='availablesWrapper' id='availableTaxomonomies'>
                         <input type="text"  placeholder="ICD Classification" id='icdClassification' class='dropdownInput'>
                         <div id='icdClassificationAvailable' class='availables' ></div>
                     </div>
                     <div ui-grid="gridOptionsICD" ui-grid-tree-view ui-grid-resize-columns class="grid-ICDtree" ng-grid="gridOptionsICD"></div>
-                </div>
+                </div>            
                 <div class='investigationBox'>
                     <div id='parameters'>
-
-                        <div class='availablesWrapper'>
-                            <input type="text" id='startYear' class='dropdownInput dropdownInputSmall' ng-model ="startYear" ng-change="parametersChanged()">
-                            <div id='startYearAvailable' class='availables' ></div>
+                        <div id="parameterHeader">
+                            <div class='done' ng-click="submit()"> <a>Done</a></div> 
+                            <div id='clearParameters' ng-click="clearInvestigations()"> Clear All </div>
+                            <div id='addInvestigation' ng-click="addInvestigation()"> Add Investigation</div>   
                         </div>
-                        <div  id='ageGroupsWrapper'>
-                            <div id='ageGroupsLabel'>Age Groups:</div>
-                            <div ui-grid="gridOptionsAge"  ui-grid-resize-columns class="grid-age"></div>
-
-                        </div>
-                        <div class='availablesWrapper'>
-                            <input type="text" id='endYear' class='dropdownInput dropdownInputSmall' ng-model ="endYear" ng-change="parametersChanged()">
-                            <div id='endYearAvailable' class='availables' ></div>
-                        </div>
-                        <div class='availablesWrapper'>
-                            <input type="text" id='gender' class='dropdownInput dropdownInputSmall' ng-model ="gender" ng-change="parametersChanged()">
-                            <div id='genderAvailable' class='availables' ></div>
-                        </div>
-
-                        <div id='covariatesWrapper'>
-                            <div id='covariateLabel'>Covariates:</div>
-                            <div class='availables covariatesAvailable'>
-                                <div>
-                                    <input type="checkbox" id="c1" name="cc" />
-                                    <label for="c1">Check Box 1</label>
+                        <div id="parameterWrap">
+                            <div id="ParameterLeft">
+                                <div class='availablesWrapper'>
+                                    <input type="text" id='invTitle' class='dropdownInput dropdownInputSmall' ng-model ="title" ng-change="parametersChanged()">
+                                    <div id='startYearAvailable' class='availables' ></div>
                                 </div>
+                                <div class='availablesWrapper'>
+                                    <input type="text" id='startYear' class='dropdownInput dropdownInputSmall' ng-model ="startYear" ng-change="parametersChanged()">
+                                    <div id='startYearAvailable' class='availables' ></div>
+                                </div>
+                                <div class='availablesWrapper'>
+                                    <input type="text" id='endYear' class='dropdownInput dropdownInputSmall' ng-model ="endYear" ng-change="parametersChanged()">
+                                    <div id='endYearAvailable' class='availables' ></div>
+                                </div>
+                                <div class='availablesWrapper'>
+                                    <input type="text" id='yearInterval' class='dropdownInput dropdownInputSmall' ng-model ="yearInterval" ng-change="parametersChanged()">
+                                    <div id='yearInterval' class='availables' ></div>
+                                </div>
+                                <div class='availablesWrapper'>
+                                    <input type="text" id='gender' class='dropdownInput dropdownInputSmall' ng-model ="gender" ng-change="parametersChanged()">
+                                    <div id='genderAvailable' class='availables' ></div>
+                                </div>
+                                
+                                <div id='covariatesWrapper'>
+                                    <div id='covariateLabel'>Covariates:</div>
+                                    <div class='availables covariatesAvailable'>
+                                        <div>
+                                            <input type="checkbox" id="c1" name="cc" />
+                                            <label for="c1">Check Box 1</label>
+                                        </div>
+                                    </div>
+                                </div>                               
                             </div>
-                        </div> 
-                        <div id='clearParameters'> Clear All </div>
-                        <div id='addInvestigation' ng-click="addInvestigation()"> Add Investigation</div>   
-
-                        <div class='done' ng-click="submit()"> <a>Done</a></div> 
+                            <div id="ParameterRight">
+                                <div id='ageGroupsLabel'>Age Groups:</div>
+                                <div ui-grid="gridOptionsAge"  ui-grid-resize-columns class="grid-age"></div>
+                            </div>
+                        </div>
                     </div>
                     <div id='investigationRecap'>
-                         <div ui-grid="gridOptionsRecap"  ui-grid-resize-columns class="grid-recap" ng-grid="gridOptionsRecap"></div>
+                        <div ui-grid="gridOptionsRecap"  ui-grid-edit ui-grid-resize-columns class="grid-recap" ng-grid="gridOptionsRecap"></div>
                     </div>
                 </div>    
+                -->
             </div>
         </div>
     </div>

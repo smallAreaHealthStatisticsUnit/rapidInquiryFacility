@@ -13,13 +13,13 @@ angular.module("RIF")
                     };
                     var defaults = JSON.parse(JSON.stringify(s));
                     return {
-                        get_state: function () {
+                        getState: function () {
                             return s;
                         },
-                        reset_state: function () {
+                        resetState: function () {
                             s = defaults;
                         },
-                        get_modelStats: function () {
+                        getModelStats: function () {
                             var method = {
                                 "name": "",
                                 "code_routine_name": "",
