@@ -109,6 +109,9 @@ public final class RIFServiceStartupOptions {
 	private DatabaseType databaseType;
 	private boolean isDatabaseCaseSensitive;
 	private boolean sslSupported;
+	private boolean useSSLDebug;
+	private String trustStore;
+	private String trustStorePassword;
 	
 	private String rifServiceClassDirectoryPath;
 	
@@ -167,6 +170,30 @@ public final class RIFServiceStartupOptions {
 			= RIFServiceStartupProperties.isDatabaseCaseSensitive();
 		sslSupported
 			= RIFServiceStartupProperties.isSSLSupported();
+		
+		if (sslSupported) {
+			System.out.println("RIFServicesStartupOptions -- using SSL debug");
+			useSSLDebug
+				= RIFServiceStartupProperties.useSSLDebug();
+			if (useSSLDebug) {			
+				System.setProperty(
+					"javax.net.debug", 
+					"ssl");				
+			}
+			
+			trustStore
+				= RIFServiceStartupProperties.getTrustStore();
+			System.setProperty(
+				"javax.net.ssl.trustStore", 
+				trustStore);
+			trustStorePassword
+				= RIFServiceStartupProperties.getTrustStorePassword();
+			
+			System.setProperty(
+				"javax.net.ssl.trustStorePassword", 
+				trustStorePassword);
+		}
+		
 	}
 
 	public static RIFServiceStartupOptions newInstance(
@@ -448,11 +475,29 @@ public final class RIFServiceStartupOptions {
 		this.useStrictValidationPolicy = useStrictValidationPolicy;
 	}
 	
+	public boolean useSSLDebug() {
+		return useSSLDebug;
+	}
+
+	public void setUseSSLDebug(
+		final boolean useSSLDebug) {
+
+		this.useSSLDebug = useSSLDebug;
+	}
+
+	public String getTrustStorePassword() {
+		return trustStorePassword;
+	}
+
+	public void setTrustStorePassword(
+		final String trustStorePassword) {
+
+		this.trustStorePassword = trustStorePassword;
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-	
 	/**
 	 * Check security violations.
 	 *

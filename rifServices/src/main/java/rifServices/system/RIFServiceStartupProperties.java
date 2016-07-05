@@ -205,6 +205,26 @@ public final class RIFServiceStartupProperties {
     	
     	return maximumValue;
     }
+
+    public static boolean useSSLDebug() {
+    	String property
+    		= getProperty("database.useSSLDebug");
+    	Boolean result
+			= Boolean.valueOf(property);
+    	return result; 	
+    }
+    
+    public static String getTrustStore() {
+    	String property
+			= getProperty("database.sslTrustStore");
+    	return property; 	
+    }
+    
+    public static String getTrustStorePassword() {
+    	String property
+    		= getProperty("database.sslTrustStorePassword");
+    	return property; 	
+    }
     
     
     /**
