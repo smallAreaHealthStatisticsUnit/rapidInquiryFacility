@@ -1108,15 +1108,14 @@ This error in actually originating from the error handler function
 				shapeFiles: []
 			},
 			projection: {},
-			simplicationList: {
-				simplification: []
-			},
 			defaultStudyArea: 		undefined,
 			defaultComparisonArea: 	undefined,
 			hierarchyTableName: 	undefined,
 			hierarchyTableData: 	{
 				hierarchyTableRow:	[]
-			}
+			},
+			simplificationFactor: 	response.fields["simplificationFactor"],
+			quantization: 			response.fields["quantization"]			
 		};
 		
 		try {
@@ -1179,6 +1178,8 @@ This error in actually originating from the error handler function
 				}
 			}
 			
+			
+			var defaultZoomLevels = [];
 			for (var i=0; i<ngeolevels.length; i++) {	
 				msg+="\nShape file [" + ngeolevels[i].i + "]: " + ngeolevels[i].file_name + 
 					"; areas: " + ngeolevels[i].total_areas + 
@@ -1213,8 +1214,26 @@ This error in actually originating from the error handler function
 					shapeFileAreaIdColumn: 			(response.file_list[ngeolevels[i].i].areaID || 
 														"To be added by user from dbfFieldList"),
 					shapeFileAreaIdDescription: 	(response.file_list[ngeolevels[i].i].areaID_desc || 
-														"To be added by user/from extended attributes file")
+														"To be added by user/from extended attributes file"),
+					simplicationList: {
+						simplification: []
+					}
 				}
+				
+				if (response.file_list[ngeolevels[i].i].topojson) {
+					msg+="\nFile [" + ngeolevels[i].i + "] topojson zoomlevels: " + response.file_list[ngeolevels[i].i].topojson.length +
+						"; from: " + response.file_list[ngeolevels[i].i].topojson[response.file_list[ngeolevels[i].i].topojson.length-1].zoomlevel +
+						" to: " + response.file_list[ngeolevels[i].i].topojson[0].zoomlevel;
+					for (var j=0; j<response.file_list[ngeolevels[i].i].topojson.length; j++) {	
+						xmlConfig.shapeFileList.shapeFiles[i].simplicationList.simplification.push({
+							zoomLevel: 			response.file_list[ngeolevels[i].i].topojson[j].zoomlevel,
+							points: 			response.file_list[ngeolevels[i].i].topojson[j].topojson_points,
+							arcs:	 			response.file_list[ngeolevels[i].i].topojson[j].topojson_arcs,
+							length:				response.file_list[ngeolevels[i].i].topojson[j].topojson_length,
+							runtime:			response.file_list[ngeolevels[i].i].topojson[j].topojson_runtime
+						});							
+					}					
+				}					
 			}
 			
 			// XML config setup
@@ -1225,14 +1244,6 @@ This error in actually originating from the error handler function
 				boundingBox: 		response.file_list[0].boundingBox
 			}
 			ofields["srid"]=response.file_list[0].srid;
-			var defaultZoomLevels = [6,8,11];
-			for (var i=0; i<defaultZoomLevels.length; i++) {	
-				xmlConfig.simplicationList.simplification[i] = {
-					zoomLevel: 			defaultZoomLevels[i],
-					points: 			undefined,
-					simplifyPrecision: 	undefined
-				}
-			}
 			
 			createXmlFile(xmlConfig); // Create XML configuration file
 			
