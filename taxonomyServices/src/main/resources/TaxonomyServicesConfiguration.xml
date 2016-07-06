@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taxonomy_services>
+
+<taxonomy_service>
+<identifier>icd10</identifier>
+<name>ICD Taxonomy Service</name>
+<description>ICD 10 is a classification of diseases.</description>
+<version>1.0</version>
+<ontology_service_class_name>
+rifGenericLibrary.taxonomyServices.DefaultXMLTaxonomyService
+</ontology_service_class_name>
+
+<parameters>
+<parameter>
+<name>term_file</name>
+<value>
+ExampleICD10Codes.xml
+</value>
+</parameter>
+</parameters>
+
+</taxonomy_service>
+
+</taxonomy_services>

@@ -62,11 +62,13 @@ import java.util.HashMap;
 public class DefaultFederatedTaxonomyService {
 
 	public static void main(String[] args) {
-		DefaultFederatedTaxonomyService service
-			= new DefaultFederatedTaxonomyService();
+
 		try {
 			String defaultResourceDirectoryPath
 				= ClassFileLocator.getClassRootLocation("rifGenericLibrary");
+			DefaultFederatedTaxonomyService service
+				= new DefaultFederatedTaxonomyService();
+			
 			service.initialise(defaultResourceDirectoryPath);
 			
 			ArrayList<TaxonomyServiceProvider> taxonomyServiceProviders
@@ -187,8 +189,7 @@ public class DefaultFederatedTaxonomyService {
 
 	public TaxonomyTerm getParentTerm(
 		final String taxonomyServiceIdentifier,
-		final String childTermIdentifier,
-		final boolean isCaseSensitive)
+		final String childTermIdentifier)
 		throws RIFServiceException {
 		
 		TaxonomyServiceAPI taxonomyService

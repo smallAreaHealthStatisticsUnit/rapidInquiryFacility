@@ -59,19 +59,16 @@ public interface FederatedTaxonomyServiceAPI {
 	public ArrayList<TaxonomyServiceProvider> getTaxonomyServiceProviders()
 		throws RIFServiceException;
 	
-	public TaxonomyTerm getTopLevelTerm(
-		final String taxonomyServiceIdentifier)
-		throws RIFServiceException;
 	
+	public ArrayList<TaxonomyTerm> getRootTerms(
+		final String taxonomyServiceIdentifier)
+		throws RIFServiceException;	
+
 	public ArrayList<TaxonomyTerm> getMatchingTerms(
 		final String taxonomyServiceIdentifier,
 		final String searchText,
 		final boolean isCaseSensitive)
 		throws RIFServiceException;
-	
-	public ArrayList<TaxonomyTerm> getRootTerms(
-		final String taxonomyServiceIdentifier)
-		throws RIFServiceException;	
 	
 	public ArrayList<TaxonomyTerm> getImmediateChildTerms(
 		final String taxonomyServiceIdentifier,
