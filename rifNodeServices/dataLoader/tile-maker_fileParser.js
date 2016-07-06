@@ -501,9 +501,9 @@ function createAccordion(fileList) {
 				'  </label>\n' + '<br>\n' +
 				'  <label id="' + key + '_areaID_Tooltip" title="Please choose an area ID. This is the unique administrative code for area on the map" ' +
 					'class="my-accordion-fields2" for="' + 
-					key + '_areaIDListname">Area ID: \n' +
+					key + '_areaID">Area ID: \n' +
 				'    <select class="my-accordion-fields2" id="' + key + '_areaID" name="' + key + 
-					'_areaIDListname" form="shpConvert">\n' +
+					'_areaID" form="shpConvert">\n' +
 				fieldSelect1 +
 				'    </select>\n' + 
 				'  </label>\n' +							
@@ -512,9 +512,9 @@ function createAccordion(fileList) {
 					key + '_areaID_desc" name="' + key + '_areaID_desc" type="text">\n' +	
 				'  </label>\n' +							
 				'  <label id="' + key + '_areaName_Tooltip" title="Please choose an area name. This is the administrative name corresponding to the area ID" ' +
-					'class="my-accordion-fields2" for="' + key + '_areaNameListname">Area Name: \n' +
+					'class="my-accordion-fields2" for="' + key + '_areaName">Area Name: \n' +
 				'    <select class="my-accordion-fields2" id="' + key + '_areaName" name="' + key + 
-					'_areaNameListname" form="shpConvert">\n' +
+					'_areaName" form="shpConvert">\n' +
 				fieldSelect2 +
 				'    </select>\n' + 
 				'  </label>\n' +
