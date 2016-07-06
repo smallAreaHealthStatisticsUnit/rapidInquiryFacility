@@ -1135,6 +1135,7 @@ This error in actually originating from the error handler function
 					points:  response.file_list[i].points,
 					geolevel_id: 0
 				};
+				
 				if (bbox[0] != response.file_list[i].boundingBox[0] &&
 				    bbox[1] != response.file_list[i].boundingBox[1] &&
 				    bbox[2] != response.file_list[i].boundingBox[2] &&
@@ -1185,7 +1186,54 @@ This error in actually originating from the error handler function
 					"; areas: " + ngeolevels[i].total_areas + 
 					"; points: " + ngeolevels[i].points + 
 					"; geolevel: " + ngeolevels[i].geolevel_id; 
-					
+				
+				var lookupTableRow = [];
+				var topojsonGeometries;
+				if (response.file_list[ngeolevels[i].i].topojson[0].topojson &&
+				    response.file_list[ngeolevels[i].i].topojson[0].topojson.objects &&
+				    response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection &&
+				    response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection.geometries &&
+				    response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection.geometries[0] &&
+				    response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection.geometries[0].properties) {
+					topojsonGeometries=response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection.geometries;
+					msg+="; topojson has properties";
+				}
+				else if (response.file_list[ngeolevels[i].i].topojson[0].topojson == undefined) {
+					msg+="; no topojson";	
+				}
+				else if (response.file_list[ngeolevels[i].i].topojson[0].topojson.objects == undefined) {
+					msg+="; topojson has no objects";	
+				}
+				else if (response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection == undefined) {
+					msg+="; topojson has no collection";	
+				}
+				else if (response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection.geometries == undefined) {
+					msg+="; topojson has no geometries";	
+				}
+				else if (response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection.geometries[0] == undefined) {
+					msg+="; topojson has no geometries array";	
+				}
+				else if (response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection.geometries[0].properties == undefined) {
+					msg+="; topojson has no properties";	
+				}
+				else {
+					msg+="; topojson has unknown state";	
+				}
+				
+				if (topojsonGeometries) {
+					msg+="\nProcessing topojsonGeometries: " + topojsonGeometries.length;
+					for (var j=0; j<topojsonGeometries.length; j++) {
+						var feature=topojsonGeometries[j];
+						if (feature && feature.properties) {
+							if (feature.properties.areaName && feature.properties.areaID) {
+								lookupTableRow.push({
+									areaID:		feature.properties.areaID,
+									areaName: 	feature.properties.areaName
+									});
+							}
+						}
+					}	
+				}
 				response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
 				
 				xmlConfig.shapeFileList.shapeFiles[i] = {
@@ -1207,7 +1255,7 @@ This error in actually originating from the error handler function
 					lookupTable:					undefined,
 					lookupTableDescriptionColumn:	undefined,
 					lookupTableData: {
-						lookupTableRow:	[]
+						lookupTableRow:				lookupTableRow,
 					},
 					shapeFileTable:					path.basename(ngeolevels[i].file_name.toUpperCase(), 
 														path.extname(ngeolevels[i].file_name.toUpperCase())),

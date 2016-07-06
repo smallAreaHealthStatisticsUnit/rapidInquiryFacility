@@ -113,7 +113,17 @@ var shapefileSimplifyGeoJSON = function shapefileSimplifyGeoJSON(shapefile, resp
 		records=shapefile.geojson.features.length;
 	}	
 	
-	shapefile.topojson = toTopoJSON(shapefile.geojson, topojson_options, response, shapefileData["topojsonFileBaseName"]);
+	var areaID=shapefileData["areaID"];
+	var areaName=shapefileData["areaName"];
+	
+	if (areaName && areaID) {
+		shapefile.topojson = toTopoJSON(shapefile.geojson, topojson_options, response, shapefileData["topojsonFileBaseName"],
+			areaID, areaName);
+	}
+	else {
+		response.message+="\nNo areaID/areaName fields set for file: " + shapefileData["topojsonFileBaseName"] + "\nShapefileData: " +
+			JSON.stringify(shapefileData, null, 4);
+	}
 	response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length=0;
 	for (var i=0; i<shapefile.topojson.length; i++) { // total_topojson_length
 		response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length+=(shapefile.topojson[i].topojson_length || 0);
@@ -175,7 +185,7 @@ var getQuantization = function getQuantization(lvl) {
 
 /*
  * Function: 	toTopoJSON() 
- * Parameters:  geoJOSN, topoJSON convertor options, internal response object, fileName
+ * Parameters:  geoJOSN, topoJSON convertor options, internal response object, fileName, rrea name, area ID
  * Returns: 	Array of topoJSON objects {
  *	 				topojson,
  *					topojson_length,
@@ -186,7 +196,7 @@ var getQuantization = function getQuantization(lvl) {
  *				}
  * Description: Convert geoJSON to topoJSON
  */
-var toTopoJSON = function toTopoJSON(geojson, topojson_options, response, fileName) {
+var toTopoJSON = function toTopoJSON(geojson, topojson_options, response, fileName, areaName, areaID) {
 	const topojson = require('topojson'),
 		  stderrHook = require('../lib/stderrHook'),
 		  serverLog = require('../lib/serverLog');
@@ -209,13 +219,26 @@ bounds: -179.148909 -14.548699000000001 179.77847 71.36516200000001 (spherical)
 pre-quantization: 39.9m (0.000359°) 9.55m (0.0000859°)
 topology: 1579 arcs, 247759 points
 */
+//
+// Retain properties gid
+//				
+	function myPropertyTransform(feature) {
+		var propertyTransform = { 
+			"areaName": feature.properties[areaName], 	
+			"areaID": 	feature.properties[areaID] /*, 
+			"id": 		feature.properties.id */
+		};
+		
+		return propertyTransform;
+	}	
+	
 	if (!topojson_options) {
 		topojson_options = {
 			verbose:      true
 		};
-		topojson_options["pre-quantization"]=1e6,
-		topojson_options["post-quantization"]=1e6,
-
+		topojson_options["pre-quantization"]=1e6;
+		topojson_options["post-quantization"]=1e6;
+	
 		response.message+="\nZoomlevel: " + response.fields["max_zoomlevel"] + "; default topoJSON options: " + JSON.stringify(topojson_options, null, 4);
 	}
 	else if (!topojson_options.simplify && topojson_options["pre-quantization"] && topojson_options["pre-quantization"] == 1e6) { // For zoomlevel 11
@@ -225,7 +248,14 @@ topology: 1579 arcs, 247759 points
 	else {
 		response.message+="\nZoomlevel: " + response.fields["max_zoomlevel"] + " topoJSON options: " + JSON.stringify(topojson_options, null, 4);
 	}
-	
+	if (areaName && areaID) {
+		topojson_options["property-transform"]=myPropertyTransform;
+		response.message+="; property-transform enabled";
+	}
+	else {
+		response.message+="; property-transform disabled";
+	}
+		
 	stderr.disable();	// Re-route topoJSON stderr to stderr.str
 
 	var lstart = new Date().getTime();		
@@ -294,12 +324,15 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 	nTopojson_options.simplify=undefined;	
 	if (response.fields && response.fields["simplificationFactor"]) { // simplificationFactor field: Topojson --simplify-proportion option!
 		nTopojson_options["retain-proportion"]=response.fields["simplificationFactor"]; 
-		response.message+="\nZoomlevel: " + (convertedTopojson[0].zoomlevel-1) + "; using simplification factor: " + nTopojson_options["retain-proportion"];
+		response.message+="\nZoomlevel: " + (convertedTopojson[0].zoomlevel-1) + "; using simplification factor: " + 
+			nTopojson_options["retain-proportion"];
 	}
 	else {
 		nTopojson_options["retain-proportion"]=0.75; 
-		response.message+="\nZoomlevel: " + (convertedTopojson[0].zoomlevel-1) + "; using default simplification factor: " + nTopojson_options["retain-proportion"];
+		response.message+="\nZoomlevel: " + (convertedTopojson[0].zoomlevel-1) + "; using default simplification factor: " + 
+			nTopojson_options["retain-proportion"];
 	}
+	response.message+="; topoJSON options: " + JSON.stringify(topojson_options, null, 4);
 	
 	for (i=(convertedTopojson[0].zoomlevel-1); i>=6; i--) { // Convert to async!
 
