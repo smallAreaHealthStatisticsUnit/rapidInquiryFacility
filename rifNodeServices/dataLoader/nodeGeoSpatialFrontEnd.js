@@ -1553,6 +1553,7 @@ function errorHandler(error, ajaxOptions, thrownError) {
 			console.error("thrownError: " + JSON.stringify(thrownError, null, 4));
 		}
 		var msg="<h1>Send Failed; http status: ";
+		var popupMsg;
 		
 		if (error.status == undefined && thrownError) {
 			msg = "errorHandler() Ajax exception from JQuery Form: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
@@ -1561,19 +1562,24 @@ function errorHandler(error, ajaxOptions, thrownError) {
 				console.log("errorHandler(): ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
 			}
 			console.error(msg);
+			popupMsg="<h3>Failed to process request: (no error status or thrownError returned - likely server failure/firefox bug)</h3>";
 		}
 		else if (error.status) {
 			msg+=error.status;
+			popupMsg="<h3>Failed to process request: " + error.status + "</h3>";
 		}
 		else if (thrownError) {
 			msg+="errorHandler() Ajax exception from JQuery Form: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
+			popupMsg="<h3>Failed to process request: "+ thrownError.message + "</h3>";
 		}	
 		else {
 			msg+="(no error status or thrownError returned - likely server failure/firefox bug)";
+			popupMsg="<h3>Failed to process request: (no error status or thrownError returned - likely server failure/firefox bug)</h3>";
 		}
 		msg+="</h1>";
 		if (error.responseJSON && error.responseJSON.error) {
 			msg+="</br>Error text: " + error.responseJSON.error;
+			popupMsg+= error.responseJSON.error;
 		}
 		else {
 			console.log("No error text in JSON response");
@@ -1614,7 +1620,19 @@ function errorHandler(error, ajaxOptions, thrownError) {
 		map = undefined;
 		document.getElementById("map").innerHTML = "";			 
 		console.log('Remove map element'); 
-	}										  
+	}		
+
+	if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
+		progressLabel.text("Upload failed");
+		error=document.getElementById("error");
+		error.innerHTML=popupMsg;
+		var errorWidth=document.getElementById('tabbox').offsetWidth-300;
+		$( "#error" ).dialog({
+			modal: true,
+			width: errorWidth
+		});
+		tabs.tabs("refresh" );
+	}	
 } // End of errorHandler()
 
 /*

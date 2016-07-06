@@ -175,14 +175,15 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 					output);	
 			}
 			else if (g_response && !g_response.fields["responseFileName"]) { // Do not raise errors - you will recurse and it will not be devine
-				serverLog.serverLog(__file, __line, "httpErrorResponse", "FATAL ERROR! Unable to rsave response file; no responseFileName", req);
+				serverLog.serverLog2(__file, __line, "httpErrorResponse", "FATAL ERROR! Unable to rsave response file; no responseFileName", req);
 			}
 				
 			res.write(output);
 			res.end();	
+			serverLog.serverLog2(__file, __line, "httpErrorResponse", "httpErrorResponse sent; size: " + output.length + " bytes", req);	
 		}
 		else { // Do not raise errors - likewise
-			serverLog.serverLog(__file, __line, "httpErrorResponse", "FATAL ERROR! Unable to return error to user - httpErrorResponse() already processed", req, err);
+			serverLog.serverLog2(__file, __line, "httpErrorResponse", "FATAL ERROR! Unable to return error to user - httpErrorResponse() already processed", req, err);
 		}
 
 	} catch (e) {                            // Catch conversion errors
@@ -195,7 +196,7 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 				res.end();	
 			}
 			else {
-				serverLog.serverLog(__file, __line, "httpErrorResponse", "FATAL! Unable to return error to user - httpErrorResponse() already processed", req, e);
+				serverLog.serverLog2(__file, __line, "httpErrorResponse", "FATAL! Unable to return error to user - httpErrorResponse() already processed", req, e);
 			}
 		}
 		catch (e2) {
