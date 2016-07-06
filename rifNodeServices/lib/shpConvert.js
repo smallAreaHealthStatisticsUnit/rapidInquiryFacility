@@ -588,7 +588,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 				// Get DBF field names from features[i].properties
 				if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) {
 					for (var key in response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) {
-						dbf_fields.push(key);
+						dbf_fields.push(key.toUpperCase());
 					}						
 				}
 				// Get number of points from features[i].geometry.coordinates arrays; supports:  Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon
@@ -1090,6 +1090,7 @@ This error in actually originating from the error handler function
 		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
 		
 		scopeChecker(__file, __line, {
+			response: response,
 			serverLog: serverLog,
 			httpErrorResponse: httpErrorResponse
 		});
@@ -1193,11 +1194,13 @@ This error in actually originating from the error handler function
 					dbfFieldList: {
 						dbfFields: response.file_list[ngeolevels[i].i].dbf_fields
 					},
-					uniqueKey:						"To be added by user from dbfFieldList",
-					uniqueName:						"To be added by user from dbfFieldList",
 					geolevelId: 					ngeolevels[i].geolevel_id,
-					geolevelName: 					"To be added by user",
-					geolevelDescription: 			"To be added by user",
+					geolevelName: 					(response.file_list[ngeolevels[i].i].areaName || 
+														"To be added by user from dbfFieldList"),
+					geolevelDescription: 			(response.file_list[ngeolevels[i].i].desc || 
+														"To be added by user/from extended attributes file"),
+					shapeFileAreaNameDescription: 	(response.file_list[ngeolevels[i].i].areaName_desc || 
+														"To be added by user/from extended attributes file"),
 					shapeFileName: 					ngeolevels[i].file_name,
 					shapeFileDir: 					dir,
 					lookupTable:					undefined,
@@ -1205,9 +1208,12 @@ This error in actually originating from the error handler function
 					lookupTableData: {
 						lookupTableRow:	[]
 					},
-					shapeFileTable:					path.basename(ngeolevels[i].file_name.toUpperCase(), path.extname(ngeolevels[i].file_name.toUpperCase())),
-					shapeFileAreaIdColumn: 			"To be added by user from dbfFieldList",
-					shapeFileDescriptionColumn: 	"To be added by user from dbfFieldList"
+					shapeFileTable:					path.basename(ngeolevels[i].file_name.toUpperCase(), 
+														path.extname(ngeolevels[i].file_name.toUpperCase())),
+					shapeFileAreaIdColumn: 			(response.file_list[ngeolevels[i].i].areaID || 
+														"To be added by user from dbfFieldList"),
+					shapeFileAreaIdDescription: 	(response.file_list[ngeolevels[i].i].areaID_desc || 
+														"To be added by user/from extended attributes file")
 				}
 			}
 			
@@ -1249,9 +1255,10 @@ This error in actually originating from the error handler function
 		}
 		catch (e) {
 			msg+='\nCaught exception: ' + e.message;
-			response.message = msg + "\n" + response.message;						
+			response.file_errors++;
+			response.message = msg + "\n" + response.message;			
 			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
-				serverLog, 500, req, res, msg, undefined, response);
+				serverLog, 500, req, res, msg, e, response);
 		}
 	} // End of shpConvertFieldProcessor().shapeFileQueue.drain()	
 
@@ -1301,6 +1308,11 @@ This error in actually originating from the error handler function
 				total_areas: 0,
 				dbf_fields: 0,
 				geolevel_id: 0,
+				desc: undefined,
+				areaID: undefined,
+				areaName: undefined,
+				areaIDDesc: undefined,
+				areaNameDesc: undefined,
 				callback: undefined,
 				recLen: 0,
 				fileNoExt: undefined,
@@ -1321,6 +1333,11 @@ This error in actually originating from the error handler function
 				file_size: '',
 				transfer_time: '',
 				geojson_time: '',
+				desc: undefined,
+				areaID: undefined,
+				areaName: undefined,
+				areaID_desc: undefined,
+				areaName_desc: undefined,
 				uncompress_time: undefined,
 				uncompress_size: undefined
 			};
@@ -1331,6 +1348,25 @@ This error in actually originating from the error handler function
 			response.fields=ofields;				// Add return fields
 			response.file_errors+=rval.file_errors;
 
+			// Populate shapefile area fields (areaID, areaName and 3x descriptions) from fields
+			var areaFieldsList = ['desc', 'areaID', 'areaName', 'areaID_desc', 'areaName_desc'];
+			for (var i=0; i< areaFieldsList.length; i++) {
+				var areaKey=areaFieldsList[i];
+				var areaField=key + "_" + areaKey;
+				if (ofields[areaField]) {
+					if (areaKey == "areaID" || areaKey == "areaName") {
+						ofields[areaField]=ofields[areaField].toUpperCase();
+					}
+					shapefileData[areaKey]=ofields[areaField];
+					var fileNo=response.file_list[shapefile_no-1];
+					fileNo[areaKey]=ofields[areaField];
+					response.message+="\nFile [" + (shapefile_no-1) + "]; key: " + areaKey + "; areaField: " + areaField + "=" + fileNo[areaKey];
+				}
+				else {
+					response.message+="\nareaField: " + areaField + " not found";
+				}
+			}
+			
 			// Add to queue			
 
 //			serverLog.serverLog2(__file, __line, "readShapeFile", 
