@@ -61,6 +61,7 @@ public interface TaxonomyServiceAPI {
 		final String defaultResourceDirectoryPath,
 		final TaxonomyServiceConfiguration taxonomyServiceConfiguration) 
 		throws RIFServiceException;
+	public boolean isServiceWorking();
 	
 	public String getIdentifier();
 	public String getNameSpace();
