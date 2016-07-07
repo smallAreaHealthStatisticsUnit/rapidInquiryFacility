@@ -1,11 +1,14 @@
 package taxonomyServices;
 
+import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.taxonomyServices.TaxonomyServiceProvider;
 import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.ServletContext;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
@@ -42,20 +45,18 @@ public class RIFTaxonomyWebServiceResource {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private SimpleDateFormat sd;
 
-	private RIFFederatedTaxonomyService taxonomyService;
+	private final RIFFederatedTaxonomyService taxonomyService = new RIFFederatedTaxonomyService();
 	private WebServiceResponseUtility webServiceResponseUtility;
 
+	private RIFServiceException serviceInitialisationException;
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public RIFTaxonomyWebServiceResource() {
 		super();
-		sd = new SimpleDateFormat("HH:mm:ss:SSS");
-
-		taxonomyService = new RIFFederatedTaxonomyService();
+		
 		webServiceResponseUtility = new WebServiceResponseUtility();		
 	}
 
@@ -72,6 +73,9 @@ public class RIFTaxonomyWebServiceResource {
 		String result = "";
 
 		try {
+				
+			checkServiceWorkingProperly(servletRequest);
+			
 			ArrayList<TaxonomyServiceProvider> taxonomyServiceProviders
 				= taxonomyService.getTaxonomyServiceProviders();
 			ArrayList<TaxonomyServiceProviderProxy> serviceProviderProxies
@@ -86,14 +90,16 @@ public class RIFTaxonomyWebServiceResource {
 				serviceProviderProxies.add(providerProxy);
 			}
 			
-			webServiceResponseUtility.serialiseArrayResult(
-				servletRequest, 
-				serviceProviderProxies);
+			result 
+				= webServiceResponseUtility.serialiseArrayResult(
+					servletRequest, 
+					serviceProviderProxies);
 		}
 		catch(Exception exception) {
-			webServiceResponseUtility.serialiseException(
-				servletRequest, 
-				exception);
+			result 
+				= webServiceResponseUtility.serialiseException(
+					servletRequest, 
+					exception);
 		}
 
 		return webServiceResponseUtility.generateWebServiceResponse(
@@ -111,6 +117,8 @@ public class RIFTaxonomyWebServiceResource {
 		String result = "";
 
 		try {
+			checkServiceWorkingProperly(servletRequest);
+
 			ArrayList<TaxonomyTerm> rootTerms
 				= taxonomyService.getRootTerms(taxonomyServiceID);
 			result 
@@ -119,9 +127,10 @@ public class RIFTaxonomyWebServiceResource {
 					rootTerms);
 		}
 		catch(Exception exception) {
-			webServiceResponseUtility.serialiseException(
-				servletRequest, 
-				exception);
+			result
+				= webServiceResponseUtility.serialiseException(
+					servletRequest, 
+					exception);
 		}
 		
 		return webServiceResponseUtility.generateWebServiceResponse(
@@ -141,6 +150,8 @@ public class RIFTaxonomyWebServiceResource {
 		String result = "";
 		
 		try {
+			checkServiceWorkingProperly(servletRequest);
+
 			ArrayList<TaxonomyTerm> matchingTerms
 				= taxonomyService.getMatchingTerms(
 					taxonomyServiceID, 
@@ -153,9 +164,10 @@ public class RIFTaxonomyWebServiceResource {
 					matchingTerms);
 		}
 		catch(Exception exception) {
-			webServiceResponseUtility.serialiseException(
-				servletRequest, 
-				exception);
+			result
+				= webServiceResponseUtility.serialiseException(
+					servletRequest, 
+					exception);
 		}
 		return webServiceResponseUtility.generateWebServiceResponse(
 			servletRequest,
@@ -173,6 +185,8 @@ public class RIFTaxonomyWebServiceResource {
 		String result = "";
 
 		try {
+			checkServiceWorkingProperly(servletRequest);
+
 			ArrayList<TaxonomyTerm> childTerms
 				= taxonomyService.getImmediateChildTerms(
 					taxonomyServiceID, 
@@ -183,9 +197,10 @@ public class RIFTaxonomyWebServiceResource {
 					childTerms);
 		}
 		catch(Exception exception) {
-			webServiceResponseUtility.serialiseException(
-				servletRequest, 
-				exception);
+			result = 
+				webServiceResponseUtility.serialiseException(
+					servletRequest, 
+					exception);
 		}
 
 		return webServiceResponseUtility.generateWebServiceResponse(
@@ -204,6 +219,8 @@ public class RIFTaxonomyWebServiceResource {
 		String result = "";
 
 		try {
+			checkServiceWorkingProperly(servletRequest);
+
 			TaxonomyTerm parentTerm
 				= taxonomyService.getParentTerm(
 					taxonomyServiceID, 
@@ -213,8 +230,10 @@ public class RIFTaxonomyWebServiceResource {
 						parentTerm);
 		}
 		catch(Exception exception) {
-			webServiceResponseUtility.serialiseException(servletRequest, 
-				exception);
+			result
+				= webServiceResponseUtility.serialiseException(
+					servletRequest, 
+					exception);
 		}
 		
 		return webServiceResponseUtility.generateWebServiceResponse(
@@ -256,6 +275,35 @@ public class RIFTaxonomyWebServiceResource {
 		return webServiceResponseUtility.serialiseArrayResult(
 			servletRequest, 
 			termProxies);			
+	}
+	
+	/**
+	 * If the federated taxonomy service did not initialise properly, immediately throw 
+	 * an exception to throw back to the client. 
+	 * @throws RIFServiceException
+	 */
+	private void checkServiceWorkingProperly(final HttpServletRequest servletRequest) 
+		throws RIFServiceException {
+		
+
+		try {
+			if (taxonomyService.isInitialised() == false) {
+				ServletContext servletContext
+					= servletRequest.getServletContext();
+				String fullPath
+					= servletContext.getRealPath("/WEB-INF/classes");
+				taxonomyService.initialise(fullPath);				
+			}
+		}
+		catch(RIFServiceException rifServiceException) {
+			serviceInitialisationException = rifServiceException;
+		}
+		
+		
+		if (serviceInitialisationException != null) {
+			throw serviceInitialisationException;
+		}
+		
 	}
 	
 	// ==========================================
