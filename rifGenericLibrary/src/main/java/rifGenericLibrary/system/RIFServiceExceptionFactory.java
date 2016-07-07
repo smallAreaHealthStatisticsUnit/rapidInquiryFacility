@@ -1,5 +1,7 @@
 package rifGenericLibrary.system;
 
+import rifGenericLibrary.system.RIFServiceException;
+
 
 /**
  *
@@ -168,6 +170,22 @@ public class RIFServiceExceptionFactory {
 				errorMessage);
 		return rifServiceException;
 	}		
+
+	public RIFServiceException createNonExistentTaxonomyTerm(
+		final String taxonomyServiceIdentifier,
+		final String taxonomyTermLabel) {
+		
+		String errorMessage
+			= RIFGenericLibraryMessages.getMessage(
+				"taxonomyService.error.nonExistentTerm",
+				taxonomyServiceIdentifier,
+				taxonomyTermLabel);
+		RIFServiceException rifServiceException
+			= new RIFServiceException(
+				RIFGenericLibraryError.NON_EXISTENT_TAXONOMY_TERM,
+				errorMessage);
+		return rifServiceException;
+	}			
 	
 	// ==========================================
 	// Section Errors and Validation
