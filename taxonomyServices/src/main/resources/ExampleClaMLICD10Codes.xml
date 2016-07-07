@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ClaMl SYSTEM "ClaML.dtd">
+<ClaMl version="2.0.0">
+    <Meta name="TopLevelSort" value="II"/>
+    <Meta name="lang" value="en"/>
+    <Identifier authority="WHO" uid="WHOICD102010_v2011-January-11"/>
+    <Title date="2012-01-11" name="ICD-10-EN" version="2010"/>
+    <ClassKinds>
+        <ClassKind name="category"/>
+        <ClassKind name="block"/>
+        <ClassKind name="chapter"/>
+    </ClassKinds>
+    <UsageKinds>
+        <UsageKind mark="*" name="aster"/>
+        <UsageKind mark="+" name="dagger"/>
+    </UsageKinds>
+    <RubricKinds>
+        <RubicKind inherited="false" name="footnote"/>
+        <RubicKind inherited="false" name="text"/>
+        <RubicKind inherited="false" name="coding-hint"/>
+        <RubicKind inherited="false" name="definition"/>
+        <RubicKind inherited="false" name="introduction"/>
+        <RubicKind inherited="false" name="modifierlink"/>
+        <RubicKind inherited="false" name="note"/>
+        <RubicKind inherited="false" name="exclusion"/>
+        <RubicKind inherited="false" name="inclusion"/>
+        <RubicKind inherited="false" name="preferredLong"/>
+        <RubicKind inherited="false" name="preferred"/>
+    </RubricKinds>
+    <Class code="II" kind="chapter">
+        <SubClass code="C00-C97"/>
+        <Rubric id="D0001786" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Neoplasms</Label>
+        </Rubric>
+    </Class>
+    <Class code="C00-C97" kind="block">
+        <SuperClass code="II"/>
+        <SubClass code="C00-C75"/>
+        <Rubric id="D0001787" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasms</Label>
+        </Rubric>
+    </Class>
+    <Class code="C00-C75" kind="block">
+        <SuperClass code="C00-C97"/>
+        <SubClass code="C15-C26"/>
+        <SubClass code="C30-C39"/>
+        <SubClass code="C50-C50"/>
+        <SubClass code="C64-C68"/>
+        <SubClass code="C69-C72"/>
+        <Rubric id="D0001788" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasms, stated or presumed to be primary, of specified sites, except of lymphoid, haematopoietic and related tissue</Label>
+        </Rubric>
+    </Class>
+    <Class code="C15-C26" kind="block">
+        <SuperClass code="C00-C75"/>
+        <SubClass code="C22"/>
+        <Rubric id="D0001867" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasms of digestive organs</Label>
+        </Rubric>
+    </Class>
+    <Class code="C22" kind="category">
+        <SuperClass code="C15-C26"/>
+        <SubClass code="C220"/>
+        <SubClass code="C221"/>
+        <SubClass code="C223"/>
+        <SubClass code="C229"/>
+        <Rubric id="D0001912" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasm of liver and intrahepatic bile ducts</Label>
+        </Rubric>
+    </Class>
+    <Class code="C220" kind="category">
+        <SuperClass code="C22"/>
+        <Rubric id="D0001913" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Liver cell carcinoma</Label>
+        </Rubric>
+    </Class>
+    <Class code="C221" kind="category">
+        <SuperClass code="C22"/>
+        <Rubric id="D0001914" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Intrahepatic bile duct carcinoma</Label>
+        </Rubric>
+    </Class>
+    <Class code="C223" kind="category">
+        <SuperClass code="C22"/>
+        <Rubric id="D0001916" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Angiosarcoma of liver</Label>
+        </Rubric>
+    </Class>
+    <Class code="C229" kind="category">
+        <SuperClass code="C22"/>
+        <Rubric id="D0001919" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Liver, unspecified</Label>
+        </Rubric>
+    </Class>
+    <Class code="C30-C39" kind="block">
+        <SuperClass code="C00-C75"/>
+        <SubClass code="C33"/>
+        <SubClass code="C34"/>
+        <Rubric id="D0001940" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasms of respiratory and intrathoracic organs</Label>
+        </Rubric>
+    </Class>
+    <Class code="C33" kind="category">
+        <SuperClass code="C30-C39"/>
+        <Rubric id="D0001958" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasm of trachea</Label>
+        </Rubric>
+    </Class>
+    <Class code="C34" kind="category">
+        <SuperClass code="C30-C39"/>
+        <SubClass code="C340"/>
+        <SubClass code="C341"/>
+        <SubClass code="C342"/>
+        <SubClass code="C343"/>
+        <SubClass code="C348"/>
+        <SubClass code="C349"/>
+        <Rubric id="D0001959" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasm of bronchus and lung</Label>
+        </Rubric>
+    </Class>
+    <Class code="C340" kind="category">
+        <SuperClass code="C34"/>
+        <Rubric id="D0001960" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Main bronchus</Label>
+        </Rubric>
+    </Class>
+    <Class code="C341" kind="category">
+        <SuperClass code="C34"/>
+        <Rubric id="D0001961" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Upper lobe, bronchus or lung</Label>
+        </Rubric>
+    </Class>
+    <Class code="C342" kind="category">
+        <SuperClass code="C34"/>
+        <Rubric id="D0001962" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Middle lobe, bronchus or lung</Label>
+        </Rubric>
+    </Class>
+    <Class code="C343" kind="category">
+        <SuperClass code="C34"/>
+        <Rubric id="D0001963" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Lower lobe, bronchus or lung</Label>
+        </Rubric>
+    </Class>
+    <Class code="C348" kind="category">
+        <SuperClass code="C34"/>
+        <Rubric id="D0001964" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Overlapping lesion of bronchus and lung</Label>
+        </Rubric>
+    </Class>
+    <Class code="C349" kind="category">
+        <SuperClass code="C34"/>
+        <Rubric id="D0001965" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Bronchus or lung, unspecified</Label>
+        </Rubric>
+    </Class>
+    <Class code="C50-C50" kind="block">
+        <SuperClass code="C00-C75"/>
+        <SubClass code="C50"/>
+        <Rubric id="D0002057" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasm of breast</Label>
+        </Rubric>
+    </Class>
+    <Class code="C50" kind="category">
+        <SuperClass code="C50-C50"/>
+        <SubClass code="C500"/>
+        <SubClass code="C501"/>
+        <SubClass code="C502"/>
+        <SubClass code="C503"/>
+        <SubClass code="C504"/>
+        <SubClass code="C505"/>
+        <SubClass code="C506"/>
+        <SubClass code="C508"/>
+        <SubClass code="C509"/>
+        <Rubric id="D0002058" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasm of breast</Label>
+        </Rubric>
+    </Class>
+    <Class code="C500" kind="category">
+        <SuperClass code="C50"/>
+        <Rubric id="D0002059" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Nipple and areola</Label>
+        </Rubric>
+    </Class>
+    <Class code="C501" kind="category">
+        <SuperClass code="C50"/>
+        <Rubric id="D0002060" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Central portion of breast</Label>
+        </Rubric>
+    </Class>
+    <Class code="C502" kind="category">
+        <SuperClass code="C50"/>
+        <Rubric id="D0002061" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Upper-inner quadrant of breast</Label>
+        </Rubric>
+    </Class>
+    <Class code="C503" kind="category">
+        <SuperClass code="C50"/>
+        <Rubric id="D0002062" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Lower-inner quadrant of breast</Label>
+        </Rubric>
+    </Class>
+    <Class code="C504" kind="category">
+        <SuperClass code="C50"/>
+        <Rubric id="D0002063" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Upper-outer quadrant of breast</Label>
+        </Rubric>
+    </Class>
+    <Class code="C505" kind="category">
+        <SuperClass code="C50"/>
+        <Rubric id="D0002064" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Lower-outer quadrant of breast</Label>
+        </Rubric>
+    </Class>
+    <Class code="C506" kind="category">
+        <SuperClass code="C50"/>
+        <Rubric id="D0002065" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Axillary tail of breast</Label>
+        </Rubric>
+    </Class>
+    <Class code="C508" kind="category">
+        <SuperClass code="C50"/>
+        <Rubric id="D0002066" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Overlapping lesion of breast</Label>
+        </Rubric>
+    </Class>
+    <Class code="C509" kind="category">
+        <SuperClass code="C50"/>
+        <Rubric id="D0002067" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Breast, unspecified</Label>
+        </Rubric>
+    </Class>
+    <Class code="C64-C68" kind="block">
+        <SuperClass code="C00-C75"/>
+        <SubClass code="C64"/>
+        <SubClass code="C65"/>
+        <SubClass code="C67"/>
+        <Rubric id="D0002119" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasms of urinary tract</Label>
+        </Rubric>
+    </Class>
+    <Class code="C64" kind="category">
+        <SuperClass code="C64-C68"/>
+        <Rubric id="D0002120" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasm of kidney, except renal pelvis</Label>
+        </Rubric>
+    </Class>
+    <Class code="C65" kind="category">
+        <SuperClass code="C64-C68"/>
+        <Rubric id="D0002121" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasm of renal pelvis</Label>
+        </Rubric>
+    </Class>
+    <Class code="C67" kind="category">
+        <SuperClass code="C64-C68"/>
+        <SubClass code="C670"/>
+        <SubClass code="C671"/>
+        <SubClass code="C672"/>
+        <SubClass code="C673"/>
+        <SubClass code="C674"/>
+        <SubClass code="C675"/>
+        <SubClass code="C676"/>
+        <SubClass code="C678"/>
+        <SubClass code="C679"/>
+        <Rubric id="D0002123" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasm of bladder</Label>
+        </Rubric>
+    </Class>
+    <Class code="C670" kind="category">
+        <SuperClass code="C67"/>
+        <Rubric id="D0002124" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Trigone of bladder</Label>
+        </Rubric>
+    </Class>
+    <Class code="C671" kind="category">
+        <SuperClass code="C67"/>
+        <Rubric id="D0002125" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Dome of bladder</Label>
+        </Rubric>
+    </Class>
+    <Class code="C672" kind="category">
+        <SuperClass code="C67"/>
+        <Rubric id="D0002126" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Lateral wall of bladder</Label>
+        </Rubric>
+    </Class>
+    <Class code="C673" kind="category">
+        <SuperClass code="C67"/>
+        <Rubric id="D0002127" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Anterior wall of bladder</Label>
+        </Rubric>
+    </Class>
+    <Class code="C674" kind="category">
+        <SuperClass code="C67"/>
+        <Rubric id="D0002128" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Posterior wall of bladder</Label>
+        </Rubric>
+    </Class>
+    <Class code="C675" kind="category">
+        <SuperClass code="C67"/>
+        <Rubric id="D0002129" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Bladder neck</Label>
+        </Rubric>
+    </Class>
+    <Class code="C676" kind="category">
+        <SuperClass code="C67"/>
+        <Rubric id="D0002130" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Ureteric orifice</Label>
+        </Rubric>
+    </Class>
+    <Class code="C678" kind="category">
+        <SuperClass code="C67"/>
+        <Rubric id="D0002132" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Overlapping lesion of bladder</Label>
+        </Rubric>
+    </Class>
+    <Class code="C679" kind="category">
+        <SuperClass code="C67"/>
+        <Rubric id="D0002133" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Bladder, unspecified</Label>
+        </Rubric>
+    </Class>
+    <Class code="C69-C72" kind="block">
+        <SuperClass code="C00-C75"/>
+        <SubClass code="C71"/>
+        <Rubric id="D0002139" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasms of eye, brain and other parts of central nervous system</Label>
+        </Rubric>
+    </Class>
+    <Class code="C71" kind="category">
+        <SuperClass code="C69-C72"/>
+        <SubClass code="C710"/>
+        <SubClass code="C711"/>
+        <SubClass code="C712"/>
+        <SubClass code="C713"/>
+        <SubClass code="C714"/>
+        <SubClass code="C715"/>
+        <SubClass code="C716"/>
+        <SubClass code="C717"/>
+        <SubClass code="C718"/>
+        <SubClass code="C719"/>
+        <Rubric id="D0002154" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Malignant neoplasm of brain</Label>
+        </Rubric>
+    </Class>
+    <Class code="C710" kind="category">
+        <SuperClass code="C71"/>
+        <Rubric id="D0002155" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Cerebrum, except lobes and ventricles</Label>
+        </Rubric>
+    </Class>
+    <Class code="C711" kind="category">
+        <SuperClass code="C71"/>
+        <Rubric id="D0002156" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Frontal lobe</Label>
+        </Rubric>
+    </Class>
+    <Class code="C712" kind="category">
+        <SuperClass code="C71"/>
+        <Rubric id="D0002157" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Temporal lobe</Label>
+        </Rubric>
+    </Class>
+    <Class code="C713" kind="category">
+        <SuperClass code="C71"/>
+        <Rubric id="D0002158" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Parietal lobe</Label>
+        </Rubric>
+    </Class>
+    <Class code="C714" kind="category">
+        <SuperClass code="C71"/>
+        <Rubric id="D0002159" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Occipital lobe</Label>
+        </Rubric>
+    </Class>
+    <Class code="C715" kind="category">
+        <SuperClass code="C71"/>
+        <Rubric id="D0002160" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Cerebral ventricle</Label>
+        </Rubric>
+    </Class>
+    <Class code="C716" kind="category">
+        <SuperClass code="C71"/>
+        <Rubric id="D0002161" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Cerebellum</Label>
+        </Rubric>
+    </Class>
+    <Class code="C717" kind="category">
+        <SuperClass code="C71"/>
+        <Rubric id="D0002162" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Brain stem</Label>
+        </Rubric>
+    </Class>
+    <Class code="C718" kind="category">
+        <SuperClass code="C71"/>
+        <Rubric id="D0002163" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Overlapping lesion of brain</Label>
+        </Rubric>
+    </Class>
+    <Class code="C719" kind="category">
+        <SuperClass code="C71"/>
+        <Rubric id="D0002164" kind="preferred">
+            <Label xml:lang="en" xml:space="default">Brain, unspecified</Label>
+        </Rubric>
+    </Class>
+</ClaMl>
