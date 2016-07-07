@@ -2,8 +2,8 @@
 <taxonomy_services>
 
 <taxonomy_service>
-<identifier>icd10</identifier>
-<name>ICD Taxonomy Service</name>
+<identifier>icd10-demo</identifier>
+<name>Demo ICD Taxonomy Service</name>
 <description>ICD 10 is a classification of diseases.</description>
 <version>1.0</version>
 <ontology_service_class_name>
