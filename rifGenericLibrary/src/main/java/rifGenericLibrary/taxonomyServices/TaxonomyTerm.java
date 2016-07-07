@@ -72,7 +72,8 @@ final public class TaxonomyTerm {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	public static final TaxonomyTerm NULL_TERM = TaxonomyTerm.newInstance();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -101,6 +102,7 @@ final public class TaxonomyTerm {
 	private TaxonomyTerm() {	
 		
 		subTerms = new ArrayList<TaxonomyTerm>();
+		parentTerm = TaxonomyTerm.NULL_TERM;
 	}
 
 	/**
@@ -237,7 +239,6 @@ final public class TaxonomyTerm {
 	 * @return the parent term
 	 */
 	public TaxonomyTerm getParentTerm() {
-		
 		return parentTerm;
 	}
 	
