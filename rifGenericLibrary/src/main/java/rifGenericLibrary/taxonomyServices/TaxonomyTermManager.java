@@ -1,12 +1,16 @@
 package rifGenericLibrary.taxonomyServices;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import rifGenericLibrary.system.RIFServiceException;
+
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 /**
  *
@@ -67,6 +71,7 @@ public class TaxonomyTermManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private String taxonomyServiceID;
 	private ArrayList<TaxonomyTerm> rootTerms;
 	/** The all terms. */
 	private ArrayList<TaxonomyTerm> allTerms;
@@ -77,7 +82,8 @@ public class TaxonomyTermManager {
 	// Section Construction
 	// ==========================================
 
-	public TaxonomyTermManager() {
+	public TaxonomyTermManager(final String taxonomyServiceID) {
+		this.taxonomyServiceID = taxonomyServiceID;
 		rootTerms = new ArrayList<TaxonomyTerm>();
 		allTerms = new ArrayList<TaxonomyTerm>();
 		termFromIdentifier = new HashMap<String, TaxonomyTerm>();
@@ -180,6 +186,45 @@ public class TaxonomyTermManager {
 		return results;
 	}
 	
+	public ArrayList<TaxonomyTerm> getImmediateChildTerms(
+		final String parentTermIdentifier) 
+		throws RIFServiceException {
+		
+		TaxonomyTerm parentTerm
+			= getTerm(parentTermIdentifier);
+		if (parentTerm == null) {
+			RIFServiceExceptionFactory rifServiceExceptionFactory
+				= new RIFServiceExceptionFactory();
+			rifServiceExceptionFactory.createNonExistentTaxonomyTerm(
+				taxonomyServiceID, 
+				parentTermIdentifier);
+		}
+		return parentTerm.getSubTerms();
+	}
+	
+	public TaxonomyTerm getParentTerm(final String childTermIdentifier) {
+		if (childTermIdentifier == null) {
+			return TaxonomyTerm.NULL_TERM;
+		}
+		
+		TaxonomyTerm childTerm
+			= getTerm(childTermIdentifier);
+		if (childTerm == null) {
+			RIFServiceExceptionFactory rifServiceExceptionFactory
+				= new RIFServiceExceptionFactory();
+			rifServiceExceptionFactory.createNonExistentTaxonomyTerm(
+				taxonomyServiceID, 
+				childTermIdentifier);
+		}
+		
+		TaxonomyTerm parentTerm = TaxonomyTerm.NULL_TERM;
+		if (childTerm.getParentTerm() != null) {
+			return TaxonomyTerm.NULL_TERM;
+		}
+		else {
+			return parentTerm;
+		}
+	}
 	
 	// ==========================================
 	// Section Errors and Validation
