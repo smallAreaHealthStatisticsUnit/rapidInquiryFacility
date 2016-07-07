@@ -213,7 +213,6 @@ final public class TaxonomyServiceContentHandler
 		}
 		if (isSingularRecordName(qualifiedName) == true) {
 			taxonomyServiceConfigurations.add(currentTaxonomyServiceConfiguration);
-			deactivate();
 		}
 		else if (isDelegatedHandlerAssigned() == true) {
 			AbstractXMLContentHandler currentDelegatedHandler
