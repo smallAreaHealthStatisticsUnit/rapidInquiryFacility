@@ -97,6 +97,7 @@ final class DefaultXMLTaxonomyService
 // ==========================================
 // Section Properties
 // ==========================================
+	private boolean isServiceWorking;
 	
 	private String serviceIdentifier;
 	private String serviceName;
@@ -129,7 +130,7 @@ final class DefaultXMLTaxonomyService
 	public DefaultXMLTaxonomyService() {
 		collator = RIFGenericLibraryMessages.getCollator();
 		parentTerms = new Stack<TaxonomyTerm>();
-		taxonomyTermManager = new TaxonomyTermManager();
+		isServiceWorking = false;
     }
 	
 // ==========================================
@@ -150,6 +151,7 @@ final class DefaultXMLTaxonomyService
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(taxonomyTermsFile, this);
+			isServiceWorking = true;
 		}
 		catch(Exception exception) {
 			String errorMessage
@@ -160,6 +162,8 @@ final class DefaultXMLTaxonomyService
 				= new RIFServiceException(
 					RIFGenericLibraryError.DEFAULT_XML_TAXONOMY_READ_FILE_ERROR, 
 					errorMessage);
+			isServiceWorking = false;
+			
 			throw rifServiceException;
 		}
 	}
@@ -249,50 +253,71 @@ final class DefaultXMLTaxonomyService
 		final TaxonomyServiceConfiguration taxonomyServiceConfiguration) 
 		throws RIFServiceException {
 
-		serviceIdentifier 
-			= taxonomyServiceConfiguration.getServiceIdentifier();
-		serviceName
-			= taxonomyServiceConfiguration.getName();
-		serviceDescription
-			= taxonomyServiceConfiguration.getDescription();
-		serviceVersion
-			= taxonomyServiceConfiguration.getVersion();
+		synchronized(this) {
+			
+			serviceIdentifier 
+				= taxonomyServiceConfiguration.getServiceIdentifier();
+			serviceName
+				= taxonomyServiceConfiguration.getName();
+			serviceDescription
+				= taxonomyServiceConfiguration.getDescription();
+			serviceVersion
+				= taxonomyServiceConfiguration.getVersion();
 
-		String fileName = "";
-		RIFServiceExceptionFactory exceptionFactory
-			= new RIFServiceExceptionFactory();
-		try {
-			Parameter termFileParameter
-				= Parameter.getParameter(
-					"term_file", 
-					taxonomyServiceConfiguration.getParameters());
-			if (termFileParameter == null) {
-				throw exceptionFactory.createNonExistentParameter("term_file");
-			}
+			taxonomyTermManager = new TaxonomyTermManager(serviceIdentifier);
+
+			String fileName = "";
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			try {
+				ArrayList<Parameter> pms = taxonomyServiceConfiguration.getParameters();
+				System.out.println("DefaultXMLTaxonomyService number of parms=="+pms.size()+"==");
+				for (Parameter pm : pms) {
+					System.out.println("Parm:=="+pm.getDisplayName()+"==");
+				}
+				
+				Parameter termFileParameter
+					= Parameter.getParameter(
+						"term_file", 
+						taxonomyServiceConfiguration.getParameters());
+				if (termFileParameter == null) {
+					System.out.println("initService 11111");
+					throw exceptionFactory.createNonExistentParameter("term_file");
+				}
 					
-			String filePath
-				= getFilePath(
-					defaultResourceDirectoryPath,
-					termFileParameter.getValue());
-			File termFile = new File(filePath);
-			if (termFile.exists() == false) {
-				throw exceptionFactory.createNonExistentFile(fileName);
-			}
+				String filePath
+					= getFilePath(
+						defaultResourceDirectoryPath,
+						termFileParameter.getValue());
+				File termFile = new File(filePath);
+				if (termFile.exists() == false) {
+					throw exceptionFactory.createNonExistentFile(fileName);
+				}
 	
-			//Parse file containing terms
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			SAXParser saxParser = factory.newSAXParser();
-			saxParser.parse(termFile, this);
-			taxonomyTermManager.determineRootTerms();
-
-		}
-		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-			throw exceptionFactory.createFileReadingProblemException(
-				fileName);
+				//Parse file containing terms
+				SAXParserFactory factory = SAXParserFactory.newInstance();
+				SAXParser saxParser = factory.newSAXParser();
+				saxParser.parse(termFile, this);
+				taxonomyTermManager.determineRootTerms();
+				isServiceWorking = true;
+			}
+			catch(Exception exception) {
+				System.out.println("DefaultXMLTaxonomyService defaultPath=="+defaultResourceDirectoryPath+"==service=="+this.getIdentifier()+"==");
+				System.out.println("DefaultXMLTaxonomyService description=="+this.getDescription()+"==");
+				exception.printStackTrace(System.out);
+				isServiceWorking = false;
+				throw exceptionFactory.createFileReadingProblemException(
+					fileName);
+			}		
 		}
 	}
 
+	public boolean isServiceWorking() {
+		synchronized(this) {
+			return isServiceWorking;
+		}
+	}
+	
 	private String getFilePath(
 		final String targetPathValue,
 		final String baseFileName) {
