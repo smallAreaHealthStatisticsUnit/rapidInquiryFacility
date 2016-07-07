@@ -589,7 +589,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 				if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) {
 					for (var key in response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) {
 						dbf_fields.push(key.toUpperCase());
-					}						
+					}		
+					shapefileData["dbf_fields"]=dbf_fields;
 				}
 				// Get number of points from features[i].geometry.coordinates arrays; supports:  Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon
 				if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].geometry.coordinates[0]) {
@@ -1196,7 +1197,12 @@ This error in actually originating from the error handler function
 				    response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection.geometries[0] &&
 				    response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection.geometries[0].properties) {
 					topojsonGeometries=response.file_list[ngeolevels[i].i].topojson[0].topojson.objects.collection.geometries;
-					msg+="; topojson has properties";
+					
+					var properties;
+					if (topojsonGeometries[0] && topojsonGeometries[0].properties) {
+						properties=Object.keys(topojsonGeometries[0].properties).length;
+					}
+					msg+="; topojson has " + (topojsonGeometries.length || "no") + " features with " + (properties || "no") + " properties";
 				}
 				else if (response.file_list[ngeolevels[i].i].topojson[0].topojson == undefined) {
 					msg+="; no topojson";	
@@ -1372,6 +1378,7 @@ This error in actually originating from the error handler function
 				areaName: undefined,
 				areaIDDesc: undefined,
 				areaNameDesc: undefined,
+				dbf_fields: [],
 				callback: undefined,
 				recLen: 0,
 				fileNoExt: undefined,
