@@ -5,7 +5,6 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.businessConceptLayer.Parameter;
 
 import org.xml.sax.InputSource;
 
@@ -129,7 +128,6 @@ public final class TaxonomyServiceConfigurationXMLReader {
 		filePath.append("TaxonomyServicesConfiguration.xml");
 		File taxonomyServiceConfigurationFile
 			= new File(filePath.toString());
-		
 		try {			
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
@@ -161,6 +159,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 					
 				}
 				catch(Exception exception) {
+					exception.printStackTrace(System.out);
 					String errorMessage
 						= RIFGenericLibraryMessages.getMessage(
 							"taxonomyServices.error.initialisationFailure", 
