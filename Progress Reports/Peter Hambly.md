@@ -477,18 +477,30 @@ RangeError: Invalid string length
 * Front end zip progress
 * Tooltips
 * Area_id and description support using .SHP.EA.ISO.XML 
- 
-#### Current TODO list (June):
 
+#### 27th June to 1st July
+
+* RIF progress meeting via Skype
+* RIF progress meeting with CDC
+* Project planning for July to December
+
+#### 4th to 8th July
+ 
+* Project planning for July to December
 * Set geolevel_name, area_id, area_name from front end
 * Add all fields to topojson
+
+#### Current TODO list (June):
+
+* Add geography name, description to form, field processing and XML file
+* Handle when areaID == name; allow NULL name
 * Add geolevel, goelevel name to legend
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
 * Database connection; clean, check OK and ST_Union(); area support [and checks]; PK support 
 * ST_Union can be done in geoJSON using turf: as it is a geomtery collection. Also check wellknown.	
 * Add area_id and id uniqueness tests to shapefile checks and tests
 * WKT support using Wellknown
-* Id generator
+* Id generator; gid support (especially in topojson)
 * Detect area mismatch between shapefiles	
 
 Parked TODO list (as required):
