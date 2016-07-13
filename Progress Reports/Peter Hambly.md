@@ -490,20 +490,34 @@ RangeError: Invalid string length
 * Set geolevel_name, area_id, area_name from front end
 * Add all fields to topojson
 
-#### Current TODO list (June):
+#### Current TODO list (July):
 
 * Add geography name, description to form, field processing and XML file
-* Handle when areaID == name; allow NULL name
 * Add geolevel, goelevel name to legend
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
-* Database connection; clean, check OK and ST_Union(); area support [and checks]; PK support 
-* ST_Union can be done in geoJSON using turf: as it is a geomtery collection. Also check wellknown.	
+* ST_Union and area calculations can be done in geoJSON using turf: as it is a geomtery collection. 
 * Add area_id and id uniqueness tests to shapefile checks and tests
 * WKT support using Wellknown
 * Id generator; gid support (especially in topojson)
-* Detect area mismatch between shapefiles	
+	
+#### August List:
 
-Parked TODO list (as required):
+* Map tile generator
+* Geolevel intersction generator
+
+#### September TODO list:
+
+* Get methods
+
+SQL Server porting expected to start in July if required (may be able to use Turf).
+Note: no bounding box (bbox) in tiles.
+
+#### Parked TODO list (as required):
+
+* Database connection; clean, check OK and ST_Union(); area support [and checks]; PK support. Turf probably removes requirement 
+  for any DB port, subject to acceptable performance
+* Handle when areaID == name; allow NULL name
+* Detect area mismatch between shapefiles	
 
 * Prevent tab change during map draw and aoccordion setup or JQuery UI and Leaflet do bad things unless tkey have focus
 * Fix customFileUpload styling so it uses the correct JQuery UI class style; the .css() function won't work on form file upload buttons
@@ -528,18 +542,6 @@ Parked TODO list (as required):
 	ii. Wrong shapefile (by bounds) in set
 	iii. No shapefile with only 1 area if > 1 shapefile
 	iv. Total area mismatch between shapefiles
-	
-#### July TODO list:
-
-* Map tile generator
-* Geolevel intersction generator
-
-#### August List:
-
-* Remaining get methods
-
-SQL Server porting expected to start in July.
-Note: no bounding box (bbox) in tiles.
 	
 ##	General RIF database Todo:
 
