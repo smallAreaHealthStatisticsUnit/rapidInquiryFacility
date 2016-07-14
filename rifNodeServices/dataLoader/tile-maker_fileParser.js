@@ -476,13 +476,21 @@ function createAccordion(fileList) {
 // Create accordion HTML; see: https://jqueryui.com/accordion/
 //
 			for (var i=0; i< fileList[key].dbfHeader.fieldNames.length; i++) {
-				if (i==0) {
+				if (i==0) { // Default for areaID
 					fieldSelect1+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '" selected="selected">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
+					
+					// Also set geographyName to the key (base name of file) if not set
+					if (!document.getElementById('geographyName').value) {
+						document.getElementById('geographyName').value=key;
+					}
+					if (!document.getElementById('geographyDesc').value) {
+						document.getElementById('geographyDesc').value="Description of: " + key;
+					}
 				}
 				else {
 					fieldSelect1+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
 				}
-				if (fileList[key].dbfHeader.fieldNames[i].toUpperCase() == "NAME") {
+				if (fileList[key].dbfHeader.fieldNames[i].toUpperCase() == "NAME") { // Default for areaName
 					fieldSelect2+='      <option value="' + fileList[key].dbfHeader.fieldNames[i] + '" selected="selected">' + fileList[key].dbfHeader.fieldNames[i] + '</option>\n';
 				}
 				else {
@@ -497,30 +505,30 @@ function createAccordion(fileList) {
 				'  <label class="my-accordion-fields1" for="' + 
 					key + '_desc" title="Please enter a description of the shapefile">Shape file description:\n' +  
 				'  <input class="my-accordion-fields1" id="' + 
-					key + '_desc" name="' + key + '_desc" type="text" value="' + fileList[key].description + '">' +
+					key + '_desc" name="' + key + '_desc" type="text" value="' + fileList[key].description + '"  required/>' +
 				'  </label>\n' + '<br>\n' +
 				'  <label id="' + key + '_areaID_Tooltip" title="Please choose an area ID. This is the unique administrative code for area on the map" ' +
 					'class="my-accordion-fields2" for="' + 
 					key + '_areaID">Area ID: \n' +
-				'    <select class="my-accordion-fields2" id="' + key + '_areaID" name="' + key + 
+				'    <select required class="my-accordion-fields2" id="' + key + '_areaID" name="' + key + 
 					'_areaID" form="shpConvert">\n' +
 				fieldSelect1 +
 				'    </select>\n' + 
 				'  </label>\n' +							
 				'  <label class="my-accordion-fields2" for="' + key + '_areaID_desc" title="Please enter a description of the choosen area ID">Label:\n' +  
 				'    <input class="my-accordion-fields2" id="' + 
-					key + '_areaID_desc" name="' + key + '_areaID_desc" type="text">\n' +	
+					key + '_areaID_desc" name="' + key + '_areaID_desc" type="text" required/>\n' +	
 				'  </label>\n' +							
 				'  <label id="' + key + '_areaName_Tooltip" title="Please choose an area name. This is the administrative name corresponding to the area ID" ' +
 					'class="my-accordion-fields2" for="' + key + '_areaName">Area Name: \n' +
-				'    <select class="my-accordion-fields2" id="' + key + '_areaName" name="' + key + 
+				'    <select required class="my-accordion-fields2" id="' + key + '_areaName" name="' + key + 
 					'_areaName" form="shpConvert">\n' +
 				fieldSelect2 +
 				'    </select>\n' + 
 				'  </label>\n' +
 				'  <label class="my-accordion-fields2" for="' + key + '_areaName_desc" title="Please enter a description of the choosen area name">Label:\n' +  
 				'    <input class="my-accordion-fields2" id="' + 
-					key + '_areaName_desc" name="' + key + '_areaName_desc" type="text">' +
+					key + '_areaName_desc" name="' + key + '_areaName_desc" type="text" required>' +
 				'  </label>\n' +							
 				'</div>\n';
 		

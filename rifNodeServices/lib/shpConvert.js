@@ -1103,8 +1103,8 @@ This error in actually originating from the error handler function
 			xmlFileName: 			"geoDataLoader.xml",
 			xmlFileDir:				dir,
 			uuidV1: 				response.fields["uuidV1"],
-			geographyName: 			"To be added by user",
-			geographyDescription: 	"To be added by user",
+			geographyName: 			(response.fields["geographyName"] || "To be added by user"),
+			geographyDescription: 	(response.fields["geographyDesc"] || "To be added by user"),
 			shapeFileList: {
 				shapeFiles: []
 			},

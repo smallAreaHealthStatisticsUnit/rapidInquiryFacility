@@ -62,7 +62,7 @@ $(document).ready(function documentReady() {
  * 11				1,000,0000
  *
  -->
-		  &nbsp;Quantization: <select id="quantizationSelect" name="quantization" form="geo2TopoJSON">
+		  &nbsp;Quantization: <select required id="quantizationSelect" name="quantization" form="geo2TopoJSON">
 		    <option value="100000000">1 in 100 million</option>
 		    <option value="10000000">1 in 10 million</option>
 		    <option value="1000000" selected="selected">1 in 1 million</option>
@@ -73,7 +73,7 @@ $(document).ready(function documentReady() {
 		    <option value="1500">1 in 1,500</option>
 		  </select>	
           &nbsp;Diagnostics<input id="diagnostics" type="checkbox" name="verbose" value="true">			  
-          <input id="geo2TopoJSONSubmit" type="submit" value="Upload File(s)" />
+          <input id="geo2TopoJSONSubmit" type="submit" value="Upload File(s)" required/>
         </form>
       </div>
 	  <div id="status"></div>

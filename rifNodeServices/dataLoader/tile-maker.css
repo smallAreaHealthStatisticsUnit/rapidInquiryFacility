@@ -111,7 +111,15 @@ input[type="file"] { /* Disable to default file load look, use customFileUpload 
 	border-radius: 6px;
 	margin-bottom: 6px;
 }
-.ui-button:focus { outline:none !important } /* Remove dialog box artefact in firefox */
+.geographyEntry { /* As does this */
+	background: #e4f1fb url("jquery-ui-1.11.4.custom/images/ui-bg_glass_100_e4f1fb_1x400.png") 50% 50% repeat-x;
+	font-weight: bold;
+	color: #0070a3;
+}
+
+.ui-button:focus { /* Remove dialog box artefact in firefox */
+	outline:none !important 
+} 
 #files { /* Set file load button message width */ 
     width: 400px; 
 }

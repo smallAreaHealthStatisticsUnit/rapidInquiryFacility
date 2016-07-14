@@ -483,6 +483,7 @@ RangeError: Invalid string length
 * RIF progress meeting via Skype
 * RIF progress meeting with CDC
 * Project planning for July to December
+* Java SSL integration
 
 #### 4th to 8th July
  
@@ -495,7 +496,7 @@ RangeError: Invalid string length
 * Add geography name, description to form, field processing and XML file
 * Add geolevel, goelevel name to legend
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
-* ST_Union and area calculations can be done in geoJSON using turf: as it is a geomtery collection. 
+* ST_Union and area calculations can be done in geoJSON using turf: as it is a geometry collection. 
 * Add area_id and id uniqueness tests to shapefile checks and tests
 * WKT support using Wellknown
 * Id generator; gid support (especially in topojson)
@@ -518,7 +519,7 @@ Note: no bounding box (bbox) in tiles.
   for any DB port, subject to acceptable performance
 * Handle when areaID == name; allow NULL name
 * Detect area mismatch between shapefiles	
-
+* Prevent submit whilst running shpConvert method
 * Prevent tab change during map draw and aoccordion setup or JQuery UI and Leaflet do bad things unless tkey have focus
 * Fix customFileUpload styling so it uses the correct JQuery UI class style; the .css() function won't work on form file upload buttons
 * Add support for XML config file so shpConvert can do all processing without further input;

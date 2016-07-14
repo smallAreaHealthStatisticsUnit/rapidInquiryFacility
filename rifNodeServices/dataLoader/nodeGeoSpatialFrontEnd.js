@@ -200,6 +200,27 @@ function formSetup(formId, formName) {
 } 	
 
 /*
+ * Function: 	errorPopup()
+ * Parameters: 	Message
+ * Returns: 	Nothing
+ * Description:	Error message popup
+ */
+function errorPopup(msg) {
+	if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
+		document.getElementById("error").innerHTML = "<h3>" + msg + "</h3>";
+		var errorWidth=document.getElementById('tabbox').offsetWidth-300;
+		$( "#error" ).dialog({
+			modal: true,
+			width: errorWidth
+		});
+	}	
+	else {	
+		document.getElementById("status").innerHTML = "<h1>" + msg + "</h1>";
+	}
+	console.log("FATAL! No files selected");
+}
+
+/*
  * Function: 	submitFormXMLHttpRequest()
  * Parameters: 	output_type, formName
  * Returns: 	Nothing
@@ -220,18 +241,7 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	nodeGeoSpatialFrontEndInit();
 	
 	if (files.length == 0) {
-		if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
-			document.getElementById("error").innerHTML = "<h3>No files selected</h3>";
-			var errorWidth=document.getElementById('tabbox').offsetWidth-300;
-			$( "#error" ).dialog({
-				modal: true,
-				width: errorWidth
-			});
-		}	
-		else {	
-			document.getElementById("status").innerHTML = "<h1>No files selected</h1>";
-		}
-		console.log("FATAL! No files selected");
+		errorPopup("No files selected");
 		return;
 	}
 	
@@ -420,21 +430,30 @@ webkitRelativePath: ""} .. then inherited
 				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
 			}
 			else {
-				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
+				errorPopup("Mandatory checkbox: " + formData[i].name + " is not checked");
+				return false;
 			}
 		}		
 		else if (formData[i].type == "range") {
 			if (formData[i].required) {
 				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
 			}
+			else if (formData[i].required) {	
+				errorPopup("Mandatory range: " + formData[i].name + " is not set");
+				return false;
+			}
 			else {
 				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
 			}
 		}
 		else if (formData[i].type == "select-one") {
-			if (formData[i].required) {
+			if (formData[i].required && formData[i].value) {
 				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
 			}
+			else if (formData[i].required) {	
+				errorPopup("Mandatory field: " + formData[i].name + " is not filled in");
+				return false;
+			}			
 			else {
 				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
 			}
@@ -444,18 +463,7 @@ webkitRelativePath: ""} .. then inherited
 		}
 	}
 	if (fileCount == 0) {
-		if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
-			document.getElementById("error").innerHTML = "<h3>No files selected</h3>";
-			var errorWidth=document.getElementById('tabbox').offsetWidth-300;
-			$( "#error" ).dialog({
-				modal: true,
-				width: errorWidth
-			});
-		}	
-		else {	
-			document.getElementById("status").innerHTML = "<h1>No files selected</h1>";
-		}		
-		console.log("FATAL! No files selected");
+		errorPopup("No files selected");
 		return false;
 	}
 	
