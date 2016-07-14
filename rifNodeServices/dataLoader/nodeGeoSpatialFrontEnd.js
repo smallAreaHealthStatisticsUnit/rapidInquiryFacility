@@ -579,13 +579,13 @@ function setupMap() {
 		
 		// Check for min height
 		
-		setHeight("maptab", height);
-		setHeight("map", (height-30));
-		setHeight("statustab", (height-20));
-		setHeight("status", (height-40));
-		setHeight("shapeFileSelectortab", (height-10));
+		setHeight("maptab", (height-50));
+		setHeight("map", (height-55));
+		setHeight("statustab", (height-50));
+		setHeight("status", (height-55));
+		setHeight("shapeFileSelectortab", (height-50));
 		setHeight("shapeFileSelector", (height-55));
-		setHeight("accordion", (height-205));
+		setHeight("accordion", (height-180));
 		setHeight("progressbar", 40);			
 	}
 	else {
