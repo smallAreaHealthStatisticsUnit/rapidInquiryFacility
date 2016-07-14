@@ -443,7 +443,11 @@ exports.convert = function exportsConvert(req, res) {
 				if ((fieldname == 'verbose')&&(val == 'true')) {
 					text+="verbose mode enabled";
 					ofields[fieldname]="true";
-				}	
+				}
+				else if ((fieldname == 'batchMode')&&(val == 'true')) {
+					text+="batch mode enabled";
+					ofields[fieldname]="true";
+				}					
 				else if (fieldname == 'quantization') {
 					if (val && isNaN(val) && (typeof val != 'number')) {
 						text+="\FIELD PROCESSING ERROR! value is not a number: " + val;

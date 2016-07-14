@@ -193,6 +193,7 @@ function geographyNameChange(value) {
 			<form id="shpConvert" action="http://127.0.0.1:3000/shpConvert" method="POST"
 				  enctype="multipart/form-data">
 			  <fieldset>	
+			  <input type="hidden" id="batchMode" name="batchMode" value="true"/>
 			  <label title="Please upload one or more shapefiles; these may be in zip format and must contain the .dbf (table data), .shp (geospatial data) and .prj (projection) files" 
 			         class="customFileUpload">Select a file/files to upload
 			    <input id="files" type="file" name="file_list" size="50" multiple="multiple" />

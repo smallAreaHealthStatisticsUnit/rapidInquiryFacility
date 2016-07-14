@@ -491,9 +491,14 @@ RangeError: Invalid string length
 * Set geolevel_name, area_id, area_name from front end
 * Add all fields to topojson
 
+#### 11th to 15th July
+
+* Project management for no cost extension
+* Add geography name, description to form, field processing and XML file
+* Common progrss bar
+
 #### Current TODO list (July):
 
-* Add geography name, description to form, field processing and XML file
 * Add geolevel, goelevel name to legend
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
 * ST_Union and area calculations can be done in geoJSON using turf: as it is a geometry collection. 
