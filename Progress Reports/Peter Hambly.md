@@ -496,10 +496,10 @@ RangeError: Invalid string length
 * Project management for no cost extension
 * Add geography name, description to form, field processing and XML file
 * Common progrss bar
+* Replaced area count with area description in legend
 
 #### Current TODO list (July):
 
-* Add geolevel, goelevel name to legend
 * Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
 * ST_Union and area calculations can be done in geoJSON using turf: as it is a geometry collection. 
 * Add area_id and id uniqueness tests to shapefile checks and tests
