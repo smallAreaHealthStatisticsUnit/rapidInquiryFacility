@@ -122,26 +122,32 @@ var shapefileSimplifyGeoJSON = function shapefileSimplifyGeoJSON(shapefile, resp
 			areaName, areaID, dbf_fields);
 	}
 	else {
-		response.message+="\nNo areaID/areaName fields set for file: " + shapefileData["topojsonFileBaseName"] + "\nShapefileData: " +
-			JSON.stringify(shapefileData, null, 4);
+		response.message+="\nNo areaID/areaName fields set for file: " + shapefileData["topojsonFileBaseName"] + "\nAreaID: " +
+			(areaID || "no areaID") + "; areaName: " + (areaName || "no areaName");
+		shapefile.topojson = toTopoJSON(shapefile.geojson, topojson_options, response, shapefileData["topojsonFileBaseName"],
+			undefined /* areaName  */, undefined /* areaID */, dbf_fields);
 	}
 	response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length=0;
-	for (var i=0; i<shapefile.topojson.length; i++) { // total_topojson_length
-		response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length+=(shapefile.topojson[i].topojson_length || 0);
+	if (shapefile.topojson) {
+		for (var i=0; i<shapefile.topojson.length; i++) { // total_topojson_length
+			response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length+=(shapefile.topojson[i].topojson_length || 0);
+		}
 	}
 	
 // This need to be replaced with write record by record and then do the callback here
 // We can then also remove the geojson
 
-	if (response.file_list[shapefileData["shapefile_no"]-1].topojson) {
-			shapefile.geojson.features=undefined;
+// Write topoJSON file; do NOT delete it
+	if (response.file_list[shapefileData["shapefile_no"]-1].topojson && response.file_list[shapefileData["shapefile_no"]-1].topojson[0]) {	
+		shapefile.geojson.features=undefined;			
+		streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], 
+			JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson[0].topojson), 
+			serverLog, shapefileData["uuidV1"], shapefileData["req"], response, records, 
+			false /* do not delete data (by undefining) at stream end */, callback);
 	}
-
-// Write topoJSON file; do NOT delete it				
-	streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], 
-		JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson[0].topojson), 
-		serverLog, shapefileData["uuidV1"], shapefileData["req"], response, records, 
-		false /* do not delete data (by undefining) at stream end */, callback);		
+	else {
+		throw new Error('response.file_list[shapefileData["shapefile_no"]-1].topojson[0] is undefined');
+	}
 } // End of shapefileSimplifyGeoJSON()
 
 /*
@@ -257,6 +263,17 @@ topology: 1579 arcs, 247759 points
 		}	
 		topojson_options["property-transform"]=myPropertyTransform;
 		response.message+="; property-transform enabled";
+	}
+	else if (dbf_fields) {
+		myPropertyTransform=function myPropertyTransform(feature) {
+			var propertyTransform = {};
+			for (var i=0; i<dbf_fields.length; i++) {
+				propertyTransform[dbf_fields[i]]=feature.properties[dbf_fields[i]];
+			}
+			return propertyTransform;
+		}	
+		topojson_options["property-transform"]=myPropertyTransform;
+		response.message+="; property-transform enabled (dbf_fields only)";
 	}
 	else {
 		response.message+="; property-transform disabled";

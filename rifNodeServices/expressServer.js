@@ -149,7 +149,7 @@ app.use(express.static('dataLoader'));
 var services=["/shpConvert",
 			  "/simplifyGeoJSON",
 			  "/geo2TopoJSON",
-			  "/getStatus",
+			  "/getShpConvertStatus",
 			  "/geoJSON2WKT",
 			  "/createHierarchy",
 			  "/createCentroids",

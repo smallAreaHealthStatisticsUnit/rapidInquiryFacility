@@ -1108,7 +1108,7 @@ function displayResponse(responseText, status, formName) {
 			else {
 				if (response.fields["batchMode"] == "true") {
 					progressLabel.text("Server is processing response");
-					setTimeout(waitForServerResponse(response.fields["uuidV1"], 1000 /* Next timeout */, 1 /* Recursion count */), 5000);
+					setTimeout(waitForServerResponse(response.fields["uuidV1"], response.fields["diagnosticFileDir"], 1000 /* Next timeout */, 1 /* Recursion count */), 5000);
 					return;
 				}
 				else if (!response.file_list[0]) {
@@ -1322,15 +1322,19 @@ function displayResponse(responseText, status, formName) {
 
 /*
  * Function: 	waitForServerResponse()
- * Parameters:  uuidV1, next timeout (mS), recursion count
+ * Parameters:  uuidV1, diagnosticFileDir, next timeout (mS), recursion count
  * Returns: 	Nothing
  * Description: Wait for server response: call getShpConvertStatus method until shpConvert completes
  */
-function waitForServerResponse(uuidV1, nextTimeout, recursionCount) {
+function waitForServerResponse(uuidV1, diagnosticFileDir, nextTimeout, recursionCount) {
 	console.log("Wait: " + recursionCount + " for server response for uuidV1: " + uuidV1);
 	
-	var jqXHR=$.get("getShpConvertStatus", { uuidV1: uuidV1 }, function getShpConvertStatus(data, status, xhr) {
-		setTimeout(waitForServerResponse, nextTimeout, uuidV1, nextTimeout /* Next timeout */, recursionCount++ /* Recursion count */);
+	var jqXHR=$.get("getShpConvertStatus", 
+		{ 
+			uuidV1: uuidV1, 
+			diagnosticFileDir: diagnosticFileDir 
+		}, function getShpConvertStatus(data, status, xhr) {
+		setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, nextTimeout /* Next timeout */, recursionCount++ /* Recursion count */);
 		alert("Data: " + data);
 		}, // End of getShpConvertStatus() 
 		"json");

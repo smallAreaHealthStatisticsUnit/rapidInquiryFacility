@@ -204,7 +204,6 @@ exports.convert = function exportsConvert(req, res) {
 		var d_files = { 
 			d_list: []
 		}
-		nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "INIT", 200 /* HTTP OK */, serverLog, req);  // Add initial status
 		
 /*
  * Services supported:
@@ -223,7 +222,7 @@ exports.convert = function exportsConvert(req, res) {
 		if (!((req.url == '/shpConvert') ||
 			  (req.url == '/simplifyGeoJSON') ||
 			  (req.url == '/geo2TopoJSON') ||
-			  (req.url == '/getStatus') ||
+			  (req.url == '/getShpConvertStatus') ||
 			  (req.url == '/geoJSONtoWKT') ||
 			  (req.url == '/createHierarchy') ||
 			  (req.url == '/createCentroids') ||
@@ -264,6 +263,15 @@ exports.convert = function exportsConvert(req, res) {
 				};
 				shapefile_options["ignore-properties"] = false;
 			}
+			else {								// All other post methods are errors
+				var msg="ERROR! "+ req.url + " post requests not allowed; please see: " + 
+					"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
+				httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert", 
+					serverLog, 405, req, res, msg);		
+				return;		  
+			}
+			
+			nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "INIT", 200 /* HTTP OK */, serverLog, req);  // Add initial status
 			
 /*
  * Function: 	req.busboy.on('filesLimit') callback function
@@ -1051,7 +1059,44 @@ exports.convert = function exportsConvert(req, res) {
 
 			req.pipe(req.busboy); // Pipe request stream to busboy form data handler
 			  
-		} // End of post method
+		} // End of post method	
+		else if (req.method == 'GET' && req.method == 'getShpConvertStatus') { // Get method: getShpConvertStatus
+			
+/*
+ * Function: 	req.busboy.on('field') callback function
+ * Parameters:	fieldname, value, fieldnameTruncated, valTruncated
+ * Description:	Field processing function; fields supported: uuidV1, diagnosticFileDir  
+ */ 
+			req.busboy.on('field', function fieldProcessing(fieldname, val, fieldnameTruncated, valTruncated) {
+		
+				var text="\nField: " + fieldname + "[" + val + "]; ";
+				
+				// Handle truncation
+				if (fieldnameTruncated) {
+					text+="\FIELD PROCESSING ERROR! field truncated";
+					response.field_errors++;
+				}
+				if (valTruncated) {
+					text+="\FIELD PROCESSING ERROR! value truncated";
+					response.field_errors++;
+				}
+				
+				// Process common fields: uuidV1, diagnosticFileDir
+				ofields[fieldname]=val;
+							
+				response.message += text;
+			 }); // End of field processing function
+			 
+			 
+/*
+ * Function: 	req.busboy.on('finish') callback function
+ * Parameters:	None
+ * Description:	End of request - complete response		  
+ */ 
+			req.busboy.on('finish', function onBusboyFinish() {
+			}); // End of req.busboy.on('finish')
+			
+		} // End of get method: getShpConvertStatus
 		else {								// All other methods are errors
 			var msg="ERROR! "+ req.method + " Requests not allowed; please see: " + 
 				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
