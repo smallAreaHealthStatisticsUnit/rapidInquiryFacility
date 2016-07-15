@@ -440,10 +440,14 @@ exports.convert = function exportsConvert(req, res) {
 				}
 				
 				// Process common fields
-				if ((fieldname == 'verbose')&&(val == 'true')) {
+				if ((fieldname == 'verbose')&&(val == 'true')&&(ofields["verbose"] != "true")) {
 					text+="verbose mode enabled";
 					ofields[fieldname]="true";
 				}
+				if ((fieldname == 'diagnostics')&&(val == 'true')&&(ofields["verbose"] != "true")) { // Called diagnostics in JQuery UI interface
+					text+="verbose mode enabled";
+					ofields["verbose"]="true";
+				}				
 				else if ((fieldname == 'batchMode')&&(val == 'true')) {
 					text+="batch mode enabled";
 					ofields[fieldname]="true";
@@ -873,12 +877,21 @@ exports.convert = function exportsConvert(req, res) {
 						return;						
 					}
 					
+					
 					if (req.url == '/geo2TopoJSON' || req.url == '/shpConvert') {
 						const async = require('async');
 						
 						response.no_files=d_files.d_list.length; // Add number of files process to response
 						response.fields=ofields;				 // Add return fields	
-										
+
+						if (ofields["batchMode"] === "true") {		 // Batch mode - return now	
+							response.message+="\nBatch mode: " + ofields["batchMode"] + "; returning just before file compression processing.";						
+							nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
+						}
+						else {	
+							response.message+="\nBatch mode: " + ofields["batchMode"] + "; continuing.";						
+						}
+					
 						async.forEachOfSeries(d_files.d_list /* col */, 
 							function fileCompressionProcessingSeries(d, index, seriesCallback) { // Process file list for compressed file and uncompress them				
 			

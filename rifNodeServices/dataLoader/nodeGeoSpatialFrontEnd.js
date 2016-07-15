@@ -217,7 +217,7 @@ function errorPopup(msg) {
 	else {	
 		document.getElementById("status").innerHTML = "<h1>" + msg + "</h1>";
 	}
-	console.log("FATAL! No files selected");
+	console.log("FATAL! " + msg);
 }
 
 /*
@@ -426,16 +426,19 @@ webkitRelativePath: ""} .. then inherited
 			fileCount++;
 		}
 		else if (formData[i].type == "checkbox") {
-			if (formData[i].required) {
+			if (formData[i].required && formData[i].value) {
 				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
 			}
-			else {
+			else if (formData[i].required) {
 				errorPopup("Mandatory checkbox: " + formData[i].name + " is not checked");
 				return false;
 			}
+			else {
+				console.log("Mandatory checkbox: " + formData[i].name + "=" + formData[i].value);	
+			}			
 		}		
 		else if (formData[i].type == "range") {
-			if (formData[i].required) {
+			if (formData[i].required && formData[i].value) {
 				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
 			}
 			else if (formData[i].required) {	
@@ -478,6 +481,7 @@ webkitRelativePath: ""} .. then inherited
     console.log('About to submit: ' + JSON.stringify(queryString, null, 4)); 
 	nodeGeoSpatialFrontEndInit();
  
+	document.getElementById("status").innerHTML  = "";
     // here we could return false to prevent the form from being submitted; 
     // returning anything other than false will allow the form submit to continue 
     return true; 
@@ -1102,7 +1106,12 @@ function displayResponse(responseText, status, formName) {
 				setStatus("Error in processing file list", new Error("response.no_files == 0"));
 			}			
 			else {
-				if (!response.file_list[0]) {
+				if (response.fields["batchMode"] == "true") {
+					progressLabel.text("Server is processing response");
+					setTimeout(waitForServerResponse(response.fields["uuidV1"], 1000 /* Next timeout */, 1 /* Recursion count */), 5000);
+					return;
+				}
+				else if (!response.file_list[0]) {
 					setStatus("Error in processing file list", new Error("First file in list (size: " + response.no_files + ") is not defined"));
 				}
 				else if (!response.file_list[0].file_name) {
@@ -1310,7 +1319,38 @@ function displayResponse(responseText, status, formName) {
 		setStatus("Send Failed", new Error("Unexpected http status: " + status), "Message:" + msg);
 	}
 }	
-											
+
+/*
+ * Function: 	waitForServerResponse()
+ * Parameters:  uuidV1, next timeout (mS), recursion count
+ * Returns: 	Nothing
+ * Description: Wait for server response: call getShpConvertStatus method until shpConvert completes
+ */
+function waitForServerResponse(uuidV1, nextTimeout, recursionCount) {
+	console.log("Wait: " + recursionCount + " for server response for uuidV1: " + uuidV1);
+	
+	var jqXHR=$.get("getShpConvertStatus", { uuidV1: uuidV1 }, function getShpConvertStatus(data, status, xhr) {
+		setTimeout(waitForServerResponse, nextTimeout, uuidV1, nextTimeout /* Next timeout */, recursionCount++ /* Recursion count */);
+		alert("Data: " + data);
+		}, // End of getShpConvertStatus() 
+		"json");
+	jqXHR.fail(function getShpConvertStatusError(x, e) {
+		if (x.status == 0) {
+			setStatus("Unable to get status for shapefile conversion request; network error", e);
+		} 
+		else if (x.status == 404) {
+			setStatus("Unable to get status for shapefile conversion request; URL not found: getShpConvertStatus", e);
+		} 
+		else if (x.status == 500) {
+			setStatus("Unable to get status for shapefile conversion request; internal server error", e);
+		}  
+		else {
+			setStatus("Unable to get status for shapefile conversion request; unknown error: " + x.responseText, e);
+		}
+	});
+		
+}
+	
 /*
  * Function: 	jsonAddLayer()
  * Parameters: 	jsonAddLayerParams object, keys: { 
