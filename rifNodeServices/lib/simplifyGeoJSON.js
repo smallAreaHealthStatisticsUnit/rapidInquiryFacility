@@ -343,9 +343,11 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 	 scopeChecker(__file, __line, {
 		response: response,
 		clone: clone,
-		sizeof: sizeof,
+		sizeof: sizeof
+	},
+	{
 		callback: myPropertyTransform
-	});
+	} /* Optional */);
 	
 	var nTopojson_options=clone(topojson_options);
 	nTopojson_options.simplify=undefined;	
