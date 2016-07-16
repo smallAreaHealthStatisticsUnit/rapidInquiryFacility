@@ -1108,7 +1108,8 @@ function displayResponse(responseText, status, formName) {
 			else {
 				if (response.fields["batchMode"] == "true") {
 					progressLabel.text("Server is processing response");
-					setTimeout(waitForServerResponse(response.fields["uuidV1"], response.fields["diagnosticFileDir"], 1000 /* Next timeout */, 1 /* Recursion count */), 5000);
+					setTimeout(waitForServerResponse(response.fields["uuidV1"], response.fields["diagnosticFileDir"], response.fields["statusFileName"], 
+						1000 /* Next timeout */, 1 /* Recursion count */), 5000);
 					return;
 				}
 				else if (!response.file_list[0]) {
@@ -1326,31 +1327,56 @@ function displayResponse(responseText, status, formName) {
  * Returns: 	Nothing
  * Description: Wait for server response: call getShpConvertStatus method until shpConvert completes
  */
-function waitForServerResponse(uuidV1, diagnosticFileDir, nextTimeout, recursionCount) {
+function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, nextTimeout, recursionCount) {
 	console.log("Wait: " + recursionCount + " for server response for uuidV1: " + uuidV1);
 	
 	var jqXHR=$.get("getShpConvertStatus", 
 		{ 
 			uuidV1: uuidV1, 
-			diagnosticFileDir: diagnosticFileDir 
+			diagnosticFileDir: diagnosticFileDir,
+			statusFileName: statusFileName			
 		}, function getShpConvertStatus(data, status, xhr) {
-		setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, nextTimeout /* Next timeout */, recursionCount++ /* Recursion count */);
+		setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, statusFileName, nextTimeout /* Next timeout */, recursionCount++ /* Recursion count */);
 		alert("Data: " + data);
 		}, // End of getShpConvertStatus() 
 		"json");
 	jqXHR.fail(function getShpConvertStatusError(x, e) {
+		var msg;
+		var response;
+		try {
+			if (x.responseText) {
+				response=JSON.parse(x.responseText);
+			}
+		}
+		catch (e) {
+		}
+		
 		if (x.status == 0) {
-			setStatus("Unable to get status for shapefile conversion request; network error", e);
+			msg="Unable to get status for shapefile conversion request; network error";
 		} 
 		else if (x.status == 404) {
-			setStatus("Unable to get status for shapefile conversion request; URL not found: getShpConvertStatus", e);
+			msg="Unable to get status for shapefile conversion request; URL not found: getShpConvertStatus";
 		} 
 		else if (x.status == 500) {
-			setStatus("Unable to get status for shapefile conversion request; internal server error", e);
+			msg="Unable to get status for shapefile conversion request; internal server error";
 		}  
-		else {
-			setStatus("Unable to get status for shapefile conversion request; unknown error: " + x.responseText, e);
+		else if (response && response.message) {
+			msg="Unable to get status for shapefile conversion request; unknown error: " + x.status + "<p>" + response.message + "</p>";
+		}	
+		else if (response) {
+			msg="Unable to get status for shapefile conversion request; unknown error: " + x.status + "<br><pre>" + JSON.stringify(response, null, 4) + "</pre>";
 		}
+		else {
+			msg="Unable to get status for shapefile conversion request; unknown error: " + x.status + "<br><pre>" + x.responseText + "</pre>";
+		}
+		
+		if (e && e.message) {
+			errorPopup(msg + "<br><pre>" + e.message + "</pre>");
+		}
+		else {
+			errorPopup(msg);
+		}
+		progressLabel.text("Proccessing failed")
 	});
 		
 }

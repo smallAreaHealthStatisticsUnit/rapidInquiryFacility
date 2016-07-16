@@ -366,6 +366,21 @@ recreateDiagnosticsLog = function recreateDiagnosticsLog(response, serverLog, ht
 } // End of recreateDiagnosticsLog	
 
 /*
+ * Function:	getStatus()
+ * Parameters:	fields array
+ * Returns:		Status array as JSON
+ * Description: Get status from file
+ */	
+getStatus = function getStatus(fields) {
+	var status;
+	if (fields && fields["uuidV1"] && fields["diagnosticFileDir"] && fields["statusFileName"]) { // Can save state
+		var statusText=fs.readFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"]);	
+		status=JSON.parse(statusText);
+	}
+	return status;
+}
+	
+/*
  * Function:	addStatus()
  * Parameters:	file, line called from, response object, textual status, http status code, serverLog object, Express HTTP request object
  * Returns:		Nothing
@@ -443,5 +458,6 @@ module.exports.createTemporaryDirectory = createTemporaryDirectory;
 module.exports.recreateDiagnosticsLog = recreateDiagnosticsLog;
 module.exports.responseProcessing = responseProcessing;
 module.exports.addStatus = addStatus;
+module.exports.getStatus = getStatus;
 
 // Eof

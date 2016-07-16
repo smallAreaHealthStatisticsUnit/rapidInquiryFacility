@@ -1094,6 +1094,16 @@ exports.convert = function exportsConvert(req, res) {
  * Description:	End of request - complete response		  
  */ 
 			req.busboy.on('finish', function onBusboyFinish() {
+				response.status=nodeGeoSpatialServicesCommon.getStatus(ofields);
+				if (response.status) {
+					nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
+				}
+				else {
+					var msg="Unable to get status";
+					httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert", 
+						serverLog, 500, req, res, msg);		
+					return;	
+				}			
 			}); // End of req.busboy.on('finish')
 			
 		} // End of get method: getShpConvertStatus
