@@ -5,14 +5,30 @@ import java.util.ArrayList;
 import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.taxonomyServices.TaxonomyServiceAPI;
+import rifGenericLibrary.taxonomyServices.AbstractTaxonomyService;
 import rifGenericLibrary.taxonomyServices.TaxonomyServiceConfiguration;
-import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
 import taxonomyServices.system.TaxonomyServiceError;
 
 import java.io.File;
 
 /**
- *
+ * A taxonomy service that provides terms from ICD collections.  The main activity
+ * of the class is to call a custom parser that understands the XML data format that
+ * the WHO uses to represent ICD terms.  The parser registers the terms it reads into
+ * an instance of {@link rifGenericLibrary.taxonomyServices.TaxonomyTermManager}, which
+ * holds manages them in-memory.  The taxonomy term manager provides the main mechanism
+ * by which the superclass {@link rifGenericLibrary.taxonomyServices.AbstractTaxonomyService}
+ * supports most of the service calls.  
+ * 
+ * <p>
+ * Most of the potential concurrency problems that may arise in simultaneous access to the
+ * service are controlled by {@link rifGenericLibrary.taxonomyServices.FederatedTaxonomyService}.
+ * </p>
+ *  
+ * 
+ * 
+ * </p>
+ * 
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
@@ -62,6 +78,7 @@ import java.io.File;
  */
 
 public class ICDTaxonomyService 
+	extends AbstractTaxonomyService 
 	implements TaxonomyServiceAPI {
 
 	// ==========================================
@@ -71,29 +88,17 @@ public class ICDTaxonomyService
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private final String identifier = "icd10";
-	private final String nameSpace = "icd10";
-	private final String name = "ICD 10 Taxonomy Service";
-	private final String version = "1.0";
-	private final String description = "provides diagnostic codes for the ICD 10 classification";
-	private boolean isServiceWorking;
 	
-	private final ICD10ClaMLTaxonomyProvider icd10TaxonomyParser 
-		= new ICD10ClaMLTaxonomyProvider(identifier);
+
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public ICDTaxonomyService() {
-		isServiceWorking = false;
-	}
-
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -110,6 +115,11 @@ public class ICDTaxonomyService
 		throws RIFServiceException {
 		
 		try {
+			ICD10TaxonomyTermParser icd10TaxonomyParser 
+				= new ICD10TaxonomyTermParser();			
+			
+			setTaxonomyServiceConfiguration(taxonomyServiceConfiguration);
+
 			ArrayList<Parameter> parameters
 				= taxonomyServiceConfiguration.getParameters();
 		
@@ -124,6 +134,7 @@ public class ICDTaxonomyService
 					= new RIFServiceException(
 						TaxonomyServiceError.HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
 						errorMessage);
+				setServiceWorking(false);
 				throw rifServiceException;
 			}		
 		
@@ -133,117 +144,16 @@ public class ICDTaxonomyService
 			icd10FileName.append(icd10FileParameter.getValue());
 			
 			File icd10File = new File(icd10FileName.toString());
-			icd10TaxonomyParser.initialise(icd10File);
-			isServiceWorking = true;
+			icd10TaxonomyParser.readFile(icd10File);
+			setTaxonomyTermManager(icd10TaxonomyParser.getTaxonomyTermManager());
+			setServiceWorking(true);
 		}
 		catch(RIFServiceException rifServiceException) {
-			isServiceWorking = false;			
+			setServiceWorking(false);
 		}
 	}
 
-	public boolean isServiceWorking() {
-		return isServiceWorking;
-	}
-	
-	public String getIdentifier() {
-		return identifier;
-	}
-	
-	public String getNameSpace() {
-		return nameSpace;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public String getDescription() {
-		return description;
-	}
-	
-	public String getVersion() {
-		return version;
-	}
 
-	
-	/**
-	 * Gets the health codes.
-	 *
-	 * @param connection the connection
-	 * @param searchText the search text
-	 * @param isCaseSensitive
-	 * @return the child terms
-	 * @throws RIFServiceException the RIF service exception
-	 */	
-	public ArrayList<TaxonomyTerm> getMatchingTerms(
-		final String searchText,
-		final boolean isCaseSensitive)
-		throws RIFServiceException {
-		
-		return icd10TaxonomyParser.getMatchingTerms(searchText, isCaseSensitive);
-	}
-
-	/**
-	 * Gets the top level codes.
-	 *
-	 * @param connection the connection
-	 * @return the top level codes
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<TaxonomyTerm> getRootTerms() 
-		throws RIFServiceException {
-
-		return icd10TaxonomyParser.getRootTerms();
-	}
-	
-	/**
-	 * Gets the immediate subterms.
-	 *
-	 * @param connection the connection
-	 * @param parentTaxonomyTerm the parent health code
-	 * @return the immediate subterms
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<TaxonomyTerm> getImmediateChildTerms(
-		final String parentTermIdentifier) 
-		throws RIFServiceException {
-
-		return icd10TaxonomyParser.getImmediateChildTerms(parentTermIdentifier);
-	}
-
-	/**
-	 * Gets the parent health code.
-	 *
-	 * @param connection the connection
-	 * @param childTaxonomyTerm the child health code
-	 * @return the parent health code
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public TaxonomyTerm getParentTerm(
-		final String childTermIdentifier) 
-		throws RIFServiceException {
-		
-		return icd10TaxonomyParser.getParentTerm(childTermIdentifier);
-	}
-	
-	public TaxonomyTerm getTerm(
-		final String termIdentifier) 
-		throws RIFServiceException {
-		
-		return icd10TaxonomyParser.getTerm(termIdentifier);
-	}
-	
-	public boolean termExists(
-		final String taxonomyTermIdentifier)
-		throws RIFServiceException {
-		
-		
-		return false;
-	}
-	
-	
-	
-	
 	// ==========================================
 	// Section Override
 	// ==========================================

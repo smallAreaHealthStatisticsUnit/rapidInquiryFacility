@@ -2,8 +2,6 @@ package taxonomyServices;
 
 import taxonomyServices.system.TaxonomyServiceError;
 
-import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
 import rifGenericLibrary.taxonomyServices.TaxonomyTermManager;
@@ -11,16 +9,10 @@ import rifGenericLibrary.taxonomyServices.TaxonomyTermManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.Collator;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,6 +20,18 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
+ *
+ * This class parses XML files that the WHO uses to publish the ICD 10 term collection.
+ * Its main job is to extract a tree of terms from the file and then register the 
+ * taxonomy terms with {@link rifGenericLibrary.taxonomyServices.TaxonomyTermManager},
+ * which is provides a generic mechanism for managing the terms in-memory.  The 
+ * <code>TaxonomyTermManager</code> is then made available so that the calling class
+ * {@link taxonomyServices.ICDTaxonomyService}, which uses it to handle most of the
+ * taxonomy service methods.
+ * 
+ * <p>
+ * 
+ * </p>
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -87,12 +91,11 @@ import org.xml.sax.SAXException;
  *
  */
 
-public final class ICD10ClaMLTaxonomyProvider {
+public final class ICD10TaxonomyTermParser {
 	
 	private static String ICD10NameSpace ="icd10";
 	private static int ICD10CODEWITHOUTCHILDREN_LENGTH =4;
-	private File ICD10XmlFile;
-	private TaxonomyTerm icd10Root;
+	//private TaxonomyTerm icd10Root;
 	
 	private TaxonomyTermManager taxonomyTermManager;
 	
@@ -111,14 +114,11 @@ public final class ICD10ClaMLTaxonomyProvider {
 	// Section Construction
 	// ==========================================
 
-	public ICD10ClaMLTaxonomyProvider(final String serviceIdentifier) {
-		icd10Root = TaxonomyTerm.newInstance();
-		taxonomyTermManager = new TaxonomyTermManager(serviceIdentifier);
-		//taxonomyContainer 
-		//	= new HashMap<String, TaxonomyTerm>();
+	public ICD10TaxonomyTermParser() {
+		taxonomyTermManager = new TaxonomyTermManager(ICD10NameSpace);
 	}
 
-	public void initialise(
+	public void readFile(
 		final File icd10File) 
 		throws RIFServiceException {
 
@@ -126,6 +126,7 @@ public final class ICD10ClaMLTaxonomyProvider {
 			parseICD10ClaMLFile(icd10File);		
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			String errorMessage 
 				= "Something wrong happened when ICD10 taxonomy (ClaML) service was initialised";
 			RIFServiceException rifServiceException
@@ -149,22 +150,10 @@ public final class ICD10ClaMLTaxonomyProvider {
 		Document icd10Source = dBuilder.parse(ICD10XmlFile);
 		
 		icd10Source.getDocumentElement().normalize();
-			 
-		//Build root taxonomy which contains all chapters, for the usage of getToplevel() method
-
-		icd10Root.setLabel("ICD10");
-		icd10Root.setNameSpace(ICD10NameSpace);
-		icd10Root.setDescription("International Statistical Classification of Diseases and Related Health Problems 10th Revision");
-		icd10Root.setParentTerm(null);
-				
-		//Container containing all taxonomy. Either using HashMap or Treemap is based on database design.
-		//The key is health code so the type is String.
 				
 		NodeList metaList = icd10Source.getElementsByTagName("Meta");
 		Node chapterValues = metaList.item(0);
 		Element chapterNames =(Element) chapterValues;
-				
-		//Element chapterNamesMeta =(Element) metaList.item(1);
 				
 		String chapterNamesInString = chapterNames.getAttribute("value");
 		String [] chapterNamesInArray = chapterNamesInString.split(" ");
@@ -174,21 +163,18 @@ public final class ICD10ClaMLTaxonomyProvider {
 		for(int i = 0; i < chapterNamesInArray.length; i++){
 			TaxonomyTerm chapter = TaxonomyTerm.newInstance();
 			chapter.setLabel(chapterNamesInArray[i]);
-			chapter.setNameSpace(ICD10NameSpace);
-			chapter.setParentTerm(icd10Root);
+			//chapter.setParentTerm(icd10Root);
+			chapter.setParentTerm(null);
 			chapters.add(chapter);
 			
 			taxonomyTermManager.addTerm(chapter);
 			//taxonomyContainer.put(chapterNamesInArray[i], chapter);
 		}
-		icd10Root.addSubTerms(chapters);
-		
-		//add root taxonomy (virtual one) into taxonomy repository
 
-		taxonomyTermManager.addTerm(icd10Root);		
-		//taxonomyContainer.put("ICD10Root", icd10Root);
-				
-		NodeList taxonomyTermList = icd10Source.getElementsByTagName("Class");
+		System.out.println("ICD10TaxonomyTermParser 2");
+		
+		NodeList taxonomyTermList 
+			= icd10Source.getElementsByTagName("Class");
 		
 		//A pattern for parsing "Class" element which may have Subclass element
 		String pattern ="\\d";
@@ -227,30 +213,13 @@ public final class ICD10ClaMLTaxonomyProvider {
 						taxonomyTermManager.addTerm(childTaxonomy);
 						//taxonomyContainer.put(childID, childTaxonomy);
 					}	
-					taxonomy.addSubTerms(childrenOfElement);
+					taxonomy.addChildTerms(childrenOfElement);
 				}
 
 				NodeList descriptions = element.getElementsByTagName("Rubric");
 				for(int k=0; k<descriptions.getLength(); k++){
 					Element rubric =(Element) descriptions.item(k);
-					
-					//The below code needs JRE 1.7 support
-					/*switch(rubric.getAttribute("kind")){
-						case "preferred":
-							taxonomy.setDescription(rubric.getTextContent());
-							break;
-						
-						//at this stage, we are not interested in "inclusion" and "exclusion" sections
-						case "inclusion":
-							break;
-						
-						case "exclusion":
-							break;
-						
-						default :
-							break;		    	 
-					}*/
-					
+										
 					if(rubric.getAttribute("kind").equals("preferred")){
 						taxonomy.setDescription(rubric.getTextContent());
 					}
@@ -263,137 +232,19 @@ public final class ICD10ClaMLTaxonomyProvider {
 				}
 			}				
 		}
+
+		taxonomyTermManager.determineRootTerms();
 		//Not include code to generate a sample icd10 xml file based on the whole WHO ICD10 code and those 
-		//that a user want to distribute 
-	}
-
-	
-	public ArrayList<TaxonomyTerm> getMatchingTerms(
-		final String searchText, 
-		final boolean isCaseSensitive) 
-		throws RIFServiceException {
-
-		return taxonomyTermManager.getMatchingTerms(
-			searchText, 
-			isCaseSensitive);
-		
-/*
-		ArrayList<TaxonomyTerm> results 
-			= new ArrayList<TaxonomyTerm>();
-				
-		Pattern searchPattern;
-		if(searchText ==null){
-			return results;
-		}
-		
-		if (isCaseSensitive) {
-			searchPattern 
-				= Pattern.compile(".*"+searchText+".*");
-		}
-		else {
-			searchPattern 
-				= Pattern.compile(".*"+searchText+".*", Pattern.CASE_INSENSITIVE);
-		}
-		
-		for (TaxonomyTerm term : taxonomyContainer.values()) {
-			Matcher patternCodeMatcher
-				= searchPattern.matcher(term.getLabel());
-			if (patternCodeMatcher.matches()) {
-				results.add(term);
-			}
-			else {			
-				Matcher patternDescriptionMatcher
-					= searchPattern.matcher(term.getDescription());
-				if (patternDescriptionMatcher.matches()) {
-					results.add(term);
-				}
-			}
-		}
-		
-		return results;
-*/		
-		
-	}
-
-	public ArrayList<TaxonomyTerm> getRootTerms() throws RIFServiceException {
-		System.out.println("ICD10ClaMLTaxonomyProvider getRootTerms 1");
-		//The container for all of the top level HealthCode
-		ArrayList<TaxonomyTerm> rootTerms 
-			= new ArrayList<TaxonomyTerm>();
-		
-		for(TaxonomyTerm term : icd10Root.getSubTerms()){
-			rootTerms.add(term);
-		}
-		return rootTerms;
-	}
-
-	public ArrayList<TaxonomyTerm> getImmediateChildTerms(
-		final String parentTermIdentifier) 
-		throws RIFServiceException {
-
-		return taxonomyTermManager.getImmediateChildTerms(parentTermIdentifier);
-
-		/*
-		ArrayList<TaxonomyTerm> childTerms = new ArrayList<TaxonomyTerm>();
-		
-		if(parentTermIdentifier == null){
-			return childTerms;
-		}
-
-		TaxonomyTerm parentTaxonomyTerm 
-			= taxonomyContainer.get(parentTermIdentifier);
-		childTerms.addAll(parentTaxonomyTerm.getSubTerms());
-		
-		return childTerms;
-		*/
-	}
-
-	public TaxonomyTerm getParentTerm(
-		final String childTermIdentifier) 
-		throws RIFServiceException {
-		
-		
-		return taxonomyTermManager.getParentTerm(childTermIdentifier);
-/*		
-		if(childTermIdentifier == null){
-			return TaxonomyTerm.NULL_TERM;
-		}
-
-		TaxonomyTerm childTaxonomyTerm 
-			= taxonomyContainer.get(childTermIdentifier);
-		TaxonomyTerm parentTerm 
-			= childTaxonomyTerm.getParentTerm();
-		if (parentTerm == null) {
-			return TaxonomyTerm.NULL_TERM;	
-		}
-		else {
-			return parentTerm;
-		}
-*/
-		
-	}
-
-	public TaxonomyTerm getTerm(
-		final String termIdentifier) 
-		throws RIFServiceException {
-
-		return taxonomyTermManager.getTerm(termIdentifier);
-
-	/*		
-		TaxonomyTerm taxonomyTerm = taxonomyContainer.get(code);
-		if (taxonomyTerm == null) {
-			return TaxonomyTerm.NULL_TERM;
-		}
-		else {
-			return taxonomyTerm;
-		}
-	*/
+		//that a user want to distribute
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	public TaxonomyTermManager getTaxonomyTermManager() {
+		return taxonomyTermManager;
+	}
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -405,21 +256,6 @@ public final class ICD10ClaMLTaxonomyProvider {
 	// ==========================================
 	// Section Override
 	// ==========================================
-	
-	private Parameter getParameter(
-		final String parameterName,
-		final ArrayList<Parameter> parameters) {
-			
-		Collator collator = RIFGenericLibraryMessages.getCollator();		
-		for (Parameter parameter : parameters) {
-			if (collator.equals(parameterName, parameter.getName())) {
-				return parameter;
-			}			
-		}
-			
-		//parameter was not found
-		return null;
-	}
 	
 	/**
 	 * Remove the dot sign in WHO ICD 10 healthcode in order to keep data format as used in RIF database

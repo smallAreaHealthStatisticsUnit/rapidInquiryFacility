@@ -51,6 +51,7 @@ package taxonomyServices.system;
  */
 
 public enum TaxonomyServiceError {
+	FEDERATED_TAXONOMY_SERVICE_NOT_INITIALISED,
 	HEALTH_CODE_TAXONOMY_SERVICE_ERROR
 }
 

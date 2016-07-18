@@ -14,7 +14,11 @@ import java.util.ArrayList;
 
 /**
  *
- *
+ * Reads an XML fragment containing taxonomy service descriptions.  It is invoked
+ * by {@link rifGenericLibrary.taxonomyServices.TaxonomyServiceConfigurationXMLReader}
+ * and generates a collection of 
+ * {@link rifGenericLibrary.taxonomyServices.TaxonomyServiceConfiguration} objects
+ * that are used to instantiate services.
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 

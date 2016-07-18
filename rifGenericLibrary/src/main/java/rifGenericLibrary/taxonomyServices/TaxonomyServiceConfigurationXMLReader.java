@@ -12,6 +12,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.io.*;
 
 
@@ -219,6 +220,17 @@ public final class TaxonomyServiceConfigurationXMLReader {
 			throw exceptionFactory.createFileReadingProblemException("");			
 		}
 	}			
+	
+	public HashMap<String, TaxonomyServiceAPI> getTaxonomyFromIdentifierHashMap() {
+		
+		HashMap<String, TaxonomyServiceAPI> serviceFromIdentifier
+			= new HashMap<String, TaxonomyServiceAPI>();
+		for (TaxonomyServiceAPI taxonomyService : taxonomyServices) {
+			serviceFromIdentifier.put(taxonomyService.getIdentifier(), taxonomyService);
+		}
+		
+		return serviceFromIdentifier;
+	}
 	
 	public ArrayList<TaxonomyServiceAPI> getTaxonomyServices() {
 		return taxonomyServices;

@@ -1,17 +1,19 @@
 package rifGenericLibrary.taxonomyServices;
 
 import rifGenericLibrary.system.RIFGenericLibraryError;
-
-
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.ClassFileLocator;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- *
+ * This class reads descriptions of taxonomy services from a configuration file and then
+ * initialises an instance of each of them.  Its main job is to help control the instantiation
+ * of services and to minimise the risk of concurrency errors happening. It manages a 
+ * Singleton instance of itself and tries to ensure that all of the services will have
+ * been fully instantiated before any of them are actually used.
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
@@ -60,31 +62,7 @@ import java.util.HashMap;
  *
  */
 
-public class DefaultFederatedTaxonomyService {
-
-	public static void main(String[] args) {
-
-		try {
-			String defaultResourceDirectoryPath
-				= ClassFileLocator.getClassRootLocation("rifGenericLibrary");
-			DefaultFederatedTaxonomyService service
-				= new DefaultFederatedTaxonomyService();
-			
-			service.initialise(defaultResourceDirectoryPath);
-			
-			ArrayList<TaxonomyServiceProvider> taxonomyServiceProviders
-				= service.getTaxonomyServiceProviders();
-			ArrayList<TaxonomyTerm> rootTerms
-				= service.getRootTerms("icd10");
-			for (TaxonomyTerm rootTerm : rootTerms) {
-				System.out.println("Root Term:"+rootTerm.getLabel()+"==");
-			}
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-		}
-	}
+public class FederatedTaxonomyService {
 	
 	// ==========================================
 	// Section Constants
@@ -93,46 +71,57 @@ public class DefaultFederatedTaxonomyService {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private static final FederatedTaxonomyService federatedTaxonomyService 
+		= new FederatedTaxonomyService();
+	
+	private AtomicBoolean hasInitialisationBegun = new AtomicBoolean(false);
+	private volatile boolean isInitialised = false;
+	
 	private HashMap<String, TaxonomyServiceAPI> taxonomyServiceFromIdentifier;
-	private boolean isInitialised;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DefaultFederatedTaxonomyService() {
+	private FederatedTaxonomyService() {
 		taxonomyServiceFromIdentifier 
 			= new HashMap<String, TaxonomyServiceAPI>();
 		isInitialised = false;
 	}
 
-	public boolean isInitialised() {
-		synchronized(this) {
-			return isInitialised;
-		}
+	public static FederatedTaxonomyService getFederatedTaxonomyService() {
+		return federatedTaxonomyService;
 	}
 	
 	public void initialise(final String defaultResourceDirectoryPath) 
 		throws RIFServiceException {
-		
-		synchronized(this) {
+
+		if (hasInitialisationBegun.get() == true) {
+			//prevent multiple threads from trying to initialise the service
+			return;
+		}
+		else {
+			hasInitialisationBegun.set(true);
 			
+			/*
+			 * For now, the default taxonomy service will only create and
+			 * initialise a taxonomy service once.  It will not deal with 
+			 * cases where a service dies, it tries to restart it etc.
+			 */
 			TaxonomyServiceConfigurationXMLReader reader
 				= new TaxonomyServiceConfigurationXMLReader();
 			reader.readFile(
-				defaultResourceDirectoryPath);			
-		
-			ArrayList<TaxonomyServiceAPI> taxonomyServices
-				= reader.getTaxonomyServices();
-			for (TaxonomyServiceAPI taxonomyService : taxonomyServices) {
-				System.out.println("Adding service with identifier=="+taxonomyService.getIdentifier()+"==");
-				taxonomyServiceFromIdentifier.put(
-					taxonomyService.getIdentifier(), 
-					taxonomyService);
-			}
+				defaultResourceDirectoryPath);
+			taxonomyServiceFromIdentifier
+				= reader.getTaxonomyFromIdentifierHashMap();
 			
 			isInitialised = true;
 		}
+
+	}
+	
+	public boolean isInitialised() {
+		return isInitialised;
 	}
 	
 	// ==========================================
@@ -143,14 +132,68 @@ public class DefaultFederatedTaxonomyService {
 	// Section Errors and Validation
 	// ==========================================
 
+	public void checkFederatedServiceWorkingProperly() 
+		throws RIFServiceException {
+		
+		if (isInitialised() == false) {
+			//The federated taxonomy service itself has not finished initialising
+
+			String errorMessage
+				= RIFGenericLibraryMessages.getMessage("federatedTaxonomyService.error.notInitialised");
+			RIFServiceException rifServiceException
+				 = new RIFServiceException(
+						RIFGenericLibraryError.FEDERATED_TAXONOMY_SERVICE_NOT_INITIALISED, 
+						errorMessage);
+			throw rifServiceException;
+		}
+	}
+	
+	public void checkTaxonomyServiceWorkingProperly(
+		final String taxonomyServiceIdentifier) 
+		throws RIFServiceException {
+		
+		checkFederatedServiceWorkingProperly();
+
+		//check service exists
+		TaxonomyServiceAPI taxonomyService
+			= taxonomyServiceFromIdentifier.get(taxonomyServiceIdentifier);
+		if (taxonomyService == null) {
+			//Error: Non-existent service
+			String errorMessage
+				= RIFGenericLibraryMessages.getMessage(
+					"taxonomyServices.error.nonExistentTaxonomyService", 
+					taxonomyServiceIdentifier);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.NON_EXISTENT_TAXONOMY_SERVICE, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		else {
+			//service exists but check if it's working
+			if (taxonomyService.isServiceWorking() == false) {
+				String errorMessage
+					= RIFGenericLibraryMessages.getMessage(
+						"taxonomyServices.error.serviceNotWorking",
+						taxonomyServiceIdentifier);
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFGenericLibraryError.TAXONOMY_SERVICE_NOT_WORKING, 
+						errorMessage);
+				throw rifServiceException;
+			}
+		}
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
-
 	
 	public ArrayList<TaxonomyServiceProvider> getTaxonomyServiceProviders() 
 		throws RIFServiceException {
 
+		checkFederatedServiceWorkingProperly();
+		
 		ArrayList<TaxonomyServiceAPI> taxonomyServices
 			= new ArrayList<TaxonomyServiceAPI>();
 		taxonomyServices.addAll(taxonomyServiceFromIdentifier.values());
@@ -174,7 +217,7 @@ public class DefaultFederatedTaxonomyService {
 		final String searchText,
 		final boolean isCaseSensitive)
 		throws RIFServiceException {
-		
+
 		TaxonomyServiceAPI taxonomyService
 			= getTaxonomyService(taxonomyServiceIdentifier);
 		
@@ -212,38 +255,14 @@ public class DefaultFederatedTaxonomyService {
 		return taxonomyService.getParentTerm(childTermIdentifier);	
 	}
 	
-	private TaxonomyServiceAPI getTaxonomyService(
+	public TaxonomyServiceAPI getTaxonomyService(
 		final String taxonomyServiceIdentifier) 
 		throws RIFServiceException {
 
+		checkTaxonomyServiceWorkingProperly(taxonomyServiceIdentifier);
+
 		TaxonomyServiceAPI matchingService
-			= taxonomyServiceFromIdentifier.get(taxonomyServiceIdentifier);
-		if (matchingService == null) {
-			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
-					"taxonomyServices.error.nonExistentTaxonomyService", 
-					taxonomyServiceIdentifier);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.NON_EXISTENT_TAXONOMY_SERVICE, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		else {
-			//service exists but check if it's working
-			if (matchingService.isServiceWorking() == false) {
-				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
-						"taxonomyServices.error.serviceNotWorking",
-						taxonomyServiceIdentifier);
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFGenericLibraryError.TAXONOMY_SERVICE_NOT_WORKING, 
-						errorMessage);
-				throw rifServiceException;
-			}
-		}
-		
+			= taxonomyServiceFromIdentifier.get(taxonomyServiceIdentifier);		
 		return matchingService;
 	}
 	

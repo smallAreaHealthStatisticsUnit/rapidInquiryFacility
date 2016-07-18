@@ -301,7 +301,7 @@ final class XMLHealthCodeTaxonomyContentHandler
 		textLine.append(taxonomyTerm.getLabel());
 		
 		System.out.println(textLine.toString());
-		ArrayList<TaxonomyTerm> subTerms = taxonomyTerm.getSubTerms();
+		ArrayList<TaxonomyTerm> subTerms = taxonomyTerm.getChildTerms();
 		for (TaxonomyTerm subTerm : subTerms) {
 			printTerm(subTerm, indentationLevel + 1);
 		}
@@ -326,7 +326,7 @@ final class XMLHealthCodeTaxonomyContentHandler
 			return results;
 		}
 		
-		return parentTerm.getSubTerms();		
+		return parentTerm.getChildTerms();		
 	}
 	
 	/**
@@ -470,7 +470,7 @@ final class XMLHealthCodeTaxonomyContentHandler
 			finishedTerm.setNameSpace(healthCodeTaxonomy.getNameSpace());
 			if (parentTerms.isEmpty() == false) {
 				TaxonomyTerm parentTerm = parentTerms.peek();
-				parentTerm.addSubTerm(finishedTerm);
+				parentTerm.addChildTerm(finishedTerm);
 				finishedTerm.setParentTerm(parentTerm);
 			}
 

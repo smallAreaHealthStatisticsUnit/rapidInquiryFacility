@@ -228,7 +228,7 @@ public final class RIFXMLTaxonomyProvider
 			healthCode.setDescription(taxonomyTerm.getDescription());
 			healthCode.setNameSpace(taxonomyTerm.getNameSpace());
 			healthCodes.add(healthCode);
-			healthCode.setNumberOfSubTerms(taxonomyTerm.getSubTerms().size());
+			healthCode.setNumberOfSubTerms(taxonomyTerm.getChildTerms().size());
 		}
 		return healthCodes;
 	}

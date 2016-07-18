@@ -250,7 +250,7 @@ public class ICD10TaxonomyService
 			return results;
 		}
 		
-		return parentTerm.getSubTerms();		
+		return parentTerm.getChildTerms();		
 	}
 	
 	/**
@@ -394,7 +394,7 @@ public class ICD10TaxonomyService
 		
 		
 		ArrayList<TaxonomyTerm> immediateSubTerms
-			= parentTerm.getSubTerms();
+			= parentTerm.getChildTerms();
 		
 		
 		return null;

@@ -190,7 +190,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 			chapters.add(chapter);
 			taxonomyContainer.put(chapterNamesInArray[i], chapter);
 		}
-		icd10Root.addSubTerms(chapters);
+		icd10Root.addChildTerms(chapters);
 		
 		//add root taxonomy (virtual one) into taxonomy repository
 		taxonomyContainer.put("ICD10Root", icd10Root);
@@ -229,7 +229,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 						childrenOfElement.add(childTaxonomy);
 						taxonomyContainer.put(childID, childTaxonomy);
 					}				
-					taxonomy.addSubTerms(childrenOfElement);
+					taxonomy.addChildTerms(childrenOfElement);
 				}
 
 				NodeList descriptions = element.getElementsByTagName("Rubric");
@@ -316,7 +316,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 		//The container for all of the top level HealthCode
 		ArrayList<HealthCode> healthCodes =new ArrayList<HealthCode>();
 		
-		for(TaxonomyTerm term : icd10Root.getSubTerms()){
+		for(TaxonomyTerm term : icd10Root.getChildTerms()){
 			healthCodes.add(transformTaxonomyTermIntoHealthCode(term));
 		}
 		return healthCodes;
@@ -336,7 +336,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 		//The container for the children of this parentHealthCode
 		ArrayList<HealthCode> children =new ArrayList<HealthCode>(parentHealthCode.getNumberOfSubTerms());
 		TaxonomyTerm parentTaxonomyTerm = taxonomyContainer.get(parentHealthCode.getCode());
-		for(TaxonomyTerm term :  parentTaxonomyTerm.getSubTerms()){
+		for(TaxonomyTerm term :  parentTaxonomyTerm.getChildTerms()){
 			HealthCode healthCode =transformTaxonomyTermIntoHealthCode(term);
 			children.add(healthCode);
 		}
@@ -459,7 +459,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 		healthCode.setTopLevelTerm(term.getParentTerm() ==null);
 		healthCode.setNameSpace(term.getNameSpace());
 		healthCode.setDescription(term.getDescription());
-		healthCode.setNumberOfSubTerms(term.getSubTerms().size());
+		healthCode.setNumberOfSubTerms(term.getChildTerms().size());
 		return healthCode;
 	}
 }

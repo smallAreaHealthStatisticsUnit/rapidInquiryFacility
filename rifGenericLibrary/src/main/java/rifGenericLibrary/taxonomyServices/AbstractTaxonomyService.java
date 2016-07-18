@@ -1,12 +1,12 @@
 package rifGenericLibrary.taxonomyServices;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.businessConceptLayer.Parameter;
 
 import java.util.ArrayList;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  *
@@ -74,7 +74,11 @@ public abstract class AbstractTaxonomyService
 	private String version;
 	
 	private ArrayList<Parameter> parameters;
-	private boolean isServiceWorking;
+	//private AtomicBoolean initialisationHasBegun = new AtomicBoolean(false);
+	private AtomicBoolean isServiceWorking = new AtomicBoolean(false);
+	
+	
+	private TaxonomyTermManager taxonomyTermManager;
 	
 	// ==========================================
 	// Section Construction
@@ -86,12 +90,20 @@ public abstract class AbstractTaxonomyService
 		description = "";
 		version = "";
 		parameters = new ArrayList<Parameter>();
+		
+		taxonomyTermManager = TaxonomyTermManager.newInstance();
+		
+		//initialisationHasBegun.set(false);
+		isServiceWorking.set(false);
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 	
+	public void setTaxonomyTermManager(final TaxonomyTermManager taxonomyTermManager) {
+		this.taxonomyTermManager = taxonomyTermManager;
+	}
 	
 	public String getIdentifier() {
 		return identifier;
@@ -99,9 +111,9 @@ public abstract class AbstractTaxonomyService
 
 	public void setIdentifier(final String identifier) {
 		this.identifier = identifier;
+		taxonomyTermManager.setTaxonomyServiceIdentifier(identifier);
 	}
 
-	
 	public String getName() {
 		return name;
 	}
@@ -126,16 +138,9 @@ public abstract class AbstractTaxonomyService
 		this.version = version;
 	}
 
-	protected void setServiceWorking(final boolean isServiceWorking) {
-		this.isServiceWorking = isServiceWorking;
-	}
-	
-	public boolean isServiceWorking() {
-		return isServiceWorking;
-	}
-
 	public void setTaxonomyServiceConfiguration(final TaxonomyServiceConfiguration taxonomyServiceConfiguration) {
 		identifier = taxonomyServiceConfiguration.getServiceIdentifier();
+		taxonomyTermManager.setTaxonomyServiceIdentifier(identifier);
 		name = taxonomyServiceConfiguration.getName();
 		description = taxonomyServiceConfiguration.getDescription();
 		version = taxonomyServiceConfiguration.getVersion();
@@ -164,7 +169,26 @@ public abstract class AbstractTaxonomyService
 			rifServiceExceptionFactory.createNonExistentFile(termFile.getAbsolutePath());
 		}
 	}
+
+	/*
+	public boolean hasInitialisationBegun() {
+		return initialisationHasBegun.get();
+	}
+
+	public void initialisationBegun() {
+		initialisationHasBegun.set(true);
+	}
+	*/
+
+	protected void setServiceWorking(final boolean isServiceWorking) {
+		this.isServiceWorking.set(isServiceWorking);
+	}
 	
+	public boolean isServiceWorking() {
+		return isServiceWorking.get();
+	}
+	
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -181,30 +205,6 @@ public abstract class AbstractTaxonomyService
 		throws RIFServiceException;
 	
 	/**
-	 * Gets the health codes.
-	 *
-	 * @param connection the connection
-	 * @param searchText the search text
-	 * @param isCaseSensitive
-	 * @return the child terms
-	 * @throws RIFServiceException the RIF service exception
-	 */	
-	public abstract ArrayList<TaxonomyTerm> getMatchingTerms(
-		final String searchText,
-		final boolean isCaseSensitive)
-		throws RIFServiceException;	
-
-	/**
-	 * Gets the top level codes.
-	 *
-	 * @param connection the connection
-	 * @return the top level codes
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public abstract ArrayList<TaxonomyTerm> getRootTerms() 
-		throws RIFServiceException;
-	
-	/**
 	 * Gets the immediate subterms.
 	 *
 	 * @param connection the connection
@@ -212,9 +212,12 @@ public abstract class AbstractTaxonomyService
 	 * @return the immediate subterms
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public abstract ArrayList<TaxonomyTerm> getImmediateChildTerms(
+	public ArrayList<TaxonomyTerm> getImmediateChildTerms(
 		final String parentTermIdentifier) 
-		throws RIFServiceException;
+		throws RIFServiceException {
+		
+		return taxonomyTermManager.getImmediateChildTerms(parentTermIdentifier);
+	}
 
 	/**
 	 * Gets the parent health code.
@@ -224,17 +227,47 @@ public abstract class AbstractTaxonomyService
 	 * @return the parent health code
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public abstract TaxonomyTerm getParentTerm(
-		final String childTermIdentifier) 
-		throws RIFServiceException;
+
+	public TaxonomyTerm getParentTerm(final String childTermIdentifier) 
+		throws RIFServiceException {
+		
+		return taxonomyTermManager.getParentTerm(childTermIdentifier);		
+	}
 	
-	public abstract TaxonomyTerm getTerm(
+	public TaxonomyTerm getTerm(
 		final String termIdentifier) 
-		throws RIFServiceException;
+		throws RIFServiceException {
+		
+		return taxonomyTermManager.getTerm(termIdentifier);
+	}
 	
-	public abstract boolean termExists(
+	public boolean termExists(
 		final String taxonomyTermIdentifier)
-		throws RIFServiceException;	
+		throws RIFServiceException {
+		
+		return taxonomyTermManager.termExists(taxonomyTermIdentifier);
+	}
+
+	
+	/**
+	 * Gets the root terms.
+	 *
+	 * @return the root terms
+	 */
+	public ArrayList<TaxonomyTerm> getRootTerms() {
+		
+		return taxonomyTermManager.getRootTerms();
+	}
+      
+	public ArrayList<TaxonomyTerm> getMatchingTerms(
+		final String searchPhrase,
+		final boolean isCaseSensitive) {
+	
+		return taxonomyTermManager.getMatchingTerms(
+			searchPhrase, 
+			isCaseSensitive);
+	}	
+	
 	
 	// ==========================================
 	// Section Override

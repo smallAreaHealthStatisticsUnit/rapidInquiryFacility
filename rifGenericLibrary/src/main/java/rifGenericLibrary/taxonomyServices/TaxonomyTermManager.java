@@ -13,7 +13,17 @@ import java.util.regex.Pattern;
 
 
 /**
- *
+ * A convenience class to manage a collection of 
+ * {@link rifGenericLibrary.taxonomyService.TaxonomyTerm} objects in-memory.  The 
+ * main reason for developing it is to separate the code used to exercise relationships
+ * between instances of <code>TaxonomyTerm</code> objects from the code used to 
+ * parse them from whatever data format that is used to serialise them.  In practice,
+ * we expect that taxonomy services will not vary much in their implementations, other 
+ * than how they initially pull out collections of terms from text files.  Once they 
+ * do that, they can register the terms with an instance of this class.  The
+ * <code>TaxonomyTermManager</code> can then provide most of the code used to support
+ * methods that are expected by the 
+ * {@link rifGenericLibrary.taxonomyServices.TaxonomyServiceAPI} interface.
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
@@ -82,16 +92,38 @@ public class TaxonomyTermManager {
 	// Section Construction
 	// ==========================================
 
-	public TaxonomyTermManager(final String taxonomyServiceID) {
+	private TaxonomyTermManager(final String taxonomyServiceID) {
+		init(taxonomyServiceID);		
+	}
+
+	public static TaxonomyTermManager newInstance() {
+		TaxonomyTermManager taxonomyTermManager
+			= new TaxonomyTermManager("");
+		return taxonomyTermManager;
+	}
+	
+	public static TaxonomyTermManager newInstance(
+		final String taxonomyServiceID) {
+		
+		TaxonomyTermManager taxonomyTermManager
+			= new TaxonomyTermManager(taxonomyServiceID);
+		return taxonomyTermManager;		
+	}
+
+	private void init(final String taxonomyServiceID) {
 		this.taxonomyServiceID = taxonomyServiceID;
 		rootTerms = new ArrayList<TaxonomyTerm>();
 		allTerms = new ArrayList<TaxonomyTerm>();
 		termFromIdentifier = new HashMap<String, TaxonomyTerm>();
 	}
-
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public void setTaxonomyServiceIdentifier(final String taxonomyServiceID) {
+		this.taxonomyServiceID = taxonomyServiceID;
+	}
 	
 	public void determineRootTerms() {
 		for (TaxonomyTerm term : allTerms) {
@@ -110,6 +142,10 @@ public class TaxonomyTermManager {
 	}
 	
 	public TaxonomyTerm getTerm(final String termIdentifier) {
+
+		if (termIdentifier == null) {
+			return null;			
+		}
 		
 		Collator collator = RIFGenericLibraryMessages.getCollator();
 
@@ -190,6 +226,12 @@ public class TaxonomyTermManager {
 		final String parentTermIdentifier) 
 		throws RIFServiceException {
 		
+		ArrayList<TaxonomyTerm> results
+			= new ArrayList<TaxonomyTerm>();
+		if (parentTermIdentifier == null) {
+			return results;
+		}
+		
 		TaxonomyTerm parentTerm
 			= getTerm(parentTermIdentifier);
 		if (parentTerm == null) {
@@ -199,12 +241,12 @@ public class TaxonomyTermManager {
 				taxonomyServiceID, 
 				parentTermIdentifier);
 		}
-		return parentTerm.getSubTerms();
+		return parentTerm.getChildTerms();
 	}
 	
 	public TaxonomyTerm getParentTerm(final String childTermIdentifier) {
 		if (childTermIdentifier == null) {
-			return TaxonomyTerm.NULL_TERM;
+			return null;
 		}
 		
 		TaxonomyTerm childTerm
@@ -217,13 +259,11 @@ public class TaxonomyTermManager {
 				childTermIdentifier);
 		}
 		
-		TaxonomyTerm parentTerm = TaxonomyTerm.NULL_TERM;
-		if (childTerm.getParentTerm() != null) {
-			return TaxonomyTerm.NULL_TERM;
-		}
-		else {
-			return parentTerm;
-		}
+		return childTerm.getParentTerm();
+	}
+	
+	public int getTotalChildren() {
+		return allTerms.size();
 	}
 	
 	// ==========================================

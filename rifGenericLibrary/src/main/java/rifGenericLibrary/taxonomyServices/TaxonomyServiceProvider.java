@@ -1,8 +1,24 @@
 package rifGenericLibrary.taxonomyServices;
 
 /**
+ * A business class designed to hold information about a taxonomy service that can
+ * be advertised to end-users.  Each provider has three attributes:
+ * <ul>
+ * <li><b>identifier</b>: a machine-readable identifier (eg: icd10)
+ * <li><b>name</b>: the human-readable name of the service as it would appear to users 
+ * in a list
+ * (eg: "ICD 10 Code service")
+ * <li><b>description</b>: a human readable description that can be used to provide
+ * users with information about what the service does (eg: "Provides terms from 
+ * the WHO's classification of diseases")
+ * </ul>
  *
- *
+ * <p>
+ * We envision that this class will be used to support a drop-down list of services in some
+ * front-end component.  Users may choose to mouse over the name of a service and learn more
+ * from the service description.  Once they have chosen the service they want, the identifier
+ * will be used for the <code>taxonomyServiceID</code> parameter for methods called in 
+ * {@link rifGenericLibrary.taxonomyServices.FederatedTaxonomyService}.
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 

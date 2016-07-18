@@ -63,8 +63,8 @@ public interface TaxonomyServiceAPI {
 		throws RIFServiceException;
 	public boolean isServiceWorking();
 	
+	//public boolean hasInitialisationBegun();
 	public String getIdentifier();
-	public String getNameSpace();
 	public String getName();
 	public String getDescription();
 	public String getVersion();

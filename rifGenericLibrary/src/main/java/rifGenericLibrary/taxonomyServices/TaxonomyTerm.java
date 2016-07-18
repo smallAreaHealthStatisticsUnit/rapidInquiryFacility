@@ -4,7 +4,59 @@ import java.util.ArrayList;
 
 
 /**
+ * Describes the concept of a taxonomy term.  It comprises the following fields:
+ * <ul>
+ * <li>label</li>
+ * <ll>description</li>
+ * <li>parentTerm</li>
+ * <li>childTerms</li>
+ * </ul>
  *
+ *<p>
+ * There are two aspects of design I considered in making the class.  Initially 
+ * I wanted to add a machine-readable <code>identifier</code> field to complement
+ * the human-readable <code>label</code> field.  To show the difference, consider
+ * a term like "testosterone", which could mean a hormone or a steroid.  If you wanted
+ * to have both contexts preserved in a taxonomy, you'd have two terms which had
+ * different identifiers, the same human-readable labels, and different descriptions.
+ * </p>
+ * 
+ * <p>
+ * However, most of the taxonomies the RIF uses expose human users to the codes that would
+ * seem better reserved for machines.  For example, "J45" is a label and "asthma" would
+ * be a description.  Some users would actually look up and remember ICD codes.
+ * </p>
+ * 
+ * <p>
+ * Note that in the ICD codes, the different contexts of "asthma" are
+ * reflected in different ICD codes (eg: J45.20 is "uncomplicated mild intermittent asthma" and
+ * J45.30 is "uncomplicated mild persistent asthma").
+ * </p>
+ * 
+ * <p>
+ * We could have made "J45" as an identifier, "asthma" as a label, but then there may not be
+ * a description.  To simplify the taxonomy services for the RIF, I decided to go with just
+ * having label and description.
+ * </p>
+ * 
+ * <p>
+ * A taxonomy term should also have a name space, but rather than storing this information with
+ * each term, I've made it a property of the taxonomy service.  For example, "icd10" could be
+ * used to set a name space field in each term.  But instead, the name space is provided in the
+ * <code>getIdentifier()</code> method of 
+ * {@link rifGenericLibrary.taxonomyServices.TaxonomyServiceAPI}.
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * However, given the taxonomies that the
+ * RIF would likely use, it seemed unnecessary.  
+ * 
+ * <p>
+ * 
+ * </p>
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -72,7 +124,6 @@ final public class TaxonomyTerm {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	public static final TaxonomyTerm NULL_TERM = TaxonomyTerm.newInstance();
 	
 	// ==========================================
 	// Section Properties
@@ -90,7 +141,7 @@ final public class TaxonomyTerm {
 	private TaxonomyTerm parentTerm;
 	
 	/** The sub terms. */
-	private ArrayList<TaxonomyTerm> subTerms;
+	private ArrayList<TaxonomyTerm> childTerms;
 	
 	// ==========================================
 	// Section Construction
@@ -101,8 +152,8 @@ final public class TaxonomyTerm {
 	 */
 	private TaxonomyTerm() {	
 		
-		subTerms = new ArrayList<TaxonomyTerm>();
-		parentTerm = TaxonomyTerm.NULL_TERM;
+		childTerms = new ArrayList<TaxonomyTerm>();
+		parentTerm = null;
 	}
 
 	/**
@@ -139,26 +190,44 @@ final public class TaxonomyTerm {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public boolean hasMatchingLabel(final String targetLabel) {
+		return label.equals(targetLabel);		
+	}
+	
+	public static boolean hasTermMatchingLabel(
+		final ArrayList<TaxonomyTerm> taxonomyTerms,
+		final String targetLabel) {
+		
+		for (TaxonomyTerm taxonomyTerm : taxonomyTerms) {
+			if (taxonomyTerm.getLabel().equals(targetLabel)) {
+				return true;
+			}
+		}
+		
+		return false;
+		
+	}
+	
 	/**
 	 * Adds the sub term.
 	 *
 	 * @param subTerm the sub term
 	 */
-	public void addSubTerm(
-		final TaxonomyTerm subTerm) {
+	public void addChildTerm(
+		final TaxonomyTerm childTerm) {
 
-		subTerms.add(subTerm);
+		childTerms.add(childTerm);
 	}
 
 	/**
 	 * Adds the sub terms.
 	 *
-	 * @param subTerms the sub terms
+	 * @param childTerms the sub terms
 	 */
-	public void addSubTerms(
-		final ArrayList<TaxonomyTerm> subTerms) {
+	public void addChildTerms(
+		final ArrayList<TaxonomyTerm> childTerms) {
 
-		this.subTerms.addAll(subTerms);
+		this.childTerms.addAll(childTerms);
 	}
 	
 	/**
@@ -166,9 +235,27 @@ final public class TaxonomyTerm {
 	 *
 	 * @return the sub terms
 	 */
-	public ArrayList<TaxonomyTerm> getSubTerms() {
+	public ArrayList<TaxonomyTerm> getChildTerms() {
 		
-		return subTerms;
+		return childTerms;
+	}
+	
+	/**
+	 * Returns the number of immediate child terms, so it doesn't count the whole
+	 * tree of terms, just the number of nodes in the next tier of the taxonomy.
+	 * @return
+	 */
+	public int getNumberOfChildTerms() {
+		return childTerms.size();
+	}
+	
+	public boolean isRootTerm() {
+		if (parentTerm == null) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 	
 	/**

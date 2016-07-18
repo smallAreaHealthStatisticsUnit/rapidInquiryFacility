@@ -1,15 +1,16 @@
 package taxonomyServices;
 
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.taxonomyServices.FederatedTaxonomyService;
 import rifGenericLibrary.taxonomyServices.TaxonomyServiceProvider;
 import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
+import rifGenericLibrary.util.CrudeCodeExecutionTimer;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletContext;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 
@@ -46,10 +47,9 @@ public class RIFTaxonomyWebServiceResource {
 	// Section Properties
 	// ==========================================
 
-	private final RIFFederatedTaxonomyService taxonomyService = new RIFFederatedTaxonomyService();
 	private WebServiceResponseUtility webServiceResponseUtility;
 
-	private RIFServiceException serviceInitialisationException;
+	//private RIFServiceException serviceInitialisationException;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -63,6 +63,37 @@ public class RIFTaxonomyWebServiceResource {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/initialiseService")
+	public Response initialiseService(
+		@Context HttpServletRequest servletRequest) {
+	
+		String result = String.valueOf(false);
+		try {			
+			FederatedTaxonomyService federatedTaxonomyService
+				= FederatedTaxonomyService.getFederatedTaxonomyService();
+			ServletContext servletContext
+				= servletRequest.getServletContext();
+			String fullPath
+				= servletContext.getRealPath("/WEB-INF/classes");
+			federatedTaxonomyService.initialise(fullPath);								
+			webServiceResponseUtility.serialiseStringResult(String.valueOf(true));
+			result = String.valueOf(true);
+		}
+		catch(Exception exception) {
+			result 
+				= webServiceResponseUtility.serialiseException(
+					servletRequest, 
+					exception);
+		}
+
+		return webServiceResponseUtility.generateWebServiceResponse(
+			servletRequest,
+			result);		
+	}
 	
 	@GET
 	@Produces({"application/json"})	
@@ -74,10 +105,12 @@ public class RIFTaxonomyWebServiceResource {
 
 		try {
 				
-			checkServiceWorkingProperly(servletRequest);
+			checkFederatedServiceWorkingProperly(servletRequest);
+			FederatedTaxonomyService federatedTaxonomyService
+				= FederatedTaxonomyService.getFederatedTaxonomyService();
 			
 			ArrayList<TaxonomyServiceProvider> taxonomyServiceProviders
-				= taxonomyService.getTaxonomyServiceProviders();
+				= federatedTaxonomyService.getTaxonomyServiceProviders();
 			ArrayList<TaxonomyServiceProviderProxy> serviceProviderProxies
 				= new ArrayList<TaxonomyServiceProviderProxy>();
 			for (TaxonomyServiceProvider taxonomyServiceProvider : taxonomyServiceProviders) {
@@ -117,10 +150,12 @@ public class RIFTaxonomyWebServiceResource {
 		String result = "";
 
 		try {
-			checkServiceWorkingProperly(servletRequest);
+			checkFederatedServiceWorkingProperly(servletRequest);
+			FederatedTaxonomyService federatedTaxonomyService
+				= FederatedTaxonomyService.getFederatedTaxonomyService();
 
 			ArrayList<TaxonomyTerm> rootTerms
-				= taxonomyService.getRootTerms(taxonomyServiceID);
+				= federatedTaxonomyService.getRootTerms(taxonomyServiceID);
 			result 
 				= serialiseTaxonomyTerms(
 					servletRequest,
@@ -149,11 +184,17 @@ public class RIFTaxonomyWebServiceResource {
 
 		String result = "";
 		
+		
+		CrudeCodeExecutionTimer timer = CrudeCodeExecutionTimer.getTimer();
+		timer.start();
+		
 		try {
-			checkServiceWorkingProperly(servletRequest);
+			checkFederatedServiceWorkingProperly(servletRequest);
+			FederatedTaxonomyService federatedTaxonomyService
+				= FederatedTaxonomyService.getFederatedTaxonomyService();
 
 			ArrayList<TaxonomyTerm> matchingTerms
-				= taxonomyService.getMatchingTerms(
+				= federatedTaxonomyService.getMatchingTerms(
 					taxonomyServiceID, 
 					searchText, 
 					isCaseSensitive);
@@ -162,6 +203,11 @@ public class RIFTaxonomyWebServiceResource {
 				= serialiseTaxonomyTerms(
 					servletRequest,
 					matchingTerms);
+
+			timer.addStoppingPoint("getMatchingTerms 2");
+			timer.stop();
+			timer.printReport();
+
 		}
 		catch(Exception exception) {
 			result
@@ -184,11 +230,17 @@ public class RIFTaxonomyWebServiceResource {
 
 		String result = "";
 
+		CrudeCodeExecutionTimer timer = CrudeCodeExecutionTimer.getTimer();
+		timer.clearStoppingPoints();
+		timer.start();
+		timer.addStoppingPoint("getImmediateChildTerms 2");
 		try {
-			checkServiceWorkingProperly(servletRequest);
+			checkFederatedServiceWorkingProperly(servletRequest);
+			FederatedTaxonomyService federatedTaxonomyService
+				= FederatedTaxonomyService.getFederatedTaxonomyService();
 
 			ArrayList<TaxonomyTerm> childTerms
-				= taxonomyService.getImmediateChildTerms(
+				= federatedTaxonomyService.getImmediateChildTerms(
 					taxonomyServiceID, 
 					parentTermID);
 			result 
@@ -202,7 +254,8 @@ public class RIFTaxonomyWebServiceResource {
 					servletRequest, 
 					exception);
 		}
-
+		timer.stop();
+		timer.printReport();
 		return webServiceResponseUtility.generateWebServiceResponse(
 			servletRequest,
 			result);		
@@ -219,10 +272,12 @@ public class RIFTaxonomyWebServiceResource {
 		String result = "";
 
 		try {
-			checkServiceWorkingProperly(servletRequest);
+			checkFederatedServiceWorkingProperly(servletRequest);
+			FederatedTaxonomyService federatedTaxonomyService
+				= FederatedTaxonomyService.getFederatedTaxonomyService();
 
 			TaxonomyTerm parentTerm
-				= taxonomyService.getParentTerm(
+				= federatedTaxonomyService.getParentTerm(
 					taxonomyServiceID, 
 					childTermID);
 			result = serialiseTaxonomyTerm(
@@ -282,28 +337,21 @@ public class RIFTaxonomyWebServiceResource {
 	 * an exception to throw back to the client. 
 	 * @throws RIFServiceException
 	 */
-	private void checkServiceWorkingProperly(final HttpServletRequest servletRequest) 
+	private void checkFederatedServiceWorkingProperly(
+		final HttpServletRequest servletRequest) 
 		throws RIFServiceException {
 		
-
-		try {
-			if (taxonomyService.isInitialised() == false) {
-				ServletContext servletContext
-					= servletRequest.getServletContext();
-				String fullPath
-					= servletContext.getRealPath("/WEB-INF/classes");
-				taxonomyService.initialise(fullPath);				
-			}
+		FederatedTaxonomyService federatedTaxonomyService
+			= FederatedTaxonomyService.getFederatedTaxonomyService();
+		if (federatedTaxonomyService.isInitialised() == false) {
+			//none of the taxonomy services will be ready because the
+			//federated service has not been initialised yet.
+			ServletContext servletContext
+				= servletRequest.getServletContext();
+			String fullPath
+				= servletContext.getRealPath("/WEB-INF/classes");
+			federatedTaxonomyService.initialise(fullPath);								
 		}
-		catch(RIFServiceException rifServiceException) {
-			serviceInitialisationException = rifServiceException;
-		}
-		
-		
-		if (serviceInitialisationException != null) {
-			throw serviceInitialisationException;
-		}
-		
 	}
 	
 	// ==========================================

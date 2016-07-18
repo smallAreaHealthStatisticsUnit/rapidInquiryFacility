@@ -1,13 +1,13 @@
-package rifGenericLibrary.taxonomyServices;
+package taxonomyServices.test;
 
-import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.taxonomyServices.*;
+import rifGenericLibrary.system.ClassFileLocator;
 
 import java.util.ArrayList;
 
+
 /**
- * The main business class that is used to hold data from the 
- * <code>TaxonomyServicesConfiguration.xml</code> file found in the resources
- * directory.
+ *
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
@@ -56,8 +56,38 @@ import java.util.ArrayList;
  *
  */
 
-public class TaxonomyServiceConfiguration {
+public class TestFederatedTaxonomyService {
 
+	public static void main(String[] args) {
+		
+		FederatedTaxonomyService service
+			= FederatedTaxonomyService.getFederatedTaxonomyService();
+
+		try {
+			String defaultResourceDirectoryPath
+				= ClassFileLocator.getClassRootLocation("taxonomyServices");
+						
+			service.initialise(defaultResourceDirectoryPath);
+			System.out.println("Initialising again");
+			service.initialise(defaultResourceDirectoryPath);
+			
+			ArrayList<TaxonomyTerm> taxonomyTerms
+				= service.getRootTerms("icd10");
+			for (TaxonomyTerm taxonomyTerm : taxonomyTerms) {
+				System.out.println("TaxonomyTerm=="+taxonomyTerm.getLabel()+"==");
+				ArrayList<TaxonomyTerm> subTerms
+					= service.getImmediateChildTerms("icd10", taxonomyTerm.getLabel());
+				for (TaxonomyTerm subTerm : subTerms) {
+					System.out.println("CHILD TERM=="+subTerm.getLabel()+"==");
+				}
+			}
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+		}
+		
+	}
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -65,75 +95,19 @@ public class TaxonomyServiceConfiguration {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String serviceIdentifier;
-	private String name;
-	private String description;
-	private String version;
-	private String ontologyServiceClassName;
-	
-	private ArrayList<Parameter> parameters;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private TaxonomyServiceConfiguration() {
-		parameters = new ArrayList<Parameter>();
-		
-	}
-	
-	public static TaxonomyServiceConfiguration newInstance() {
-		TaxonomyServiceConfiguration taxonomyServiceConfiguration
-			= new TaxonomyServiceConfiguration();
-		
-		return taxonomyServiceConfiguration;
+	public TestFederatedTaxonomyService() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
-	public String getServiceIdentifier() {
-		return serviceIdentifier;
-	}
-	public void setServiceIdentifier(final String serviceIdentifier) {
-		this.serviceIdentifier = serviceIdentifier;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(final String name) {
-		this.name = name;
-	}
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(final String description) {
-		this.description = description;
-	}
-	public String getVersion() {
-		return version;
-	}
-	public void setVersion(final String version) {
-		this.version = version;
-	}
-	public String getOntologyServiceClassName() {
-		return ontologyServiceClassName;
-	}
-	public void setOntologyServiceClassName(final String ontologyServiceClassName) {
-		this.ontologyServiceClassName = ontologyServiceClassName;
-	}
-	public ArrayList<Parameter> getParameters() {
-		return parameters;
-	}
-	public void setParameters(final ArrayList<Parameter> parameters) {
-		this.parameters = parameters;
-	}
 
-	public void addParameter(final Parameter parameter) {
-		parameters.add(parameter);
-	}
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -145,4 +119,6 @@ public class TaxonomyServiceConfiguration {
 	// ==========================================
 	// Section Override
 	// ==========================================
+
 }
+
