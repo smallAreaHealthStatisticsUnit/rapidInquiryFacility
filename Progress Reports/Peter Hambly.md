@@ -505,6 +505,7 @@ RangeError: Invalid string length
 #### Current TODO list (July):
 
 * Add addStatus() callbacks, tidy messages
+* Convert toTopoJSONZoomlevels() for loops to async
 * Timeout recovery (switches to batch mode).
 * ST_Union and area calculations can be done in geoJSON using turf: as it is a geometry collection. 
 * Add area_id and id uniqueness tests to shapefile checks and tests

@@ -609,8 +609,14 @@ exports.convert = function exportsConvert(req, res) {
 								response.message=msg + "\n" + response.message;
 								response.file_errors++;					// Increment file error count	
 								serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
-	//							d_files.d_list[index-1] = d;							
-								callback(err);
+	//							d_files.d_list[index-1] = d;	
+								try {
+									callback(err);
+								}
+								catch (e) {
+									serverLog.serverError2(__file, __line, "fileCompressionProcessing", 
+										"Recursive error in fileCompressionProcessing() callback", req, e);
+								}
 							}
 							else {		
 								d.file.file_data=result;
@@ -639,8 +645,14 @@ exports.convert = function exportsConvert(req, res) {
 								response.message=msg + "\n" + response.message;
 								response.file_errors++;					// Increment file error count	
 								serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
-	//							d_files.d_list[index-1] = d;								
-								callback(err);
+	//							d_files.d_list[index-1] = d;	
+								try {
+									callback(err);
+								}
+								catch (e) {
+									serverLog.serverError2(__file, __line, "fileCompressionProcessing", 
+										"Recursive error in fileCompressionProcessing() callback", req, e);
+								}
 							}
 							else {	
 								d.file.file_data=result;

@@ -219,7 +219,8 @@ shpConvert = function shpConvert(ofields, d_files, response, req, res, shapefile
 //		serverLog.serverLog2(__file, __line, "shpConvert", 
 //		"In shpConvertFileProcessor(), shapeFileComponentQueue[" + fileData["i"] + "]: " + fileData.d.file.file_name);
 
-		shapeFileComponentQueue.push(fileData, function shapeFileComponentQueuePush(err) {
+		shapeFileComponentQueue.push(fileData, 
+			function shapeFileComponentQueuePush(err) {
 			if (err) {
 //				var msg='ERROR! [' + fileData["uuidV1"] + '] in shapefile read: ' + fileData.d.file.file_name;
 				var msg="Error! in shpConvertFileProcessor()";
@@ -1321,9 +1322,24 @@ This error in actually originating from the error handler function
 						if (err) {						
 							serverLog.serverLog2(__file, __line, "addStatusCallback", "ERROR! in writing status file", req, e);
 						}
-						else {						
-							var output = JSON.stringify(response);// Convert output response to JSON 
-							writeResponseFile(serverLog, response, req, output,  ".2", function finalProcessingCallback() {	// Intermediate version 
+						else {
+							var diagnosticsTimer=response.diagnosticsTimer;  // Save
+							response.diagnosticsTimer=undefined; // Prevent TypeError: Converting circular structure to JSON - in JSON.stringify()
+							var output;
+							try {
+								output = JSON.stringify(response); // Convert output response to JSON 
+							}
+							catch (e) {
+								const util = require('util');
+
+								var trace=(util.inspect(response, { showHidden: true, depth: 3 }));
+								serverLog.serverError2(__file, __line, "finalProcessingCallback", 
+									"ERROR! in JSON.stringify(response); trace >>>\n" + trace + "\n<<< End of trace", req, e);
+							}
+							response.diagnosticsTimer=diagnosticsTimer; // Restore
+							
+							writeResponseFile(serverLog, response, req, output,  ".2", 
+								function finalProcessingCallback() {	// Intermediate version 
 								if (err) {						
 									serverLog.serverLog2(__file, __line, "finalProcessingCallback", "ERROR! in writing response file", req, e);
 								}

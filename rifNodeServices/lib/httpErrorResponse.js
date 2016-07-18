@@ -80,6 +80,50 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		diagnostic: '',
 		fields: [] 
 	};
+	
+	/*
+	 * Function:	httpErrorResponseAddStatusCallback()
+	 * Parameters:	Error object
+	 * Returns:		Nothing
+	 * Description: addStatus callback
+	 */				
+	function httpErrorResponseAddStatusCallback(err) { // Add error status
+		if (err) {
+			serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", 
+				"WARNING: Error in addStatus()", req, err);
+		}
+		
+		if (!res.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
+			res.status(status);		
+			var output;
+			try {
+				output = JSON.stringify(l_response); // Convert output response to JSON 
+			}
+			catch (e) {
+				const util = require('util');
+
+				var trace=(util.inspect(l_response, { showHidden: true, depth: 3 }));
+				serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", 
+					"ERROR! in JSON.stringify(g_response); trace >>>\n" + trace + "\n<<< End of trace", req, e);
+			}
+
+			if (g_response && g_response.fields["diagnosticFileDir"] && g_response.fields["responseFileName"]) { // Save to response file
+				fs.writeFileSync(g_response.fields["diagnosticFileDir"] + "/" + g_response.fields["responseFileName"], 
+					output);	
+			}
+			else if (g_response && !g_response.fields["responseFileName"]) { // Do not raise errors - you will recurse and it will not be devine
+				serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "FATAL ERROR! Unable to save response file; no responseFileName", req);
+			}
+				
+			res.write(output);
+			res.end();	
+			serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "httpErrorResponse sent; size: " + output.length + " bytes", req);	
+		}
+		else { // Do not raise errors - likewise
+			serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "FATAL ERROR! Unable to return error to user - httpErrorResponse() already processed", req, err);
+		}						
+	} // End of httpErrorResponseAddStatusCallback()	
+					
 	try {			
 		if (g_response) {
 			l_response.no_files = g_response.no_files;
@@ -142,50 +186,32 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		if (g_response && g_response.status && nodeGeoSpatialServicesCommon && 
 		    nodeGeoSpatialServicesCommon.addStatus && typeof nodeGeoSpatialServicesCommon.addStatus == "function") { // Add error status
 			try {
-				nodeGeoSpatialServicesCommon.addStatus(file, line, g_response, "ERROR", status /* HTTP status */, serverLog, req,
-					function httpErrorResponseAddStatusCallback() { // Add error status
-						
-						if (!res.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
-							res.status(status);		
-							var output = JSON.stringify(l_response);// Convert output response to JSON 	
-
-							if (g_response && g_response.fields["diagnosticFileDir"] && g_response.fields["responseFileName"]) { // Save to response file
-								fs.writeFileSync(g_response.fields["diagnosticFileDir"] + "/" + g_response.fields["responseFileName"], 
-									output);	
-							}
-							else if (g_response && !g_response.fields["responseFileName"]) { // Do not raise errors - you will recurse and it will not be devine
-								serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "FATAL ERROR! Unable to save response file; no responseFileName", req);
-							}
-								
-							res.write(output);
-							res.end();	
-							serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "httpErrorResponse sent; size: " + output.length + " bytes", req);	
-						}
-						else { // Do not raise errors - likewise
-							serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "FATAL ERROR! Unable to return error to user - httpErrorResponse() already processed", req, err);
-						}						
-					}); // End of httpErrorResponseAddStatusCallback()
+				nodeGeoSpatialServicesCommon.addStatus(file, line, g_response, "ERROR", status /* HTTP status */, serverLog, req, httpErrorResponseAddStatusCallback);
+					
 				l_response.status = g_response.status;
 			}
 			catch (e) {		
 				serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): caught exception in addStatus()", req, e);
 			}
 		}
-		else if (!g_response) {	
-			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no g_response; unable to addStatus()", req, undefined /* No exception */);	
-		}
-		else if (!g_response.status) {	
-			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no g_response.status; unable to addStatus()", req, undefined /* No exception */);	
-		}
-		else if (!nodeGeoSpatialServicesCommon) {	
-			serverLog.serverLog2(file, line, calling_function, 
-				"WARNING: httpErrorResponse(): no nodeGeoSpatialServicesCommon module for addStatus() function; unable to addStatus()", req, undefined /* No exception */);
-		}
-		else if (!nodeGeoSpatialServicesCommon.addStatus) {	
-			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no addStatus() function; unable to addStatus()", req, undefined /* No exception */);
-		}
-		else if (typeof nodeGeoSpatialServicesCommon.addStatus != "function") {	
-			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): addStatus() is not a function; unable to addStatus()", req, undefined /* No exception */);
+		else {
+			if (!g_response) {	
+				serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no g_response; unable to addStatus()", req, undefined /* No exception */);	
+			}
+			else if (!g_response.status) {	
+				serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no g_response.status; unable to addStatus()", req, undefined /* No exception */);	
+			}
+			else if (!nodeGeoSpatialServicesCommon) {	
+				serverLog.serverLog2(file, line, calling_function, 
+					"WARNING: httpErrorResponse(): no nodeGeoSpatialServicesCommon module for addStatus() function; unable to addStatus()", req, undefined /* No exception */);
+			}
+			else if (!nodeGeoSpatialServicesCommon.addStatus) {	
+				serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): no addStatus() function; unable to addStatus()", req, undefined /* No exception */);
+			}
+			else if (typeof nodeGeoSpatialServicesCommon.addStatus != "function") {	
+				serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): addStatus() is not a function; unable to addStatus()", req, undefined /* No exception */);
+			}
+			httpErrorResponseAddStatusCallback(); // Cannot add status, run callback anyway (or you won't get a result...
 		}
 
 	} catch (e) {                            // Catch conversion errors

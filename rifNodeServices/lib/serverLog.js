@@ -150,15 +150,22 @@ serverError = function(msg, req, err) {
 	// Get file information from magic-globals: __stack
 	var file=__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0];
 	var line=__stack[2].getLineNumber();
+	var stack = new Error().stack
 	
 	try {
-		if (response && response.diagnosticsTimer) { // Disable the diagnostic file write timer
+		if (response && response.diagnosticsTimer && response.diagnosticsTimer > 0) { // Disable the diagnostic file write timer
 			clearInterval(response.diagnosticsTimer);
 			response.diagnosticsTimer=undefined;
 		}
+		else if (response) {
+			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, timer not set; stack: " + stack, req);
+		}
+		else {
+			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req);
+		}
 	}
 	catch (e) {
-		serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, response not in scope", req, e);
+		serverLog2(file, line, calling_function, "WARNING! Caught error! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req, e);
 	}
 		
 	serverLog2(file, line, calling_function, msg, req, err);
@@ -172,14 +179,22 @@ serverError = function(msg, req, err) {
 
 serverError2 = function(file, line, calling_function, msg, req, err) {	
 
+	var stack = new Error().stack
+	
 	try {
-		if (response && response.diagnosticsTimer) { // Disable the diagnostic file write timer
+		if (response && response.diagnosticsTimer && response.diagnosticsTimer > 0) { // Disable the diagnostic file write timer
 			clearInterval(response.diagnosticsTimer);
 			response.diagnosticsTimer=undefined;
 		}
+		else if (response) {
+			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, timer not set; stack: " + stack, req);
+		}
+		else {
+			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req);
+		}
 	}
 	catch (e) {
-		serverLog2(file, line, calling_function, "WARNING! Unable to disable the diagnostic file write timer, response not in scope", req, e);
+		serverLog2(file, line, calling_function, "WARNING! Caught error! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req, e);
 	}
 	
 	serverLog2(file, line, calling_function, msg, req, err);
