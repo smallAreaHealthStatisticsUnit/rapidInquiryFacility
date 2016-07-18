@@ -115,7 +115,7 @@ public final class ICD10TaxonomyTermParser {
 	// ==========================================
 
 	public ICD10TaxonomyTermParser() {
-		taxonomyTermManager = new TaxonomyTermManager(ICD10NameSpace);
+		taxonomyTermManager = TaxonomyTermManager.newInstance(ICD10NameSpace);
 	}
 
 	public void readFile(
