@@ -404,7 +404,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		var xmlDoc = builder.buildObject(xmlConfig);
 		
 //		response.message+="\nCreated XML config [xml] >>>\n" + xmlDoc + "\n<<< end of XML config [xml]";
-		response.message+="\nXML config as json>>>\n" + JSON.stringify(xmlConfig, null, 4) + "\n<<< end of XM config as json";
+//		response.message+="\nXML config as json >>>\n" + JSON.stringify(xmlConfig, null, 4) + "\n<<< end of XM config as json";
 			
 		fs.writeFileSync(xmlConfig.xmlFileDir + "/" + xmlConfig.xmlFileName, xmlDoc);
 	} // End of createXmlFile()
@@ -1315,7 +1315,35 @@ This error in actually originating from the error handler function
 			else { 				
 				msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
 				response.message = response.message + "\n" + msg;
-				nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
+
+				addStatus(__file, __line, response, "BATCH_INTERMEDIATE_END", 200 /* HTTP OK */, serverLog, req, // Add status
+					function addStatusCallback(err) { 	
+						if (err) {						
+							serverLog.serverLog2(__file, __line, "addStatusCallback", "ERROR! in writing status file", req, e);
+						}
+						else {						
+							var output = JSON.stringify(response);// Convert output response to JSON 
+							writeResponseFile(serverLog, response, req, output,  ".2", function finalProcessingCallback() {	// Intermediate version 
+								if (err) {						
+									serverLog.serverLog2(__file, __line, "finalProcessingCallback", "ERROR! in writing response file", req, e);
+								}
+								else {								
+									scopeChecker(__file, __line, {
+										serverLog: serverLog,
+										httpErrorResponse: httpErrorResponse,
+										req: req,
+										res: res,
+										response: response,
+										ofields: ofields
+									});
+					
+				// REST OF PROCESSING GOES HERE!
+								
+									nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
+								}
+							}); // End of finalProcessingCallback() 	
+						}							
+					}); // End of addStatusCallback()		
 			}
 		}
 		catch (e) {

@@ -187,49 +187,77 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 		ofields["topojson_options"]=undefined;
 	}	
 	response.fields=ofields;				// Add return fields not already present	
-
+	var diagnosticFileDir=response.fields["diagnosticFileDir"]; // Save for later
+	
 	if (response.field_errors == 0 && response.file_errors == 0) { // OK
 	
-		addStatus(__file, __line, response, "END", 200 /* HTTP OK */, serverLog, req); // Add status
-		
+		if (ofields["batchMode"] == "true") { // Batch mode
+			if (res.finished) { // Response has been processed
+				addStatus(__file, __line, response, "BATCH_END", 200 /* HTTP OK */, serverLog, req); // Add status
+			}
+			else { // Response NOT already processed
+				addStatus(__file, __line, response, "BATCH_START", 200 /* HTTP OK */, serverLog, req); // Add status
+			}
+		}
+		else {
+			addStatus(__file, __line, response, "END", 200 /* HTTP OK */, serverLog, req); // Add status
+		}
+			
 		response.fields["diagnosticFileDir"]=undefined;	// Remove diagnosticFileDir as it reveals OS type
 	
 //			serverLog.serverLog2(__file, __line, "responseProcessing", msg, req);	
-		if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
+		if (!res.finished) { // Response NOT already processed
 			var msg=response.message;
 			if (!response.fields.verbose) {
 				response.message="";	
 			}	
 			var output = JSON.stringify(response);// Convert output response to JSON 
-			msg+="\nCreated reponse, size: " + output.length; 
+			response.fields["diagnosticFileDir"]=diagnosticFileDir // Restore
+			msg+="\nCreated reponse, size: " + output.length + "; saving to file: " + response.fields["responseFileName"] + ".1"; 
 			serverLog.serverLog2(__file, __line, "responseProcessing", 
 				"Diagnostics >>>\n" +
 				msg + "\n<<< End of diagnostics", req);
 
-			if (response.fields["diagnosticFileDir"] && response.fields["responseFileName"]) { // Save to response file
-				fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["responseFileName"], 
-					output);	
-			}
-			else if (!response.fields["responseFileName"]) {	
-				serverLog.serverError(__file, __line, "responseProcessing", "Unable to save response file; no responseFileName", req);
-			}
-	
-// Need to test res was not finished by an expection to avoid "write after end" errors			
-			try {
-				res.write(output);                  // Write output  
-				res.end();	
-
-				if (response.fields.verbose || output.length > (10*1024*1024) /* 10MB */) {
-					serverLog.serverLog2(__file, __line, "responseProcessing", 
-						"Response sent; size: " + output.length + " bytes", req);					
+			function writeResponseFileCallback(err) {	
+				if (err) {						
+					serverLog.serverLog2(__file, __line, "writeResponseFileCallback", "ERROR! in writing response file", req, e);
 				}
-								
-			}
-			catch(e) {
-				serverLog.serverError(__file, __line, "responseProcessing", "Error in sending response to client", req, e);
-			}
+				else {	
+					try { // Have tested res was not finished by an expection to avoid "write after end" errors
+						res.write(output);                  // Write output  
+						res.end();	
+
+						if (response.fields.verbose || output.length > (10*1024*1024) /* 10MB */) {
+							serverLog.serverLog2(__file, __line, "writeResponseFileCallback", 
+								"Response sent; size: " + output.length + " bytes", req);					
+						}
+										
+					}
+					catch(e) {
+						serverLog.serverLog2(__file, __line, "writeResponseFileCallback", "ERROR! in sending response to client", req, e);
+					}
+				}
+			} // End of responseProcessingCallback()
+			
+			writeResponseFile(serverLog, response, req, output,  ".3", writeResponseFileCallback); // Final END version
+
 		}
-		else {
+		else if (ofields["batchMode"] == "true") { // Batch mode
+			var msg=response.message;
+			if (!response.fields.verbose) {
+				response.message="";	
+			}	
+			var output = JSON.stringify(response);// Convert output response to JSON 
+			response.fields["diagnosticFileDir"]=diagnosticFileDir // Restore
+			msg+="\nCreated reponse, size: " + output.length; 
+			serverLog.serverLog2(__file, __line, "responseProcessing", 
+				"Batch end diagnostics >>>\n" +
+				msg + "\n<<< End of diagnostics", req);
+
+			writeResponseFile(serverLog, response, req, output,  ".1", undefined /* No callback */); // BEGIN BATCH version		
+//
+		}
+		else { // Error if response has already been processed
 			serverLog.serverLog2(__file, __line, "responseProcessing", 
 				"Diagnostics >>>\n" +
 				response.message + "\n<<< End of diagnostics", req);
@@ -267,8 +295,47 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 } // End of responseProcessing
 
 /*
+ * Function: 	writeResponseFile()
+ * Parameters:	ServerLog object, Internal response object, Express HTTP request object, output (JSION as text), file version (.1, .2 etc), optional callback
+ * Returns:		Nothing
+ * Description: Write response file to disk
+ */	
+writeResponseFile = function writeResponseFile(serverLog, response, req, output, fileVersion, callback) {		
+
+	const fs = require('fs');
+	
+	scopeChecker(__file, __line, {
+		serverLog: serverLog,
+		req: req,
+		output: output,
+		response: response
+	},
+	{ // Optional
+		callback: callback
+	});
+	
+	if (response.fields["diagnosticFileDir"] && response.fields["responseFileName"]) { // Save to response file
+		fs.writeFile(response.fields["diagnosticFileDir"] + "/" + response.fields["responseFileName"] + fileVersion, 
+			output,
+			function writeResponseFileError(err) {
+				if (err) {
+					serverLog.serverLog(__file, __line, "writeResponseFileError", 
+						"Unable to write response file: " + response.fields["responseFileName"] + fileVersion, req, err);
+				}
+				if (callback) {
+					callback(err);
+				}
+			});	
+	}
+	else if (!response.fields["responseFileName"]) {	
+		serverLog.serverError(__file, __line, "responseProcessing", "Unable to save response file; no responseFileName", req);
+	}
+}
+
+/*
  * Function: 	setupDiagnostics()
  * Parameters:	File, line called from, Express HTTP request object, ofields object, internal response object, serverLog, httpErrorResponse object
+ * Returns:		Nothing
  * Description: Send express HTTP response
  */	
 var setupDiagnostics = function setupDiagnostics(lfile, lline, req, ofields, response, serverLog, httpErrorResponse) {
@@ -367,26 +434,107 @@ recreateDiagnosticsLog = function recreateDiagnosticsLog(response, serverLog, ht
 
 /*
  * Function:	getStatus()
- * Parameters:	fields array
+ * Parameters:	response
  * Returns:		Status array as JSON
  * Description: Get status from file
  */	
-getStatus = function getStatus(fields) {
-	var status;
-	if (fields && fields["uuidV1"] && fields["diagnosticFileDir"] && fields["statusFileName"]) { // Can save state
-		var statusText=fs.readFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"]);	
-		status=JSON.parse(statusText);
+getStatus = function getStatus(response, req, res, serverLog, httpErrorResponse) {
+    const os = require('os'),
+		  fs = require('fs');
+		  
+	scopeChecker(__file, __line, {
+		serverLog: serverLog,
+		httpErrorResponse: httpErrorResponse,
+		response: response,
+		req: req,
+		res: res
+	});
+	
+	response.message="In: getShpConvertStatus()";	
+	var msg="getShpConvertStatus(): ";	
+	response.fields=req.query;
+	if (response.fields && response.fields["uuidV1"] && response.fields["statusFileName"]) { // Can get state
+		if (response.fields["diagnosticFileDir"] == undefined) {
+			response.fields["diagnosticFileDir"]=os.tmpdir() + "/shpConvert/" + response.fields["uuidV1"];
+		}
+		var fileName=response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"];
+		fs.stat(fileName, function getStatusFExists(err, stats) {
+			if (err) {
+				msg+="Status file: " + fileName + " does not exist";
+				httpErrorResponse.httpErrorResponse(__file, __line, "getStatus", 
+					serverLog, 500, req, res, msg, err /* Error */, response);		
+				return;	
+			}
+			else {
+				fs.readFile(fileName, function getStatusFReadFile(err, statusText) {
+					if (err) {
+						msg+="Unable to read status file: " + fileName;
+						httpErrorResponse.httpErrorResponse(__file, __line, "getStatus", 
+							serverLog, 500, req, res, msg, err /* Error */, response);		
+						return;	
+					}
+					else {	
+						response.message+="\nRead status file: " + fileName + "; status size: " + statusText.length;
+						if (statusText && statusText.length > 0) {
+							
+							try {
+								var status=JSON.parse(statusText);
+								if (status) {
+									response.status=status;
+									if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
+								
+										var output = JSON.stringify(response);// Convert output response to JSON 
+							// Need to test res was not finished by an expection to avoid "write after end" errors			
+										try {
+											res.write(output);                  // Write output  
+											res.end();		
+										}
+										catch(e) {
+											serverLog.serverError(__file, __line, "getStatus", "Error in sending response to client", req, e);
+										}
+									}
+									else {
+										serverLog.serverLog2(__file, __line, "getStatus", 
+											"Diagnostics >>>\n" +
+											response.message + "\n<<< End of diagnostics", req);
+										serverLog.serverError2(__file, __line, "getStatus", "Unable to return OK response to user - httpErrorResponse() already processed", req);
+									}	
+								}
+								else {
+									throw new Error("Unable to get status: status is undefined after parse");
+								}
+							}
+							catch (e) {
+								msg+="Unable to get status: parse error: " + e.message;
+								httpErrorResponse.httpErrorResponse(__file, __line, "getStatus", 
+									serverLog, 500, req, res, msg, e /* Error */, response);		
+								return;	
+							}
+						}
+						else {
+							msg+="Unable to get status: Zero length status text";
+							httpErrorResponse.httpErrorResponse(__file, __line, "getStatus", 
+								serverLog, 500, req, res, msg, new Error("Unable to get status: Zero length status text") /* Error */, response);		
+							return;	
+						}	
+					}
+				});
+			}
+		});
 	}
-	return status;
+	else {
+		response.message+="\nCannot get state; insufficent fields";
+		return undefined;
+	}
 }
 	
 /*
  * Function:	addStatus()
- * Parameters:	file, line called from, response object, textual status, http status code, serverLog object, Express HTTP request object
+ * Parameters:	file, line called from, response object, textual status, http status code, serverLog object, Express HTTP request object, optional callback
  * Returns:		Nothing
  * Description: Add status to response status array
  */	
-addStatus = function addStatus(sfile, sline, response, status, httpStatus, serverLog, req) {
+addStatus = function addStatus(sfile, sline, response, status, httpStatus, serverLog, req, callback) {
 	var calling_function = arguments.callee.caller.name || '(anonymous)';
 	const path = require('path'),
 		  fs = require('fs');
@@ -400,6 +548,8 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 		status: response.status,
 		message: response.message,
 		httpStatus: httpStatus
+	}, { // Optional
+		callback: callback
 	});	
 	var msg;
 
@@ -443,14 +593,31 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 		response.message+="\n+" + response.status[response.status.length-1].etime + 
 			" S] Re-creating status file: " + response.fields["statusFileName"];
 		var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
-		fs.writeFileSync(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"], 
-			statusText);	
-	}
+
+		fs.writeFile(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"] + ".new", 
+			statusText, 
+			function addStatusWriteDiagnosticFile(err) {
+				if (err) {
+					serverLog.serverLog2(__file, __line, "addStatusWriteDiagnosticFile", "WARNING: Unable to write status file", req, err);
+				}
+				else {
+					fs.rename(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"] + ".new",
+						response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"],
+						function addStatusWriteDiagnosticFileRename() {
+							if (err) {
+								serverLog.serverLog2(__file, __line, "addStatusWriteDiagnosticFileRename", "WARNING: Unable to write status file", req, err);
+							}							
+							if (callback) {
+								callback(err);
+							}
+						}); // End of addStatusWriteDiagnosticFileRename()
+				}
+			}); // End of addStatusWriteDiagnosticFile()
 // Do not log it - it will be - trust me
 //		else { 		
 //			serverLog.serverLog2(__file, __line, "addStatus", msg, req);
 //		}
-	
+	}
 } // End of addStatus
 
 module.exports.setupDiagnostics = setupDiagnostics;
@@ -459,5 +626,6 @@ module.exports.recreateDiagnosticsLog = recreateDiagnosticsLog;
 module.exports.responseProcessing = responseProcessing;
 module.exports.addStatus = addStatus;
 module.exports.getStatus = getStatus;
+module.exports.writeResponseFile = writeResponseFile;
 
 // Eof

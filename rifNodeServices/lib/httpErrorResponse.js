@@ -142,7 +142,29 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		if (g_response && g_response.status && nodeGeoSpatialServicesCommon && 
 		    nodeGeoSpatialServicesCommon.addStatus && typeof nodeGeoSpatialServicesCommon.addStatus == "function") { // Add error status
 			try {
-				nodeGeoSpatialServicesCommon.addStatus(file, line, g_response, "ERROR", status /* HTTP status */, serverLog, req);  // Add error status
+				nodeGeoSpatialServicesCommon.addStatus(file, line, g_response, "ERROR", status /* HTTP status */, serverLog, req,
+					function httpErrorResponseAddStatusCallback() { // Add error status
+						
+						if (!res.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
+							res.status(status);		
+							var output = JSON.stringify(l_response);// Convert output response to JSON 	
+
+							if (g_response && g_response.fields["diagnosticFileDir"] && g_response.fields["responseFileName"]) { // Save to response file
+								fs.writeFileSync(g_response.fields["diagnosticFileDir"] + "/" + g_response.fields["responseFileName"], 
+									output);	
+							}
+							else if (g_response && !g_response.fields["responseFileName"]) { // Do not raise errors - you will recurse and it will not be devine
+								serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "FATAL ERROR! Unable to save response file; no responseFileName", req);
+							}
+								
+							res.write(output);
+							res.end();	
+							serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "httpErrorResponse sent; size: " + output.length + " bytes", req);	
+						}
+						else { // Do not raise errors - likewise
+							serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "FATAL ERROR! Unable to return error to user - httpErrorResponse() already processed", req, err);
+						}						
+					}); // End of httpErrorResponseAddStatusCallback()
 				l_response.status = g_response.status;
 			}
 			catch (e) {		
@@ -165,30 +187,10 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		else if (typeof nodeGeoSpatialServicesCommon.addStatus != "function") {	
 			serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): addStatus() is not a function; unable to addStatus()", req, undefined /* No exception */);
 		}
-		
-		if (!res.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
-			res.status(status);		
-			var output = JSON.stringify(l_response);// Convert output response to JSON 	
-
-			if (g_response && g_response.fields["diagnosticFileDir"] && g_response.fields["responseFileName"]) { // Save to response file
-				fs.writeFileSync(g_response.fields["diagnosticFileDir"] + "/" + g_response.fields["responseFileName"], 
-					output);	
-			}
-			else if (g_response && !g_response.fields["responseFileName"]) { // Do not raise errors - you will recurse and it will not be devine
-				serverLog.serverLog2(__file, __line, "httpErrorResponse", "FATAL ERROR! Unable to rsave response file; no responseFileName", req);
-			}
-				
-			res.write(output);
-			res.end();	
-			serverLog.serverLog2(__file, __line, "httpErrorResponse", "httpErrorResponse sent; size: " + output.length + " bytes", req);	
-		}
-		else { // Do not raise errors - likewise
-			serverLog.serverLog2(__file, __line, "httpErrorResponse", "FATAL ERROR! Unable to return error to user - httpErrorResponse() already processed", req, err);
-		}
 
 	} catch (e) {                            // Catch conversion errors
 		try {
-			var n_msg="Error response processing ERROR!\n\n" + msg;				  
+			var n_msg="Error response processing ERROR!\n\n" + (msg || "no msg");				  
 			serverLog.serverLog(n_msg, req, e);
 			if (!res.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 				res.status(501);			
@@ -201,7 +203,8 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		}
 		catch (e2) {
 			console.error("\n* LOG START *********************************************************************\n" +
-				+ "\nhttpErrorResponse() FATAL Error in exception handler; message >>>\n" + n_msg + "\n<<< End of message." +
+				+ "\nhttpErrorResponse() FATAL Error in exception handler; message >>>\n" + (n_msg || "No n_msg") + "\n<<< End of message." +
+				"\nhttpErrorResponse() error: " + e2.message +
 				"\n\n* LOG END ***********************************************************************\n");
 			throw new Error("httpErrorResponse() FATAL Error in exception handler");
 		}	

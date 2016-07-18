@@ -131,14 +131,14 @@ app.use(express.static('dataLoader'));
 /*
  * Services supported:
  * 
- * shpConvert: Upload then convert shapefiles to geoJSON;
+ * shpConvert: Upload then convert shapefile to geoJSON;
+ * geo2TopoJSON: Convert geoJSON to TopoJSON;
+ * getShpConvertStatus: Get shapefile conversion sttaus;
+ *
+ * Not yet imnplement:
+ *
  * simplifyGeoJSON: Load, validate, aggregate, clean and simplify converted shapefile data;
- * getStatus: Get status (and result if complete) from geo2TopoJSON and shpConvert
- * geo2topoJSON: Convert geoJSON to TopoJSON;
- *
- * Services not yet supported:
- *
- * geoJSON2WKT: Convert geoJSON to Well Known Text (WKT);
+ * geoJSONtoWKT: Convert geoJSON to Well Known Text (WKT);
  * createHierarchy: Create hierarchical geospatial intersection of all the shapefiles;
  * createCentroids: Create centroids for all shapefiles;
  * createMaptiles: Create topoJSON maptiles for all geolevels and zoomlevels; 
@@ -146,17 +146,17 @@ app.use(express.static('dataLoader'));
  * getNumShapefilesInSet: Returns the number of shapefiles in the set. This is the same as the highest resolution geolevel id;
  * getMapTile: Get maptile for specified geolevel, zoomlevel, X and Y tile number.
  */		
-var services=["/shpConvert",
+var services=["/:shpConvert",
+			  "/:geo2TopoJSON",
+			  "/:getShpConvertStatus" /*,
 			  "/simplifyGeoJSON",
-			  "/geo2TopoJSON",
-			  "/getShpConvertStatus",
 			  "/geoJSON2WKT",
 			  "/createHierarchy",
 			  "/createCentroids",
 			  "/createMaptiles",
 			  "/getGeospatialData",
 			  "/getNumShapefilesInSet",
-			  "/getMapTile"];
+			  "/getMapTile" */];
 var theDate = new Date();
 for (var i=0; i<services.length; i++) { // Call common method
 // Get methods are dummies for test purposes

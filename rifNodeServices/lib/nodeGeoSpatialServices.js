@@ -209,8 +209,12 @@ exports.convert = function exportsConvert(req, res) {
  * Services supported:
  * 
  * shpConvert: Upload then convert shapefile to geoJSON;
- * simplifyGeoJSON: Load, validate, aggregate, clean and simplify converted shapefile data;
  * geo2TopoJSON: Convert geoJSON to TopoJSON;
+ * getShpConvertStatus: Get shapefile conversion sttaus;
+ *
+ * Not yet imnplement:
+ *
+ * simplifyGeoJSON: Load, validate, aggregate, clean and simplify converted shapefile data;
  * geoJSONtoWKT: Convert geoJSON to Well Known Text (WKT);
  * createHierarchy: Create hierarchical geospatial intersection of all the shapefiles;
  * createCentroids: Create centroids for all shapefiles;
@@ -219,21 +223,23 @@ exports.convert = function exportsConvert(req, res) {
  * getNumShapefilesInSet: Returns the number of shapefiles in the set. This is the same as the highest resolution geolevel id;
  * getMapTile: Get maptile for specified geolevel, zoomlevel, X and Y tile number.
  */		
-		if (!((req.url == '/shpConvert') ||
+		if (!((req.params["shpConvert"] == 'shpConvert') ||
+			  (req.params["shpConvert"] == 'geo2TopoJSON') ||
+			  (req.params["shpConvert"] == 'getShpConvertStatus') /* ||
 			  (req.url == '/simplifyGeoJSON') ||
-			  (req.url == '/geo2TopoJSON') ||
-			  (req.url == '/getShpConvertStatus') ||
 			  (req.url == '/geoJSONtoWKT') ||
 			  (req.url == '/createHierarchy') ||
 			  (req.url == '/createCentroids') ||
 			  (req.url == '/createMaptiles') ||
 			  (req.url == '/getGeospatialData') ||
 			  (req.url == '/getNumShapefilesInSet') ||
-			  (req.url == '/getMapTile'))) {
+			  (req.url == '/getMapTile') */ )) {
 			var msg="ERROR! " + req.url + " service invalid; please see: " + 
-				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";
+				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help"; 
+			response.fields=req.query;
+			response.message="ERROR! " + req.url + " invalid service; params: " + JSON.stringify(req.params);
 			httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert", 
-				serverLog, 405, req, res, msg);		
+				serverLog, 405, req, res, msg, undefined /* error */, response);		
 			return;					
 		}
 	
@@ -1060,52 +1066,17 @@ exports.convert = function exportsConvert(req, res) {
 			req.pipe(req.busboy); // Pipe request stream to busboy form data handler
 			  
 		} // End of post method	
-		else if (req.method == 'GET' && req.method == 'getShpConvertStatus') { // Get method: getShpConvertStatus
-			
-/*
- * Function: 	req.busboy.on('field') callback function
- * Parameters:	fieldname, value, fieldnameTruncated, valTruncated
- * Description:	Field processing function; fields supported: uuidV1, diagnosticFileDir  
- */ 
-			req.busboy.on('field', function fieldProcessing(fieldname, val, fieldnameTruncated, valTruncated) {
-		
-				var text="\nField: " + fieldname + "[" + val + "]; ";
-				
-				// Handle truncation
-				if (fieldnameTruncated) {
-					text+="\FIELD PROCESSING ERROR! field truncated";
-					response.field_errors++;
-				}
-				if (valTruncated) {
-					text+="\FIELD PROCESSING ERROR! value truncated";
-					response.field_errors++;
-				}
-				
-				// Process common fields: uuidV1, diagnosticFileDir
-				ofields[fieldname]=val;
-							
-				response.message += text;
-			 }); // End of field processing function
-			 
-			 
-/*
- * Function: 	req.busboy.on('finish') callback function
- * Parameters:	None
- * Description:	End of request - complete response		  
- */ 
-			req.busboy.on('finish', function onBusboyFinish() {
-				response.status=nodeGeoSpatialServicesCommon.getStatus(ofields);
-				if (response.status) {
-					nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
-				}
-				else {
-					var msg="Unable to get status";
-					httpErrorResponse.httpErrorResponse(__file, __line, "exports.convert", 
-						serverLog, 500, req, res, msg);		
-					return;	
-				}			
-			}); // End of req.busboy.on('finish')
-			
+		else if (req.method == 'GET' && (req.params["shpConvert"] == 'getShpConvertStatus')) { // Get method: getShpConvertStatus		
+
+			scopeChecker(__file, __line, {
+				serverLog: serverLog,
+				httpErrorResponse: httpErrorResponse,
+				response: response,
+				req: req,
+				res: res
+			});
+	
+			nodeGeoSpatialServicesCommon.getStatus(response, req, res, serverLog, httpErrorResponse);				
 		} // End of get method: getShpConvertStatus
 		else {								// All other methods are errors
 			var msg="ERROR! "+ req.method + " Requests not allowed; please see: " + 

@@ -498,9 +498,14 @@ RangeError: Invalid string length
 * Common progrss bar
 * Replaced area count with area description in legend
 
+#### 18th to 22nd July
+
+* Status update using uuidV1; batch mode (returns in onBusboyFinish())
+
 #### Current TODO list (July):
 
-* Status update using uuidV1; batch mode (returns in onBusboyFinish()); add timeout recovery (switches to batch mode).
+* Add addStatus() callbacks, tidy messages
+* Timeout recovery (switches to batch mode).
 * ST_Union and area calculations can be done in geoJSON using turf: as it is a geometry collection. 
 * Add area_id and id uniqueness tests to shapefile checks and tests
 * WKT support using Wellknown
@@ -520,6 +525,7 @@ Note: no bounding box (bbox) in tiles.
 
 #### Parked TODO list (as required):
 
+* Favicon support: https://github.com/expressjs/serve-favicon
 * Database connection; clean, check OK and ST_Union(); area support [and checks]; PK support. Turf probably removes requirement 
   for any DB port, subject to acceptable performance
 * Handle when areaID == name; allow NULL name

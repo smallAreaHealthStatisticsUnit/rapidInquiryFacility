@@ -1109,7 +1109,7 @@ function displayResponse(responseText, status, formName) {
 				if (response.fields["batchMode"] == "true") {
 					progressLabel.text("Server is processing response");
 					setTimeout(waitForServerResponse(response.fields["uuidV1"], response.fields["diagnosticFileDir"], response.fields["statusFileName"], 
-						1000 /* Next timeout */, 1 /* Recursion count */), 5000);
+						1000 /* Next timeout */, 1 /* Recursion count */, -1 /* Index */), 5000 /* 5 S timer */);
 					return;
 				}
 				else if (!response.file_list[0]) {
@@ -1323,12 +1323,14 @@ function displayResponse(responseText, status, formName) {
 
 /*
  * Function: 	waitForServerResponse()
- * Parameters:  uuidV1, diagnosticFileDir, next timeout (mS), recursion count
+ * Parameters:  uuidV1, diagnosticFileDir, next timeout (mS), recursion count, index
  * Returns: 	Nothing
  * Description: Wait for server response: call getShpConvertStatus method until shpConvert completes
  */
-function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, nextTimeout, recursionCount) {
-	console.log("Wait: " + recursionCount + " for server response for uuidV1: " + uuidV1);
+function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, nextTimeout, recursionCount, index) {
+	console.log("Wait: " + recursionCount + " for server response for getShpConvertStatus(uuidV1): " + uuidV1 + "; current index: " + index);
+	var lstart=new Date().getTime();
+	var atEnd=false;
 	
 	var jqXHR=$.get("getShpConvertStatus", 
 		{ 
@@ -1336,8 +1338,51 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, nextTi
 			diagnosticFileDir: diagnosticFileDir,
 			statusFileName: statusFileName			
 		}, function getShpConvertStatus(data, status, xhr) {
-		setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, statusFileName, nextTimeout /* Next timeout */, recursionCount++ /* Recursion count */);
-		alert("Data: " + data);
+			var nrecursionCount=recursionCount+1;
+			
+			if (data && data.status) {
+				var nIndex=data.status.length;
+				if (nIndex > index) { // Found new status's 
+					nrecursionCount=0;
+				}
+				var status=data.status[(data.status.length-1)];
+				if (status && status["statusText"]) {
+					if (status["statusText"] == "BATCH_END") {
+						progressLabel.text("All processing complete");
+						atEnd=true;
+					}					
+					else if (status["statusText"] == "BATCH_INTERMEDIATE_END") {
+						progressLabel.text("Intermediate processing complete, loading maps, making tiles");
+						atEnd=true;
+					}
+					else {
+						progressLabel.text(status["statusText"]);
+					}
+					for (var i=index; i<data.status.length; i++) {
+						if (data.status[i]) {
+							console.log("+" + data.status[i]["etime"] + " [" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
+								data.status[i].calling_function + "]: " + data.status[i].statusText);	
+						}
+					} // End of for loop		
+
+					var ltime=(new Date().getTime() - lstart)/1000; // in S	
+					if (ltime > 5) {
+						console.log("Warning: status interruption of " + ltime + " for last status"); 
+					}	
+				}
+				
+				if (nrecursionCount < 90 && atEnd == false) {
+					setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, statusFileName, nextTimeout /* Next timeout */, 
+						nrecursionCount /* Recursion count */, nIndex /* New index */);
+				}
+				else if (atEnd) {
+					console.log("No need for more status updates: at end");
+				}
+				else {
+					console.log("Status update recusrion limit reached with no new status: " + nrecursionCount);
+					progressLabel.text("Processing failed, no success or failure detected, no status change in " + nrecursionCount + " seconds");
+				}
+			}
 		}, // End of getShpConvertStatus() 
 		"json");
 	jqXHR.fail(function getShpConvertStatusError(x, e) {
