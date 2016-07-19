@@ -69,6 +69,7 @@ public enum RIFGenericLibraryError {
 	DB_UNABLE_TO_LOAD_DRIVER,
 	DB_MAX_READ_CONNECTIONS_EXCEEDED,
 	DB_MAX_WRITE_CONNECTIONS_EXCEEDED,
+	DB_UNABLE_TO_USE_CONNECTION_STRING,
 	/** The db unable to grant connection. */
 	DB_UNABLE_TO_GRANT_CONNECTION,		
 	/** The db unable register user. */
@@ -76,6 +77,7 @@ public enum RIFGenericLibraryError {
 	/** The db unable deregister user. */
 	DB_UNABLE_DEREGISTER_USER,
 	
+	COMMAND_LINE_EXECUTION_PROBLEM,
 	FILE_PARSING_PROBLEM,
 	FILE_WRITING_PROBLEM,
 	NON_EXISTENT_FILE,
