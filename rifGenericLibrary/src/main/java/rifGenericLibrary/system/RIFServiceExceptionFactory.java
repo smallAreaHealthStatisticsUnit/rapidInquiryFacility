@@ -86,7 +86,37 @@ public class RIFServiceExceptionFactory {
 		return rifServiceException;
 	}
 	
-	public RIFServiceException createFileReadingProblemException(final String fileName) {
+	public RIFServiceException createFileExecutionProblemException(final String fileName) {
+		String errorMessage
+			= RIFGenericLibraryMessages.getMessage(
+				"io.error.problemExecutingFile",
+				fileName);
+		RIFServiceException rifServiceException
+			= new RIFServiceException(
+				RIFGenericLibraryError.COMMAND_LINE_EXECUTION_PROBLEM,
+				errorMessage);
+		return rifServiceException;
+	}	
+
+	
+	public RIFServiceException createFileCommandLineRunException(
+		final String commandLineExecutable) {
+		
+		String errorMessage
+			= RIFGenericLibraryMessages.getMessage(
+				"io.error.unableToRunCommandLineProgram",
+				commandLineExecutable);
+		RIFServiceException rifServiceException
+			= new RIFServiceException(
+				RIFGenericLibraryError.FILE_PARSING_PROBLEM,
+				errorMessage);
+		return rifServiceException;
+	}	
+
+	
+	public RIFServiceException createFileReadingProblemException(
+		final String fileName) {
+		
 		String errorMessage
 			= RIFGenericLibraryMessages.getMessage(
 				"io.error.problemReadingFile",
@@ -97,8 +127,10 @@ public class RIFServiceExceptionFactory {
 				errorMessage);
 		return rifServiceException;
 	}	
-	
-	public RIFServiceException createFileWritingProblemException(final String fileName) {
+		
+	public RIFServiceException createFileWritingProblemException(
+		final String fileName) {
+
 		String errorMessage
 			= RIFGenericLibraryMessages.getMessage(
 				"io.error.problemWritingFile",
@@ -110,6 +142,19 @@ public class RIFServiceExceptionFactory {
 		return rifServiceException;
 	}		
 
+	
+	public RIFServiceException createUnableToUseDBConnectionString(
+		final String databaseConnectionString) {
+		String errorMessage
+			= RIFGenericLibraryMessages.getMessage(
+				"db.error.unableToUseDatabaseConnectionString",
+				databaseConnectionString);
+		RIFServiceException rifServiceException
+			= new RIFServiceException(
+				RIFGenericLibraryError.DB_UNABLE_TO_USE_CONNECTION_STRING,
+				errorMessage);
+		return rifServiceException;
+	}	
 	
 	public RIFServiceException createUnableToRegisterUser(final String userID) {
 		String errorMessage
