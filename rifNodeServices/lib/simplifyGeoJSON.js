@@ -369,8 +369,14 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		response.message+="; property-transform disabled";
 	}
 	response.message+="; topoJSON options pre transform: " + JSON.stringify(nTopojson_options, null, 4);
-	
-	for (i=(convertedTopojson[0].zoomlevel-1); i>=6; i--) { // Convert to async!
+
+	/*
+	 * Function: 	toTopoJSONZoomlevel() 
+	 * Parameters:  Zoomlevel
+	 * Returns: 	Nothing
+	 * Description: Convert geoJSON to topoJSON for a zoomlevel
+	 */	
+	function toTopoJSONZoomlevel(i) {
 
 		stderr.disable();	// Re-route topoJSON stderr to stderr.str
 
@@ -405,9 +411,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		var j=0;
 		for (var key in convertedTopojson[(convertedTopojson.length-2)].topojson.objects) {
 			j++;
-			if (j == 1) {
-
-				
+			if (j == 1) {	
 				end = new Date().getTime();
 				response.message+="\n+"  + ((end - lstart)/1000) + " S; " + fileName + ": created geojson from zoomlevel topojson: " + 
 					convertedTopojson[(convertedTopojson.length-2)].zoomlevel;
@@ -415,14 +419,31 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 					convertedTopojson[(convertedTopojson.length-2)].topojson.objects[key]);
 				nGeojsonLen=sizeof(nGeojson);
 				end = new Date().getTime();
-				addStatus(__file, __line, response, fileName + ": created geojson from zoomlevel topojson: " + 
-					convertedTopojson[(convertedTopojson.length-2)].zoomlevel + "; took: " + ((end - lstart)/1000) + "S", 
-					200 /* HTTP OK */, serverLog, undefined /* req */);  // Add created geojson from zoomlevel topojson status	
+				var msg="Created geojson from zoomlevel " + 
+					convertedTopojson[(convertedTopojson.length-2)].zoomlevel + " topojson: " + fileName;
+				response.message+="\n" + msg  + "; took: " + ((end - lstart)/1000) + "S"
+				addStatus(__file, __line, response, msg, 
+					200 /* HTTP OK */, serverLog, undefined /* req */,  // Add created geojson from zoomlevel topojson status	
+					/*
+					 * Function: 	createGeoJSONFromTopoJSON()
+					 * Parameters:	error object
+					 * Description:	Add status callback
+					 */												
+					function createGeoJSONFromTopoJSON(err) {
+						if (err) {
+							serverLog.serverLog2(__file, __line, "zipProcessingSeriesAddStatus", 
+								"WARNING: Unable to add zip file processing status", req, err);
+						}
+					});
 //				if (i == (convertedTopojson[0].zoomlevel-1)) {
 //					response.message+="\nZoomlevel [" + i + "] " + key + " Truncated geoJSON >>>\n" + JSON.stringify(nGeojson, null, 4).substring(0, 600) + "\n<<< End of JSON";
 //				} // Can cause - Stack: RangeError: Invalid string length
 			}
-		}							
+			else {
+				break; // Out  of for loop
+			}
+		} // For loop			
+		
 		if (j > 1) {
 			throw new Error("Create topojson zoomlevel[" + i + "] topojson.objects length > 1: "  + j);
 		} 
@@ -535,12 +556,28 @@ Stack: RangeError: Invalid string length
 					
 			response.message+="Topojson has " + (topojsonGeometries.length || "no") + " features with " + (properties || "no") + " properties";
 		}
+		
 		addStatus(__file, __line, response, fileName + ": simplified topojson for zoomlevel[" + i + "] took: " + 
 			convertedTopojson[(convertedTopojson.length-1)].topojson_runtime + "S", 
-			200 /* HTTP OK */, serverLog, undefined /* req */);  // Add zoomlevel topojson simplify status			
-			
-		stderr.clean();						// Clean down stderr string
-		stderr.restore();                   // Restore normal stderr functionality 					
+			200 /* HTTP OK */, serverLog, undefined /* req */,  // Add zoomlevel topojson simplify status	
+			/*
+			 * Function: 	simplifiedTopoJSONComplete()
+			 * Parameters:	error object
+			 * Description:addStatus() callback
+			 */												
+			function simplifiedTopoJSONComplete(err) {
+				if (err) {
+					serverLog.serverLog2(__file, __line, "simplifiedTopoJSONComplete", 
+						"WARNING: Unable to simplified TopoJSON", req, err);
+				}
+				stderr.clean();						// Clean down stderr string
+				stderr.restore();                   // Restore normal stderr functionality 	
+			});		
+				
+	} // End of toTopoJSONZoomlevel()
+	
+	for (i=(convertedTopojson[0].zoomlevel-1); i>=6; i--) { // Convert to async!
+		toTopoJSONZoomlevel(i);			
 	} // End of for loop
 		
 } // end of toTopoJSONZoomlevels()
