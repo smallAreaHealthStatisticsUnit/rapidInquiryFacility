@@ -746,7 +746,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 	
 	if (response.fields["uuidV1"] && response.fields["diagnosticFileDir"] && response.fields["statusFileName"]) { // Can save state
 		response.message+="\n+" + response.status[response.status.length-1].etime + 
-			" S] addStatus: " + msg + "\nRe-creating status file: " + response.fields["statusFileName"];
+			" S addStatus: " + msg + "\nRe-creating status file: " + response.fields["statusFileName"];
 		var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
 
 		fs.writeFile(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"] + ".new", 
@@ -818,7 +818,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 	}
 	else if (callback) {
 		response.message+="\n+" + response.status[response.status.length-1].etime + 
-			" S] addStatus: " + msg + "\nNo status file to re-create.";		
+			" S addStatus: " + msg + "\nNo status file to re-create.";		
 		try {
 			callback();
 		}
@@ -829,6 +829,29 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 	}
 } // End of addStatus
 
+/*
+ * Function: 	fileSize()
+ * Parameters: 	File size
+ * Returns: 	Nicely formatted file size
+ * Description:	Display file size nicely	
+ */
+function fileSize(file_size) {
+	var niceFileSize;
+	if (!file_size) {
+		return undefined;
+	}
+	else if (file_size > 1024 * 1024 * 1024) {
+		niceFileSize = (Math.round(file_size * 100 / (1024 * 1024 * 1024)) / 100).toString() + 'GB';
+	}
+	else if (file_size > 1024 * 1024) {
+		niceFileSize = (Math.round(file_size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+	} 
+	else {
+		niceFileSize = (Math.round(file_size * 100 / 1024) / 100).toString() + 'KB';
+	}
+	return niceFileSize;
+}
+
 module.exports.setupDiagnostics = setupDiagnostics;
 module.exports.createTemporaryDirectory = createTemporaryDirectory;
 module.exports.recreateDiagnosticsLog = recreateDiagnosticsLog;
@@ -837,5 +860,6 @@ module.exports.addStatus = addStatus;
 module.exports.getStatus = getStatus;
 module.exports.getShpConvertTopoJSON = getShpConvertTopoJSON;
 module.exports.writeResponseFile = writeResponseFile;
+module.exports.fileSize = fileSize;
 
 // Eof

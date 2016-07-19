@@ -592,7 +592,8 @@ exports.convert = function exportsConvert(req, res) {
 						callback: callback,
 						async: async,
 						nodeGeoSpatialServicesCommon: nodeGeoSpatialServicesCommon,
-						addStatus: nodeGeoSpatialServicesCommon.addStatus
+						addStatus: nodeGeoSpatialServicesCommon.addStatus,
+						addStatus: nodeGeoSpatialServicesCommon.fileSize
 					});
 					const path = require('path');
 					
@@ -600,193 +601,319 @@ exports.convert = function exportsConvert(req, res) {
 					var new_no_files=0;
 						
 					if (d.file.file_encoding === "gzip") {
-						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processing gzip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
-							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
+						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processing gzip file [" + (index+1) + "]: " + d.file.file_name + 
+							"; size: " + nodeGeoSpatialServicesCommon.fileSize(d.file.file_data.length), 
+							200 /* HTTP OK */, serverLog, req,  // Add file compression processing status		
+							/*
+							 * Function: 	gzipAddStatusCallback()
+							 * Parameters:	error object
+							 * Description:	Add status callback
+							 */							
+							function gzipAddStatusCallback(err, result) {
+								if (err) {								
+									serverLog.serverLog2(__file, __line, "gzipAddStatusCallback", 
+										"WARNING: Unable to add gzip file processing status", req, err);
+								}
 							
-						zlib.gunzip(d.file.file_data, function gunzipFileCallback(err, result) {
-							if (err) {	
-								msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
-								d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-								d.file.file_error=msg;	
-								response.message=msg + "\n" + response.message;
-								response.file_errors++;					// Increment file error count	
-								serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
-	//							d_files.d_list[index-1] = d;	
-								try {
-									callback(err);
-								}
-								catch (e) {
-									serverLog.serverError2(__file, __line, "fileCompressionProcessing", 
-										"Recursive error in fileCompressionProcessing() callback", req, e);
-								}
+								zlib.gunzip(d.file.file_data, 
+									/*
+									 * Function: 	gunzipFileCallback()
+									 * Parameters:	error object, result
+									 * Description:	Add status callback
+									 */	
+									function gunzipFileCallback(err, result) {
+									if (err) {	
+										msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+										d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+										d.file.file_error=msg;	
+										response.message=msg + "\n" + response.message;
+										response.file_errors++;					// Increment file error count	
+										serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
+			//							d_files.d_list[index-1] = d;	
+										try {
+											callback(err);
+										}
+										catch (e) {
+											serverLog.serverError2(__file, __line, "fileCompressionProcessing", 
+												"Recursive error in fileCompressionProcessing() callback", req, e);
+										}
+									}
+									else {		
+										d.file.file_data=result;
+										nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processed gzip file [" + (index+1) + "]: " + d.file.file_name + 
+											"; size: " + nodeGeoSpatialServicesCommon.fileSize(d.file.file_data.length), 
+											200 /* HTTP OK */, serverLog, req,
+												/*
+												 * Function: 	gzipProcessingSeriesAddStatus()
+												 * Parameters:	error object
+												 * Description:	Add status callback
+												 */												
+												function gzipProcessingSeriesAddStatus(err) {
+													if (err) {
+														serverLog.serverLog2(__file, __line, "gzipProcessingSeriesAddStatus", 
+															"WARNING: Unable to add zlib file processing status", req, err);
+													}
+													var end = new Date().getTime();	
+													d.file.uncompress_time=(end - lstart)/1000; // in S		
+													d.file.uncompress_size=d.file.file_data.length;								
+													response.message+="\nFile [" + (index+1) + "]: " + d.file.file_name + "; encoding: " +
+														d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
+														"; from buffer: " + d.file.file_data.length, req; 	
+													callback(err);														
+												}
+											);  // Add file compression processing status						
+									}	
+								});	// End of zlib.gunzip()							
 							}
-							else {		
-								d.file.file_data=result;
-								nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processed gzip file [" + (index+1) + "]: " + d.file.file_name + "; new size: " + d.file.file_data.length + " bytes", 
-									200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
-									
-								var end = new Date().getTime();	
-								d.file.uncompress_time=(end - lstart)/1000; // in S		
-								d.file.uncompress_size=d.file.file_data.length;								
-								response.message+="\nFile [" + (index+1) + "]: " + d.file.file_name + "; encoding: " +
-									d.file.file_encoding + "; zlib.gunzip(): " + d.file.file_data.length + 
-									"; from buffer: " + d.file.file_data.length, req; 	
-								callback();								
-							}	
-						});
+						);
+
 					}	
 					else if (d.file.file_encoding === "zlib") {	
-						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processing zlib file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
-							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status						
+						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processing zlib file [" + (index+1) + "]: " + d.file.file_name + 
+							"; size: " + nodeGeoSpatialServicesCommon.fileSize(d.file.file_data.length), 
+							200 /* HTTP OK */, serverLog, req, // Add file compression processing status
+							/*
+							 * Function: 	zlibAddStatusCallback()
+							 * Parameters:	error object
+							 * Description:	Add status callback
+							 */							
+							function zlibAddStatusCallback(err, result) {
+								if (err) {								
+									serverLog.serverLog2(__file, __line, "zlibAddStatusCallback", 
+										"WARNING: Unable to add zlib file processing status", req, err);
+								}	
 
-						zlib.inflate(d.file.file_data, function inflateFileCallback(err, result) {
-							if (err) {
-								msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
-									d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
-								d.file.file_error=msg;	
-								response.message=msg + "\n" + response.message;
-								response.file_errors++;					// Increment file error count	
-								serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
-	//							d_files.d_list[index-1] = d;	
-								try {
-									callback(err);
-								}
-								catch (e) {
-									serverLog.serverError2(__file, __line, "fileCompressionProcessing", 
-										"Recursive error in fileCompressionProcessing() callback", req, e);
-								}
-							}
-							else {	
-								d.file.file_data=result;
-								nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processed zlib file [" + (index+1) + "]: " + d.file.file_name + "; new size: " + d.file.file_data.length + " bytes", 
-									200 /* HTTP OK */, serverLog, req);  // Add file compression processing status
-									
-								var end = new Date().getTime();	
-								d.file.uncompress_time=(end - lstart)/1000; // in S		
-								d.file.uncompress_size=d.file.file_data.length;		
-								response.message+="\nFile [" + (index+1) + "]: " + d.file.file_name + "; encoding: " +
-									d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
-									"; from buffer: " + d.file.file_data.length, req; 
-								callback();								
-							}	
-						});
+								zlib.inflate(d.file.file_data, 
+									/*
+									 * Function: 	zlibInflateFileCallback()
+									 * Parameters:	error object, result
+									 * Description:	Add status callback
+									 */							
+									function zlibInflateFileCallback(err, result) {
+										if (err) {
+											msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+												d.file.extension + "; file_encoding: " + d.file.file_encoding + " inflate exception";
+											d.file.file_error=msg;	
+											response.message=msg + "\n" + response.message;
+											response.file_errors++;					// Increment file error count	
+											serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
+				//							d_files.d_list[index-1] = d;	
+											try {
+												callback(err);
+											}
+											catch (e) {
+												serverLog.serverError2(__file, __line, "fileCompressionProcessing", 
+													"Recursive error in fileCompressionProcessing() callback", req, e);
+											}
+										}
+										else {	
+											d.file.file_data=result;
+											nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processed zlib file " + (index+1) + ": " + d.file.file_name + 
+												"; size: " + nodeGeoSpatialServicesCommon.fileSize(d.file.file_data.length), 
+												200 /* HTTP OK */, serverLog, req,
+												/*
+												 * Function: 	zlibProcessingSeriesAddStatus()
+												 * Parameters:	error object
+												 * Description:	Add status callback
+												 */												
+												function zlibProcessingSeriesAddStatus(err) {
+													if (err) {
+														serverLog.serverLog2(__file, __line, "zlibProcessingSeriesAddStatus", 
+															"WARNING: Unable to add zlib file processing status", req, err);
+													}
+																						
+													var end = new Date().getTime();	
+													d.file.uncompress_time=(end - lstart)/1000; // in S		
+													d.file.uncompress_size=d.file.file_data.length;		
+													response.message+="\nFile [" + (index+1) + "]: " + d.file.file_name + "; encoding: " +
+														d.file.file_encoding + "; zlib.inflate(): " + d.file.file_data.length + 
+														"; from buffer: " + d.file.file_data.length, req; 
+													callback(err);		
+												} // End of zlibProcessingSeriesAddStatus()												
+											);  // Add file compression processing status
+										
+										}	
+									} // End of zlibInflateFileCallback()
+								); // End of zlib.inflate()
+							}								
+						);						
 					}
 					else if (d.file.file_encoding === "zip") {
-						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processing zip file [" + (index+1) + "]: " + d.file.file_name + "; size: " + d.file.file_data.length + " bytes", 
-							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status	
-
-						var zip=new JSZip(d.file.file_data, {} /* Options */);
-						var noZipFiles=0;
-						var zipUncompressedSize=0;
-						
-						msg="";
-						async.forEachOfSeries(zip.files /* col */, 
-							function zipProcessingSeries(zipFileName, ZipIndex, seriesCallback) { // Process zip file and uncompress			
-			
-								var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
-									seriesCallback(e);
-								}
-									
-								scopeChecker(__file, __line, {
-									zip: zip,
-									zipFileName: zipFileName,
-									index: index,
-									ZipIndex: ZipIndex,
-									response: response,
-									serverLog: serverLog,
-									d: d,
-									d_files: d_files,
-									d_list: d_files.d_list,
-									req: req,
-									ofields: ofields,
-									nodeGeoSpatialServicesCommon: nodeGeoSpatialServicesCommon,
-									addStatus: nodeGeoSpatialServicesCommon.addStatus
-								});
-																
-								noZipFiles++;	
-								var fileContainedInZipFile=zip.files[ZipIndex];	
-								if (fileContainedInZipFile.dir) {
-									msg+="Zip file[" + noZipFiles + "]: directory: " + fileContainedInZipFile.name + "\n";
-								}
-								else {
-//									console.error("fileContainedInZipFile object: " + JSON.stringify(fileContainedInZipFile, null, 4));
-									var d2=createD(path.basename(fileContainedInZipFile.name), undefined /* encoding */, undefined /* mimetype */, 
-										response, req); // Create D object for each zip file file
-
-									msg+="Zip file[" + noZipFiles + "]: " + d2.file.file_name + "; relativePath: " + fileContainedInZipFile.name + 
-										"; date: " + fileContainedInZipFile.date + "\n";  
-									if (fileContainedInZipFile._data) {
-										zipUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
-										msg+="Decompress from: " + fileContainedInZipFile._data.compressedSize + " to: " +  fileContainedInZipFile._data.uncompressedSize;
-										d2.file.file_size=fileContainedInZipFile._data.compressedSize;
-										d2.file.file_uncompress_size=fileContainedInZipFile._data.uncompressedSize;
-										d2.file.file_data=zip.files[ZipIndex].asNodeBuffer(); 
-											// No longer causes Error(RangeError): Invalid string length with >255M files!!! (as expected)
-											
-										if (d2.file.file_data.length != d2.file.file_uncompress_size) { // Check length is as expected
-											throw new Error("Zip file[" + noZipFiles + "]: " + d2.file.file_name + "; expecting length: " + 
-												 d2.file.file_uncompress_size + ";  got: " + d2.file.file_data.length);
-										}
-										if (d.file.extension == "json" || d.file.extension == "js") {
-											d2.file.file_data.toString().replace(/\r?\n|\r/g, ""); // Remove any CRLF
-										}
-										msg+="; size: " + d2.file.file_data.length + " bytes\n";
-									
-										var end = new Date().getTime();	
-										d2.file.uncompress_time=(end - lstart)/1000; // in S	
-										
-										new_no_files++;
-//										console.error("A: response.no_files: " + response.no_files + "; new_no_files: " + new_no_files + "\nData >>>\n" +
-//											d2.file.file_data.toString().substring(0, 200) + "\n<<<\n");
-										d.no_files=response.no_files;
-										d_files.d_list[response.no_files-1] = d2;
-										
-										nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Expanded and added zip file [" + (index+1) + "." + noZipFiles + "]: " + 
-											d.file.file_name + "//:" + d2.file.file_name + " to file list [" + response.no_files+new_no_files + "]", 
-											200 /* HTTP OK */, serverLog, req);  // Add file compression processing status								
-									}
-									else {
-										throw new Error("No fileContainedInZipFile._data for file in zip: " + fileContainedInZipFile.name);
-									}
-								}
-								seriesCallbackFunc();										
-							}, 
-							function zipProcessingSeriesEnd(err) {	
+						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processing zip file [" + (index+1) + "]: " + d.file.file_name + 
+							"; size: " + nodeGeoSpatialServicesCommon.fileSize(d.file.file_data.length), 
+							200 /* HTTP OK */, serverLog, req,
+							/*
+							 * Function: 	zipProcessingSeriesAddStatus1()
+							 * Parameters:	error object
+							 * Description:	Add status callback
+							 */												
+							function zipProcessingSeriesAddStatus1(err) {
+//								console.error("zipProcessingSeriesAddStatus1");
 								if (err) {
-									msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
-										d.file.extension + "; file_encoding: " + d.file.file_encoding + " unzip exception";
-									d.file.file_error=msg;	
-									response.message=msg + "\n" + response.message;
-									response.file_errors++;					// Increment file error count	
-									serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed		
-									callback(e);
+									serverLog.serverLog2(__file, __line, "zipProcessingSeriesAddStatus1", 
+										"WARNING: Unable to add zip file processing status (1)", req, err);
 								}
-								else {
-//									console.error("B: response.no_files: " + response.no_files +
-//											"; last new file[" + (response.no_files-1) + "]: " + d_files.d_list[response.no_files-1].file.file_name + 
-//											"\nData >>>\n" + d_files.d_list[response.no_files-1].file.file_data.toString().substring(0, 200) + "\n<<<\n");
-									
-									nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processed zip file [" + (index+1) + "]: " + d.file.file_name + 
-										"; size: " + d.file.file_data.length + " bytes" + 
-										"; added: " + new_no_files + " file(s)", 
-										200 /* HTTP OK */, serverLog, req);  // Add file compression processing status	
-									
-									msg+="Processed Zipfile [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
-										d.file.extension + "; number of files: " + noZipFiles + "; Uncompressed size: " + zipUncompressedSize;
-			//						d.file.file_error=msg;			
-									response.message=msg + "\n" + response.message;	
-			//						response.file_errors++;					// Increment file error count; now supported - no longer an error	
-			//						serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
-			//						d_files.d_list[index-1] = d;				
-									callback();		
-								}
-							}); // End of async zip file processing				
+
+								var zip=new JSZip(d.file.file_data, {} /* Options */);
+								var noZipFiles=0;
+								var zipUncompressedSize=0;
+								
+								msg="";
+								async.forEachOfSeries(zip.files /* col */, 
+									function zipProcessingSeries(zipFileName, ZipIndex, seriesCallback) { // Process zip file and uncompress			
+					
+										var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
+											seriesCallback(e);
+										}
+											
+										scopeChecker(__file, __line, {
+											zip: zip,
+											zipFileName: zipFileName,
+											index: index,
+											ZipIndex: ZipIndex,
+											response: response,
+											serverLog: serverLog,
+											d: d,
+											d_files: d_files,
+											d_list: d_files.d_list,
+											req: req,
+											ofields: ofields,
+											nodeGeoSpatialServicesCommon: nodeGeoSpatialServicesCommon,
+											addStatus: nodeGeoSpatialServicesCommon.addStatus
+										});
+																		
+										noZipFiles++;	
+										
+//										console.error("zipProcessingSeries" + noZipFiles);
+										var fileContainedInZipFile=zip.files[ZipIndex];	
+										if (fileContainedInZipFile.dir) {
+											msg+="Zip file[" + noZipFiles + "]: directory: " + fileContainedInZipFile.name + "\n";
+											seriesCallbackFunc();
+										}
+										else {
+//											console.error("fileContainedInZipFile object: " + JSON.stringify(fileContainedInZipFile, null, 4));
+											var d2=createD(path.basename(fileContainedInZipFile.name), undefined /* encoding */, undefined /* mimetype */, 
+												response, req); // Create D object for each zip file file
+
+											msg+="Zip file[" + noZipFiles + "]: " + d2.file.file_name + "; relativePath: " + fileContainedInZipFile.name + 
+												"; date: " + fileContainedInZipFile.date + "\n";  
+											if (fileContainedInZipFile._data) {
+												zipUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+												msg+="Decompress from: " + fileContainedInZipFile._data.compressedSize + " to: " +  fileContainedInZipFile._data.uncompressedSize;
+												d2.file.file_size=fileContainedInZipFile._data.compressedSize;
+												d2.file.file_uncompress_size=fileContainedInZipFile._data.uncompressedSize;
+												d2.file.file_data=zip.files[ZipIndex].asNodeBuffer(); 
+													// No longer causes Error(RangeError): Invalid string length with >255M files!!! (as expected)
+													
+												if (d2.file.file_data.length != d2.file.file_uncompress_size) { // Check length is as expected
+													seriesCallbackFunc(new Error("Zip file[" + noZipFiles + "]: " + d2.file.file_name + "; expecting length: " + 
+														 d2.file.file_uncompress_size + ";  got: " + d2.file.file_data.length));
+												}
+												if (d.file.extension == "json" || d.file.extension == "js") {
+													d2.file.file_data.toString().replace(/\r?\n|\r/g, ""); // Remove any CRLF
+												}
+												msg+="; size: " + d2.file.file_data.length + " bytes\n";
+											
+												var end = new Date().getTime();	
+												d2.file.uncompress_time=(end - lstart)/1000; // in S	
+												
+												new_no_files++;
+//												console.error("A: response.no_files: " + response.no_files + "; new_no_files: " + new_no_files);
+//													+ "\nData >>>\n" + d2.file.file_data.toString().substring(0, 200) + "\n<<<\n");
+												d.no_files=response.no_files;
+												d_files.d_list[response.no_files-1] = d2;
+												
+												nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Expanded and added zip file " + (index+1) + "." + noZipFiles + ": " + 
+													d.file.file_name + "//:" + d2.file.file_name + " as file " + response.no_files+new_no_files + 
+													" in list; size: " + nodeGeoSpatialServicesCommon.fileSize(d2.file.file_data.length), 
+													200 /* HTTP OK */, serverLog, req,
+													/*
+													 * Function: 	zipProcessingSeriesAddStatus()
+													 * Parameters:	error object
+													 * Description:	Add status callback
+													 */												
+													function zipProcessingSeriesAddStatus(err) {
+														if (err) {
+															serverLog.serverLog2(__file, __line, "zipProcessingSeriesAddStatus", 
+																"WARNING: Unable to add zip file processing status", req, err);
+														}
+														
+														seriesCallbackFunc(err);	
+													}
+												);  // Add file compression processing status								
+											}
+											else {
+												seriesCallbackFunc(new Error("No fileContainedInZipFile._data for file in zip: " + fileContainedInZipFile.name));
+											}
+										}									
+									}, 
+									/*
+									 * Function: 	zipProcessingSeriesEnd()
+									 * Parameters:	error object
+									 * Description:	Zip process end function
+									 */								
+									function zipProcessingSeriesEnd(err) {	
+										if (err) {
+											msg="FAIL! File [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+												d.file.extension + "; file_encoding: " + d.file.file_encoding + " unzip exception";
+											d.file.file_error=msg;	
+											response.message=msg + "\n" + response.message;
+											response.file_errors++;					// Increment file error count	
+											serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed		
+											callback(err);
+										}
+										else {
+		//									console.error("B: response.no_files: " + response.no_files +
+		//											"; last new file[" + (response.no_files-1) + "]: " + d_files.d_list[response.no_files-1].file.file_name + 
+		//											"\nData >>>\n" + d_files.d_list[response.no_files-1].file.file_data.toString().substring(0, 200) + "\n<<<\n");
+											
+											nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processed zip file " + (index+1) + ": " + d.file.file_name + 
+												"; size: " + nodeGeoSpatialServicesCommon.fileSize(d.file.file_data.length) + 
+												"; added: " + new_no_files + " file(s)", 
+												200 /* HTTP OK */, serverLog, req,
+												/*
+												 * Function: 	zipProcessingSeriesAddStatus2()
+												 * Parameters:	error object
+												 * Description:	Add status callback
+												 */											
+												function zipProcessingSeriesAddStatus2(err) {
+													if (err) {
+														serverLog.serverLog2(__file, __line, "zipProcessingSeriesAddStatus", 
+															"WARNING: Unable to add zip file processing status (2)", req, err);
+													}												
+													msg+="Processed Zipfile [" + (index+1) + "]: " + d.file.file_name + "; extension: " + 
+														d.file.extension + "; number of files: " + noZipFiles + "; Uncompressed size: " + zipUncompressedSize;
+							//						d.file.file_error=msg;			
+													response.message=msg + "\n" + response.message;	
+							//						response.file_errors++;					// Increment file error count; now supported - no longer an error	
+							//						serverLog.serverLog2(__file, __line, "fileCompressionProcessing", msg, req);	// Not an error; handled after all files are processed					
+							//						d_files.d_list[index-1] = d;				
+													callback(err);											
+												} // End of zipProcessingSeriesAddStatus2()
+											);  // Add file compression processing status			
+										}
+									}
+								); // End of async zip file processing		
+
+							} // End of zipProcessingSeriesAddStatus1()											
+						);  // Add file compression processing status								
 					}
 					else {
-						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processed file [" + (index+1) + "]: " + d.file.file_name + 
-							"; size: " + d.file.file_data.length + " bytes" + "; file_encoding: " + d.file.file_encoding || "(no encoding)", 
-							200 /* HTTP OK */, serverLog, req);  // Add file compression processing status		
-						callback();												
+						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processed file " + (index+1) + ": " + d.file.file_name + 
+							"; size: " + nodeGeoSpatialServicesCommon.fileSize(d.file.file_data.length), 
+							200 /* HTTP OK */, serverLog, req,
+							/*
+							 * Function: 	fileCompressionProcessingAddStatus()
+							 * Parameters:	error object
+							 * Description:	Add status callback
+							 */	
+							function fileCompressionProcessingAddStatus(err) {
+								if (err) {
+									serverLog.serverLog2(__file, __line, "fileCompressionProcessingAddStatus", 
+										"WARNING: Unable to add zip file processing status", req, err);
+								}							
+								callback(err);														
+							});  // Add file compression processing status		
 					}
 				} // End of fileCompressionProcessing()
 
@@ -836,7 +963,8 @@ exports.convert = function exportsConvert(req, res) {
 					if (!response.fields["diagnosticFileDir"]) {
 						nodeGeoSpatialServicesCommon.setupDiagnostics(__file, __line, req, ofields, response, serverLog, httpErrorResponse);
 					}
-					nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Busboy Finish", 200 /* HTTP OK */, serverLog, req);  // Add onBusboyFinish status
+					nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "All form data and fields loaded; running completion processing", 
+						200 /* HTTP OK */, serverLog, req);  // Add onBusboyFinish status
 					
 					// Set any required parameters not yet set
 					if (!ofields["quantization"]) {
