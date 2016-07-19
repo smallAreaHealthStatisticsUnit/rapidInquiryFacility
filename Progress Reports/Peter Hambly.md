@@ -526,6 +526,7 @@ Note: no bounding box (bbox) in tiles.
 
 #### Parked TODO list (as required):
 
+* Read DBF header so shapefile reader knows number of expected records; add to status update
 * Timeout recovery (switches to batch mode).
 * Favicon support: https://github.com/expressjs/serve-favicon
 * Database connection; clean, check OK and ST_Union(); area support [and checks]; PK support. Turf probably removes requirement 

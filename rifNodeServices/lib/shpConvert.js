@@ -878,15 +878,28 @@ This error in actually originating from the error handler function
 						});		
 						
 						var end = new Date().getTime();
-						var elapsedTime=(end - lstart)/1000; // in S	
+						var elapsedTime=(end - lstart)/1000; // in S
+						var msg;
+						
 						if (e) {
-							nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "TopoJSON creation and save failed: " + shapefileData["topojsonFileBaseName"] + " took: " + elapsedTime + "S", 
-								500 /* HTTP Failure */, serverLog, req);  // Add end of shapefile read status	
+							msg="TopoJSON creation and save failed: " + shapefileData["topojsonFileBaseName"];
 						}
-						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "TopoJSON creation and save: " + shapefileData["topojsonFileBaseName"] + " took: " + elapsedTime + "S", 
-							200 /* HTTP OK */, serverLog, req);  // Add end of shapefile read status
-						response.message+=";\nRun shapeFileQueueCallback callback()";
-						shapefileData["callback"](e);								
+						else {
+							msg="TopoJSON creation and save: " + shapefileData["topojsonFileBaseName"];
+						}	
+						response.message+=msg + "; took: " + elapsedTime + "S";
+									
+						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, 
+							500 /* HTTP Failure */, serverLog, req,  // Add end of shapefile read status	
+							function topoFunctionAddStatus(err) {
+								if (err) {
+									serverLog.serverLog2(__file, __line, "topoFunctionAddStatus", 
+										"WARNING: Unable to rename status file", req, err);
+								}		
+									
+								response.message+=";\nRun shapeFileQueueCallback callback()";		
+								shapefileData["callback"](e || err);
+							});							
 					}	
 					var topoFunction=function topoFunction(e) {
 						
@@ -903,9 +916,9 @@ This error in actually originating from the error handler function
 						response.message+=msg + "; took: " + elapsedTime + "S";
 						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, 
 							500 /* HTTP OK */, serverLog, req,
-							function topoFunctionAddStatus(err) {
+							function topoFunctionAddStatus2(err) {
 								if (err) {
-									serverLog.serverLog2(__file, __line, "topoFunctionAddStatus", 
+									serverLog.serverLog2(__file, __line, "topoFunctionAddStatus2", 
 										"WARNING: Unable to rename status file", req, err);
 								}		
 

@@ -1398,7 +1398,10 @@ function getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName) {
  * Description: Wait for server response: call getShpConvertStatus method until shpConvert completes
  */
 function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, responseFileName, nextTimeout, recursionCount, index) {
-	console.log("Wait: " + recursionCount + " for server response for getShpConvertStatus(uuidV1): " + uuidV1 + "; current index: " + index);
+	
+	var end=new Date().getTime();
+	var elapsed=(Math.round(end - start))/1000; // in S
+	console.log("+" + elapsed + " Wait: " + recursionCount + " for server response for getShpConvertStatus(uuidV1): " + uuidV1 + "; current index: " + index);
 	var lstart=new Date().getTime();
 	var atEnd=false;
 	
@@ -1447,9 +1450,11 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 						}
 					} // End of for loop		
 
-					var ltime=(new Date().getTime() - lstart)/1000; // in S	
-					if (ltime > 5) {
-						console.log("Warning: status interruption of " + ltime + " for last status"); 
+					var end=new Date().getTime();
+					var ltime=(end - lstart)/1000; // in S	
+					if (ltime > 5) {	
+						var elapsed=(Math.round(end - start))/1000; // in S
+						console.log("+" + elapsed + " Warning: status interruption of " + ltime + " for last status"); 
 					}	
 				}
 				
