@@ -210,7 +210,8 @@ exports.convert = function exportsConvert(req, res) {
  * 
  * shpConvert: Upload then convert shapefile to geoJSON;
  * geo2TopoJSON: Convert geoJSON to TopoJSON;
- * getShpConvertStatus: Get shapefile conversion sttaus;
+ * getShpConvertStatus: Get shapefile conversion status;
+ * getShpConvertTopoJSON: Get shapefile converts into topoJSON optimised for zoomnlevels 6-11
  *
  * Not yet imnplement:
  *
@@ -225,7 +226,8 @@ exports.convert = function exportsConvert(req, res) {
  */		
 		if (!((req.params["shpConvert"] == 'shpConvert') ||
 			  (req.params["shpConvert"] == 'geo2TopoJSON') ||
-			  (req.params["shpConvert"] == 'getShpConvertStatus') /* ||
+			  (req.params["shpConvert"] == 'getShpConvertStatus') ||
+			  (req.params["shpConvert"] == 'getShpConvertTopoJSON') /* ||
 			  (req.url == '/simplifyGeoJSON') ||
 			  (req.url == '/geoJSONtoWKT') ||
 			  (req.url == '/createHierarchy') ||
@@ -1090,6 +1092,18 @@ exports.convert = function exportsConvert(req, res) {
 	
 			nodeGeoSpatialServicesCommon.getStatus(response, req, res, serverLog, httpErrorResponse);				
 		} // End of get method: getShpConvertStatus
+		else if (req.method == 'GET' && (req.params["shpConvert"] == 'getShpConvertTopoJSON')) { // Get method: getShpConvertTopoJSON		
+
+			scopeChecker(__file, __line, {
+				serverLog: serverLog,
+				httpErrorResponse: httpErrorResponse,
+				response: response,
+				req: req,
+				res: res
+			});
+	
+			nodeGeoSpatialServicesCommon.getShpConvertTopoJSON(response, req, res, serverLog, httpErrorResponse);				
+		} // End of get method: getShpConvertTopoJSON		
 		else {								// All other methods are errors
 			var msg="ERROR! "+ req.method + " Requests not allowed; please see: " + 
 				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";

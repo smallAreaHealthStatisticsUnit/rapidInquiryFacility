@@ -94,10 +94,10 @@ function formSetup(formId, formName) {
 
 		try {
 			if (status == "success") {
-				displayResponse(data, 200, formName);
+				displayResponse(data, 200, formName, true /* enableGetStatus */);
 			}
 			else {
-				displayResponse(data, status, formName);
+				displayResponse(data, status, formName, true /* enableGetStatus */);
 			}
 		}
 		catch (e) {
@@ -277,7 +277,7 @@ function submitFormXMLHttpRequest(output_type, formName) {
 			
 				if (request.response) {
 					setStatus("Processing response..."); 
-					displayResponse(request.response, request.status, formName);
+					displayResponse(request.response, request.status, formName, true /* enableGetStatus */);
 				}
 				else {
 					console.log("[" + elapsed + "] Ignoring null response"); 
@@ -1055,11 +1055,11 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 				
 /*
  * Function: 	displayResponse()
- * Parameters: 	Response text (JSON as a string), status code, form name (textual)
+ * Parameters: 	Response text (JSON as a string), status code, form name (textual), enable getStatus(): true/false
  * Returns: 	Nothing
  * Description:	Display reponse from submit form
  */
-function displayResponse(responseText, status, formName) {
+function displayResponse(responseText, status, formName, enableGetStatus) {
 										
 	var response;
 	var msg=""
@@ -1106,9 +1106,10 @@ function displayResponse(responseText, status, formName) {
 				setStatus("Error in processing file list", new Error("response.no_files == 0"));
 			}			
 			else {
-				if (response.fields["batchMode"] == "true") {
+				if (response.fields["batchMode"] == "true" && enableGetStatus) {
 					progressLabel.text("Server is processing response");
-					setTimeout(waitForServerResponse(response.fields["uuidV1"], response.fields["diagnosticFileDir"], response.fields["statusFileName"], 
+					setTimeout(waitForServerResponse(
+						response.fields["uuidV1"], response.fields["diagnosticFileDir"], response.fields["statusFileName"], response.fields["responseFileName"] + ".2",
 						1000 /* Next timeout */, 1 /* Recursion count */, -1 /* Index */), 5000 /* 5 S timer */);
 					return;
 				}
@@ -1313,7 +1314,7 @@ function displayResponse(responseText, status, formName) {
 		msg+="<p>Processing diagnostic:</br><pre>" + response.diagnostic + "</pre></p>";
 	}	
 	
-	if (status == 200) {	
+	if (status == 200  || status == "success") {	
 		setStatus("<h1>" + formName + " processed OK</h1>", undefined, msg);
 	}	
 	else {
@@ -1321,13 +1322,79 @@ function displayResponse(responseText, status, formName) {
 	}
 }	
 
+
 /*
- * Function: 	waitForServerResponse()
- * Parameters:  uuidV1, diagnosticFileDir, next timeout (mS), recursion count, index
+ * Function: 	getShpConvertTopoJSON()
+ * Parameters:  uuidV1, diagnosticFileDir, response file name
  * Returns: 	Nothing
  * Description: Wait for server response: call getShpConvertStatus method until shpConvert completes
  */
-function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, nextTimeout, recursionCount, index) {
+function getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName) {
+	console.log("Wait for server response for getShpConvertTopoJSON(uuidV1): " + uuidV1);
+	var lstart=new Date().getTime();
+	var atEnd=false;
+	
+	var jqXHR=$.get("getShpConvertTopoJSON", 
+		{ 
+			uuidV1: uuidV1, 
+			diagnosticFileDir: diagnosticFileDir,
+			responseFileName: responseFileName			
+		}, function getShpConvertTopoJSON(data, status, xhr) {
+	
+			console.log("Got server response for getShpConvertTopoJSON(uuidV1): " + uuidV1);		
+			
+			displayResponse(data, status, "shpConvert" /* formName */, false /* enableGetStatus */);
+		}, // End of getShpConvertTopoJSON() 
+		"json");
+	jqXHR.fail(function getShpConvertTopoJSONError(x, e) {
+		var msg="";
+		var response;
+		try {
+			if (x.responseText) {
+				response=JSON.parse(x.responseText);
+			}
+		}
+		catch (e) {
+			msg+="Error parsing response: " + e.message;
+		}
+		
+		if (x.status == 0) {
+			msg+="Unable to get TopoJSON data from shapefile conversion request; network error";
+		} 
+		else if (x.status == 404) {
+			msg+="Unable to get TopoJSON data from shapefile conversion request; URL not found: getShpConvertStatus";
+		} 
+		else if (x.status == 500) {
+			msg+="Unable to get TopoJSON data from shapefile conversion request; internal server error";
+		}  
+		else if (response && response.message) {
+			msg+="Unable to get TopoJSON data from shapefile conversion request; unknown error: " + x.status + "<p>" + response.message + "</p>";
+		}	
+		else if (response) {
+			msg+="Unable to get TopoJSON data from shapefile conversion request; unknown error: " + x.status + "<br><pre>" + JSON.stringify(response, null, 4) + "</pre>";
+		}
+		else {
+			msg+="Unable to get TopoJSON data from shapefile conversion request; unknown error: " + x.status + "<br><pre>" + x.responseText + "</pre>";
+		}
+		
+		if (e && e.message) {
+			errorPopup(msg + "<br><pre>" + e.message + "</pre>");
+		}
+		else {
+			errorPopup(msg);
+		}
+		progressLabel.text("Unable to fetch map")
+	});
+		
+} // End of getShpConvertTopoJSON()
+				
+/*
+ * Function: 	waitForServerResponse()
+ * Parameters:  uuidV1, diagnosticFileDir, status file name, response file name, next timeout (mS), recursion count, index
+ * Returns: 	Nothing
+ * Description: Wait for server response: call getShpConvertStatus method until shpConvert completes
+ */
+function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, responseFileName, nextTimeout, recursionCount, index) {
 	console.log("Wait: " + recursionCount + " for server response for getShpConvertStatus(uuidV1): " + uuidV1 + "; current index: " + index);
 	var lstart=new Date().getTime();
 	var atEnd=false;
@@ -1336,7 +1403,8 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, nextTi
 		{ 
 			uuidV1: uuidV1, 
 			diagnosticFileDir: diagnosticFileDir,
-			statusFileName: statusFileName			
+			statusFileName: statusFileName,
+			responseFileName, responseFileName
 		}, function getShpConvertStatus(data, status, xhr) {
 			var nrecursionCount=recursionCount+1;
 			
@@ -1347,21 +1415,30 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, nextTi
 				}
 				var status=data.status[(data.status.length-1)];
 				if (status && status["statusText"]) {
-					if (status["statusText"] == "BATCH_END") {
+					if (status["statusText"] == "BATCH_END") { // Display the last status in the progress bar
 						progressLabel.text("All processing complete");
-						atEnd=true;
 					}					
 					else if (status["statusText"] == "BATCH_INTERMEDIATE_END") {
 						progressLabel.text("Intermediate processing complete, loading maps, making tiles");
-						atEnd=true;
 					}
 					else {
 						progressLabel.text(status["statusText"]);
 					}
+					
 					for (var i=index; i<data.status.length; i++) {
 						if (data.status[i]) {
 							console.log("+" + data.status[i]["etime"] + " [" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
 								data.status[i].calling_function + "]: " + data.status[i].statusText);	
+								
+							if (data.status[i].statusText == "BATCH_END") {
+								// Load tiles
+								atEnd=true;
+							}					
+							else if (data.status[i].statusText == "BATCH_INTERMEDIATE_END") {
+								getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName); // Load intermediate map
+								atEnd=true;
+							}
+								
 						}
 					} // End of for loop		
 
@@ -1372,7 +1449,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, nextTi
 				}
 				
 				if (nrecursionCount < 90 && atEnd == false) {
-					setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, statusFileName, nextTimeout /* Next timeout */, 
+					setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, statusFileName, responseFileName, nextTimeout /* Next timeout */, 
 						nrecursionCount /* Recursion count */, nIndex /* New index */);
 				}
 				else if (atEnd) {
@@ -1386,7 +1463,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, nextTi
 		}, // End of getShpConvertStatus() 
 		"json");
 	jqXHR.fail(function getShpConvertStatusError(x, e) {
-		var msg;
+		var msg="";
 		var response;
 		try {
 			if (x.responseText) {
@@ -1394,25 +1471,26 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, nextTi
 			}
 		}
 		catch (e) {
+			msg+="Error parsing response: " + e.message;
 		}
 		
 		if (x.status == 0) {
-			msg="Unable to get status for shapefile conversion request; network error";
+			msg+="Unable to get status for shapefile conversion request; network error";
 		} 
 		else if (x.status == 404) {
-			msg="Unable to get status for shapefile conversion request; URL not found: getShpConvertStatus";
+			msg+="Unable to get status for shapefile conversion request; URL not found: getShpConvertStatus";
 		} 
 		else if (x.status == 500) {
-			msg="Unable to get status for shapefile conversion request; internal server error";
+			msg+="Unable to get status for shapefile conversion request; internal server error";
 		}  
 		else if (response && response.message) {
-			msg="Unable to get status for shapefile conversion request; unknown error: " + x.status + "<p>" + response.message + "</p>";
+			msg+="Unable to get status for shapefile conversion request; unknown error: " + x.status + "<p>" + response.message + "</p>";
 		}	
 		else if (response) {
-			msg="Unable to get status for shapefile conversion request; unknown error: " + x.status + "<br><pre>" + JSON.stringify(response, null, 4) + "</pre>";
+			msg+="Unable to get status for shapefile conversion request; unknown error: " + x.status + "<br><pre>" + JSON.stringify(response, null, 4) + "</pre>";
 		}
 		else {
-			msg="Unable to get status for shapefile conversion request; unknown error: " + x.status + "<br><pre>" + x.responseText + "</pre>";
+			msg+="Unable to get status for shapefile conversion request; unknown error: " + x.status + "<br><pre>" + x.responseText + "</pre>";
 		}
 		
 		if (e && e.message) {
@@ -1952,7 +2030,8 @@ function createTable(response, layerColours, layerAddOrder) {
 
 		for (var i = 0; i < response.no_files; i++) {
 			labels.push(
-				'<i style="background:' +layerColours[i] + '"></i>' + (response.file_list[i].desc || response.file_list[i].file_name));
+				'<i style="background:' +layerColours[i] + '"></i>' + response.file_list[i].desc + "/" + response.file_list[i].file_name + 
+					" (" + response.file_list[i].total_areas + ")");
 		}
 
 		div.innerHTML = '<i style="background:#FFF"></i><em>Geolevels</em><br>' + labels.join('<br>');

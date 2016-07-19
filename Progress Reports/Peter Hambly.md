@@ -504,9 +504,9 @@ RangeError: Invalid string length
 
 #### Current TODO list (July):
 
+* Colurs wrong in legend
 * Add addStatus() callbacks, tidy messages
 * Convert toTopoJSONZoomlevels() for loops to async
-* Timeout recovery (switches to batch mode).
 * ST_Union and area calculations can be done in geoJSON using turf: as it is a geometry collection. 
 * Add area_id and id uniqueness tests to shapefile checks and tests
 * WKT support using Wellknown
@@ -526,6 +526,7 @@ Note: no bounding box (bbox) in tiles.
 
 #### Parked TODO list (as required):
 
+* Timeout recovery (switches to batch mode).
 * Favicon support: https://github.com/expressjs/serve-favicon
 * Database connection; clean, check OK and ST_Union(); area support [and checks]; PK support. Turf probably removes requirement 
   for any DB port, subject to acceptable performance

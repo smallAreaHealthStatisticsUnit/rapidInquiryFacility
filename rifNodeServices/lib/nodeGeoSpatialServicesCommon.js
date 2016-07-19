@@ -204,13 +204,14 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 		
 	//			serverLog.serverLog2(__file, __line, "responseProcessing", msg, req);	
 			if (!res.finished) { // Response NOT already processed
-				var msg=response.message;
-				if (!response.fields.verbose) {
+				var msg=response.message; // Save
+				if (!response.fields.verbose) { // Only send diagnostics if requested
 					response.message="";	
 				}	
 				var output = JSON.stringify(response);// Convert output response to JSON 
 				response.fields["diagnosticFileDir"]=diagnosticFileDir // Restore
 				msg+="\nCreated reponse, size: " + output.length + "; saving to file: " + response.fields["responseFileName"] + ".1"; 
+				response.message=msg; // Restore
 				serverLog.serverLog2(__file, __line, "responseProcessing", 
 					"Diagnostics >>>\n" +
 					msg + "\n<<< End of diagnostics", req);
@@ -246,13 +247,14 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 
 			}
 			else if (ofields["batchMode"] == "true") { // Batch mode
-				var msg=response.message;
-				if (!response.fields.verbose) {
+				var msg=response.message; // Save
+				if (!response.fields.verbose) { // Only send diagnostics if requested
 					response.message="";	
 				}	
 				var output = JSON.stringify(response);// Convert output response to JSON 
 				response.fields["diagnosticFileDir"]=diagnosticFileDir // Restore
-				msg+="\nCreated reponse, size: " + output.length; 
+				msg+="\nCreated response, size: " + output.length; 
+				response.message=msg; // Restore
 				serverLog.serverLog2(__file, __line, "responseProcessing", 
 					"Batch end diagnostics >>>\n" +
 					msg + "\n<<< End of diagnostics", req);
@@ -462,6 +464,115 @@ recreateDiagnosticsLog = function recreateDiagnosticsLog(response, serverLog, ht
 	}
 } // End of recreateDiagnosticsLog	
 
+/*
+ * Function:	getShpConvertTopoJSON()
+ * Parameters:	response
+ * Returns:		Intermediate  TopoJSON response
+ * Description: Get intermediate TopoJSON response from file
+ */	
+getShpConvertTopoJSON = function getShpConvertTopoJSON(response, req, res, serverLog, httpErrorResponse) {
+	const os = require('os'),
+		  fs = require('fs');
+		  
+	scopeChecker(__file, __line, {
+		serverLog: serverLog,
+		httpErrorResponse: httpErrorResponse,
+		response: response,
+		req: req,
+		res: res
+	});
+	
+	response.message="In: getShpConvertTopoJSON()";	
+	var msg="getShpConvertTopoJSON(): ";	
+	response.fields=req.query;
+	if (response.fields && response.fields["uuidV1"] && response.fields["responseFileName"]) { // Can get state
+		if (response.fields["diagnosticFileDir"] == undefined) {
+			response.fields["diagnosticFileDir"]=os.tmpdir() + "/shpConvert/" + response.fields["uuidV1"];
+		}
+		var fileName=response.fields["diagnosticFileDir"] + "/" + response.fields["responseFileName"];
+		fs.stat(fileName, 
+			/*
+			 * Function:	getStatusFExists()
+			 * Parameters:	Error object, stat object
+			 * Returns:		Nothing
+			 * Description: stat callback
+			 */		
+			function getStatusFExists(err, stats) {
+			if (err) {
+				msg+="Iintermediate TopoJSON response file: " + fileName + " does not exist";
+				httpErrorResponse.httpErrorResponse(__file, __line, "getShpConvertTopoJSON", 
+					serverLog, 500, req, res, msg, err /* Error */, response);		
+				return;	
+			}
+			else {
+				fs.readFile(fileName, 
+				/*
+				 * Function:	getStatusFReadFile()
+				 * Parameters:	Error object, read data
+				 * Returns:		Nothing
+				 * Description: readFile callback
+				 */
+				function getStatusFReadFile(err, topoResponseText) {
+					if (err) {
+						msg+="Unable to read get intermediate TopoJSON response file: " + fileName;
+						httpErrorResponse.httpErrorResponse(__file, __line, "getShpConvertTopoJSON", 
+							serverLog, 500, req, res, msg, err /* Error */, response);		
+						return;	
+					}
+					else {	
+						response.message+="\nRead get intermediate TopoJSON response file: " + fileName + "; response size: " + topoResponseText.length;
+						if (topoResponseText && topoResponseText.length > 0) {
+							
+							try {
+								var topoResponse=JSON.parse(topoResponseText);
+								if (topoResponse) {
+									if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
+								
+										var output = JSON.stringify(topoResponse);// Convert output response to JSON 
+							// Need to test res was not finished by an expection to avoid "write after end" errors			
+										try {
+											res.write(output);                  // Write output  
+											res.end();		
+										}
+										catch(e) {
+											serverLog.serverError(__file, __line, "getShpConvertTopoJSON", "Error in sending response to client", req, e);
+										}
+									}
+									else {
+										serverLog.serverLog2(__file, __line, "getShpConvertTopoJSON", 
+											"Diagnostics >>>\n" +
+											response.message + "\n<<< End of diagnostics", req);
+										serverLog.serverError2(__file, __line, "getShpConvertTopoJSON", "Unable to return OK response to user - httpErrorResponse() already processed", req);
+									}	
+								}
+								else {
+									throw new Error("Unable to get get intermediate TopoJSON response: response is undefined after parse");
+								}
+							}
+							catch (e) {
+								msg+="Unable to get response: parse error: " + e.message;
+								httpErrorResponse.httpErrorResponse(__file, __line, "getShpConvertTopoJSON", 
+									serverLog, 500, req, res, msg, e /* Error */, response);		
+								return;	
+							}
+						}
+						else {
+							msg+="Unable to get status: Zero length intermediate TopoJSON response text";
+							httpErrorResponse.httpErrorResponse(__file, __line, "getShpConvertTopoJSON", 
+								serverLog, 500, req, res, msg, new Error("Unable to get intermediate TopoJSON response: Zero length response") /* Error */, response);		
+							return;	
+						}	
+					}
+				});
+			}
+		});
+	}
+	else {
+		response.message+="\nCannot get intermediate TopoJSON response from file; insufficent fields";
+		return undefined;
+	}
+} // End of getShpConvertTopoJSON()
+	
 /*
  * Function:	getStatus()
  * Parameters:	response
@@ -724,6 +835,7 @@ module.exports.recreateDiagnosticsLog = recreateDiagnosticsLog;
 module.exports.responseProcessing = responseProcessing;
 module.exports.addStatus = addStatus;
 module.exports.getStatus = getStatus;
+module.exports.getShpConvertTopoJSON = getShpConvertTopoJSON;
 module.exports.writeResponseFile = writeResponseFile;
 
 // Eof

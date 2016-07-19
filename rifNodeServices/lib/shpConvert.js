@@ -1325,6 +1325,10 @@ This error in actually originating from the error handler function
 						else {
 							var diagnosticsTimer=response.diagnosticsTimer;  // Save
 							response.diagnosticsTimer=undefined; // Prevent TypeError: Converting circular structure to JSON - in JSON.stringify()
+							var msg=response.message; // Save
+							if (!response.fields.verbose) { // Only send diagnostics if requested
+								response.message="";	
+							}	
 							var output;
 							try {
 								output = JSON.stringify(response); // Convert output response to JSON 
@@ -1337,6 +1341,7 @@ This error in actually originating from the error handler function
 									"ERROR! in JSON.stringify(response); trace >>>\n" + trace + "\n<<< End of trace", req, e);
 							}
 							response.diagnosticsTimer=diagnosticsTimer; // Restore
+							response.message=msg; // Restore
 							
 							writeResponseFile(serverLog, response, req, output,  ".2", 
 								function finalProcessingCallback() {	// Intermediate version 
