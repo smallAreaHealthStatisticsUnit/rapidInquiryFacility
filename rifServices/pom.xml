@@ -139,6 +139,11 @@
   		<version>0.0.1-SNAPSHOT</version>  		
   	</dependency>
 
+	<dependency>
+    	<groupId>org.nuiton.thirdparty</groupId>
+    	<artifactId>JRI</artifactId>
+    	<version>0.8-4</version>
+	</dependency>
   	
   </dependencies>
   <dependencyManagement>
