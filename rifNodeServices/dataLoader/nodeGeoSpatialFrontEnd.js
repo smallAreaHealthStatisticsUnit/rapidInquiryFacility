@@ -2030,8 +2030,8 @@ function createTable(response, layerColours, layerAddOrder) {
 
 		for (var i = 0; i < response.no_files; i++) {
 			labels.push(
-				'<i style="background:' +layerColours[i] + '"></i>' + response.file_list[i].desc + "/" + response.file_list[i].file_name + 
-					" (" + response.file_list[i].total_areas + ")");
+				'<i style="background:' + layerColours[i] + '"></i>' + (response.file_list[layerAddOrder[i]].desc || response.file_list[layerAddOrder[i]].file_name) + 
+					" (" + response.file_list[layerAddOrder[i]].total_areas + " areas)");
 		}
 
 		div.innerHTML = '<i style="background:#FFF"></i><em>Geolevels</em><br>' + labels.join('<br>');
