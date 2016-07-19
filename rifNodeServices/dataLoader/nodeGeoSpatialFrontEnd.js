@@ -53,6 +53,7 @@ var serverTime;
 var jsonAddLayerParamsArray=[];
 var initHtml;
 var status;
+var uuidV1;
 		
 // Extend Leaflet to use topoJSON
 L.topoJson = L.GeoJSON.extend({  
@@ -398,6 +399,7 @@ function checkRequest(formData, jqForm, options) {
 		 	
 	options.data.uuidV1=generateUUID();
 	console.log("uuidV1: " + options.data.uuidV1);
+	uuidV1=options.data.uuidV1;
 	var queryString = $.param(formData); 
 	var fileCount=0;
 		
@@ -482,6 +484,7 @@ webkitRelativePath: ""} .. then inherited
 	nodeGeoSpatialFrontEndInit();
  
 	document.getElementById("status").innerHTML  = "";
+	
     // here we could return false to prevent the form from being submitted; 
     // returning anything other than false will allow the form submit to continue 
     return true; 
@@ -718,7 +721,7 @@ function setStatus(msg, err, diagnostic, stack) {
 			if (document.getElementById("tabs") && tabs) { // JQuery-UI version
 				tabs.tabs("refresh" );
 			}
-			console.log("[" + elapsed + "] " + msg);
+			console.log("+" + elapsed + " " + msg);
 		}
 		else {
 			var error=status;
@@ -1304,7 +1307,7 @@ function displayResponse(responseText, status, formName, enableGetStatus) {
 	var elapsed=(Math.round((end - start)/100))/10; // in S
 	msg+="Time taken: " + elapsed + " S; upload time: " + uploadTime + " S; server time: " + serverTime + " S [excluding map draw time]</br>";
 	if (document.getElementById("progressbar")) { // JQuery-UI version
-		$(".progress-label").text( "Processing completed in " +  elapsed + " S");
+		$(".progress-label").text( "Map completed; took " +  elapsed + " S");
 	}
 	if (response.message) {
 		msg+="<p>Processing diagnostic messages:</br><div id=\"div_message\" style=\"overflow:scroll; height: 400px;\"><pre>" + response.message + "</pre></div?</p>"
@@ -1435,6 +1438,8 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 								atEnd=true;
 							}					
 							else if (data.status[i].statusText == "BATCH_INTERMEDIATE_END") {
+								console.log("Enable shpConvertGetConfig button");
+								$( "#shpConvertGetConfig" ).button( "enable" ); // Enable shpConvertGetConfig button
 								getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName); // Load intermediate map
 								atEnd=true;
 							}
@@ -2040,4 +2045,14 @@ function createTable(response, layerColours, layerAddOrder) {
 	};
 
 	legend.addTo(map);
+}
+
+/*
+ * Function: 	shpConvertGetConfigFunc()
+ * Parameters: 	Value
+ * Returns: 	Nothing
+ * Description:	Action when shpConvertGetConfigFunc button is clicked
+ */
+function shpConvertGetConfigFunc(value) {
+	console.log("shpConvertGetConfigFunc: call shpConvertGetConfig("+ uuidV1 + ")");
 }

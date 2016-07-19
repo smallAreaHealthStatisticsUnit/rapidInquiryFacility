@@ -823,9 +823,9 @@ exports.convert = function exportsConvert(req, res) {
 												d.no_files=response.no_files;
 												d_files.d_list[response.no_files-1] = d2;
 												
-												nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Expanded and added zip file " + (index+1) + "." + noZipFiles + ": " + 
+												nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Expanded " + (index+1) + "." + noZipFiles + ": " + 
 													d.file.file_name + "//:" + d2.file.file_name + " as file " + response.no_files+new_no_files + 
-													" in list; size: " + nodeGeoSpatialServicesCommon.fileSize(d2.file.file_data.length), 
+													" to list; size: " + nodeGeoSpatialServicesCommon.fileSize(d2.file.file_data.length), 
 													200 /* HTTP OK */, serverLog, req,
 													/*
 													 * Function: 	zipProcessingSeriesAddStatus()
