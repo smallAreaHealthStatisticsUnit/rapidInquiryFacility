@@ -1369,6 +1369,9 @@ function getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName) {
 		} 
 		else if (x.status == 500) {
 			msg+="Unable to get TopoJSON data from shapefile conversion request; internal server error";
+			if (response && response.message) {
+				msg+="<br><pre>" + response.message + "</pre>";
+			}
 		}  
 		else if (response && response.message) {
 			msg+="Unable to get TopoJSON data from shapefile conversion request; unknown error: " + x.status + "<p>" + response.message + "</p>";
@@ -1386,7 +1389,8 @@ function getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName) {
 		else {
 			errorPopup(msg);
 		}
-		progressLabel.text("Unable to fetch map")
+		progressLabel.text("Unable to fetch map");
+		console.error(msg);
 	});
 		
 } // End of getShpConvertTopoJSON()
@@ -1454,7 +1458,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					var ltime=(end - lstart)/1000; // in S	
 					if (ltime > 5) {	
 						var elapsed=(Math.round(end - start))/1000; // in S
-						console.log("+" + elapsed + " Warning: status interruption of " + ltime + " for last status"); 
+						console.log("+" + elapsed + " WARNING: status interruption of " + ltime + " seconds for last status"); 
 					}	
 				}
 				
@@ -1509,7 +1513,12 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 		else {
 			errorPopup(msg);
 		}
-		progressLabel.text("Proccessing failed")
+		
+		progressLabel.text("Proccessing failed");
+		if (response && response.message) {
+			msg+=response.message;
+		}		
+		console.error(msg);
 	});
 		
 }
