@@ -117,37 +117,47 @@ var shapefileSimplifyGeoJSON = function shapefileSimplifyGeoJSON(shapefile, resp
 	var areaName=shapefileData["areaName"];
 	var dbf_fields=shapefileData["dbf_fields"];
 	
+	function toTopoJSONCallback(err) {
+		
+		if (err) {
+			serverLog.serverError2(__file, __line, "toTopoJSONCallback", 
+				"WARNING: Unable to create topoJSON", req, err);
+		}	
+									
+		response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length=0;
+		if (shapefile.topojson) {
+			for (var i=0; i<shapefile.topojson.length; i++) { // total_topojson_length
+				response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length+=(shapefile.topojson[i].topojson_length || 0);
+			}
+		}
+		
+	// This need to be replaced with write record by record and then do the callback here
+	// We can then also remove the geojson
+
+	// Write topoJSON file; do NOT delete it
+		if (response.file_list[shapefileData["shapefile_no"]-1].topojson && response.file_list[shapefileData["shapefile_no"]-1].topojson[0]) {	
+			shapefile.geojson.features=undefined;			
+			streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], 
+				JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson[0].topojson), 
+				serverLog, shapefileData["uuidV1"], shapefileData["req"], response, records, 
+				false /* do not delete data (by undefining) at stream end */, callback);
+		}
+		else {
+			throw new Error('response.file_list[shapefileData["shapefile_no"]-1].topojson[0] is undefined');
+		}		
+	} // End of toTopoJSONCallback()
+	
 	if (areaName && areaID) {
 		shapefile.topojson = toTopoJSON(shapefile.geojson, topojson_options, response, shapefileData["topojsonFileBaseName"],
-			areaName, areaID, dbf_fields);
+			areaName, areaID, dbf_fields, toTopoJSONCallback);
 	}
 	else {
 		response.message+="\nNo areaID/areaName fields set for file: " + shapefileData["topojsonFileBaseName"] + "\nAreaID: " +
 			(areaID || "no areaID") + "; areaName: " + (areaName || "no areaName");
 		shapefile.topojson = toTopoJSON(shapefile.geojson, topojson_options, response, shapefileData["topojsonFileBaseName"],
-			undefined /* areaName  */, undefined /* areaID */, dbf_fields);
+			undefined /* areaName  */, undefined /* areaID */, dbf_fields, toTopoJSONCallback);
 	}
-	response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length=0;
-	if (shapefile.topojson) {
-		for (var i=0; i<shapefile.topojson.length; i++) { // total_topojson_length
-			response.file_list[shapefileData["shapefile_no"]-1].total_topojson_length+=(shapefile.topojson[i].topojson_length || 0);
-		}
-	}
-	
-// This need to be replaced with write record by record and then do the callback here
-// We can then also remove the geojson
 
-// Write topoJSON file; do NOT delete it
-	if (response.file_list[shapefileData["shapefile_no"]-1].topojson && response.file_list[shapefileData["shapefile_no"]-1].topojson[0]) {	
-		shapefile.geojson.features=undefined;			
-		streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["topojsonFileName"], 
-			JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].topojson[0].topojson), 
-			serverLog, shapefileData["uuidV1"], shapefileData["req"], response, records, 
-			false /* do not delete data (by undefining) at stream end */, callback);
-	}
-	else {
-		throw new Error('response.file_list[shapefileData["shapefile_no"]-1].topojson[0] is undefined');
-	}
 } // End of shapefileSimplifyGeoJSON()
 
 /*
@@ -192,7 +202,7 @@ var getQuantization = function getQuantization(lvl) {
 
 /*
  * Function: 	toTopoJSON() 
- * Parameters:  geoJOSN, topoJSON convertor options, internal response object, fileName, area name, area ID, dbf fields
+ * Parameters:  geoJOSN, topoJSON convertor options, internal response object, fileName, area name, area ID, dbf fields, callback
  * Returns: 	Array of topoJSON objects {
  *	 				topojson,
  *					topojson_length,
@@ -203,7 +213,7 @@ var getQuantization = function getQuantization(lvl) {
  *				}
  * Description: Convert geoJSON to topoJSON
  */
-var toTopoJSON = function toTopoJSON(geojson, topojson_options, response, fileName, areaName, areaID, dbf_fields) {
+var toTopoJSON = function toTopoJSON(geojson, topojson_options, response, fileName, areaName, areaID, dbf_fields, callback) {
 	const topojson = require('topojson'),
 		  stderrHook = require('../lib/stderrHook'),
 		  serverLog = require('../lib/serverLog');
@@ -211,7 +221,8 @@ var toTopoJSON = function toTopoJSON(geojson, topojson_options, response, fileNa
 	 scopeChecker(__file, __line, {
 		response: response,
 		geojson: geojson,
-		sizeof: sizeof
+		sizeof: sizeof,
+		callback: callback
 	});
 
 // Add stderr hook to capture debug output from topoJSON	
@@ -320,7 +331,7 @@ topology: 1579 arcs, 247759 points
 		addStatus(__file, __line, response, fileName + ": simplified topojson for zoomlevel[11] took: " + convertedTopojson[0].topojson_runtime + "S", 
 			200 /* HTTP OK */, serverLog, undefined /* req */);  // Add end of shapefile read status
 	
-		toTopoJSONZoomlevels(geojson, topojson_options, response, convertedTopojson, stderr, serverLog, fileName, myPropertyTransform);
+		toTopoJSONZoomlevels(geojson, topojson_options, response, convertedTopojson, stderr, serverLog, fileName, myPropertyTransform, callback);
 	}
 	else {
 		addStatus(__file, __line, response, fileName + ": simplified topojson (unknown zoomlevel) took: " + convertedTopojson[0].topojson_runtime + "S", 
@@ -333,17 +344,18 @@ topology: 1579 arcs, 247759 points
 /*
  * Function: 	toTopoJSONZoomlevels() 
  * Parameters:  geoJOSN, topoJSON convertor options, internal response object, convertedTopojson object, 
- *				stderr object, serverLog object, fileName, myPropertyTransform function
+ *				stderr object, serverLog object, fileName, myPropertyTransform function, toTopoJSON() callback
  * Returns: 	Nothing
  * Description: Convert geoJSON to topoJSON for each zoomlevel 10=>6
  */
 var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_options, response, convertedTopojson, stderr, serverLog, 
-	fileName, myPropertyTransform) {
+	fileName, myPropertyTransform, topoJSONcallback) {
 		  
 	 scopeChecker(__file, __line, {
 		response: response,
 		clone: clone,
-		sizeof: sizeof
+		sizeof: sizeof,
+		callback: topoJSONcallback
 	},
 	{
 		callback: myPropertyTransform
@@ -372,12 +384,24 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 
 	/*
 	 * Function: 	toTopoJSONZoomlevel() 
-	 * Parameters:  Zoomlevel, previous zoomlevel object
+	 * Parameters:  Zoomlevel, current zoomlevel object, previous zoomlevel object, callback function
 	 * Returns: 	Nothing
 	 * Description: Convert geoJSON to topoJSON for a zoomlevel
 	 */	
-	function toTopoJSONZoomlevel(i, currentConvertedTopojson, previousConvertedTopojson) {
+	function toTopoJSONZoomlevel(i, currentConvertedTopojson, previousConvertedTopojson, callback) {
 
+		scopeChecker(__file, __line, {
+			response: response,
+			clone: clone,
+			sizeof: sizeof,
+			currentConvertedTopojson: currentConvertedTopojson,
+			previousConvertedTopojson: previousConvertedTopojson,
+			callback: callback
+		},
+		{
+			callback: myPropertyTransform
+		} /* Optional */);
+	
 		stderr.disable();	// Re-route topoJSON stderr to stderr.str
 
 		var lstart = new Date().getTime();	
@@ -386,6 +410,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		var nTopojson;
 		var nTopojsonLen;
 		var end;	
+		var msg;
 		
 		var j=0;
 		for (var key in previousConvertedTopojson.topojson.objects) {
@@ -425,7 +450,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		} // For loop			
 		
 		if (j > 1) {
-			throw new Error("Create topojson zoomlevel[" + i + "] topojson.objects length > 1: "  + j);
+			callback(new Error("Create topojson zoomlevel[" + i + "] topojson.objects length > 1: "  + j));
 		} 
 		
 // Clone using JSON.parse(JSON.stringify() ...
@@ -474,9 +499,9 @@ Stack: RangeError: Invalid string length
 				200 /* HTTP OK */, serverLog, undefined /* req */);  // Add clone() status				
 		}
 		else {	
-			throw new Error("Create topojson zoomlevel[" + i + "] no geojson created from topojson convertedTopojson[" + 
+			callback(new Error("Create topojson zoomlevel[" + i + "] no geojson created from topojson convertedTopojson[" + 
 				(i-1) + 
-				"]; length: " + previousConvertedTopojson.topojson_length);
+				"]; length: " + previousConvertedTopojson.topojson_length));
 		}
 		
 		try { // convert the previous topojson to geojson
@@ -489,8 +514,8 @@ Stack: RangeError: Invalid string length
 						nTopojson, nTopojson_options);						
 			}
 			else {	
-				throw new Error("Create topojson zoomlevel[" + i + "] no nTopojson cloned from topojson convertedTopojson[" + (i-1) + 
-					"]; length: " + previousConvertedTopojson.topojson_length);
+				callback(new Error("Create topojson zoomlevel[" + i + "] no nTopojson cloned from topojson convertedTopojson[" + (i-1) + 
+					"]; length: " + previousConvertedTopojson.topojson_length));
 			}
 		}
 		catch (e) {
@@ -498,7 +523,7 @@ Stack: RangeError: Invalid string length
 //			console.error("Create topojson zoomlevel[" + i + "] error: " + e.message + "\nStack>>>\n" + e.stack + "<<<\nStderr:\n" + stderr.str());
 			stderr.clean();						// Clean down stderr string
 			stderr.restore();                   // Restore normal stderr functionality 						
-			throw e;
+			callback(e);
 		}
 		var end = new Date().getTime();
 		currentConvertedTopojson.topojson_runtime=(end - lstart)/1000; // in S	
@@ -534,11 +559,13 @@ Stack: RangeError: Invalid string length
 				properties=Object.keys(topojsonGeometries[0].properties).length;
 			}
 					
-			response.message+="Topojson has " + (topojsonGeometries.length || "no") + " features with " + (properties || "no") + " properties";
+			response.message+="\nTopojson has " + (topojsonGeometries.length || "no") + " features with " + (properties || "no") + " properties";
 		}
 		
-		addStatus(__file, __line, response, fileName + ": simplified topojson for zoomlevel[" + i + "] took: " + 
-			currentConvertedTopojson.topojson_runtime + "S", 
+		msg=fileName + ": simplified topojson for zoomlevel: " + i;
+		response.message+="\n" + msg + "; took: " + 
+			currentConvertedTopojson.topojson_runtime + "S"
+		addStatus(__file, __line, response, msg, 
 			200 /* HTTP OK */, serverLog, undefined /* req */,  // Add zoomlevel topojson simplify status	
 			/*
 			 * Function: 	simplifiedTopoJSONComplete()
@@ -548,16 +575,18 @@ Stack: RangeError: Invalid string length
 			function simplifiedTopoJSONComplete(err) {
 				if (err) {
 					serverLog.serverLog2(__file, __line, "simplifiedTopoJSONComplete", 
-						"WARNING: Unable to simplified TopoJSON", req, err);
+						"WARNING: Unable to simplify TopoJSON", req, err);
 				}
 				stderr.clean();						// Clean down stderr string
 				stderr.restore();                   // Restore normal stderr functionality 	
+				callback(err);
 			});		
 				
 	} // End of toTopoJSONZoomlevel()
 
 	var startZoomlevel=convertedTopojson[0].zoomlevel;	
 	for (var i=(startZoomlevel-1); i>=6; i--) { // Setup array for async
+//		console.error("Create convertedTopojson[" + convertedTopojson.length + "]; zoomlevel: " + i);
 		convertedTopojson[convertedTopojson.length] = {
 			topojson: undefined,
 			geojson_length: undefined,
@@ -571,30 +600,79 @@ Stack: RangeError: Invalid string length
 		};	
 	} // End of for loop
 	
-	for (var j=0; j<convertedTopojson.length; j++) { // Convert to async!
-		if (convertedTopojson[j] == undefined) {
-			throw new Error("Create topojson convertedTopojson[" + j + "].zoomlevel does exist");
-		}
+	const async = require('async');
+
+	var astart = new Date().getTime();
+	async.forEachOfSeries(convertedTopojson, 
+		function (value, j, callback) { // Processing code
+			scopeChecker(__file, __line, {
+				response: response,
+				message: response.message,
+				convertedTopojson: convertedTopojson,
+				callback: topoJSONcallback,
+				astart: astart
+			});
 		
-		var i=convertedTopojson[j].zoomlevel;
-		if (convertedTopojson[j].zoomlevel < startZoomlevel) {
-			
-			if (!convertedTopojson[(j-1)]) {
-				throw new Error("Create topojson zoomlevel[" + i + "] no previous convertedTopojson[] element: " + (j-1));
-			}			
-			else if (!convertedTopojson[(j-1)].topojson) {
-				throw new Error("Create topojson zoomlevel[" + i + "] no previous convertedTopojson[] topojson object: " + (j-1));
-			}		
-			else if (!convertedTopojson[(j-1)].topojson.objects) {
-				throw new Error("Create topojson zoomlevel[" + i + "] no previous convertedTopojson[] topojson.objects object: " + (j-1));
+//			console.error("toTopoJSONZoomlevel START: " +  convertedTopojson.length + "; zoomlevel: " + value.zoomlevel);
+			var startZoomlevel=convertedTopojson[0].zoomlevel;	
+			if (convertedTopojson[j] == undefined) {
+				callback(new Error("Create topojson convertedTopojson[" + j + "].zoomlevel does exist"));
 			}
-//			console.error("toTopoJSONZoomlevel(" + i + "); zoomlevel: " + convertedTopojson[j].zoomlevel + "; previous zoomlevel: " + convertedTopojson[(j-1)].zoomlevel);
-			toTopoJSONZoomlevel(i, convertedTopojson[j], convertedTopojson[(j-1)]);
-		}
-		else {
-//			console.error("IGNORE FIRST toTopoJSONZoomlevel(" + i + "); zoomlevel: " + convertedTopojson[j].zoomlevel);
-		}
-	} // End of for loop
+			
+			var i=convertedTopojson[j].zoomlevel;
+			if (convertedTopojson[j] && convertedTopojson[j].zoomlevel && startZoomlevel) {
+				if (convertedTopojson[j].zoomlevel < startZoomlevel) {
+					
+					if (!convertedTopojson[(j-1)]) {
+						callback(new Error("Create topojson zoomlevel[" + i + "] no previous convertedTopojson[] element: " + (j-1)));
+					}			
+					else if (!convertedTopojson[(j-1)].topojson) {
+						callback(new Error("Create topojson zoomlevel[" + i + "] no previous convertedTopojson[] topojson object: " + (j-1)));
+					}		
+					else if (!convertedTopojson[(j-1)].topojson.objects) {
+						callback(new Error("Create topojson zoomlevel[" + i + "] no previous convertedTopojson[] topojson.objects object: " + (j-1)));
+					}
+//					console.error("toTopoJSONZoomlevel(" + i + "); zoomlevel: " + convertedTopojson[j].zoomlevel + "; previous zoomlevel: " + convertedTopojson[(j-1)].zoomlevel);
+					toTopoJSONZoomlevel(i, convertedTopojson[j], convertedTopojson[(j-1)], callback);
+				}
+				else {
+//					console.error("IGNORE FIRST toTopoJSONZoomlevel(" + i + "); zoomlevel: " + convertedTopojson[j].zoomlevel);
+					callback();
+				}		
+			}
+			else {
+				callback(new Error("One of convertedTopojson[j] && convertedTopojson[j].zoomlevel && startZoomlevel does exist"));
+			}	
+		}, // End of convertTopoJSONSeries() 
+		function seriesEndCallbackFunc(e) { // Cause seriesCallback to be named
+//			console.error("toTopoJSONZoomlevel END: " + convertedTopojson.length);
+			if (e) {
+				serverLog.serverLog2(__file, __line, "seriesEndCallbackFunc", 
+					"WARNING: Unable to simplify TopoJSON", req, e);
+					topoJSONcallback(e);
+			}
+			else {			
+				var msg=fileName + ": simplified topojson for zoomlevels " + convertedTopojson[(convertedTopojson.length-1)].zoomlevel + " to " +  convertedTopojson[0].zoomlevel;
+				var end = new Date().getTime();
+				response.message+="\n" + msg + "; took: " +  ((end - astart)/1000) + "S";
+				addStatus(__file, __line, response, msg, 
+					200 /* HTTP OK */, serverLog, undefined /* req */,  // Add zoomlevel topojson simplify status	
+					/*
+					 * Function: 	addStatusSeriesEndCallbackFunc()
+					 * Parameters:	error object
+					 * Description:addStatus() callback
+					 */												
+					function addStatusSeriesEndCallbackFunc(err) {
+						if (err) {
+							serverLog.serverLog2(__file, __line, "addStatusSeriesEndCallbackFunc", 
+								"WARNING: Unable to simplify TopoJSON", req, err);
+						}
+						topoJSONcallback(err);
+					}
+				);
+			}	
+		} // End of seriesEndCallbackFunc()	
+	); // End of async.forEachOfSeries(convertedTopojson, ...
 		
 } // end of toTopoJSONZoomlevels()
 

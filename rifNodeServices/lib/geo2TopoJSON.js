@@ -343,35 +343,46 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 		
 		// Call parser that can process multi GB collections
 		d.file.jsonData=simplifyGeoJSON.jsonParse(d.file.file_data, response);
+		var toTopoJSONCallbackDone=false;
 		
-		d.file.topojson=simplifyGeoJSON.toTopoJSON(d.file.jsonData, topojson_options, response, d.file.file_name);
-		d.file.total_topojson_length=0;
-		for (var i=0; i<d.file.topojson.length; i++) { // total_topojson_length
-			d.file.total_topojson_length+=(d.file.topojson[i].topojson_length || 0);
-		}
-	
-		if (global.gc &&d.file.jsonData.length > (1024*1024*500) ) { // GC if json > 500M; 
-			const v8 = require('v8');
-		
-			d.file.jsonData=undefined;			// Release memory		
-			global.gc();
-			var heap=v8.getHeapStatistics();
-			msg+="\nMemory heap >>>";
-			for (var key in heap) {
-				msg+="\n" + key + ": " + heap[key];
+		function toTopoJSONCallback(err) {
+			if (err) {
+				serverLog.serverError2(__file, __line, "seriesEndCallbackFunc", 
+					"WARNING: Unable to simplify TopoJSON", req, err);
 			}
-			msg+="\n<<< End of memory heap";
-			serverLog.serverLog2(__file, __line, "geo2TopoJSONFile", "Force garbage collection");					
+			
+			d.file.total_topojson_length=0;
+			for (var i=0; i<d.file.topojson.length; i++) { // total_topojson_length
+				d.file.total_topojson_length+=(d.file.topojson[i].topojson_length || 0);
+			}
+		
+			if (global.gc &&d.file.jsonData.length > (1024*1024*500) ) { // GC if json > 500M; 
+				const v8 = require('v8');
+			
+				d.file.jsonData=undefined;			// Release memory		
+				global.gc();
+				var heap=v8.getHeapStatistics();
+				msg+="\nMemory heap >>>";
+				for (var key in heap) {
+					msg+="\n" + key + ": " + heap[key];
+				}
+				msg+="\n<<< End of memory heap";
+				serverLog.serverLog2(__file, __line, "geo2TopoJSONFile", "Force garbage collection");					
+			}
+			response.file_list[idx].topojson=d.file.topojson;
+			response.file_list[idx].file_size=d.file.file_size;		
+			response.file_list[idx].geojson_file_length=d.file.file_size;	
+			response.file_list[idx].total_topojson_length=d.file.total_topojson_length;
+			response.file_list[idx].transfer_time=d.file.transfer_time;
+			response.file_list[idx].uncompress_time=d.file.uncompress_time;
+			response.file_list[idx].uncompress_size=d.file.uncompress_size;		
+			toTopoJSONCallbackDone=true;	
+			
+			return d.file.topojson;						
 		}
-		response.file_list[idx].topojson=d.file.topojson;
-		response.file_list[idx].file_size=d.file.file_size;		
-		response.file_list[idx].geojson_file_length=d.file.file_size;	
-		response.file_list[idx].total_topojson_length=d.file.total_topojson_length;
-		response.file_list[idx].transfer_time=d.file.transfer_time;
-		response.file_list[idx].uncompress_time=d.file.uncompress_time;
-		response.file_list[idx].uncompress_size=d.file.uncompress_size;		
-															   
-		return d.file.topojson;								   
+		d.file.topojson=simplifyGeoJSON.toTopoJSON(d.file.jsonData, topojson_options, response, d.file.file_name, 
+			undefined /* areaName */, undefined /* areaID */, undefined /* dbf_fields */, toTopoJSONCallback);
+					   
 	} catch (e) {                            // Catch conversion errors
 
 		d.file.topojson_stderr=stderr.str();  // Get stderr as a string	

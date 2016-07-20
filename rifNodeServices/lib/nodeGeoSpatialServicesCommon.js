@@ -660,7 +660,7 @@ getStatus = function getStatus(response, req, res, serverLog, httpErrorResponse)
 								}
 							}
 							catch (e) {
-								msg+="Unable to get status: parse error: " + e.message;
+								msg+="Unable to get status: parse error: " + e.message + "\nStatus text: " + statusText;
 								httpErrorResponse.httpErrorResponse(__file, __line, "getStatus", 
 									serverLog, 500, req, res, msg, e /* Error */, response);		
 								return;	
