@@ -1582,11 +1582,6 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 	if (initialRun) {
 		verb="Adding data to";
 	}
-	console.log("[" + elapsed + "] " + verb + " JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
-		"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
-		jsonAddLayerParams.file_name +
-		"; colour: " + jsonAddLayerParams.style.color + "; weight: " + jsonAddLayerParams.style.weight + 
-		"; opacity: " + jsonAddLayerParams.style.opacity + "; fillOpacity: " + jsonAddLayerParams.style.fillOpacity + "; zoomlevel: " +  map.getZoom());
 							
 	try {
 		if (jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]) {	
@@ -1608,10 +1603,20 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 	try {	
 		if (jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] == undefined) {
 			if (jsonAddLayerParams.isGeoJSON) { // Use the right function
+				console.log("+" + elapsed + " " + verb + " GeoJSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+					"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
+					jsonAddLayerParams.file_name +
+					"; colour: " + jsonAddLayerParams.style.color + "; weight: " + jsonAddLayerParams.style.weight + 
+					"; opacity: " + jsonAddLayerParams.style.opacity + "; fillOpacity: " + jsonAddLayerParams.style.fillOpacity + "; zoomlevel: " +  map.getZoom());
 				JSONLayer[jsonAddLayerParams.i] = L.geoJson(undefined /* Geojson options */, 
 					jsonAddLayerParams.style).addTo(map);
 			}
 			else {
+				console.log("+" + elapsed + " " + verb + " TopoJSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+					"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
+					jsonAddLayerParams.file_name +
+					"; colour: " + jsonAddLayerParams.style.color + "; weight: " + jsonAddLayerParams.style.weight + 
+					"; opacity: " + jsonAddLayerParams.style.opacity + "; fillOpacity: " + jsonAddLayerParams.style.fillOpacity + "; zoomlevel: " +  map.getZoom());
 				JSONLayer[jsonAddLayerParams.i] = new L.topoJson(undefined /* Topojson options */, 
 					jsonAddLayerParams.style).addTo(map);					
 			}
