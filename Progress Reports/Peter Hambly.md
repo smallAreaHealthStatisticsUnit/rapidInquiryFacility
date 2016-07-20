@@ -501,19 +501,16 @@ RangeError: Invalid string length
 #### 18th to 22nd July
 
 * Status update using uuidV1; batch mode (returns in onBusboyFinish())
-
-#### Current TODO list (July):
-
-* Colurs wrong in legend
-* Add addStatus() callbacks, tidy messages
 * Convert toTopoJSONZoomlevels() for loops to async
+* Add addStatus() callbacks, tidy messages
+* Colurs wrong in legend
+
+#### Current TODO list (August):
+
 * ST_Union and area calculations can be done in geoJSON using turf: as it is a geometry collection. 
 * Add area_id and id uniqueness tests to shapefile checks and tests
 * WKT support using Wellknown
 * Id generator; gid support (especially in topojson)
-	
-#### August List:
-
 * Map tile generator
 * Geolevel intersction generator
 
