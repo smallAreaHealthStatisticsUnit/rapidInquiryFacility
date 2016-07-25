@@ -68,14 +68,21 @@ table {
 }
 #progressbar {
 	width: 99.5%;
+    text-align: center;
 }
 .ui-progressbar {
-	position: relative;
+/*	position: relative; */
 }
 .progress-label {
-  position: fixed;
+/*	width: 98%; */
+    font-size: 11pt !important;  
+/* Chnaged to fixed so there is more space! */	
+    width: 100%;
+    bottom: 2.5%;
+    position:absolute;
+/*  position: fixed;
   left: 50%;
-  transform: translate(-50%, +50%);	
+  transform: translate(-50%, +50%);	*/
 }
 input[type="file"] { /* Disable to default file load look, use customFileUpload */
     display: none;
