@@ -485,9 +485,11 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		 */	
 		function geoJSON2WKT() {	
 			var wktLen=0;
+			var j=0;
 			
 			async.forEachOfSeries(nGeojson.features, 
 				function geoJSON2WKTSeries(value, i, lcallback) { // Processing code
+					j++;
 					try {
 						previousConvertedTopojson.wkt[i]=wellknown.stringify(nGeojson.features[i]);	
 						wktLen+=previousConvertedTopojson.wkt[i].length;
@@ -495,7 +497,13 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 					catch (e) {
 						lcallback(e);
 					}
-					lcallback();
+					if (j >= 1000) {
+						j=0;
+						process.nextTick(lcallback);
+					}
+					else {
+						lcallback();
+					}
 				},
 				function geoJSON2WKTError(err) { //  Callback
 			
