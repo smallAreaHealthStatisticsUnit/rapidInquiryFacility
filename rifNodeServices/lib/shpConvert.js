@@ -734,7 +734,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		var lstart=new Date().getTime();
 	
 		async.forEachOfSeries(response.file_list[shapefileData["shapefile_no"]-1].geojson.features	/* col */, 
-			function writeGeoJsonbyFeatureSeries(value, index, seriesCallback) {
+			function writeGeoJsonbyFeatureSeries(value, index, seriesCallback) { // Iterator
 					var inCallback=false;
 					
 					var seriesCallbackFunc = function seriesCallbackFunc(e) { // Cause seriesCallback to be named
@@ -858,13 +858,14 @@ This error in actually originating from the error handler function
 							}
 						}
 					}
-			}, 
-			function writeGeoJsonbyFeatureSeriesEnd(err) {																	/* Callback at end */
+			} /* End of writeGeoJsonbyFeatureSeries() iterator */, 
+			function writeGeoJsonbyFeatureSeriesEnd(err) { // Callback																/* Callback at end */
 				if (err) {
 					serverLog.serverError2(__file, __line, "writeGeoJsonbyFeatureSeriesEnd", err.message, req, undefined);
 				}
 				else { // Write footer
-					// Callbacks:
+				
+					// Callback functions:
 					// * streamWriteFilePieceWithCallback (footer) calls:
 					// 	 * testFunc; calls:
 					//     * topoFunction; calls:
@@ -933,20 +934,22 @@ This error in actually originating from the error handler function
 							}
 						);  // Add end of shapefile read status	
 														
-					}							
-// For testing					
-					var testFunc = function testFunc(e) {
-						
-						if (e) {
-							throw e;
-						}
+					}	
+					// End of callbacks; 
+					
+// For testing				
+//					var testFunc = function testFunc(e) {
+//						
+//						if (e) {
+//							throw e;
+//						}
 //								console.error("Creating: " + shapefileData["jsonFileName"] + ".2");
-						streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", 
-							JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
-							serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
-							numFeatures /* records */, false /* do not delete data (by undefining) at stream end */,
-							topoFunction /* callback */);
-					}			
+//						streamWriteFileWithCallback.streamWriteFileWithCallback(shapefileData["jsonFileName"] + ".2", 
+//							JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson), 
+//							serverLog, shapefileData["uuidV1"], shapefileData["req"], response, 
+//							numFeatures /* records */, false /* do not delete data (by undefining) at stream end */,
+//							topoFunction /* callback */);
+//					}			
 
 					response.message+="\nWrite footer for: " + shapefileData["jsonFileName"]; 
 					try {
@@ -962,7 +965,8 @@ This error in actually originating from the error handler function
 						shapeFileQueueCallbackFunc(e);
 					}
 				}
-			}); // End of async feature loop
+			} // End of writeGeoJsonbyFeatureSeriesEnd() callback
+		); // End of async feature loop
 	} // End of writeGeoJsonbyFeature()
 		
 	/*
@@ -1468,6 +1472,7 @@ This error in actually originating from the error handler function
 		if (shpList[key].hasShp && shpList[key].hasPrj && shpList[key].hasDbf) {
 			var dir=os.tmpdir() + "/shpConvert/" + ofields["uuidV1"] + "/" + key;
 			var shapefileData = {
+				key: key, 
 				shapeFileBaseName: key + ".shp", 
 				jsonFileBaseName: key + ".json", 
 				topojsonFileBaseName: key + ".topojson", 

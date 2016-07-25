@@ -47,6 +47,7 @@
 const topojson = require('topojson'),
 	  clone = require('clone'),
 	  sizeof = require('object-sizeof'),
+	  wellknown = require('wellknown'),
 	  stderrHook = require('../lib/stderrHook'),
 	  serverLog = require('../lib/serverLog'),
 	  streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback');
@@ -148,13 +149,13 @@ var shapefileSimplifyGeoJSON = function shapefileSimplifyGeoJSON(shapefile, resp
 	} // End of toTopoJSONCallback()
 	
 	if (areaName && areaID) {
-		shapefile.topojson = toTopoJSON(shapefile.geojson, topojson_options, response, shapefileData["topojsonFileBaseName"],
+		shapefile.topojson = toTopoJSON(shapefile.geojson, topojson_options, response, shapefileData["key"],
 			areaName, areaID, dbf_fields, toTopoJSONCallback);
 	}
 	else {
 		response.message+="\nNo areaID/areaName fields set for file: " + shapefileData["topojsonFileBaseName"] + "\nAreaID: " +
 			(areaID || "no areaID") + "; areaName: " + (areaName || "no areaName");
-		shapefile.topojson = toTopoJSON(shapefile.geojson, topojson_options, response, shapefileData["topojsonFileBaseName"],
+		shapefile.topojson = toTopoJSON(shapefile.geojson, topojson_options, response, shapefileData["key"],
 			undefined /* areaName  */, undefined /* areaID */, dbf_fields, toTopoJSONCallback);
 	}
 
@@ -217,12 +218,13 @@ var toTopoJSON = function toTopoJSON(geojson, topojson_options, response, fileNa
 	const topojson = require('topojson'),
 		  stderrHook = require('../lib/stderrHook'),
 		  serverLog = require('../lib/serverLog');
-
+		  
 	 scopeChecker(__file, __line, {
 		response: response,
 		geojson: geojson,
 		sizeof: sizeof,
-		callback: callback
+		callback: callback,
+		wellknown: wellknown
 	});
 
 // Add stderr hook to capture debug output from topoJSON	
@@ -296,6 +298,7 @@ topology: 1579 arcs, 247759 points
 	var convertedTopojson = []; 
 	convertedTopojson[0] = {
 		topojson: undefined,
+		wkt: [],
 		geojson_length: undefined,
 		topojson_length: undefined,
 		topojson_runtime: undefined,
@@ -374,6 +377,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 		response: response,
 		clone: clone,
 		sizeof: sizeof,
+		wellknown: wellknown,
 		callback: topoJSONcallback
 	},
 	{
@@ -413,6 +417,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 			response: response,
 			clone: clone,
 			sizeof: sizeof,
+			wellknown: wellknown,
 			currentConvertedTopojson: currentConvertedTopojson,
 			previousConvertedTopojson: previousConvertedTopojson,
 			callback: callback
@@ -443,10 +448,11 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 					previousConvertedTopojson.topojson.objects[key]);
 				nGeojsonLen=sizeof(nGeojson);
 				end = new Date().getTime();
-				var msg="Created geojson for zoomlevel " + currentConvertedTopojson.zoomlevel + 
+				var msg="Created geojson (" + nGeojson.features.length + " areas) for zoomlevel " + currentConvertedTopojson.zoomlevel + 
 					" from zoomlevel " + 
 					previousConvertedTopojson.zoomlevel + " topojson: " + fileName;
-				response.message+="\n" + msg  + "; took: " + ((end - lstart)/1000) + "S"
+				response.message+="\n" + msg  + "; took: " + ((end - lstart)/1000) + "S";
+									
 				addStatus(__file, __line, response, msg,   // Add created geojson from zoomlevel topojson status	
 					200 /* HTTP OK */, serverLog, undefined /* req */,
 					/*
@@ -460,7 +466,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 								"WARNING: Unable to add topojson processing status", req, err);
 						}
 						else {
-							cloneTopoJSON(); // Now clone it
+							geoJSON2WKT(); // Now create WKT it
 						}
 					});
 //				if (i == (convertedTopojson[0].zoomlevel-1)) {
@@ -471,11 +477,63 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 				break; // Out  of for loop
 			}
 		} // For loop			
+
+		/*
+		 * Function: 	geoJSON2WKT()
+		 * Parameters:	None
+		 * Description:	Callback from createGeoJSONFromTopoJSON()
+		 */	
+		function geoJSON2WKT() {	
+			var wktLen=0;
 			
+			async.forEachOfSeries(nGeojson.features, 
+				function geoJSON2WKTSeries(value, i, lcallback) { // Processing code
+					try {
+						previousConvertedTopojson.wkt[i]=wellknown.stringify(nGeojson.features[i]);	
+						wktLen+=previousConvertedTopojson.wkt[i].length;
+					} 
+					catch (e) {
+						lcallback(e);
+					}
+					lcallback();
+				},
+				function geoJSON2WKTError(err) { //  Callback
+			
+					if (err) {
+						callback(err);
+					}
+					else {
+						end = new Date().getTime();
+						var msg="Created wellknown text for zoomlevel " + currentConvertedTopojson.zoomlevel + 
+							" from geoJSON: " + fileName;
+						response.message+="\n" + msg  + "; size: " + wktLen + "; took: " + ((end - lstart)/1000) + "S";
+											
+						addStatus(__file, __line, response, msg,   // Add created WKT zoomlevel topojson status	
+							200 /* HTTP OK */, serverLog, undefined /* req */,
+							/*
+							 * Function: 	createGeoJSONFromTopoJSON()
+							 * Parameters:	error object
+							 * Description:	Add status callback
+							 */												
+							function geoJSON2WKTAddStatus(err) {
+								if (err) {
+									serverLog.serverLog2(__file, __line, "geoJSON2WKTAddStatus", 
+										"WARNING: Unable to add WKT processing status", req, err);
+								}
+								else {
+									cloneTopoJSON(); // Now clone it
+								}
+							}
+						);	
+					}						
+				}
+			);
+	
+		}
 		/*
 		 * Function: 	cloneTopoJSON()
 		 * Parameters:	None
-		 * Description:	Callback from createGeoJSONFromTopoJSON()
+		 * Description:	Callback from geoJSON2WKT()
 		 */	
 		 function cloneTopoJSON() {
 			if (j > 1) {
@@ -516,11 +574,11 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 				200 /- HTTP OK -/, serverLog, undefined /- req -/);  // Add clone 2 status				
 			nTopojsonStr=undefined;
 	 */		
-	 
 			else if (nGeojson && nGeojsonLen > 0) {		
 				response.message+="\n+"  + ((end - lstart)/1000) + " S; " + fileName + ": clone topojson : " + 
 					previousConvertedTopojson.zoomlevel;				
-				nTopojson=clone(previousConvertedTopojson.topojson, false /* cicrular references */);
+				nTopojson=clone(previousConvertedTopojson.topojson, false /* no cicrular references */);
+				
 				nTopojsonLen=sizeof(nTopojson);
 				end = new Date().getTime();
 				mnsg=fileName + ": clone topojson[: " + previousConvertedTopojson.zoomlevel;
@@ -640,6 +698,7 @@ var toTopoJSONZoomlevels = function toTopoJSONZoomlevels(geojson, topojson_optio
 //		console.error("Create convertedTopojson[" + convertedTopojson.length + "]; zoomlevel: " + i);
 		convertedTopojson[convertedTopojson.length] = {
 			topojson: undefined,
+			wkt: [],
 			geojson_length: undefined,
 			topojson_length: undefined,
 			topojson_runtime: undefined,
