@@ -114,6 +114,7 @@ public class RunStudyThread {
 			}
 		}
 		catch(SQLException exception) {
+/*
 			String errorMessage
 				= RIFServiceMessages.getMessage("");
 			RIFServiceException rifServiceException 
@@ -121,7 +122,7 @@ public class RunStudyThread {
 					RIFServiceError, 
 					errorMessage);
 			throw rifServiceException;
-			
+*/			
 		}
 		finally {
 			SQLQueryUtility.close(statement);
