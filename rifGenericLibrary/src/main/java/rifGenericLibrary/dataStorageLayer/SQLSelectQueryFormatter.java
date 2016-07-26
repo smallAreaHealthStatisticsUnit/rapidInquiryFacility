@@ -375,6 +375,25 @@ public final class SQLSelectQueryFormatter
 		
 	
 	/**
+	 * Adds the where parameter.
+	 *
+	 * @param fieldName the field name
+	 */
+	public void addWhereParameterWithLiteralValue(
+		final String fieldName,
+		final String literalValue) {
+		
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(fieldName);
+		whereCondition.append("='");
+		whereCondition.append(literalValue);
+		whereCondition.append("'");
+
+		whereConditions.add(whereCondition.toString());
+	}
+		
+	
+	/**
 	 * Adds the where parameter with operator.
 	 *
 	 * @param fieldName the field name
