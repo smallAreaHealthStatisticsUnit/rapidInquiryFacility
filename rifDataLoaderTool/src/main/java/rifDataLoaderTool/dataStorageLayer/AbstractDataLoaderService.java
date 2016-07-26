@@ -1870,9 +1870,16 @@ abstract class AbstractDataLoaderService
 	public String[] getCleaningFunctionNames(final User _rifManager) 
 			throws RIFServiceException {
 	
-		return getDatabaseFunctionNames(_rifManager, "^clean.*");
+		String[] validationFunctionNames = new String[4];
+		validationFunctionNames[0] = "clean_age";
+		validationFunctionNames[1] = "clean_date";
+		validationFunctionNames[2] = "clean_uk_postal_code";
+		validationFunctionNames[3] = "clean_year";
+		return validationFunctionNames;
+		
+		//return getDatabaseFunctionNames(_rifManager, "^clean.*");
 	}
-	
+/*	
 	public String[] getDatabaseFunctionNames(
 		final User _rifManager,
 		final String functionNamePattern) 
@@ -1881,6 +1888,12 @@ abstract class AbstractDataLoaderService
 		//Defensively copy parameters and guard against blocked rifManagers
 		User rifManager = User.createCopy(_rifManager);
 
+		if (sqlConnectionManager == null) {
+			System.out.println("getDBFunctionNames 1");
+		}
+		else if (rifManager == null) {
+			System.out.println("getDBFunctionNames 2");
+		}
 		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
 			return new String[0];
 		}
@@ -1927,7 +1940,6 @@ abstract class AbstractDataLoaderService
 		
 		return results.toArray(new String[0]);
 		
-		/*
 		//@TODO: make this come from the database
 		String[] cleaningFunctionNames = new String[5];
 		cleaningFunctionNames[0] = "clean_uk_postal_code";
@@ -1937,10 +1949,9 @@ abstract class AbstractDataLoaderService
 		cleaningFunctionNames[4] = "clean_year";
 		
 		return cleaningFunctionNames;
-		*/
 		
 	}
-
+*/
 	
 	
 	
@@ -1955,17 +1966,15 @@ abstract class AbstractDataLoaderService
 	public String[] getValidationFunctionNames(final User _rifManager) 
 		throws RIFServiceException {
 
-		return getDatabaseFunctionNames(_rifManager, "^is_valid.*");
+		//return getDatabaseFunctionNames(_rifManager, "^is_valid.*");
 
-		/*
 		//@TODO: make this come from the database
 		String[] validationFunctionNames = new String[4];
 		validationFunctionNames[0] = "is_valid_uk_postal_code";
-		validationFunctionNames[1] = "is_valid_icd_code";
-		validationFunctionNames[2] = "is_valid_sex";
-		validationFunctionNames[3] = "is_valid_age";
+		//validationFunctionNames[1] = "is_valid_icd_code";
+		//validationFunctionNames[2] = "is_valid_sex";
+		//validationFunctionNames[3] = "is_valid_age";
 		return validationFunctionNames;
-		*/
 	}
 
 	public String getDescriptionForValidationFunction(
