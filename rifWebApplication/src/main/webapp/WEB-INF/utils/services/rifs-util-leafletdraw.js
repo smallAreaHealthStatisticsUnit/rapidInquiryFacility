@@ -11,20 +11,6 @@ angular.module("RIF")
                 function ($rootScope) {
                     function extendLeafletDrawCircle() {
 
-                        //TODO: put somewhere else (call on bootstrap)
-                        L.TopoJSON = L.GeoJSON.extend({
-                            addData: function (jsonData) {
-                                if (jsonData.type === "Topology") {
-                                    for (key in jsonData.objects) {
-                                        geojson = topojson.feature(jsonData, jsonData.objects[key]);
-                                        L.GeoJSON.prototype.addData.call(this, geojson);
-                                    }
-                                } else {
-                                    L.GeoJSON.prototype.addData.call(this, jsonData);
-                                }
-                            }
-                        });
-
                         //increment of band count, 1st band is #1, to a max of 9
                         var thisBand = 1;
 

@@ -630,6 +630,12 @@ path.polygon:hover {
     top:1px;
 }
 
+#finalRun {
+    position: absolute;
+    right: 0px;
+    bottom: 30px;
+}
+
 #areaSelectionMap, #comparisonAreaSelectionMap{
     position: absolute;
     margin-left: 34%;
@@ -1005,12 +1011,13 @@ div.aSR:hover,
 }
 #buttons .geoDrops {
     position: relative;
+    padding-top: 60px;
 }
 #buttons .geoDrops>div {
     float: left;
     margin-top: 0%;
     font-size: 11px;
-    width: 20%;
+    width: 15%;
     margin-right: 5%;
 }
 #buttons .geoDrops>div select {
@@ -1020,9 +1027,6 @@ div.aSR:hover,
     text-transform: uppercase
 }
 
-
-
-/*xxx*/
 #buttons{
     height:55px;
 }
@@ -1063,9 +1067,75 @@ div.aSR:hover,
 }
 /*xxx*/
 
+.dropdownSelectSingle,
+.dropdownSelect {
+    padding: 10px;
+    width: 100%;
+    font-size: 20px;
+    text-transform: uppercase;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    border: none;
+    border-bottom: solid 2px #87CEFA;
+    -webkit-transition: border 0.3s;
+    -moz-transition: border 0.3s;
+    -o-transition: border 0.3s;
+    transition: border 0.3s;
+    color: #848484;
+    background-color: transparent;
+}
+::-webkit-input-placeholder {
+    color: #848484;
+}
 
+:-moz-placeholder { /* Firefox 18- */
+    color: #848484;  
+}
 
+::-moz-placeholder {  /* Firefox 19+ */
+    color: #848484;  
+}
 
+:-ms-input-placeholder {  
+    color: #848484;  
+}
+
+.dropdownSelectSingle:hover,
+.dropdownSelect:hover {
+    border-bottom: solid 4px #87CEFA;
+}
+.dropdownSelectSingle,
+.dropdownSelect option {
+    background-color: transparent;
+}
+
+.dropdownSelectSingleSmall,
+.dropdownSelectSmall {
+    padding-left: 0px;
+    width: 100%;
+    font-size: 14px;
+    text-transform: uppercase;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    border: none;
+    border-bottom: solid 1px #CAE1FF !important;
+    -webkit-transition: border 0.3s;
+    -moz-transition: border 0.3s;
+    -o-transition: border 0.3s;
+    transition: border 0.3s;
+    color: #848484;
+    background-color: transparent;
+}
+.dropdownSelectSmallLabel {
+    color: #87CEFA;
+    margin-bottom: 12px !important;
+}
 
 input[type="text"].dropdownInput {
     padding: 0px;
@@ -1103,9 +1173,11 @@ input[type="file"].fileOpener {
     margin-bottom: 20px !important;
 
 }
-#studyName {
-    margin-left: 3%;
+
+.dropDownLabel {
+    color: #87CEFA;
 }
+
 input[type="text"].dropdownInput:focus,
 .style-4 input[type="text"].focus {
     border-bottom: solid 20px #63B8FF;
@@ -1292,9 +1364,9 @@ textarea.description {
     margin: 10px 30px;
     color: #848484;
     resize: none;
-}
-.viewSummary:hover {
-    cursor: pointer;
+    position: absolute;
+    bottom: 90px;
+    left: 0px;
 }
 
 #importExportContainer:hover {
@@ -1352,19 +1424,26 @@ textarea.description {
 }
 #ParameterLeft {
     float: left;
-    width: 55%;
-    height: 100%;
+    width: 33%;
+    height: 90%;
 }
 #ParameterLeft > div:first-child {
     margin-top: 3% !important;
 }
 #ParameterLeft > div {
     margin-left: 5%;
-    margin-right: 15%;
+    margin-right: 5%;
 }
+#ParameterCentre {
+    width: 30%;
+    height: 90%;
+    float: right;
+    margin-bottom: 50px;
+    margin-left:15px;
+}  
 #ParameterRight {
     float: right;
-    width: 45%;
+    width: 33%;
     height: 90%;
     margin-bottom: 50px;
 }  
@@ -1497,9 +1576,12 @@ textarea.description {
 }
 .runDialog > a{
     position:absolute;
-    bottom:90px;
+    bottom:80px;
     left:30px;
     font-weight: bold;
+}
+.viewSummary:hover {
+    cursor: pointer;
 }
 
 
@@ -1528,7 +1610,7 @@ div.world{
     opacity: 1;
     width: 100%;
     height: 100%;
-    background: transparent url("../images/industry-sunrise-clouds-fog-39553.jpeg"); /* squirrels */
+    /*  background: transparent url("../images/industry-sunrise-clouds-fog-39553.jpeg"); /* squirrels */
     background-size: cover;
     position: absolute;
 }
@@ -1590,14 +1672,6 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
     border-bottom: solid 2px #63B8FF;
     outline: none
 }
-  
-.stats-Modal .modal-dialog{
-    width:500px;
-    height: 400px;
-    position: absolute;
-    top:0; bottom: 0; left: 0; right: 0;
-    margin: auto;
-}
 
 .statsManual {
     float:right;
@@ -1625,17 +1699,6 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
     display: block ;
     max-height: 300px ;
     z-index: 1;
-}
-
-.modelViewer {
-    margin: 2% 4% 0% 4%;
-    width: 90%;
-    position: relative;
-    height: 90%;
-    border: 1px solid #CAE1FF;
-    background: white;
-    overflow: auto;
-    padding: 4px 9px;
 }
 
 input[type=radio]   {
@@ -1769,4 +1832,89 @@ div#studyLabel h2{
     margin: 5px;
     color: white;
     box-shadow: 2px 2px 2px #666;
+}
+/*SUMMARY TABLE*/
+.modelViewer table {
+    background-color: #E3E3E3;
+}
+.modelViewer header {
+    font-size: 22px;
+    text-transform: uppercase;
+    padding: 30px 10px 10px 0px;
+    font-weight: bold;
+}
+header:first-child {
+    padding-top: 10px;
+}
+.modelViewer {
+    margin: 2% 2% 0% 2%;
+    width: 95%;
+    position: relative;
+    height: 94%;
+    border: 1px solid #CAE1FF;
+    background: white;
+    overflow: auto;
+    padding: 4px 9px;
+}
+.modelViewer section {
+    padding-left: 10px;
+    margin: 1px;
+    font-size: 14px;
+    color: #A1A1A1;
+    display: inline;
+    text-transform: uppercase;
+}
+.modelViewer attr {
+    font-size: 14px;
+    color: #000;
+}
+.modelViewer td {
+    padding-left: 50px;
+    padding-right: 50px;
+    font-size: 10px;
+    color: #000;
+}
+.modelViewer th {
+    text-align: center;
+    font-size: 10px;
+    color: #000;
+    background-color: #A1A1A1;
+}
+
+.toggleJSON {
+    float: right;
+    padding-right: 2%;
+
+}
+.toggleJSON:hover {
+    cursor: pointer;
+}
+
+/* LEGEND */
+.info {
+    padding: 6px 8px;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+.info h4 {
+    color: #065581;
+    font-weight: bold;
+    font-size: 16px;
+}
+.legend {
+    line-height: 25px;
+    color: #555;
+}
+.legend i {
+    width: 10px;
+    height: 25px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+    position: absolute;
+}
+.legend span {
+    padding-left: 15px;
 }

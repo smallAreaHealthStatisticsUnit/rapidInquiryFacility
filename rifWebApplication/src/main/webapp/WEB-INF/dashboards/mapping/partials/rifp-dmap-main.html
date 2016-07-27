@@ -3,8 +3,8 @@ HTML partial for ui-router
 Mapping
 -->
 <div id="navigation">
-    <div class='logOutUsername'> 
-        <a class="userName" href='#'> USERNAME </a><span id="logOut" ui-sref="state0" ng-class="{active: $state.includes('state0')}"> log out </span>
+    <div class='logOutUsername' ng-controller="TabCtrl"> 
+        <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
     </div>
     <div class='nav'>
         <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Status</a>

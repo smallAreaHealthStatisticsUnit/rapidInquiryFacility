@@ -19,9 +19,9 @@ angular.module("RIF")
                         rowTemplate: rowTemplate()
                     };
                     var areaTableColumnDefs = [
-                        {field: 'id', enableHiding: false},
-                        {field: 'label', enableHiding: false},
-                        {field: 'band', enableHiding: false}
+                        {field: 'id', enableHiding: false, width: "*"},
+                        {field: 'label', enableHiding: false, width: "*"},
+                        {field: 'band', enableHiding: false, width: "*"}
                     ];
 
                     //Set-up rows to capture click and keypress events

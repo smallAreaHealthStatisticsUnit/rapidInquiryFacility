@@ -3,17 +3,30 @@
  * 
  */
 angular.module("RIF")
-        .controller('ModalSummaryCtrl', ['$scope', '$uibModal', 'ModelService',
-            function ($scope, $uibModal, ModelService) {
+        .controller('ModalSummaryCtrl', ['$scope', '$uibModal', 'ModelService', '$sce',
+            function ($scope, $uibModal, ModelService, $sce) {
 
-                $scope.summary = ModelService.get_rif_job_submission();
+                $scope.toggleText = "JSON";
+                //get model summary as either JSON or HTML
+                getModel = function (x) {
+                    if (x === "JSON") {
+                        $scope.summary = $sce.trustAsHtml(ModelService.get_rif_job_submission_HTML());
+                    } else {
+                        $scope.summary = ModelService.get_rif_job_submission_JSON();
+                    }
+                };
+                $scope.toggleJSON = function () {
+                    $scope.toggleText = $scope.toggleText === "JSON" ? "Formatted" : "JSON";
+                    getModel($scope.toggleText);
+                };
+                getModel($scope.toggleText);
 
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
                         animation: true,
                         templateUrl: 'dashboards/submission/partials/rifp-dsub-summary.html',
                         controller: 'ModalSummaryInstanceCtrl',
-                        windowClass: 'modal-fit',
+                        windowClass: 'summary-Modal',
                         backdrop: 'static',
                         keyboard: false
                     });

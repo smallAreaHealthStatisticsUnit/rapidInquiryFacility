@@ -7,7 +7,7 @@
 /* global L */
 
 angular.module("RIF")
-        .controller('LoginCtrl', ['$scope',
+        .controller('LoginCtrlxxx', ['$scope',
             function ($scope) {
                 $scope.userName = "xxx";
 

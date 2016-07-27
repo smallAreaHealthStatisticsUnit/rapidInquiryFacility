@@ -5,9 +5,6 @@
 angular.module("RIF")
         .factory('ColorBrewerService',
                 function () {
-                    //default scheme
-                    var selectedN = 3;
-                    var selectedScheme = 'YlGn';
                     //colorbrewer (http://colorbrewer.org/).
                     var colorbrewer = {
                         LightGreen: {
@@ -351,7 +348,7 @@ angular.module("RIF")
                     };
                     return {
                         //Get a list of all schemes available to fill modal selects
-                        get_schemeList: function () {
+                        getSchemeList: function () {
                             var schemeList = [];
                             for (var i in colorbrewer) {
                                 schemeList.push(i);
@@ -359,30 +356,16 @@ angular.module("RIF")
                             return schemeList;
                         },
                         //get the selected scheme
-                        get_colorbrewer: function (scheme, classes) {
+                        getColorbrewer: function (scheme, classes) {
                             return colorbrewer[scheme][classes];
                         },
                         //get the maximum possible intervals for scheme
-                        get_schemeIntervals: function (scheme) {
+                        getSchemeIntervals: function (scheme) {
                             var n = [];
                             for (var i in colorbrewer[scheme]) {
                                 n.push(Number(i));
                             }
                             return n;
-                        },
-                        //selected number of intervals
-                        get_selectedN: function() {
-                            return selectedN;
-                        },
-                        set_selecedN: function(n) {
-                            selectedN = n;
-                        },
-                        //selected scheme
-                        get_selectedScheme: function() {
-                            return selectedScheme;
-                        },
-                        set_selectedScheme: function(scheme) {
-                            selectedScheme = scheme;
                         }
                     };
                 });

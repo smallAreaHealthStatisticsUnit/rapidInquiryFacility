@@ -377,3 +377,24 @@
     height: 50px;
     overflow: scroll;
 }
+
+.stats-Modal .modal-dialog{
+    width:500px;
+    height: 400px;
+    position: absolute;
+    top:0; bottom: 0; left: 0; right: 0;
+    margin: auto;
+}
+
+.summary-Modal .modal-dialog{
+    width:75%;
+    height: 100%;
+    position: absolute;
+    top:0; bottom: 0; left: 0; right: 0;
+    margin: auto;
+}
+
+.summary-Modal .modal-body {
+    height: calc(100vh - 20px);
+    overflow: hidden;
+}

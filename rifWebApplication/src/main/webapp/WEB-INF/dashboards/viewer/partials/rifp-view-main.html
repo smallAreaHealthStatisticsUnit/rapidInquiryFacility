@@ -3,8 +3,8 @@ HTML partial for ui-router
 Viewer
 -->
 <div id="navigation">
-    <div class='logOutUsername'> 
-        <a class="userName" href='#'> USERNAME </a><span id="logOut" ui-sref="state0" ng-class="{active: $state.includes('state0')}"> log out </span>
+    <div class='logOutUsername' ng-controller="TabCtrl"> 
+        <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
     </div>
     <div class='nav'>
         <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Status</a>
@@ -42,35 +42,35 @@ Viewer
             <select>
                 <option></option>
             </select>
-        </div>
+        </div>  
     </div>
 </div>
 
-<div ui-layout="{flow : 'column'}" ng-controller="ViewerCtrl2">
-    <div ui-layout-container size="33%"> 
-        <div ui-layout="{flow : 'row'}" >
+<div ng-controller="ViewerCtrl2" ui-layout="{flow : 'column'}">
+    <div  ui-layout-container size="{{size1}}"> 
+        <div ui-layout="{flow : 'row'}">
             <div ui-layout-container class="js-back">                             
                 ULSRR
             </div>
-            <div ui-layout-container class="js-back" size="66%">POPULATION
-
-
+            <div ui-layout-container class="js-back" size="{{size2}}">
+                POPULATION ng-controller="ViewerCtrl"
             </div>
         </div>
     </div>
 
     <div ui-layout-container> 
-        <div ui-layout="{flow : 'row'}" >
+        <div ui-layout="{flow : 'row'}">
             <div ui-layout-container class="leaflet-box">            
-                <div id="submenuMapping" ng-controller="ViewerCtrl">
+                <div id="submenuMapping" >
                     <div>
                         <div class='mapOpts'>
                             <a ng-controller="ChoroplethModalCtrl" ng-click="open()"class='mapOpt' id="choroplethBtn" title="Choropleth map"></a>
                             <a ng-controller="BaseMapModalCtrl" ng-click="open('viewermap')" class='mapOpt' id="baseMapBtn" title="Base map"></a>	
-                            <a href='#' class='mapOpt' id="clearSelection" title="Clear selection"></a>
-                            <a href='#' class='mapOpt' id="zoomExtent" title="Zoom to extent"></a>
-                            <input type="range" min="0" max="1" step="0.01" value ="0.7"/>
+                            <a class='mapOpt' id="clearSelection" title="Clear selection" ng-click="clear()"></a>   
+                            <a class='mapOpt' id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent()"></a>  
+                            <input type="range" ng-model ="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
                         </div>
+
                         <a href='#' rel='leanModal' class='settings' title="Settings" id='settingsButton'>
                             <img src="images/settings.png" alt="settings">
                         </a>
@@ -78,8 +78,10 @@ Viewer
                 </div>    
                 <leaflet id="viewermap" tiles="tiles" width="100%" height="calc(100% - 40px)"></leaflet>  
             </div>
-            <div ui-layout-container class="js-back">DATA TABLE
+            <div ui-layout-container class="js-back">
+                <div ui-grid="viewerTableOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns class="grid-viewer" ng-grid="viewerTableOptions"></div>
             </div>
         </div>
     </div>
 </div>
+

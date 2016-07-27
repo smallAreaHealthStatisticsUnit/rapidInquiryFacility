@@ -45,10 +45,11 @@
         <meta name="description" content="RIF, Software for Environmental Spatial Epidemiology">
         <meta name="keywords" content="Disease mapping, Spatial epidemiology, Environental exposure, Health data, GIS, Biostatistics">
 
-        <!-- Anngular -->
+        <!-- Angular -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.3/angular.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.18/angular-ui-router.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.3/angular-animate.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.5.7/angular-sanitize.min.js"></script>
         <script src="libs/angular-simple-logger.js"></script>
 
         <!-- Boostrap -->
@@ -65,6 +66,9 @@
         <script src="libs/l.control.geosearch.js"></script>
         <script src="libs/l.geosearch.provider.openstreetmap.js"></script>
         <link rel="stylesheet" href="libs/l.geosearch.css" />
+        
+        <!--Simple Statistics-->
+        <script src="libs/sstatistics.js"></script>
 
         <!-- D3 -->
         <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
@@ -88,6 +92,7 @@
         <!-- RIF 4.0 JS -->
         <script src="modules/rifm-app.js"></script> 
         <script src="dashboards/login/controllers/rifc-login-login.js"></script>
+        <script src="dashboards/login/services/rifs-login-user.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-comparea.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-compareastate.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-params.js"></script>
@@ -116,8 +121,9 @@
         <script src="utils/services/rifs-util-colorbrewer.js"></script>
         <script src="utils/services/rifs-util-leafletdraw.js"></script>
         <script src="utils/services/rifs-util-gis.js"></script>
+        <script src="utils/services/rifs-util-choro.js"></script>
         <script src="dashboards/status/controllers/rifc-status-main.js"></script>
-
+       
         <script src="dashboards/mapping/directives/rifd-dmap-d3test.js"></script>
 
 

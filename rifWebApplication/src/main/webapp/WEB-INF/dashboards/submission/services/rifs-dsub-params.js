@@ -7,9 +7,7 @@ angular.module("RIF")
         .factory('ParameterService',
                 function () {
                     
-                    
-
                     return {
-                        
+
                     };
                 });

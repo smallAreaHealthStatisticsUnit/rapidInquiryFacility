@@ -3,8 +3,8 @@ HTML partial for ui-router
 Disease submission main 'trees' menu
 -->
 <div id="navigation">
-    <div class='logOutUsername'> 
-        <a class="userName" href='#'> USERNAME </a><span id="logOut" ui-sref="state0" ng-class="{active: $state.includes('state0')}"> log out </span>
+    <div class='logOutUsername' ng-controller="TabCtrl"> 
+        <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
     </div>
     <div class='nav'>
         <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Status</a>
@@ -13,31 +13,46 @@ Disease submission main 'trees' menu
         <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
     </div>
 </div>
-<!-- Four Submission drop downs-->
+<!-- 5 Submission drop downs-->
 <div id="buttons" class='positioning' ng-controller="SumbmissionCtrl">
     <div class='geoDrops'>
         <div>
             <div  class='styleUnderline'>
-                <input type="text" ng-model="studyName" id='studyName' class='dropdownInput editable'>
+                <input type="text" ng-model="studyName" placeholder = "my study name" id='studyName' class='dropdownSelectSingle' ng-change="studyNameChanged()">
+                <div id='studyAvailables' class='availables' > </div>
+                <div class="dropDownLabel">Study Name</div>
             </div>
+
         </div>
         <div>
             <div class='styleUnderline dropdowns availablesWrapper'>
-                <input type="text" ng-model="healthTheme" id='healthTheme' class='dropdownInput'>
-                <div id='healthThemeAvailables' class='availables' >
-                </div>
+                <select type="text" ng-model="healthTheme" id='healthTheme' class='dropdownSelect' ng-options="s.name for s in healthThemes" ng-change="healthThemeChange()">
+                </select>
+                <div id='healthThemeAvailables' class='availables'></div>
+                <div class="dropDownLabel">Health Theme</div>
             </div>
         </div>
         <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
-                <input type="text" ng-model="numerator" id='numerator' class='dropdownInput'>
+                <select type="text" ng-model="geography" id='geography' class='dropdownSelect' ng-options="s for s in geographies">
+                </select>
+                <div id='geographiesAvailables' class='availables'></div>
+                <div class="dropDownLabel">Geography</div>
+            </div>
+        </div>
+        <div>
+            <div  class='styleUnderline dropdowns availablesWrapper'>
+                <select type="text" ng-model="numerator" id='numerator' class='dropdownSelect' ng-options="s.numeratorTableName for s in fractions" ng-change="numeratorChange()">
+                </select>
                 <div id='numeratorAvailables' class='availables' ></div>
+                <div class="dropDownLabel">Numerator</div>
             </div>
         </div>
         <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
-                <input type="text" ng-model="denominator" id='denominator' class='dropdownInput'>
+                <input type="text" ng-model="denominator" id='denominator' class='dropdownSelectSingle' readonly>
                 <div id='denominatorAvailables' class='availables' > </div>
+                <div class="dropDownLabel">Denominator</div>
             </div>
         </div>
     </div>
@@ -54,7 +69,7 @@ Disease submission main 'trees' menu
             Study Area
         </div>    
     </div>
-    <!-- Compaison area block -->
+    <!-- Comparison area block -->
     <div ng-switch on=tree id='comparisonArea' class='blocks' ng-controller="ModalComparisonAreaCtrl">      
         <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
         <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>
@@ -75,7 +90,7 @@ Disease submission main 'trees' menu
         <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
         <div class='headerBlockActive' ng-click="open()" ng-switch-when="true"></div>        
         <div class='summary bodyBlock'>
-            statsitical methods
+            statistical methods
         </div> 
     </div> 
 </div>

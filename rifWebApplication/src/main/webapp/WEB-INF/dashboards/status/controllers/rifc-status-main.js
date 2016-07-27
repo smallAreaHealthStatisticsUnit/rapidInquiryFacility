@@ -3,6 +3,7 @@
 angular.module("RIF")
         .controller('StatusCtrl', ['$scope', 
             function ($scope ) {
+                
 
             }]);
             

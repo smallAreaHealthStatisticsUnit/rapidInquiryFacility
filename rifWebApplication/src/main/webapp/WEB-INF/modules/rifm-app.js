@@ -1,3 +1,5 @@
+/* global L, topojson */
+
 /**
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -50,11 +52,27 @@ angular.module("RIF",
             "ui.grid.edit",
             "ui.grid.autoResize",
             "ngAnimate",
+            "ngSanitize",
             "ngNotificationsBar",
             "ui.layout"
         ]
         )
         .config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
+                
+                //Extend Leaflet to handle topojson
+                L.TopoJSON = L.GeoJSON.extend({
+                    addData: function (jsonData) {
+                        if (jsonData.type === "Topology") {
+                            for (var key in jsonData.objects) {
+                                geojson = topojson.feature(jsonData, jsonData.objects[key]);
+                                L.GeoJSON.prototype.addData.call(this, geojson);
+                            }
+                        } else {
+                            L.GeoJSON.prototype.addData.call(this, jsonData);
+                        }
+                    }
+                });
+
                 //Handle main page transitions in navbar, login
                 $stateProvider
                         .state('state0', {
@@ -80,7 +98,7 @@ angular.module("RIF",
                             url: '/status',
                             templateUrl: "dashboards/status/partials/rifp-status-main.html"
                         });
-                $urlRouterProvider.otherwise("/submission");  //login submission
+                $urlRouterProvider.otherwise("/login");  //login submission
             }])
         .run(function ($rootScope, $state) {
             $rootScope.$state = $state;

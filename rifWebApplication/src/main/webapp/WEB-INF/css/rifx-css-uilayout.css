@@ -18,6 +18,7 @@
 }
 .js-back{
     background : #fff;
+    overflow: hidden;
 }
 .glyphicon {
     font-family: none;

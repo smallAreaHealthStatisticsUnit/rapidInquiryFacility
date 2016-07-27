@@ -10,13 +10,15 @@ angular.module("RIF")
                         comparisonTree: false,
                         investigationTree: false,
                         statsTree: false,
-                        studyName: "Study Name",
-                        healthTheme: "Health Theme",
-                        numerator: "Numerator",
-                        denominator: "Denominator",
+                        studyName: "",
+                        healthTheme: "",
+                        geography: "",
+                        numerator: "",
+                        denominator: "",
                         //these are in the run-study modal
                         projectName: "",
-                        projectDescription: ""
+                        projectDescription: "",
+                        studyDescription: ""
                     };
                     var defaults = JSON.parse(JSON.stringify(s));
                     return {

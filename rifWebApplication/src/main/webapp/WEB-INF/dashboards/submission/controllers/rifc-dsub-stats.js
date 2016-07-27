@@ -27,8 +27,6 @@ angular.module("RIF")
                         StatsStateService.getState().het_a = input.het_a;
                         StatsStateService.getState().het_b = input.het_b;
                         StatsStateService.getState().car_a = input.car_a;
-
-                        $scope.showWarning("a warning message");
                     });
                 };
             }])

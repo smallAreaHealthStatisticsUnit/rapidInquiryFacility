@@ -4,18 +4,53 @@
  * TODO: Top level terms
  */
 angular.module("RIF")
-        .controller('ModalParametersCtrl', ['$scope', '$uibModal', '$http', 'SubmissionStateService', 'ParameterStateService',
-            function ($scope, $uibModal, $http, SubmissionStateService, ParameterStateService) {
+        .controller('ModalParametersCtrl', ['$scope', '$uibModal', '$http', 'SubmissionStateService', 'ParameterStateService', 'user',
+            function ($scope, $uibModal, $http, SubmissionStateService, ParameterStateService, user) {
 
                 $scope.tree = SubmissionStateService.getState().investigationTree;
                 $scope.animationsEnabled = true;
 
                 //input params
                 $scope.title = "Investigation";
-                $scope.startYear = "StartYear";
-                $scope.endYear = "EndYear";
-                $scope.gender = "Gender";
-                $scope.yearInterval = "YearInterval";
+                $scope.gender = "Both";
+
+                //Fill years drop-downs
+                $scope.years = [];
+                $scope.intervals = [];
+
+                $scope.fillYears = function () {
+                    user.getYears(user.currentUser, 'SAHSU', 'SAHSULAND_CANCER').then(handleYears, handleYearsError); //TODO: is hard typed
+                }();
+                function handleYears(res) {
+                    //TODO: check numeric and direction
+                    $scope.years.length = 0;
+                    for (var i = res.data[0].lowerBound; i <= res.data[0].upperBound; i++) {
+                        $scope.years.push(Number(i));
+                    }
+                    $scope.startYear = Number(res.data[0].lowerBound);
+                    $scope.endYear = Number(res.data[0].upperBound);
+                    $scope.yearsChanged();
+                }
+                function handleYearsError(res) {
+                    console.log("years error");
+                }
+
+                $scope.yearsChanged = function () {
+                    $scope.intervals.length = 0;
+                    //ensure that start year is before end year
+                    if ($scope.endYear < $scope.startYear) {
+                        $scope.endYear = [$scope.startYear, $scope.startYear = $scope.endYear][0];
+                    }
+                    //calculate possible intervals
+                    var diff = $scope.endYear - $scope.startYear + 1;
+                    for (var i = 1; i <= diff; i++) {
+                        if (diff % i === 0) {
+                            $scope.intervals.push(i);
+                        }
+                    }
+                    $scope.yearInterval = 1;
+                    $scope.parametersChanged();
+                };
 
                 //recap table <-> ICD tree link
                 var providerNameSpace = "";
@@ -23,6 +58,14 @@ angular.module("RIF")
                 var rowCollectionStore = [];
                 $scope.fullICDselection = ParameterStateService.getState().rows;
                 $scope.thisICDselection = [];
+                
+                 //if the user has changed the Health theme, reset form
+                var thisTheme = SubmissionStateService.getState().healthTheme.name;
+                var activeTheme = ParameterStateService.getActiveHealthTheme();
+                ParameterStateService.setActiveHealthTheme(thisTheme);
+                if (thisTheme !== activeTheme) {
+                    $scope.fullICDselection.length = 0;
+                } 
 
                 /*
                  * TABLE SET UP (1)
@@ -128,7 +171,7 @@ angular.module("RIF")
                         {name: 'years', enableHiding: false, width: "15%"},
                         {name: 'gender', enableHiding: false, width: "7%"},
                         {name: 'covariates', enableHiding: false, width: "15%"},
-                        {name: '\t', enableHiding: false,                         
+                        {name: '\t', enableHiding: false,
                             cellTemplate:
                                     '<div class="removebtn" ng-click="grid.appScope.cellClickRecapRemove(row)">' +
                                     '<div style="height: 100%" ng-class="{ ' +
@@ -182,6 +225,24 @@ angular.module("RIF")
                             }
                             fillRecapTable($scope.thisICDselection);
                         }
+                    }
+                };
+                /*
+                 * TABLE SET UP (4)
+                 * table setups covariate table
+                 */
+                $scope.gridOptionsCovariates = {
+                    enableHorizontalScrollbar: 0,
+                    enableColumnResizing: true,
+                    enableSorting: false,
+                    enableFiltering: false,
+                    enableRowSelection: true,
+                    enableSelectAll: true,
+                    columnDefs: [
+                        {name: 'variable', enableHiding: false}
+                    ],
+                    onRegisterApi: function (gridApi) {
+                        $scope.gridApi = gridApi;
                     }
                 };
                 /*
@@ -244,7 +305,7 @@ angular.module("RIF")
                     }
                     fillRecapTable($scope.thisICDselection);
                 });
-                //On changing years or gender
+                //On changing years or gender etc
                 $scope.parametersChanged = function () {
                     fillRecapTable($scope.thisICDselection);
                 };
@@ -296,7 +357,7 @@ angular.module("RIF")
                 }
                 function getYears(i) {
                     if (i === 0) {
-                        return $scope.startYear + " - " + $scope.endYear;
+                        return $scope.startYear + " - " + $scope.endYear + " [" + $scope.yearInterval + "]";
                     }
                 }
                 function getGender(i) {
@@ -348,8 +409,11 @@ angular.module("RIF")
                         backdrop: 'static',
                         keyboard: false
                     });
+                    modalInstance.opened.then(function () {
+
+                    });
                     modalInstance.result.then(function () {
-                        ParameterStateService.getState().rows = $scope.fullICDselection;
+                        ParameterStateService.getState().rows = $scope.fullICDselection;                     
                         //Change tree icon colour
                         if ($scope.fullICDselection.length === 0) {
                             SubmissionStateService.getState().investigationTree = false;

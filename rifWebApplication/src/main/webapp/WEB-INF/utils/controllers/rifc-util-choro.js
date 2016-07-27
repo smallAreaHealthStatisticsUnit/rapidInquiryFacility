@@ -1,37 +1,9 @@
-
+/*
+ * CONTROLLER
+ */
 angular.module("RIF")
-        .controller('ChoroplethModalCtrl', ['$scope', '$uibModal', 'ColorBrewerService',
-            function ($scope, $uibModal, ColorBrewerService) {
-                //get list of available colour schemes for drop-down and defaults
-                $scope.checkboxInvert = false;
-                $scope.mySchemes = ColorBrewerService.get_schemeList();
-                $scope.intervalRange = ColorBrewerService.get_schemeIntervals('YlGn');
-                $scope.selectedSchemeName = ColorBrewerService.get_selectedScheme();
-                $scope.selectedN = ColorBrewerService.get_selectedN();
-
-                //list of html colours to use
-                $scope.selectedScheme = ColorBrewerService.get_colorbrewer($scope.selectedSchemeName, $scope.selectedN);
-
-                //update preview swatch in modal
-                $scope.renderSwatch = function () {
-                    $scope.intervalRange = ColorBrewerService.get_schemeIntervals($scope.selectedSchemeName);
-                    //ensure that the colour scheme allows the selected number of classes
-                    if ($scope.selectedN > Math.max.apply(Math, $scope.intervalRange)) {
-                        $scope.selectedN = Math.max.apply(Math, $scope.intervalRange);
-                    } else if ($scope.selectedN < Math.min.apply(Math, $scope.intervalRange)) {
-                        $scope.selectedN = Math.min.apply(Math, $scope.intervalRange);
-                    }
-                    $scope.selectedScheme = ColorBrewerService.get_colorbrewer($scope.selectedSchemeName, $scope.selectedN);
-                    if ($scope.checkboxInvert) {
-                        $scope.selectedScheme.reverse();
-                    }
-                };
-                
-                //checkbox change event
-                $scope.invertColours = function () {
-                    $scope.selectedScheme.reverse();
-                };
-
+        .controller('ChoroplethModalCtrl', ['$scope', '$uibModal', 'ChoroService', 'ColorBrewerService',
+            function ($scope, $uibModal, ChoroService, ColorBrewerService) {
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
                         animation: true,
@@ -39,18 +11,51 @@ angular.module("RIF")
                         controller: 'ChoroplethModalInstanceCtrl',
                         windowClass: 'mapping-Modal'
                     });
-                    modalInstance.result.then(function () {
-                        //TODO: save state
+                    modalInstance.result.then(function (modal) {
+                        ChoroService.getViewMap().brewerName = modal.selectedSchemeName;
+                        ChoroService.getViewMap().invert = modal.checkboxInvert;
+                        ChoroService.getViewMap().brewer = ColorBrewerService.getColorbrewer(modal.selectedSchemeName, modal.selectedN);
+                        ChoroService.getViewMap().intervals = modal.selectedN;
+                        ChoroService.getViewMap().feature = modal.selectedFeature;
+                        ChoroService.getViewMap().method = modal.method;
 
+                        $scope.parent.refresh(modal.checkboxInvert, modal.method);
                     });
                 };
             }])
-        .controller('ChoroplethModalInstanceCtrl', function ($scope, $uibModalInstance) {
+        .controller('ChoroplethModalInstanceCtrl', function ($scope, $uibModalInstance, ColorBrewerService, ChoroService) {
+            //get list of available colour schemes for drop-down and defaults
+            $scope.input = {};
+            $scope.input.mySchemes = ColorBrewerService.getSchemeList();
+            $scope.input.checkboxInvert = ChoroService.getViewMap().invert;
+            $scope.input.selectedSchemeName = ChoroService.getViewMap().brewerName;
+            $scope.input.intervalRange = ColorBrewerService.getSchemeIntervals($scope.input.selectedSchemeName);
+            $scope.input.selectedN = ChoroService.getViewMap().intervals;
+            $scope.input.method = ChoroService.getViewMap().method;
+
+            //list of attributes
+            $scope.input.features = ChoroService.getFeaturesToMap();
+            if ($scope.input.features.indexOf(ChoroService.getViewMap().feature) === -1) {
+                $scope.input.selectedFeature = $scope.input.features[0];
+            } else {
+                $scope.input.selectedFeature = ChoroService.getViewMap().feature;
+            }
+
+            //ensure that the colour scheme allows the selected number of classes
+            $scope.renderSwatch = function () {
+                $scope.input.intervalRange = ColorBrewerService.getSchemeIntervals($scope.input.selectedSchemeName);
+                if ($scope.input.selectedN > Math.max.apply(Math, $scope.input.intervalRange)) {
+                    $scope.input.selectedN = Math.max.apply(Math, $scope.input.intervalRange);
+                } else if ($scope.input.selectedN < Math.min.apply(Math, $scope.input.intervalRange)) {
+                    $scope.input.selectedN = Math.min.apply(Math, $scope.input.intervalRange);
+                }
+            };
+
             $scope.close = function () {
                 $uibModalInstance.dismiss();
             };
             $scope.apply = function () {
-                $uibModalInstance.close();
+                $uibModalInstance.close($scope.input);
             };
         });
 

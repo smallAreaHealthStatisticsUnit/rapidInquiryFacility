@@ -1,153 +1,119 @@
-//https://github.com/emgeee/angular-jwt-auth-tutorial/blob/master/code/app.js
-//https://djds4rce.wordpress.com/2013/08/13/understanding-angular-http-interceptors/
-angular.module("RIF")
-        .factory('authInterceptor', ['$q', 'API', 'auth',
-            function ($q, API, auth) {
-                return {
-                    // automatically attach Authorization header
-                    request: function (config) {
-                        var token = auth.getToken();
-                        if (config.url.indexOf(API) === 0 && token) {
-                            config.headers.Authorization = 'Bearer ' + token;
-                        }
-                        return config;
 
+angular.module("RIF")
+        .constant('API', "http://localhost:8080/rifServices/studySubmission/")
+
+        .factory('authInterceptor', ['$q', 'API', '$injector',
+            function ($q, API, $injector) {
+                return {
+                    request: function (config) {
+                        //to reject any outgoing requests
+
+                        return config;
                     },
-                    // If a token was sent back, save it
                     response: function (res) {
-                        if (res.config.url.indexOf(API) === 0 && res.data.token) {
-                            console.log('here');
-                            auth.saveToken(res.data.token);
+                        //called with the response object from the server
+                        if (res.data[0].errorMessages) {
+                            //not logged in redirect to login page
+                            console.log(res.data[0].errorMessages);
+                            console.log(res.status);
+ 
+                        //    $injector.get('$state').transitionTo('state0');
                         }
                         return res;
                     },
-                    responseError: function (rejection) {
-                        if (rejection.status === 401) {
-                            //$urlRouterProvider.otherwise("/login")
-                            // 
-                            // Return a new promise
-                            //   return userService.authenticate().then(function () {
-                            //       return $injector.get('$http')(rejection.config);
-                            //   });
-                        }
+                    requestError: function (rejection) {
 
-                        /* If not a 401, do nothing with this error.
-                         * This is necessary to make a `responseError`
-                         * interceptor a no-op. */
+                        return $q.reject(rejection);
+                    },
+                    responseError: function (rejection) {
+                        //for non-200 errors
+
                         return $q.reject(rejection);
                     }
                 };
             }])
-
-        .service('user', ['$http', 'API', 'auth',
-            function ($http, API, auth) {
-                var self = this;
-
-                self.register = function (username, password) {
-                    return $http.post(API + '/auth/register', {
-                        username: username,
-                        password: password
-                    });
-                };
-
-                self.login = function (username, password) {
-                    return $http.post(API + '/auth/login', {
-                        username: username,
-                        password: password
-                    });
-                };
-
-                self.someRequest = function () {
-                    return $http.get('/api/first-item')
-                            .success(function (data, status, headers, config) {
-                                // write your code for successful request
-                                // result object will be always valid.
-                                console.log(data);
-                            })
-                            .error(function (data, status, headers, config) {
-                                console.log(status); // will print 400 when data.data.status != 0
-                            });
-                };
-
-
-            }])
-
-        .service('auth', ['$window',
-            function ($window) {
-                var self = this;
-
-                self.parseJwt = function (token) {
-                    var base64Url = token.split('.')[1];
-                    var base64 = base64Url.replace('-', '+').replace('_', '/');
-                    return JSON.parse($window.atob(base64));
-                };
-
-                self.saveToken = function (token) {
-                    $window.localStorage['jwtToken'] = token;
-                };
-
-                self.getToken = function () {
-                    return $window.localStorage['jwtToken'];
-                };
-
-                self.isAuthed = function () {
-                    var token = self.getToken();
-                    if (token) {
-                        var params = self.parseJwt(token);
-                        return Math.round(new Date().getTime() / 1000) <= params.exp;
-                    } else {
-                        return false;
-                    }
-                };
-
-                self.logout = function () {
-                    $window.localStorage.removeItem('jwtToken');
-                };
-
-            }])
-
-        .constant('API', 'http://test-routes.herokuapp.com')
-
         .config(function ($httpProvider) {
             $httpProvider.interceptors.push('authInterceptor');
         })
 
-        .controller('MainCtrl', ['$scope', 'user', 'auth',
-            function ($scope, user, auth) {
+        .service('user', ['$http', 'API',
+            function ($http, API) {
                 var self = this;
-
-                function handleRequest(res) {
-                    console.log(res.status);
-                    var token = res.data ? res.data.token : null;
-                    if (token) {
-                        console.log('JWT:', token);
-                    } else {
-                        $scope.showError("AUTH FAIL");
-                        //direct to login page
-                    }
-                    $scope.message = res.data.message;
-                }
-
-                self.login = function () {
-                    user.login(self.username, self.password)
-                            .then(handleRequest, handleRequest);
+                self.currentUser = "";
+                self.login = function (username, password) {
+                    //http://localhost:8080/rifServices/studySubmission/login?userID=kgarwood&password=kgarwood
+                    //[{"result":"User kgarwood logged in."}]
+                    self.currentUser = username;
+                    return $http.get(API + 'login?userID=' + username + '&password=' + password);
                 };
-                self.register = function () {
-                    user.register(self.username, self.password)
-                            .then(handleRequest, handleRequest);
+                self.logout = function (username) {
+                    //http://localhost:8080/rifServices/studySubmission/logout?userID=kgarwood
+                    //[{"result":"User kgarwood logged out."}]
+                    self.currentUser = "";
+                    return $http.get(API + 'logout?userID=' + username);
                 };
-                self.logout = function () {
-                    auth.logout && auth.logout();
+                self.isLoggedIn = function (username) {
+                    //http://localhost:8080/rifServices/studySubmission/isLoggedIn?userID=kgarwood
+                    //[{"result":"true"}]
+                    return $http.get(API + 'isLoggedIn?userID=' + username);
                 };
-                self.isAuthed = function () {
-                    console.log(auth.isAuthed ? auth.isAuthed() : false);
-                    return auth.isAuthed ? auth.isAuthed() : false;
+                //TODO: where to put this?
+                self.getGeographies = function (username) {
+                    //http://localhost:8080/rifServices/studySubmission/getGeographies?userID=kgarwood
+                    //[{"names":["EW01","SAHSU","UK91"]}]
+                    return $http.get(API + 'getGeographies?userID=' + username);
                 };
-                //self.xyz make a server request
-                //....
-
-
-
+                self.getHealthThemes = function (username, geography) {
+                    //http://localhost:8080/rifServices/studySubmission/getHealthThemes?userID=kgarwood&geographyName=SAHSU
+                    //[{"name":"SAHSULAND","description":"SAHSU land cancer incidence example data"}]
+                    return $http.get(API + 'getHealthThemes?userID=' + username + '&geographyName=' + geography);
+                };
+                self.getFractions = function (username, geography, healthThemeDescription) {
+                    //http://localhost:8080/rifServices/studySubmission/getNumerator?userID=kgarwood&geographyName=SAHSU&healthThemeDescription=SAHSU%20land%20cancer%20incidence%20example%20data
+                    //[{"numeratorTableName":"SAHSULAND_CANCER","numeratorTableDescription":"Cancer cases in SAHSU land","denominatorTableName":"SAHSULAND_POP","denominatorTableDescription":"SAHSU land population"}]
+                    return $http.get(API + 'getNumerator?userID=' + username + '&geographyName=' + geography + "&healthThemeDescription=" + healthThemeDescription);
+                };
+                self.getProjects = function (username) {
+                    //http://localhost:8080/rifServices/studySubmission/getProjects?userID=kgarwood
+                    //[{"name":"TEST","description":null}]
+                    return $http.get(API + 'getProjects?userID=' + username);
+                };
+                self.getYears = function(username, geography, numeratorTableName) {
+                    //http://localhost:8080/rifServices/studySubmission/getYearRange?userID=kgarwood&geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER
+                    //[{"lowerBound":"1989","upperBound":"1996"}]
+                    return $http.get(API + 'getYearRange?userID=' + username + '&geographyName=' + geography + '&numeratorTableName=' + numeratorTableName);
+                };
 
             }])
-        ;
+
+        .controller('TabCtrl', ['$scope', 'user', '$injector',
+            function ($scope, user, $injector) {
+                $scope.username = user.currentUser;
+
+                function handleLogout(res) {
+                    $injector.get('$state').transitionTo('state0');
+                }
+                $scope.logout = function () {
+                    user.logout(user.currentUser).then(handleLogout, handleLogout);
+                };
+            }])
+
+        .controller('LoginCtrl', ['$scope', 'user', '$injector',
+            function ($scope, user, $injector) {
+
+                function handleLogin(res) {
+                    if (res.data[0].result === "User " + $scope.username + " logged in.") {
+                        $injector.get('$state').transitionTo('state1');
+                    } else {
+                        //login failed
+                        $scope.showError("Could not login. Please check username and password");
+                    }
+                }
+                function handleServerError(res) {
+                    console.log("server error");
+                    $scope.showError("Server error");
+                }
+                $scope.login = function () {
+                    user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                };
+            }]);

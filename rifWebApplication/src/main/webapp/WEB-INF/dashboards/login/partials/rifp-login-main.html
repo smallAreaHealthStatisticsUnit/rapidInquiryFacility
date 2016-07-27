@@ -9,15 +9,13 @@ Login menu
             <div class="msettings-header">
                 <h2>Rapid Inquiry Facility: RIF4</h2>
             </div>
-            <form ng-controller="MainCtrl as main">
+            <form ng-controller="LoginCtrl">
                 <div class="txt-fld">
-                    <input type="text" placeholder="User name" id="username"  class='dropdownInput username'/>
-                    <input type="password" placeholder="Password" id="password"  class='dropdownInput password' />
+                    <input ng-model="username" type="text" placeholder="User name" id="username"  class='dropdownInput username'/>
+                    <input ng-model="password" type="password" placeholder="Password" id="password"  class='dropdownInput password' />
                 </div>
                 <div class="save-fld-settings">
-                    <input type="button" value="log in" class='login' id='logInBtn' ui-sref="state1">
-                    <button ng-click="main.login()">Login</button>
-                    <button ng-click="main.isAuthed()">Check Auth</button>
+                    <input type="button" value="log in" class='login' id='logInBtn' ng-click="login()">
                 </div>
             </form>
         </div>

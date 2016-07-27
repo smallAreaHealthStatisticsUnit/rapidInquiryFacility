@@ -24,7 +24,7 @@ angular.module("RIF")
                         $timeout(function () {
                             $scope.parent.renderMap("area");
                         });
-
+/*
                         var mapEvents = leafletMapEvents.getAvailableMapEvents();
                         for (var k in mapEvents) {
                             var eventName = 'leafletDirectiveMap.' + mapEvents[k];
@@ -32,7 +32,7 @@ angular.module("RIF")
                                 console.log(event.name);
                             });
                         }
-
+*/
                         //map max bounds from topojson layer
                         var maxbounds;
                         //selectedPolygon array synchronises the map <-> table selections                        
@@ -310,6 +310,7 @@ angular.module("RIF")
 
                         //Multiple select with shift
                         //detect shift key (16) down
+                        //TODO: Change to last click location as start point
                         var bShift = false;
                         var multiStart = -1;
                         var multiStop = -1;

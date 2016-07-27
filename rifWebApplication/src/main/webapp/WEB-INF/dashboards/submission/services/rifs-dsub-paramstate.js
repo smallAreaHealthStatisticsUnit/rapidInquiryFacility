@@ -4,11 +4,19 @@
 angular.module("RIF")
         .factory('ParameterStateService',
                 function (SubmissionStateService) {
+                    var activeHealthTheme = "";
                     var s = {
                         rows: new Array()
                     };
                     var defaults = JSON.parse(JSON.stringify(s));
+                    
                     return {
+                        setActiveHealthTheme: function (s) {
+                            activeHealthTheme = s;
+                        },
+                        getActiveHealthTheme: function () {
+                            return activeHealthTheme;
+                        },
                         getState: function () {
                             return s;
                         },
@@ -41,14 +49,14 @@ angular.module("RIF")
                                             if (bFirstRow) {
                                                 thisInv.title = s.rows[k].title;
                                                 thisInv.health_theme = {
-                                                    "name": SubmissionStateService.getState().healthTheme,
-                                                    "description": "TODO"
+                                                    "name": SubmissionStateService.getState().healthTheme.name,
+                                                    "description": SubmissionStateService.getState().healthTheme.description
                                                 };
                                                 thisInv.numerator_denominator_pair = {
-                                                    "numerator_table_name": SubmissionStateService.getState().numerator,
-                                                    "numerator_table_description": SubmissionStateService.getState().numerator,
-                                                    "denominator_table_name": SubmissionStateService.getState().denominator,
-                                                    "denominator_table_description": SubmissionStateService.getState().denominator
+                                                    "numerator_table_name": SubmissionStateService.getState().numerator.numeratorTableName,
+                                                    "numerator_table_description": SubmissionStateService.getState().numerator.numeratorTableDescription,
+                                                    "denominator_table_name": SubmissionStateService.getState().denominator.denominatorTableName,
+                                                    "denominator_table_description": SubmissionStateService.getState().denominator.denominatorTableDescription
                                                 };
                                                 thisInv.age_band = {
                                                     "lower_age_group": {
@@ -66,15 +74,18 @@ angular.module("RIF")
                                                 };
                                                 thisInv.year_range = {
                                                     "lower_bound": s.rows[k].years.split(' - ')[0],
-                                                    "upper_bound": s.rows[k].years.split(' - ')[1]
+                                                    "upper_bound": s.rows[k].years.split(' - ')[1].split(' [')[0]
                                                 };
-                                                thisInv.year_intervals.year_interval.push(
-                                                        {
-                                                            "start_year": "1993xxx",
-                                                            "end_year": "1996xxx"
-                                                        }
-                                                );
-                                                thisInv.years_per_interval = "TODO";
+                                                thisInv.years_per_interval = s.rows[k].years.split('[')[1].split(']')[0];
+                                                var jump = Number(thisInv.years_per_interval);
+                                                for (var i = Number(thisInv.year_range.lower_bound); i <= Number(thisInv.year_range.upper_bound); i += jump) {
+                                                    thisInv.year_intervals.year_interval.push(
+                                                            {
+                                                                "start_year": i.toString(),
+                                                                "end_year": (i + jump - 1).toString()
+                                                            }
+                                                    );
+                                                }
                                                 thisInv.sex = s.rows[k].gender;
                                                 thisInv.covariates.adjustable_covariate.push(
                                                         {

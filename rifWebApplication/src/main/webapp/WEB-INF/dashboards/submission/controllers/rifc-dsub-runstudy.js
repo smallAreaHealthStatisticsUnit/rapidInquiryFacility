@@ -19,10 +19,25 @@ angular.module("RIF")
                     });
                 };
             }])
-        .controller('ModalRunInstanceCtrl', function ($scope, $uibModalInstance, SubmissionStateService) {
+        .controller('ModalRunInstanceCtrl', function ($scope, $uibModalInstance, SubmissionStateService, user) {
             $scope.input = {};
-            $scope.input.description = SubmissionStateService.getState().projectDescription;
-            $scope.input.name = SubmissionStateService.getState().projectName;
+            $scope.input.studyDescription = SubmissionStateService.getState().studyDescription;
+            //    $scope.input.name = SubmissionStateService.getState().projectName;
+            
+            
+            //Fill health themes drop-down
+            $scope.input.projects = [];
+            $scope.input.fillProjects = function () {
+                user.getProjects(user.currentUser).then(handleProjects, handleProjects);
+            }();
+            function handleProjects(res) {
+                $scope.input.projects.length = 0;
+                for (var i = 0; i < res.data.length; i++) {
+                    $scope.input.projects.push({name: res.data[i].name, description: res.data[i].description});
+                }
+                $scope.input.project = $scope.input.projects[0];
+                $scope.updateModel();
+            }
 
             $scope.close = function () {
                 $uibModalInstance.dismiss();
@@ -31,7 +46,8 @@ angular.module("RIF")
                 $uibModalInstance.close($scope.input);
             };
             $scope.updateModel = function () {
-                SubmissionStateService.getState().projectDescription = $scope.input.description;
-                SubmissionStateService.getState().projectName = $scope.input.name;
+                SubmissionStateService.getState().studyDescription = $scope.input.studyDescription;
+                SubmissionStateService.getState().projectDescription = $scope.input.project.description;
+                SubmissionStateService.getState().projectName = $scope.input.project.name;
             };
         });

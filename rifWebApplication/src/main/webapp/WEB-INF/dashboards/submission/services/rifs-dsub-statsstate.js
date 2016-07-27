@@ -30,7 +30,7 @@ angular.module("RIF")
                                 method.name = "BYM";
                                 method.code_routine_name = "bym_r_proceedure";
                                 method.description = "Besag, York and Mollie Model";
-                                method.parameters = {"parameter": {"name": "c", "value": s.bym_c}};
+                                method.parameters = {"parameter": [{"name": "c", "value": s.bym_c}]};
                             } else if (s.checked === "2") {
                                 method.name = "HET";
                                 method.code_routine_name = "het_r_proceedure";
@@ -40,7 +40,7 @@ angular.module("RIF")
                                 method.name = "CAR";
                                 method.code_routine_name = "car_r_proceedure";
                                 method.description = "Conditional autoregressive";
-                                method.parameters = {"parameter": {"name": "a", "value": s.car_a}};
+                                method.parameters = {"parameter": [{"name": "a", "value": s.car_a}]};
                             }
                             return method;
                         }
