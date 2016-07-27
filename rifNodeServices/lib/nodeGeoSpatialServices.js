@@ -164,17 +164,6 @@ exports.convert = function exportsConvert(req, res) {
 
 		res.setHeader("Content-Type", "text/plain");
 		
-// Set timeout for 10 minutes
-		req.setTimeout(10*60*1000, function myTimeoutFunction() {
-			serverLog.serverError2(__file, __line, "exports.convert", "Message timed out at: " + req.timeout, undefined, undefined);	
-			req.abort();
-		}); // 10 minutes
-		
-// Add stderr hook to capture debug output from topoJSON	
-		var stderr = stderrHook.stderrHook(function myStderrHook(output, obj) { 
-			output.str += obj.str;
-		});
-		
 /*
  * Response object - no errors:
  *                    
@@ -204,6 +193,18 @@ exports.convert = function exportsConvert(req, res) {
 		var d_files = { 
 			d_list: []
 		}
+		
+// Set timeout for 10 minutes
+		req.setTimeout(10*60*1000, function myTimeoutFunction() {
+			serverLog.serverError2(__file, __line, "exports.convert", "Message timed out at: " + req.timeout, 
+				undefined /* req */, undefined /* err */, response);	
+			req.abort();
+		}); // 10 minutes
+		
+// Add stderr hook to capture debug output from topoJSON	
+		var stderr = stderrHook.stderrHook(function myStderrHook(output, obj) { 
+			output.str += obj.str;
+		});
 		
 /*
  * Services supported:
@@ -635,7 +636,7 @@ exports.convert = function exportsConvert(req, res) {
 										}
 										catch (e) {
 											serverLog.serverError2(__file, __line, "fileCompressionProcessing", 
-												"Recursive error in fileCompressionProcessing() callback", req, e);
+												"Recursive error in fileCompressionProcessing() callback", req, e, response);
 										}
 									}
 									else {		
@@ -703,7 +704,7 @@ exports.convert = function exportsConvert(req, res) {
 											}
 											catch (e) {
 												serverLog.serverError2(__file, __line, "fileCompressionProcessing", 
-													"Recursive error in fileCompressionProcessing() callback", req, e);
+													"Recursive error in fileCompressionProcessing() callback", req, e, response);
 											}
 										}
 										else {	

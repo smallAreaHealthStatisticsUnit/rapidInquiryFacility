@@ -94,13 +94,13 @@ createTemporaryDirectory = function createTemporaryDirectory(dirArray, response,
 					response.message += "\nmkdir: " + tdir;
 				} catch (e) { 
 					serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
-						"ERROR: Cannot create directory: " + tdir + "; error: " + e.message, req);
+						"ERROR: Cannot create directory: " + tdir + "; error: " + e.message, req, undefined /* err */, response);
 //							shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
 				}			
 			}
 			else {
 				serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
-					"ERROR: Cannot access directory: " + tdir + "; error: " + e.message, req);
+					"ERROR: Cannot access directory: " + tdir + "; error: " + e.message, req, undefined /* err */, response);
 //						 shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 					
 			}
 		}
@@ -266,7 +266,8 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 				serverLog.serverLog2(__file, __line, "responseProcessing", 
 					"Diagnostics >>>\n" +
 					response.message + "\n<<< End of diagnostics", req);
-				serverLog.serverError(__file, __line, "responseProcessing", "Unable to return OK reponse to user - httpErrorResponse() already processed", req);
+				serverLog.serverError(__file, __line, "responseProcessing", 
+					"Unable to return OK reponse to user - httpErrorResponse() already processed", req, undefined /* err */, response);
 			}	
 //					console.error(util.inspect(req));
 //					console.error(JSON.stringify(req.headers, null, 4));	
@@ -354,13 +355,14 @@ writeResponseFile = function writeResponseFile(serverLog, response, req, output,
 					}
 					catch (e) {
 						serverLog.serverError2(__file, __line, "writeResponseFileError", 
-							"Recursive error in writeResponseFileError() callback", req, e);
+							"Recursive error in writeResponseFileError() callback", req, e, response);
 					}
 				}
 			});	
 	}
 	else if (!response.fields["responseFileName"]) {	
-		serverLog.serverError(__file, __line, "responseProcessing", "Unable to save response file; no responseFileName", req);
+		serverLog.serverError(__file, __line, "responseProcessing", "Unable to save response file; no responseFileName", 
+			req, undefined /* err */, response);
 	}
 }
 
@@ -535,14 +537,17 @@ getShpConvertTopoJSON = function getShpConvertTopoJSON(response, req, res, serve
 											res.end();		
 										}
 										catch(e) {
-											serverLog.serverError(__file, __line, "getShpConvertTopoJSON", "Error in sending response to client", req, e);
+											serverLog.serverError(__file, __line, 
+												"getShpConvertTopoJSON", "Error in sending response to client", req, e, response);
 										}
 									}
 									else {
 										serverLog.serverLog2(__file, __line, "getShpConvertTopoJSON", 
 											"Diagnostics >>>\n" +
 											response.message + "\n<<< End of diagnostics", req);
-										serverLog.serverError2(__file, __line, "getShpConvertTopoJSON", "Unable to return OK response to user - httpErrorResponse() already processed", req);
+										serverLog.serverError2(__file, __line, 
+											"getShpConvertTopoJSON", "Unable to return OK response to user - httpErrorResponse() already processed", 
+											req, undefined /* err */, response);
 									}	
 								}
 								else {
@@ -645,7 +650,7 @@ getStatus = function getStatus(response, req, res, serverLog, httpErrorResponse)
 											res.end();		
 										}
 										catch(e) {
-											serverLog.serverError(__file, __line, "getStatus", "Error in sending response to client", req, e);
+											serverLog.serverError(__file, __line, "getStatus", "Error in sending response to client", req, e, response);
 										}
 									}
 									else {
@@ -793,7 +798,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 	
 							if (err) {
 								serverLog.serverLog2(__file, __line, "addStatusWriteDiagnosticFileRename", 
-									"WARNING: Unable to rename status file", req, err);
+									"WARNING: Unable to rename status file", req, err, response);
 							}							
 							if (callback) {
 								try {

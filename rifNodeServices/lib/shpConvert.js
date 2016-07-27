@@ -487,7 +487,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 					"\nProjection data:\n" + shapefileData["prj"] + "\n<<<" +
 					"\nCRSS database >>>\n" + JSON.stringify(shapefileData["crss"], null, 2) + "\n<<<" +
 					"\nGeoJSON sample >>>\n" + JSON.stringify(shapefileData["featureList"], null, 2).substring(0, 600) + "\n<<<", 
-					shapefileData["req"], e);	
+					shapefileData["req"], e, response);	
 			}
 		}
 		else {
@@ -568,7 +568,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			if (err) {
 				msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile reader.close: ' + shapefileData["shapeFileName"];
 				serverLog.serverError2(__file, __line, "readerClose", 
-					msg, shapefileData["req"], err);							
+					msg, shapefileData["req"], err, response);							
 			}	
 			shapefileData["reader"]=undefined; // Release for gc		
 			
@@ -649,7 +649,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 								"; got: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length + 
 								"; for: " + shapefileData["shapeFileName"];
 							serverLog.serverError2(__file, __line, "shapefileReadLastRecord", 
-								msg, shapefileData["req"], err);		
+								msg, shapefileData["req"], err, response);		
 						}
 						msg+="\n" + dbf_fields.length + " fields: " + JSON.stringify(dbf_fields) + "; areas: " + 
 							response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;
@@ -688,7 +688,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 					else {
 						serverLog.serverError2(__file, __line, "shapefileReadLastRecord", 
 							'ERROR! [' + shapefileData["uuidV1"] + '] no collection.bbox: ' + 
-							shapefileData["shapeFileName"], shapefileData["req"]);	
+							shapefileData["shapeFileName"], shapefileData["req"], undefined /* err */, response);	
 					}		
 
 				}); // End of shapefileReadLastRecordAddStatus()  			
@@ -744,10 +744,11 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						}
 						catch (e2) {	
 							if (e) {
-								serverLog.serverError2(__file, __line, "seriesCallbackFunc", "Stacked error running callback; first error: " + e.message, req, e2);
+								serverLog.serverError2(__file, __line, "seriesCallbackFunc", 
+									"Stacked error running callback; first error: " + e.message, req, e2, response);
 							}
 							else {
-								serverLog.serverError2(__file, __line, "seriesCallbackFunc", "First error running callback", req, e2);
+								serverLog.serverError2(__file, __line, "seriesCallbackFunc", "First error running callback", req, e2, response);
 							}								
 						}
 					}
@@ -846,22 +847,22 @@ This error in actually originating from the error handler function
  */
 					catch (e) {
 						if (inCallback) {
-							serverLog.serverError2(__file, __line, "writeGeoJsonbyFeatureSeries", e.message, req, e);
+							serverLog.serverError2(__file, __line, "writeGeoJsonbyFeatureSeries", e.message, req, e, response);
 						}
 						else {
 							try {
 								seriesCallbackFunc(e);
 							}
 							catch (err) {
-								serverLog.serverError2(__file, __line, "writeGeoJsonbyFeatureSeries", "First error: " + e.message, req, err);	
-
+								serverLog.serverError2(__file, __line, "writeGeoJsonbyFeatureSeries", 
+									"First error: " + e.message, req, err, response);	
 							}
 						}
 					}
 			} /* End of writeGeoJsonbyFeatureSeries() iterator */, 
 			function writeGeoJsonbyFeatureSeriesEnd(err) { // Callback																/* Callback at end */
 				if (err) {
-					serverLog.serverError2(__file, __line, "writeGeoJsonbyFeatureSeriesEnd", err.message, req, undefined);
+					serverLog.serverError2(__file, __line, "writeGeoJsonbyFeatureSeriesEnd", err.message, req, undefined /* err */, response);
 				}
 				else { // Write footer
 				
@@ -1039,7 +1040,7 @@ This error in actually originating from the error handler function
 			if (err) {
 				msg='ERROR! [' + shapefileData["uuidV1"] + '] in shapefile reader.read: ' + shapefileData["shapeFileName"];
 				shapefileData["serverLog"].serverError2(__file, __line, "shapefileReader", 
-					msg, shapefileData["req"], err);						
+					msg, shapefileData["req"], err, response);						
 			}
 			else if (record.bbox) { // Header						
 				var lRec=JSON.stringify(record);
@@ -1064,7 +1065,8 @@ This error in actually originating from the error handler function
 		var msg;
 			
 		if (shapefileData["lstart"]) {
-			serverLog.serverError2(__file, __line, "readShapeFile", "Called > once: " + shapefileData["shapeFileName"], undefined, undefined);//Run > once - this should never occur
+			serverLog.serverError2(__file, __line, "readShapeFile", "Called > once: " + shapefileData["shapeFileName"], 
+				undefined, undefined, response); // Run > once - this should never occur
 		}
 		else {
 			shapefileData["lstart"]=new Date().getTime();
@@ -1101,7 +1103,7 @@ This error in actually originating from the error handler function
 				else { // Error
 					serverLog.serverError2(__file, __line, "readShapeFile", 
 						"ERROR! no SRID for projection: " + shapefileData["mySrs"].name || "(no name)" + "; data: " + shapefileData["prj"] + " in shapefile: " +
-						shapefileData["shapeFileName"], shapefileData["req"]);	
+						shapefileData["shapeFileName"], shapefileData["req"], undefined /* err */, response);	
 //						callback();	// Not needed - serverError2() raises exception 
 				}
 			}
@@ -1161,6 +1163,7 @@ This error in actually originating from the error handler function
 	 */
 	shapeFileQueue.drain = function shapeFileQueueDrain() {
 		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
+		const geojsonToCSV = require('../lib/geojsonToCSV');
 		
 		scopeChecker(__file, __line, {
 			response: response,
@@ -1170,6 +1173,7 @@ This error in actually originating from the error handler function
 		
 		var os = require('os');
 		var path = require('path');
+	  
 		var dir = os.tmpdir() + "/shpConvert/" + response.fields["uuidV1"];
 		var xmlConfig = {
 			xmlFileName: 			"geoDataLoader.xml",
@@ -1373,70 +1377,125 @@ This error in actually originating from the error handler function
 			
 			createXmlFile(xmlConfig); // Create XML configuration file
 			
-			// Final processing
-			if (response.no_files == 0) { 
-				response.message = msg + "\n" + response.message;
-				msg="FAIL! No files attached\n";						
-				response.message = msg + "\n" + response.message;
-				response.fields=ofields;				// Add return fields
-				response.file_errors++;					// Increment file error count	
-				httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
-					serverLog, 500, req, res, msg, undefined, response);							
-				return;						
-			}
-			else { 				
-				msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
-				response.message = response.message + "\n" + msg;
-
-				addStatus(__file, __line, response, "BATCH_INTERMEDIATE_END", 200 /* HTTP OK */, serverLog, req, // Add status
-					function addStatusCallback(err) { 	
-						if (err) {						
-							serverLog.serverLog2(__file, __line, "addStatusCallback", "ERROR! in writing status file", req, e);
+			// Remove any geoJSON or WKT from response if topoJSON present; save geojson		
+			var geojsonFileList=[];
+			for (var i=0; i<ngeolevels.length; i++) {
+				if (response.file_list[ngeolevels[i].i].topojson) {
+					geojsonFileList[ngeolevels[i].i]={ topojson: [] };
+					for (var j=0; j<response.file_list[ngeolevels[i].i].topojson.length; j++) {	
+						if (response.file_list[ngeolevels[i].i].topojson[j].wkt && response.file_list[ngeolevels[i].i].topojson[j].wkt.length > 0) {
+							response.file_list[ngeolevels[i].i].topojson[j].wkt=undefined;
 						}
-						else {
-							var diagnosticsTimer=response.diagnosticsTimer;  // Save
-							response.diagnosticsTimer=undefined; // Prevent TypeError: Converting circular structure to JSON - in JSON.stringify()
-							var msg=response.message; // Save
-							if (!response.fields.verbose) { // Only send diagnostics if requested
-								response.message="";	
-							}	
-							var output;
-							try {
-								output = JSON.stringify(response); // Convert output response to JSON 
+						if (response.file_list[ngeolevels[i].i].topojson[j].geojson) {
+							geojsonFileList[ngeolevels[i].i].topojson[j] = {
+								geojson: response.file_list[ngeolevels[i].i].topojson[j].geojson
 							}
-							catch (e) {
-								const util = require('util');
-
-								var trace=(util.inspect(response, { showHidden: true, depth: 3 }));
-								serverLog.serverError2(__file, __line, "finalProcessingCallback", 
-									"ERROR! in JSON.stringify(response); trace >>>\n" + trace + "\n<<< End of trace", req, e);
-							}
-							response.diagnosticsTimer=diagnosticsTimer; // Restore
-							response.message=msg; // Restore
-							
-							writeResponseFile(serverLog, response, req, output,  ".2", 
-								function finalProcessingCallback() {	// Intermediate version 
-								if (err) {						
-									serverLog.serverLog2(__file, __line, "finalProcessingCallback", "ERROR! in writing response file", req, e);
-								}
-								else {								
-									scopeChecker(__file, __line, {
-										serverLog: serverLog,
-										httpErrorResponse: httpErrorResponse,
-										req: req,
-										res: res,
-										response: response,
-										ofields: ofields
-									});
-					
-				// REST OF PROCESSING GOES HERE!
-								
-									nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
-								}
-							}); // End of finalProcessingCallback() 	
-						}							
-					}); // End of addStatusCallback()		
+							response.file_list[ngeolevels[i].i].topojson[j].geojson=undefined;
+						}
+						if (response.file_list[ngeolevels[i].i].geojson) {
+							response.file_list[ngeolevels[i].i].geojson=undefined
+						}
+					}
+				}			
 			}
+			
+			addStatus(__file, __line, response, "Cloned intermediate response", 200 /* HTTP OK */, serverLog, req, // Add status
+				function addStatusCloneCallback(err) { 	
+					if (err) {						
+						serverLog.serverLog2(__file, __line, "addStatusCloneCallback", "ERROR! in cloning intermediate response", req, e);
+					}	
+				
+					// Final processing
+					if (response.no_files == 0) { 
+						response.message = msg + "\n" + response.message;
+						msg="FAIL! No files attached\n";						
+						response.message = msg + "\n" + response.message;
+						response.fields=ofields;				// Add return fields
+						response.file_errors++;					// Increment file error count	
+						httpErrorResponse.httpErrorResponse(__file, __line, "req.busboy.on('finish')", 
+							serverLog, 500, req, res, msg, undefined, response);							
+						return;						
+					}
+					else { 				
+						msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
+						response.message = response.message + "\n" + msg;
+
+						addStatus(__file, __line, response, "BATCH_INTERMEDIATE_END", 200 /* HTTP OK */, serverLog, req, // Add status
+							function addStatusCallback(err) { 	
+								if (err) {						
+									serverLog.serverLog2(__file, __line, "addStatusCallback", "ERROR! in writing status file", req, e);
+								}
+								else {
+									var diagnosticsTimer=response.diagnosticsTimer;  // Save
+									response.diagnosticsTimer=undefined; // Prevent TypeError: Converting circular structure to JSON - in JSON.stringify()
+									var msg=response.message; // Save
+									if (!response.fields.verbose) { // Only send diagnostics if requested
+										response.message="";	
+									}	
+									var output;
+									try {
+										output = JSON.stringify(response); // Convert output response to JSON 
+									}
+									catch (e) {
+										const util = require('util');
+
+										var trace=(util.inspect(response, { showHidden: true, depth: 3 }));
+										serverLog.serverError2(__file, __line, "finalProcessingCallback", 
+											"ERROR! in JSON.stringify(response); trace >>>\n" + trace + "\n<<< End of trace", req, e, response);
+									}
+									response.diagnosticsTimer=diagnosticsTimer; // Restore
+									response.message=msg; // Restore
+									
+									writeResponseFile(serverLog, response, req, output,  ".2", 
+										function finalProcessingCallback() {	// Intermediate version 
+										if (err) {						
+											serverLog.serverLog2(__file, __line, "finalProcessingCallback", "ERROR! in writing response file", req, e);
+										}
+										else {								
+											scopeChecker(__file, __line, {
+												serverLog: serverLog,
+												httpErrorResponse: httpErrorResponse,
+												req: req,
+												res: res,
+												response: response,
+												ofields: ofields
+											});
+																
+											nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
+
+											for (var i=0; i<ngeolevels.length; i++) { // Restore geojson
+												if (response.file_list[ngeolevels[i].i].topojson && 
+													geojsonFileList[ngeolevels[i].i] && 
+													geojsonFileList[ngeolevels[i].i].topojson) {
+													for (var j=0; j<response.file_list[ngeolevels[i].i].topojson.length; j++) {
+														response.file_list[ngeolevels[i].i].topojson[j].geojson=geojsonFileList[ngeolevels[i].i].topojson[j].geojson;					
+													}
+												}
+												else if (response.file_list[ngeolevels[i].i].topojson && 
+													geojsonFileList[ngeolevels[i].i]) {
+													serverLog.serverError2(__file, __line, "shapeFileQueueDrain", 
+														"geojsonFileList[ngeolevels[i].i].topojson not defined", req, undefined /* err */, response);
+														
+												}
+												else if (response.file_list[ngeolevels[i].i].topojson) {
+													serverLog.serverError2(__file, __line, "shapeFileQueueDrain", 
+														"geojsonFileList[ngeolevels[i].i] not defined", req, undefined /* err */, response);
+														
+												}
+												else {			
+													serverLog.serverError2(__file, __line, "shapeFileQueueDrain", 
+														"nResponse.file_list[ngeolevels[i].i].topojson not defined ", req, undefined /* err */, response);
+												}
+											}		
+											
+											geojsonToCSV.geojsonToCSV(response, req); // Converty geoJSON to CSV
+										}
+									}); // End of finalProcessingCallback() 	
+								}							
+							}); // End of addStatusCallback()		
+						}					
+					} // End of addStatusCloneCallback()
+				);
 		}
 		catch (e) {
 			msg+='\nCaught exception: ' + e.message;

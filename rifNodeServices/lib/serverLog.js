@@ -145,7 +145,7 @@ serverLog2 = function(file, line, calling_function, msg, req, err) {
 }
 
 // Likewise for error; except RAISE the error
-serverError = function(msg, req, err) {
+serverError = function(msg, req, err, response) {
 	var calling_function = arguments.callee.caller.name || '(anonymous)';
 	// Get file information from magic-globals: __stack
 	var file=__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0];
@@ -154,11 +154,14 @@ serverError = function(msg, req, err) {
 	
 	try {
 		if (response && response.diagnosticsTimer && response.diagnosticsTimer > 0) { // Disable the diagnostic file write timer
+//			console.error("serverError(): clearInterval: " + response.diagnosticsTimer);
 			clearInterval(response.diagnosticsTimer);
 			response.diagnosticsTimer=undefined;
 		}
 		else if (response) {
-			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, timer not set; stack: " + stack, req);
+//			console.error("serverError(): response in scope; has already been disabled; recursive call!!!");
+// has already been disable; recursive call!!!
+//			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, timer not set; stack: " + stack, req);
 		}
 		else {
 			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req);
@@ -177,20 +180,23 @@ serverError = function(msg, req, err) {
 	}
 }
 
-serverError2 = function(file, line, calling_function, msg, req, err) {	
+serverError2 = function(file, line, calling_function, msg, req, err, response) {	
 
 	var stack = new Error().stack
 	
 	try {
 		if (response && response.diagnosticsTimer && response.diagnosticsTimer > 0) { // Disable the diagnostic file write timer
+//			console.error("serverError2(): clearInterval: " + response.diagnosticsTimer);
 			clearInterval(response.diagnosticsTimer);
 			response.diagnosticsTimer=undefined;
 		}
 		else if (response) {
-			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, timer not set; stack: " + stack, req);
+//			console.error("serverError2(): response in scope; has already been disabled; recursive call!!!");
+// has already been disable; recursive call!!!
+//			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, timer not set; stack: " + stack, req);
 		}
 		else {
-			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req);
+			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, response not in scope;\nstack: " + stack, req);
 		}
 	}
 	catch (e) {
