@@ -1429,7 +1429,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 			uuidV1: uuidV1, 
 			diagnosticFileDir: diagnosticFileDir,
 			statusFileName: statusFileName,
-			responseFileName, responseFileName
+			responseFileName: responseFileName
 		}, function getShpConvertStatus(data, status, xhr) {
 			var nrecursionCount=recursionCount+1;
 			
@@ -1441,10 +1441,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 				var status=data.status[(data.status.length-1)];
 				if (status && status["statusText"]) {
 					if (status["statusText"] == "BATCH_END") { // Display the last status in the progress bar
-					
-						var end=new Date().getTime();
-						var elapsed=(Math.round(end - start))/1000; // in S
-						displayProgress("All processing completed in " + elapsed + " S");
+						console.log("No need for more status updates: at end");
 					}					
 					else if (status["statusText"] == "BATCH_INTERMEDIATE_END") {
 						displayProgress("Intermediate processing complete, loading maps, making tiles");
@@ -1459,6 +1456,8 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 								data.status[i].calling_function + "]: " + data.status[i].statusText);	
 								
 							if (data.status[i].statusText == "BATCH_END") {
+								console.log("Enable shpConvertGetResults button");
+								$( "#shpConvertGetResults" ).button( "enable" ); // Enable shpConvertGetResults button
 								// Load tiles
 								atEnd=true;
 							}					
@@ -1485,6 +1484,10 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 						nrecursionCount /* Recursion count */, nIndex /* New index */);
 				}
 				else if (atEnd) {
+
+					var end=new Date().getTime();
+					var elapsed=(Math.round(end - start))/1000; // in S
+					displayProgress("All node processing completed in " + elapsed + " S");					
 					console.log("No need for more status updates: at end");
 				}
 				else {
@@ -1597,12 +1600,14 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 		console.log("[" + elapsed + "] " + "Suppressing (jsonAddLayerParams.areas > 200 && map.getZoom() < 6) JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
 			"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
 			jsonAddLayerParams.file_name + "; areas: " + jsonAddLayerParams.areas + "; zoomlevel: " +  map.getZoom());
+		callback();
 		return;
 	}
 	else if (jsonAddLayerParams.areas > 10000) {
 		console.log("[" + elapsed + "] " + "Suppressing (jsonAddLayerParams.areas > 10,000) JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
 			"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
 			jsonAddLayerParams.file_name + "; areas: " + jsonAddLayerParams.areas + "; zoomlevel: " +  map.getZoom());
+		callback();
 		return;
 	}
 		
@@ -1991,8 +1996,14 @@ function changeJsonLayers(event) {
 								if (err) {
 									console.error("[" + elapsed + "] asyncEachErrorHandler: " + err.message + "\nStack: " + err.stack);								
 								}
+								else if (event) {
+									console.log("[" + elapsed + "] " + jsonAddLayerParamsArray.length + " zoomed layers processed OK.");
+								}
 								else {
-									console.log("[" + elapsed + "] " + jsonAddLayerParamsArray.length + " layers processed OK.");
+									var end=new Date().getTime();
+									var elapsed=(Math.round(end - start))/1000; // in S
+									displayProgress("All node processing completed in " + elapsed + " S");	
+									console.log("[" + elapsed + "] " + jsonAddLayerParamsArray.length + " initial layers processed OK.");
 								}
 							}
 							catch(e) {
@@ -2086,11 +2097,22 @@ function createTable(response, layerColours, layerAddOrder) {
 	legend.addTo(map);
 }
 
+
+/*
+ * Function: 	shpConvertGetResultsFunc()
+ * Parameters: 	Value
+ * Returns: 	Nothing
+ * Description:	Action when shpConvertGetResults button is clicked
+ */
+function shpConvertGetConfigFunc(value) {
+	console.log("shpConvertGetResultsFunc: call shpConvertGetResultsFunc("+ uuidV1 + ")");
+}
+
 /*
  * Function: 	shpConvertGetConfigFunc()
  * Parameters: 	Value
  * Returns: 	Nothing
- * Description:	Action when shpConvertGetConfigFunc button is clicked
+ * Description:	Action when shpConvertGetConfig button is clicked
  */
 function shpConvertGetConfigFunc(value) {
 	console.log("shpConvertGetConfigFunc: call shpConvertGetConfig("+ uuidV1 + ")");

@@ -505,6 +505,11 @@ RangeError: Invalid string length
 * Add addStatus() callbacks, tidy messages
 * Colurs wrong in legend
 
+#### 25th to 29th July
+
+* geojson to wellknown text conversion; added framework for processing from intermediare point to end
+* Batch mode now complete; firefox and chrome are OK. IE has intermittent problems
+
 #### Current TODO list (August):
 
 * ST_Union and area calculations can be done in geoJSON using turf: as it is a geometry collection. 
