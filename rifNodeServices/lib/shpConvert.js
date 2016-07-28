@@ -1395,10 +1395,14 @@ This error in actually originating from the error handler function
 						if (response.file_list[ngeolevels[i].i].geojson) {
 							response.file_list[ngeolevels[i].i].geojson=undefined
 						}
+						if (i == (ngeolevels.length-1) && j == (response.file_list[ngeolevels[i].i].topojson.length -1)) {
+//							console.error("Removed any geoJSON or WKT from response if topoJSON present; save geojson");
+						}
 					}
 				}			
 			}
 			
+//			console.error("Edited intermediate response");
 			addStatus(__file, __line, response, "Cloned intermediate response", 200 /* HTTP OK */, serverLog, req, // Add status
 				function addStatusCloneCallback(err) { 	
 					if (err) {						
@@ -1419,7 +1423,7 @@ This error in actually originating from the error handler function
 					else { 				
 						msg+="\nshpConvertFieldProcessor().shapeFileQueue.drain() OK";
 						response.message = response.message + "\n" + msg;
-
+//						console.error("BATCH_INTERMEDIATE_END");
 						addStatus(__file, __line, response, "BATCH_INTERMEDIATE_END", 200 /* HTTP OK */, serverLog, req, // Add status
 							function addStatusCallback(err) { 	
 								if (err) {						
@@ -1461,8 +1465,6 @@ This error in actually originating from the error handler function
 												ofields: ofields
 											});
 																
-											nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
-
 											for (var i=0; i<ngeolevels.length; i++) { // Restore geojson
 												if (response.file_list[ngeolevels[i].i].topojson && 
 													geojsonFileList[ngeolevels[i].i] && 
@@ -1486,9 +1488,13 @@ This error in actually originating from the error handler function
 													serverLog.serverError2(__file, __line, "shapeFileQueueDrain", 
 														"nResponse.file_list[ngeolevels[i].i].topojson not defined ", req, undefined /* err */, response);
 												}
+												if (i == (ngeolevels.length-1) && j == (response.file_list[ngeolevels[i].i].topojson.length -1)) {
+													console.error("Restore geoJSON");
+												}
 											}		
 											
-											geojsonToCSV.geojsonToCSV(response, req); // Converty geoJSON to CSV
+											geojsonToCSV.geojsonToCSV(response, req, res); // Converty geoJSON to CSV
+
 										}
 									}); // End of finalProcessingCallback() 	
 								}							

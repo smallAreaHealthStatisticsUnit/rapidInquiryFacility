@@ -1110,7 +1110,7 @@ function displayResponse(responseText, status, formName, enableGetStatus) {
 			}			
 			else {
 				if (response.fields["batchMode"] == "true" && enableGetStatus) {
-					progressLabel.text("Server is processing response");
+					displayProgress("Server is processing response");
 					setTimeout(waitForServerResponse(
 						response.fields["uuidV1"], response.fields["diagnosticFileDir"], response.fields["statusFileName"], response.fields["responseFileName"] + ".2",
 						1000 /* Next timeout */, 1 /* Recursion count */, -1 /* Index */), 5000 /* 5 S timer */);
@@ -1343,8 +1343,10 @@ function getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName) {
 			diagnosticFileDir: diagnosticFileDir,
 			responseFileName: responseFileName			
 		}, function getShpConvertTopoJSON(data, status, xhr) {
-	
-			console.log("Got server response for getShpConvertTopoJSON(uuidV1): " + uuidV1);		
+
+			var end=new Date().getTime();
+			var elapsed=(Math.round((end - lstart)/100))/10; // in S	
+			console.log("BATCH_INTERMEDIATE_END +" + elapsed + " Got server response for getShpConvertTopoJSON(uuidV1): " + uuidV1);		
 			
 			displayResponse(data, status, "shpConvert" /* formName */, false /* enableGetStatus */);
 		}, // End of getShpConvertTopoJSON() 
@@ -1389,12 +1391,25 @@ function getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName) {
 		else {
 			errorPopup(msg);
 		}
-		progressLabel.text("Unable to fetch map");
+		displayProgress("Unable to fetch map");
 		console.error(msg);
 	});
 		
 } // End of getShpConvertTopoJSON()
-				
+	
+/*
+ * Function: 	displayProgress()
+ * Parameters:  Msg
+ * Returns: 	Nothing
+ * Description: Log and display progress message
+ */	
+function displayProgress(msg) {
+	var end=new Date().getTime();
+	var elapsed=(Math.round(end - start))/1000; // in S
+	console.log("+" + elapsed + " [PROGRESS]: " + msg);
+	progressLabel.text(msg);
+}	
+
 /*
  * Function: 	waitForServerResponse()
  * Parameters:  uuidV1, diagnosticFileDir, status file name, response file name, next timeout (mS), recursion count, index
@@ -1426,13 +1441,16 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 				var status=data.status[(data.status.length-1)];
 				if (status && status["statusText"]) {
 					if (status["statusText"] == "BATCH_END") { // Display the last status in the progress bar
-						progressLabel.text("All processing complete");
+					
+						var end=new Date().getTime();
+						var elapsed=(Math.round(end - start))/1000; // in S
+						displayProgress("All processing completed in " + elapsed + " S");
 					}					
 					else if (status["statusText"] == "BATCH_INTERMEDIATE_END") {
-						progressLabel.text("Intermediate processing complete, loading maps, making tiles");
+						displayProgress("Intermediate processing complete, loading maps, making tiles");
 					}
 					else {
-						progressLabel.text(status["statusText"]);
+						displayProgress(status["statusText"]);
 					}
 					
 					for (var i=index; i<data.status.length; i++) {
@@ -1448,7 +1466,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 								console.log("Enable shpConvertGetConfig button");
 								$( "#shpConvertGetConfig" ).button( "enable" ); // Enable shpConvertGetConfig button
 								getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName); // Load intermediate map
-								atEnd=true;
+//								atEnd=true;
 							}
 								
 						}
@@ -1471,7 +1489,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 				}
 				else {
 					console.log("Status update recusrion limit reached with no new status: " + nrecursionCount);
-					progressLabel.text("Processing failed, no success or failure detected, no status change in " + nrecursionCount + " seconds");
+					displayProgress("Processing failed, no success or failure detected, no status change in " + nrecursionCount + " seconds");
 				}
 			}
 		}, // End of getShpConvertStatus() 
@@ -1514,7 +1532,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 			errorPopup(msg);
 		}
 		
-		progressLabel.text("Proccessing failed");
+		displayProgress("Proccessing failed");
 		if (response && response.message) {
 			msg+=response.message;
 		}		
@@ -1612,6 +1630,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 	try {	
 		if (jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] == undefined) {
 			if (jsonAddLayerParams.isGeoJSON) { // Use the right function
+				displayProgress("Adding geoJSON map layer for " + jsonAddLayerParams.file_name);
 				console.log("+" + elapsed + " " + verb + " GeoJSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
 					"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
 					jsonAddLayerParams.file_name +
@@ -1621,6 +1640,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 					jsonAddLayerParams.style).addTo(map);
 			}
 			else {
+				displayProgress("Adding topoJSON map layer for " + jsonAddLayerParams.file_name);
 				console.log("+" + elapsed + " " + verb + " TopoJSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
 					"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
 					jsonAddLayerParams.file_name +
@@ -1848,7 +1868,7 @@ function errorHandler(error, ajaxOptions, thrownError) {
 	}		
 
 	if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
-		progressLabel.text("Upload failed");
+		displayProgress("Upload failed");
 		error=document.getElementById("error");
 		error.innerHTML=popupMsg;
 		var errorWidth=document.getElementById('tabbox').offsetWidth-300;
@@ -1880,7 +1900,7 @@ function uploadProgressHandler(event, position, total, percentComplete) {
 	if (document.getElementById("tabs")) { // JQuery-UI version
 		progressbar.progressbar("value", percentComplete);
 		if (percentComplete == 100 && position == total) {
-			progressLabel.text( "Upload complete; awaiting server response");
+			displayProgress( "Upload complete; awaiting server response");
 		}
 	}
 	else {

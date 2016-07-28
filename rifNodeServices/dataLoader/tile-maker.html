@@ -68,7 +68,8 @@ $(document).ready(function documentReady() {
 	
 					$('input').addClass("ui-corner-all");				// Nice round corners everywhere
 	  
-					$( "#diagnostics, #shpConvertGetConfig, #shpConvertSubmit" ).button();	// Diagnostics, shpConvertGetConfig, shpConvertSubmit buttons
+					$( "#diagnostics, #shpConvertGetConfig, #shpConvertGetResults, #shpConvertSubmit" ).button();	
+						// Diagnostics, shpConvertGetConfig, shpConvertGetResults, shpConvertSubmit buttons
 					$( "#geographyName, #geographyDesc" ).button()		// Geography name, desc buttons
 						  .css({
 								  'font' : 'inherit',
@@ -224,7 +225,10 @@ function geographyNameChange(value) {
 			  <input class="geographyEntry" id="geographyDesc" name="geographyDesc" size="73" type="text" required/></label>
 				  <div id="accordion">
 				  </div>
-			  <input id="shpConvertGetConfig" name="shpConvertGetConfig" type="button" value="Download configuration" onclick="shpConvertGetConfigFunc(this.value);" disabled />&nbsp;
+			  <input id="shpConvertGetConfig" name="shpConvertGetConfig" type="button" value="Download configuration" 
+			         onclick="shpConvertGetConfigFunc(this.value);" disabled />&nbsp;
+			  <input id="shpConvertGetResults" name="shpConvertGetResults" type="button" value="Download results" 
+			         onclick="shpConvertshpConvertGetResultsFunc(this.value);" disabled />&nbsp;
 			  <input id="shpConvertSubmit" name="shpConvertSubmit" type="submit" value="Upload File(s)" />&nbsp;
 			  </fieldset>	  
 			</form>		

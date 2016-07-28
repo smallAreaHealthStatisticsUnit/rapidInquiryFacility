@@ -1043,7 +1043,7 @@ exports.convert = function exportsConvert(req, res) {
 
 						if (ofields["batchMode"] === "true") {		 // Batch mode - return now	
 							response.message+="\nBatch mode: " + ofields["batchMode"] + "; returning just before file compression processing.";						
-							nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
+							nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields, undefined /* optional callback */);
 						}
 						else {	
 							response.message+="\nBatch mode: " + ofields["batchMode"] + "; continuing.";						
@@ -1161,7 +1161,7 @@ exports.convert = function exportsConvert(req, res) {
 									if (req.url == '/shpConvert') { // Processed by shpConvertCheckFiles() - uses async
 									}
 									else if (req.url == '/geo2TopoJSON') {	
-										nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields);
+										nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields, undefined /* optional callback */);
 									}										
 								}
 						}); // End of async file processing loop					

@@ -110,7 +110,8 @@ createTemporaryDirectory = function createTemporaryDirectory(dirArray, response,
 
 /*
  * Function: 	responseProcessing()
- * Parameters:	Express HTTP request object, HTTP response object, internal response object, serverLog, httpErrorResponse object, ofields object
+ * Parameters:	Express HTTP request object, HTTP response object, internal response object, serverLog, httpErrorResponse object, 
+ *				ofields object, optional callback
  * Description: Send express HTTP response
  *
  * geo2TopoJSON response object - no errors:
@@ -158,7 +159,7 @@ createTemporaryDirectory = function createTemporaryDirectory(dirArray, response,
  * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 	 
  *
  */
-responseProcessing = function responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields) {
+responseProcessing = function responseProcessing(req, res, response, serverLog, httpErrorResponse, ofields, callback) {
 	var msg="";
 	const fs = require('fs');
 		
@@ -169,6 +170,9 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 		res: res,
 		response: response,
 		ofields: ofields
+	},
+	{
+		callback: callback
 	});
 	
 	if (response.diagnosticsTimer) { // Disable the diagnostic file write timer
@@ -236,7 +240,9 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 									serverLog.serverLog2(__file, __line, "writeResponseFileCallback", 
 										"Response sent; size: " + output.length + " bytes", req);					
 								}
-												
+								if (callback) {
+									callback();
+								}				
 							}
 							catch(e) {
 								serverLog.serverLog2(__file, __line, "writeResponseFileCallback", "ERROR! in sending response to client", req, e);
@@ -259,7 +265,7 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 					"Batch end diagnostics >>>\n" +
 					msg + "\n<<< End of diagnostics", req);
 
-				writeResponseFile(serverLog, response, req, output,  ".1", undefined /* No callback */); // BEGIN BATCH version		
+				writeResponseFile(serverLog, response, req, output,  ".1", undefined /* no callback */); // BEGIN BATCH version		
 	//
 			}
 			else { // Error if response has already been processed
@@ -657,7 +663,9 @@ getStatus = function getStatus(response, req, res, serverLog, httpErrorResponse)
 										serverLog.serverLog2(__file, __line, "getStatus", 
 											"Diagnostics >>>\n" +
 											response.message + "\n<<< End of diagnostics", req);
-										serverLog.serverError2(__file, __line, "getStatus", "Unable to return OK response to user - httpErrorResponse() already processed", req);
+										serverLog.serverError2(__file, __line, "getStatus", 
+											"Unable to return OK response to user - httpErrorResponse() already processed", 
+											req, undefined /* err */, response);
 									}	
 								}
 								else {
@@ -806,7 +814,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 								}
 								catch (e) {
 									serverLog.serverError2(__file, __line, "addStatusWriteDiagnosticFileRename", 
-										"Recursive error in addStatusWriteDiagnosticFileRename() callback", req, e);
+										"Recursive error in addStatusWriteDiagnosticFileRename() callback; addStatus: " + msg, req, e, response);
 								}
 							}
 //							else {
