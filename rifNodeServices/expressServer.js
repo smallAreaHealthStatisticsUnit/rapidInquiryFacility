@@ -135,6 +135,8 @@ app.use(express.static('dataLoader'));
  * geo2TopoJSON: Convert geoJSON to TopoJSON;
  * getShpConvertStatus: Get shapefile conversion status;
  * getShpConvertTopoJSON: Get shapefile converts into topoJSON optimised for zoomnlevels 6-11
+ * shpConvertGetConfig.xml: Get shapefile conversion XML configuration
+ * shpConvertGetResults.zip: Get shapefile conversion results zip file
  *
  * Not yet imnplement:
  *
@@ -150,7 +152,9 @@ app.use(express.static('dataLoader'));
 var services=["/:shpConvert",
 			  "/:geo2TopoJSON",
 			  "/:getShpConvertStatus" ,
-			  "/:getShpConvertTopoJSON" /*,
+			  "/:getShpConvertTopoJSON" ,
+			  "/:shpConvertGetConfig.xml" ,
+			  "/:shpConvertGetResults.zip" /*,
 			  "/simplifyGeoJSON",
 			  "/geoJSON2WKT",
 			  "/createHierarchy",

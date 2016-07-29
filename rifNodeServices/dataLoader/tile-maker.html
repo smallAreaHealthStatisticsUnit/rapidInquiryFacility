@@ -68,7 +68,11 @@ $(document).ready(function documentReady() {
 	
 					$('input').addClass("ui-corner-all");				// Nice round corners everywhere
 	  
-					$( "#diagnostics, #shpConvertGetConfig, #shpConvertGetResults, #shpConvertSubmit" ).button();	
+					$( "#diagnostics, #shpConvertSubmit" ).button();
+					$( "#shpConvertGetResults, #shpConvertGetConfig" ).button();	
+					$( "#shpConvertGetResults, #shpConvertGetConfig" ).button( "option", "disabled", true );	
+					
+					
 						// Diagnostics, shpConvertGetConfig, shpConvertGetResults, shpConvertSubmit buttons
 					$( "#geographyName, #geographyDesc" ).button()		// Geography name, desc buttons
 						  .css({
@@ -225,10 +229,15 @@ function geographyNameChange(value) {
 			  <input class="geographyEntry" id="geographyDesc" name="geographyDesc" size="73" type="text" required/></label>
 				  <div id="accordion">
 				  </div>
-			  <input id="shpConvertGetConfig" name="shpConvertGetConfig" type="button" value="Download configuration" 
-			         onclick="shpConvertGetConfigFunc(this.value);" disabled />&nbsp;
-			  <input id="shpConvertGetResults" name="shpConvertGetResults" type="button" value="Download processed tiles" 
-			         onclick="shpConvertGetResultsFunc(this.value);" disabled />&nbsp;
+			  <label title="Download configuration XML file" for="shpConvertGetConfig"></label>    
+			  <a id="shpConvertGetConfig" href="shpConvertGetConfig.xml?uuidV1=unknown" download
+			         onclick="shpConvertGetConfigFunc(this);">Download configuration</a>&nbsp;
+<!--			  <input id="shpConvertGetConfig" name="shpConvertGetConfig" type="button" value="Download configuration" 
+			         onclick="shpConvertGetConfigFunc(this.value);" disabled />&nbsp; -->
+
+			  <label title="Download process tiles and tabular setup data" for="shpConvertGetResults"></label> 					 
+			  <a id="shpConvertGetResults" href="shpConvertGetResults.zip?uuidV1=unknown" download
+			         onclick="shpConvertGetResultsFunc(this);">Download processed tiles</a>&nbsp; 
 			  <input id="shpConvertSubmit" name="shpConvertSubmit" type="submit" value="Upload file(s)" />&nbsp;
 			  </fieldset>	  
 			</form>		

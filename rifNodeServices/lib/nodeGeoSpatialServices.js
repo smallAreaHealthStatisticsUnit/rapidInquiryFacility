@@ -213,6 +213,8 @@ exports.convert = function exportsConvert(req, res) {
  * geo2TopoJSON: Convert geoJSON to TopoJSON;
  * getShpConvertStatus: Get shapefile conversion status;
  * getShpConvertTopoJSON: Get shapefile converts into topoJSON optimised for zoomnlevels 6-11
+ * shpConvertGetConfig.xml: Get shapefile conversion XML configuration
+ * shpConvertGetResults.zip: Get shapefile conversion results zip file
  *
  * Not yet imnplement:
  *
@@ -228,7 +230,9 @@ exports.convert = function exportsConvert(req, res) {
 		if (!((req.params["shpConvert"] == 'shpConvert') ||
 			  (req.params["shpConvert"] == 'geo2TopoJSON') ||
 			  (req.params["shpConvert"] == 'getShpConvertStatus') ||
-			  (req.params["shpConvert"] == 'getShpConvertTopoJSON') /* ||
+			  (req.params["shpConvert"] == 'getShpConvertTopoJSON') ||
+			  (req.params["shpConvert"] == 'shpConvertGetConfig.xml') ||
+			  (req.params["shpConvert"] == 'shpConvertGetResults.zip') /* ||
 			  (req.url == '/simplifyGeoJSON') ||
 			  (req.url == '/geoJSONtoWKT') ||
 			  (req.url == '/createHierarchy') ||
@@ -1233,6 +1237,30 @@ exports.convert = function exportsConvert(req, res) {
 	
 			nodeGeoSpatialServicesCommon.getShpConvertTopoJSON(response, req, res, serverLog, httpErrorResponse);				
 		} // End of get method: getShpConvertTopoJSON		
+		else if (req.method == 'GET' && (req.params["shpConvert"] == 'shpConvertGetConfig.xml')) { // Get method: shpConvertGetConfig.xml		
+
+			scopeChecker(__file, __line, {
+				serverLog: serverLog,
+				httpErrorResponse: httpErrorResponse,
+				response: response,
+				req: req,
+				res: res
+			});
+	
+			nodeGeoSpatialServicesCommon.shpConvertGetConfig(response, req, res, serverLog, httpErrorResponse);				
+		} // End of get method: shpConvertGetConfig.xml		
+		else if (req.method == 'GET' && (req.params["shpConvert"] == 'shpConvertGetResults.zip')) { // Get method: shpConvertGetResults.zip		
+
+			scopeChecker(__file, __line, {
+				serverLog: serverLog,
+				httpErrorResponse: httpErrorResponse,
+				response: response,
+				req: req,
+				res: res
+			});
+	
+			nodeGeoSpatialServicesCommon.shpConvertGetResults(response, req, res, serverLog, httpErrorResponse);				
+		} // End of get method: shpConvertGetResults.zip		
 		else {								// All other methods are errors
 			var msg="ERROR! "+ req.method + " Requests not allowed; please see: " + 
 				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";

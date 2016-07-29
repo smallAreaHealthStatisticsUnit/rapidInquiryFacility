@@ -1457,13 +1457,20 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 								
 							if (data.status[i].statusText == "BATCH_END") {
 								console.log("Enable shpConvertGetResults button");
+								var shpConvertGetResults=document.getElementById("shpConvertGetResults");
+								shpConvertGetResults.href= "shpConvertGetResults.zip?uuidV1="+ uuidV1;
+								console.log("change shpConvertGetResults href to: " + shpConvertGetResults.href);
 								$( "#shpConvertGetResults" ).button( "enable" ); // Enable shpConvertGetResults button
 								// Load tiles
 								atEnd=true;
 							}					
 							else if (data.status[i].statusText == "BATCH_INTERMEDIATE_END") {
 								console.log("Enable shpConvertGetConfig button");
+								var shpConvertGetConfig=document.getElementById("shpConvertGetConfig");
+								shpConvertGetConfig.href= "shpConvertGetConfig.xml?uuidV1="+ uuidV1;
+								console.log("change shpConvertGetConfig href to: " + shpConvertGetConfig.href);
 								$( "#shpConvertGetConfig" ).button( "enable" ); // Enable shpConvertGetConfig button
+								
 								getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName); // Load intermediate map
 //								atEnd=true;
 							}
@@ -2104,16 +2111,32 @@ function createTable(response, layerColours, layerAddOrder) {
  * Returns: 	Nothing
  * Description:	Action when shpConvertGetResults button is clicked
  */
-function shpConvertGetConfigFunc(value) {
-	console.log("shpConvertGetResultsFunc: call shpConvertGetResultsFunc("+ uuidV1 + ")");
+function shpConvertGetResultsFunc(event) {
+	event = event || window.event;
+	
+	if (event) {
+//		event.preventDefault();
+		console.log("shpConvertGetResultsFunc: call shpConvertGetResults("+ uuidV1 + ")");
+	}
+	else {
+		console.error("shpConvertGetResultsFunc(): no event defined");
+	}	
 }
 
 /*
  * Function: 	shpConvertGetConfigFunc()
- * Parameters: 	Value
+ * Parameters: 	Event
  * Returns: 	Nothing
  * Description:	Action when shpConvertGetConfig button is clicked
  */
-function shpConvertGetConfigFunc(value) {
-	console.log("shpConvertGetConfigFunc: call shpConvertGetConfig("+ uuidV1 + ")");
+function shpConvertGetConfigFunc(event) {
+	event = event || window.event;
+
+	if (event) {
+//		event.preventDefault();
+		console.log("shpConvertGetConfigFunc: call shpConvertGetConfig("+ uuidV1 + ")");
+	}
+	else {
+		console.error("shpConvertGetConfigFunc(): no event defined");
+	}
 }

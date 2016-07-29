@@ -840,7 +840,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 				"Recursive error in addStatus() callback", req, e);
 		}
 	}
-} // End of addStatus
+} // End of addStatus()
 
 /*
  * Function: 	fileSize()
@@ -865,6 +865,214 @@ function fileSize(file_size) {
 	return niceFileSize;
 }
 
+/*
+ * Function:	shpConvertGetConfig()
+ * Parameters:	response
+ * Returns:		Status array as JSON
+ * Description: Get status from file
+ */	
+shpConvertGetConfig = function shpConvertGetConfig(response, req, res, serverLog, httpErrorResponse) {
+    const os = require('os'),
+		  fs = require('fs');
+		  
+	scopeChecker(__file, __line, {
+		serverLog: serverLog,
+		httpErrorResponse: httpErrorResponse,
+		response: response,
+		req: req,
+		res: res
+	});
+	
+	response.message="In: shpConvertGetConfig()";	
+	var msg="shpConvertGetConfig(): ";	
+	response.fields=req.query;
+	if (response.fields && response.fields["uuidV1"]) { // Can get XML config
+		if (response.fields["diagnosticFileDir"] == undefined) {
+			response.fields["diagnosticFileDir"]=os.tmpdir() + "/shpConvert/" + response.fields["uuidV1"];
+		}
+		if (response.fields["xmlFileName"] == undefined) {
+			response.fields["xmlFileName"]="geoDataLoader.xml";
+		}
+		var fileName=response.fields["diagnosticFileDir"] + "/" + response.fields["xmlFileName"];
+		fs.stat(fileName, 
+			/*
+			 * Function:	shpConvertGetConfigFExists()
+			 * Parameters:	Error object, stat object
+			 * Returns:		Nothing
+			 * Description: stat callback
+			 */		
+			function shpConvertGetConfigFExists(err, stats) {
+			if (err) {
+				msg+="\nXML file: " + fileName + " does not exist";
+				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertGetConfigFExists", 
+					serverLog, 500, req, res, msg, err /* Error */, response);		
+				return;	
+			}
+			else {
+				fs.readFile(fileName, 
+				/*
+				 * Function:	shpConvertGetConfigFReadFile()
+				 * Parameters:	Error object, read data
+				 * Returns:		Nothing
+				 * Description: readFile callback
+				 */
+				function shpConvertGetConfigFReadFile(err, xmlText) {
+					if (err) {
+						msg+="\nUnable to read XML file: " + fileName;
+						httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertGetConfigFReadFile", 
+							serverLog, 500, req, res, msg, err /* Error */, response);		
+						return;	
+					}
+					else {	
+						msg+="\nRead XML file: " + fileName + "; XML size: " + xmlText.length;
+						if (xmlText && xmlText.length > 0) {
+							
+							if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
+						
+					// Need to test res was not finished by an expection to avoid "write after end" errors			
+								try {	
+									res.setHeader('Content-Type', 'application/xml');
+									res.write(xmlText);                  // Write output  
+									res.end();		
+								}
+								catch(e) {
+									serverLog.serverError(__file, __line, "shpConvertGetConfigFReadFile", 
+										"Error in sending response to client", req, e, response);
+								}
+							}
+							else {
+								serverLog.serverLog2(__file, __line, "shpConvertGetConfigFReadFile", 
+									"Diagnostics >>>\n" +
+									response.message + "\n<<< End of diagnostics", req);
+								serverLog.serverError2(__file, __line, "shpConvertGetConfigFReadFile", 
+									"Unable to return OK response to user - httpErrorResponse() already processed", 
+									req, undefined /* err */, response);
+							}	
+						}
+						else {
+							console.error(response.message)
+							msg+="\nUnable to get XML: Zero length XML text";
+							httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertGetConfigFReadFile", 
+								serverLog, 500, req, res, msg, new Error("Unable to get XML: Zero length XML text") /* Error */, response);		
+							return;	
+						}	
+					}
+				});
+			}
+		});
+	}
+	else {
+		msg="Cannot get state; insufficent fields: " + JSON.stringify(req.query, null, 4);	
+		httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertGetConfigFReadFile", 
+			serverLog, 500, req, res, msg, new Error(msg) /* Error */, response);		
+		return;	
+	}
+} // End of shpConvertGetConfig
+
+/*
+ * Function:	shpConvertGetResults()
+ * Parameters:	response
+ * Returns:		Status array as JSON
+ * Description: Get status from file
+ */	
+shpConvertGetResults = function shpConvertGetResults(response, req, res, serverLog, httpErrorResponse) {
+    const os = require('os'),
+		  fs = require('fs');
+		  
+	scopeChecker(__file, __line, {
+		serverLog: serverLog,
+		httpErrorResponse: httpErrorResponse,
+		response: response,
+		req: req,
+		res: res
+	});
+	
+	response.message="In: shpConvertGetResults()";	
+	var msg="shpConvertGetResults(): ";	
+	response.fields=req.query;
+	if (response.fields && response.fields["uuidV1"]) { // Can get results ZIP file
+		if (response.fields["diagnosticFileDir"] == undefined) {
+			response.fields["diagnosticFileDir"]=os.tmpdir() + "/shpConvert/" + response.fields["uuidV1"];
+		}
+		if (response.fields["xmlFileName"] == undefined) {
+			response.fields["xmlFileName"]="geoDataLoader.zip";
+		}
+		var fileName=response.fields["diagnosticFileDir"] + "/" + response.fields["xmlFileName"];
+		fs.stat(fileName, 
+			/*
+			 * Function:	shpConvertGetResultsFExists()
+			 * Parameters:	Error object, stat object
+			 * Returns:		Nothing
+			 * Description: stat callback
+			 */		
+			function shpConvertGetResultsFExists(err, stats) {
+			if (err) {
+				msg+="\nresults ZIP file: " + fileName + " does not exist";
+				httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertGetResultsFExists", 
+					serverLog, 500, req, res, msg, err /* Error */, response);		
+				return;	
+			}
+			else {
+				fs.readFile(fileName, 
+				/*
+				 * Function:	shpConvertGetResultsFReadFile()
+				 * Parameters:	Error object, read data
+				 * Returns:		Nothing
+				 * Description: readFile callback
+				 */
+				function shpConvertGetResultsFReadFile(err, xmlText) {
+					if (err) {
+						msg+="\nUnable to read results ZIP file: " + fileName;
+						httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertGetResultsFReadFile", 
+							serverLog, 500, req, res, msg, err /* Error */, response);		
+						return;	
+					}
+					else {	
+						msg+="\nRead results ZIP file: " + fileName + "; results ZIP size: " + xmlText.length;
+						if (xmlText && xmlText.length > 0) {
+							
+							if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
+						
+					// Need to test res was not finished by an expection to avoid "write after end" errors			
+								try {	
+									res.setHeader('Content-Type', 'application/xml');
+									res.write(xmlText);                  // Write output  
+									res.end();		
+								}
+								catch(e) {
+									serverLog.serverError(__file, __line, "shpConvertGetResultsFReadFile", 
+										"Error in sending response to client", req, e, response);
+								}
+							}
+							else {
+								serverLog.serverLog2(__file, __line, "shpConvertGetResultsFReadFile", 
+									"Diagnostics >>>\n" +
+									response.message + "\n<<< End of diagnostics", req);
+								serverLog.serverError2(__file, __line, "shpConvertGetResultsFReadFile", 
+									"Unable to return OK response to user - httpErrorResponse() already processed", 
+									req, undefined /* err */, response);
+							}	
+						}
+						else {
+							console.error(response.message)
+							msg+="\nUnable to get results ZIP: Zero length results ZIP text";
+							httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertGetResultsFReadFile", 
+								serverLog, 500, req, res, msg, new Error("Unable to get results ZIP: Zero length XML text") /* Error */, response);		
+							return;	
+						}	
+					}
+				});
+			}
+		});
+	}
+	else {
+		msg="Cannot get state; insufficent fields: " + JSON.stringify(req.query, null, 4);	
+		httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertGetResultsFReadFile", 
+			serverLog, 500, req, res, msg, new Error(msg) /* Error */, response);		
+		return;	
+	}
+} // End of shpConvertGetResults
+
 module.exports.setupDiagnostics = setupDiagnostics;
 module.exports.createTemporaryDirectory = createTemporaryDirectory;
 module.exports.recreateDiagnosticsLog = recreateDiagnosticsLog;
@@ -874,5 +1082,7 @@ module.exports.getStatus = getStatus;
 module.exports.getShpConvertTopoJSON = getShpConvertTopoJSON;
 module.exports.writeResponseFile = writeResponseFile;
 module.exports.fileSize = fileSize;
+module.exports.shpConvertGetConfig = shpConvertGetConfig;
+module.exports.shpConvertGetResults = shpConvertGetResults;
 
 // Eof
