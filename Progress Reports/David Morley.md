@@ -23,3 +23,9 @@ Principal Work Area: JavaScript User interface development
 
 
 ##July
+
+- Now using local version of RIF database
+- adding calls to the middleware
+- Study submission JSON object almost complete
+- Choropleth mapping for a test dataset in dataviewer
+- Integrated taxonomy service into parameters modal
