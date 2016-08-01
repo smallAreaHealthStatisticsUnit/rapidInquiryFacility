@@ -152,6 +152,11 @@ final class SQLRIFSubmissionManager
 			configureQueryFormatterForDB(deleteComparisonAreasQueryFormatter);
 			deleteComparisonAreasQueryFormatter.setFromTable("t_rif40_comparison_areas");
 			deleteComparisonAreasQueryFormatter.addWhereParameter("username");
+
+			logSQLQuery(
+				"deleteComparisonAreasQueryFormatter", 
+				deleteComparisonAreasQueryFormatter,
+				userID);				
 			
 			deleteComparisonAreasStatement 			
 				= createPreparedStatement(
@@ -165,6 +170,12 @@ final class SQLRIFSubmissionManager
 			configureQueryFormatterForDB(deleteStudyAreasQueryFormatter);
 			deleteStudyAreasQueryFormatter.setFromTable("t_rif40_study_areas");
 			deleteStudyAreasQueryFormatter.addWhereParameter("username");
+
+			logSQLQuery(
+				"deleteStudyAreasQueryFormatter", 
+				deleteComparisonAreasQueryFormatter,
+				userID);				
+						
 			deleteStudyAreasStatement 
 				= createPreparedStatement(
 					connection,
@@ -177,6 +188,13 @@ final class SQLRIFSubmissionManager
 			configureQueryFormatterForDB(deleteInvestigationsQueryFormatter);
 			deleteInvestigationsQueryFormatter.setFromTable("t_rif40_investigations");
 			deleteInvestigationsQueryFormatter.addWhereParameter("username");
+
+			logSQLQuery(
+				"deleteInvestigationsQueryFormatter", 
+				deleteInvestigationsQueryFormatter,
+				userID);				
+			
+			
 			deleteInvestigationsStatement
 				= createPreparedStatement(
 					connection,
@@ -189,6 +207,11 @@ final class SQLRIFSubmissionManager
 			configureQueryFormatterForDB(deleteStudiesQueryFormatter);
 			deleteStudiesQueryFormatter.setFromTable("t_rif40_studies");
 			deleteStudiesQueryFormatter.addWhereParameter("username");
+			logSQLQuery(
+					"deleteStudiesQueryFormatter", 
+					deleteStudiesQueryFormatter,
+					userID);				
+
 			deleteStudiesStatement
 				= createPreparedStatement(
 					connection,
@@ -413,6 +436,13 @@ final class SQLRIFSubmissionManager
 			queryFormatter.setSchema("rif40_sm_pkg");
 			queryFormatter.setFunctionName("rif40_run_study");
 			queryFormatter.setNumberOfFunctionParameters(2);
+
+			logSQLQuery(
+				"runStudy", 
+				queryFormatter,
+				studyID,
+				"0");
+
 			
 			statement
 				= createPreparedStatement(
@@ -477,6 +507,11 @@ final class SQLRIFSubmissionManager
 			queryFormatter.setSchema("rif40_sm_pkg");
 			queryFormatter.setFunctionName("rif40_delete_study");
 			queryFormatter.setNumberOfFunctionParameters(1);
+
+			logSQLQuery(
+				"deleteStudy", 
+				queryFormatter,
+				studyID);
 			
 			statement
 				= createPreparedStatement(
@@ -540,6 +575,11 @@ final class SQLRIFSubmissionManager
 			queryFormatter.addQueryLine(0, "SELECT");
 			queryFormatter.addQueryLine(1, "currval('rif40_study_id_seq'::regclass);");
 
+
+			logSQLQuery(
+				"getCurrentStudyID", 
+				queryFormatter);
+						
 			statement
 				= createPreparedStatement(
 					connection,
@@ -591,6 +631,10 @@ final class SQLRIFSubmissionManager
 			studyQueryFormatter.addInsertField("suppression_value");
 			studyQueryFormatter.addInsertField("extract_permitted");
 			studyQueryFormatter.addInsertField("transfer_permitted");
+
+			logSQLQuery(
+				"addGeneralInformationToStudy", 
+				studyQueryFormatter);
 			
 			addStudyStatement
 				= createPreparedStatement(
@@ -731,9 +775,7 @@ final class SQLRIFSubmissionManager
 
 			SQLInsertQueryFormatter queryFormatter
 				= new SQLInsertQueryFormatter();
-			queryFormatter.setIntoTable("rif40_investigations");
-		
-				
+			queryFormatter.setIntoTable("rif40_investigations");		
 			queryFormatter.addInsertField("inv_name");
 			queryFormatter.addInsertField("inv_description");
 			queryFormatter.addInsertField("genders");
@@ -982,11 +1024,7 @@ final class SQLRIFSubmissionManager
 			Geography geography = diseaseMappingStudy.getGeography();
 			DiseaseMappingStudyArea diseaseMappingStudyArea
 				= diseaseMappingStudy.getDiseaseMappingStudyArea();
-			
-
-			
-			
-			
+					
 			ArrayList<MapArea> allMapAreas
 				= mapDataManager.getAllRelevantMapAreas(
 					connection,
@@ -998,7 +1036,12 @@ final class SQLRIFSubmissionManager
 			queryFormatter.setIntoTable("rif40_study_areas");
 			queryFormatter.addInsertField("area_id");
 			queryFormatter.addInsertField("band_id");
-				
+		
+			logSQLQuery(
+				"addStudyAreaToStudy", 
+				queryFormatter);
+
+			
 			statement
 				= createPreparedStatement(
 					connection,
@@ -1228,8 +1271,6 @@ final class SQLRIFSubmissionManager
 					getOutcomeGroupNameQueryFormatter,
 					geography.getName(),
 					ndPair.getNumeratorTableName());
-				
-			
 			
 			getOutcomeGroupNameStatement
 				= createPreparedStatement(
@@ -1413,6 +1454,7 @@ final class SQLRIFSubmissionManager
 			user,
 			studyID);
 
+		
 		DiseaseMappingStudy result
 			= DiseaseMappingStudy.newInstance();
 		try {
@@ -1469,7 +1511,12 @@ final class SQLRIFSubmissionManager
 			queryFormatter.addSelectField("study_geolevel_name");
 			queryFormatter.addSelectField("denom_tab");
 			queryFormatter.addWhereParameter("study_id");
-
+			
+			logSQLQuery(
+				"retrieveGeneralInformationForStudy", 
+				queryFormatter,
+				diseaseMappingStudy.getIdentifier());		
+			
 			statement
 				= createPreparedStatement(
 					connection,
@@ -1523,7 +1570,12 @@ final class SQLRIFSubmissionManager
 			queryFormatter.addSelectField("area_id");
 			queryFormatter.addSelectField("band_id");
 			queryFormatter.addWhereParameter("study_id");
-						
+			
+			logSQLQuery(
+				"retrieveStudyAreaForStudy", 
+				queryFormatter,
+				diseaseMappingStudy.getIdentifier());	
+			
 			statement 
 				= createPreparedStatement(
 					connection,
@@ -1567,6 +1619,12 @@ final class SQLRIFSubmissionManager
 			queryFormatter.addFromTable("rif40_comparison_areas");
 			queryFormatter.addSelectField("area_id");
 			queryFormatter.addWhereParameter("study_id");
+			
+			logSQLQuery(
+				"retrieveComparisonAreaForStudy", 
+				queryFormatter,
+				diseaseMappingStudy.getIdentifier());	
+
 			
 			statement 
 				= createPreparedStatement(
@@ -1621,6 +1679,11 @@ final class SQLRIFSubmissionManager
 		
 			queryFormatter.addFromTable("rif40_investigations");
 			queryFormatter.addWhereParameter("study_id");
+			
+			logSQLQuery(
+					"retrieveInvestigationsForStudy", 
+					queryFormatter,
+					diseaseMappingStudy.getIdentifier());
 			
 			statement 
 				= createPreparedStatement(
@@ -1734,6 +1797,12 @@ final class SQLRIFSubmissionManager
 			queryFormatter.addWhereParameter("age_group_id");
 			queryFormatter.addWhereParameter("\"offset\"");
 			
+			logSQLQuery(
+					"getAgeGroupFromIdentifier", 
+					queryFormatter,
+					"1",
+					String.valueOf(ageGroupIdentifier));
+			
 			statement 
 				= createPreparedStatement(
 					connection,
@@ -1776,6 +1845,11 @@ final class SQLRIFSubmissionManager
 			queryFormatter.addSelectField("denominator_description");		
 			queryFormatter.addFromTable("rif40_num_denom");
 			queryFormatter.addWhereParameter("numerator_table");		
+
+			logSQLQuery(
+					"getNDPairForNumeratorTableName", 
+					queryFormatter,
+					String.valueOf(numeratorTableName));			
 			
 			statement 
 				= createPreparedStatement(
@@ -1803,6 +1877,7 @@ final class SQLRIFSubmissionManager
 		final User user) 
 		throws RIFServiceException {
 		
+		System.out.println("SQLRIFSubmissionManager getStudySummariesForUser 1");
 		ArrayList<StudySummary> results = new ArrayList<StudySummary>();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -1814,6 +1889,12 @@ final class SQLRIFSubmissionManager
 			queryFormatter.addSelectField("study_name");
 			queryFormatter.addSelectField("description");
 			queryFormatter.addWhereParameter("username");
+
+			logSQLQuery(
+					"getNDPairForNumeratorTableName", 
+					queryFormatter,
+					user.getUserID());			
+
 			
 			statement 
 				= createPreparedStatement(
@@ -1834,6 +1915,7 @@ final class SQLRIFSubmissionManager
 						studyDescription);
 				results.add(studySummary);
 			}
+
 			
 			connection.commit();
 			return results;			
@@ -1915,6 +1997,10 @@ final class SQLRIFSubmissionManager
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("study_id");
 			queryFormatter.setFromTable("rif40_studies");		
+			logSQLQuery(
+				"checkNonExistentStudyID", 
+				queryFormatter, 
+				studyID);
 			
 			statement 
 				= createPreparedStatement(
@@ -1991,7 +2077,12 @@ final class SQLRIFSubmissionManager
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("project");
 			queryFormatter.setFromTable("rif40_projects");
-		
+
+			logSQLQuery(
+					"checkProjectExists", 
+					queryFormatter,
+					project.getName());			
+			
 			//KLG: TODO - change table name
 				
 			checkProjectExistsStatement
