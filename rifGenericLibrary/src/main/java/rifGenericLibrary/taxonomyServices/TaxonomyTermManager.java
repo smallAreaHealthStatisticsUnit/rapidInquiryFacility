@@ -205,17 +205,17 @@ public class TaxonomyTermManager {
 				
 		ArrayList<TaxonomyTerm> results = new ArrayList<TaxonomyTerm>();
 		for (TaxonomyTerm term : allTerms) {
-			Matcher patternCodeMatcher
-				= searchPattern.matcher(term.getLabel());
-			if (patternCodeMatcher.matches()) {
+			Matcher descriptionMatcher
+				= searchPattern.matcher(term.getDescription());			
+			if (descriptionMatcher.matches()) {
 				results.add(term);
 			}
-			else {			
-				Matcher patternDescriptionMatcher
-					= searchPattern.matcher(term.getDescription());
-				if (patternDescriptionMatcher.matches()) {
+			else {
+				Matcher labelMatcher
+					= searchPattern.matcher(term.getLabel());
+				if (labelMatcher.matches()) {
 					results.add(term);
-				}
+				}				
 			}
 		}
 		
@@ -237,14 +237,16 @@ public class TaxonomyTermManager {
 		if (parentTerm == null) {
 			RIFServiceExceptionFactory rifServiceExceptionFactory
 				= new RIFServiceExceptionFactory();
-			rifServiceExceptionFactory.createNonExistentTaxonomyTerm(
+			throw rifServiceExceptionFactory.createNonExistentTaxonomyTerm(
 				taxonomyServiceID, 
 				parentTermIdentifier);
 		}
 		return parentTerm.getChildTerms();
 	}
 	
-	public TaxonomyTerm getParentTerm(final String childTermIdentifier) {
+	public TaxonomyTerm getParentTerm(final String childTermIdentifier) 
+		throws RIFServiceException {
+		
 		if (childTermIdentifier == null) {
 			return null;
 		}
@@ -254,7 +256,7 @@ public class TaxonomyTermManager {
 		if (childTerm == null) {
 			RIFServiceExceptionFactory rifServiceExceptionFactory
 				= new RIFServiceExceptionFactory();
-			rifServiceExceptionFactory.createNonExistentTaxonomyTerm(
+			throw rifServiceExceptionFactory.createNonExistentTaxonomyTerm(
 				taxonomyServiceID, 
 				childTermIdentifier);
 		}
