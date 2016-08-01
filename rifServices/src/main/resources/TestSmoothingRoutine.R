@@ -1,42 +1,41 @@
 
-
-##Validate the command line arguments
-
-
-##if (require(RODBC)==FALSE) {
-##	install(RODBC, true)
-##}
-
 library(RODBC)
 
-##if (require(sqldf)==FALSE) {
-##	install(sqldf, true)
-##}
-
-
+##====================================================================
+# SCRIPT VARIABLES
+##====================================================================
+#Variables that hold database connectivity information.  For now, we
+#will rely on named ODBC sources but in future the script should be 
+#altered to use host:port/databaseName
 user <- ""
 dbName <- ""
 dbHost <- ""
 dbPort <- ""
-studyID <- "7"
 dbConnectionString <- ""
+
+#The identifier of the study whose extract table fields need to be smoothed.
+studyID <- ""
+
+#We expect models to have one of the three values: 'BYM', 'CAR' or 'HET'
 models <- ""
 
-mapTableName <- ""
+#The name of the extract table that is created by the middleware for a given
+#study.  It is of the format rif_studies.s[study_id]_extract
 extractTableName <- ""
-smoothingExtractTableName <- ""
+
+#The name of the skeleton table created by the RIF middleware to hold smoothed results
+#for a given study.  Initially the values for smoothed columns will be empty.  It is 
+#of the format rif_studies.s[study_id]_map 
+mapTableName <- ""
+
+#The name of the temporary table that this script uses to hold the data frame
+#containing smoothed results.  It should have a 1:1 correspondence between
+#its fields and fields that appear in the map table skeleton.  
+temporarySmoothedResultsTableName <- ""
 
 
-linkingColumns <- list()
-originalExtractColumns <- list()
-smoothedColumns <- list()
 
-useAdjustedSmoothing = FALSE
-includeHETColumns = FALSE
-includeBYMColumns = FALSE
-includeCARColumns = FALSE
-
-
+ 
 
 ##====================================================================
 ## FUNCTION: processCommandLineArguments
@@ -82,37 +81,7 @@ processCommandLineArguments <- function() {
 				studyID <<- parametersDataFrame[i, 2]
 
 			} else if (grepl('models', parametersDataFrame[i, 1]) == TRUE){
-				models <<- parametersDataFrame[i, 2]
-				
-				if (models=='BYM') {
-					includeBYMColumns = TRUE
-					includeCARColumns = FALSE
-					includeHETColumns = FALSE				
-				} else if (models == 'CAR') {
-					includeBYMColumns = FALSE
-					includeCARColumns = TRUE
-					includeHETColumns = FALSE				
-				} else if (models == 'HET') {
-					includeBYMColumns = FALSE
-					includeCARColumns = FALSE
-					includeHETColumns = TRUE				
-				} else if (models == 'BYMCAR') {
-					includeBYMColumns = TRUE
-					includeCARColumns = TRUE
-					includeHETColumns = FALSE				
-				} else if (models == 'BYMHET') {
-					includeBYMColumns = TRUE
-					includeCARColumns = FALSE
-					includeHETColumns = TRUE				
-				} else if (models == 'CARHET') {
-					includeBYMColumns = FALSE
-					includeCARColumns = TRUE
-					includeHETColumns = TRUE				
-				} else if (models == 'BYMCARHET') {
-					includeBYMColumns = TRUE
-					includeCARColumns = TRUE
-					includeHETColumns = TRUE				
-				}								
+				models <<- parametersDataFrame[i, 2]				
 			}			
 		}
 			
@@ -127,429 +96,242 @@ processCommandLineArguments <- function() {
 ##string that can be used to make an ODBC connection
 ##====================================================================
 createDatabaseConnectionString <- function() {
+	
+#print( paste0("host==", dbHost, "=="))
+#print( paste0("port==", dbPort, "=="))
+#print( paste0("datatabase name==", dbName, "=="))
+
 	return(paste0(dbHost, ":", dbPort, "/", dbName))
 }
 
-
+##==========================================================================
+#FUNCTION: establishTableNames
+#DESCRIPTION: uses the study_id number to determine the names of
+#tables that are used in the script.  There are three tables that are
+#important for this activity and their meanings are as follows:
+#rif_studies.s[study_id]_extract - contains the extract data table created
+#by the middleware
+#
+#rif_studies.s[study_id]_map - the skeleton table that the RIF middleware
+#creates to hold smoothed results
+#
+##==========================================================================
 establishTableNames <-function(vstudyID) {
 	print(paste("Study ID:", vstudyID))
 	extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
-	smoothingExtractTableName <<-paste("rif_studies.tmp_s", vstudyID, "_extract", sep="")
+	temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_extract", sep="")
 	mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
 }
 
-registerLinkingColumn <- function(linkingColumnName) {	
-	linkingColumns <<- c(linkingColumns, linkingColumnName)
+
+##==========================================================================
+#FUNCTION: generateFakeValues
+#DESCRIPTION: This function is just used to generate a fake value for 
+#every row that appears in the extract table that has been loaded into 
+#the data frame. This should be removed later on when the real smoothing
+#code is used.
+##==========================================================================
+generateFakeValues <- function(numberOfRows, value) {
+	columnValues = rep(value, numberOfRows)
+	return(columnValues)
 }
 
-registerOriginalExtractColumn <- function(originalExtractColumnName) {	
-	originalExtractColumns <<- c(originalExtractColumns, originalExtractColumnName)
+generateFakeGenderValues <- function(numberOfRows) {
+	genderValues <- vector(,numberOfRows)
+
+	for (i in 1:numberOfRows) {
+		#Cycle through assigning values of 1,2,3 so that 
+		#rows will get values for male, female and both
+		genderValues[i] <-  (i %% 3)	
+	}
+	
+	return(genderValues)
 }
 
-registerSmoothedColumn <- function(smoothedColumnName) {
-	smoothedColumns <<- c(smoothedColumns, smoothedColumnName)
-}
 
 ##====================================================================
-##  Statistical Functions
-##====================================================================
-
-
-##====================================================================
-##FUNCTION: EmpBayes
-##DESCRIPTION: performs a Bayesian analysis
-##====================================================================
-
-
-
-
-
-
-##====================================================================
-##FUNCTION: smooth_extract_results
+##FUNCTION: createSmoothedExtractResults
 ##DESCRIPTION: assembles pieces of database information such as
 ##the host, port and database name to create a database connection
 ##string that can be used to make an ODBC connection
 ##====================================================================
-
-
-createSmoothedExtractResults_bak <- function() {
-
-	#This command returns a data frame
-	#originalExtractTable<-sqlQuery(connDB, paste("SELECT * FROM ",
-	#										  extractTableName,
-	#										  " LIMIT 10"))
-
-	##data=sqlFetch(connDB, "rif_studies.s1_extract")
-	originalExtractTable <- sqlFetch(connDB, extractTableName)
-	##originalExtractTable <- data.frame()
-	##original_extract_rows<-sqlQuery(connDB, paste("CREATE TABLE rif_studies.s9_adj AS SELECT year FROM rif_studies.s9_extract"))
-
-
-	##register the original column names in order to help with updating the table later
-	##Register columns that will be used to link the original extract table and the
-	##table of smoothed results together
-	registerLinkingColumn("year")
-	registerLinkingColumn("study_id")
-	registerLinkingColumn("area_id")
-	registerLinkingColumn("sex")
-	registerLinkingColumn("age_group")
-
-	##Register all other columns that already appear in the extract table
-	registerOriginalExtractColumn("band_id")
-	registerOriginalExtractColumn("study_or_comparison")
-	registerOriginalExtractColumn("ses")
-	registerOriginalExtractColumn("inv_1")
-	registerOriginalExtractColumn("total_pop")
-
-	print(originalExtractTable)
-	numberOfRows <- nrow(originalExtractTable)
-	print(numberOfRows)
-	originalExtractTable$blah=unlist(rep(5.666, numberOfRows))
-	registerSmoothedColumn("blah");
-	##sqlDrop(connDB, originalExtractTable, errors = FALSE)
-	print(paste0("SMOOTH TABLE NAME==", smoothingExtractTableName))
-	sqlDrop(connDB, smoothingExtractTableName, errors=TRUE)
-	sqlSave(connDB, originalExtractTable, tablename=smoothingExtractTableName)
-	
-}
-
-generateFakeSmoothedValues <- function(numberOfRows, value) {
-	return(unlist(rep(value, numberOfRows)))
-}
-
-#################################################################################
-
 createSmoothedExtractResults <- function() {
 
+	print("createSmoothed 1")
+	#Part I: Read in the extract table
+	#=================================
+	#Read original extract table data into a data frame
 	sqlGetStuff <- paste0("SELECT * FROM ",
 						  extractTableName)
+	#Use the as.is flag to prevent R from using its own hints to assign table columns to data types
+	#The flag was needed because when it interpretted dummy area_id values that looked like
+	#"01.001", it assumed it was a numeric value and made it "1.001". This would mean that a join 
+	#condition on the area_id field would fail.
 	originalExtractTable <- sqlQuery(connDB, sqlGetStuff, as.is=TRUE)
-
-	originalExtractTable$area_id <- as.character(originalExtractTable$area_id)
-	
-	
 	numberOfRows <- nrow(originalExtractTable)
+	print("createSmoothed 2")
+	
+	#originalExtractTable$area_id <- as.character(originalExtractTable$area_id)
 
 
-	##register the original column names in order to help with updating the table later
-	##Register columns that will be used to link the original extract table and the
-	##table of smoothed results together
-	registerLinkingColumn("year")
-	registerLinkingColumn("study_id")
-	registerLinkingColumn("area_id")
-	registerLinkingColumn("sex")
-	registerLinkingColumn("age_group")
+	print("createSmoothed 3")
 
-	##Register all other columns that already appear in the extract table
-	registerOriginalExtractColumn("band_id")
-	registerOriginalExtractColumn("study_or_comparison")
-	registerOriginalExtractColumn("ses")
-	registerOriginalExtractColumn("inv_1")
-	registerOriginalExtractColumn("total_pop")
+	#Part II: Perform smoothing operation
+	#====================================	
+	#Perform smoothing operation.  For now, create a set of fake values that will
+	#simulate the data transformations done by smoothing.  By the end of the smoothing
+	#activity, the data frame will have all the columns below, using exactly the
+	#same case as that expected by the RIF
 	
 	
-	#Create and register all the columns that are involved with smoothing
+	#simulating smoothing transformation	
+	originalExtractTable$genders <- generateFakeGenderValues(numberOfRows)
+
+	print("createSmoothed 4")
+
+	originalExtractTable$direct_standardisation <- rep(0, numberOfRows)
+	print("createSmoothed 5")
+	originalExtractTable$adjusted <- generateFakeValues(numberOfRows, 0)
+	print("createSmoothed 6")
+	originalExtractTable$observed <- rep(1.111, numberOfRows)
+	print("createSmoothed 7")	
+	originalExtractTable$expected <- rep(2.111, numberOfRows)
+	originalExtractTable$lower95 <- rep(4.111, numberOfRows)
+	originalExtractTable$upper95 <- rep(5.111, numberOfRows)
+	originalExtractTable$relative_risk <- rep(6.111, numberOfRows)
+	originalExtractTable$smoothed_relative_risk <- rep(7.111, numberOfRows)
+	originalExtractTable$posterior_probability <- rep(8.111, numberOfRows)
+	originalExtractTable$posterior_probability_upper95 <- rep(9.111, numberOfRows)
+	originalExtractTable$posterior_probability_lower95 <- rep(10.111, numberOfRows)
+	originalExtractTable$residual_relative_risk <- rep(11.111, numberOfRows)
+	originalExtractTable$residual_rr_lower95 <- rep(12.111, numberOfRows)
+	originalExtractTable$residual_rr_upper95 <- rep(13.111, numberOfRows)
+	originalExtractTable$smoothed_smr <- rep(14.111, numberOfRows)
+	originalExtractTable$smoothed_smr_lower95 <- rep(15.111, numberOfRows)
+	originalExtractTable$smoothed_smr_upper95 <- rep(16.111, numberOfRows)
+
+
+	#Part III: Write data frame with smoothed values to temporary file
+	#=================================================================
+	print("creating smoothed results for:")
+	print(temporarySmoothedResultsTableName)
 	
-	originalExtractTable$EXP_UNADJ=generateFakeSmoothedValues(numberOfRows, 1.111)
-	
-	#Relative Risk non adjusted
-	originalExtractTable$RR_UNADJ=generateFakeSmoothedValues(numberOfRows, 1.222)
-
-	#Lower 95 percent interval non adjusted
-	originalExtractTable$RRL95_UNADJ=generateFakeSmoothedValues(numberOfRows, 1.223)
-	originalExtractTable$RRU95_UNADJ=generateFakeSmoothedValues(numberOfRows, 1.224)
-
-	#Rate non adjusted
-	originalExtractTable$RATE_UNADJ=generateFakeSmoothedValues(numberOfRows, 1.225)
-
-	#Lower 95% percent rate
-	originalExtractTable$RATEL95_UNADJ=generateFakeSmoothedValues(numberOfRows, 1.226)
-
-	#Upper 95% percent rate
-	originalExtractTable$RATEU95_UNADJ=generateFakeSmoothedValues(numberOfRows, 1.227)
-	
-	#Relative risk with Empirical bayesian estimates non adjusted
-	originalExtractTable$SMRR_UNADJ=generateFakeSmoothedValues(numberOfRows, 1.228)
-
-	###ADJUSTED
-	#Expected number of cases adjusted
-	originalExtractTable$EXP_ADJ=generateFakeSmoothedValues(numberOfRows, 1.229)
-
-	#Relative Risk adjusted
-	originalExtractTable$RR_ADJ=generateFakeSmoothedValues(numberOfRows, 1.300)
-
-	#Lower 95 percent interval adjusted
-	originalExtractTable$RRL95_ADJ=generateFakeSmoothedValues(numberOfRows, 1.301)
-
-	#Upper 95 percent interval adjusted
-	originalExtractTable$RRU95_ADJ=generateFakeSmoothedValues(numberOfRows, 1.302)
-
-	#Rate adjusted
-	originalExtractTable$RATE_ADJ=generateFakeSmoothedValues(numberOfRows, 1.303)
-
-	#Lower 95% percent rate adjusted
-	originalExtractTable$RATEL95_ADJ=generateFakeSmoothedValues(numberOfRows, 1.304)
-
-	#Upper 95% percent rate adjusted
-	originalExtractTable$RATEU95_ADJ=generateFakeSmoothedValues(numberOfRows, 1.305)
-
-	#Relative risk with Empirical bayesian estimates adjusted
-	originalExtractTable$SMRR_ADJ=generateFakeSmoothedValues(numberOfRows, 1.306)
-
-	##registerSmoothedColumn("EXP_UNADJ")
-	registerSmoothedColumn("RR_UNADJ")
-	registerSmoothedColumn("RRL95_UNADJ")
-	registerSmoothedColumn("RRU95_UNADJ")
-	registerSmoothedColumn("RATE_UNADJ")
-	registerSmoothedColumn("RATEL95_UNADJ")
-	registerSmoothedColumn("RATEU95_UNADJ")
-	registerSmoothedColumn("SMRR_UNADJ")
-	registerSmoothedColumn("EXP_ADJ")
-	registerSmoothedColumn("RR_ADJ")
-	registerSmoothedColumn("RRL95_ADJ")
-	registerSmoothedColumn("RRU95_ADJ")
-	registerSmoothedColumn("RATE_ADJ")
-	registerSmoothedColumn("RATEL95_ADJ")
-	registerSmoothedColumn("RATEU95_ADJ")
-	registerSmoothedColumn("SMRR_ADJ")
-
-	if (useAdjustedSmoothing==FALSE) {
-
-		if (includeBYMColumns==TRUE) {
-			originalExtractTable$BYM_ssRR_UNADJ=generateFakeSmoothedValues(numberOfRows, 2.100)			
-			originalExtractTable$BYM_ssRRL95_UNADJ=generateFakeSmoothedValues(numberOfRows, 2.200)
-			originalExtractTable$BYM_ssRRU95_UNADJ=generateFakeSmoothedValues(numberOfRows, 2.300)
-      
-			originalExtractTable$BYM_RR_UNADJ=generateFakeSmoothedValues(numberOfRows, 2.400)
- 			originalExtractTable$BYM_RRL95_UNADJ=generateFakeSmoothedValues(numberOfRows, 2.500)
- 			originalExtractTable$BYM_RRU95_UNADJ=generateFakeSmoothedValues(numberOfRows, 2.600)
- 			
- 			registerSmoothedColumn("BYM_ssRR_UNADJ")
-			registerSmoothedColumn("BYM_ssRRL95_UNADJ")
-			registerSmoothedColumn("BYM_ssRRU95_UNADJ")
-			registerSmoothedColumn("BYM_RR_UNADJ")
-			registerSmoothedColumn("BYM_RRL95_UNADJ")
-			registerSmoothedColumn("BYM_RRU95_UNADJ")
- 		}
-	
-		if (includeCARColumns==TRUE) {
-      		originalExtractTable$CAR_RR_UNADJ=generateFakeSmoothedValues(numberOfRows, 2.700)
-      		originalExtractTable$CAR_RRL95_UNADJ=generateFakeSmoothedValues(numberOfRows, 2.800)
-      		originalExtractTable$CAR_RRU95_UNADJ=generateFakeSmoothedValues(numberOfRows, 2.900) 
-      		
-      		registerSmoothedColumn("CAR_RR_UNADJ")
-       		registerSmoothedColumn("CAR_RRL95_UNADJ")
-       		registerSmoothedColumn("CAR_RRU95_UNADJ")
-		}
-		
-		if (includeHETColumns==TRUE) {
-      		originalExtractTable$HET_RR_UNADJ=generateFakeSmoothedValues(numberOfRows, 3.000) 
-      		originalExtractTable$HET_RRL95_UNADJ=generateFakeSmoothedValues(numberOfRows, 3.100) 
-      		originalExtractTable$HET_RRU95_UNADJ=generateFakeSmoothedValues(numberOfRows, 3.200) 
-
-      		registerSmoothedColumn("HET_RR_UNADJ")
-      		registerSmoothedColumn("HET_RRL95_UNADJ")
-      		registerSmoothedColumn("HET_RRU95_UNADJ")
-		}
-	}else {
-
-		if (includeBYMColumns==TRUE) {
-			originalExtractTable$BYM_ssRR_ADJ=generateFakeSmoothedValues(numberOfRows, 4.000)
-			originalExtractTable$BYM_ssRRL95_ADJ=generateFakeSmoothedValues(numberOfRows, 4.100)
-			originalExtractTable$BYM_ssRRU95_ADJ=generateFakeSmoothedValues(numberOfRows, 4.200)
-      
-			originalExtractTable$BYM_RR_ADJ=generateFakeSmoothedValues(numberOfRows, 4.300)
- 			originalExtractTable$BYM_RRL95_ADJ=generateFakeSmoothedValues(numberOfRows, 4.400)
- 			originalExtractTable$BYM_RRU95_ADJ=generateFakeSmoothedValues(numberOfRows, 4.500)
-
-      		registerSmoothedColumn("BYM_ssRR_ADJ")
-      		registerSmoothedColumn("BYM_ssRRL95_ADJ")
-      		registerSmoothedColumn("BYM_ssRRU95_ADJ")
-      		registerSmoothedColumn("BYM_RR_ADJ")
-      		registerSmoothedColumn("BYM_RRL95_ADJ")
-      		registerSmoothedColumn("BYM_RRU95_ADJ")
-		}
-	
-		if (includeCARColumns==TRUE) {
-      		originalExtractTable$CAR_RR_ADJ=generateFakeSmoothedValues(numberOfRows, 4.600)
-      		originalExtractTable$CAR_RRL95_ADJ=generateFakeSmoothedValues(numberOfRows, 4.700)
-      		originalExtractTable$CAR_RRU95_ADJ=generateFakeSmoothedValues(numberOfRows, 4.800) 
-      		
-      		registerSmoothedColumn("CAR_RR_ADJ")
-      		registerSmoothedColumn("CAR_RRL95_ADJ")
-      		registerSmoothedColumn("CAR_RRU95_ADJ")
-		}
-		
-		if (includeHETColumns==TRUE) {
-      		originalExtractTable$HET_RR_ADJ=generateFakeSmoothedValues(numberOfRows, 5.000) 
-      		originalExtractTable$HET_RRL95_ADJ=generateFakeSmoothedValues(numberOfRows, 5.100) 
-      		originalExtractTable$HET_RRU95_ADJ=generateFakeSmoothedValues(numberOfRows, 5.200) 
-      		
-      		registerSmoothedColumn("HET_RR_ADJ")
-      		registerSmoothedColumn("HET_RRL95_ADJ")
-      		registerSmoothedColumn("HET_RRU95_ADJ")      		
-		}
-	}
-	
-	##No drop if exists
-	##sqlDrop(connDB, smoothingExtractTableName, errors=TRUE)
-	
-	
-	for (i in 1:length(smoothedColumns)) {
-		print(smoothedColumns[i]);
-	}	
-	
-	sqlSave(connDB, originalExtractTable, tablename=mapTableName)
-	
+	return(originalExtractTable) 
 }
 
-generateSQLUpdateStatement <- function() {
+saveDataFrameToDatabaseTable <- function(data) {
 
-	#Step 1: Create new columns in the extract table
-	#Example:
-	# ALTER TABLE rif_studies.s6_extract ADD RR_ADJ;
-	print("=================BEGIN ADD COLUMNS=============")
-	for (i in 1:length(smoothedColumns)) {
-		addColumnToExtractQuery <- paste0("ALTER TABLE ",
-										  extractTableName,
-									      " ADD ",
-									      smoothedColumns[i],
-									      " DOUBLE PRECISION")
-		print(addColumnToExtractQuery)
-		sqlQuery(connDB, addColumnToExtractQuery, errors = FALSE)
-	}
-	print("=================END ADD COLUMNS===============")
-
-
-	#Step 2: Update new columns using values from the 
-	#smoothed table.
-	#Example:
-	#		
-	setValueConditions <- "";
-	for (i in 1:length(smoothedColumns)) {
-		if (i == 1) {
-			setValueConditions <- paste0(setValueConditions,
-										smoothedColumns[i],
-										"=b.",
-										smoothedColumns[i]);
-		}
-		else {
-			setValueConditions <- paste0(setValueConditions,
-										",",
-										smoothedColumns[i],
-										"=b.",
-										smoothedColumns[i],
-										sep="");
-		}
-	}							
+	sqlSave(connDB, data, tablename=temporarySmoothedResultsTableName)
 	
-	whereValueConditions <- "";
-	for (i in 1:length(linkingColumns)) {
-		if (i != 1) {
-			whereValueConditions <- paste0(" AND ", whereValueConditions)
-		}
-		whereValueConditions <- paste0("a.",
-								linkingColumns[i],
-								"=b.",
-								linkingColumns[i],
-								whereValueConditions);
-	}
-		
-	updateSQLQuery <- paste0("UPDATE ",
-							extractTableName,
-							" a",
-							" SET ",
-							setValueConditions,
-							" FROM ",
-							smoothingExtractTableName,
-							" b WHERE ",
-							whereValueConditions);
-							
-	print("===================BEGIN UPDATE=========================")
-	print(updateSQLQuery)
-	print("===================END UPDATE===========================")
-	
-	sqlQuery(connDB, updateSQLQuery)
-	
-	#Step 3: Add indexes to smoothed columns
-	#Example:
-	#CREATE INDEX ind_RR_ADJ ON rif_studies.s6_extract(RR_ADJ)
-	print("===================BEGIN ADD INDEX===================")
-	for (i in 1:length(smoothedColumns)) {
-		addIndexToSmoothedColumn <- paste0("CREATE INDEX ",
-		                                  "ind_",
-									      smoothedColumns[i],
-									      " ON ",
-										  extractTableName,
-										  "(",
-									      smoothedColumns[i],
-										  ")")
-		print(addIndexToSmoothedColumn)
-		sqlQuery(connDB, addIndexToSmoothedColumn)
-	}
-	print("===================END ADD INDEX=====================")
-	
-	sqlQuery(connDB, "COMMIT")
-	
-
+	#Add indices to the new table so that its join with s[study_id]_map will be more 
+	#efficient
+	sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "study_id"))
+	sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "band_id"))
+	sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "inv_id"))
+	sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "genders"))
+	sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "adjusted"))
+	sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "direct_standardisation"))
+	sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "area_id"))
 }
 
-##===========================================================================
-##MAIN PROGRAM
-##===========================================================================
+generateTableIndexSQLQuery <- function(tableName, columnName) {
+	sqlIndexQuery <- paste0(
+		"CREATE INDEX ind22_",
+		columnName,
+		" ON ",
+		tableName,
+		"(",
+		columnName,
+		")")
+		
+	return(sqlIndexQuery);
+}
 
+##================================================================================
+##FUNCTION: updateMapTable
+##DESCRIPTION
+##When the study is run, the RIF creates a skeleton map table that has all the 
+##fields we expect the smoothed results will contain.  After we do the smoothing
+##operation, we will have a temporary table that contains all the smoothed results.
+##This method updates cell values in the skeleton map file with values from 
+##corresponding fields that exist in the temporary table.
+##================================================================================
+updateMapTableFromSmoothedResultsTable <- function() {
 
-dbConnectionString <- createDatabaseConnectionString()
-#print( paste("command line==", dbConnectionString, "==", sep=""))
-#print( paste("temp smoothed table name==", createTemporarySmoothedTableName(studyID), "==", sep=""))
-#print( paste("extract table name==", createExtractTableName(studyID), "==", sep=""))
-#print( paste("map table name==", createMapTableName(studyID), "==", sep=""))
+	updateMapTableSQLQuery <- paste0(
+		"UPDATE ", mapTableName, " a ",
+		"SET ",
+			"genders=b.genders,",
+			"direct_standardisation=b.direct_standardisation,",
+			"adjusted=b.adjusted,",
+			"observed=b.observed,",
+			"expected=b.expected,",
+			"lower95=b.lower95,",
+			"upper95=b.upper95,",
+			"relative_risk=b.relative_risk,",
+			"smoothed_relative_risk=b.smoothed_relative_risk,",
+			"posterior_probability=b.posterior_probability,",
+			"posterior_probability_upper95=b.posterior_probability_upper95,",
+			"posterior_probability_lower95=b.posterior_probability_lower95,",
+			"residual_relative_risk=b.residual_relative_risk,",
+			"residual_rr_lower95=b.residual_rr_lower95,",
+			"residual_rr_upper95=b.residual_rr_upper95,",
+			"smoothed_smr=b.smoothed_smr,",
+			"smoothed_smr_lower95=b.smoothed_smr_lower95,",					
+			"smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		"FROM ",
+			temporarySmoothedResultsTableName,
+		" b ",
+		"WHERE ",
+			"a.study_id=b.study_id AND ",
+			"a.band_id=b.band_id AND ",
+			"a.inv_1=b.inv_1 AND ",
+			"a.genders=b.genders AND ",
+			"a.adjusted=b.adjusted AND ",
+			"a.direct_standardisation=b.direct_standardisation AND ",
+			"a.area_id=b.area_id");
+
+	sqlQuery(connDB, updateMapTableSQLQuery)
+						
+}						
+
+##=============================================================================
+#MAIN PROGRAM
+#DESCRIPTION
+#This script is designed to be called by the Java class
+#   rifServices.statisticalServices.BayesianSmoothingService
+#When the RIF middleware is creating a study, it creates extract and map
+#tables that are of the form rif_studies.s[study_id]_extract and
+#rif_studies.s[study_id]_map respectively.  The map table is initially a skeleton
+#table which has all the column names that the RIF expects to appear in the 
+#smoothed results.  
+#
+#In this script we read the extract table into an R data frame, and add columns 
+#that hold the smoothed results.  We write the data frame table to a temporary 
+#table and then update the skeleton map table using values that come from the
+#corresponding temporary table that was just created.
+#
+##=============================================================================
+
 
 processCommandLineArguments()
+##Determines the names of the original extract table, the map table and the temporary 
+#table that will hold results.  eg for study_id=13, we would have:
+#   s13_extract - the extract table created by the RIF middleware
+#   s13_map - the skeleton smoothed results table that is created by the RIF middleware
+#   s13_tmp_map - temporary table holding the data frame containing smoothed value columns
 establishTableNames(studyID)
-
+dbConnectionString <- createDatabaseConnectionString()
 connDB = odbcConnect("PostgreSQL30", uid="kgarwood", pwd="kgarwood")
-createSmoothedExtractResults()
 
-##sqlQuery(connDB, "ALTER TABLE rif_studies.s9_extract ADD blah DOUBLE PRECISION")
-
-##generateSQLUpdateStatement()
+#This method will eventually be removed.  When the middleware calls this script, it will have
+#already created s[study_id]_map.  However, for testing purposes, we have a routine that simulates
+#that activity.
+print("test smoothing 1")
+dataFrameToSmooth <- createSmoothedExtractResults()
+print("test smoothing 2.1")
+#saveDataFrameToDatabaseTable(dataFrameToSmooth)
+print("test smoothing 2")
+updateMapTableFromSmoothedResultsTable()
 
 odbcClose(connDB)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##original_extract_rows<-sqlQuery(connDB, paste("CREATE TABLE rif_studies.s9_adj AS SELECT year FROM rif_studies.s9_extract")
-##original_extract_rows<-sqlQuery(connDB, paste("SELECT * FROM rif_studies.s9_extract"))
-##print(AdjRowset)
-
-
-
-
-
-
-##colnames(originalExtractTable)
-
-
-##fileConn <- file("C:/rif_test/stuff.txt")
-##writeLines(c("Hello", "World"), fileConn)
-
-#writeLines(commandLineArgsList, fileConn)
-##close(fileConn)
