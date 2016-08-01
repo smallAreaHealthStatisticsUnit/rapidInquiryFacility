@@ -263,8 +263,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		@QueryParam("userID") String userID,
 		@QueryParam("geographyName") String geographyName,	
 		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("geoLevelAreaName") String geoLevelAreaName,		
-		@QueryParam("geoLevelToMapName") String geoLevelViewName,
+		@QueryParam("geoLevelViewName") String geoLevelViewName,
 		@QueryParam("gids") final List<String> geographicalIdentifiers) {
 					
 		String result = "";
@@ -274,7 +273,6 @@ public class RIFStudyResultRetrievalWebServiceResource
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
 				= GeoLevelSelect.newInstance(geoLevelSelectName);
-			GeoLevelArea geoLevelArea = GeoLevelArea.newInstance(geoLevelAreaName);
 			GeoLevelView geoLevelView
 				= GeoLevelView.newInstance(geoLevelViewName);
 			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
