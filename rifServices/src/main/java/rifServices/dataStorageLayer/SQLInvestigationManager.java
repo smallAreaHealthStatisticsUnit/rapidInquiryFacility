@@ -184,7 +184,7 @@ final class SQLInvestigationManager
 			= investigation.getHealthTheme();
 		rifContextManager.checkHealthThemeExists(
 			connection, 
-			healthTheme.getName());
+			healthTheme.getDescription());
 
 		NumeratorDenominatorPair ndPair = investigation.getNdPair();
 		rifContextManager.checkNDPairExists(
