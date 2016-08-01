@@ -4,7 +4,6 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.taxonomyServices.FederatedTaxonomyService;
 import rifGenericLibrary.taxonomyServices.TaxonomyServiceProvider;
 import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
-import rifGenericLibrary.util.CrudeCodeExecutionTimer;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -183,11 +182,6 @@ public class RIFTaxonomyWebServiceResource {
 		@QueryParam("is_case_sensitive") Boolean isCaseSensitive) {
 
 		String result = "";
-		
-		
-		CrudeCodeExecutionTimer timer = CrudeCodeExecutionTimer.getTimer();
-		timer.start();
-		
 		try {
 			checkFederatedServiceWorkingProperly(servletRequest);
 			FederatedTaxonomyService federatedTaxonomyService
@@ -203,10 +197,6 @@ public class RIFTaxonomyWebServiceResource {
 				= serialiseTaxonomyTerms(
 					servletRequest,
 					matchingTerms);
-
-			timer.addStoppingPoint("getMatchingTerms 2");
-			timer.stop();
-			timer.printReport();
 
 		}
 		catch(Exception exception) {
@@ -230,10 +220,6 @@ public class RIFTaxonomyWebServiceResource {
 
 		String result = "";
 
-		CrudeCodeExecutionTimer timer = CrudeCodeExecutionTimer.getTimer();
-		timer.clearStoppingPoints();
-		timer.start();
-		timer.addStoppingPoint("getImmediateChildTerms 2");
 		try {
 			checkFederatedServiceWorkingProperly(servletRequest);
 			FederatedTaxonomyService federatedTaxonomyService
@@ -243,6 +229,7 @@ public class RIFTaxonomyWebServiceResource {
 				= federatedTaxonomyService.getImmediateChildTerms(
 					taxonomyServiceID, 
 					parentTermID);
+			
 			result 
 				= serialiseTaxonomyTerms(
 					servletRequest,
@@ -254,8 +241,6 @@ public class RIFTaxonomyWebServiceResource {
 					servletRequest, 
 					exception);
 		}
-		timer.stop();
-		timer.printReport();
 		return webServiceResponseUtility.generateWebServiceResponse(
 			servletRequest,
 			result);		
