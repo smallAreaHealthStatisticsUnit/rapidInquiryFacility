@@ -123,4 +123,16 @@ Whereas my work last year related to helping maintain the middleware to support 
 
 Currently, there are two issues I'm dealing with: exploring the network installation issues related to setting up the RIF database; making the taxonomy service report independent from the rest of the RIF code base; and doing production testing of taxonomy services.
 
+#July 2016
+Finished work on the taxonomy services.  The taxonomy services that are used by the web-based applications to retrieve taxonomy terms (eg: ICD-10 codes) now work properly and have been separated into a web application that can be run independently form the rest of the RIF.  It may now be regarded as a reusable piece of software that can be used to service other software projects.  Furthermore, it hides dependencies on future taxonomy technologies from the rest of the code base.
+
+As part of the invoking R code from a Java program, I have worked to produce code that can be viewed as "sandwiching" the Bayesian smoothing algorithms for HET, BYM and CAR.  Currently, the inclusion of the R smoothing algorithms is focusing on interoperability rather than integration; Java builds up a command-line call to an R engine and invokes it.  The R script then runs as if it were invoked on its own and it receives command-line arguments supplied by the Java program.  My work has been limited to: (1) minimising potential problems in creating and invoking the command-line call to the smoothing script and (2) ensuring that when the algorithm finishes, the results are copied to the appropriate tables (they are of the form rif_studies.s[studyID]_map.  That work is still ongoing.  
+
+My most significant progress for the month has been to take an inventory of existing web service calls that support our applications and to analyse all of the database queries that they use.  The analysis has allowed me to more accurately estimate the amount of work that will be required to support SQL Server porting activities.  Of the 54 middleware methods that are responsible for supporting end-user application features, it can be proven that 10 of them will not require any porting work because they do not use SQL queries.  A further 17 are unlikely to require porting because the SQL queries they use are already likely to be completely compliant with the most basic parts of the SQL standard.  
+
+2 may require some porting because they have query fragments that may not be equally supported between PostgreSQL and SQL Server.  23 existing methods would require that code from a database query be moved into Java-based middleware classes.  However, some of these methods may prove unnecessary to support a production environment and others may be able to be deleted in favour of having them easily rewritten in the front end.  1 method needs to be implemented and 1 requires that the database be modified to support a new concept: calculation methods.  
+
+We are currently investigating three ways of simplifying the work needed to be done in the middleware: reviewing methods to ensure they are justified by production use and not just from prototyping efforts; moving some methods into the front end; and reviewing whether we can retrieve large blocks of data from result tables to reduce the number of methods needed to support rendering smoothed data.
+
+
 
