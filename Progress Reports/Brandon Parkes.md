@@ -16,3 +16,4 @@ June 2016 progress report
 
 
 ##July
+- Assisted KG in R integration work
