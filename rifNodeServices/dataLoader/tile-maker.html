@@ -132,12 +132,16 @@ $(document).ready(function documentReady() {
 					function tabsActivate( event, ui ) {
 						var currentTab=ui.newPanel[0].id;
 						consoleLog("tabsActivate(): " + event.type + "; active tab ID: " + currentTab);
+					
 						if (currentTab == "maptab" && L && map && map.invalidateSize && 
 						    typeof map.invalidateSize == "function") {	
 							setTimeout(function resizeMap() { // Wait to resize map
 								consoleLog("tabsActivate(): map resize; h x w: " + 
 									document.getElementById('map').style.height + " x " + document.getElementById('map').style.width);
-								map.invalidateSize(true /* Animate */);
+
+								map.invalidateSize(false /* Animate */);								
+//								L.Util.requestAnimFrame(map.invalidateSize,map,!1,map._container);
+
 								var mapSize=map.getSize();
 								consoleLog("tabsActivate(): map after resize; h x w: " + 
 									document.getElementById('map').style.height + " x " + 
@@ -156,7 +160,7 @@ $(document).ready(function documentReady() {
 						}
 						else {
 							consoleLog("tabsActivate(): no map resize: map loaded; invalidateSize() is not a function; map not in initialized");
-						}
+						} 
 					} 
 				);
 
@@ -172,31 +176,32 @@ $(document).ready(function documentReady() {
 		}).css({
 			'min-height': height+"px"
 		});
-	});
 	
 //
 // Enable resize
 //
-	$( window ).resize(function windowResize() {	
-		consoleLog("windowResize(): resize; body; h x w: " + document.getElementById('tilemakerbody').offsetHeight +
-			"x" + document.getElementById('tilemakerbody').offsetWidth);
-		var w = window,
-			d = document,
-			e = d.documentElement,
-			g = d.getElementsByTagName('body')[0],
-			x = w.innerWidth || e.clientWidth || g.clientWidth,
-			y = w.innerHeight|| e.clientHeight|| g.clientHeight;
-		consoleLog("Viewport; h x w: " + y + "x" + x);
-		
-		setupMap();
-		var ntabs=$('#tabs >ul >li').size();
-		for (var i=(ntabs-1); i>=0; i--) {
-			$( "#tabs" ).tabs( "option", "active", i); // Activate all panels. This sets the height correctly
-		}		
-		tabs.tabs("refresh" );
-	});
+		$( window ).resize(function windowResize() {	
+			consoleLog("windowResize(): resize; body; h x w: " + document.getElementById('tilemakerbody').offsetHeight +
+				"x" + document.getElementById('tilemakerbody').offsetWidth);
+			var w = window,
+				d = document,
+				e = d.documentElement,
+				g = d.getElementsByTagName('body')[0],
+				x = w.innerWidth || e.clientWidth || g.clientWidth,
+				y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+			consoleLog("Viewport; h x w: " + y + "x" + x);
+			
+			setupMap();
+			var ntabs=$('#tabs >ul >li').size();
+			for (var i=(ntabs-1); i>=0; i--) {
+				$( "#tabs" ).tabs( "option", "active", i); // Activate all panels. This sets the height correctly
+				
+			}		
+			tabs.tabs("refresh" );
+		}).trigger("resize");		
+	}); // Setup tabs
 
-});
+}); // On documentReady
 
 function quantizationSelectChange(value) {
 	consoleLog("quantizationSelectChange() new value: " + value);
