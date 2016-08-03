@@ -161,15 +161,17 @@ $(document).ready(function documentReady() {
 
 								map.invalidateSize(false /* Animate */);								
 //								L.Util.requestAnimFrame(map.invalidateSize,map,!1,map._container);
-
-								$( "#tabs" ).tabs( "option", "active", nTab); // Activate original tab
-																
-								var mapSize=map.getSize();
-								activeTab=$("#tabs .ui-state-active a").attr('href');
-								consoleLog("resizeMap(): map after resize; h x w: " + 
-									document.getElementById('map').style.height + " x " + 
-									document.getElementById('map').style.width + "; size: " + mapSize.toString() + 
-									"; active tab ID: " + activeTab);
+/*
+								setTimeout(function reactivateCorrectTab2(nTab) { // Wait for resize of map
+									$( "#tabs" ).tabs( "option", "active", nTab); // Activate original tab
+																	
+									var mapSize=map.getSize();
+									activeTab=$("#tabs .ui-state-active a").attr('href');
+									consoleLog("reactivateCorrectTab2(): map after resize; h x w: " + 
+										document.getElementById('map').style.height + " x " + 
+										document.getElementById('map').style.width + "; size: " + mapSize.toString() + 
+										"; active tab ID: " + activeTab);
+										}, 500, nTab); */
 						
 							}, 200);
 						}
