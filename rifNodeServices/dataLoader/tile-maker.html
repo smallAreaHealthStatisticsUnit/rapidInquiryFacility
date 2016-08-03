@@ -35,7 +35,15 @@ $(document).ready(function documentReady() {
 
 	var height="100%";
 	if (document.getElementById('tilemakerbody')) {
-		console.log("Body; h x w: " + document.getElementById('tilemakerbody').offsetHeight + "x" + document.getElementById('tilemakerbody').offsetWidth);
+		console.log("Body; h x w: " + document.getElementById('tilemakerbody').offsetHeight + "x" + 
+			document.getElementById('tilemakerbody').offsetWidth);
+		var w = window,
+			d = document,
+			e = d.documentElement,
+			g = d.getElementsByTagName('body')[0],
+			x = w.innerWidth || e.clientWidth || g.clientWidth,
+			y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+		console.log("Viewport; h x w: " + y + "x" + x);
 		height=document.getElementById('tilemakerbody').offsetHeight;
 	}
 	
@@ -113,6 +121,32 @@ $(document).ready(function documentReady() {
 					$(".progress-label").text("Ready");	
 				});	
 				
+				$( "#tabs" ).on( "tabsactivate", 
+					function tabsActivate( event, ui ) {
+						var currentTab=ui.newPanel[0].id;
+						console.log("tabsActivate(): " + event.type + "; active tab ID: " + currentTab);
+						if (currentTab == "maptab" && L && map && map.invalidateSize && 
+						    typeof map.invalidateSize == "function") {
+							console.log("tabsActivate(): map resize; h x w: " + 
+								document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
+
+							map.invalidateSize();
+						}
+						else if (currentTab == "maptab" && L && map) {
+							console.log("tabsActivate(): no map resize: map not loaded");
+						}
+						else if (currentTab == "maptab" && L && map && map.invalidateSize) {
+							console.log("tabsActivate(): no map resize: map loaded; invalidateSize() not found");
+						}
+						else if (currentTab != "maptab") {
+							console.log("tabsActivate(): no map resize required: other tab");
+						}
+						else {
+							console.log("tabsActivate(): no map resize: map loaded; invalidateSize() is not a function; map not in initialized");
+						}
+					} 
+				);
+
 				for (var i=(ntabs-1); i>=0; i--) {
 					$( "#tabs" ).tabs( "option", "active", i); // Activate all panels. This sets the height correctly
 				}
@@ -130,9 +164,22 @@ $(document).ready(function documentReady() {
 //
 // Enable resize
 //
-	$( window ).resize(function() {	
-		console.log("setupTabs(): resize");
+	$( window ).resize(function windowResize() {	
+		console.log("windowResize(): resize; body; h x w: " + document.getElementById('tilemakerbody').offsetHeight +
+			"x" + document.getElementById('tilemakerbody').offsetWidth);
+		var w = window,
+			d = document,
+			e = d.documentElement,
+			g = d.getElementsByTagName('body')[0],
+			x = w.innerWidth || e.clientWidth || g.clientWidth,
+			y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+		console.log("Viewport; h x w: " + y + "x" + x);
+		
 		setupMap();
+		var ntabs=$('#tabs >ul >li').size();
+		for (var i=(ntabs-1); i>=0; i--) {
+			$( "#tabs" ).tabs( "option", "active", i); // Activate all panels. This sets the height correctly
+		}		
 		tabs.tabs("refresh" );
 	});
 
@@ -229,14 +276,16 @@ function geographyNameChange(value) {
 			  <input class="geographyEntry" id="geographyDesc" name="geographyDesc" size="73" type="text" required/></label>
 				  <div id="accordion">
 				  </div>
+	
+<!--			         onerror="errorPopup('Unable to download configuration');" DOES NOT WORK -->			  
 			  <label title="Download configuration XML file" for="shpConvertGetConfig"></label>    
-			  <a id="shpConvertGetConfig" href="shpConvertGetConfig.xml?uuidV1=unknown" download
+			  <a id="shpConvertGetConfig" href="shpConvertGetConfig.xml?uuidV1=unknown" download="shpConvertGetConfig.xml" target="_blank" 
 			         onclick="shpConvertGetConfigFunc(this);">Download configuration</a>&nbsp;
 <!--			  <input id="shpConvertGetConfig" name="shpConvertGetConfig" type="button" value="Download configuration" 
 			         onclick="shpConvertGetConfigFunc(this.value);" disabled />&nbsp; -->
 
 			  <label title="Download process tiles and tabular setup data" for="shpConvertGetResults"></label> 					 
-			  <a id="shpConvertGetResults" href="shpConvertGetResults.zip?uuidV1=unknown" download
+			  <a id="shpConvertGetResults" href="shpConvertGetResults.zip?uuidV1=unknown" download="shpConvertGetResults.zip" target="_blank"
 			         onclick="shpConvertGetResultsFunc(this);">Download processed tiles</a>&nbsp; 
 			  <input id="shpConvertSubmit" name="shpConvertSubmit" type="submit" value="Upload file(s)" />&nbsp;
 			  </fieldset>	  

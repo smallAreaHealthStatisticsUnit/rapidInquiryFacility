@@ -569,9 +569,18 @@ scopeChecker = function scopeChecker(array, optionalArray) {
  * Description:	Setup map width for Leaflet 
  */
 function setupMap() {	
+	var w = window,
+		d = document,
+		e = d.documentElement,
+		g = d.getElementsByTagName('body')[0],
+		x = w.innerWidth || e.clientWidth || g.clientWidth,
+		y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+		
 	if (document.getElementById("tabs")) { // JQuery-UI version
 		var tabboxheight=document.getElementById('tabbox').offsetHeight;
-		var height=document.getElementById('tilemakerbody').offsetHeight-(tabboxheight+24);
+//		var height=document.getElementById('tilemakerbody').offsetHeight-(tabboxheight+24);
+//		var height=y-22-(tabboxheight+24); // Use Y instead with a correction factor (22)
+		var height=y-tabboxheight-46; // Merge all the correction factors (46px)
 		function setHeight(id, lheight) {
 			document.getElementById(id).setAttribute("style","display:block;cursor:pointer;cursor:hand;");
 			document.getElementById(id).setAttribute("draggable", "true");
@@ -1459,6 +1468,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 								console.log("Enable shpConvertGetResults button");
 								var shpConvertGetResults=document.getElementById("shpConvertGetResults");
 								shpConvertGetResults.href= "shpConvertGetResults.zip?uuidV1="+ uuidV1;
+								shpConvertGetResults.download= "shpConvertGetResults_"+ uuidV1 + ".zip";
 								console.log("change shpConvertGetResults href to: " + shpConvertGetResults.href);
 								$( "#shpConvertGetResults" ).button( "enable" ); // Enable shpConvertGetResults button
 								// Load tiles
@@ -1468,6 +1478,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 								console.log("Enable shpConvertGetConfig button");
 								var shpConvertGetConfig=document.getElementById("shpConvertGetConfig");
 								shpConvertGetConfig.href= "shpConvertGetConfig.xml?uuidV1="+ uuidV1;
+								shpConvertGetConfig.download= "shpConvertGetConfig_"+ uuidV1 + ".xml";
 								console.log("change shpConvertGetConfig href to: " + shpConvertGetConfig.href);
 								$( "#shpConvertGetConfig" ).button( "enable" ); // Enable shpConvertGetConfig button
 								
