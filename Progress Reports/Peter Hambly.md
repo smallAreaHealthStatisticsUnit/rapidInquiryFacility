@@ -510,6 +510,14 @@ RangeError: Invalid string length
 * geojson to wellknown text conversion; added framework for processing from intermediare point to end
 * Batch mode now complete; firefox and chrome are OK. IE has intermittent problems
 
+#### 1st to 5th August
+
+* XML and ZIP download buttons; only XML method complete.
+* Resizing much better (i.e. map stays within the viewport); much work still to do (deffered to later) 
+* IE problems only when NOT in developer mode. This is related to a) console.log has been wrapped and
+  b) Ajax get() caching. Disabling Ajax get caching did not work; added an lstart parameter (so each call is different)
+  did
+
 #### Current TODO list (August):
 
 * ST_Union and area calculations can be done in geoJSON using turf: as it is a geometry collection. 

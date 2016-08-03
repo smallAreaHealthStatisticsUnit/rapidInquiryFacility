@@ -35,7 +35,7 @@ $(document).ready(function documentReady() {
 
 	var height="100%";
 	if (document.getElementById('tilemakerbody')) {
-		console.log("Body; h x w: " + document.getElementById('tilemakerbody').offsetHeight + "x" + 
+		consoleLog("Body; h x w: " + document.getElementById('tilemakerbody').offsetHeight + "x" + 
 			document.getElementById('tilemakerbody').offsetWidth);
 		var w = window,
 			d = document,
@@ -43,10 +43,18 @@ $(document).ready(function documentReady() {
 			g = d.getElementsByTagName('body')[0],
 			x = w.innerWidth || e.clientWidth || g.clientWidth,
 			y = w.innerHeight|| e.clientHeight|| g.clientHeight;
-		console.log("Viewport; h x w: " + y + "x" + x);
+		consoleLog("Viewport; h x w: " + y + "x" + x);
 		height=document.getElementById('tilemakerbody').offsetHeight;
 	}
-	
+
+
+	if (isIE()) {				
+		$.ajaxSetup({
+			// Disable caching of AJAX responses
+			cache: false
+		});
+	}
+				
 	//
 	// Setup tabs
 	//	
@@ -56,10 +64,9 @@ $(document).ready(function documentReady() {
 				var ntabs=$('#tabs >ul >li').size();
 				var ltabs=$( ".selector" ).tabs("tabs");
 				
-				console.log("setupTabs().oncreate: " + ntabs + " tabs setup");
+				consoleLog("setupTabs().oncreate: " + ntabs + " tabs setup");
 				setupMap();
 				formSetup('shpConvert', 'Shapefile');
-				
 				
 				$(function initFields() {
 					$( "#simplificationFactor" ).slider({				// Simplication slider - needs to be replaced with pure JQuery UI version
@@ -110,7 +117,7 @@ $(document).ready(function documentReady() {
 						
 						create: function setupProgressCreated() {
 							progressLabel.text("");
-							console.log("setupProgress().oncreate: setup");
+							consoleLog("setupProgress().oncreate: setup");
 						},
 						change: function functionsetupProgessChangeded() {
 							if (progressbar.progressbar( "value" ) > 0) {
@@ -124,25 +131,25 @@ $(document).ready(function documentReady() {
 				$( "#tabs" ).on( "tabsactivate", 
 					function tabsActivate( event, ui ) {
 						var currentTab=ui.newPanel[0].id;
-						console.log("tabsActivate(): " + event.type + "; active tab ID: " + currentTab);
+						consoleLog("tabsActivate(): " + event.type + "; active tab ID: " + currentTab);
 						if (currentTab == "maptab" && L && map && map.invalidateSize && 
 						    typeof map.invalidateSize == "function") {
-							console.log("tabsActivate(): map resize; h x w: " + 
+							consoleLog("tabsActivate(): map resize; h x w: " + 
 								document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
 
 							map.invalidateSize();
 						}
 						else if (currentTab == "maptab" && L && map) {
-							console.log("tabsActivate(): no map resize: map not loaded");
+							consoleLog("tabsActivate(): no map resize: map not loaded");
 						}
 						else if (currentTab == "maptab" && L && map && map.invalidateSize) {
-							console.log("tabsActivate(): no map resize: map loaded; invalidateSize() not found");
+							consoleLog("tabsActivate(): no map resize: map loaded; invalidateSize() not found");
 						}
 						else if (currentTab != "maptab") {
-							console.log("tabsActivate(): no map resize required: other tab");
+							consoleLog("tabsActivate(): no map resize required: other tab");
 						}
 						else {
-							console.log("tabsActivate(): no map resize: map loaded; invalidateSize() is not a function; map not in initialized");
+							consoleLog("tabsActivate(): no map resize: map loaded; invalidateSize() is not a function; map not in initialized");
 						}
 					} 
 				);
@@ -153,7 +160,7 @@ $(document).ready(function documentReady() {
 				
 			},
 			load: function setupTabsLoaded() {
-				console.log("setupTabs().onload");
+				consoleLog("setupTabs().onload");
 			},			
 			heightStyle: "fill"
 		}).css({
@@ -165,7 +172,7 @@ $(document).ready(function documentReady() {
 // Enable resize
 //
 	$( window ).resize(function windowResize() {	
-		console.log("windowResize(): resize; body; h x w: " + document.getElementById('tilemakerbody').offsetHeight +
+		consoleLog("windowResize(): resize; body; h x w: " + document.getElementById('tilemakerbody').offsetHeight +
 			"x" + document.getElementById('tilemakerbody').offsetWidth);
 		var w = window,
 			d = document,
@@ -173,7 +180,7 @@ $(document).ready(function documentReady() {
 			g = d.getElementsByTagName('body')[0],
 			x = w.innerWidth || e.clientWidth || g.clientWidth,
 			y = w.innerHeight|| e.clientHeight|| g.clientHeight;
-		console.log("Viewport; h x w: " + y + "x" + x);
+		consoleLog("Viewport; h x w: " + y + "x" + x);
 		
 		setupMap();
 		var ntabs=$('#tabs >ul >li').size();
@@ -186,7 +193,7 @@ $(document).ready(function documentReady() {
 });
 
 function quantizationSelectChange(value) {
-	console.log("quantizationSelectChange() new value: " + value);
+	consoleLog("quantizationSelectChange() new value: " + value);
 }	
 
 /*
@@ -213,7 +220,7 @@ function geographyNameChange(value) {
 	else {
 		var reValue=re.exec(value);
 		if (reValue == value) {
-			console.log("geographyNameChange() new value OK: " + value);
+			consoleLog("geographyNameChange() new value OK: " + value);
 		}
 		else {
 			errorPopup('Geography name must be a valid database name: "' + value + '" is invalid');

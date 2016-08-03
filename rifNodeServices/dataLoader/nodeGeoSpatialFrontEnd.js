@@ -72,6 +72,44 @@ L.topoJson = L.GeoJSON.extend({
 // Copyright (c) 2013 Ryan Clark
 
 /*
+ * Function: 	consoleLog()
+ * Parameters:  Message
+ * Returns: 	Nothing
+ * Description:	IE safe console log 
+ */
+function consoleLog(msg) {
+	if (window.console && console && console.log && typeof console.log == "function") {
+		if (isIE()) {
+			if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+				console.log(msg);
+			}
+		}
+		else {
+			console.log(msg);
+		}
+	}  
+}
+
+/*
+ * Function: 	consoleError()
+ * Parameters:  Message
+ * Returns: 	Nothing
+ * Description:	IE safe console error 
+ */
+function consoleError(msg) {
+	if (window.console && console && console.error && typeof console.error == "function") {
+		if (isIE()) {
+			if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {	
+				console.error(msg);
+			}
+		}
+		else {
+			console.error(msg);
+		}
+	}
+}
+
+/*
  * Function: 	formSetup()
  * Parameters:  formId, formName
  * Returns: 	Nothing
@@ -90,7 +128,7 @@ function formSetup(formId, formName) {
 		// 'data' is the json object returned from the server 
 		if (!data) {
 			document.getElementById("status").innerHTML = "FATAL: processJson(): data undefined: " + formName;
-			console.error("FATAL: processJson(): data undefined: " + formName);
+			consoleError("FATAL: processJson(): data undefined: " + formName);
 		}
 
 		try {
@@ -103,7 +141,7 @@ function formSetup(formId, formName) {
 		}
 		catch (e) {
 			document.getElementById("status").innerHTML = "<h1>FATAL: Caught exception in displayResponse()</h1><h2>Error message: " + e.message + "</h2><pre>" + e.stack + "</pre>";
-			console.error("FATAL: Caught exception in displayResponse(): " + e.message + "\n" + e.stack);	
+			consoleError("FATAL: Caught exception in displayResponse(): " + e.message + "\n" + e.stack);	
 		}
 	}
 
@@ -122,7 +160,8 @@ function formSetup(formId, formName) {
         //resetForm: true        // reset the form after successful submit 
  
         // $.ajax options can be used here too, for example: 
-        timeout:     180000    // mS - 10 minutes
+        timeout:     180000,    // mS - 10 minutes
+		cache:		false		// Do not cache (helps IE)
 		
     }; 
 
@@ -140,7 +179,7 @@ function formSetup(formId, formName) {
 		function shpConvertInputHandler() {
 			var fileList = this.files;
 			
-			console.log("shpConvertInput() event files: " + JSON.stringify(fileList, null, 4));
+			consoleLog("shpConvertInput() event files: " + JSON.stringify(fileList, null, 4));
 			shpConvertInput(fileList);
 		}		
 		files_elem.addEventListener("change", shpConvertInputHandler, false);
@@ -148,7 +187,7 @@ function formSetup(formId, formName) {
 
 		
 		if  (files.length > 0) { // Already set
-			console.log("shpConvertInput() already set");
+			consoleLog("shpConvertInput() already set");
 			setTimeout(function() {
 				document.getElementById("status").innerHTML = document.getElementById("status").innerHTML + "<br>" + "Please wait for " + files.length + " file(s) to load";
 				shpConvertInput(files);
@@ -157,7 +196,7 @@ function formSetup(formId, formName) {
 		
 		if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){
 			document.getElementById(formId + "Submit").addEventListener("click", function xMLHttpRequestSubmitForm(event) {
-				console.log("Event: " + formId + "Submit");
+				consoleLog("Event: " + formId + "Submit");
 				event.preventDefault();
 				submitFormXMLHttpRequest(formId, formName);
 		 
@@ -182,7 +221,7 @@ function formSetup(formId, formName) {
 	}
 	catch (e) {
 		document.getElementById("status").innerHTML = "Caught error in ajaxSubmit(" + formId + "): " + e.message + "\n" + e.stack;
-		console.error(document.getElementById("status").innerHTML);
+		consoleError(document.getElementById("status").innerHTML);
 	}
 	
 	if (document.getElementById("progressbar")) { // JQuery-UI version
@@ -197,7 +236,7 @@ function formSetup(formId, formName) {
 		tabs.tabs("refresh" );
 	}
 			
-	console.log("Ready: " + formId);
+	consoleLog("Ready: " + formId);
 } 	
 
 /*
@@ -218,7 +257,7 @@ function errorPopup(msg) {
 	else {	
 		document.getElementById("status").innerHTML = "<h1>" + msg + "</h1>";
 	}
-	console.log("FATAL! " + msg);
+	consoleLog("FATAL! " + msg);
 }
 
 /*
@@ -247,14 +286,14 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	}
 	
 	if (verbose) { // i.e. diagnostics
-		console.log('Verbose mode: ' + verbose);
+		consoleLog('Verbose mode: ' + verbose);
 		formData.append('verbose', verbose);
 	}	
 	formData.append('uuidV1', generateUUID()); // Random reference
 
 	// Display the key/value pairs
 //	for (var pair of formData.entries()) { // Breaks in IE!
-//		console.log("Key: " + pair[0] + '='+ pair[1]); 
+//		consoleLog("Key: " + pair[0] + '='+ pair[1]); 
 //	}
 
 	try {
@@ -281,7 +320,7 @@ function submitFormXMLHttpRequest(output_type, formName) {
 					displayResponse(request.response, request.status, formName, true /* enableGetStatus */);
 				}
 				else {
-					console.log("[" + elapsed + "] Ignoring null response"); 
+					consoleLog("[" + elapsed + "] Ignoring null response"); 
 				}
 			}
 			else {		
@@ -291,11 +330,11 @@ function submitFormXMLHttpRequest(output_type, formName) {
 		
 		if (isIE() && request.timeout) {
 			request.timeout = timeout;
-			console.log('IE Timeout set: ' + timeout);
+			consoleLog('IE Timeout set: ' + timeout);
 		}
 		else {
 			request.timeout = timeout;
-			console.log('Timeout set: ' + timeout);
+			consoleLog('Timeout set: ' + timeout);
 		}
 		
 		request.onabort = function onabortFunc() {
@@ -398,7 +437,7 @@ function checkRequest(formData, jqForm, options) {
     // but the form plugin does this for you automatically when it submits the data 
 		 	
 	options.data.uuidV1=generateUUID();
-	console.log("uuidV1: " + options.data.uuidV1);
+	consoleLog("uuidV1: " + options.data.uuidV1);
 	uuidV1=options.data.uuidV1;
 	var queryString = $.param(formData); 
 	var fileCount=0;
@@ -421,50 +460,50 @@ webkitRelativePath: ""} .. then inherited
 	for (var i=0; i<formData.length; i++) {
 		var value=formData[i].value;
 		if (formData[i].type == "file" && !value.name) {
-			console.log("Formdata: null file");
+			consoleLog("Formdata: null file");
 		}
 		else if (formData[i].type == "file") {
-			console.log("Formdata file[" + i + "]: " + value.name + "; size: " + value.size + "; last modified: " + value.lastModifiedDate);
+			consoleLog("Formdata file[" + i + "]: " + value.name + "; size: " + value.size + "; last modified: " + value.lastModifiedDate);
 			fileCount++;
 		}
 		else if (formData[i].type == "checkbox") {
 			if (formData[i].required && formData[i].value) {
-				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
+				consoleLog("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
 			}
 			else if (formData[i].required) {
 				errorPopup("Mandatory checkbox: " + formData[i].name + " is not checked");
 				return false;
 			}
 			else {
-				console.log("Mandatory checkbox: " + formData[i].name + "=" + formData[i].value);	
+				consoleLog("Mandatory checkbox: " + formData[i].name + "=" + formData[i].value);	
 			}			
 		}		
 		else if (formData[i].type == "range") {
 			if (formData[i].required && formData[i].value) {
-				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
+				consoleLog("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
 			}
 			else if (formData[i].required) {	
 				errorPopup("Mandatory range: " + formData[i].name + " is not set");
 				return false;
 			}
 			else {
-				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
+				consoleLog("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
 			}
 		}
 		else if (formData[i].type == "select-one") {
 			if (formData[i].required && formData[i].value) {
-				console.log("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
+				consoleLog("Formdata file[" + i + "] mandatory field: " + formData[i].name + "=" + formData[i].value);	
 			}
 			else if (formData[i].required) {	
 				errorPopup("Mandatory field: " + formData[i].name + " is not filled in");
 				return false;
 			}			
 			else {
-				console.log("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
+				consoleLog("Formdata file[" + i + "] field: " + formData[i].name + "=" + formData[i].value);	
 			}
 		}
 		else {
-			console.log("Formdata other [" + i + "]: " + JSON.stringify(formData[i], null, 4));
+			consoleLog("Formdata other [" + i + "]: " + JSON.stringify(formData[i], null, 4));
 		}
 	}
 	if (fileCount == 0) {
@@ -477,10 +516,10 @@ webkitRelativePath: ""} .. then inherited
     // var formElement = jqForm[0]; 
 	if (!setupMap) {
 		document.getElementById("status").innerHTML = "<h1>setupMap() not defined: errors in nodeGeoSpatialServices.js</h1>"
-		console.log("FATAL! setupMap() not defined: errors in nodeGeoSpatialServices.js");
+		consoleLog("FATAL! setupMap() not defined: errors in nodeGeoSpatialServices.js");
 		return false;
 	}
-    console.log('About to submit: ' + JSON.stringify(queryString, null, 4)); 
+    consoleLog('About to submit: ' + JSON.stringify(queryString, null, 4)); 
 	nodeGeoSpatialFrontEndInit();
  
 	document.getElementById("status").innerHTML  = "";
@@ -557,7 +596,7 @@ scopeChecker = function scopeChecker(array, optionalArray) {
 	
 	// Raise exception if errors
 	if (errors > 0) {
-		console.log("scopeChecker() ERROR: " + msg);
+		consoleLog("scopeChecker() ERROR: " + msg);
 		throw new Error(msg);
 	}	
 } // End of scopeChecker()
@@ -588,10 +627,10 @@ function setupMap() {
 			document.getElementById(id).style.cursor = "hand";			
 			document.getElementById(id).style.height=lheight + "px";						
 			
-			console.log(id + " h x w: " + document.getElementById(id).offsetHeight + "x" + document.getElementById(id).offsetWidth);	
+			consoleLog(id + " h x w: " + document.getElementById(id).offsetHeight + "x" + document.getElementById(id).offsetWidth);	
 		}
 
-		console.log("Using JQuery-UI; setup map; height: " + height + "px; tabboxheight: " + tabboxheight + "px");
+		consoleLog("Using JQuery-UI; setup map; height: " + height + "px; tabboxheight: " + tabboxheight + "px");
 		
 		// Check for min height
 		
@@ -639,11 +678,11 @@ function setupMap() {
 			document.getElementById('map').style.width=new_w + "px";
 			document.getElementById('map').style.height=new_h + "px";
 			
-			console.log("Size h x w: " + h + "x" + w +
+			consoleLog("Size h x w: " + h + "x" + w +
 				"; map size old: " + old_h + "x" + old_w + ", new: " + new_h + "x" + new_w +
 				"; new status width: " + new_status_width);
-			console.log("Map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
-			console.log("Status; h x w: " + document.getElementById('status').style.height + "x" + document.getElementById('status').style.width);	
+			consoleLog("Map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
+			consoleLog("Status; h x w: " + document.getElementById('status').style.height + "x" + document.getElementById('status').style.width);	
 		}
 	}
 }
@@ -730,7 +769,7 @@ function setStatus(msg, err, diagnostic, stack) {
 			if (document.getElementById("tabs") && tabs) { // JQuery-UI version
 				tabs.tabs("refresh" );
 			}
-			console.log("+" + elapsed + " " + msg);
+			consoleLog("+" + elapsed + " " + msg);
 		}
 		else {
 			var error=status;
@@ -741,18 +780,18 @@ function setStatus(msg, err, diagnostic, stack) {
 			else {
 				error.innerHTML = "<h1>" + msg + "</h1><h2>Error: " + errm + "</h2>";
 			}
-			console.log(error.innerHTML);
+			consoleLog(error.innerHTML);
 			if (stack) {
 				error.innerHTML += "<p>Stack:</br><pre>" + stack + "</pre></p>";
-				console.log("[" + elapsed + "] Stack: " + stack);
+				consoleLog("[" + elapsed + "] Stack: " + stack);
 			}
 			else if (err && err.stack) {
 				error.innerHTML += "<p>Stack:</br><pre>" + err.stack + "</pre></p>";
-				console.log("[" + elapsed + "] err.Stack: " + stack);
+				consoleLog("[" + elapsed + "] err.Stack: " + stack);
 			}
 			if (diagnostic) {
 				error.innerHTML += "<p>Processing diagnostic:</br><pre>" + diagnostic + "</pre></p>";
-				console.log("[" + elapsed + "] Diagnostic: " + diagnostic);
+				consoleLog("[" + elapsed + "] Diagnostic: " + diagnostic);
 			} 
 				
 			if (document.getElementById("tabs") && tabs) { // JQuery-UI version
@@ -782,7 +821,7 @@ function createMap(boundingBox, noZoomlevels) {
 	var end=new Date().getTime();
 	var elapsed=(Math.round(end - start))/1000; // in S
 									
-	console.log("[" + elapsed + "] Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
+	consoleLog("[" + elapsed + "] Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
 	var map = new L.map('map' , {
 			zoom: 11,
 			// Tell the map to use a fullsreen control
@@ -801,7 +840,7 @@ function createMap(boundingBox, noZoomlevels) {
 			map.remove();
 		}
 		catch (e2) {
-			console.log("WARNING! Unable to remove map during error recovery");
+			consoleLog("WARNING! Unable to remove map during error recovery");
 		}
 		throw new Error("Unable to add loading control to map: " + e.message);
 	}
@@ -817,7 +856,7 @@ function createMap(boundingBox, noZoomlevels) {
 			map.remove();
 		}
 		catch (e2) {
-			console.log("WARNING! Unable to remove map during error recovery");
+			consoleLog("WARNING! Unable to remove map during error recovery");
 		}
 		throw new Error("Unable to create map: " + e.message);
 	}
@@ -831,13 +870,13 @@ function createMap(boundingBox, noZoomlevels) {
 			map.eachLayer(function(layer) {
 				if (!layer.on) return;
 				layer.on({
-					loading: function(event) { console.log("Loading: " + layer); },
-					load: function(event) { console.log("Loaded: " + layer); }
+					loading: function(event) { consoleLog("Loading: " + layer); },
+					load: function(event) { consoleLog("Loaded: " + layer); }
 				}, this);
 			}); */
 		}
 		else {
-			console.log("Zoomlevel based layer support disabled; only one zoomlevel of data present");
+			consoleLog("Zoomlevel based layer support disabled; only one zoomlevel of data present");
 		}
 	}
 	catch (e) {
@@ -845,7 +884,7 @@ function createMap(boundingBox, noZoomlevels) {
 			map.remove();
 		}
 		catch (e2) {
-			console.log("WARNING! Unable to remove map during error recovery");
+			consoleLog("WARNING! Unable to remove map during error recovery");
 		}
 		throw new Error("Unable to add zoomend event to map: " +  e.message);
 	}		
@@ -853,7 +892,7 @@ function createMap(boundingBox, noZoomlevels) {
 	try {
 		end=new Date().getTime();
 		elapsed=(Math.round(end - start))/1000; // in S		
-		console.log("[" + elapsed + "] Creating basemap...");															
+		consoleLog("[" + elapsed + "] Creating basemap...");															
 		tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 			maxZoom: 11,
 			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -866,7 +905,7 @@ function createMap(boundingBox, noZoomlevels) {
 		
 		end=new Date().getTime();
 		elapsed=(Math.round(end - start))/1000; // in S		
-		console.log("[" + elapsed + "] Added tileLayer and scale to map");	
+		consoleLog("[" + elapsed + "] Added tileLayer and scale to map");	
 	
 		return map;
 	}
@@ -875,7 +914,7 @@ function createMap(boundingBox, noZoomlevels) {
 			map.remove();
 		}
 		catch (e2) {
-			console.log("WARNING! Unable to remove map during error recovery");
+			consoleLog("WARNING! Unable to remove map during error recovery");
 		}		
 		throw new Error("Unable to add tile layer to map: " + e.message);
 	}
@@ -900,7 +939,7 @@ function setupBoundingBox(response) {
 				response.file_list[i].topojson[0].topojson.objects && 
 				response.file_list[i].topojson[0].topojson.objects.collection && 
 				response.file_list[i].topojson[0].topojson.objects.collection.bbox) {
-				console.log("File [" + i + "]: Using topojson bounding box");	
+				consoleLog("File [" + i + "]: Using topojson bounding box");	
 				
 				response.file_list[i].boundingBox={
 					xmin: response.file_list[i].topojson[0].topojson.objects.collection.bbox[0], 
@@ -909,7 +948,7 @@ function setupBoundingBox(response) {
 					ymax: response.file_list[i].topojson[0].topojson.objects.collection.bbox[3]};										
 			}
 			else {
-				console.log("WARNING! File [" + i + "/" + (response.no_files - 1) + "]: bounding box is not defined; using whole world as bounding box");								
+				consoleLog("WARNING! File [" + i + "/" + (response.no_files - 1) + "]: bounding box is not defined; using whole world as bounding box");								
 				response.file_list[i].boundingBox={xmin: -180, ymin: -85, xmax: 180, ymax: 85};
 			}
 		}
@@ -986,7 +1025,7 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 				"ymin: " + response.file_list[i].boundingBox[1] + ", " +
 				"xmax: " + response.file_list[i].boundingBox[2] + ", " +
 				"ymax: " + response.file_list[i].boundingBox[3] + "];";
-			console.error("\nERROR: Bounding box " + i + ": [" +
+			consoleError("\nERROR: Bounding box " + i + ": [" +
 				"xmin: " + response.file_list[i].boundingBox[0] + ", " +
 				"ymin: " + response.file_list[i].boundingBox[1] + ", " +
 				"xmax: " + response.file_list[i].boundingBox[2] + ", " +
@@ -1012,7 +1051,7 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 			
 	for (var i=0; i < response.no_files; i++) {	// Create sorted ngeolevels array for geolevel_id for re-order (if required)		
 		ngeolevels[i].geolevel_id=i+1;						
-//							console.log("ngeolevels[" + i + "]: " + JSON.stringify(ngeolevels[i], null, 4));
+//							consoleLog("ngeolevels[" + i + "]: " + JSON.stringify(ngeolevels[i], null, 4));
 		if (i == 0 && ngeolevels.length > 1 && ngeolevels[i].total_areas != 1) { // Geolevel 1 - Check that minimum resolution shapefile has only 1 area
 			setStatus("Check that minimum resolution shapefile has only 1 area", 
 				new Error("geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)"));
@@ -1022,7 +1061,7 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 	for (var i=0; i < response.no_files; i++) {	// Re-order by geolevel_id if required	
 		var j=ngeolevels[i].i;
 		if (response.file_list[j].geolevel_id) { // Geolevel ID present in data
-			console.log("File[" + j + "]: " + response.file_list[j].file_name +
+			consoleLog("File[" + j + "]: " + response.file_list[j].file_name +
 				"; geolevel: " + response.file_list[j].geolevel_id +
 				"; size: " + response.file_list[j].file_size +
 				"; areas: " + response.file_list[j].total_areas);
@@ -1030,7 +1069,7 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 		else {
 			response.file_list[j].geolevel_id = ngeolevels[i].geolevel_id;
 			if (response.file_list[j].geolevel_id) {
-				console.log("File[" + j + "]: " + response.file_list[j].file_name +
+				consoleLog("File[" + j + "]: " + response.file_list[j].file_name +
 					"; deduced geolevel: " + response.file_list[j].geolevel_id +
 					"; size: " + (response.file_list[j].file_size || "not defined") +
 					"; areas: " +  response.file_list[j].total_areas);
@@ -1043,12 +1082,12 @@ Add data to JSONLayer[3]; shapefile [0]: SAHSU_GRD_Level1.shp
 	}
 	
 //					for (var i=0; i < response.no_files; i++) {	// Display now re-ordered geolevels array		
-//							console.log("geolevels[" + i + "]: " + JSON.stringify(geolevels[i], null, 4));
+//							consoleLog("geolevels[" + i + "]: " + JSON.stringify(geolevels[i], null, 4));
 //					}
 	
 	for (var i=0; i < response.no_files; i++) {	// Re-order by geolevel_id; creating layerAddOrder array		
 		if (response.file_list[i].geolevel_id) {
-			console.log("Re-order: layerAddOrder[" + (response.no_files-response.file_list[i].geolevel_id) + "]=" + i);
+			consoleLog("Re-order: layerAddOrder[" + (response.no_files-response.file_list[i].geolevel_id) + "]=" + i);
 			layerAddOrder[(response.no_files-response.file_list[i].geolevel_id)]=i;	
 		}
 		else {
@@ -1249,17 +1288,17 @@ function displayResponse(responseText, status, formName, enableGetStatus) {
 							else {
 								var centre=map.getCenter();
 	
-								console.log("Centre: " + centre.lat + ", " + centre.lng);
+								consoleLog("Centre: " + centre.lat + ", " + centre.lng);
 		//						if (+centre.lat.toFixed(4) == +y_avg.toFixed(4) && 
 		//							+centre.lng.toFixed(4) == +x_avg.toFixed(4)) {
-		//							console.log("Map centre has not changed");
+		//							consoleLog("Map centre has not changed");
 		//						}
 		//						else {
 									map.eachLayer(function (layer) {
-										console.log('Remove tileLayer');
+										consoleLog('Remove tileLayer');
 										map.removeLayer(layer);
 									});
-									console.log('Remove map');
+									consoleLog('Remove map');
 									map.remove(); // Known leaflet bug:
 												  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
 									
@@ -1279,15 +1318,15 @@ function displayResponse(responseText, status, formName, enableGetStatus) {
 			
 			if (response.file_list[0]) {
 				if (response.file_list[0].srid) {
-					console.log("SRID: " + response.file_list[0].srid);
+					consoleLog("SRID: " + response.file_list[0].srid);
 				}	
 					
 				if (response.file_list[0].projection_name) {
-					console.log("Projection name: " + response.file_list[0].projection_name);
+					consoleLog("Projection name: " + response.file_list[0].projection_name);
 				}	
 				
 				if (response.file_list[0].boundingBox) {
-					console.log("Bounding box [" +
+					consoleLog("Bounding box [" +
 								"xmin: " + response.file_list[0].boundingBox.xmin + ", " +
 								"ymin: " + response.file_list[0].boundingBox.ymin + ", " +
 								"xmax: " + response.file_list[0].boundingBox.xmax + ", " +
@@ -1342,7 +1381,7 @@ function displayResponse(responseText, status, formName, enableGetStatus) {
  * Description: Wait for server response: call getShpConvertStatus method until shpConvert completes
  */
 function getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName) {
-	console.log("Wait for server response for getShpConvertTopoJSON(uuidV1): " + uuidV1);
+	consoleLog("Wait for server response for getShpConvertTopoJSON(uuidV1): " + uuidV1);
 	var lstart=new Date().getTime();
 	var atEnd=false;
 	
@@ -1355,7 +1394,7 @@ function getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName) {
 
 			var end=new Date().getTime();
 			var elapsed=(Math.round((end - lstart)/100))/10; // in S	
-			console.log("BATCH_INTERMEDIATE_END +" + elapsed + " Got server response for getShpConvertTopoJSON(uuidV1): " + uuidV1);		
+			consoleLog("BATCH_INTERMEDIATE_END +" + elapsed + " Got server response for getShpConvertTopoJSON(uuidV1): " + uuidV1);		
 			
 			displayResponse(data, status, "shpConvert" /* formName */, false /* enableGetStatus */);
 		}, // End of getShpConvertTopoJSON() 
@@ -1401,7 +1440,7 @@ function getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName) {
 			errorPopup(msg);
 		}
 		displayProgress("Unable to fetch map");
-		console.error(msg);
+		consoleError(msg);
 	});
 		
 } // End of getShpConvertTopoJSON()
@@ -1415,7 +1454,7 @@ function getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName) {
 function displayProgress(msg) {
 	var end=new Date().getTime();
 	var elapsed=(Math.round(end - start))/1000; // in S
-	console.log("+" + elapsed + " [PROGRESS]: " + msg);
+	consoleLog("+" + elapsed + " [PROGRESS]: " + msg);
 	progressLabel.text(msg);
 }	
 
@@ -1429,7 +1468,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 	
 	var end=new Date().getTime();
 	var elapsed=(Math.round(end - start))/1000; // in S
-	console.log("+" + elapsed + " Wait: " + recursionCount + " for server response for getShpConvertStatus(uuidV1): " + uuidV1 + "; current index: " + index);
+	consoleLog("+" + elapsed + " Wait: " + recursionCount + " for server response for getShpConvertStatus(uuidV1): " + uuidV1 + "; current index: " + index);
 	var lstart=new Date().getTime();
 	var atEnd=false;
 	
@@ -1438,7 +1477,8 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 			uuidV1: uuidV1, 
 			diagnosticFileDir: diagnosticFileDir,
 			statusFileName: statusFileName,
-			responseFileName: responseFileName
+			responseFileName: responseFileName,
+			lstart: lstart							// Added to prevent IE caching!
 		}, function getShpConvertStatus(data, status, xhr) {
 			var nrecursionCount=recursionCount+1;
 			
@@ -1450,7 +1490,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 				var status=data.status[(data.status.length-1)];
 				if (status && status["statusText"]) {
 					if (status["statusText"] == "BATCH_END") { // Display the last status in the progress bar
-						console.log("No need for more status updates: at end");
+						consoleLog("No need for more status updates: at end");
 					}					
 					else if (status["statusText"] == "BATCH_INTERMEDIATE_END") {
 						displayProgress("Intermediate processing complete, loading maps, making tiles");
@@ -1461,25 +1501,25 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					
 					for (var i=index; i<data.status.length; i++) {
 						if (data.status[i]) {
-							console.log("+" + data.status[i]["etime"] + " [" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
+							consoleLog("+" + data.status[i]["etime"] + " [" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
 								data.status[i].calling_function + "]: " + data.status[i].statusText);	
 								
 							if (data.status[i].statusText == "BATCH_END") {
-								console.log("Enable shpConvertGetResults button");
+								consoleLog("Enable shpConvertGetResults button");
 								var shpConvertGetResults=document.getElementById("shpConvertGetResults");
 								shpConvertGetResults.href= "shpConvertGetResults.zip?uuidV1="+ uuidV1;
 								shpConvertGetResults.download= "shpConvertGetResults_"+ uuidV1 + ".zip";
-								console.log("change shpConvertGetResults href to: " + shpConvertGetResults.href);
+								consoleLog("change shpConvertGetResults href to: " + shpConvertGetResults.href);
 								$( "#shpConvertGetResults" ).button( "enable" ); // Enable shpConvertGetResults button
 								// Load tiles
 								atEnd=true;
 							}					
 							else if (data.status[i].statusText == "BATCH_INTERMEDIATE_END") {
-								console.log("Enable shpConvertGetConfig button");
+								consoleLog("Enable shpConvertGetConfig button");
 								var shpConvertGetConfig=document.getElementById("shpConvertGetConfig");
 								shpConvertGetConfig.href= "shpConvertGetConfig.xml?uuidV1="+ uuidV1;
 								shpConvertGetConfig.download= "shpConvertGetConfig_"+ uuidV1 + ".xml";
-								console.log("change shpConvertGetConfig href to: " + shpConvertGetConfig.href);
+								consoleLog("change shpConvertGetConfig href to: " + shpConvertGetConfig.href);
 								$( "#shpConvertGetConfig" ).button( "enable" ); // Enable shpConvertGetConfig button
 								
 								getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName); // Load intermediate map
@@ -1493,7 +1533,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					var ltime=(end - lstart)/1000; // in S	
 					if (ltime > 5) {	
 						var elapsed=(Math.round(end - start))/1000; // in S
-						console.log("+" + elapsed + " WARNING: status interruption of " + ltime + " seconds for last status"); 
+						consoleLog("+" + elapsed + " WARNING: status interruption of " + ltime + " seconds for last status"); 
 					}	
 				}
 				
@@ -1506,10 +1546,10 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					var end=new Date().getTime();
 					var elapsed=(Math.round(end - start))/1000; // in S
 					displayProgress("All node processing completed in " + elapsed + " S");					
-					console.log("No need for more status updates: at end");
+					consoleLog("No need for more status updates: at end");
 				}
 				else {
-					console.log("Status update recusrion limit reached with no new status: " + nrecursionCount);
+					consoleLog("Status update recusrion limit reached with no new status: " + nrecursionCount);
 					displayProgress("Processing failed, no success or failure detected, no status change in " + nrecursionCount + " seconds");
 				}
 			}
@@ -1557,7 +1597,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 		if (response && response.message) {
 			msg+=response.message;
 		}		
-		console.error(msg);
+		consoleError(msg);
 	});
 		
 }
@@ -1603,7 +1643,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 		} */
 	}
 	catch (e) {
-		console.log("jsonAddLayer() scopeChecker ERROR: " + e.message);
+		consoleLog("jsonAddLayer() scopeChecker ERROR: " + e.message);
 		callback(e);
 		return;
 	}
@@ -1615,14 +1655,14 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 	
 	// Suppress for performance
 	if (jsonAddLayerParams.areas > 200 && map.getZoom() < 6) {
-		console.log("[" + elapsed + "] " + "Suppressing (jsonAddLayerParams.areas > 200 && map.getZoom() < 6) JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+		consoleLog("[" + elapsed + "] " + "Suppressing (jsonAddLayerParams.areas > 200 && map.getZoom() < 6) JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
 			"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
 			jsonAddLayerParams.file_name + "; areas: " + jsonAddLayerParams.areas + "; zoomlevel: " +  map.getZoom());
 		callback();
 		return;
 	}
 	else if (jsonAddLayerParams.areas > 10000) {
-		console.log("[" + elapsed + "] " + "Suppressing (jsonAddLayerParams.areas > 10,000) JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+		consoleLog("[" + elapsed + "] " + "Suppressing (jsonAddLayerParams.areas > 10,000) JSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
 			"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
 			jsonAddLayerParams.file_name + "; areas: " + jsonAddLayerParams.areas + "; zoomlevel: " +  map.getZoom());
 		callback();
@@ -1635,9 +1675,9 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 							
 	try {
 		if (jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i]) {	
-			console.log("[" + elapsed + "] Removing topoJSONLayer data: " + jsonAddLayerParams.i);
+			consoleLog("[" + elapsed + "] Removing topoJSONLayer data: " + jsonAddLayerParams.i);
 			jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i].clearLayers();
-			console.log("[" + elapsed + "] Removed topoJSONLayer data: " + jsonAddLayerParams.i);
+			consoleLog("[" + elapsed + "] Removed topoJSONLayer data: " + jsonAddLayerParams.i);
 		}
 	}
 	catch (e) {
@@ -1645,7 +1685,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 		elapsed=(Math.round(end - start))/1000; // in S
 		
 		msg="[" + elapsed + "] Error removing JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "]  map: " + e.message;
-		console.log("jsonAddLayer() ERROR: " + msg);
+		consoleLog("jsonAddLayer() ERROR: " + msg);
 		callback(new Error(msg));
 		return;
 	}			
@@ -1654,7 +1694,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 		if (jsonAddLayerParams.JSONLayer[jsonAddLayerParams.i] == undefined) {
 			if (jsonAddLayerParams.isGeoJSON) { // Use the right function
 				displayProgress("Adding geoJSON map layer for " + jsonAddLayerParams.file_name);
-				console.log("+" + elapsed + " " + verb + " GeoJSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+				consoleLog("+" + elapsed + " " + verb + " GeoJSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
 					"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
 					jsonAddLayerParams.file_name +
 					"; colour: " + jsonAddLayerParams.style.color + "; weight: " + jsonAddLayerParams.style.weight + 
@@ -1664,7 +1704,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 			}
 			else {
 				displayProgress("Adding topoJSON map layer for " + jsonAddLayerParams.file_name);
-				console.log("+" + elapsed + " " + verb + " TopoJSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
+				consoleLog("+" + elapsed + " " + verb + " TopoJSONLayer[" + jsonAddLayerParams.i + "/" + jsonAddLayerParams.no_files + 
 					"]; file layer [" + jsonAddLayerParams.layerAddOrder + "]: " +
 					jsonAddLayerParams.file_name +
 					"; colour: " + jsonAddLayerParams.style.color + "; weight: " + jsonAddLayerParams.style.weight + 
@@ -1686,7 +1726,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 	
 			for (var j=0; j<=jsonAddLayerParams.no_files; j++) {
 				if (JSONLayer[j]  && j != jsonAddLayerParams.i ) {
-					console.log("Map layer: " + jsonAddLayerParams.i + "; bring layer: " + j + " to front");
+					consoleLog("Map layer: " + jsonAddLayerParams.i + "; bring layer: " + j + " to front");
 					JSONLayer[j].bringToFront();
 				}
 			}
@@ -1694,15 +1734,15 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 			map.whenReady(function jsonAddLayerReady() { 
 					end=new Date().getTime();
 					elapsed=(Math.round(end - start))/1000; // in S
-					console.log("[" + elapsed + "] Added JSONLayer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + 
+					consoleLog("[" + elapsed + "] Added JSONLayer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + 
 						"]: " + jsonAddLayerParams.file_name + "; zoomlevel: " +  map.getZoom() /* + "; size: " + sizeof(json) SLOW!!! */);
-			//		console.log("Callback: " + jsonAddLayerParams.i);
+			//		consoleLog("Callback: " + jsonAddLayerParams.i);
 					callback();
 				}, this); 
 		}
 		else {
 			msg="jsonAddLayer(): jsonAddLayerParams.json is not defined.";
-			console.log("jsonAddLayer() ERROR: " + msg);
+			consoleLog("jsonAddLayer() ERROR: " + msg);
 			callback(new Error(msg));
 		}	
 	}
@@ -1711,7 +1751,7 @@ function jsonAddLayer(jsonAddLayerParams, JSONLayer, callback, initialRun) {
 		elapsed=(Math.round(end - start))/1000; // in S
 		
 		msg="[" + elapsed + "] Error adding JSON layer [" + jsonAddLayerParams.i  + "/" + jsonAddLayerParams.no_files + "] to map: " + e.message;
-		console.log("jsonAddLayer() ERROR: " + msg);
+		consoleLog("jsonAddLayer() ERROR: " + msg);
 		callback(new Error(msg));
 	}			
 		
@@ -1754,39 +1794,39 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
 				break;
 			}
 			else {
-				console.log("Layer [" + layerNum + "]: key: " + key + "; no match for zoomlevel: " + mapZoomlevel + 
+				consoleLog("Layer [" + layerNum + "]: key: " + key + "; no match for zoomlevel: " + mapZoomlevel + 
 					"; maxZoomlevel key: " + maxZoomlevel + "; minZoomlevel key: " + minZoomlevel);
 			}
 		}
 		
 		if (json) {
-			console.log("Layer [" + layerNum + "]: json match for zoomlevel: " + mapZoomlevel + 
+			consoleLog("Layer [" + layerNum + "]: json match for zoomlevel: " + mapZoomlevel + 
 				"; maxZoomlevel key: " + maxZoomlevel + "; minZoomlevel key: " + minZoomlevel);
 			return json;
 		}
 		// no json found for zoomlevel: 3; mapZoomlevel < minZoomlevel; using minZoomlevel key: 10
 		if (json == undefined && mapZoomlevel > maxZoomlevel) {
-			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using maxZoomlevel key: " + maxZoomlevel);
+			consoleLog("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using maxZoomlevel key: " + maxZoomlevel);
 			json=jsonZoomlevels[maxZoomlevel];
 		}	
 		
 		if (json == undefined && mapZoomlevel < minZoomlevel) {
-			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; mapZoomlevel < minZoomlevel; using minZoomlevel key: " + minZoomlevel);
+			consoleLog("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; mapZoomlevel < minZoomlevel; using minZoomlevel key: " + minZoomlevel);
 			json=jsonZoomlevels[minZoomlevel];
 		}
 		
 		if (json == undefined && minZoomlevel) {
-			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using minZoomlevel key: " + minZoomlevel);
+			consoleLog("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using minZoomlevel key: " + minZoomlevel);
 			json=jsonZoomlevels[minZoomlevel];
 		}
 		
 		if (json == undefined && firstKey) {
-			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using first key: " + firstKey);
+			consoleLog("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using first key: " + firstKey);
 			json=jsonZoomlevels[firstKey];
 		}
 		
 		if (json == undefined) {
-			console.log("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using default zoomlevel: 11");
+			consoleLog("Layer [" + layerNum + "]: no json found for zoomlevel: " + mapZoomlevel + "; using default zoomlevel: 11");
 			json=jsonZoomlevels["11"];
 		}
 		
@@ -1813,12 +1853,12 @@ function jsonZoomlevelData(jsonZoomlevels, mapZoomlevel, layerNum) {
 function errorHandler(error, ajaxOptions, thrownError) {
 	
 	if (error) {
-		console.error("error: " + JSON.stringify(error, null, 4));
+		consoleError("error: " + JSON.stringify(error, null, 4));
 		if (ajaxOptions) {
-			console.error("ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
+			consoleError("ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
 		}
 		if (thrownError) {
-			console.error("thrownError: " + JSON.stringify(thrownError, null, 4));
+			consoleError("thrownError: " + JSON.stringify(thrownError, null, 4));
 		}
 		var msg="<h1>Send Failed; http status: ";
 		var popupMsg;
@@ -1827,9 +1867,9 @@ function errorHandler(error, ajaxOptions, thrownError) {
 			msg = "errorHandler() Ajax exception from JQuery Form: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
 			document.getElementById("status").innerHTML = "<h1>Send Failed;</h1>" + msg;
 			if (ajaxOptions) {
-				console.log("errorHandler(): ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
+				consoleLog("errorHandler(): ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
 			}
-			console.error(msg);
+			consoleError(msg);
 			popupMsg="<h3>Failed to process request: (no error status or thrownError returned - likely server failure/firefox bug)</h3>";
 		}
 		else if (error.status) {
@@ -1850,7 +1890,7 @@ function errorHandler(error, ajaxOptions, thrownError) {
 			popupMsg+= error.responseJSON.error;
 		}
 		else {
-			console.log("No error text in JSON response");
+			consoleLog("No error text in JSON response");
 		}		
 		msg+="</br>Message:";
 		if (error.responseJSON && error.responseJSON.message) {
@@ -1869,25 +1909,25 @@ function errorHandler(error, ajaxOptions, thrownError) {
 		msg = "errorHandler() Ajax exception from JQuery Form: " + thrownError.message + "\nStack:\n" + (errorHandler.stack || ("No stack)"));
 		document.getElementById("status").innerHTML = "<h1>Send Failed;</h1>" + msg;
 		if (ajaxOptions) {
-			console.log("errorHandler(): ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
+			consoleLog("errorHandler(): ajaxOptions: " + JSON.stringify(ajaxOptions, null, 4));
 		}
-		console.error(msg);
+		consoleError(msg);
 	}
 	else {
-		console.error("errorHandler(): No error or thrownError returned");
+		consoleError("errorHandler(): No error or thrownError returned");
 	}
 	
 	if (map) {
 		map.eachLayer(function (layer) {
-			console.log('Remove tileLayer');
+			consoleLog('Remove tileLayer');
 			map.removeLayer(layer);
 		});
-		console.log('Remove map');
+		consoleLog('Remove map');
 		map.remove(); // Known leaflet bug:
 					  // Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
 		map = undefined;
 		document.getElementById("map").innerHTML = "";			 
-		console.log('Remove map element'); 
+		consoleLog('Remove map element'); 
 	}		
 
 	if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
@@ -1929,7 +1969,7 @@ function uploadProgressHandler(event, position, total, percentComplete) {
 	else {
 		document.getElementById("status").innerHTML = msg;
 	}
-	console.log(msg);
+	consoleLog(msg);
 }
 
 /*
@@ -1949,7 +1989,7 @@ function changeJsonLayers(event) {
 				});
 			}
 			catch(e) {
-				console.error("whenMapIsReady(): caught: " + e.message + "\nStack: " + e.stack);
+				consoleError("whenMapIsReady(): caught: " + e.message + "\nStack: " + e.stack);
 				return;
 			}
 							
@@ -1958,11 +1998,11 @@ function changeJsonLayers(event) {
 			var initialRun;
 			
 			if (event) {
-				console.log("[" + elapsed + "] New zoomlevel: " +  map.getZoom() + "; event: " + event.type);	
+				consoleLog("[" + elapsed + "] New zoomlevel: " +  map.getZoom() + "; event: " + event.type);	
 				initialRun=false;
 			}
 			else {
-				console.log("[" + elapsed + "] Initial zoomlevel: " +  map.getZoom());	
+				consoleLog("[" + elapsed + "] Initial zoomlevel: " +  map.getZoom());	
 				initialRun=true;
 			}			
 			
@@ -1974,7 +2014,7 @@ function changeJsonLayers(event) {
 						});
 					}
 					catch(e) {
-						console.error("asyncEachSeries(): caught: " + e.message);
+						consoleError("asyncEachSeries(): caught: " + e.message);
 						return;
 					}
 			
@@ -2012,20 +2052,20 @@ function changeJsonLayers(event) {
 								var end=new Date().getTime();
 								var elapsed=(Math.round(end - start))/1000; // in S
 								if (err) {
-									console.error("[" + elapsed + "] asyncEachErrorHandler: " + err.message + "\nStack: " + err.stack);								
+									consoleError("[" + elapsed + "] asyncEachErrorHandler: " + err.message + "\nStack: " + err.stack);								
 								}
 								else if (event) {
-									console.log("[" + elapsed + "] " + jsonAddLayerParamsArray.length + " zoomed layers processed OK.");
+									consoleLog("[" + elapsed + "] " + jsonAddLayerParamsArray.length + " zoomed layers processed OK.");
 								}
 								else {
 									var end=new Date().getTime();
 									var elapsed=(Math.round(end - start))/1000; // in S
 									displayProgress("All node processing completed in " + elapsed + " S");	
-									console.log("[" + elapsed + "] " + jsonAddLayerParamsArray.length + " initial layers processed OK.");
+									consoleLog("[" + elapsed + "] " + jsonAddLayerParamsArray.length + " initial layers processed OK.");
 								}
 							}
 							catch(e) {
-								console.error("asyncEachSeriesError(): caught: " + e.message + "\nStack: " + e.stack);
+								consoleError("asyncEachSeriesError(): caught: " + e.message + "\nStack: " + e.stack);
 							}
 						} // End of asyncEachSeriesError()
 					);						
@@ -2127,10 +2167,10 @@ function shpConvertGetResultsFunc(event) {
 	
 	if (event) {
 //		event.preventDefault();
-		console.log("shpConvertGetResultsFunc: call shpConvertGetResults("+ uuidV1 + ")");
+		consoleLog("shpConvertGetResultsFunc: call shpConvertGetResults("+ uuidV1 + ")");
 	}
 	else {
-		console.error("shpConvertGetResultsFunc(): no event defined");
+		consoleError("shpConvertGetResultsFunc(): no event defined");
 	}	
 }
 
@@ -2145,9 +2185,9 @@ function shpConvertGetConfigFunc(event) {
 
 	if (event) {
 //		event.preventDefault();
-		console.log("shpConvertGetConfigFunc: call shpConvertGetConfig("+ uuidV1 + ")");
+		consoleLog("shpConvertGetConfigFunc: call shpConvertGetConfig("+ uuidV1 + ")");
 	}
 	else {
-		console.error("shpConvertGetConfigFunc(): no event defined");
+		consoleError("shpConvertGetConfigFunc(): no event defined");
 	}
 }
