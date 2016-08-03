@@ -136,18 +136,42 @@ $(document).ready(function documentReady() {
 						if (currentTab == "maptab" && L && map && map.invalidateSize && 
 						    typeof map.invalidateSize == "function") {	
 							setTimeout(function resizeMap() { // Wait to resize map
-								consoleLog("tabsActivate(): map resize; h x w: " + 
-									document.getElementById('map').style.height + " x " + document.getElementById('map').style.width);
+								$('#map').css("margin-top",150);
+							 
+								var currentTab=$("#tabs .ui-state-active a").attr('href');
+								var nTab=0;
+								if (currentTab == "#statustab") {
+									nTab=2; // Activate diagnostics
+								}
+								else if (currentTab == "#maptab") {
+									nTab=1; // Activate map
+								}
+								else {
+									nTab=0; // Activate shapeFileSelector
+								}	
+								var activeTab=currentTab;
+								if (currentTab != "maptab") {
+									consoleLog("resizeMap(): " + event.type + "; change active tab ID to map from: " + currentTab);
+									$( "#tabs" ).tabs( "option", "active", 1); // Activate map
+									activeTab=$("#tabs .ui-state-active a").attr('href');
+								}
+								consoleLog("resizeMap(): map resize; h x w: " + 
+									document.getElementById('map').style.height + " x " + 
+									document.getElementById('map').style.width + "; active tab ID: " + activeTab);
 
 								map.invalidateSize(false /* Animate */);								
 //								L.Util.requestAnimFrame(map.invalidateSize,map,!1,map._container);
 
+								$( "#tabs" ).tabs( "option", "active", nTab); // Activate original tab
+																
 								var mapSize=map.getSize();
-								consoleLog("tabsActivate(): map after resize; h x w: " + 
+								activeTab=$("#tabs .ui-state-active a").attr('href');
+								consoleLog("resizeMap(): map after resize; h x w: " + 
 									document.getElementById('map').style.height + " x " + 
-									document.getElementById('map').style.width + "; size: " + mapSize.toString());
+									document.getElementById('map').style.width + "; size: " + mapSize.toString() + 
+									"; active tab ID: " + activeTab);
 						
-							}, 1000);
+							}, 200);
 						}
 						else if (currentTab == "maptab" && L && map) {
 							consoleLog("tabsActivate(): no map resize: map not loaded");
@@ -188,16 +212,35 @@ $(document).ready(function documentReady() {
 				e = d.documentElement,
 				g = d.getElementsByTagName('body')[0],
 				x = w.innerWidth || e.clientWidth || g.clientWidth,
-				y = w.innerHeight|| e.clientHeight|| g.clientHeight;
-			consoleLog("Viewport; h x w: " + y + "x" + x);
+				y = w.innerHeight|| e.clientHeight|| g.clientHeight;	
+			var currentTab=$("#tabs .ui-state-active a").attr('href');
+			var nTab=0;
+			if (currentTab == "#statustab") {
+				nTab=2; // Activate diagnostics
+			}
+			else if (currentTab == "#maptab") {
+				nTab=1; // Activate map
+			}
+			else {
+				nTab=0; // Activate shapeFileSelector
+			}	
+			consoleLog("windowResize(): Viewport; h x w: " + y + "x" + x + "; currentTab: " + currentTab +
+				"; nTab: " + nTab);
 			
 			setupMap();
 			var ntabs=$('#tabs >ul >li').size();
+			
 			for (var i=(ntabs-1); i>=0; i--) {
-				$( "#tabs" ).tabs( "option", "active", i); // Activate all panels. This sets the height correctly
-				
-			}		
+				$( "#tabs" ).tabs( "option", "active", i); // Activate all panels. This sets the height correctly	
+			}
+			
 			tabs.tabs("refresh" );
+			
+			setTimeout(function reactivateCorrectTab(nTab) { // Wait for resize of map
+				consoleLog("reactivateCorrectTab(): Activate new nTab: " + nTab);
+				$( "#tabs" ).tabs( "option", "active", nTab); // Activate correct tab
+			}, 1000, nTab);
+			
 		}).trigger("resize");		
 	}); // Setup tabs
 
