@@ -133,11 +133,17 @@ $(document).ready(function documentReady() {
 						var currentTab=ui.newPanel[0].id;
 						consoleLog("tabsActivate(): " + event.type + "; active tab ID: " + currentTab);
 						if (currentTab == "maptab" && L && map && map.invalidateSize && 
-						    typeof map.invalidateSize == "function") {
-							consoleLog("tabsActivate(): map resize; h x w: " + 
-								document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
-
-							map.invalidateSize();
+						    typeof map.invalidateSize == "function") {	
+							setTimeout(function resizeMap() { // Wait to resize map
+								consoleLog("tabsActivate(): map resize; h x w: " + 
+									document.getElementById('map').style.height + " x " + document.getElementById('map').style.width);
+								map.invalidateSize(true /* Animate */);
+								var mapSize=map.getSize();
+								consoleLog("tabsActivate(): map after resize; h x w: " + 
+									document.getElementById('map').style.height + " x " + 
+									document.getElementById('map').style.width + "; size: " + mapSize.toString());
+						
+							}, 1000);
 						}
 						else if (currentTab == "maptab" && L && map) {
 							consoleLog("tabsActivate(): no map resize: map not loaded");
@@ -300,7 +306,9 @@ function geographyNameChange(value) {
 		   </div>			   
 		 </div>
 		 <div id="maptab">
-		   <div id="map">
+		   <div id="mapcontainer">
+			   <div id="map">
+			   </div>
 		   </div>
 		 </div>
 		 <div id="statustab">

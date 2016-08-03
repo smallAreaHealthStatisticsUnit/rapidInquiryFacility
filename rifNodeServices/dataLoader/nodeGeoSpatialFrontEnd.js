@@ -635,7 +635,11 @@ function setupMap() {
 		// Check for min height
 		
 		setHeight("maptab", (height-50));
+		setHeight("mapcontainer", (height-52));
 		setHeight("map", (height-55));
+		
+//		document.getElementById("map").setAttribute("style", "overflow:auto;"); // Breaks leaflet
+			
 		setHeight("statustab", (height-50));
 		setHeight("status", (height-55));
 		setHeight("shapeFileSelectortab", (height-50));
@@ -668,13 +672,15 @@ function setupMap() {
 			document.getElementById("status").setAttribute("draggable", "true");
 			document.getElementById("status").style.display = "block"	;
 			document.getElementById("status").style.cursor = "hand";
+			
 			document.getElementById('status').style.height=new_h + "px";
 			document.getElementById('status').style.width=new_status_width + "px";
 			
-			document.getElementById("map").setAttribute("style","display:block;cursor:pointer;cursor:hand;");
+			document.getElementById("map").setAttribute("style","display:block;cursor:pointer;cursor:hand;overflow:auto;");
 			document.getElementById("map").setAttribute("draggable", "true");
 			document.getElementById("map").style.display = "block"	;
-			document.getElementById("map").style.cursor = "hand";		
+			document.getElementById("map").style.cursor = "hand";	
+			
 			document.getElementById('map').style.width=new_w + "px";
 			document.getElementById('map').style.height=new_h + "px";
 			
@@ -1544,7 +1550,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 				else if (atEnd) {
 
 					var end=new Date().getTime();
-					var elapsed=(Math.round(end - start))/1000; // in S
+					var elapsed=Math.round((end - start)/1000, 2); // in S
 					displayProgress("All node processing completed in " + elapsed + " S");					
 					consoleLog("No need for more status updates: at end");
 				}
