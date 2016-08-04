@@ -233,20 +233,19 @@ public class SampleRIFDatabaseCreationManager {
 			createCovariateTableQueryFormatter.addTextFieldDeclaration(
 				"covariate_name", 
 				30, 
-				false);						
-			createCovariateTableQueryFormatter.addFieldDeclaration(
+				false);
+			
+			createCovariateTableQueryFormatter.addDoubleFieldDeclaration(
 				"min", 
-				"double precision", 
-				false);			
-		
-			createCovariateTableQueryFormatter.addFieldDeclaration(
+				false);
+
+			createCovariateTableQueryFormatter.addDoubleFieldDeclaration(
 				"max", 
-				"double precision", 
-				false);					
-			createCovariateTableQueryFormatter.addFieldDeclaration(
+				false);
+
+			createCovariateTableQueryFormatter.addDoubleFieldDeclaration(
 				"type", 
-				"double precision", 
-				false);			
+				false);
 		
 			statement
 				= SQLQueryUtility.createPreparedStatement(
@@ -356,14 +355,12 @@ public class SampleRIFDatabaseCreationManager {
 				= new SQLCreateTableQueryFormatter();
 			queryFormatter.setTableName("rif_change_log");
 
-			queryFormatter.addFieldDeclaration(
+			queryFormatter.addIntegerFieldDeclaration(
 				"data_set_id", 
-				"INTEGER", 
 				false);
 
-			queryFormatter.addFieldDeclaration(
+			queryFormatter.addIntegerFieldDeclaration(
 				"row_number", 
-				"INTEGER", 
 				false);
 			
 			queryFormatter.addTextFieldDeclaration(
@@ -413,14 +410,12 @@ public class SampleRIFDatabaseCreationManager {
 				= new SQLCreateTableQueryFormatter();
 			queryFormatter.setTableName("rif_failed_val_log");
 
-			queryFormatter.addFieldDeclaration(
+			queryFormatter.addIntegerFieldDeclaration(
 				"data_set_id", 
-				"INTEGER", 
 				false);
 
-			queryFormatter.addFieldDeclaration(
+			queryFormatter.addIntegerFieldDeclaration(
 				"row_number", 
-				"INTEGER", 
 				false);
 			
 			queryFormatter.addTextFieldDeclaration(

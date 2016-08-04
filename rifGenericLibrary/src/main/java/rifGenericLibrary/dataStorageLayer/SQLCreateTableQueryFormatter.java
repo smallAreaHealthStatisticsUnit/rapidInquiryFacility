@@ -100,6 +100,7 @@ public final class SQLCreateTableQueryFormatter
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
 	public void setTextFieldLength(final int textFieldLength) {
 		this.textFieldLength = textFieldLength;
 	}
@@ -107,6 +108,49 @@ public final class SQLCreateTableQueryFormatter
 	public void setTableName(final String tableToCreate) {
 		this.tableToCreate = tableToCreate;		
 	}
+
+	public void addDateFieldDeclaration(
+		final String fieldName,
+		final boolean isNullAllowed) {
+				
+		addFieldDeclaration(
+			fieldName, 
+			"DATE", 
+			isNullAllowed);
+	}
+	
+	public void addSmallIntegerFieldDeclaration(
+		final String fieldName,
+		final boolean isNullAllowed) {
+		
+		addFieldDeclaration(
+			fieldName, 
+			"SMALLINT", 
+			isNullAllowed);	
+	}
+	
+	
+	public void addIntegerFieldDeclaration(
+		final String fieldName,
+		final boolean isNullAllowed) {
+		
+		addFieldDeclaration(
+			fieldName, 
+			"INTEGER", 
+			isNullAllowed);	
+	}
+		
+	public void addDoubleFieldDeclaration(
+		final String fieldName,
+		final boolean isNullAllowed) {
+		
+		addFieldDeclaration(
+			fieldName, 
+			"DOUBLE PRECISION", 
+			isNullAllowed);
+		
+	}
+	
 	
 	public void addTextFieldDeclaration(
 		final String fieldName,
@@ -204,7 +248,7 @@ public final class SQLCreateTableQueryFormatter
 		}
 	}	
 	
-	public void addFieldDeclaration(
+	private void addFieldDeclaration(
 		final String fieldName,
 		final String dataType,
 		final String defaultPhrase,
@@ -234,7 +278,7 @@ public final class SQLCreateTableQueryFormatter
 		
 	}
 	
-	public void addFieldDeclaration(
+	private void addFieldDeclaration(
 		final String fieldName,
 		String dataType,
 		final boolean isNullAllowed) {
