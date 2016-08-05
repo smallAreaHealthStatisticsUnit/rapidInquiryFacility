@@ -1,17 +1,7 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
-
-
-
-import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.*;
@@ -416,7 +406,404 @@ final class SQLRIFSubmissionManager
 
 	}
 	
+	private void createExtractTable(
+		final Connection connection,
+		final String studyID,
+		final AbstractStudy study) 
+		throws RIFServiceException {
+		
+		String result = null;
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
 	
+		String extractTableName = generateExtractTableName(studyID);
+		try {
+			
+	
+			SQLCreateTableQueryFormatter queryFormatter 
+				= new SQLCreateTableQueryFormatter();
+			queryFormatter.setTableName(extractTableName);			
+			queryFormatter.addSmallIntegerFieldDeclaration(
+				"year", 
+				false);
+			queryFormatter.addTextFieldDeclaration(
+				"study_or_comparison", 
+				1, 
+				false);			
+			queryFormatter.addIntegerFieldDeclaration(
+				"study_id", 
+				false);
+			queryFormatter.addTextFieldDeclaration(
+				"area_id", 
+				false);						
+			queryFormatter.addIntegerFieldDeclaration(
+				"band_id", 
+				true);			
+			queryFormatter.addSmallIntegerFieldDeclaration(
+				"sex", 
+				true);						
+			queryFormatter.addTextFieldDeclaration(
+				"age_group", 
+				true);						
+			queryFormatter.addDoubleFieldDeclaration(
+				"total_pop", 
+				true);
+
+			//add fields for covariates
+			ArrayList<Investigation> investigations
+				= study.getInvestigations();	
+			/*
+			 * Each investigation should have the same set of covariates.
+			 * Therefore, to get the covariates for the study, take the
+			 * first investigation and retrieve the collection of covariates
+			 */
+			ArrayList<AbstractCovariate> covariates
+				= investigations.get(0).getCovariates();
+			for (AbstractCovariate covariate : covariates) {
+				queryFormatter.addTextFieldDeclaration(
+					covariate.getName(), 
+					true);
+			}
+			
+			/*
+			 * Add a column for the name of each investigation
+			 */
+			for (Investigation investigation : investigations) {
+				queryFormatter.addTextFieldDeclaration(
+					investigation.getDisplayName(),
+					true);
+			}
+		
+			logSQLQuery(
+				"createExtractTable", 
+				queryFormatter);
+			
+			statement
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
+			resultSet
+				= statement.executeQuery();
+						
+			/*
+			 * Now comment the schema
+			 */
+			String extractTableComment
+				= RIFServiceMessages.getMessage("schemaComments.extractTable");
+			addSchemaTableComment(
+				connection, 
+				extractTableName, 
+				extractTableComment);
+	
+			String extractTableYearComment
+				= RIFServiceMessages.getMessage("schemaComments.extractTable.year");
+
+			addSchemaTableColumnComment(
+				connection,
+				extractTableName, 
+				"year", 
+				extractTableYearComment);
+
+			String extractTableStudyOrComparisonComment
+				= RIFServiceMessages.getMessage("schemaComments.extractTable.studyOrComparison");
+			addSchemaTableColumnComment(
+				connection,
+				extractTableName, 
+				"study_or_comparison", 
+				extractTableStudyOrComparisonComment);
+			
+			String extractTableStudyIDComment
+				= RIFServiceMessages.getMessage("schemaComments.extractTable.studyID");
+			addSchemaTableColumnComment(
+				connection,
+				extractTableName, 
+				"study_id", 
+				extractTableStudyIDComment);
+						
+			String extractTableAreaIDComment
+				= RIFServiceMessages.getMessage("schemaComments.extractTable.areaID");
+			addSchemaTableColumnComment(
+				connection,
+				extractTableName, 
+				"area_id", 
+				extractTableAreaIDComment);
+						
+			String extractTableBandIDComment
+				= RIFServiceMessages.getMessage("schemaComments.extractTable.bandID");
+			addSchemaTableColumnComment(
+				connection,
+				extractTableName, 
+				"band_id", 
+				extractTableBandIDComment);
+			
+			String extractTableSexComment
+				= RIFServiceMessages.getMessage("schemaComments.extractTable.sex");
+			addSchemaTableColumnComment(
+				connection,
+				extractTableName, 
+				"sex", 
+				extractTableSexComment);
+
+			String extractTableAgeGroupComment
+				= RIFServiceMessages.getMessage("schemaComments.extractTable.ageGroup");
+			addSchemaTableColumnComment(
+				connection,
+				extractTableName, 
+				"age_group", 
+				extractTableAgeGroupComment);
+
+			String extractTableTotalPopulationComment
+				= RIFServiceMessages.getMessage("schemaComments.extractTable.totalPopulation");
+			addSchemaTableColumnComment(
+				connection,
+				extractTableName, 
+				"total_pop", 
+				extractTableTotalPopulationComment);
+			connection.commit();
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToCreateExtractTable",
+					studyID);
+
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLRIFSubmissionManager.class, 
+				errorMessage, 
+				sqlException);
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+	}
+
+	private void createMapTable(
+		final Connection connection, 
+		final String studyID,
+		final AbstractStudy study) 
+		throws RIFServiceException {
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		
+		String mapTableName = generateMapTableName(studyID);
+		
+		try {
+			//Create the map table
+			SQLCreateTableQueryFormatter queryFormatter 
+				= new SQLCreateTableQueryFormatter();
+			queryFormatter.setTableName(mapTableName);			
+			queryFormatter.addTextFieldDeclaration(
+				"area_id", 
+				300, 
+				false);
+			queryFormatter.addSmallIntegerFieldDeclaration(
+				"year", 
+				false);
+			queryFormatter.addTextFieldDeclaration(
+				"study_or_comparison", 
+				1, 
+				false);			
+			queryFormatter.addIntegerFieldDeclaration(
+				"study_id", 
+				false);			
+			queryFormatter.addTextFieldDeclaration(
+				"area_id", 
+				false);					
+			queryFormatter.addIntegerFieldDeclaration(
+				"band_id", 
+				true);
+			queryFormatter.addSmallIntegerFieldDeclaration(
+				"sex", 
+				true);					
+			queryFormatter.addTextFieldDeclaration(
+				"age_group", 
+				true);						
+			queryFormatter.addDoubleFieldDeclaration(
+				"total_pop", 
+				true);
+
+			//add fields for covariates
+			ArrayList<Investigation> investigations
+				= study.getInvestigations();	
+			/*
+			 * Each investigation should have the same set of covariates.
+			 * Therefore, to get the covariates for the study, take the
+			 * first investigation and retrieve the collection of covariates
+			 */
+			ArrayList<AbstractCovariate> covariates
+				= investigations.get(0).getCovariates();
+			for (AbstractCovariate covariate : covariates) {
+				queryFormatter.addTextFieldDeclaration(
+					covariate.getName(), 
+					true);
+			}
+			
+			/*
+			 * Add a column for the name of each investigation
+			 */
+			for (Investigation investigation : investigations) {
+				queryFormatter.addTextFieldDeclaration(
+					investigation.getDisplayName(),
+					true);
+			}
+			
+			logSQLQuery(
+				"createMapTable", 
+				queryFormatter);
+			
+			statement
+				= createPreparedStatement(
+					connection,
+					queryFormatter);
+			resultSet
+				= statement.executeQuery();
+			
+			//Comment the map table
+			String mapTableComment
+				= RIFServiceMessages.getMessage("schemaComments.mapTable");
+			addSchemaTableComment(
+				connection, 
+				mapTableName, 
+				mapTableComment);
+			
+			String extractTableYearComment
+				= RIFServiceMessages.getMessage("schemaComments.mapTable.year");
+			addSchemaTableColumnComment(
+				connection,
+				mapTableName, 
+				"year", 
+				extractTableYearComment);
+
+			/*
+			 * @TODO: KLG
+			 * Ignore code for adding comments about covariates because currently
+			 * they do not have a description field.
+			 */
+			/*
+			for (AbstractCovariate covariate : covariates) {
+				addSchemaTableColumnComment(
+					connection,
+					mapTableName, 
+					covariate.getName(), 
+					covariate.getName()); //@TODO: KLG: add new method "getDescription()"
+			}
+			*/
+			
+			/*
+			 * @TODO: KLG
+			 * Ignore code for adding comments about investigations because currently
+			 * they do not have a name field.  Given that this is intended to be 
+			 * a table column name, it could not be allowed to have spaces or other
+			 * strange characters.  
+			 */
+			/*
+			for(Investigation investigation : investigations) {
+				addSchemaTableColumnComment(
+					connection,
+					mapTableName, 
+					investigation.getDisplayName(), 
+					covariate.getDescription()); //@TODO: KLG: add new method "getDescription()"				
+			}
+			*/
+			
+			connection.commit();			
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToCreateMapTable",
+					studyID);
+
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLRIFSubmissionManager.class, 
+				errorMessage, 
+				sqlException);
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}
+		
+	}	
+	
+	private void addSchemaTableComment(
+		final Connection connection,
+		final String tableName,
+		final String comment) 
+		throws SQLException, 
+		RIFServiceException {
+	
+		SQLSchemaCommentQueryFormatter queryFormatter
+			= new SQLSchemaCommentQueryFormatter();
+		queryFormatter.setTableComment(tableName, comment);
+		
+		logSQLQuery(
+			"addSchemaTableComment", 
+			queryFormatter);
+		
+		PreparedStatement statement = null;
+		try {
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			statement.executeUpdate();
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}		
+	}
+
+	
+	private void addSchemaTableColumnComment(
+		final Connection connection,
+		final String tableName,
+		final String columnName,
+		final String comment) 
+		throws SQLException, 
+		RIFServiceException {
+		
+		SQLSchemaCommentQueryFormatter queryFormatter
+			= new SQLSchemaCommentQueryFormatter();
+		queryFormatter.setTableColumnComment(tableName, columnName, comment);
+		
+		logSQLQuery(
+			"addSchemaTableColumnComment", 
+			queryFormatter);
+		
+		PreparedStatement statement = null;
+		try {
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			statement.executeUpdate();
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}		
+	}
 	
 	public String runStudy(
 		final Connection connection,
@@ -951,8 +1338,7 @@ final class SQLRIFSubmissionManager
 			SQLQueryUtility.close(statement);
 		}
 	}
-	
-	
+
 	public void deleteStudy(
 		final Connection connection,
 		final User user,
@@ -1948,6 +2334,26 @@ final class SQLRIFSubmissionManager
 		}		
 		
 	}
+		
+	private String generateExtractTableName(final String studyID) {
+		StringBuilder extractTableName = new StringBuilder();
+		
+		extractTableName.append("rif_studies.s");
+		extractTableName.append(studyID);
+		extractTableName.append("_extract");
+		return extractTableName.toString();
+	}
+
+	private String generateMapTableName(final String studyID) {
+		StringBuilder extractTableName = new StringBuilder();
+	
+		extractTableName.append("rif_studies.s");
+		extractTableName.append(studyID);
+		extractTableName.append("_map");
+		return extractTableName.toString();
+	}
+	
+	
 		
 	// ==========================================
 	// Section Errors and Validation
