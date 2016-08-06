@@ -205,7 +205,7 @@ var geojsonToCSV = function geoJSON2WKT(response, req, res) {
 						}
 
 						// Next			
-						console.error("Edited final response");											
+//						console.error("Edited final response");											
 						nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, 
 							httpErrorResponse, response.fields, undefined /* optional callback */);								
 					} // End of geoJSON2WKTFileAddStatus()

@@ -59,6 +59,9 @@
 // Imperial College London
 //
  
+const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
+       os = require('os');
+ 
 /*
  * Function:	createTemporaryDirectory()
  * Parameters:	Directory component array [$TEMP/shpConvert, <uuidV1>, <fileNoext>], internal response object, Express HTTP request object, serverLog object
@@ -720,16 +723,20 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 		callback: callback
 	});	
 	var msg;
+	var isError=false;
 
 	// Check status, httpStatus
 	switch (httpStatus) {
 		case 200: /* HTTP OK */
 			break;
 		case 405: /* HTTP service not supported */
+			isError=true;
 			break;				
 		case 500: /* HTTP error */
+			isError=true;
 			break;
 		case 501: /* HTTP general exception trap */
+			isError=true;
 			break;				
 		default:
 			msg="addStatus() invalid httpStatus: " + httpStatus;
@@ -757,9 +764,22 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 		response.status[response.status.length-1].statusText + "; code: " + response.status[response.status.length-1].httpStatus;
 	}
 	
-	if (response.fields["uuidV1"] && response.fields["diagnosticFileDir"] && response.fields["statusFileName"]) { // Can save state
-		response.message+="\n+" + response.status[response.status.length-1].etime + 
-			" S addStatus: " + msg + "\nRe-creating status file: " + response.fields["statusFileName"];
+	msg="+" + response.status[response.status.length-1].etime + 
+		" S addStatus: " + msg;
+			
+	if (response.fields["uuidV1"] && response.fields["statusFileName"]) { // Can save state
+
+		if (response.fields["diagnosticFileDir"] == undefined) {
+			response.fields["diagnosticFileDir"]=os.tmpdir() + "/shpConvert/" + response.fields["uuidV1"];
+		}
+		
+		msg+="\nRe-creating status file: " + response.fields["statusFileName"];
+		if (isError) {		
+			serverLog.serverLog2(__file, __line, "addStatus", 
+				"WARNING: Error status: " + msg, req, undefined /* Error */, response);
+		}
+//		console.error(msg);
+		response.message+="\n" + msg;
 		var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
 
 		fs.writeFile(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"] + ".new", 
@@ -829,15 +849,43 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 //			serverLog.serverLog2(__file, __line, "addStatus", msg, req);
 //		}
 	}
-	else if (callback) {
-		response.message+="\n+" + response.status[response.status.length-1].etime + 
-			" S addStatus: " + msg + "\nNo status file to re-create.";		
-		try {
-			callback();
-		}
-		catch (e) {
+	else {
+		if (callback && response.fields) {
+			msg+="\nNo status file to re-create, missing fields from response: " + JSON.stringify(response.fields, null, 4);
 			serverLog.serverLog2(__file, __line, "addStatus", 
-				"Recursive error in addStatus() callback", req, e);
+				"WARNING: Error with addStatus: " + msg, req, undefined /* Error */, response);
+			response.message+="\n" + msg;	
+			try {
+				callback();
+			}
+			catch (e) {
+				serverLog.serverLog2(__file, __line, "addStatus", 
+					"Recursive error in addStatus() callback", req, e);
+			}
+		}
+		else if (callback && response.fields == undefined) {
+			msg+="\nNo status file to re-create";
+			serverLog.serverLog2(__file, __line, "addStatus", 
+				"WARNING: Error with addStatus: " + msg, req, undefined /* Error */, response);
+			response.message+="\n" + msg;	
+			try {
+				callback();
+			}
+			catch (e) {
+				serverLog.serverLog2(__file, __line, "addStatus", 
+					"Recursive error in addStatus() callback", req, e);
+			}
+		}
+		else if (response.fields) {
+			msg+="\nNo status file to re-create and no callback, missing fields from response: " + 
+				JSON.stringify(response.fields, null, 4);
+			serverLog.serverLog2(__file, __line, "addStatus", 
+				"WARNING: Error with addStatus: " + msg, req, undefined /* Error */, response);
+			response.message+="\n" + msg;	
+		}
+		else {
+			msg+="\nNo status file to re-create and no callback";
+			response.message+="\n" + msg;	
 		}
 	}
 } // End of addStatus()

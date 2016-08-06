@@ -47,6 +47,9 @@
 // Peter Hambly, SAHSU
 
 require('magic-globals'); // For file and line information. Does not work from Event queues
+
+const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
+		
 var util = require('util');
  
 /*
@@ -153,34 +156,46 @@ serverError = function(msg, req, err, response) {
 	var stack = new Error().stack
 	
 	try {
-		if (response && response.diagnosticsTimer && response.diagnosticsTimer > 0) { // Disable the diagnostic file write timer
-//			console.error("serverError(): clearInterval: " + response.diagnosticsTimer);
-			clearInterval(response.diagnosticsTimer);
-			response.diagnosticsTimer=undefined;
-		}
-		else if (response) {
-//			console.error("serverError(): response in scope; has already been disabled; recursive call!!!");
-// has already been disable; recursive call!!!
-//			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, timer not set; stack: " + stack, req);
-		}
-		else {
-			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req);
-		}
+		nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, 
+			500 /* HTTP Failure */, serverLog, req,  // Add Error status	
+		function serverErrorAddStatus(err) {
+			if (err) {
+				serverLog.serverLog2(__file, __line, "serverErrorAddStatus", 
+					"WARNING: Unable to add status", req, err);
+			}	
+			console.error("serverErrorAddStatus() OK");
+			_serverError2(file, line, calling_function, msg, req, err, response);			
+		});	
 	}
 	catch (e) {
-		serverLog2(file, line, calling_function, "WARNING! Caught error! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req, e);
+		serverLog2(file, line, calling_function, "WARNING! Caught error! trying to serverErrorAddStatus; stack: " + stack, req, e);
+
+		_serverError2(file, line, calling_function, msg, req, err, response);		
 	}
-		
-	serverLog2(file, line, calling_function, msg, req, err);
-	if (err) {
-		throw err;
+	
+}
+
+serverError2 = function(file, line, calling_function, msg, req, err, response) {
+	try {
+		nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, 
+			500 /* HTTP Failure */, serverLog, req,  // Add Error status	
+		function serverError2AddStatus(err) {
+			if (err) {
+				serverLog.serverLog2(__file, __line, "serverError2AddStatus", 
+					"WARNING: Unable to add status", req, err);
+			}	
+			console.error("serverError2AddStatus() OK");
+			_serverError2(file, line, calling_function, msg, req, err, response);			
+		});	
 	}
-	else {
-		throw new Error(msg);
+	catch (e) {
+		serverLog2(file, line, calling_function, "WARNING! Caught error! trying to serverError2AddStatus; stack: " + stack, req, e);
+
+		_serverError2(file, line, calling_function, msg, req, err, response);		
 	}
 }
 
-serverError2 = function(file, line, calling_function, msg, req, err, response) {	
+_serverError2 = function(file, line, calling_function, msg, req, err, response) {	
 
 	var stack = new Error().stack
 	

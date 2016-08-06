@@ -1477,6 +1477,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 	consoleLog("+" + elapsed + " Wait: " + recursionCount + " for server response for getShpConvertStatus(uuidV1): " + uuidV1 + "; current index: " + index);
 	var lstart=new Date().getTime();
 	var atEnd=false;
+	var hasErrors=false;
 	
 	var jqXHR=$.get("getShpConvertStatus", 
 		{ 
@@ -1500,6 +1501,9 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					}					
 					else if (status["statusText"] == "BATCH_INTERMEDIATE_END") {
 						displayProgress("Intermediate processing complete, loading maps, making tiles");
+					}				
+					else if (status["statusText"] == "ERROR") {
+						displayProgress("Processing failed");
 					}
 					else {
 						displayProgress(status["statusText"]);
@@ -1530,6 +1534,10 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 								
 								getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName); // Load intermediate map
 //								atEnd=true;
+							}				
+							else if (data.status[i].statusText == "ERROR") {
+								atEnd=true;
+								hasErrors=true;
 							}
 								
 						}
@@ -1546,6 +1554,13 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 				if (nrecursionCount < 90 && atEnd == false) {
 					setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, statusFileName, responseFileName, nextTimeout /* Next timeout */, 
 						nrecursionCount /* Recursion count */, nIndex /* New index */);
+				}
+				else if (atEnd && hasErrors) {
+
+					var end=new Date().getTime();
+					var elapsed=Math.round((end - start)/1000, 2); // in S
+					displayProgress("Node processing failed with error after " + elapsed + " S");					
+					consoleLog("No need for more status updates: at end");
 				}
 				else if (atEnd) {
 

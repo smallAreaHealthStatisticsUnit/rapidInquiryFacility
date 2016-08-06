@@ -363,6 +363,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	      reproject = require('reproject'),
 	      srs = require('srs'),
 	      async = require('async'),
+	      turf = require('turf'),
 		  streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback'),
 		  simplifyGeoJSON = require('../lib/simplifyGeoJSON');
 
@@ -374,8 +375,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	scopeChecker(__file, __line, {
 		serverLog: serverLog,
 		httpErrorResponse: httpErrorResponse
-	});	
-		
+	});				
 	// Queue functions
 	
 	/*
@@ -416,6 +416,148 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	 * Description:	Read next shapefile record, call reader function
 	 */
 	var shapefileReadNextRecord = function shapefileReadNextRecord(record, shapefileData, response, shapefileReader) {
+
+		/*
+		 * Function:	shapefileDataAddRecord()
+		 * Parameters:	shapefile record, shape file data object, recNo
+		 * Returns:		TRUE (OK)/FALSE
+		 * Description:	Add record to shape file data object featureList; ST_Union duplicates
+		 */	
+		function shapefileDataAddRecord(record, shapefileData, recNo) {
+				
+			scopeChecker(__file, __line, {
+				turf: turf,
+				serverLog: serverLog,
+				httpErrorResponse: httpErrorResponse
+			});
+	
+			var areaID=shapefileData["areaID"];
+			var areaName=shapefileData["areaName"];
+		
+			try {
+				if (record.properties && areaID && record.properties[areaID]) { // Extract area_id value 
+				
+					if (shapefileData["areaIDs"][record.properties[areaID]] &&
+						shapefileData["areaIDs"][record.properties[areaID]].areaID == record.properties[areaID]) {
+							
+						shapefileData["areaIDs"][record.properties[areaID]].duplicates++;	
+//						console.error("duplicate areaIDs: " + record.properties[areaID] + 
+//							"; base recNo: " + shapefileData["areaIDs"][record.properties[areaID]].recNo + 
+//							"; current recNo: " + recNo + "; areaID: " + areaID + 
+//							"; duplicates Unioned so far: " + shapefileData["areaIDs"][record.properties[areaID]].duplicates +
+//							"; record.properties: " + JSON.stringify(record.properties, null, 4));
+						var dupRecord=shapefileData["featureList"][(shapefileData["areaIDs"][record.properties[areaID]].recNo-1)];
+						
+						if (dupRecord) {
+							dupRecordJSON=JSON.stringify(dupRecord.properties, null, 4);
+							recordJSON=JSON.stringify(record.properties, null, 4);
+							if (recordJSON == dupRecordJSON) {
+								var newFeature=turf.union(record, dupRecord);	
+								shapefileData["featureList"][(shapefileData["areaIDs"][record.properties[areaID]].recNo-1)]=newRecord;
+								// Replace feature with new Unioned feature in collection (record number: recNo)			
+							}	
+							else {
+								throw new Error("ST_Union de-duplication for shapefile[" + 
+									shapefileData["shapefile_no"] + "]: " +	shapefileData["shapeFileName"] +
+									"; properties mismatch in shapefileData featureList for: " + 
+									(shapefileData["areaIDs"][record.properties[areaID]].recNo-1) +
+									"; recordJSON: " + recordJSON +
+									"; dupRecordJSON: " + dupRecordJSON);
+							}						
+						}	
+						else {
+							throw new Error("ST_Union de-duplicationfor shapefile[" + 
+									shapefileData["shapefile_no"] + "]: " +	shapefileData["shapeFileName"] +
+									"; no featureList record found shapefileData featureList for: " + 
+								(shapefileData["areaIDs"][record.properties[areaID]].recNo-1));
+						}					
+					}
+					else {
+						if (record.properties.gid == undefined) {
+							record.properties.gid=recNo;
+						}
+						shapefileData["areaIDs"][record.properties[areaID]] = {
+							recNo: recNo,
+							duplicates: 0,
+							areaID: record.properties[areaID],
+							areaName: record.properties[areaName]
+						}	
+//						console.error("new areaID: " + record.properties[areaID] + 
+//							"; current recNo: " + recNo + " areaID: " + areaID + 
+//							"; record.properties: " + JSON.stringify(record.properties, null, 4) +
+//							"; shapefileData areaIDs: " + JSON.stringify(shapefileData["areaIDs"][record.properties[areaID]], null, 4));
+						shapefileData["featureList"].push(record); 		// Add feature to collection (record number: recNo)	
+					}
+				}	
+				else {
+					shapefileData["featureList"].push(record); 		// Add feature to collection (record number: recNo)
+				}
+				return true;
+			}
+			catch (e) {
+				serverLog.serverLog2(__file, __line, "shapefileDataAddRecord", 
+					"[" + recNo + "]; failed [" + shapefileData["uuidV1"] + 
+					"] File: " + shapefileData["shapeFileName"] + "\n" + 
+					"\nGeoJSON recordsample >>>\n" + JSON.stringify(record, null, 2).substring(0, 600) + "\n<<<", 
+					shapefileData["req"], e);	
+				shapefileData["callback"](e); // Run shapefile callback with error
+				return false;
+			}
+		} // End of shapefileDataAddRecord()
+
+		/*
+		 * Function:	shapefileDataReadNextRecord()
+		 * Parameters:	shapefile record, shape file data object, recNo
+		 * Returns:		Nothing; runs shaoefile callback
+		 * Description:	Read next record
+		 *				Print read record diagnostics every 1000 shapefile records or second
+		 */			
+		function shapefileDataReadNextRecord(record, shapefileData, recNo) { // Read next record
+			record=undefined;	
+			// Force garbage collection
+			if (global.gc && shapefileData["recLen"] > (1024*1024*500) && ((recNo/10000)-Math.floor(recNo/10000)) == 0) { // GC if json > 500M;  every 10K records
+				const v8 = require('v8');
+				
+				global.gc();
+				var heap=v8.getHeapStatistics();
+				msg+="\nMemory heap >>>";
+				for (var key in heap) {
+					msg+="\n" + key + ": " + heap[key];
+				}
+				msg+="\n<<< End of memory heap";
+				serverLog.serverLog2(__file, __line, "shapefileDataReadNextRecord", "OK [" + shapefileData["uuidV1"] + 
+					"] Force garbage collection shapefile at read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"] + msg, shapefileData["req"]);					
+			}
+			
+			// Print read record diagnostics every 1000 shapefile records or second
+			if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1 || elapsedReadTime > (shapefileData["elapsedReadTime"] + 1)) { 
+				doTrace=true;
+		
+				msg="Reading shapefile record " + recNo + " from: " + shapefileData["fileNoExt"] + "; current size: " + nodeGeoSpatialServicesCommon.fileSize(shapefileData["recLen"]);						
+				if (shapefileData["recLen"] > 100*1024*1024) { // Write a log message every 100 MB
+					serverLog.serverLog2(__file, __line, "readShapeFile", "+" + shapefileData["elapsedReadTime"] + "S; " + msg, shapefileData["req"]);
+				}
+				if (elapsedReadTime > (shapefileData["elapsedReadTime"] + 1)) { // Add status every 1S
+					shapefileData["elapsedReadTime"]=elapsedReadTime;
+					nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, // Add end of shapefile read status
+						200 /* HTTP OK */, serverLog, req,
+						function shapefileReadNextRecordAddStatus(err) {
+							if (err) {
+								serverLog.serverLog2(__file, __line, "shapefileReadNextRecordAddStatus", 
+									"WARNING: Unable shapefile record processing status", req, err);
+							}				
+							process.nextTick(shapefileData["reader"].readRecord, shapefileReader); 	// Read next record		
+						});  // End of shapefileReadNextRecordAddStatus()
+				}
+				else {
+					process.nextTick(shapefileData["reader"].readRecord, shapefileReader); 	// Read next record
+				}
+				response.message+="\n+" + shapefileData["elapsedReadTime"] + "S; " + msg;
+			}
+			else {
+				process.nextTick(shapefileData["reader"].readRecord, shapefileReader); 	// Read next record
+			}
+		} // £nd of shapefileDataReadNextRecord()
 		
 		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
 		
@@ -439,7 +581,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		if (!shapefileData["elapsedReadTime"]) {
 			shapefileData["elapsedReadTime"]=elapsedReadTime;
 		}
-
+			
 		if (shapefileData["mySrs"].srid != "4326") { // Re-project to 4326
 			try {
 				msg="\nshapefile read [" + recNo	+ "] call reproject.toWgs84() for: " + shapefileData["fileNoExt"];
@@ -473,70 +615,40 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						"xmax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2] + ", " +
 						"ymax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3] + "];";
 				}
-				shapefileData["featureList"].push(
-					reproject.toWgs84(
-						{type: "FeatureCollection", bbox: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox, features: [record]}, 
-						"EPSG:" + shapefileData["mySrs"].srid, 
-						shapefileData["crss"]).features[0]
-					);
+				
+				var newRecord=reproject.toWgs84({
+						type: "FeatureCollection", 
+						bbox: response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox, 
+						features: [record]
+					}, 
+					"EPSG:" + shapefileData["mySrs"].srid, 
+					shapefileData["crss"]).features[0];	
+				if (!shapefileDataAddRecord(newRecord, shapefileData, recNo)) { 
+					return;
+				}
+				else {
+					shapefileDataReadNextRecord(record, shapefileData, recNo); // Read next record
+				}
 			}
 			catch (e) {
-				serverLog.serverError2(__file, __line, "shapefileReadNextRecord", 
+				serverLog.serverLog2(__file, __line, "shapefileReadNextRecord", 
 					"[" + recNo + "]; reproject.toWgs84() failed [" + shapefileData["uuidV1"] + 
 					"] File: " + shapefileData["shapeFileName"] + "\n" + 
 					"\nProjection data:\n" + shapefileData["prj"] + "\n<<<" +
 					"\nCRSS database >>>\n" + JSON.stringify(shapefileData["crss"], null, 2) + "\n<<<" +
 					"\nGeoJSON sample >>>\n" + JSON.stringify(shapefileData["featureList"], null, 2).substring(0, 600) + "\n<<<", 
-					shapefileData["req"], e, response);	
+					shapefileData["req"], e);	
+				shapefileData["callback"](e); // Run shapefile callback with error
+				return;
 			}
 		}
 		else {
-			shapefileData["featureList"].push(record); 		// Add feature to collection
-		}
-
-		record=undefined;	
-		// Force garbage collection
-		if (global.gc && shapefileData["recLen"] > (1024*1024*500) && ((recNo/10000)-Math.floor(recNo/10000)) == 0) { // GC if json > 500M;  every 10K records
-			const v8 = require('v8');
-			
-			global.gc();
-			var heap=v8.getHeapStatistics();
-			msg+="\nMemory heap >>>";
-			for (var key in heap) {
-				msg+="\n" + key + ": " + heap[key];
-			}
-			msg+="\n<<< End of memory heap";
-			serverLog.serverLog2(__file, __line, "shapefileReadNextRecord", "OK [" + shapefileData["uuidV1"] + 
-				"] Force garbage collection shapefile at read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"] + msg, shapefileData["req"]);					
-		}
-		
-		// Print read record diagnostics every 1000 shapefile records or second
-		if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1 || elapsedReadTime > (shapefileData["elapsedReadTime"] + 1)) { 
-			doTrace=true;
-	
-			msg="Reading shapefile record " + recNo + " from: " + shapefileData["fileNoExt"] + "; current size: " + nodeGeoSpatialServicesCommon.fileSize(shapefileData["recLen"]);						
-			if (shapefileData["recLen"] > 100*1024*1024) { // Write a log message every 100 MB
-				serverLog.serverLog2(__file, __line, "readShapeFile", "+" + shapefileData["elapsedReadTime"] + "S; " + msg, shapefileData["req"]);
-			}
-			if (elapsedReadTime > (shapefileData["elapsedReadTime"] + 1)) { // Add status every 1S
-				shapefileData["elapsedReadTime"]=elapsedReadTime;
-				nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, // Add end of shapefile read status
-					200 /* HTTP OK */, serverLog, req,
-					function shapefileReadNextRecordAddStatus(err) {
-						if (err) {
-							serverLog.serverLog2(__file, __line, "shapefileReadNextRecordAddStatus", 
-								"WARNING: Unable shapefile record processing status", req, err);
-						}				
-						process.nextTick(shapefileData["reader"].readRecord, shapefileReader); 	// Read next record		
-					});  // End of shapefileReadNextRecordAddStatus()
+			if (!shapefileDataAddRecord(record, shapefileData, recNo)) { 
+				return;
 			}
 			else {
-				process.nextTick(shapefileData["reader"].readRecord, shapefileReader); 	// Read next record
+				shapefileDataReadNextRecord(record, shapefileData, recNo); // Read next record
 			}
-			response.message+="\n+" + shapefileData["elapsedReadTime"] + "S; " + msg;
-		}
-		else {
-			process.nextTick(shapefileData["reader"].readRecord, shapefileReader); 	// Read next record
 		}
 		
 	} // End of shapefileReadNextRecord()
@@ -555,10 +667,17 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			serverLog: serverLog,
 			httpErrorResponse: httpErrorResponse
 		});
+
+		var recNo2=shapefileData["featureList"].length+1;	
+// Last record is null
+//		console.error("last record: " + JSON.stringify(record, null, 4)); 
 		
 		response.file_list[shapefileData["shapefile_no"]-1].geojson.features=shapefileData["featureList"];
+		var recNo=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;	
+		
 		shapefileData["featureList"]=undefined;
-		var recNo=response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;				
+//		console.error("areaIDs for areaID[" + shapefileData["areaID"] + "]: " + JSON.stringify(shapefileData["areaIDs"], null, 4));
+					
 		msg="shapefile read [" + recNo	+ "] completed for: " + shapefileData["fileNoExt"] + "; geoJSON length: " + shapefileData["recLen"];
 
 
@@ -1133,6 +1252,10 @@ This error in actually originating from the error handler function
 		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
 		
 		var shapeFileQueueCallbackFunc = function shapeFileQueueCallbackFunc(err) {
+			if (err) {
+				console.error("shapeFileQueueCallbackFunc(): " + err.message + 
+					"\nStack >>>" + err.stack + "\n<<< End of stack\n");
+			}
 			shapeFileQueueCallback(err);
 		}
 		scopeChecker(__file, __line, {
@@ -1195,8 +1318,18 @@ This error in actually originating from the error handler function
 			quantization: 			response.fields["quantization"]			
 		};
 		
+		if (response.file_errors > 0) {
+			msg+='Errors detected in shapefile read processing: ' + response.file_errors;
+			response.message = msg + "\n" + response.message;		
+
+			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
+				serverLog, 500, req, res, msg, undefined /* Error */, response);
+								
+			return;
+		}
+		
 		try {
-			var msg="All " + response.no_files + " shapefiles have been processed";
+			var msg="All " + response.no_files + " shapefiles have been processed; errors: " + response.file_errors;
 							// WE NEED TO WAIT FOR MULTIPLE FILES TO COMPLETE BEFORE RETURNING A RESPONSE
 
 			// Re-order shapefiles by total areas; check all bounding boxes are the same
@@ -1489,7 +1622,7 @@ This error in actually originating from the error handler function
 														"nResponse.file_list[ngeolevels[i].i].topojson not defined ", req, undefined /* err */, response);
 												}
 												if (i == (ngeolevels.length-1) && j == (response.file_list[ngeolevels[i].i].topojson.length -1)) {
-													console.error("Restore geoJSON");
+//													console.error("Restore geoJSON");
 												}
 											}		
 											
@@ -1569,6 +1702,7 @@ This error in actually originating from the error handler function
 				recLen: 0,
 				fileNoExt: undefined,
 				featureList: [],
+				areaIDs: {},
 				mySrs: undefined,
 				prj: undefined,
 				reader: undefined,
@@ -1609,7 +1743,11 @@ This error in actually originating from the error handler function
 					if (areaKey == "areaID" || areaKey == "areaName") {
 						ofields[areaField]=ofields[areaField].toUpperCase();
 					}
+//					console.error("Set areaField ofields[" + areaField + "]=" + ofields[areaField]);
+					shapefileData[areaField]=ofields[areaField];
+//					console.error("Set areaField shapefileData[" + areaField + "]=" + ofields[areaField]);
 					shapefileData[areaKey]=ofields[areaField];
+//					console.error("Set areaKey shapefileData[" + areaKey + "]=" + ofields[areaField]);
 					var fileNo=response.file_list[shapefile_no-1];
 					fileNo[areaKey]=ofields[areaField];
 					response.message+="\nFile [" + (shapefile_no-1) + "]; key: " + areaKey + "; areaField: " + areaField + "=" + fileNo[areaKey];
@@ -1620,18 +1758,20 @@ This error in actually originating from the error handler function
 			}
 			
 			// Add to queue			
-
+// Called from: shpConvert.js:1236
 //			serverLog.serverLog2(__file, __line, "readShapeFile", 
 //				"In readShapeFile(), shapeFileQueue shapefile [" + shapefile_no + "/" + shapefile_total + "]: " + shapefileData["shapeFileName"]);			
 			shapeFileQueue.push(shapefileData, function shapeFileQueuePush(err) {
 				if (err) {
-					var msg='ERROR! in readShapeFile(): ' + err.message + "\nStack: " + err.stack;
+					var msg="ERROR! in readShapeFile() for shapefile[" + shapefileData["shapefile_no"] + "]: " + 
+						shapefileData["shapeFileName"] + "; Error: " + err.message + "\nStack >>>" + err.stack + "\n<<< End of stack\n";
 						
 					response.message+="\n" + msg;	
 					
 					response.file_errors++;					// Increment file error count
 					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", msg, 
 						shapefileData["req"], err);	
+
 				} // End of err		
 //				else {
 //					response.message+="\nXXXX Completed processing shapefile[" + shapefileData["shapefile_no"] + "]: " + shapefileData["shapeFileName"];
