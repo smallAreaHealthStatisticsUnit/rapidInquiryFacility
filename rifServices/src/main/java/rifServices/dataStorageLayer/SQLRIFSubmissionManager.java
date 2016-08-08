@@ -83,7 +83,7 @@ final class SQLRIFSubmissionManager
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -338,6 +338,7 @@ final class SQLRIFSubmissionManager
 	 * @param rifStudySubmission the rif job submission
 	 * @throws RIFServiceException the RIF service exception
 	 */	
+
 	public String submitStudy(
 		final Connection connection,
 		final User user,
@@ -405,10 +406,109 @@ final class SQLRIFSubmissionManager
 		}
 
 	}
+
+
+	public String submitStudy2(
+		final Connection connection,
+		final User user,
+		final RIFStudySubmission studySubmission) 
+		throws RIFServiceException {
+		
+		System.out.println("Submit Study2 user=="+user.getUserID()+"==");
+		//Validate parameters
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		studySubmission.checkErrors(validationPolicy);
+		
+		//perform various checks for non-existent objects
+		//such as geography,  geo level selects, covariates
+		checkNonExistentItems(
+			connection, 
+			studySubmission);
+
+		//KLG: TODO: Later on we should not rely on casting - it might
+		//be a risk analysis study
+		String result = null;
+		DiseaseMappingStudy diseaseMappingStudy
+			= (DiseaseMappingStudy) studySubmission.getStudy();
+		try {
+					
+			Project project = studySubmission.getProject();
+			addGeneralInformationToStudy(
+				connection,
+				user,
+				project,
+				diseaseMappingStudy);
+
+			addComparisonAreaToStudy(
+				connection, 
+				diseaseMappingStudy);
+
+			addStudyAreaToStudy(
+				connection,
+				diseaseMappingStudy);
+
+			addInvestigationsToStudy(
+				connection, 
+				true, 
+				diseaseMappingStudy);
+	
+			result = getCurrentStudyID(connection);
+			
+			connection.commit();
+			
+			runStudy2(
+				connection, 
+				result, 
+				user.getUserID(),
+				studySubmission);
+			
+			return result;
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
+					diseaseMappingStudy.getDisplayName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;			
+		}
+
+	}
+	
+	
+	/**
+	 * This method will eventually replace the original runStudy method that
+	 * relies on the run_study database procedure.
+	 */
+	public void runStudy2(
+		final Connection connection,
+		final String studyID,
+		final String userID,
+		final RIFStudySubmission studySubmission) 
+		throws RIFServiceException {		
+	
+		AbstractStudy study
+			= studySubmission.getStudy();
+	
+		createExtractTable(
+			connection, 
+			studyID, 
+			userID,
+			study);
+		
+		
+		
+	}
 	
 	private void createExtractTable(
 		final Connection connection,
 		final String studyID,
+		final String userID,
 		final AbstractStudy study) 
 		throws RIFServiceException {
 		
@@ -416,10 +516,11 @@ final class SQLRIFSubmissionManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 	
-		String extractTableName = generateExtractTableName(studyID);
-		try {
-			
-	
+		String extractTableName 		
+			= generateUserSchemaExtractTableName(
+				userID, 
+				studyID);
+		try {	
 			SQLCreateTableQueryFormatter queryFormatter 
 				= new SQLCreateTableQueryFormatter();
 			queryFormatter.setTableName(extractTableName);			
@@ -482,8 +583,8 @@ final class SQLRIFSubmissionManager
 				= createPreparedStatement(
 					connection,
 					queryFormatter);
-			resultSet
-				= statement.executeQuery();
+
+			statement.executeUpdate();
 						
 			/*
 			 * Now comment the schema
@@ -820,7 +921,7 @@ final class SQLRIFSubmissionManager
 			enableDatabaseDebugMessages(connection);		
 			
 			SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
-			queryFormatter.setSchema("rif40_sm_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
 			queryFormatter.setFunctionName("rif40_run_study");
 			queryFormatter.setNumberOfFunctionParameters(2);
 
@@ -891,7 +992,7 @@ final class SQLRIFSubmissionManager
 		try {
 			
 			SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
-			queryFormatter.setSchema("rif40_sm_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
 			queryFormatter.setFunctionName("rif40_delete_study");
 			queryFormatter.setNumberOfFunctionParameters(1);
 
@@ -1357,7 +1458,7 @@ final class SQLRIFSubmissionManager
 		try {
 			SQLFunctionCallerQueryFormatter queryFormatter 
 				= new SQLFunctionCallerQueryFormatter();
-			queryFormatter.setSchema("rif40_sm_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
 			queryFormatter.setFunctionName("rif40_delete_study");
 			queryFormatter.setNumberOfFunctionParameters(1);
 		
@@ -2335,10 +2436,13 @@ final class SQLRIFSubmissionManager
 		
 	}
 		
-	private String generateExtractTableName(final String studyID) {
-		StringBuilder extractTableName = new StringBuilder();
+	private String generateUserSchemaExtractTableName(
+		final String userID,
+		final String studyID) {
 		
-		extractTableName.append("rif_studies.s");
+		StringBuilder extractTableName = new StringBuilder();		
+		extractTableName.append(userID);
+		extractTableName.append("kgarwood.s");
 		extractTableName.append(studyID);
 		extractTableName.append("_extract");
 		return extractTableName.toString();
