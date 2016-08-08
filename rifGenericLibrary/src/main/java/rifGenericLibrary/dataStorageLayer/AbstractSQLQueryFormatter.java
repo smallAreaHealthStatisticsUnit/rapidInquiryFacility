@@ -78,6 +78,7 @@ public abstract class AbstractSQLQueryFormatter {
 	/** The query. */
 	private StringBuilder query;
 	
+	private String databaseSchemaName;
 	
 	private DatabaseType databaseType;
 	private boolean isCaseSensitive;
@@ -99,6 +100,25 @@ public abstract class AbstractSQLQueryFormatter {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public void setDatabaseSchemaName(final String databaseSchemaName) {
+		this.databaseSchemaName = databaseSchemaName;
+	}
+	
+	public String getDatabaseSchemaName() {
+		return databaseSchemaName;
+	}
+	
+	protected String getSchemaTableName(final String tableName) {
+		StringBuilder schemaTableName = new StringBuilder();
+		
+		if (databaseSchemaName != null) {
+			schemaTableName.append(databaseSchemaName);
+			schemaTableName.append(".");			
+		}
+		schemaTableName.append(tableName);
+		return schemaTableName.toString();
+	}
 	
 	protected StringBuilder getQueryBuilder() {
 		return query;

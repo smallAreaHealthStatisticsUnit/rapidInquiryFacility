@@ -225,7 +225,7 @@ public final class SQLAggregateValueQueryFormatter
 		addQueryPhrase(0, "FROM");
 		padAndFinishLine();
 
-		addQueryPhrase(1, convertCase(fromTableName));
+		addQueryPhrase(1, convertCase(getSchemaTableName(fromTableName)));
 		padAndFinishLine();
 		
 		int numberOfWhereConditions = whereConditions.size();

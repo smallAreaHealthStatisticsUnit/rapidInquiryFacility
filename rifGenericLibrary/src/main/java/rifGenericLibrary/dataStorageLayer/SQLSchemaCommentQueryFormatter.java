@@ -113,12 +113,12 @@ public final class SQLSchemaCommentQueryFormatter
 		if (columnName == null) {
 			//it is a table comment
 			addQueryPhrase(0, "COMMENT ON TABLE ");
-			addQueryPhrase(tableName);
+			addQueryPhrase(getSchemaTableName(tableName));
 		}
 		else {
 			//it is a table column comment
 			addQueryPhrase(0, "COMMENT ON COLUMN ");
-			addQueryPhrase(tableName);
+			addQueryPhrase(getSchemaTableName(tableName));
 			addQueryPhrase(".");
 			addQueryPhrase(columnName);
 		}

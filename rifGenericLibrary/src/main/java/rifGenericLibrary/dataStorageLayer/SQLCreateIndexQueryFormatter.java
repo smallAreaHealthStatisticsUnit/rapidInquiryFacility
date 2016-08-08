@@ -123,7 +123,7 @@ public final class SQLCreateIndexQueryFormatter
 		addQueryPhrase(indexTableField);
 		padAndFinishLine();
 		addPaddedQueryLine(0, "ON");
-		addQueryPhrase(1, indexTable);
+		addQueryPhrase(1, getSchemaTableName(indexTable));
 		addQueryPhrase(" (");
 		addQueryPhrase(indexTableField);		
 		addQueryPhrase(")");

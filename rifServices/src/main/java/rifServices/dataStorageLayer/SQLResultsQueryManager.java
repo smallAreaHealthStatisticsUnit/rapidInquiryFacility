@@ -128,7 +128,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		getTilesQueryFormatter
 			= new SQLFunctionCallerQueryFormatter();
 		configureQueryFormatterForDB(getTilesQueryFormatter);
-		getTilesQueryFormatter.setSchema("rif40_xml_pkg");
+		getTilesQueryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		getTilesQueryFormatter.setFunctionName("rif40_get_geojson_tiles");
 		getTilesQueryFormatter.setNumberOfFunctionParameters(9);		
 		
@@ -169,7 +169,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLFunctionCallerQueryFormatter queryFormatter
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getgeolevelboundsforarea");
 			queryFormatter.setNumberOfFunctionParameters(3);
 		
@@ -254,7 +254,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLFunctionCallerQueryFormatter queryFormatter
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getgeolevelfullextentforstudy");
 			queryFormatter.setNumberOfFunctionParameters(3);
 
@@ -377,7 +377,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
 		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_get_geojson_tiles");
 		queryFormatter.setNumberOfFunctionParameters(8);
 		
@@ -503,7 +503,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
 		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_get_geojson_tiles");
 		queryFormatter.setNumberOfFunctionParameters(5);
 		
@@ -855,7 +855,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			//Create query		
 			SQLFunctionCallerQueryFormatter queryFormatter
 				= new SQLFunctionCallerQueryFormatter();
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("");
 			queryFormatter.setNumberOfFunctionParameters(2);		
 		
@@ -1055,7 +1055,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLFunctionCallerQueryFormatter queryFormatter
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("");
 			queryFormatter.setNumberOfFunctionParameters(2);
 		
@@ -1152,7 +1152,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLFunctionCallerQueryFormatter queryFormatter
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getallattributesforgeolevelattributetheme");
 			queryFormatter.setNumberOfFunctionParameters(4);
 
@@ -1260,7 +1260,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("attribute");
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getAllAttributesForGeoLevelAttributeTheme");
 			queryFormatter.setNumberOfFunctionParameters(3);
 			queryFormatter.addWhereParameter("attribute_source");
@@ -1867,7 +1867,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 
 			SQLFunctionCallerQueryFormatter queryFormatter
 				= new SQLFunctionCallerQueryFormatter();
-		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("get_pyramid_data");
 		queryFormatter.setNumberOfFunctionParameters(3);
 		
@@ -2529,7 +2529,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLFunctionCallerQueryFormatter queryFormatter 
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getgeometrycolumnnames");
 			queryFormatter.setNumberOfFunctionParameters(1);
 			
@@ -2595,7 +2595,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLFunctionCallerQueryFormatter queryFormatter 
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_createmapareaattributesource");		
 			queryFormatter.setNumberOfFunctionParameters(6);
 			
@@ -2650,7 +2650,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLFunctionCallerQueryFormatter queryFormatter 
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_closegetmapareaattributecursor");		
 			queryFormatter.setNumberOfFunctionParameters(1);
 				
@@ -2695,7 +2695,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLFunctionCallerQueryFormatter queryFormatter 
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_deletemapareaattributesource");		
 			queryFormatter.setNumberOfFunctionParameters(1);		
 			
@@ -2889,7 +2889,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			SQLFunctionCallerQueryFormatter queryFormatter 
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setSchema("rif40");
+			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.setFunctionName("table_field_exists");
 			queryFormatter.setNumberOfFunctionParameters(2);
 		
@@ -3216,7 +3216,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		/*
 		SQLFunctionCallerQueryFormatter query
 			= new SQLFunctionCallerQueryFormatter();
-		query.setSchema("rif40_xml_pkg");
+		query.setDatabaseSchemaName("rif40_xml_pkg");
 		query.setFunctionName("geo_level_attribute_exists");
 		query.setNumberOfFunctionParameters(3);
 		
@@ -3301,7 +3301,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("theme");
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getAllAttributesForGeoLevelAttributeTheme");
 			queryFormatter.setNumberOfFunctionParameters(3);
 			queryFormatter.addWhereParameter("attribute_source");

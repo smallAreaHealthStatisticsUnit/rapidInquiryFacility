@@ -124,7 +124,7 @@ public final class SQLInsertQueryFormatter
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "INSERT INTO ");
-		addQueryPhrase(intoTable);
+		addQueryPhrase(getSchemaTableName(intoTable));
 		addQueryPhrase("(");
 
 		int numberOfInsertFields = insertFields.size();

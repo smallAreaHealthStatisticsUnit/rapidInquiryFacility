@@ -96,7 +96,7 @@ final class UserManager {
 
 		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
-		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_add_user");
 		queryFormatter.setNumberOfFunctionParameters(4);
 		
@@ -151,7 +151,7 @@ final class UserManager {
 		
 		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
-		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_alter_user");
 		queryFormatter.setNumberOfFunctionParameters(4);
 	
@@ -203,7 +203,7 @@ final class UserManager {
 					
 		SQLFunctionCallerQueryFormatter queryFormatter
 			= new SQLFunctionCallerQueryFormatter();
-		queryFormatter.setSchema("rif40_xml_pkg");
+		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_delete_user");
 		queryFormatter.setNumberOfFunctionParameters(1);
 	

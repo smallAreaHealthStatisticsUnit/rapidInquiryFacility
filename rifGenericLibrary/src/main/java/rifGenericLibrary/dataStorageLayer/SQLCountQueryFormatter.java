@@ -171,11 +171,11 @@ public final class SQLCountQueryFormatter
 		final String fieldNameB) {
 
 		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableA);
+		whereCondition.append(getSchemaTableName(tableA));
 		whereCondition.append(".");
 		whereCondition.append(fieldNameA);
 		whereCondition.append("=");
-		whereCondition.append(tableB);
+		whereCondition.append(getSchemaTableName(tableB));
 		whereCondition.append(".");
 		whereCondition.append(fieldNameB);
 		
@@ -244,7 +244,7 @@ public final class SQLCountQueryFormatter
 		final String fieldName) {
 		
 		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableName);
+		whereCondition.append(getSchemaTableName(tableName));
 		whereCondition.append(".");		
 		whereCondition.append(fieldName);
 		whereCondition.append("=?");
@@ -308,7 +308,7 @@ public final class SQLCountQueryFormatter
 		StringBuilder orderByCondition = new StringBuilder();
 			
 		if (tableName != null) {
-			orderByCondition.append(tableName);
+			orderByCondition.append(getSchemaTableName(tableName));
 			orderByCondition.append(".");
 		}
 		orderByCondition.append(fieldName);
@@ -345,7 +345,7 @@ public final class SQLCountQueryFormatter
 			if (i > 0) {
 				addQueryPhrase(",");
 			}
-			addQueryPhrase(1, convertCase(fromTables.get(i)));
+			addQueryPhrase(1, convertCase(getSchemaTableName(fromTables.get(i))));
 		}
 		
 		int numberOfWhereConditions = whereConditions.size();

@@ -1314,7 +1314,7 @@ final class SQLMapDataManager
 			SQLFunctionCallerQueryFormatter queryFormatter
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_get_geojson_as_js");
 			queryFormatter.setNumberOfFunctionParameters(5);
 
@@ -1551,7 +1551,7 @@ final class SQLMapDataManager
 			SQLFunctionCallerQueryFormatter queryFormatter
 				= new SQLFunctionCallerQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setSchema("rif40_xml_pkg");
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getgeolevelfullextent");
 			queryFormatter.setNumberOfFunctionParameters(2);		
 		
@@ -1696,7 +1696,7 @@ final class SQLMapDataManager
 			getBoundsForGeographyQueryFormatter.addSelectField("x_max");
 			getBoundsForGeographyQueryFormatter.addSelectField("y_min");
 			getBoundsForGeographyQueryFormatter.addSelectField("x_min");
-			getBoundsForGeographyQueryFormatter.setSchema("rif40_xml_pkg");
+			getBoundsForGeographyQueryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			getBoundsForGeographyQueryFormatter.setFunctionName("rif40_getGeoLevelBoundsForArea");
 			getBoundsForGeographyQueryFormatter.setNumberOfFunctionParameters(3);
 			

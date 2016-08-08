@@ -86,7 +86,6 @@ public final class SQLFunctionCallerQueryFormatter
 	/** The use distinct. */
 	private boolean useDistinct;
 	
-	private String schema;
 	private String functionName;
 	private int numberOfFunctionParameters;
 
@@ -115,14 +114,6 @@ public final class SQLFunctionCallerQueryFormatter
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public String getSchema() {
-		return schema;
-	}
-	
-	public void setSchema(final String schema) {
-		this.schema = schema;
-	}
-	
 	public String getFunctionName() {
 		return functionName;
 	}
@@ -246,8 +237,12 @@ public final class SQLFunctionCallerQueryFormatter
 		
 		addQueryPhrase(0, "FROM");
 		padAndFinishLine();
-		addQueryPhrase(1, schema);
-		addQueryPhrase(".");
+		
+		String databaseSchemaName = getDatabaseSchemaName();
+		if (databaseSchemaName != null) {
+			addQueryPhrase(1, databaseSchemaName);
+			addQueryPhrase(".");			
+		}
 		addQueryPhrase(functionName);
 		addQueryPhrase("(");
 		

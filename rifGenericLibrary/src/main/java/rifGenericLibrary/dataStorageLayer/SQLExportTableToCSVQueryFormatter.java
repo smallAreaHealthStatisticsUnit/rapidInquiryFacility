@@ -132,7 +132,7 @@ public final class SQLExportTableToCSVQueryFormatter
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
 		addPaddedQueryLine(0, "COPY");
-		addPaddedQueryLine(1, tableToExport);
+		addPaddedQueryLine(1, getSchemaTableName(tableToExport));
 		addPaddedQueryLine(0, "TO STDOUT WITH DELIMITER ',' CSV HEADER");
 		/*
 		addQueryPhrase(1, "'");

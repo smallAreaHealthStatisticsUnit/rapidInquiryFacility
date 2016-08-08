@@ -296,7 +296,7 @@ public final class SQLCreateTableQueryFormatter
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "CREATE TABLE ");
-		addQueryPhrase(tableToCreate);
+		addQueryPhrase(getSchemaTableName(tableToCreate));
 		addQueryPhrase(" (");
 		padAndFinishLine();
 		
