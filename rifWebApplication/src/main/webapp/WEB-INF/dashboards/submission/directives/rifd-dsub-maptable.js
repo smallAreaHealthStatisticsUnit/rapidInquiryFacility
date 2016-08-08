@@ -24,15 +24,7 @@ angular.module("RIF")
                         $timeout(function () {
                             $scope.parent.renderMap("area");
                         });
-/*
-                        var mapEvents = leafletMapEvents.getAvailableMapEvents();
-                        for (var k in mapEvents) {
-                            var eventName = 'leafletDirectiveMap.' + mapEvents[k];
-                            $scope.$on(eventName, function (event) {
-                                console.log(event.name);
-                            });
-                        }
-*/
+
                         //map max bounds from topojson layer
                         var maxbounds;
                         //selectedPolygon array synchronises the map <-> table selections                        
@@ -51,7 +43,6 @@ angular.module("RIF")
                         //district centres for rubberband selection
                         var latlngList = 0;
                         var centroidMarkers = new L.layerGroup();
-                        var bDrawing = false;
                         //Set up table (UI-grid)
                         $scope.gridOptions = ModalAreaService.getAreaTableOptions();
                         $scope.gridOptions.columnDefs = ModalAreaService.getAreaTableColumnDefs();
@@ -122,13 +113,13 @@ angular.module("RIF")
                             });
                             //override other map mouse events
                             map.on('draw:drawstart', function (e) {
-                                bDrawing = true;
+                                $scope.input.bDrawing = true;
                             });
                         });
 
                         //selection event fired from service
                         $scope.$on('makeDrawSelection', function (event, data) {
-                            makeDrawSelection(data);
+                                makeDrawSelection(data);
                         });
                         function makeDrawSelection(shape) {
                             latlngList.forEach(function (point) {
@@ -173,7 +164,7 @@ angular.module("RIF")
 
                         function removeMapDrawItems() {
                             drawnItems.clearLayers();
-                            bDrawing = false; //re-enable layer events
+                            $scope.input.bDrawing = false; //re-enable layer events
                         }
 
                         function renderFeature(feature) {
@@ -252,7 +243,7 @@ angular.module("RIF")
 
                                         layer.on('mouseover', function (e) {
                                             //if drawing then return
-                                            if (bDrawing) {
+                                            if ($scope.input.bDrawing) {
                                                 return;
                                             }
                                             this.setStyle({
@@ -272,7 +263,7 @@ angular.module("RIF")
                                         });
                                         layer.on('click', function (e) {
                                             //if drawing then return
-                                            if (bDrawing) {
+                                            if ($scope.input.bDrawing) {
                                                 return;
                                             }
                                             var thisPoly = e.target.feature.properties.LAD13NM;
@@ -301,7 +292,7 @@ angular.module("RIF")
                                     });
                                     map.on('moveend', function (e) {
                                         $scope.$parent.input.view = map.getCenter();
-                                    });                                    
+                                    });
                                     $scope.$parent.input.zoomLevel = map.getZoom();
                                     $scope.$parent.input.view = map.getCenter();
                                 }

@@ -11,6 +11,14 @@ angular.module("RIF")
                     SubmissionStateService.getState().studyName = $scope.studyName;
                 };
 
+                //TODO: do these calls only on start-up then save in a service
+
+                //Initialise the Taxonomy service
+                user.initialiseService().then(handleInitialise, handleInitialise);
+                function handleInitialise(res) {
+    //                console.log("taxonomy initialised: " + res.data);
+                }
+
                 //Get geographies
                 $scope.geographies = [];
                 var geogs = {"names": ["EW01", "SAHSU", "UK91"]};

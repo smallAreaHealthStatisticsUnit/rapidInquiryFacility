@@ -11,7 +11,7 @@ body {
   min-height: 60px;
   line-height: 60px;
   width: 100%;
-  z-index: 1000;
+  z-index: 10000;
 }
 /* line 14, ../sass/ngNotificationsBar.scss */
 .notifications .notification, .notifications .error, .notifications .success, .notifications .warning, .notifications .info {

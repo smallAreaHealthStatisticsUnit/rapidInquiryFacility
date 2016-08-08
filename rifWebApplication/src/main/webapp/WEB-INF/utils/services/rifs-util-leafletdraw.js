@@ -59,8 +59,6 @@ angular.module("RIF")
                                             .off('touchstart', this._onMouseDown, this)
                                             .off('touchmove', this._onMouseMove, this);
 
-                                    L.DomEvent.off(document, 'mouseup', this._onMouseUp, this);
-
                                     // If the box element doesn't exist they must not have moved the mouse, so don't need to destroy/return
                                     if (this._shape) {
                                         this._map.removeLayer(this._shape);
@@ -82,10 +80,6 @@ angular.module("RIF")
                                     this._startLatLng = e.latlng;
                                     this._isConcentricing = true;
                                 }
-
-                                L.DomEvent
-                                        .on(document, 'mouseup', this._onMouseUp, this)
-                                        .preventDefault(e.originalEvent);
 
                                 //stop drawing on right click or if band = max
                                 if (e.originalEvent.buttons === 2 | thisBand === 9) {
@@ -110,6 +104,19 @@ angular.module("RIF")
 
                                     //make selection
                                     $rootScope.$broadcast('removeDrawnItems');
+                                } else {
+                                    this._map.addLayer(this._shape);
+
+                                    this._fireCreatedEvent();
+
+                                    //fire event in directive
+                                    $rootScope.$broadcast('makeDrawSelection', {
+                                        data: this._shape,
+                                        circle: true,
+                                        band: thisBand
+                                    });
+                                    //increase band number
+                                    thisBand++;
                                 }
                             },
                             _onMouseMove: function (e) {
@@ -120,21 +127,6 @@ angular.module("RIF")
                                     this._tooltip.updateContent(this._getTooltipText());
                                     this._drawShape(latlng);
                                 }
-                            },
-                            _onMouseUp: function () {
-
-                                this._map.addLayer(this._shape);
-
-                                this._fireCreatedEvent();
-
-                                //fire event in directive
-                                $rootScope.$broadcast('makeDrawSelection', {
-                                    data: this._shape,
-                                    circle: true,
-                                    band: thisBand
-                                });
-                                //increase band number
-                                thisBand++;
                             }
                         });
 

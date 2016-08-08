@@ -16,6 +16,11 @@ angular.module("RIF")
                 notifications.showSuccess({message: 'Success: ' + msg, hide: $scope.hide});
             };
 
+            $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
+     //           console.log('resize root');
+            });
+
+
             //$scope.showError("an error message");
             //$scope.showSuccess("a success message");
             //$scope.showWarning("a warning message");

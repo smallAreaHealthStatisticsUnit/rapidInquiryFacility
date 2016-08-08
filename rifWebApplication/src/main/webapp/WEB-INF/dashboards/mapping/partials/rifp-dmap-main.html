@@ -86,7 +86,7 @@ Mapping
                 </li>	
             </ul>
         </div>
-        <div id='mAreaCharts' ng-controller ="DiseaseMappingCtrl2">          
+        <div id='mAreaCharts' >          
             <bars-chart chart-data="myData" ></bars-chart>
         </div>
     </div>
@@ -98,9 +98,9 @@ Mapping
                         <div class='mapOpts'>
                             <a ng-controller="ChoroplethModalCtrl" ng-click="open()"class='mapOpt' id="choroplethBtn" title="Choropleth map"></a>
                             <a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap')" class='mapOpt' id="baseMapBtn" title="Base map"></a>	
-                            <a href='#' class='mapOpt' id="clearSelection" title="Clear selection"></a>
-                            <a href='#' class='mapOpt' id="zoomExtent" title="Zoom to extent"></a>
-                            <input type="range" min="0" max="1" step="0.01" value ="0.7"/>
+                            <a class='mapOpt' id="clearSelection" title="Clear selection" ng-click="clear()"></a>   
+                            <a class='mapOpt' id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent()"></a>  
+                            <input type="range" ng-model ="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
                         </div>
                         <a href='#' rel='leanModal' class='settings' title="Settings" id='settingsButton'>
                             <img src="images/settings.png" alt="settings">
@@ -109,8 +109,7 @@ Mapping
                 </div>               
                 <leaflet id="diseasemap" tiles="tiles" width="100%" height="calc(100% - 40px)"></leaflet>     
             </div>
-            <div ui-layout-container class="js-back" >RR_D3_CHART
-
+            <div ui-layout-container class="rr-back" id="rr">                                              
             </div>
         </div>
     </div>

@@ -6,26 +6,21 @@ angular.module("RIF")
 
                 //unused
 
-
             }])
-        .controller('ViewerCtrl2', ['$scope', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService', 'ColorBrewerService',
-            function ($scope, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService, ColorBrewerService) {
+        .controller('ViewerCtrl2', ['$scope', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService',
+            function ($scope, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService) {
 
+                //ui-container sizes
                 $scope.size1 = "33%";
                 $scope.size2 = "66%";
-                $scope.$on('ui.layout.resize', function () {
-                    console.log('resize');
-                });
 
                 //leaflet render
                 $scope.transparency = 0.7;
-                var maxbounds;
                 $scope.selectedPolygon = [];
-
-                //d3 choropleth plotting
+                var maxbounds;
+                var thisMap = [];
                 var domain = [];
                 var attr;
-                var scale;
 
                 //get the user defined basemap
                 $scope.parent = {};
@@ -39,18 +34,34 @@ angular.module("RIF")
                             map.addLayer($scope.parent.thisLayer);
                         }
                         //restore setView
-                        map.setView(ViewerStateService.getState().view, ViewerStateService.getState().zoomLevel);
+                        if (maxbounds && ViewerStateService.getState().zoomLevel === -1) {
+                            map.fitBounds(maxbounds);
+                        } else {
+                            map.setView(ViewerStateService.getState().view, ViewerStateService.getState().zoomLevel);
+                        }
                         //hack to refresh map
                         setTimeout(function () {
                             map.invalidateSize();
-                            map.fitBounds(maxbounds); //TODO: from service
                         }, 50);
                     });
                 };
                 $scope.parent.renderMap("viewermap");
 
                 $timeout(function () {
+                    leafletData.getMap("viewermap").then(function (map) {
+                        map.on('zoomend', function (e) {
+                            ViewerStateService.getState().zoomLevel = map.getZoom();
+                        });
+                        map.on('moveend', function (e) {
+                            ViewerStateService.getState().view = map.getCenter();
+                        });
+                        new L.Control.GeoSearch({
+                            provider: new L.GeoSearch.Provider.OpenStreetMap()
+                        }).addTo(map);
+                    });
+                    //refresh map with saved state
                     $scope.parent.renderMap("viewermap");
+                    $scope.parent.refresh(ChoroService.getViewMap().invert, ChoroService.getViewMap().method);
                 });
 
                 //Clear all selection from map and table
@@ -95,7 +106,7 @@ angular.module("RIF")
                 //Render map functions
                 function style(feature) {
                     return {
-                        fillColor: renderFeature(feature),
+                        fillColor: ChoroService.getRenderFeature(feature, thisMap.scale, attr),
                         weight: 1,
                         opacity: 1,
                         color: 'gray',
@@ -103,41 +114,19 @@ angular.module("RIF")
                         fillOpacity: $scope.transparency
                     };
                 }
-                function renderFeatureSelect(feature) {
-                    //TODO: use or not?
-                    if (feature.properties._selected === 1) {
-                        return 1;
-                    } else {
-                        return 1;
-                    }
-                }
-                function renderFeature(feature) {
-                    //TODO: should be a service                         
 
-                    //handle selected
-                    if (feature.properties._selected === 1) {
-                        return "green";
-                    }
-                    //choropleth
-                    if (scale && attr !== "") {
-                        return scale(feature.properties[attr]);
-                    } else {
-                        return "#9BCD9B";
-                    }
-                }
                 function handleLayer(layer) {
                     layer.setStyle({
-                        fillColor: renderFeature(layer.feature),
-                        fillOpacity: $scope.transparency
+                        fillColor: ChoroService.getRenderFeature(layer.feature, thisMap.scale, attr)
                     });
                 }
                 $scope.changeOpacity = function () {
                     $scope.topoLayer.eachLayer(handleLayer);
                 };
 
-                //Legend and hover box
-                var legend = L.control({position: 'topright'});
+                //Hover box and Legend
                 var infoBox = L.control({position: 'bottomleft'});
+                var legend = L.control({position: 'topright'});
                 infoBox.onAdd = function () {
                     this._div = L.DomUtil.create('div', 'info');
                     this.update();
@@ -151,12 +140,11 @@ angular.module("RIF")
 
                 //information from choropleth modal to colour map                             
                 $scope.parent.refresh = function (flip, method) {
-
                     //get selected colour ramp
                     var rangeIn = ChoroService.getViewMap().brewer;
                     attr = ChoroService.getViewMap().feature;
 
-                    //Not a choropleth, but single colour
+                    //not a choropleth, but single colour
                     if (rangeIn.length === 1) {
                         attr = "";
                         leafletData.getMap("viewermap").then(function (map) {
@@ -169,104 +157,16 @@ angular.module("RIF")
                         return;
                     }
 
-                    //get value range
+                    //get the Choropleth map
                     domain.length = 0;
-                    $scope.topoLayer.eachLayer(fillDomain);
-                    var mx = Math.max.apply(Math, domain);
-                    var mn = Math.min.apply(Math, domain);
+                    $scope.topoLayer.eachLayer(function (layer) {
+                        domain.push(layer.feature.properties[attr]);
+                    });
+                    thisMap = ChoroService.getChoroScale(method, domain, rangeIn, flip);
 
-                    //flip the colour ramp?
-                    var range = [];
-                    if (!flip) {
-                        range = angular.copy(rangeIn);
-                    } else {
-                        range = angular.copy(rangeIn).reverse();
-                    }
-
-                    //find the breaks
-                    switch (method) {
-                        case "quantile":
-                            scale = d3.scale.quantile()
-                                    .domain(domain)
-                                    .range(range);
-                            var breaks = scale.quantiles();
-                            break;
-                        case "quantize":
-                            scale = d3.scale.quantize()
-                                    .domain([mn, mx])
-                                    .range(range);
-                            var breaks = [];
-                            var dom = scale.domain();
-                            var l = (dom[1] - dom[0]) / scale.range().length;
-                            var breaks = d3.range(0, scale.range().length).map(function (i) {
-                                return i * l;
-                            });
-                            breaks.shift();
-                            break;
-                        case "jenks":
-                            var breaks = ss.jenks(domain, range.length);
-                            breaks.pop();
-                            breaks.shift();
-                            scale = d3.scale.threshold()
-                                    .domain(breaks)
-                                    .range(range);
-                            break;
-                        case "standardDeviation":
-                            /*
-                             * Implementation derived by ArcMap Stand. Deviation classification
-                             * 5 intervals of which those around the mean are 1/2 the Standard Deviation
-                             */
-                            var sd = ss.sample_standard_deviation(domain);
-                            var mean = d3.mean(domain);
-
-                            var below_mean = mean - sd / 2;
-                            var above_mean = mean + sd / 2;
-                            var breaks = [];
-
-                            for (i = 0; below_mean > mn && i < 2; i++) {
-                                breaks.push(below_mean);
-                                below_mean = below_mean - sd;
-                            }
-                            for (i = 0; above_mean < mx && i < 2; i++) {
-                                breaks.push(above_mean);
-                                above_mean = above_mean + sd;
-                            }
-                            breaks.sort(d3.ascending);
-
-                            //dynamic scale range
-                            range = ColorBrewerService.getColorbrewer(ChoroService.getViewMap().brewerName, breaks.length + 1);
-
-                            scale = d3.scale.threshold()
-                                    .domain(breaks)
-                                    .range(range);
-                            break;
-                        case "logarithmic":
-                            //TODO: check, not implemented by Fred
-                            scale = d3.scale.log()
-                                    .domain([mn, mx])
-                                    .range(range);
-                            break;
-                    }
-
-                    //http://leafletjs.com/examples/choropleth.html
-                    legend.onAdd = function () {
-                        var div = L.DomUtil.create('div', 'info legend');
-                        div.innerHTML += '<h4>' + attr + '</h4>';
-                        for (var i = 0; i < range.length; i++) {
-                            div.innerHTML += '<i style="background:' + range[i] + '"></i>';
-                            if (i === 0) { //first break
-                                div.innerHTML += '<span>' + mn.toFixed(2) + '&ndash;' + breaks[i].toFixed(2) + '</span><br>';
-                            } else if (i === range.length - 1) { //last break
-                                div.innerHTML += '<span>' + breaks[i - 1].toFixed(2) + '&ndash;' + mx.toFixed(2) + '</span>';
-                            } else {
-                                div.innerHTML += '<span>' + breaks[i - 1].toFixed(2) + '&ndash;' + breaks[i].toFixed(2) + '</span><br>';
-                            }
-                        }
-                        return div;
-                    };
-
+                    //remove old legend and add new
+                    legend.onAdd = ChoroService.getMakeLegend(thisMap, attr);
                     leafletData.getMap("viewermap").then(function (map) {
-                        //remove existing legend
                         if (legend._map) { //This may break in future leaflet versions
                             map.removeControl(legend);
                         }
@@ -277,18 +177,13 @@ angular.module("RIF")
                     $scope.topoLayer.eachLayer(handleLayer);
                 };
 
-                function fillDomain(layer) {
-                    domain.push(layer.feature.properties[attr]);
-                }
-
                 d3.json("test/za.js", function (error, data) {
                     //Fill data table   
                     var colDef = [];
                     var attrs = [];
                     for (var i in data.objects.layer1.geometries[0].properties) {
                         if (typeof (data.objects.layer1.geometries[0].properties[i]) === "number") {
-                            //Attributes possible to map
-                            attrs.push(i);
+                            attrs.push(i); //Numeric attributes possible to map
                         }
                         colDef.push({
                             name: i,
@@ -329,18 +224,12 @@ angular.module("RIF")
                                     updateSelection(e.target.feature.properties);
                                 });
                             }
-
                         });
                         $scope.topoLayer.addTo(map);
                         maxbounds = $scope.topoLayer.getBounds();
-                        map.fitBounds(maxbounds);
                     });
                 });
 
-
-
-
-                //This function fires all the rendering from UI events
                 //Watch selectedPolygon array for any changes
                 $scope.$watchCollection('selectedPolygon', function (newNames, oldNames) {
                     if (newNames === oldNames) {
