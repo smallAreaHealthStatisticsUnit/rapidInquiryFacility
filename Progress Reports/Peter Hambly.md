@@ -625,4 +625,4 @@ Note: no bounding box (bbox) in tiles.
 
 ## Bugs
 
-None outstanding.
+* Missing primary key index on Postgres s<study_id>_extract.
