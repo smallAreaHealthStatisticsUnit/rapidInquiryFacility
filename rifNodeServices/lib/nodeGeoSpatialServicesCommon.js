@@ -60,7 +60,8 @@
 //
  
 const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
-       os = require('os');
+	  serverLog = require('../lib/serverLog'),
+      os = require('os');
  
 /*
  * Function:	createTemporaryDirectory()
@@ -363,8 +364,9 @@ writeResponseFile = function writeResponseFile(serverLog, response, req, output,
 						callback(err);
 					}
 					catch (e) {
-						serverLog.serverError2(__file, __line, "writeResponseFileError", 
-							"Recursive error in writeResponseFileError() callback", req, e, response);
+						serverLog.serverLog2(__file, __line, "writeResponseFileError", 
+							"RECURSIVE ERROR in writeResponseFileError() callback", req, e, response);
+						throw e;
 					}
 				}
 			});	
@@ -701,15 +703,24 @@ getStatus = function getStatus(response, req, res, serverLog, httpErrorResponse)
 	
 /*
  * Function:	addStatus()
- * Parameters:	file, line called from, response object, textual status, http status code, serverLog object, Express HTTP request object, optional callback
+ * Parameters:	file, line called from, response object, textual status, http status code, serverLog object,
+ * 				Express HTTP request object, optional callback, 
+ *				optional addtional info (for status)
  * Returns:		Nothing
  * Description: Add status to response status array
  */	
-addStatus = function addStatus(sfile, sline, response, status, httpStatus, serverLog, req, callback) {
+addStatus = function addStatus(sfile, sline, response, status, httpStatus, serverLog, req, addStatusCallback, stack, additionalInfo) {
 	var calling_function = arguments.callee.caller.name || '(anonymous)';
 	const path = require('path'),
 		  fs = require('fs');
 		
+	if (serverLog == undefined) { // Force serverLog into scope if needed
+		serverLog=require('../lib/serverLog');
+	}
+	if (stack == undefined) {
+		stack=new Error().stack;
+	}
+	
 	scopeChecker(__file, __line, {
 		serverLog: serverLog,
 		response: response,
@@ -720,7 +731,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 		message: response.message,
 		httpStatus: httpStatus
 	}, { // Optional
-		callback: callback
+		callback: addStatusCallback
 	});	
 	var msg;
 	var isError=false;
@@ -739,20 +750,28 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 			isError=true;
 			break;				
 		default:
-			msg="addStatus() invalid httpStatus: " + httpStatus;
+			msg="WARNING: addStatus() invalid httpStatus: " + httpStatus;
 			response.message+="\n" + msg;
-			throw new Error(msg);
-			break;
+			serverLog.serverLog2(__file, __line, "addStatus", msg, req, undefined /* Error */, response);
+			return;
 	}
 	
+	var nadditionalInfo=additionalInfo;
+	var nstatus=status;
+	if (additionalInfo == undefined && status && status.indexOf("\n") != -1) {
+		nadditionalInfo=status.slice(status.indexOf("\n")+1);
+		nstatus=status.slice(0, status.indexOf("\n")-1);
+	}
 	response.status[response.status.length]= {
-			statusText: status,
+			statusText: nstatus,
 			httpStatus: httpStatus,
 			sfile: path.basename(sfile),
 			sline: sline,
 			calling_function: calling_function,
 			stime: new Date().getTime(),
-			etime: 0
+			etime: 0,
+			stack: stack,
+			additionalInfo: nadditionalInfo
 		}
 		
 	if (response.status.length == 1) {	
@@ -798,7 +817,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 					message: response.message,
 					httpStatus: httpStatus
 				}, { // Optional
-					callback: callback
+					callback: addStatusCallback
 				});				
 				
 				if (err) {
@@ -821,25 +840,31 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 								message: response.message,
 								httpStatus: httpStatus
 							}, { // Optional
-								callback: callback
+								callback: addStatusCallback
 							});				
 	
 							if (err) {
 								serverLog.serverLog2(__file, __line, "addStatusWriteDiagnosticFileRename", 
 									"WARNING: Unable to rename status file", req, err, response);
 							}							
-							if (callback) {
+							if (addStatusCallback) {
 								try {
-									callback(err);
+//									console.error("YY: " + msg);
+									addStatusCallback(err);						
+//									console.error("YY2: " + msg);
+									return;
 								}
 								catch (e) {
-									serverLog.serverError2(__file, __line, "addStatusWriteDiagnosticFileRename", 
-										"Recursive error in addStatusWriteDiagnosticFileRename() callback; addStatus: " + msg, req, e, response);
+//									console.error("YY3: " + e.message + "\n" + e.stack)
+									serverLog.serverLog2(__file, __line, "addStatusWriteDiagnosticFileRename", 
+										"RECURSIVE ERROR in addStatusWriteDiagnosticFileRename() addStatusCallback; addStatus: " + msg, 
+										req, e, response);
+									throw e;
 								}
 							}
 //							else {
 //								serverLog.serverLog2(__file, __line, "addStatusWriteDiagnosticFileRename", 
-//									"WARNING: No callback", req, err);
+//									"WARNING: No addStatusCallback", req, err);
 //							}
 						}); // End of addStatusWriteDiagnosticFileRename()
 				}
@@ -850,44 +875,47 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 //		}
 	}
 	else {
-		if (callback && response.fields) {
+		if (addStatusCallback && response.fields) {
 			msg+="\nNo status file to re-create, missing fields from response: " + JSON.stringify(response.fields, null, 4);
 			serverLog.serverLog2(__file, __line, "addStatus", 
 				"WARNING: Error with addStatus: " + msg, req, undefined /* Error */, response);
 			response.message+="\n" + msg;	
 			try {
-				callback();
+				addStatusCallback();
 			}
 			catch (e) {
 				serverLog.serverLog2(__file, __line, "addStatus", 
-					"Recursive error in addStatus() callback", req, e);
+					"RECURSIVE ERROR in addStatus() addStatusCallback", req, e);
+				throw e;
 			}
 		}
-		else if (callback && response.fields == undefined) {
+		else if (addStatusCallback && response.fields == undefined) {
 			msg+="\nNo status file to re-create";
 			serverLog.serverLog2(__file, __line, "addStatus", 
 				"WARNING: Error with addStatus: " + msg, req, undefined /* Error */, response);
 			response.message+="\n" + msg;	
 			try {
-				callback();
+				addStatusCallback();
 			}
 			catch (e) {
 				serverLog.serverLog2(__file, __line, "addStatus", 
-					"Recursive error in addStatus() callback", req, e);
+					"RECURSIVE ERROR in addStatus() addStatusCallback", req, e);
+				throw e;
 			}
 		}
 		else if (response.fields) {
-			msg+="\nNo status file to re-create and no callback, missing fields from response: " + 
+			msg+="\nNo status file to re-create and no addStatusCallback, missing fields from response: " + 
 				JSON.stringify(response.fields, null, 4);
 			serverLog.serverLog2(__file, __line, "addStatus", 
 				"WARNING: Error with addStatus: " + msg, req, undefined /* Error */, response);
 			response.message+="\n" + msg;	
 		}
 		else {
-			msg+="\nNo status file to re-create and no callback";
+			msg+="\nNo status file to re-create and no addStatusCallback";
 			response.message+="\n" + msg;	
 		}
-	}
+	}	
+//	console.error("YY4: " + msg);
 } // End of addStatus()
 
 /*

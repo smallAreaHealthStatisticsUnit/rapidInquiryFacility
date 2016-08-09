@@ -31,7 +31,7 @@ body {
 	border-radius: 12px;
 	overflow: scroll;
 }
-table {
+#diagnosticstable {
 /*    color:rgb(0, 200, 255); */
     font-family: courier;
     font-size:75%;
@@ -85,6 +85,16 @@ table {
 /*  position: fixed;
   left: 50%;
   transform: translate(-50%, +50%);	*/
+}
+#errorpopuptable {
+    border: 1px solid black;
+    font-size:75%;
+}
+th, td, tr  {
+    border: 1px solid black;
+}
+#errorpopuptablestack {
+    font-size:75%;
 }
 input[type="file"] { /* Disable to default file load look, use customFileUpload */
     display: none;

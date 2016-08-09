@@ -251,8 +251,10 @@ function errorPopup(msg) {
 		var errorWidth=document.getElementById('tabbox').offsetWidth-300;
 		$( "#error" ).dialog({
 			modal: true,
-			width: errorWidth
+			width: errorWidth,
+			closeText: ""
 		});
+				
 	}	
 	else {	
 		document.getElementById("status").innerHTML = "<h1>" + msg + "</h1>";
@@ -1511,7 +1513,8 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					
 					for (var i=index; i<data.status.length; i++) {
 						if (data.status[i]) {
-							consoleLog("+" + data.status[i]["etime"] + " [" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
+							consoleLog("+" + data.status[i]["etime"] + data.status[i].httpStatus + " " + 
+								" [" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
 								data.status[i].calling_function + "]: " + data.status[i].statusText);	
 								
 							if (data.status[i].statusText == "BATCH_END") {
@@ -1559,7 +1562,36 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 
 					var end=new Date().getTime();
 					var elapsed=Math.round((end - start)/1000, 2); // in S
-					displayProgress("Node processing failed with error after " + elapsed + " S");					
+					var errorText="Node processing failed with error after " + elapsed + " S";
+					
+					displayProgress(errorText);
+					var j=0;
+					for (var i=0; i<data.status.length; i++) {
+						if (data.status[i] && data.status[i].httpStatus != 200) {
+							j++;
+							if (j==1) {
+								errorText+="</br><p><table id=\"errorpopuptable\">" + 
+								"<caption>Status events in error</caption>" +
+								"<tr><th>Elapsed time</th><th>" +
+									"Code</th><th>" + 
+									"File/Line/Function</td><td>Error</th>" +
+//									"<td>Stack</th>" + 
+									"<td>Addtional Info</th></tr>";	
+							}
+							errorText+="<tr><td>+" + data.status[i]["etime"] + " S</td><td>" + 
+								data.status[i].httpStatus + "</td><td>" + 
+								"[" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
+								data.status[i].calling_function + "]</td><td>" + 
+								data.status[i].statusText + "</td><td>" +
+//								"<pre>" + (data.status[i].stack || "No stack") + "</pre></td><td>" +
+								"<pre>" + (data.status[i].additionalInfo || "&nbsp;") + "</pre></td></tr>";
+						}
+					}	
+
+					if (j>0) {	
+						errorText+="</table></p>";
+						errorPopup(errorText);
+					}					
 					consoleLog("No need for more status updates: at end");
 				}
 				else if (atEnd) {
@@ -2104,7 +2136,7 @@ function changeJsonLayers(event) {
  */
 function createTable(response, layerColours, layerAddOrder) {
 	
-	var msg="<table border=\"1\" style=\"width:100%\">" + 
+	var msg="<table id=\"diagnosticstable\" border=\"1\" style=\"width:100%\">" + 
 		"<tr>" +
 		"<th>File</th>" + 
 		"<th>Size</th>" +

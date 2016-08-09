@@ -417,6 +417,67 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	 */
 	var shapefileReadNextRecord = function shapefileReadNextRecord(record, shapefileData, response, shapefileReader) {
 
+		function closePolygonLoop(record, recNo) {
+				
+			scopeChecker(__file, __line, {
+				record: record
+			});
+	
+			// Get number of points from features[i].geometry.coordinates arrays; supports:  Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon
+			if (record && record.geometry && 
+			    record.geometry.coordinates && record.geometry.coordinates[0]) {
+					
+				var points=0;
+				var dimensions=2;
+				var firstPoint=[];
+				var lastPoint=[];
+				var coordinates=record.geometry.coordinates;
+				var firstPoint=[];
+				var lastPoint=[];
+				for (var i=0; i<coordinates.length; i++) {
+					
+					if (coordinates[i][0][0] && coordinates[i][0][0][0]) { // a further dimension (multipolygon)
+						dimensions=3;
+						for (var j=0; j<coordinates[i].length; j++) {
+//							console.error("closePolygonLoop(): points: " + points + "; row: " + (recNo-1) + 
+//								"; dimensions: " + dimensions +
+//								"; polygon [" + i + "," + j + "]; length: " + (coordinates[i][j].length-1) + "; " + 
+//								"; " + JSON.stringify(coordinates[i][j], null, 4).substring(0, 132));					
+							points+=coordinates[i][j].length+1;
+						}			
+						firstPoint=coordinates[i][(coordinates[i].length-1)].slice(0,1);
+						lastPoint=coordinates[i][(coordinates[i].length-1)].slice((coordinates[i][(coordinates[i].length-1)].length-1),coordinates[i][(coordinates[i].length-1)].length);
+						if (firstPoint[0][0] != lastPoint[0][0] && firstPoint[0][1] != lastPoint[0][1]) {
+							console.error("closePolygonLoop(): points: " + points + "; row: " + (recNo-1) + 
+								"; dimensions: " + dimensions +
+								"; add add first point [" + i + "]; firstPoint: " + JSON.stringify(firstPoint) + 
+								"; lastPoint: " + JSON.stringify(lastPoint));
+							coordinates[i][(coordinates[i].length-1)].push(firstPoint[0]);
+						}
+					}
+					else {	
+						points+=coordinates[i].length+1;	
+						firstPoint=coordinates[i].slice(0,1);
+						lastPoint=coordinates[i].slice((coordinates[i].length-1),coordinates[i].length);
+						if (firstPoint[0][0] != lastPoint[0][0] && firstPoint[0][1] != lastPoint[0][1]) {
+							console.error("closePolygonLoop(): points: " + points + "; row: " + (recNo-1) + 
+								"; dimensions: " + dimensions +
+								"; add first point [" + i + "]; firstPoint: " + JSON.stringify(firstPoint) + 
+								"; lastPoint: " + JSON.stringify(lastPoint));
+							coordinates[i].push(firstPoint[0]);
+						}
+					}
+				}
+			}
+			else if (record) {
+//				console.error(JSON.stringify(record, null, 4).substring(0, 132));
+				throw new Error("closePolygonLoop(): Unexpected record format; row: " + (recNo-1) +
+					"\nRecord\n" + JSON.stringify(record, null, 4).substring(0, 132));
+			}
+						
+			return record;
+		} // End of closePolygonLoop()
+		
 		/*
 		 * Function:	shapefileDataAddRecord()
 		 * Parameters:	shapefile record, shape file data object, recNo
@@ -451,18 +512,36 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						if (dupRecord) {
 							dupRecordJSON=JSON.stringify(dupRecord.properties, null, 4);
 							recordJSON=JSON.stringify(record.properties, null, 4);
-							if (recordJSON == dupRecordJSON) {
-								var newFeature=turf.union(record, dupRecord);	
-								shapefileData["featureList"][(shapefileData["areaIDs"][record.properties[areaID]].recNo-1)]=newRecord;
-								// Replace feature with new Unioned feature in collection (record number: recNo)			
+							if (record.properties[areaID] == dupRecord.properties[areaID]) {
+								try { // Replace feature with new Unioned feature in collection (record number: recNo)
+									
+									var newFeature=turf.union(record, dupRecord);
+									newFeature.properties=dupRecord.properties;					
+									shapefileData["featureList"][(shapefileData["areaIDs"][record.properties[areaID]].recNo-1)]=
+										newFeature;					
+									console.error("Duplicate area ID fixed in shapefile " + 
+										shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+										"\nArea id field: " + areaID + 
+										"; value: " + record.properties[areaID] + 
+										"; gid: " + dupRecord.properties["gid"] + 
+										"; row: " + (recNo-1));
+								}
+								catch (e) {
+									throw new Error("Duplicate area ID Union error in shapefile " + 
+										shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+										"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+										"; row: " + (recNo-1) + "\nError: " + e.message +
+										"\nrecord:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+								}								
 							}	
 							else {
-								throw new Error("ST_Union de-duplication for shapefile[" + 
-									shapefileData["shapefile_no"] + "]: " +	shapefileData["shapeFileName"] +
-									"; properties mismatch in shapefileData featureList for: " + 
-									(shapefileData["areaIDs"][record.properties[areaID]].recNo-1) +
-									"; recordJSON: " + recordJSON +
-									"; dupRecordJSON: " + dupRecordJSON);
+								throw new Error("Duplicate area ID detected in shapefile " + 
+									shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+									"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+									"; row: " + (recNo-1) +
+									"\nproperties mismatch in shapefileData featureList for: " + 
+										(shapefileData["areaIDs"][record.properties[areaID]].recNo-1) +
+									"\record:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
 							}						
 						}	
 						else {
@@ -470,7 +549,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 									shapefileData["shapefile_no"] + "]: " +	shapefileData["shapeFileName"] +
 									"; no featureList record found shapefileData featureList for: " + 
 								(shapefileData["areaIDs"][record.properties[areaID]].recNo-1));
-						}					
+						}				 	
 					}
 					else {
 						if (record.properties.gid == undefined) {
@@ -623,11 +702,11 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 					}, 
 					"EPSG:" + shapefileData["mySrs"].srid, 
 					shapefileData["crss"]).features[0];	
-				if (!shapefileDataAddRecord(newRecord, shapefileData, recNo)) { 
+				if (!shapefileDataAddRecord(closePolygonLoop(newRecord, recNo), shapefileData, recNo)) { 
 					return;
 				}
 				else {
-					shapefileDataReadNextRecord(record, shapefileData, recNo); // Read next record
+					shapefileDataReadNextRecord(closePolygonLoop(record, recNo), shapefileData, recNo); // Read next record
 				}
 			}
 			catch (e) {
@@ -1011,7 +1090,7 @@ This error in actually originating from the error handler function
 						response.message+=msg + "; took: " + elapsedTime + "S";
 									
 						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, 
-							500 /* HTTP Failure */, serverLog, req,  // Add end of shapefile read status	
+							200 /* HTTP Failure */, serverLog, req,  // Add end of shapefile read status	
 							function topoFunctionAddStatus(err) {
 								if (err) {
 									serverLog.serverLog2(__file, __line, "topoFunctionAddStatus", 
@@ -1036,7 +1115,7 @@ This error in actually originating from the error handler function
 						}
 						response.message+=msg + "; took: " + elapsedTime + "S";
 						nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, 
-							500 /* HTTP OK */, serverLog, req,
+							200 /* HTTP OK */, serverLog, req,
 							function topoFunctionAddStatus2(err) {
 								if (err) {
 									serverLog.serverLog2(__file, __line, "topoFunctionAddStatus2", 
@@ -1252,10 +1331,10 @@ This error in actually originating from the error handler function
 		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
 		
 		var shapeFileQueueCallbackFunc = function shapeFileQueueCallbackFunc(err) {
-			if (err) {
-				console.error("shapeFileQueueCallbackFunc(): " + err.message + 
-					"\nStack >>>" + err.stack + "\n<<< End of stack\n");
-			}
+//			if (err) {
+//				console.error("shapeFileQueueCallbackFunc(): " + err.message + 
+//					"\nStack >>>" + err.stack + "\n<<< End of stack\n");
+//			}
 			shapeFileQueueCallback(err);
 		}
 		scopeChecker(__file, __line, {
@@ -1762,16 +1841,40 @@ This error in actually originating from the error handler function
 //			serverLog.serverLog2(__file, __line, "readShapeFile", 
 //				"In readShapeFile(), shapeFileQueue shapefile [" + shapefile_no + "/" + shapefile_total + "]: " + shapefileData["shapeFileName"]);			
 			shapeFileQueue.push(shapefileData, function shapeFileQueuePush(err) {
+				
+				scopeChecker(__file, __line, {
+					response: response,
+					message: response.message,
+					shapefileData: shapefileData
+				});
+					
 				if (err) {
 					var msg="ERROR! in readShapeFile() for shapefile[" + shapefileData["shapefile_no"] + "]: " + 
-						shapefileData["shapeFileName"] + "; Error: " + err.message + "\nStack >>>" + err.stack + "\n<<< End of stack\n";
-						
+						shapefileData["shapeFileName"] + "; Error: " + err.message;
+					if (serverLog == undefined) { // Force serverLog into scope if needed
+						serverLog=require('../lib/serverLog');
+					}
+	
 					response.message+="\n" + msg;	
+					msg="Error reading shapefile " + shapefileData["shapefile_no"] + ": " + shapefileData["shapeFileBaseName"];
 					
 					response.file_errors++;					// Increment file error count
-					serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", msg, 
-						shapefileData["req"], err);	
+// function(file, line, calling_function, msg, req, err, response, callback, stack, additionalInfo)	
 
+					try {
+						var serverErrorAddStatusCallback = function serverErrorAddStatusCallback() {
+							serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", 
+								msg, shapefileData["req"], err);				
+						}
+						serverLog.serverErrorAddStatus(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", 
+							msg, 
+							shapefileData["req"], err, response, serverErrorAddStatusCallback, 
+							err.stack, err.message /* additionalInfo */);	
+						}
+					catch (e) {
+						serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", 
+							"WARNING: Error in serverLog.serverErrorAddStatus()", shapefileData["req"], e);									
+					}
 				} // End of err		
 //				else {
 //					response.message+="\nXXXX Completed processing shapefile[" + shapefileData["shapefile_no"] + "]: " + shapefileData["shapeFileName"];
