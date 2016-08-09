@@ -517,6 +517,18 @@ RangeError: Invalid string length
 * IE problems only when NOT in developer mode. This is related to a) console.log has been wrapped and
   b) Ajax get() caching. Disabling Ajax get caching did not work; added an lstart parameter (so each call is different)
   did
+* CDC monthly report and project planning
+
+#### 8th to 12th August  
+  
+* De-duplication processing, closed polygon loops if needed
+* Improved error handling
+* RIF meeting
+
+
+#### 15th to 19th August  
+
+* Eurospeleo 2016
 
 #### Current TODO list (August):
 
