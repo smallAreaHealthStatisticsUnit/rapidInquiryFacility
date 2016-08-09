@@ -447,7 +447,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						}			
 						firstPoint=coordinates[i][(coordinates[i].length-1)].slice(0,1);
 						lastPoint=coordinates[i][(coordinates[i].length-1)].slice((coordinates[i][(coordinates[i].length-1)].length-1),coordinates[i][(coordinates[i].length-1)].length);
-						if (firstPoint[0][0] != lastPoint[0][0] && firstPoint[0][1] != lastPoint[0][1]) {
+						if (firstPoint[0][0] != lastPoint[0][0] || firstPoint[0][1] != lastPoint[0][1]) {
 							console.error("closePolygonLoop(): points: " + points + "; row: " + (recNo-1) + 
 								"; dimensions: " + dimensions +
 								"; add add first point [" + i + "]; firstPoint: " + JSON.stringify(firstPoint) + 
@@ -459,7 +459,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						points+=coordinates[i].length+1;	
 						firstPoint=coordinates[i].slice(0,1);
 						lastPoint=coordinates[i].slice((coordinates[i].length-1),coordinates[i].length);
-						if (firstPoint[0][0] != lastPoint[0][0] && firstPoint[0][1] != lastPoint[0][1]) {
+						if (firstPoint[0][0] != lastPoint[0][0] || firstPoint[0][1] != lastPoint[0][1]) {
 							console.error("closePolygonLoop(): points: " + points + "; row: " + (recNo-1) + 
 								"; dimensions: " + dimensions +
 								"; add first point [" + i + "]; firstPoint: " + JSON.stringify(firstPoint) + 
@@ -513,6 +513,19 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 							dupRecordJSON=JSON.stringify(dupRecord.properties, null, 4);
 							recordJSON=JSON.stringify(record.properties, null, 4);
 							if (record.properties[areaID] == dupRecord.properties[areaID]) {
+								
+								if (record.properties[areaName] != dupRecord.properties[areaName]) {
+									throw new Error("Area names do not match for the same duplicate area ID" +
+										"\nshapefile " + 
+										shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+										"; row: " + (recNo-1) +
+										"\nArea id field: " + areaID + "; value: " + record.properties[areaID] +
+										"; name: " + record.properties[areaName] + 
+										"\nArea name field: " + areaName + 
+										"; duplicate: " + dupRecord.properties[areaName] + 
+										"\nrecord:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+								}
+								
 								try { // Replace feature with new Unioned feature in collection (record number: recNo)
 									
 									var newFeature=turf.union(record, dupRecord);
@@ -524,7 +537,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 										"\nArea id field: " + areaID + 
 										"; value: " + record.properties[areaID] + 
 										"; gid: " + dupRecord.properties["gid"] + 
-										"; row: " + (recNo-1));
+										"; row: " + (recNo-1) +
+										"\record:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
 								}
 								catch (e) {
 									throw new Error("Duplicate area ID Union error in shapefile " + 
