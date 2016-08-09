@@ -1810,15 +1810,28 @@ abstract class AbstractRIFStudySubmissionService
 			
 			SQLRIFSubmissionManager rifSubmissionManager
 				= rifServiceResources.getRIFSubmissionManager();
+			/*
+			 * This is the original submitStudy implementation, which makes use of the
+			 * stored DB procedure "run_study".  We'll comment this out and try to 
+			 * incrementally replace the proc with a middleware representation of the
+			 * code in that procedure
 			result
 				= rifSubmissionManager.submitStudy(
 					connection, 
 					user, 
 					rifStudySubmission);	
+			 */
 			
-			createStudyExtract(
-				user,
-				result);
+			User postgresUser = User.newInstance("postgres", "111.111.111.111");
+			result
+				= rifSubmissionManager.submitStudy2(
+					connection, 
+					postgresUser, 
+					rifStudySubmission);	
+			
+			//createStudyExtract(
+			//	user,
+			//	result);
 			
 		}
 		catch(RIFServiceException rifServiceException) {

@@ -118,7 +118,7 @@ public final class SQLDeleteIndexQueryFormatter
 		addQueryPhrase(0, "DROP INDEX IF EXISTS");
 		padAndFinishLine();
 		addQueryPhrase(1, "ind_");
-		addQueryPhrase(indexTable);
+		addQueryPhrase(getSchemaTableName(indexTable));
 		addQueryPhrase("_");
 		addQueryPhrase(indexTableField);
 		addQueryPhrase(";");

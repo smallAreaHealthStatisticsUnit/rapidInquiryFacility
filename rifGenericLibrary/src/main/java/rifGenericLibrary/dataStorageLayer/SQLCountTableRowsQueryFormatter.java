@@ -104,7 +104,7 @@ public final class SQLCountTableRowsQueryFormatter
 		query.append("SELECT");
 		query.append("COUNT(*)");
 		query.append("FROM");
-		query.append(convertCase(tableName));
+		query.append(convertCase(getSchemaTableName(tableName)));
 		
 		return query.toString();		
 	}

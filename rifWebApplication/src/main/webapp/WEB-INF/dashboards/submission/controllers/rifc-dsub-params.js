@@ -4,23 +4,65 @@
  * TODO: Top level terms
  */
 angular.module("RIF")
-        .controller('ModalParametersCtrl', ['$scope', '$uibModal', '$http', 'SubmissionStateService', 'ParameterStateService', 'user',
-            function ($scope, $uibModal, $http, SubmissionStateService, ParameterStateService, user) {
-
+        .controller('ModalParametersCtrl', ['$scope', '$uibModal', 'SubmissionStateService', 'ParameterStateService', 'user',
+            function ($scope, $uibModal, SubmissionStateService, ParameterStateService, user) {
                 $scope.tree = SubmissionStateService.getState().investigationTree;
                 $scope.animationsEnabled = true;
 
-                //input params
-                $scope.title = "Investigation";
-                $scope.gender = "Both";
+                $scope.fillContents = function () {
+                    //TODO: check geography and level selected
+                    var thisGeography = SubmissionStateService.getState().geography;
+                    var thisNumerator = SubmissionStateService.getState().numerator.numeratorTableName;
+                    var thisGeoLevel = "LEVEL4";
 
-                //Fill years drop-downs
-                $scope.years = [];
-                $scope.intervals = [];
+                    $scope.title = "Investigation";
 
-                $scope.fillYears = function () {
-                    user.getYears(user.currentUser, 'SAHSU', 'SAHSULAND_CANCER').then(handleYears, handleYearsError); //TODO: is hard typed
-                }();
+
+                    //Fill drop-downs
+                    $scope.years = [];
+                    $scope.intervals = [];
+                    $scope.sexes = [];
+                    $scope.covariates = [];
+                    $scope.selectedAges = [];
+                    $scope.ages = [];
+                    $scope.taxonomyServices = [];
+                    //          $scope.taxonomyScheme = $scope.taxonomyServices[0];
+
+                    //taxonomy services
+                    user.getTaxonomyServiceProviders().then(handleTaxonomyServiceProviders, handleParameterError);
+                    //start and end years
+                    user.getYears(user.currentUser, thisGeography, thisNumerator).then(handleYears, handleParameterError);
+                    //sex
+                    user.getSexes(user.currentUser).then(handleSexes, handleParameterError);
+                    //covariates
+                    user.getCovariates(user.currentUser, thisGeography, thisGeoLevel).then(handleCovariates, handleParameterError);
+                    //age ranges
+                    user.getAgeGroups(user.currentUser, thisGeography, thisNumerator).then(handleAgeGroups, handleParameterError);
+
+                    //if the user has changed the Health theme, reset form
+                    var thisTheme = SubmissionStateService.getState().healthTheme.name;
+                    var activeTheme = ParameterStateService.getActiveHealthTheme();
+                    ParameterStateService.setActiveHealthTheme(thisTheme);
+                    if (thisTheme !== activeTheme) {
+                        $scope.fullICDselection.length = 0;
+                    }
+                };
+
+                //Callback error handler
+                function handleParameterError(res) {
+                    console.log("error");
+                }
+
+                //handle taxonomy services
+                function handleTaxonomyServiceProviders(res) {
+                    $scope.taxonomyServices.length = 0;
+                    for (var i = 0; i < res.data.length; i++) {
+                        $scope.taxonomyServices.push(res.data[i].identifier);
+                    }
+                    $scope.taxonomyScheme = $scope.taxonomyServices[0];
+                }
+
+                //handle years
                 function handleYears(res) {
                     //TODO: check numeric and direction
                     $scope.years.length = 0;
@@ -31,10 +73,6 @@ angular.module("RIF")
                     $scope.endYear = Number(res.data[0].upperBound);
                     $scope.yearsChanged();
                 }
-                function handleYearsError(res) {
-                    console.log("years error");
-                }
-
                 $scope.yearsChanged = function () {
                     $scope.intervals.length = 0;
                     //ensure that start year is before end year
@@ -52,103 +90,119 @@ angular.module("RIF")
                     $scope.parametersChanged();
                 };
 
-                //recap table <-> ICD tree link
-                var providerNameSpace = "";
-                $scope.investigationCount = 1;
-                var rowCollectionStore = [];
-                $scope.fullICDselection = ParameterStateService.getState().rows;
-                $scope.thisICDselection = [];
-                
-                 //if the user has changed the Health theme, reset form
-                var thisTheme = SubmissionStateService.getState().healthTheme.name;
-                var activeTheme = ParameterStateService.getActiveHealthTheme();
-                ParameterStateService.setActiveHealthTheme(thisTheme);
-                if (thisTheme !== activeTheme) {
-                    $scope.fullICDselection.length = 0;
-                } 
+                //handle sex
+                function handleSexes(res) {
+                    $scope.sexes.length = 0;
+                    for (var i = 0; i < res.data[0].names.length; i++) {
+                        $scope.sexes.push(res.data[0].names[i]);
+                    }
+                    $scope.sex = res.data[0].names[0];
+                }
+
+                //handle covariates
+                function handleCovariates(res) {
+                    $scope.covariates.length = 0;
+                    var tmp = [];
+                    for (var i = 0; i < res.data.length; i++) {
+                        $scope.covariates.push({variable: res.data[i].name});
+                        tmp.push({name: res.data[i].name, minimum_value: res.data[i].minimumValue,
+                            maximum_value: res.data[i].maximumValue, covariate_type: res.data[i].covariateType});
+                    }
+                    ParameterStateService.setPossibleCovariates(tmp); //TODO: move this to 1st tab open to avoid repeated calls
+                }
+
+                //handle ages
+                function handleAgeGroups(res) {
+                    $scope.ages.length = 0;
+                    $scope.agesSelected = 0;
+                    var tmp = [];
+                    for (var i = 0; i < res.data[0].name.length; i++) {
+                        $scope.ages.push({age: res.data[1].lowerAgeLimit[i] + " - " + res.data[2].upperAgeLimit[i], description: res.data[0].name[i]});
+                        tmp.push({id: i, name: res.data[0].name[i], lower_limit: res.data[1].lowerAgeLimit[i], upper_limit: res.data[2].upperAgeLimit[i]});
+                    }
+                    ParameterStateService.setPossibleAges(tmp);
+                }
+                function ageRowChanged(row) {
+                    var indx = $scope.ages.indexOf(row.entity);
+                    if ($scope.selectedAges.indexOf(indx) === -1) {
+                        $scope.selectedAges.push(indx);
+                    } else {
+                        $scope.selectedAges.splice($scope.selectedAges.indexOf(indx), 1);
+                    }
+                    //make contiguous
+                    var min = Math.min.apply(null, $scope.selectedAges);
+                    var max = Math.max.apply(null, $scope.selectedAges);
+                    for (var i = min; i <= max; i++) {
+                        $scope.gridApi1.selection.selectRow($scope.ages[i]);
+                    }
+                    $scope.parametersChanged();
+                }
+                $scope.clearAgeSelection = function () {
+                    $scope.gridApi1.selection.clearSelectedRows();
+                    $scope.selectedAges.length = 0;
+                };
+
 
                 /*
                  * TABLE SET UP (1)
                  * age category table 
                  */
+
                 $scope.gridOptionsAge = {
                     enableHorizontalScrollbar: 0,
+                    enableRowHeaderSelection: false,
                     enableColumnResizing: true,
                     enableSorting: false,
                     enableFiltering: false,
+                    rowHeight: 20,
                     columnDefs: [
                         {name: 'age', enableHiding: false, width: "50%"},
                         {name: 'description', enableHiding: false}
                     ],
+                    data: $scope.ages,
                     onRegisterApi: function (gridApi) {
-                        $scope.gridApi = gridApi;
+                        $scope.gridApi1 = gridApi;
+                        $scope.gridApi1.selection.on.rowSelectionChanged($scope, ageRowChanged);
                     }
                 };
 
                 /*
                  * TABLE SET UP (2)
-                 * ICD treeview
+                 * ICD code list
                  */
                 $scope.gridOptionsICD = {
                     enableHorizontalScrollbar: 0,
                     enableColumnResizing: true,
-                    enableSorting: true,
-                    enableFiltering: true,
-                    showTreeExpandNoChildren: false,
                     rowTemplate: rowTemplate(),
                     columnDefs: [
-                        {name: 'term_name', enableHiding: false, width: "20%"},
+                        {name: 'term_name', enableHiding: false, width: 100},
                         {name: 'term_description', enableHiding: false}
                     ],
                     onRegisterApi: function (gridApi) {
-                        $scope.gridApi = gridApi;
+                        $scope.gridApi2 = gridApi;
                     }
                 };
                 function rowTemplate() {
                     return  '<div id="testdiv">' +
                             '<div style="height: 100%" ng-class="{ ' +
-                            'tree0: row.entity.$$treeLevel===0,' +
-                            'tree1: row.entity.$$treeLevel===1,' +
-                            'tree2: row.entity.$$treeLevel===2 && row.entity.selected===0,' +
-                            'tree2selected: row.entity.$$treeLevel===2 && row.entity.selected===1' +
+                            'ICDNotSelected: row.entity.selected===0,' +
+                            'ICDSelected: row.entity.selected===1' +
                             '}">' +
                             '<div ng-click="grid.appScope.rowClickICD(row)">' +
-                            '<div ng-dblclick="grid.appScope.rowDoubleClickICD(row)">' +
                             '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>' +
                             '</div>';
                 }
-                //Tree level 2 click (e.g. J458 Mixed Asthma)
+
                 $scope.rowClickICD = function (row) {
-                    if (row.treeLevel === 2) {
-                        var thisIndex = $scope.thisICDselection.indexOf(row.entity.term_name);
-                        if (thisIndex === -1) {
-                            $scope.thisICDselection.push(row.entity.term_name);
-                        } else {
-                            $scope.thisICDselection.splice(thisIndex, 1);
-                        }
+                    var idToCheck = [];
+                    for (var i = 0; i < $scope.thisICDselection.length; i++) {
+                        idToCheck.push($scope.thisICDselection[i][0]);
                     }
-                };
-                //Tree level 1 double-click (e.g. J45 Asthma)
-                $scope.rowDoubleClickICD = function (row) {
-                    if (row.treeLevel === 1) {
-                        var selCount = 0;
-                        for (var i = 0; i < row.treeNode.children.length; i++) {
-                            if (row.treeNode.children[i].row.entity.selected === 1) {
-                                selCount++;
-                            }
-                        }
-                        for (var i = 0; i < row.treeNode.children.length; i++) {
-                            var thisIndex = $scope.thisICDselection.indexOf(row.treeNode.children[i].row.entity.term_name);
-                            if (selCount === row.treeNode.children.length) {
-                                //if all selected, deselect all
-                                $scope.thisICDselection.splice(thisIndex, 1);
-                            } else {
-                                //select all in branch not already selected
-                                if (thisIndex === -1) {
-                                    $scope.thisICDselection.push(row.treeNode.children[i].row.entity.term_name);
-                                }
-                            }
-                        }
+                    var thisIndex = idToCheck.indexOf(row.entity.identifier);
+                    if (thisIndex === -1) {
+                        $scope.thisICDselection.push([row.entity.identifier, row.entity.term_description]);
+                    } else {
+                        $scope.thisICDselection.splice(thisIndex, 1);
                     }
                 };
 
@@ -156,6 +210,13 @@ angular.module("RIF")
                  * TABLE SET UP (3)
                  * table setups recap table
                  */
+
+                //recap table <-> ICD tree link
+                $scope.investigationCount = 1;
+                var rowCollectionStore = [];
+                $scope.fullICDselection = ParameterStateService.getState().rows;
+                $scope.thisICDselection = [];
+
                 $scope.gridOptionsRecap = {
                     enableColumnMenus: false,
                     enableHorizontalScrollbar: 0,
@@ -165,11 +226,11 @@ angular.module("RIF")
                     rowTemplate: rowTemplateRecap(),
                     columnDefs: [
                         {name: 'title', enableHiding: false, enableCellEditOnFocus: true, width: "10%"},
-                        {name: 'taxonomy', enableHiding: false, width: "7%"},
+                        {name: 'identifier', enableHiding: false, width: "7%"},
                         {name: 'health_outcomes', enableHiding: false, width: "26%"},
                         {name: 'age_groups', enableHiding: false, width: "15%"},
                         {name: 'years', enableHiding: false, width: "15%"},
-                        {name: 'gender', enableHiding: false, width: "7%"},
+                        {name: 'sex', enableHiding: false, width: "7%"},
                         {name: 'covariates', enableHiding: false, width: "15%"},
                         {name: '\t', enableHiding: false,
                             cellTemplate:
@@ -182,7 +243,7 @@ angular.module("RIF")
                         }
                     ],
                     onRegisterApi: function (gridApi) {
-                        $scope.gridApi = gridApi;
+                        $scope.gridApi3 = gridApi;
                     }
                 };
                 function rowTemplateRecap() {
@@ -227,6 +288,20 @@ angular.module("RIF")
                         }
                     }
                 };
+
+                //Restore past state in recap table
+                var rowCollection = [];
+                rowCollectionStore.length = 0;
+                for (var i in $scope.fullICDselection) {
+                    rowCollection.push($scope.fullICDselection[i]);
+                }
+                if (rowCollection.length === 0) {
+                    $scope.investigationCount = 1;
+                } else {
+                    $scope.investigationCount = rowCollection[rowCollection.length - 1].i + 1;
+                }
+                $scope.gridOptionsRecap.data = rowCollection;
+
                 /*
                  * TABLE SET UP (4)
                  * table setups covariate table
@@ -241,71 +316,92 @@ angular.module("RIF")
                     columnDefs: [
                         {name: 'variable', enableHiding: false}
                     ],
+                    data: $scope.covariates,
                     onRegisterApi: function (gridApi) {
-                        $scope.gridApi = gridApi;
+                        $scope.gridApi4 = gridApi;
+                        $scope.gridApi4.selection.on.rowSelectionChanged($scope, $scope.parametersChanged);
                     }
                 };
+
                 /*
                  * TABLE SET-UP FINISHED
                  */
 
 
-                //read XML
-                $http.get("test/ExampleICD10Codes.xml").success(function (xml, status) {
-                    var x2js = new X2JS();
-                    var data = x2js.xml_str2json(xml);
-                    //Taxonomy code for recap table col#1
-                    providerNameSpace = data.rif_health_code_provider.provider_information.provider_name_space;
-                    data = data.rif_health_code_provider.terms.term;
-                    data = "[" + JSON.stringify(data) + "]";
-                    data = JSON.parse(data);
-                    var myData = data[0];
-                    var myICD = [];
-                    //format JSON data for ui-grid treeview
-                    for (i = 0; i < myData.length; i++) {
-                        myICD.push({term_name: myData[i].term_name, term_description: myData[i].term_description, $$treeLevel: 0, selected: 0});
-                        for (j = 0; j < myData[i].term.length; j++) {
-                            myICD.push({term_name: myData[i].term[j].term_name, term_description: myData[i].term[j].term_description, $$treeLevel: 1, selected: 0});
-                            for (k = 0; k < myData[i].term[j].term.length; k++) {
-                                myICD.push({term_name: myData[i].term[j].term[k].term_name, term_description: myData[i].term[j].term[k].term_description, $$treeLevel: 2, selected: 0});
-                            }
-                        }
-                    }
-                    $scope.gridOptionsICD.data = myICD;
+                /*
+                 * TAXONOMY SERVICE
+                 */
+                $scope.taxonomySchemeChanged = function () {
+                    console.log("scheme changed");
+                };
 
-                    //fill recap table with any stored selection
-                    var rowCollection = [];
-                    rowCollectionStore.length = 0;
-                    for (var i in $scope.fullICDselection) {
-                        rowCollection.push($scope.fullICDselection[i]);
+                $scope.searchCode = "";
+                $scope.searchText = "";
+                $scope.hitsCount = "";
+
+                //search on return key from text box
+                $scope.textKeyPress = function (event) {
+                    if (event.charCode === 13) {
+                        $scope.searchDescription();
                     }
-                    if (rowCollection.length === 0) {
-                        $scope.investigationCount = 1;
+                };
+                $scope.codeKeyPress = function (event) {
+                    if (event.charCode === 13) {
+                        $scope.searchCode();
+                    }
+                };
+
+                //Get search terms
+                $scope.searchDescription = function () {
+                    user.getMatchingTerms($scope.taxonomyScheme.toLowerCase(), $scope.searchText).then(handleTextSearch, handleTextSearch);
+                };
+                $scope.searchLabels = function () {
+                    //Not yet implemented
+                    //user.getCodeSearch('icd10', $scope.searchCode).then(handleTextSearch, handleTextSearch);
+                };
+                function handleTextSearch(res) {
+                    var myICD = [];
+                    if (res.data.length !== 0) {
+                        for (var i = 0; i < res.data.length; i++) {
+                            myICD.push({term_name: res.data[i].label, term_description: res.data[i].description, identifier: res.data[i].identifier, selected: 0});
+                        }
                     } else {
-                        $scope.investigationCount = rowCollection[rowCollection.length - 1].i + 1;
+                        $scope.showWarning("no terms found (not needed here proof of concept $scope)");
                     }
-                    $scope.gridOptionsRecap.data = rowCollection;
-                });
+                    $scope.hitsCount = res.data.length + " terms returned";
+                    $scope.gridOptionsICD.data = myICD;
+                }
+                $scope.resetCodeSearch = function () {
+                    $scope.searchCode = "";
+                    $scope.hitsCount = "";
+                };
+                $scope.resetTextSearch = function () {
+                    $scope.searchText = "";
+                    $scope.hitsCount = "";
+                };
 
                 /*
-                 * Table synchoronistation
+                 * TABLE SYNCHRONISATION
                  */
                 $scope.$watchCollection('thisICDselection', function (newNames, oldNames) {
                     if (newNames === oldNames) {
                         return;
                     }
+                    var idToCheck = [];
+                    for (var i = 0; i < newNames.length; i++) {
+                        idToCheck.push(newNames[i][0]);
+                    }
                     for (var i = 0; i < $scope.gridOptionsICD.data.length; i++) {
-                        if ($scope.gridOptionsICD.data[i].$$treeLevel === 2) {
-                            if (newNames.indexOf($scope.gridOptionsICD.data[i].term_name) !== -1) {
-                                $scope.gridOptionsICD.data[i].selected = 1;
-                            } else {
-                                $scope.gridOptionsICD.data[i].selected = 0;
-                            }
+                        if (idToCheck.indexOf($scope.gridOptionsICD.data[i].identifier) !== -1) {
+                            $scope.gridOptionsICD.data[i].selected = 1;
+                        } else {
+                            $scope.gridOptionsICD.data[i].selected = 0;
                         }
                     }
                     fillRecapTable($scope.thisICDselection);
                 });
-                //On changing years or gender etc
+
+                //On changing years or sex etc
                 $scope.parametersChanged = function () {
                     fillRecapTable($scope.thisICDselection);
                 };
@@ -319,11 +415,11 @@ angular.module("RIF")
                     for (var i = 0; i < ICD.length; i++) {
                         var obj = {
                             title: getTitle(i),
-                            taxonomy: providerNameSpace,
-                            health_outcomes: getICDText(ICD[i]),
+                            identifier: ICD[i][0],
+                            health_outcomes: ICD[i][1],
                             age_groups: getAgeGroups(i),
                             years: getYears(i),
-                            gender: getGender(i),
+                            sex: getSex(i),
                             covariates: getCovariates(i),
                             remove: getRemove(i),
                             n: getOddOrEven($scope.investigationCount),
@@ -336,15 +432,6 @@ angular.module("RIF")
                 }
 
                 //format recap table rows
-                function getICDText(ICD) {
-                    for (var i = 0; i < $scope.gridOptionsICD.data.length; i++) {
-                        if ($scope.gridOptionsICD.data[i].$$treeLevel === 2) {
-                            if ($scope.gridOptionsICD.data[i].term_name === ICD) {
-                                return ICD + " - " + $scope.gridOptionsICD.data[i].term_description;
-                            }
-                        }
-                    }
-                }
                 function getTitle(i) {
                     if (i === 0) {
                         return $scope.title;
@@ -352,7 +439,14 @@ angular.module("RIF")
                 }
                 function getAgeGroups(i) {
                     if (i === 0) {
-                        return "AgeGroups";
+                        //get min and max of selected range
+                        if ($scope.selectedAges.length !== 0) {
+                            var min = Math.min.apply(null, $scope.selectedAges);
+                            var max = Math.max.apply(null, $scope.selectedAges);
+                            var tmp = "LWR: " + ParameterStateService.getPossibleAges()[min].name + ", UPR: "
+                                    + ParameterStateService.getPossibleAges()[max].name;
+                            return tmp;
+                        }
                     }
                 }
                 function getYears(i) {
@@ -360,14 +454,22 @@ angular.module("RIF")
                         return $scope.startYear + " - " + $scope.endYear + " [" + $scope.yearInterval + "]";
                     }
                 }
-                function getGender(i) {
+                function getSex(i) {
                     if (i === 0) {
-                        return $scope.gender;
+                        return $scope.sex;
                     }
                 }
                 function getCovariates(i) {
                     if (i === 0) {
-                        return "covariates";
+                        var covariatesSelected = $scope.gridApi4.selection.getSelectedRows();
+                        var tmp = "";
+                        for (var j = 0; j < covariatesSelected.length; j++) {
+                            tmp += covariatesSelected[j].variable;
+                            if (j !== covariatesSelected.length - 1) {
+                                tmp += "; ";
+                            }
+                        }
+                        return tmp;
                     }
                 }
                 function getRemove(i) {
@@ -383,21 +485,36 @@ angular.module("RIF")
 
                 //Add investigation controls
                 $scope.addInvestigation = function () {
+                    if (rowCollectionStore.length === 0) {
+                        return;
+                    }
+                    //check age is filled                    
+                    if (!rowCollectionStore[0].age_groups) {
+                        $scope.showWarning("Age groups not defined");
+                        return;
+                    }
                     //save rows of this investigation
                     for (var row in rowCollectionStore) {
                         $scope.fullICDselection.push(rowCollectionStore[row]);
                     }
                     //reset selected rows in tree
-                    $scope.thisICDselection.length = 0;
+                    resetTable();
                     $scope.investigationCount++;
                 };
 
                 //Clear all from recap table
                 $scope.clearInvestigations = function () {
                     $scope.fullICDselection.length = 0;
-                    $scope.thisICDselection.length = 0;
+                    resetTable();
                     $scope.investigationCount = 1;
                     fillRecapTable($scope.thisICDselection);
+                };
+
+                resetTable = function () {
+                    $scope.thisICDselection.length = 0;
+                    $scope.selectedAges.length = 0;
+                    $scope.gridApi1.selection.clearSelectedRows();
+                    $scope.gridApi4.selection.clearSelectedRows();
                 };
 
                 $scope.open = function () {
@@ -407,13 +524,15 @@ angular.module("RIF")
                         controller: 'ModalParametersInstanceCtrl',
                         windowClass: 'modal-fit',
                         backdrop: 'static',
+                        scope: $scope, //reference parent scope in modal
                         keyboard: false
                     });
                     modalInstance.opened.then(function () {
-
+                        //fill all user controls
+                        $scope.fillContents();
                     });
                     modalInstance.result.then(function () {
-                        ParameterStateService.getState().rows = $scope.fullICDselection;                     
+                        ParameterStateService.getState().rows = $scope.fullICDselection;
                         //Change tree icon colour
                         if ($scope.fullICDselection.length === 0) {
                             SubmissionStateService.getState().investigationTree = false;
@@ -432,6 +551,5 @@ angular.module("RIF")
             };
             $scope.submit = function () {
                 $uibModalInstance.close();
-            }
-            ;
+            };
         });

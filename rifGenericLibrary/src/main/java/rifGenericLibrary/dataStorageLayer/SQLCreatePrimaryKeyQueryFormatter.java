@@ -131,7 +131,7 @@ public final class SQLCreatePrimaryKeyQueryFormatter
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "ALTER TABLE");
 		addQueryPhrase(" ");
-		addQueryPhrase(tableName);
+		addQueryPhrase(getSchemaTableName(tableName));
 		addQueryPhrase(" ADD PRIMARY KEY (");
 		addQueryPhrase(primaryKeyFieldPhrase);
 		addQueryPhrase(")");

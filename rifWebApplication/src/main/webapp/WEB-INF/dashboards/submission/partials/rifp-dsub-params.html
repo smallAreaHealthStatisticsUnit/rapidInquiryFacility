@@ -12,15 +12,21 @@ Disease submission modal investigation parameters (tree #3)
             <div class='modalContainer'>
                 <div ui-layout="{flow : 'column'}">
                     <div ui-layout-container class="ICD-back" size="33%">
-                        <div class='availablesWrapper' id='availableTaxomonomies'>
-                            <input type="text"  placeholder="ICD Classification" id='icdClassification' class='dropdownInput'>
-                            <div id='icdClassificationAvailable' class='availables' ></div>
+                        <div class="ICDsearchContainer">                         
+                            <select ng-model="taxonomyScheme" type="text" class='ICDsearchDrop' ng-options="t for t in taxonomyServices" ng-change="taxonomySchemeChanged()"></select>                          
+                            <input ng-model="searchCode" type="text" placeholder="Search by code" ng-click="resetCodeSearch()" ng-keypress="codeKeyPress($event)" class='ICDsearchBox'/>
+                            <button class="ICDsearchButton" ng-click="searchLabels()">SEARCH</button>
+                            <input ng-model="searchText" type="text" placeholder="Search by description" ng-click="resetTextSearch()" ng-keypress="textKeyPress($event)" class='ICDsearchBox'/>
+                            <button class="ICDsearchButton" ng-click="searchDescription()">SEARCH</button>
+                            <div class="counter">{{hitsCount}}</div>
+                        </div>                     
+                        <div class="ICgridContainer">
+                            <div ui-grid="gridOptionsICD" ui-grid-auto-resize ui-grid-resize-columns class="grid-ICD" ng-grid="gridOptionsICD"></div>
                         </div>
-                        <div ui-grid="gridOptionsICD" ui-grid-tree-view ui-grid-auto-resize ui-grid-resize-columns class="grid-ICDtree" ng-grid="gridOptionsICD"></div>
                     </div>
                     <div ui-layout-container> 
                         <div ui-layout="{flow : 'row'}" >
-                            <div ui-layout-container class="param-back" size="50%">
+                            <div ui-layout-container class="param-back" size="37%">
                                 <div id="parameterHeader">
                                     <div class='done' ng-click="submit()"> <a>Done</a></div> 
                                     <div id='clearParameters' ng-click="clearInvestigations()"> Clear All </div>
@@ -45,26 +51,23 @@ Disease submission modal investigation parameters (tree #3)
                                             <div class="dropdownSelectSmallLabel">Year Interval</div>
                                         </div>
                                         <div class='availablesWrapper'>
-                                            <select type="text" ng-init="gender" ng-model="gender" id='genderAvailable' class='dropdownSelectSmall' ng-change="parametersChanged()">
-                                                <option>Male</option>
-                                                <option>Female</option>
-                                                <option>Both</option>
-                                            </select>
+                                            <select type="text" ng-model="sex" id='genderAvailable' class='dropdownSelectSmall' ng-options="g for g in sexes" ng-change="parametersChanged()"></select>
                                             <div class="dropdownSelectSmallLabel">Sex</div>
                                         </div>
                                     </div>
                                     <div id="ParameterCentre">
                                         <div id='ageGroupsLabel'>Age Groups:</div>
-                                        <div ui-grid="gridOptionsAge" ui-grid-auto-resize ui-grid-resize-columns class="grid-age"></div>
+                                        <div ui-grid="gridOptionsAge" ui-grid-auto-resize ui-grid-selection ui-grid-resize-columns class="grid-age"></div>
+                                        <a class="reset" ng-click="clearAgeSelection()">Reset</a>
                                     </div>
                                     <div id="ParameterRight">
                                         <div id='covariateLabel'>Covariates:</div>
-                                       <div ui-grid="gridOptionsCovariates" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns class="grid-age" ng-grid="gridOptionsCovariates"></div>
+                                        <div ui-grid="gridOptionsCovariates" ui-grid-selection ui-grid-auto-resize class="grid-covariates" ng-grid="gridOptionsCovariates"></div>
                                     </div>
                                 </div>
                             </div>
                             <div ui-layout-container class=" recap-back" >                
-                                <div ui-grid="gridOptionsRecap"  ui-grid-edit ui-grid-auto-resize ui-grid-resize-columns class="grid-recap" ng-grid="gridOptionsRecap"></div>
+                                <div ui-grid="gridOptionsRecap" ui-grid-auto-resize ui-grid-resize-columns class="grid-recap" ng-grid="gridOptionsRecap"></div>
                             </div>
                         </div>
                     </div>

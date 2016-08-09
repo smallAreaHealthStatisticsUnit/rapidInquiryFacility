@@ -47,6 +47,9 @@
 // Peter Hambly, SAHSU
 
 require('magic-globals'); // For file and line information. Does not work from Event queues
+
+const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
+		
 var util = require('util');
  
 /*
@@ -133,7 +136,7 @@ serverLog2 = function(file, line, calling_function, msg, req, err) {
 	
 	// Add error tracer if present
 	if (err && err.message && err.stack) {
-		error_tracer="\n\nError(" + err.name + "): " + err.message + "\nStack>>>\n" + err.stack + "<<<";
+		error_tracer="\n\nError(" + err.name + "): " + err.message + "\nStack >>>\n" + err.stack + "<<<";
 	}
 	else {
 		error_tracer="\n\nNo errors"
@@ -145,42 +148,94 @@ serverLog2 = function(file, line, calling_function, msg, req, err) {
 }
 
 // Likewise for error; except RAISE the error
-serverError = function(msg, req, err, response) {
+
+/*
+ * Function:	serverLog.serverError()
+ * Parameters:	Message, HTTP request object, error object, response object, optional addtional info (for status)
+ * Returns:		Nothing
+ * Description: serverLog error primitive
+ *				Adds error to status array
+ *				Raises error after logging
+ */
+serverError = function(msg, req, err, response, additionalInfo) {
 	var calling_function = arguments.callee.caller.name || '(anonymous)';
 	// Get file information from magic-globals: __stack
 	var file=__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0];
 	var line=__stack[2].getLineNumber();
-	var stack = new Error().stack
+	var stack = new Error().stack;
+
+	serverErrorAddStatus(file, line, calling_function, msg, req, err, response, _serverError2, 
+		(err.stack || stack), additionalInfo);
 	
-	try {
-		if (response && response.diagnosticsTimer && response.diagnosticsTimer > 0) { // Disable the diagnostic file write timer
-//			console.error("serverError(): clearInterval: " + response.diagnosticsTimer);
-			clearInterval(response.diagnosticsTimer);
-			response.diagnosticsTimer=undefined;
-		}
-		else if (response) {
-//			console.error("serverError(): response in scope; has already been disabled; recursive call!!!");
-// has already been disable; recursive call!!!
-//			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, timer not set; stack: " + stack, req);
-		}
-		else {
-			serverLog2(file, line, calling_function, "WARNING! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req);
-		}
-	}
-	catch (e) {
-		serverLog2(file, line, calling_function, "WARNING! Caught error! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req, e);
-	}
-		
-	serverLog2(file, line, calling_function, msg, req, err);
-	if (err) {
-		throw err;
-	}
-	else {
-		throw new Error(msg);
-	}
 }
 
-serverError2 = function(file, line, calling_function, msg, req, err, response) {	
+/*
+ * Function:	serverLog.serverError2()
+ * Parameters:	File called from, line number called from, procedure called from, 
+ *				Message, HTTP request object, error object, response object, optional addtional info (for status)
+ * Returns:		Nothing
+ * Description: serverLog error primitive for event anonymous functions. 
+ *				Adds error to status array
+ *				Raises error after logging
+ */
+serverError2 = function(file, line, calling_function, msg, req, err, response, additionalInfo) {
+//	console.error("ZZ: " + msg);
+	serverErrorAddStatus(file, line, calling_function, msg, req, err, response, _serverError2, 
+		(err.stack || stack), additionalInfo);
+//	console.error("ZZ2: " + msg);
+}
+
+/*
+ * Function:	serverLog.serverErrorAddStatus()
+ * Parameters:	File called from, line number called from, procedure called from, 
+ *				Message, HTTP request object, error object, response object, optional callback, 
+ *				optional addtional info (for status)
+ * Returns:		Nothing
+ * Description: Adds error to status array
+ *				Runs callback
+ */
+serverErrorAddStatus = function(file, line, calling_function, msg, req, err, response, errorCallback, stack, additionalInfo) {
+	try {
+		nodeGeoSpatialServicesCommon.addStatus(file, line, response, msg, 
+			500 /* HTTP Failure */, undefined /* serverLog */, req,  // Add Error status	
+		function serverErrorAddStatusCallback(err) {
+			if (err) {
+				serverLog2(file, line, "serverErrorAddStatusCallback", 
+					"WARNING: Unable to add status", req, err);
+			}	
+//			console.error("serverErrorAddStatus() OK: " + msg);
+			if (errorCallback) {
+				try {
+//					console.error("AA: " + msg);
+					errorCallback(file, line, calling_function, msg, req, err, response);	
+//					console.error("AA2: " + msg);
+				}
+				catch (e) {	
+//					console.error("AA3: " + msg + "; error: " + e.message);
+					// DO NOTHING - callback handles errors!
+					return;
+				}
+			}				
+		}, // End of serverErrorAddStatusCallback()
+		(err.stack || stack), additionalInfo);	
+	}
+	catch (e) {
+		serverLog2(file, line, calling_function, "WARNING! Caught error! trying to serverError2AddStatus; stack: " + 
+			(err.stack || "(No error)"), req, e);		
+	}	
+//	console.error("AA5: " + msg);
+}
+
+/*
+ * Function:	_serverError2()
+ * Parameters:	File called from, line number called from, procedure called from, 
+ *				Message, HTTP request object, error object, response object
+ * Returns:		Nothing
+ * Description: Common error code: serverLog error primitive for event anonymous functions. 
+ *				Adds error to status array
+ *				Raises error after logging
+ */
+_serverError2 = function(file, line, calling_function, msg, req, err, response) {	
 
 	var stack = new Error().stack
 	
@@ -204,6 +259,7 @@ serverError2 = function(file, line, calling_function, msg, req, err, response) {
 	}
 	
 	serverLog2(file, line, calling_function, msg, req, err);
+//	console.error("DD: " + stack);
 	if (err) {
 		throw err;
 	}
@@ -277,6 +333,7 @@ generateUUID = function() {
 	
 module.exports.serverError = serverError;
 module.exports.serverError2 = serverError2;
+module.exports.serverErrorAddStatus = serverErrorAddStatus;
 module.exports.serverLog = serverLog;
 module.exports.serverLog2 = serverLog2;
 module.exports.generateUUID = generateUUID;

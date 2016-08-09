@@ -22,7 +22,7 @@ angular.module("RIF")
                             "description": SubmissionStateService.getState().studyDescription,
                             "geography": {
                                 "name": SubmissionStateService.getState().geography,
-                                "description": "TODO: Not supplied from middleware"
+                                "description": SubmissionStateService.getState().geography
                             },
                             "disease_mapping_study_area": {
                                 "geo_levels": {
@@ -88,29 +88,38 @@ angular.module("RIF")
             investigationTable = function (inv) {
                 var studyTable = "<table><tr>" +
                         "<th>Title</th>" +
-                        "<th>Code</th>" +
+                        "<th>Identifier</th>" +
                         "<th>Description</th>" +
                         "<th>Years</th>" +
                         "<th>Interval</th>" +
-                        "<th>Gender</th>" +
+                        "<th>Sex</th>" +
+                        "<th>Age Range</th>" +
                         "<th>Covariates</th>" +
                         "</tr>";
                 for (var i = 0; i < inv.length; i++) {
+                    var covars = "";
+                    for (var v = 0; v < inv[i].covariates.length; v++) {
+                        covars += inv[i].covariates[v].adjustable_covariate.name;
+                        if (v !== inv[i].covariates.length - 1) {
+                            covars += "; ";
+                        }
+                    }
                     for (var j = 0; j < inv[i].health_codes.health_code.length; j++) {
                         if (j === 0) {
                             studyTable += "<tr><td>" + inv[i].title + "</td><td>" + 
-                                    inv[i].health_codes.health_code[j].name_space + ": " +
-                                    inv[i].health_codes.health_code[j].code + "</td>" +
+                                    inv[i].health_codes.health_code[j].code + "-" +
+                                    inv[i].health_codes.health_code[j].name_space + "</td>" +
                                     "<td>" + inv[i].health_codes.health_code[j].description + "</td>" +
                                     "<td>" + inv[i].year_range.lower_bound + "-" + inv[i].year_range.upper_bound + "</td>" +
                                     "<td>" + inv[i].years_per_interval + "</td>" +
                                     "<td>" + inv[i].sex + "</td>" +
-                                    "<td>" + inv[i].year_range.covariates + "</td>" +
+                                    "<td> LWR: " + inv[i].age_band.lower_age_group.name + ", UPR: " +  inv[i].age_band.upper_age_group.name + "</td>" +
+                                    "<td>" + covars + "</td>" +
                                     "</tr>";
                         } else {
                             studyTable += "<tr><td></td>" + "</td><td>" + 
-                                    inv[i].health_codes.health_code[j].name_space + ": " +
-                                    inv[i].health_codes.health_code[j].code + "</td>" +
+                                    inv[i].health_codes.health_code[j].code + "-" +
+                                    inv[i].health_codes.health_code[j].name_space + "</td>" +
                                     "<td>" + inv[i].health_codes.health_code[j].description + "</td>" +
                                     "</tr>";
                         }

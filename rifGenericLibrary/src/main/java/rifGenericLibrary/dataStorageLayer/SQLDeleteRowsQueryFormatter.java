@@ -209,7 +209,7 @@ public final class SQLDeleteRowsQueryFormatter
 	
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "DELETE FROM ");
-		addQueryPhrase(fromTable);
+		addQueryPhrase(getSchemaTableName(fromTable));
 
 		
 		int numberOfWhereConditions = whereConditions.size();

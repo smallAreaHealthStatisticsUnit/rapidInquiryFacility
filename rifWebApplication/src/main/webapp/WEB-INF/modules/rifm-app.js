@@ -42,6 +42,7 @@
 
 angular.module("RIF",
         [
+            "oz.components.ui-layout-events",
             "ui.router",
             "ui.bootstrap",
             "ui-leaflet",
@@ -58,7 +59,7 @@ angular.module("RIF",
         ]
         )
         .config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
-                
+
                 //Extend Leaflet to handle topojson
                 L.TopoJSON = L.GeoJSON.extend({
                     addData: function (jsonData) {
@@ -101,5 +102,5 @@ angular.module("RIF",
                 $urlRouterProvider.otherwise("/login");  //login submission
             }])
         .run(function ($rootScope, $state) {
-            $rootScope.$state = $state;
+            $rootScope.$state = $state;           
         });

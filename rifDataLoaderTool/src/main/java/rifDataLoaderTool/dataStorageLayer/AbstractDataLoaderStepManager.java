@@ -307,14 +307,12 @@ abstract class AbstractDataLoaderStepManager {
 		
 		PreparedStatement statement = null;
 		try {
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-			queryFormatter.addQueryPhrase(0, "COMMENT ON TABLE ");
-			queryFormatter.addQueryPhrase(targetTable);
-			queryFormatter.addQueryPhrase(" IS ");
-			queryFormatter.addQueryPhrase("'");
-			queryFormatter.addQueryPhrase(dataSetConfiguration.getDescription());
-			queryFormatter.addQueryPhrase("'");
-			
+
+			SQLSchemaCommentQueryFormatter queryFormatter
+				= new SQLSchemaCommentQueryFormatter();
+			queryFormatter.setTableComment(
+				targetTable, 
+				dataSetConfiguration.getDescription());
 			statement
 				= createPreparedStatement(
 					connection, 
@@ -479,8 +477,8 @@ abstract class AbstractDataLoaderStepManager {
 		final Connection connection,
 		final Writer logFileWriter,
 		final String targetTable,
-		final String fieldName,
-		final String fieldDescription)
+		final String columnName,
+		final String comment)
 		throws SQLException,
 		RIFServiceException {
 		
@@ -492,18 +490,13 @@ abstract class AbstractDataLoaderStepManager {
 			//we've loaded a CSV file with no header and then try to assign
 			//field names we'd like to give the auto-named fields (eg: field1
 			//could become year)
-						
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-			queryFormatter.addQueryPhrase(0, "COMMENT ON COLUMN ");
-			queryFormatter.addQueryPhrase(targetTable);
-			queryFormatter.addQueryPhrase(".");
-			queryFormatter.addQueryPhrase(fieldName);
 			
-			queryFormatter.addQueryPhrase(" IS ");
-			queryFormatter.addQueryPhrase("'");
-			queryFormatter.addQueryPhrase(fieldDescription);
-			queryFormatter.addQueryPhrase("'");
-			
+			SQLSchemaCommentQueryFormatter queryFormatter
+				= new SQLSchemaCommentQueryFormatter();
+			queryFormatter.setTableColumnComment(
+				targetTable, 
+				columnName, 
+				comment);
 			
 			logSQLQuery(
 				logFileWriter,
@@ -657,20 +650,6 @@ abstract class AbstractDataLoaderStepManager {
 			}
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	protected void deleteTable(
 		final Connection connection,
@@ -857,6 +836,17 @@ abstract class AbstractDataLoaderStepManager {
 
 	}
 		
+	protected PreparedStatement createPreparedStatement(
+		final Connection connection,
+		final String query) 
+		throws SQLException {
+				
+		return SQLQueryUtility.createPreparedStatement(
+			connection,
+			query);
+	}
+	
+	
 
 	protected void logSQLQuery(
 		final Writer logFileWriter,

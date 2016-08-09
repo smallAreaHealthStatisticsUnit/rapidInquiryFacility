@@ -7,11 +7,14 @@ library(RODBC)
 #Variables that hold database connectivity information.  For now, we
 #will rely on named ODBC sources but in future the script should be 
 #altered to use host:port/databaseName
-user <- ""
+userID <- ""
+password <- ""
 dbName <- ""
 dbHost <- ""
 dbPort <- ""
 dbConnectionString <- ""
+odbcDataSource <- ""
+numberOfInvestigations <- ""
 
 #The identifier of the study whose extract table fields need to be smoothed.
 studyID <- ""
@@ -69,8 +72,10 @@ processCommandLineArguments <- function() {
 		for (i in 1:nrow(parametersDataFrame)) {
 			print(parametersDataFrame[i,1])
 			
-			if (grepl('user', parametersDataFrame[i, 1]) == TRUE) {
-				user <<- parametersDataFrame[i, 2]
+			if (grepl('user_id', parametersDataFrame[i, 1]) == TRUE) {
+				userID <<- parametersDataFrame[i, 2]
+			} else if (grepl('password', parametersDataFrame[i, 1]) == TRUE){
+				password <<- parametersDataFrame[i, 2]
 			} else if (grepl('db_name', parametersDataFrame[i, 1]) == TRUE){
 				dbName <<- parametersDataFrame[i, 2]
 			} else if (grepl('db_host', parametersDataFrame[i, 1]) == TRUE){
@@ -79,7 +84,10 @@ processCommandLineArguments <- function() {
 				dbPort <<- parametersDataFrame[i, 2]	
 			} else if (grepl('study_id', parametersDataFrame[i, 1]) == TRUE){
 				studyID <<- parametersDataFrame[i, 2]
-
+			} else if (grepl('num_investigations', parametersDataFrame[i, 1]) == TRUE){
+				numberOfInvestigations <<- parametersDataFrame[i, 2]
+			} else if (grepl('odbc_data_source', parametersDataFrame[i, 1]) == TRUE){
+				odbcDataSource <<- parametersDataFrame[i, 2]
 			} else if (grepl('models', parametersDataFrame[i, 1]) == TRUE){
 				models <<- parametersDataFrame[i, 2]				
 			}			
@@ -119,7 +127,7 @@ createDatabaseConnectionString <- function() {
 establishTableNames <-function(vstudyID) {
 	print(paste("Study ID:", vstudyID))
 	extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
-	temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_extract", sep="")
+	temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_map", sep="")
 	mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
 }
 
@@ -137,6 +145,7 @@ generateFakeValues <- function(numberOfRows, value) {
 }
 
 generateFakeGenderValues <- function(numberOfRows) {
+	print(paste0("generateFakeGenderValues numberOfRows=", numberOfRows))
 	genderValues <- vector(,numberOfRows)
 
 	for (i in 1:numberOfRows) {
@@ -157,24 +166,24 @@ generateFakeGenderValues <- function(numberOfRows) {
 ##====================================================================
 createSmoothedExtractResults <- function() {
 
-	print("createSmoothed 1")
+
 	#Part I: Read in the extract table
 	#=================================
 	#Read original extract table data into a data frame
-	sqlGetStuff <- paste0("SELECT * FROM ",
-						  extractTableName)
+	print("============EXTRACT TABLE NAME ====================")
+	print(extractTableName)
+	print("============EXTRACT TABLE NAME ====================")
+	sqlGetStuff <- paste0("SELECT * FROM ", mapTableName)
+	print(paste0("smoothing query==",sqlGetStuff,"=="))
 	#Use the as.is flag to prevent R from using its own hints to assign table columns to data types
 	#The flag was needed because when it interpretted dummy area_id values that looked like
 	#"01.001", it assumed it was a numeric value and made it "1.001". This would mean that a join 
 	#condition on the area_id field would fail.
 	originalExtractTable <- sqlQuery(connDB, sqlGetStuff, as.is=TRUE)
-	numberOfRows <- nrow(originalExtractTable)
-	print("createSmoothed 2")
+	numberOfRows <- nrow(originalExtractTable)	
 	
-	#originalExtractTable$area_id <- as.character(originalExtractTable$area_id)
-
-
-	print("createSmoothed 3")
+	print(paste0("createSmoothedExtractResults numberOfRows=",numberOfRows, "=="))
+	##originalExtractTable$area_id <- as.character(originalExtractTable$area_id)
 
 	#Part II: Perform smoothing operation
 	#====================================	
@@ -187,14 +196,9 @@ createSmoothedExtractResults <- function() {
 	#simulating smoothing transformation	
 	originalExtractTable$genders <- generateFakeGenderValues(numberOfRows)
 
-	print("createSmoothed 4")
-
 	originalExtractTable$direct_standardisation <- rep(0, numberOfRows)
-	print("createSmoothed 5")
 	originalExtractTable$adjusted <- generateFakeValues(numberOfRows, 0)
-	print("createSmoothed 6")
 	originalExtractTable$observed <- rep(1.111, numberOfRows)
-	print("createSmoothed 7")	
 	originalExtractTable$expected <- rep(2.111, numberOfRows)
 	originalExtractTable$lower95 <- rep(4.111, numberOfRows)
 	originalExtractTable$upper95 <- rep(5.111, numberOfRows)
@@ -210,12 +214,6 @@ createSmoothedExtractResults <- function() {
 	originalExtractTable$smoothed_smr_lower95 <- rep(15.111, numberOfRows)
 	originalExtractTable$smoothed_smr_upper95 <- rep(16.111, numberOfRows)
 
-
-	#Part III: Write data frame with smoothed values to temporary file
-	#=================================================================
-	print("creating smoothed results for:")
-	print(temporarySmoothedResultsTableName)
-	
 	return(originalExtractTable) 
 }
 
@@ -285,14 +283,13 @@ updateMapTableFromSmoothedResultsTable <- function() {
 		"WHERE ",
 			"a.study_id=b.study_id AND ",
 			"a.band_id=b.band_id AND ",
-			"a.inv_1=b.inv_1 AND ",
+			"a.inv_id=b.inv_id ",
+			"a.inv_id=b.inv_id AND ",
 			"a.genders=b.genders AND ",
-			"a.adjusted=b.adjusted AND ",
-			"a.direct_standardisation=b.direct_standardisation AND ",
 			"a.area_id=b.area_id");
 
-	sqlQuery(connDB, updateMapTableSQLQuery)
-						
+		print(updateMapTableSQLQuery)
+		sqlQuery(connDB, updateMapTableSQLQuery)				
 }						
 
 ##=============================================================================
@@ -313,25 +310,32 @@ updateMapTableFromSmoothedResultsTable <- function() {
 #
 ##=============================================================================
 
+performSmoothingActivity <- function() {	
+
+	code <- 111
+	tryCatch({
+		dataFrameToSmooth <<- createSmoothedExtractResults()
+		saveDataFrameToDatabaseTable(dataFrameToSmooth)
+		updateMapTableFromSmoothedResultsTable()
+		odbcEndTran(connDB, commit=TRUE)
+		},
+	error=function(c) {
+		print(paste0("error==",c))
+		#Error occurred perform rollback
+		odbcEndTran(connDB, commit=FALSE)
+		code <<- 666
+	},
+	finally={
+	})		
+	return(code)
+}
 
 processCommandLineArguments()
-##Determines the names of the original extract table, the map table and the temporary 
-#table that will hold results.  eg for study_id=13, we would have:
-#   s13_extract - the extract table created by the RIF middleware
-#   s13_map - the skeleton smoothed results table that is created by the RIF middleware
-#   s13_tmp_map - temporary table holding the data frame containing smoothed value columns
 establishTableNames(studyID)
-dbConnectionString <- createDatabaseConnectionString()
-connDB = odbcConnect("PostgreSQL30", uid="kgarwood", pwd="kgarwood")
-
-#This method will eventually be removed.  When the middleware calls this script, it will have
-#already created s[study_id]_map.  However, for testing purposes, we have a routine that simulates
-#that activity.
-print("test smoothing 1")
-dataFrameToSmooth <- createSmoothedExtractResults()
-print("test smoothing 2.1")
-#saveDataFrameToDatabaseTable(dataFrameToSmooth)
-print("test smoothing 2")
-updateMapTableFromSmoothedResultsTable()
-
+connDB <- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password))
+odbcSetAutoCommit(connDB, autoCommit=FALSE)
+result <- performSmoothingActivity()
+print(paste0("RESULT==", result, "=="))
 odbcClose(connDB)
+quit(status=result)
+

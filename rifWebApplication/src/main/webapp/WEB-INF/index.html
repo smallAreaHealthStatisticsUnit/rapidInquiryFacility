@@ -66,7 +66,7 @@
         <script src="libs/l.control.geosearch.js"></script>
         <script src="libs/l.geosearch.provider.openstreetmap.js"></script>
         <link rel="stylesheet" href="libs/l.geosearch.css" />
-        
+
         <!--Simple Statistics-->
         <script src="libs/sstatistics.js"></script>
 
@@ -76,8 +76,11 @@
         <!-- UI grid -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-grid/3.1.1/ui-grid.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-grid/3.1.1/ui-grid.css"/>  
+
+        <!-- UI layout grid -->
         <script type="application/javascript" src="https://rawgithub.com/angular-ui/ui-layout/v1.0.5/ui-layout.min.js"></script>
         <link rel="stylesheet" href="https://rawgithub.com/angular-ui/ui-layout/v1.0.5/ui-layout.css">
+        <script src="modules/rifm-ui_resize.js"></script> 
 
         <!-- notification -->
         <link rel="stylesheet" href="libs/ngNotificationsBar.css">
@@ -86,7 +89,7 @@
         <!-- topojson -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.20/topojson.min.js"></script>
 
-        <!-- XML2JSON -->
+        <!-- XML2JSON not used-->
         <script type="text/javascript" src="libs/xml2json.min.js" charset="UTF-8"></script>
 
         <!-- RIF 4.0 JS -->
@@ -123,7 +126,11 @@
         <script src="utils/services/rifs-util-gis.js"></script>
         <script src="utils/services/rifs-util-choro.js"></script>
         <script src="dashboards/status/controllers/rifc-status-main.js"></script>
-       
+        <script src="backend/services/rifs-back-requests.js"></script>
+        <script src="utils/controllers/rifc-util-tabctrl.js"></script>
+        <script src="backend/services/rifs-back-interceptor.js"></script>
+
+        <script src="dashboards/mapping/services/rifs-dmap-d3rr.js"></script>
         <script src="dashboards/mapping/directives/rifd-dmap-d3test.js"></script>
 
 
@@ -132,9 +139,6 @@
         <link href="css/rifx-css-uigrids.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-uilayout.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-modals.css" rel="stylesheet" media="screen" />
-
-        <!-- LOGON TEST -->
-        <script src="dashboards/login/app.js"></script>
 
 
     </head>

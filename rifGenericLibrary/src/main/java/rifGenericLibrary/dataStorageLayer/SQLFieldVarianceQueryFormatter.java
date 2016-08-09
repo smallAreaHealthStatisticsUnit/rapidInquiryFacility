@@ -141,7 +141,7 @@ public final class SQLFieldVarianceQueryFormatter
 
 		addQueryPhrase(0, "FROM ");
 		padAndFinishLine();
-		addQueryPhrase(1, fromTable);		
+		addQueryPhrase(1, getSchemaTableName(fromTable));		
 		padAndFinishLine();
 		addQueryPhrase(0, "GROUP BY");
 		padAndFinishLine();

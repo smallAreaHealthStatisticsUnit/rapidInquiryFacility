@@ -205,13 +205,11 @@ public class PostgreSQLDataLoadingScriptWriter {
 		createTableQueryFormatter.setTableName(publishTableName);
 
 		//these two fields will be the primary keys
-		createTableQueryFormatter.addFieldDeclaration(
+		createTableQueryFormatter.addIntegerFieldDeclaration(
 			"data_source_id", 
-			"int", 
 			false);
-		createTableQueryFormatter.addFieldDeclaration(
+		createTableQueryFormatter.addIntegerFieldDeclaration(
 			"row_number", 
-			"int", 
 			false);
 		
 		//Process the fields which did not require conversion
@@ -220,13 +218,32 @@ public class PostgreSQLDataLoadingScriptWriter {
 		for (DataSetFieldConfiguration fieldWithoutConversion : fieldsWithoutConversion) {
 			boolean isRequired
 				= !fieldWithoutConversion.isEmptyValueAllowed();
-			String dataTypePhrase
-				= getDataTypePhrase(fieldWithoutConversion);
-			createTableQueryFormatter.addFieldDeclaration(
-				fieldWithoutConversion.getConvertFieldName(), 
-				dataTypePhrase, 
-				null, 
-				isRequired);
+			RIFDataType dataType = fieldWithoutConversion.getRIFDataType();
+			String convertFieldName = fieldWithoutConversion.getConvertFieldName();
+			
+			if ( RIFDataTypeFactory.isAgeDataType(dataType) ||
+					 RIFDataTypeFactory.isYearDataType(dataType) ||
+					 RIFDataTypeFactory.isIntegerDataType(dataType)) {
+					
+					createTableQueryFormatter.addIntegerFieldDeclaration(
+						convertFieldName, 
+						isRequired);
+				}
+				else if (RIFDataTypeFactory.isDoubleDataType(dataType)) {
+					createTableQueryFormatter.addDoubleFieldDeclaration(
+						convertFieldName, 
+						isRequired);
+				}
+				else if (RIFDataTypeFactory.isDateDataType(dataType)) {
+					createTableQueryFormatter.addDateFieldDeclaration(
+						convertFieldName, 
+						isRequired);
+				}		
+				else {
+					createTableQueryFormatter.addTextFieldDeclaration(
+						convertFieldName, 
+						isRequired);
+				}
 		}		
 		fileWriter.write(createTableQueryFormatter.generateQuery());
 		
@@ -279,6 +296,7 @@ public class PostgreSQLDataLoadingScriptWriter {
 	/*
 	 * Creates field type of "text", "int", "double precision", "date"
 	 */
+	/*
 	private String getDataTypePhrase(final DataSetFieldConfiguration dataSetFieldConfiguration) {
 		RIFDataType dataType = dataSetFieldConfiguration.getRIFDataType();
 		
@@ -286,21 +304,21 @@ public class PostgreSQLDataLoadingScriptWriter {
 			 RIFDataTypeFactory.isYearDataType(dataType) ||
 			 RIFDataTypeFactory.isIntegerDataType(dataType)) {
 			
-			return "INT";
+			return SQLCreateTableQueryFormatter.getIntegerTypePhrase();
 		}
 		else if (RIFDataTypeFactory.isDoubleDataType(dataType)) {
-			return "DOUBLE PRECISION";
+			return SQLCreateTableQueryFormatter.getDoubleTypePhrase();
 		}
 		else if (RIFDataTypeFactory.isDateDataType(dataType)) {
-			return "DATE";
+			return SQLCreateTableQueryFormatter.getDateTypePhrase();
 		}		
 		else {
-			return "TEXT";
+			return SQLCreateTableQueryFormatter.getTextTypePhrase();
 		}
 		
 		
 	}
-	
+	*/
 	private void writeIndices(
 		final FileWriter fileWriter,
 		final DataSetConfiguration dataSetConfiguration) 

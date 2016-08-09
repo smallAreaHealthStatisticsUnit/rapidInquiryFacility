@@ -160,14 +160,14 @@ public abstract class AbstractSQLManager {
 			
 		SQLFunctionCallerQueryFormatter setupDatabaseLogQueryFormatter 
 			= new SQLFunctionCallerQueryFormatter();
-		setupDatabaseLogQueryFormatter.setSchema("rif40_log_pkg");
+		setupDatabaseLogQueryFormatter.setDatabaseSchemaName("rif40_log_pkg");
 		setupDatabaseLogQueryFormatter.setFunctionName("rif40_log_setup");
 		setupDatabaseLogQueryFormatter.setNumberOfFunctionParameters(0);		
 		PreparedStatement setupLogStatement = null;
 		
 		SQLFunctionCallerQueryFormatter sendDebugToInfoQueryFormatter 
 			= new SQLFunctionCallerQueryFormatter();
-		sendDebugToInfoQueryFormatter.setSchema("rif40_log_pkg");
+		sendDebugToInfoQueryFormatter.setDatabaseSchemaName("rif40_log_pkg");
 		sendDebugToInfoQueryFormatter.setFunctionName("rif40_send_debug_to_info");
 		sendDebugToInfoQueryFormatter.setNumberOfFunctionParameters(1);		
 		

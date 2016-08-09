@@ -85,8 +85,7 @@ $(document).ready(function documentReady() {
 	  
 					$( "#diagnostics, #shpConvertSubmit" ).button();
 					$( "#shpConvertGetResults, #shpConvertGetConfig" ).button();	
-					$( "#shpConvertGetResults, #shpConvertGetConfig" ).button( "option", "disabled", true );	
-					
+					$( "#shpConvertGetResults, #shpConvertGetConfig" ).button( "option", "disabled", true );						
 					
 						// Diagnostics, shpConvertGetConfig, shpConvertGetResults, shpConvertSubmit buttons
 					$( "#geographyName, #geographyDesc" ).button()		// Geography name, desc buttons
@@ -101,7 +100,7 @@ $(document).ready(function documentReady() {
 							  my: "right bottom+50"
 						  },
 						  tooltipClass: "entry-tooltip-positioner"
-						  });							
+						  });					  
 
 //					Accordion is initialised dynamically					
 				});
@@ -136,7 +135,7 @@ $(document).ready(function documentReady() {
 						if (currentTab == "maptab" && L && map && map.invalidateSize && 
 						    typeof map.invalidateSize == "function") {	
 							setTimeout(function resizeMap() { // Wait to resize map
-								$('#map').css("margin-top",150);
+//								$('#map').css("margin-top",150);
 							 
 								var currentTab=$("#tabs .ui-state-active a").attr('href');
 								var nTab=0;
@@ -202,7 +201,7 @@ $(document).ready(function documentReady() {
 		}).css({
 			'min-height': height+"px"
 		});
-	
+					
 //
 // Enable resize
 //

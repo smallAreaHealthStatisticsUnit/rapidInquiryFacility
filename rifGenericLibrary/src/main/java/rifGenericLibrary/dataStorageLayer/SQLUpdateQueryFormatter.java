@@ -160,7 +160,7 @@ public final class SQLUpdateQueryFormatter
 		final String fieldNameB) {
 
 		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableA);
+		whereCondition.append(getSchemaTableName(tableA));
 		whereCondition.append(".");
 		whereCondition.append(fieldNameA);
 		whereCondition.append("=");
@@ -265,7 +265,7 @@ public final class SQLUpdateQueryFormatter
 		final String fieldName) {
 		
 		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableName);
+		whereCondition.append(getSchemaTableName(tableName));
 		whereCondition.append(".");		
 		whereCondition.append(fieldName);
 		whereCondition.append("=?");
@@ -285,7 +285,7 @@ public final class SQLUpdateQueryFormatter
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "UPDATE ");
-		addQueryPhrase(updateTable);
+		addQueryPhrase(getSchemaTableName(updateTable));
 		padAndFinishLine();
 		addQueryPhrase(0, "SET ");
 		

@@ -280,11 +280,11 @@ public final class SQLSelectQueryFormatter
 		final String fieldNameB) {
 
 		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableA);
+		whereCondition.append(getSchemaTableName(tableA));
 		whereCondition.append(".");
 		whereCondition.append(fieldNameA);
 		whereCondition.append("=");
-		whereCondition.append(tableB);
+		whereCondition.append(getSchemaTableName(tableB));
 		whereCondition.append(".");
 		whereCondition.append(fieldNameB);
 		
@@ -338,13 +338,13 @@ public final class SQLSelectQueryFormatter
 		final String tableBField) {
 		
 		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableA);
+		whereCondition.append(getSchemaTableName(tableA));
 		whereCondition.append(".");
 		whereCondition.append(tableAField);
 		whereCondition.append(" ");
 		whereCondition.append(operator);
 		whereCondition.append(" ");
-		whereCondition.append(tableB);
+		whereCondition.append(getSchemaTableName(tableB));
 		whereCondition.append(".");
 		whereCondition.append(tableBField);
 		whereConditions.add(whereCondition.toString());
@@ -363,7 +363,7 @@ public final class SQLSelectQueryFormatter
 		final String literalValue) {
 		
 		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableName);
+		whereCondition.append(getSchemaTableName(tableName));
 		whereCondition.append(".");
 		whereCondition.append(fieldName);
 		whereCondition.append("='");
@@ -454,7 +454,7 @@ public final class SQLSelectQueryFormatter
 		final String fieldName) {
 		
 		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableName);
+		whereCondition.append(getSchemaTableName(tableName));
 		whereCondition.append(".");		
 		whereCondition.append(fieldName);
 		whereCondition.append("=?");
@@ -572,7 +572,7 @@ public final class SQLSelectQueryFormatter
 				addQueryPhrase(",");
 				finishLine();
 			}
-			addQueryPhrase(1, convertCase(fromTables.get(i)));
+			addQueryPhrase(1, convertCase(getSchemaTableName(fromTables.get(i))));
 		}
 		
 		

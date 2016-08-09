@@ -515,7 +515,7 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		throws Exception {
 				
 		SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
-		queryFormatter.setSchema("rif40_dmp_pkg");
+		queryFormatter.setDatabaseSchemaName("rif40_dmp_pkg");
 		queryFormatter.setFunctionName("csv_dump");
 		queryFormatter.setNumberOfFunctionParameters(1);
 		

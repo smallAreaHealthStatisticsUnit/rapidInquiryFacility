@@ -120,7 +120,8 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "httpErrorResponse sent; size: " + output.length + " bytes", req);	
 		}
 		else { // Do not raise errors - likewise
-			serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "FATAL ERROR! Unable to return error to user - httpErrorResponse() already processed", req, err);
+			serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", 
+				"FATAL ERROR! Unable to return error to user - httpErrorResponse() already processed", req, err);
 		}						
 	} // End of httpErrorResponseAddStatusCallback()	
 					
@@ -185,8 +186,10 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 	
 		if (g_response && g_response.status && nodeGeoSpatialServicesCommon && 
 		    nodeGeoSpatialServicesCommon.addStatus && typeof nodeGeoSpatialServicesCommon.addStatus == "function") { // Add error status
-			try {
-				nodeGeoSpatialServicesCommon.addStatus(file, line, g_response, "ERROR", status /* HTTP status */, serverLog, req, httpErrorResponseAddStatusCallback);
+			try {	
+//				console.error("httpErrorResponse(): Call addStatus()");
+				nodeGeoSpatialServicesCommon.addStatus(file, line, g_response, "ERROR", 
+					status /* HTTP status */, serverLog, req, httpErrorResponseAddStatusCallback);
 					
 				l_response.status = g_response.status;
 			}

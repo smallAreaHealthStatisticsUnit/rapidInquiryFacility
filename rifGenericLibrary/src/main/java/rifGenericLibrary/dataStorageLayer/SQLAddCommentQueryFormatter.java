@@ -90,7 +90,8 @@ public class SQLAddCommentQueryFormatter extends AbstractSQLQueryFormatter {
 	public String generateQuery() {
 		
 		addQueryPhrase(0, "COMMENT ON TABLE ");
-		addQueryPhrase(tableName);
+		
+		addQueryPhrase(getSchemaTableName(tableName));
 		
 		if (fieldName != null) {
 			addQueryPhrase(".");

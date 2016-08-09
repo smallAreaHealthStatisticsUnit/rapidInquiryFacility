@@ -175,7 +175,7 @@ public final class SQLRecordExistsQueryFormatter
 		addQueryPhrase(0, "FROM");
 		padAndFinishLine();
 		
-		addQueryPhrase(1, convertCase(fromTableName));
+		addQueryPhrase(1, convertCase(getSchemaTableName(fromTableName)));
 		padAndFinishLine();
 		addQueryPhrase(0, "WHERE");
 		padAndFinishLine();

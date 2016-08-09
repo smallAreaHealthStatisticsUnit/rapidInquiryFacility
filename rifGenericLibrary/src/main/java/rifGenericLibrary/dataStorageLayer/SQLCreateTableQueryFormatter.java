@@ -100,6 +100,7 @@ public final class SQLCreateTableQueryFormatter
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
 	public void setTextFieldLength(final int textFieldLength) {
 		this.textFieldLength = textFieldLength;
 	}
@@ -107,13 +108,58 @@ public final class SQLCreateTableQueryFormatter
 	public void setTableName(final String tableToCreate) {
 		this.tableToCreate = tableToCreate;		
 	}
+
+	public void addDateFieldDeclaration(
+		final String fieldName,
+		final boolean isNullAllowed) {
+				
+		addFieldDeclaration(
+			fieldName, 
+			"DATE", 
+			isNullAllowed);
+	}
+	
+	public void addSmallIntegerFieldDeclaration(
+		final String fieldName,
+		final boolean isNullAllowed) {
+		
+		addFieldDeclaration(
+			fieldName, 
+			"SMALLINT", 
+			isNullAllowed);	
+	}
+	
+	
+	public void addIntegerFieldDeclaration(
+		final String fieldName,
+		final boolean isNullAllowed) {
+		
+		addFieldDeclaration(
+			fieldName, 
+			"INTEGER", 
+			isNullAllowed);	
+	}
+		
+	public void addDoubleFieldDeclaration(
+		final String fieldName,
+		final boolean isNullAllowed) {
+		
+		addFieldDeclaration(
+			fieldName, 
+			"DOUBLE PRECISION", 
+			isNullAllowed);
+		
+	}
+	
 	
 	public void addTextFieldDeclaration(
 		final String fieldName,
 		final boolean isNullAllowed) {
 		
 		StringBuilder textFieldType = new StringBuilder();
-		textFieldType.append("TEXT");
+		//
+		textFieldType.append("VARCHAR");
+		//textFieldType.append("TEXT");
 		//textFieldType.append("VARCHAR(");
 		//textFieldType.append(String.valueOf(textFieldLength));
 		//textFieldType.append(")");
@@ -204,14 +250,14 @@ public final class SQLCreateTableQueryFormatter
 		}
 	}	
 	
-	public void addFieldDeclaration(
+	private void addFieldDeclaration(
 		final String fieldName,
 		final String dataType,
 		final String defaultPhrase,
 		final boolean isNullAllowed) {
 		
 		StringBuilder fieldDeclaration = new StringBuilder();
-		fieldDeclaration.append(fieldName);
+		fieldDeclaration.append(fieldName.toLowerCase());
 		fieldDeclaration.append(" ");
 		
 		if (isCaseSensitive() == false) {
@@ -234,7 +280,7 @@ public final class SQLCreateTableQueryFormatter
 		
 	}
 	
-	public void addFieldDeclaration(
+	private void addFieldDeclaration(
 		final String fieldName,
 		String dataType,
 		final boolean isNullAllowed) {
@@ -250,7 +296,7 @@ public final class SQLCreateTableQueryFormatter
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "CREATE TABLE ");
-		addQueryPhrase(tableToCreate);
+		addQueryPhrase(getSchemaTableName(tableToCreate));
 		addQueryPhrase(" (");
 		padAndFinishLine();
 		

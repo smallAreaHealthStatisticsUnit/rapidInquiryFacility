@@ -34,6 +34,7 @@ angular.module("RIF")
                 $scope.input.projects.length = 0;
                 for (var i = 0; i < res.data.length; i++) {
                     $scope.input.projects.push({name: res.data[i].name, description: res.data[i].description});
+                    //TODO: description is NULL but there is a getProjectDescription method
                 }
                 $scope.input.project = $scope.input.projects[0];
                 $scope.updateModel();

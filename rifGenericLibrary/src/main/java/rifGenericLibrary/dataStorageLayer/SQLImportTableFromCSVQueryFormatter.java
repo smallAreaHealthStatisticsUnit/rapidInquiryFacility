@@ -131,7 +131,7 @@ public final class SQLImportTableFromCSVQueryFormatter
 		//COPY t FROM STDIN
 		resetAccumulatedQueryExpression();
 		addPaddedQueryLine(0, "COPY ");
-		addPaddedQueryLine(1, tableToImport);
+		addPaddedQueryLine(1, getSchemaTableName(tableToImport));
 		addPaddedQueryLine(0, "FROM");
 		addQueryPhrase(1, importFileName);		
 		addQueryPhrase(" WITH DELIMITER '");
