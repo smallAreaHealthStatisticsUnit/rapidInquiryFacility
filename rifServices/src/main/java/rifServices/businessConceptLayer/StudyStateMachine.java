@@ -143,6 +143,10 @@ public class StudyStateMachine {
 		return currentState;
 	}
 	
+	public StudyState getCurrentStudyState() {
+		return currentState;
+	}
+	
 	public boolean isFinished() {
 		if (currentState == finalState) {
 			return true;
