@@ -103,6 +103,8 @@ public final class RIFServiceResources {
 	
 	private SQLInvestigationManager sqlInvestigationManager;
 
+	private SQLStudyStateManager sqlStudyStateManager;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -148,7 +150,9 @@ public final class RIFServiceResources {
 				sqlInvestigationManager,
 				sqlMapDataManager);
 				
-				
+		sqlStudyStateManager
+			= new SQLStudyStateManager(rifDatabaseProperties);
+		
 		sqlRIFSubmissionManager 
 			= new SQLRIFSubmissionManager(
 				rifDatabaseProperties,
@@ -156,7 +160,8 @@ public final class RIFServiceResources {
 				sqlAgeGenderYearManager,
 				sqlCovariateManager,
 				sqlDiseaseMappingStudyManager,
-				sqlMapDataManager);
+				sqlMapDataManager,
+				sqlStudyStateManager);
 
 		sqlStudyExtractManager
 			= new SQLStudyExtractManager(
@@ -250,6 +255,10 @@ public final class RIFServiceResources {
 		return healthOutcomeManager;
 	}
 
+	public SQLStudyStateManager getStudyStateManager() {
+		return sqlStudyStateManager;
+	}
+	
 	public SQLRIFSubmissionManager getRIFSubmissionManager() {
 		return sqlRIFSubmissionManager;
 	}
