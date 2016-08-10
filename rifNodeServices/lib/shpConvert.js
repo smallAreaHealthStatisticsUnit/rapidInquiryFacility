@@ -477,7 +477,41 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						
 			return record;
 		} // End of closePolygonLoop()
-		
+
+		/*
+		 * Function:	addAreaAndCentroid()
+		 * Parameters:	shapefile record, shape file data object, recNo, area ID
+		 * Returns:		nothing
+		 * Description:	Add geographic centroid and area in square Km to shapefile record
+		 *				Can be enhanced to do population weighted centroids
+		 */			
+		function addAreaAndCentroid(record, shapefileData, recNo, areaID) {
+			if (record.properties.area_km2 == undefined) {
+				try {	
+					record.properties.area_km2=turf.area(record);
+				}
+				catch (e) {
+					throw new Error("Duplicate area ID area error in shapefile " + 
+						shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+						"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+						"; row: " + (recNo-1) + "\nError: " + e.message +
+						"\nrecord:\n" + JSON.stringify(record, NULL, 4));
+				}	
+			}
+			if (record.properties.geographic_centroid == undefined) {
+				try {	
+					record.properties.geographic_centroid=turf.centroid(record);
+				}
+				catch (e) {
+					throw new Error("Duplicate area ID geographic centroid error in shapefile " + 
+						shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+						"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+						"; row: " + (recNo-1) + "\nError: " + e.message +
+						"\nrecord:\n" + JSON.stringify(record, NULL, 4));
+				}	
+			}
+		} // End of addAreaAndCentroid()
+					
 		/*
 		 * Function:	shapefileDataAddRecord()
 		 * Parameters:	shapefile record, shape file data object, recNo
@@ -528,8 +562,12 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 								
 								try { // Replace feature with new Unioned feature in collection (record number: recNo)
 									
-									var newFeature=turf.union(record, dupRecord);
-									newFeature.properties=dupRecord.properties;					
+									var newFeature=turf.union(record, dupRecord);	// Union records together
+									
+									newFeature.properties=dupRecord.properties;		// Add properties back
+									
+									addAreaAndCentroid(newFeature, shapefileData, recNo, areaID); // Add area and centooid
+									
 									shapefileData["featureList"][(shapefileData["areaIDs"][record.properties[areaID]].recNo-1)]=
 										newFeature;					
 									console.error("Duplicate area ID fixed in shapefile " + 
@@ -569,6 +607,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						if (record.properties.gid == undefined) {
 							record.properties.gid=recNo;
 						}
+						addAreaAndCentroid(record, shapefileData, recNo, areaID);	// Add area and centooid
+
 						shapefileData["areaIDs"][record.properties[areaID]] = {
 							recNo: recNo,
 							duplicates: 0,
