@@ -1,9 +1,15 @@
 package rifServices.dataStorageLayer;
 
+import rifServices.system.RIFServiceMessages;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.StudyState;
+import rifServices.businessConceptLayer.StudyStateMachine;
+
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.system.RIFServiceMessages;
+
 
 import java.util.ArrayList;
 import java.sql.*;
@@ -68,72 +74,54 @@ import java.sql.*;
  *
  */
 
-public class RunStudyThread {
+public class RunStudyThread 
+	implements Runnable {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final int SLEEP_TIME = 500;
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	private Connection connection;
+	private User user;
+	private SQLStudyStateManager studyStateManager;
+	private SQLRIFSubmissionManager studySubmissionManager;
+	private RIFStudySubmission studySubmission;
+	private String studyID;
+	
+	private StudyStateMachine studyStateMachine;
+	
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public RunStudyThread() {
-
-		
+		studyStateMachine = new StudyStateMachine();
+		studyStateMachine.initialiseState();
 	}
-
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	
-	
-	
-	private Integer[] scanForNewStudySubmissions(final Connection connection) 
-		throws RIFServiceException {
-				
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-		queryFormatter.addSelectField("study_id");
-		queryFormatter.addFromTable("rif40.rif_studies");
-		queryFormatter.addWhereParameterWithLiteralValue("study_state", "C");
+	public void initialise(
+		final Connection connection,
+		final User user,
+		final SQLStudyStateManager studyStateManager, 
+		final SQLRIFSubmissionManager studySubmissionManager,
+		final RIFStudySubmission studySubmission,
+		final String studyID) {
 		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		ArrayList<Integer> studiesToRun = new ArrayList<Integer>();
-		try {
-			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
-			resultSet = statement.executeQuery();
-			while (resultSet.next()) {
-				studiesToRun.add(resultSet.getInt(1));
-			}
-		}
-		catch(SQLException exception) {
-/*
-			String errorMessage
-				= RIFServiceMessages.getMessage("");
-			RIFServiceException rifServiceException 
-				= new RIFServiceException(
-					RIFServiceError, 
-					errorMessage);
-			throw rifServiceException;
-*/			
-		}
-		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(statement);
-		}
-		
-		return studiesToRun.toArray(new Integer[0]);
-		
+		this.connection = connection;
+		this.user = user;
+		this.studyStateManager = studyStateManager;
+		this.studySubmissionManager = studySubmissionManager;
+		this.studySubmission = studySubmission;
+		this.studyID = studyID;
 	}
-	
-	
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -141,7 +129,95 @@ public class RunStudyThread {
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
+	public void run() {
+		try {
+			while (studyStateMachine.isFinished() == false) {				
+				StudyState currentState
+					= studyStateMachine.getCurrentStudyState();
+				if (currentState == StudyState.STUDY_CREATED) {
+					//Study has been extracted but neither the extract nor map tables
+					//for that study have been produced.
+					verifyStudyProperlyCreated();					
+				}
+				else if (currentState == StudyState.STUDY_VERIFIED) {
+					createExtractTable();
+				}
+				else if (currentState == StudyState.STUDY_EXTRACTED) {
+					computeSmoothedResults();
+				}
+				else if (currentState == StudyState.STUDY_RESULTS_COMPUTED) {
+					
+					//we are done.  Break out of the loop so that the thread can stop
+					break;
+				}
 
+				
+				Thread.sleep(SLEEP_TIME);
+			}
+		}
+		catch(InterruptedException interruptedException) {
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			
+		}
+		finally {
+			
+			
+		}
+	}
+	
+	
+	private void verifyStudyProperlyCreated() 
+		throws RIFServiceException {
+		
+		/*
+		studySubmissionManager.verifyStudyProperlyCreated(
+			user,
+			studyID);
+		
+		String statusMessage
+			= RIFServiceMessages.getMessage(
+				"",
+				studyID);
+		studyStateManager.addStatusMessage(
+			user, 
+			studyID, 
+			statusMessage);
+		studyStateMachine.next();
+		*/
+	}
+	
+	
+	private void createExtractTable() 
+		throws RIFServiceException {
+		
+		/*
+		studySubmissionManager.verifyStudyProperlyCreated(
+			user,
+			studyID);
+			
+		studyStateManager.updateStudyState(
+			connection, 
+			user, 
+			studyID, 
+			studyStateMachine.getCurrentStudyState());
+		String statusMessage
+			= RIFServiceMessages.getMessage(
+				"",
+				studyID);
+		studyStateManager.addStatusMessage(user, studyID, statusMessage);
+		studyStateMachine.next();	
+		
+		*/
+	}
+	
+	private void computeSmoothedResults() {
+		
+		
+	}
+	
+	
 	// ==========================================
 	// Section Override
 	// ==========================================
