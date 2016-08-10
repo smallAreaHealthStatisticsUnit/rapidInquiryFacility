@@ -78,8 +78,11 @@ public enum StudyState {
 		"studyState.extractCompleted"),
 	STUDY_RESULTS_COMPUTED(
 		"R",
-		"studyState.resultsComputed");
-
+		"studyState.resultsComputed"),
+	STUDY_STATE_UNKNOWN(
+		"U", 
+		"studyState.studyStateUnknown");
+	
 	final String name;
 	final String descriptionPropertyName;
 		
