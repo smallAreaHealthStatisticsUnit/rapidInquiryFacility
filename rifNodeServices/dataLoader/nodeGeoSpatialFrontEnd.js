@@ -1504,6 +1504,10 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					else if (status["statusText"] == "BATCH_INTERMEDIATE_END") {
 						displayProgress("Intermediate processing complete, loading maps, making tiles");
 					}				
+					else if (status["statusText"] == "FATAL") {
+						displayProgress("Processing failed");
+						hasErrors=true;
+					}
 					else if (status["statusText"] == "ERROR") {
 						displayProgress("Processing failed");
 					}
@@ -1511,7 +1515,19 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 						displayProgress(status["statusText"]);
 					}
 					
-					for (var i=index; i<data.status.length; i++) {
+					for (var i=0; i<data.status.length; i++) { // Look for any errors
+						if (data.status[i]) {
+							if (data.status[i].statusText == "FATAL") {
+								atEnd=true;
+								hasErrors=true;
+							}
+							if (data.status[i].statusText == "ERROR") {
+								hasErrors=true;
+							}
+						}
+					}
+					
+					for (var i=index; i<data.status.length; i++) { // Add new statii; lock for end
 						if (data.status[i]) {
 							consoleLog("+" + data.status[i]["etime"] + data.status[i].httpStatus + " " + 
 								" [" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
@@ -1538,10 +1554,6 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 								getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName); // Load intermediate map
 //								atEnd=true;
 							}				
-							else if (data.status[i].statusText == "ERROR") {
-								atEnd=true;
-								hasErrors=true;
-							}
 								
 						}
 					} // End of for loop		
@@ -1558,7 +1570,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, statusFileName, responseFileName, nextTimeout /* Next timeout */, 
 						nrecursionCount /* Recursion count */, nIndex /* New index */);
 				}
-				else if (atEnd && hasErrors) {
+				else if (atEnd && hasErrors) { // At end; has errors
 
 					var end=new Date().getTime();
 					var elapsed=Math.round((end - start)/1000, 2); // in S
@@ -1594,7 +1606,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					}					
 					consoleLog("No need for more status updates: at end");
 				}
-				else if (atEnd) {
+				else if (atEnd) { // At end no errors
 
 					var end=new Date().getTime();
 					var elapsed=Math.round((end - start)/1000, 2); // in S

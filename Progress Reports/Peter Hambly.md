@@ -524,7 +524,7 @@ RangeError: Invalid string length
 * De-duplication processing, closed polygon loops if needed
 * Improved error handling
 * RIF meeting
-
+* Added area in square KM and geographic centroid to data
 
 #### 15th to 19th August  
 
@@ -638,3 +638,4 @@ Note: no bounding box (bbox) in tiles.
 ## Bugs
 
 * Missing primary key index on Postgres s<study_id>_extract.
+* Missing GRANT INSERT on map table (e.g s1_map)

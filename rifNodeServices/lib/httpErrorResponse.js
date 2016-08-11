@@ -188,7 +188,7 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		    nodeGeoSpatialServicesCommon.addStatus && typeof nodeGeoSpatialServicesCommon.addStatus == "function") { // Add error status
 			try {	
 //				console.error("httpErrorResponse(): Call addStatus()");
-				nodeGeoSpatialServicesCommon.addStatus(file, line, g_response, "ERROR", 
+				nodeGeoSpatialServicesCommon.addStatus(file, line, g_response, "FATAL", 
 					status /* HTTP status */, serverLog, req, httpErrorResponseAddStatusCallback);
 					
 				l_response.status = g_response.status;
