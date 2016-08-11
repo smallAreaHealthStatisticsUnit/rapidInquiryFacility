@@ -194,13 +194,14 @@ class AbstractRIFUserService extends AbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			
-			SQLRIFSubmissionManager rifSubmissionManager
-				= rifServiceResources.getRIFSubmissionManager();
+			SQLStudyStateManager studyStateManager
+				= rifServiceResources.getStudyStateManager();
 			results
-				= rifSubmissionManager.getStudyStatusUpdates(
-					connection,
-					user,
+				= studyStateManager.getStudyStatusHistory(
+					connection, 
+					user, 
 					studyID);
+
 			
 		}
 		catch(RIFServiceException rifServiceException) {

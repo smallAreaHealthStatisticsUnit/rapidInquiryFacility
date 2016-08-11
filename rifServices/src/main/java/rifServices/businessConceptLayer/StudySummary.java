@@ -92,6 +92,9 @@ public final class StudySummary {
 	/** The study summary. */
 	private String studySummary;
 	
+	/** The current processing state of the study */
+	private StudyState studyState;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -103,6 +106,7 @@ public final class StudySummary {
 	 * @param studyName the study name
 	 * @param studySummary the study summary
 	 */
+	
 	private StudySummary(
 		final String studyID,
 		final String studyName,
@@ -111,8 +115,22 @@ public final class StudySummary {
 		this.studyID = studyID;
 		this.studyName = studyName;
 		this.studySummary = studySummary;
+		studyState = StudyState.STUDY_STATE_UNKNOWN;
 	}
 
+	private StudySummary(
+		final String studyID,
+		final String studyName,
+		final String studySummary,
+		final StudyState studyState) {
+
+		this.studyID = studyID;
+		this.studyName = studyName;
+		this.studySummary = studySummary;
+		this.studyState = studyState;
+	}
+	
+		
 	/**
 	 * New instance.
 	 *
@@ -121,6 +139,7 @@ public final class StudySummary {
 	 * @param studySummary the study summary
 	 * @return the RIF job submission summary
 	 */
+	
 	static public StudySummary newInstance(
 		final String studyID,
 		final String studyName,
@@ -135,6 +154,23 @@ public final class StudySummary {
 		return summary;
 	}
 	
+	static public StudySummary newInstance(
+		final String studyID,
+		final String studyName,
+		final String studySummary,
+		final StudyState studyState) {
+		
+		StudySummary summary
+			= new StudySummary(
+				studyID, 
+				studyName, 
+				studySummary,
+				studyState);
+		
+		return summary;
+	}
+	
+	
 	static public StudySummary createCopy(
 		final StudySummary originalStudySummary) {
 		
@@ -146,7 +182,8 @@ public final class StudySummary {
 			= StudySummary.newInstance(
 				originalStudySummary.getStudyID(), 
 				originalStudySummary.getStudyName(), 
-				originalStudySummary.getStudySummary());
+				originalStudySummary.getStudySummary(),
+				originalStudySummary.getStudyState());
 		
 		return cloneStudySummary;
 	}
@@ -187,6 +224,10 @@ public final class StudySummary {
 	public String getStudySummary() {
 		
 		return studySummary;
+	}
+	
+	public StudyState getStudyState() {
+		return studyState;
 	}
 	
 	public void identifyDifferences(

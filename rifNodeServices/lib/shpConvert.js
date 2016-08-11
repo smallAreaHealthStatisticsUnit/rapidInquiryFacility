@@ -364,6 +364,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	      srs = require('srs'),
 	      async = require('async'),
 	      turf = require('turf'),
+	      wellknown = require('wellknown'),
 		  streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback'),
 		  simplifyGeoJSON = require('../lib/simplifyGeoJSON');
 
@@ -477,7 +478,61 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						
 			return record;
 		} // End of closePolygonLoop()
-		
+
+		/*
+		 * Function:	addAreaAndCentroid()
+		 * Parameters:	shapefile record, shape file data object, recNo, area ID
+		 * Returns:		nothing
+		 * Description:	Add geographic centroid and area in square Km to shapefile record
+		 *				Can be enhanced to do population weighted centroids
+		 */			
+		function addAreaAndCentroid(record, shapefileData, recNo, areaID) {
+			if (record.properties.area_km2 == undefined) {
+				try {	
+					record.properties.area_km2=turf.area(record)/(1000*1000);
+				}
+				catch (e) {
+					throw new Error("Duplicate area ID area error in shapefile " + 
+						shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+						"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+						"; row: " + (recNo-1) + "\nError: " + e.message +
+						"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
+				}	
+			}
+			if (record.properties.geographic_centroid == undefined) {
+				try {	
+					var centroid=turf.centroid(record);
+					try {
+						if (centroid) {
+							record.properties.geographic_centroid=wellknown.stringify(centroid); // In WKT
+						}
+						else {
+							record.properties.geographic_centroid=undefined;
+							throw new Error("Duplicate area ID geographic NULL centroid error in shapefile " + 
+								shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+								"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+								"; row: " + (recNo-1) + "\nError: " + e.message +
+								"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
+						}
+					}
+					catch (e) {
+						throw new Error("Duplicate area ID geographic centroid to WKT error in shapefile " + 
+							shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+							"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+							"; row: " + (recNo-1) + "\nError: " + e.message +
+							"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
+					}
+				}
+				catch (e) {
+					throw new Error("Duplicate area ID geographic create centroid error in shapefile " + 
+						shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+						"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+						"; row: " + (recNo-1) + "\nError: " + e.message +
+						"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
+				}	
+			}
+		} // End of addAreaAndCentroid()
+					
 		/*
 		 * Function:	shapefileDataAddRecord()
 		 * Parameters:	shapefile record, shape file data object, recNo
@@ -528,8 +583,12 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 								
 								try { // Replace feature with new Unioned feature in collection (record number: recNo)
 									
-									var newFeature=turf.union(record, dupRecord);
-									newFeature.properties=dupRecord.properties;					
+									var newFeature=turf.union(record, dupRecord);	// Union records together
+									
+									newFeature.properties=dupRecord.properties;		// Add properties back
+									
+									addAreaAndCentroid(newFeature, shapefileData, recNo, areaID); // Add area and centooid
+									
 									shapefileData["featureList"][(shapefileData["areaIDs"][record.properties[areaID]].recNo-1)]=
 										newFeature;					
 									console.error("Duplicate area ID fixed in shapefile " + 
@@ -569,6 +628,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						if (record.properties.gid == undefined) {
 							record.properties.gid=recNo;
 						}
+						addAreaAndCentroid(record, shapefileData, recNo, areaID);	// Add area and centooid
+
 						shapefileData["areaIDs"][record.properties[areaID]] = {
 							recNo: recNo,
 							duplicates: 0,

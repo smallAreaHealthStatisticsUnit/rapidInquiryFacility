@@ -92,6 +92,7 @@ final class SQLRIFSubmissionManager
 	private SQLAgeGenderYearManager ageGenderYearManager;
 	private SQLCovariateManager covariateManager;
 	private SQLMapDataManager mapDataManager;
+	private SQLStudyStateManager studyStateManager;
 	
 	// ==========================================
 	// Section Construction
@@ -106,7 +107,8 @@ final class SQLRIFSubmissionManager
 		final SQLAgeGenderYearManager ageGenderYearManager,
 		final SQLCovariateManager covariateManager,
 		final SQLDiseaseMappingStudyManager diseaseMappingStudyManager,
-		final SQLMapDataManager mapDataManager) {
+		final SQLMapDataManager mapDataManager,
+		final SQLStudyStateManager studyStateManager) {
 
 		super(rifDatabaseProperties);		
 		this.rifContextManager = rifContextManager;
@@ -114,6 +116,7 @@ final class SQLRIFSubmissionManager
 		this.covariateManager = covariateManager;		
 		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
 		this.mapDataManager = mapDataManager;
+		this.studyStateManager = studyStateManager;
 	}
 
 	// ==========================================
@@ -232,101 +235,6 @@ final class SQLRIFSubmissionManager
 			SQLQueryUtility.close(deleteStudyAreasStatement);
 			SQLQueryUtility.close(deleteInvestigationsStatement);
 		}
-	}
-	
-	
-	public String[] getStudyStatusUpdates(
-		final Connection connection, 
-		final User user,
-		final String studyID) 
-		throws RIFServiceException {
-		
-		
-		//validate parameters
-		checkNonExistentStudyID(
-			connection, 
-			user,
-			studyID);
-					
-		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		String[] results = new String[0];
-		//try {
-			
-			
-			//stubbed for now
-			/*
-			 * Something that gets:
-			 * time of update
-			 * study name
-			 * processing stage
-			 * status message
-			 */
-			
-			/*
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
-			
-			statement
-				= createPreparedStatement(
-					connection, 
-					queryFormatter);
-			resultSet
-				= statement.executeQuery();
-
-			ArrayList<String> statusUpdates = new ArrayList<String>();
-			while (resultSet.next() ) {			
-				String studyName = resultSet.getString(1);
-				String processingStage = resultSet.getString(2);
-				String currentStatus = resultSet.getString(3);
-				Date timeStamp = resultSet.getDate(4);
-				String datePhrase = RIFGenericLibraryMessages.getDatePhrase(timeStamp);
-						
-				String statusUpdate
-					= RIFServiceMessages.getMessage(
-						"sqlRIFSubmissionManager.statusUpdate",
-						datePhrase,
-						studyName,
-						processingStage,
-						currentStatus);
-				statusUpdates.add(statusUpdate);
-			}
-			
-			results
-				= statusUpdates.toArray(new String[0]);
-			
-			connection.commit();
-			
-			return results;			
-			*/
-			String[] statusUpdates = new String[2];
-			statusUpdates[0] = "study has been created but nothing much else is happening with it.";
-			statusUpdates[1] = "The RIF has begun to process the study.";			
-			return (statusUpdates);
-/*			
-		}
-		catch(SQLException sqlException) {
-			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToGetStatusUpdate",
-					studyID);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);			
-		}
-*/		
-		
-		
-		
-		
 	}
 	
 	
@@ -1449,7 +1357,7 @@ final class SQLRIFSubmissionManager
 		
 		String studyID 
 			= study.getIdentifier();
-		checkNonExistentStudyID(
+		studyStateManager.checkNonExistentStudyID(
 			connection,
 			user,
 			studyID);
@@ -1936,12 +1844,11 @@ final class SQLRIFSubmissionManager
 		//check for non-existent study given id
 		//checkNonExistentStudy(studyID);
 		
-		checkNonExistentStudyID(
+		studyStateManager.checkNonExistentStudyID(
 			connection,
 			user,
 			studyID);
 
-		
 		DiseaseMappingStudy result
 			= DiseaseMappingStudy.newInstance();
 		try {
@@ -2490,86 +2397,6 @@ final class SQLRIFSubmissionManager
 		
 		//we can assume that all rif output options that are supplied
 		//do in fact exist because they are taken from an enumerated type
-	}
-	
-	
-	private void checkNonExistentStudyID(
-		final Connection connection,
-		final User user,
-		final String studyID)
-		throws RIFServiceException {
-		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		try {
-			SQLRecordExistsQueryFormatter queryFormatter
-				= new SQLRecordExistsQueryFormatter();
-			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setLookupKeyFieldName("study_id");
-			queryFormatter.setFromTable("rif40_studies");		
-			logSQLQuery(
-				"checkNonExistentStudyID", 
-				queryFormatter, 
-				studyID);
-			
-			statement 
-				= createPreparedStatement(
-					connection,
-					queryFormatter);	
-			statement.setInt(1, Integer.valueOf(studyID));
-			resultSet = statement.executeQuery();
-
-			if (resultSet.next() == false) {
-				//ERROR: no such study exists
-				String recordType
-					= RIFServiceMessages.getMessage("abstractStudy.label");
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"general.validation.nonExistentRecord",
-						recordType,
-						studyID);
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.NON_EXISTENT_STUDY, 
-						errorMessage);
-				
-				connection.commit();
-				
-				throw rifServiceException;
-				
-			}	
-		
-			connection.commit();
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
-			String recordType
-				= RIFServiceMessages.getMessage("abstractStudy.label");			
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"general.validation.unableCheckNonExistentRecord",
-					recordType,
-					studyID);
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				SQLRIFContextManager.class, 
-				errorMessage, 
-				sqlException);										
-					
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);			
-		}		
 	}
 	
 	private void checkProjectExists(
