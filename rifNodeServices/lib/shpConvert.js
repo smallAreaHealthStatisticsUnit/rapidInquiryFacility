@@ -364,6 +364,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 	      srs = require('srs'),
 	      async = require('async'),
 	      turf = require('turf'),
+	      wellknown = require('wellknown'),
 		  streamWriteFileWithCallback = require('../lib/streamWriteFileWithCallback'),
 		  simplifyGeoJSON = require('../lib/simplifyGeoJSON');
 
@@ -488,26 +489,46 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		function addAreaAndCentroid(record, shapefileData, recNo, areaID) {
 			if (record.properties.area_km2 == undefined) {
 				try {	
-					record.properties.area_km2=turf.area(record);
+					record.properties.area_km2=turf.area(record)/(1000*1000);
 				}
 				catch (e) {
 					throw new Error("Duplicate area ID area error in shapefile " + 
 						shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
 						"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
 						"; row: " + (recNo-1) + "\nError: " + e.message +
-						"\nrecord:\n" + JSON.stringify(record, NULL, 4));
+						"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
 				}	
 			}
 			if (record.properties.geographic_centroid == undefined) {
 				try {	
-					record.properties.geographic_centroid=turf.centroid(record);
+					var centroid=turf.centroid(record);
+					try {
+						if (centroid) {
+							record.properties.geographic_centroid=wellknown.stringify(centroid); // In WKT
+						}
+						else {
+							record.properties.geographic_centroid=undefined;
+							throw new Error("Duplicate area ID geographic NULL centroid error in shapefile " + 
+								shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+								"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+								"; row: " + (recNo-1) + "\nError: " + e.message +
+								"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
+						}
+					}
+					catch (e) {
+						throw new Error("Duplicate area ID geographic centroid to WKT error in shapefile " + 
+							shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
+							"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
+							"; row: " + (recNo-1) + "\nError: " + e.message +
+							"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
+					}
 				}
 				catch (e) {
-					throw new Error("Duplicate area ID geographic centroid error in shapefile " + 
+					throw new Error("Duplicate area ID geographic create centroid error in shapefile " + 
 						shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
 						"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
 						"; row: " + (recNo-1) + "\nError: " + e.message +
-						"\nrecord:\n" + JSON.stringify(record, NULL, 4));
+						"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
 				}	
 			}
 		} // End of addAreaAndCentroid()
