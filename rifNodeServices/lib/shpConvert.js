@@ -559,14 +559,14 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						shapefileData["areaNames"][record.properties[areaName]].duplicates++;	
 						
 						// There possibly needs to be a wsrning status
-						console.error("WARNING: duplicate areaNames: " + record.properties[areaName] + 
+						response.message+="\nWARNING: duplicate areaNames: " + record.properties[areaName] + 
 							"; base recNo: " + shapefileData["areaNames"][record.properties[areaName]].recNo + 
 							"; current recNo: " + recNo + "; areaID: " + areaID + "; areaName: " + areaName + 
 							"; duplicates detected so far: " + shapefileData["areaNames"][record.properties[areaName]].duplicates +
-							"; record.properties: " + JSON.stringify(record.properties, null, 4));
+							"; record.properties: " + JSON.stringify(record.properties, null, 4);
 					}
 					
-					// Duplicate areaID detector; uinion togetherr into multipolygon
+					// Duplicate areaID detector; uinion together into multipolygon
 					if (shapefileData["areaIDs"][record.properties[areaID]] &&
 						shapefileData["areaIDs"][record.properties[areaID]].areaID == record.properties[areaID]) {
 							
@@ -584,7 +584,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 							if (record.properties[areaID] == dupRecord.properties[areaID]) {
 								
 								if (record.properties[areaName] != dupRecord.properties[areaName]) {
-									throw new Error("Area names do not match for the same duplicate area ID" +
+									var err=new Error("Area names do not match for the same duplicate area ID" +
 										"\nshapefile " + 
 										shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
 										"; row: " + (recNo-1) +
@@ -593,6 +593,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 										"\nArea name field: " + areaName + 
 										"; duplicate: " + dupRecord.properties[areaName] + 
 										"\nrecord:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+									err.name="AREA_NAME_MISMATCH";
+									throw err;
 								}
 								
 								try { // Replace feature with new Unioned feature in collection (record number: recNo)
@@ -622,13 +624,15 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 								}								
 							}	
 							else {
-								throw new Error("Duplicate area ID detected in shapefile " + 
+								var err=new Error("Duplicate area ID detected in shapefile " + 
 									shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
 									"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
 									"; row: " + (recNo-1) +
 									"\nproperties mismatch in shapefileData featureList for: " + 
 										(shapefileData["areaIDs"][record.properties[areaID]].recNo-1) +
 									"\record:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+								err.name="DUPLICATE_AREA_ID";
+								throw err;
 							}						
 						}	
 						else {
@@ -1505,7 +1509,7 @@ This error in actually originating from the error handler function
 		};
 		
 		if (response.file_errors > 0) {
-			msg+='Errors detected in shapefile read processing: ' + response.file_errors;
+			var msg='Errors detected in shapefile read processing: ' + response.file_errors;
 			response.message = msg + "\n" + response.message;		
 
 			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
@@ -1978,7 +1982,7 @@ This error in actually originating from the error handler function
 						serverLog.serverErrorAddStatus(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", 
 							msg, 
 							shapefileData["req"], err, response, serverErrorAddStatusCallback, 
-							err.stack, err.message /* additionalInfo */);	
+							err.stack, err.message /* additionalInfo */, err.name);	
 						}
 					catch (e) {
 						serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", 

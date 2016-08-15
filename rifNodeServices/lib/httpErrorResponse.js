@@ -93,6 +93,25 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 				"WARNING: Error in addStatus()", req, err);
 		}
 		
+		var statii="";
+		for (var i=0; i<g_response.status.length; i++) { // Print statii
+			if (g_response.status[i]) {
+				statii+="[" + i + "]: +" + g_response.status[i].etime + " S (" + 
+					g_response.status[i].httpStatus + "); " +
+					g_response.status[i].statusText;
+				if (g_response.status[i].errorName) {
+					statii+="\n\terrorName: " + g_response.status[i].errorName+ "; "
+				}
+				if (g_response.status[i].additionalInfo) {
+					statii+="\n\tadditionalInfo: >>>\n" + g_response.status[i].additionalInfo+ "<<< End of additionalInfo; "
+				}
+				statii+="\n";
+			}
+		}
+		
+		serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", 
+			"Status list; size: " + g_response.status.length + "\n" + statii);
+		
 		if (!res.finished) { // Error if httpErrorResponse.httpErrorResponse() NOT already processed
 			res.status(status);		
 			var output;

@@ -135,7 +135,14 @@ serverLog2 = function(file, line, calling_function, msg, req, err) {
 	}
 	
 	// Add error tracer if present
-	if (err && err.message && err.stack) {
+	if (err && err.message && err.stack && err.errno && err.syscall) {
+		error_tracer="\n\nError(" + err.name + ") Errno: " + err.errno + "; syscall: " + err.syscall + "; " + 
+			err.message + "\nStack >>>\n" + err.stack + "<<<";
+	}
+	else if (err && err.message && err.stack && err.errno) {
+		error_tracer="\n\nError(" + err.name + ") Errno: " + err.errno + "; " + err.message + "\nStack >>>\n" + err.stack + "<<<";
+	}
+	else if (err && err.message && err.stack) {
 		error_tracer="\n\nError(" + err.name + "): " + err.message + "\nStack >>>\n" + err.stack + "<<<";
 	}
 	else {
@@ -255,7 +262,8 @@ _serverError2 = function(file, line, calling_function, msg, req, err, response) 
 		}
 	}
 	catch (e) {
-		serverLog2(file, line, calling_function, "WARNING! Caught error! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req, e);
+		serverLog2(file, line, calling_function, 
+			"WARNING! Caught error! unable to disable the diagnostic file write timer, response not in scope; stack: " + stack, req, e);
 	}
 	
 	serverLog2(file, line, calling_function, msg, req, err);
