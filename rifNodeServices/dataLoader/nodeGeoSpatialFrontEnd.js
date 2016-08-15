@@ -1561,7 +1561,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					
 				var end=new Date().getTime();
 				var ltime=(end - lstart)/1000; // in S	
-				if (ltime > 5) {	
+				if (ltime > 5) { // Help find non async code - causes status delays
 					var elapsed=(Math.round(end - start))/1000; // in S
 					consoleLog("+" + elapsed + " WARNING: status interruption of " + ltime + " seconds for last status"); 
 				}	
@@ -1585,17 +1585,24 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 						displayProgress(status["statusText"]);
 					}	
 				} // End of if (status && status["statusText"])
-				else if (status) {
+				else if (status) { // This is a suspect error
 					consoleError("No statusText for status: " + (data.status.length-1));
 				}
 				else {
 					consoleError("No status for status: " + (data.status.length-1));
 				}
 				
-				if (nrecursionCount < 90 && atEnd == false) {
-					consoleLog("Not at end; setTimeout for more statii");
+				if (nrecursionCount < 90 && atEnd == false) { // Not at end; setTimeout for more statii
+//					consoleLog("Not at end; setTimeout for more statii");
 					setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, statusFileName, responseFileName, nextTimeout /* Next timeout */, 
 						nrecursionCount /* Recursion count */, nIndex /* New index */);
+				}
+		
+				if (atEnd) { // At end no errors				
+					consoleLog("No need for more status updates: at end");
+					var end=new Date().getTime();
+					var elapsed=Math.round((end - start)/1000, 2); // in S
+					displayProgress("All node processing completed in " + elapsed + " S");	
 				}
 				
 				if (hasErrors) { // At has errors
@@ -1635,7 +1642,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 						}
 					}	
 
-					if (j>0) {	
+					if (j>0) {	// Error popup support
 						errorText+="</table></p>";
 						switch (errorName) {
 							case "AREA_NAME_MISMATCH":
@@ -1655,14 +1662,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					consoleLog("No need for more status updates: at end");
 				} // End of hasErrors
 				
-				if (atEnd) { // At end no errors				
-					consoleLog("No need for more status updates: at end");
-					var end=new Date().getTime();
-					var elapsed=Math.round((end - start)/1000, 2); // in S
-					displayProgress("All node processing completed in " + elapsed + " S");	
-				}
-				
-				if (nrecursionCount >= 90 && atEnd == false) {
+				if (nrecursionCount >= 90 && atEnd == false) { // Status timeout detector
 					displayProgress("Processing failed, no success or failure detected, no status change in " + 
 						nrecursionCount + " seconds");
 					consoleError("Status update recursion limit reached with no new status: " + nrecursionCount);
