@@ -1499,6 +1499,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 	var lstart=new Date().getTime();
 	var atEnd=false;
 	var hasErrors=false;
+	var errorCount=0;
 	
 	var jqXHR=$.get("getShpConvertStatus", 
 		{ 
@@ -1521,9 +1522,11 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 						if (data.status[i].statusText == "FATAL") {
 							atEnd=true;
 							hasErrors=true;
+							errorCount++;
 						}
 						if (data.status[i].statusText == "ERROR") {
 							hasErrors=true;
+							errorCount++;
 						}
 					}
 				}
@@ -1613,7 +1616,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 						errorText="Node processing failed with error after " + elapsed + " S";
 					}
 					displayProgress(errorText);
-					consoleLog("Has " + data.status.length + " errors: " + errorText);
+					consoleLog("Has " + errorCount + " errors: " + errorText);
 					var j=0;
 					var errorName;
 					for (var i=0; i<data.status.length; i++) {

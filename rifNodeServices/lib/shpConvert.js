@@ -487,9 +487,9 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		 *				Can be enhanced to do population weighted centroids
 		 */			
 		function addAreaAndCentroid(record, shapefileData, recNo, areaID) {
-			if (record.properties.area_km2 == undefined) {
+			if (record.properties.AREA_KM2 == undefined) {
 				try {	
-					record.properties.area_km2=turf.area(record)/(1000*1000);
+					record.properties.AREA_KM2=turf.area(record)/(1000*1000);
 				}
 				catch (e) {
 					throw new Error("Duplicate area ID area error in shapefile " + 
@@ -499,15 +499,15 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
 				}	
 			}
-			if (record.properties.geographic_centroid == undefined) {
+			if (record.properties.GEOGRAPHIC_CENTROID == undefined) {
 				try {	
 					var centroid=turf.centroid(record);
 					try {
 						if (centroid) {
-							record.properties.geographic_centroid=wellknown.stringify(centroid); // In WKT
+							record.properties.GEOGRAPHIC_CENTROID=wellknown.stringify(centroid); // In WKT
 						}
 						else {
-							record.properties.geographic_centroid=undefined;
+							record.properties.GEOGRAPHIC_CENTROID=undefined;
 							throw new Error("Duplicate area ID geographic NULL centroid error in shapefile " + 
 								shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
 								"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
@@ -559,11 +559,11 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						shapefileData["areaNames"][record.properties[areaName]].duplicates++;	
 						
 						// There possibly needs to be a wsrning status
-						response.message+="\nWARNING: duplicate areaNames: " + record.properties[areaName] + 
-							"; base recNo: " + shapefileData["areaNames"][record.properties[areaName]].recNo + 
-							"; current recNo: " + recNo + "; areaID: " + areaID + "; areaName: " + areaName + 
-							"; duplicates detected so far: " + shapefileData["areaNames"][record.properties[areaName]].duplicates +
-							"; record.properties: " + JSON.stringify(record.properties, null, 4);
+//						response.message+="\nWARNING: duplicate areaNames: " + record.properties[areaName] + 
+//							"; base recNo: " + shapefileData["areaNames"][record.properties[areaName]].recNo + 
+//							"; current recNo: " + recNo + "; areaID: " + areaID + "; areaName: " + areaName + 
+//							"; duplicates detected so far: " + shapefileData["areaNames"][record.properties[areaName]].duplicates +
+//							"; record.properties: " + JSON.stringify(record.properties, null, 4);
 					}
 					
 					// Duplicate areaID detector; uinion together into multipolygon
@@ -643,14 +643,14 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						}				 	
 					}
 					else {
-						if (record.properties.gid == undefined) {
-							record.properties.gid=recNo;
+						if (record.properties.GID == undefined) {
+							record.properties.GID=recNo;
 						}
-						if (record.properties.areaID == undefined) {
-							record.properties.areaID=record.properties[areaID];
+						if (record.properties.AREAID == undefined) {
+							record.properties.AREAID=record.properties[areaID];
 						}
-						if (record.properties.areaName == undefined) {
-							record.properties.areaName=record.properties[areaName];
+						if (record.properties.AREANAME == undefined) {
+							record.properties.AREANAME=record.properties[areaName];
 						}
 						addAreaAndCentroid(record, shapefileData, recNo, areaID);	// Add area and centooid
 

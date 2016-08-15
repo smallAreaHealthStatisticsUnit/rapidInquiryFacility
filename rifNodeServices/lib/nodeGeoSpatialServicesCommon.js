@@ -257,6 +257,23 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 
 			}
 			else if (ofields["batchMode"] == "true") { // Batch mode
+				var statii="";
+				for (var i=0; i<response.status.length; i++) { // Print statii
+					if (response.status[i]) {
+						statii+="[" + i + "]: +" + response.status[i].etime + " S (" + 
+							response.status[i].httpStatus + "); " +
+							response.status[i].statusText;
+						if (response.status[i].errorName) {
+							statii+="\n\terrorName: " + response.status[i].errorName+ "; "
+						}
+						if (response.status[i].additionalInfo) {
+							statii+="\n\tadditionalInfo: >>>\n" + response.status[i].additionalInfo+ "<<< End of additionalInfo; "
+						}
+						statii+="\n";
+					}
+				}
+				response.message+="\nStatus array\n" + statii;
+				
 				var msg=response.message; // Save
 				if (!response.fields.verbose) { // Only send diagnostics if requested
 					response.message="";	
