@@ -1,14 +1,15 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.system.RIFServiceMessages;
+import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
-
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
+
 
 
 import java.util.ArrayList;
@@ -148,15 +149,20 @@ public class RunStudyThread
 				else if (currentState == StudyState.STUDY_RESULTS_COMPUTED) {
 					
 					//we are done.  Break out of the loop so that the thread can stop
+					advertiseDataSet();
 					break;
 				}
-
 				
 				Thread.sleep(SLEEP_TIME);
 			}
 		}
 		catch(InterruptedException interruptedException) {
 			
+			//String errorMessage
+			//	= RIFServiceMessages.getMessage(
+			//		"",
+			//		);
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			
@@ -170,6 +176,12 @@ public class RunStudyThread
 	
 	private void verifyStudyProperlyCreated() 
 		throws RIFServiceException {
+
+		studySubmissionManager.verifyStudyProperlyCreated(
+			connection, 
+			studyID, 
+			user.getUserID());
+		studyStateMachine.next();		
 		
 		/*
 		studySubmissionManager.verifyStudyProperlyCreated(
@@ -191,7 +203,13 @@ public class RunStudyThread
 	
 	private void createExtractTable() 
 		throws RIFServiceException {
-		
+
+		studySubmissionManager.createExtractTable(
+			connection, 
+			studyID, 
+			user.getUserID(), 
+			studySubmission.getStudy());
+		studyStateMachine.next();		
 		/*
 		studySubmissionManager.verifyStudyProperlyCreated(
 			user,
@@ -212,7 +230,18 @@ public class RunStudyThread
 		*/
 	}
 	
-	private void computeSmoothedResults() {
+	private void computeSmoothedResults() 
+		throws RIFServiceException {
+		
+		studySubmissionManager.computeSmoothedResults(
+			connection, 
+			studySubmission.getStudy(), 
+			studyID, 
+			user.getUserID());
+		studyStateMachine.next();
+	}
+	
+	private void advertiseDataSet() {
 		
 		
 	}

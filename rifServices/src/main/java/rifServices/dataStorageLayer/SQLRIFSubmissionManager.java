@@ -413,7 +413,19 @@ final class SQLRIFSubmissionManager
 		
 	}
 	
-	private void createExtractTable(
+	public void verifyStudyProperlyCreated(
+		final Connection connection,
+		final String studyID,
+		final String userID) 
+		throws RIFServiceException {
+		
+		
+		
+		
+		
+	}
+	
+	public void createExtractTable(
 		final Connection connection,
 		final String studyID,
 		final String userID,
@@ -599,10 +611,11 @@ final class SQLRIFSubmissionManager
 		
 	}
 
-	private void createMapTable(
+	public void computeSmoothedResults(
 		final Connection connection, 
+		final AbstractStudy study,
 		final String studyID,
-		final AbstractStudy study) 
+		final String userID)
 		throws RIFServiceException {
 		
 		PreparedStatement statement = null;
