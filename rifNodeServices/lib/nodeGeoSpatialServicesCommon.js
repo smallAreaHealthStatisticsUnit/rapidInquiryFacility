@@ -257,6 +257,23 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 
 			}
 			else if (ofields["batchMode"] == "true") { // Batch mode
+				var statii="";
+				for (var i=0; i<response.status.length; i++) { // Print statii
+					if (response.status[i]) {
+						statii+="[" + i + "]: +" + response.status[i].etime + " S (" + 
+							response.status[i].httpStatus + "); " +
+							response.status[i].statusText;
+						if (response.status[i].errorName) {
+							statii+="\n\terrorName: " + response.status[i].errorName+ "; "
+						}
+						if (response.status[i].additionalInfo) {
+							statii+="\n\tadditionalInfo: >>>\n" + response.status[i].additionalInfo+ "<<< End of additionalInfo; "
+						}
+						statii+="\n";
+					}
+				}
+				response.message+="\nStatus array\n" + statii;
+				
 				var msg=response.message; // Save
 				if (!response.fields.verbose) { // Only send diagnostics if requested
 					response.message="";	
@@ -705,11 +722,13 @@ getStatus = function getStatus(response, req, res, serverLog, httpErrorResponse)
  * Function:	addStatus()
  * Parameters:	file, line called from, response object, textual status, http status code, serverLog object,
  * 				Express HTTP request object, optional callback, 
- *				optional addtional info (for status)
+ *				optional addtional info (for status), optional error name (for status)
  * Returns:		Nothing
  * Description: Add status to response status array
  */	
-addStatus = function addStatus(sfile, sline, response, status, httpStatus, serverLog, req, addStatusCallback, stack, additionalInfo) {
+addStatus = function addStatus(sfile, sline, response, status, httpStatus, serverLog, req, addStatusCallback, stack, 
+	additionalInfo, errorName) {
+		
 	var calling_function = arguments.callee.caller.name || '(anonymous)';
 	const path = require('path'),
 		  fs = require('fs');
@@ -762,6 +781,18 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 		nadditionalInfo=status.slice(status.indexOf("\n")+1);
 		nstatus=status.slice(0, status.indexOf("\n")-1);
 	}
+	var nerrorName=errorName;
+	
+	// Hunt for non default error names (Error) in the stack
+	if (errorName == undefined && stack && stack.indexOf("\n") != -1) { // Default error: "error\n\t at ... ""
+		nerrorName=stack.slice(0, stack.indexOf("\n"));
+		if (nerrorName == "Error") {
+			nerrorName=undefined;
+		}
+		else if (errorName == undefined && stack && stack.indexOf(":") != -1) { // 
+			nerrorName=stack.slice(0, stack.indexOf(":"));
+		}
+	}
 	response.status[response.status.length]= {
 			statusText: nstatus,
 			httpStatus: httpStatus,
@@ -771,7 +802,8 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 			stime: new Date().getTime(),
 			etime: 0,
 			stack: stack,
-			additionalInfo: nadditionalInfo
+			additionalInfo: nadditionalInfo,
+			errorName: nerrorName
 		}
 		
 	if (response.status.length == 1) {	
@@ -785,7 +817,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 	
 	msg="+" + response.status[response.status.length-1].etime + 
 		" S addStatus: " + msg;
-			
+		
 	if (response.fields["uuidV1"] && response.fields["statusFileName"]) { // Can save state
 
 		if (response.fields["diagnosticFileDir"] == undefined) {
@@ -794,11 +826,14 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 		
 		msg+="\nRe-creating status file: " + response.fields["statusFileName"];
 		if (isError) {		
+			msg="WARNING: Error status: " + msg + 
+				"\nStatus object >>> " + JSON.stringify(response.status[response.status.length-1], null, 4) + "\n<<< End of status object.";
 			serverLog.serverLog2(__file, __line, "addStatus", 
-				"WARNING: Error status: " + msg, req, undefined /* Error */, response);
+				msg, req, undefined /* Error */, response);
 		}
+		response.message+="\n" + msg;		
+
 //		console.error(msg);
-		response.message+="\n" + msg;
 		var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
 
 		fs.writeFile(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"] + ".new", 

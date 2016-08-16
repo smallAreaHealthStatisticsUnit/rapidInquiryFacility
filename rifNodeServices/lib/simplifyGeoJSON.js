@@ -262,20 +262,16 @@ topology: 1579 arcs, 247759 points
 	}
 	if (areaName && areaID) {
 		myPropertyTransform=function myPropertyTransform(feature) {
-			var propertyTransform = { 
-				"areaName": feature.properties[areaName], 	
-				"areaID": 	feature.properties[areaID] /*, 
-				"id": 		feature.properties.id */
-			};
+			var propertyTransform = {};
 			if (dbf_fields) {
 				for (var i=0; i<dbf_fields.length; i++) {
-					propertyTransform[dbf_fields[i]]=feature.properties[dbf_fields[i]];
+					propertyTransform[dbf_fields[i].toUpperCase()]=feature.properties[dbf_fields[i]];
 				}
 			}
 			return propertyTransform;
 		}	
 		topojson_options["property-transform"]=myPropertyTransform;
-		response.message+="; property-transform enabled";
+		response.message+="; property-transform enabled: " + JSON.stringify(topojson_options["property-transform"], null, 4);
 	}
 	else if (dbf_fields) {
 		myPropertyTransform=function myPropertyTransform(feature) {

@@ -241,20 +241,39 @@ function formSetup(formId, formName) {
 
 /*
  * Function: 	errorPopup()
- * Parameters: 	Message
+ * Parameters: 	Message, extended message
  * Returns: 	Nothing
  * Description:	Error message popup
  */
-function errorPopup(msg) {
+function errorPopup(msg, extendedMessage) {
 	if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
 		document.getElementById("error").innerHTML = "<h3>" + msg + "</h3>";
 		var errorWidth=document.getElementById('tabbox').offsetWidth-300;
-		$( "#error" ).dialog({
+		var dialogObject={
 			modal: true,
 			width: errorWidth,
-			closeText: ""
-		});
-				
+			closeText: "",
+			dialogClass: "no-close",
+			buttons: [ {
+				text: "OK",
+				click: function() {
+					$( this ).dialog( "close" );
+				}
+			}]
+		};
+		
+		if (extendedMessage) {
+			consoleLog("extended message: " + extendedMessage);
+			dialogObject.buttons.push({
+				text: "Extended Info",
+				click: function() {
+					$( this ).dialog( "close" );
+					errorPopup(extendedMessage);
+				}
+			});
+		}
+		
+		$( "#error" ).dialog(dialogObject);
 	}	
 	else {	
 		document.getElementById("status").innerHTML = "<h1>" + msg + "</h1>";
@@ -1480,6 +1499,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 	var lstart=new Date().getTime();
 	var atEnd=false;
 	var hasErrors=false;
+	var errorCount=0;
 	
 	var jqXHR=$.get("getShpConvertStatus", 
 		{ 
@@ -1496,6 +1516,59 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 				if (nIndex > index) { // Found new status's 
 					nrecursionCount=0;
 				}
+				
+				for (var i=0; i<data.status.length; i++) { // Look for any errors
+					if (data.status[i]) {
+						if (data.status[i].statusText == "FATAL") {
+							atEnd=true;
+							hasErrors=true;
+							errorCount++;
+						}
+						if (data.status[i].statusText == "ERROR") {
+							hasErrors=true;
+							errorCount++;
+						}
+					}
+				}
+					
+				for (var i=index; i<data.status.length; i++) { // Add new statii; look for end
+					if (data.status[i]) {
+						consoleLog("+" + data.status[i]["etime"] + data.status[i].httpStatus + " " + 
+							" [" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
+							data.status[i].calling_function + "]: " + data.status[i].statusText);	
+							
+						if (data.status[i].statusText == "BATCH_END") {
+							consoleLog("Enable shpConvertGetResults button");
+							var shpConvertGetResults=document.getElementById("shpConvertGetResults");
+							shpConvertGetResults.href= "shpConvertGetResults.zip?uuidV1="+ uuidV1;
+							shpConvertGetResults.download= "shpConvertGetResults_"+ uuidV1 + ".zip";
+							consoleLog("change shpConvertGetResults href to: " + shpConvertGetResults.href);
+							$( "#shpConvertGetResults" ).button( "enable" ); // Enable shpConvertGetResults button
+							// Load tiles
+							atEnd=true;
+						}					
+						else if (data.status[i].statusText == "BATCH_INTERMEDIATE_END") {
+							consoleLog("Enable shpConvertGetConfig button");
+							var shpConvertGetConfig=document.getElementById("shpConvertGetConfig");
+							shpConvertGetConfig.href= "shpConvertGetConfig.xml?uuidV1="+ uuidV1;
+							shpConvertGetConfig.download= "shpConvertGetConfig_"+ uuidV1 + ".xml";
+							consoleLog("change shpConvertGetConfig href to: " + shpConvertGetConfig.href);
+							$( "#shpConvertGetConfig" ).button( "enable" ); // Enable shpConvertGetConfig button
+							
+							getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName); // Load intermediate map
+//								atEnd=true;
+						}				
+							
+					}
+				} // End of for loop					
+					
+				var end=new Date().getTime();
+				var ltime=(end - lstart)/1000; // in S	
+				if (ltime > 5) { // Help find non async code - causes status delays
+					var elapsed=(Math.round(end - start))/1000; // in S
+					consoleLog("+" + elapsed + " WARNING: status interruption of " + ltime + " seconds for last status"); 
+				}	
+					
 				var status=data.status[(data.status.length-1)];
 				if (status && status["statusText"]) {
 					if (status["statusText"] == "BATCH_END") { // Display the last status in the progress bar
@@ -1504,68 +1577,48 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					else if (status["statusText"] == "BATCH_INTERMEDIATE_END") {
 						displayProgress("Intermediate processing complete, loading maps, making tiles");
 					}				
+					else if (status["statusText"] == "FATAL") {
+						displayProgress("Processing failed");
+						hasErrors=true;
+					}
 					else if (status["statusText"] == "ERROR") {
 						displayProgress("Processing failed");
 					}
 					else {
 						displayProgress(status["statusText"]);
-					}
-					
-					for (var i=index; i<data.status.length; i++) {
-						if (data.status[i]) {
-							consoleLog("+" + data.status[i]["etime"] + data.status[i].httpStatus + " " + 
-								" [" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
-								data.status[i].calling_function + "]: " + data.status[i].statusText);	
-								
-							if (data.status[i].statusText == "BATCH_END") {
-								consoleLog("Enable shpConvertGetResults button");
-								var shpConvertGetResults=document.getElementById("shpConvertGetResults");
-								shpConvertGetResults.href= "shpConvertGetResults.zip?uuidV1="+ uuidV1;
-								shpConvertGetResults.download= "shpConvertGetResults_"+ uuidV1 + ".zip";
-								consoleLog("change shpConvertGetResults href to: " + shpConvertGetResults.href);
-								$( "#shpConvertGetResults" ).button( "enable" ); // Enable shpConvertGetResults button
-								// Load tiles
-								atEnd=true;
-							}					
-							else if (data.status[i].statusText == "BATCH_INTERMEDIATE_END") {
-								consoleLog("Enable shpConvertGetConfig button");
-								var shpConvertGetConfig=document.getElementById("shpConvertGetConfig");
-								shpConvertGetConfig.href= "shpConvertGetConfig.xml?uuidV1="+ uuidV1;
-								shpConvertGetConfig.download= "shpConvertGetConfig_"+ uuidV1 + ".xml";
-								consoleLog("change shpConvertGetConfig href to: " + shpConvertGetConfig.href);
-								$( "#shpConvertGetConfig" ).button( "enable" ); // Enable shpConvertGetConfig button
-								
-								getShpConvertTopoJSON(uuidV1, diagnosticFileDir, responseFileName); // Load intermediate map
-//								atEnd=true;
-							}				
-							else if (data.status[i].statusText == "ERROR") {
-								atEnd=true;
-								hasErrors=true;
-							}
-								
-						}
-					} // End of for loop		
-
-					var end=new Date().getTime();
-					var ltime=(end - lstart)/1000; // in S	
-					if (ltime > 5) {	
-						var elapsed=(Math.round(end - start))/1000; // in S
-						consoleLog("+" + elapsed + " WARNING: status interruption of " + ltime + " seconds for last status"); 
 					}	
+				} // End of if (status && status["statusText"])
+				else if (status) { // This is a suspect error
+					consoleError("No statusText for status: " + (data.status.length-1));
+				}
+				else {
+					consoleError("No status for status: " + (data.status.length-1));
 				}
 				
-				if (nrecursionCount < 90 && atEnd == false) {
+				if (nrecursionCount < 90 && atEnd == false) { // Not at end; setTimeout for more statii
+//					consoleLog("Not at end; setTimeout for more statii");
 					setTimeout(waitForServerResponse, nextTimeout, uuidV1, diagnosticFileDir, statusFileName, responseFileName, nextTimeout /* Next timeout */, 
 						nrecursionCount /* Recursion count */, nIndex /* New index */);
 				}
-				else if (atEnd && hasErrors) {
-
+		
+				if (atEnd) { // At end no errors				
+					consoleLog("No need for more status updates: at end");
 					var end=new Date().getTime();
 					var elapsed=Math.round((end - start)/1000, 2); // in S
-					var errorText="Node processing failed with error after " + elapsed + " S";
-					
+					displayProgress("All node processing completed in " + elapsed + " S");	
+				}
+				
+				if (hasErrors) { // At has errors
+					var end=new Date().getTime();
+					var elapsed=Math.round((end - start)/1000, 2); // in S
+					var errorText="Node processing had error after " + elapsed + " S";
+					if (atEnd) {
+						errorText="Node processing failed with error after " + elapsed + " S";
+					}
 					displayProgress(errorText);
+					consoleLog("Has " + errorCount + " errors: " + errorText);
 					var j=0;
+					var errorName;
 					for (var i=0; i<data.status.length; i++) {
 						if (data.status[i] && data.status[i].httpStatus != 200) {
 							j++;
@@ -1585,29 +1638,45 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 								data.status[i].statusText + "</td><td>" +
 //								"<pre>" + (data.status[i].stack || "No stack") + "</pre></td><td>" +
 								"<pre>" + (data.status[i].additionalInfo || "&nbsp;") + "</pre></td></tr>";
+							if (data.status[i].errorName) {
+								consoleLog("extended message errorName[" + i + "]: " + data.status[i].errorName);
+								errorName=data.status[i].errorName;
+							}
 						}
 					}	
 
-					if (j>0) {	
+					if (j>0) {	// Error popup support
 						errorText+="</table></p>";
-						errorPopup(errorText);
+						switch (errorName) {
+							case "AREA_NAME_MISMATCH":
+								errorPopup("Area names do not match for the same duplicate area ID", errorText);
+								break;
+							case "DUPLICATE_AREA_ID":
+								errorPopup("Duplicate area ID detected in shapefile", errorText);
+								break;
+							case undefined:
+								errorPopup(errorText);
+								break;
+							default:
+								errorPopup(errorText);
+								break;
+						}
 					}					
 					consoleLog("No need for more status updates: at end");
+				} // End of hasErrors
+				
+				if (nrecursionCount >= 90 && atEnd == false) { // Status timeout detector
+					displayProgress("Processing failed, no success or failure detected, no status change in " + 
+						nrecursionCount + " seconds");
+					consoleError("Status update recursion limit reached with no new status: " + nrecursionCount);
 				}
-				else if (atEnd) {
-
-					var end=new Date().getTime();
-					var elapsed=Math.round((end - start)/1000, 2); // in S
-					displayProgress("All node processing completed in " + elapsed + " S");					
-					consoleLog("No need for more status updates: at end");
-				}
-				else {
-					consoleLog("Status update recusrion limit reached with no new status: " + nrecursionCount);
-					displayProgress("Processing failed, no success or failure detected, no status change in " + nrecursionCount + " seconds");
-				}
+			}
+			else {
+				consoleError("No data.status")
 			}
 		}, // End of getShpConvertStatus() 
 		"json");
+		
 	jqXHR.fail(function getShpConvertStatusError(x, e) {
 		var msg="";
 		var response;

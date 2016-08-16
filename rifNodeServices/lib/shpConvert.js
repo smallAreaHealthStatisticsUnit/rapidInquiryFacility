@@ -487,9 +487,9 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		 *				Can be enhanced to do population weighted centroids
 		 */			
 		function addAreaAndCentroid(record, shapefileData, recNo, areaID) {
-			if (record.properties.area_km2 == undefined) {
+			if (record.properties.AREA_KM2 == undefined) {
 				try {	
-					record.properties.area_km2=turf.area(record)/(1000*1000);
+					record.properties.AREA_KM2=turf.area(record)/(1000*1000);
 				}
 				catch (e) {
 					throw new Error("Duplicate area ID area error in shapefile " + 
@@ -499,15 +499,15 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
 				}	
 			}
-			if (record.properties.geographic_centroid == undefined) {
+			if (record.properties.GEOGRAPHIC_CENTROID == undefined) {
 				try {	
 					var centroid=turf.centroid(record);
 					try {
 						if (centroid) {
-							record.properties.geographic_centroid=wellknown.stringify(centroid); // In WKT
+							record.properties.GEOGRAPHIC_CENTROID=wellknown.stringify(centroid); // In WKT
 						}
 						else {
-							record.properties.geographic_centroid=undefined;
+							record.properties.GEOGRAPHIC_CENTROID=undefined;
 							throw new Error("Duplicate area ID geographic NULL centroid error in shapefile " + 
 								shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
 								"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
@@ -537,14 +537,15 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		 * Function:	shapefileDataAddRecord()
 		 * Parameters:	shapefile record, shape file data object, recNo
 		 * Returns:		TRUE (OK)/FALSE
-		 * Description:	Add record to shape file data object featureList; ST_Union duplicates
+		 * Description:	Add record to shape file data object featureList; ST_Union duplicates into multipolygons
 		 */	
 		function shapefileDataAddRecord(record, shapefileData, recNo) {
 				
 			scopeChecker(__file, __line, {
 				turf: turf,
 				serverLog: serverLog,
-				httpErrorResponse: httpErrorResponse
+				httpErrorResponse: httpErrorResponse,
+				message: response.message
 			});
 	
 			var areaID=shapefileData["areaID"];
@@ -552,16 +553,29 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		
 			try {
 				if (record.properties && areaID && record.properties[areaID]) { // Extract area_id value 
-				
+					// Duplicate areaName detector
+					if (shapefileData["areaNames"][record.properties[areaName]] &&
+						shapefileData["areaNames"][record.properties[areaName]].areaName == record.properties[areaName]) {
+						shapefileData["areaNames"][record.properties[areaName]].duplicates++;	
+						
+						// There possibly needs to be a wsrning status
+//						response.message+="\nWARNING: duplicate areaNames: " + record.properties[areaName] + 
+//							"; base recNo: " + shapefileData["areaNames"][record.properties[areaName]].recNo + 
+//							"; current recNo: " + recNo + "; areaID: " + areaID + "; areaName: " + areaName + 
+//							"; duplicates detected so far: " + shapefileData["areaNames"][record.properties[areaName]].duplicates +
+//							"; record.properties: " + JSON.stringify(record.properties, null, 4);
+					}
+					
+					// Duplicate areaID detector; uinion together into multipolygon
 					if (shapefileData["areaIDs"][record.properties[areaID]] &&
 						shapefileData["areaIDs"][record.properties[areaID]].areaID == record.properties[areaID]) {
 							
 						shapefileData["areaIDs"][record.properties[areaID]].duplicates++;	
-//						console.error("duplicate areaIDs: " + record.properties[areaID] + 
-//							"; base recNo: " + shapefileData["areaIDs"][record.properties[areaID]].recNo + 
-//							"; current recNo: " + recNo + "; areaID: " + areaID + 
-//							"; duplicates Unioned so far: " + shapefileData["areaIDs"][record.properties[areaID]].duplicates +
-//							"; record.properties: " + JSON.stringify(record.properties, null, 4));
+						response.message+="\nduplicate areaIDs: " + record.properties[areaID] + 
+							"; base recNo: " + shapefileData["areaIDs"][record.properties[areaID]].recNo + 
+							"; current recNo: " + recNo + "; areaID: " + areaID + 
+							"; duplicates Unioned so far: " + shapefileData["areaIDs"][record.properties[areaID]].duplicates +
+							"; record.properties: " + JSON.stringify(record.properties, null, 4);
 						var dupRecord=shapefileData["featureList"][(shapefileData["areaIDs"][record.properties[areaID]].recNo-1)];
 						
 						if (dupRecord) {
@@ -570,7 +584,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 							if (record.properties[areaID] == dupRecord.properties[areaID]) {
 								
 								if (record.properties[areaName] != dupRecord.properties[areaName]) {
-									throw new Error("Area names do not match for the same duplicate area ID" +
+									var err=new Error("Area names do not match for the same duplicate area ID" +
 										"\nshapefile " + 
 										shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
 										"; row: " + (recNo-1) +
@@ -579,6 +593,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 										"\nArea name field: " + areaName + 
 										"; duplicate: " + dupRecord.properties[areaName] + 
 										"\nrecord:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+									err.name="AREA_NAME_MISMATCH";
+									throw err;
 								}
 								
 								try { // Replace feature with new Unioned feature in collection (record number: recNo)
@@ -608,13 +624,15 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 								}								
 							}	
 							else {
-								throw new Error("Duplicate area ID detected in shapefile " + 
+								var err=new Error("Duplicate area ID detected in shapefile " + 
 									shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
 									"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
 									"; row: " + (recNo-1) +
 									"\nproperties mismatch in shapefileData featureList for: " + 
 										(shapefileData["areaIDs"][record.properties[areaID]].recNo-1) +
 									"\record:\n" + recordJSON + "\nduplicate:\n" + dupRecordJSON);
+								err.name="DUPLICATE_AREA_ID";
+								throw err;
 							}						
 						}	
 						else {
@@ -625,17 +643,35 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						}				 	
 					}
 					else {
-						if (record.properties.gid == undefined) {
-							record.properties.gid=recNo;
+						if (record.properties.GID == undefined) {
+							record.properties.GID=recNo;
+						}
+						if (record.properties.AREAID == undefined) {
+							record.properties.AREAID=record.properties[areaID];
+						}
+						if (record.properties.AREANAME == undefined) {
+							record.properties.AREANAME=record.properties[areaName];
 						}
 						addAreaAndCentroid(record, shapefileData, recNo, areaID);	// Add area and centooid
 
-						shapefileData["areaIDs"][record.properties[areaID]] = {
-							recNo: recNo,
-							duplicates: 0,
-							areaID: record.properties[areaID],
-							areaName: record.properties[areaName]
-						}	
+						if (shapefileData["areaIDs"][record.properties[areaID]] == undefined) {
+							shapefileData["areaIDs"][record.properties[areaID]] = {
+								recNo: recNo,
+								duplicates: 0,
+								areaID: record.properties[areaID],
+								areaName: record.properties[areaName],
+								properties: record.properties
+							}	
+						}
+						if (shapefileData["areaNames"][record.properties[areaName]] == undefined) {
+							shapefileData["areaNames"][record.properties[areaName]] = {
+								recNo: recNo,
+								duplicates: 0,
+								areaID: record.properties[areaID],
+								areaName: record.properties[areaName],
+								properties: record.properties
+							}
+						}
 //						console.error("new areaID: " + record.properties[areaID] + 
 //							"; current recNo: " + recNo + " areaID: " + areaID + 
 //							"; record.properties: " + JSON.stringify(record.properties, null, 4) +
@@ -1473,7 +1509,7 @@ This error in actually originating from the error handler function
 		};
 		
 		if (response.file_errors > 0) {
-			msg+='Errors detected in shapefile read processing: ' + response.file_errors;
+			var msg='Errors detected in shapefile read processing: ' + response.file_errors;
 			response.message = msg + "\n" + response.message;		
 
 			httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.drain()", 
@@ -1857,6 +1893,7 @@ This error in actually originating from the error handler function
 				fileNoExt: undefined,
 				featureList: [],
 				areaIDs: {},
+				areaNames: {},
 				mySrs: undefined,
 				prj: undefined,
 				reader: undefined,
@@ -1931,7 +1968,8 @@ This error in actually originating from the error handler function
 					}
 	
 					response.message+="\n" + msg;	
-					msg="Error reading shapefile " + shapefileData["shapefile_no"] + ": " + shapefileData["shapeFileBaseName"];
+					msg="Error detected while processing " + shapefileData["shapefile_no"] + " shapefiles"; // shapefileData is not 
+															// in te same scope as te processing; see error message for scope
 					
 					response.file_errors++;					// Increment file error count
 // function(file, line, calling_function, msg, req, err, response, callback, stack, additionalInfo)	
@@ -1944,16 +1982,13 @@ This error in actually originating from the error handler function
 						serverLog.serverErrorAddStatus(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", 
 							msg, 
 							shapefileData["req"], err, response, serverErrorAddStatusCallback, 
-							err.stack, err.message /* additionalInfo */);	
+							err.stack, err.message /* additionalInfo */, err.name);	
 						}
 					catch (e) {
 						serverLog.serverLog2(__file, __line, "shpConvertFieldProcessor().shapeFileQueue.push()", 
 							"WARNING: Error in serverLog.serverErrorAddStatus()", shapefileData["req"], e);									
 					}
 				} // End of err		
-//				else {
-//					response.message+="\nXXXX Completed processing shapefile[" + shapefileData["shapefile_no"] + "]: " + shapefileData["shapeFileName"];
-//				}
 			});		
 		}	
 

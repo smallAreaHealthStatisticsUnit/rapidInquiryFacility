@@ -524,7 +524,8 @@ RangeError: Invalid string length
 * De-duplication processing, closed polygon loops if needed
 * Improved error handling
 * RIF meeting
-
+* Added area in square KM and geographic centroid to data
+* Detect duplicate area name; can be a warning
 
 #### 15th to 19th August  
 
@@ -638,3 +639,6 @@ Note: no bounding box (bbox) in tiles.
 ## Bugs
 
 * Missing primary key index on Postgres s<study_id>_extract.
+* Missing GRANT INSERT on map table (e.g s1_map)
+* AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
+  for duplicate county names within a state
