@@ -93,6 +93,10 @@ public final class TestRIFStudyServiceBundle
 		return rifStudyServiceBundle;
 	}
 	
+	public RIFServiceResources getRIFServiceResources() {		
+		return super.getRIFServiceResources();
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
