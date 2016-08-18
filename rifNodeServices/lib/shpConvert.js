@@ -1815,8 +1815,12 @@ This error in actually originating from the error handler function
 //													console.error("Restore geoJSON");
 												}
 											}		
-											
-											geojsonToCSV.geojsonToCSV(response, req, res); // Converty geoJSON to CSV
+											function finalResponse() {							
+						//						console.error("Edited final response");											
+												nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, 
+													httpErrorResponse, response.fields, undefined /* optional callback */);													
+											}
+											geojsonToCSV.geojsonToCSV(response, req, res, finalResponse); // Converty geoJSON to CSV
 
 										}
 									}); // End of finalProcessingCallback() 	
