@@ -127,7 +127,10 @@ public class StudyStateMachine {
 			return currentState;
 		}
 		
-		if (currentState == StudyState.STUDY_CREATED) {
+		if (currentState == StudyState.STUDY_NOT_CREATED) {
+			currentState = StudyState.STUDY_CREATED;
+		}
+		else if (currentState == StudyState.STUDY_CREATED) {
 			currentState = StudyState.STUDY_VERIFIED;
 		}
 		else if (currentState == StudyState.STUDY_VERIFIED) {
@@ -145,6 +148,10 @@ public class StudyStateMachine {
 	
 	public StudyState getCurrentStudyState() {
 		return currentState;
+	}
+	
+	public void setCurrentStudyState(final StudyState currentState) {
+		this.currentState = currentState;
 	}
 	
 	public boolean isFinished() {
