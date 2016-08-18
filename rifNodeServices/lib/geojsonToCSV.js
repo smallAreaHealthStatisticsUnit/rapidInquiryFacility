@@ -133,7 +133,7 @@ var geojsonToCSV = function geoJSON2WKT(response, req, res, endCallback) {
 
 						
 						wktLen+=topojson.wkt[k].length;
-						if (l >= 100) {
+						if (l >= 1000) {
 							l=0;
 							process.nextTick(featureCallback);
 						}
@@ -315,20 +315,36 @@ var geojsonToCSV = function geoJSON2WKT(response, req, res, endCallback) {
 									"; " + keys.length + " keys: " + keys.toString();	
 								var buf=keys.toString() + "\r\n";
 								csvStream.write(buf);
+								var l=0;
 								
 								async.forEachOfSeries(csvFiles[i].rows, 
 									function geoJSON2WKTFileCSVSeries(value, j, csvCallback) { // Processing code	
+										l++;
 										buf=undefined;
+										
 										for (var key in value) { //csvFiles[i].rows[k][
+											var str=value[key].toString();
+											// CSV escape data 
+											str=str.split('"' /* search: " */).join('""' /* replacement: "" */);
+//											str=str.split(',' /* search: , */).join('","' /* replacement: "," */);
 											if (buf) {
-												buf+="," + value[key];
+												buf+=',"' + str + '"';
 											}
 											else {					
-												buf=value[key];
+												buf='"' + str + '"';
 											}
 										}
 										buf+="\r\n";
-										csvStream.write(buf, csvCallback);
+										if (l >= 1000) {
+											l=0;
+											var nextTickFunc = function nextTick() {
+												csvStream.write(buf, csvCallback);
+											}
+											process.nextTick(nextTickFunc);
+										}
+										else {
+											csvStream.write(buf, csvCallback);
+										} 		
 									}, // End of geoJSON2WKTFileCSVSeries
 									function geoJSON2WKTFileCSVEnd(err) { //  Callback
 										var msg="Wrote CSV file " + fileNoext + ".csv";

@@ -526,17 +526,25 @@ RangeError: Invalid string length
 * RIF meeting
 * Added area in square KM and geographic centroid to data
 * Detect duplicate area name; can be a warning
+* ST_Union and area calculations were done geoJSON using turf: as it is a geometry collection. 
+* WKT support using Wellknown
+* Id generator; gid support (especially in topojson)
 
 #### 15th to 19th August  
 
 * Eurospeleo 2016
+* CSV file save 
+* Load to Postgres
+* Check area calculation - it is wrong for Conneticut: 14,357 km2 verses 12941.42 Javascript, 12932.58 PostGIS
+  Florida 139,760.29 verses: 151512.42 Javascript 151029.30 PostGIS
+  Texas 678,051.12 verses: 689860.28 Javascript 688466.71 PostGIS. This appears to be a projection issue as I have used UTM zones
+  Likewise centroids: Alabama 32.834722, -86.633333; -86.7665,31.7691 Javascript -86.8284,32.7898 PostGIS; 19.37km out for PostGIS
+* area_id and gid uniqueness tests to shapefile checks and tests added to SQL load script. Area name will need to be unqiue 
+  within the confines on the next lower resolution layer
 
 #### Current TODO list (August):
 
-* ST_Union and area calculations can be done in geoJSON using turf: as it is a geometry collection. 
-* Add area_id and id uniqueness tests to shapefile checks and tests
-* WKT support using Wellknown
-* Id generator; gid support (especially in topojson)
+* SQL load script generatpr
 * Map tile generator
 * Geolevel intersction generator
 
