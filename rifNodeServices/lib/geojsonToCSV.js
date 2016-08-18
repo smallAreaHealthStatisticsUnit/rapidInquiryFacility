@@ -49,7 +49,11 @@ const wellknown = require('wellknown'),
 	  serverLog = require('../lib/serverLog'),
 	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
 	  httpErrorResponse = require('../lib/httpErrorResponse');
-	  
+
+const os = require('os'),
+	  fs = require('fs'),
+	  path = require('path');
+		  
 var geojsonToCSV = function geoJSON2WKT(response, req, res, endCallback) {
 	
 	scopeChecker(__file, __line, {
@@ -72,7 +76,10 @@ var geojsonToCSV = function geoJSON2WKT(response, req, res, endCallback) {
 		scopeChecker(__file, __line, {
 			topojson: topojson,
 			fileName: fileName,
-			callback: topojsonCallback
+			callback: topojsonCallback,
+			response: response,
+			fields: response.fields,
+			uuidV1: response.fields["uuidV1"]
 		});
 		
 		var wktLen=0;
@@ -188,14 +195,22 @@ var geojsonToCSV = function geoJSON2WKT(response, req, res, endCallback) {
 		}
 
 	} // End of geoJSON2WKT()
-
-	
+											
+//	
+// Create directory: $TEMP/shpConvert/<uuidV1>/data as required
+//		  
+	var dirArray=[os.tmpdir() + "/shpConvert", response.fields["uuidV1"], "data"];
+	var dir=nodeGeoSpatialServicesCommon.createTemporaryDirectory(dirArray, response, req, serverLog);
+		  
+//	
+// Write file to directory
+//	
 	var csvFiles = [];	
 	var lstart = new Date().getTime();
 	
 	// Convert all geojson to wellknown text by file then zoomlevel
 	async.forEachOfSeries(response.file_list, 
-		function geoJSON2WKTFileSeries(value, i, fileCallback) { // Processing code	
+		function geoJSON2WKTFileSeries(value, i, fileCallback) { // Processing code			
 			
 			csvFiles[i] = {
 				index: i,
@@ -271,14 +286,80 @@ var geojsonToCSV = function geoJSON2WKT(response, req, res, endCallback) {
 						}
 
 						// Dump CSV file data
-	
-						for (var i=0; i<csvFiles.length; i++) {
-							var keys=Object.keys(csvFiles[i].rows[0]);
-							response.message+="\nCSV file [" + (i+1) + "]: " + (csvFiles[i].file_name||"No file") + "; rows: " + csvFiles[i].rows.length +
-								"; " + keys.length + " keys: " + keys.toString();
-						}
-						endCallback(); // Run callback
-						
+						async.forEachOfSeries(csvFiles, 
+							function geoJSON2WKTFileCSVFiles(value, i, csvfileCallback) { // Processing code					
+												
+								var csvStream;
+								var fileNoext;
+								var csvFileName;
+								try {
+									fileNoext = path.basename(response.file_list[i].file_name, ".shp");	
+									csvFileName=dir + "/" + fileNoext + ".csv";
+									csvStream = fs.createWriteStream(csvFileName, { flags : 'w' });	
+									csvStream.on('finish', function csvStreamClose() {
+										response.message+="\nsvStreamClose(): " + csvFileName;
+									});		
+									csvStream.on('error', function csvStreamError(e) {
+										serverLog.serverLogc2(__file, __line, "csvStreamError", 
+											"WARNING: Exception in CSV write to file: " + csvFileName, req, e, response);										
+									});
+								}
+								catch (e) {
+									csvfileCallback(e);
+								}	
+			
+								var keys=Object.keys(csvFiles[i].rows[0]);
+								var buf;
+								
+								response.message+="\nCSV file [" + (i+1) + "]: " + (csvFiles[i].file_name||"No file") + "; rows: " + csvFiles[i].rows.length +
+									"; " + keys.length + " keys: " + keys.toString();	
+								var buf=keys.toString() + "\r\n";
+								csvStream.write(buf);
+								
+								async.forEachOfSeries(csvFiles[i].rows, 
+									function geoJSON2WKTFileCSVSeries(value, j, csvCallback) { // Processing code	
+										buf=undefined;
+										for (var key in value) { //csvFiles[i].rows[k][
+											if (buf) {
+												buf+="," + value[key];
+											}
+											else {					
+												buf=value[key];
+											}
+										}
+										buf+="\r\n";
+										csvStream.write(buf, csvCallback);
+									}, // End of geoJSON2WKTFileCSVSeries
+									function geoJSON2WKTFileCSVEnd(err) { //  Callback
+										var msg="Wrote CSV file " + fileNoext + ".csv";
+										var code=200 /* HTTP OK */;
+										if (err) {
+											code=501;
+											msg+="; caught error: " + err.message
+										}
+										else {
+											csvStream.end();
+											var stats = fs.statSync(csvFileName);	
+											msg+="; size: " + nodeGeoSpatialServicesCommon.fileSize(stats.size);											
+										}
+										addStatus(__file, __line, response, msg,   // Add created WKT zoomlevel topojson status	
+											code, serverLog, undefined /* req */, 
+											function geoJSON2WKTFileCSVEndAddStatus(err2) {
+												csvfileCallback(err || err2); // Run callback	
+											}
+										);
+									} // End of geoJSON2WKTFileCSVEnd()
+								); // End of async.forEachOfSeries()
+							}, // End of geoJSON2WKTFileCSVFiles
+							function geoJSON2WKTFileCSVFilesEnd(err) { //  Callback
+								if (err) {
+									endCallback(err); // Run callback				
+								}
+								else {
+									endCallback(); // Run callback
+								}
+							} // End of geoJSON2WKTFileCSVFilesEnd()
+						); // End of for csvFiles[] async loop
 					} // End of geoJSON2WKTFileAddStatus()
 				);	// End of addStatus()
 			}

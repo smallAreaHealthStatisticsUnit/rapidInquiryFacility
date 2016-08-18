@@ -1815,12 +1815,23 @@ This error in actually originating from the error handler function
 //													console.error("Restore geoJSON");
 												}
 											}		
-											function finalResponse() {							
+											function finalResponse(err) {	
+												if (err) {
+													serverLog.serverLog2(__file, __line, "finalResponse", 
+														"finalResponse() callback received error", req, err, response);
+														
+												}											
 						//						console.error("Edited final response");											
 												nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, 
 													httpErrorResponse, response.fields, undefined /* optional callback */);													
 											}
-											geojsonToCSV.geojsonToCSV(response, req, res, finalResponse); // Converty geoJSON to CSV
+											try {
+												geojsonToCSV.geojsonToCSV(response, req, res, finalResponse); // Convert geoJSON to CSV
+											}
+											catch (e) {	
+												serverLog.serverError2(__file, __line, "shapeFileQueueDrain", 
+													"Exception thrown by geojsonToCSV.geojsonToCSV() ", req, e, response);	
+											}
 
 										}
 									}); // End of finalProcessingCallback() 	
