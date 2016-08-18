@@ -79,7 +79,32 @@ import java.util.ArrayList;
 
 final class SQLRIFSubmissionManager 
 	extends AbstractSQLManager {
+
+	
+	public static void main(String[] args) {
+
+		SQLGeneralQueryFormatter insertStudyAreasQueryFormatter
+			= new SQLGeneralQueryFormatter();
+		insertStudyAreasQueryFormatter.addQueryLine(0, "INSERT INTO g_rif40_study_areas ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "(study_id, area_id, band_id) ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "SELECT");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id, area_id, band_id ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "FROM ");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "rif40_study_areas ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "WHERE ");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id=? ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "ORDER BY ");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id, area_id, band_id");
+		insertStudyAreasQueryFormatter.endWithSemiColon();		
 		
+		System.out.println("====================================================================");
+		System.out.println(insertStudyAreasQueryFormatter.generateQuery());
+		System.out.println("====================================================================");
+		
+		
+	}
+	
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -316,6 +341,76 @@ final class SQLRIFSubmissionManager
 	}
 
 
+
+	public String addStudyToDatabase(
+		final Connection connection,
+		final User user,
+		final RIFStudySubmission studySubmission) 
+		throws RIFServiceException {
+
+		
+		//Validate parameters
+		ValidationPolicy validationPolicy = getValidationPolicy();
+		studySubmission.checkErrors(validationPolicy);
+		
+		//perform various checks for non-existent objects
+		//such as geography,  geo level selects, covariates
+		checkNonExistentItems(
+			connection, 
+			studySubmission);
+
+		//KLG: TODO: Later on we should not rely on casting - it might
+		//be a risk analysis study
+		String result = null;
+		DiseaseMappingStudy diseaseMappingStudy
+			= (DiseaseMappingStudy) studySubmission.getStudy();
+		try {
+					
+			Project project = studySubmission.getProject();
+			addGeneralInformationToStudy(
+				connection,
+				user,
+				project,
+				diseaseMappingStudy);
+
+			addComparisonAreaToStudy(
+				connection, 
+				diseaseMappingStudy);
+
+			addStudyAreaToStudy(
+				connection,
+				diseaseMappingStudy);
+
+			addInvestigationsToStudy(
+				connection, 
+				true, 
+				diseaseMappingStudy);
+	
+			result = getCurrentStudyID(connection);
+			
+			connection.commit();
+			
+			return result;
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
+					diseaseMappingStudy.getDisplayName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;			
+		}
+
+	}
+
+	
+	
+	
 	public String submitStudy2(
 		final Connection connection,
 		final User user,
@@ -403,12 +498,13 @@ final class SQLRIFSubmissionManager
 		AbstractStudy study
 			= studySubmission.getStudy();
 	
-		createExtractTable(
+		/*
+		createStudyTables(
 			connection, 
 			studyID, 
 			userID,
 			study);
-		
+		*/
 		
 		
 	}
@@ -419,93 +515,113 @@ final class SQLRIFSubmissionManager
 		final String userID) 
 		throws RIFServiceException {
 		
-		
-		
-		
-		
-	}
-	
-	public void createExtractTable(
-		final Connection connection,
-		final String studyID,
-		final String userID,
-		final AbstractStudy study) 
-		throws RIFServiceException {
-		
-		String result = null;
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
+		try {
+			
+			//resultSet = statement.executeQuery();
+		}
+		catch(Exception sqlException) {
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"",
+					studyID);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);			
+		}
+				
+	}
 	
+
+	/*
+	 * Creates the extract table
+	 */
+	public void createStudyExtractTable(
+		final Connection connection,
+		final String userID,
+		final String studyID,
+		final AbstractStudy study) 
+		throws RIFServiceException {
+				
 		String extractTableName 		
 			= generateUserSchemaExtractTableName(
 				userID, 
 				studyID);
-		try {	
-			SQLCreateTableQueryFormatter queryFormatter 
-				= new SQLCreateTableQueryFormatter();
-			queryFormatter.setTableName(extractTableName);			
-			queryFormatter.addSmallIntegerFieldDeclaration(
-				"year", 
-				false);
-			queryFormatter.addTextFieldDeclaration(
-				"study_or_comparison", 
-				1, 
-				false);			
-			queryFormatter.addIntegerFieldDeclaration(
-				"study_id", 
-				false);
-			queryFormatter.addTextFieldDeclaration(
-				"area_id", 
-				false);						
-			queryFormatter.addIntegerFieldDeclaration(
-				"band_id", 
-				true);			
-			queryFormatter.addSmallIntegerFieldDeclaration(
-				"sex", 
-				true);						
-			queryFormatter.addTextFieldDeclaration(
-				"age_group", 
-				true);						
-			queryFormatter.addDoubleFieldDeclaration(
-				"total_pop", 
-				true);
+				
+		SQLCreateTableQueryFormatter queryFormatter 
+			= new SQLCreateTableQueryFormatter();
+		queryFormatter.setTableName(extractTableName);			
+		queryFormatter.addSmallIntegerFieldDeclaration(
+			"year", 
+			false);
+		queryFormatter.addTextFieldDeclaration(
+			"study_or_comparison", 
+			1, 
+			false);			
+		queryFormatter.addIntegerFieldDeclaration(
+			"study_id", 
+			false);
+		queryFormatter.addTextFieldDeclaration(
+			"area_id", 
+			false);						
+		queryFormatter.addIntegerFieldDeclaration(
+			"band_id", 
+			true);			
+		queryFormatter.addSmallIntegerFieldDeclaration(
+			"sex", 
+			true);						
+		queryFormatter.addTextFieldDeclaration(
+			"age_group", 
+			true);						
+		queryFormatter.addDoubleFieldDeclaration(
+			"total_pop", 
+			true);
 
-			//add fields for covariates
-			ArrayList<Investigation> investigations
-				= study.getInvestigations();	
-			/*
-			 * Each investigation should have the same set of covariates.
-			 * Therefore, to get the covariates for the study, take the
-			 * first investigation and retrieve the collection of covariates
-			 */
-			ArrayList<AbstractCovariate> covariates
-				= investigations.get(0).getCovariates();
-			for (AbstractCovariate covariate : covariates) {
-				queryFormatter.addTextFieldDeclaration(
-					covariate.getName(), 
-					true);
-			}
-			
-			/*
-			 * Add a column for the name of each investigation
-			 */
-			for (Investigation investigation : investigations) {
-				queryFormatter.addTextFieldDeclaration(
-					investigation.getDisplayName(),
-					true);
-			}
-		
-			logSQLQuery(
-				"createExtractTable", 
-				queryFormatter);
-			
+		//add fields for covariates
+		ArrayList<Investigation> investigations
+			= study.getInvestigations();	
+
+		/*
+		 * Each investigation should have the same set of covariates.
+		 * Therefore, to get the covariates for the study, take the
+		 * first investigation and retrieve the collection of covariates
+		 */
+		ArrayList<AbstractCovariate> covariates
+			= investigations.get(0).getCovariates();
+		for (AbstractCovariate covariate : covariates) {
+			queryFormatter.addTextFieldDeclaration(
+				covariate.getName(), 
+				true);
+		}
+	
+		/*
+		 * Add a column for the name of each investigation
+		 */
+		for (Investigation investigation : investigations) {
+			queryFormatter.addTextFieldDeclaration(
+				investigation.getDisplayName(),
+				true);
+		}
+
+		logSQLQuery(
+			"createExtractTable", 
+			queryFormatter);
+
+		PreparedStatement statement = null;
+		try {
 			statement
 				= createPreparedStatement(
 					connection,
 					queryFormatter);
-
 			statement.executeUpdate();
-						
+					
 			/*
 			 * Now comment the schema
 			 */
@@ -515,7 +631,7 @@ final class SQLRIFSubmissionManager
 				connection, 
 				extractTableName, 
 				extractTableComment);
-	
+
 			String extractTableYearComment
 				= RIFServiceMessages.getMessage("schemaComments.extractTable.year");
 
@@ -532,7 +648,7 @@ final class SQLRIFSubmissionManager
 				extractTableName, 
 				"study_or_comparison", 
 				extractTableStudyOrComparisonComment);
-			
+		
 			String extractTableStudyIDComment
 				= RIFServiceMessages.getMessage("schemaComments.extractTable.studyID");
 			addSchemaTableColumnComment(
@@ -540,7 +656,7 @@ final class SQLRIFSubmissionManager
 				extractTableName, 
 				"study_id", 
 				extractTableStudyIDComment);
-						
+					
 			String extractTableAreaIDComment
 				= RIFServiceMessages.getMessage("schemaComments.extractTable.areaID");
 			addSchemaTableColumnComment(
@@ -548,7 +664,7 @@ final class SQLRIFSubmissionManager
 				extractTableName, 
 				"area_id", 
 				extractTableAreaIDComment);
-						
+					
 			String extractTableBandIDComment
 				= RIFServiceMessages.getMessage("schemaComments.extractTable.bandID");
 			addSchemaTableColumnComment(
@@ -604,13 +720,147 @@ final class SQLRIFSubmissionManager
 			throw rifServiceException;
 		}
 		finally {
-			//Cleanup database resources			
 			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
 		}
 		
 	}
+	
+	
+	
+	
+	
+	
+	private void registerRIFExtractInDatabase() 
+		throws RIFServiceException {
+		
+		
+		SQLGeneralQueryFormatter insertStudyAreasQueryFormatter
+			= new SQLGeneralQueryFormatter();
+		insertStudyAreasQueryFormatter.addQueryLine(0, "INSERT INTO g_rif40_study_areas ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "(study_id, area_id, band_id) ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "SELECT");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id, area_id, band_id ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "FROM ");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "rif40_study_areas ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "WHERE ");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id=? ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "ORDER BY ");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id, area_id, band_id");
+		insertStudyAreasQueryFormatter.endWithSemiColon();
+		
+			
+		SQLGeneralQueryFormatter insertComparisonAreasQueryFormatter
+			= new SQLGeneralQueryFormatter();
+		insertStudyAreasQueryFormatter.addQueryLine(0, "INSERT INTO g_rif40_comparison_areas ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "(study_id, area_id) ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "SELECT");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id, area_id ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "FROM ");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "rif40_comparison_areas ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "WHERE ");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id=? ");
+		insertStudyAreasQueryFormatter.addQueryLine(1, "ORDER BY ");
+		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id, area_id");
+		insertStudyAreasQueryFormatter.endWithSemiColon();
+		
+		
+		
+		//insertStudyAreasQueryFormatter.setIntoTable("g_rif40_study_areas");
+		
+		
+		//try {
+			
+			
+		//}
+		//catch(SQLException sqlException) {
+			
+			
+		//}
+		//finally {
+			
+			
+		//}
+		
+	}
+	
+	
+	/*
+	 * Creates a temporary table that the middleware uses to store status messages
+	 * that can be provided to users so they get interactive feedback about how
+	 * their submissions are progressing
+	 */
+	public void createStudyStatusTable(
+		final Connection connection,
+		final String userID, 
+		final String studyID)
+		throws RIFServiceException {
+				
+		String statusTableName
+			= generateUserSchemaStatusTableName(
+				userID, 
+				studyID);
+		
+		
+		SQLDeleteTableQueryFormatter deleteTableQueryFormatter
+			= new SQLDeleteTableQueryFormatter();
+		deleteTableQueryFormatter.setTableToDelete(statusTableName);
+		
+		System.out.println("status table name=="+statusTableName+"==");
+		SQLCreateTableQueryFormatter createTableQueryFormatter
+			= new SQLCreateTableQueryFormatter();
+		createTableQueryFormatter.useTemporaryTable();
+		createTableQueryFormatter.setTableName(statusTableName);
+		createTableQueryFormatter.addDateFieldDeclaration("log_time", false);		
+		createTableQueryFormatter.addTextFieldDeclaration("message", false);
+			
+		logSQLQuery(
+			"deleetStatusTable", 
+			deleteTableQueryFormatter);
+		logSQLQuery(
+			"createStatusTable", 
+			createTableQueryFormatter);
+		
+		PreparedStatement deleteTableStatement = null;
+		PreparedStatement createTableStatement = null;
+		
+		try {
+			deleteTableStatement 
+				= connection.prepareStatement(deleteTableQueryFormatter.generateQuery());
+			deleteTableStatement.executeUpdate();			
 
+			createTableStatement 
+				= connection.prepareStatement(createTableQueryFormatter.generateQuery());
+			createTableStatement.executeUpdate();		
+			
+			connection.commit();
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToCreateStatusTable",
+					studyID);
+
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLRIFSubmissionManager.class, 
+				errorMessage, 
+				sqlException);
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(deleteTableStatement);			
+			SQLQueryUtility.close(createTableStatement);			
+		}		
+	}
+	
 	public void computeSmoothedResults(
 		final Connection connection, 
 		final AbstractStudy study,
@@ -2355,19 +2605,33 @@ final class SQLRIFSubmissionManager
 		}		
 		
 	}
-		
+
+	
 	private String generateUserSchemaExtractTableName(
 		final String userID,
 		final String studyID) {
 		
 		StringBuilder extractTableName = new StringBuilder();		
 		extractTableName.append(userID);
-		extractTableName.append("kgarwood.s");
+		extractTableName.append(".s");
 		extractTableName.append(studyID);
 		extractTableName.append("_extract");
 		return extractTableName.toString();
 	}
 
+	
+	private String generateUserSchemaStatusTableName(
+		final String userID,
+		final String studyID) {
+		
+		StringBuilder extractTableName = new StringBuilder();		
+		extractTableName.append("s");
+		extractTableName.append(studyID);
+		extractTableName.append("_status");
+		return extractTableName.toString();
+	}
+	
+	
 	private String generateMapTableName(final String studyID) {
 		StringBuilder extractTableName = new StringBuilder();
 	
