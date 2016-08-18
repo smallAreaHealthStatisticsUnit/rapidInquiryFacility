@@ -66,22 +66,22 @@ import rifServices.system.RIFServiceMessages;
 public enum StudyState {
 	STUDY_NOT_CREATED(
 		"X",
-		"studyState.studyNotCreated"),
+		"studyState.studyNotCreated.description"),
 	STUDY_CREATED(
 		"C",
-		"studyState.studyCreated"),
+		"studyState.studyCreated.description"),
 	STUDY_VERIFIED(
 		"V",
-		"studyStatus.studyVerified"),
+		"studyState.studyVerified.description"),
 	STUDY_EXTRACTED(
 		"E",
-		"studyState.extractCompleted"),
+		"studyState.studyExtracted.description"),
 	STUDY_RESULTS_COMPUTED(
 		"R",
-		"studyState.resultsComputed"),
+		"studyState.resultsComputed.description"),
 	STUDY_STATE_UNKNOWN(
 		"U", 
-		"studyState.studyStateUnknown");
+		"studyState.studyStateUnknown.description");
 	
 	final String name;
 	final String descriptionPropertyName;
