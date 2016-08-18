@@ -85,6 +85,8 @@ public final class SQLCreateTableQueryFormatter
 	
 	/** The insert fields. */
 	private ArrayList<String> fieldDeclarations;
+	
+	private boolean isTemporaryTable;
 
 	// ==========================================
 	// Section Construction
@@ -100,6 +102,15 @@ public final class SQLCreateTableQueryFormatter
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	/**
+	 * @TODO: although both SQL Server and PostgreSQL can support the concept of
+	 * temporary tables, this looks like an area where there may need to be 
+	 * different implementations
+	 */
+	public void useTemporaryTable() {
+		isTemporaryTable = true;
+	}
 	
 	public void setTextFieldLength(final int textFieldLength) {
 		this.textFieldLength = textFieldLength;
@@ -295,7 +306,12 @@ public final class SQLCreateTableQueryFormatter
 	@Override
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "CREATE TABLE ");
+		
+		addQueryPhrase(0, "CREATE");
+		if (isTemporaryTable == true) {
+			addQueryPhrase(" TEMPORARY");
+		}
+		addQueryPhrase(" TABLE ");
 		addQueryPhrase(getSchemaTableName(tableToCreate));
 		addQueryPhrase(" (");
 		padAndFinishLine();
