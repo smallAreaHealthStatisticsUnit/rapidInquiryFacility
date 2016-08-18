@@ -122,7 +122,9 @@ class AbstractStudyServiceBundle {
 		this.rifServiceResources = rifServiceResources;
 	}
 	
-	
+	protected RIFServiceResources getRIFServiceResources() {
+		return rifServiceResources;
+	}
 	
 	public RIFStudyResultRetrievalAPI getRIFStudyRetrievalService() {
 		return rifStudyRetrievalService;
