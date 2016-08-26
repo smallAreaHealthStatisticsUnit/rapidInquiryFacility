@@ -542,6 +542,12 @@ RangeError: Invalid string length
 * area_id and gid uniqueness tests to shapefile checks and tests added to SQL load script. Area name will need to be unqiue 
   within the confines on the next lower resolution layer
 
+  
+#### 22nd to 26th August  
+
+* Auto generate Postgres and MS SQL server scripts
+* Confirmed areas and centroids are the same in the US SRID projection
+
 #### Current TODO list (August):
 
 * SQL load script generatpr

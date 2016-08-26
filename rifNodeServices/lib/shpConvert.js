@@ -499,15 +499,15 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						"\nrecord:\n" + JSON.stringify(record, null, 4).substring(0, 132));
 				}	
 			}
-			if (record.properties.GEOGRAPHIC_CENTROID == undefined) {
+			if (record.properties.GEOGRAPHIC_CENTROID_WKT == undefined) {
 				try {	
 					var centroid=turf.centroid(record);
 					try {
 						if (centroid) {
-							record.properties.GEOGRAPHIC_CENTROID=wellknown.stringify(centroid); // In WKT
+							record.properties.GEOGRAPHIC_CENTROID_WKT=wellknown.stringify(centroid); // In WKT
 						}
 						else {
-							record.properties.GEOGRAPHIC_CENTROID=undefined;
+							record.properties.GEOGRAPHIC_CENTROID_WKT=undefined;
 							throw new Error("Duplicate area ID geographic NULL centroid error in shapefile " + 
 								shapefileData["shapefile_no"] + ": " +	shapefileData["shapeFileBaseName"] +
 								"\nArea id field: " + areaID + "; value: " + record.properties[areaID] + 
@@ -1815,6 +1815,11 @@ This error in actually originating from the error handler function
 //													console.error("Restore geoJSON");
 												}
 											}		
+											/*
+											 * Function: 	finalResponse()
+											 * Parameters:	Error object (if thrown)
+											 * Description: Call final response processing
+											 */
 											function finalResponse(err) {	
 												if (err) {
 													serverLog.serverLog2(__file, __line, "finalResponse", 

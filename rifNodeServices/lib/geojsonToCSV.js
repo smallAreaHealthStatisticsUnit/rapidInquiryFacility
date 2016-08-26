@@ -48,13 +48,19 @@ const wellknown = require('wellknown'),
 	  async = require('async'),
 	  serverLog = require('../lib/serverLog'),
 	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
+	  dbLoad = require('../lib/dbLoad'),
 	  httpErrorResponse = require('../lib/httpErrorResponse');
 
 const os = require('os'),
 	  fs = require('fs'),
 	  path = require('path');
-		  
-var geojsonToCSV = function geoJSON2WKT(response, req, res, endCallback) {
+	
+/*
+ * Function: 	geojsonToCSV()
+ * Parameters:	Internal response object, HTTP request object, HTTP response object, callback to call at end of processing
+ * Description:	Convert geoJSON to CSV; save as CSV files; create load scripts for Postgres and MS SQL server
+ */		
+var geojsonToCSV = function geojsonToCSV(response, req, res, endCallback) {
 	
 	scopeChecker(__file, __line, {
 		response: response,
@@ -215,9 +221,11 @@ var geojsonToCSV = function geoJSON2WKT(response, req, res, endCallback) {
 			csvFiles[i] = {
 				index: i,
 				file_name: response.file_list[i].file_name,
+				tableName: path.basename(response.file_list[i].file_name, ".shp").toLowerCase(),
 				areas: response.file_list[i].total_areas,
 				points: response.file_list[i].points,
 				geolevel: response.file_list[i].geolevel_id,
+				geolevelDescription: (response.file_list[i].desc || "Not defined"),
 				topojson_arcs: undefined,
 				topojson_points: undefined,
 				rows: [],
@@ -300,7 +308,7 @@ var geojsonToCSV = function geoJSON2WKT(response, req, res, endCallback) {
 										response.message+="\nsvStreamClose(): " + csvFileName;
 									});		
 									csvStream.on('error', function csvStreamError(e) {
-										serverLog.serverLogc2(__file, __line, "csvStreamError", 
+										serverLog.serverLog2(__file, __line, "csvStreamError", 
 											"WARNING: Exception in CSV write to file: " + csvFileName, req, e, response);										
 									});
 								}
@@ -369,10 +377,11 @@ var geojsonToCSV = function geoJSON2WKT(response, req, res, endCallback) {
 							}, // End of geoJSON2WKTFileCSVFiles
 							function geoJSON2WKTFileCSVFilesEnd(err) { //  Callback
 								if (err) {
-									endCallback(err); // Run callback				
+									endCallback(err); // Run end callback				
 								}
 								else {
-									endCallback(); // Run callback
+									dbLoad.CreateDbLoadScripts(response, req, res, dir, csvFiles, endCallback); // Create DB load scripts; 
+													// Then run end callback
 								}
 							} // End of geoJSON2WKTFileCSVFilesEnd()
 						); // End of for csvFiles[] async loop
