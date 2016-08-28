@@ -138,18 +138,27 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			newStream.write(header);
 			if (dbType == "PostGres") {	
 				newStream.write("\n--\n" +
-"-- Usage: psql -U <username> -d <POstgres database name> -w -e -f " + path.basename(scriptName) + "\n" +	
-"--\n" +			
-"\\set ECHO all\n" +
-"\\set ON_ERROR_STOP ON\n" +
-"\\timing\n" +
-"\\pset pager off\n" +
-"\n");
+"-- Usage: psql -w -e -f " + path.basename(scriptName) + "\n" +	
+"-- Connect flags if required: -U <username> -d <Postgres database name> -h <host> -p <port>\n" +
+"--\n" +	
+"\n" +
+"BEGIN;\n");
 			}
 			else if (dbType == "MSSQLServer") {	
-				newStream.write("\n");
+				newStream.write("\n--\n" +
+"-- Usage: sqlcmd -E -b -m-1 -e -i " + path.basename(scriptName) + ' -v pwd="%cd%"\n' +	
+"-- Connect flags if required: -U <username>/-E -S<myServer\instanceName>\n" +
+"--\n" +			
+"-- You must set the current schema if you cannot write to the default schema!\n" +			
+"--You need create privilege for the various object and the bulkadmin role\n" +					
+"--\n" +			
+"-- USE <my database>;\n" +			
+"--\n" +		
+"\n" +
+"BEGIN TRANSACTION;\n" +
+"GO\n");
 			}
-			newStream.write("BEGIN;\n");
+			newStream.write();
 		}
 		catch (e) {
 			serverLog.serverLog2(__file, __line, dbType + "StreamError", 
@@ -178,7 +187,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 
 	/*
 	 * Function: 	addSQLStatements()
-	 * Parameters:	Database stream, CSV files object, srid (spatial reference identifier), dbbase type as a string ("PostGres" or "MSSQLServer")
+	 * Parameters:	Database stream, format file stream, CSV files object, srid (spatial reference identifier), dbbase type as a string ("PostGres" or "MSSQLServer")
 	 * Description:	Add SQL statements
 	 	 
 -- SQL statement 0 >>>
@@ -324,12 +333,20 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 	var addSQLStatements=function addSQLStatements(dbStream, csvFiles, srid, dbType) {
 		function Sql(comment, sql) { // Object constructor
 			this.comment=comment;
-			this.sql=sql;		
+			this.sql=sql;	
+			this.dbStream=dbType;			
 		}
 		var sql=[];
 		
 		for (var i=0; i<csvFiles.length; i++) {
-			var sqlStmt=new Sql("Drop table", "DROP TABLE IF EXISTS " + csvFiles[i].tableName);
+			var sqlStmt;
+			
+			if (dbType == "PostGres") {	
+				sqlStmt=new Sql("Drop table", "DROP TABLE IF EXISTS " + csvFiles[i].tableName);
+			}
+			else if (dbType == "MSSQLServer") {				
+				sqlStmt=new Sql("Drop table", "IF OBJECT_ID('" + csvFiles[i].tableName + "', 'U') IS NOT NULL DROP TABLE " + csvFiles[i].tableName);
+			}
 			sql.push(sqlStmt);
 			
 			var columnList=Object.keys(csvFiles[i].rows[0]);
@@ -342,10 +359,24 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 					sqlStmt.sql+="\n";
 				}
 				if (columnList[j] == "GID") {
-					sqlStmt.sql+="\t" + pad("                               ", columnList[j].toLowerCase(), false) + "\tinteger";
+					sqlStmt.sql+="\t" + pad("                               ", columnList[j].toLowerCase(), false) + "\tinteger	NOT NULL";
 				}
 				else if (columnList[j] == "AREA_KM2") {
 					sqlStmt.sql+="\t" + pad("                               ", columnList[j].toLowerCase(), false) + "\tnumeric";
+				}
+				else if (columnList[j] == "AREAID") {		
+					if (dbType == "PostGres") {	
+						sqlStmt.sql+="\t" + pad("                               ", 
+							columnList[j].toLowerCase(), false) + "\ttext	NOT NULL";
+					}
+					else if (dbType == "MSSQLServer") {	
+						sqlStmt.sql+="\t" + pad("                               ", 
+							columnList[j].toLowerCase(), false) + "\tvarchar(100)	NOT NULL";					
+					}
+				}
+				else if (columnList[j] == "AREANAME") {
+					sqlStmt.sql+="\t" + pad("                               ", 
+					columnList[j].toLowerCase(), false) + "\ttext	NOT NULL";
 				}
 				else {
 					sqlStmt.sql+="\t" + pad("                               ", columnList[j].toLowerCase(), false) + "\ttext";
@@ -359,19 +390,30 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 				sqlStmt.sql="COMMENT ON TABLE " + csvFiles[i].tableName + " IS '" + csvFiles[i].geolevelDescription + "'";
 			}
 			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="GO\n" +    
-"EXEC sys.sp_addextendedproperty\n" +     
-"@name = N'MS_DescriptionExample',\n" +     
-"@value = N'" + csvFiles[i].geolevelDescription + "',\n" +     
-"@level0type = N'SCHEMA', @level0name = USER,\n" +    
-"@level1type = N'TABLE',  @level1name = '" + csvFiles[i].tableName + "'; \n" +   
-"GO";
+				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+"SELECT @CurrentUser = user_name();\n" +   
+"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+"   '" + csvFiles[i].geolevelDescription + "',\n" +   
+"   'user', @CurrentUser, \n" +   
+"   'table', '" + csvFiles[i].tableName + "'";
 			}
 			sql.push(sqlStmt);
 			
 			// Needs to be SQL to psql command (i.e. COPY FROM stdin)
 			var sqlStmt=new Sql("Load table from CSV file");
-			sqlStmt.sql="\\copy " + csvFiles[i].tableName + " FROM '" + csvFiles[i].tableName + ".csv' DELIMITER ',' CSV HEADER";
+			if (dbType == "PostGres") {	
+				sqlStmt.sql="\\copy " + csvFiles[i].tableName + " FROM '" + csvFiles[i].tableName + ".csv' DELIMITER ',' CSV HEADER";
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="BULK INSERT " + csvFiles[i].tableName + "\n" + 
+"FROM '$(pwd)/" + csvFiles[i].tableName + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
+"WITH\n" + 
+"(\n" + 
+"	FIRSTROW = 2,			-- Ignore first row\n" + 
+"	FORMATFILE = '$(pwd)/mssql_" + csvFiles[i].tableName + ".fmt',		-- Use a format file\n" +
+"	TABLOCK					-- Table lock\n" + 
+")";
+			}
 			sql.push(sqlStmt);
 			
 			var sqlStmt=new Sql("Add primary key");
@@ -438,9 +480,119 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 			sql.push(sqlStmt);
 		}
 		for (var i=0; i<sql.length; i++) {
-			dbStream.write("\n-- SQL statement " + i + ": " + sql[i].comment + " >>>\n" + sql[i].sql + ";\n");
+			if (dbType == "PostGres") {				
+				dbStream.write("\n-- SQL statement " + i + ": " + sql[i].comment + " >>>\n" + sql[i].sql + ";\n");
+			}
+			else if (dbType == "MSSQLServer") {				
+				dbStream.write("\n-- SQL statement " + i + ": " + sql[i].comment + " >>>\n" + sql[i].sql + ";\nGO\n");
+			}
 		}
 	} // End of addSQLStatements()
+
+	/*
+	 * Function: 	createSqlServerFmtFiles()
+	 * Parameters:	Directory to create in, CSV files object
+	 * Description:	Create MS SQL Server bulk load format files
+	 *
+	 * Exammple file format:
+	 
+<?xml version="1.0"?>
+<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ <RECORD>
+  <FIELD ID="0" xsi:type="CharTerm" TERMINATOR='"' />
+   <FIELD ID="1" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="2" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="3" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="4" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="5" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="6" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="7" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="8" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="9" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="10" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="11" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="12" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="13" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="14" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="15" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="16" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="17" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="18" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="19" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="20" xsi:type="CharTerm" TERMINATOR='"\r\n' />
+ </RECORD>
+ <ROW>
+   <COLUMN SOURCE="1" NAME="statefp" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="2" NAME="countyfp" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="3" NAME="countyns" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="4" NAME="affgeoid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="5" NAME="geoid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="6" NAME="name" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="7" NAME="lsad" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="8" NAME="aland" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="9" NAME="awater" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="10" NAME="gid" xsi:type="SQLINT" />
+   <COLUMN SOURCE="11" NAME="areaid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="12" NAME="areaname" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="13" NAME="area_km2" xsi:type="SQLNUMERIC" />
+   <COLUMN SOURCE="14" NAME="geographic_centroid_wkt" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="15" NAME="wkt_11" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="16" NAME="wkt_10" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="17" NAME="wkt_9" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="18" NAME="wkt_8" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="19" NAME="wkt_7" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="20" NAME="wkt_6" xsi:type="SQLVARYCHAR" />
+ </ROW>
+</BCPFORMAT>	 
+	 
+	 */	 
+	var createSqlServerFmtFiles=function createSqlServerFmtFiles(dir, csvFiles) {	
+		for (var i=0; i<csvFiles.length; i++) {
+			var fmtScriptName="mssql_" + csvFiles[i].tableName + ".fmt";
+			var fmtStream = fs.createWriteStream(dir + "/" + fmtScriptName, { flags : 'w' });	
+			fmtStream.on('finish', function fmtStreamClose() {
+				response.message+="\nstreamClose() MS SQL Server bulk load format file";
+			});		
+			fmtStream.on('error', function fmtStreamError(e) {
+				serverLog.serverLog2(__file, __line, dbType + "StreamError", 
+					"WARNING: Exception in MS SQL Server bulk load format file write: " + fmtScriptName, req, e, response);										
+			});
+			
+			var fmtBuf='<?xml version="1.0"?>\n' +
+'<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"\n' +
+'  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n' +
+' <RECORD>\n' + 
+'   <FIELD ID="0" xsi:type="CharTerm" TERMINATOR=' + "'" + '"' + "' />\n";
+			var columnList=Object.keys(csvFiles[i].rows[0]);
+			
+			for (var j=1; j<=columnList.length; j++) {
+				if (j<columnList.length) {
+					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '","' + "' />\n";
+				}
+				else {
+					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '"\\r\\n' + "' />\n";
+				}
+			}
+			fmtBuf+=' </RECORD>\n'; 
+			fmtBuf+=' <ROW>\n'; 
+			for (var j=1; j<=columnList.length; j++) {
+				var bcpDtype="SQLVARYCHAR";
+				var column=columnList[(j-1)].toLowerCase();
+				if (column == "gid") {
+					bcpDtype="SQLINT"; // Integer
+				}
+				else if (column == "area_km2") {
+					bcpDtype="SQLNUMERIC"; // Numeric
+				}
+				fmtBuf+='   <COLUMN SOURCE="' + j + '" NAME="' + column + '" xsi:type="' + bcpDtype + '" />\n';
+			}			
+			fmtBuf+=' </ROW>\n'; 
+			fmtBuf+='</BCPFORMAT>\n'; 
+			fmtStream.write(fmtBuf);
+			fmtStream.end();
+		} // End of for csvFiles
+	} // End of createSqlServerFmtFiles()
 	
 	var pgScript="pg_" + response.fields["geographyName"] + ".sql"
 	var mssqlScript="mssql_" + response.fields["geographyName"] + ".sql"
@@ -450,13 +602,14 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 	
 	addSQLStatements(pgStream, csvFiles, response.fields["srid"], "PostGres");
 	addSQLStatements(mssqlStream, csvFiles, response.fields["srid"], "MSSQLServer");
+	createSqlServerFmtFiles(dir, csvFiles);
 	
 	var endStr="\nEND;\n\n--\n-- EOF\n";
 	pgStream.write(endStr);
 	mssqlStream.write(endStr);
 	
 	pgStream.end();
-	mssqlStream.end();
+	mssqlStream.end();	
 	
 	var msg="Created database load scripts: " + pgScript + " and " + mssqlScript;
 	response.message+="\n" + msg;
