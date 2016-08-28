@@ -155,10 +155,10 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 "-- USE <my database>;\n" +			
 "--\n" +		
 "\n" +
+"SET QUOTED_IDENTIFIER ON;\n\n" +
 "BEGIN TRANSACTION;\n" +
 "GO\n");
 			}
-			newStream.write();
 		}
 		catch (e) {
 			serverLog.serverLog2(__file, __line, dbType + "StreamError", 
@@ -402,7 +402,8 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 			// Needs to be SQL to psql command (i.e. COPY FROM stdin)
 			var sqlStmt=new Sql("Load table from CSV file");
 			if (dbType == "PostGres") {	
-				sqlStmt.sql="\\copy " + csvFiles[i].tableName + " FROM '" + csvFiles[i].tableName + ".csv' DELIMITER ',' CSV HEADER";
+				sqlStmt.sql="\\copy " + csvFiles[i].tableName + " FROM '" + csvFiles[i].tableName + 
+					".csv' DELIMITER ',' CSV HEADER";
 			}
 			else if (dbType == "MSSQLServer") {	
 				sqlStmt.sql="BULK INSERT " + csvFiles[i].tableName + "\n" + 
@@ -416,16 +417,38 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 			}
 			sql.push(sqlStmt);
 			
+			var sqlStmt=new Sql("Row check: " + csvFiles[i].rows.length);
+			if (dbType == "PostGres") {	
+				sqlStmt.sql="DO LANGUAGE plpgsql $$\n" + 
+"DECLARE\n" + 
+"	c1 CURSOR FOR\n" + 
+"		SELECT COUNT(gid) AS total\n" + 
+"		  FROM " + csvFiles[i].tableName + ";\n" + 		
+"	c1_rec RECORD;\n" + 
+"BEGIN\n" + 
+"	OPEN c1;\n" + 
+"	FETCH c1 INTO c1_rec;\n" + 
+"	CLOSE c1;\n" + 
+"	IF c1_rec.total = " + csvFiles[i].rows.length + " THEN\n" + 
+"		RAISE INFO 'Table: " + csvFiles[i].tableName + " row check OK: %', c1_rec.total;\n" + 
+"	ELSE\n" + 
+"		RAISE EXCEPTION 'Table: " + csvFiles[i].tableName + " row check FAILED: expected: " + 
+		csvFiles[i].rows.length + " got: %', c1_rec.total;\n" + 
+"	END IF;\n" + 
+"END;\n" +
+"$$";
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="SELECT COUNT(gid) AS total FROM " + csvFiles[i].tableName; // Make T-SQL version off above
+			}
+			sql.push(sqlStmt);	
+			
 			var sqlStmt=new Sql("Add primary key");
 			sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ADD PRIMARY KEY (gid)";
 			sql.push(sqlStmt);
 			
 			var sqlStmt=new Sql("Add unique key");
 			sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ADD CONSTRAINT " + csvFiles[i].tableName + "_uk UNIQUE(areaid)";
-			sql.push(sqlStmt);
-			
-			var sqlStmt=new Sql("Force name to be NOT NULL");
-			sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ALTER COLUMN name SET NOT NULL";
 			sql.push(sqlStmt);
 			
 			if (dbType == "PostGres") {				
@@ -467,18 +490,74 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 	"\t\tEND, " + response.fields["srid"] + ")";
 				sql.push(sqlStmt);
 			}
+			else if (dbType == "MSSQLServer") {					
+				var sqlStmt=new Sql("Add geometry column: geographic centroid");
+				sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ADD geographic_centroid geography"; 
+				sql.push(sqlStmt);	
+				
+				var sqlStmt=new Sql("Update geometry column: geographic centroid");
+				sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n" + 
+	"   SET geographic_centroid = geography::STGeomFromText(geographic_centroid_wkt, 4326)";
+				sql.push(sqlStmt);	
+				
+				for (var k=response.fields["min_zoomlevel"]; k < response.fields["max_zoomlevel"]; k++) {
+					var sqlStmt=new Sql("Add geometry column for zoomlevel: " + k);
+					sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ADD geom_" + k + " geography"; 
+					sql.push(sqlStmt);
+				}
+				
+				var sqlStmt=new Sql("Add geometry column for original SRID geometry");
+				sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ADD geom_orig geography";
+				sql.push(sqlStmt);
+				
+				var sqlStmt=new Sql("Update geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID");
+				sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n   SET ";
+				for (var k=response.fields["min_zoomlevel"]; k < response.fields["max_zoomlevel"]; k++) {
+					sqlStmt.sql+="\tgeom_" + k + " = geography::STGeomFromText(wkt_" + k + ", 4326),\n";
+				}	
+
+// Needs codeplex SQL Server Spatial Tools:  http://sqlspatialtools.codeplex.com/wikipage?title=Current%20Contents&referringTitle=Home				
+				sqlStmt.sql+="" +
+	"\tgeom_orig = /* geography::STTransform(geography::STGeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326), " + 
+					response.fields["srid"] + ") NOT POSSIBLE */ NULL"; 
+				sql.push(sqlStmt);
+			}
 
 			for (var k=response.fields["min_zoomlevel"]; k < response.fields["max_zoomlevel"]; k++) {
-				var sqlStmt=new Sql("Index geometry column for zoomlevel: " + k,
-					"CREATE INDEX " + csvFiles[i].tableName + "_geom_" + k + "_gix ON " + csvFiles[i].tableName + 
-					" USING GIST (geom_" + k + ")");
+				var sqlStmt=new Sql("Index geometry column for zoomlevel: " + k);
+				if (dbType == "PostGres") {		
+					sqlStmt.sql="CREATE INDEX " + csvFiles[i].tableName + "_geom_" + k + "_gix ON " + csvFiles[i].tableName + 
+						" USING GIST (geom_" + k + ")";
+				}
+				else if (dbType == "MSSQLServer") {	
+					sqlStmt.sql="CREATE SPATIAL INDEX " + csvFiles[i].tableName + "_geom_" + k + "_gix ON " + 
+						csvFiles[i].tableName + " (geom_" + k + ")";
+				}
 				sql.push(sqlStmt);
 			}			
-			var sqlStmt=new Sql("Index geometry column for original SRID geometry",
-				"CREATE INDEX " + csvFiles[i].tableName + "_geom_orig_gix ON " + csvFiles[i].tableName + 
-				" USING GIST (geom_orig)");
+			if (dbType == "PostGres") {		
+				var sqlStmt=new Sql("Index geometry column for original SRID geometry",
+					"CREATE INDEX " + csvFiles[i].tableName + "_geom_orig_gix ON " + csvFiles[i].tableName + 
+					" USING GIST (geom_orig)");					
+				sql.push(sqlStmt);
+			}
+			else if (dbType == "MSSQLServer") {	
+				var sqlStmt=new Sql("Index geometry column for original SRID geometry",
+					"CREATE SPATIAL INDEX " + csvFiles[i].tableName + "_geom_orig_gix ON " + csvFiles[i].tableName + 
+					" (geom_orig)");
+				sql.push(sqlStmt);
+			}
+		} // Enf of for csvFiles loop
+		
+		if (dbType == "PostGres") {		
+			var sqlStmt=new Sql("Commit transaction", "END");					
 			sql.push(sqlStmt);
 		}
+		else if (dbType == "MSSQLServer") {	
+			var sqlStmt=new Sql("Commit transaction", "COMMIT");	
+			sql.push(sqlStmt);
+		}
+			
 		for (var i=0; i<sql.length; i++) {
 			if (dbType == "PostGres") {				
 				dbStream.write("\n-- SQL statement " + i + ": " + sql[i].comment + " >>>\n" + sql[i].sql + ";\n");
@@ -604,7 +683,7 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 	addSQLStatements(mssqlStream, csvFiles, response.fields["srid"], "MSSQLServer");
 	createSqlServerFmtFiles(dir, csvFiles);
 	
-	var endStr="\nEND;\n\n--\n-- EOF\n";
+	var endStr="\n\n--\n-- EOF\n";
 	pgStream.write(endStr);
 	mssqlStream.write(endStr);
 	
