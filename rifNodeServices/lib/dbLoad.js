@@ -141,8 +141,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 "-- Usage: psql -w -e -f " + path.basename(scriptName) + "\n" +	
 "-- Connect flags if required: -U <username> -d <Postgres database name> -h <host> -p <port>\n" +
 "--\n" +	
-"\n" +
-"BEGIN;\n");
+"\n");
 			}
 			else if (dbType == "MSSQLServer") {	
 				newStream.write("\n--\n" +
@@ -155,9 +154,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 "-- USE <my database>;\n" +			
 "--\n" +		
 "\n" +
-"SET QUOTED_IDENTIFIER ON;\n\n" +
-"BEGIN TRANSACTION;\n" +
-"GO\n");
+"SET QUOTED_IDENTIFIER ON;\n" +
+"SET STATISTICS TIME ON;\n\n");
 			}
 		}
 		catch (e) {
@@ -338,9 +336,18 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 		}
 		var sql=[];
 		
+		var sqlStmt=new Sql("Start transaction");
+		if (dbType == "PostGres") {		
+			sqlStmt.sql="BEGIN";	
+		}
+		else if (dbType == "MSSQLServer") {	
+			sqlStmt.sql="BEGIN TRANSACTION";	
+		}				
+		sql.push(sqlStmt);
+		
 		for (var i=0; i<csvFiles.length; i++) {
-			var sqlStmt;
 			
+			var sqlStmt;		
 			if (dbType == "PostGres") {	
 				sqlStmt=new Sql("Drop table", "DROP TABLE IF EXISTS " + csvFiles[i].tableName);
 			}
@@ -410,7 +417,6 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 "FROM '$(pwd)/" + csvFiles[i].tableName + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 "WITH\n" + 
 "(\n" + 
-"	FIRSTROW = 2,			-- Ignore first row\n" + 
 "	FORMATFILE = '$(pwd)/mssql_" + csvFiles[i].tableName + ".fmt',		-- Use a format file\n" +
 "	TABLOCK					-- Table lock\n" + 
 ")";
@@ -439,7 +445,17 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 "$$";
 			}
 			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="SELECT COUNT(gid) AS total FROM " + csvFiles[i].tableName; // Make T-SQL version off above
+				sqlStmt.sql="DECLARE c1 CURSOR FOR SELECT COUNT(gid) AS total FROM " + csvFiles[i].tableName + ";\n" + 
+"DECLARE @c1_total AS int;\n" + 
+"OPEN c1;\n" + 
+"FETCH NEXT FROM c1 INTO @c1_total;\n" + 
+"IF @c1_total = "+ csvFiles[i].rows.length + "\n" +  
+"	PRINT 'Table: " + csvFiles[i].tableName + " row check OK: ' + CAST(@c1_total AS VARCHAR);\n" + 
+"ELSE\n" + 
+"	RAISERROR('Table: " + csvFiles[i].tableName + " row check FAILED: expected: " + 
+				csvFiles[i].rows.length + " got: %i', 16, 1, @c1_total);\n" + 
+"CLOSE c1;\n" + 
+"DEALLOCATE c1";
 			}
 			sql.push(sqlStmt);	
 			
@@ -549,14 +565,14 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 			}
 		} // Enf of for csvFiles loop
 		
+		var sqlStmt=new Sql("Commit transaction");
 		if (dbType == "PostGres") {		
-			var sqlStmt=new Sql("Commit transaction", "END");					
-			sql.push(sqlStmt);
+			sqlStmt.sql="END";	
 		}
 		else if (dbType == "MSSQLServer") {	
-			var sqlStmt=new Sql("Commit transaction", "COMMIT");	
-			sql.push(sqlStmt);
-		}
+			sqlStmt.sql="COMMIT";	
+		}				
+		sql.push(sqlStmt);
 			
 		for (var i=0; i<sql.length; i++) {
 			if (dbType == "PostGres") {				
@@ -572,10 +588,13 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 	 * Function: 	createSqlServerFmtFiles()
 	 * Parameters:	Directory to create in, CSV files object
 	 * Description:	Create MS SQL Server bulk load format files
+	 *				The insistence on quotes excludes the header row
 	 *
 	 * Exammple file format:
 	 
 <?xml version="1.0"?>
+<!-- MS SQL Server bulk load format files
+	 The insistence on quotes excludes the header row -->
 <BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
  <RECORD>
@@ -639,6 +658,8 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 			});
 			
 			var fmtBuf='<?xml version="1.0"?>\n' +
+			'<!-- MS SQL Server bulk load format files\n' +
+'	 The insistence on quotes excludes the header row -->\n' +
 '<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"\n' +
 '  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n' +
 ' <RECORD>\n' + 
