@@ -141,6 +141,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 "-- Usage: psql -w -e -f " + path.basename(scriptName) + "\n" +	
 "-- Connect flags if required: -U <username> -d <Postgres database name> -h <host> -p <port>\n" +
 "--\n" +	
+"\\pset pager off\n" +
 "\n");
 			}
 			else if (dbType == "MSSQLServer") {	
@@ -155,7 +156,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 "--\n" +		
 "\n" +
 "SET QUOTED_IDENTIFIER ON;\n" +
-"SET STATISTICS TIME ON;\n\n");
+"-- SET STATISTICS TIME ON;\n\n");
 			}
 		}
 		catch (e) {
@@ -381,9 +382,15 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 							columnList[j].toLowerCase(), false) + "\tvarchar(100)	NOT NULL";					
 					}
 				}
-				else if (columnList[j] == "AREANAME") {
-					sqlStmt.sql+="\t" + pad("                               ", 
-					columnList[j].toLowerCase(), false) + "\ttext	NOT NULL";
+				else if (columnList[j] == "AREANAME") {		
+					if (dbType == "PostGres") {	
+						sqlStmt.sql+="\t" + pad("                               ", 
+							columnList[j].toLowerCase(), false) + "\ttext	NOT NULL";
+					}
+					else if (dbType == "MSSQLServer") {	
+						sqlStmt.sql+="\t" + pad("                               ", 
+							columnList[j].toLowerCase(), false) + "\tvarchar(1000)	NOT NULL";
+					}
 				}
 				else {
 					sqlStmt.sql+="\t" + pad("                               ", columnList[j].toLowerCase(), false) + "\ttext";
@@ -458,7 +465,8 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 "DEALLOCATE c1";
 			}
 			sql.push(sqlStmt);	
-			
+
+			sql.push(new Sql("Add keys"));			
 			var sqlStmt=new Sql("Add primary key");
 			sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ADD PRIMARY KEY (gid)";
 			sql.push(sqlStmt);
@@ -466,7 +474,8 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 			var sqlStmt=new Sql("Add unique key");
 			sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ADD CONSTRAINT " + csvFiles[i].tableName + "_uk UNIQUE(areaid)";
 			sql.push(sqlStmt);
-			
+
+			sql.push(new Sql("Add geometric  data"));			
 			if (dbType == "PostGres") {				
 				var sqlStmt=new Sql("Add geometry column: geographic centroid");
 				sqlStmt.sql="SELECT AddGeometryColumn('" + csvFiles[i].tableName + "','geographic_centroid', 4326, 'POINT', 2, false)"; 
@@ -477,7 +486,7 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 	"   SET geographic_centroid = ST_GeomFromText(geographic_centroid_wkt, 4326)";
 				sql.push(sqlStmt);
 	
-				for (var k=response.fields["min_zoomlevel"]; k < response.fields["max_zoomlevel"]; k++) {
+				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
 					var sqlStmt=new Sql("Add geometry column for zoomlevel: " + k);
 					sqlStmt.sql="SELECT AddGeometryColumn('" + csvFiles[i].tableName + "','geom_" + k + 
 						"', 4326, 'MULTIPOLYGON', 2, false)";
@@ -490,21 +499,38 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 				
 				var sqlStmt=new Sql("Update geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID");
 				sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n   SET ";
-				for (var k=response.fields["min_zoomlevel"]; k < response.fields["max_zoomlevel"]; k++) {
+				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
 					sqlStmt.sql+="" +
 	"\tgeom_" + k + " = \n" +
-	"\t\tCASE ST_IsCollection(ST_GeomFromText(wkt_" + k + ", 4326))\n" +
+	"\t\tCASE ST_IsCollection(ST_GeomFromText(wkt_" + k + ", 4326)) /* Convert to Multipolygon */\n" +
 	"\t\t\tWHEN true THEN 	ST_GeomFromText(wkt_" + k + ", 4326)\n" +
 	"\t\t\tELSE 			ST_Multi(ST_GeomFromText(wkt_" + k + ", 4326))\n" +
 	"\t\tEND,\n";
 				}
 				sqlStmt.sql+="" +
 	"\tgeom_orig = ST_Transform(\n" +
-	"\t\tCASE ST_IsCollection(ST_GeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326))\n" +
+	"\t\tCASE ST_IsCollection(ST_GeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326)) /* Convert to Multipolygon */\n" +
 	"\t\t\tWHEN true THEN 	ST_GeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326)\n" +
 	"\t\t\tELSE 			ST_Multi(ST_GeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326))\n" +
 	"\t\tEND, " + response.fields["srid"] + ")";
 				sql.push(sqlStmt);
+				
+				var sqlStmt=new Sql("Make geometry columns valid");
+				sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n   SET ";
+				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+					sqlStmt.sql+="" +		
+	"\tgeom_" + k + " = CASE ST_IsValid(geom_" + k + ")\n" + 
+"			WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_" + k + "), 3 /* Remove non polygons */)\n" +
+"			ELSE geom_" + k + "\n" +
+"		END,\n";	
+				}
+				sqlStmt.sql+="" +
+	"\tgeom_orig = CASE ST_IsValid(geom_orig)\n" +
+"			WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_orig), 3 /* Remove non polygons */)\n" +
+"			ELSE geom_orig\n" +
+"		END";	
+				sql.push(sqlStmt);
+						
 			}
 			else if (dbType == "MSSQLServer") {					
 				var sqlStmt=new Sql("Add geometry column: geographic centroid");
@@ -516,7 +542,7 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 	"   SET geographic_centroid = geography::STGeomFromText(geographic_centroid_wkt, 4326)";
 				sql.push(sqlStmt);	
 				
-				for (var k=response.fields["min_zoomlevel"]; k < response.fields["max_zoomlevel"]; k++) {
+				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
 					var sqlStmt=new Sql("Add geometry column for zoomlevel: " + k);
 					sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ADD geom_" + k + " geography"; 
 					sql.push(sqlStmt);
@@ -528,18 +554,48 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 				
 				var sqlStmt=new Sql("Update geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID");
 				sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n   SET ";
-				for (var k=response.fields["min_zoomlevel"]; k < response.fields["max_zoomlevel"]; k++) {
-					sqlStmt.sql+="\tgeom_" + k + " = geography::STGeomFromText(wkt_" + k + ", 4326),\n";
+				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+					sqlStmt.sql+="\tgeom_" + k + " = geography::STGeomFromText(wkt_" + k + ", 4326).MakeValid(),\n";
 				}	
 
 // Needs codeplex SQL Server Spatial Tools:  http://sqlspatialtools.codeplex.com/wikipage?title=Current%20Contents&referringTitle=Home				
 				sqlStmt.sql+="" +
-	"\tgeom_orig = /* geography::STTransform(geography::STGeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326), " + 
+	"\tgeom_orig = /* geography::STTransform(geography::STGeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326).MakeValid(), " + 
 					response.fields["srid"] + ") NOT POSSIBLE */ NULL"; 
 				sql.push(sqlStmt);
 			}
 
-			for (var k=response.fields["min_zoomlevel"]; k < response.fields["max_zoomlevel"]; k++) {
+			sql.push(new Sql("Test geometry and make valid if required"));
+			
+			var sqlStmt=new Sql("Check validity of geometry columns");
+			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+				var sqlFrag;
+				if (dbType == "PostGres") {		
+					sqlFrag="SELECT areaname,\n" +
+"       " + k + " AS geolevel,\n" +					
+"       ST_IsValidReason(geom_" + k + ") AS reason\n" +
+"  FROM " + csvFiles[i].tableName + "\n" +
+" WHERE NOT ST_IsValid(geom_" + k + ")\n";
+				}
+				else if (dbType == "MSSQLServer") {		
+					sqlFrag="SELECT areaname,\n" +
+"       " + k + " AS geolevel,\n" +					
+"       geom_" + k + ".IsValidDetailed() AS reason\n" +
+"  FROM " + csvFiles[i].tableName + "\n" +
+" WHERE geom_" + k + ".STIsValid() = 0\n";
+				}
+				if (sqlStmt.sql) {
+					sqlStmt.sql+="UNION\n" + sqlFrag;
+				}
+				else {	
+					sqlStmt.sql=sqlFrag;
+				}
+			}		
+			sqlStmt.sql+=" ORDER BY 1, 2";
+			sql.push(sqlStmt);		
+	
+			sql.push(new Sql("Create spatial indexes"));
+			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
 				var sqlStmt=new Sql("Index geometry column for zoomlevel: " + k);
 				if (dbType == "PostGres") {		
 					sqlStmt.sql="CREATE INDEX " + csvFiles[i].tableName + "_geom_" + k + "_gix ON " + csvFiles[i].tableName + 
@@ -563,7 +619,46 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 					" (geom_orig)");
 				sql.push(sqlStmt);
 			}
-		} // Enf of for csvFiles loop
+
+			sql.push(new Sql("Reports"));			
+			if (dbType == "PostGres") {		
+				var sqlStmt=new Sql("Areas and centroids", "WITH a AS (\n" +
+"	SELECT areaname,\n" +
+"		   ROUND(area_km2::numeric, 2) AS area_km2,\n" +
+"		   ROUND(\n" +
+"				(ST_Area(geography(geom_" + response.fields["max_zoomlevel"] + "))/(1000*1000))::numeric, 2) AS area_km2_calc,\n" +
+"		   ROUND(ST_X(geographic_centroid)::numeric, 4)||','||ROUND(ST_Y(geographic_centroid)::numeric, 4) AS geographic_centroid,\n" +
+"		   ROUND(ST_X(ST_Centroid(geom_" + response.fields["max_zoomlevel"] + 
+				"))::numeric, 4)||','||ROUND(ST_Y(ST_Centroid(geom_" + 
+				response.fields["max_zoomlevel"] + "))::numeric, 4) AS geographic_centroid_calc,\n" +
+"		   ROUND(ST_Distance_Sphere(ST_Centroid(geom_" + response.fields["max_zoomlevel"] + 
+				"), geographic_centroid)::numeric/1000, 2) AS centroid_diff_km\n" +
+"	  FROM " + csvFiles[i].tableName + "\n" +
+"	 GROUP BY areaname, area_km2, geom_" + response.fields["max_zoomlevel"] + ", geographic_centroid\n" +
+")\n" +
+"SELECT a.areaname,\n" + 
+"       a.area_km2,\n" + 
+"	   a.area_km2_calc,\n" + 
+"	   ROUND(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2_calc), 2) AS pct_km2_diff,\n" +
+"	   a.geographic_centroid,\n" + 
+"      a.geographic_centroid_calc,\n" +
+"	   a.centroid_diff_km\n" +
+"  FROM a\n" +
+" ORDER BY 1\n" +
+" LiMiT 100");
+				sql.push(sqlStmt);
+			}
+						
+			var sqlStmt=new Sql("Describe " + csvFiles[i].tableName);			
+			if (dbType == "PostGres") {		
+				sqlStmt.sql="\\dS+ " + csvFiles[i].tableName;
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="EXEC sp_help " + csvFiles[i].tableName;
+			}
+			sql.push(sqlStmt);
+			
+		} // End of for csvFiles loop
 		
 		var sqlStmt=new Sql("Commit transaction");
 		if (dbType == "PostGres") {		
@@ -573,9 +668,24 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 			sqlStmt.sql="COMMIT";	
 		}				
 		sql.push(sqlStmt);
-			
+
+		sql.push(new Sql("Create table statistics in separate transactions"));
+		for (var i=0; i<csvFiles.length; i++) {
+			var sqlStmt=new Sql("Create table statistics for " + csvFiles[i].tableName);
+			if (dbType == "PostGres") {		
+				sqlStmt.sql="VACUUM ANALYZE " + csvFiles[i].tableName;
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="UPDATE STATISTICS " + csvFiles[i].tableName;		
+			}
+			sql.push(sqlStmt);
+		} // End of for csvFiles loop
+		
 		for (var i=0; i<sql.length; i++) {
-			if (dbType == "PostGres") {				
+			if (sql[i].sql == undefined) { // Comment			
+				dbStream.write("\n--\n-- " + sql[i].comment + "\n--\n");
+			}
+			else if (dbType == "PostGres") {				
 				dbStream.write("\n-- SQL statement " + i + ": " + sql[i].comment + " >>>\n" + sql[i].sql + ";\n");
 			}
 			else if (dbType == "MSSQLServer") {				
