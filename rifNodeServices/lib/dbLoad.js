@@ -568,8 +568,9 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 			sql.push(new Sql("Test geometry and make valid if required"));
 			
 			var sqlStmt=new Sql("Check validity of geometry columns");
+			var selectFrag=undefined;
 			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
-				var sqlFrag;
+				var sqlFrag=undefined;
 				if (dbType == "PostGres") {		
 					sqlFrag="SELECT areaname,\n" +
 "       " + k + " AS geolevel,\n" +					
@@ -584,16 +585,35 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 "  FROM " + csvFiles[i].tableName + "\n" +
 " WHERE geom_" + k + ".STIsValid() = 0\n";
 				}
-				if (sqlStmt.sql) {
-					sqlStmt.sql+="UNION\n" + sqlFrag;
+				if (selectFrag) {
+					selectFrag+="UNION\n" + sqlFrag;
 				}
 				else {	
-					sqlStmt.sql=sqlFrag;
+					selectFrag=sqlFrag;
 				}
 			}		
-			sqlStmt.sql+=" ORDER BY 1, 2";
+			selectFrag+=" ORDER BY 1, 2\n";
+			sqlStmt.sql="DECLARE c1 CURSOR FOR\n" + selectFrag +
+"DECLARE @areaname AS VARCHAR(30);\n" +
+"DECLARE @geolevel AS int;\n" +
+"DECLARE @reason AS VARCHAR(90);\n" +
+"OPEN c1;\n" +
+"FETCH NEXT FROM c1 INTO @areaname, @geolevel, @reason;\n" +
+"WHILE @@FETCH_STATUS = 0\n" +
+"BEGIN\n" +
+"	   PRINT 'Area: ' + @areaname + ', geolevel: ' + CAST(@geolevel AS VARCHAR) + ': ' +RTRIM(@reason);\n" +
+"       FETCH NEXT FROM c1 INTO @areaname, @geolevel, @reason;\n" +   
+"END\n" +
+"IF @@CURSOR_ROWS = 0\n" +
+"	PRINT 'Table: cb_2014_us_county_500k no invalid geometry check OK';\n" +
+"ELSE\n" +
+"	RAISERROR('Table: cb_2014_us_county_500k no invalid geometry check FAILED: %i invalid', 16, 1, @@CURSOR_ROWS);\n" +
+"CLOSE c1;\n" +
+"DEALLOCATE c1";			
 			sql.push(sqlStmt);		
-	
+
+			sql.push(new Sql("Make all polygons right handed"));
+			
 			sql.push(new Sql("Create spatial indexes"));
 			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
 				var sqlStmt=new Sql("Index geometry column for zoomlevel: " + k);
