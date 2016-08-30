@@ -153,7 +153,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 "-- Connect flags if required: -U <username>/-E -S<myServer\instanceName>\n" +
 "--\n" +			
 "-- You must set the current schema if you cannot write to the default schema!\n" +			
-"--You need create privilege for the various object and the bulkadmin role\n" +					
+"-- You need create privilege for the various object and the bulkadmin role\n" +					
 "--\n" +			
 "-- USE <my database>;\n" +			
 "--\n" +		
@@ -714,7 +714,7 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 "	)\n" +
 "	SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff\n" +
 "	  FROM b\n" +
-"	 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */;\n" +
+"	 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */\n" +
 "	   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */;\n" +
 "\n" +
 "	c1_rec RECORD;\n" +
@@ -804,9 +804,10 @@ sqlStmt.sql="DECLARE c1 CURSOR FOR\n" +
 				sql.push(sqlStmt);
 			}
 
-			sql.push(new Sql("Reports"));			
-			if (dbType == "PostGres") {		
-				var sqlStmt=new Sql("Areas and centroids", "WITH a AS (\n" +
+			sql.push(new Sql("Reports"));	
+			var sqlStmt=new Sql("Areas and centroids");			
+			if (dbType == "PostGres") {
+				sqlStmt.sql="WITH a AS (\n" +
 "	SELECT areaname,\n" +
 "		   ROUND(area_km2::numeric, 2) AS area_km2,\n" +
 "		   ROUND(\n" +
@@ -829,9 +830,39 @@ sqlStmt.sql="DECLARE c1 CURSOR FOR\n" +
 "	   a.centroid_diff_km\n" +
 "  FROM a\n" +
 " ORDER BY 1\n" +
-" LiMiT 100");
-				sql.push(sqlStmt);
+" LIMIT 100";
 			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="WITH a AS (\n" +
+"	SELECT areaname, geom_" + response.fields["max_zoomlevel"] + ",\n" +
+"		   CAST(area_km2 AS NUMERIC(15,2)) AS area_km2,\n" +
+"		   CAST((geom_" + response.fields["max_zoomlevel"] + ".STArea()/(1000*1000)) AS NUMERIC(15,2)) AS area_km2_calc,\n" +	  
+"		   CONCAT(\n" +
+"				CAST(CAST(geographic_centroid.Long AS NUMERIC(15,7)) AS VARCHAR(30)),\n" +
+"				',',\n" +
+"				CAST(CAST(geographic_centroid.Lat AS NUMERIC(15,7)) AS VARCHAR(30))\n" +
+"				) AS geographic_centroid,\n" +
+"		   CONCAT(\n" +
+"				CAST(CAST(geom_" + response.fields["max_zoomlevel"] + ".EnvelopeCenter().Long AS NUMERIC(15,7)) AS VARCHAR(30)),\n" +
+"				',',\n" +
+"				CAST(CAST(geom_" + response.fields["max_zoomlevel"] + ".EnvelopeCenter().Lat AS NUMERIC(15,7)) AS VARCHAR(30))\n" +
+"				) AS geographic_centroid_calc,\n" +
+"		   CAST((geom_" + response.fields["max_zoomlevel"] + ".EnvelopeCenter().STDistance(geographic_centroid))/1000 AS VARCHAR(30)) AS centroid_diff_km,\n" +		
+"		   ROW_NUMBER() OVER (ORDER BY areaname) as nrow\n" +
+"	  FROM " + csvFiles[i].tableName + "\n" +
+")\n" +
+"SELECT SUBSTRING(a.areaname, 1, 30) AS areaname,\n" +
+"       a.area_km2,\n" +
+"	   a.area_km2_calc,\n" +
+"	   CAST(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2) AS NUMERIC(15,2)) AS pct_km2_diff,\n" +
+"	   a.geographic_centroid,\n" +
+"       a.geographic_centroid_calc,\n" +
+"	   a.centroid_diff_km\n" +
+"  FROM a\n" +
+" WHERE nrow <= 100\n" +
+" ORDER BY 1"; 
+			}
+			sql.push(sqlStmt);
 						
 			var sqlStmt=new Sql("Describe " + csvFiles[i].tableName);			
 			if (dbType == "PostGres") {		
