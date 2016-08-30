@@ -142,6 +142,9 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 "-- Connect flags if required: -U <username> -d <Postgres database name> -h <host> -p <port>\n" +
 "--\n" +	
 "\\pset pager off\n" +
+"\\set ECHO all\n" +
+"\\set ON_ERROR_STOP ON\n" +
+"\\timing\n" +
 "\n");
 			}
 			else if (dbType == "MSSQLServer") {	
@@ -573,7 +576,7 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 				var sqlFrag=undefined;
 				if (dbType == "PostGres") {		
 					sqlFrag="SELECT areaname,\n" +
-"       " + k + " AS geolevel,\n" +					
+"       " + k + "::Text AS geolevel,\n" +					
 "       ST_IsValidReason(geom_" + k + ") AS reason\n" +
 "  FROM " + csvFiles[i].tableName + "\n" +
 " WHERE NOT ST_IsValid(geom_" + k + ")\n";
@@ -592,7 +595,18 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 					selectFrag=sqlFrag;
 				}
 			}		
-			selectFrag+=" ORDER BY 1, 2;\n";
+			if (dbType == "PostGres") {		
+				selectFrag+="UNION\n" +
+"SELECT areaname,\n" +
+"       'geom_orig'::Text AS geolevel,\n" +					
+"       ST_IsValidReason(geom_orig) AS reason\n" +
+"  FROM " + csvFiles[i].tableName + "\n" +
+" WHERE NOT ST_IsValid(geom_orig)\n" +			
+" ORDER BY 1, 2;\n";
+			}
+			else if (dbType == "MSSQLServer") {			
+				selectFrag+="ORDER BY 1, 2;\n";
+			}
 			
 			if (dbType == "PostGres") {
 				sqlStmt.sql="DO LANGUAGE plpgsql $$\n" + 
@@ -603,12 +617,12 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 "BEGIN\n" +  
 "	FOR c1_rec IN c1 LOOP\n" + 
 "		total:=total+1;\n" +
-"		RAISE INFO 'Area: '||c1_rec.areaname||', geolevel: '||c1{_rec.geolevel||': '||c1_rec.reason;\n" + 
+"		RAISE INFO 'Area: %, geolevel: %: %', c1_rec.areaname, c1_rec.geolevel, c1_rec.reason;\n" + 
 "	END LOOP;\n" + 
-"	IF total = " + csvFiles[i].rows.length + " THEN\n" + 
+"	IF total = 0 THEN\n" + 
 "		RAISE INFO 'Table: " + csvFiles[i].tableName + " no invalid geometry check OK';\n" + 
 "	ELSE\n" + 
-"		RAISE EXCEPTION 'Table: " + csvFiles[i].tableName + " no invalid geometry check FAILED: % invalid', total);\n" + 
+"		RAISE EXCEPTION 'Table: " + csvFiles[i].tableName + " no invalid geometry check FAILED: % invalid', total;\n" + 
 "	END IF;\n" + 
 "END;\n" +
 "$$";
@@ -634,7 +648,50 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 			}		
 			sql.push(sqlStmt);		
 
+//
+// In SQL server, all polygons must have right hand orientation or bad things happen - like the area ~ one hemisphere
+// as used to detect the problem
+//
 			sql.push(new Sql("Make all polygons right handed"));
+			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+				var sqlStmt=new Sql("Make all polygons right handed for zoomlevel: " + k);
+				if (dbType == "MSSQLServer") {		
+					sqlStmt.sql="WITH a AS (\n" +
+"	SELECT gid, geom_" + k + ",\n" +
+"		   CAST(area_km2 AS NUMERIC(21,6)) AS area_km2,\n" +
+"		   CAST((geom_" + k + ".STArea()/(1000*1000)) AS NUMERIC(21,6)) AS area_km2_calc\n" +
+"	  FROM " + csvFiles[i].tableName + "\n" +
+"), b AS (\n" +
+"	SELECT a.gid,\n" + 
+"	       a.geom_" + k + ",\n" +
+"          a.area_km2,\n" +
+"	       a.area_km2_calc,\n" +
+"          CASE WHEN a.area_km2 > 0 THEN CAST(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2) AS NUMERIC(21,6))\n" +
+"				WHEN a.area_km2 = a.area_km2_calc THEN 0\n" +
+"	        	ELSE NULL\n" +
+"	   	   END AS pct_km2_diff \n" +
+"  FROM a\n" +
+")\n" +
+"UPDATE " + csvFiles[i].tableName + "\n" +
+"   SET geom_" + k + " = c.geom_" + k + ".ReorientObject()\n" +
+"  FROM " + csvFiles[i].tableName + " c\n" +
+" JOIN b ON b.gid = c.gid\n" +
+" WHERE b.pct_km2_diff > 200 /* Threshold test */";
+				}
+				else if (dbType == "PostGres") {	
+					sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n" +
+"   SET geom_" + k + " = ST_ForceRHR(geom_" + k + ")";
+				}
+				sql.push(sqlStmt);
+			}
+			if (dbType == "PostGres") { // No geom_orig in SQL Server
+				var sqlStmt=new Sql("Make all polygons right handed for original geometry", 
+"UPDATE " + csvFiles[i].tableName + "\n" +
+"   SET geom_orig = ST_ForceRHR(geom_orig)");
+				sql.push(sqlStmt);
+			}
+			
+			sql.push(new Sql("Test Turf and DB areas agree to within 1%"));
 			
 			sql.push(new Sql("Create spatial indexes"));
 			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
