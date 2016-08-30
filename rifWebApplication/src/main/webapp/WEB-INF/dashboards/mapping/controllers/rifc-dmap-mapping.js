@@ -18,11 +18,30 @@ angular.module("RIF")
         .controller('DiseaseMappingCtrl', ['$scope', 'leafletData', 'LeafletBaseMapService', '$timeout', 'MappingStateService', 'D3RRService', 'user',
             function ($scope, leafletData, LeafletBaseMapService, $timeout, MappingStateService, D3RRService, user) {
 
+                $scope.rrCurrentWidth = d3.select("#rr").node().getBoundingClientRect().width;
+                $scope.rrCurrentHeight = d3.select("#rr").node().getBoundingClientRect().height;
+
                 $scope.$on('ui.layout.resize', function (e) {
 
+                    //Stop svg flicker as event fires even when bbox not resized
+                    if ($scope.rrCurrentWidth === d3.select("#rr").node().getBoundingClientRect().width &
+                            $scope.rrCurrentHeight === d3.select("#rr").node().getBoundingClientRect().height) {
+                        return;
+                    }
+
+                    //Rescale D3 graphs
                     D3RRService.getPlot(d3.select("#rr").node().getBoundingClientRect().width,
                             d3.select("#rr").node().getBoundingClientRect().height, "SOME DATA", '#rr');
 
+                    $scope.rrCurrentWidth = d3.select("#rr").node().getBoundingClientRect().width;
+                    $scope.rrCurrentHeight = d3.select("#rr").node().getBoundingClientRect().height;
+
+                    //Rescale leaflet container        
+                    leafletData.getMap("diseasemap").then(function (map) {
+                        setTimeout(function () {
+                            map.invalidateSize();
+                        }, 50);
+                    });
                 });
 
                 $scope.transparency = 0.7;
@@ -40,12 +59,12 @@ angular.module("RIF")
                             map.addLayer($scope.parent.thisLayer);
                         }
                         /*
-                        //restore setView
-                        if (maxbounds && ViewerStateService.getState().zoomLevel === -1) {
-                            map.fitBounds(maxbounds);
-                        } else {
-                            map.setView(ViewerStateService.getState().view, ViewerStateService.getState().zoomLevel);
-                        }*/
+                         //restore setView
+                         if (maxbounds && ViewerStateService.getState().zoomLevel === -1) {
+                         map.fitBounds(maxbounds);
+                         } else {
+                         map.setView(ViewerStateService.getState().view, ViewerStateService.getState().zoomLevel);
+                         }*/
                         //hack to refresh map
                         setTimeout(function () {
                             map.invalidateSize();
@@ -97,7 +116,7 @@ angular.module("RIF")
                     });
                 };
 
-                user.getTiles().then(handleTopoJSON, handleTopoJSON);
+                user.getTiles(user.currentUser, "SAHSU", "LEVEL4").then(handleTopoJSON, handleTopoJSON);
 
                 function handleTopoJSON(res) {
                     leafletData.getMap("diseasemap").then(function (map) {
@@ -123,8 +142,6 @@ angular.module("RIF")
                         $scope.topoLayer.addTo(map);
                         maxbounds = $scope.topoLayer.getBounds();
                     });
-
-
                 }
 
 

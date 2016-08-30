@@ -7,14 +7,14 @@
  * captured clicks do not lead directly to an update of the map or table rather
  * 'selectedPolygon' is monitored using a $watchCollection which renders the selections on changes
  * 
- * TODO: restrict scope
- * TODO: refactor selectpolygon
  */
 
 /* global L, d3, key, topojson */
 angular.module("RIF")
-        .directive('submissionMapTable', ['leafletData', 'leafletMapEvents', 'ModalAreaService', 'LeafletDrawService', 'GISService', 'LeafletBaseMapService', '$timeout',
-            function (leafletData, leafletMapEvents, ModalAreaService, LeafletDrawService, GISService, LeafletBaseMapService, $timeout) {
+        .directive('submissionMapTable', ['leafletData', 'ModalAreaService', 'LeafletDrawService',
+            'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService',
+            function (leafletData, ModalAreaService, LeafletDrawService,
+                    GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
@@ -24,14 +24,23 @@ angular.module("RIF")
                         $timeout(function () {
                             $scope.parent.renderMap("area");
                         });
-
                         //map max bounds from topojson layer
                         var maxbounds;
-                        //selectedPolygon array synchronises the map <-> table selections                        
+
+                        //If geog changed then clear selected
+                        var thisGeography = SubmissionStateService.getState().geography;
+                        if (thisGeography !== $scope.input.geography) {
+                            $scope.input.selectedPolygon.length = 0;
+                            $scope.input.selectAt = "";
+                            $scope.input.studyResolution = "";
+                            $scope.input.geography = thisGeography;
+                        }
+
+                        //selectedPolygon array synchronises the map <-> table selections  
                         $scope.selectedPolygon = $scope.input.selectedPolygon;
 
                         //total for display
-                        $scope.selectedPolygonCount = 0;
+                        $scope.selectedPolygonCount = $scope.selectedPolygon.length;
 
                         //band colour look-up for selected districts
                         $scope.possibleBands = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -40,6 +49,163 @@ angular.module("RIF")
                         //d3 polygon rendering, changed by slider
                         $scope.transparency = 0.7;
 
+                        getMyMap = function () {
+                            user.getTiles(user.currentUser, thisGeography, $scope.input.selectAt).then(function (topo) {
+
+                                //populate the table
+                                for (var i = 0; i < topo.data.objects['2_1_1'].geometries.length; i++) {
+                                    var thisPoly = topo.data.objects['2_1_1'].geometries[i].properties.area_id;
+                                    var bFound = false;
+                                    for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+                                        if ($scope.selectedPolygon[j].id === thisPoly) {
+                                            topo.data.objects['2_1_1'].geometries[i].properties.band = $scope.selectedPolygon[j].band;
+                                            bFound = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!bFound) {
+                                        topo.data.objects['2_1_1'].geometries[i].properties.band = 0;
+                                    }
+                                }
+                                $scope.gridOptions.data = ModalAreaService.fillTable(topo.data);
+
+                                //draw the map
+                                leafletData.getMap("area").then(function (map) {
+                                    latlngList = [];
+                                    centroidMarkers = new L.layerGroup();
+
+                                    if (map.hasLayer($scope.topoLayer)) {
+                                        map.removeLayer($scope.topoLayer);
+                                    }
+
+                                    $scope.topoLayer = new L.TopoJSON(topo.data, {
+                                        style: style,
+                                        onEachFeature: function (feature, layer) {
+                                            //define polygon centroids
+                                            var p = layer.getBounds().getCenter();
+                                            latlngList.push([L.latLng([p.lat, p.lng]), feature.properties.name, feature.properties.area_id]);
+
+                                            //get as optional marker layer
+                                            var circle = new L.CircleMarker([p.lat, p.lng], {
+                                                radius: 2,
+                                                fillColor: "red",
+                                                color: "#000",
+                                                weight: 1,
+                                                opacity: 1,
+                                                fillOpacity: 0.8
+                                            });
+                                            centroidMarkers.addLayer(circle);
+
+                                            layer.on('mouseover', function (e) {
+                                                //if drawing then return
+                                                if ($scope.input.bDrawing) {
+                                                    return;
+                                                }
+                                                this.setStyle({
+                                                    color: 'gray',
+                                                    dashArray: 'none',
+                                                    weight: 1.5,
+                                                    fillOpacity: function () {
+                                                        //set tranparency from slider
+                                                        return($scope.transparency - 0.3 > 0 ? $scope.transparency - 0.3 : 0.1);
+                                                    }()
+                                                });
+                                                $scope.thisPolygon = feature.properties.name;
+                                            });
+                                            layer.on('mouseout', function (e) {
+                                                $scope.topoLayer.resetStyle(e.target);
+                                                $scope.thisPolygon = "";
+                                            });
+                                            layer.on('click', function (e) {
+                                                //if drawing then return
+                                                if ($scope.input.bDrawing) {
+                                                    return;
+                                                }
+                                                var thisPoly = e.target.feature.properties.area_id;
+                                                var bFound = false;
+                                                for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+                                                    if ($scope.selectedPolygon[i].id === thisPoly) {
+                                                        bFound = true;
+                                                        $scope.selectedPolygon.splice(i, 1);
+                                                        break;
+                                                    }
+                                                }
+                                                if (!bFound) {
+                                                    $scope.selectedPolygon.push({id: feature.properties.area_id, gid: feature.properties.gid, label: feature.properties.name, band: $scope.currentBand});
+                                                }
+                                            });
+                                        }
+                                    });
+                                    $scope.topoLayer.addTo(map);
+                                    maxbounds = $scope.topoLayer.getBounds();
+                                    $scope.totalPolygonCount = latlngList.length;
+
+                                    //Store the current zoom and view on map changes
+                                    map.on('zoomend', function (e) {
+                                        $scope.input.zoomLevel = map.getZoom();
+                                    });
+                                    map.on('moveend', function (e) {
+                                        $scope.input.view = map.getCenter();
+                                    });
+                                    if ($scope.input.zoomLevel === -1) {
+                                        map.fitBounds(maxbounds);
+                                    }
+                                });
+                            }, handleGeographyError);
+                        };
+
+                        /*
+                         * GET THE SELECT AND VIEW RESOLUTIONS
+                         */
+                        $scope.geoLevels = [];
+                        $scope.geoLevelsViews = [];
+
+                        user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
+
+                        $scope.geoLevelChange = function () {
+                            $scope.selectedPolygon.length = 0;
+                            user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
+                        };
+
+                        function handleGeoLevelSelect(res) {
+                            $scope.geoLevels.length = 0;
+                            for (var i = 0; i < res.data[0].names.length; i++) {
+                                $scope.geoLevels.push(res.data[0].names[i]);
+                            }
+                            //Only get default if pristine
+                            if ($scope.input.selectAt === "" & $scope.input.studyResolution === "") {
+                                user.getDefaultGeoLevelSelectValue(user.currentUser, thisGeography).then(handleDefaultGeoLevels, handleGeographyError);
+                            } else {
+                                user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
+                            }
+                        }
+                        function handleDefaultGeoLevels(res) {
+                            //get the select levels
+                            $scope.input.selectAt = res.data[0].names[0];
+                            $scope.input.studyResolution = res.data[0].names[0];
+                            $scope.geoLevelChange();
+                        }
+                        function handleGeoLevelViews(res) {
+                            $scope.geoLevelsViews.length = 0;
+                            for (var i = 0; i < res.data[0].names.length; i++) {
+                                $scope.geoLevelsViews.push(res.data[0].names[i]);
+                            }
+                            //if not in list then match (because result res cannot be lower than select res)
+                            if ($scope.geoLevelsViews.indexOf($scope.input.studyResolution) === -1) {
+                                $scope.input.studyResolution = $scope.input.selectAt;
+                            }
+                            //get table
+                            getMyMap();
+                        }
+
+                        function handleGeographyError() {
+                            //close the modal                           
+                            $scope.$parent.close();
+                        }
+
+                        /*
+                         * MAP SETUP
+                         */
                         //district centres for rubberband selection
                         var latlngList = 0;
                         var centroidMarkers = new L.layerGroup();
@@ -63,7 +229,7 @@ angular.module("RIF")
                                     map.addLayer($scope.parent.thisLayer);
                                 }
                                 //restore setView
-                                map.setView($scope.$parent.input.view, $scope.$parent.input.zoomLevel);
+                                map.setView($scope.input.view, $scope.input.zoomLevel);
                                 //hack to refresh map
                                 setTimeout(function () {
                                     map.invalidateSize();
@@ -119,7 +285,7 @@ angular.module("RIF")
 
                         //selection event fired from service
                         $scope.$on('makeDrawSelection', function (event, data) {
-                                makeDrawSelection(data);
+                            makeDrawSelection(data);
                         });
                         function makeDrawSelection(shape) {
                             latlngList.forEach(function (point) {
@@ -169,7 +335,7 @@ angular.module("RIF")
 
                         function renderFeature(feature) {
                             for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                if ($scope.selectedPolygon[i].label === feature) {
+                                if ($scope.selectedPolygon[i].id === feature) {
                                     bFound = true;
                                     var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628', '#f781bf', '#999999'];
                                     return cb[$scope.selectedPolygon[i].band - 1];
@@ -181,7 +347,7 @@ angular.module("RIF")
                         //Functions to style topoJson on selection changes
                         function style(feature) {
                             return {
-                                fillColor: renderFeature(feature.properties.LAD13NM),
+                                fillColor: renderFeature(feature.properties.area_id),
                                 weight: 1,
                                 opacity: 1,
                                 color: 'gray',
@@ -191,113 +357,13 @@ angular.module("RIF")
                         }
                         function handleLayer(layer) {
                             layer.setStyle({
-                                fillColor: renderFeature(layer.feature.properties.LAD13NM),
+                                fillColor: renderFeature(layer.feature.properties.area_id),
                                 fillOpacity: $scope.transparency
                             });
                         }
                         $scope.changeOpacity = function () {
                             $scope.topoLayer.eachLayer(handleLayer);
                         };
-
-                        //Read topoJson with d3
-                        d3.json("test/eng.json", function (error, data) {
-                            //populate the table
-                            for (var i = 0; i < data.objects.lad.geometries.length; i++) {
-                                var thisPoly = data.objects.lad.geometries[i].properties.LAD13NM;
-                                var bFound = false;
-                                for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                                    if ($scope.selectedPolygon[j].label === thisPoly) {
-                                        data.objects.lad.geometries[i].properties.band = $scope.selectedPolygon[j].band;
-                                        bFound = true;
-                                        break;
-                                    }
-                                }
-                                if (!bFound) {
-                                    data.objects.lad.geometries[i].properties.band = 0;
-                                }
-                            }
-                            $scope.gridOptions.data = ModalAreaService.fillTable(data);
-
-                            $scope.refresh = false;
-                            leafletData.getMap("area").then(function (map) {
-                                latlngList = [];
-                                centroidMarkers = new L.layerGroup();
-
-                                $scope.topoLayer = new L.TopoJSON(data, {
-                                    style: style,
-                                    onEachFeature: function (feature, layer) {
-                                        //define polygon centroids
-                                        var p = layer.getBounds().getCenter();
-                                        latlngList.push([L.latLng([p.lat, p.lng]), feature.properties.LAD13NM, feature.properties.LAD13CD]);
-
-                                        //get as optional marker layer
-                                        var circle = new L.CircleMarker([p.lat, p.lng], {
-                                            radius: 2,
-                                            fillColor: "red",
-                                            color: "#000",
-                                            weight: 1,
-                                            opacity: 1,
-                                            fillOpacity: 0.8
-                                        });
-                                        centroidMarkers.addLayer(circle);
-
-                                        layer.on('mouseover', function (e) {
-                                            //if drawing then return
-                                            if ($scope.input.bDrawing) {
-                                                return;
-                                            }
-                                            this.setStyle({
-                                                color: 'gray',
-                                                dashArray: 'none',
-                                                weight: 1.5,
-                                                fillOpacity: function () {
-                                                    //set tranparency from slider
-                                                    return($scope.transparency - 0.3 > 0 ? $scope.transparency - 0.3 : 0.1);
-                                                }()
-                                            });
-                                            $scope.thisPolygon = feature.properties.LAD13NM;
-                                        });
-                                        layer.on('mouseout', function (e) {
-                                            $scope.topoLayer.resetStyle(e.target);
-                                            $scope.thisPolygon = "";
-                                        });
-                                        layer.on('click', function (e) {
-                                            //if drawing then return
-                                            if ($scope.input.bDrawing) {
-                                                return;
-                                            }
-                                            var thisPoly = e.target.feature.properties.LAD13NM;
-                                            var bFound = false;
-                                            for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                                if ($scope.selectedPolygon[i].label === thisPoly) {
-                                                    bFound = true;
-                                                    $scope.selectedPolygon.splice(i, 1);
-                                                    break;
-                                                }
-                                            }
-                                            if (!bFound) {
-                                                $scope.selectedPolygon.push({id: feature.properties.LAD13CD, gid: feature.properties.LAD13CD, label: feature.properties.LAD13NM, band: $scope.currentBand});
-                                            }
-                                        });
-                                    }
-                                });
-                                $scope.topoLayer.addTo(map);
-                                maxbounds = $scope.topoLayer.getBounds();
-                                $scope.totalPolygonCount = latlngList.length;
-                                if ($scope.$parent.input.zoomLevel === -1) {
-                                    map.fitBounds(maxbounds);
-                                    //Store the current zoom and view on map changes
-                                    map.on('zoomend', function (e) {
-                                        $scope.$parent.input.zoomLevel = map.getZoom();
-                                    });
-                                    map.on('moveend', function (e) {
-                                        $scope.$parent.input.view = map.getCenter();
-                                    });
-                                    $scope.$parent.input.zoomLevel = map.getZoom();
-                                    $scope.$parent.input.view = map.getCenter();
-                                }
-                            });
-                        });
 
                         //Multiple select with shift
                         //detect shift key (16) down
@@ -322,7 +388,7 @@ angular.module("RIF")
                         //Table click event to update selectedPolygon 
                         $scope.rowClick = function (row) {
                             //We are doing a single click select on the table
-                            //TODO: REFACTOR
+                            //TODO: REFACTOR - NEEDS ALSO FIXING
                             var thisPoly = row.entity.label;
                             var thisPolyID = row.entity.id;
                             var bFound = false;
@@ -416,10 +482,6 @@ angular.module("RIF")
                             if (newNames === oldNames) {
                                 return;
                             }
-                            //Update the area counter
-                            $scope.selectedPolygonCount = newNames.length;
-                            //Update map selection
-                            $scope.topoLayer.eachLayer(handleLayer);
                             //Update table selection
                             $scope.gridApi.selection.clearSelectedRows();
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
@@ -429,6 +491,14 @@ angular.module("RIF")
                                         $scope.gridOptions.data[i].band = $scope.selectedPolygon[j].band;
                                     }
                                 }
+                            }
+                            //Update the area counter
+                            $scope.selectedPolygonCount = newNames.length;
+                            if (!$scope.topoLayer) {
+                                return;
+                            } else {
+                                //Update map selection
+                                $scope.topoLayer.eachLayer(handleLayer);
                             }
                         });
                     }

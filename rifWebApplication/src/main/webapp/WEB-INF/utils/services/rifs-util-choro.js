@@ -10,7 +10,8 @@ angular.module("RIF")
                     intervals: 1,
                     feature: "",
                     invert: false,
-                    method: "quantile"
+                    method: "quantile",
+                    renderer: []
                 };
                 function renderFeature(feature, scale, attr) {
                     //selected
@@ -50,11 +51,10 @@ angular.module("RIF")
                                     .domain([mn, mx])
                                     .range(range);
                             var breaks = [];
-                            var dom = scale.domain();
-                            var l = (dom[1] - dom[0]) / scale.range().length;
-                            var breaks = d3.range(0, scale.range().length).map(function (i) {
-                                return i * l;
-                            });
+                            var l = (mx - mn) / scale.range().length;
+                            for (var i = 0; i < range.length; i++) {
+                                breaks.push(mn + (i * l));
+                            }
                             breaks.shift();
                             break;
                         case "jenks":

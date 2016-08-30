@@ -10,7 +10,7 @@ angular.module("RIF")
                     var s = {
                         rows: new Array()
                     };
-                    var defaults = JSON.parse(JSON.stringify(s));
+                    var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
 
                     return {
                         setActiveHealthTheme: function (s) {
@@ -35,7 +35,7 @@ angular.module("RIF")
                             return s;
                         },
                         resetState: function () {
-                            s = defaults;
+                            s = angular.copy(defaults);
                         },
                         getModelInvestigation: function () {
                             if (s.rows.length !== 0) {

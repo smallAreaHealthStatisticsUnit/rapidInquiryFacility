@@ -2,9 +2,36 @@
  * 
  */
 angular.module("RIF")
-        .controller('SumbmissionCtrl', ['$scope', 'SubmissionStateService', 'user',
-            function ($scope, SubmissionStateService, user) {
+        .controller('SumbmissionCtrl', ['$scope', 'user', '$state',
+            'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService', 'StatsStateService',
+            function ($scope, user, $state,
+                    SubmissionStateService, StudyAreaStateService, CompAreaStateService, ParameterStateService, StatsStateService) {
 
+                //Initialise the Taxonomy service
+                user.initialiseService().then(handleInitialise, handleInitialise);
+                function handleInitialise(res) {
+                    //console.log("taxonomy initialised: " + res.data);
+                }
+
+                //called from reset button.
+                $scope.resetToDefaults = function () {
+
+                    //close the reset modal
+                    $scope.submit();
+
+                    //Reset services
+                    SubmissionStateService.resetState();
+                    StudyAreaStateService.resetState();
+                    CompAreaStateService.resetState();
+                    ParameterStateService.resetState();
+                    StatsStateService.resetState();
+
+                    //Reload submission (state1)
+                    $state.go('state1').then(function () {
+                        $state.reload();
+                    });
+                };
+       
                 //Study name
                 $scope.studyName = SubmissionStateService.getState().studyName;
                 $scope.studyNameChanged = function () {
@@ -13,24 +40,37 @@ angular.module("RIF")
 
                 //TODO: do these calls only on start-up then save in a service
 
-                //Initialise the Taxonomy service
-                user.initialiseService().then(handleInitialise, handleInitialise);
-                function handleInitialise(res) {
-    //                console.log("taxonomy initialised: " + res.data);
+                function handleError(e) {
+                    console.log(e);
                 }
 
-                //Get geographies
+                //Get geographies and health themes
                 $scope.geographies = [];
-                var geogs = {"names": ["EW01", "SAHSU", "UK91"]};
-                $scope.geographies = geogs.names;
-                $scope.geography = $scope.geographies[1];
-                SubmissionStateService.getState().geography = $scope.geography;
+                user.getGeographies(user.currentUser).then(handleGeographies, handleGeographies);
 
-                //Fill health themes drop-down
-                $scope.healthThemes = [];
-                $scope.fillHealthThemes = function () {
+                function handleGeographies(res) {
+                    $scope.geographies.length = 0;
+                    for (var i = 0; i < res.data[0].names.length; i++) {
+                        $scope.geographies.push(res.data[0].names[i]);
+                    }
+                    //TODO: default hardtyped
+                    if ($scope.geographies.indexOf("SAHSU") !== -1) {
+                        $scope.geography = "SAHSU";
+                    } else {
+                        $scope.geography = $scope.geographies[0];
+                    }
+                    SubmissionStateService.getState().geography = $scope.geography;
+                    //Fill health themes drop-down
+                    $scope.healthThemes = [];
                     user.getHealthThemes(user.currentUser, $scope.geography).then(handleHealthThemes, handleHealthThemes);
-                }();
+                }
+                $scope.geographyChange = function () {
+                    SubmissionStateService.getState().geography = $scope.geography;
+
+                    //TODO: reset trees and area states
+
+                };
+
                 function handleHealthThemes(res) {
                     $scope.healthThemes.length = 0;
                     for (var i = 0; i < res.data.length; i++) {

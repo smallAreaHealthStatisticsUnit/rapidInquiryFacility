@@ -10,30 +10,12 @@ Disease submission modal study areas (tree #1)
                 <a class="modal_close" ng-click="close()"></a>
             </div>
             <div class='modalContainer areasSelectionDialog'>
-                <div class='modalAreaSelectionMenu'>
-                    <div id='selectAtSelection' class='dropdowns availablesWrapper'>
-                        <input type="text" ng-model="input.selectAt" id='selectAt' class='dropdownInput'>
-                        <div id='selectAtAvailable' class='availables'></div>
-                    </div>
-                    <div id='resolutionSelection' class="dropdowns availablesWrapper">
-                        <input type="text" ng-model="input.studyResolution" id='resolution' class='dropdownInput'>
-                        <div id='resolutionAvailable' class='availables'></div>
-                    </div>
-                </div>                         
-                <div class='modalAreaSelectionContent'>
-                    <submission-map-table></submission-map-table>
-                </div>
+
+                <submission-map-table></submission-map-table>
+
                 <div class='done' ng-click="submit()"><a>Done</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!--
-<style>
-    .leaflet-container {
-        background-color:rgba(255,0,0,0.0);
-    }
-</style>
--->

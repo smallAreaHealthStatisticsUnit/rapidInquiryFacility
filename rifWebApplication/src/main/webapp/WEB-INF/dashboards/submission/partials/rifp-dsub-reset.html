@@ -1,0 +1,16 @@
+<!-- 
+HTML partial for ui-router
+Disease submission modal to reset study
+-->
+<div class="msettingsSmall" ng-controller="ModalResetCtrl">
+    <div class="msettings-ct">
+        <div class="msettings-header">
+            <h2>Reset study</h2>
+            <a class="modal_close" ng-click="close()"></a>
+        </div> 
+      
+        <div id="resetLabel">Are you sure?</div>   
+        <button id='okReset' class='myButton' ng-click="resetToDefaults()" ng-controller="SumbmissionCtrl">Yes</button>
+        <button id='cancelReset' class='myButton' ng-click="close()">No</button>     
+    </div>
+</div>

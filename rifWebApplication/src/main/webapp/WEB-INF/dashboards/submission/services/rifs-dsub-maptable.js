@@ -47,11 +47,11 @@ angular.module("RIF")
                         //Populate the polygon attribute table
                         fillTable: function (data) {
                             var rowCollection = [];
-                            for (var i = 0; i < data.objects.lad.geometries.length; i++) {
+                            for (var i = 0; i < data.objects['2_1_1'].geometries.length; i++) {
                                 var obj = {
-                                    id: data.objects.lad.geometries[i].properties.LAD13CD,
-                                    label: data.objects.lad.geometries[i].properties.LAD13NM,
-                                    band: data.objects.lad.geometries[i].properties.band
+                                    id: data.objects['2_1_1'].geometries[i].properties.area_id,
+                                    label: data.objects['2_1_1'].geometries[i].properties.name,
+                                    band: data.objects['2_1_1'].geometries[i].properties.band
                                 };
                                 rowCollection.push(obj);
                             }

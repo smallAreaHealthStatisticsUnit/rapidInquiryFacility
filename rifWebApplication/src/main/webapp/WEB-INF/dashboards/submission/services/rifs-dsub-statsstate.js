@@ -11,13 +11,13 @@ angular.module("RIF")
                         het_b: 10,
                         car_a: 5
                     };
-                    var defaults = JSON.parse(JSON.stringify(s));
+                    var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
                         getState: function () {
                             return s;
                         },
                         resetState: function () {
-                            s = defaults;
+                            s = angular.copy(defaults);
                         },
                         getModelStats: function () {
                             var method = {

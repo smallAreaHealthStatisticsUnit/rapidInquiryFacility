@@ -29,13 +29,15 @@ angular.module("RIF")
                                     "geolevel_select": {
                                         name: StudyAreaStateService.getState().selectAt
                                     },
+                                    "geolevel_area": {
+                                        name: "TODO: UNKNOWN VARIABLE"
+                                    },
                                     "geolevel_view": {
-                                        name: StudyAreaStateService.getState().studyResolution //TODO: why are there the same?
+                                        name: "TODO: UNKNOWN VARIABLE"
                                     },
                                     "geolevel_to_map": {
                                         name: StudyAreaStateService.getState().studyResolution
-                                    },
-                                    "geolevel_area": "TODO: UNKNOWN VARIABLE"
+                                    }
                                 },
                                 "map_areas": {
                                     "map_area": StudyAreaStateService.getState().polygonIDs //TODO: is gid needed when it is the same as id?
@@ -46,13 +48,15 @@ angular.module("RIF")
                                     "geolevel_select": {
                                         name: CompAreaStateService.getState().selectAt
                                     },
+                                    "geolevel_area": {
+                                        name: "TODO: UNKNOWN VARIABLE"
+                                    },
                                     "geolevel_view": {
-                                        name: CompAreaStateService.getState().studyResolution
+                                        name: "TODO: UNKNOWN VARIABLE"
                                     },
                                     "geolevel_to_map": {
                                         name: CompAreaStateService.getState().studyResolution
-                                    },
-                                    "geolevel_area": "TODO: UNKNOWN VARIABLE"
+                                    }
                                 },
                                 "map_areas": {
                                     "map_area": CompAreaStateService.getState().polygonIDs
@@ -106,18 +110,18 @@ angular.module("RIF")
                     }
                     for (var j = 0; j < inv[i].health_codes.health_code.length; j++) {
                         if (j === 0) {
-                            studyTable += "<tr><td>" + inv[i].title + "</td><td>" + 
+                            studyTable += "<tr><td>" + inv[i].title + "</td><td>" +
                                     inv[i].health_codes.health_code[j].code + "-" +
                                     inv[i].health_codes.health_code[j].name_space + "</td>" +
                                     "<td>" + inv[i].health_codes.health_code[j].description + "</td>" +
                                     "<td>" + inv[i].year_range.lower_bound + "-" + inv[i].year_range.upper_bound + "</td>" +
                                     "<td>" + inv[i].years_per_interval + "</td>" +
                                     "<td>" + inv[i].sex + "</td>" +
-                                    "<td> LWR: " + inv[i].age_band.lower_age_group.name + ", UPR: " +  inv[i].age_band.upper_age_group.name + "</td>" +
+                                    "<td> LWR: " + inv[i].age_band.lower_age_group.name + ", UPR: " + inv[i].age_band.upper_age_group.name + "</td>" +
                                     "<td>" + covars + "</td>" +
                                     "</tr>";
                         } else {
-                            studyTable += "<tr><td></td>" + "</td><td>" + 
+                            studyTable += "<tr><td></td>" + "</td><td>" +
                                     inv[i].health_codes.health_code[j].code + "-" +
                                     inv[i].health_codes.health_code[j].name_space + "</td>" +
                                     "<td>" + inv[i].health_codes.health_code[j].description + "</td>" +
@@ -125,7 +129,7 @@ angular.module("RIF")
                         }
                     }
                 }
-                return studyTable + "</table></br>";
+                return studyTable + "</table>";
             };
             _getAttr = function (v) {
                 return '<attr>' + v + '</attr></br>';
@@ -157,16 +161,16 @@ angular.module("RIF")
 
                     //Study area
                     project += '<header>Study Area</header>' +
-                            '<section>Geolevel Select:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.disease_mapping_study_area.geo_levels.geolevel_select.name) +
-                            '<section>Geolevel Resolution:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.disease_mapping_study_area.geo_levels.geolevel_view.name);
+                            '<section>Selection Resolution:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.disease_mapping_study_area.geo_levels.geolevel_select.name) +
+                            '<section>Resolution of Results:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.disease_mapping_study_area.geo_levels.geolevel_to_map.name);
                     if (modelJSON.rif_job_submission.disease_mapping_study.disease_mapping_study_area.map_areas.map_area.length !== 0) {
                         project += areaTable(modelJSON.rif_job_submission.disease_mapping_study.disease_mapping_study_area.map_areas.map_area);
                     }
 
                     //Comparision area
                     project += '<header>Comparison Area</header>' +
-                            '<section>Geolevel Select:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.comparison_area.geo_levels.geolevel_select.name) +
-                            '<section>Geolevel Resolution:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.comparison_area.geo_levels.geolevel_view.name);
+                            '<section>Selection Resolution:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.comparison_area.geo_levels.geolevel_select.name) +
+                            '<section>Resolution of Results:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.comparison_area.geo_levels.geolevel_to_map.name);
                     if (modelJSON.rif_job_submission.disease_mapping_study.comparison_area.map_areas.map_area.length !== 0) {
                         project += areaTable(modelJSON.rif_job_submission.disease_mapping_study.comparison_area.map_areas.map_area);
                     }
@@ -175,11 +179,11 @@ angular.module("RIF")
                     var investigations = modelJSON.rif_job_submission.disease_mapping_study.investigations.investigation;
                     project += '<header>Investigations</header>';
                     if (investigations) {
-                         project += '<section>Health Theme:</section>' + _getAttr(investigations[0].health_theme.name + " - " + investigations[0].health_theme.description) +
-                                 '<section>Numerator Table:</section>' + _getAttr(investigations[0].numerator_denominator_pair.numerator_table_name + " - " + 
-                                 investigations[0].numerator_denominator_pair.numerator_table_description) +
-                                 '<section>Denominator Table:</section>' +_getAttr(investigations[0].numerator_denominator_pair.denominator_table_name + " - " + 
-                                 investigations[0].numerator_denominator_pair.denominator_table_description);
+                        project += '<section>Health Theme:</section>' + _getAttr(investigations[0].health_theme.name + " - " + investigations[0].health_theme.description) +
+                                '<section>Numerator Table:</section>' + _getAttr(investigations[0].numerator_denominator_pair.numerator_table_name + " - " +
+                                        investigations[0].numerator_denominator_pair.numerator_table_description) +
+                                '<section>Denominator Table:</section>' + _getAttr(investigations[0].numerator_denominator_pair.denominator_table_name + " - " +
+                                        investigations[0].numerator_denominator_pair.denominator_table_description);
                     }
                     if (modelJSON.rif_job_submission.disease_mapping_study.investigations.investigation) {
                         project += investigationTable(investigations);

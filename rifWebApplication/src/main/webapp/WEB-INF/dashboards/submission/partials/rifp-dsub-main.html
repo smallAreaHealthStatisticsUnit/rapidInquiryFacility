@@ -34,7 +34,7 @@ Disease submission main 'trees' menu
         </div>
         <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
-                <select type="text" ng-model="geography" id='geography' class='dropdownSelect' ng-options="s for s in geographies">
+                <select type="text" ng-model="geography" id='geography' class='dropdownSelect' ng-options="s for s in geographies" ng-change="geographyChange()">
                 </select>
                 <div id='geographiesAvailables' class='availables'></div>
                 <div class="dropDownLabel">Geography</div>
@@ -59,7 +59,7 @@ Disease submission main 'trees' menu
 </div>
 
 <!-- Four Tree Icons-->
-<div id="content">
+<div id="content" ng-controller="SumbmissionCtrl">
 
     <!-- Study area block -->
     <div ng-switch on=tree id='studyArea' class='blocks' ng-controller="ModalStudyAreaCtrl">   
@@ -69,6 +69,7 @@ Disease submission main 'trees' menu
             Study Area
         </div>    
     </div>
+
     <!-- Comparison area block -->
     <div ng-switch on=tree id='comparisonArea' class='blocks' ng-controller="ModalComparisonAreaCtrl">      
         <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
@@ -98,8 +99,9 @@ Disease submission main 'trees' menu
 <!-- Run and Retrieve buttons-->
 <div class='positioning'>
     <div id='importExport' >
-        <div id='importExportContainer' class='buttonContainer' ng-controller="ModalRetrieveCtrl">
-            <div id='retrieve' ng-click="open()">Retrieve</div>
+        <div id='importExportContainer' class='buttonContainer'>
+            <div ng-controller="ModalRetrieveCtrl" id='retrieve' ng-click="open()">Save Study</div>
+            <div ng-controller="ModalResetCtrl" id='resetStudy' ng-click="open()">Reset</div>
         </div>
     </div>
     <div id='runnable'>

@@ -102,5 +102,14 @@ angular.module("RIF",
                 $urlRouterProvider.otherwise("/login");  //login submission
             }])
         .run(function ($rootScope, $state) {
-            $rootScope.$state = $state;           
+            $rootScope.$state = $state;
+        })
+        .run(function ($rootScope, $uibModalStack) {
+            //force modal close on state chnage
+            $rootScope.$on('$stateChangeSuccess', function (newVal, oldVal) {
+                if (oldVal !== newVal) {
+                    $uibModalStack.dismissAll();
+                }
+            });
         });
+

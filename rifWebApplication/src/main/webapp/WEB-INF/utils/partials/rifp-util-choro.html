@@ -4,43 +4,57 @@
             <h2> Choropleth map symbology </h2>
             <a class="modal_close" ng-click="close()"></a>
         </div>
-        <form>
-            <!--
-            <div class="brewerswatch-ct">
-                <span class="brewerswatch" ng-repeat="colour in selectedScheme" ng-style="{'background': colour, 'width': (360 / selectedN) + 'px'}"></span>
-            </div>
-            -->
-            <div class="txt-fld">
-                <label for="colourScale"> Colour scale:</label>
-                <select ng-style="{'text-transform': 'none'}" id='colourScale' ng-options="s for s in input.mySchemes" ng-model="input.selectedSchemeName" ng-change="renderSwatch()"></select>
-                <div class='invertWrapper'>
-                    <input type="checkbox" name="inverter" id="invertColors" ng-model="input.checkboxInvert"> 
-                    <label for = "invertColors" id="invertColorsLabel"> Invert </label>
+
+        <div id="choroWrap">
+            <div class="left">
+                <div class="txt-fld">
+                    <label for="colourScale"> Colour scale:</label> 
+                    <select ng-style="{'text-transform': 'none'}" id='colourScale' ng-model="input.selectedSchemeName" ng-change="renderSwatch()">
+                        <option ng-repeat='o in input.mySchemes' value='{{o}}'>{{o}}</option> 
+                    </select>
+                    <div class='invertWrapper'>
+                        <input type="checkbox" name="inverter" id="invertColors" ng-model="input.checkboxInvert" ng-change="renderSwatch()"> 
+                        <label for = "invertColors" id="invertColorsLabel"> Invert </label>
+                    </div>
+                </div>
+                <div class="txt-fld">
+                    <label for="fieldToMap"> Field to Map:</label>
+                    <select ng-style="{'text-transform': 'none'}" id='fieldToMap' ng-options="s for s in input.features" ng-model="input.selectedFeature" ng-change="renderSwatch()"></select>
+                </div>
+                <div class="txt-fld">
+                    <label for="intervals">Intervals:</label>
+                    <select id='intervals' ng-options="n for n in input.intervalRange" ng-model="input.selectedN" ng-init="input.selectedN" ng-change="renderSwatch()" ></select>
+                </div>
+                <div class="txt-fld">
+                    <label for="classification">Classification:</label>
+                    <select id='classification' ng-model="input.method" ng-change="renderSwatch()">
+                        <option value='quantile'>Quantile</option>
+                        <option value='quantize'>Equal</option>
+                        <option value='jenks'>Jenks</option>
+                        <option value='standardDeviation'> Standard Deviation</option>
+                    </select>
                 </div>
             </div>
-            <div class="txt-fld">
-                <label for="fieldToMap"> Field to Map:</label>
-                <select ng-style="{'text-transform': 'none'}" id='fieldToMap' ng-options="s for s in input.features" ng-model="input.selectedFeature"></select>
-            </div>
-            <div class="txt-fld">
-                <label for="intervals">Intervals:</label>
-                <select id='intervals' ng-options="n for n in input.intervalRange" ng-model="input.selectedN" ng-init="input.selectedN" ng-change="renderSwatch()" ></select>
-            </div>
-            <div class="txt-fld">
-                <label for="classification">Classification:</label>
-                <select id='classification' ng-model="input.method" ng-change="renderSwatch()">
-                    <option value='quantile'>Quantile</option>
-                    <option value='quantize'>Equal</option>
-                    <option value='jenks'>Jenks</option>
-                    <option value='standardDeviation'> Standard Deviation</option>
-                </select>
-                <div class="editBreaks"><a href='#'> edit </a> </div>
-                <div id="breaks"></div>
+            <div style="margin-top: 10px">Edit Breaks</div>
+            <div class="right">          
+                <table id="swatchtable">
+                    <tr ng-repeat="i in input.thisMap.range">
+                        <td ng-style="{'background-color': i}"></td>
+                    </tr>
+                </table>
+                <table id="breakstable">
+                    <tr><td><input class="break" ng-model="input.thisMap.mn" readonly> Minimum</td></tr>
+                    <tr ng-repeat="i in input.thisMap.breaks track by $index">
+                        <td><input class="break"  ng-model="input.thisMap.breaks[$index]"></td>
+                    </tr>
+                    <tr><td><input class="break" ng-model="input.thisMap.mx" readonly> Maximum</td></tr>
+                </table>
             </div>
 
-            <div class="save-fld">
-                <input type="button" value="Apply" ng-click="apply()">
-            </div>
-        </form>
+        </div>
+        <hist-img chart-data="domain" chart-breaks="input.thisMap.breaks"></hist-img> 
+        <div class="save-fld">
+            <input type="button" value="Apply" ng-click="apply()">
+        </div>
     </div>
 </div>

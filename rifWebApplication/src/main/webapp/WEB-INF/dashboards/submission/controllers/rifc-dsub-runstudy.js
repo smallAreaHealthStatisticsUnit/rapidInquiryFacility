@@ -12,10 +12,11 @@ angular.module("RIF")
                         controller: 'ModalRunInstanceCtrl',
                         windowClass: 'stats-Modal',
                         backdrop: 'static',
+                        scope: $scope,
                         keyboard: false
                     });
                     modalInstance.result.then(function () {
-                        $scope.showWarning("a warning message");
+                        $scope.showSuccess("Study Submitted");
                     });
                 };
             }])
@@ -23,8 +24,7 @@ angular.module("RIF")
             $scope.input = {};
             $scope.input.studyDescription = SubmissionStateService.getState().studyDescription;
             //    $scope.input.name = SubmissionStateService.getState().projectName;
-            
-            
+
             //Fill health themes drop-down
             $scope.input.projects = [];
             $scope.input.fillProjects = function () {
@@ -34,7 +34,7 @@ angular.module("RIF")
                 $scope.input.projects.length = 0;
                 for (var i = 0; i < res.data.length; i++) {
                     $scope.input.projects.push({name: res.data[i].name, description: res.data[i].description});
-                    //TODO: description is NULL but there is a getProjectDescription method
+                    //TODO: description is NULL but there is a getProjectDescription method in middleware
                 }
                 $scope.input.project = $scope.input.projects[0];
                 $scope.updateModel();
@@ -44,6 +44,32 @@ angular.module("RIF")
                 $uibModalInstance.dismiss();
             };
             $scope.submit = function () {
+                //check ready to submit
+                var errMsg = [];
+                //1: Quick check on trees
+                if (!SubmissionStateService.getState().studyTree) {
+                    errMsg.push("Study Area");
+                }
+                if (!SubmissionStateService.getState().comparisonTree) {
+                    errMsg.push("Comparision Area");
+                }
+                if (!SubmissionStateService.getState().investigationTree) {
+                    errMsg.push("Investigation Parameters");
+                }
+                if (!SubmissionStateService.getState().statsTree) {
+                    errMsg.push("Statistical Methods");
+                }
+                if (errMsg.length !== 0) {
+                    $scope.showError("Could not submit study. Please complete - " + errMsg);
+                    return;
+                }
+
+                //2: In depth check on JSON
+                                
+                //If tests passed, then submitStudy
+                
+                //TODO: reset to default state after submission?
+
                 $uibModalInstance.close($scope.input);
             };
             $scope.updateModel = function () {

@@ -7,18 +7,19 @@ angular.module("RIF")
                 function () {
                     var s = {
                         polygonIDs: [],
-                        selectAt: "Select at",
-                        studyResolution: "Study resolution",
+                        selectAt: "",
+                        studyResolution: "",
                         zoomLevel: -1,
-                        view: [0, 0]
+                        view: [0, 0],
+                        geography: ""
                     };
-                    var defaults = JSON.parse(JSON.stringify(s));
+                    var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
                         getState: function () {
                             return s;
                         },
                         resetState: function () {
-                            s = defaults;
+                            s = angular.copy(defaults);
                         }
                     };
                 });

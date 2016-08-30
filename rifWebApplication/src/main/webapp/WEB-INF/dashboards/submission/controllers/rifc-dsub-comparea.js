@@ -27,13 +27,13 @@ angular.module("RIF")
                             SubmissionStateService.getState().comparisonTree = true;
                             $scope.tree = true;
                         }
-
                         //Store what has been selected
                         CompAreaStateService.getState().polygonIDs = input.selectedPolygon;
                         CompAreaStateService.getState().selectAt = input.selectAt;
                         CompAreaStateService.getState().studyResolution = input.studyResolution;
                         CompAreaStateService.getState().zoomLevel = input.zoomLevel;
                         CompAreaStateService.getState().view = input.view;
+                        CompAreaStateService.getState().geography = input.geography;
                     });
                 };
             }])
@@ -44,6 +44,7 @@ angular.module("RIF")
             $scope.input.studyResolution = CompAreaStateService.getState().studyResolution;
             $scope.input.zoomLevel = CompAreaStateService.getState().zoomLevel;
             $scope.input.view = CompAreaStateService.getState().view;
+            $scope.input.geography = CompAreaStateService.getState().geography;
 
             $scope.close = function () {
                 $uibModalInstance.dismiss();

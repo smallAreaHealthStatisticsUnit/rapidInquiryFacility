@@ -22,7 +22,7 @@ angular.module("RIF")
                         animation: true,
                         templateUrl: 'utils/partials/rifp-util-basemap.html',
                         controller: 'BaseMapModalInstanceCtrl',
-                        windowClass: 'mapping-Modal'
+                        windowClass: 'osm-Modal'
                     });
                     modalInstance.result.then(function () {
                         $scope.parent.renderMap($scope.id);

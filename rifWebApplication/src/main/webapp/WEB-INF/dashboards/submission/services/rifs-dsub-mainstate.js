@@ -20,13 +20,13 @@ angular.module("RIF")
                         projectDescription: "",
                         studyDescription: ""
                     };
-                    var defaults = JSON.parse(JSON.stringify(s));
+                    var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
                         getState: function () {
                             return s;
                         },
                         resetState: function () {
-                            s = defaults;
+                            s = angular.copy(defaults);
                         }
                     };
                 });

@@ -14,12 +14,26 @@ angular.module("RIF")
                 $scope.size1 = "33%";
                 $scope.size2 = "66%";
 
+                $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
+                    //Monitor panel sizes
+                    
+
+                    //Rescale D3 graphs
+                  
+                    //Rescale leaflet container        
+                    leafletData.getMap("viewermap").then(function (map) {
+                        setTimeout(function () {
+                            map.invalidateSize();
+                        }, 50);
+                    });
+                });
+
                 //leaflet render
                 $scope.transparency = 0.7;
                 $scope.selectedPolygon = [];
                 var maxbounds;
                 var thisMap = [];
-                var domain = [];
+                $scope.domain = [];
                 var attr;
 
                 //get the user defined basemap
@@ -117,7 +131,8 @@ angular.module("RIF")
 
                 function handleLayer(layer) {
                     layer.setStyle({
-                        fillColor: ChoroService.getRenderFeature(layer.feature, thisMap.scale, attr)
+                        fillColor: ChoroService.getRenderFeature(layer.feature, thisMap.scale, attr),
+                        fillOpacity: $scope.transparency
                     });
                 }
                 $scope.changeOpacity = function () {
@@ -139,7 +154,7 @@ angular.module("RIF")
                 };
 
                 //information from choropleth modal to colour map                             
-                $scope.parent.refresh = function (flip, method) {
+                $scope.parent.refresh = function () {
                     //get selected colour ramp
                     var rangeIn = ChoroService.getViewMap().brewer;
                     attr = ChoroService.getViewMap().feature;
@@ -157,12 +172,7 @@ angular.module("RIF")
                         return;
                     }
 
-                    //get the Choropleth map
-                    domain.length = 0;
-                    $scope.topoLayer.eachLayer(function (layer) {
-                        domain.push(layer.feature.properties[attr]);
-                    });
-                    thisMap = ChoroService.getChoroScale(method, domain, rangeIn, flip);
+                    thisMap = ChoroService.getViewMap().renderer;
 
                     //remove old legend and add new
                     legend.onAdd = ChoroService.getMakeLegend(thisMap, attr);

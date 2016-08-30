@@ -7,6 +7,7 @@
 angular.module("RIF")
         .controller('ModalStudyAreaCtrl', ['$scope', '$uibModal', 'StudyAreaStateService', 'SubmissionStateService',
             function ($scope, $uibModal, StudyAreaStateService, SubmissionStateService) {
+                                              
                 $scope.tree = SubmissionStateService.getState().studyTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
@@ -16,23 +17,26 @@ angular.module("RIF")
                         controller: 'ModalStudyAreaInstanceCtrl',
                         windowClass: 'modal-fit',
                         backdrop: 'static',
+                    //    scope: $scope,
                         keyboard: false
                     });
                     modalInstance.result.then(function (input) {
                         //Change tree icon colour
                         if (input.selectedPolygon.length === 0) {
                             SubmissionStateService.getState().studyTree = false;
-                            $scope.tree = false;
+                            $scope.tree = false;                         
                         } else {
                             SubmissionStateService.getState().studyTree = true;
                             $scope.tree = true;
                         }
+
                         //Store what has been selected
                         StudyAreaStateService.getState().polygonIDs = input.selectedPolygon;
                         StudyAreaStateService.getState().selectAt = input.selectAt;
                         StudyAreaStateService.getState().studyResolution = input.studyResolution;
                         StudyAreaStateService.getState().zoomLevel = input.zoomLevel;
                         StudyAreaStateService.getState().view = input.view;
+                        StudyAreaStateService.getState().geography = input.geography;
                     });
                 };
             }])
@@ -43,6 +47,7 @@ angular.module("RIF")
             $scope.input.studyResolution = StudyAreaStateService.getState().studyResolution;
             $scope.input.zoomLevel = StudyAreaStateService.getState().zoomLevel;
             $scope.input.view = StudyAreaStateService.getState().view;
+            $scope.input.geography = StudyAreaStateService.getState().geography;
 
             $scope.close = function () {
                 $uibModalInstance.dismiss();
