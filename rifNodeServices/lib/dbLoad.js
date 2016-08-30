@@ -592,8 +592,29 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 					selectFrag=sqlFrag;
 				}
 			}		
-			selectFrag+=" ORDER BY 1, 2\n";
-			sqlStmt.sql="DECLARE c1 CURSOR FOR\n" + selectFrag +
+			selectFrag+=" ORDER BY 1, 2;\n";
+			
+			if (dbType == "PostGres") {
+				sqlStmt.sql="DO LANGUAGE plpgsql $$\n" + 
+"DECLARE\n" + 
+"	c1 CURSOR FOR\n" + selectFrag + 		
+"	c1_rec RECORD;\n" + 
+"	total INTEGER:=0;\n" +
+"BEGIN\n" +  
+"	FOR c1_rec IN c1 LOOP\n" + 
+"		total:=total+1;\n" +
+"		RAISE INFO 'Area: '||c1_rec.areaname||', geolevel: '||c1{_rec.geolevel||': '||c1_rec.reason;\n" + 
+"	END LOOP;\n" + 
+"	IF total = " + csvFiles[i].rows.length + " THEN\n" + 
+"		RAISE INFO 'Table: " + csvFiles[i].tableName + " no invalid geometry check OK';\n" + 
+"	ELSE\n" + 
+"		RAISE EXCEPTION 'Table: " + csvFiles[i].tableName + " no invalid geometry check FAILED: % invalid', total);\n" + 
+"	END IF;\n" + 
+"END;\n" +
+"$$";
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="DECLARE c1 CURSOR FOR\n" + selectFrag +
 "DECLARE @areaname AS VARCHAR(30);\n" +
 "DECLARE @geolevel AS int;\n" +
 "DECLARE @reason AS VARCHAR(90);\n" +
@@ -605,11 +626,12 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 "       FETCH NEXT FROM c1 INTO @areaname, @geolevel, @reason;\n" +   
 "END\n" +
 "IF @@CURSOR_ROWS = 0\n" +
-"	PRINT 'Table: cb_2014_us_county_500k no invalid geometry check OK';\n" +
+"	PRINT 'Table: " + csvFiles[i].tableName + " no invalid geometry check OK';\n" +
 "ELSE\n" +
-"	RAISERROR('Table: cb_2014_us_county_500k no invalid geometry check FAILED: %i invalid', 16, 1, @@CURSOR_ROWS);\n" +
+"	RAISERROR('Table: " + csvFiles[i].tableName + " no invalid geometry check FAILED: %i invalid', 16, 1, @@CURSOR_ROWS);\n" +
 "CLOSE c1;\n" +
-"DEALLOCATE c1";			
+"DEALLOCATE c1";	
+			}		
 			sql.push(sqlStmt);		
 
 			sql.push(new Sql("Make all polygons right handed"));

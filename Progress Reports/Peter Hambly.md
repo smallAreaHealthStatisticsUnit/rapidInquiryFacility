@@ -550,6 +550,10 @@ RangeError: Invalid string length
 
 #### 30th August to 2nd September
 
+* Area caclulation problem with SQL Server confirmed as being caused by ring orientation (Postgis does not care!), and can be fixed. 
+  It appears it can only be detected when the SQL Server calculated area is 1000s times more than the Turf area. Detection threshold 
+  set at 200%; areas will need to agree to within 1%.
+
 #### Current TODO list (August):
 
 * SQL load script generatpr
