@@ -552,9 +552,10 @@ RangeError: Invalid string length
 
 * Area caclulation problem with SQL Server confirmed as being caused by ring orientation (Postgis does not care!), and can be fixed. 
   It appears it can only be detected when the SQL Server calculated area is 1000s times more than the Turf area. Detection threshold 
-  set at 200%; areas will need to agree to within 1%.
+  set at 200%; areas will need to agree to within 5% at the maximum geolevel, ignoring small areas <= 10 km2.
 * Rose Island, Charleston has zero area at geolevel 6. 38° 25′ 49.69″ N, 85° 36′ 56.06″ W; 38.430468, -85.615571. This is indicative 
   of oversimplification; but is not a problem at level 6.
+* Postgres is more accurate and will accept 1% error (Rose Island has a real area of 0.1035 km2 in Postgres).
 
 #### Current TODO list (September):
 
