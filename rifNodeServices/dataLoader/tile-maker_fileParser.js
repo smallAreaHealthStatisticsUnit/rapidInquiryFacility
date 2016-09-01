@@ -57,8 +57,8 @@ function shpConvertInput(files) {
 
 	/*
 	 * Function: 	processFile()
-	 * Parameters: 	File name, file size, base file name (no extension, no directory), zip file name (optional), 
-	 *				data (for DBF as arraybuf, for .shp.ea.iso.xml and .prj as text)
+	 * Parameters: 	File name, file size, base file name (no extension, no directory), unzipped file base name (optional), 
+	 *				data (for DBF as arraybuf, for .shp.ea.iso.xml and .prj as text), original file name (unzipped or not)
 	 * Returns: 	Nothing
 	 * Description:	Process file by type: SHP, DBF or .SHP.EA.ISO.XML (extended attributes XML file); add to three used objects; detect duplicates
 	 * Uses:		fileList 
@@ -66,7 +66,7 @@ function shpConvertInput(files) {
 	 *				shapefileList 
 	 *				projectionList
 	 */	
-	function processFile(fileName, fileSizeBytes, baseName, ext, zipFileName, data) {
+	function processFile(fileName, fileSizeBytes, baseName, ext, unzipFileName, data, originalFileName) {
 		scopeChecker({ // Check - should be in scope!
 			fileList: fileList,
 			xmlDocList: xmlDocList,
@@ -78,6 +78,8 @@ function shpConvertInput(files) {
 		var elapsed=(end - lstart)/1000; // in S	
 				
 		console.log("Processing file: " + fileName);
+		console.error("originalFileName: " + JSON.stringify(originalFileName, null, 4));
+			
 		if (ext == 'shp') {
 			document.getElementById("status").innerHTML =
 				document.getElementById("status").innerHTML + "<br>Loaded shapefile file: " + name + "; " + fileSize(fileSizeBytes) + " in: " + elapsed + " S";
@@ -86,7 +88,7 @@ function shpConvertInput(files) {
 					throw new Error("Duplicate file: " +  fileName + "; shape file: " + fileList[baseName].fileName + " already processed");
 				}
 				else {
-					throw new Error("Duplicate file: " +  ffileName + "; file: " + baseName + ".shp already processed");
+					throw new Error("Duplicate file: " +  fileName + "; file: " + baseName + ".shp already processed");
 				}
 			}		
 			shapefileList[baseName] = {
@@ -123,13 +125,17 @@ function shpConvertInput(files) {
 			}						
 			fileList[baseName] = {
 				fileName: 	baseName + ".shp",
+				zipFileBaseName: originalFileName.substring(0, originalFileName.indexOf('.')).toLowerCase(),
 				description: "",
 				dbfHeader: 	readDbfHeader(data, name),
 				exAML: 		undefined,
 				fileSize: 	undefined,
 				projection:	undefined
 			};
-//			console.log(JSON.stringify(fileList[baseName].dbfHeader, null, 4));
+			console.log("fileName: " + JSON.stringify(fileName, null, 4));
+			console.log("baseName: " + JSON.stringify(baseName, null, 4));
+			console.log("fileList: " + JSON.stringify(fileList, null, 4));
+			console.log("shapefileList: " + JSON.stringify(shapefileList, null, 4));
 		}
 		else if (ext == 'prj') {
 			if (projectionList[baseName]) {
@@ -203,7 +209,9 @@ function shpConvertInput(files) {
 												
 						if (ext == 'shp.ea.iso.xml' || ext == 'shp' || ext == 'dbf' || ext == 'prj') {
 							try {
-								processFile(file.name, file.size, baseName, ext, undefined /* Zip file name */, data, fileList);
+								// processFile(fileName, fileSizeBytes, baseName, ext, unzipFileName, data, originalFileName);
+								processFile(file.name, file.size, baseName, ext, undefined /* unzipFileName */, data,
+									file.name);
 							}
 							catch (e) {
 								console.log("asyncSeriesIteree() WARNING! Caught error in processFile(): " + e.message);
@@ -215,7 +223,8 @@ function shpConvertInput(files) {
 //
 // Zip file processing
 //				
-						else if (ext == "zip") {						
+						else if (ext == "zip") {
+							var zipFileName=file.name;
 							var zip=new JSZip(arrayBuf, {} /* Options */);
 							var noZipFiles=0;
 							var totalUncompressedSize=0;
@@ -260,7 +269,9 @@ function shpConvertInput(files) {
 								
 								if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf'|| zipExt == 'prj') {
 									try {
-										processFile(zipName, fileContainedInZipFile._data.uncompressedSize, zipBaseName, zipExt, zipName /* Zip file name */, data, fileList);
+									// processFile(fileName, fileSizeBytes, baseName, ext, unzipFileName, data, originalFileName);
+										processFile(zipName, fileContainedInZipFile._data.uncompressedSize, 
+											zipBaseName, zipExt, zipName /* unzipFileName */, data, zipFileName);
 									}
 									catch (e) {
 										console.log("asyncSeriesIteree() WARNING! Caught error in processFile(): " + e.message);
@@ -481,7 +492,12 @@ function createAccordion(fileList) {
 					
 					// Also set geographyName to the key (base name of file) if not set
 					if (!document.getElementById('geographyName').value) {
-						document.getElementById('geographyName').value=key;
+						if (fileList[key].zipFileBaseName) {
+							document.getElementById('geographyName').value=fileList[key].zipFileBaseName;		
+						}
+						else {
+							document.getElementById('geographyName').value=key;
+						}
 					}
 					if (!document.getElementById('geographyDesc').value) {
 						document.getElementById('geographyDesc').value="Description of: " + key;
