@@ -349,7 +349,10 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 		}				
 		sql.push(sqlStmt);
 		
-		for (var i=0; i<csvFiles.length; i++) {
+		var defaultcomparea;
+		var defaultstudyarea;
+	
+		for (var i=0; i<csvFiles.length; i++) { // Main file process loop
 			
 			var sqlStmt;		
 			if (dbType == "PostGres") {	
@@ -632,17 +635,20 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 "DECLARE @areaname AS VARCHAR(30);\n" +
 "DECLARE @geolevel AS int;\n" +
 "DECLARE @reason AS VARCHAR(90);\n" +
+"DECLARE @nrows AS int;\n" +
+"SET @nrows=0;\n" +
 "OPEN c1;\n" +
 "FETCH NEXT FROM c1 INTO @areaname, @geolevel, @reason;\n" +
 "WHILE @@FETCH_STATUS = 0\n" +
 "BEGIN\n" +
-"	   PRINT 'Area: ' + @areaname + ', geolevel: ' + CAST(@geolevel AS VARCHAR) + ': ' +RTRIM(@reason);\n" +
+"		SET @nrows+=1;\n" +
+"	    PRINT 'Area: ' + @areaname + ', geolevel: ' + CAST(@geolevel AS VARCHAR) + ': ' +RTRIM(@reason);\n" +
 "       FETCH NEXT FROM c1 INTO @areaname, @geolevel, @reason;\n" +   
 "END\n" +
-"IF @@CURSOR_ROWS = 0\n" +
+"IF @nrows = 0\n" +
 "	PRINT 'Table: " + csvFiles[i].tableName + " no invalid geometry check OK';\n" +
 "ELSE\n" +
-"	RAISERROR('Table: " + csvFiles[i].tableName + " no invalid geometry check FAILED: %i invalid', 16, 1, @@CURSOR_ROWS);\n" +
+"	RAISERROR('Table: " + csvFiles[i].tableName + " no invalid geometry check FAILED: %i invalid', 16, 1, @nrows);\n" +
 "CLOSE c1;\n" +
 "DEALLOCATE c1";	
 			}		
@@ -759,9 +765,9 @@ sqlStmt.sql="DECLARE c1 CURSOR FOR\n" +
 "DECLARE @area_km2_calc AS NUMERIC(15,2);\n" +
 "DECLARE @pct_km2_diff AS NUMERIC(15,2);\n" +
 "DECLARE @nrows AS int;\n" +
+"SET @nrows=0;\n" +
 "OPEN c1;\n" +
 "FETCH NEXT FROM c1 INTO @areaname, @area_km2, @area_km2_calc, @pct_km2_diff;\n" +
-"SET @nrows=0;\n" +
 "WHILE @@FETCH_STATUS = 0\n" +
 "BEGIN\n" +
 "		SET @nrows+=1;\n" +
@@ -873,8 +879,100 @@ sqlStmt.sql="DECLARE c1 CURSOR FOR\n" +
 			}
 			sql.push(sqlStmt);
 			
+			// Set default satudy and comparison areas
+			if (csvFiles[i].geolevel == 1) {
+				defaultcomparea=response.fields[csvFiles[i].file_name_no_ext + "_areaID"]; // E.g. cb_2014_us_nation_5m_areaID
+			}
+			else if (csvFiles[i].geolevel == (csvFiles.length-1)) {
+				defaultstudyarea=response.fields[csvFiles[i].file_name_no_ext + "_areaID"]; // E.g. cb_2014_us_county_500k_areaID
+			}
+//			else {
+//				console.error("No match for geolevel: " + csvFiles[i].geolevel);
+//			}
 		} // End of for csvFiles loop
 		
+		// defaultcomparea and defaultstudyarea are defined
+		if (defaultcomparea == undefined) {
+			throw new Error("Unable to determine default comparison area");
+		}
+		if (defaultstudyarea == undefined) {
+			throw new Error("Unable to determine default study area");
+		}
+
+		sql.push(new Sql("Geography meta data"));	
+		
+		if (dbType == "PostGres") {	
+			sqlStmt=new Sql("Drop table", "DROP TABLE IF EXISTS geography_" + response.fields["geographyName"].toLowerCase());
+		}
+		else if (dbType == "MSSQLServer") {				
+			sqlStmt=new Sql("Drop table", "IF OBJECT_ID('geography_" + response.fields["geographyName"].toLowerCase() + 
+				"', 'U') IS NOT NULL DROP TABLE geography_" + response.fields["geographyName"].toLowerCase());
+		}
+		sql.push(sqlStmt);
+		
+		var sqlStmt=new Sql("Create geography meta data table",
+			"CREATE TABLE geography_" + response.fields["geographyName"].toLowerCase() + " (\n" +
+			"       geography               VARCHAR(50)  NOT NULL,\n" +
+			"       description             VARCHAR(250) NOT NULL,\n" +  
+			"       hierarchytable          VARCHAR(30)  NOT NULL,\n" + 
+			"       srid                    integer      NULL DEFAULT 0,\n" + 
+			"       defaultcomparea         VARCHAR(30)  NULL,\n" + 
+			"       defaultstudyarea        VARCHAR(30)  NULL,\n" + 
+			"       CONSTRAINT geography PRIMARY KEY(geography)\n" +
+			")");			
+		sql.push(sqlStmt);
+		
+		var sqlStmt=new Sql("Populate geography meta data table", 
+			"INSERT INTO geography_" + response.fields["geographyName"].toLowerCase() + " (\n" +
+				"geography, description, hierarchytable, srid, defaultcomparea, defaultstudyarea)\n" + 
+				"SELECT '" + response.fields["geographyName"] + "' AS geography,\n" +
+				"       '" + response.fields["geographyDesc"] + "' AS description,\n" + 
+				"       'hierarchy_" + response.fields["geographyName"].toLowerCase() + "' AS hierarchytable,\n" + 
+				"       " + response.fields["srid"] + " AS srid,\n" + 
+				"       '" + defaultcomparea + "' AS defaultcomparea,\n" + 
+				"       '" + defaultstudyarea + "' AS defaultstudyarea");
+		sql.push(sqlStmt);
+		
+		var sqlStmt=new Sql("Comment geography meta data table");			
+		if (dbType == "PostGres") {		
+			sqlStmt.sql="COMMENT ON TABLE geography_" + response.fields["geographyName"].toLowerCase() + 
+				" IS 'Hierarchial geographies. Usually based on Census geography.'";
+		}
+		else if (dbType == "MSSQLServer") {	
+			sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+"SELECT @CurrentUser = user_name();\n" +   
+"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+"   'Hierarchial geographies. Usually based on Census geography.',\n" +   
+"   'user', @CurrentUser, \n" +   
+"   'table', 'geography_" + response.fields["geographyName"].toLowerCase() + "'";
+		}
+		sql.push(sqlStmt);
+		
+		var fieldArray = ['geography', 'description', 'hierarchytable', 'srid', 'defaultcomparea', 'defaultstudyarea'];
+		var fieldDescArray = ['Geography name', 
+			'Description', 
+			'Hierarchy table', 
+			'Projection SRID', 
+			'Default comparison area: lowest resolution geolevel', 
+			'Default study area: highest resolution geolevel'];
+		for (var l=0; l< fieldArray.length; l++) {		
+			var sqlStmt=new Sql("Comment geography meta data column");	
+			if (dbType == "PostGres") {		
+				sqlStmt.sql="COMMENT ON COLUMN geography_" + response.fields["geographyName"].toLowerCase() + "." + fieldArray[l] +
+					" IS '" + fieldDescArray[l] + "'";
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+	"SELECT @CurrentUser = user_name();\n" +   
+	"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+	"   '" + fieldDescArray[l] + "',\n" +   
+	"   'user', @CurrentUser, \n" +   
+	"   'table', 'geography_" + response.fields["geographyName"].toLowerCase() + "'" +   
+	"   'column', '" + fieldArray[l] + "'";
+			}
+			sql.push(sqlStmt);			
+		}
+			
 		var sqlStmt=new Sql("Commit transaction");
 		if (dbType == "PostGres") {		
 			sqlStmt.sql="END";	

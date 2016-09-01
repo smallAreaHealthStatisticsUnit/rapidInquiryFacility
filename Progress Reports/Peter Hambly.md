@@ -561,9 +561,12 @@ RangeError: Invalid string length
 
 * SQL load script generator: still todo:
   * Geography, geolevels meta data; 
-  * Add CSV files meta to XML config.
+  * Add CSV files meta to XML config;
+  * Check Turf JS centroid code (figures are wrong);
+  * Compare Turf/PostGIS/SQL Server area and centroid caculations;
+  * Resolve SQL Server use of geograaphy verses geometry and SQL Server casting; 
 * Map tile generator
-* Geolevel intersction generator
+* Geolevel intersction generator (Turf and/or DB versions)
 
 #### September TODO list:
 

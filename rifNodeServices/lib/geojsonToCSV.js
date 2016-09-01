@@ -221,6 +221,7 @@ var geojsonToCSV = function geojsonToCSV(response, req, res, endCallback) {
 			csvFiles[i] = {
 				index: i,
 				file_name: response.file_list[i].file_name,
+				file_name_no_ext: path.basename(response.file_list[i].file_name, ".shp"),
 				tableName: path.basename(response.file_list[i].file_name, ".shp").toLowerCase(),
 				areas: response.file_list[i].total_areas,
 				points: response.file_list[i].points,
