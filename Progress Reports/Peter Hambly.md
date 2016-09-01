@@ -556,23 +556,35 @@ RangeError: Invalid string length
 * Rose Island, Charleston has zero area at geolevel 6. 38° 25′ 49.69″ N, 85° 36′ 56.06″ W; 38.430468, -85.615571. This is indicative 
   of oversimplification; but is not a problem at level 6.
 * Postgres is more accurate and will accept 1% error (Rose Island has a real area of 0.1035 km2 in Postgres).
-
+* SQL load script generator for Postgres and SQL Server:
+  * Load shapefile derived CSV files;
+  * Convert well known text to geometry;
+  * Fix and validate geometry data, make all polygons right handed;
+  * Test Turf and DB areas agree to within 1% (3% for SQL Server);
+  * Spatially index;
+  * Add geography, geolevels meta data;
+  
 #### Current TODO list (September):
 
 * SQL load script generator: still todo:
-  * Geography, geolevels meta data; 
+  * Lookup tables; 
+  * Missing comments on other columns from shapefile via extended attributes XML file;
   * Add CSV files meta to XML config;
   * Check Turf JS centroid code (figures are wrong);
   * Compare Turf/PostGIS/SQL Server area and centroid caculations;
-  * Resolve SQL Server use of geograaphy verses geometry and SQL Server casting; 
+  * Resolve SQL Server use of geography verses geometry and SQL Server casting; 
 * Map tile generator
 * Geolevel intersction generator (Turf and/or DB versions)
 
-#### September TODO list:
+#### October TODO list:
 
-* Get methods
+* Get methods: 
+  * ZIP results;
+  * <To be added>
 
-SQL Server porting expected to start in July if required (may be able to use Turf).
+SQL Server porting started in August; so far I was able to use Turf. The Node.js backend needs to be 
+able to run the scripts so that the fixed and validated geometry data becomes available.
+
 Note: no bounding box (bbox) in tiles.
 
 #### Parked TODO list (as required):

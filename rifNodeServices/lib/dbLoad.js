@@ -967,12 +967,118 @@ sqlStmt.sql="DECLARE c1 CURSOR FOR\n" +
 	"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
 	"   '" + fieldDescArray[l] + "',\n" +   
 	"   'user', @CurrentUser, \n" +   
-	"   'table', 'geography_" + response.fields["geographyName"].toLowerCase() + "'" +   
+	"   'table', 'geography_" + response.fields["geographyName"].toLowerCase() + "'," +   
 	"   'column', '" + fieldArray[l] + "'";
 			}
 			sql.push(sqlStmt);			
 		}
-			
+
+		sql.push(new Sql("Geolevels meta data"));	
+		
+		if (dbType == "PostGres") {	
+			sqlStmt=new Sql("Drop table", "DROP TABLE IF EXISTS geolevels_" + response.fields["geographyName"].toLowerCase());
+		}
+		else if (dbType == "MSSQLServer") {				
+			sqlStmt=new Sql("Drop table", "IF OBJECT_ID('geolevels_" + response.fields["geographyName"].toLowerCase() + 
+				"', 'U') IS NOT NULL DROP TABLE geolevels_" + response.fields["geographyName"].toLowerCase());
+		}
+		sql.push(sqlStmt);
+		
+		var sqlStmt=new Sql("Create geolevels meta data table",
+			"CREATE TABLE geolevels_" + response.fields["geographyName"].toLowerCase() + " (\n" +
+			"       geography                       VARCHAR(50)  NOT NULL,\n" +
+			"       geolevel_name                   VARCHAR(30)  NOT NULL,\n" +
+			"       geolevel_id			        	integer	     NOT NULL,\n" +		
+			"       description                     VARCHAR(250) NOT NULL,\n" +
+			"       lookup_table                    VARCHAR(30)  NOT NULL,\n" +
+			"       lookup_desc_column              VARCHAR(30)  NOT NULL,\n" +		
+			"       shapefile                       VARCHAR(512) NOT NULL,\n" +
+			"       shapefile_table                 VARCHAR(30)  NULL,\n" +
+			"       shapefile_area_id_column        VARCHAR(30)  NOT NULL,\n" +			
+			"       shapefile_desc_column           VARCHAR(30)  NULL,\n" +
+			"       resolution                      integer      NULL,\n" +			
+			"       comparea                        integer      NULL,\n" +
+			"       listing                         integer      NULL,\n" +			
+			"       CONSTRAINT geolevel_pk PRIMARY KEY(geography, geolevel_name)\n" +
+			")");			
+		sql.push(sqlStmt);	
+		
+		var sqlStmt=new Sql("Comment geolevels meta data table");			
+		if (dbType == "PostGres") {		
+			sqlStmt.sql="COMMENT ON TABLE geolevels_" + response.fields["geographyName"].toLowerCase() + 
+				" IS 'Geolevels: hierarchy of level with a geography.'";
+		}
+		else if (dbType == "MSSQLServer") {	
+			sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+"SELECT @CurrentUser = user_name();\n" +   
+"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+"   'Geolevels: hierarchy of level with a geography.',\n" +   
+"   'user', @CurrentUser, \n" +   
+"   'table', 'geolevels_" + response.fields["geographyName"].toLowerCase() + "'";
+		}
+		sql.push(sqlStmt);
+		
+		var fieldArray = ['geography', 'geolevel_name', 'geolevel_id', 'description', 'lookup_table',
+						  'lookup_desc_column', 'shapefile', 'shapefile_table', 'shapefile_area_id_column', 'shapefile_desc_column',
+						  'resolution', 'comparea', 'listing'];
+		var fieldDescArray = [
+			'Geography (e.g EW2001)',
+			'Name of geolevel. This will be a column name in the numerator/denominator tables',
+			'ID for ordering (1=lowest resolution). Up to 99 supported.',
+			'Description',
+			'Lookup table name. This is used to translate codes to the common names, e.g a LADUA of 00BK is "Westminster"',
+			'Lookup table description column name.',
+			'Location of the GIS shape file. NULL if PostGress/PostGIS used. Can also use SHAPEFILE_GEOMETRY instead',
+			'Table containing GIS shape file data.',
+			'Column containing the AREA_IDs in SHAPEFILE_TABLE',
+			'Column containing the AREA_ID descriptions in SHAPEFILE_TABLE',
+			'Can use a map for selection at this resolution (0/1)',
+			'Able to be used as a comparison area (0/1)',
+			'Able to be used in a disease map listing (0/1)'];
+		for (var l=0; l< fieldArray.length; l++) {		
+			var sqlStmt=new Sql("Comment geography meta data column");	
+			if (dbType == "PostGres") {		
+				sqlStmt.sql="COMMENT ON COLUMN geolevels_" + response.fields["geographyName"].toLowerCase() + "." + fieldArray[l] +
+					" IS '" + fieldDescArray[l] + "'";
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+	"SELECT @CurrentUser = user_name();\n" +   
+	"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+	"   '" + fieldDescArray[l] + "',\n" +   
+	"   'user', @CurrentUser, \n" +   
+	"   'table', 'geolevels_" + response.fields["geographyName"].toLowerCase() + "'," +   
+	"   'column', '" + fieldArray[l] + "'";
+			}
+			sql.push(sqlStmt);			
+		}		
+		
+		for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
+			var sqlStmt=new Sql("Insert geolevels meta data for: " + csvFiles[i].tableName, 
+					"INSERT INTO geolevels_" + response.fields["geographyName"].toLowerCase() + "(\n" +
+					"   geography, geolevel_name, geolevel_id, description, lookup_table,\n" +
+					"   lookup_desc_column, shapefile, shapefile_table, shapefile_area_id_column, shapefile_desc_column,\n" + 
+					"   resolution, comparea, listing)\n" +
+					"SELECT '" + response.fields["geographyName"] + "' AS geography,\n" + 
+					"       '" + csvFiles[i].tableName + "' AS geolevel_name,\n" +
+					"       " + csvFiles[i].geolevel + " AS geolevel_id,\n" +
+					"       '" + csvFiles[i].geolevelDescription + "' AS description,\n" + 
+					"       'lookup_" + csvFiles[i].tableName + "' AS lookup_table,\n" +
+					"       'areaname' AS lookup_desc_column,\n" +
+					"       '" + csvFiles[i].file_name + "' AS shapefile,\n" +
+					"       '" + csvFiles[i].tableName + "' AS shapefile_table,\n" +
+					"       'areaid' AS shapefile_area_id_column,\n" +
+					"       'areaname' AS shapefile_desc_column,\n" +
+					"       1 AS resolution,\n" +
+					"       1 AS comparea,\n" +
+					"       1 AS listing");
+			sql.push(sqlStmt);
+		}	
+		
+		sql.push(new Sql("Geolevels lookup tables"));
+		
+		sql.push(new Sql("Hierarchy table"));
+		
 		var sqlStmt=new Sql("Commit transaction");
 		if (dbType == "PostGres") {		
 			sqlStmt.sql="END";	
