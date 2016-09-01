@@ -333,27 +333,294 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 
 	 */		
 	var addSQLStatements=function addSQLStatements(dbStream, csvFiles, srid, dbType) {
-		function Sql(comment, sql) { // Object constructor
-			this.comment=comment;
-			this.sql=sql;	
-			this.dbStream=dbType;			
-		}
-		var sql=[];
 		
-		var sqlStmt=new Sql("Start transaction");
-		if (dbType == "PostGres") {		
-			sqlStmt.sql="BEGIN";	
-		}
-		else if (dbType == "MSSQLServer") {	
-			sqlStmt.sql="BEGIN TRANSACTION";	
-		}				
-		sql.push(sqlStmt);
+		/*
+		 * Function: 	beginTransaction()
+		 * Parameters:	None
+		 * Description:	Begin transaction SQL statements
+		 */	 
+		function beginTransaction() {
+			var sqlStmt=new Sql("Start transaction");
+			if (dbType == "PostGres") {		
+				sqlStmt.sql="BEGIN";	
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="BEGIN TRANSACTION";	
+			}				
+			sql.push(sqlStmt);
+		} // End of beginTransaction()
 		
-		var defaultcomparea;
-		var defaultstudyarea;
-	
-		for (var i=0; i<csvFiles.length; i++) { // Main file process loop
+		/*
+		 * Function: 	commitTransaction()
+		 * Parameters:	None
+		 * Description:	Commit transaction SQL statements
+		 */	 
+		function commitTransaction() {
+			var sqlStmt=new Sql("Commit transaction");
+			if (dbType == "PostGres") {		
+				sqlStmt.sql="END";	
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="COMMIT";	
+			}				
+			sql.push(sqlStmt);
+		} // End of commitTransaction()	
+		
+		/*
+		 * Function: 	analyzeTables()
+		 * Parameters:	None
+		 * Description:	Analze and describe all tables: SQL statements
+		 *				Needs to be in a separate transaction (do NOT start one!)
+		 */	 	
+		function analyzeTables() {
+			sql.push(new Sql("Analyze tables"));
+			var tableList=[];
+			for (var i=0; i<csvFiles.length; i++) {
+				tableList.push(csvFiles[i].tableName);
+			}
+			tableList.push("geolevels_" + response.fields["geographyName"].toLowerCase());
+			tableList.push("geography_" + response.fields["geographyName"].toLowerCase());
 			
+			for (var i=0; i<tableList.length; i++) {												
+				var sqlStmt=new Sql("Describe " + tableList[i]);			
+				if (dbType == "PostGres") {		
+					sqlStmt.nonsql="\\dS+ " + tableList[i];
+				}
+				else if (dbType == "MSSQLServer") {	
+					sqlStmt.sql="EXEC sp_help " + tableList[i];
+				}
+				sql.push(sqlStmt);
+				
+				var sqlStmt=new Sql("Create table statistics for: " + tableList[i]);
+				if (dbType == "PostGres") {		
+					sqlStmt.sql="VACUUM ANALYZE " + tableList[i];
+				}
+				else if (dbType == "MSSQLServer") {	
+					sqlStmt.sql="UPDATE STATISTICS " + tableList[i];		
+				}
+				sql.push(sqlStmt);
+			} // End of for csvFiles loop			
+		} // End of analyzeTables()		 
+
+		/*
+		 * Function: 	createGeolevelsLookupTables()
+		 * Parameters:	None
+		 * Description:	Create geoelvels lookup tables: SQL statements
+		 */	 
+		function createGeolevelsLookupTables() {
+			sql.push(new Sql("Geolevels lookup tables"));		
+		} // End of createGeolevelsLookupTables()
+		
+		/*
+		 * Function: 	analyzeTables()
+		 * Parameters:	None
+		 * Description:	Create hierarchy table: SQL statements
+		 */	 
+		function createHierarchyTable() {
+			sql.push(new Sql("Hierarchy table"));
+		} // End of createHierarchyTable()
+
+		/*
+		 * Function: 	createGeolevelsTable()
+		 * Parameters:	None
+		 * Description:	Create geolevels meta data table: geolevels_<geographyName> 
+		 *				SQL statements
+		 */	 
+		function createGeolevelsTable() {
+			sql.push(new Sql("Geolevels meta data"));	
+			
+			if (dbType == "PostGres") {	
+				sqlStmt=new Sql("Drop table", "DROP TABLE IF EXISTS geolevels_" + response.fields["geographyName"].toLowerCase());
+			}
+			else if (dbType == "MSSQLServer") {				
+				sqlStmt=new Sql("Drop table", "IF OBJECT_ID('geolevels_" + response.fields["geographyName"].toLowerCase() + 
+					"', 'U') IS NOT NULL DROP TABLE geolevels_" + response.fields["geographyName"].toLowerCase());
+			}
+			sql.push(sqlStmt);
+			
+			var sqlStmt=new Sql("Create geolevels meta data table",
+				"CREATE TABLE geolevels_" + response.fields["geographyName"].toLowerCase() + " (\n" +
+				"       geography                       VARCHAR(50)  NOT NULL,\n" +
+				"       geolevel_name                   VARCHAR(30)  NOT NULL,\n" +
+				"       geolevel_id			        	integer	     NOT NULL,\n" +		
+				"       description                     VARCHAR(250) NOT NULL,\n" +
+				"       lookup_table                    VARCHAR(30)  NOT NULL,\n" +
+				"       lookup_desc_column              VARCHAR(30)  NOT NULL,\n" +		
+				"       shapefile                       VARCHAR(512) NOT NULL,\n" +
+				"       shapefile_table                 VARCHAR(30)  NULL,\n" +
+				"       shapefile_area_id_column        VARCHAR(30)  NOT NULL,\n" +			
+				"       shapefile_desc_column           VARCHAR(30)  NULL,\n" +
+				"       resolution                      integer      NULL,\n" +			
+				"       comparea                        integer      NULL,\n" +
+				"       listing                         integer      NULL,\n" +			
+				"       CONSTRAINT geolevels_" + response.fields["geographyName"].toLowerCase() + "_pk" + 
+						" PRIMARY KEY(geography, geolevel_name)\n" +
+				")");			
+			sql.push(sqlStmt);	
+			
+			var sqlStmt=new Sql("Comment geolevels meta data table");			
+			if (dbType == "PostGres") {		
+				sqlStmt.sql="COMMENT ON TABLE geolevels_" + response.fields["geographyName"].toLowerCase() + 
+					" IS 'Geolevels: hierarchy of level with a geography.'";
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+					"SELECT @CurrentUser = user_name();\n" +   
+					"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+					"   'Geolevels: hierarchy of level with a geography.',\n" +   
+					"   'user', @CurrentUser, \n" +   
+					"   'table', 'geolevels_" + response.fields["geographyName"].toLowerCase() + "'";
+			}
+			sql.push(sqlStmt);
+			
+			var fieldArray = ['geography', 'geolevel_name', 'geolevel_id', 'description', 'lookup_table',
+							  'lookup_desc_column', 'shapefile', 'shapefile_table', 'shapefile_area_id_column', 'shapefile_desc_column',
+							  'resolution', 'comparea', 'listing'];
+			var fieldDescArray = [
+				'Geography (e.g EW2001)',
+				'Name of geolevel. This will be a column name in the numerator/denominator tables',
+				'ID for ordering (1=lowest resolution). Up to 99 supported.',
+				'Description',
+				'Lookup table name. This is used to translate codes to the common names, e.g a LADUA of 00BK is "Westminster"',
+				'Lookup table description column name.',
+				'Location of the GIS shape file. NULL if PostGress/PostGIS used. Can also use SHAPEFILE_GEOMETRY instead',
+				'Table containing GIS shape file data.',
+				'Column containing the AREA_IDs in SHAPEFILE_TABLE',
+				'Column containing the AREA_ID descriptions in SHAPEFILE_TABLE',
+				'Can use a map for selection at this resolution (0/1)',
+				'Able to be used as a comparison area (0/1)',
+				'Able to be used in a disease map listing (0/1)'];
+			for (var l=0; l< fieldArray.length; l++) {		
+				var sqlStmt=new Sql("Comment geography meta data column");	
+				if (dbType == "PostGres") {		
+					sqlStmt.sql="COMMENT ON COLUMN geolevels_" + response.fields["geographyName"].toLowerCase() + "." + fieldArray[l] +
+						" IS '" + fieldDescArray[l] + "'";
+				}
+				else if (dbType == "MSSQLServer") {	
+					sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+						"SELECT @CurrentUser = user_name();\n" +   
+						"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+						"   '" + fieldDescArray[l] + "',\n" +   
+						"   'user', @CurrentUser, \n" +   
+						"   'table', 'geolevels_" + response.fields["geographyName"].toLowerCase() + "'," +   
+						"   'column', '" + fieldArray[l] + "'";
+				}
+				sql.push(sqlStmt);			
+			}		
+			
+			for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
+				var sqlStmt=new Sql("Insert geolevels meta data for: " + csvFiles[i].tableName, 
+						"INSERT INTO geolevels_" + response.fields["geographyName"].toLowerCase() + "(\n" +
+						"   geography, geolevel_name, geolevel_id, description, lookup_table,\n" +
+						"   lookup_desc_column, shapefile, shapefile_table, shapefile_area_id_column, shapefile_desc_column,\n" + 
+						"   resolution, comparea, listing)\n" +
+						"SELECT '" + response.fields["geographyName"] + "' AS geography,\n" + 
+						"       '" + csvFiles[i].tableName + "' AS geolevel_name,\n" +
+						"       " + csvFiles[i].geolevel + " AS geolevel_id,\n" +
+						"       '" + csvFiles[i].geolevelDescription + "' AS description,\n" + 
+						"       'lookup_" + csvFiles[i].tableName + "' AS lookup_table,\n" +
+						"       'areaname' AS lookup_desc_column,\n" +
+						"       '" + csvFiles[i].file_name + "' AS shapefile,\n" +
+						"       '" + csvFiles[i].tableName + "' AS shapefile_table,\n" +
+						"       'areaid' AS shapefile_area_id_column,\n" +
+						"       'areaname' AS shapefile_desc_column,\n" +
+						"       1 AS resolution,\n" +
+						"       1 AS comparea,\n" +
+						"       1 AS listing");
+				sql.push(sqlStmt);
+			}				
+		} // End of createGeolevelsTable()
+
+		/*
+		 * Function: 	createGeographyTable()
+		 * Parameters:	None
+		 * Description:	Create geography meta data table: geography_<geographyName> 
+		 *				SQL statements
+		 */			
+		function createGeographyTable() {
+			sql.push(new Sql("Geography meta data"));	
+			
+			if (dbType == "PostGres") {	
+				sqlStmt=new Sql("Drop table", "DROP TABLE IF EXISTS geography_" + response.fields["geographyName"].toLowerCase());
+			}
+			else if (dbType == "MSSQLServer") {				
+				sqlStmt=new Sql("Drop table", "IF OBJECT_ID('geography_" + response.fields["geographyName"].toLowerCase() + 
+					"', 'U') IS NOT NULL DROP TABLE geography_" + response.fields["geographyName"].toLowerCase());
+			}
+			sql.push(sqlStmt);
+			
+			var sqlStmt=new Sql("Create geography meta data table",
+				"CREATE TABLE geography_" + response.fields["geographyName"].toLowerCase() + " (\n" +
+				"       geography               VARCHAR(50)  NOT NULL,\n" +
+				"       description             VARCHAR(250) NOT NULL,\n" +  
+				"       hierarchytable          VARCHAR(30)  NOT NULL,\n" + 
+				"       srid                    integer      NULL DEFAULT 0,\n" + 
+				"       defaultcomparea         VARCHAR(30)  NULL,\n" + 
+				"       defaultstudyarea        VARCHAR(30)  NULL,\n" + 
+				"       CONSTRAINT geography_" + response.fields["geographyName"].toLowerCase() + "_pk" + 
+						" PRIMARY KEY(geography)\n" +
+				")");			
+			sql.push(sqlStmt);
+			
+			var sqlStmt=new Sql("Populate geography meta data table", 
+				"INSERT INTO geography_" + response.fields["geographyName"].toLowerCase() + " (\n" +
+					"geography, description, hierarchytable, srid, defaultcomparea, defaultstudyarea)\n" + 
+					"SELECT '" + response.fields["geographyName"] + "' AS geography,\n" +
+					"       '" + response.fields["geographyDesc"] + "' AS description,\n" + 
+					"       'hierarchy_" + response.fields["geographyName"].toLowerCase() + "' AS hierarchytable,\n" + 
+					"       " + response.fields["srid"] + " AS srid,\n" + 
+					"       '" + defaultcomparea + "' AS defaultcomparea,\n" + 
+					"       '" + defaultstudyarea + "' AS defaultstudyarea");
+			sql.push(sqlStmt);
+			
+			var sqlStmt=new Sql("Comment geography meta data table");			
+			if (dbType == "PostGres") {		
+				sqlStmt.sql="COMMENT ON TABLE geography_" + response.fields["geographyName"].toLowerCase() + 
+					" IS 'Hierarchial geographies. Usually based on Census geography.'";
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+	"SELECT @CurrentUser = user_name();\n" +   
+	"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+	"   'Hierarchial geographies. Usually based on Census geography.',\n" +   
+	"   'user', @CurrentUser, \n" +   
+	"   'table', 'geography_" + response.fields["geographyName"].toLowerCase() + "'";
+			}
+			sql.push(sqlStmt);
+			
+			var fieldArray = ['geography', 'description', 'hierarchytable', 'srid', 'defaultcomparea', 'defaultstudyarea'];
+			var fieldDescArray = ['Geography name', 
+				'Description', 
+				'Hierarchy table', 
+				'Projection SRID', 
+				'Default comparison area: lowest resolution geolevel', 
+				'Default study area: highest resolution geolevel'];
+			for (var l=0; l< fieldArray.length; l++) {		
+				var sqlStmt=new Sql("Comment geography meta data column");	
+				if (dbType == "PostGres") {		
+					sqlStmt.sql="COMMENT ON COLUMN geography_" + response.fields["geographyName"].toLowerCase() + "." + fieldArray[l] +
+						" IS '" + fieldDescArray[l] + "'";
+				}
+				else if (dbType == "MSSQLServer") {	
+					sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+		"SELECT @CurrentUser = user_name();\n" +   
+		"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+		"   '" + fieldDescArray[l] + "',\n" +   
+		"   'user', @CurrentUser, \n" +   
+		"   'table', 'geography_" + response.fields["geographyName"].toLowerCase() + "'," +   
+		"   'column', '" + fieldArray[l] + "'";
+				}
+				sql.push(sqlStmt);			
+			}
+		} // End of createGeographyTable()
+
+		/*
+		 * Function: 	createShapeFileTable()
+		 * Parameters:	None
+		 * Description:	Create shapefile derived data table: csvFiles[i].tableName 
+		 *				SQL statements
+		 */			
+		function createShapeFileTable() {
 			var sqlStmt;		
 			if (dbType == "PostGres") {	
 				sqlStmt=new Sql("Drop table", "DROP TABLE IF EXISTS " + csvFiles[i].tableName);
@@ -869,15 +1136,6 @@ sqlStmt.sql="DECLARE c1 CURSOR FOR\n" +
 " ORDER BY 1"; 
 			}
 			sql.push(sqlStmt);
-						
-			var sqlStmt=new Sql("Describe " + csvFiles[i].tableName);			
-			if (dbType == "PostGres") {		
-				sqlStmt.sql="\\dS+ " + csvFiles[i].tableName;
-			}
-			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="EXEC sp_help " + csvFiles[i].tableName;
-			}
-			sql.push(sqlStmt);
 			
 			// Set default satudy and comparison areas
 			if (csvFiles[i].geolevel == 1) {
@@ -888,227 +1146,58 @@ sqlStmt.sql="DECLARE c1 CURSOR FOR\n" +
 			}
 //			else {
 //				console.error("No match for geolevel: " + csvFiles[i].geolevel);
-//			}
+//			}			
+		} // End of createShapeFileTable()
+		
+		function Sql(comment, sql) { // Object constructor
+			this.comment=comment;
+			this.sql=sql;	
+			this.nonsql=undefined;	
+			this.dbStream=dbType;			
+		}
+		var sql=[];
+		
+		beginTransaction();
+		
+		var defaultcomparea;
+		var defaultstudyarea;
+	
+		for (var i=0; i<csvFiles.length; i++) { // Main file processing loop
+			createShapeFileTable();
 		} // End of for csvFiles loop
 		
-		// defaultcomparea and defaultstudyarea are defined
+		// Check defaultcomparea and defaultstudyarea are defined by createShapeFileTable()
 		if (defaultcomparea == undefined) {
 			throw new Error("Unable to determine default comparison area");
 		}
 		if (defaultstudyarea == undefined) {
 			throw new Error("Unable to determine default study area");
 		}
-
-		sql.push(new Sql("Geography meta data"));	
 		
-		if (dbType == "PostGres") {	
-			sqlStmt=new Sql("Drop table", "DROP TABLE IF EXISTS geography_" + response.fields["geographyName"].toLowerCase());
-		}
-		else if (dbType == "MSSQLServer") {				
-			sqlStmt=new Sql("Drop table", "IF OBJECT_ID('geography_" + response.fields["geographyName"].toLowerCase() + 
-				"', 'U') IS NOT NULL DROP TABLE geography_" + response.fields["geographyName"].toLowerCase());
-		}
-		sql.push(sqlStmt);
+		createGeographyTable();
+		createGeolevelsTable();
+		createGeolevelsLookupTables();
+		createHierarchyTable();
 		
-		var sqlStmt=new Sql("Create geography meta data table",
-			"CREATE TABLE geography_" + response.fields["geographyName"].toLowerCase() + " (\n" +
-			"       geography               VARCHAR(50)  NOT NULL,\n" +
-			"       description             VARCHAR(250) NOT NULL,\n" +  
-			"       hierarchytable          VARCHAR(30)  NOT NULL,\n" + 
-			"       srid                    integer      NULL DEFAULT 0,\n" + 
-			"       defaultcomparea         VARCHAR(30)  NULL,\n" + 
-			"       defaultstudyarea        VARCHAR(30)  NULL,\n" + 
-			"       CONSTRAINT geography PRIMARY KEY(geography)\n" +
-			")");			
-		sql.push(sqlStmt);
+		commitTransaction();
 		
-		var sqlStmt=new Sql("Populate geography meta data table", 
-			"INSERT INTO geography_" + response.fields["geographyName"].toLowerCase() + " (\n" +
-				"geography, description, hierarchytable, srid, defaultcomparea, defaultstudyarea)\n" + 
-				"SELECT '" + response.fields["geographyName"] + "' AS geography,\n" +
-				"       '" + response.fields["geographyDesc"] + "' AS description,\n" + 
-				"       'hierarchy_" + response.fields["geographyName"].toLowerCase() + "' AS hierarchytable,\n" + 
-				"       " + response.fields["srid"] + " AS srid,\n" + 
-				"       '" + defaultcomparea + "' AS defaultcomparea,\n" + 
-				"       '" + defaultstudyarea + "' AS defaultstudyarea");
-		sql.push(sqlStmt);
-		
-		var sqlStmt=new Sql("Comment geography meta data table");			
-		if (dbType == "PostGres") {		
-			sqlStmt.sql="COMMENT ON TABLE geography_" + response.fields["geographyName"].toLowerCase() + 
-				" IS 'Hierarchial geographies. Usually based on Census geography.'";
-		}
-		else if (dbType == "MSSQLServer") {	
-			sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
-"SELECT @CurrentUser = user_name();\n" +   
-"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
-"   'Hierarchial geographies. Usually based on Census geography.',\n" +   
-"   'user', @CurrentUser, \n" +   
-"   'table', 'geography_" + response.fields["geographyName"].toLowerCase() + "'";
-		}
-		sql.push(sqlStmt);
-		
-		var fieldArray = ['geography', 'description', 'hierarchytable', 'srid', 'defaultcomparea', 'defaultstudyarea'];
-		var fieldDescArray = ['Geography name', 
-			'Description', 
-			'Hierarchy table', 
-			'Projection SRID', 
-			'Default comparison area: lowest resolution geolevel', 
-			'Default study area: highest resolution geolevel'];
-		for (var l=0; l< fieldArray.length; l++) {		
-			var sqlStmt=new Sql("Comment geography meta data column");	
-			if (dbType == "PostGres") {		
-				sqlStmt.sql="COMMENT ON COLUMN geography_" + response.fields["geographyName"].toLowerCase() + "." + fieldArray[l] +
-					" IS '" + fieldDescArray[l] + "'";
-			}
-			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
-	"SELECT @CurrentUser = user_name();\n" +   
-	"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
-	"   '" + fieldDescArray[l] + "',\n" +   
-	"   'user', @CurrentUser, \n" +   
-	"   'table', 'geography_" + response.fields["geographyName"].toLowerCase() + "'," +   
-	"   'column', '" + fieldArray[l] + "'";
-			}
-			sql.push(sqlStmt);			
-		}
-
-		sql.push(new Sql("Geolevels meta data"));	
-		
-		if (dbType == "PostGres") {	
-			sqlStmt=new Sql("Drop table", "DROP TABLE IF EXISTS geolevels_" + response.fields["geographyName"].toLowerCase());
-		}
-		else if (dbType == "MSSQLServer") {				
-			sqlStmt=new Sql("Drop table", "IF OBJECT_ID('geolevels_" + response.fields["geographyName"].toLowerCase() + 
-				"', 'U') IS NOT NULL DROP TABLE geolevels_" + response.fields["geographyName"].toLowerCase());
-		}
-		sql.push(sqlStmt);
-		
-		var sqlStmt=new Sql("Create geolevels meta data table",
-			"CREATE TABLE geolevels_" + response.fields["geographyName"].toLowerCase() + " (\n" +
-			"       geography                       VARCHAR(50)  NOT NULL,\n" +
-			"       geolevel_name                   VARCHAR(30)  NOT NULL,\n" +
-			"       geolevel_id			        	integer	     NOT NULL,\n" +		
-			"       description                     VARCHAR(250) NOT NULL,\n" +
-			"       lookup_table                    VARCHAR(30)  NOT NULL,\n" +
-			"       lookup_desc_column              VARCHAR(30)  NOT NULL,\n" +		
-			"       shapefile                       VARCHAR(512) NOT NULL,\n" +
-			"       shapefile_table                 VARCHAR(30)  NULL,\n" +
-			"       shapefile_area_id_column        VARCHAR(30)  NOT NULL,\n" +			
-			"       shapefile_desc_column           VARCHAR(30)  NULL,\n" +
-			"       resolution                      integer      NULL,\n" +			
-			"       comparea                        integer      NULL,\n" +
-			"       listing                         integer      NULL,\n" +			
-			"       CONSTRAINT geolevel_pk PRIMARY KEY(geography, geolevel_name)\n" +
-			")");			
-		sql.push(sqlStmt);	
-		
-		var sqlStmt=new Sql("Comment geolevels meta data table");			
-		if (dbType == "PostGres") {		
-			sqlStmt.sql="COMMENT ON TABLE geolevels_" + response.fields["geographyName"].toLowerCase() + 
-				" IS 'Geolevels: hierarchy of level with a geography.'";
-		}
-		else if (dbType == "MSSQLServer") {	
-			sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
-"SELECT @CurrentUser = user_name();\n" +   
-"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
-"   'Geolevels: hierarchy of level with a geography.',\n" +   
-"   'user', @CurrentUser, \n" +   
-"   'table', 'geolevels_" + response.fields["geographyName"].toLowerCase() + "'";
-		}
-		sql.push(sqlStmt);
-		
-		var fieldArray = ['geography', 'geolevel_name', 'geolevel_id', 'description', 'lookup_table',
-						  'lookup_desc_column', 'shapefile', 'shapefile_table', 'shapefile_area_id_column', 'shapefile_desc_column',
-						  'resolution', 'comparea', 'listing'];
-		var fieldDescArray = [
-			'Geography (e.g EW2001)',
-			'Name of geolevel. This will be a column name in the numerator/denominator tables',
-			'ID for ordering (1=lowest resolution). Up to 99 supported.',
-			'Description',
-			'Lookup table name. This is used to translate codes to the common names, e.g a LADUA of 00BK is "Westminster"',
-			'Lookup table description column name.',
-			'Location of the GIS shape file. NULL if PostGress/PostGIS used. Can also use SHAPEFILE_GEOMETRY instead',
-			'Table containing GIS shape file data.',
-			'Column containing the AREA_IDs in SHAPEFILE_TABLE',
-			'Column containing the AREA_ID descriptions in SHAPEFILE_TABLE',
-			'Can use a map for selection at this resolution (0/1)',
-			'Able to be used as a comparison area (0/1)',
-			'Able to be used in a disease map listing (0/1)'];
-		for (var l=0; l< fieldArray.length; l++) {		
-			var sqlStmt=new Sql("Comment geography meta data column");	
-			if (dbType == "PostGres") {		
-				sqlStmt.sql="COMMENT ON COLUMN geolevels_" + response.fields["geographyName"].toLowerCase() + "." + fieldArray[l] +
-					" IS '" + fieldDescArray[l] + "'";
-			}
-			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
-	"SELECT @CurrentUser = user_name();\n" +   
-	"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
-	"   '" + fieldDescArray[l] + "',\n" +   
-	"   'user', @CurrentUser, \n" +   
-	"   'table', 'geolevels_" + response.fields["geographyName"].toLowerCase() + "'," +   
-	"   'column', '" + fieldArray[l] + "'";
-			}
-			sql.push(sqlStmt);			
-		}		
-		
-		for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
-			var sqlStmt=new Sql("Insert geolevels meta data for: " + csvFiles[i].tableName, 
-					"INSERT INTO geolevels_" + response.fields["geographyName"].toLowerCase() + "(\n" +
-					"   geography, geolevel_name, geolevel_id, description, lookup_table,\n" +
-					"   lookup_desc_column, shapefile, shapefile_table, shapefile_area_id_column, shapefile_desc_column,\n" + 
-					"   resolution, comparea, listing)\n" +
-					"SELECT '" + response.fields["geographyName"] + "' AS geography,\n" + 
-					"       '" + csvFiles[i].tableName + "' AS geolevel_name,\n" +
-					"       " + csvFiles[i].geolevel + " AS geolevel_id,\n" +
-					"       '" + csvFiles[i].geolevelDescription + "' AS description,\n" + 
-					"       'lookup_" + csvFiles[i].tableName + "' AS lookup_table,\n" +
-					"       'areaname' AS lookup_desc_column,\n" +
-					"       '" + csvFiles[i].file_name + "' AS shapefile,\n" +
-					"       '" + csvFiles[i].tableName + "' AS shapefile_table,\n" +
-					"       'areaid' AS shapefile_area_id_column,\n" +
-					"       'areaname' AS shapefile_desc_column,\n" +
-					"       1 AS resolution,\n" +
-					"       1 AS comparea,\n" +
-					"       1 AS listing");
-			sql.push(sqlStmt);
-		}	
-		
-		sql.push(new Sql("Geolevels lookup tables"));
-		
-		sql.push(new Sql("Hierarchy table"));
-		
-		var sqlStmt=new Sql("Commit transaction");
-		if (dbType == "PostGres") {		
-			sqlStmt.sql="END";	
-		}
-		else if (dbType == "MSSQLServer") {	
-			sqlStmt.sql="COMMIT";	
-		}				
-		sql.push(sqlStmt);
-
-		sql.push(new Sql("Create table statistics in separate transactions"));
-		for (var i=0; i<csvFiles.length; i++) {
-			var sqlStmt=new Sql("Create table statistics for " + csvFiles[i].tableName);
-			if (dbType == "PostGres") {		
-				sqlStmt.sql="VACUUM ANALYZE " + csvFiles[i].tableName;
-			}
-			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="UPDATE STATISTICS " + csvFiles[i].tableName;		
-			}
-			sql.push(sqlStmt);
-		} // End of for csvFiles loop
+		analyzeTables();
 		
 		for (var i=0; i<sql.length; i++) {
-			if (sql[i].sql == undefined) { // Comment			
+			if (sql[i].sql == undefined && sql[i].nonsql == undefined) { // Comment			
 				dbStream.write("\n--\n-- " + sql[i].comment + "\n--\n");
 			}
-			else if (dbType == "PostGres") {				
+			else if (sql[i].sql != undefined && dbType == "PostGres") {				
 				dbStream.write("\n-- SQL statement " + i + ": " + sql[i].comment + " >>>\n" + sql[i].sql + ";\n");
 			}
-			else if (dbType == "MSSQLServer") {				
+			else if (sql[i].sql != undefined && dbType == "MSSQLServer") {				
 				dbStream.write("\n-- SQL statement " + i + ": " + sql[i].comment + " >>>\n" + sql[i].sql + ";\nGO\n");
+			}
+			else if (sql[i].nonsql != undefined && dbType == "PostGres") {				
+				dbStream.write("\n-- PSQL statement " + i + ": " + sql[i].comment + " >>>\n" + sql[i].nonsql + "\n");
+			}
+			else if (sql[i].nonsql != undefined && dbType == "MSSQLServer") {				
+				dbStream.write("\n-- SQLCMD statement " + i + ": " + sql[i].comment + " >>>\n" + sql[i].nonsql + "\n");
 			}
 		}
 	} // End of addSQLStatements()
