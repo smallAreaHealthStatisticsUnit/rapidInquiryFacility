@@ -36,6 +36,15 @@ No work
 
 ### Web services (rifServices) - Kevin/David
 
+The main work on the RIF related to enabling middleware methods that help support visualising smoothed data extract results. 
+The work done on that has not just involved coding new middleware methods but also making design decisions to help expedite 
+the need to make the RIF work on both PostgreSQL and SQL Server systems. The need to find a simple solution was made more 
+pressing because Kevin was ill for ten days.
+
+Currently there are a number of database procedures in PostgreSQL which, given a study id, will retrieve smoothed results. 
+These procedures have been designed to retrieve parts of the result sets to facilitate showing results as pages in the front end. 
+However, considering the factors of effort needed to maintain the code for these features and to maintain that code for 
+both PostgreSQL and SQL Server platforms, Kevin had to re-evaluate using them.
 
 ### Run study batch - Kevin
 
@@ -45,12 +54,14 @@ No work
 
 ### Ontology support - Kevin
  
+- 
 
 ### Node geospatial services (tile-maker) - Peter
 
 Major progress this month with both SQL Server and Postgres integration for the geospatial services.
 
-* Create shapefile derived CSV files; de-duplicated. Geometric data interchnaged in well known text format;
+
+- Create shapefile derived CSV files; de-duplicated. Geometric data interchnaged in well known text format;
 * XML Configuration download support;
 * SQL load script generator for Postgres and SQL Server:
   * Load shapefile derived CSV files;
