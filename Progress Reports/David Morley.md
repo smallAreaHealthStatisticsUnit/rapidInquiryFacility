@@ -29,3 +29,14 @@ Principal Work Area: JavaScript User interface development
 - Study submission JSON object almost complete
 - Choropleth mapping for a test dataset in dataviewer
 - Integrated taxonomy service into parameters modal
+
+
+##August
+
+- Added histogram to choropleth map break selector
+- Finished adding split-containers to dashboards
+- Statistical method dialogue completed
+- Finished login methods and added permission check to outgoing requests
+- Started status report viewer
+- Continued looking at D3 library with KG
+
