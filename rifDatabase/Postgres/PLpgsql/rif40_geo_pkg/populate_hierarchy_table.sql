@@ -473,7 +473,12 @@ SELECT level1, level2, level3, level4,
 			END IF;
 		END IF;
 	END LOOP;
-	sql_stmt:=sql_stmt||' ORDER BY 1, 2, 3, 4';
+	
+	sql_stmt:=sql_stmt||' ORDER BY 1';
+	FOR i IN 2 .. num_geolevels LOOP /* ORDER BY clause */ 	
+		sql_stmt:=sql_stmt||', '||i;
+	END LOOP;
+	
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'populate_hierarchy_table', 'SQL> %', sql_stmt::VARCHAR);
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 --
