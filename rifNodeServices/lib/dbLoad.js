@@ -522,6 +522,224 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 "   'table', 'hierarchy_" + response.fields["geographyName"].toLowerCase() + "'";
 			}
 			sql.push(sqlStmt);
+			
+			var sqlStmt=new Sql("Create function check_hierarchy_" + response.fields["geographyName"].toLowerCase());
+			if (dbType == "PostGres") {	
+			sqlStmt.sql="CREATE OR REPLACE FUNCTION check_hierarchy_" + response.fields["geographyName"].toLowerCase() + "(l_geography VARCHAR, l_hierarchytable VARCHAR, l_type VARCHAR)\n" +
+"RETURNS integer\n" +
+"SECURITY INVOKER\n" +
+"AS $body$\n" +
+"/*\n" +
+"Function: 		check_hierarchy_" + response.fields["geographyName"].toLowerCase() + "()\n" +
+"Parameters:		Geography, hierarchy table, type: 'missing', 'spurious additional' or 'multiple hierarchy'\n" +
+"Returns:		Nothing\n" +
+"Description:	Diff geography hierarchy table using dynamic method 4\n" +
+"				Also tests the hierarchy, i.e. all a higher resolutuion is contained by one of the next higher and so on\n" +
+" */\n" +
+"DECLARE\n" +
+"	c2 CURSOR(l_geography VARCHAR) FOR\n" +
+"		SELECT *\n" +
+"		  FROM geolevels_" + response.fields["geographyName"].toLowerCase() + "\n" +
+"		 WHERE geography = l_geography\n" +
+"		 ORDER BY geolevel_id;\n" +
+"	c3 REFCURSOR;\n" +
+"	c4 CURSOR(l_geography VARCHAR, l_geolevel_id INTEGER) FOR\n" +
+"		SELECT *\n" +
+"		  FROM geolevels_" + response.fields["geographyName"].toLowerCase() + "\n" +
+"		 WHERE geography   = l_geography\n" +
+"		   AND geolevel_id = l_geolevel_id\n" +
+"		 ORDER BY geolevel_id;\n" +
+"--\n" +
+"	c2_rec geolevels_" + response.fields["geographyName"].toLowerCase() + "%ROWTYPE;\n" +
+"	c3_rec RECORD;\n" +
+"	c4_rec geolevels_" + response.fields["geographyName"].toLowerCase() + "%ROWTYPE;\n" +
+"--\n" +
+"	sql_stmt 		VARCHAR;\n" +
+"	previous_geolevel_name 	VARCHAR:=NULL;\n" +
+"	i INTEGER;\n" +
+"	e INTEGER:=0;\n" +
+"	field INTEGER;\n" +
+"BEGIN\n" +
+"--\n" +
+"	sql_stmt:='WITH /* '||l_type||' */ ';\n" +
+"	i:=0;\n" +
+"	FOR c2_rec IN c2(l_geography) LOOP\n" +
+"		i:=i+1;\n" +
+"		IF l_type = 'multiple hierarchy' THEN\n" +
+"			IF i = 1 THEN\n" +
+"				NULL;\n" +
+"			ELSIF i > 2 THEN\n" +
+"				sql_stmt:=sql_stmt||', '||quote_ident('a'||c2_rec.geolevel_id)||' AS ('||E'\n';\n" +
+"				sql_stmt:=sql_stmt||E'\t'||'SELECT COUNT(*) AS '||quote_ident(LOWER(c2_rec.geolevel_name)||'_total')||E'\n';\n" +
+"				sql_stmt:=sql_stmt||E'\t'||'  FROM ('||E'\n';\n" +
+"			ELSE\n" +
+"				sql_stmt:=sql_stmt||quote_ident('a'||c2_rec.geolevel_id)||' AS ('||E'\n';\n" +
+"				sql_stmt:=sql_stmt||E'\t'||'SELECT COUNT(*) AS '||quote_ident(LOWER(c2_rec.geolevel_name)||'_total')||E'\n';\n" +
+"				sql_stmt:=sql_stmt||E'\t'||'  FROM ('||E'\n';\n" +
+"			END IF;\n" +
+"		ELSE\n" +
+"			IF i != 1 THEN\n" +
+"				sql_stmt:=sql_stmt||', '||quote_ident('a'||c2_rec.geolevel_id)||' AS ('||E'\n';\n" +
+"			ELSE\n" +
+"				sql_stmt:=sql_stmt||quote_ident('a'||c2_rec.geolevel_id)||' AS ('||E'\n';\n" +
+"			END IF;\n" +
+"			sql_stmt:=sql_stmt||E'\t'||'SELECT COUNT(*) AS '||quote_ident(LOWER(c2_rec.geolevel_name)||'_total')||E'\n';\n" +
+"			sql_stmt:=sql_stmt||E'\t'||'  FROM ('||E'\n';\n" +
+"		END IF;\n" +
+"		IF l_type = 'missing' THEN\n" +
+"			sql_stmt:=sql_stmt||E'\t'||E'\t'||'SELECT '||quote_ident(LOWER(c2_rec.geolevel_name))||' FROM '||quote_ident(LOWER(l_hierarchytable))||E'\n';\n" +
+"			sql_stmt:=sql_stmt||E'\t'||E'\t'||'EXCEPT'||E'\n';\n" +
+"			sql_stmt:=sql_stmt||E'\t'||E'\t'||'SELECT '||quote_ident(LOWER(c2_rec.geolevel_name))||' FROM '||quote_ident(LOWER(c2_rec.lookup_table))||\n" +
+"				') '||quote_ident('as'||c2_rec.geolevel_id)||')'||E'\n';\n" +
+"		ELSIF l_type = 'spurious additional' THEN\n" +
+"			sql_stmt:=sql_stmt||E'\t'||E'\t'||'SELECT '||quote_ident(LOWER(c2_rec.geolevel_name))||' FROM '||quote_ident(LOWER(c2_rec.lookup_table))||E'\n';\n" +
+"			sql_stmt:=sql_stmt||E'\t'||E'\t'||'EXCEPT'||E'\n';\n" +
+"			sql_stmt:=sql_stmt||E'\t'||E'\t'||'SELECT '||quote_ident(LOWER(c2_rec.geolevel_name))||' FROM '||quote_ident(LOWER(l_hierarchytable))||\n" +
+"				') '||quote_ident('as'||c2_rec.geolevel_id)||')'||E'\n';\n" +
+"		ELSIF l_type = 'multiple hierarchy' THEN\n" +
+"			IF previous_geolevel_name IS NOT NULL THEN\n" +
+"				sql_stmt:=sql_stmt||E'\t'||E'\t'||'SELECT '||quote_ident(LOWER(c2_rec.geolevel_name))||\n" +
+"					', COUNT(DISTINCT('||previous_geolevel_name||')) AS total'||E'\n';\n" +
+"				sql_stmt:=sql_stmt||E'\t'||E'\t'||'  FROM '||quote_ident(LOWER(l_hierarchytable))||E'\n';\n" +
+"				sql_stmt:=sql_stmt||E'\t'||E'\t'||' GROUP BY '||quote_ident(LOWER(c2_rec.geolevel_name))||E'\n';\n" +
+"				sql_stmt:=sql_stmt||E'\t'||E'\t'||'HAVING COUNT(DISTINCT('||previous_geolevel_name||')) > 1'||\n" +
+"					') '||quote_ident('as'||c2_rec.geolevel_id)||')'||E'\n';\n" +
+"			END IF;\n" +
+"		ELSE\n" +
+"			RAISE EXCEPTION 'Invalid check type: %, valid types are: ''missing'', ''spurious additional'', or ''multiple hierarchy''', \n" +
+"				l_type::VARCHAR 	/* Check type */;\n" +
+"		END IF;\n" +
+"		previous_geolevel_name:=quote_ident(LOWER(c2_rec.geolevel_name));\n" +
+"	END LOOP;\n" +
+"	sql_stmt:=sql_stmt||'SELECT ARRAY[';\n" +
+"	i:=0;\n" +
+"	FOR c2_rec IN c2(l_geography) LOOP\n" +
+"		i:=i+1;\n" +
+"		IF l_type = 'multiple hierarchy' THEN\n" +
+"			IF i = 1 THEN\n" +
+"				NULL;\n" +
+"			ELSIF i > 2 THEN\n" +
+"				sql_stmt:=sql_stmt||', '||quote_ident('a'||c2_rec.geolevel_id)||'.'||quote_ident(LOWER(c2_rec.geolevel_name)||'_total');\n" +
+"			ELSE\n" +
+"				sql_stmt:=sql_stmt||quote_ident('a'||c2_rec.geolevel_id)||'.'||quote_ident(LOWER(c2_rec.geolevel_name)||'_total');\n" +
+"			END IF;\n" +
+"		ELSE\n" +
+"			IF i != 1 THEN\n" +
+"				sql_stmt:=sql_stmt||', '||quote_ident('a'||c2_rec.geolevel_id)||'.'||quote_ident(LOWER(c2_rec.geolevel_name)||'_total');\n" +
+"			ELSE\n" +
+"				sql_stmt:=sql_stmt||quote_ident('a'||c2_rec.geolevel_id)||'.'||quote_ident(LOWER(c2_rec.geolevel_name)||'_total');\n" +
+"			END IF;\n" +
+"		END IF;\n" +
+"	END LOOP;\n" +
+"	sql_stmt:=sql_stmt||'] AS res_array'||E'\n'||'FROM ';\n" +
+"	i:=0;\n" +
+"	FOR c2_rec IN c2(l_geography) LOOP\n" +
+"		i:=i+1;\n" +
+"		IF l_type = 'multiple hierarchy' THEN\n" +
+"			IF i = 1 THEN\n" +
+"				NULL;\n" +
+"			ELSIF i > 2 THEN\n" +
+"				sql_stmt:=sql_stmt||', '||quote_ident('a'||c2_rec.geolevel_id);\n" +
+"			ELSE\n" +
+"				sql_stmt:=sql_stmt||quote_ident('a'||c2_rec.geolevel_id);\n" +
+"			END IF;\n" +
+"		ELSE\n" +
+"			IF i != 1 THEN\n" +
+"				sql_stmt:=sql_stmt||', '||quote_ident('a'||c2_rec.geolevel_id);\n" +
+"			ELSE\n" +
+"				sql_stmt:=sql_stmt||quote_ident('a'||c2_rec.geolevel_id);\n" +
+"			END IF;\n" +
+"		END IF;\n" +
+"	END LOOP;\n" +
+"--\n" +
+"	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;\n" +
+"	OPEN c3 FOR EXECUTE sql_stmt;\n" +
+"	FETCH c3 INTO c3_rec;\n" +
+"--\n" +
+"-- Process results array\n" +
+"--\n" +
+"	i:=0;\n" +
+"	FOREACH field IN ARRAY c3_rec.res_array LOOP\n" +
+"		i:=i+1;\n" +
+"		OPEN c4(l_geography, i);\n" +
+"		FETCH c4 INTO c4_rec;\n" +
+"		CLOSE c4;\n" +
+"		IF field != 0 THEN\n" +
+"			RAISE WARNING 'Geography: % geolevel %: [%] % codes: %',\n" + 
+"				l_geography::VARCHAR		/* Geography */, \n" +
+"				i::VARCHAR					/* Geolevel ID */, \n" +
+"				LOWER(c4_rec.geolevel_name)::VARCHAR	/* Geolevel name */,\n" + 
+"				l_type::VARCHAR				/* Check type */, \n" +
+"				field::VARCHAR				/* Area ID */;\n" +
+"			e:=e+1;\n" +
+"		ELSE\n" +
+"			RAISE INFO 'Geography: % geolevel %: [%] no % codes', \n" +
+"				l_geography::VARCHAR		/* Geography */, \n" +
+"				i::VARCHAR					/* Geolevel ID */, \n" +
+"				LOWER(c4_rec.geolevel_name)::VARCHAR	/* Geolevel name */, \n" +
+"				l_type::VARCHAR				/* Check type */;\n" +
+"		END IF;\n" +
+"	END LOOP;\n" +
+"--\n" +
+"	RETURN e;\n" +
+"END;\n" +
+"$body$\n" +
+"LANGUAGE PLPGSQL";
+			}
+			sql.push(sqlStmt);
+			
+			var sqlStmt=new Sql("Comment function check_hierarchy_" + response.fields["geographyName"].toLowerCase());
+			if (dbType == "PostGres") {	
+			sqlStmt.sql="COMMENT ON FUNCTION check_hierarchy_" + response.fields["geographyName"].toLowerCase() + "(VARCHAR, VARCHAR, VARCHAR) IS 'Function: 		check_hierarchy_" + response.fields["geographyName"].toLowerCase() + "()\n" +
+"Parameters:		Geography, hierarchy table, type: \"missing\", \"spurious additional\" or \"multiple hierarchy\"\n" +
+"Returns:		Nothing\n" +
+"Description:	Diff geography hierarchy table using dynamic method 4\n" +
+"				Also tests the hierarchy, i.e. all a higher resolutuion is contained by one of the next higher and so on\n" +
+"\n" +
+"Example of dynamic SQL. Note the use of an array return type to achieve method 4\n" +
+"\n" +
+"WITH /* missing */ a1 AS (\n" +
+"        SELECT COUNT(*) AS cb_2014_us_nation_5m_total\n" +
+"          FROM (\n" +
+"                SELECT cb_2014_us_nation_5m FROM hierarchy_cb_2014_us_500k\n" +
+"                EXCEPT\n" +
+"                SELECT cb_2014_us_nation_5m FROM lookup_cb_2014_us_nation_5m) as1)\n" +
+", a2 AS (\n" +
+"        SELECT COUNT(*) AS cb_2014_us_state_500k_total\n" +
+"          FROM (\n" +
+"                SELECT cb_2014_us_state_500k FROM hierarchy_cb_2014_us_500k\n" +
+"                EXCEPT\n" +
+"                SELECT cb_2014_us_state_500k FROM lookup_cb_2014_us_state_500k) as2)\n" +
+", a3 AS (\n" +
+"        SELECT COUNT(*) AS cb_2014_us_county_500k_total\n" +
+"          FROM (\n" +
+"                SELECT cb_2014_us_county_500k FROM hierarchy_cb_2014_us_500k\n" +
+"                EXCEPT\n" +
+"                SELECT cb_2014_us_county_500k FROM lookup_cb_2014_us_county_500k) as3)\n" +
+"SELECT ARRAY[a1.cb_2014_us_nation_5m_total, a2.cb_2014_us_state_500k_total, a3.cb_2014_us_county_500k_total] AS res_array\n" +
+"FROM a1, a2, a3;\n" +
+"\n" +
+"Or: \n" +
+"\n" +
+"WITH /* multiple hierarchy */ a2 AS (\n" +
+"        SELECT COUNT(*) AS cb_2014_us_state_500k_total\n" +
+"          FROM (\n" +
+"                SELECT cb_2014_us_state_500k, COUNT(DISTINCT(cb_2014_us_nation_5m)) AS total\n" +
+"                  FROM hierarchy_cb_2014_us_500k\n" +
+"                 GROUP BY cb_2014_us_state_500k\n" +
+"                HAVING COUNT(DISTINCT(cb_2014_us_nation_5m)) > 1) as2)\n" +
+", a3 AS (\n" +
+"        SELECT COUNT(*) AS cb_2014_us_county_500k_total\n" +
+"          FROM (\n" +
+"                SELECT cb_2014_us_county_500k, COUNT(DISTINCT(cb_2014_us_state_500k)) AS total\n" +
+"                  FROM hierarchy_cb_2014_us_500k\n" +
+"                 GROUP BY cb_2014_us_county_500k\n" +
+"                HAVING COUNT(DISTINCT(cb_2014_us_state_500k)) > 1) as3)\n" +
+"SELECT ARRAY[a2.cb_2014_us_state_500k_total, a3.cb_2014_us_county_500k_total] AS res_array\n" +
+"FROM a2, a3;\n" +
+"';";			
+			}
+			sql.push(sqlStmt);
 		} // End of createHierarchyTable()
 
 		/*
