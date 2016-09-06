@@ -4,14 +4,10 @@
 
 No milestones.
 
-## Planned work for July and August
+## Planned work for August and September
 
 | Week | Week Starting  | PH                                                     | KG                                               | DM                                                                   | BP                                         | MD                       | Milestone        | Notes |
 |------|----------------|--------------------------------------------------------|--------------------------------------------------|----------------------------------------------------------------------|--------------------------------------------|--------------------------|------------------|-------|
-| 27   | 04 July 2016   | Shapefile services: 3.1 meta data (6 days)             | 2.3 Taxonomy services (4 days)                   | Data Viewer                                                          | Integrate R into Java middleware (10 days) |                          |                  |       |
-| 28   | 11 July 2016   |                                                        |                                                  | Exposomics                                                           |                                            |                          |                  |       |
-| 29   | 18 July 2016   |                                                        | Integrate R into Java middleware (5 days)        | GIS short course                                                     | Holiday                                    |                          |                  |       |
-| 30   | 25 July 2016   |                                                        | 2.1 Middleware services planning                 | Disease Mapping - m/w services (5 days)                              |                                            |                          | Study Submission |       |
 | 31   | 01 August 2016 | Shapefile services: 3.2 Geospatial outputs (8 days)    | Integrate R into Java middleware (10 days)       | Handover to new GIS person                                           | Integrate R into Java middleware (10 days) |                          |                  |       |
 | 32   | 08 August 2016 |                                                        |                                                  | Data Viewer - middleware services (5 days)                           |                                            |                          |                  |       |
 | 33   | 15 August 2016 | Holiday                                                | 6.3 Middleware services - create study (14 days) | Holiday                                                              | Holiday                                    |                          |                  |       |
@@ -20,7 +16,7 @@ No milestones.
 
 ## Data Loader - Kevin
 
-No work
+No work (as planned)
 
 ## Front end (webPlatform)
 
@@ -54,12 +50,11 @@ both PostgreSQL and SQL Server platforms, Kevin had to re-evaluate using them.
 
 ### Ontology support - Kevin
  
-- 
+- No progress required.
 
 ### Node geospatial services (tile-maker) - Peter
 
 Major progress this month with both SQL Server and Postgres integration for the geospatial services.
-
 
 - Create shapefile derived CSV files; de-duplicated. Geometric data interchnaged in well known text format;
 * XML Configuration download support;
