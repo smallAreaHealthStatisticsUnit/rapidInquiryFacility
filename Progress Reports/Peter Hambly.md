@@ -570,9 +570,10 @@ RangeError: Invalid string length
   * Lookup tables; 
   * Missing comments on other columns from shapefile via extended attributes XML file;
   * Add CSV files meta to XML config;
+  * Drive database script generator from XML config file (not internal data structures);
   * Check Turf JS centroid code (figures are wrong);
   * Compare Turf/PostGIS/SQL Server area and centroid caculations;
-  * Resolve SQL Server use of geography verses geometry and SQL Server casting; 
+  * Resolve SQL Server use of geography verses geometry and SQL Server geometry to geography casting; 
 * Map tile generator
 * Geolevel intersction generator (Turf and/or DB versions)
 
