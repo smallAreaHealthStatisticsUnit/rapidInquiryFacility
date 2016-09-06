@@ -377,9 +377,11 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 			var tableList=[];
 			for (var i=0; i<csvFiles.length; i++) {
 				tableList.push(csvFiles[i].tableName);
+				tableList.push("lookup_" + csvFiles[i].tableName);
 			}
 			tableList.push("geolevels_" + response.fields["geographyName"].toLowerCase());
 			tableList.push("geography_" + response.fields["geographyName"].toLowerCase());
+			tableList.push("hierarchy_" + response.fields["geographyName"].toLowerCase());
 			
 			for (var i=0; i<tableList.length; i++) {												
 				var sqlStmt=new Sql("Describe " + tableList[i]);			
@@ -408,7 +410,50 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 		 * Description:	Create geoelvels lookup tables: SQL statements
 		 */	 
 		function createGeolevelsLookupTables() {
-			sql.push(new Sql("Geolevels lookup tables"));		
+			sql.push(new Sql("Geolevels lookup tables"));
+			for (var i=0; i<csvFiles.length; i++) {									
+				var sqlStmt=new Sql("Drop table lookup_" + csvFiles[i].tableName); 
+				if (dbType == "PostGres") {		
+					sqlStmt.sql="DROP TABLE IF EXISTS lookup_" + csvFiles[i].tableName;
+				}
+				else if (dbType == "MSSQLServer") {	
+					sqlStmt.sql="IF OBJECT_ID('lookup_" + csvFiles[i].tableName + 
+						"', 'U') IS NOT NULL DROP TABLE lookup_" + csvFiles[i].tableName;
+				}
+				sql.push(sqlStmt);
+				
+				var sqlStmt=new Sql("Create table lookup_" + csvFiles[i].tableName,
+					"CREATE TABLE lookup_" + csvFiles[i].tableName + " (\n" +
+					"	" + csvFiles[i].tableName + "	varchar(100)  NOT NULL,\n" +
+					"	areaname				varchar(1000)\n" +
+					")");
+				sql.push(sqlStmt);
+				
+				var sqlStmt=new Sql("Insert table lookup_" + csvFiles[i].tableName,			
+					"INSERT INTO lookup_" + csvFiles[i].tableName + "(" + csvFiles[i].tableName + ", areaname)\n" +					
+					"SELECT areaid, areaname\n" + 
+					"  FROM " + csvFiles[i].tableName + "\n" +
+					" ORDER BY 1");
+				sql.push(sqlStmt);
+				
+				var sqlStmt=new Sql("Add primary key: lookup_" + csvFiles[i].tableName,	
+					"ALTER TABLE lookup_" + csvFiles[i].tableName + " ADD PRIMARY KEY (" + csvFiles[i].tableName + ")");	
+				sql.push(sqlStmt);	
+
+				var sqlStmt=new Sql("Comment table: lookup_" + csvFiles[i].tableName);
+				if (dbType == "PostGres") {	
+					sqlStmt.sql="COMMENT ON TABLE lookup_" + csvFiles[i].tableName + " IS 'Lookup table for " + csvFiles[i].geolevelDescription + "'";
+				}
+				else if (dbType == "MSSQLServer") {	
+					sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+	"SELECT @CurrentUser = user_name();\n" +   
+	"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+	"   'Lookup table for " + csvFiles[i].geolevelDescription + "',\n" +   
+	"   'user', @CurrentUser, \n" +   
+	"   'table', 'lookup_" + csvFiles[i].tableName + "'";
+				}
+				sql.push(sqlStmt);				
+			}				
 		} // End of createGeolevelsLookupTables()
 		
 		/*
@@ -417,7 +462,66 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 		 * Description:	Create hierarchy table: SQL statements
 		 */	 
 		function createHierarchyTable() {
-			sql.push(new Sql("Hierarchy table"));
+			sql.push(new Sql("Hierarchy table"));	
+			
+			var sqlStmt=new Sql("Drop hierarchy hierarchy_" + response.fields["geographyName"].toLowerCase()); 
+			if (dbType == "PostGres") {		
+				sqlStmt.sql="DROP TABLE IF EXISTS hierarchy_" + response.fields["geographyName"].toLowerCase();
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="IF OBJECT_ID('hierarchy_" + response.fields["geographyName"].toLowerCase() + 
+					"', 'U') IS NOT NULL DROP TABLE hierarchy_" + response.fields["geographyName"].toLowerCase();
+			}
+			sql.push(sqlStmt);
+			
+			var sqlStmt=new Sql("Create table hierarchy_" + response.fields["geographyName"].toLowerCase());
+			sqlStmt.sql="CREATE TABLE hierarchy_" + response.fields["geographyName"].toLowerCase() + " (\n";
+			var pkField=undefined;
+			for (var i=0; i<csvFiles.length; i++) {	
+				if (i == 0) {
+					sqlStmt.sql+="	" + csvFiles[i].tableName + "	varchar(100)  NOT NULL";
+				}
+				else {
+					sqlStmt.sql+=",\n	" + csvFiles[i].tableName + "	varchar(100)  NOT NULL";
+				}
+			
+				if (csvFiles[i].geolevel == csvFiles.length && pkField == undefined) {
+					pkField=csvFiles[i].tableName;
+					response.message+="\nDetected hierarchy_" + response.fields["geographyName"].toLowerCase() +
+						" primary key: " + pkField + "; file: " + i + "; geolevel: " + csvFiles[i].geolevel;
+				}
+			}
+			sqlStmt.sql+=")";
+			sql.push(sqlStmt);
+			
+			var sqlStmt=new Sql("Add primary key to: hierarchy_" + response.fields["geographyName"].toLowerCase(), 
+				"ALTER TABLE hierarchy_" + response.fields["geographyName"].toLowerCase() + 
+					" ADD PRIMARY KEY (" + pkField + ")");
+			sql.push(sqlStmt);
+					
+			for (var i=0; i<csvFiles.length; i++) {	// Add non unique indexes
+				if (csvFiles[i].geolevel != csvFiles.length && csvFiles[i].geolevel != 1) {		
+					var sqlStmt=new Sql("Add index to: hierarchy_" + response.fields["geographyName"].toLowerCase(), 
+						"CREATE INDEX hierarchy_" + response.fields["geographyName"].toLowerCase() + "_" + csvFiles[i].tableName +
+						" ON  hierarchy_" + response.fields["geographyName"].toLowerCase() + "(" + csvFiles[i].tableName + ")");
+					sql.push(sqlStmt);
+				}
+			}
+			
+			var sqlStmt=new Sql("Comment table: hierarchy_" + response.fields["geographyName"].toLowerCase());
+			if (dbType == "PostGres") {	
+				sqlStmt.sql="COMMENT ON TABLE hierarchy_" + response.fields["geographyName"].toLowerCase() + " IS 'Hierarchy lookup table for " + 
+					response.fields["geographyDesc"] + "'";
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
+"SELECT @CurrentUser = user_name();\n" +   
+"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
+"   'Hierarchy lookup table " + response.fields["geographyDesc"] + "',\n" +   
+"   'user', @CurrentUser, \n" +   
+"   'table', 'hierarchy_" + response.fields["geographyName"].toLowerCase() + "'";
+			}
+			sql.push(sqlStmt);
 		} // End of createHierarchyTable()
 
 		/*

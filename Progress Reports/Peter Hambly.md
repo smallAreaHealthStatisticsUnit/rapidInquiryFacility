@@ -564,24 +564,29 @@ RangeError: Invalid string length
   * Spatially index;
   * Add geography, geolevels meta data;
   
+#### 5th to 9th September
+
+* SQL load script generator:
+  * Lookup tables; 
+  * Hierarchy table - geolevel intersction generator (DB version);
+  
 #### Current TODO list (September):
 
 * SQL load script generator: still todo:
-  * Lookup tables; 
-  * Missing comments on other columns from shapefile via extended attributes XML file;
   * Add CSV files meta to XML config;
   * Drive database script generator from XML config file (not internal data structures);
+  * Missing comments on other columns from shapefile via extended attributes XML file;
+  * Dump SQL to XML files (Postgres and SQL Server) so Kevin does not need to generate it;
   * Check Turf JS centroid code (figures are wrong);
   * Compare Turf/PostGIS/SQL Server area and centroid caculations;
   * Resolve SQL Server use of geography verses geometry and SQL Server geometry to geography casting; 
 * Map tile generator
-* Geolevel intersction generator (Turf and/or DB versions)
 
 #### October TODO list:
 
 * Get methods: 
   * ZIP results;
-  * <To be added>
+  * Run front end and batch from XML config file.
 
 SQL Server porting started in August; so far I was able to use Turf. The Node.js backend needs to be 
 able to run the scripts so that the fixed and validated geometry data becomes available.
