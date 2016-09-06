@@ -509,9 +509,6 @@ SELECT level1, level2, level3, level4,
 --
 -- Check intersections
 --
-	PERFORM rif40_sql_pkg.rif40_method4('SELECT level3 FROM sahsuland_level3
-EXCEPT
-SELECT level3 FROM sahsuland_geography', 'TEST');
 	PERFORM rif40_geo_pkg.check_rif40_hierarchy_lookup_tables(l_geography);
 --
 	etp:=clock_timestamp();
