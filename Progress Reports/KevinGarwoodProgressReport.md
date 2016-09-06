@@ -134,5 +134,53 @@ My most significant progress for the month has been to take an inventory of exis
 
 We are currently investigating three ways of simplifying the work needed to be done in the middleware: reviewing methods to ensure they are justified by production use and not just from prototyping efforts; moving some methods into the front end; and reviewing whether we can retrieve large blocks of data from result tables to reduce the number of methods needed to support rendering smoothed data.
 
+#August 2016
+The main work on the RIF related to enabling middleware methods that help support visualising smoothed data extract results.  The work I’ve done on that has not just involved coding new middleware methods but also making design decisions to help expedite the need to make the RIF work on both PostgreSQL and SQL Server systems.  The need to find a simple solution was made more pressing because I was ill for ten days.
 
+This is the main summary of work, and you can stop here if you just want to see the status report.  But what follows is a more detailed discussion about decision decisions I made and the effects it has had on the system design.
+Currently there are a number of database procedures in PostgreSQL which, given a study id, will retrieve smoothed results.  These procedures have been designed to retrieve parts of the result sets to facilitate showing results as pages in the front end.  However, considering the factors of effort needed to maintain the code for these features and to maintain that code for both PostgreSQL and SQL Server platforms, I’ve had to re-evaluate using them.
+
+###The Design Challenge of Creating an Effective Way for Retrieving Smoothed Result Sets
+The system needs to support an effective way of communicating result sets between the middleware services and the web-based front end applications.  This ‘dialogue’ describes what we’ll call a round trip of communication.  That trip has the following steps:
+1.	 The web client uses web page controls to create a URL and issue a request to a RIF web service.
+2.	The RIF web service uses parts of the URL path to determine what middleware operation it needs to call.  
+3.	The RIF web service converts URL parameters into Java objects that can be passed to Java-based service classes
+4.	The appropriate method in the Java-based service class constructs an SQL query to retrieve data from the database
+5.	The database returns table rows to the Java-based service classes
+6.	The Java-based service classes package the tabular data into results that are expressed in Java objects
+7.	The RIF web service serialises the Java objects in a JSON format that can be used by the web-based front clients
+8.	The RIF web service returns the JSON result to the web client
+9.	The web client renders the results.
+
+These steps occur during almost every request that the web application may make to the RIF middleware.  Part of designing the middleware is to provide methods that support ‘conversations’ that are appropriate for the characteristics of the end-user activities. Here we consider two approaches: “Talk Once” and “Talk Often”. Then we evaluate how well they work to serve project needs.
+
+####Talk Often
+In many cases, the ‘dialogue’ involves fetching chunks of large data sets in order to minimise the time and memory involved with transferring the data to and holding data in the front-end.  The dialogue is typically expressed to end-users through controls that let them select the first, previous, next and last result pages.   For example, when a user presses “next”, the web client issues a request to get the next set of N results that it can present in a display.
+
+The main benefit of this approach is that the middleware fetches the minimum amount of data that users will see at any given time.  Retrieving data in small chunks rather than all at once may reduce the time needed for SQL queries to execute.  The approach will definitely mean that the middleware does less work translating SQL table data into Java objects and then to a JSON format.  It also means that the web service will return a smaller amount of data to the web client and that the web client can operate on client machines that may have little memory resources.
+
+The main drawback of the “Talk Often” approach is that some part of the system must remember where a user is within a result set when the next chunk of data is being retrieved from the database.  This can add extra complexity to the code base that may require additional thought to how it could be made portable across SQL Server and PostgreSQL databases.
+
+One way of doing this would be to have the client application remember a current start and end index for the portion of the data set it is currently visualising.  These indices can be used to parameterise the next request.  The middleware can then create and execute SQL queries that are parameterised by limits it may not have to remember, which means it is easier to manage its sense of state.  However, this approach may result in using a lot of computing resources to do similar queries.
+
+Another way of doing this is to have query results persist so that the work done to retrieve results is done once.  This is usually accomplished with the use of cursors, which provide a mechanism for navigating through a result set.  When we talk about cursors in the middleware, we need to identify two kinds that could be used: database cursors and JDBC cursors.  Database cursors are managed within the database.  Query results are retrieved into temporary tables and the database retains memory of where the currently accessed record points to in the table.  Database cursors manage SQL tables, whereas JDBC cursors manage current record positions within a Java-based ResultSet that holds query data.  
+
+The main challenges with using JDBC cursors is that I’ve had difficulty getting them to demonstrate fetching part rather than all a data set and that even assuming it would work, they appear to only work by default with result sets that only go forward.  You can configure them to move the current record forward (ie: “next”, “last”) or backward (ie: “previous”, “first”) by making them Scrollable but I’ve not had time to try this out and determine if there are performance problems with it. My main concerns with using database cursors are whether their use would present database portability problems and how references to cursors would be managed by the middleware. 
+
+####Talk Once
+With talk once, the web client requests the middleware to retrieve the entire data set.  The client then becomes responsible for navigating through pages of results.  The main benefit of this approach is its simplicity: its solution requires a simple SQL Select statement which will present no portability issues between SQL Server and PostgreSQL.
+
+Its drawbacks are that it may add more complexity to manage data in the web client, it requires clients that have a lot of memory to hold all the data and the initial request for the data set may be time consuming and memory intensive.
+
+####Evaluation  
+I believe that we would have a system that behaves better for very large data sets if we use the Talk Often approach to engineering the dialogue between the web clients and the middleware.  However, the main problem here is that it adds more complexity to the code base and I have to spend more time considering any portability issues that may arise from cursor-based fetch calls to SQL Server or PostgreSQL databases.  
+
+The Talk Once option will likely result in performance problems for large data sets.  But its main appeal is that it can be done more quickly within project milestone periods.  We currently have a good front-end developer (Dave Morley) who would be able to add extra support for having the web applications remember a whole data set.  I was ill for ten days and I’m under further time constraints from other projects.  
+
+Finally, when you’re designing for performance, the golden rule is to do it when you need to and to make sure you benchmark to justify decisions for adding more complexity.  However, for the next few months, we would only have the data sets from SAHSULAND to judge performance and they were not designed to stress test a system.  It begs the question: how do you design for performance when your test data set has not been designed to test aspects of performance? 
+
+We can spend more time developing more test data and shortly we hope we can load large real data sets into the RIF.  These data sets could then gauge the value of savings that would be realised by retrieving results in chunks rather than all at once.  Until then, we observe that retrieving all of the current demonstration data sets takes about two seconds, which seems acceptable.
+
+I observe that we can take steps to reduce the amount of data we retrieve.  First, it doesn’t make sense to return a lot of the columns that appear in the smoothed data sets; they exist mainly to facilitate linking with other database tables and other fields look as though their value is the same for all rows.  Second, the results contain far too many significant digits than are warranted by the calculations.  By reducing the number of digits, we reduce the length of the JSON data that are returned to the web client.
+The Work.  I’ve developed three methods that can retrieve all the data set or specific columns from a data set. The work for managing paged results will then be moved to the web clients.
 
