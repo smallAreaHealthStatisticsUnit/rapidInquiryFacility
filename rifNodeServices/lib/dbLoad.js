@@ -53,6 +53,53 @@ const os = require('os'),
 	  path = require('path');
 	  
 /*
+ * Function: 	getSqlFromFile()
+ * Parameters:	File name (in directory: rapidInquiryFacility\rifNodeServices\sql\postgres),
+ *				dbbase type as a string ("PostGres" or "MSSQLServer"),
+ *				0 or more parameters
+ * Returns:		SQL statement with parameters replaced
+ * Description:	Create geolevels meta data table: geolevels_<geographyName> 
+ *				SQL statements.
+ *
+ *				Argument replacement:
+ *
+ *				%1 is replaced by arguments[2] and so on to max arguments
+ *				Unreplaced arguments are not detected
+ *				%%1 becomes %1
+ *				%%%% becomes %% after substitution
+ */
+var getSqlFromFile = function getSqlFromFile(fileName, dbType, parameters) {
+	var dir="sql/";
+	
+	if (dbType == "PostGres") {	
+		dir+="postgres";
+	}
+	else if (dbType == "MSSQLServer") {	
+		dir+="sqlserver";
+	}
+	else {
+		throw new Error("getSqlFromFile(): Invalid dbType: " + dbType);
+	}
+	var sqlBuffer=fs.readFileSync(dir + "/" + fileName);
+	if (sqlBuffer == undefined) {
+		throw new Error("getSqlFromFile(): No SQL in file: " + dir + "/" + fileName);
+	}
+	var sqlText=sqlBuffer.toString();
+	
+	if (parameters) { // Replace %1 with arguments[2] etc; ignore %%
+		for (var i = 2; i < arguments.length; i++) {
+//			console.error("getSqlFromFile(): replace %" + (i-1) + " with: " + arguments[i]);
+			sqlText=sqlText.replace(new RegExp('%' + (i-1), 'g'), arguments[i]); 
+				// No negative lookbehind in javascript so cannot ignore %%1
+		}
+	}
+	// Replace %% with %
+	sqlText=sqlText.replace(new RegExp('%%', 'g'), '%');
+	
+	return sqlText;
+} // End of getSqlFromFile()
+		
+/*
  * Function: 	CreateDbLoadScripts()
  * Parameters:	Internal response object, HTTP request object, HTTP response object, dir, csvFiles object, callback to call at end of processing
  * Description:	Convert geoJSON to CSV; save as CSV files; create load scripts for Postgres and MS SQL server
@@ -189,7 +236,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 
 	/*
 	 * Function: 	addSQLStatements()
-	 * Parameters:	Database stream, format file stream, CSV files object, srid (spatial reference identifier), dbbase type as a string ("PostGres" or "MSSQLServer")
+	 * Parameters:	Database stream, format file stream, CSV files object, srid (spatial reference identifier), 
+	 *				dbbase type as a string ("PostGres" or "MSSQLServer")
 	 * Description:	Add SQL statements
 	 	 
 -- SQL statement 0 >>>
@@ -740,8 +788,14 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 "';";			
 			}
 			sql.push(sqlStmt);
+			
+			var sqlStmt=new Sql("Insert into hierarchy_" + response.fields["geographyName"].toLowerCase(),
+				getSqlFromFile("insert_hierarchy.sql", 
+					dbType, 
+					response.fields["geographyName"].toLowerCase()));
+			sql.push(sqlStmt);
 		} // End of createHierarchyTable()
-
+		
 		/*
 		 * Function: 	createGeolevelsTable()
 		 * Parameters:	None
@@ -1670,7 +1724,7 @@ sqlStmt.sql="DECLARE c1 CURSOR FOR\n" +
 		});
 } // End of CreateDbLoadScripts()
 
-
 module.exports.CreateDbLoadScripts = CreateDbLoadScripts;
+module.exports.getSqlFromFile = getSqlFromFile;
 
 // Eof
