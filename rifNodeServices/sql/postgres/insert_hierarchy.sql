@@ -8,7 +8,6 @@ DECLARE
  *
  * Description:			Create insert statement into hierarchy table
  * Note:				%%%% becomes %% after substitution
- (%%(?!%1))
  */
 	l_geography VARCHAR:='%1';
 --
@@ -44,13 +43,7 @@ DECLARE
  	shapefile_area_id_column	VARCHAR[];
  	shapefile_desc_column		VARCHAR[];
 --
-	stp TIMESTAMP WITH TIME ZONE;
-	etp TIMESTAMP WITH TIME ZONE;
-	took INTERVAL;
---
 BEGIN
---
-	stp:=clock_timestamp();
 --
 	OPEN c4_hier(l_geography);
 	FETCH c4_hier INTO c4_rec;
