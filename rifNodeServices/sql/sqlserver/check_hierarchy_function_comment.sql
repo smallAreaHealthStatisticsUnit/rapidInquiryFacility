@@ -1,13 +1,15 @@
-COMMENT /*
+DECLARE @CurrentUser sysname  /*
  * SQL statement name: 	check_hierarchy_function_comment.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Type:				Microsoft SQL Server T/sql anonymous block
  * Parameters:
  *						1: function name; e.g. check_hierarchy_cb_2014_us_500k
  *
  * Description:			Create hierarchy check function comment
  * Note:				%%%% becomes %% after substitution
  */
-	ON FUNCTION %1(VARCHAR, VARCHAR, VARCHAR) IS 'Function: 		%1()
+SELECT @CurrentUser = user_name(); 
+EXECUTE sp_addextendedproperty 'MS_Description',   
+   'Function: 		%1()
 Parameters:		Geography, hierarchy table, type: "missing", "spurious additional" or "multiple hierarchy"
 Returns:		Nothing
 Description:	Diff geography hierarchy table using dynamic method 4
@@ -54,4 +56,6 @@ WITH /* multiple hierarchy */ a2 AS (
                 HAVING COUNT(DISTINCT(cb_2014_us_state_500k)) > 1) as3)
 SELECT ARRAY[a2.cb_2014_us_state_500k_total, a3.cb_2014_us_county_500k_total] AS res_array
 FROM a2, a3;
-'
+',
+   'user', @CurrentUser,   
+   'function', '%1'

@@ -6,9 +6,9 @@ AS $body$
  * SQL statement name: 	check_hierarchy_function.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
  * Parameters:
- *						1: geography; e.g. cb_2014_us_500k
+ *						1: function name; e.g. check_hierarchy_cb_2014_us_500k
  *
- * Description:			Create insert statement into hierarchy table
+ * Description:			Create hierarchy check function
  * Note:				%%%% becomes %% after substitution
  */
  

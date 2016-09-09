@@ -265,4 +265,4 @@ SELECT level1, level2, level3, level4,
 	RAISE NOTICE 'SQL> %;', sql_stmt;
 	EXECUTE sql_stmt;
 END;
-$$;
+$$
