@@ -556,35 +556,43 @@ CREATE INDEX cb_2014_us_county_500k_geom_orig_gix ON cb_2014_us_county_500k USIN
 				}
 			}
 			
-			var sqlStmt=new Sql("Comment table: hierarchy_" + response.fields["geographyName"].toLowerCase());
+			var sqlStmt=new Sql("Comment table: hierarchy_" + response.fields["geographyName"].toLowerCase(),
 				getSqlFromFile("comment_table.sql", 
-				dbType, 
-				"hierarchy_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
-				"Hierarchy lookup table for " + response.fields["geographyDesc"]	/* Comment */);
+					dbType, 
+					"hierarchy_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+					"Hierarchy lookup table for " + response.fields["geographyDesc"]	/* Comment */)
+				);
 			sql.push(sqlStmt);
 			
-			var sqlStmt=new Sql("Create function check_hierarchy_" + response.fields["geographyName"].toLowerCase(),		
+			var sqlStmt=new Sql("Create function check_hierarchy_" + 
+					response.fields["geographyName"].toLowerCase(),		
 				getSqlFromFile("check_hierarchy_function.sql", 
-				dbType, 
-				response.fields["geographyName"].toLowerCase()) 					/* Geography */);	
+					dbType, 
+					response.fields["geographyName"].toLowerCase() 			/* Geography */)
+				);	
 			sql.push(sqlStmt);
 			
-			var sqlStmt=new Sql("Comment function check_hierarchy_" + response.fields["geographyName"].toLowerCase(),
+			var sqlStmt=new Sql("Comment function check_hierarchy_" + 
+					response.fields["geographyName"].toLowerCase(),
 				getSqlFromFile("check_hierarchy_function_comment.sql", 
-				dbType, 
-				"check_hierarchy_" + response.fields["geographyName"].toLowerCase() /* Function name */);			
+					dbType, 
+					"check_hierarchy_" + response.fields["geographyName"].toLowerCase() /* Function name */)
+				);			
 			sql.push(sqlStmt);			
 			
 			var sqlStmt=new Sql("Insert into hierarchy_" + response.fields["geographyName"].toLowerCase(),
 				getSqlFromFile("insert_hierarchy.sql", 
-				dbType, 
-				response.fields["geographyName"].toLowerCase()) 					/* Geography */);
+					dbType, 
+					response.fields["geographyName"].toLowerCase()			/* Geography */)
+				);
 			sql.push(sqlStmt);
 			
-			var sqlStmt=new Sql("Check intersctions  for geograpy: " + response.fields["geographyName"].toLowerCase(),
+			var sqlStmt=new Sql("Check intersctions  for geograpy: " + 
+					response.fields["geographyName"].toLowerCase(),
 				getSqlFromFile("check_intersections.sql", 
-				dbType, 
-				response.fields["geographyName"].toLowerCase()) 					/* Geography */);
+					dbType, 
+					response.fields["geographyName"].toLowerCase() 				/* Geography */)
+				);
 			sql.push(sqlStmt);
 			
 		} // End of createHierarchyTable()

@@ -9,8 +9,9 @@ DECLARE @CurrentUser sysname  /*
  */
 SELECT @CurrentUser = user_name(); 
 EXECUTE sp_addextendedproperty 'MS_Description',   
-   'Function: 		%1()
-Parameters:		Geography, hierarchy table, type: "missing", "spurious additional" or "multiple hierarchy"
+   'Procedure: 		check_hierarchy_cb_2014_us_500k()
+Parameters:		Geography, hierarchy table, type: "missing", "spurious additional" or "multiple hierarchy", 
+				Error count (OUT)
 Returns:		Nothing
 Description:	Diff geography hierarchy table using dynamic method 4
 				Also tests the hierarchy, i.e. all a higher resolutuion is contained by one of the next higher and so on
@@ -58,4 +59,4 @@ SELECT ARRAY[a2.cb_2014_us_state_500k_total, a3.cb_2014_us_county_500k_total] AS
 FROM a2, a3;
 ',
    'user', @CurrentUser,   
-   'function', '%1'
+   'procedure', '%1'

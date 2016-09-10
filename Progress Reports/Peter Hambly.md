@@ -572,11 +572,12 @@ RangeError: Invalid string length
   * SQL Server version needed to be rewritten to use global temporary tables because a) SQL Server always
     unnests common tsble expressions (WITH clause) b) cannot be hinted to not do this and c) you have to
 	use global temporary tables because dynamic SQL is in a different logon context to the script T-SQL
+  * Hierarchy checks (as for Postgres)
   
 #### Current TODO list (September):
 
 * SQL load script generator: still todo:
-  * Hierarchy checks (as for Postgres) and confirm Postgres and SQL Server are the same
+  * Confirm Postgres and SQL Server are the same
   * Add CSV files meta to XML config;
   * Drive database script generator from XML config file (not internal data structures);
   * Missing comments on other columns from shapefile via extended attributes XML file;
