@@ -573,7 +573,15 @@ RangeError: Invalid string length
     unnests common tsble expressions (WITH clause) b) cannot be hinted to not do this and c) you have to
 	use global temporary tables because dynamic SQL is in a different logon context to the script T-SQL
   * Hierarchy checks (as for Postgres)
+ 
+#### 12th to 16th September
+ 
+* Fixed Postgres study creation bugs:
   
+  * INV_1 hard coded as extract table investigate name (should be rif40_investigations.inv_name)
+  * Missing primary key index on Postgres s<study_id>_extract.
+  * Missing GRANT UPDATE on map table (e.g s1_map)
+
 #### Current TODO list (September):
 
 * SQL load script generator: still todo:
@@ -689,7 +697,8 @@ Note: no bounding box (bbox) in tiles.
 
 ## Bugs
 
-* Missing primary key index on Postgres s<study_id>_extract.
-* Missing GRANT INSERT on map table (e.g s1_map)
+* Simple enable debug function for rif40_run_study
 * AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
   for duplicate county names within a state
+* Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
+  and grant back permissions

@@ -241,6 +241,7 @@ BEGIN
 	EXECUTE 'SELECT '||USER||'.rif40_run_study(currval(''rif40_study_id_seq''::regclass)::INTEGER)' INTO study_ran_ok;
 	IF study_ran_ok THEN
 		RAISE INFO 'test_4_study_id_1.sql: T4--12: Test 4; Study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+--		RAISE EXCEPTION 'XXXX TEST STOP HERE';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 	ELSE
 		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--13: Test 4; Study: % run failed; see trace', currval('rif40_study_id_seq'::regclass)::VARCHAR;

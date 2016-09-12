@@ -446,7 +446,7 @@ BEGIN
 --
 	FOREACH icd IN ARRAY investigation_desc_array LOOP
 		i:=i+1;
-		l_inv_name:='INV_'||i::VARCHAR;
+		l_inv_name:='T_INV_'||i::VARCHAR;
 		sql_stmt='INSERT /* 2 */ INTO rif40_investigations('||E'\n';
 --
 -- Check if rif40_investigations.geography column still exists (pre alter 2)

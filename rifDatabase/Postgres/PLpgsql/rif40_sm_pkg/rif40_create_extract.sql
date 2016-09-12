@@ -162,12 +162,15 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 	sql_stmt 	VARCHAR;
 	ddl_stmts	VARCHAR[];
 	t_ddl		INTEGER:=0;
+	sql_frag 	VARCHAR;
 --
 	index_column	VARCHAR;
-	index_columns 	VARCHAR[] := ARRAY['area_id', 'band_id', 'sex', 'age_group']; 
+	index_columns 	VARCHAR[] := ARRAY['area_id', 'band_id', 'sex', 'age_group'];
 	table_column	VARCHAR;
 	table_columns	VARCHAR[] := ARRAY['year', 'study_or_comparison', 'study_id', 'area_id',
 		'band_id', 'sex',  'age_group', 'total_pop'];
+	pk_index_columns VARCHAR[] := ARRAY['year', 'study_or_comparison', 'study_id', 'area_id',
+		'sex',  'age_group'];
 	column_comments	VARCHAR[] := ARRAY['Year', 'Study (S) or comparison (C) area', 'Study ID', 'Area ID',
 		'Band ID', 'Sex',  'Age group', 'Total population'];
 	i		INTEGER:=0;
@@ -263,6 +266,7 @@ BEGIN
 	FOR c2_rec IN c2_creex(study_id) LOOP
 		sql_stmt:=sql_stmt||E'\t'||LOWER(c2_rec.covariate_name)||'               VARCHAR,'||E'\n'; /* Covariate value always coerced to a VARCHAR */
 		table_columns:=array_append(table_columns, c2_rec.covariate_name::VARCHAR);
+		pk_index_columns:=array_append(pk_index_columns, c2_rec.covariate_name::VARCHAR);
 		column_comments:=array_append(column_comments, c2_rec.covariate_name::VARCHAR);
 	END LOOP;
 --
@@ -357,6 +361,25 @@ BEGIN
 		ddl_stmts[t_ddl]:=sql_stmt;
 	END LOOP;
 
+--
+-- Primary key index on: year, study_or_comparison, study_id, area_id, band_id, sex, age_group,
+-- ses column(s)
+--	
+	sql_frag:=NULL;
+	FOREACH index_column IN ARRAY pk_index_columns LOOP
+		IF sql_frag IS NULL THEN
+			sql_frag:=LOWER(index_column);
+		ELSE
+			sql_frag:=sql_frag||','||LOWER(index_column);
+		END IF;
+	END LOOP;
+	IF c1_rec.study_type != '1' THEN /* study type: 1 - disease mapping */
+		sql_frag:=sql_frag||',band_id'; /* Risk analysis only */
+	END IF;
+	sql_stmt:='ALTER TABLE rif_studies.'||LOWER(c1_rec.extract_table)||
+		' ADD CONSTRAINT '||LOWER(c1_rec.extract_table)||'_pk PRIMARY KEY ('||sql_frag||')';
+	t_ddl:=t_ddl+1;	
+	ddl_stmts[t_ddl]:=sql_stmt;
 --
 -- Vacuum analyze - raises 25001 "VACUUM cannot run inside a transaction block"
 --

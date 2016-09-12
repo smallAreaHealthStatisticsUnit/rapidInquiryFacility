@@ -182,10 +182,10 @@ BEGIN
 		i:=i+1;
 		inv_array[i]:=c2_rec.inv_id;
 		IF i = 1 THEN
-		       	sql_stmt:=sql_stmt||E'\n'||E'\t'||'       SUM(COALESCE(inv_'||i::VARCHAR||', 0)) AS inv_'||i::VARCHAR||'_observed'||
+		       	sql_stmt:=sql_stmt||E'\n'||E'\t'||'       SUM(COALESCE('||c2_rec.inv_name||', 0)) AS inv_'||i::VARCHAR||'_observed'||
 				E'\t'||'/* '||c2_rec.inv_id||' -  '||c2_rec.numer_tab||' - '||c2_rec.inv_description||' */';
 		ELSE
-		       	sql_stmt:=sql_stmt||','||E'\n'||E'\t'||'       SUM(COALESCE(inv_'||i::VARCHAR||', 0)) AS inv_'||i::VARCHAR||'_observed'||
+		       	sql_stmt:=sql_stmt||','||E'\n'||E'\t'||'       SUM(COALESCE('||c2_rec.inv_name||', 0)) AS inv_'||i::VARCHAR||'_observed'||
 				E'\t'||'/* '||c2_rec.inv_id||' -  '||c2_rec.numer_tab||' - '||c2_rec.inv_description||' */';
 		END IF;
 	END LOOP;
@@ -302,13 +302,19 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 -- Grant to study owner and all grantees in rif40_study_shares if extract_permitted=1 
 --
 	IF c1_rec.extract_permitted = 1 THEN
-		sql_stmt:='GRANT SELECT,INSERT,TRUNCATE ON rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' TO '||USER;
+		sql_stmt:='GRANT SELECT,INSERT,UPDATE,TRUNCATE ON rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' TO '||USER;
 		t_ddl:=t_ddl+1;	
 		ddl_stmts[t_ddl]:=sql_stmt;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
+			'[55604] SQL> %;',
+			ddl_stmts[t_ddl]::VARCHAR);
 		FOR c3_rec IN c3comp(study_id) LOOP
-			sql_stmt:='GRANT SELECT,INSERT ON rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' TO '||c3_rec.grantee_username;
+			sql_stmt:='GRANT SELECT,INSERT,UPDATE ON rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' TO '||c3_rec.grantee_username;
 			t_ddl:=t_ddl+1;	
 			ddl_stmts[t_ddl]:=sql_stmt;
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
+				'[55605] SQL> %;',
+				ddl_stmts[t_ddl]::VARCHAR);
 		END LOOP;
 	END IF;
 --
@@ -318,7 +324,7 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 	t_ddl:=t_ddl+1;	
 	ddl_stmts[t_ddl]:=sql_stmt;
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'[55604] SQL> %;',
+		'[55606] SQL> %;',
 		ddl_stmts[t_ddl]::VARCHAR);
 	FOR c4_rec IN c4comp LOOP
 		sql_stmt:='COMMENT ON COLUMN rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'.'||c4_rec.column_name||
@@ -326,7 +332,7 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 		t_ddl:=t_ddl+1;	
 		ddl_stmts[t_ddl]:=sql_stmt;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55605] SQL> %;',
+			'[55607] SQL> %;',
 			ddl_stmts[t_ddl]::VARCHAR);
 	END LOOP;
 	IF c1_rec.study_type = 1 /* Disease mapping */ THEN
@@ -339,7 +345,7 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 		t_ddl:=t_ddl+1;	
 		ddl_stmts[t_ddl]:=sql_stmt;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55606] SQL> %;',
+			'[55608] SQL> %;',
 			ddl_stmts[t_ddl]::VARCHAR);
 --
 		sql_stmt:='COMMENT ON COLUMN rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'.gid_rowindex'||
@@ -355,7 +361,7 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 		t_ddl:=t_ddl+1;	
 		ddl_stmts[t_ddl]:=sql_stmt;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55608] SQL> %;',
+			'[55609] SQL> %;',
 			ddl_stmts[t_ddl]::VARCHAR);
 	END IF;
 
@@ -409,7 +415,7 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 		' PRIMARY KEY (study_id, band_id, inv_id, genders, adjusted, direct_standardisation)';
 	ddl_stmts[t_ddl]:=sql_stmt;
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'[55607] SQL> %;',
+		'[55611] SQL> %;',
 		sql_stmt::VARCHAR);
 	t_ddl:=t_ddl+1;	
 	IF c1_rec.study_type = 1 /* Disease mapping */ AND c5_rec.column_name /* gid_rowindex post alter 2 */ IS NOT NULL THEN
@@ -420,14 +426,14 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 			' ON rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'(gid_rowindex)';
 		ddl_stmts[t_ddl]:=sql_stmt;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55610] SQL> %;',
+			'[55612] SQL> %;',
 			sql_stmt::VARCHAR);
 		t_ddl:=t_ddl+1;	
 	END IF;
 	sql_stmt:='ANALYZE rif_studies.'||quote_ident(LOWER(c1_rec.map_table));
 	ddl_stmts[t_ddl]:=sql_stmt;
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'[55611] SQL> %;',
+		'[55613] SQL> %;',
 		sql_stmt::VARCHAR);
 --
 -- Execute DDL code as rif40
@@ -438,14 +444,14 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 
 --
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_compute_results', 
-		'[55612] Study ID % map table % created',
+		'[55614] Study ID % map table % created',
 		study_id::VARCHAR,
 		c1_rec.map_table::VARCHAR);
 --
 -- Next expected...
 --
 	PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_compute_results', 
-		'[55613] Study ID % rif40_compute_results() not fully implemented',
+		'[55615] Study ID % rif40_compute_results() not fully implemented',
 		study_id::VARCHAR);
 	RETURN TRUE;
 --
