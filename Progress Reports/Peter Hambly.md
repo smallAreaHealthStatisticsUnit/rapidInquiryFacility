@@ -582,6 +582,7 @@ RangeError: Invalid string length
   * Missing primary key index on Postgres s<study_id>_extract.
   * Missing GRANT UPDATE on map table (e.g s1_map)
   * Check node is setup correctly (node_check target)
+  * Simple enable debug function for rif40_run_study
 
 #### Current TODO list (September):
 
@@ -698,7 +699,6 @@ Note: no bounding box (bbox) in tiles.
 
 ## Bugs
 
-* Simple enable debug function for rif40_run_study
 * AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
   for duplicate county names within a state
 * Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 

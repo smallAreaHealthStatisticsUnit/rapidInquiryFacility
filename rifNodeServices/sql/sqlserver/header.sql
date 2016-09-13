@@ -1,0 +1,11 @@
+--
+-- MS SQL Server specific parameters
+--
+-- Usage: sqlcmd -E -b -m-1 -e -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
+-- Connect flags if required: -U <username>/-E -S<myServerinstanceName>
+--
+-- You must set the current schema if you cannot write to the default schema!
+-- You need create privilege for the various object and the bulkadmin role
+--
+-- USE <my database>;
+--
