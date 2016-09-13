@@ -68,14 +68,17 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION rif40_sm_pkg.rif40_run_study(study_id INTEGER, recursion_level INTEGER DEFAULT 0)
+CREATE OR REPLACE FUNCTION rif40_sm_pkg.rif40_run_study(
+	study_id 			INTEGER, 
+	debug 				BOOLEAN DEFAULT FALSE, 
+	recursion_level 	INTEGER DEFAULT 0)
 RETURNS BOOLEAN
 SECURITY INVOKER
 AS $func$
 DECLARE
 /*
 Function:	rif40_run_study()
-Parameter:	Study ID
+Parameter:	Study ID, enable debug boolean (default FALSE), recursion level (internal parameter DO NOT USE)
 Returns:	Success or failure [BOOLEAN]
 			Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
 			Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
@@ -109,12 +112,45 @@ Recurse until complete
 		  FROM t_rif40_studies a, b /* MUST USE TABLE NOT VIEWS WHEN USING LOCKS/WHERE CURRENT OF */
 		 WHERE l_study_id = a.study_id
 		   FOR UPDATE;
+	c1sm CURSOR FOR /* Get list of study_id tables with trigger functions */
+		WITH a AS (
+			SELECT DISTINCT table_name
+			  FROM information_schema.columns
+			 WHERE column_name = 'study_id'
+			   AND table_name NOT LIKE 'g_rif40%'
+			   AND table_name IN (
+				SELECT table_name
+				  FROM information_schema.tables
+			 	 WHERE table_schema = 'rif40'
+				   AND table_type = 'BASE TABLE')
+		)
+		SELECT TRANSLATE(SUBSTR(action_statement, STRPOS(action_statement, '.')+1), '()', '') AS function,
+		       a.table_name, action_timing, COUNT(trigger_name) AS t
+		  FROM a 
+			LEFT OUTER JOIN information_schema.triggers b ON (
+		  		trigger_schema = 'rif40'
+		  	    AND action_timing IN ('BEFORE', 'AFTER') 
+			    AND event_object_table = a.table_name)
+		 GROUP BY TRANSLATE(SUBSTR(action_statement, STRPOS(action_statement, '.')+1), '()', ''),
+		       a.table_name, action_timing
+		 ORDER BY 1 DESC, 3;		   
+	c4sm CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;		   
 	c1_rec RECORD;
+	c1sm_rec RECORD;
+	c4sm_rec RECORD;
 --
 	new_study_state 	VARCHAR;
-	investigation_count 	INTEGER;
+	investigation_count INTEGER;
 	study_count 		INTEGER;
 	n_recursion_level 	INTEGER:=recursion_level+1;
+--
+	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY['rif40_verify_state_change', 
+						'rif40_run_study', 'rif40_ddl', 'rif40_study_ddl_definer', 
+						'rif40_create_insert_statement', 'rif40_execute_insert_statement', 
+						'rif40_compute_results'];
+	debug_level		INTEGER;				
+	l_function 		VARCHAR;		
 --
 	stp		TIMESTAMP WITH TIME ZONE := clock_timestamp();
 	etp		TIMESTAMP WITH TIME ZONE;
@@ -143,6 +179,66 @@ BEGIN
 			'Study ID % cannot be run, in state: %, needs to be in ''V'' or ''E''',
 			study_id::VARCHAR,
 			c1_rec.study_state::VARCHAR);
+	END IF;
+	
+--
+-- Enable debug if required
+--
+	IF recursion_level = 0 THEN
+		IF debug THEN
+			OPEN c4sm;
+			FETCH c4sm INTO c4sm_rec;
+			CLOSE c4sm;
+	--
+	-- Test parameter; default
+	--
+			IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
+				debug_level:=1;	
+			ELSE
+				debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
+				
+			END IF;
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', '[55215] Debug level parameter="%"', 
+				debug_level::VARCHAR);
+		
+	--
+	-- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
+	--
+			PERFORM rif40_log_pkg.rif40_log_setup();
+			IF debug_level IS NULL THEN
+				debug_level:=0;
+			ELSIF debug_level > 4 THEN
+				PERFORM rif40_log_pkg.rif40_error(-55216, 'rif40_run_study', 
+					'Invalid debug level [0-4]: %', debug_level::VARCHAR);
+			ELSIF debug_level BETWEEN 1 AND 4 THEN
+				PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
+
+				FOR c1sm_rec IN c1sm LOOP
+					IF c1sm_rec.function IS NOT NULL THEN
+						PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', 
+							'[55217] Enable debug for % trigger function: % on table: %',
+							c1sm_rec.action_timing::VARCHAR	/* Action */, 
+							c1sm_rec.function, 				/* Function name */
+							c1sm_rec.table_name::VARCHAR	/* Table name */);
+							PERFORM rif40_log_pkg.rif40_add_to_debug(c1sm_rec.function||':DEBUG'||debug_level::Text);
+					ELSE
+						PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_run_study', 
+							'[55218] No trigger function found for table: %', 
+							c1sm_rec.table_name::VARCHAR	/* Table name */);
+					END IF;
+				END LOOP;
+	--
+	-- Enabled debug on select rif40_sm_pkg functions
+	--
+				FOREACH l_function IN ARRAY rif40_sm_pkg_functions LOOP
+					PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', 
+							'[55219] Enable debug for function: %', l_function	/* Table name */);
+					PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG'||debug_level::Text);
+				END LOOP;
+			END IF;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', '[552200] Debug disabled');	
+		END IF;
 	END IF;
 --
 -- Create extract, call: rif40_sm_pkg.rif40_create_extract()
@@ -221,7 +317,7 @@ BEGIN
 			n_recursion_level::VARCHAR,
 			new_study_state::VARCHAR,
 			c1_rec.study_id::VARCHAR);
-		IF rif40_sm_pkg.rif40_run_study(c1_rec.study_id, n_recursion_level) = FALSE THEN /* Halt on failure */
+		IF rif40_sm_pkg.rif40_run_study(c1_rec.study_id, debug, n_recursion_level) = FALSE THEN /* Halt on failure */
 			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_run_study',
 				'[55210] Recurse [%] rif40_run_study to new state % for study % failed, see previous warnings',
 				n_recursion_level::VARCHAR,
@@ -268,14 +364,57 @@ END;
 $func$
 LANGUAGE 'plpgsql';
 
+GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_run_study(INTEGER, BOOLEAN, INTEGER) TO rif_manager;
+GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_run_study(INTEGER, BOOLEAN, INTEGER) TO rif_user;
+GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_run_study(INTEGER, BOOLEAN, INTEGER) TO rif40;
+COMMENT ON FUNCTION rif40_sm_pkg.rif40_run_study(INTEGER, BOOLEAN, INTEGER) IS 'Function:	rif40_run_study()
+Parameter:	Study ID, enable debug boolean (default FALSE), recursion level (internal parameter DO NOT USE)
+Returns:	Success or failure [BOOLEAN]
+		Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
+		Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
+		
+Description:	Run study 
+
+Check study state - 
+
+C: created, not verfied; 
+V: verified, but no other work done; 
+E: extracted imported or created, but no results or maps created; 
+R: results computed; 
+U: upgraded record from V3.1 RIF (has an indeterminate state; probably R).
+
+Define transition
+Create extract, call: rif40_sm_pkg.rif40_create_extract()
+Runs as rif40_sm_pkg NOT the user. This is so all objects created can be explicitly granted to the user
+Compute results, call: rif40_sm_pkg.rif40_compute_results()
+Do update. This forces verification
+(i.e. change in study_State on rif40_studies calls rif40_sm_pkg.rif40_verify_state_change)
+Recurse until complete';
+
+-- Old form
+CREATE OR REPLACE FUNCTION rif40_sm_pkg.rif40_run_study(
+	study_id 			INTEGER, 
+	recursion_level 	INTEGER DEFAULT 0)
+RETURNS BOOLEAN
+SECURITY INVOKER
+AS $func$
+DECLARE
+BEGIN
+	PERFORM rif40_sm_pkg.rif40_run_study(study_id, FALSE /* Debug */, recursion_level);
+END;
+$func$
+LANGUAGE 'plpgsql';
+
 GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_run_study(INTEGER, INTEGER) TO rif_manager;
 GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_run_study(INTEGER, INTEGER) TO rif_user;
 GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_run_study(INTEGER, INTEGER) TO rif40;
 COMMENT ON FUNCTION rif40_sm_pkg.rif40_run_study(INTEGER, INTEGER) IS 'Function:	rif40_run_study()
-Parameter:	Study ID
+Parameter:	Study ID, recursion level (internal parameter DO NOT USE)
 Returns:	Success or failure [BOOLEAN]
 		Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
 		Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
+		
+		OLD FORM: Obsolete - calls new
 		
 Description:	Run study 
 

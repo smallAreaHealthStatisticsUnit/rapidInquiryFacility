@@ -581,6 +581,7 @@ RangeError: Invalid string length
   * INV_1 hard coded as extract table investigate name (should be rif40_investigations.inv_name)
   * Missing primary key index on Postgres s<study_id>_extract.
   * Missing GRANT UPDATE on map table (e.g s1_map)
+  * Check node is setup correctly (node_check target)
 
 #### Current TODO list (September):
 

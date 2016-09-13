@@ -273,6 +273,7 @@ DROP FUNCTION IF EXISTS rif40_geo_pkg.rif40_get_default_comparison_area(VARCHAR,
 
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_verify_state_change(INTEGER, VARCHAR, VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_run_study(INTEGER, INTEGER);
+DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_run_study(INTEGER, BOOLEAN, INTEGER);
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_create_extract(INTEGER);
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_compute_results(INTEGER);
 DROP FUNCTION IF EXISTS rif40_sm_pkg.rif40_insert_extract(INTEGER);

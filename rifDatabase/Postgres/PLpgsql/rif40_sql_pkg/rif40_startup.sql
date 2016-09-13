@@ -475,7 +475,14 @@ BEGIN
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'search_path not set for: %', USER::VARCHAR);
 	END IF;	
-	
+
+--
+-- Drop old rum_study() function
+--	
+	sql_stmt:='DROP FUNCTION IF EXISTS '||USER||'.rif40_run_study(INTEGER, INTEGER)';
+	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'SQL> %;', sql_stmt);
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+
 --
 -- Create temporary tables if required
 --
@@ -749,7 +756,7 @@ BEGIN
 			j:=j+1;
 		END IF;
 		IF rif40_run_study AND USER != 'rif40' THEN
-			sql_stmt:='DROP FUNCTION '||USER||'.rif40_run_study(INTEGER, INTEGER)';
+			sql_stmt:='DROP FUNCTION IF EXISTS '||USER||'.rif40_run_study(INTEGER, BOOLEAN, INTEGER)';
 			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 			rif40_run_study:=FALSE;
 			j:=j+1;
@@ -768,14 +775,14 @@ BEGIN
 -- If user objects do not exist them create them
 --
 	IF NOT rif40_run_study AND USER != 'rif40' THEN
-		sql_stmt:='CREATE OR REPLACE FUNCTION '||USER||'.rif40_run_study(study_id INTEGER, recursion_level INTEGER DEFAULT 0)'||E'\n'||
+		sql_stmt:='CREATE OR REPLACE FUNCTION '||USER||'.rif40_run_study(study_id INTEGER, debug BOOLEAN, recursion_level INTEGER DEFAULT 0)'||E'\n'||
 'RETURNS BOOLEAN'||E'\n'||		
 'SECURITY DEFINER'||E'\n'||
 'AS '||CHR(36)||'func'||CHR(36)||E'\n'||
 'DECLARE'||E'\n'||
 '/*'||E'\n'||
 'Function:	rif40_run_study()'||E'\n'||
-'Parameter:	Study ID'||E'\n'||
+'Parameter:	Study ID, enable debug boolean (default FALSE), recursion level (internal parameter DO NOT USE)'||E'\n'||
 'Returns:	Success or failure [BOOLEAN]'||E'\n'||
 '			Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)'||E'\n'||
 '			Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost'||E'\n'||
@@ -783,14 +790,14 @@ BEGIN
 'Runs DEFINER USER; calls rif40_sm_pkg.rif40_run_study(). Intended for batch.'||E'\n'||
 ' */'||E'\n'||
 'BEGIN'||E'\n'||
-'	RETURN rif40_sm_pkg.rif40_run_study(study_id, recursion_level);'||E'\n'||
+'	RETURN rif40_sm_pkg.rif40_run_study(study_id, debug, recursion_level);'||E'\n'||
 'END;'||E'\n'||
 CHR(36)||'func'||CHR(36)||E'\n'||
 'LANGUAGE ''plpgsql'''||E'\n'||
 '';
 --
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-		sql_stmt:='COMMENT ON FUNCTION '||USER||'.rif40_run_study(INTEGER, INTEGER) IS '''||
+		sql_stmt:='COMMENT ON FUNCTION '||USER||'.rif40_run_study(INTEGER, BOOLEAN, INTEGER) IS '''||
 'Function:	rif40_run_study()'||E'\n'||
 'Parameter:	Study ID'||E'\n'||
 'Returns:	Success or failure [BOOLEAN]'||E'\n'||
@@ -801,7 +808,7 @@ E'\n'||
 'Runs DEFINER USER; calls rif40_sm_pkg.rif40_run_study(). Intended for batch.'||E'\n'||
 '''';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
-		sql_stmt:='GRANT EXECUTE ON FUNCTION '||USER||'.rif40_run_study(INTEGER, INTEGER) TO rif40';
+		sql_stmt:='GRANT EXECUTE ON FUNCTION '||USER||'.rif40_run_study(INTEGER, BOOLEAN, INTEGER) TO rif40';
 		PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);	
 	END IF;
 	IF NOT t_rif40_num_denom THEN

@@ -117,6 +117,7 @@ DECLARE
 	debug_level		INTEGER;
 	study_ran_ok	BOOLEAN;
 BEGIN
+/*
 	OPEN c4sm;
 	FETCH c4sm INTO c4sm_rec;
 	CLOSE c4sm;
@@ -157,6 +158,7 @@ BEGIN
 			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG'||debug_level::Text);
 		END LOOP;
 	END IF;
+	*/
 --
 -- Call init function is case called from main build scripts
 --
@@ -238,7 +240,7 @@ BEGIN
 --
 -- Execute in USER context
 --
-	EXECUTE 'SELECT '||USER||'.rif40_run_study(currval(''rif40_study_id_seq''::regclass)::INTEGER)' INTO study_ran_ok;
+	EXECUTE 'SELECT '||USER||'.rif40_run_study(currval(''rif40_study_id_seq''::regclass)::INTEGER, TRUE /* Debug */)' INTO study_ran_ok;
 	IF study_ran_ok THEN
 		RAISE INFO 'test_4_study_id_1.sql: T4--12: Test 4; Study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 --		RAISE EXCEPTION 'XXXX TEST STOP HERE';
