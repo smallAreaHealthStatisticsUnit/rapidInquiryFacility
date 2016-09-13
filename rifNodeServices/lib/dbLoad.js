@@ -233,22 +233,11 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			tableList.push("hierarchy_" + response.fields["geographyName"].toLowerCase());
 			
 			for (var i=0; i<tableList.length; i++) {												
-				var sqlStmt=new Sql("Describe " + tableList[i]);			
-				if (dbType == "PostGres") {		
-					sqlStmt.nonsql="\\dS+ " + tableList[i];
-				}
-				else if (dbType == "MSSQLServer") {	
-					sqlStmt.sql="EXEC sp_help " + tableList[i];
-				}
+				var sqlStmt=new Sql("Describe table " + tableList[i], 
+					getSqlFromFile("describe_table.sql", dbType, tableList[i] /* Table name */)); 
 				sql.push(sqlStmt);
-				
-				var sqlStmt=new Sql("Create table statistics for: " + tableList[i]);
-				if (dbType == "PostGres") {		
-					sqlStmt.sql="VACUUM ANALYZE " + tableList[i];
-				}
-				else if (dbType == "MSSQLServer") {	
-					sqlStmt.sql="UPDATE STATISTICS " + tableList[i];		
-				}
+				var sqlStmt=new Sql("Analyze table " + tableList[i], 
+					getSqlFromFile("analyze_table.sql", dbType, tableList[i] /* Table name */)); 
 				sql.push(sqlStmt);
 			} // End of for csvFiles loop			
 		} // End of analyzeTables()		 

@@ -9,3 +9,5 @@
 --
 -- USE <my database>;
 --
+SET QUOTED_IDENTIFIER ON;
+-- SET STATISTICS TIME ON;
