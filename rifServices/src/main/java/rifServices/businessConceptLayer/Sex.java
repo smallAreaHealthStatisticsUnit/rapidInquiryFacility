@@ -53,13 +53,16 @@ import java.util.ArrayList;
 public enum Sex {
 	
 	/** Note: the identifiers are the numbers used to identify sex values in the RIF database. */
-	MALES("sex.males.label"),
+	MALES(1, "sex.males.label"),
 	
 	/** The females. */
-	FEMALES("sex.females.label"),
+	FEMALES(2, "sex.females.label"),
 	
 	/** The both. */
-	BOTH("sex.both.label");
+	BOTH(3, "sex.both.label");
+	
+	/** the numeric value associated with each sex **/
+	private int code;
 	
 	/** The property name. */
 	private final String propertyName;
@@ -69,9 +72,16 @@ public enum Sex {
 	 *
 	 * @param propertyName the property name
 	 */
-	Sex(final String propertyName) {
+	Sex(
+		final int code, 
+		final String propertyName) {
 
+		this.code = code;
 		this.propertyName = propertyName;
+	}
+		
+	public int getCode() {
+		return code;
 	}
 	
 	/**
@@ -125,6 +135,31 @@ public enum Sex {
 			return null;
 		}
 	}
+	
+	/**
+	 * Gets the sex from the numeric code.
+	 *
+	 * @param name the name
+	 * @return the sex from name
+	 */
+	static public Sex getSexFromCode(
+		final int code) {
+
+		if (code == MALES.getCode()) {
+			return MALES;			
+		}
+		else if (code == FEMALES.getCode()) {
+			return FEMALES;			
+		}
+		else if (code == BOTH.getCode()) {
+			return BOTH;
+		}
+		else {
+			assert false;
+			return null;
+		}
+	}
+	
 	
 	/**
 	 * Gets the sex name list.
