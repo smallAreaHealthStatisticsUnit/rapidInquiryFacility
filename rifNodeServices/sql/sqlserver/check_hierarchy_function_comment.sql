@@ -9,7 +9,7 @@ DECLARE @CurrentUser sysname  /*
  */
 SELECT @CurrentUser = user_name(); 
 EXECUTE sp_addextendedproperty 'MS_Description',   
-   'Procedure: 		check_hierarchy_cb_2014_us_500k()
+   'Procedure: 		check_hierarchy_%1()
 Parameters:		Geography, hierarchy table, type: "missing", "spurious additional" or "multiple hierarchy", 
 				Error count (OUT)
 Returns:		Nothing

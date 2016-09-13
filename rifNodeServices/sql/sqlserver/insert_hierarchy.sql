@@ -13,7 +13,7 @@ DECLARE @l_geography AS VARCHAR(200)='%1';
 --
 DECLARE c1_hier CURSOR FOR
 		SELECT geolevel_id, geolevel_name, shapefile_table, shapefile_area_id_column, shapefile_desc_column 
-		  FROM geolevels_cb_2014_us_500k
+		  FROM geolevels_%1
 		 WHERE geography = @l_geography
 		 ORDER BY geography, geolevel_id;
 DECLARE c2_hier CURSOR FOR
@@ -22,12 +22,12 @@ DECLARE c2_hier CURSOR FOR
   		  FROM sys.indexes i
 		 WHERE i.object_id = (
 					 SELECT object_id(LOWER(hierarchytable))
-				       FROM geography_cb_2014_us_500k
+				       FROM geography_%1
 				      WHERE geography = @l_geography)
 		 ORDER BY 1;		 
 DECLARE c4_hier CURSOR FOR		 
 	SELECT geography, hierarchytable
-		  FROM geography_cb_2014_us_500k
+		  FROM geography_%1
 		 WHERE geography = @l_geography;
 DECLARE @c3 CURSOR;
 DECLARE @geography		AS	VARCHAR(200);
@@ -101,7 +101,7 @@ BEGIN
 
 		DECLARE c1a_hier CURSOR FOR
 				SELECT geolevel_name, shapefile_table, shapefile_area_id_column, shapefile_desc_column 
-				  FROM geolevels_cb_2014_us_500k
+				  FROM geolevels_%1
 				 WHERE geography   = @l_geography
 				   AND geolevel_id = @geolevel_id+1
 				 ORDER BY geography, geolevel_id;		
@@ -267,7 +267,7 @@ Postgres Original:
 									 
 		DECLARE c1a_hier CURSOR FOR
 				SELECT geolevel_name, shapefile_table, shapefile_area_id_column, shapefile_desc_column 
-				  FROM geolevels_cb_2014_us_500k
+				  FROM geolevels_%1
 				 WHERE geography   = @l_geography
 				   AND geolevel_id = @geolevel_id+1
 				 ORDER BY geography, geolevel_id;		
@@ -308,7 +308,7 @@ Postgres Original:
 									 
 		DECLARE c1a_hier CURSOR FOR
 				SELECT geolevel_name, shapefile_table, shapefile_area_id_column, shapefile_desc_column 
-				  FROM geolevels_cb_2014_us_500k
+				  FROM geolevels_%1
 				 WHERE geography   = @l_geography
 				   AND geolevel_id = @geolevel_id+1
 				 ORDER BY geography, geolevel_id;		
@@ -391,7 +391,7 @@ Postgres Original:
 									 
 		DECLARE c1a_hier CURSOR FOR
 				SELECT geolevel_name, shapefile_table, shapefile_area_id_column, shapefile_desc_column 
-				  FROM geolevels_cb_2014_us_500k
+				  FROM geolevels_%1
 				 WHERE geography   = @l_geography
 				   AND geolevel_id = @geolevel_id+1
 				 ORDER BY geography, geolevel_id;		
