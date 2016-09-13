@@ -180,17 +180,18 @@ $(error Unknown database: $(PGDATABASE))
 #	
 endif
 endif
-	
+		
 #
 # Targets
 #
 #- all: Run all completed alter scripts [DEFAULT]
-all: $(TARGETS)
+all: node_check $(TARGETS)
 #- dev: Run all alter scripts in development
-dev: $(DEV_TARGETS)
+dev: node_check $(DEV_TARGETS)
 #- clean: Remove logs so completed scripts can be re-run
 clean: 
 	$(DELETE) $(TARGETS)
+	$(MAKE) -C ../../Node clean
 #- devclean: Remove logs so alter scripts in development can be re-run 
 #-           Not normally needed as they abort.
 devclean: 
@@ -202,7 +203,9 @@ topojson_convert:
 	
 # Do nothing
 recurse:
-	
+
+node_check: 
+		$(MAKE) -C ../../Node node_check
 #
 # So you can type make v4_0_alter_5
 #

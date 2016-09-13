@@ -161,7 +161,7 @@ ifeq ($(OS),Windows_NT)
 # Windows support
 #
 	RUN=powershell -ExecutionPolicy ByPass -file run.ps1
-	DELETE=powershell -ExecutionPolicy ByPass -file delete.ps1
+	DELETE=powershell -ExecutionPolicy ByPass -file ..\psql_scripts\delete.ps1
 	HELP=findstr "\#-" Makefile
 #	SUDO_MKDIR=runas /user:$(WINDOWS_ADMIN_USER) "powershell -ExecutionPolicy ByPass -file mkdir.ps1 $@" 
 	SUDO_MKDIR=powershell -ExecutionPolicy ByPass -file mkdir.ps1 "$@"
@@ -175,7 +175,7 @@ ifeq ($(OS),Windows_NT)
 		TESTUSER=$(USERNAME)
 	endif
 #	TOPOJSON=C:\Users\$(USERNAME)\AppData\Roaming\npm\topojson.cmd
-	TOPOJSON=Node node_modules\topojson\bin\topojson
+	TOPOJSON=node node_modules\topojson\bin\topojson
 	NODE=node
 	NPM=npm
 	PGPASSFILE=$(APPDATA)\postgresql\pgpass.conf
@@ -192,7 +192,7 @@ else
 	SUDO_CHOWN_POSTGRES=chown -R postgres "$@"
 	COPY=cp
 	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
-	TOPOJSON=node_modules/topojson/bin/topojson
+	TOPOJSON=node node_modules/topojson/bin/topojson
 	NODE=node
 	NPM=npm
     ifeq ($(UNAME_S),Linux)
@@ -223,20 +223,27 @@ endif
 #	$(RUN) $@ "$(CURDIR)" $(PSQL) $(PSQL_FLAGS) -f $< 
 MODULES=node_modules/pg node_modules/pg-native node_modules/topojson
 
-all: modules topojson_convert
+all: node_check modules topojson_convert
 
+node_check: node_check.txt
+
+node_check.txt:
+	$(NODE) -v
+	@echo Building $(TOPOJSON)...
+	$(NPM) update pg pg-native topojson
+	$(TOPOJSON) --version
+	echo "Done"  > node_check.txt
+	
 modules: $(MODULES)
 	
 $(MODULES):
 	$(NPM) install pg pg-native topojson
 
-#clean:
+clean:
+	$(DELETE) node_check.txt
 #	 $(DELETE) node_modules
 	 
-install: $(TOPOJSON)
-	@echo Building $(TOPOJSON)...
-	$(NPM) update pg pg-native topojson
-	$(TOPOJSON) --version	
+install: node_check $(TOPOJSON)	
 	
 topojson: $(TOPOJSON) ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
 	$(TOPOJSON) -q 1e6 -o test_6_geojson_test_01.json ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json
