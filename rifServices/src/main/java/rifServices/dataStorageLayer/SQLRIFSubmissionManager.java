@@ -319,12 +319,16 @@ final class SQLRIFSubmissionManager
 			result = getCurrentStudyID(connection);
 			
 			connection.commit();
+			System.out.println("=========submitStudy DONE 1=====================");
 
 			runStudy(connection, result);
+			
+			System.out.println("=========================submitStudy DONE 2================");
 			
 			return result;
 		}
 		catch(SQLException sqlException) {
+			System.out.println("============================submitStudy ERROR============================");
 			logSQLException(sqlException);
 			SQLQueryUtility.rollback(connection);
 			String errorMessage
@@ -1084,36 +1088,79 @@ final class SQLRIFSubmissionManager
 		
 		
 		String result = null;
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
+		PreparedStatement runStudyStatement = null;
+		PreparedStatement computeResultsStatement = null;
+		ResultSet runStudyResultSet = null;
+		ResultSet computeResultSet = null;
 		
 		try {
 			
 			enableDatabaseDebugMessages(connection);		
 			
-			SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
-			queryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
-			queryFormatter.setFunctionName("rif40_run_study");
-			queryFormatter.setNumberOfFunctionParameters(2);
+			SQLFunctionCallerQueryFormatter runStudyQueryFormatter = new SQLFunctionCallerQueryFormatter();
+			runStudyQueryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
+			runStudyQueryFormatter.setFunctionName("rif40_run_study");
+			runStudyQueryFormatter.setNumberOfFunctionParameters(2);
 
+			
+			SQLFunctionCallerQueryFormatter computeResultsQueryFormatter = new SQLFunctionCallerQueryFormatter();
+			computeResultsQueryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
+			computeResultsQueryFormatter.setFunctionName("rif40_compute_results");
+			computeResultsQueryFormatter.setNumberOfFunctionParameters(1);
+			
+			
 			logSQLQuery(
 				"runStudy", 
-				queryFormatter,
+				runStudyQueryFormatter,
+				studyID,
+				"0");
+
+			logSQLQuery(
+				"computeResults", 
+				computeResultsQueryFormatter,
 				studyID,
 				"0");
 
 			
-			statement
+			runStudyStatement
 				= createPreparedStatement(
 					connection,
-					queryFormatter);
-			statement.setInt(1, Integer.valueOf(studyID));
-			statement.setInt(2, 0);
-			resultSet
-				= statement.executeQuery();
-			resultSet.next();
+					runStudyQueryFormatter);
+			runStudyStatement.setInt(1, Integer.valueOf(studyID));
+			runStudyStatement.setInt(2, 0);
+			runStudyResultSet
+				= runStudyStatement.executeQuery();
+			runStudyResultSet.next();
 			
-			result = String.valueOf(resultSet.getBoolean(1));	
+			result = String.valueOf(runStudyResultSet.getBoolean(1));	
+			System.out.print("SQLRIFSubmissionManager submitStudy 1=="+result+"== PRINTING WARNINGS 1");
+			
+			SQLWarning warning = runStudyStatement.getWarnings();
+			while (warning != null) {
+		        System.out.println("Message:" + warning.getMessage());
+		        System.out.println("SQLState:" + warning.getSQLState());
+		        System.out.print("Vendor error code: ");
+		        System.out.println(warning.getErrorCode());
+		        System.out.println("==");
+		        warning = warning.getNextWarning();
+			}
+			
+			System.out.print("SQLRIFSubmissionManager submitStudy 1=="+result+"== PRINTING WARNINGS 2");
+			
+			
+			
+			computeResultsStatement
+				= createPreparedStatement(
+					connection,
+					computeResultsQueryFormatter);
+			computeResultsStatement.setInt(1, Integer.valueOf(studyID));
+			computeResultSet
+				= runStudyStatement.executeQuery();
+			computeResultSet.next();
+			
+			//result = String.valueOf(resultSet.getBoolean(1));	
+			System.out.print("SQLRIFSubmissionManager submitStudy 2=="+result+"==");
+						
 			connection.commit();
 			
 			return result;
@@ -1141,8 +1188,10 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(runStudyStatement);
+			SQLQueryUtility.close(runStudyResultSet);
+			SQLQueryUtility.close(computeResultsStatement);
+			SQLQueryUtility.close(computeResultSet);
 		}
 		
 		
