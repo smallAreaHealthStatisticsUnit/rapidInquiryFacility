@@ -124,7 +124,7 @@ abstract class AbstractDataLoaderStepManager {
 			
 			
 		RIFResultTable rifResultTable = new RIFResultTable();
-		rifResultTable.setFieldNames(fieldNames);
+		rifResultTable.setColumnProperties(fieldNames);
 			
 		//gather results
 		PreparedStatement statement = null;
