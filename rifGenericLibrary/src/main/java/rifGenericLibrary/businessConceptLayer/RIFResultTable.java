@@ -69,19 +69,23 @@ public class RIFResultTable {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	public static enum ColumnDataType {TEXT, NUMERIC};
+	
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private String[] columnNameDescriptions;	
+	private String[] columnNames;
+	private ColumnDataType[] columnDataTypes;
 	
-	private String[] fieldNames;
 	private String[][] data;
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public RIFResultTable() {
-		fieldNames = new String[0];
 	}
 
 	public static RIFResultTable newInstance() {
@@ -95,14 +99,27 @@ public class RIFResultTable {
 		RIFResultTable cloneRIFResultTable
 			= new RIFResultTable();
 		
-		String[] originalFieldNames = originalRIFResultTable.getFieldNames();
-		if (originalFieldNames == null) {
-			cloneRIFResultTable.setFieldNames(null);
+		String[] originalColumnNames = originalRIFResultTable.getColumnNames();
+		String[] originalColumnDescriptions = originalRIFResultTable.getColumnNameDescriptions();
+		ColumnDataType[] originalColumnDataTypes = originalRIFResultTable.getColumnDataTypes();
+		if (originalColumnNames == null) {
+			//assume that the other columns will be null as well
+			cloneRIFResultTable.setColumnProperties(null, null, null);
 		}
 		else {
-			String[] cloneFieldNames
-				= Arrays.copyOf(originalFieldNames, originalFieldNames.length);
-			cloneRIFResultTable.setFieldNames(cloneFieldNames);			
+			String[] cloneColumnNames
+				= Arrays.copyOf(originalColumnNames, originalColumnNames.length);
+			String[] cloneColumnDescriptions
+				= Arrays.copyOf(originalColumnNames, originalColumnDescriptions.length);
+
+			ColumnDataType[] cloneColumnDataTypes
+				= Arrays.copyOf(originalColumnDataTypes, originalColumnDataTypes.length);
+			
+			cloneRIFResultTable.setColumnProperties(
+				cloneColumnNames, 
+				cloneColumnDescriptions, 
+				cloneColumnDataTypes);	
+			
 		}
 		String[][] originalData
 			= originalRIFResultTable.getData();
@@ -123,12 +140,54 @@ public class RIFResultTable {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setFieldNames(final String[] fieldNames) {
-		this.fieldNames = fieldNames;
+	
+	public void setColumnProperties(
+		final String[] columnNames,
+		final ColumnDataType[] columnDataTypes) {
+
+		this.columnNames = columnNames;
+		columnNameDescriptions = new String[columnNames.length];
+		for (int i = 0; i < columnNameDescriptions.length; i++) {
+			columnNameDescriptions[i] = "";
+		}
+		this.columnDataTypes = columnDataTypes;
 	}
 	
-	public String[] getFieldNames() {
-		return fieldNames;
+	public void setColumnProperties(
+		final String[] columnNames,
+		final String[] columnNameDescriptions,
+		final ColumnDataType[] columnDataTypes) {
+		
+		this.columnNames = columnNames;
+		this.columnNameDescriptions = columnNameDescriptions;
+		this.columnDataTypes = columnDataTypes;
+	}
+	
+	public void setColumnProperties(
+		final String[] fieldNames) {
+		
+		this.columnNames = fieldNames;
+		columnNameDescriptions = new String[fieldNames.length];
+		for (int i = 0; i < columnNameDescriptions.length; i++) {
+			columnNameDescriptions[i] = "";
+		}
+		
+		columnDataTypes = new ColumnDataType[fieldNames.length];
+		for (int i = 0; i < columnDataTypes.length; i++) {
+			columnDataTypes[i] = ColumnDataType.TEXT;
+		}
+	}	
+	
+	public String[] getColumnNameDescriptions() {
+		return columnNameDescriptions;
+	}
+	
+	public ColumnDataType[] getColumnDataTypes() {
+		return columnDataTypes;
+	}
+	
+	public String[] getColumnNames() {
+		return columnNames;
 	}
 	
 	public void setData(final String[][] data) {
@@ -139,7 +198,71 @@ public class RIFResultTable {
 		return data;
 	}
 	
+	
+	public void print() {
+		print(null);		
+	}
+	
+	
+	public void print(Integer numberOfLines) {
 
+		System.out.println("Table has dimensions of rows="+data.length + "==columns="+columnNames.length+"==");
+
+		//Print the header: column names
+		StringBuilder tableColumnNameLine = new StringBuilder();
+		for (int i = 0 ; i < columnNames.length; i++) {
+			if (i != 0) {
+				tableColumnNameLine.append("\t");
+			}
+			tableColumnNameLine.append(columnNames[i]);
+		}
+		System.out.println(tableColumnNameLine.toString());
+		
+		//Print the header: column data types
+		StringBuilder tableColumnTypeLine = new StringBuilder();
+		for (int i = 0 ; i < columnDataTypes.length; i++) {
+			if (i != 0) {
+				tableColumnTypeLine.append("\t");
+			}
+			if (columnDataTypes[i] == RIFResultTable.ColumnDataType.NUMERIC) {
+				tableColumnTypeLine.append("N");				
+			}
+			else {
+				tableColumnTypeLine.append("T");			
+			}
+		}
+		System.out.println(tableColumnTypeLine.toString());
+		
+		//Print the header: column name descriptions
+		
+		
+		
+		if (numberOfLines == null) {
+			
+			//print all of the lines
+			for (int ithRow = 0; ithRow < data.length; ithRow++) {
+				printLine(data[ithRow]);
+			}
+		}
+		else {
+			//print only some of the lines
+			for (int ithRow = 0; ithRow < numberOfLines; ithRow++) {
+				printLine(data[ithRow]);
+			}
+		}		
+	}
+	
+	private void printLine(final String... rowData) {
+		StringBuilder row = new StringBuilder();
+		for (int i = 0; i < rowData.length; i++) {
+			if (i != 0) {
+				row.append("\t");
+			}
+			row.append(rowData[i]);
+		}
+		System.out.println(row.toString());
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
