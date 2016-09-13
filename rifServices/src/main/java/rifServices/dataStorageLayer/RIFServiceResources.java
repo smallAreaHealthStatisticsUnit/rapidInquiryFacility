@@ -86,6 +86,8 @@ public final class RIFServiceResources {
 	/** The sql rif context manager. */
 	private SQLRIFContextManager sqlRIFContextManager;
 	
+	private SQLSmoothedResultManager sqlSmoothedResultManager;
+	
 	/** The sql age gender year manager. */
 	private SQLAgeGenderYearManager sqlAgeGenderYearManager;
 	
@@ -121,6 +123,11 @@ public final class RIFServiceResources {
 		
 		sqlRIFContextManager 
 			= new SQLRIFContextManager(rifDatabaseProperties);
+		
+		
+		sqlSmoothedResultManager
+			= new SQLSmoothedResultManager(rifDatabaseProperties);
+		
 		sqlAgeGenderYearManager 
 			= new SQLAgeGenderYearManager(
 				rifDatabaseProperties,
@@ -226,7 +233,7 @@ public final class RIFServiceResources {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
 	public SQLConnectionManager getSqlConnectionManager() {
 		return sqlConnectionManager;
 	}
@@ -235,10 +242,14 @@ public final class RIFServiceResources {
 		return sqlRIFContextManager;
 	}
 
+	public SQLSmoothedResultManager getSQLSmoothedResultManager() {
+		return sqlSmoothedResultManager;
+	}
+	
 	public SQLAgeGenderYearManager getSqlAgeGenderYearManager() {
 		return sqlAgeGenderYearManager;
 	}
-
+	
 	public SQLCovariateManager getSqlCovariateManager() {
 		return sqlCovariateManager;
 	}
