@@ -583,6 +583,7 @@ RangeError: Invalid string length
   * Missing GRANT UPDATE on map table (e.g s1_map)
   * Check node is setup correctly (node_check target)
   * Simple enable debug function for rif40_run_study
+  * Database load code restructure to use template SQL scripts
 
 #### Current TODO list (September):
 

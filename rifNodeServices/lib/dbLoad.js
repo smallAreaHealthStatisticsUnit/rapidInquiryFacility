@@ -252,39 +252,29 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			for (var i=0; i<csvFiles.length; i++) {									
 				var sqlStmt=new Sql("Drop table lookup_" + csvFiles[i].tableName, 
 					getSqlFromFile("drop_table.sql", dbType, "lookup_" + csvFiles[i].tableName /* Table name */)); 
-				sql.push(sqlStmt);
-				
-				var sqlStmt=new Sql("Create table lookup_" + csvFiles[i].tableName,
-					"CREATE TABLE lookup_" + csvFiles[i].tableName + " (\n" +
-					"	" + csvFiles[i].tableName + "	varchar(100)  NOT NULL,\n" +
-					"	areaname				varchar(1000)\n" +
-					")");
-				sql.push(sqlStmt);
-				
-				var sqlStmt=new Sql("Insert table lookup_" + csvFiles[i].tableName,			
-					"INSERT INTO lookup_" + csvFiles[i].tableName + "(" + csvFiles[i].tableName + ", areaname)\n" +					
-					"SELECT areaid, areaname\n" + 
-					"  FROM " + csvFiles[i].tableName + "\n" +
-					" ORDER BY 1");
-				sql.push(sqlStmt);
-				
-				var sqlStmt=new Sql("Add primary key: lookup_" + csvFiles[i].tableName,	
-					"ALTER TABLE lookup_" + csvFiles[i].tableName + " ADD PRIMARY KEY (" + csvFiles[i].tableName + ")");	
 				sql.push(sqlStmt);	
-
-				var sqlStmt=new Sql("Comment table: lookup_" + csvFiles[i].tableName);
-				if (dbType == "PostGres") {	
-					sqlStmt.sql="COMMENT ON TABLE lookup_" + csvFiles[i].tableName + " IS 'Lookup table for " + csvFiles[i].geolevelDescription + "'";
-				}
-				else if (dbType == "MSSQLServer") {	
-					sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
-	"SELECT @CurrentUser = user_name();\n" +   
-	"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
-	"   'Lookup table for " + csvFiles[i].geolevelDescription + "',\n" +   
-	"   'user', @CurrentUser, \n" +   
-	"   'table', 'lookup_" + csvFiles[i].tableName + "'";
-				}
+				
+				var sqlStmt=new Sql("Create table lookup_" + csvFiles[i].tableName, 
+					getSqlFromFile("create_lookup_table.sql", undefined /* Common */, csvFiles[i].tableName /* Table name */)); 
 				sql.push(sqlStmt);				
+				
+				var sqlStmt=new Sql("Insert table lookup_" + csvFiles[i].tableName, 
+					getSqlFromFile("insert_lookup_table.sql", undefined /* Common */, csvFiles[i].tableName /* Table name */)); 
+				sql.push(sqlStmt);			
+				
+				var sqlStmt=new Sql("Add primary key lookup_" + csvFiles[i].tableName, 
+					getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
+						"lookup_" + csvFiles[i].tableName 	/* Table name */, 
+						csvFiles[i].tableName 				/* Primary key */)); 
+				sql.push(sqlStmt);
+
+				var sqlStmt=new Sql("Comment table lookup_" + csvFiles[i].tableName,
+					getSqlFromFile("comment_table.sql", 
+						dbType, 
+						"lookup_" + csvFiles[i].tableName,		/* Table name */
+						"Lookup table for " + csvFiles[i].geolevelDescription 	/* Comment */)
+					);
+				sql.push(sqlStmt);			
 			}				
 		} // End of createGeolevelsLookupTables()
 		
@@ -320,10 +310,11 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			sqlStmt.sql+=")";
 			sql.push(sqlStmt);
 			
-			var sqlStmt=new Sql("Add primary key to: hierarchy_" + response.fields["geographyName"].toLowerCase(), 
-				"ALTER TABLE hierarchy_" + response.fields["geographyName"].toLowerCase() + 
-					" ADD PRIMARY KEY (" + pkField + ")");
-			sql.push(sqlStmt);
+			var sqlStmt=new Sql("Add primary key hierarchy_" + response.fields["geographyName"].toLowerCase(), 
+				getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
+					"hierarchy_" + response.fields["geographyName"].toLowerCase() 	/* Table name */, 
+					pkField 														/* Primary key */)); 
+			sql.push(sqlStmt);			
 					
 			for (var i=0; i<csvFiles.length; i++) {	// Add non unique indexes
 				if (csvFiles[i].geolevel != csvFiles.length && csvFiles[i].geolevel != 1) {		
@@ -682,10 +673,11 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			}
 			sql.push(sqlStmt);	
 
-			sql.push(new Sql("Add keys"));			
-			var sqlStmt=new Sql("Add primary key");
-			sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ADD PRIMARY KEY (gid)";
-			sql.push(sqlStmt);
+			var sqlStmt=new Sql("Add primary key " + csvFiles[i].tableName, 
+				getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
+					csvFiles[i].tableName	/* Table name */, 
+					'gid'					/* Primary key */)); 
+			sql.push(sqlStmt);		
 			
 			var sqlStmt=new Sql("Add unique key");
 			sqlStmt.sql="ALTER TABLE " + csvFiles[i].tableName + " ADD CONSTRAINT " + csvFiles[i].tableName + "_uk UNIQUE(areaid)";

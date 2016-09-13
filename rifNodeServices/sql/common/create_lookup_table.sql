@@ -1,0 +1,4 @@
+CREATE TABLE lookup_%1 (
+	%1			VARCHAR(100)  NOT NULL,
+	areaname	VARCHAR(1000)
+)
