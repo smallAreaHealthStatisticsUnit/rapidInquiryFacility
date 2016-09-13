@@ -162,7 +162,8 @@ final class SQLStudyStateManager
 				user.getUserID());
 		
 			//Parameterise and execute query
-				
+			
+			
 			statement
 				= createPreparedStatement(connection, queryFormatter);
 			statement.setString(1, studyID);
@@ -524,6 +525,15 @@ final class SQLStudyStateManager
 		
 	}
 	
+	public void addStatusMessage(
+		final User user, 
+		final String studyID, 
+		final String statusMessage) 
+		throws RIFServiceException {
+		
+		
+		
+	}
 	
 	
 	// ==========================================
