@@ -2066,6 +2066,484 @@ abstract class AbstractRIFStudyRetrievalService
 		return results;
 	}
 		
+	public ArrayList<String> getSmoothedResultAttributes(
+			final User _user) 
+			throws RIFServiceException {
+			
+
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLConnectionManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user) == true) {
+				return null;
+			}
+
+			ArrayList<String> results = new ArrayList<String>();
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getSmoothedResultAttributes",
+					"user",
+					user);
+				
+				//Check for security violations
+				validateUser(user);
+
+				
+				//Audit attempt to do operation
+				RIFLogger rifLogger = RIFLogger.getLogger();				
+				String auditTrailMessage
+					= RIFServiceMessages.getMessage("logging.getSmoothedResultAttributes",
+						user.getUserID(),
+						user.getIPAddress());
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+
+				//Delegate operation to a specialised manager class
+				SQLSmoothedResultManager sqlSmoothedResultQueryManager
+					= rifServiceResources.getSQLSmoothedResultManager();
+				results
+					= sqlSmoothedResultQueryManager.getSmoothedResultAttributes();
+			}
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getSmoothedResults",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+			
+			return results;
+			
+		}
+
+	
+	public RIFResultTable getSmoothedResults(
+		final User _user,
+		final String studyID,
+		final String sex,
+		final String year) 
+		throws RIFServiceException {
+		
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+
+		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSmoothedResults",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSmoothedResults",
+				"studyID",
+				studyID);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSmoothedResults",
+				"sex",
+				sex);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSmoothedResults",
+				"year",
+				year);
+				
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getSmoothedResults", 
+				"studyID", 
+				studyID);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSmoothedResults",
+				"sex",
+				sex);
+	
+			fieldValidationUtility.checkValidIntegerMethodParameterValue(
+				"getSmoothedResults", 
+				"sex", 
+				sex);
+			
+			fieldValidationUtility.checkValidIntegerMethodParameterValue(
+				"getSmoothedResults", 
+				"year", 
+				year);
+						
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getSmoothedResults",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID);
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			SQLSmoothedResultManager sqlSmoothedResultQueryManager
+				= rifServiceResources.getSQLSmoothedResultManager();
+			
+			results
+				= sqlSmoothedResultQueryManager.getSmoothedResults(
+					connection, 
+					studyID,
+					Sex.getSexFromCode(Integer.valueOf(sex)),
+					Integer.valueOf(year));
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getSmoothedResults",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+		
+		return results;
+		
+	}
+
+	
+	public RIFResultTable getSmoothedResultsForAttributes(
+		final User _user,
+		final ArrayList<String> smoothedAttributesToInclude,
+		final String studyID,
+		final String sex,
+		final String year) 
+		throws RIFServiceException {
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+
+		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSmoothedResults",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSmoothedResults",
+				"studyID",
+				studyID);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSmoothedResults",
+				"year",
+				year);
+				
+			//Check for security violations
+			validateUser(user);
+
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getSmoothedResults", 
+				"studyID", 
+				studyID);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getSmoothedResults", 
+				"year", 
+				year);
+			
+			
+			fieldValidationUtility.checkValidIntegerMethodParameterValue(
+				"getSmoothedResults", 
+				"sex", 
+				sex);
+			
+			fieldValidationUtility.checkValidIntegerMethodParameterValue(
+				"getSmoothedResults", 
+				"year", 
+				year);
+										
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getSmoothedResults",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID);
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			SQLSmoothedResultManager sqlSmoothedResultQueryManager
+				= rifServiceResources.getSQLSmoothedResultManager();
+
+			results
+				= sqlSmoothedResultQueryManager.getSmoothedResultsForAttributes(
+					connection, 
+					smoothedAttributesToInclude,
+					studyID,
+					Sex.getSexFromCode(Integer.valueOf(sex)),
+					Integer.valueOf(year));			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getSmoothedResults",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+		
+		return results;
+		
+	}
+
+	public RIFResultTable getPopulationPyramidData(
+		final User _user,
+		final String studyID,
+		final String year)
+		throws RIFServiceException {
+		
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+
+		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAllPopulationPyramidData",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAllPopulationPyramidData",
+				"studyID",
+				studyID);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getAllPopulationPyramidData",
+				"year",
+				year);
+			
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getAllPopulationPyramidData", 
+				"studyID", 
+				studyID);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getAllPopulationPyramidData", 
+				"year", 
+				year);
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getAllPopulationPyramidData",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID);
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			SQLSmoothedResultManager sqlSmoothedResultQueryManager
+				= rifServiceResources.getSQLSmoothedResultManager();
+
+			results
+				= sqlSmoothedResultQueryManager.getPopulationPyramidData(
+					connection, 
+					studyID,
+					Integer.valueOf(year));
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getAllPopulationPyramidData",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+		
+		return results;
+		
+		
+	}
+		
+	public RIFResultTable getPopulationPyramidData(
+		final User _user,
+		final String studyID,
+		final String year,
+		final ArrayList<MapArea> mapAreas)
+		throws RIFServiceException {
+		
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		
+		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getPopulationPyramidDataForAreas",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getPopulationPyramidDataForAreas",
+				"studyID",
+				studyID);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getPopulationPyramidDataForAreas",
+				"year",
+				year);
+			
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getPopulationPyramidDataForAreas", 
+				"studyID", 
+				studyID);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getPopulationPyramidDataForAreas", 
+				"year", 
+				year);
+						
+			if (mapAreas != null) {
+				
+				for (MapArea mapArea : mapAreas) {
+					
+					fieldValidationUtility.checkMaliciousMethodParameter(
+						"getPopulationPyramidDataForAreas", 
+						"mapArea", 
+						mapArea.getLabel());				
+				
+				}
+			}			
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getPopulationPyramidDataForAreas",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID);
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			SQLSmoothedResultManager sqlSmoothedResultQueryManager
+				= rifServiceResources.getSQLSmoothedResultManager();
+
+			if (mapAreas == null) {
+				results
+					= sqlSmoothedResultQueryManager.getPopulationPyramidData(
+						connection, 
+						studyID,
+						Integer.valueOf(year));				
+			}
+			else {
+				results
+					= sqlSmoothedResultQueryManager.getPopulationPyramidData(
+						connection, 
+						studyID,
+						Integer.valueOf(year),
+						mapAreas);
+			}
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getPopulationPyramidData",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+		
+		return results;		
+	}
+	
+	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
