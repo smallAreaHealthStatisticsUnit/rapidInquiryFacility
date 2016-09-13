@@ -291,17 +291,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 					String.valueOf(yMin),
 					String.valueOf(xMax),
 					String.valueOf(yMax));
-
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
+		
 			connection.commit();
 			
 			return result;
@@ -1408,7 +1398,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		//KLG: TODO call database function for this
 
 		RIFResultTable result = new RIFResultTable();
-		result.setFieldNames(extractTableFieldNames);
+		result.setColumnProperties(extractTableFieldNames);
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
@@ -1519,7 +1509,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		for (int i = 0; i < resultFieldNames.length; i++) {
 			resultFieldNames[i] = resultSetMetaData.getColumnName(i+1);
 		}
-		rifResultTable.setFieldNames(resultFieldNames);
+		rifResultTable.setColumnProperties(resultFieldNames);
 					
 		String[][] resultsBlockData
 			= new String[totalResultRows][resultFieldNames.length];
@@ -2142,7 +2132,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			for (int i = 0; i < resultFieldNames.length; i++) {
 				resultFieldNames[i] = resultSetMetaData.getColumnName(i+1);
 			}
-			results.setFieldNames(resultFieldNames);
+			results.setColumnProperties(resultFieldNames);
 			
 			//Obtain the data
 			int totalResultRows = 0;
@@ -2215,7 +2205,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			for (int i = 0; i < resultFieldNames.length; i++) {
 				resultFieldNames[i] = resultSetMetaData.getColumnName(i+1);
 			}
-			results.setFieldNames(resultFieldNames);
+			results.setColumnProperties(resultFieldNames);
 			
 			//Obtain the data
 			int totalResultRows = 0;
@@ -2289,7 +2279,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			for (int i = 0; i < resultFieldNames.length; i++) {
 				resultFieldNames[i] = resultSetMetaData.getColumnName(i+1);
 			}
-			results.setFieldNames(resultFieldNames);
+			results.setColumnProperties(resultFieldNames);
 			
 			//Obtain the data
 			int totalResultRows = 0;
