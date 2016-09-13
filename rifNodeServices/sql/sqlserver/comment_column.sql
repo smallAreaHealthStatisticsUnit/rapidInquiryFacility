@@ -15,4 +15,4 @@ EXECUTE sp_addextendedproperty 'MS_Description',
    '%3',
    'user', @CurrentUser,   
    'table', '%1',
-   'column', '%2
+   'column', '%2'

@@ -391,8 +391,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			var sqlStmt=new Sql("Comment geolevels meta data table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
-					response.fields["geographyName"].toLowerCase(),		/* Table name */
-					"Geolevels: hierarchy of level within a geography"	/* Comment */)
+					"geolevels_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+					"Geolevels: hierarchy of level within a geography"					/* Comment */)
 				);
 			sql.push(sqlStmt);
 			
@@ -460,45 +460,32 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				getSqlFromFile("drop_table.sql", dbType, 
 					"geography_" + response.fields["geographyName"].toLowerCase() /* Table name */)); 
 			sql.push(sqlStmt);
-			
+	
 			var sqlStmt=new Sql("Create geography meta data table",
-				"CREATE TABLE geography_" + response.fields["geographyName"].toLowerCase() + " (\n" +
-				"       geography               VARCHAR(50)  NOT NULL,\n" +
-				"       description             VARCHAR(250) NOT NULL,\n" +  
-				"       hierarchytable          VARCHAR(30)  NOT NULL,\n" + 
-				"       srid                    integer      NULL DEFAULT 0,\n" + 
-				"       defaultcomparea         VARCHAR(30)  NULL,\n" + 
-				"       defaultstudyarea        VARCHAR(30)  NULL,\n" + 
-				"       CONSTRAINT geography_" + response.fields["geographyName"].toLowerCase() + "_pk" + 
-						" PRIMARY KEY(geography)\n" +
-				")");			
+				getSqlFromFile("create_geography_table.sql", undefined /* Common */, 
+					"geography_" + response.fields["geographyName"].toLowerCase() /* Table name */)); 		
+			sql.push(sqlStmt);		
+
+			var sqlStmt=new Sql("Comment geography meta data table",
+				getSqlFromFile("comment_table.sql", 
+					dbType, 
+					"geography_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"Hierarchial geographies. Usually based on Census geography"	/* Comment */)
+				);
 			sql.push(sqlStmt);
-			
-			var sqlStmt=new Sql("Populate geography meta data table", 
-				"INSERT INTO geography_" + response.fields["geographyName"].toLowerCase() + " (\n" +
-					"geography, description, hierarchytable, srid, defaultcomparea, defaultstudyarea)\n" + 
-					"SELECT '" + response.fields["geographyName"] + "' AS geography,\n" +
-					"       '" + response.fields["geographyDesc"] + "' AS description,\n" + 
-					"       'hierarchy_" + response.fields["geographyName"].toLowerCase() + "' AS hierarchytable,\n" + 
-					"       " + response.fields["srid"] + " AS srid,\n" + 
-					"       '" + defaultcomparea + "' AS defaultcomparea,\n" + 
-					"       '" + defaultstudyarea + "' AS defaultstudyarea");
-			sql.push(sqlStmt);
-			
-			var sqlStmt=new Sql("Comment geography meta data table");			
-			if (dbType == "PostGres") {		
-				sqlStmt.sql="COMMENT ON TABLE geography_" + response.fields["geographyName"].toLowerCase() + 
-					" IS 'Hierarchial geographies. Usually based on Census geography.'";
-			}
-			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
-	"SELECT @CurrentUser = user_name();\n" +   
-	"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
-	"   'Hierarchial geographies. Usually based on Census geography.',\n" +   
-	"   'user', @CurrentUser, \n" +   
-	"   'table', 'geography_" + response.fields["geographyName"].toLowerCase() + "'";
-			}
-			sql.push(sqlStmt);
+	
+			var sqlStmt=new Sql("Populate geography meta data table",
+				getSqlFromFile("insert_geography.sql", 
+					undefined /* Common */, 
+					"geography_" + response.fields["geographyName"].toLowerCase()	/* table; e.g. geography_cb_2014_us_county_500k */,
+					response.fields["geographyName"] 								/* Geography; e.g. cb_2014_us_500k */,
+					response.fields["geographyDesc"] 								/* Geography description; e.g. "United states to county level" */,
+					"hierarchy_" + response.fields["geographyName"].toLowerCase()	/* Hierarchy table; e.g. hierarchy_cb_2014_us_500k */,
+					response.fields["srid"] 										/* SRID; e.g. 4269 */,
+					defaultcomparea													/* Default comparision area */,
+					defaultstudyarea 												/* Default study area */)
+				);
+			sql.push(sqlStmt)	
 			
 			var fieldArray = ['geography', 'description', 'hierarchytable', 'srid', 'defaultcomparea', 'defaultstudyarea'];
 			var fieldDescArray = ['Geography name', 
@@ -508,20 +495,13 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				'Default comparison area: lowest resolution geolevel', 
 				'Default study area: highest resolution geolevel'];
 			for (var l=0; l< fieldArray.length; l++) {		
-				var sqlStmt=new Sql("Comment geography meta data column");	
-				if (dbType == "PostGres") {		
-					sqlStmt.sql="COMMENT ON COLUMN geography_" + response.fields["geographyName"].toLowerCase() + "." + fieldArray[l] +
-						" IS '" + fieldDescArray[l] + "'";
-				}
-				else if (dbType == "MSSQLServer") {	
-					sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
-		"SELECT @CurrentUser = user_name();\n" +   
-		"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
-		"   '" + fieldDescArray[l] + "',\n" +   
-		"   'user', @CurrentUser, \n" +   
-		"   'table', 'geography_" + response.fields["geographyName"].toLowerCase() + "'," +   
-		"   'column', '" + fieldArray[l] + "'";
-				}
+				var sqlStmt=new Sql("Comment geography meta data column",
+					getSqlFromFile("comment_column.sql", 
+						dbType, 
+						"geography_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+						fieldArray[l]														/* Column name */,
+						fieldDescArray[l]													/* Comment */)
+					);
 				sql.push(sqlStmt);			
 			}
 		} // End of createGeographyTable()
