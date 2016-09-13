@@ -71,6 +71,8 @@ public final class SQLCountTableRowsQueryFormatter
 	// Section Properties
 	// ==========================================
 	private String tableName;
+	private String countFieldName;
+	private boolean isDistinct;
 	
 	// ==========================================
 	// Section Construction
@@ -87,6 +89,20 @@ public final class SQLCountTableRowsQueryFormatter
 		this.tableName = tableName;
 	}
 	
+	public void setCountFieldName(final String countFieldName) {
+		this.countFieldName = countFieldName;
+		isDistinct = false;
+	}
+
+	public void setCountFieldName(
+		final String countFieldName, 
+		final boolean isDistinct) {
+
+		this.countFieldName = countFieldName;
+		this.isDistinct = isDistinct;
+	}
+		
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -102,8 +118,24 @@ public final class SQLCountTableRowsQueryFormatter
 		StringBuilder query = new StringBuilder();
 		
 		query.append("SELECT");
-		query.append("COUNT(*)");
-		query.append("FROM");
+		
+		if (countFieldName == null) {
+			query.append(" COUNT(*) ");
+		}
+		else {
+			if (isDistinct) {
+				query.append(" COUNT(DISTINCT ");
+				query.append(countFieldName);
+				query.append(") ");
+			}
+			else {				
+				query.append(" COUNT(");
+				query.append(countFieldName);
+				query.append(") ");
+			}
+		}
+		
+		query.append("FROM ");
 		query.append(convertCase(getSchemaTableName(tableName)));
 		
 		return query.toString();		
