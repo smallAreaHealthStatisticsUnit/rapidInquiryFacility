@@ -343,6 +343,33 @@ public final class FieldValidationUtility {
 		}		
 	}
 	
+
+	public void checkValidIntegerMethodParameterValue(
+		final String methodName, 
+		final String fieldName,
+		final String fieldValue) 
+		throws RIFServiceException {
+			
+		try {
+			Integer.valueOf(fieldValue);
+			
+		}
+		catch(NumberFormatException numberformatException) {
+			String errorMessage
+				= RIFGenericLibraryMessages.getMessage(
+					"general.validation.invalidIntegerMethodParameter", 
+					methodName,
+					fieldValue,
+					fieldName);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.INVALID_INTEGER_API_METHOD_PARAMETER,
+					errorMessage);
+			throw rifServiceException;
+		}
+	}	
+
+		
 	/**
 	 * Checks if is empty.
 	 *
