@@ -295,10 +295,10 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			var pkField=undefined;
 			for (var i=0; i<csvFiles.length; i++) {	
 				if (i == 0) {
-					sqlStmt.sql+="	" + csvFiles[i].tableName + "	varchar(100)  NOT NULL";
+					sqlStmt.sql+="	" + csvFiles[i].tableName + "	VARCHAR(100)  NOT NULL";
 				}
 				else {
-					sqlStmt.sql+=",\n	" + csvFiles[i].tableName + "	varchar(100)  NOT NULL";
+					sqlStmt.sql+=",\n	" + csvFiles[i].tableName + "	VARCHAR(100)  NOT NULL";
 				}
 			
 				if (csvFiles[i].geolevel == csvFiles.length && pkField == undefined) {
@@ -317,11 +317,15 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			sql.push(sqlStmt);			
 					
 			for (var i=0; i<csvFiles.length; i++) {	// Add non unique indexes
-				if (csvFiles[i].geolevel != csvFiles.length && csvFiles[i].geolevel != 1) {		
-					var sqlStmt=new Sql("Add index to: hierarchy_" + response.fields["geographyName"].toLowerCase(), 
-						"CREATE INDEX hierarchy_" + response.fields["geographyName"].toLowerCase() + "_" + csvFiles[i].tableName +
-						" ON  hierarchy_" + response.fields["geographyName"].toLowerCase() + "(" + csvFiles[i].tableName + ")");
-					sql.push(sqlStmt);
+				if (csvFiles[i].geolevel != csvFiles.length && csvFiles[i].geolevel != 1) {	
+					var sqlStmt=new Sql("Add index key hierarchy_" + 
+						response.fields["geographyName"].toLowerCase() + "_" + csvFiles[i].tableName, 
+						getSqlFromFile("create_index.sql", undefined /* Common */, 
+							"hierarchy_" + response.fields["geographyName"].toLowerCase() + "_" + csvFiles[i].tableName	/* Index name */,
+							"hierarchy_" + response.fields["geographyName"].toLowerCase() 								/* Table name */, 
+							csvFiles[i].tableName 																		/* Index column(s) */
+						)); 
+					sql.push(sqlStmt);	
 				}
 			}
 			
@@ -380,38 +384,16 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			sql.push(sqlStmt);
 			
 			var sqlStmt=new Sql("Create geolevels meta data table",
-				"CREATE TABLE geolevels_" + response.fields["geographyName"].toLowerCase() + " (\n" +
-				"       geography                       VARCHAR(50)  NOT NULL,\n" +
-				"       geolevel_name                   VARCHAR(30)  NOT NULL,\n" +
-				"       geolevel_id			        	integer	     NOT NULL,\n" +		
-				"       description                     VARCHAR(250) NOT NULL,\n" +
-				"       lookup_table                    VARCHAR(30)  NOT NULL,\n" +
-				"       lookup_desc_column              VARCHAR(30)  NOT NULL,\n" +		
-				"       shapefile                       VARCHAR(512) NOT NULL,\n" +
-				"       shapefile_table                 VARCHAR(30)  NULL,\n" +
-				"       shapefile_area_id_column        VARCHAR(30)  NOT NULL,\n" +			
-				"       shapefile_desc_column           VARCHAR(30)  NULL,\n" +
-				"       resolution                      integer      NULL,\n" +			
-				"       comparea                        integer      NULL,\n" +
-				"       listing                         integer      NULL,\n" +			
-				"       CONSTRAINT geolevels_" + response.fields["geographyName"].toLowerCase() + "_pk" + 
-						" PRIMARY KEY(geography, geolevel_name)\n" +
-				")");			
+				getSqlFromFile("create_geolevels_table.sql", undefined /* Common */, 
+					"geolevels_" + response.fields["geographyName"].toLowerCase() /* Table name */)); 		
 			sql.push(sqlStmt);	
 			
-			var sqlStmt=new Sql("Comment geolevels meta data table");			
-			if (dbType == "PostGres") {		
-				sqlStmt.sql="COMMENT ON TABLE geolevels_" + response.fields["geographyName"].toLowerCase() + 
-					" IS 'Geolevels: hierarchy of level with a geography.'";
-			}
-			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
-					"SELECT @CurrentUser = user_name();\n" +   
-					"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
-					"   'Geolevels: hierarchy of level with a geography.',\n" +   
-					"   'user', @CurrentUser, \n" +   
-					"   'table', 'geolevels_" + response.fields["geographyName"].toLowerCase() + "'";
-			}
+			var sqlStmt=new Sql("Comment geolevels meta data table",
+				getSqlFromFile("comment_table.sql", 
+					dbType, 
+					response.fields["geographyName"].toLowerCase(),		/* Table name */
+					"Geolevels: hierarchy of level within a geography"	/* Comment */)
+				);
 			sql.push(sqlStmt);
 			
 			var fieldArray = ['geography', 'geolevel_name', 'geolevel_id', 'description', 'lookup_table',
@@ -431,22 +413,15 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				'Can use a map for selection at this resolution (0/1)',
 				'Able to be used as a comparison area (0/1)',
 				'Able to be used in a disease map listing (0/1)'];
-			for (var l=0; l< fieldArray.length; l++) {		
-				var sqlStmt=new Sql("Comment geography meta data column");	
-				if (dbType == "PostGres") {		
-					sqlStmt.sql="COMMENT ON COLUMN geolevels_" + response.fields["geographyName"].toLowerCase() + "." + fieldArray[l] +
-						" IS '" + fieldDescArray[l] + "'";
-				}
-				else if (dbType == "MSSQLServer") {	
-					sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
-						"SELECT @CurrentUser = user_name();\n" +   
-						"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
-						"   '" + fieldDescArray[l] + "',\n" +   
-						"   'user', @CurrentUser, \n" +   
-						"   'table', 'geolevels_" + response.fields["geographyName"].toLowerCase() + "'," +   
-						"   'column', '" + fieldArray[l] + "'";
-				}
-				sql.push(sqlStmt);			
+			for (var l=0; l< fieldArray.length; l++) {			
+				var sqlStmt=new Sql("Comment geolevels meta data column",
+					getSqlFromFile("comment_column.sql", 
+						dbType, 
+						"geolevels_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+						fieldArray[l]														/* Column name */,
+						fieldDescArray[l]													/* Comment */)
+					);
+				sql.push(sqlStmt);		
 			}		
 			
 			for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
