@@ -399,8 +399,11 @@ RETURNS BOOLEAN
 SECURITY INVOKER
 AS $func$
 DECLARE
+	rcode BOOLEAN;
 BEGIN
-	PERFORM rif40_sm_pkg.rif40_run_study(study_id, FALSE /* Debug */, recursion_level);
+	rcode:=rif40_sm_pkg.rif40_run_study(study_id, FALSE /* Debug */, recursion_level);
+--
+	RETURN rcode;
 END;
 $func$
 LANGUAGE 'plpgsql';
