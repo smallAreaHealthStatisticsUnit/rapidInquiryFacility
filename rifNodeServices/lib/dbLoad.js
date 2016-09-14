@@ -775,127 +775,32 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			sql.push(new Sql("Make all polygons right handed"));
 			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
 				var sqlStmt=new Sql("Make all polygons right handed for zoomlevel: " + k);
-				if (dbType == "MSSQLServer") {		
-					sqlStmt.sql="WITH a AS (\n" +
-"	SELECT gid, geom_" + k + ",\n" +
-"		   CAST(area_km2 AS NUMERIC(21,6)) AS area_km2,\n" +
-"		   CAST((geom_" + k + ".STArea()/(1000*1000)) AS NUMERIC(21,6)) AS area_km2_calc\n" +
-"	  FROM " + csvFiles[i].tableName + "\n" +
-"), b AS (\n" +
-"	SELECT a.gid,\n" + 
-"	       a.geom_" + k + ",\n" +
-"          a.area_km2,\n" +
-"	       a.area_km2_calc,\n" +
-"          CASE WHEN a.area_km2 > 0 THEN CAST(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2) AS NUMERIC(21,6))\n" +
-"				WHEN a.area_km2 = a.area_km2_calc THEN 0\n" +
-"	        	ELSE NULL\n" +
-"	   	   END AS pct_km2_diff \n" +
-"  FROM a\n" +
-")\n" +
-"UPDATE " + csvFiles[i].tableName + "\n" +
-"   SET geom_" + k + " = c.geom_" + k + ".ReorientObject()\n" +
-"  FROM " + csvFiles[i].tableName + " c\n" +
-" JOIN b ON b.gid = c.gid\n" +
-" WHERE b.pct_km2_diff > 200 /* Threshold test */";
+				if (dbType == "MSSQLServer") {	
+					sqlStmt.sql=getSqlFromFile("force_rhr.sql", dbType, 
+						"geom_" + k 			/* 1: geometry column; e.g. geom_6 */,
+						csvFiles[i].tableName 	/* 2: table name; e.g. cb_2014_us_county_500k	*/);
+					sql.push(sqlStmt);
 				}
-				else if (dbType == "PostGres") {	
-					sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n" +
-"   SET geom_" + k + " = ST_ForceRHR(geom_" + k + ")";
-				}
-				sql.push(sqlStmt);
 			}
 			if (dbType == "PostGres") { // No geom_orig in SQL Server
 				var sqlStmt=new Sql("Make all polygons right handed for original geometry", 
 "UPDATE " + csvFiles[i].tableName + "\n" +
-"   SET geom_orig = ST_ForceRHR(geom_orig)");
+"   SET");
+				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+					sqlStmt.sql+="" +
+"       geom_" + k + " = ST_ForceRHR(geom_" + k + "),\n";
+				}
+				sqlStmt.sql+="" +
+"       geom_orig = ST_ForceRHR(geom_orig)";
 				sql.push(sqlStmt);
 			}
 			
 			sql.push(new Sql("Test Turf and DB areas agree to within 1%"));
 			
-			var sqlStmt=new Sql("Test Turf and DB areas agree to within 1%");
-			if (dbType == "PostGres") { // No geom_orig in SQL Server
-				sqlStmt.sql="DO LANGUAGE plpgsql $$\n" +
-"DECLARE c1 CURSOR FOR\n" +
-"	WITH a AS (\n" +
-"		SELECT areaname,\n" + 
-"			   area_km2 AS area_km2,\n" +
-"			   ST_Area(geography(geom_" + response.fields["max_zoomlevel"] + "))/(1000*1000) AS area_km2_calc\n" +
-"		  FROM " + csvFiles[i].tableName + "\n" +
-"	), b AS (\n" +
-"	SELECT SUBSTRING(a.areaname, 1, 30) AS areaname,\n" +
-"		   a.area_km2,\n" +
-"		   a.area_km2_calc,\n" +
-"		   CASE WHEN a.area_km2 > 0 THEN 100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2)\n" +
-"				WHEN a.area_km2 = a.area_km2_calc THEN 0\n" +
-"				ELSE NULL\n" +
-"		   END AS pct_km2_diff \n" +
-"	  FROM a\n" +
-"	)\n" +
-"	SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff\n" +
-"	  FROM b\n" +
-"	 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */\n" +
-"	   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */;\n" +
-"\n" +
-"	c1_rec RECORD;\n" +
-"	total INTEGER:=0;\n" +
-"BEGIN\n" +
-"	FOR c1_rec IN c1 LOOP\n" +
-"		total:=total+1;\n" +
-"		RAISE INFO 'Area: %, area km2: %:, calc: %, diff %',\n" +
-"			c1_rec.areaname, c1_rec.area_km2, c1_rec.area_km2_calc, c1_rec.pct_km2_diff;\n" +
-"	END LOOP;\n" +
-"	IF total = 0 THEN\n" +
-"		RAISE INFO 'Table: " + csvFiles[i].tableName + " no invalid areas check OK';\n" +
-"	ELSE\n" +
-"		RAISE EXCEPTION 'Table: " + csvFiles[i].tableName + " no invalid areas check FAILED: % invalid', total;\n" +
-"	END IF;\n" +
-"END;\n" +
-"$$";
-			}
-			else if (dbType == "MSSQLServer") {
-sqlStmt.sql="DECLARE c1 CURSOR FOR\n" +
-"	WITH a AS (\n" +
-"		SELECT areaname,\n" +
-"			   CAST(area_km2 AS NUMERIC(15,2)) AS area_km2,\n" +
-"			   CAST((geom_" + response.fields["max_zoomlevel"] + ".STArea()/(1000*1000)) AS NUMERIC(15,2)) AS area_km2_calc\n" +
-"		  FROM " + csvFiles[i].tableName + "\n" +
-"	), b AS (\n" +
-"	SELECT SUBSTRING(a.areaname, 1, 30) AS areaname,\n" +
-"		   a.area_km2,\n" +
-"		   a.area_km2_calc,\n" +
-"		   CASE WHEN a.area_km2 > 0 THEN CAST(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2) AS NUMERIC(15,2))\n" +
-"				WHEN a.area_km2 = a.area_km2_calc THEN 0\n" +
-"				ELSE NULL\n" +
-"		   END AS pct_km2_diff\n" +
-"	  FROM a\n" +
-"	)\n" +
-"	SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff\n" +
-"	  FROM b\n" +
-"	 WHERE b.pct_km2_diff > 5 /* Allow for 5% error */\n" +
-"	   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */;\n" +
-"DECLARE @areaname AS VARCHAR(30);\n" +
-"DECLARE @area_km2 AS NUMERIC(15,2);\n" +
-"DECLARE @area_km2_calc AS NUMERIC(15,2);\n" +
-"DECLARE @pct_km2_diff AS NUMERIC(15,2);\n" +
-"DECLARE @nrows AS int;\n" +
-"SET @nrows=0;\n" +
-"OPEN c1;\n" +
-"FETCH NEXT FROM c1 INTO @areaname, @area_km2, @area_km2_calc, @pct_km2_diff;\n" +
-"WHILE @@FETCH_STATUS = 0\n" +
-"BEGIN\n" +
-"		SET @nrows+=1;\n" +
-"		PRINT 'Area: ' + @areaname + ', area km2: ' + CAST(@area_km2 AS VARCHAR) +  + ', calc: ' +\n" +
-"			CAST(@area_km2_calc AS VARCHAR) + ', diff: ' + CAST(@pct_km2_diff AS VARCHAR);\n" +
-"		FETCH NEXT FROM c1 INTO @areaname, @area_km2, @area_km2_calc, @pct_km2_diff;\n" +
-"END\n" +
-"IF @nrows = 0\n" +
-"	PRINT 'Table: " + csvFiles[i].tableName + " no invalid areas check OK';\n" +
-"ELSE\n" +
-"	RAISERROR('Table: " + csvFiles[i].tableName + " no invalid areas check FAILED: %i invalid', 16, 1, @nrows);\n" +
-"CLOSE c1;\n" +
-"DEALLOCATE c1";
-			}
+			var sqlStmt=new Sql("Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server)",
+				getSqlFromFile("area_check.sql", dbType, 
+					"geom_" + response.fields["max_zoomlevel"] 	/* 1: geometry column; e.g. geom_11 */,
+					csvFiles[i].tableName 						/* 2: table name; e.g. cb_2014_us_county_500k */));
 			sql.push(sqlStmt);
 		
 			sql.push(new Sql("Create spatial indexes"));
