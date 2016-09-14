@@ -156,7 +156,7 @@ DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_rpt)
 .sql.sahsuland_rpt:
 	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 
 #
-$(info Database is: sahsuland;  targets: $(TARGETS)) 	
+$(info Database is: $(PGDATABASE);  targets: $(TARGETS)) 	
 #	
 else
 ifeq ($(PGDATABASE),sahsuland_dev)
@@ -167,8 +167,8 @@ DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_dev_rpt)
 .sql.sahsuland_dev_rpt:
 	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 	
 #
-$(info Database is: sahsuland_dev;  targets: $(TARGETS)) 		
-#	
+$(info Database is: $(PGDATABASE);  targets: $(TARGETS)) 	
+#
 else
 $(error Unknown database: $(PGDATABASE))
 #
