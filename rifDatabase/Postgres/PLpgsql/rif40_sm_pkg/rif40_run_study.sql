@@ -186,24 +186,28 @@ BEGIN
 --
 	IF recursion_level = 0 THEN
 		IF debug THEN
-			OPEN c4sm;
-			FETCH c4sm INTO c4sm_rec;
-			CLOSE c4sm;
-	--
-	-- Test parameter; default
-	--
-			IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
-				debug_level:=1;	
-			ELSE
-				debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
-				
-			END IF;
+			BEGIN
+				OPEN c4sm;
+				FETCH c4sm INTO c4sm_rec;
+				CLOSE c4sm;
+--
+-- Test parameter; default
+--
+				IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
+					debug_level:=1;	
+				ELSE
+					debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;		
+				END IF;				
+			EXCEPTION
+				WHEN others THEN 
+					debug_level:=1;	
+			END;
 			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', '[55215] Debug level parameter="%"', 
 				debug_level::VARCHAR);
 		
-	--
-	-- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
-	--
+--
+-- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
+--
 			PERFORM rif40_log_pkg.rif40_log_setup();
 			IF debug_level IS NULL THEN
 				debug_level:=0;
