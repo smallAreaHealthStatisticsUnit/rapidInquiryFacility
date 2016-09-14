@@ -426,23 +426,16 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			
 			for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
 				var sqlStmt=new Sql("Insert geolevels meta data for: " + csvFiles[i].tableName, 
-						"INSERT INTO geolevels_" + response.fields["geographyName"].toLowerCase() + "(\n" +
-						"   geography, geolevel_name, geolevel_id, description, lookup_table,\n" +
-						"   lookup_desc_column, shapefile, shapefile_table, shapefile_area_id_column, shapefile_desc_column,\n" + 
-						"   resolution, comparea, listing)\n" +
-						"SELECT '" + response.fields["geographyName"] + "' AS geography,\n" + 
-						"       '" + csvFiles[i].tableName + "' AS geolevel_name,\n" +
-						"       " + csvFiles[i].geolevel + " AS geolevel_id,\n" +
-						"       '" + csvFiles[i].geolevelDescription + "' AS description,\n" + 
-						"       'lookup_" + csvFiles[i].tableName + "' AS lookup_table,\n" +
-						"       'areaname' AS lookup_desc_column,\n" +
-						"       '" + csvFiles[i].file_name + "' AS shapefile,\n" +
-						"       '" + csvFiles[i].tableName + "' AS shapefile_table,\n" +
-						"       'areaid' AS shapefile_area_id_column,\n" +
-						"       'areaname' AS shapefile_desc_column,\n" +
-						"       1 AS resolution,\n" +
-						"       1 AS comparea,\n" +
-						"       1 AS listing");
+					getSqlFromFile("insert_geolevel.sql", 
+						undefined /* Common */, 
+						"geolevels_" + response.fields["geographyName"].toLowerCase() 	/* 1: table; e.g. geolevels_cb_2014_us_county_500k */,
+						response.fields["geographyName"] 								/* 2: geography; e.g. cb_2014_us_500k */,
+						csvFiles[i].tableName 											/* 3: Geolevel name; e.g. cb_2014_us_county_500k */,
+						csvFiles[i].geolevel 											/* 4: Geolevel id; e.g. 3 */,
+						csvFiles[i].geolevelDescription 								/* 5: Geolevel description; e.g. "The State-County at a scale of 1:500,000" */,
+						"lookup_" + csvFiles[i].tableName 								/* 6: lookup table; e.g. lookup_cb_2014_us_county_500k */,
+						csvFiles[i].file_name 											/* 7: shapefile; e.g. cb_2014_us_county_500k */)
+						 );
 				sql.push(sqlStmt);
 			}				
 		} // End of createGeolevelsTable()
@@ -516,7 +509,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			var sqlStmt;	
 
 			var sqlStmt=new Sql("Drop table " + csvFiles[i].tableName, 
-				getSqlFromFile("drop_table.sql", dbType, csvFiles[i].tableName /* Table name */)); 		
+				getSqlFromFile("drop_table.sql", dbType, 
+					csvFiles[i].tableName /* Table name */)); 				
 			sql.push(sqlStmt);
 			
 			var columnList=Object.keys(csvFiles[i].rows[0]);
@@ -560,19 +554,13 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			}
 			sqlStmt.sql+=")";
 			sql.push(sqlStmt);
-			
-			var sqlStmt=new Sql("Comment table");
-			if (dbType == "PostGres") {	
-				sqlStmt.sql="COMMENT ON TABLE " + csvFiles[i].tableName + " IS '" + csvFiles[i].geolevelDescription + "'";
-			}
-			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="DECLARE @CurrentUser sysname\n" +   
-"SELECT @CurrentUser = user_name();\n" +   
-"EXECUTE sp_addextendedproperty 'MS_Description',\n" +   
-"   '" + csvFiles[i].geolevelDescription + "',\n" +   
-"   'user', @CurrentUser, \n" +   
-"   'table', '" + csvFiles[i].tableName + "'";
-			}
+
+			var sqlStmt=new Sql("Comment geospatial data table",
+				getSqlFromFile("comment_table.sql", 
+					dbType, 
+					csvFiles[i].tableName,			/* Table name */
+					csvFiles[i].geolevelDescription	/* Comment */)
+				);			
 			sql.push(sqlStmt);
 			
 			// Needs to be SQL to psql command (i.e. COPY FROM stdin)
