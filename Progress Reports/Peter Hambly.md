@@ -591,7 +591,8 @@ RangeError: Invalid string length
   * Confirm Postgres and SQL Server geolevel intersections are the same;
   * RIF production script;
   * Add trigger verification code from Postgres;
-  * SQL server RHR force to support mixed LH and RH in multipolygons;
+  * SQL server RHR force to support mixed LH and RH in multipolygons
+    [c.%1.STUnion(%1.STStartPoint()) is also possible instead of c.%1.ReorientObject()] where %1 is the geometry column
   * Fix in Node:
     - Self-intersection at or near point -76.329400888614401 39.31505881204005
     - Too few points in geometry component at or near point -91.774770828512843 46.946012696542709
