@@ -588,11 +588,17 @@ RangeError: Invalid string length
 #### Current TODO list (September):
 
 * SQL load script generator: still todo:
-  * Confirm Postgres and SQL Server are the same
+  * Confirm Postgres and SQL Server geolevel intersections are the same;
+  * RIF production script;
+  * Add trigger verification code from Postgres;
+  * SQL server RHR force to support mixed LH and RH in multipolygons;
+  * Fix in Node:
+    - Self-intersection at or near point -76.329400888614401 39.31505881204005
+    - Too few points in geometry component at or near point -91.774770828512843 46.946012696542709
   * Add CSV files meta to XML config;
   * Drive database script generator from XML config file (not internal data structures);
   * Missing comments on other columns from shapefile via extended attributes XML file;
-  * Dump SQL to XML files (Postgres and SQL Server) so Kevin does not need to generate it;
+  * Dump SQL to XML/JSON files (Postgres and SQL Server) so Kevin does not need to generate it;
   * Check Turf JS centroid code (figures are wrong);
   * Compare Turf/PostGIS/SQL Server area and centroid caculations;
   * Resolve SQL Server use of geography verses geometry and SQL Server geometry to geography casting; 
