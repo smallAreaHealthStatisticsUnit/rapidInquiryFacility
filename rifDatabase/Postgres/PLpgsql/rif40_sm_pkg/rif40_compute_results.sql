@@ -177,7 +177,8 @@ BEGIN
 --
 	sql_stmt:='INSERT INTO rif40_results (study_id, inv_id, band_id, genders, direct_standardisation, adjusted, observed)'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'WITH a AS ('||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'SELECT study_id, band_id, sex,';
+--
+	sql_stmt:=sql_stmt||E'\t'||'SELECT study_id, band_id, sex,';				/* Alredy banded */
 	FOR c2_rec IN c2comp(study_id) LOOP
 		i:=i+1;
 		inv_array[i]:=c2_rec.inv_id;
@@ -197,18 +198,20 @@ BEGIN
 		IF i > 1 THEN
 			sql_stmt:=sql_stmt||'UNION'||E'\n';
 		END IF;
-		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id, 1 AS genders, 0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted, inv_'||
+		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id,'||
+		' 1 AS genders, 0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted, inv_'||
 			i::VARCHAR||'_observed AS observed'||E'\n';
 		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
 		sql_stmt:=sql_stmt||' WHERE sex = 1'||E'\n';
 		sql_stmt:=sql_stmt||'UNION'||E'\n';
-		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id, 2 AS genders, 0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted, inv_'||
+		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id,'||
+		' 2 AS genders, 0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted, inv_'||
 			i::VARCHAR||'_observed AS observed'||E'\n';
 		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
 		sql_stmt:=sql_stmt||' WHERE sex = 2'||E'\n';
 		sql_stmt:=sql_stmt||'UNION'||E'\n';
-		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||
-			' AS inv_id, band_id, 3 /* both */ AS genders, 0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted, SUM(COALESCE(inv_'||
+		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id,'||
+		' 3 /* both */ AS genders, 0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted, SUM(COALESCE(inv_'||
 			i::VARCHAR||'_observed, 0)) AS observed'||E'\n';
 		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
 		sql_stmt:=sql_stmt||' GROUP BY study_id, band_id'||E'\n';
@@ -239,47 +242,17 @@ BEGIN
 --
 	IF c1_rec.study_type = 1 /* Disease mapping */ THEN
 --
--- Check if t_rif40_sahsu_geometry.gid_rowindex column still exists (pre alter 2)
+-- GID_ROWINDEX support in maps (extracts subject to performance tests)
 --
-		IF 	c5_rec.column_name IS NULL THEN
-			ddl_stmts[t_ddl]:='CREATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
-				'AS'||E'\n'||
-				'SELECT d.area_id, d.gid, ''GID_ROWINDEX''::Text AS gid_rowindex, a.*'||E'\n'||
-				'  FROM rif40_results a, rif40_studies b, rif40_study_areas c, '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' d'||E'\n'||
-				' WHERE a.study_id      = '||study_id::VARCHAR||' /* Current study ID */'||E'\n'||
-				'   AND a.study_id      = b.study_id'||E'\n'||
-				'   AND a.band_id       = c.band_id'||E'\n'||
-				'   AND c.area_id       = d.area_id'||E'\n'||
-				'   AND d.geolevel_name = b.study_geolevel_name /* Partition elimination */'||E'\n'||
-				' LIMIT 1'::VARCHAR; 
-		ELSE
---
--- GID, GID_ROWINDEX support in maps (extracts subject to performance tests)
--- AREA_ID in disease mapping
---
-/*
-CREATE TABLE rif_studies.s2_map
-AS
-SELECT d.area_id, d.gid, d.gid_rowindex, a.*
-  FROM rif40_results a, rif40_studies b, rif40_study_areas c, t_rif40_sahsu_geometry d
- WHERE a.study_id      = 2 /- Current study ID -/
-   AND a.study_id      = b.study_id
-   AND a.band_id       = c.band_id
-   AND c.area_id       = d.area_id
-   AND d.geolevel_name = b.study_geolevel_name /- Partition elimination -/
- LIMIT 1;
- */
-			ddl_stmts[t_ddl]:='CREATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
-				'AS'||E'\n'||
-				'SELECT d.area_id, d.gid, d.gid_rowindex, a.*'||E'\n'||
-				'  FROM rif40_results a, rif40_studies b, rif40_study_areas c, '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' d'||E'\n'||
-				' WHERE a.study_id      = '||study_id::VARCHAR||' /* Current study ID */'||E'\n'||
-				'   AND a.study_id      = b.study_id'||E'\n'||
-				'   AND a.band_id       = c.band_id'||E'\n'||
-				'   AND c.area_id       = d.area_id'||E'\n'||
-				'   AND d.geolevel_name = b.study_geolevel_name /* Partition elimination */'||E'\n'||
-				' LIMIT 1'::VARCHAR; 
-		END IF;
+		ddl_stmts[t_ddl]:='CREATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
+			'AS'||E'\n'||
+			'SELECT ''X''::Text AS gid, LPAD(ROW_NUMBER() OVER('||E'\n'||
+			'       		ORDER BY a.study_id, a.band_id, a.inv_id, a.genders, a.adjusted, a.direct_standardisation)::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
+			'               a.band_id::Text AS area_id,'||E'\n'||
+			'       a.*'||E'\n'||
+			'  FROM rif40_results a'||E'\n'||
+			' WHERE a.study_id      = '||study_id::VARCHAR||' /* Current study ID */'||E'\n'||
+			' LIMIT 1'::VARCHAR; 
 	ELSE
 		ddl_stmts[t_ddl]:='CREATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
 			'AS'||E'\n'||
@@ -340,10 +313,6 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 -- GID, GID_ROWINDEX support in maps (extracts subject to performance tests)
 -- AREA_ID in disease mapping
 --
-		sql_stmt:='COMMENT ON COLUMN rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'.gid'||
-			' IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
-		t_ddl:=t_ddl+1;	
-		ddl_stmts[t_ddl]:=sql_stmt;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
 			'[55608] SQL> %;',
 			ddl_stmts[t_ddl]::VARCHAR);
@@ -356,12 +325,12 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 			'[55607] SQL> %;',
 			ddl_stmts[t_ddl]::VARCHAR);
 --
-		sql_stmt:='COMMENT ON COLUMN rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'.area_id'||
-			' IS ''An area id, the value of the study geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE''';
+		sql_stmt:='COMMENT ON COLUMN rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'.gid'||
+			' IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
 		t_ddl:=t_ddl+1;	
 		ddl_stmts[t_ddl]:=sql_stmt;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55609] SQL> %;',
+			'[55607] SQL> %;',
 			ddl_stmts[t_ddl]::VARCHAR);
 	END IF;
 
@@ -380,21 +349,13 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 -- AREA_ID in disease mapping
 --
 		sql_stmt:='INSERT INTO rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
-			'SELECT d.area_id, d.gid,'||E'\n'||
-			'      LPAD(d.gid::Text, 10, ''0''::Text)||''_''||'||
-						'LPAD(ROW_NUMBER() OVER(PARTITION BY d.area_id'||E'\n'||
-			'			ORDER BY a.band_id, a.inv_id, a.genders, a.adjusted, a.direct_standardisation'||
-						' /* Use default table order */)::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||E'\n'||
+			'SELECT ''X''::Text AS gid, LPAD(ROW_NUMBER() OVER('||E'\n'||
+			'       		ORDER BY a.study_id, a.band_id, a.inv_id, a.genders, a.adjusted, a.direct_standardisation)::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
+			'               a.band_id::Text AS area_id,'||E'\n'||
 			'       a.*'||E'\n'||
-			'  FROM rif40_results a, rif40_studies b, rif40_study_areas c,'||
-					quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' d'||E'\n'||
+			'  FROM rif40_results a'||E'\n'||
 			' WHERE a.study_id      = '||study_id::VARCHAR||' /* Current study ID */'||E'\n'||
-			'   AND a.study_id      = b.study_id'||E'\n'||
-			'   AND a.study_id      = c.study_id'||E'\n'||
-			'   AND a.band_id       = c.band_id'||E'\n'||
-			'   AND c.area_id       = d.area_id'||E'\n'||
-			'   AND d.geolevel_name = b.study_geolevel_name /* Partition elimination */'||E'\n'||
-			' ORDER BY 3 /* GID_ROWINDEX */'::VARCHAR; 
+			' ORDER BY 1			/* GID_ROWINDEX */'::VARCHAR; 
 	ELSE
 		sql_stmt:='INSERT INTO rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
 			'SELECT a.*'||E'\n'||
@@ -406,11 +367,41 @@ SELECT d.area_id, d.gid, d.gid_rowindex, a.*
 		RETURN FALSE;
 	END IF;
 
+	ddl_stmts:=NULL;
+	t_ddl:=1;
+	
+--
+-- Update area_id, gid
+--
+	IF c1_rec.study_type = 1 /* Disease mapping */ THEN
+		sql_stmt:='UPDATE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' a'||E'\n'||
+			'   SET area_id = ('||E'\n'||
+			'			SELECT b.area_id'||E'\n'||
+			'			  FROM rif40_study_areas b'||E'\n'||
+			'			 WHERE a.study_id = b.study_id'||E'\n'||
+			'			   AND a.band_id  = b.band_id)';
+		ddl_stmts[t_ddl]:=sql_stmt;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
+			'[55611] SQL> %;',
+			sql_stmt::VARCHAR);
+		t_ddl:=t_ddl+1;		
+		
+		sql_stmt:='UPDATE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' a'||E'\n'||
+			'   SET gid = ('||E'\n'||
+			'			SELECT d.gid'||E'\n'||
+			'			  FROM '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' d'||E'\n'||
+			'			 WHERE a.area_id       = d.area_id'||E'\n'||
+			'			   AND d.geolevel_name = '''||c1_rec.study_geolevel_name||''' /* Partition elimination */)';
+		ddl_stmts[t_ddl]:=sql_stmt;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
+			'[55611] SQL> %;',
+			sql_stmt::VARCHAR);
+		t_ddl:=t_ddl+1;				
+	END IF;
+	
 --
 -- Index, analyze
 --
-	ddl_stmts:=NULL;
-	t_ddl:=1;
 	sql_stmt:='ALTER TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' ADD CONSTRAINT '||quote_ident(LOWER(c1_rec.map_table)||'_pk')||
 		' PRIMARY KEY (study_id, band_id, inv_id, genders, adjusted, direct_standardisation)';
 	ddl_stmts[t_ddl]:=sql_stmt;

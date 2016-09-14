@@ -578,12 +578,13 @@ RangeError: Invalid string length
  
 * Fixed Postgres study creation bugs:
   
-  * INV_1 hard coded as extract table investigate name (should be rif40_investigations.inv_name)
-  * Missing primary key index on Postgres s<study_id>_extract.
-  * Missing GRANT UPDATE on map table (e.g s1_map)
-  * Check node is setup correctly (node_check target)
-  * Simple enable debug function for rif40_run_study
-  * Database load code restructure to use template SQL scripts
+  * INV_1 hard coded as extract table investigate name (should be rif40_investigations.inv_name);
+  * Missing primary key index on Postgres s<study_id>_extract;
+  * Missing GRANT UPDATE on map table (e.g s1_map);
+  * Check node is setup correctly (node_check target;
+  * Simple enable debug function for rif40_run_study;
+  * Database load code restructure to use template SQL scripts;
+  * Band id bug (causing map map PK to fail). Area id added via update so it is clear where the problem lies;
 
 #### Current TODO list (September):
 

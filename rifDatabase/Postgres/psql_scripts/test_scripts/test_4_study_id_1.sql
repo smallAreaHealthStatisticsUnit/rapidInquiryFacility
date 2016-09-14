@@ -251,6 +251,62 @@ BEGIN
 END;
 $$;
 
+DO LANGUAGE plpgsql $$
+DECLARE
+	c2sm CURSOR FOR 
+		SELECT array_agg(level3) AS level3_array FROM sahsuland_level3;
+	c2sm_rec 		RECORD;
+--
+	condition_array				VARCHAR[4][2]:='{{"SAHSULAND_ICD", "C34", NULL, NULL}, {"SAHSULAND_ICD", "162", "1629", NULL}}';	
+										 /* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+											outcome_group_name, min_condition, max_condition, predefined_group_name */
+	investigation_desc_array	VARCHAR[]:=array['Lung cancer'];
+	covariate_array				VARCHAR[]:=array['SES'];		
+--
+	study_ran_ok	BOOLEAN;
+BEGIN
+--
+-- Get "SELECTED" study geolevels
+--
+	OPEN c2sm;
+	FETCH c2sm INTO c2sm_rec;
+	CLOSE c2sm;
+	
+--
+-- Create new test study
+--
+	RAISE INFO 'test_4_study_id_1.sql: T4--10: Create 2nd test study';
+	PERFORM rif40_sm_pkg.rif40_create_disease_mapping_example(
+		'SAHSU'::VARCHAR 			/* Geography */,
+		'LEVEL1'::VARCHAR			/* Geolevel view */,
+		'01'::VARCHAR				/* Geolevel area */,
+		'LEVEL4'::VARCHAR			/* Geolevel map */,
+		'LEVEL3'::VARCHAR			/* Geolevel select */,
+		c2sm_rec.level3_array 		/* Geolevel selection array */,
+		'TEST'::VARCHAR 			/* project */, 
+		'SAHSULAND test 4 study_id 2 example'::VARCHAR /* study name */, 
+		'SAHSULAND_POP'::VARCHAR 	/* denominator table */, 
+		'SAHSULAND_CANCER'::VARCHAR /* numerator table */,
+ 		1989						/* year_start */, 
+		1996						/* year_stop */,
+		condition_array 			/* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
+											outcome_group_name, min_condition, max_condition, predefined_group_name */,
+		investigation_desc_array 	/* investigation description array */,
+		covariate_array				/* covariate array */);
+
+--
+-- Execute in USER context
+--
+	EXECUTE 'SELECT '||USER||'.rif40_run_study(currval(''rif40_study_id_seq''::regclass)::INTEGER, TRUE /* Debug */)' INTO study_ran_ok;
+	IF study_ran_ok THEN
+		RAISE INFO 'test_4_study_id_1.sql: T4--12: Test 4; 2nd study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+--		RAISE EXCEPTION 'YYYY TEST STOP HERE';
+	ELSE
+		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--13: Test 4; 2nd study: % run failed; see trace', currval('rif40_study_id_seq'::regclass)::VARCHAR;
+	END IF;
+END;
+$$;
+
 /*
 SELECT * FROM rif40_comparison_areas WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
 SELECT * FROM rif40_study_areas WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
