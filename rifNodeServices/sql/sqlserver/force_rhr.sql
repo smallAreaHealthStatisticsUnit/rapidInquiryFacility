@@ -7,6 +7,7 @@
  *
  * Description:			Create insert statement into hierarchy table
  * Note:				%%%% becomes %% after substitution
+ * 						c.%1.STUnion(%1.STStartPoint()) is also possible instead of c.%1.ReorientObject()
  */
 WITH a AS (
 	SELECT gid, %1,
