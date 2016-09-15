@@ -355,7 +355,7 @@ BEGIN
 			'       a.*'||E'\n'||
 			'  FROM rif40_results a'||E'\n'||
 			' WHERE a.study_id      = '||study_id::VARCHAR||' /* Current study ID */'||E'\n'||
-			' ORDER BY 1			/* GID_ROWINDEX */'::VARCHAR; 
+			' ORDER BY 2			/* GID_ROWINDEX */'::VARCHAR; 
 	ELSE
 		sql_stmt:='INSERT INTO rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
 			'SELECT a.*'||E'\n'||
@@ -369,11 +369,32 @@ BEGIN
 
 	ddl_stmts:=NULL;
 	t_ddl:=1;
+--
+-- Add primary key
+--
+	sql_stmt:='ALTER TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' ADD CONSTRAINT '||quote_ident(LOWER(c1_rec.map_table)||'_pk')||
+		' PRIMARY KEY (study_id, band_id, inv_id, genders, adjusted, direct_standardisation)';
+	ddl_stmts[t_ddl]:=sql_stmt;
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
+		'[55611] SQL> %;',
+		sql_stmt::VARCHAR);
+	t_ddl:=t_ddl+1;		
+	
+--
+-- Execute DDL code as rif40
+--
+	IF rif40_sm_pkg.rif40_study_ddl_definer(c1_rec.study_id, c1_rec.username, c1a_rec.audsid, ddl_stmts) = FALSE THEN
+		RETURN FALSE;
+	END IF;
 	
 --
 -- Update area_id, gid
 --
 	IF c1_rec.study_type = 1 /* Disease mapping */ THEN
+
+		ddl_stmts:=NULL;
+		t_ddl:=1;	
+		
 		sql_stmt:='UPDATE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' a'||E'\n'||
 			'   SET area_id = ('||E'\n'||
 			'			SELECT b.area_id'||E'\n'||
@@ -382,7 +403,7 @@ BEGIN
 			'			   AND a.band_id  = b.band_id)';
 		ddl_stmts[t_ddl]:=sql_stmt;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55611] SQL> %;',
+			'[55612] SQL> %;',
 			sql_stmt::VARCHAR);
 		t_ddl:=t_ddl+1;		
 		
@@ -394,21 +415,30 @@ BEGIN
 			'			   AND d.geolevel_name = '''||c1_rec.study_geolevel_name||''' /* Partition elimination */)';
 		ddl_stmts[t_ddl]:=sql_stmt;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55611] SQL> %;',
+			'[55613] SQL> %;',
 			sql_stmt::VARCHAR);
-		t_ddl:=t_ddl+1;				
+		t_ddl:=t_ddl+1;			
+
+--
+-- Merge gid with gid_rowindex
+--		
+		sql_stmt:='UPDATE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' a'||E'\n'||
+			'   SET gid_rowindex = a.gid||''_''||a.gid_rowindex'||E'\n'||
+			' WHERE a.gid IS NOT NULL';
+		ddl_stmts[t_ddl]:=sql_stmt;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
+			'[55614] SQL> %;',
+			sql_stmt::VARCHAR);
+		t_ddl:=t_ddl+1;	
+		
+		PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmts); -- Needs to run in user execution context
 	END IF;
-	
+
+	ddl_stmts:=NULL;
+	t_ddl:=1;	
 --
 -- Index, analyze
 --
-	sql_stmt:='ALTER TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' ADD CONSTRAINT '||quote_ident(LOWER(c1_rec.map_table)||'_pk')||
-		' PRIMARY KEY (study_id, band_id, inv_id, genders, adjusted, direct_standardisation)';
-	ddl_stmts[t_ddl]:=sql_stmt;
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'[55611] SQL> %;',
-		sql_stmt::VARCHAR);
-	t_ddl:=t_ddl+1;	
 	IF c1_rec.study_type = 1 /* Disease mapping */ AND c5_rec.column_name /* gid_rowindex post alter 2 */ IS NOT NULL THEN
 --
 -- Add gid_rowindex unique key for disease maps
@@ -417,14 +447,14 @@ BEGIN
 			' ON rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'(gid_rowindex)';
 		ddl_stmts[t_ddl]:=sql_stmt;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55612] SQL> %;',
+			'[55615] SQL> %;',
 			sql_stmt::VARCHAR);
 		t_ddl:=t_ddl+1;	
 	END IF;
 	sql_stmt:='ANALYZE rif_studies.'||quote_ident(LOWER(c1_rec.map_table));
 	ddl_stmts[t_ddl]:=sql_stmt;
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'[55613] SQL> %;',
+		'[55616] SQL> %;',
 		sql_stmt::VARCHAR);
 --
 -- Execute DDL code as rif40
@@ -435,14 +465,14 @@ BEGIN
 
 --
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_compute_results', 
-		'[55614] Study ID % map table % created',
+		'[55617] Study ID % map table % created',
 		study_id::VARCHAR,
 		c1_rec.map_table::VARCHAR);
 --
 -- Next expected...
 --
 	PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_compute_results', 
-		'[55615] Study ID % rif40_compute_results() not fully implemented',
+		'[55618] Study ID % rif40_compute_results() not fully implemented',
 		study_id::VARCHAR);
 	RETURN TRUE;
 --
