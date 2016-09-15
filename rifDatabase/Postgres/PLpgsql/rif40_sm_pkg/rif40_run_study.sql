@@ -354,10 +354,19 @@ BEGIN
 --
 -- All recursion unwound
 --
+	etp:=clock_timestamp();
 	IF recursion_level = 0 THEN
-		etp:=clock_timestamp();
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_run_study',
-			'[55214] Recursion complete rif40_run_study study % with % investigation(s); time taken %',
+			'[55214] Recursion complete, state %, rif40_run_study study % with % investigation(s); time taken %',
+			c1_rec.study_state::VARCHAR,
+			c1_rec.study_id::VARCHAR,
+			investigation_count::VARCHAR,
+			age(etp, stp)::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_run_study',
+			'[55215] Recursion %, state %, rif40_run_study study % with % investigation(s); time taken %',
+			recursion_level::VARCHAR,
+			c1_rec.study_state::VARCHAR,
 			c1_rec.study_id::VARCHAR,
 			investigation_count::VARCHAR,
 			age(etp, stp)::VARCHAR);
