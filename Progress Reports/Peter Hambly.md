@@ -590,7 +590,11 @@ RangeError: Invalid string length
 
 * SQL load script generator: still todo:
   * Confirm Postgres and SQL Server geolevel intersections are the same;
-  * RIF production script;
+  * RIF production script:
+    * DELETE/INSERT rif40_geographies/geolevels
+	* Add tile table to geolevels;
+	* Add gid to lookup_table;
+	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
   * Add trigger verification code from Postgres;
   * SQL server RHR force to support mixed LH and RH in multipolygons
     [c.%1.STUnion(%1.STStartPoint()) is also possible instead of c.%1.ReorientObject()] where %1 is the geometry column
@@ -712,3 +716,5 @@ Note: no bounding box (bbox) in tiles.
   for duplicate county names within a state
 * Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
   and grant back permissions
+* Add t_rif40_study_areas trigger check (once per INSERT/UPDATE) for correct use of band_id in rif40_study_shares. 
+  Alternatively check in rif40_run_study 
