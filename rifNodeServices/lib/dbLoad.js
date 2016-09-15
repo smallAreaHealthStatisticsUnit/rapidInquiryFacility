@@ -505,8 +505,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 
 			var sqlStmt=new Sql("Drop table " + csvFiles[i].tableName, 
 				getSqlFromFile("drop_table.sql", dbType, 
-					csvFiles[i].tableName /* Table name */)); 				
-			sqlArray.push(sqlStmt);
+					csvFiles[i].tableName /* Table name */), sqlArray); 
 			
 			var columnList=Object.keys(csvFiles[i].rows[0]);
 			var sqlStmt=new Sql("Create table" + csvFiles[i].tableName, "CREATE TABLE " + csvFiles[i].tableName + " (");
@@ -554,9 +553,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
 					csvFiles[i].tableName,			/* Table name */
-					csvFiles[i].geolevelDescription	/* Comment */)
-				);			
-			sqlArray.push(sqlStmt);
+					csvFiles[i].geolevelDescription	/* Comment */),
+				sqlArray);			
 			
 			// Needs to be SQL to psql command (i.e. COPY FROM stdin)
 			var sqlStmt=new Sql("Load table from CSV file");
@@ -580,22 +578,19 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 					dbType, 
 					csvFiles[i].tableName	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					csvFiles[i].rows.length /* 2: Expected number of rows; e.g. 3233 */,
-					"gid"					/* 3: Column to count; e.g. gid */)
-				);
-			sqlArray.push(sqlStmt);	
+					"gid"					/* 3: Column to count; e.g. gid */), 
+				sqlArray);
 
 			var sqlStmt=new Sql("Add primary key " + csvFiles[i].tableName, 
 				getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
 					csvFiles[i].tableName	/* Table name */, 
-					'gid'					/* Primary key */)); 
-			sqlArray.push(sqlStmt);	
+					'gid'					/* Primary key */), sqlArray); 
 			
 			var sqlStmt=new Sql("Add unique key " + csvFiles[i].tableName, 
 				getSqlFromFile("add_unique_key.sql", undefined /* Common */, 
 					csvFiles[i].tableName 		/* 1: table; e.g. cb_2014_us_nation_5m */,
 					csvFiles[i].tableName + "_uk" 	/* 2: constraint name; e.g. cb_2014_us_nation_5m_uk */,
-					"areaid" 						/* 3: fields; e.g. areaid */)); 
-			sqlArray.push(sqlStmt);		
+					"areaid" 						/* 3: fields; e.g. areaid */), sqlArray); 
 
 			sqlArray.push(new Sql("Add geometric  data"));		
 			
@@ -604,16 +599,14 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 					csvFiles[i].tableName 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'geographic_centroid' 	/* 2: column name; e.g. geographic_centroid */,
 					4326 					/* 3: Column SRID; e.g. 4326 */,
-					'POINT' 				/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */));				
-			sqlArray.push(sqlStmt);
+					'POINT' 				/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray);	
 				
 			var sqlStmt=new Sql("Add geometry column for original SRID geometry",
 				getSqlFromFile("add_geometry_column.sql", dbType, 
 					csvFiles[i].tableName 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'geom_orig' 			/* 2: column name; e.g. geographic_centroid */,
 					response.fields["srid"]	/* 3: Column SRID; e.g. 4326 */,
-					'MULTIPOLYGON' 			/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */));	
-			sqlArray.push(sqlStmt);
+					'MULTIPOLYGON' 			/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray);
 	
 			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
 				var sqlStmt=new Sql("Add geometry column for zoomlevel: " + k,
@@ -621,8 +614,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 						csvFiles[i].tableName 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 						"geom_" + k 			/* 2: column name; e.g. geographic_centroid */,
 						4326	/* 3: Column SRID; e.g. 4326 */,
-						'MULTIPOLYGON' 			/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */));
-				sqlArray.push(sqlStmt);
+						'MULTIPOLYGON' 			/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray);
 			}
 				
 			if (dbType == "PostGres") {				
@@ -794,8 +786,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			var sqlStmt=new Sql("Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server)",
 				getSqlFromFile("area_check.sql", dbType, 
 					"geom_" + response.fields["max_zoomlevel"] 	/* 1: geometry column; e.g. geom_11 */,
-					csvFiles[i].tableName 						/* 2: table name; e.g. cb_2014_us_county_500k */));
-			sqlArray.push(sqlStmt);
+					csvFiles[i].tableName 						/* 2: table name; e.g. cb_2014_us_county_500k */), sqlArray);
 		
 			sqlArray.push(new Sql("Create spatial indexes"));
 			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
@@ -803,23 +794,20 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 					getSqlFromFile("create_spatial_index.sql", dbType, 
 						csvFiles[i].tableName + "_geom_" + k + "_gix"	/* Index name */,
 						csvFiles[i].tableName  							/* Table name */, 
-						"geom_" + k 									/* Index column(s) */)); 
-				sqlArray.push(sqlStmt);
+						"geom_" + k 									/* Index column(s) */), sqlArray); 
 			}				
 			var sqlStmt=new Sql("Index geometry column for original SRID geometry",
 				getSqlFromFile("create_spatial_index.sql", dbType, 
 					csvFiles[i].tableName + "_geom_orig_gix"	/* Index name */,
 					csvFiles[i].tableName  						/* Table name */, 
-					"geom_orig" 								/* Index column(s) */));
-			sqlArray.push(sqlStmt);
+					"geom_orig" 								/* Index column(s) */), sqlArray);
 
 			sqlArray.push(new Sql("Reports"));	
 			
 			var sqlStmt=new Sql("Areas and centroids report",
 				getSqlFromFile("area_centroid_report.sql", dbType, 
 					"geom_" + response.fields["max_zoomlevel"]	/* 1: geometry column; e.g. geom_11 */,
-					csvFiles[i].tableName  						/* Table name */));
-			sqlArray.push(sqlStmt);
+					csvFiles[i].tableName  						/* Table name */), sqlArray);
 			
 			// Set default satudy and comparison areas
 			if (csvFiles[i].geolevel == 1) {
