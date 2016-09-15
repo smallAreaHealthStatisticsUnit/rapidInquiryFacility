@@ -374,21 +374,18 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			sqlArray.push(new Sql("Geolevels meta data"));	
 			
 			var sqlStmt=new Sql("Drop table geolevels_" + response.fields["geographyName"].toLowerCase(), 
-				getSqlFromFile("drop_table.sql", dbType, "geolevels_" + response.fields["geographyName"].toLowerCase() /* Table name */)); 
-			sqlArray.push(sqlStmt);
+				getSqlFromFile("drop_table.sql", dbType, "geolevels_" + response.fields["geographyName"].toLowerCase() /* Table name */), 
+				sqlArray); 
 			
 			var sqlStmt=new Sql("Create geolevels meta data table",
 				getSqlFromFile("create_geolevels_table.sql", undefined /* Common */, 
-					"geolevels_" + response.fields["geographyName"].toLowerCase() /* Table name */)); 		
-			sqlArray.push(sqlStmt);	
+					"geolevels_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray); 
 			
 			var sqlStmt=new Sql("Comment geolevels meta data table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
 					"geolevels_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
-					"Geolevels: hierarchy of level within a geography"					/* Comment */)
-				);
-			sqlArray.push(sqlStmt);
+					"Geolevels: hierarchy of level within a geography"					/* Comment */), sqlArray);
 			
 			var fieldArray = ['geography', 'geolevel_name', 'geolevel_id', 'description', 'lookup_table',
 							  'lookup_desc_column', 'shapefile', 'shapefile_table', 'shapefile_area_id_column', 'shapefile_desc_column',
@@ -413,9 +410,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 						dbType, 
 						"geolevels_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
 						fieldArray[l]														/* Column name */,
-						fieldDescArray[l]													/* Comment */)
-					);
-				sqlArray.push(sqlStmt);		
+						fieldDescArray[l]													/* Comment */), 
+					sqlArray);
 			}		
 			
 			for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
@@ -429,9 +425,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 						csvFiles[i].geolevelDescription 								/* 5: Geolevel description; e.g. "The State-County at a scale of 1:500,000" */,
 						"lookup_" + csvFiles[i].tableName 								/* 6: lookup table; e.g. lookup_cb_2014_us_county_500k */,
 						csvFiles[i].file_name 											/* 7: shapefile; e.g. cb_2014_us_county_500k */,
-						csvFiles[i].tableName											/* 8: shapefile table; e.g. cb_2014_us_county_500k */)
-						 );
-				sqlArray.push(sqlStmt);
+						csvFiles[i].tableName											/* 8: shapefile table; e.g. cb_2014_us_county_500k */), 
+					sqlArray);
 			}				
 		} // End of createGeolevelsTable()
 
@@ -446,21 +441,17 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			
 			var sqlStmt=new Sql("Drop table geography_" + response.fields["geographyName"].toLowerCase(), 
 				getSqlFromFile("drop_table.sql", dbType, 
-					"geography_" + response.fields["geographyName"].toLowerCase() /* Table name */)); 
-			sqlArray.push(sqlStmt);
+					"geography_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray); 
 	
 			var sqlStmt=new Sql("Create geography meta data table",
 				getSqlFromFile("create_geography_table.sql", undefined /* Common */, 
-					"geography_" + response.fields["geographyName"].toLowerCase() /* Table name */)); 		
-			sqlArray.push(sqlStmt);		
+					"geography_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray);
 
 			var sqlStmt=new Sql("Comment geography meta data table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
 					"geography_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
-					"Hierarchial geographies. Usually based on Census geography"	/* Comment */)
-				);
-			sqlArray.push(sqlStmt);
+					"Hierarchial geographies. Usually based on Census geography"	/* Comment */), sqlArray);
 	
 			var sqlStmt=new Sql("Populate geography meta data table",
 				getSqlFromFile("insert_geography.sql", 
@@ -471,9 +462,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 					"hierarchy_" + response.fields["geographyName"].toLowerCase()	/* Hierarchy table; e.g. hierarchy_cb_2014_us_500k */,
 					response.fields["srid"] 										/* SRID; e.g. 4269 */,
 					defaultcomparea													/* Default comparision area */,
-					defaultstudyarea 												/* Default study area */)
-				);
-			sqlArray.push(sqlStmt)	
+					defaultstudyarea 												/* Default study area */), 
+				sqlArray);
 			
 			var fieldArray = ['geography', 'description', 'hierarchytable', 'srid', 'defaultcomparea', 'defaultstudyarea'];
 			var fieldDescArray = ['Geography name', 
@@ -488,9 +478,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 						dbType, 
 						"geography_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
 						fieldArray[l]														/* Column name */,
-						fieldDescArray[l]													/* Comment */)
-					);
-				sqlArray.push(sqlStmt);			
+						fieldDescArray[l]													/* Comment */), 
+					sqlArray);
 			}
 		} // End of createGeographyTable()
 

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!-- MS SQL Server bulk load format files
+	 The insistence on quotes excludes the header row -->
+<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ <RECORD>
+   <FIELD ID="0" xsi:type="CharTerm" TERMINATOR='"' />
+   <FIELD ID="1" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="2" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="3" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="4" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="5" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="6" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="7" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="8" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="9" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="10" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="11" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="12" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="13" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="14" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="15" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="16" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="17" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="18" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="19" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="20" xsi:type="CharTerm" TERMINATOR='"\r\n' />
+ </RECORD>
+ <ROW>
+   <COLUMN SOURCE="1" NAME="statefp" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="2" NAME="countyfp" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="3" NAME="countyns" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="4" NAME="affgeoid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="5" NAME="geoid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="6" NAME="name" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="7" NAME="lsad" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="8" NAME="aland" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="9" NAME="awater" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="10" NAME="gid" xsi:type="SQLINT" />
+   <COLUMN SOURCE="11" NAME="areaid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="12" NAME="areaname" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="13" NAME="area_km2" xsi:type="SQLNUMERIC" />
+   <COLUMN SOURCE="14" NAME="geographic_centroid_wkt" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="15" NAME="wkt_11" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="16" NAME="wkt_10" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="17" NAME="wkt_9" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="18" NAME="wkt_8" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="19" NAME="wkt_7" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="20" NAME="wkt_6" xsi:type="SQLVARYCHAR" />
+ </ROW>
+</BCPFORMAT>
