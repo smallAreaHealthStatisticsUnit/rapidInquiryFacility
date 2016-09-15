@@ -585,6 +585,8 @@ RangeError: Invalid string length
   * Simple enable debug function for rif40_run_study;
   * Database load code restructure to use template SQL scripts;
   * Band id bug (causing map map PK to fail). Area id added via update so it is clear where the problem lies;
+* Refactor SQL code using template SQL files where possible; 
+* Introduction SQL Server database creation scripts with MD
 
 #### Current TODO list (September):
 
