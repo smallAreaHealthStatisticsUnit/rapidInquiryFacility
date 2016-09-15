@@ -1,21 +1,16 @@
 package rifServices.statisticalServices;
 
 import rifServices.system.RIFServiceStartupOptions;
-import rifGenericLibrary.system.ClassFileLocator;
+import rifServices.businessConceptLayer.CalculationMethod;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.businessConceptLayer.Parameter;
 
-
-
-
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.sql.*;
+
 
 //import org.rosuda.JRI.*;
 
@@ -80,112 +75,31 @@ import java.sql.*;
  *
  */
 
-public class BayesianSmoothingService {
+public class BayesianSmoothingService extends AbstractRService {
 
 	public static void main(String[] args) {
 		BayesianSmoothingService bayesianSmoothingService
 			= new BayesianSmoothingService();
 		try {
-			
-			//Specify the executable that will be invoked by the service
-			//to call R.			
-			StringBuilder commandLineExecutable = new StringBuilder();
-			commandLineExecutable.append("C:");
-			commandLineExecutable.append(File.separator);
-			commandLineExecutable.append("Program Files");
-			commandLineExecutable.append(File.separator);
-			commandLineExecutable.append("R");
-			commandLineExecutable.append(File.separator);
-			commandLineExecutable.append("R-3.2.2");
-			commandLineExecutable.append(File.separator);
-			commandLineExecutable.append("bin");
-			commandLineExecutable.append(File.separator);
-			commandLineExecutable.append("x64");
-			commandLineExecutable.append(File.separator);
-			commandLineExecutable.append("R");
-			//rCommandLinePath.append("R CMD BATCH");
-			
-			
-			
-			
+						
 			ArrayList<Parameter> parameters = new ArrayList<Parameter>();
 			
 			//Add parameters related to database access
-			Parameter userParameter
-				= Parameter.newInstance("user", "kgarwood");
 			RIFServiceStartupOptions rifStartupOptions 
 				= RIFServiceStartupOptions.newInstance(false, false);
-			parameters.add(userParameter);
+			rifStartupOptions.setHost("wpea-rif1");
+			CalculationMethod hetCalculationMethod 
+				= CalculationMethod.newInstance();
+			hetCalculationMethod.setName("HET");
 			
-			//Note this is just for testing and will be eliminated later
-			Parameter passwordParameter
-				= Parameter.newInstance("password", "kgarwood");
-			parameters.add(passwordParameter);
-			
-			Parameter databaseDriverPrefix
-				= Parameter.newInstance(
-					"db_driver_prefix", 
-					rifStartupOptions.getDatabaseDriverPrefix());
-			parameters.add(databaseDriverPrefix);
-			Parameter databaseHostParameter
-				 = Parameter.newInstance(
-					"db_host",
-					rifStartupOptions.getHost());
-			parameters.add(databaseHostParameter);
-			Parameter databasePortParameter
-				= Parameter.newInstance(
-					"db_port",
-					rifStartupOptions.getPort());			
-			parameters.add(databasePortParameter);
-			Parameter databaseNameParameter
-				= Parameter.newInstance(
-					"db_name",
-					rifStartupOptions.getDatabaseName());			
-			parameters.add(databaseNameParameter);
-			Parameter databaseDriverClassNameParameter
-				= Parameter.newInstance(
-					"db_driver_class_name",
-					rifStartupOptions.getDatabaseDriverClassName());
-			parameters.add(databaseDriverClassNameParameter);
-					
-			//Add parameters related to files used in the executable			
-			Parameter sourceCodeFileParameter
-				= Parameter.newInstance(
-					"r_source_file", 
-					"TestSmoothingRoutine.R");
-			parameters.add(sourceCodeFileParameter);
-			
-			StringBuilder outputFilePath = new StringBuilder();
-			outputFilePath.append("C:");
-			outputFilePath.append(File.separator);
-			outputFilePath.append("rif_test");
-			outputFilePath.append(File.separator);
-			outputFilePath.append(sourceCodeFileParameter.getValue());
-			outputFilePath.append("out");
-			Parameter rOutputFileParameter
-				= Parameter.newInstance(
-					"r_out_file", 
-					outputFilePath.toString());
-			parameters.add(rOutputFileParameter);
-			
-			//Add parameter related to the model
-			Parameter rModelParameter 
-				= Parameter.newInstance(
-					"r_model", 
-					"BYHETCAR");
-			parameters.add(rModelParameter);
-						
-			Parameter studyIDParameter 
-				= Parameter.newInstance(
-					"study_id", 
-					"1");
-			parameters.add(studyIDParameter);			
-				
+			String rScriptFileName = "TestSmoothingRoutine.R";
 			bayesianSmoothingService.initialise(
-				commandLineExecutable.toString(),
-				parameters,
-				BayesianSmoothingService.OperatingSystemType.WINDOWS);
-			
+				"kgarwood", 
+				"kgarwood", 
+				rScriptFileName, 
+				rifStartupOptions, 
+				"1", 
+				hetCalculationMethod);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
@@ -195,7 +109,6 @@ public class BayesianSmoothingService {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	public static enum OperatingSystemType {WINDOWS, UNIX};
 	
 	// ==========================================
 	// Section Properties
@@ -213,42 +126,52 @@ public class BayesianSmoothingService {
 	// Section Accessors and Mutators
 	// ==========================================
 	public void initialise(
-		final String commandLineExecutable,
-		final ArrayList<Parameter> parameters,
-		final OperatingSystemType operatingSystemType) 
+		final String userID,
+		final String password,
+		final String rScriptFileName,
+		final RIFServiceStartupOptions rifStartupOptions,
+		final String studyID,
+		final CalculationMethod calculationMethod) 
 		throws RIFServiceException {
 		
-		//do validation checks
-		checkMissingParameters(parameters);
+		setUser(userID, password);
+		setRScriptFileName(rScriptFileName);
+		ArrayList<Parameter> rifStartupOptionParameters
+			= rifStartupOptions.extractParameters();
+		addParameters(rifStartupOptionParameters);
+		addParameter("study_id", studyID);
+		setCalculationMethod(calculationMethod);
+		setODBCDataSourceName("PostgreSQL30");
 				
-		File rCodeFile = determineSmoothingSourceCodeFile(parameters);
-		checkInputOutputFileProperties(
-			commandLineExecutable,
-			parameters, 
-			rCodeFile,
-			operatingSystemType);
-		checkDatabaseConnectionString(parameters);
-
-		String commandLineInvocation
-			= createRCommandLineInvocation(
-				commandLineExecutable, 
-				parameters);
+		//register the names of parameters that we will want to check are
+		//not empty
+		ArrayList<String> startupOptionParameterNames
+			= Parameter.extractParameterNames(rifStartupOptionParameters);
+		addParameterToVerify(startupOptionParameterNames);
+		addParameterToVerify("study_id");		
+		validateCommandLineExpressionComponents();
 		
-		//try {
-			System.out.println("RUN=="+commandLineInvocation+"==");
-			/*
+		
+		String commandLineExpression
+			= generateCommandLineExpression();
+		
+		try {
+			System.out.println("RUN=="+commandLineExpression+"==");
+/*
 			Process process
-				= Runtime.getRuntime().exec(commandLineInvocation);	
-			int exitValue = process.exitValue();
+				= Runtime.getRuntime().exec(commandLineExpression);	
+			int exitValue = process.waitFor();
 			System.out.println("Exit value=="+exitValue+"==");
-			*/
-		//}
-		//catch(IOException ioException) {
-		//	RIFServiceExceptionFactory rifServiceExceptionFactory
-		//		= new RIFServiceExceptionFactory();
-		//	rifServiceExceptionFactory.createFileCommandLineRunException(commandLineInvocation);
-		//}
+*/			
+		}
+		catch(Exception ioException) {
+			RIFServiceExceptionFactory rifServiceExceptionFactory
+				= new RIFServiceExceptionFactory();
+			rifServiceExceptionFactory.createFileCommandLineRunException(commandLineExpression);
+		}
+	
 	}
+		
 	
 	private String createRCommandLineInvocation(
 		final String commandLineExecutable,
@@ -256,43 +179,28 @@ public class BayesianSmoothingService {
 		
 		StringBuilder commandLineInvocation = new StringBuilder();
 		commandLineInvocation.append(commandLineExecutable);
-		commandLineInvocation.append(" CMD BATCH");
+		//commandLineInvocation.append(" CMD BATCH");
 		
 		for (Parameter parameter : parameters) {
-			commandLineInvocation.append(" -");
+			commandLineInvocation.append(" --");
 			commandLineInvocation.append(parameter.getName());
-			commandLineInvocation.append(" ");
+			commandLineInvocation.append("=");
 			commandLineInvocation.append(parameter.getValue());
 		}
 		
 		return commandLineInvocation.toString();		
 	}
-	
-	private File determineSmoothingSourceCodeFile(
-		final ArrayList<Parameter> parameters) {
-			
-		Parameter rSourceFileParameter
-			= Parameter.getParameter("r_source_file", parameters);
-			
-		StringBuilder fileName = new StringBuilder();
-		
-		String resourceFilePath
-			= ClassFileLocator.getClassRootLocation("rifServices");
-		fileName.append(resourceFilePath);
-		fileName.append(File.separator);
-		fileName.append(rSourceFileParameter.getValue());		
-		File file = new File(fileName.toString());
-		
-		return file;
-	}
+
 		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
+
 	private void checkMissingParameters(
 		final ArrayList<Parameter> parameters) 
 		throws RIFServiceException {
 		
+
 		//Check for parameters related to database access
 		RIFServiceExceptionFactory rifServiceExceptionFactory
 			= new RIFServiceExceptionFactory();		
@@ -372,10 +280,12 @@ public class BayesianSmoothingService {
 	private void checkInputOutputFileProperties(
 		final String commandLineExecutable,
 		final ArrayList<Parameter> parameters, 
-		final File rSourceCodeFile,
+		final String rSourceCodeFileName,
 		final OperatingSystemType operatingSystemType) 
 		throws RIFServiceException {
 
+		File rSourceCodeFile = new File(rSourceCodeFileName);
+		
 		RIFServiceExceptionFactory rifServiceExceptionFactory
 			= new RIFServiceExceptionFactory();
 
