@@ -203,6 +203,16 @@ public final class Parameter
 // Section Accessors and Mutators
 // ==========================================
 
+	public static ArrayList<String> extractParameterNames(final ArrayList<Parameter> parameters) {
+		ArrayList<String> parameterNames = new ArrayList<String>();
+		
+		for (Parameter parameter : parameters) {
+			parameterNames.add(parameter.getName());			
+		}
+		
+		return parameterNames;
+	}
+	
 	public static Parameter getParameter(
 		final String targetParameterName,
 		final ArrayList<Parameter> parameters) {
