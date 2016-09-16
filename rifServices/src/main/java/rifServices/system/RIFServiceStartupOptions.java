@@ -1,11 +1,13 @@
 package rifServices.system;
 
 import rifGenericLibrary.util.FieldValidationUtility;
+
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.businessConceptLayer.Parameter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -115,6 +117,8 @@ public final class RIFServiceStartupOptions {
 	
 	private String rifServiceClassDirectoryPath;
 	
+	private String odbcDataSourceName;
+	
 	/** The server side cache directory. */
 	private File serverSideCacheDirectory;
 		
@@ -159,6 +163,10 @@ public final class RIFServiceStartupOptions {
 			= RIFServiceStartupProperties.getWebApplicationDirectory();
 		rScriptDirectory
 			= RIFServiceStartupProperties.getRScriptDirectory();
+
+		
+		odbcDataSourceName
+			= RIFServiceStartupProperties.getODBCDataSourceName();
 		
 		extractDirectory
 			= RIFServiceStartupProperties.getExtractDirectoryName();
@@ -170,7 +178,7 @@ public final class RIFServiceStartupOptions {
 			= RIFServiceStartupProperties.isDatabaseCaseSensitive();
 		sslSupported
 			= RIFServiceStartupProperties.isSSLSupported();
-		
+
 		if (sslSupported) {
 			System.out.println("RIFServicesStartupOptions -- using SSL debug");
 			useSSLDebug
@@ -211,6 +219,42 @@ public final class RIFServiceStartupOptions {
 	// Section Accessors and Mutators
 	// ==========================================
 	
+	public ArrayList<Parameter> extractParameters() {
+		ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+		
+		Parameter databaseDriverPrefixParameter
+			= Parameter.newInstance(
+				"db_driver_prefix", 
+				databaseDriverPrefix);		
+		parameters.add(databaseDriverPrefixParameter);
+
+		Parameter databaseHostParameter
+			= Parameter.newInstance(
+				"db_host",
+				host);
+		parameters.add(databaseHostParameter);
+
+		Parameter databasePortParameter
+			= Parameter.newInstance(
+				"db_port",
+				port);			
+		parameters.add(databasePortParameter);
+
+		Parameter databaseNameParameter
+			= Parameter.newInstance(
+				"db_name",
+				databaseName);			
+		parameters.add(databaseNameParameter);
+
+		Parameter databaseDriverClassNameParameter
+			= Parameter.newInstance(
+				"db_driver_class_name",
+				databaseDriverClassName);
+		parameters.add(databaseDriverClassNameParameter);
+				
+		return parameters;
+	}
+	
 	public RIFDatabaseProperties getRIFDatabaseProperties() {
 				
 		RIFDatabaseProperties rifDatabaseProperties
@@ -220,6 +264,12 @@ public final class RIFServiceStartupOptions {
 				sslSupported);
 		
 		return rifDatabaseProperties;
+	}
+	
+	
+	public String getODBCDataSourceName() {
+		
+		return odbcDataSourceName;	
 	}
 	
 	public String getExtractDirectory() {
