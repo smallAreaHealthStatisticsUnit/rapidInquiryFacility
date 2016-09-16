@@ -1749,6 +1749,8 @@ abstract class AbstractRIFStudySubmissionService
 		final RIFStudySubmission _rifStudySubmission,
 		final File _outputFile) throws RIFServiceException {
 		
+		
+		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
@@ -1806,32 +1808,15 @@ abstract class AbstractRIFStudySubmissionService
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 
 			//Delegate operation to a specialised manager class
-			
-			
+						
 			SQLRIFSubmissionManager rifSubmissionManager
 				= rifServiceResources.getRIFSubmissionManager();
-			/*
-			 * This is the original submitStudy implementation, which makes use of the
-			 * stored DB procedure "run_study".  We'll comment this out and try to 
-			 * incrementally replace the proc with a middleware representation of the
-			 * code in that procedure
 			result
 				= rifSubmissionManager.submitStudy(
 					connection, 
 					user, 
-					rifStudySubmission);	
-			 */
-			
-			User postgresUser = User.newInstance("postgres", "111.111.111.111");
-			result
-				= rifSubmissionManager.submitStudy2(
-					connection, 
-					postgresUser, 
-					rifStudySubmission);	
-			
-			//createStudyExtract(
-			//	user,
-			//	result);
+					rifStudySubmission,
+					getRIFServiceStartupOptions());	
 			
 		}
 		catch(RIFServiceException rifServiceException) {
