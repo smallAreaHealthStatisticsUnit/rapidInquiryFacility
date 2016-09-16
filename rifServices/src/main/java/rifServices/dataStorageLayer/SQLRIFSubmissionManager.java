@@ -1,18 +1,23 @@
 package rifServices.dataStorageLayer;
 
+
+import rifServices.statisticalServices.BayesianSmoothingService;
+import rifServices.businessConceptLayer.*;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.fileFormats.RIFZipFileWriter;
+import rifServices.system.*;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.*;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.*;
 import rifGenericLibrary.util.FieldValidationUtility;
 
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
+
+import java.io.File;
 import java.sql.*;
 import java.util.ArrayList;
-
-
 
 /**
  *
@@ -275,7 +280,8 @@ final class SQLRIFSubmissionManager
 	public String submitStudy(
 		final Connection connection,
 		final User user,
-		final RIFStudySubmission studySubmission) 
+		final RIFStudySubmission studySubmission,
+		final RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
 
 		
@@ -291,41 +297,85 @@ final class SQLRIFSubmissionManager
 
 		//KLG: TODO: Later on we should not rely on casting - it might
 		//be a risk analysis study
-		String result = null;
+		String studyID = null;
 		DiseaseMappingStudy diseaseMappingStudy
 			= (DiseaseMappingStudy) studySubmission.getStudy();
 		try {
-					
+			/*
+			 * Part I: Add the study description to the database
+			 */
 			Project project = studySubmission.getProject();
 			addGeneralInformationToStudy(
 				connection,
 				user,
 				project,
 				diseaseMappingStudy);
-
 			addComparisonAreaToStudy(
 				connection, 
 				diseaseMappingStudy);
-
 			addStudyAreaToStudy(
 				connection,
 				diseaseMappingStudy);
-
 			addInvestigationsToStudy(
 				connection, 
 				true, 
-				diseaseMappingStudy);
-	
-			result = getCurrentStudyID(connection);
-			
+				diseaseMappingStudy);	
+			studyID = getCurrentStudyID(connection);			
 			connection.commit();
-			System.out.println("=========submitStudy DONE 1=====================");
+			
+			/*
+			 * Part II: Run the study to produce two tables:
+			 * (1) rif_studies.s[study_id].extract and
+			 * (2) rif_studies.s[study_id].map
+			 * 
+			 * At the end of this step, we will have a skeleton map file
+			 * that needs to be populated with smoothed results.  For this,
+			 * we will next call the smoothing service
+			 */
+			System.out.println("SQLRIFSubmissionManager submitStudy 1");
+			runStudy(connection, studyID);
+			System.out.println("SQLRIFSubmissionManager submitStudy 2");
+			
+			
+			/*
+			 * Part III: Run smoothing on the data extract
+			 */
+			
 
-			runStudy(connection, result);
 			
-			System.out.println("=========================submitStudy DONE 2================");
+			String rScriptFileName = "Adj_Cov_Smooth.R";
+			/*
+			 * Originally we thought a study might be associated with multiple calculation
+			 * methods that could each be used to post-process extract data to produce
+			 * different smoothed result sets.  Presently we think that a given study will
+			 * only have one CalculationMethod, and later on the business classes will
+			 * likely be changed to reflect the use of one rather han many calculation methods
+			 */
+			CalculationMethod calculationMethod
+				= studySubmission.getCalculationMethods().get(0);
+
+			System.out.println("SQLRIFSubmissionManager submitStudy 3");
 			
-			return result;
+			BayesianSmoothingService bayesianSmoothingService
+				= new BayesianSmoothingService();
+			bayesianSmoothingService.initialise(
+				user.getUserID(), 
+				"blah", //@TODO KLG: we need to find a way to eliminate passwords from this 
+				rScriptFileName, 
+				rifServiceStartupOptions, 
+				studyID, 
+				calculationMethod);
+			
+
+			System.out.println("SQLRIFSubmissionManager submitStudy 4");
+
+			RIFZipFileWriter writer = new RIFZipFileWriter();
+			File targetFile = new File("C://rif_scripts/result.zip");
+			writer.writeZipFile(user, targetFile, studySubmission);
+			
+			
+			System.out.println("Finished the whole thing studyID=="+studyID+"==");
+			return studyID;
 		}
 		catch(SQLException sqlException) {
 			System.out.println("============================submitStudy ERROR============================");
@@ -345,6 +395,56 @@ final class SQLRIFSubmissionManager
 	}
 
 
+	/**
+	 * writes the extract and smoothed data tables to csv files that will appear in 
+	 * a specified output scratch directory
+	 * @param connection
+	 * @param scratchFileDirectory
+	 * @param studyID
+	 */
+	public void writeResultFiles(
+		final Connection connection,
+		final File scratchFileDirectory, 
+		final String studyID) 
+		throws RIFServiceException {
+		
+		
+		PreparedStatement writeExtractFileStatement = null;
+		PreparedStatement writeSmoothedResultsFileStatement = null;
+		
+		//CopyManager copyManager 
+		//	= new CopyManager((BaseConnection) connection);
+		//try {
+			
+			
+			
+			
+		//}
+		//catch(SQLException sqlException) {
+			/*
+			String errorMessage
+				= RIFServiceMessages.getMessage("", studyID);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(	
+					RIFServiceError, 
+					errorMessage);
+			throw rifServiceException;
+			*/
+		//}
+		//finally {			
+		//}		
+	}
+	
+
+	public void writeSmoothedResultFile(
+		final Connection connection,
+		final File scratchFileDirectory, 
+		final String studyID) {
+		
+		
+		
+	}
+	
 
 	public String addStudyToDatabase(
 		final Connection connection,
@@ -412,107 +512,6 @@ final class SQLRIFSubmissionManager
 
 	}
 
-	
-	
-	
-	public String submitStudy2(
-		final Connection connection,
-		final User user,
-		final RIFStudySubmission studySubmission) 
-		throws RIFServiceException {
-		
-		System.out.println("Submit Study2 user=="+user.getUserID()+"==");
-		//Validate parameters
-		ValidationPolicy validationPolicy = getValidationPolicy();
-		studySubmission.checkErrors(validationPolicy);
-		
-		//perform various checks for non-existent objects
-		//such as geography,  geo level selects, covariates
-		checkNonExistentItems(
-			connection, 
-			studySubmission);
-
-		//KLG: TODO: Later on we should not rely on casting - it might
-		//be a risk analysis study
-		String result = null;
-		DiseaseMappingStudy diseaseMappingStudy
-			= (DiseaseMappingStudy) studySubmission.getStudy();
-		try {
-					
-			Project project = studySubmission.getProject();
-			addGeneralInformationToStudy(
-				connection,
-				user,
-				project,
-				diseaseMappingStudy);
-
-			addComparisonAreaToStudy(
-				connection, 
-				diseaseMappingStudy);
-
-			addStudyAreaToStudy(
-				connection,
-				diseaseMappingStudy);
-
-			addInvestigationsToStudy(
-				connection, 
-				true, 
-				diseaseMappingStudy);
-	
-			result = getCurrentStudyID(connection);
-			
-			connection.commit();
-			
-			runStudy2(
-				connection, 
-				result, 
-				user.getUserID(),
-				studySubmission);
-			
-			return result;
-		}
-		catch(SQLException sqlException) {
-			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
-					diseaseMappingStudy.getDisplayName());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;			
-		}
-
-	}
-	
-	
-	/**
-	 * This method will eventually replace the original runStudy method that
-	 * relies on the run_study database procedure.
-	 */
-	public void runStudy2(
-		final Connection connection,
-		final String studyID,
-		final String userID,
-		final RIFStudySubmission studySubmission) 
-		throws RIFServiceException {		
-	
-		AbstractStudy study
-			= studySubmission.getStudy();
-	
-		/*
-		createStudyTables(
-			connection, 
-			studyID, 
-			userID,
-			study);
-		*/
-		
-		
-	}
-	
 	public void verifyStudyProperlyCreated(
 		final Connection connection,
 		final String studyID,
@@ -729,11 +728,7 @@ final class SQLRIFSubmissionManager
 		
 	}
 	
-	
-	
-	
-	
-	
+
 	private void registerRIFExtractInDatabase() 
 		throws RIFServiceException {
 		
@@ -1102,32 +1097,18 @@ final class SQLRIFSubmissionManager
 			runStudyQueryFormatter.setFunctionName("rif40_run_study");
 			runStudyQueryFormatter.setNumberOfFunctionParameters(2);
 
-			
-			SQLFunctionCallerQueryFormatter computeResultsQueryFormatter = new SQLFunctionCallerQueryFormatter();
-			computeResultsQueryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
-			computeResultsQueryFormatter.setFunctionName("rif40_compute_results");
-			computeResultsQueryFormatter.setNumberOfFunctionParameters(1);
-			
-			
 			logSQLQuery(
 				"runStudy", 
 				runStudyQueryFormatter,
 				studyID,
 				"0");
-
-			logSQLQuery(
-				"computeResults", 
-				computeResultsQueryFormatter,
-				studyID,
-				"0");
-
 			
 			runStudyStatement
 				= createPreparedStatement(
 					connection,
 					runStudyQueryFormatter);
 			runStudyStatement.setInt(1, Integer.valueOf(studyID));
-			runStudyStatement.setInt(2, 0);
+			runStudyStatement.setBoolean(2, true);
 			runStudyResultSet
 				= runStudyStatement.executeQuery();
 			runStudyResultSet.next();
@@ -1137,31 +1118,19 @@ final class SQLRIFSubmissionManager
 			
 			SQLWarning warning = runStudyStatement.getWarnings();
 			while (warning != null) {
+				/*
 		        System.out.println("Message:" + warning.getMessage());
 		        System.out.println("SQLState:" + warning.getSQLState());
 		        System.out.print("Vendor error code: ");
 		        System.out.println(warning.getErrorCode());
 		        System.out.println("==");
+		        */
 		        warning = warning.getNextWarning();
+
 			}
 			
-			System.out.print("SQLRIFSubmissionManager submitStudy 1=="+result+"== PRINTING WARNINGS 2");
-			
-			
-			
-			computeResultsStatement
-				= createPreparedStatement(
-					connection,
-					computeResultsQueryFormatter);
-			computeResultsStatement.setInt(1, Integer.valueOf(studyID));
-			computeResultSet
-				= runStudyStatement.executeQuery();
-			computeResultSet.next();
-			
-			//result = String.valueOf(resultSet.getBoolean(1));	
-			System.out.print("SQLRIFSubmissionManager submitStudy 2=="+result+"==");
-						
 			connection.commit();
+			System.out.print("SQLRIFSubmissionManager submitStudy 1=="+result+"== PRINTING WARNINGS 2");
 			
 			return result;
 		}
@@ -1193,9 +1162,6 @@ final class SQLRIFSubmissionManager
 			SQLQueryUtility.close(computeResultsStatement);
 			SQLQueryUtility.close(computeResultSet);
 		}
-		
-		
-		
 	}
 
 	
@@ -1752,11 +1718,17 @@ final class SQLRIFSubmissionManager
 			statement
 				= createPreparedStatement(
 					connection,
-					queryFormatter);			
+					queryFormatter);	
+			int i = 1;
 			for (MapArea currentMapArea : allMapAreas) {
 				statement.setString(1, currentMapArea.getLabel());
-				statement.setInt(2, 1);
+
+				statement.setInt(2, i);
+				
+				
 				statement.executeUpdate();
+				
+				i++;
 			}			
 			
 			
