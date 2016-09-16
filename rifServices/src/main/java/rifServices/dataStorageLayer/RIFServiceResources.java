@@ -107,6 +107,9 @@ public final class RIFServiceResources {
 
 	private SQLStudyStateManager sqlStudyStateManager;
 	
+	
+	private RIFServiceStartupOptions rifServiceStartupOptions;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -114,6 +117,9 @@ public final class RIFServiceResources {
 	private RIFServiceResources(
 		final RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
+		
+		
+		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		sqlConnectionManager = new SQLConnectionManager(rifServiceStartupOptions);
 		healthOutcomeManager = new HealthOutcomeManager(rifServiceStartupOptions);
@@ -233,6 +239,10 @@ public final class RIFServiceResources {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public RIFServiceStartupOptions getRIFServiceStartupOptions() {
+		return rifServiceStartupOptions;
+	}
 	
 	public SQLConnectionManager getSqlConnectionManager() {
 		return sqlConnectionManager;
