@@ -226,6 +226,12 @@ public final class RIFServiceStartupProperties {
     	return property; 	
     }
     
+    public static String getODBCDataSourceName() {
+    	String property
+			= getProperty("odbcDataSourceName");
+    	return property;    	
+    }
+    
     
     /**
      * Gets the message.
