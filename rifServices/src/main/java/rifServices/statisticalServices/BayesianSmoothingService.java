@@ -92,7 +92,9 @@ public class BayesianSmoothingService extends AbstractRService {
 				= CalculationMethod.newInstance();
 			hetCalculationMethod.setName("HET");
 			
-			String rScriptFileName = "TestSmoothingRoutine.R";
+			String rScriptFileName = "Adj_Cov_Smooth.R";
+
+			//String rScriptFileName = "TestSmoothingRoutine.R";
 			bayesianSmoothingService.initialise(
 				"kgarwood", 
 				"kgarwood", 
@@ -141,7 +143,8 @@ public class BayesianSmoothingService extends AbstractRService {
 		addParameters(rifStartupOptionParameters);
 		addParameter("study_id", studyID);
 		setCalculationMethod(calculationMethod);
-		setODBCDataSourceName("PostgreSQL30");
+		
+		setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
 				
 		//register the names of parameters that we will want to check are
 		//not empty
