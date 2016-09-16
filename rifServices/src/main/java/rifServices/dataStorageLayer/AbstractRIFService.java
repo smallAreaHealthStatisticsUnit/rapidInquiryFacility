@@ -1,16 +1,16 @@
 package rifServices.dataStorageLayer;
 
+import rifServices.businessConceptLayer.RIFServiceInformation;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.system.RIFServiceSecurityException.SecurityThreatType;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.RIFServiceInformation;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 
@@ -294,6 +294,11 @@ public class AbstractRIFService {
 		
 		return result;
 	}
+	
+	public RIFServiceStartupOptions getRIFServiceStartupOptions() {
+		return rifServiceResources.getRIFServiceStartupOptions();
+	}
+	
 	
 	public boolean isInitialised() {
 		return isInitialised;
