@@ -803,7 +803,45 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 //				console.error("No match for geolevel: " + csvFiles[i].geolevel);
 //			}			
 		} // End of createShapeFileTable()
-		
+
+		/*
+		 * Function: 	createTilesTables()
+		 * Parameters:	None
+		 * Description:	Create tiles tables 
+		 *				SQL statements
+		 */			
+		function createTilesTables() {
+			var sqlStmt;	
+			
+			sqlArray.push(new Sql("Create tiles tables"));
+
+			var sqlStmt=new Sql("Create function: longitude2tile.sql", 
+				getSqlFromFile("longitude2tile.sql", dbType), sqlArray); 
+			var sqlStmt=new Sql("Create function: latitude2tile.sql", 
+				getSqlFromFile("latitude2tile.sql", dbType), sqlArray); 
+			var sqlStmt=new Sql("Create function: tile2longitude.sql", 
+				getSqlFromFile("tile2longitude.sql", dbType), sqlArray); 
+			var sqlStmt=new Sql("Create function: tile2latitude.sql", 
+				getSqlFromFile("tile2latitude.sql", dbType), sqlArray); 
+				
+			
+			var singleBoundaryGeolevelTable;
+			for (var i=0; i<csvFiles.length; i++) {	
+				if (csvFiles[i].geolevel == 1) {
+					singleBoundaryGeolevelTable=csvFiles[i].tableName;
+				}
+			}
+			var sqlStmt=new Sql("Tile check", 
+				getSqlFromFile("tile_check.sql", dbType,
+					"geolevels_" + response.fields["geographyName"].toLowerCase() 	/* 1: Lowest resolution geolevels table */,
+					response.fields["geographyName"] 								/* 2: Geography */,
+					response.fields["min_zoomlevel"]							 	/* 3: min_zoomlevel */,
+					response.fields["max_zoomlevel"] 								/* 4: max_zoomlevel */,
+					singleBoundaryGeolevelTable										/* 5: Geolevel id = 1 geometry table */
+				), sqlArray); 
+				
+		} // End of createTilesTables()
+	
 		function Sql(comment, sql, sqlArray) { // Object constructor
 			this.comment=comment;
 			this.sql=sql;	
@@ -837,6 +875,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 		createGeolevelsTable();
 		createGeolevelsLookupTables();
 		createHierarchyTable();
+		createTilesTables();
 		
 		commitTransaction();
 		

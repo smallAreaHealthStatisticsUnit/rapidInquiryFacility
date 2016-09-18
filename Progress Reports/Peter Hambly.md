@@ -586,7 +586,9 @@ RangeError: Invalid string length
   * Database load code restructure to use template SQL scripts;
   * Band id bug (causing map map PK to fail). Area id added via update so it is clear where the problem lies;
 * Refactor SQL code using template SQL files where possible; 
-* Introduction SQL Server database creation scripts with MD
+* Introduction SQL Server database creation scripts with MD;
+
+#### 19th to 23rd September
 
 #### Current TODO list (September):
 
@@ -610,7 +612,10 @@ RangeError: Invalid string length
   * Check Turf JS centroid code (figures are wrong);
   * Compare Turf/PostGIS/SQL Server area and centroid caculations;
   * Resolve SQL Server use of geography verses geometry and SQL Server geometry to geography casting; 
-* Map tile generator
+* Map tile generator; RIF integration preparation:
+  * One table partition per geolevel; add tile table to geography; and schema
+  * Partition geometry tables
+  * Add GID to lookup tables;
 
 #### October TODO list:
 
