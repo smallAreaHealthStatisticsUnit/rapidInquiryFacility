@@ -18,6 +18,7 @@ USE [sahsuland_dev];
 IF DATABASE_PRINCIPAL_ID('rif_manager') IS NULL
 	CREATE ROLE [rif_manager];
 GO
+
 	
 IF DATABASE_PRINCIPAL_ID('rif_user') IS NULL
 	CREATE ROLE [rif_user];

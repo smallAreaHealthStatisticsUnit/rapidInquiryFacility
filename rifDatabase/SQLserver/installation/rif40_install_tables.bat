@@ -1,12 +1,12 @@
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_version.sql
-sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_a_and_e.sql
+REM sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_a_and_e.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_age_group_names.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_geographies.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_health_study_themes.sql
-sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_icd10.sql
-sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_icd9.sql
-sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_icd_o_3.sql
-sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_opcs4.sql
+REM sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_icd10.sql
+REM sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_icd9.sql
+REM sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_icd_o_3.sql
+REM sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_opcs4.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_outcomes.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\rif40_reference_tables.sql
 sqlcmd -d sahsuland_dev -i ..\sahsuland_dev\rif40\tables\t_rif40_projects.sql
