@@ -3755,7 +3755,246 @@ BEGIN
 END;;
 GO
 
--- SQL statement 172: Commit transaction >>>
+--
+-- Create tiles tables
+--
+
+-- SQL statement 173: Create function: longitude2tile.sql >>>
+/*
+ * SQL statement name: 	longitude2tile.sql
+ * Type:				Postgres/PostGIS PL/pgsql function
+ * Parameters:			None
+ *
+ * Description:			Convert longitude (WGS84 - 4326) to OSM tile x
+ * Note:				% becomes % after substitution
+ */
+IF OBJECT_ID (N'tileMaker_longitude2tile', N'FN') IS NOT NULL  
+    DROP FUNCTION tileMaker_longitude2tile;  
+GO 
+
+CREATE FUNCTION tileMaker_longitude2tile(@longitude DOUBLE PRECISION, @zoom_level INTEGER)
+RETURNS INTEGER AS
+BEGIN
+	DECLARE @tileX INTEGER;
+	SET @tileX=CAST(
+			FLOOR( (@longitude + 180) / 360 * POWER(2, @zoom_level) ) AS INTEGER);
+	RETURN @tileX;
+END;
+GO
+  
+DECLARE @CurrentUser sysname;
+SELECT @CurrentUser = user_name(); 
+EXECUTE sp_addextendedproperty  'MS_Description', 'Function: 	 tileMaker_longitude2tile()
+Parameters:	 Longitude, zoom level
+Returns:	 OSM Tile x
+Description: Convert longitude (WGS84 - 4326) to OSM tile x
+
+Derivation of the tile X/Y 
+
+* Reproject the coordinates to the Mercator projection (from EPSG:4326 to EPSG:3857):
+
+x = lon
+y = arsinh(tan(lat)) = log[tan(lat) + sec(lat)]
+(lat and lon are in radians)
+
+* Transform range of x and y to 0 � 1 and shift origin to top left corner:
+
+x = [1 + (x / p)] / 2
+y = [1 - (y / p)] / 2
+
+* Calculate the number of tiles across the map, n, using 2**zoom
+* Multiply x and y by n. Round results down to give tilex and tiley.
+',
+   'user', @CurrentUser,   
+   'function', 'tileMaker_longitude2tile';
+GO
+
+-- SQL statement 174: Create function: latitude2tile.sql >>>
+/*
+ * SQL statement name: 	latitude2tile.sql
+ * Type:				Microsoft SQL Server T/sql function
+ * Parameters:			None
+ *
+ * Description:			Convert latitude (WGS84 - 4326) to OSM tile y
+ * Note:				% becomes % after substitution
+ */
+IF OBJECT_ID (N'tileMaker_latitude2tile', N'FN') IS NOT NULL  
+    DROP FUNCTION tileMaker_latitude2tile;  
+GO 
+
+CREATE FUNCTION tileMaker_latitude2tile(@latitude DOUBLE PRECISION, @zoom_level INTEGER)
+RETURNS INTEGER 
+AS
+BEGIN
+	DECLARE @tileY INTEGER;
+	SET @tileY=CAST(
+					FLOOR( 
+						(1.0 - LOG /* Natural Log */ 
+							(TAN(RADIANS(@latitude)) + 1.0 / COS(RADIANS(@latitude))) / PI()) / 2.0 * POWER(2, @zoom_level) 
+						) 
+					AS INTEGER);
+	RETURN @tileY;
+END;
+GO
+  
+DECLARE @CurrentUser sysname;
+SELECT @CurrentUser = user_name(); 
+EXECUTE sp_addextendedproperty  'MS_Description', 'Function: 	 tileMaker_latitude2tile()
+Parameters:	 Latitude, zoom level
+Returns:	 OSM Tile y
+Description: Convert latitude (WGS84 - 4326) to OSM tile x
+
+Derivation of the tile X/Y 
+
+* Reproject the coordinates to the Mercator projection (from EPSG:4326 to EPSG:3857):
+
+x = lon
+y = arsinh(tan(lat)) = log[tan(lat) + sec(lat)]
+(lat and lon are in radians)
+
+* Transform range of x and y to 0 � 1 and shift origin to top left corner:
+
+x = [1 + (x / p)] / 2
+y = [1 - (y / p)] / 2
+
+* Calculate the number of tiles across the map, n, using 2**zoom
+* Multiply x and y by n. Round results down to give tilex and tiley.
+',
+   'user', @CurrentUser,   
+   'function', 'tileMaker_latitude2tile';
+GO
+
+-- SQL statement 175: Create function: tile2longitude.sql >>>
+/*
+ * SQL statement name: 	tile2longitude.sql
+ * Type:				Postgres/PostGIS PL/pgsql function
+ * Parameters:			None
+ *
+ * Description:			Convert OSM tile x to longitude (WGS84 - 4326) 
+ * Note:				% becomes % after substitution
+ */
+IF OBJECT_ID (N'tileMaker_tile2longitude', N'FN') IS NOT NULL  
+    DROP FUNCTION tileMaker_tile2longitude;  
+GO 
+
+CREATE FUNCTION tileMaker_tile2longitude(@x INTEGER, @zoom_level INTEGER)
+RETURNS DOUBLE PRECISION AS
+BEGIN
+	DECLARE @longitude DOUBLE PRECISION;
+	SET @longitude=CAST( ( (@x * 1.0) / POWER(2, @zoom_level) * 360.0) - 180.0 AS DOUBLE PRECISION);
+	RETURN @longitude;
+END;
+GO
+  
+DECLARE @CurrentUser sysname;
+SELECT @CurrentUser = user_name(); 
+EXECUTE sp_addextendedproperty  'MS_Description', 'Function: 	 tileMaker_tile2longitude()
+Parameters:	 OSM Tile x, zoom level
+Returns:	 Longitude
+Description: Convert OSM tile x to longitude (WGS84 - 4326)
+',
+   'user', @CurrentUser,   
+   'function', 'tileMaker_tile2longitude';
+GO
+
+-- SQL statement 176: Create function: tile2latitude.sql >>>
+/*
+ * SQL statement name: 	tileMaker_tile2latitude.sql
+ * Type:				Postgres/PostGIS PL/pgsql function
+ * Parameters:			None
+ *
+ * Description:			Convert OSM tile y to latitude (WGS84 - 4326)
+ * Note:				% becomes % after substitution
+ */
+IF OBJECT_ID (N'tileMaker_tile2latitude', N'FN') IS NOT NULL  
+    DROP FUNCTION tileMaker_tile2latitude;  
+GO 
+
+CREATE FUNCTION tileMaker_tile2latitude(@y INTEGER, @zoom_level INTEGER)
+RETURNS DOUBLE PRECISION AS
+BEGIN
+	DECLARE @latitude DOUBLE PRECISION;
+	DECLARE @n FLOAT;
+	DECLARE @sinh FLOAT;
+	DECLARE @E FLOAT = 2.7182818284;
+	
+    SET @n = PI() - (2.0 * PI() * @y) / POWER(2.0, @zoom_level);
+    SET @sinh = (1 - POWER(@E, -2*@n)) / (2 * POWER(@E, -@n));
+    SET @latitude = DEGREES(ATAN(@sinh));
+	RETURN @latitude;
+END;
+GO
+  
+DECLARE @CurrentUser sysname;
+SELECT @CurrentUser = user_name(); 
+EXECUTE sp_addextendedproperty  'MS_Description', 'Function: 	 tileMaker_tile2latitude()
+Parameters:	 OSM Tile y, zoom level
+Returns:	 Latitude
+Description: Convert OSM tile y to latitude (WGS84 - 4326)
+',
+   'user', @CurrentUser,   
+   'function', 'tileMaker_tile2latitude';
+GO
+
+-- SQL statement 177: Tile check >>>
+/*
+ * SQL statement name: 	tileMaker_tile2latitude.sql
+ * Type:				Postgres/PostGIS PL/pgsql function
+ * Parameters:			
+ *						1: Lowest resolution geolevels table
+ *						2: Geography
+ *						3: min_zoomlevel
+ *						4: max_zoomlevel
+ *						5: Geolevel id = 1 geometry table
+ *
+ * Description:			Convert OSM tile y to latitude (WGS84 - 4326)
+ * Note:				% becomes % after substitution
+ */
+WITH a AS ( /* Geolevel summary */
+		SELECT a1.geography, 
+		       a1.geolevel_name AS min_geolevel_name,
+               MIN(geolevel_id) AS min_geolevel_id,
+               CAST(11 AS INTEGER) AS zoomlevel,
+               a2.max_geolevel_id
+          FROM geolevels_cb_2014_us_500k a1, (
+                        SELECT geography, MAX(geolevel_id) AS max_geolevel_id
+  						  FROM geolevels_cb_2014_us_500k 
+						 GROUP BY geography
+						) a2
+         WHERE a1.geography     = 'cb_2014_us_500k' 
+           AND a1.geography     = a2.geography
+         GROUP BY a1.geography, a1.geolevel_name, a2.max_geolevel_id
+        HAVING MIN(geolevel_id) = 1
+), b AS ( /* Get bounds of geography */		
+	SELECT a2.geography,
+		   a2.min_geolevel_id,
+		   a2.max_geolevel_id,
+		   a2.zoomlevel,
+		   CASE
+				WHEN a2.zoomlevel <= 6 THEN
+					geometry::STGeomFromWKB(b.geom_6.STAsBinary(), b.geom_6.STSrid /* Cast to geometry */).STEnvelope()
+				WHEN a2.zoomlevel BETWEEN (6+1) AND 11 THEN	
+					geometry::STGeomFromWKB(b.geom_11.STAsBinary(), b.geom_11.STSrid /* Cast to geometry */).STEnvelope()
+				ELSE NULL
+           END AS geom_envelope
+      FROM cb_2014_us_nation_5m b, a a2
+)
+SELECT b.geography,
+	   b.min_geolevel_id,
+	   b.max_geolevel_id,
+	   b.zoomlevel,
+	   CAST(b.geom_envelope.STPointN(1).STX AS numeric(8,5)) AS Xmin,
+	   CAST(b.geom_envelope.STPointN(3).STX AS numeric(8,5)) AS Xmax,
+	   CAST(b.geom_envelope.STPointN(1).STY AS numeric(8,5)) AS Ymin,
+	   CAST(b.geom_envelope.STPointN(3).STY AS numeric(8,5)) AS Ymax,
+	   $(USERNAME).tileMaker_latitude2tile(b.geom_envelope.STPointN(1).STY, zoomlevel) AS Y_mintile,
+	   $(USERNAME).tileMaker_latitude2tile(b.geom_envelope.STPointN(3).STY, zoomlevel) AS Y_maxtile,
+	   $(USERNAME).tileMaker_longitude2tile(b.geom_envelope.STPointN(1).STX, zoomlevel) AS X_mintile,
+	   $(USERNAME).tileMaker_longitude2tile(b.geom_envelope.STPointN(3).STX, zoomlevel) AS X_maxtile
+  FROM b;
+GO
+
+-- SQL statement 178: Commit transaction >>>
 COMMIT;
 GO
 
@@ -3763,75 +4002,75 @@ GO
 -- Analyze tables
 --
 
--- SQL statement 174: Describe table cb_2014_us_county_500k >>>
+-- SQL statement 180: Describe table cb_2014_us_county_500k >>>
 -- EXEC sp_help cb_2014_us_county_500k;
 GO
 
--- SQL statement 175: Analyze table cb_2014_us_county_500k >>>
+-- SQL statement 181: Analyze table cb_2014_us_county_500k >>>
 UPDATE STATISTICS cb_2014_us_county_500k;
 GO
 
--- SQL statement 176: Describe table lookup_cb_2014_us_county_500k >>>
+-- SQL statement 182: Describe table lookup_cb_2014_us_county_500k >>>
 -- EXEC sp_help lookup_cb_2014_us_county_500k;
 GO
 
--- SQL statement 177: Analyze table lookup_cb_2014_us_county_500k >>>
+-- SQL statement 183: Analyze table lookup_cb_2014_us_county_500k >>>
 UPDATE STATISTICS lookup_cb_2014_us_county_500k;
 GO
 
--- SQL statement 178: Describe table cb_2014_us_nation_5m >>>
+-- SQL statement 184: Describe table cb_2014_us_nation_5m >>>
 -- EXEC sp_help cb_2014_us_nation_5m;
 GO
 
--- SQL statement 179: Analyze table cb_2014_us_nation_5m >>>
+-- SQL statement 185: Analyze table cb_2014_us_nation_5m >>>
 UPDATE STATISTICS cb_2014_us_nation_5m;
 GO
 
--- SQL statement 180: Describe table lookup_cb_2014_us_nation_5m >>>
+-- SQL statement 186: Describe table lookup_cb_2014_us_nation_5m >>>
 -- EXEC sp_help lookup_cb_2014_us_nation_5m;
 GO
 
--- SQL statement 181: Analyze table lookup_cb_2014_us_nation_5m >>>
+-- SQL statement 187: Analyze table lookup_cb_2014_us_nation_5m >>>
 UPDATE STATISTICS lookup_cb_2014_us_nation_5m;
 GO
 
--- SQL statement 182: Describe table cb_2014_us_state_500k >>>
+-- SQL statement 188: Describe table cb_2014_us_state_500k >>>
 -- EXEC sp_help cb_2014_us_state_500k;
 GO
 
--- SQL statement 183: Analyze table cb_2014_us_state_500k >>>
+-- SQL statement 189: Analyze table cb_2014_us_state_500k >>>
 UPDATE STATISTICS cb_2014_us_state_500k;
 GO
 
--- SQL statement 184: Describe table lookup_cb_2014_us_state_500k >>>
+-- SQL statement 190: Describe table lookup_cb_2014_us_state_500k >>>
 -- EXEC sp_help lookup_cb_2014_us_state_500k;
 GO
 
--- SQL statement 185: Analyze table lookup_cb_2014_us_state_500k >>>
+-- SQL statement 191: Analyze table lookup_cb_2014_us_state_500k >>>
 UPDATE STATISTICS lookup_cb_2014_us_state_500k;
 GO
 
--- SQL statement 186: Describe table geolevels_cb_2014_us_500k >>>
+-- SQL statement 192: Describe table geolevels_cb_2014_us_500k >>>
 -- EXEC sp_help geolevels_cb_2014_us_500k;
 GO
 
--- SQL statement 187: Analyze table geolevels_cb_2014_us_500k >>>
+-- SQL statement 193: Analyze table geolevels_cb_2014_us_500k >>>
 UPDATE STATISTICS geolevels_cb_2014_us_500k;
 GO
 
--- SQL statement 188: Describe table geography_cb_2014_us_500k >>>
+-- SQL statement 194: Describe table geography_cb_2014_us_500k >>>
 -- EXEC sp_help geography_cb_2014_us_500k;
 GO
 
--- SQL statement 189: Analyze table geography_cb_2014_us_500k >>>
+-- SQL statement 195: Analyze table geography_cb_2014_us_500k >>>
 UPDATE STATISTICS geography_cb_2014_us_500k;
 GO
 
--- SQL statement 190: Describe table hierarchy_cb_2014_us_500k >>>
+-- SQL statement 196: Describe table hierarchy_cb_2014_us_500k >>>
 -- EXEC sp_help hierarchy_cb_2014_us_500k;
 GO
 
--- SQL statement 191: Analyze table hierarchy_cb_2014_us_500k >>>
+-- SQL statement 197: Analyze table hierarchy_cb_2014_us_500k >>>
 UPDATE STATISTICS hierarchy_cb_2014_us_500k;
 GO
 

@@ -6,16 +6,23 @@
  * Description:			Convert longitude (WGS84 - 4326) to OSM tile x
  * Note:				%% becomes % after substitution
  */
-DROP FUNCTION IF EXISTS tileMaker_longitude2tile(DOUBLE PRECISION, INTEGER);
+IF OBJECT_ID (N'tileMaker_longitude2tile', N'FN') IS NOT NULL  
+    DROP FUNCTION tileMaker_longitude2tile;  
+GO 
 
-CREATE OR REPLACE FUNCTION tileMaker_longitude2tile(longitude DOUBLE PRECISION, zoom_level INTEGER)
+CREATE FUNCTION tileMaker_longitude2tile(@longitude DOUBLE PRECISION, @zoom_level INTEGER)
 RETURNS INTEGER AS
-$$
-    SELECT FLOOR( (longitude + 180) / 360 * (1 << zoom_level) )::INTEGER
-$$
-LANGUAGE sql IMMUTABLE;
+BEGIN
+	DECLARE @tileX INTEGER;
+	SET @tileX=CAST(
+			FLOOR( (@longitude + 180) / 360 * POWER(2, @zoom_level) ) AS INTEGER);
+	RETURN @tileX;
+END;
+GO
   
-COMMENT ON FUNCTION tileMaker_longitude2tile(DOUBLE PRECISION, INTEGER) IS 'Function: 	 tileMaker_longitude2tile()
+DECLARE @CurrentUser sysname;
+SELECT @CurrentUser = user_name(); 
+EXECUTE sp_addextendedproperty  'MS_Description', 'Function: 	 tileMaker_longitude2tile()
 Parameters:	 Longitude, zoom level
 Returns:	 OSM Tile x
 Description: Convert longitude (WGS84 - 4326) to OSM tile x
@@ -34,4 +41,7 @@ x = [1 + (x / p)] / 2
 y = [1 - (y / p)] / 2
 
 * Calculate the number of tiles across the map, n, using 2**zoom
-* Multiply x and y by n. Round results down to give tilex and tiley.'
+* Multiply x and y by n. Round results down to give tilex and tiley.
+',
+   'user', @CurrentUser,   
+   'function', 'tileMaker_longitude2tile'

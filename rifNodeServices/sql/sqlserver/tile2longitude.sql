@@ -6,16 +6,25 @@
  * Description:			Convert OSM tile x to longitude (WGS84 - 4326) 
  * Note:				%% becomes % after substitution
  */
-DROP FUNCTION IF EXISTS tileMaker_tile2longitude(INTEGER, INTEGER);
+IF OBJECT_ID (N'tileMaker_tile2longitude', N'FN') IS NOT NULL  
+    DROP FUNCTION tileMaker_tile2longitude;  
+GO 
 
-CREATE OR REPLACE FUNCTION tileMaker_tile2longitude(x INTEGER, zoom_level INTEGER)
+CREATE FUNCTION tileMaker_tile2longitude(@x INTEGER, @zoom_level INTEGER)
 RETURNS DOUBLE PRECISION AS
-$$
-	SELECT ( ( (x * 1.0) / (1 << zoom_level) * 360.0) - 180.0)::DOUBLE PRECISION
-$$
-LANGUAGE sql IMMUTABLE;
+BEGIN
+	DECLARE @longitude DOUBLE PRECISION;
+	SET @longitude=CAST( ( (@x * 1.0) / POWER(2, @zoom_level) * 360.0) - 180.0 AS DOUBLE PRECISION);
+	RETURN @longitude;
+END;
+GO
   
-COMMENT ON FUNCTION tileMaker_tile2longitude(INTEGER, INTEGER) IS 'Function: 	 tileMaker_tile2longitude()
+DECLARE @CurrentUser sysname;
+SELECT @CurrentUser = user_name(); 
+EXECUTE sp_addextendedproperty  'MS_Description', 'Function: 	 tileMaker_tile2longitude()
 Parameters:	 OSM Tile x, zoom level
 Returns:	 Longitude
-Description: Convert OSM tile x to longitude (WGS84 - 4326)'
+Description: Convert OSM tile x to longitude (WGS84 - 4326)
+',
+   'user', @CurrentUser,   
+   'function', 'tileMaker_tile2longitude'

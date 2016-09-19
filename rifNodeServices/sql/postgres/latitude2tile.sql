@@ -3,7 +3,7 @@
  * Type:				Postgres/PostGIS PL/pgsql function
  * Parameters:			None
  *
- * Description:			Convert latitude (WGS84 - 4326) to OSM tile x
+ * Description:			Convert latitude (WGS84 - 4326) to OSM tile y
  * Note:				%% becomes % after substitution
  */
 DROP FUNCTION IF EXISTS tileMaker_latitude2tile(DOUBLE PRECISION, INTEGER);
@@ -17,7 +17,7 @@ LANGUAGE sql IMMUTABLE;
   
 COMMENT ON FUNCTION tileMaker_latitude2tile(DOUBLE PRECISION, INTEGER) IS 'Function: 	 tileMaker_latitude2tile()
 Parameters:	 Latitude, zoom level
-Returns:	 OSM Tile x
+Returns:	 OSM Tile y
 Description: Convert latitude (WGS84 - 4326) to OSM tile x
 
 Derivation of the tile X/Y 
