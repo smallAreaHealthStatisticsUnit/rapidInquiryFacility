@@ -37,4 +37,4 @@ BEGIN
 		AND [member_principal_id]=@user_id);
 	RETURN @user_has_role;
 END;
-	
+GO	

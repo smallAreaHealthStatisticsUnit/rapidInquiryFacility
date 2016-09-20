@@ -132,7 +132,7 @@ BEGIN
 	END;
 	RETURN @msg;
 END;
-
+GO
 
 /*
 GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_auto_indirect_checks(character varying) TO public;
