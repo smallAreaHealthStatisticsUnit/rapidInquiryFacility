@@ -13,6 +13,10 @@ IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = N'Peter')
 		CREATE USER [Peter] FOR LOGIN [Peter] WITH DEFAULT_SCHEMA=[dbo];
 	END;
 /*
+
+THIS DOES NOT WORK IF THE USER EXISTS BUT HAS NOT HAD ACCESS GRANTED TO THE DATABASE
+Use SQL Server Management Studio to do this until I work out the obscure SQL command
+
 BEGIN
 	ALTER SERVER ROLE [rif_manager] ADD MEMBER [Peter];
 	ALTER SERVER ROLE [rif_user] ADD MEMBER [Peter];		

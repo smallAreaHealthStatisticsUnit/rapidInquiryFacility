@@ -113,14 +113,16 @@ To install database, run in this order (I think):
 	(1 rows affected)
 	```
 
-4. Run ...
+4. Run the following scripts in order:
 
-rif40_install_tables.bat
+* rif40_install_sequences.bat
+* rif40_install_tables.bat
+
 rif40_install_views.bat
-rif40_install_sequences.bat
 rif40_install_log_error_handling.bat
 rif40_install_functions.bat
 rif40_install_table_triggers.bat
 rif40_install_view_triggers.bat
 rif40_data_install_tables.bat
+
 rif40_import_data.bat (but change path, take away comments in the rif40_import_sahsuland.sql script)

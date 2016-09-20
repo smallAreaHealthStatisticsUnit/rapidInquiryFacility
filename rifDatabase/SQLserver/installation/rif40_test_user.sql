@@ -1,5 +1,6 @@
 /*
 Need some test people - $(USERNAME) is the user environment username (admin in my case)
+A parameter would be useful
 
 THIS SCRIPT MUST BE RUN AS ADMINSITRATOR
 */
