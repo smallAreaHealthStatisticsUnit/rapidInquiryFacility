@@ -590,6 +590,20 @@ RangeError: Invalid string length
 
 #### 19th to 23rd September
 
+* Port Latitude/Longitude to tile number and vice versa dfunctions from Postgres to SQL Server; confirmed results are the same;
+* SQL Server port testing - building of SAHSULAND:
+  * DB creation; user creation scripts slighty modified
+  * There is an issue if you have already created and Windows database user; you need to grant access to sahsuland_dev; however 
+    how you do this is very unobvious and hard to find in the documentation.  I used SQL Server Management Studio to do this (so 
+	you obviously can!), but forget to get it to show me the SQL command;
+  * Rebuilt sequences and tables scripts so they are:
+    a) Run from one script
+    b) Are transactional
+    c) Stop on error
+    d) Table creation order is correct (i.e. referenced objects must exist)
+    e) Recreates OK
+    I suspect their will be more problems if there is data in the tables	
+
 #### Current TODO list (September):
 
 * SQL load script generator: still todo:
