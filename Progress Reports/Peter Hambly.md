@@ -602,7 +602,10 @@ RangeError: Invalid string length
     c) Stop on error
     d) Table creation order is correct (i.e. referenced objects must exist)
     e) Recreates OK
-    I suspect their will be more problems if there is data in the tables	
+    I suspect their will be more problems if there is data in the tables;
+  * Added functions and views. The function rif40_sequence_current_value() is created earlier by the sequences SQL script and 
+    cannot be recreated once tables have been created;
+  * Added log error handling;  
 
 #### Current TODO list (September):
 
