@@ -267,3 +267,4 @@ IF @missing_defaultstudyarea IS NOT NULL
 	END CATCH;	
 	
 END;
+GO

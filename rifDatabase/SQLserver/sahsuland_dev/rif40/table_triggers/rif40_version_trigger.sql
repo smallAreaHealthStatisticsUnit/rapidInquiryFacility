@@ -90,6 +90,7 @@ Declare  @xtype varchar(5)
    BEGIN
 		update [rif40].[rif40_version] set schema_amended=sysdatetime();
 	END
- end 
+ end;
  
+GO 
  

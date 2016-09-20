@@ -90,3 +90,4 @@ BEGIN
 	EXEC [rif40].[rif40_log] 'DEBUG2', '[rif40].[tr_t_rif40_comparison_areas]', @log_msg;
 END;
 END;
+GO

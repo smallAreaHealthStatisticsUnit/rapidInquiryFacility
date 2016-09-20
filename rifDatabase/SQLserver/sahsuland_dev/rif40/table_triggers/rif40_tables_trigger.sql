@@ -141,3 +141,4 @@ DEALLOCATE table_name_cursor ;
 END;
 
 END;
+GO

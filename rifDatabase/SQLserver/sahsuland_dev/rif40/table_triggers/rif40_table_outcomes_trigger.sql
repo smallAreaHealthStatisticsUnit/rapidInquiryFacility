@@ -102,3 +102,4 @@ DECLARE @log_msg1 VARCHAR(MAX) = 'RIF40_TABLE_OUTCOMES outcome group numerator O
 EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[rif40_table_outcomes]', @log_msg1;
 		
 END; 
+GO
