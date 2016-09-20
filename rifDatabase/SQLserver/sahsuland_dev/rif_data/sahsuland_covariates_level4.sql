@@ -41,3 +41,4 @@ GO
 CREATE UNIQUE INDEX sahsuland_covariates_level4_pk
   ON [rif_data].[sahsuland_covariates_level4] (year, level4);
   
+GO

@@ -121,6 +121,8 @@ To install database, run in this order (I think):
 * rif40_install_views.bat
 * rif40_install_log_error_handling.bat
 * rif40_install_table_triggers.bat
+* rif40_install_view_triggers.bat
+* rif40_data_install_tables.bat
 
 Notes:
 
@@ -128,7 +130,7 @@ Notes:
   cannot be recreated once tables have been created;
 	
 
-rif40_install_view_triggers.bat
-rif40_data_install_tables.bat
+
+
 
 rif40_import_data.bat (but change path, take away comments in the rif40_import_sahsuland.sql script)

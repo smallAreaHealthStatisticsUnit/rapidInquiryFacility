@@ -88,3 +88,4 @@ GO
 CREATE VIEW [rif_data].[sahsuland_cancer_import] AS 
 select year, age_sex_group, level1, level2, level3, level4, icd, total
 from [rif_data].[sahsuland_cancer];
+GO

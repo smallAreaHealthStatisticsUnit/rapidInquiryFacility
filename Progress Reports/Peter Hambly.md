@@ -596,7 +596,7 @@ RangeError: Invalid string length
   * There is an issue if you have already created and Windows database user; you need to grant access to sahsuland_dev; however 
     how you do this is very unobvious and hard to find in the documentation.  I used SQL Server Management Studio to do this (so 
 	you obviously can!), but forget to get it to show me the SQL command;
-  * Rebuilt sequences and tables scripts so they are:
+  * Rebuilt sequences and tables scripts (and later all other install SQL scripts) so they are:
     a) Run from one script
     b) Are transactional
     c) Stop on error
@@ -605,7 +605,7 @@ RangeError: Invalid string length
     I suspect their will be more problems if there is data in the tables;
   * Added functions and views. The function rif40_sequence_current_value() is created earlier by the sequences SQL script and 
     cannot be recreated once tables have been created;
-  * Added log error handling, table triggers;  
+  * Added log error handling, table and view triggers; data load tables for SAHUSLAND data; 
 
 #### Current TODO list (September):
 

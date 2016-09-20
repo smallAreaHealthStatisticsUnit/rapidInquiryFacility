@@ -45,3 +45,4 @@ CREATE INDEX level3_idx3
 CREATE UNIQUE INDEX level4_idx4
   ON [rif_data].[sahsuland_geography](level4);
  
+GO

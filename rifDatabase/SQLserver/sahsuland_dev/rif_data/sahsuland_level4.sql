@@ -36,4 +36,4 @@ CREATE UNIQUE INDEX sahsuland_level4_pk
  
 CREATE UNIQUE INDEX sahsuland_level4_uk2
   ON [rif_data].[sahsuland_level4](name);
-  
+GO  

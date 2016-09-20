@@ -81,4 +81,4 @@ GO
 CREATE VIEW [rif_data].[sahsuland_pop_import] AS 
 select year, age_sex_group, level1, level2, level3, level4, total
 from [rif_data].[sahsuland_pop];
-
+GO
