@@ -43,12 +43,20 @@ No work (as planned)
 
 - Client can produce chloropleth maps or population and rates etc. Needs data from server before all 
   parts of client can be completed
+- Added histogram of breaks to choropleth maps
+- Added capability to save a RIF submssion and load it back in
+- Contiued adding middleware methods and removing hardtyping
+- Added container for status updates
+- Improved look of interface CSS
+- Work with KG on D3 graphs for data viewer
 
 ## Middleware
 
 ### Web services (rifServices) - Kevin/David
 
-- XXX
+- D3 graphs for data viewer
+- Work on get interface for data viewer. Fred interface was not suited to the middleware multi process architecture; so was simplified 
+  and now the middlewre pulls in a large blob of data and feeds iot to the client as required in more digestible chunks..
 
 ### Run study batch - Kevin
 
