@@ -40,3 +40,12 @@ Principal Work Area: JavaScript User interface development
 - Started status report viewer
 - Continued looking at D3 library with KG
 
+##September
+
+- Added histogram of breaks to choropleth maps
+- Added capability to save a RIF submssion and load it back in
+- Contiued adding middleware methods and removing hardtyping
+- Added container for status updates
+- Improved look of interface CSS
+- Work with KG on D3 graphs for data viewer
+
