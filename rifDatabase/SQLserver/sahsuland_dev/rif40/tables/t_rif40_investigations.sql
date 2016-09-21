@@ -42,8 +42,8 @@ GO
 
 --table definition
 CREATE TABLE [rif40].[t_rif40_investigations](
-	[inv_id] [integer] NOT NULL DEFAULT (NEXT VALUE FOR [rif40].[rif40_inv_id_seq]),
-	[study_id] [integer] NOT NULL DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
+	[inv_id] [integer] NOT NULL CONSTRAINT t_rif40_investigation_inv_id_seq DEFAULT (NEXT VALUE FOR [rif40].[rif40_inv_id_seq]),
+	[study_id] [integer] NOT NULL CONSTRAINT t_rif40_investigation_study_id_seq DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
 	[username] [varchar](90) NOT NULL DEFAULT (SUSER_SNAME()),
 	[inv_name] [varchar](20) NOT NULL,
 	[inv_description] [varchar](250) NOT NULL,

@@ -12,7 +12,7 @@ GO
 --table definition
 
 CREATE TABLE [rif40].[rif40_study_shares](
-	[study_id] [int] NOT NULL DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
+	[study_id] [int] NOT NULL CONSTRAINT t_rif40_study_share_study_id_seq DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
 	[grantor] [varchar](90) NOT NULL DEFAULT (SUSER_SNAME()),
 	[grantee_username] [varchar](90) NOT NULL,
  CONSTRAINT [rif40_study_shares_pk] PRIMARY KEY CLUSTERED 
