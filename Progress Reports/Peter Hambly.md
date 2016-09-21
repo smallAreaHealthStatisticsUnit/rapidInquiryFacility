@@ -605,7 +605,7 @@ RangeError: Invalid string length
     I suspect their will be more problems if there is data in the tables;
   * Added functions and views. The function rif40_sequence_current_value() is created earlier by the sequences SQL script and 
     cannot be recreated once tables have been created;
-  * Added log error handling, table and view triggers; data load tables for SAHUSLAND data; 
+  * Added log error handling, table and view triggers; data load tables and data load for SAHUSLAND data; 
 
 #### Current TODO list (September):
 
