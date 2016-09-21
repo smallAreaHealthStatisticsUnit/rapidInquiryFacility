@@ -124,3 +124,4 @@ IF @XTYPE='D'
 	END CATCH;	
 	
 END;
+GO
