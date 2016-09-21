@@ -123,13 +123,18 @@ To install database, run in this order (I think):
 * rif40_install_table_triggers.bat
 * rif40_install_view_triggers.bat
 * rif40_data_install_tables.bat
-* 
+
+Or run:
+
+* rif40_sahsuland_dev_install.bat
+
 Notes:
 
-* All scripts are now transactional;
+* All scripts are now transactional, with a script of the same name usually in the source code directory;
 * The function rif40_sequence_current_value() is created earlier by the sequences SQL script and 
   cannot be recreated once tables have been created;
-* rif40_import_data.bat is now path independent. This script will now delete all setup data in the database!
+* rif40_import_data.bat is now path independent. The SQL script (in this directory) will now delete all 
+  setup data in the database!
 	
 
 
