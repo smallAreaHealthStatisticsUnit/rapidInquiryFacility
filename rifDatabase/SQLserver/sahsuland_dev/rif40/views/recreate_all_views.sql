@@ -57,7 +57,7 @@ GO
 -- This script must be run from the installation directory
 :r ..\sahsuland_dev\rif40\views\rif40_comparison_areas.sql
 :r ..\sahsuland_dev\rif40\views\rif40_contextual_stats.sql
-:r ..\sahsuland_dev\rif40\views\rif40_fdw_tables.sql
+--:r ..\sahsuland_dev\rif40\views\rif40_fdw_tables.sql
 :r ..\sahsuland_dev\rif40\views\rif40_geolevels.sql
 :r ..\sahsuland_dev\rif40\views\rif40_investigations.sql
 :r ..\sahsuland_dev\rif40\views\rif40_inv_conditions.sql

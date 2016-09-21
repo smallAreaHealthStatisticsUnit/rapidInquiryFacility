@@ -2,7 +2,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF40 view triggers creation
+-- Rapid Enquiry Facility (RIF) - RIF40 create sahsuland_dev database objects and install data
 --
 -- Copyright:
 --
@@ -40,7 +40,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -d sahsuland_dev -b -m-1 -e -i ..\sahsuland_dev\rif40\view_triggers\recreate_view_triggers.sql
+-- Usage: sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_sahsuland_dev_install.sql -v path="%cd%\..\.." -I
 --
 -- MUST BE RUN AS ADMINSTRATOR SO CAN CREATE OBJECTS OR RUN AS RIF40 (with -U rif40)
 --
@@ -48,27 +48,44 @@
 SET QUOTED_IDENTIFIER ON;
 -- SET STATISTICS TIME ON;
 
---
--- Use a single transaction
---
-BEGIN TRANSACTION;
+/*
+ * Run SQL scripts originally called in order from:
+ *
+ * rif40_install_sequences.bat
+ * rif40_install_tables.bat
+ * rif40_install_functions.bat
+ * rif40_install_views.bat
+ * rif40_install_log_error_handling.bat
+ * rif40_install_table_triggers.bat
+ * rif40_install_view_triggers.bat
+ * rif40_data_install_tables.bat
+ */
+ 
+/*
+
+All the constraints have now been named so they can be dropped and recreated. On an earlier database you will get errors like:
+
+Msg 3729, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 6
+Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being referenced by object 'DF__t_rif40_r__inv_i__12A9974E'.
+
+Fix by running manually:
+
+rif40_drop_all_data.sql
+..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
+
+ */
+:r ..\sahsuland_dev\rif40\sequences\recreate_all_sequences.sql
+:r rif40_drop_all_data.sql
+:r ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
+:r ..\sahsuland_dev\rif40\functions\recreate_all_functions.sql
+:r ..\sahsuland_dev\rif40\views\recreate_all_views.sql
+:r ..\sahsuland_dev\error_handling\recreate_error_handling.sql
+:r ..\sahsuland_dev\rif40\table_triggers\recreate_table_triggers.sql
+:r ..\sahsuland_dev\rif40\view_triggers\recreate_view_triggers.sql
+:r rif40_import_sahsuland.sql
+
+PRINT 'All done: RIF40 create sahsuland_dev database objects and install data.';
 GO
 
--- This script must be run from the installation directory
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_comparison_areas_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_contextual_stats_trigger.sql
---:r ..\sahsuland_dev\rif40\view_triggers\rif40_fdw_tables_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_inv_conditions_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_inv_covariates_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_investigations_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_parameters_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_results_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_studies_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_study_areas_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_study_sql_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_study_sql_log_trigger.sql
-:r ..\sahsuland_dev\rif40\view_triggers\rif40_user_projects_trigger.sql
-GO
-
-COMMIT;
-GO
+--
+-- Eof

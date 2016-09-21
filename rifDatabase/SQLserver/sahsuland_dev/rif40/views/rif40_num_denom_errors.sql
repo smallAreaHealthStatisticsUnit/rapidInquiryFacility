@@ -63,14 +63,13 @@ CREATE VIEW [rif40].[rif40_num_denom_errors] AS
             WHEN d.auto_indirect_error IS NULL THEN 0
             ELSE 1
         END AS auto_indirect_error_flag,
-    d.auto_indirect_error,
+    d.auto_indirect_error /*,
     f.create_status AS n_fdw_create_status,
     f.error_message AS n_fdw_error_message,
     f.date_created AS n_fdw_date_created,
-    f.rowtest_passed AS n_fdw_rowtest_passed
+    f.rowtest_passed AS n_fdw_rowtest_passed */
    FROM d,
     n
-     LEFT JOIN [rif40].[rif40_fdw_tables] f ON n.numerator_table = f.table_name
   WHERE n.geography = d.geography;
 GO
 
@@ -104,6 +103,7 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Error flag 0/1
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator. List of geographies and tables in error.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', @level2type=N'COLUMN',@level2name=N'auto_indirect_error'
 GO
+/*
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF numerator foreign data wrappers table create status: C (Created, no errors), E(Created, errors in test SELECT), N(Not created, errors).', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', @level2type=N'COLUMN',@level2name=N'n_fdw_create_status'
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF numerator foreign data wrappers table error message when create status is: E(Created, errors in test SELECT, N(Not created, errors).', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', @level2type=N'COLUMN',@level2name=N'n_fdw_error_message'
@@ -112,3 +112,4 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF numerator 
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF numerator foreign data wrappers table SELECT rowtest passed (0/1).', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', @level2type=N'COLUMN',@level2name=N'n_fdw_rowtest_passed'
 GO
+ */

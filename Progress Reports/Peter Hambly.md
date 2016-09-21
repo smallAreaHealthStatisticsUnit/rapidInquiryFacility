@@ -606,6 +606,9 @@ RangeError: Invalid string length
   * Added functions and views. The function rif40_sequence_current_value() is created earlier by the sequences SQL script and 
     cannot be recreated once tables have been created;
   * Added log error handling, table and view triggers; data load tables and data load for SAHUSLAND data; 
+  * Removed [Postgres] foreign data wrapper (FDW) tables from SQL Server as obsolete ;
+  * Single script to (re-)create sahsuland_dev database objects and install data: rif40_sahsuland_dev_install.bat/
+    rif40_sahsuland_dev_install.sql
 
 #### Current TODO list (September):
 
