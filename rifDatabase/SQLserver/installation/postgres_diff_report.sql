@@ -40,7 +40,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -d sahsuland_dev -b -m-1 -e -i postgres_diff_report.sql
+-- Usage: sqlcmd -d sahsuland_dev -b -m-1 -e -i postgres_diff_report.sql -o postgres_diff_report.txt
 --
 -- MUST BE RUN AS ADMINSTRATOR SO CAN CREATE OBJECTS OR RUN AS RIF40 (with -U rif40)
 --

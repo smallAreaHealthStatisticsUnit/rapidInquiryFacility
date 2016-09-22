@@ -67,6 +67,25 @@ GO
 :r rif40_drop_all_data.sql
 
 BULK
+INSERT [rif40].[rif40_columns]
+FROM '$(path)\Postgres\sahsuland\data\rif40_columns_mssql.txt'
+WITH
+(
+FIELDTERMINATOR = '|',
+ROWTERMINATOR = '\n'
+)
+GO
+BULK
+INSERT [rif40].[rif40_tables_and_views]
+FROM '$(path)\Postgres\sahsuland\data\rif40_tables_and_views.csv'
+WITH
+(
+FIELDTERMINATOR = ',',
+ROWTERMINATOR = '\n'
+)
+GO
+
+BULK
 INSERT [rif_data].[sahsuland_level1]
 FROM '$(path)\Postgres\sahsuland\data\sahsuland_level1.csv'
 WITH
@@ -277,25 +296,6 @@ WITH
 FIELDTERMINATOR = ',',
 ROWTERMINATOR = '\n'
 )
-
-BULK
-INSERT [rif40].[rif40_columns]
-FROM '$(path)\Postgres\sahsuland\data\rif40_columns.csv'
-WITH
-(
-FIELDTERMINATOR = ',',
-ROWTERMINATOR = '\n'
-)
-GO
-BULK
-INSERT [rif40].[rif40_tables_and_views]
-FROM '$(path)\Postgres\sahsuland\data\rif40_tables_and_views.csv'
-WITH
-(
-FIELDTERMINATOR = ',',
-ROWTERMINATOR = '\n'
-)
-GO
 
 --
 -- csv needs to be preprocessed (hence (_mssql version); an alternative is a .fmt file. 

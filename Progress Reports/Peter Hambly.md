@@ -609,6 +609,7 @@ RangeError: Invalid string length
   * Removed [Postgres] foreign data wrapper (FDW) tables from SQL Server as obsolete ;
   * Single script to (re-)create sahsuland_dev database objects and install data: rif40_sahsuland_dev_install.bat/
     rif40_sahsuland_dev_install.sql
+  * Report on SQL Server and Postgres RIF40 database table and column differences
 
 #### Current TODO list (September):
 
