@@ -25,7 +25,7 @@ creation and data extraction has now been moved to Peter towards the end of Octo
 |------|-------------------|----------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|------------------------------------------------|-----------------------------------------------------------|-------|
 | 36   | 05 September 2016 |                                                                      | Not allocated (for overrun - 10 days); now: Data viewer get methods                               | Allocated to JG                                                                                | 8.1 US Test dataset, 8.2 Test Plan, 8.3 Manual calculation of tests | 6.1 Schema comparison (3 days)                 |                                                           |       |
 | 37   | 12 September 2016 | 6.2 SQL server schema completion (5 days)                            |                                                                                                   | 6.3 Middleware services - other (10 days) [Potentially Kevin as well]: data viewer get methods |                                                                     | 6.2 SQL server schema completion (as required) |                                                           |       |
-| 38   | 19 September 2016 |                                                                      | ALSPAC                                                                                            |                                                                                                |                                                                     |                                                | Results Viewer                                            |       |
+| 38   | 19 September 2016 |                                                                      | ALSPAC [Non RIF work]                                                                             |                                                                                                |                                                                     |                                                | Results Viewer                                            |       |
 | 39   | 26 September 2016 | Shapefile services: 3.3 Get Methods II (6 Days)                      |                                                                                                   |                                                                                                |                                                                     |                                                |                                                           |       |
 | 40   | 03 October 2016   |                                                                      |                                                                                                   | Allocated to JG                                                                                |                                                                     |                                                |                                                           |       |
 | 41   | 10 October 2016   | Not allocated (for overrun - 9 days); now: Map tile generation       | 7. Data Loader (35 days) - start liable for 2/3 weeks delays caused by more work on GET methods   | 6.3 Middleware services - other (10 days) [Potentially Kevin as well]: data viewer get methods |                                                                     |                                                |                                                           |       |
@@ -55,8 +55,10 @@ No work (as planned)
 ### Web services (rifServices) - Kevin/David
 
 - D3 graphs for data viewer
-- Work on get interface for data viewer. Fred interface was not suited to the middleware multi process architecture; so was simplified 
-  and now the middlewre pulls in a large blob of data and feeds iot to the client as required in more digestible chunks..
+- Work on get interface for data viewer. The original interface design by Fred and Peter was not suited to the middleware multi 
+  process architecture. The use of database cursors to manage the flow of data to the middleware was an issue to scaleability 
+  and control as tese cursors could not be shared between processes. The design was therefore simplified so that the 
+  middleware pulls in all the data, buffers it and feeds it to the client as required in digestible chunks.
 
 ### Run study batch - Kevin
 
@@ -98,7 +100,8 @@ integration on track for mid October
 
 ### Postgres, integration - Peter
 
-* Tested tile maker database script to create geolevel geometry table.
+* Tested the tile maker generated database script to create geolevel geometry tables. Will replace the pre-existing 
+  functionality in October.
 
 ### Microsoft SQL server - Margaret/Peter
 
