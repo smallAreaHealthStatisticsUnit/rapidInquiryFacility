@@ -135,6 +135,17 @@ Notes:
   cannot be recreated once tables have been created;
 * rif40_import_data.bat is now path independent. The SQL script (in this directory) will now delete all 
   setup data in the database!
+* All the default column constraints have now been named so they can be dropped and recreated. On an earlier 
+  database you will get errors like:
+
+```
+Msg 3729, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 6
+Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being referenced by object 'DF__t_rif40_r__inv_i__12A9974E'.
+```
+  Fix by running manually:
+
+  * rif40_drop_all_data.sql
+  * ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
 	
 
 

@@ -277,9 +277,8 @@ Missing RIF40_NUM_DENOM_ERRORS.N_FDW_ROWTEST_PASSED                   NULL      
 Missing RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS                NULL       bool                                              
 Missing RIF40_PARAMETERS.PARAM_DESCRIPTION                            NULL       VARCHAR2(250)                                     
 Missing T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION         NULL       NUMBER(38,6)                                      
-Missing T_RIF40_INV_CONDITIONS.HASH_PARTITION_NUMBER                  NULL       int4                                              
 
-(14 rows affected)
+(13 rows affected)
 
 -- Column datatype or nullity change
 WITH common AS (

@@ -66,9 +66,19 @@ GO
 --
 :r rif40_drop_all_data.sql
 
+/*
+Created using psql with:
+
+\copy rif40_tables_and_views to rif40_tables_and_views.txt with delimiter '|';
+\copy rif40_columns to rif40_columns.txt with delimiter '|';
+
+These are the latest versions POST patching
+
+Make sure the files are in Windows format
+ */
 BULK
 INSERT [rif40].[rif40_columns]
-FROM '$(path)\Postgres\sahsuland\data\rif40_columns_mssql.txt'
+FROM '$(path)\SQLserver\sahsuland_dev\rif_data\rif40_columns.txt'
 WITH
 (
 FIELDTERMINATOR = '|',
@@ -77,10 +87,10 @@ ROWTERMINATOR = '\n'
 GO
 BULK
 INSERT [rif40].[rif40_tables_and_views]
-FROM '$(path)\Postgres\sahsuland\data\rif40_tables_and_views.csv'
+FROM '$(path)\SQLserver\sahsuland_dev\rif_data\rif40_tables_and_views.txt'
 WITH
 (
-FIELDTERMINATOR = ',',
+FIELDTERMINATOR = '|',
 ROWTERMINATOR = '\n'
 )
 GO

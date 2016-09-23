@@ -1,0 +1,62 @@
+Test harness|TABLE|RIF40_TEST_RUNS|Test harness test run information
+Test harness|TABLE|RIF40_TEST_HARNESS|Test harness test cases and last run information
+Configuration|TABLE|RIF40_COVARIATES|RIF multiple covariates
+Configuration|TABLE|RIF40_GEOGRAPHIES|Pre-defined hierarchial geographies
+Configuration|TABLE|RIF40_TABLES|RIF numerator and denominator tables
+Configuration|TABLE|RIF40_TABLE_OUTCOMES|Intersection of health outcomes in logical groups and Health tables
+Configuration|TABLE|T_RIF40_GEOLEVELS|Geolevels: hierarchy of level with a geography
+Configuration|TABLE|T_RIF40_NUM_DENOM|Private copy of extra numerator and denominator pairs not added automatically
+Documentation|TABLE|RIF40_ERROR_MESSAGES|RIF error messages resulting from schema violations
+Lookup|TABLE|RIF40_AGE_GROUPS|RIF age groups
+Lookup|TABLE|RIF40_AGE_GROUP_NAMES|RIF Age group names
+Documentation|VIEW|RIF40_COLUMNS|RIF40 Columns
+Lookup|TABLE|RIF40_DUAL|RIF40 version of dual table (for remote execution on Postgres)
+Lookup|TABLE|RIF40_HEALTH_STUDY_THEMES|RIF health study themes
+Lookup|TABLE|RIF40_ICD10|ICD10 code (SAHSU historic version; needs to be updated)
+Lookup|TABLE|RIF40_ICD9|ICD9 code (SAHSU historic version; needs to be updated)
+Lookup|TABLE|RIF40_OUTCOMES|Health Outcomes
+Lookup|TABLE|RIF40_OUTCOME_GROUPS|Collection of Health outcomes into logical groups
+Lookup|TABLE|RIF40_POPULATION_EUROPE|1991 European standarised populations (to be updated)
+Lookup|TABLE|RIF40_POPULATION_US|2000 United States of America standarised populations (to be updated)
+Lookup|TABLE|RIF40_POPULATION_WORLD|1991 World standarised populations (to be updated)
+Lookup|TABLE|RIF40_PREDEFINED_GROUPS|Predefined Health Outcomes
+Lookup|TABLE|RIF40_REFERENCE_TABLES|List of references tables without constraints
+Lookup|TABLE|T_RIF40_PROJECTS|RIF projects
+Lookup|TABLE|T_RIF40_USER_PROJECTS|RIF project users
+Other|TABLE|RIF40_VERSION|RIF version
+Other|TABLE|T_RIF40_FDW_TABLES|RIF numerator tables which are Foreign data wrappers in Postgres
+Other|TABLE|T_RIF40_PARAMETERS|RIF40 parameters
+Results|TABLE|T_RIF40_RESULTS|RIF Results Table
+SQL Generator|TABLE|T_RIF40_STUDY_SQL|SQL created for study execution
+Study Setup|TABLE|G_RIF40_COMPARISON_AREAS|Local session cache of links comparison areas and bands for a given study
+Study Setup|TABLE|G_RIF40_STUDY_AREAS|Local session cache of links study areas and bands for a given study
+Study Setup|TABLE|RIF40_STUDY_SHARES|Users granted access by a RIF_MANAGER to study data
+Study Setup|TABLE|T_RIF40_COMPARISON_AREAS|Links comparison areas and bands for a given study
+Configuration|VIEW|RIF40_NUMERATOR_OUTCOME_COLUMNS|All numerator outcome fields (columns) 
+Study Setup|TABLE|T_RIF40_CONTEXTUAL_STATS|Contextual stats for results map
+Study Setup|TABLE|T_RIF40_INVESTIGATIONS|Details of each investigation in a study
+Study Setup|TABLE|T_RIF40_INV_CONDITIONS|Lines of SQL conditions pertinent to an investigation
+Study Setup|TABLE|T_RIF40_INV_COVARIATES|Details of each covariate used by an investigation in a study
+Study Setup|TABLE|T_RIF40_STUDIES|RIF studies
+Study Setup|TABLE|T_RIF40_STUDY_AREAS|Links study areas and bands for a given study
+Study Setup|TABLE|T_RIF40_STUDY_SQL_LOG|Log of SQL executed for study
+Configuration|VIEW|RIF40_GEOLEVELS|Geolevels: hierarchy of level with a geography
+Configuration|VIEW|RIF40_NUM_DENOM|Numerator and indirect standardisation denominator pairs
+Configuration|VIEW|RIF40_NUM_DENOM_ERRORS|Numerator and indirect standardisation denominator pairs in error
+Documentation|VIEW|RIF40_TABLES_AND_VIEWS|RIF40 Tables and Views
+Lookup|VIEW|RIF40_PROJECTS|RIF projects (restricted to those granted to the user)
+Lookup|VIEW|RIF40_TRIGGERS|RIF40 Triggers
+Lookup|VIEW|RIF40_USER_PROJECTS|RIF project users
+Lookup|VIEW|RIF40_USER_VERSION|User schema revision control view
+Other|VIEW|RIF40_FDW_TABLES|RIF numerator tables which are Foreign data wrappers in Postgres
+Other|VIEW|RIF40_PARAMETERS|RIF40 parameters with automatic SuppressionValue parameter
+Results|VIEW|RIF40_RESULTS|RIF Results Table
+SQL Generator|VIEW|RIF40_STUDY_SQL|SQL created for study execution
+Study Setup|VIEW|RIF40_COMPARISON_AREAS|Links study areas and bands for a given study
+Study Setup|VIEW|RIF40_CONTEXTUAL_STATS|Contextual stats for results map
+Study Setup|VIEW|RIF40_INVESTIGATIONS|Details of each investigation in a study
+Study Setup|VIEW|RIF40_INV_CONDITIONS|Lines of SQL conditions pertinent to an investigation
+Study Setup|VIEW|RIF40_INV_COVARIATES|Details of each covariate used by an investigation in a study
+Study Setup|VIEW|RIF40_STUDIES|RIF studies
+Study Setup|VIEW|RIF40_STUDY_AREAS|Links study areas and bands for a given study
+Study Setup|VIEW|RIF40_STUDY_SQL_LOG|Log of SQL executed for study
