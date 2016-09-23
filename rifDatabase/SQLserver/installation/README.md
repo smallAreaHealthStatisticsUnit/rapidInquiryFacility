@@ -112,7 +112,10 @@ To install database, run in this order (I think):
 
 	(1 rows affected)
 	```
-
+   In the case where the user already exists they need to be granted access to the sahsuland_dev database or the ```ALTER 
+   SERVER ROLE [rif_manager] ADD MEMBER [Peter];``` command will fail. Use SQL Server Management Studio to do this until 
+   I work out the obscure SQL command required (see: create_peter.sql)
+   
 4. Run the following scripts in order:
 
 * rif40_install_sequences.bat

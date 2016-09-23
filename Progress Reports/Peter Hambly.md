@@ -570,7 +570,7 @@ RangeError: Invalid string length
   * Lookup tables; 
   * Hierarchy table - geolevel intersction generator (DB version);
   * SQL Server version needed to be rewritten to use global temporary tables because a) SQL Server always
-    unnests common tsble expressions (WITH clause) b) cannot be hinted to not do this and c) you have to
+    unnests common table expressions (WITH clause) b) cannot be hinted to not do this and c) you have to
 	use global temporary tables because dynamic SQL is in a different logon context to the script T-SQL
   * Hierarchy checks (as for Postgres)
  
