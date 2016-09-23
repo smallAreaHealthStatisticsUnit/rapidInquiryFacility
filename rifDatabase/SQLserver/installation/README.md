@@ -146,9 +146,42 @@ Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being re
 
   * rif40_drop_all_data.sql
   * ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
+
+* The following tables are not present in SQL Server and not needed:
+                                
+	RIF40_DUAL                                           
+	RIF40_ICD10                                          
+	RIF40_ICD9                                           
+	RIF40_POPULATION_EUROPE                              
+	RIF40_POPULATION_US                                 
+	RIF40_POPULATION_WORLD                               
+	RIF40_TEST_HARNESS                                   
+	RIF40_TEST_RUNS                                     
+	T_RIF40_FDW_TABLES
+  
+* To be SQL Server temporary tables (i.e. ##g_rif40_comparison_areas) created by on-logon trigger:
+
+	G_RIF40_COMPARISON_AREAS                            
+	G_RIF40_STUDY_AREAS 
 	
+Still to do:
 
+* Search path
+* On logon trigger - Postgres rif40_startup() function
+* Fix selected columns:
 
+¦ type    ¦ column_name                                                 ¦ nullable ¦ data_type        ¦ Notes                           ¦       
+¦---------¦-------------------------------------------------------------¦----------¦------------------¦---------------------------------¦ 
+¦ Extra   ¦ RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISON_POPULATION          ¦ NULL     ¦ numeric          ¦                                 ¦   
+¦ Extra   ¦ RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMN_EXISTS               ¦ NOT NULL ¦ varchar          ¦                                 ¦   
+¦ Extra   ¦ RIF40_PARAMETERS.DESCRIPTION                                ¦ NOT NULL ¦ varchar          ¦                                 ¦   
+¦ Extra   ¦ T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISON_POPULATION        ¦ NULL     ¦ numeric          ¦                                 ¦  
+¦ Extra   ¦ T_RIF40_INVESTIGATIONS.ROWID                                ¦ NOT NULL ¦ uniqueidentifier ¦                                 ¦                                          
+¦ Missing ¦ RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS              ¦ NULL     ¦ bool             ¦ Fix Postgres spelling           ¦                               ¦ 
+¦ Missing ¦ RIF40_PARAMETERS.PARAM_DESCRIPTION                          ¦ NULL     ¦ VARCHAR2(250)    ¦ Resolve with Postgres           ¦                               ¦    
+¦ Missing ¦ T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION       ¦ NULL     ¦ NUMBER(38,6)     ¦ Fix Postgres spelling           ¦                                          ¦ 
 
+* Fix NULL/NOT NULL issues in postgres_diff_report.txt
+* Check Postgres alter 1-8 for minor changes
 
 
