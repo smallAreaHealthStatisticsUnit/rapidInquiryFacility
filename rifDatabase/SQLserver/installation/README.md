@@ -170,16 +170,16 @@ Still to do:
 * On logon trigger - Postgres rif40_startup() function
 * Fix selected columns:
 
-¦ type    ¦ column_name                                                 ¦ nullable ¦ data_type        ¦ Notes                           ¦       
-¦---------¦-------------------------------------------------------------¦----------¦------------------¦---------------------------------¦ 
-¦ Extra   ¦ RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISON_POPULATION          ¦ NULL     ¦ numeric          ¦                                 ¦   
-¦ Extra   ¦ RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMN_EXISTS               ¦ NOT NULL ¦ varchar          ¦                                 ¦   
-¦ Extra   ¦ RIF40_PARAMETERS.DESCRIPTION                                ¦ NOT NULL ¦ varchar          ¦                                 ¦   
-¦ Extra   ¦ T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISON_POPULATION        ¦ NULL     ¦ numeric          ¦                                 ¦  
-¦ Extra   ¦ T_RIF40_INVESTIGATIONS.ROWID                                ¦ NOT NULL ¦ uniqueidentifier ¦                                 ¦                                          
-¦ Missing ¦ RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS              ¦ NULL     ¦ bool             ¦ Fix Postgres spelling           ¦                               ¦ 
-¦ Missing ¦ RIF40_PARAMETERS.PARAM_DESCRIPTION                          ¦ NULL     ¦ VARCHAR2(250)    ¦ Resolve with Postgres           ¦                               ¦    
-¦ Missing ¦ T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION       ¦ NULL     ¦ NUMBER(38,6)     ¦ Fix Postgres spelling           ¦                                          ¦ 
+| type    | column_name                                                 | nullable | data_type        | Notes                           |       
+|---------|-------------------------------------------------------------|----------|------------------|---------------------------------| 
+| Extra   | RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISON_POPULATION          | NULL     | numeric          |                                 |   
+| Extra   | RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMN_EXISTS               | NOT NULL | varchar          |                                 |   
+| Extra   | RIF40_PARAMETERS.DESCRIPTION                                | NOT NULL | varchar          |                                 |   
+| Extra   | T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISON_POPULATION        | NULL     | numeric          |                                 |  
+| Extra   | T_RIF40_INVESTIGATIONS.ROWID                                | NOT NULL | uniqueidentifier |                                 |                                          
+| Missing | RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS              | NULL     | bool             | Fix Postgres spelling           |                               | 
+| Missing | RIF40_PARAMETERS.PARAM_DESCRIPTION                          | NULL     | VARCHAR2(250)    | Resolve with Postgres           |                               |    
+| Missing | T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION       | NULL     | NUMBER(38,6)     | Fix Postgres spelling           |                                          | 
 
 * Fix NULL/NOT NULL issues in postgres_diff_report.txt
 * Check Postgres alter 1-8 for minor changes
