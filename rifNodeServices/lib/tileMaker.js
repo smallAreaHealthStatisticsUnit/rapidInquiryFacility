@@ -76,12 +76,10 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 	const geojsonToCSV = require('../lib/geojsonToCSV');
 		
 /*
- * SQL statement name: 	longitude2tile.sql
- * Type:				Postgres/PostGIS PL/pgsql function
- * Parameters:			longitude, zoomLevel
- * Returns:				tile number
- *
- * Description:			Convert longitude (WGS84 - 4326) to OSM tile x
+ * Function: 	longitude2tile
+ * Parameters:	Longitude, zoom level
+ * Returns:		tile X
+ * Description:	Convert longitude (WGS84 - 4326) to OSM tile x
  
 	Derivation of the tile X/Y 
 
@@ -99,60 +97,48 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 	* Calculate the number of tiles across the map, n, using 2**zoom
 	* Multiply x and y by n. Round results down to give tilex and tiley.
 
-CREATE FUNCTION tileMaker_longitude2tile(@longitude DOUBLE PRECISION, @zoom_level INTEGER)
-RETURNS INTEGER AS
-BEGIN
-	DECLARE @tileX INTEGER;
-	SET @tileX=CAST(
-			FLOOR( (@longitude + 180) / 360 * POWER(2, @zoom_level) ) AS INTEGER);
-	RETURN @tileX;
-END;
  */		
 	var longitude2tile = function longitude2tile(longitude, zoomLevel) {
-		
+		var tileX=Math.floor( (longitude + 180) / 360 * Math.pow(2, zoomLevel) );
+		return tileX;
 	}
 	
 /*
- * SQL statement name: 	latitude2tile.sql
- * Type:				Microsoft SQL Server T/sql function
- * Parameters:			None
- *
- * Description:			Convert latitude (WGS84 - 4326) to OSM tile y
-
- Derivation of the tile X/Y 
-
-* Reproject the coordinates to the Mercator projection (from EPSG:4326 to EPSG:3857):
-
-x = lon
-y = arsinh(tan(lat)) = log[tan(lat) + sec(lat)]
-(lat and lon are in radians)
-
-* Transform range of x and y to 0 ? 1 and shift origin to top left corner:
-
-x = [1 + (x / p)] / 2
-y = [1 - (y / p)] / 2
-
-* Calculate the number of tiles across the map, n, using 2**zoom
-* Multiply x and y by n. Round results down to give tilex and tiley. 
-
-CREATE FUNCTION tileMaker_latitude2tile(@latitude DOUBLE PRECISION, @zoom_level INTEGER)
-RETURNS INTEGER 
-AS
-BEGIN
-	DECLARE @tileY INTEGER;
-	SET @tileY=CAST(
-					FLOOR( 
-						(1.0 - LOG /- Natural Log -/ 
-							(TAN(RADIANS(@latitude)) + 1.0 / COS(RADIANS(@latitude))) / PI()) / 2.0 * POWER(2, @zoom_level) 
-						) 
-					AS INTEGER);
-	RETURN @tileY;
-END;
+ * Function: 	latitude2tile
+ * Parameters:	Latitude, zoom level
+ * Returns:		tile Y
+ * Description:	Convert latitude (WGS84 - 4326) to OSM tile y
  */ 
- 	var latitude2tile = function latitude2tile(longitude, zoomLevel) {
-		
+ 	var latitude2tile = function latitude2tile(latitude, zoomLevel) {
+		var tileY=Math.floor(
+			(1.0 - Math.log( /* Natural Log */
+					Math.tan(latitude * (Math.PI/180)) + 1.0 / Math.cos(latitude * (Math.PI/180))) / 
+				Math.PI) / 2.0 * Math.pow(2, zoomLevel)
+			);
+		return tileY;
+	}
+
+/*
+ * Function: 	tile2longitude
+ * Parameters:	tile X, zoom level
+ * Returns:		Longitude
+ * Description:	Convert OSM tile X to longitude (WGS84 - 4326)
+ */
+	function tile2longitude(x,zoomLevel) {
+		return (x/Math.pow(2,zoomLevel)*360-180);
 	}
 	
+/*
+ * Function: 	tile2latitude
+ * Parameters:	tile Y, zoom level
+ * Returns:		Latitude
+ * Description:	Convert OSM tile Y to latitude (WGS84 - 4326)
+ */	
+	function tile2latitude(y,zoomLevel) {
+		var n=Math.PI-2*Math.PI*y/Math.pow(2,zoomLevel);
+		return (180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))));
+	}
+ 
 	for (var i=0; i<response.file_list.length; i++) { 
 //
 // Get tile max/min lat/long from bounding box
@@ -163,11 +149,37 @@ END;
 			"; zoom levels: " + (response.file_list[i].topojson.length|| "No zoomlevels") +
 			"; min zoomlevel: " + response.file_list[i].topojson[(response.file_list[i].topojson.length-1)].zoomlevel +
 			"; max zoomlevel: " + response.file_list[i].topojson[0].zoomlevel +
-			"; bounding box (4326): " + 
+			"\nBounding box (4326) [" + 
 			"xmin: " + response.file_list[i].bbox[0] + ", " +
 			"ymin: " + response.file_list[i].bbox[1] + ", " +
 			"xmax: " + response.file_list[i].bbox[2] + ", " +
-			"ymax: " + response.file_list[i].bbox[3] + "];";
+			"ymax: " + response.file_list[i].bbox[3] + "]; " +
+			"\nTile numbers (" + response.file_list[i].topojson[0].zoomlevel +") [" + 
+			"xmin: " + longitude2tile(response.file_list[i].bbox[0], response.file_list[i].topojson[0].zoomlevel) + ", " +
+			"ymin: " + latitude2tile(response.file_list[i].bbox[1], response.file_list[i].topojson[0].zoomlevel) + ", " +
+			"xmax: " + longitude2tile(response.file_list[i].bbox[2], response.file_list[i].topojson[0].zoomlevel) + ", " +
+			"ymax: " + latitude2tile(response.file_list[i].bbox[3], response.file_list[i].topojson[0].zoomlevel) + "];";
+//			
+// Comparision with SQL Server calculation:
+//
+// TRACE: tileMaker() file [0/3]: cb_2014_us_county_500k.shp; geolevel_id: 3; zoom levels: 6; min zoomlevel: 6; max zoomlevel: 11
+// Bounding box (4326) [xmin: -179.148909, ymin: -14.548699000000001, xmax: 179.77847, ymax: 71.36516200000001]; 
+// Tile numbers (11) [xmin: 4, ymin: 1107, xmax: 2046, ymax: 434];
+//
+// geography       zoomlevel       Xmin        Xmax       Ymin       Ymax       Y_mintile  Y_maxtile   X_mintile   X_maxtile
+// --------------- --------------- ----------- ---------- ---------- ---------- ---------- ----------- ----------- ----------
+// cb_2014_us_500k              11  -179.14734  179.77847  -14.55255   71.35256       1107         435           4       2046
+//			
+// This shows that YmaxTile is one less; this is caused by projection error in the SQL; this needs to be reduced:
+//
+// i.e. 71.35256 compared to 71.365162
+//
+// sahsuland_dev=> SELECT tileMaker_latitude2tile(71.365162, 11);
+//  tilemaker_latitude2tile
+// -------------------------
+//                     434
+// (1 row)
+//
 		console.error("TRACE: " + msg);
 		response.message+=msg;
 	}
