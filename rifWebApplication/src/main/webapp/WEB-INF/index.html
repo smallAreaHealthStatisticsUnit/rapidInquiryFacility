@@ -78,9 +78,10 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-grid/3.1.1/ui-grid.css"/>  
 
         <!-- UI layout grid -->
-        <script type="application/javascript" src="https://rawgithub.com/angular-ui/ui-layout/v1.0.5/ui-layout.min.js"></script>
-        <link rel="stylesheet" href="https://rawgithub.com/angular-ui/ui-layout/v1.0.5/ui-layout.css">
-        <script src="modules/rifm-ui_resize.js"></script> 
+        <!-- <script type="application/javascript" src="https://rawgithub.com/angular-ui/ui-layout/master/src/ui-layout.js"></script>-->
+        <!--This version of ui-layout had patch for sticky mouse issue #181-->
+        <script src="libs/ui-layout.js"></script>   
+        <link rel="stylesheet" href="https://rawgithub.com/angular-ui/ui-layout/master/src/ui-layout.css"> 
 
         <!-- notification -->
         <link rel="stylesheet" href="libs/ngNotificationsBar.css">
@@ -92,7 +93,6 @@
         <!-- RIF 4.0 JS -->
         <script src="modules/rifm-app.js"></script> 
         <script src="dashboards/login/controllers/rifc-login-login.js"></script>
-        <script src="dashboards/login/services/rifs-login-user.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-comparea.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-compareastate.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-params.js"></script>
@@ -109,11 +109,15 @@
         <script src="dashboards/submission/controllers/rifc-dsub-reset.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-summary.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-fromfile.js"></script>
+        <script src="dashboards/submission/controllers/rifc-dsub-status.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-maptable.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-model.js"></script>       
+        <script src="dashboards/submission/directives/rifd-dsub-mydownload.js"></script>       
+        <script src="dashboards/submission/directives/rifd-dsub-onreadfile.js"></script>    
         <script src="dashboards/viewer/controllers/rifc-view-viewer.js"></script>
         <script src="dashboards/viewer/services/rifs-view-viewerstate.js"></script>
-        <script src="dashboards/viewer/directives/rifd-view-d3hist.js"></script>
+        <script src="dashboards/viewer/services/rifs-view-d3distHisto.js"></script>
+        <script src="utils/directives/rifd-view-d3hist.js"></script>
         <script src="dashboards/mapping/controllers/rifc-dmap-mapping.js"></script>
         <script src="dashboards/mapping/services/rifs-dmap-mappingstate.js"></script>
         <script src="utils/controllers/rifc-util-basemap.js"></script>
@@ -138,7 +142,7 @@
         <link href="css/rifx-css-uigrids.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-uilayout.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-modals.css" rel="stylesheet" media="screen" />
-
+        <link href="css/rifx-css-d3.css" rel="stylesheet" media="screen" />
 
     </head>
 

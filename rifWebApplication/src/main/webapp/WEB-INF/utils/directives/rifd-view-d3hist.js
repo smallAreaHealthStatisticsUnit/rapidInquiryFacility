@@ -79,7 +79,7 @@ angular.module("RIF")
                         var breakRefs = svg.selectAll('.breakRefs')
                                 .data(scope.breaks)
                                 .enter().append("line")
-                                .attr("stroke", "#e6add8")
+                                .attr("stroke", "#d472bc")
                                 .attr("stroke-width", 2)
                                 .attr('x1', function (d) {
                                     return x(d);
@@ -96,7 +96,7 @@ angular.module("RIF")
                                 .attr("height", function (d) {
                                     return height - y(d.y);
                                 })
-                                .attr("fill", "lightblue");
+                                .attr("fill", "#1caff6");
 
                         svg.append("g")
                                 .attr("class", "x axis")

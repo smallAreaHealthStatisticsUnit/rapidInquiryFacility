@@ -60,3 +60,8 @@
 .recap-back {
     overflow: hidden;
 }
+
+/* Allow disabling of icons */
+.ui-splitbar-icon {
+  display: none;
+}

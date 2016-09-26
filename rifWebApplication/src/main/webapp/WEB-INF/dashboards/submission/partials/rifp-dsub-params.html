@@ -10,13 +10,11 @@ Disease submission modal investigation parameters (tree #3)
                 <a class="modal_close" ng-click="close()"></a>
             </div>
             <div class='modalContainer'>
-                <div ui-layout="{flow : 'column'}">
-                    <div ui-layout-container class="ICD-back" size="33%">
+                <div ui-layout="{flow : 'column'}" >
+                    <div ui-layout-container class="ICD-back" id="vSplit1" size="45%">
                         <div class="ICDsearchContainer">                         
-                            <select ng-model="taxonomyScheme" type="text" class='ICDsearchDrop' ng-options="t for t in taxonomyServices" ng-change="taxonomySchemeChanged()"></select>                          
-                            <input ng-model="searchCode" type="text" placeholder="Search by code" ng-click="resetCodeSearch()" ng-keypress="codeKeyPress($event)" class='ICDsearchBox'/>
-                            <button class="ICDsearchButton" ng-click="searchLabels()">SEARCH</button>
-                            <input ng-model="searchText" type="text" placeholder="Search by description" ng-click="resetTextSearch()" ng-keypress="textKeyPress($event)" class='ICDsearchBox'/>
+                            <select ng-model="taxonomyScheme" type="text" class='ICDsearchDrop' ng-options="t for t in taxonomyServices" ng-change="taxonomySchemeChanged()"></select>                                                   
+                            <input class='ICDsearchBox' ng-model="searchText" type="text" placeholder="Search name or description" ng-click="resetTextSearch()" ng-keypress="textKeyPress($event)"/>
                             <button class="ICDsearchButton" ng-click="searchDescription()">SEARCH</button>
                             <div class="counter">{{hitsCount}}</div>
                         </div>                     
@@ -26,16 +24,15 @@ Disease submission modal investigation parameters (tree #3)
                     </div>
                     <div ui-layout-container> 
                         <div ui-layout="{flow : 'row'}" >
-                            <div ui-layout-container class="param-back" size="37%">
+                            <div ui-layout-container class="param-back" id ="hSplit1" size="50%">
                                 <div id="parameterHeader">
-                                    <div class='done' ng-click="submit()"> <a>Done</a></div> 
-                                    <div id='clearParameters' ng-click="clearInvestigations()"> Clear All </div>
-                                    <div id='addInvestigation' ng-click="addInvestigation()"> Add Investigation</div>  
+                                    <div class='done' ng-click="addInvestigation()"> <a>Done</a></div> 
+                                    <div id='clearParameters' ng-click="clearInvestigations()"> Clear </div>
                                 </div>
                                 <div id="parameterWrap">
                                     <div id="ParameterLeft">
                                         <div class='availablesWrapper'>                                            
-                                            <input type="text" ng-model="title" placeholder = "investigation" id='invTitle' class='dropdownSelectSingleSmall' ng-change="parametersChanged()">                                                               
+                                            <input type="text" ng-model="title" id='invTitle' class='dropdownSelectSingleSmall'>                                                               
                                             <div class="dropdownSelectSmallLabel">Title</div>
                                         </div>
                                         <div class='availablesWrapper'>                                           
@@ -47,22 +44,27 @@ Disease submission modal investigation parameters (tree #3)
                                             <div class="dropdownSelectSmallLabel">End Year</div>
                                         </div>
                                         <div class='availablesWrapper'>
-                                            <select type="text" ng-model="yearInterval" id='yearInterval' class='dropdownSelectSmall' ng-options="s for s in intervals" ng-change="parametersChanged()"></select>
+                                            <select type="text" ng-model="yearInterval" id='yearInterval' class='dropdownSelectSmall' ng-options="s for s in intervals"></select>
                                             <div class="dropdownSelectSmallLabel">Year Interval</div>
                                         </div>
+                                    </div>                                    
+                                    <div id="ParameterRight">
                                         <div class='availablesWrapper'>
-                                            <select type="text" ng-model="sex" id='genderAvailable' class='dropdownSelectSmall' ng-options="g for g in sexes" ng-change="parametersChanged()"></select>
+                                            <select type="text" ng-model="sex" id='genderAvailable' class='dropdownSelectSmall' ng-options="g for g in sexes"></select>
                                             <div class="dropdownSelectSmallLabel">Sex</div>
                                         </div>
-                                    </div>
-                                    <div id="ParameterCentre">
-                                        <div id='ageGroupsLabel'>Age Groups:</div>
-                                        <div ui-grid="gridOptionsAge" ui-grid-auto-resize ui-grid-selection ui-grid-resize-columns class="grid-age"></div>
-                                        <a class="reset" ng-click="clearAgeSelection()">Reset</a>
-                                    </div>
-                                    <div id="ParameterRight">
-                                        <div id='covariateLabel'>Covariates:</div>
-                                        <div ui-grid="gridOptionsCovariates" ui-grid-selection ui-grid-auto-resize class="grid-covariates" ng-grid="gridOptionsCovariates"></div>
+                                        <div class='availablesWrapper'>
+                                            <select type="text" ng-model="covariate" id='covariates' class='dropdownSelectSmall' ng-options="g for g in covariates"></select>
+                                            <div class="dropdownSelectSmallLabel">Covariate</div>
+                                        </div>
+                                        <div class='availablesWrapper'>
+                                            <select type="text" ng-model="lowerAge" id='lowerAges' class='dropdownSelectSmall' ng-options="g for g in ages" ng-change="agesChanged()"></select>
+                                            <div class="dropdownSelectSmallLabel">Lower Age Band</div>
+                                        </div>
+                                        <div class='availablesWrapper'>
+                                            <select type="text" ng-model="upperAge" id='upperAges' class='dropdownSelectSmall' ng-options="g for g in ages" ng-change="agesChanged()"></select>
+                                            <div class="dropdownSelectSmallLabel">Upper Age Band</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

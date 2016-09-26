@@ -11,10 +11,10 @@ Disease submission modal to retrieve study
         <div class='modalContainer retrieveModalDialog'>
             <div class='retrieveMenu'>
                 <div id='retrieveSelection' class='dropdowns availablesWrapper'>
-                    <input type="text"  placeholder="Save study parameters" id='retrieveSelection' class='dropdownInput'>
+                    <div id="resetLabel">Save study parameters</div>   
                     <div id='retrieveAvailable' class='availables'></div> 
                 </div>
-                <button   id='exportStudyParameters' class='myButton'>EXPORT FILE</button>
+                <my-download get-data="getBlob()"/>
             </div>
         </div>
     </div>

@@ -116,11 +116,11 @@ angular.module("RIF")
                         for (var i = 0; i < thisMap.range.length; i++) {
                             div.innerHTML += '<i style="background:' + thisMap.range[i] + '"></i>';
                             if (i === 0) { //first break
-                                div.innerHTML += '<span>' + thisMap.mn.toFixed(2) + '&ndash;' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+                                div.innerHTML += '<span>' + thisMap.mn.toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
                             } else if (i === thisMap.range.length - 1) { //last break
-                                div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + '&ndash;' + thisMap.mx.toFixed(2) + '</span>';
+                                div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - ' + '&le;' + thisMap.mx.toFixed(2) + '</span>';
                             } else {
-                                div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + '&ndash;' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+                                div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
                             }
                         }
                         return div;

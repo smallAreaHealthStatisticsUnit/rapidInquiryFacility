@@ -1,76 +1,47 @@
 /*
- * 
+ * CONTROLLER for the main 'tree' page
  */
 angular.module("RIF")
-        .controller('SumbmissionCtrl', ['$scope', 'user', '$state',
-            'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService', 'StatsStateService',
-            function ($scope, user, $state,
-                    SubmissionStateService, StudyAreaStateService, CompAreaStateService, ParameterStateService, StatsStateService) {
-
-                //Initialise the Taxonomy service
-                user.initialiseService().then(handleInitialise, handleInitialise);
-                function handleInitialise(res) {
-                    //console.log("taxonomy initialised: " + res.data);
-                }
-
-                //called from reset button.
-                $scope.resetToDefaults = function () {
-
-                    //close the reset modal
-                    $scope.submit();
-
-                    //Reset services
-                    SubmissionStateService.resetState();
-                    StudyAreaStateService.resetState();
-                    CompAreaStateService.resetState();
-                    ParameterStateService.resetState();
-                    StatsStateService.resetState();
-
-                    //Reload submission (state1)
-                    $state.go('state1').then(function () {
-                        $state.reload();
-                    });
-                };
-       
-                //Study name
-                $scope.studyName = SubmissionStateService.getState().studyName;
-                $scope.studyNameChanged = function () {
-                    SubmissionStateService.getState().studyName = $scope.studyName;
-                };
-
-                //TODO: do these calls only on start-up then save in a service
-
-                function handleError(e) {
-                    console.log(e);
-                }
-
-                //Get geographies and health themes
+        .controller('SumbmissionCtrl', ['$scope', 'user', '$state', 'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService', 
+            function ($scope, user, $state, SubmissionStateService, StudyAreaStateService, CompAreaStateService, ParameterStateService) {
+               
+                /*
+                 * STUDY, GEOGRAPHY AND FRACTION DROP-DOWNS
+                 * Calls to API returns a chain of promises
+                 */
                 $scope.geographies = [];
-                user.getGeographies(user.currentUser).then(handleGeographies, handleGeographies);
 
+                //Get geographies
+                user.getGeographies(user.currentUser).then(handleGeographies, handleError); //1ST PROMISE
                 function handleGeographies(res) {
                     $scope.geographies.length = 0;
                     for (var i = 0; i < res.data[0].names.length; i++) {
                         $scope.geographies.push(res.data[0].names[i]);
                     }
-                    //TODO: default hardtyped
-                    if ($scope.geographies.indexOf("SAHSU") !== -1) {
-                        $scope.geography = "SAHSU";
+                    var thisGeography = SubmissionStateService.getState().geography;
+                    if ($scope.geographies.indexOf(thisGeography) !== -1) {
+                        $scope.geography = thisGeography;
                     } else {
                         $scope.geography = $scope.geographies[0];
                     }
                     SubmissionStateService.getState().geography = $scope.geography;
                     //Fill health themes drop-down
                     $scope.healthThemes = [];
-                    user.getHealthThemes(user.currentUser, $scope.geography).then(handleHealthThemes, handleHealthThemes);
+                    user.getHealthThemes(user.currentUser, $scope.geography).then(handleHealthThemes, handleError); //2ND PROMISE
                 }
                 $scope.geographyChange = function () {
                     SubmissionStateService.getState().geography = $scope.geography;
-
-                    //TODO: reset trees and area states
-
+                    //reset states using geography
+                    StudyAreaStateService.resetState();
+                    CompAreaStateService.resetState();
+                    ParameterStateService.resetState();
+                    SubmissionStateService.getState().comparisonTree = false;
+                    SubmissionStateService.getState().studyTree = false;
+                    SubmissionStateService.getState().investigationTree = false;
+                    $scope.resetState();
                 };
 
+                //Get health themes
                 function handleHealthThemes(res) {
                     $scope.healthThemes.length = 0;
                     for (var i = 0; i < res.data.length; i++) {
@@ -86,7 +57,7 @@ angular.module("RIF")
                 $scope.healthThemeChange = function () {
                     if ($scope.healthTheme) {
                         SubmissionStateService.getState().healthTheme = $scope.healthTheme;
-                        user.getFractions(user.currentUser, $scope.geography, $scope.healthTheme.description).then(handleFractions, handleFractions);
+                        user.getFractions(user.currentUser, $scope.geography, $scope.healthTheme.description).then(handleFractions, handleError); //3RD PROMISE
                     } else {
                         $scope.fractions.length = 0;
                     }
@@ -111,5 +82,29 @@ angular.module("RIF")
                     }
                     SubmissionStateService.getState().numerator = $scope.numerator;
                     SubmissionStateService.getState().denominator = $scope.fractions[0];
+
+                    //This will have an impact on investigations year range, so reset investigation parameters
+                    ParameterStateService.resetState();
+                };
+
+                function handleError(e) {
+                    $scope.showError("Could not retreive your project information from the database");
+                }
+
+                /*
+                 * STUDY NAME
+                 */
+                $scope.studyName = SubmissionStateService.getState().studyName;
+                $scope.studyNameChanged = function () {
+                    SubmissionStateService.getState().studyName = $scope.studyName;
+                };
+
+                /*
+                 * RESET
+                 */
+                $scope.resetState = function() {
+                    $state.go('state1').then(function () {
+                        $state.reload();
+                    });
                 };
             }]);

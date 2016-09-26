@@ -10,11 +10,11 @@ angular.module("RIF")
                         comparisonTree: false,
                         investigationTree: false,
                         statsTree: false,
-                        studyName: "",
-                        healthTheme: "",
-                        geography: "",
-                        numerator: "",
-                        denominator: "",
+                        studyName: "", //1
+                        healthTheme: "", //2
+                        geography: "SAHSU", //3
+                        numerator: "", //4
+                        denominator: "", //5
                         //these are in the run-study modal
                         projectName: "",
                         projectDescription: "",

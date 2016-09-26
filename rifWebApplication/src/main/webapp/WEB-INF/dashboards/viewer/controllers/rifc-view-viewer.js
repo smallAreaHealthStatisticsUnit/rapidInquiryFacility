@@ -1,25 +1,44 @@
 /* global L, key, topojson, d3, ss, values */
 
+
+//TODO:
+// how do we know that the geography is SAHSU? from the study ID?
+
 angular.module("RIF")
-        .controller('ViewerCtrl3', ['$scope',
+        .controller('ViewerCtrl2', ['$scope',
             function ($scope) {
 
-                //unused
+                $scope.settings = function () {
+                    console.log("settings button clicked");
+                };
 
             }])
-        .controller('ViewerCtrl2', ['$scope', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService',
-            function ($scope, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService) {
+        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService', 'D3DistHisto',
+            function ($scope, user, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService, D3DistHisto) {
+
+                $scope.rrTestData = d3.range(1000).map(d3.random.bates(10));
 
                 //ui-container sizes
-                $scope.size1 = "33%";
-                $scope.size2 = "66%";
+                $scope.vSplit1 = ViewerStateService.getState().vSplit1;
+                $scope.hSplit1 = ViewerStateService.getState().hSplit1;
+                $scope.hSplit2 = ViewerStateService.getState().hSplit2;
 
                 $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
-                    //Monitor panel sizes
-                    
+                    //Monitor split sizes                  
+                    if (beforeContainer.id === "vSplit1") {
+                        ViewerStateService.getState().vSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
+                    }
+                    if (beforeContainer.id === "hSplit1") {
+                        ViewerStateService.getState().hSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
+                    }
+                    if (beforeContainer.id === "hSplit2") {
+                        ViewerStateService.getState().hSplit2 = (beforeContainer.size / beforeContainer.maxSize) * 100;
+                    }
 
                     //Rescale D3 graphs
-                  
+                    D3DistHisto.getPlot(d3.select("#hSplit1").node().getBoundingClientRect().width,
+                            d3.select("#hSplit1").node().getBoundingClientRect().height, $scope.rrTestData, '#hSplit1');
+
                     //Rescale leaflet container        
                     leafletData.getMap("viewermap").then(function (map) {
                         setTimeout(function () {
@@ -27,6 +46,27 @@ angular.module("RIF")
                         }, 50);
                     });
                 });
+
+                //Drop-downs
+                $scope.studyIDs = [1, 2, 3, 4, 20, 30];
+                $scope.studyID = $scope.studyIDs[0];
+                $scope.years = [1990, 1991, 1992, 1993];
+                $scope.year = $scope.years[0];
+                $scope.sexes = ["Male", "Female", "Both"];
+                $scope.sex = $scope.sexes[0];
+                $scope.attributes = ["lower95", "upper95"];
+                $scope.attribute;
+
+                user.getSmoothedResultAttributes(user.currentUser, $scope.studyID).then(function (res) {
+                    $scope.attributes = res.data;
+                    $scope.attribute = $scope.attributes[0];
+                }, handleAttributeError);
+
+                function handleAttributeError(e) {
+                    console.log("attribute error");
+                }
+
+
 
                 //leaflet render
                 $scope.transparency = 0.7;
@@ -76,6 +116,9 @@ angular.module("RIF")
                     //refresh map with saved state
                     $scope.parent.renderMap("viewermap");
                     $scope.parent.refresh(ChoroService.getViewMap().invert, ChoroService.getViewMap().method);
+
+                    D3DistHisto.getPlot(d3.select("#hSplit1").node().getBoundingClientRect().width,
+                            d3.select("#hSplit1").node().getBoundingClientRect().height, $scope.rrTestData, '#hSplit1');
                 });
 
                 //Clear all selection from map and table
@@ -187,12 +230,34 @@ angular.module("RIF")
                     $scope.topoLayer.eachLayer(handleLayer);
                 };
 
+                $scope.getAttributeTable = function () {
+
+
+                    //   user.getSmoothedResultsForAttributes(user.currentUser, 1, 1, 1990, 'lower95', 'upper95')
+                    //           .then(handleSmoothedResults, attributeError);
+
+                    function handleSmoothedResults(res) {
+                        //       console.log(res);
+                    }
+
+                    function attributeError(e) {
+                        console.log(e);
+                    }
+
+
+                };
+
+                //TODO: Will be called from options dropdowns
+                $scope.getAttributeTable();
+
+
+
                 d3.json("test/za.js", function (error, data) {
                     //Fill data table   
                     var colDef = [];
                     var attrs = [];
                     for (var i in data.objects.layer1.geometries[0].properties) {
-                        if (typeof (data.objects.layer1.geometries[0].properties[i]) === "number") {
+                        if (angular.isNumber(data.objects.layer1.geometries[0].properties[i])) {
                             attrs.push(i); //Numeric attributes possible to map
                         }
                         colDef.push({

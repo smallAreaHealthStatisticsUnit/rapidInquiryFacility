@@ -102,6 +102,7 @@ nav,
 section {
     display: block;
 }
+
 @media screen and (max-height: 650px) {
     .buttonContainer {
         margin-top: 30% !important;
@@ -180,7 +181,7 @@ body {
 }
 #navigation {
     height: 60px;
-    background-color: #87CEFA;
+    background-color: #1caff6;
 }
 
 #navigation .nav {
@@ -206,51 +207,26 @@ body {
 }
 #navigation .logOutUsername {
     float: right;
-    cursor: pointer;
     margin: 40px 8%;
     text-transform: uppercase
+}
+
+.leaflet-container {
+    background-color: white !important;
 }
 
 #logOut {
     color: white;
 }
 #logOut:hover {
-    color: black;
+    color: #FF7D40;
+    cursor: pointer;
 }
 .userName {
-    color: #1C86EE;
+    color: #FFDAB9;
     font-weight: bold;
 }
-.userName:hover {
-    color: #8B7E66;
-}
-#submenu {
-    height: 40px;
-    background-color: #F5F5F5;
-    border-top: 1px solid #E3E3E3;
-    border-bottom: 1px solid #E3E3E3
-}
-#submenu div a img {
-    margin: 35px 10px 0 0;
-    text-transform: lowercase;
-}
-#submenu div {
-    height: 100%;
-}
-#submenu div a img.active {
-    -moz-opacity: 1;
-    -khtml-opacity: 1;
-    opacity: 1;
-}
-#submenu div a.settings {
-    float: right;
-    margin-right: 10px;
-}
-#submenu a {
-    width: 32px;
-    height: 32px;
-    float: left
-}
+
 .chartOpts {
     width: 25%;
     min-width: 390px;
@@ -395,19 +371,7 @@ input[type="range"]::-ms-thumb {
     padding: 1px;
 }
 
-#content {
-    /* Firefox */
-
-    margin-left: -moz-calc(5% + 10px);
-    /* WebKit */
-
-    margin-left: -webkit-calc(5% + 10px);
-    /* Opera */
-
-    margin-left: -o-calc(5% + 10px);
-    /* Standard */
-
-    margin-left: calc(3% + 10px);
+#content {  
     height: 50%;
     margin-top: 7%;
 }
@@ -421,16 +385,7 @@ select {
     padding: 3px;
     text-transform: uppercase;
 }
-.clearslctd {
-    display: block;
-    text-align: center;
-    text-decoration: none;
-}
-.clearslctd a.clear {
-    background-image: url('../images/spritesheet.png');
-    background-position: -182px -2px;
-    background-repeat: no-repeat;
-}
+
 /* Left Col */
 
 #content #leftcol div#studyInfo {
@@ -471,38 +426,7 @@ div#studyInfo ul li.listHeader {
     margin-right: auto;
     width: 92%;
 }
-#content #rightcol {
-    position: relative;
-    height: 100%;
-    overflow: hidden;
-}
-#content #rightcol #map {
-    height: 80%;
-    display: block;
-    background-color: transparent;
-}
-#content #rightcol #map .slctd {
-    float: right;
-    overflow: auto;
-    margin: 10px;
-    border-top: 2px solid #A9DB80;
-    height: auto;
-    min-width: auto;
-    max-width: 100px;
-}
-#content #rightcol #map .slctd div {
-    padding: 2px 10px;
-    background-color: #fff;
-    text-transform: uppercase;
-    text-align: center;
-}
-#content #rightcol #map .slctd div.slctdHeader {
-    background-color: #F5F5F5;
-}
-/*
-        * Data Table
-        *
-        */
+
 
 #rr_chart {
     border-top: 1px solid #C1C1C1;
@@ -512,79 +436,7 @@ div#studyInfo ul li.listHeader {
     overflow: hidden;
     background-color: #F5F5F5;
 }
-/*
-         *  Map Container
-         */
 
-.leaflet-container {
-    background-color: white
-
-}
-/*
-         * Map control container - Legend
-         *
-         */
-
-.map-legend {
-    padding: 10px 20px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    background: none repeat scroll 0 0 rgba(255, 255, 255, 0.8);
-    border-radius: 5px 5px 5px 5px;
-}
-.map-legend .legendTitle {
-    text-transform: uppercase;
-    text-decoration: underline;
-    margin: 5px 0;
-}
-li.key {
-    border-left-width: 12px;
-    border-left-style: solid;
-    border-color: gray;
-    font-size: 1em;
-    padding-left: 5px;
-    list-style-type: none;
-}
-li.key a {
-    color: #7F7F7F;
-    height: 25px;
-    display: table-cell;
-    line-height: 30px;
-    ;
-}
-li.maxkey {
-    border: none;
-}
-li.maxkey a {
-    padding-left: 10px
-}
-/*
-        * Polygon rendering style using D3
-    */
-
-path.polygon {
-    fill-opacity: 1;
-    stroke: #1B1;
-    stroke-width: 0.6px;
-
-}
-path.polygon:hover {
-    fill-opacity: 0.8;
-    cursor: auto
-}
-
-
-.statsInfo{
-    padding:15px 15px 0px 15px;
-    position: relative
-}
-.statsInfo h2{
-    font-weight:bold;
-    font-size:14px;
-    text-transform: uppercase
-}
-.statsInfo p{ 
-    font-style: italic
-}
 .myButton {
     -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
     -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
@@ -603,7 +455,7 @@ path.polygon:hover {
     border:1px solid #dcdcdc;
     display:inline-block;
     cursor:pointer;
-    color:#87CEFA;
+    color:#1caff6;
     font-family:arial;
     font-size:15px;
     font-weight:bold;
@@ -646,201 +498,29 @@ path.polygon:hover {
 
 .tableCounter {
     position: absolute;
-    bottom: 20px;
+    bottom: 0.5%;
     text-transform: uppercase;
     font-size: 15px;
-    left: 10px;
+    left: 0.5%;
 }
 .mapCounter {
     position: absolute;
-    bottom: 20px;
+    bottom: 0.5%;
     text-transform: uppercase;
     font-size: 15px;
-    right: 10px;
-}
-
-.areaButtons {
-    float:left;
-    margin-top: 5%;
-    margin-left: 4%;
-}
-.areaButtons div{
-    opacity:0.6;
-    width:50px;
-    height:50px;
-}
-.areaButtons div:hover {
-    opacity:1;
-    cursor : pointer;
+    right: 0.5%;
 }
 
 .clearSelection {
     background: url('../images/clear.png')  no-repeat  ;
 }
 
-
-#resolutionCountLabel {
-    font-weight: bold;
-}
 .counter {
     font-weight: bold;
     color: #FF7D40
 }
-/************************/
-/* SUMMARY TABLES *******/
-/************************/
-
-.summaryStudy{
-    margin:0 2%;
-}
-.summaryStudy h3,.summaryStudy h4,.summaryStudy h5{
-    font-weight: bold;
-    color: #A1A1A1;
-}
-
-.summaryStudy h3{
-    font-size: 16px;
-    padding-top: 1%;
-    text-align: left;
-}
-.summaryStudy h4{
-    font-size: 13px;
-    padding-left: 10px;
-}
-
-
-.summaryStudy > div  {
-    padding: 5px 25px 0px 25px;
-    text-align: left; 
-}
-
-.summaryStudy div div div{
-    text-transform: uppercase;
-    padding: 0px 25px 5px 25px;
-}
-
-/************************/
-/* AREA SELECTION TABLE */
-/************************/
-
-.selectAllBtn{
-    position: absolute;
-    margin-left: 31%; 
-    background-color: #CD96CD;
-    padding:0.1% 0.4%; 
-    font-size:10px;
-    text-transform: uppercase;  
-    color: white;  
-    opacity: 0.7    
-}
-
-.selectAllBtn:hover{
-    cursor: pointer;
-    opacity: 1    
-}
-
-.clearAllBtn{
-    position: absolute;
-    margin-left: 31%; 
-    margin-top: 50px;
-    background-color: #CD96CD;
-    padding:0.1% 0.4%; 
-    font-size:10px;
-    text-transform: uppercase;  
-    color: white;  
-    opacity: 0.7    
-}
-
-.clearAllBtn:hover{
-    cursor: pointer;
-    opacity: 1    
-}
-
-.areaSelectionTable {
-    width: 40%;
-    max-height: 82%;
-    height: auto;
-    border: 1px solid #ddd;
-    overflow-y: auto;
-    float: left;
-    margin-top:1%;
-}
-.areaSelectionTable ul.aSH {
-    width: 100%;
-}
-.areaSelectionTable ul.aSH li:first-child {
-    border-right: 2px solid #ddd;
-    width: 170px;
-    float: left;
-}
-.areaSelectionTable ul.aSH li {
-    text-align: center;
-    padding: 6px 0px;
-    font-weight: bold;
-    background-color: #F2F2F2;
-    text-decoration: underline;
-    font-size: 14px;
-    overflow: hidden;
-}
-.areaSelectionTable .aSC {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    width: 100%;
-    height: auto;
-    overflow: auto;
-    text-align: center;
-}
-.areaSelectionTable .aSR {
-    border-top: 1px solid #ddd;
-    width: 100%;
-}
-div.aSR:hover,
-.rowHovered {
-    background-color: rgba(171, 130, 255, 0.2);
-    cursor: pointer
-}
-.areaSelectionTable .rowSelected,
-#allRowsAgeGroups .rowSelected,
-.comparisonRowSelected,
-.labelSelected {
-    background-color: #CD96CD !important;
-    color:white;
-}
-.aSR div {
-    padding: 5px 0;
-    cursor: pointer;
-}
-
-.aSR div:first-child {
-    border-right: 2px solid #ddd;
-    float: left;
-    width: 170px;
-}
-.summaryStudy .even {
-    background-color: rgba(198, 226, 255, 0.1);
-    color: #757575;
-}
-.odd {
-    background-color: rgba(242, 242, 242  ,0.2);
-    /*color: #696969;*/
-}
-.aSR div {
-    padding: 2px 0px;
-    overflow: hidden;
-    word-break: break-all;
-}
-#allRowsAgeGroups .aSR div {
-    padding: 0px !important;
-    text-align: center;
-    line-height: 15px;
-}
 
 /* General dropdown styles */
-
 .dropdownBand {
     display: inline;
     border-radius: 4px;
@@ -894,27 +574,7 @@ div.aSR:hover,
 .dropdown dd ul li a {
     display: block;
 }
-.palette {
-    cursor: pointer;
-    display: inline-block;
-    vertical-align: bottom;
-    padding: 2px 0;
-    background: #fff;
-    border: solid 1px #aaa;
-    height: 140px;
-    overflow: scroll;
-    z-index: 9999;
-}
-.palette div {
-    height: 20px;
-    z-index: 9999;
-    display: block
-}
 
-#defaultColor {
-    width: 162px;
-    background-color: rgb(217, 240, 163)
-}
 .dropDownArrow {
     background: url(../images/arrow.jpg) no-repeat;
     width: 9px;
@@ -922,33 +582,17 @@ div.aSR:hover,
     float: right;
     margin-top: 5px;
 }
-/*
-   * Tiled geojson dialog hover
-   */
 
-#tooltip {
-    background: none repeat scroll 0 0 rgba(255, 255, 255, 0.8);
-    position: absolute;
-    padding: 10px;
-    display: none;
-    z-index: 99999999;
-}
-#tooltip #geoname {
-    position: relative;
-}
-/*
- * 
- *
- */
 
 #footer {
     width: 100%;
-    background-color: #87CEFA;
+    background-color: #331a00; 
     position: absolute;
     bottom: 0;
     height: 12%;
     max-height: 70px;
     color: white;
+    opacity: 0.8;
 }
 #footer div {
     position: fixed;
@@ -986,13 +630,10 @@ div.aSR:hover,
     text-transform: uppercase;
     font-weight: bold;
 }
-/*
-  *
-  *  Disease Submission
-  *
-  *
-  */
 
+/*
+ *  Disease Submission
+ */
 .positioning {
     width: 90%;
     margin-left: 5%;
@@ -1005,15 +646,15 @@ div.aSR:hover,
     width: 100%;
 }
 #buttons .geoDrops {
-    position: relative;
-    padding-top: 60px;
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
 }
 #buttons .geoDrops>div {
     float: left;
     margin-top: 0%;
     font-size: 11px;
     width: 15%;
-    margin-right: 5%;
 }
 #buttons .geoDrops>div select {
     margin: 0;
@@ -1060,7 +701,6 @@ div.aSR:hover,
 #buttons .geoDropsMapping>div span {
     text-transform:uppercase
 }
-/*xxx*/
 
 .dropdownSelectSingle,
 .dropdownSelect {
@@ -1074,7 +714,7 @@ div.aSR:hover,
     -moz-box-shadow: none;
     box-shadow: none;
     border: none;
-    border-bottom: solid 4px rgba(135,206,250, 0.5);
+    border-bottom: solid 4px rgba(32,166,231,0.8);
     -webkit-transition: border 0.3s;
     -moz-transition: border 0.3s;
     -o-transition: border 0.3s;
@@ -1109,7 +749,7 @@ div.aSR:hover,
 
 .dropdownSelectSingleSmall,
 .dropdownSelectSmall {
-    padding-left: 0px;
+    padding: 3px;
     width: 100%;
     font-size: 14px;
     text-transform: uppercase;
@@ -1128,7 +768,7 @@ div.aSR:hover,
     background-color: transparent;
 }
 .dropdownSelectSmallLabel {
-    color: #87CEFA;
+    color: #1caff6;
     margin-bottom: 4px !important;
 }
 
@@ -1145,7 +785,6 @@ input[type="text"].dropdownInput {
     padding: 0px;
     width: 100%;
     font-size: 20px;
-    text-transform: uppercase;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -1179,7 +818,7 @@ input[type="file"].fileOpener {
 }
 
 .dropDownLabel {
-    color: #87CEFA;
+    color: #1caff6;
 }
 
 input[type="text"].dropdownInput:focus,
@@ -1187,7 +826,7 @@ input[type="text"].dropdownInput:focus,
     border-bottom: solid 20px #63B8FF;
 }
 .inputBorderSelection {
-    border-bottom: solid 2px #B4EEB4 !important;
+    border-bottom: solid 2px #4daf4a !important;
 }
 .availablesWrapper {
     position: relative;
@@ -1222,13 +861,12 @@ input.dropdownInput:-webkit-input-placeholder {
 }
 #content>div.blocks {
     float: left;
-    margin-right: 4%;
     height: 100%;
+    margin-left: 4%;
     width: 20%;
     text-align: center;
     text-transform: uppercase;
     max-height: 400px;
-    /* margin-top: 3%;*/
 }
 .headerBlock {
     height: 90%;
@@ -1315,54 +953,77 @@ div.headerBlock{
     padding: 2px 0;
     font-size: 11px;
 }
-#importExport {
+
+.subButtons{
+    margin-top: 50px;
+    height: 100px;
+}
+#saveButton {
     float: left;
-    margin-left: 1%;
+    margin-left: 5%;
 }
-#runContainer {
-    border-bottom: 5px solid #DEDEDE;
-}
-#runContainer #fromFile {
-    top: 15px;
-    font-size: 12px;
-}
-#importExportContainer #resetStudy {
-    top: 15px;
-    font-size: 12px;
-}
-#fromFile:hover,
-#retrieve:hover,
-#resetStudy:hover,
-#run:hover {
-    color: black;
-}
-#importExportContainer {
-    border-bottom: 5px solid #FFDAB9;
-    width: 200px !important;
-}
-#runContainer > div,
-#importExportContainer div {
-    position: absolute;
-    bottom: 8px;
-    text-align: center;
-    width: 100%;
-    text-transform: uppercase;
-    font-size: 22px;
-    cursor: pointer
-}
-.buttonContainer {
+#statusButton {
+    margin-left: auto ;
+    margin-right: auto ;
     width: 160px;
-    color: #848484;
-    margin-top: 100px;
+}
+#runButton{
+    float: right;
+    margin-right: 5%;
     position: relative;
 }
-#runContainer:hover {
+
+.subButtonContainer {
+    width: 160px;
+    color: #848484;
+    position: relative;   
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+#fromFile:hover, #resetStudy:hover {
+    color: black;
+}
+
+#resetStudy, #fromFile {
+    top: 15px;
+    font-size: 12px;
+}
+
+#retrieve, #run, #status {
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 5px solid #FFDAB9;
+}
+
+#retrieve:hover, #run:hover {
     -webkit-transition: border 0.3s;
     -moz-transition: border 0.3s;
     -o-transition: border 0.3s;
     transition: border 0.3s;
-    border-bottom: solid 5px #63B8FF;
+    color: black;
+    border-bottom: 5px solid #63B8FF;
 }
+
+#exportParameters{
+    text-align: center;
+    height: auto;
+    width: auto;
+    margin-top: 40px;
+    padding: 12px 24px;
+}
+
+#status:hover {
+    -webkit-transition: border 0.3s;
+    -moz-transition: border 0.3s;
+    -o-transition: border 0.3s;
+    transition: border 0.3s;
+    color: black;
+    border-bottom: 5px solid #4daf4a;
+}
+
 
 textarea.description {
     background-repeat: repeat-x;
@@ -1378,19 +1039,15 @@ textarea.description {
     left: 0px;
 }
 
-#importExportContainer:hover {
-    -webkit-transition: border 0.3s;
-    -moz-transition: border 0.3s;
-    -o-transition: border 0.3s;
-    transition: border 0.3s;
-    border-bottom: solid 5px #F4A460;
-}
-
 #resetLabel {
     padding:24px 24px;
     font-size: 20px;
 }
 
+#cancelReset {
+    margin-left: 30px;
+    float:left;
+}
 
 /****************************************/
 /****************************************/
@@ -1440,28 +1097,23 @@ textarea.description {
 }
 #ParameterLeft {
     float: left;
-    width: 33%;
+    width: 50%;
     height: 90%;
 }
+#ParameterRight > div:first-child,
 #ParameterLeft > div:first-child {
     margin-top: 3% !important;
 }
+#ParameterRight > div,
 #ParameterLeft > div {
     margin-left: 5%;
     margin-right: 5%;
 }
-#ParameterCentre {
-    width: 30%;
-    height: 90%;
-    float: right;
-    margin-bottom: 50px;
-    margin-left:15px;
-}  
+
 #ParameterRight {
     float: right;
-    width: 33%;
+    width: 50%;
     height: 90%;
-    margin-bottom: 50px;
 }  
 
 #covariatesWrapper {
@@ -1518,29 +1170,36 @@ textarea.description {
     margin: 0 !important;
 }
 
-#addInvestigation,
+#clearParameters {
+    background-color: #FF7256;
+    opacity: 1;
+    padding: 10px 20px;
+    font-size: 14px;
+    display: inline-table;
+}
+
 #clearParameters{
-    opacity: 0.2;
+    text-transform: uppercase;
     margin: 0 0% 0 0 !important;
     border-radius: 0px 0px 10px 10px;
     -moz-border-radius: 0px 0px 10px 10px;
-    -webkit-border-radius: 0px 0px 10px 10px    
+    -webkit-border-radius: 0px 0px 10px 10px;
+    color: white! important;
+    font-weight: bold;
+    border: 1px solid #F2F2F2;
 }
-#addInvestigation,
-#clearParameters,
 .done{
     position: absolute;
     top: 0;
     text-transform: uppercase;
-    width: auto !important;
-    z-index: 999999999999999999999999;
+    z-index: 99999999;
     border: 1px solid #F2F2F2;
     color: white! important;
     font-weight: bold;
 }
 
 .done{
-    background-color: #87CEFA;
+    background-color: #1caff6;
     font-size: 20px;
     right: 0;
     border-radius: 10px 0px 00px 10px;
@@ -1554,23 +1213,6 @@ textarea.description {
     padding: 12px 30px;
 }
 
-#addInvestigation {
-    background-color: #00CD00 !important;
-    opacity: 0.7 !important;
-    padding: 10px 20px;
-    font-size: 14px;
-    left: calc(2% + 120px);
-}
-
-#clearParameters {
-    background-color: #FF7256;
-    opacity: 1;
-    padding: 10px 20px;
-    font-size: 14px;
-    left: 2%;
-}
-
-#addInvestigation:hover,
 #clearParameters:hover,
 .done:hover{
     text-decoration: underline;
@@ -1609,13 +1251,13 @@ textarea.description {
 .ICDsearchContainer {
     float: left;
     width: 90%;
-    height: 140px;
+    height: 100px;
     position: relative;
 }
 .ICgridContainer {
     float: left;
     width: 90%;
-    height: calc(100% - 225px);
+    height: calc(100% - 185px);
     position: relative;
     margin-top: 0px !important;
 }
@@ -1624,7 +1266,7 @@ textarea.description {
     padding: 10px;
     margin-bottom: 10px;
     margin-right: 10px;
-    width: calc(100% - 98px);
+    width: calc(100% - 96px) !important;
     font-size: 14px;
     text-transform: uppercase;
     -webkit-appearance: none;
@@ -1632,7 +1274,7 @@ textarea.description {
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     box-shadow: none;
-    border: solid 2px #87CEFA;;
+    border: solid 2px #1caff6;;
     -webkit-transition: border 0.3s;
     -moz-transition: border 0.3s;
     -o-transition: border 0.3s;
@@ -1645,7 +1287,7 @@ textarea.description {
     padding: 10px;
     margin-bottom: 10px;
     margin-right: 10px;
-    width: calc(100% - 120px);
+    width: calc(100% - 120px) !important;
     font-size: 14px;
     text-transform: uppercase;
     -webkit-appearance: none;
@@ -1653,7 +1295,7 @@ textarea.description {
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     box-shadow: none;
-    border: solid 2px #87CEFA;;
+    border: solid 2px #1caff6;;
     -webkit-transition: border 0.3s;
     -moz-transition: border 0.3s;
     -o-transition: border 0.3s;
@@ -1682,7 +1324,7 @@ textarea.description {
     border:1px solid #dcdcdc;
     display:inline-block;
     cursor:pointer;
-    color:#87CEFA;
+    color:#1caff6;
     font-family:arial;
     font-size:14px;
     font-weight:bold;
@@ -1695,7 +1337,7 @@ textarea.description {
 
 
 /*
-ADDED, LOGIN SCREEN
+* LOGIN SCREEN
 */
 
 .login-box {
@@ -1719,7 +1361,8 @@ div.world{
     opacity: 1;
     width: 100%;
     height: 100%;
-    /*  background: transparent url("../images/industry-sunrise-clouds-fog-39553.jpeg"); /* squirrels */
+    /*background: transparent url("../images/industry-sunrise-clouds-fog-39553.jpeg"); */
+    /*background: transparent url("../images/squirrels.jpg");*/  
     background-size: cover;
     position: absolute;
 }
@@ -1734,7 +1377,7 @@ div.world{
 
 .active{
     background-color: white;
-    color:#87CEFA !important;
+    color:#1caff6 !important;
     -moz-border-radius-topleft: 5px;
     -webkit-border-top-left-radius: 5px;
     border-top-left-radius: 5px;
@@ -1748,12 +1391,11 @@ div.world{
     cursor: pointer;
     display: inline-block;
     font-family: 'lucida grande',tahoma,verdana,arial,sans-serif;
-    font-size: 11px; 
     line-height: 13px;
     margin: 0;
     padding: 10px 20px !important;
     white-space: nowrap;
-    background: #87CEFA;
+    background: #1caff6;
     color: white !important;
 }
 
@@ -1782,10 +1424,33 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
     outline: none
 }
 
+/*
+* STATS
+*/
+.statsInfo{
+    padding:15px 15px 0px 15px;
+    position: relative;
+}
+.statsInfo h2{
+    font-weight:bold;
+    font-size:14px;
+    text-transform: uppercase
+}
+.statsInfo p{ 
+    font-style: italic
+}
+
+#modelsList {
+    margin-bottom: 35px;
+}
+
 .statsManual {
     float:right;
     margin-left: 20px;
     font-weight: bold;
+}
+.statsManual:hover {
+    cursor: pointer;
 }
 
 .modelsAvailable > div {
@@ -1797,7 +1462,7 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
 }
 .modelsAvailable{
     margin-top:10px;
-    margin-bottom:15px;
+    margin-bottom:0px;
     width:446px;
     position: relative; 
     height: auto;
@@ -1806,7 +1471,7 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
     overflow: auto;
     padding: 4px 9px; 
     display: block ;
-    max-height: 300px ;
+    max-height: 400px ;
     z-index: 1;
 }
 
@@ -1920,28 +1585,6 @@ div#studyLabel h2{
     /* font-size: 100%; */
 }
 
-/*D3 CSS*/
-.chart {
-    background: #eee;
-    padding: 3px;
-}
-
-.chart div {
-    width: 0;
-    transition: all 1s ease-out;
-    -moz-transition: all 1s ease-out;
-    -webkit-transition: all 1s ease-out;
-}
-
-.chart div {
-    font: 10px sans-serif;
-    background-color: steelblue;
-    text-align: right;
-    padding: 3px;
-    margin: 5px;
-    color: white;
-    box-shadow: 2px 2px 2px #666;
-}
 /*SUMMARY TABLE*/
 .modelViewer table {
     background-color: #E3E3E3;
@@ -1982,6 +1625,7 @@ header:first-child {
     padding-right: 50px;
     font-size: 10px;
     color: #000;
+    white-space: nowrap;
 }
 .modelViewer th {
     text-align: center;
@@ -2027,34 +1671,3 @@ header:first-child {
 .legend span {
     padding-left: 15px;
 }
-
-/*TESTING D3*/
-.svg-container {
-    display: inline-block;
-    position: relative;
-    width: 100%;
-    vertical-align: top;
-    overflow: hidden;
-}
-.svg-content-responsive {
-    display: inline-block;
-    position: absolute;
-    top: 10px;
-    left: 0;
-}
-
-.axis path,
-.axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
-}
-
-.x.axis path {
-    display: none;
-}
-
-.area {
-    fill: steelblue;
-}
-
