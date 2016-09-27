@@ -154,14 +154,33 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
  * Description:	Object constructor; add to tileArray if defined
  */
 	function tile(zoomlevel, X, Y, geolevel_id, tileArray) { 
-		this.zoomlevel=zoomlevel;
+		this.zl=zoomlevel;
 		this.X=X; 
 		this.Y=Y; 
-		this.geolevel_id=geolevel_id;
+		this.gl=geolevel_id;
+
+		tileArray.push(this);	
 		
-		if (tileArray) {
-			tileArray.push(this);	
-		}	
+		return this;
+	}
+
+/* 
+ * Function: 	tile2csv()
+ * Parameters:	gid, tile object
+ * Description:	Dumnp tile object to CSV
+ */	
+	function tile2csv(gid, tile) {
+		if (tile) {
+			try {
+				return gid + "," + tile.zl + "," + tile.X + "," + tile.Y + "," + tile.gl + "\r\n";
+			}
+			catch (err) {
+				throw new error("tile2csv() error: " + err.message + "; tile: " + JSON.stringify(tile, null, 4));
+			}
+		}
+		else {
+			throw new error("tile2csv() tile not defined");
+		}
 	}
 
 /* 
@@ -185,14 +204,16 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 			var ymin=response.file_list[i].bbox[1];
 			var xmax=response.file_list[i].bbox[2];
 			var ymax=response.file_list[i].bbox[3];
-			var xminTile=longitude2tile(xmin, maxZoomlevel);
-			var yminTile=latitude2tile(ymin, maxZoomlevel);
-			var xmaxTile=longitude2tile(xmax, maxZoomlevel);
-			var ymaxTile=latitude2tile(ymax, maxZoomlevel);
+			
+			var xminTile
+			var yminTile;
+			var xmaxTile;
+			var ymaxTile;
 			var xStart=xminTile;
 			var xEnd=xmaxTile;	
 			var yStart=yminTile;
 			var yEnd=ymaxTile;
+			var tileCount=0;
 			
 	// Calculate x/y start and end tile numbers. Handle southern hemisphere 
 			if (xminTile > xmaxTile) {
@@ -203,16 +224,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 				yStart=ymaxTile;
 				yEnd=yminTile;
 			}	
-			
-	// Create tile array		
-			for (var zoomlevel=0; zoomlevel<=maxZoomlevel; zoomlevel++) {		
-				for (var X=xStart; X<=xEnd; X++) {				
-					for (var Y=yStart; Y<=yEnd; Y++) {
-						tile(zoomlevel, X, Y, response.file_list[i].geolevel_id, tileArray);
-					}
-				}
-			}
-		
+
 			var msg="\ntileMaker() file [" + i + "/" + response.file_list.length + "]: " + 
 				(response.file_list[i].file_name || "No file name") +
 				"; geolevel_id: " + (response.file_list[i].geolevel_id|| "No geolevel_id") + 
@@ -223,12 +235,44 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 				"xmin: " + xmin + ", " +
 				"ymin: " + ymin + ", " +
 				"xmax: " + xmax + ", " +
-				"ymax: " + ymax + "]; " +
-				"\nTile numbers (" + maxZoomlevel +") [" + 
-				"xminTile: " + xminTile + ", " +
-				"yminTile: " + yminTile + ", " +
-				"xmaxTile: " + xmaxTile + ", " +
-				"ymaxTile: " + ymaxTile + "];";
+				"ymax: " + ymax + "]; ";
+					
+	// Create tile array for performance		
+			for (var zoomlevel=0; zoomlevel<=maxZoomlevel; zoomlevel++) {
+				xminTile=longitude2tile(xmin, zoomlevel);
+				yminTile=latitude2tile(ymin, zoomlevel);
+				xmaxTile=longitude2tile(xmax, zoomlevel);
+				ymaxTile=latitude2tile(ymax, zoomlevel);
+				
+				xStart=xminTile;
+				xEnd=xmaxTile;	
+				yStart=yminTile;
+				yEnd=ymaxTile;
+				
+		// Calculate x/y start and end tile numbers. Handle southern hemisphere 
+				if (xminTile > xmaxTile) {
+					xStart=xmaxTile;
+					xEnd=xminTile;
+				}
+				if (yminTile > ymaxTile) {
+					yStart=ymaxTile;
+					yEnd=yminTile;
+				}
+
+				 msg+="\nTile numbers (" + zoomlevel +") [" + 
+					"xminTile: " + xminTile + ", " +
+					"yminTile: " + yminTile + ", " +
+					"xmaxTile: " + xmaxTile + ", " +
+					"ymaxTile: " + ymaxTile + "];";
+			
+				for (var X=xStart; X<=xEnd; X++) {				
+					for (var Y=yStart; Y<=yEnd; Y++) {
+						new tile(zoomlevel, X, Y, response.file_list[i].geolevel_id, tileArray);
+						tileCount++;
+					} // Y loop
+				} // X loop
+				msg+="\nTotal tiles: " + tileCount;
+			} // Zoom level loop
 				
 	//			
 	// Comparision with SQL Server calculation:
@@ -252,18 +296,20 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 	// (1 row)
 	//
 			response.message+=msg;
-		}
+		} // File loop
 		
 		return tileArray;
 	} // End of createTileArray()
 
 /* 
  * Function: 	createTilesSeriesUpdate()
- * Parameters:	Tile array index number (+1); number of tiles in array
+ * Parameters:	Tile array index number (+1);, number of tiles in array, tile csv file size
  * Description:	Create tile Array
  */		
-	function createTilesSeriesUpdate(m, nTiles) {
-		addStatus(__file, __line, response, "Created " + m + "/" + nTiles + " tiles", 200 /* HTTP OK */, serverLog, req, // Add status
+	function createTilesSeriesUpdate(m, nTiles, csvFileSize) {
+		var msg="Created " + m + "/" + nTiles + " tiles; size: " + csvFileSize;
+		console.error("createTilesSeriesUpdate(): " + msg);
+		addStatus(__file, __line, response, msg, 200 /* HTTP OK */, serverLog, req, // Add status
 			function createTilesSeriesUpdateCallback(err) { 	
 				if (err) {						
 					serverLog.serverLog2(__file, __line, "createTilesSeriesUpdateCallback", "ERROR! in adding tiles", req, e);
@@ -279,34 +325,40 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
  * Returns:		tile array object
  * Description:	Create tile Array
  */		
-	function createTilesSeriesEndUpdate(nTiles, err) {
+	function createTilesSeriesEndUpdate(nTiles, e) {
 		var msg;
 		var httpStatus;
 		var stack;
-		if (err) {
-			msg="Error creating " + nTiles + " tiles: " + err.message;
+		
+		tileArray=undefined;
+		
+		if (e) {
+			msg="Error creating " + nTiles + " tiles: " + e.message;
 			httpStatus=501; /*  HTTP general exception trap */
-			stack=err.stack;
+			stack=e.stack;
 		}
 		else {
 			msg="Created " + nTiles + " tiles";
 			httpStatus=200; /* HTTP OK */
 		}
+		console.error("createTilesSeriesEndUpdate(): " + msg);
 		
 		addStatus(__file, __line, response, msg, httpStatus, serverLog, req, // Add status
 			function createTilesSeriesEndUpdateCallback(err) { 	
-				if (err) {						
+				if (err || e) {						
 					serverLog.serverLog2(__file, __line, "createTilesSeriesEndUpdateCallback", "ERROR! in adding tiles", req, e);
+					endCallback(err || e);
 				}
-		
-				try {
-					// Call geojsonToCSV() - Convert geoJSON to CSV; save as CSV files; create load scripts for Postgres and MS SQL server
-					geojsonToCSV.geojsonToCSV(response, req, res, endCallback); // Convert geoJSON to CSV
-				}
-				catch (e) {	
-					serverLog.serverError2(__file, __line, "createTilesSeriesEndUpdateCallback", 
-						"Exception thrown by tileMaker.tileMaker() ", req, e, response);	
-				}	
+				else {
+					try {
+						// Call geojsonToCSV() - Convert geoJSON to CSV; save as CSV files; create load scripts for Postgres and MS SQL server
+						geojsonToCSV.geojsonToCSV(response, req, res, endCallback); // Convert geoJSON to CSV
+					}
+					catch (e) {	
+						serverLog.serverError2(__file, __line, "createTilesSeriesEndUpdateCallback", 
+							"Exception thrown by tileMaker.tileMaker() ", req, e, response);	
+					}
+				}				
 			}, stack /* additionalInfo, errorName */);		
 	} // End of createTilesSeriesEndUpdate()
 	
@@ -314,30 +366,75 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 	var nTiles=tileArray.length;	
 	var l=0; // 1000 record counter
 	var m=0; // 100,000 record counter
-	
+//	
+// Create directory: $TEMP/shpConvert/<uuidV1>/data as required
+//		  
+	var dirArray=[os.tmpdir() + "/shpConvert", response.fields["uuidV1"], "data"];
+	var dir=nodeGeoSpatialServicesCommon.createTemporaryDirectory(dirArray, response, req, serverLog);
+	var csvFileName=dir + "/tiles.csv";
+	var csvStream = fs.createWriteStream(csvFileName, { flags : 'w' });	
+	csvStream.on('finish', function csvStreamClose() {
+		response.message+="\nTile svStreamClose(): " + csvFileName;
+	});		
+	csvStream.on('error', function csvStreamError(e) {
+		serverLog.serverLog2(__file, __line, "csvStreamError", 
+			"WARNING: Exception in Tile CSV write to file: " + csvFileName, req, e, response);										
+	});
+	var buf;
+	var csvBuf=undefined;
+	var csvFileSize=0;
+									
 	async.forEachOfSeries(tileArray, 
-		function createTilesSeries(ltile, k, tileCallback) { // Processing code
+		function createTilesSeries(ntile, k, tileCallback) { // Processing code
+			if (l == 0) {
+				csvBuf=undefined;
+			}
 			l++;
 			m++;
 			try {
 				if (m >= 100000) {
-					createTilesSeriesUpdate((k+1), nTiles);	// Update status
+					createTilesSeriesUpdate((k+1), nTiles, csvFileSize);	// Update status
 					m=0;
 				}
 				
-				if (l >= 1000) { // Keep the stack under control!
-					l=0;
-					process.nextTick(tileCallback);
+				buf=tile2csv(k, ntile);
+				csvFileSize+=buf.length;
+				if (csvBuf == undefined) {
+					csvBuf=buf;
 				}
 				else {
-					tileCallback();
+					csvBuf+=buf;
+				}
+					
+				if (l >= 1000) { // Keep the stack under control!
+					l=0;
+					var nextTickFunc = function nextTick() {
+						csvStream.write(csvBuf, tileCallback);
+					}
+					process.nextTick(nextTickFunc);
+				}
+				else {
+					if (csvBuf.length > 10000000) { // 10 MB
+						var bufCallBackFunc = function bufCallBack() {
+							csvBuf=undefined;
+							tileCallback();				
+						}
+						csvStream.write(csvBuf, bufCallBackFunc);					
+					}
+					else {
+						tileCallback();
+					}
 				} 
 			}
 			catch (e) {
+				var msg="Created " + nTiles + " tiles; size: " + csvFileSize + "; error: " +
+					e.message + "\nStack: " + e.stack;
+				console.error("createTilesSeries catch(): " + msg);
 				tileCallback(e);
 			}
 		}, // End of createTilesSeries() [Processing code]
-		function createTilesSeriesEnd(err) { //  Callback		
+		function createTilesSeriesEnd(err) { //  Callback	
+			csvStream.end();	
 			if (err) {
 				createTilesSeriesEndUpdate(nTiles, err);
 			}
