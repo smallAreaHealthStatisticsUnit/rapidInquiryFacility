@@ -307,8 +307,9 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
  * Description:	Create tile Array
  */		
 	function createTilesSeriesUpdate(m, nTiles, csvFileSize) {
-		var msg="Created " + m + "/" + nTiles + " tiles; size: " + csvFileSize;
-		console.error("createTilesSeriesUpdate(): " + msg);
+		var pct=Math.round((m/nTiles)*10000)/100;
+		var msg="Created " + m + " tiles, " + pct + "% done; size: " + nodeGeoSpatialServicesCommon.fileSize(csvFileSize);
+//		console.error("createTilesSeriesUpdate(): " + msg);
 		addStatus(__file, __line, response, msg, 200 /* HTTP OK */, serverLog, req, // Add status
 			function createTilesSeriesUpdateCallback(err) { 	
 				if (err) {						
@@ -321,11 +322,11 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 
 /* 
  * Function: 	createTilesSeriesEndUpdate()
- * Parameters:	Number of tiles in array, error object (optional)
+ * Parameters:	Number of tiles in array, tile csv file size, error object (optional)
  * Returns:		tile array object
  * Description:	Create tile Array
  */		
-	function createTilesSeriesEndUpdate(nTiles, e) {
+	function createTilesSeriesEndUpdate(nTiles, csvFileSize, e) {
 		var msg;
 		var httpStatus;
 		var stack;
@@ -338,10 +339,10 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 			stack=e.stack;
 		}
 		else {
-			msg="Created " + nTiles + " tiles";
+			msg="Created " + nTiles + " tiles; size: " + nodeGeoSpatialServicesCommon.fileSize(csvFileSize);
 			httpStatus=200; /* HTTP OK */
 		}
-		console.error("createTilesSeriesEndUpdate(): " + msg);
+//		console.error("createTilesSeriesEndUpdate(): " + msg);
 		
 		addStatus(__file, __line, response, msg, httpStatus, serverLog, req, // Add status
 			function createTilesSeriesEndUpdateCallback(err) { 	
@@ -429,17 +430,17 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 			catch (e) {
 				var msg="Created " + nTiles + " tiles; size: " + csvFileSize + "; error: " +
 					e.message + "\nStack: " + e.stack;
-				console.error("createTilesSeries catch(): " + msg);
+//				console.error("createTilesSeries catch(): " + msg);
 				tileCallback(e);
 			}
 		}, // End of createTilesSeries() [Processing code]
 		function createTilesSeriesEnd(err) { //  Callback	
 			csvStream.end();	
 			if (err) {
-				createTilesSeriesEndUpdate(nTiles, err);
+				createTilesSeriesEndUpdate(nTiles, csvFileSize, err);
 			}
 			else {
-				createTilesSeriesEndUpdate(nTiles, undefined /* NO ERROR */);
+				createTilesSeriesEndUpdate(nTiles, csvFileSize, undefined /* NO ERROR */);
 			}
 		});
 											
