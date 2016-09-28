@@ -44,14 +44,23 @@
 //
 // Peter Hambly, SAHSU
 	
-const async = require('async'),
-	  serverLog = require('../lib/serverLog'),
+const serverLog = require('../lib/serverLog'),
 	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
 	  httpErrorResponse = require('../lib/httpErrorResponse');
 
-const os = require('os'),
+const async = require('async'),
+	  os = require('os'),
 	  fs = require('fs'),
-	  path = require('path');
+	  path = require('path'),
+	  turf = require('turf'),
+	  geojson2svg = require('geojson2svg'),
+	  converter = geojson2svg({
+			viewportSize: { width: 256, height: 256 },
+			attributes: { 'style': 'stroke:#000000; fill-opacity: 0.0; stroke-width:0.5px;' },
+			output: 'svg'
+		}),
+	  reproject = require("reproject"),
+	  proj4 = require("proj4");
 	
 /*
  * Function: 	tileMaker()
@@ -165,9 +174,146 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 	}
 
 /* 
+ * Function: 	createTile()
+ * Parameters:	Processing index, tile object, geoJSON for tile geolevel/file
+ * Returns:		TopoJSON tile or undefined if no topoJSON data within the bounding boc
+ * Description:	Crrate tile:
+ *					create bounding box for tile
+ */	
+	function createTile(k, ntile, geoJSON) {
+		if (geoJSON == undefined) {
+			throw new Error("createTile(" + k + ") no geoJSON for zoomlevel: " + ntile.zl +
+				"\nntile: " + JSON.stringify(ltile, null, 4).substring(0, 132));
+		}
+		
+		var bbox=[];
+		var bboxPolygon;
+		var intersection;
+		var result;
+
+//
+// Fix min/max in wrong order		
+// Bounding box [xmin: -179.14733999999999, ymin: -14.552548999999997, xmax: 179.77847, ymax: 71.352561];
+// turf.bbox-polygon() failed for bbox: [-180, 85.0511287798066, 180, -85.0511287798066]
+//		
+		bbox[0]=tile2longitude(ntile.X, ntile.zl);		// xmin
+		bbox[1]=tile2latitude(ntile.Y, ntile.zl);		// ymin
+		bbox[2]=tile2longitude(ntile.X+1, ntile.zl);	// xmax
+		bbox[3]=tile2latitude(ntile.Y+1, ntile.zl);		// ymax
+		if (bbox[3] < bbox[1]) { // Swap Y
+			var t=bbox[3];
+			bbox[3]=bbox[1];
+			bbox[1]=t;
+		}
+		if (bbox[2] < bbox[0]) { // Swap X
+			var t=bbox[2];
+			bbox[2]=bbox[0];
+			bbox[0]=t;
+		}
+		
+		var ltile = {			// Result object
+			zl: ntile.zl,
+			X: ntile.X,
+			Y: ntile.Y,
+			gl: ntile.gl,
+			bbox: bbox,
+			intersects: 0,
+			svg: undefined,
+			topojson: undefined
+		}
+		
+		try {
+			bboxPolygon=turf.bboxPolygon(bbox);	// Convert bounding box to polygon
+		}
+		catch (e) {
+			throw new Error("createTile(" + k + ") turf.bboxPolygon() failed for bbox: " + JSON.stringify(bbox, null, 4) +
+				"\nError: " + e.message +
+				"\nltile: " + JSON.stringify(ltile, null, 4).substring(0, 132));
+		}	
+		
+		var intersectlist = [];					// Intersect bounding box polygon with geoJSON feature by feature
+		for (var i = 0; i < geoJSON.features.length; i++) {
+			var kinks = turf.kinks(geoJSON.features[i]);
+
+			if (kinks && kinks.intersections && kinks.intersections.features) { // Look for self intersections
+				var kinksFeatures = kinks.intersections.features.concat(geoJSON.features[i]);
+				var kinksFeatureCollection = {
+				  "type": "FeatureCollection",
+				  "features": kinksFeatures
+				};
+				throw new Error("createTile(" + k + ") feature: " + i + "; turf.kinks() found self intersections: " + 
+					JSON.stringify(kinksFeatureCollection, null, 4).substring(0, 400));
+			}
+			
+			try {
+				var intersectedFeature = turf.intersect(geoJSON.features[i], bboxPolygon);
+				if (intersectedFeature) {
+					intersectlist.push(geoJSON.features[i]); // Use geoJSON NOT boundinng box!
+				}
+			}
+			catch (e) {
+				throw new Error("createTile(" + k + ") turf.intersect() failed for feature: " + i + 
+					"; bboxPolygon: " + JSON.stringify(bboxPolygon, null, 4) +
+					"\nError: " + e.message +
+					"\nGeoJSON: " + JSON.stringify(geoJSON.features[i], null, 2).substring(0, 800) + 
+					"\nltile: " + JSON.stringify(ltile, null, 4).substring(0, 132));
+			}
+		}	
+		
+		if (intersectlist.length > 0) { // Intersected
+			ltile.intersects=1;
+
+			intersectlist.push(bboxPolygon); // Add boundary to tile for test purtposes			
+			var intersection= {
+				type: "FeatureCollection",
+				features: intersectlist
+			}
+			// Make topoJSOB
+			ltile.topojson=intersection3857;
+				
+			var intersection3857 = reproject.reproject(	// Re-project to 3857 (WGS 84 / Pseudo-Mercator) for SVG
+				intersection,'EPSG:4326', 'EPSG:3857', proj4.defs);	
+			var bbox3857Polygon = reproject.reproject(
+				bboxPolygon,'EPSG:4326', 'EPSG:3857', proj4.defs);
+			var mapExtent={ 
+				left: bbox3857Polygon.geometry.coordinates[0][0][0], 	// Xmin
+				bottom: bbox3857Polygon.geometry.coordinates[0][1][1], 	// Ymin
+				right: bbox3857Polygon.geometry.coordinates[0][2][0], 	// Xmax
+				top: bbox3857Polygon.geometry.coordinates[0][3][1] 		// Ymax
+			};		
+			var svgOptions = {
+				mapExtent: mapExtent,
+				attributes: { id: "Test" }
+			};
+			try {
+// Need to clip - turf.difference() ?
+//				var tileJSON=turf.bboxClip(intersection, bbox);
+				var svgString = converter.convert(intersection3857, svgOptions);
+				ltile.svg='<?xml version="1.0" standalone="no"?>\n' +
+					' <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
+					'  <svg width="256" height="256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + 
+					'   ' + svgString + '\n' +
+					'  </svg>';
+			}
+			catch (e) {
+				throw new Error("createTile(" + k + ") tile create failed for bboxPolygon: " + JSON.stringify(bboxPolygon, null, 4) +
+					"\nError: " + e.message +
+					"\nintersection: " + JSON.stringify(intersection, null, 2).substring(0, 800) + 
+					"\nltile: " + JSON.stringify(ltile, null, 4).substring(0, 132));
+			}			
+		}
+		
+		if (k<30) {
+			console.error("createTile(" + k + "): " + JSON.stringify(ltile, null, 4).substring(0, 132));
+		}
+		
+		return ltile;
+	}
+	
+/* 
  * Function: 	tile2csv()
  * Parameters:	gid, tile object
- * Description:	Dumnp tile object to CSV
+ * Description:	Dump tile object to CSV
  */	
 	function tile2csv(gid, tile) {
 		if (tile) {
@@ -200,6 +346,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 	// Get tile max/min lat/long from bounding box
 	//
 			var maxZoomlevel=response.file_list[i].topojson[0].zoomlevel;
+			var minZoomlevel=response.file_list[i].topojson[(response.file_list[i].topojson.length-1)].zoomlevel;
 			var xmin=response.file_list[i].bbox[0];
 			var ymin=response.file_list[i].bbox[1];
 			var xmax=response.file_list[i].bbox[2];
@@ -229,7 +376,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 				(response.file_list[i].file_name || "No file name") +
 				"; geolevel_id: " + (response.file_list[i].geolevel_id|| "No geolevel_id") + 
 				"; zoom levels: " + (response.file_list[i].topojson.length|| "No zoomlevels") +
-				"; min zoomlevel: " + response.file_list[i].topojson[(response.file_list[i].topojson.length-1)].zoomlevel +
+				"; min zoomlevel: " + minZoomlevel +
 				"; max zoomlevel: " + maxZoomlevel +
 				"\nBounding box (4326) [" + // [left, bottom, right, top]
 				"xmin: " + xmin + ", " +
@@ -331,7 +478,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 		var httpStatus;
 		var stack;
 		
-		tileArray=undefined;
+		tileArray=undefined;	// Free memory
 		
 		if (e) {
 			msg="Error creating " + nTiles + " tiles: " + e.message;
@@ -384,7 +531,29 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 	var buf;
 	var csvBuf=undefined;
 	var csvFileSize=0;
-									
+					
+	var geolevelId2fileIndex = {};
+	for (var i=0; i<response.file_list.length; i++) { 	
+		geolevelId2fileIndex[response.file_list[i].geolevel_id]=i;	
+	}
+	var zoomlevelIndex = {};
+	for (var i=0; i<response.file_list[0].topojson.length; i++) {
+		zoomlevelIndex[response.file_list[0].topojson[i].zoomlevel]=i;
+	}
+	var maxZoomlevel=response.file_list[0].topojson[0].zoomlevel;	
+	var minZoomlevel=response.file_list[0].topojson[(response.file_list[0].topojson.length-1)].zoomlevel;
+	for (var i=0; i<=maxZoomlevel; i++) {
+		if (zoomlevelIndex[i] == undefined) {
+			if (i<minZoomlevel) {
+				zoomlevelIndex[i]=zoomlevelIndex[minZoomlevel];
+			}
+			else if (i>maxZoomlevel) {
+				zoomlevelIndex[i]=zoomlevelIndex[maxZoomlevel];
+			}
+		}
+	}
+	console.error("zoomlevelIndex: " + JSON.stringify(zoomlevelIndex, null, 4));
+	
 	async.forEachOfSeries(tileArray, 
 		function createTilesSeries(ntile, k, tileCallback) { // Processing code
 			if (l == 0) {
@@ -398,8 +567,36 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 					m=0;
 				}
 				
-				buf=tile2csv(k, ntile);
+				if (zoomlevelIndex[ntile.zl] == undefined) {
+					throw new Error("createTilesSeries(" + k + ") no zoomlevelIndex for zoomlevel: " + ntile.zl);
+				}				
+				else if (geolevelId2fileIndex[ntile.gl] == undefined) {
+					throw new Error("createTilesSeries(" + k + ") no geolevelId2fileIndex for geolevel: " + ntile.gl);
+				}
+				else if (response.file_list[geolevelId2fileIndex[ntile.gl]] == undefined) {
+					throw new Error("createTilesSeries(" + k + ") no response.file_list array item for geolevel: " + 
+						ntile.gl + 
+						"; file index: " + geolevelId2fileIndex[ntile.gl]);
+				}
+				else if (response.file_list[geolevelId2fileIndex[ntile.gl]].topojson[zoomlevelIndex[ntile.zl]] == undefined) {
+					throw new Error("createTilesSeries(" + k + ") no topojson object for geolevel: " + 
+						ntile.gl + 
+						"; file index: " + geolevelId2fileIndex[zoomlevelIndex[ntile.zl]] +
+						"; zoomlevel index: " + zoomlevelIndex[ntile.zl] +
+						"; zoomlevel: " + ntile.zl);
+				}
+				else if (response.file_list[geolevelId2fileIndex[ntile.gl]].topojson[zoomlevelIndex[ntile.zl]].geojson == undefined) {
+					throw new Error("createTilesSeries(" + k + ") geojson for geolevel: " + 
+						ntile.gl + 
+						"; file index: " + geolevelId2fileIndex[ntile.gl] +
+						"; zoomlevel index: " + zoomlevelIndex[ntile.zl] +
+						"; zoomlevel: " + ntile.zl);
+				}
+				var geojson=response.file_list[geolevelId2fileIndex[ntile.gl]].topojson[zoomlevelIndex[ntile.zl]].geojson;
+				var ltile=createTile(k, ntile, geojson);
+				buf=tile2csv(k, ltile);
 				csvFileSize+=buf.length;
+				ntile={};	// Free memory
 				if (csvBuf == undefined) {
 					csvBuf=buf;
 				}
@@ -430,7 +627,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 			catch (e) {
 				var msg="Created " + nTiles + " tiles; size: " + csvFileSize + "; error: " +
 					e.message + "\nStack: " + e.stack;
-//				console.error("createTilesSeries catch(): " + msg);
+				console.error("createTilesSeries catch(): " + msg);
 				tileCallback(e);
 			}
 		}, // End of createTilesSeries() [Processing code]

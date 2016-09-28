@@ -195,6 +195,7 @@ endif
 MODULE_JSON=node_modules/request/package.json \
 	node_modules/JSZip/package.json \
 	node_modules/turf/package.json \
+	node_modules/geojson2svg/package.json \
 	node_modules/clone/package.json \
 	node_modules/object-sizeof/package.json \
 	node_modules/form-data/package.json \
