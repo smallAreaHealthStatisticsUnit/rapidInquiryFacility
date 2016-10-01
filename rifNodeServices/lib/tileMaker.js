@@ -8,7 +8,7 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - GeoJSON to CSV conversion code
+// Rapid Enquiry Facility (RIF) - Tile maker code
 //
 // Copyright:
 //
@@ -63,28 +63,6 @@ const async = require('async'),
 	  proj4 = require("proj4");
 	
 /*
- * Function: 	tileMaker()
- * Parameters:	Internal response object, HTTP request object, HTTP response object, callback to call at end of processing
- * Description:	
- *				Then call geojsonToCSV() - Convert geoJSON to CSV; save as CSV files; create load scripts for Postgres and MS SQL server
- */		
- 
-var tileMaker = function tileMaker(response, req, res, endCallback) {
-
-	scopeChecker(__file, __line, {
-		response: response,
-		message: response.message,
-		serverLog: serverLog,
-		req: req,
-		res: res,
-		httpErrorResponse: httpErrorResponse,
-		nodeGeoSpatialServicesCommon: nodeGeoSpatialServicesCommon,
-		callback: endCallback
-	});
-		
-	const geojsonToCSV = require('../lib/geojsonToCSV');
-		
-/*
  * Function: 	longitude2tile
  * Parameters:	Longitude, zoom level
  * Returns:		tile X
@@ -115,10 +93,10 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 	
 	For the curious, the number 85.0511 is the result of arctan(sinh(π)). By using this bound, the entire map becomes a (very large) square.
  */		
-	var longitude2tile = function longitude2tile(longitude, zoomLevel) {
-		var tileX=Math.floor( (longitude + 180) / 360 * Math.pow(2, zoomLevel) );
-		return tileX;
-	}
+var longitude2tile = function longitude2tile(longitude, zoomLevel) {
+	var tileX=Math.floor( (longitude + 180) / 360 * Math.pow(2, zoomLevel) );
+	return tileX;
+}
 	
 /*
  * Function: 	latitude2tile
@@ -126,14 +104,14 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
  * Returns:		tile Y
  * Description:	Convert latitude (WGS84 - 4326) to OSM tile y
  */ 
- 	var latitude2tile = function latitude2tile(latitude, zoomLevel) {
-		var tileY=Math.floor(
-			(1.0 - Math.log( /* Natural Log */
-					Math.tan(latitude * (Math.PI/180)) + 1.0 / Math.cos(latitude * (Math.PI/180))) / 
-				Math.PI) / 2.0 * Math.pow(2, zoomLevel)
-			);
-		return tileY;
-	}
+var latitude2tile = function latitude2tile(latitude, zoomLevel) {
+	var tileY=Math.floor(
+		(1.0 - Math.log( /* Natural Log */
+				Math.tan(latitude * (Math.PI/180)) + 1.0 / Math.cos(latitude * (Math.PI/180))) / 
+			Math.PI) / 2.0 * Math.pow(2, zoomLevel)
+		);
+	return tileY;
+}
 
 /*
  * Function: 	tile2longitude
@@ -141,9 +119,9 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
  * Returns:		Longitude
  * Description:	Convert OSM tile X to longitude (WGS84 - 4326)
  */
-	function tile2longitude(x,zoomLevel) {
-		return (x/Math.pow(2,zoomLevel)*360-180);
-	}
+function tile2longitude(x,zoomLevel) {
+	return (x/Math.pow(2,zoomLevel)*360-180);
+}
 	
 /*
  * Function: 	tile2latitude
@@ -151,10 +129,32 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
  * Returns:		Latitude
  * Description:	Convert OSM tile Y to latitude (WGS84 - 4326)
  */	
-	function tile2latitude(y,zoomLevel) {
-		var n=Math.PI-2*Math.PI*y/Math.pow(2,zoomLevel);
-		return (180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))));
-	}
+function tile2latitude(y,zoomLevel) {
+	var n=Math.PI-2*Math.PI*y/Math.pow(2,zoomLevel);
+	return (180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))));
+}
+	
+/*
+ * Function: 	tileMaker()
+ * Parameters:	Internal response object, HTTP request object, HTTP response object, callback to call at end of processing
+ * Description:	
+ *				Then call geojsonToCSV() - Convert geoJSON to CSV; save as CSV files; create load scripts for Postgres and MS SQL server
+ */		
+ 
+var tileMaker = function tileMaker(response, req, res, endCallback) {
+
+	scopeChecker(__file, __line, {
+		response: response,
+		message: response.message,
+		serverLog: serverLog,
+		req: req,
+		res: res,
+		httpErrorResponse: httpErrorResponse,
+		nodeGeoSpatialServicesCommon: nodeGeoSpatialServicesCommon,
+		callback: endCallback
+	});
+		
+	const geojsonToCSV = require('../lib/geojsonToCSV');
  
 /* 
  * Function: 	tile()
@@ -219,6 +219,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 			bbox: bbox,
 			intersects: 0,
 			svg: undefined,
+			id: "/" + ntile.gl + "/" + ntile.zl + "/" + ntile.X + "/" + ntile.Y + ".png",
 			topojson: undefined
 		}
 		
@@ -283,7 +284,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 			};		
 			var svgOptions = {
 				mapExtent: mapExtent,
-				attributes: { id: "Test" }
+				attributes: { id: ltile.id }
 			};
 			try {
 // Need to clip - turf.difference() ?
@@ -338,12 +339,18 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 	function createTileArray() {
 		var tileArray=[];
 
+		var geolevelId2fileIndex = {};
+		for (var i=0; i<response.file_list.length; i++) { 	
+			geolevelId2fileIndex[response.file_list[i].geolevel_id]=i;	
+		}
+	
 	/*
 	 * Create tile array by looping through file array
 	 */	
-		for (var i=0; i<response.file_list.length; i++) { 
+		for (var j=1; j<=response.file_list.length; j++) { 
+			var i=geolevelId2fileIndex[j];
 	//
-	// Get tile max/min lat/long from bounding box
+	// Get tile max/ lat/long from bounding box
 	//
 			var maxZoomlevel=response.file_list[i].topojson[0].zoomlevel;
 			var minZoomlevel=response.file_list[i].topojson[(response.file_list[i].topojson.length-1)].zoomlevel;
@@ -352,7 +359,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 			var xmax=response.file_list[i].bbox[2];
 			var ymax=response.file_list[i].bbox[3];
 			
-			var xminTile
+			var xminTile;
 			var yminTile;
 			var xmaxTile;
 			var ymaxTile;
@@ -552,7 +559,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 			}
 		}
 	}
-	console.error("zoomlevelIndex: " + JSON.stringify(zoomlevelIndex, null, 4));
+//	console.error("zoomlevelIndex: " + JSON.stringify(zoomlevelIndex, null, 4));
 	
 	async.forEachOfSeries(tileArray, 
 		function createTilesSeries(ntile, k, tileCallback) { // Processing code
@@ -604,7 +611,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 					csvBuf+=buf;
 				}
 					
-				if (l >= 1000) { // Keep the stack under control!
+				if (l >= 10 /* 00 */) { // Keep the stack under control!
 					l=0;
 					var nextTickFunc = function nextTick() {
 						csvStream.write(csvBuf, tileCallback);
@@ -612,6 +619,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 					process.nextTick(nextTickFunc);
 				}
 				else {
+					/*
 					if (csvBuf.length > 10000000) { // 10 MB
 						var bufCallBackFunc = function bufCallBack() {
 							csvBuf=undefined;
@@ -619,9 +627,9 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 						}
 						csvStream.write(csvBuf, bufCallBackFunc);					
 					}
-					else {
+					else { */
 						tileCallback();
-					}
+				/*	} */
 				} 
 			}
 			catch (e) {
@@ -644,5 +652,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 } // End of tileMaker()
 
 module.exports.tileMaker = tileMaker;
+module.exports.tile2longitude = tile2longitude;
+module.exports.tile2latitude = tile2latitude;
 
 // Eof
