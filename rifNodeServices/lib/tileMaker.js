@@ -64,6 +64,95 @@ const async = require('async'),
 	  proj4 = require("proj4");
 
 /*
+ * Function: 	intersectTile
+ * Parameters:	geolevel, zoomlevel, X, Y, callback, input geoJSON
+ * Returns:		GeoJSON for tile intersction
+ * Description: Insect tile
+ *
+ * inputGeoJSON object:
+ 
+	var inputGeoJSON={};
+	for (var i=0; i<=11; i++) {
+		inputGeoJSON[i] = 
+			zoomlevel: i
+			geojson: {}
+		}
+		for (var j=1; j<=3; j++) {
+			inputGeoJSON[i].geojson[j] = {
+				geolevel: j,
+				zoomlevel: i,
+				geojson: geolevelGeojson[j]
+			};
+		}
+	} 
+*/
+var intersectTile = function intersectTile(geolevel, zoomlevel, X, Y, inputGeoJSON) {
+
+	scopeChecker(__file, __line, {
+		inputGeoJSON: inputGeoJSON,
+		zoomlevelGeoJSON: inputGeoJSON[zoomlevel],
+		geojsonObj: inputGeoJSON[zoomlevel].geojson,
+		geojson: inputGeoJSON[zoomlevel].geojson[geolevel].geojson,
+		features: inputGeoJSON[zoomlevel].geojson[geolevel].geojson.features
+	});
+	
+	var bbox = [];
+	
+	if (zoomlevel == 0) {
+		bbox[0]=tile2longitude(0, inputGeoJSON[zoomlevel].zoomlevel);		// xmin
+		bbox[1]=tile2latitude(0, inputGeoJSON[zoomlevel].zoomlevel);		// ymin
+		bbox[2]=-(tile2longitude(0, inputGeoJSON[zoomlevel].zoomlevel));	// xmax
+		bbox[3]=-(tile2latitude(0, inputGeoJSON[zoomlevel].zoomlevel));	// ymax
+	}
+	else {
+		bbox[0]=tile2longitude(X, input_geojson.zoomlevel);				// xmin
+		bbox[1]=tile2latitude(Y, input_geojson.zoomlevel);				// ymin
+		bbox[2]=tile2longitude(X+1, inputGeoJSON[zoomlevel].zoomlevel);	// xmax
+		bbox[3]=tile2latitude(Y+1, inputGeoJSON[zoomlevel].zoomlevel);	// ymax
+	}
+	
+	var bboxPolygon = turf.bboxPolygon(bbox);	
+	var intersectlist = [];
+	for (var i = 0; i < inputGeoJSON[zoomlevel].geojson[geolevel].geojson.features.length; i++) {
+		var kinks = turf.kinks(inputGeoJSON[zoomlevel].geojson[geolevel].geojson.features[i]);
+
+		if (kinks && kinks.intersections && kinks.intersections.features) {
+			var resultFeatures = kinks.intersections.features.concat(inputGeoJSON[zoomlevel].geojson[geolevel].geojson.features[i]);
+			var result = {
+			  "type": "FeatureCollection",
+			  "features": resultFeatures
+			};
+			throw new Error("Geolevel: " + geolevel + "; zoomlevel: " + zoomlevel + "; X: " + X + "; Y: " + Y +
+				"; kinks: " + i + 
+				"; geojson: " + JSON.stringify(result, null, 4).substring(0, 400));
+		}
+		
+		var intersectedFeature = turf.intersect(inputGeoJSON[zoomlevel].geojson[geolevel].geojson.features[i], bboxPolygon);
+		if (intersectedFeature != null) {
+			
+			console.error("Geolevel: " + geolevel + "; zoomlevel: " + zoomlevel + "; X: " + X + "; Y: " + Y +
+				"; intersection: " + i /* + 
+				"; geojson: " + 
+				JSON.stringify(inputGeoJSON[zoomlevel].geojson[geolevel].geojson.features[i], null, 4).substring(0, 400) */);
+			intersectlist.push(inputGeoJSON[zoomlevel].geojson[geolevel].geojson.features[i]);
+		}
+	}
+	
+	if (intersectlist.length > 0) {
+		intersectlist.push(bboxPolygon); // Add boundary to tile for test purposes
+		var intersection={
+			type: "FeatureCollection",
+			features: intersectlist,
+			bbox: bbox
+		}		
+		return intersection;
+	}
+	else {
+		return undefined;
+	}
+} // End of intersectTile()
+
+/*
  * Function: 	writeSVGTile
  * Parameters:	path, geolevel, zoomlevel, X, Y, callback, insertion geoJSON
  * Returns:		tile X
@@ -72,12 +161,8 @@ const async = require('async'),
 var writeSVGTile = function writeSVGTile(path, geolevel, zoomlevel, X, Y, callback, intersection) {
 	scopeChecker(__file, __line, {
 		path: path,
-		geolevel: geolevel, 
-		zoomlevel: zoomlevel, 
-		X: X, 
-		Y: Y, 
 		callback: callback, 
-		intersection: intersection, 
+		intersection: intersection,
 		bbox: intersection.bbox
 	});
 	
@@ -94,6 +179,7 @@ var writeSVGTile = function writeSVGTile(path, geolevel, zoomlevel, X, Y, callba
 	var svgStream = fs.createWriteStream(svgFileName, { flags : 'w' });	
 	svgStream.on('finish', 
 		function svgStreamClose() {
+			console.error("Wrote tile: " + svgFileName);
 			callback();
 		});		
 	svgStream.on('error', 
@@ -129,13 +215,13 @@ var writeSVGTile = function writeSVGTile(path, geolevel, zoomlevel, X, Y, callba
 		'  <svg width="256" height="256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + 
 		'   ' + svgString + '\n' +
 		'  </svg>';
-
+	console.error(svgFileName + ": " + svgString.substring(0, 132));
 //
 // Write SVG file
 //		
 	svgStream.write(svgString);
 	svgStream.end();
-} 
+} // End of writeSVGTile()
 
 /*
  * Function: 	longitude2tile
@@ -730,5 +816,6 @@ module.exports.tileMaker = tileMaker;
 module.exports.tile2longitude = tile2longitude;
 module.exports.tile2latitude = tile2latitude;
 module.exports.writeSVGTile = writeSVGTile;
+module.exports.intersectTile = intersectTile;
 
 // Eof

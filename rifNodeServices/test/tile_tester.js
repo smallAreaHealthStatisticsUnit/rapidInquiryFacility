@@ -46,69 +46,77 @@
 
 const turf = require("turf"),
 	  fs = require("fs"),
+	  async = require("async"),
 	  tileMaker = require('../lib/tileMaker'),
 	  reproject = require("reproject"),
 	  proj4 = require("proj4");
 
 //const svg2png = require("svg2png");
 
-var input_geojson={
-	bbox: [],		
-	geolevel: [],
-	zoomlevel: 0
-};
-input_geojson.bbox[0]=tileMaker.tile2longitude(0, input_geojson.zoomlevel);		// xmin
-input_geojson.bbox[1]=tileMaker.tile2latitude(0, input_geojson.zoomlevel);		// ymin
-input_geojson.bbox[2]=-(tileMaker.tile2longitude(0, input_geojson.zoomlevel));	// xmax
-input_geojson.bbox[3]=-(tileMaker.tile2latitude(0, input_geojson.zoomlevel));	// ymax
+var geolevelGeojson = [];
+geolevelGeojson[1] = JSON.parse(fs.readFileSync("tile_tester\\cb_2014_us_nation_5m.json"));
+geolevelGeojson[2] = JSON.parse(fs.readFileSync("tile_tester\\cb_2014_us_state_500k.json"));
+geolevelGeojson[3] = JSON.parse(fs.readFileSync("tile_tester\\cb_2014_us_county_500k.json"));
 
-//console.error("bbox: " + JSON.stringify(input_geojson.bbox, null, 4));
-
-for (var i=1; i<=3; i++) {
-	input_geojson.geolevel[i] = {};
-}
-input_geojson.geolevel[1].geojson = JSON.parse(fs.readFileSync("tile_tester\\cb_2014_us_nation_5m.json"));
-input_geojson.geolevel[2].geojson = JSON.parse(fs.readFileSync("tile_tester\\cb_2014_us_state_500k.json"));
-input_geojson.geolevel[3].geojson = JSON.parse(fs.readFileSync("tile_tester\\cb_2014_us_county_500k.json"));
-
-var bboxPolygon = turf.bboxPolygon(input_geojson.bbox);
-//console.error("bboxPolygon: " + JSON.stringify(bboxPolygon, null, 4));
-var intersectlist = [];
-for (var i = 0; i < input_geojson.geolevel[1].geojson.features.length; i++) {
-	var kinks = turf.kinks(input_geojson.geolevel[1].geojson.features[i]);
-
-	if (kinks && kinks.intersections && kinks.intersections.features) {
-		var resultFeatures = kinks.intersections.features.concat(input_geojson.geolevel[1].geojson.features[i]);
-		var result = {
-		  "type": "FeatureCollection",
-		  "features": resultFeatures
+var inputGeoJSON={};
+for (var i=0; i<=11; i++) {
+	inputGeoJSON[i] = {
+		zoomlevel: i,
+		geojson: {}
+	}
+	for (var j=1; j<=3; j++) {
+		inputGeoJSON[i].geojson[j] = {
+			geolevel: j,
+			zoomlevel: i,
+			geojson: geolevelGeojson[j]
 		};
-		console.error("kinks: " + i + "; geojson: " + JSON.stringify(result, null, 4).substring(0, 400));
-	}
-	
-	var intersectedFeature = turf.intersect(input_geojson.geolevel[1].geojson.features[i], bboxPolygon);
-	if (intersectedFeature != null) {
-		
-		console.error("Intersection: " + i + "; geojson: " + JSON.stringify(input_geojson.geolevel[1].geojson.features[i], null, 4).substring(0, 400));
-		intersectlist.push(input_geojson.geolevel[1].geojson.features[i]);
 	}
 }
-if (intersectlist.length > 0) {
-	intersectlist.push(bboxPolygon); // Add boundary to tile for test purtposes
-	var intersection={
-		type: "FeatureCollection",
-		features: intersectlist,
-		bbox: input_geojson.bbox
-	}
-//		var result = turf.clip(bboxPolygon /* clipping geojson */, intersection);
-		
-//		fs.writeFile("test.json", JSON.stringify(intersection));
-//		tileJSON=turf.bboxClip(intersection, bbox);
 
+var intersectTileGeolevel = function intersectTileGeolevel(zoomlevel, X, Y, inputGeoJSON) {
+	var intersection=tileMaker.intersectTile(1 /* geolevel */, zoomlevel, X, Y, inputGeoJSON);
+	if (intersection) {
 		var tileCallback = function tileCallback(e) {
 			if (e) {
 				throw e;
-			}
-		}
-		tileMaker.writeSVGTile('tile_tester', 1 /* geolevel*/ , input_geojson.zoomlevel, 0 /* X */, 0 /* Y */, tileCallback, intersection);
-}		
+			}	
+			async.forEachOfSeries(inputGeoJSON[zoomlevel].geojson, 
+				function (value, key, callback) {	
+					console.error("key: " + key);						
+					if (key == "1") { // Already done
+//					if (key != "2") { // Only do state; county breaks JSTS with intersectTileGeolevel() error: side location conflict [ (-86.149806, 34.533633, undefined) ]
+						callback();
+					}
+					else {
+						var intersection;
+						try {
+							intersection=tileMaker.intersectTile(key /* geolevel */, zoomlevel, X, Y, inputGeoJSON);
+							if (intersection) {
+								tileMaker.writeSVGTile('tile_tester', key /* geolevel */, zoomlevel, X, Y, callback, intersection);
+							}
+							else {
+								callback(new Error("No intersection when expected for geolevel: " + 
+									key + "; zoomlevel: " + zoomlevel + "; X: " + X + "; Y: " + Y));
+							}
+						}
+						catch (e) {
+							callback(e);
+						}
+					}
+				},
+				function (err) {
+					if (err) {
+						console.error("intersectTileGeolevel() error: " + err.message + "\nStack: " + (err.stack || "no stack"));
+					}
+					console.error("intersectTileGeolevel() done")
+				});			
+		} // End of tileCallback()
+		
+//		console.error("inputGeoJSON[" + zoomlevel + "]: " + JSON.stringify(inputGeoJSON[zoomlevel].geojson, null, 4).substring(0, 400));
+		
+		// path, geolevel, zoomlevel, X, Y, callback, intersection
+		tileMaker.writeSVGTile('tile_tester', 1 /* geolevel */, zoomlevel, X, Y, tileCallback, intersection);
+	}		
+} // End of intersectTileGeolevel
+
+intersectTileGeolevel(0 /* zoomlevel */, 0 /* X */, 0 /* Y */, inputGeoJSON);
