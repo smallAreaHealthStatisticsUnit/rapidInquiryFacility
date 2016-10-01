@@ -46,7 +46,8 @@
 	
 const serverLog = require('../lib/serverLog'),
 	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
-	  httpErrorResponse = require('../lib/httpErrorResponse');
+	  httpErrorResponse = require('../lib/httpErrorResponse'),
+	  scopeChecker = require('../lib/scopeChecker');
 
 const async = require('async'),
 	  os = require('os'),
@@ -61,7 +62,81 @@ const async = require('async'),
 		}),
 	  reproject = require("reproject"),
 	  proj4 = require("proj4");
+
+/*
+ * Function: 	writeSVGTile
+ * Parameters:	path, geolevel, zoomlevel, X, Y, callback, insertion geoJSON
+ * Returns:		tile X
+ * Description: Create SVG tile from geoJSON
+ */
+var writeSVGTile = function writeSVGTile(path, geolevel, zoomlevel, X, Y, callback, intersection) {
+	scopeChecker(__file, __line, {
+		path: path,
+		geolevel: geolevel, 
+		zoomlevel: zoomlevel, 
+		X: X, 
+		Y: Y, 
+		callback: callback, 
+		intersection: intersection, 
+		bbox: intersection.bbox
+	});
 	
+//	
+// Create directory: path/geolevel/zoomlevel/X as required
+//		  
+	var dirArray=[path, geolevel, zoomlevel, Y];
+	var dir=nodeGeoSpatialServicesCommon.createTemporaryDirectory(dirArray);
+	var svgFileName=dir + "/" + Y + ".svg";
+	
+//
+// Create stream for tile
+//	
+	var svgStream = fs.createWriteStream(svgFileName, { flags : 'w' });	
+	svgStream.on('finish', 
+		function svgStreamClose() {
+			callback();
+		});		
+	svgStream.on('error', 
+		function svgStreamError(e) {
+			callback(e);						
+		});
+
+//
+// Get bounding box from intersection, reproject to 3857
+//
+	var bboxPolygon = turf.bboxPolygon(intersection.bbox);		
+	var bbox3857Polygon = reproject.reproject(
+		bboxPolygon,'EPSG:4326','EPSG:3857',proj4.defs);
+	var mapExtent={ 
+		left: bbox3857Polygon.geometry.coordinates[0][0][0], 	// Xmin
+		bottom: bbox3857Polygon.geometry.coordinates[0][1][1], 	// Ymin
+		right: bbox3857Polygon.geometry.coordinates[0][2][0], 	// Xmax
+		top: bbox3857Polygon.geometry.coordinates[0][3][1] 		// Ymax
+	};		
+	var svgOptions = {
+		mapExtent: mapExtent,
+		attributes: { id: svgFileName }
+	};
+	
+//
+// Reproject intersection to 3857 and convert to SVG
+//	
+	var intersection3857 = reproject.reproject(
+		intersection,'EPSG:4326','EPSG:3857',proj4.defs);
+	var svgString = converter.convert(intersection3857, svgOptions);
+	svgString='<?xml version="1.0" standalone="no"?>\n' +
+		' <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
+		'  <svg width="256" height="256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + 
+		'   ' + svgString + '\n' +
+		'  </svg>';
+
+//
+// Write SVG file
+//		
+	svgStream.write(svgString);
+	svgStream.end();
+} 
+
 /*
  * Function: 	longitude2tile
  * Parameters:	Longitude, zoom level
@@ -654,5 +729,6 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 module.exports.tileMaker = tileMaker;
 module.exports.tile2longitude = tile2longitude;
 module.exports.tile2latitude = tile2latitude;
+module.exports.writeSVGTile = writeSVGTile;
 
 // Eof

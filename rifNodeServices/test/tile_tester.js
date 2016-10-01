@@ -46,16 +46,9 @@
 
 const turf = require("turf"),
 	  fs = require("fs"),
-	  geojson2svg = require('geojson2svg'),
-  	  converter = geojson2svg({
-			viewportSize: { width: 256, height: 256 },
-			attributes: { 'style': 'stroke:#000000; fill-opacity: 0.0; stroke-width:0.5px;' },
-			output: 'svg'
-		},
-	tileMaker = require('../lib/tileMaker')
-);
-var reproject = require("reproject");
-var proj4 = require("proj4");
+	  tileMaker = require('../lib/tileMaker'),
+	  reproject = require("reproject"),
+	  proj4 = require("proj4");
 
 //const svg2png = require("svg2png");
 
@@ -69,7 +62,7 @@ input_geojson.bbox[1]=tileMaker.tile2latitude(0, input_geojson.zoomlevel);		// y
 input_geojson.bbox[2]=-(tileMaker.tile2longitude(0, input_geojson.zoomlevel));	// xmax
 input_geojson.bbox[3]=-(tileMaker.tile2latitude(0, input_geojson.zoomlevel));	// ymax
 
-console.error("bbox: " + JSON.stringify(input_geojson.bbox, null, 4));
+//console.error("bbox: " + JSON.stringify(input_geojson.bbox, null, 4));
 
 for (var i=1; i<=3; i++) {
 	input_geojson.geolevel[i] = {};
@@ -79,7 +72,7 @@ input_geojson.geolevel[2].geojson = JSON.parse(fs.readFileSync("tile_tester\\cb_
 input_geojson.geolevel[3].geojson = JSON.parse(fs.readFileSync("tile_tester\\cb_2014_us_county_500k.json"));
 
 var bboxPolygon = turf.bboxPolygon(input_geojson.bbox);
-console.error("bboxPolygon: " + JSON.stringify(bboxPolygon, null, 4));
+//console.error("bboxPolygon: " + JSON.stringify(bboxPolygon, null, 4));
 var intersectlist = [];
 for (var i = 0; i < input_geojson.geolevel[1].geojson.features.length; i++) {
 	var kinks = turf.kinks(input_geojson.geolevel[1].geojson.features[i]);
@@ -104,35 +97,18 @@ if (intersectlist.length > 0) {
 	intersectlist.push(bboxPolygon); // Add boundary to tile for test purtposes
 	var intersection={
 		type: "FeatureCollection",
-		features: intersectlist
+		features: intersectlist,
+		bbox: input_geojson.bbox
 	}
 //		var result = turf.clip(bboxPolygon /* clipping geojson */, intersection);
-
-		var bbox3857Polygon = reproject.reproject(
-			bboxPolygon,'EPSG:4326','EPSG:3857',proj4.defs);
-		var mapExtent={ 
-			left: bbox3857Polygon.geometry.coordinates[0][0][0], 	// Xmin
-			bottom: bbox3857Polygon.geometry.coordinates[0][1][1], 	// Ymin
-			right: bbox3857Polygon.geometry.coordinates[0][2][0], 	// Xmax
-			top: bbox3857Polygon.geometry.coordinates[0][3][1] 		// Ymax
-		};
-//		console.error("bbox3857Polygon: " + JSON.stringify(bbox3857Polygon, null, 4));	
-		console.error("mapExtent: " + JSON.stringify(mapExtent, null, 4));			
-		var svgOptions = {
-			mapExtent: mapExtent,
-			attributes: { id: "Test" }
-		};
 		
-		fs.writeFile("test.json", JSON.stringify(intersection));
+//		fs.writeFile("test.json", JSON.stringify(intersection));
 //		tileJSON=turf.bboxClip(intersection, bbox);
-		var intersection3857 = reproject.reproject(
-			intersection,'EPSG:4326','EPSG:3857',proj4.defs);
-		var svgString = converter.convert(intersection3857, svgOptions);
-		svgString='<?xml version="1.0" standalone="no"?>\n' +
-			' <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
-			'  <svg width="256" height="256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + 
-			'   ' + svgString + '\n' +
-			'  </svg>';
-		fs.writeFile("test.svg", svgString);
-		console.error(svgString.substring(0, 400));	
+
+		var tileCallback = function tileCallback(e) {
+			if (e) {
+				throw e;
+			}
+		}
+		tileMaker.writeSVGTile('tile_tester', 1 /* geolevel*/ , input_geojson.zoomlevel, 0 /* X */, 0 /* Y */, tileCallback, intersection);
 }		
