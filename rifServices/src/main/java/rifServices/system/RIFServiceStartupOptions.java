@@ -129,6 +129,8 @@ public final class RIFServiceStartupOptions {
 	
 	private String extractDirectory;
 	
+	private String extraExtractFilesDirectoryPath;
+	
 	private boolean useStrictValidationPolicy;
 	
 	// ==========================================
@@ -202,6 +204,8 @@ public final class RIFServiceStartupOptions {
 				trustStorePassword);
 		}
 		
+		extraExtractFilesDirectoryPath
+			= RIFServiceStartupProperties.getExtraDirectoryForExtractFiles();
 	}
 
 	public static RIFServiceStartupOptions newInstance(
@@ -218,6 +222,11 @@ public final class RIFServiceStartupOptions {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	
+	public String getExtraExtractFilesDirectoryPath() {
+		return extraExtractFilesDirectoryPath;
+	}
 	
 	public ArrayList<Parameter> extractParameters() {
 		ArrayList<Parameter> parameters = new ArrayList<Parameter>();
