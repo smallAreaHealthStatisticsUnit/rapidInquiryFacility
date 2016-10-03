@@ -10,9 +10,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFDateFormat;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -94,10 +92,15 @@ public final class RIFZipFileWriter {
 // Section Constants
 // ==========================================
 	/** The Constant queryFolder. */
-	private static final String queryFolder = "rif_query";
+	private static final String SUBMISSION_DIRECTORY = "submission";
+	
 // ==========================================
 // Section Properties
 // ==========================================
+	
+	private File extraDirectoryForExtractFiles;
+	
+	private ArrayList<File> dataAccessPolicyFiles;
 	
 	/** The other directories to include. */
 	private ArrayList<File> otherDirectoriesToInclude;
@@ -106,7 +109,7 @@ public final class RIFZipFileWriter {
 	private RIFStudySubmissionContentHandler rifStudySubmissionContentHandler;
 	
 	/** The source directory for rif output option. */
-	private HashMap<RIFOutputOption, File> sourceDirectoryForRIFOutputOption;
+	private HashMap<RIFOutputOption, ArrayList<File>> filesForRIFOutputOption;
 	
 // ==========================================
 // Section Construction
@@ -116,24 +119,40 @@ public final class RIFZipFileWriter {
      */
 	public RIFZipFileWriter() {
 		rifStudySubmissionContentHandler = new RIFStudySubmissionContentHandler();
-		sourceDirectoryForRIFOutputOption = new HashMap<RIFOutputOption, File>();
+		filesForRIFOutputOption = new HashMap<RIFOutputOption, ArrayList<File>>();
 		otherDirectoriesToInclude = new ArrayList<File>();		
+		dataAccessPolicyFiles = new ArrayList<File>();
     }
 
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
+
+	public void setExtraDirectoryForExtractFiles(final File extraDirectoryForExtractFiles) {
+		this.extraDirectoryForExtractFiles = extraDirectoryForExtractFiles;
+	}
+		
+	public void addDataAccessPolicy(final File dataAccessPolicyFile) {
+		dataAccessPolicyFiles.add(dataAccessPolicyFile);
+	}
+	
     /**
      * Associate source directory.
      *
      * @param rifOutputOption the rif output option
      * @param sourceDirectory the source directory
      */
-	public void associateSourceDirectory(
+	public void addOutputFileToInclude(
     	final RIFOutputOption rifOutputOption, 
-    	final File sourceDirectory) {
+    	final File fileToInclude) {
     	
-    	sourceDirectoryForRIFOutputOption.put(rifOutputOption, sourceDirectory);
+		ArrayList<File> filesForOption
+			= filesForRIFOutputOption.get(rifOutputOption);
+		if (filesForOption == null) {
+			filesForOption = new ArrayList<File>();
+			filesForRIFOutputOption.put(rifOutputOption, filesForOption);			
+		}
+		filesForOption.add(fileToInclude);
     }
     
     /**
@@ -181,12 +200,11 @@ public final class RIFZipFileWriter {
 					zipFile, 
 					user, 
 					"xml");
-
 			
 			//write the query file to a special directory.
 			//this folder should only contain one file
 			StringBuilder queryFileName = new StringBuilder();
-			queryFileName.append(queryFolder);
+			queryFileName.append(SUBMISSION_DIRECTORY);
 			queryFileName.append(File.separator);
 			queryFileName.append(rifQueryFile.getName());
 			
@@ -204,23 +222,83 @@ public final class RIFZipFileWriter {
 				StringBuilder rifOutputOptionDirectoryName
 					= new StringBuilder();
 				rifOutputOptionDirectoryName.append(rifOutputOption.getDirectoryName());
-				rifOutputOptionDirectoryName.append(File.separator);
+				rifOutputOptionDirectoryName.append(File.separator);				
 				
-				ZipEntry rifOutputOptionDirectoryEntry 
-					= new ZipEntry(rifOutputOptionDirectoryName.toString());
-				zipOutputStream.putNextEntry(rifOutputOptionDirectoryEntry);
+				ArrayList<File> filesForOption 
+					= filesForRIFOutputOption.get(rifOutputOption);
+				if (filesForOption != null) {
+					
+					for (File fileForOption : filesForOption) {
+						addFileToInclude(
+							rifOutputOption,
+							fileForOption, 
+							zipOutputStream);					
+					}
+				}
+
 			}
 			
+			if (extraDirectoryForExtractFiles != null) {
+				//If there are any extra files in the extra file directory
+				//just add them to the root directory of the zip file
+				
+				if (extraDirectoryForExtractFiles.isDirectory()) {
+					File[] extraFiles = extraDirectoryForExtractFiles.listFiles();				
+					for (File extraFile : extraFiles) {						
+						//specifying null means it will appear in the main directory
+						//when user unzips it.
+						addFileToInclude(
+							null, 
+							extraFile, 
+							zipOutputStream);
+					}
+				}
+			}
+						
 			zipOutputStream.close();
 		}
 		catch(IOException exception) {
+			exception.printStackTrace(System.out);
     		RIFServiceExceptionFactory exceptionFactory
     			= new RIFServiceExceptionFactory();
     		throw exceptionFactory.createFileWritingProblemException(
     			zipFile.getAbsolutePath());
 		}		
 	}
+	
+	/*
+	 * When rifOutputOption is null, then the routine just writes the file to 
+	 * the main directory that appears when the user unzips a RIF submission file.
+	 */
+	public void addFileToInclude(
+		final RIFOutputOption rifOutputOption,
+		final File sourceFile,		
+		ZipOutputStream zipOutputStream) 
+		throws FileNotFoundException, 
+		IOException {
+
+		StringBuilder filePath = new StringBuilder();
+		if (rifOutputOption != null) {			
+			filePath.append(rifOutputOption.getDirectoryName());
+			filePath.append(File.separator);
+		}
+		filePath.append(sourceFile.getName());
 		
+		File file = new File(sourceFile.getAbsolutePath());
+		FileInputStream fileInputStream = new FileInputStream(file);
+		ZipEntry zipEntry = new ZipEntry(filePath.toString());
+		zipOutputStream.putNextEntry(zipEntry);
+
+		byte[] bytes = new byte[1024];
+		int length;
+		while ((length = fileInputStream.read(bytes)) >= 0) {
+			zipOutputStream.write(bytes, 0, length);
+		}
+
+		zipOutputStream.closeEntry();
+		fileInputStream.close();
+	}	
+	
 	/**
 	 * Gets the submission file name.
 	 *
