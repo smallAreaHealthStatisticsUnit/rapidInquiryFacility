@@ -100,12 +100,7 @@ final class SQLRIFSubmissionManager
 		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id=? ");
 		insertStudyAreasQueryFormatter.addQueryLine(1, "ORDER BY ");
 		insertStudyAreasQueryFormatter.addQueryLine(2, "study_id, area_id, band_id");
-		insertStudyAreasQueryFormatter.endWithSemiColon();		
-		
-		System.out.println("====================================================================");
-		System.out.println(insertStudyAreasQueryFormatter.generateQuery());
-		System.out.println("====================================================================");
-		
+		insertStudyAreasQueryFormatter.endWithSemiColon();					
 		
 	}
 	
@@ -332,16 +327,13 @@ final class SQLRIFSubmissionManager
 			 * that needs to be populated with smoothed results.  For this,
 			 * we will next call the smoothing service
 			 */
-			System.out.println("SQLRIFSubmissionManager submitStudy 1");
 			runStudy(connection, studyID);
-			System.out.println("SQLRIFSubmissionManager submitStudy 2");
+
 			
 			
 			/*
 			 * Part III: Run smoothing on the data extract
 			 */
-			
-
 			
 			String rScriptFileName = "Adj_Cov_Smooth.R";
 			/*
@@ -353,8 +345,6 @@ final class SQLRIFSubmissionManager
 			 */
 			CalculationMethod calculationMethod
 				= studySubmission.getCalculationMethods().get(0);
-
-			System.out.println("SQLRIFSubmissionManager submitStudy 3");
 			
 			BayesianSmoothingService bayesianSmoothingService
 				= new BayesianSmoothingService();
@@ -366,19 +356,16 @@ final class SQLRIFSubmissionManager
 				studyID, 
 				calculationMethod);
 			
-
-			System.out.println("SQLRIFSubmissionManager submitStudy 4");
-
-			RIFZipFileWriter writer = new RIFZipFileWriter();
-			File targetFile = new File("C://rif_scripts/result.zip");
-			writer.writeZipFile(user, targetFile, studySubmission);
+			writeStudyToZipFile(
+				connection,
+				rifServiceStartupOptions,
+				user,
+				studySubmission,
+				String.valueOf(studyID));
 			
-			
-			System.out.println("Finished the whole thing studyID=="+studyID+"==");
 			return studyID;
 		}
 		catch(SQLException sqlException) {
-			System.out.println("============================submitStudy ERROR============================");
 			logSQLException(sqlException);
 			SQLQueryUtility.rollback(connection);
 			String errorMessage
@@ -394,7 +381,39 @@ final class SQLRIFSubmissionManager
 
 	}
 
+	
+	/*
+	 * This is a method used to test whether the RIF will correctly write a 
+	 * study submission and its results to a single zip file
+	 */
+	public void writeStudyToZipFile(
+		final Connection connection,
+		final RIFServiceStartupOptions rifServiceStartupOptions,
+		final User user,
+		final RIFStudySubmission rifStudySubmission,
+		final String studyID) throws RIFServiceException {
 
+		//Defensively copy parameters and guard against blocked users
+		
+		SQLStudySubmissionFileExportService fileExportService
+			= new SQLStudySubmissionFileExportService();
+		File scratchSpaceDirectory 
+			= new File(rifServiceStartupOptions.getExtractDirectory());
+		File extraFilesDirectory 
+			= new File(rifServiceStartupOptions.getExtraExtractFilesDirectoryPath());
+		fileExportService.initialise(
+			scratchSpaceDirectory, 
+			extraFilesDirectory);
+			
+		fileExportService.writeRIFStudyToZipFile(
+			connection, 
+			user,
+			rifStudySubmission, 
+			studyID);
+	}
+
+	
+	
 	/**
 	 * writes the extract and smoothed data tables to csv files that will appear in 
 	 * a specified output scratch directory
@@ -804,7 +823,6 @@ final class SQLRIFSubmissionManager
 			= new SQLDeleteTableQueryFormatter();
 		deleteTableQueryFormatter.setTableToDelete(statusTableName);
 		
-		System.out.println("status table name=="+statusTableName+"==");
 		SQLCreateTableQueryFormatter createTableQueryFormatter
 			= new SQLCreateTableQueryFormatter();
 		createTableQueryFormatter.useTemporaryTable();
@@ -1114,7 +1132,6 @@ final class SQLRIFSubmissionManager
 			runStudyResultSet.next();
 			
 			result = String.valueOf(runStudyResultSet.getBoolean(1));	
-			System.out.print("SQLRIFSubmissionManager submitStudy 1=="+result+"== PRINTING WARNINGS 1");
 			
 			SQLWarning warning = runStudyStatement.getWarnings();
 			while (warning != null) {
@@ -1130,7 +1147,6 @@ final class SQLRIFSubmissionManager
 			}
 			
 			connection.commit();
-			System.out.print("SQLRIFSubmissionManager submitStudy 1=="+result+"== PRINTING WARNINGS 2");
 			
 			return result;
 		}
@@ -2555,7 +2571,6 @@ final class SQLRIFSubmissionManager
 		final User user) 
 		throws RIFServiceException {
 		
-		System.out.println("SQLRIFSubmissionManager getStudySummariesForUser 1");
 		ArrayList<StudySummary> results = new ArrayList<StudySummary>();
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
