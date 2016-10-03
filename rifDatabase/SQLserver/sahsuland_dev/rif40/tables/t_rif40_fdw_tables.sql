@@ -9,6 +9,8 @@ BEGIN
 END
 GO
 
+/* FOREIGN DATA WRAPPER TABLES - Postgres only!
+
 --table definition
 CREATE TABLE [rif40].[t_rif40_fdw_tables](
 	[username] [varchar](90) NOT NULL DEFAULT (SUSER_SNAME()),
@@ -54,4 +56,4 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Date FDW table
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'SELECT rowtest passed (0/1)', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_fdw_tables', @level2type=N'COLUMN',@level2name=N'rowtest_passed'
 GO
-
+ */

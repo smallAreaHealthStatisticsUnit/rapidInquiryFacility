@@ -1,6 +1,16 @@
 USE [sahsuland_dev]
 GO
 
+-- Remove incorrectly named trigger: tr_rif40_use_projects
+IF EXISTS (SELECT *  FROM sys.triggers tr
+INNER JOIN sys.views t ON tr.parent_id = t.object_id
+WHERE t.schema_id = SCHEMA_ID(N'rif40') 
+and tr.name=N'tr_rif40_use_projects')
+BEGIN
+	DROP TRIGGER [rif40].[tr_rif40_use_projects];
+END
+GO
+
 IF EXISTS (SELECT *  FROM sys.triggers tr
 INNER JOIN sys.views t ON tr.parent_id = t.object_id
 WHERE t.schema_id = SCHEMA_ID(N'rif40') 
@@ -10,11 +20,10 @@ BEGIN
 END
 GO
 
-
 ------------------------------
 -- create trigger code 
 ------------------------------
-CREATE trigger [rif40].[tr_rif40_use_projects]
+CREATE trigger [rif40].[tr_rif40_user_projects]
 on [rif40].[rif40_user_projects]
 instead of insert , update , delete
 as
@@ -150,3 +159,4 @@ BEGIN
 END;
 
 END;
+GO

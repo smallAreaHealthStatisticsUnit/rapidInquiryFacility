@@ -73,3 +73,4 @@ BEGIN
 	DECLARE @log_msg VARCHAR(max) = 'Valid name for column '+@l_columnname+': '+@l_value;
 	EXEC [rif40].[rif40_log] 'DEBUG3', '[rif40].[rif40_db_name_check]', @log_msg;
 END;
+GO

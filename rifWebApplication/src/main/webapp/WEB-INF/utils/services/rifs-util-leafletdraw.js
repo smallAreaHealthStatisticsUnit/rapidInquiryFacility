@@ -11,7 +11,7 @@ angular.module("RIF")
                 function ($rootScope) {
                     function extendLeafletDrawCircle() {
 
-                        //increment of band count, 1st band is #1, to a max of 9
+                        //increment of band count, 1st band is #1, to a max of 6
                         var thisBand = 1;
 
                         L.SimpleShape = {};
@@ -82,7 +82,7 @@ angular.module("RIF")
                                 }
 
                                 //stop drawing on right click or if band = max
-                                if (e.originalEvent.buttons === 2 | thisBand === 9) {
+                                if (e.originalEvent.buttons === 2 | thisBand === 6) {
                                     if (this._shape) {
                                         this._fireCreatedEvent();
                                         //fire event in directive     

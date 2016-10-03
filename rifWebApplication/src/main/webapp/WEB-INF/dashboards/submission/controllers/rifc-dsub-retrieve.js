@@ -1,13 +1,22 @@
-/* CONTROLLER for disease submission retrieve study modal
- * 
- * 
+/* 
+ * CONTROLLER for disease submission retrieve study modal
  */
+/* global URL */
+
 angular.module("RIF")
-        .controller('ModalRetrieveCtrl', ['$scope', '$uibModal',
-            function ($scope, $uibModal) {
+        .controller('ModalRetrieveCtrl', ['$scope', '$uibModal', 'ModelService',
+            function ($scope, $uibModal, ModelService) {
+                
+                //get the study object
+                $scope.getBlob = function () {
+                    var data = ModelService.get_rif_job_submission_JSON();
+                    var json = JSON.stringify(data);
+                    return new Blob([json], {type: "application/json"});
+                };
+
                 $scope.open = function () {
                     var modalInstance = $uibModal.open({
-                        animation: true, 
+                        animation: true,
                         templateUrl: 'dashboards/submission/partials/rifp-dsub-retrieve.html',
                         controller: 'ModalRetrieveInstanceCtrl',
                         windowClass: 'stats-Modal',

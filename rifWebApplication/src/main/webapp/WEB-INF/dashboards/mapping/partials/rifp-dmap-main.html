@@ -55,8 +55,8 @@ Mapping
     </div>
 </div>
 
-<div ui-layout="{flow : 'column'}" ng-controller ="DiseaseMappingCtrl2">
-    <div ui-layout-container class="html-back" size="25%">
+<div ui-layout="{flow : 'column'}" ng-controller ="DiseaseMappingCtrl">
+    <div ui-layout-container class="html-back" id="vSplit1" max-size="100%" size="{{vSplit1}}%">
         <div class='chartOptsMapping'>
             <div id="studyLabel">
                 <h1 > Study Id  </h1>
@@ -86,14 +86,14 @@ Mapping
                 </li>	
             </ul>
         </div>
-        <div id='mAreaCharts' >          
-            <bars-chart chart-data="myData" ></bars-chart>
+        <div id='mAreaCharts' ng-controller ="DiseaseMappingCtrl2">          
+            <bars-chart chart-data="myData"></bars-chart>
         </div>
     </div>
     <div ui-layout-container> 
         <div ui-layout="{flow : 'row'}" >
-            <div ui-layout-container size="75%" class="leaflet-box">
-                <div id="submenuMapping" ng-controller ="DiseaseMappingCtrl">
+            <div ui-layout-container id="hSplit1" max-size="100%" size="{{hSplit1}}%" class="leaflet-box">
+                <div id="submenuMapping">
                     <div>
                         <div class='mapOpts'>
                             <a ng-controller="ChoroplethModalCtrl" ng-click="open()"class='mapOpt' id="choroplethBtn" title="Choropleth map"></a>

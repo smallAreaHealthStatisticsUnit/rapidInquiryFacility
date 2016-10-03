@@ -1,4 +1,4 @@
-# CDC RIF 4.0 Progress Report August 2016
+# CDC RIF 4.0 Progress Report Start August 2016
 
 ## Highlight
 
@@ -20,13 +20,14 @@ No work (as planned)
 
 ## Front end (webPlatform)
 
-### Disease Mapping - David
+### Disease Mapping, Data viewer - David
 
-- XXX
-
-### Data viewer - David
-
-- XXX
+- Added histogram to choropleth map break selector
+- Finished adding split-containers to dashboards
+- Statistical method dialogue completed
+- Finished login methods and added permission check to outgoing requests
+- Started status report viewer
+- Continued looking at D3 library with KG
 
 ## Middleware
 
@@ -44,9 +45,11 @@ both PostgreSQL and SQL Server platforms, Kevin had to re-evaluate using them.
 
 ### Run study batch - Kevin
 
+- Started R script integration from Java
 
 #### R - Brandon
 
+- Completed R script integration to database
 
 ### Ontology support - Kevin
  

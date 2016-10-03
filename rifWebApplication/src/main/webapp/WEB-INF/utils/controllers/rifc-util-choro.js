@@ -1,5 +1,5 @@
 /*
- * CONTROLLER
+ * CONTROLLER for choropleth map symbology modal used by viewer and mapper
  */
 /* global d3 */
 
@@ -29,7 +29,6 @@ angular.module("RIF")
 
                         $scope.parent.refresh();
                     });
-
                 };
             }])
         .controller('ChoroplethModalInstanceCtrl', function ($scope, $uibModalInstance, ColorBrewerService, ChoroService) {
@@ -62,7 +61,7 @@ angular.module("RIF")
                 }
 
                 //get the domain
-                $scope.domain.length = [];
+                $scope.domain.length = 0;
                 $scope.$parent.topoLayer.eachLayer(function (layer) {
                     $scope.domain.push(layer.feature.properties[$scope.input.selectedFeature]);
                 });
@@ -70,12 +69,12 @@ angular.module("RIF")
                 //get the breaks
                 $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.selectedSchemeName,
                         $scope.input.selectedN), $scope.input.checkboxInvert);
-
             };
 
             $scope.close = function () {
                 $uibModalInstance.dismiss();
             };
+            
             $scope.apply = function () {
                 //check breaks are numeric               
                 for (var i = 0; i < $scope.input.thisMap.breaks.length; i++) {
@@ -100,7 +99,6 @@ angular.module("RIF")
                 }
 
                 $uibModalInstance.close($scope.input);
-            }
-            ;
+            };
         });
 

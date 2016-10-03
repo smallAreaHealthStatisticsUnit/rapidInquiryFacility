@@ -74,8 +74,10 @@ createTemporaryDirectory = function createTemporaryDirectory(dirArray, response,
 	const fs = require('fs');
 		  
 	scopeChecker(__file, __line, {
+		dirArray: dirArray
+	},
+	{
 		serverLog: serverLog,
-		dirArray: dirArray,
 		req: req,
 		response: response,
 		serverLog: serverLog
@@ -95,17 +97,29 @@ createTemporaryDirectory = function createTemporaryDirectory(dirArray, response,
 			if (e.code == 'ENOENT') {
 				try {
 					fs.mkdirSync(tdir);
-					response.message += "\nmkdir: " + tdir;
+					if (response && response.message) {
+						response.message += "\nmkdir: " + tdir;
+					}
 				} catch (e) { 
-					serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
-						"ERROR: Cannot create directory: " + tdir + "; error: " + e.message, req, undefined /* err */, response);
-//							shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
+					if (response && serverLog && serverLog.serverError2) {
+						serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
+							"ERROR: Cannot create directory: " + tdir + "; error: " + e.message, req, undefined /* err */, response);
+//								shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
+					}
+					else {
+						throw e;						
+					}	
 				}			
 			}
 			else {
-				serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
-					"ERROR: Cannot access directory: " + tdir + "; error: " + e.message, req, undefined /* err */, response);
-//						 shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 					
+				if (response && serverLog && serverLog.serverError2) {
+					serverLog.serverError2(__file, __line, "createTemporaryDirectory", 
+						"ERROR: Cannot access directory: " + tdir + "; error: " + e.message, req, undefined /* err */, response);
+//						 shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
+				}
+				else {
+					throw e;						
+				}	
 			}
 		}
 	}

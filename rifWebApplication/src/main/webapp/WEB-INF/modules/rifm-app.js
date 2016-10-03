@@ -42,7 +42,6 @@
 
 angular.module("RIF",
         [
-            "oz.components.ui-layout-events",
             "ui.router",
             "ui.bootstrap",
             "ui-leaflet",
@@ -57,8 +56,9 @@ angular.module("RIF",
             "ngNotificationsBar",
             "ui.layout"
         ]
-        )
-        .config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
+        )      
+        .config(['$stateProvider', '$urlRouterProvider',
+            function ($stateProvider, $urlRouterProvider) {
 
                 //Extend Leaflet to handle topojson
                 L.TopoJSON = L.GeoJSON.extend({
@@ -78,18 +78,18 @@ angular.module("RIF",
                 $stateProvider
                         .state('state0', {
                             url: '/login',
-                            templateUrl: "dashboards/login/partials/rifp-login-main.html"
+                            templateUrl: "dashboards/login/partials/rifp-login-main.html",
+                            controller: 'LoginCtrl'
                         })
                         .state('state1', {
                             url: '/submission',
                             templateUrl: "dashboards/submission/partials/rifp-dsub-main.html",
-                            controller: function ($scope, $state) {
-                                $scope.$state = $state;
-                            }
+                            controller: 'SumbmissionCtrl'
                         })
                         .state('state2', {
                             url: '/viewer',
-                            templateUrl: "dashboards/viewer/partials/rifp-view-main.html"
+                            templateUrl: "dashboards/viewer/partials/rifp-view-main.html",
+                            controller: 'ViewerCtrl'
                         })
                         .state('state3', {
                             url: '/mapping',

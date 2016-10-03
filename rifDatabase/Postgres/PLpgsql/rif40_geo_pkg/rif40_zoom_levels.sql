@@ -446,7 +446,7 @@ $$
 LANGUAGE sql IMMUTABLE;
  
 COMMENT ON FUNCTION rif40_geo_pkg.tile2longitude(INTEGER, INTEGER) IS 'Function: 	 tile2latitude()
-Parameters:	 OSM Tile y, zoom level
+Parameters:	 OSM Tile x, zoom level
 Returns:	 Longitude
 Description: Convert OSM tile y to longitude (WGS84 - 4326)';
 

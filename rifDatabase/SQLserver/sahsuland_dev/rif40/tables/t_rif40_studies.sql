@@ -53,7 +53,8 @@ GO
 
 --table definition
 CREATE TABLE [rif40].[t_rif40_studies](
-	[study_id] [integer] NOT NULL DEFAULT (NEXT VALUE FOR [rif40].[rif40_study_id_seq]),
+--	[study_id] [integer] NOT NULL DEFAULT (NEXT VALUE FOR [rif40].[rif40_study_id_seq]),
+	[study_id] [integer] NOT NULL CONSTRAINT t_rif40_study_study_id_seq DEFAULT (NEXT VALUE FOR [rif40].[rif40_study_id_seq]),
 	[username] [varchar](90) NOT NULL DEFAULT (SUSER_SNAME()),
 	[geography] [varchar](50) NOT NULL,
 	[project] [varchar](30) NOT NULL,

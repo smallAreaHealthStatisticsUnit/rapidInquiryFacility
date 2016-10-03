@@ -11,7 +11,7 @@ GO
 
 CREATE TABLE [rif40].[t_rif40_comparison_areas](
 	[username] [varchar](90) NOT NULL DEFAULT (SUSER_SNAME()),
-	[study_id] [integer] NOT NULL DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
+	[study_id] [integer] NOT NULL CONSTRAINT t_rif40_comparison_area_study_id_seq DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
 	[area_id] [varchar](300) NOT NULL,
  CONSTRAINT [t_rif40_comparison_areas_pk] PRIMARY KEY CLUSTERED 
 (

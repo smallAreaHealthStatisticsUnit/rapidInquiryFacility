@@ -5,7 +5,6 @@ angular.module("RIF")
         .controller('DiseaseMappingCtrl2', ['$scope',
             function ($scope) {
 
-
                 //TEST DATA FOR d3
                 $scope.myData = [10, 25, 60, 40, 70];
                 $scope.myData2 = [10, 25, 60, 40, 70, 80];
@@ -15,22 +14,26 @@ angular.module("RIF")
                 }
 
             }])
-        .controller('DiseaseMappingCtrl', ['$scope', 'leafletData', 'LeafletBaseMapService', '$timeout', 'MappingStateService', 'D3RRService', 'user',
-            function ($scope, leafletData, LeafletBaseMapService, $timeout, MappingStateService, D3RRService, user) {
+        .controller('DiseaseMappingCtrl', ['$scope', 'leafletData', 'LeafletBaseMapService', '$timeout', 'MappingStateService', 'D3RR', 'user',
+            function ($scope, leafletData, LeafletBaseMapService, $timeout, MappingStateService, D3RR, user) {
 
+                //ui-container sizes
                 $scope.rrCurrentWidth = d3.select("#rr").node().getBoundingClientRect().width;
                 $scope.rrCurrentHeight = d3.select("#rr").node().getBoundingClientRect().height;
+                $scope.vSplit1 = MappingStateService.getState().vSplit1;
+                $scope.hSplit1 = MappingStateService.getState().hSplit1;
 
-                $scope.$on('ui.layout.resize', function (e) {
-
-                    //Stop svg flicker as event fires even when bbox not resized
-                    if ($scope.rrCurrentWidth === d3.select("#rr").node().getBoundingClientRect().width &
-                            $scope.rrCurrentHeight === d3.select("#rr").node().getBoundingClientRect().height) {
-                        return;
+                $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
+                    //Monitor split sizes
+                    if (beforeContainer.id === "vSplit1") {
+                        MappingStateService.getState().vSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
+                    }
+                    if (beforeContainer.id === "hSplit1") {
+                        MappingStateService.getState().hSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                     }
 
                     //Rescale D3 graphs
-                    D3RRService.getPlot(d3.select("#rr").node().getBoundingClientRect().width,
+                    D3RR.getPlot(d3.select("#rr").node().getBoundingClientRect().width,
                             d3.select("#rr").node().getBoundingClientRect().height, "SOME DATA", '#rr');
 
                     $scope.rrCurrentWidth = d3.select("#rr").node().getBoundingClientRect().width;
@@ -58,13 +61,13 @@ angular.module("RIF")
                             $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBase());
                             map.addLayer($scope.parent.thisLayer);
                         }
-                        /*
-                         //restore setView
-                         if (maxbounds && ViewerStateService.getState().zoomLevel === -1) {
-                         map.fitBounds(maxbounds);
-                         } else {
-                         map.setView(ViewerStateService.getState().view, ViewerStateService.getState().zoomLevel);
-                         }*/
+
+                        //restore setView
+                        if (maxbounds && MappingStateService.getState().zoomLevel === -1) {
+                            map.fitBounds(maxbounds);
+                        } else {
+                            map.setView(MappingStateService.getState().view, MappingStateService.getState().zoomLevel);
+                        }
                         //hack to refresh map
                         setTimeout(function () {
                             map.invalidateSize();
@@ -85,13 +88,15 @@ angular.module("RIF")
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
                     });
-                    $scope.parent.renderMap("diseasemap");
-
+                    
+                    //Draw D3 (TODO: into functions)
+                    D3RR.getPlot(d3.select("#rr").node().getBoundingClientRect().width,
+                            d3.select("#rr").node().getBoundingClientRect().height, "SOME DATA", '#rr');
                 });
 
                 function style(feature) {
                     return {
-                        fillColor: 'red',
+                        fillColor: '#ffcccc',
                         weight: 1,
                         opacity: 1,
                         color: 'gray',
@@ -140,12 +145,10 @@ angular.module("RIF")
                             }
                         });
                         $scope.topoLayer.addTo(map);
-                        maxbounds = $scope.topoLayer.getBounds();
+                        maxbounds = $scope.topoLayer.getBounds();                       
                     });
+                    $scope.parent.renderMap("diseasemap");
                 }
-
-
-
             }]);
 
 

@@ -6,15 +6,18 @@ angular.module("RIF")
                 function () {
                     var s = {
                         zoomLevel: -1,
-                        view: [0,0]
+                        view: [0,0],
+                        vSplit1: 33,
+                        hSplit1: 40,
+                        hSplit2: 60
                     };
-                    var defaults = JSON.parse(JSON.stringify(s));
+                    var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
                         getState: function () {
                             return s;
                         },
                         resetState: function () {
-                            s = defaults;
+                            s = angular.copy(defaults);
                         }
                     };
                 });

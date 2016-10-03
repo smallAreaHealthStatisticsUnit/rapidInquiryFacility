@@ -43,7 +43,7 @@ angular.module("RIF")
                         $scope.selectedPolygonCount = $scope.selectedPolygon.length;
 
                         //band colour look-up for selected districts
-                        $scope.possibleBands = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                        $scope.possibleBands = [1, 2, 3, 4, 5, 6];
                         $scope.currentBand = 1; //from dropdown
 
                         //d3 polygon rendering, changed by slider
@@ -318,7 +318,7 @@ angular.module("RIF")
                             if (!shape.circle) {
                                 removeMapDrawItems();
                                 //auto increase band dropdown
-                                if ($scope.currentBand < 9) {
+                                if ($scope.currentBand < 6) {
                                     $scope.currentBand++;
                                 }
                             }
@@ -337,7 +337,8 @@ angular.module("RIF")
                             for (var i = 0; i < $scope.selectedPolygon.length; i++) {
                                 if ($scope.selectedPolygon[i].id === feature) {
                                     bFound = true;
-                                    var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628', '#f781bf', '#999999'];
+                                    //max possible is six bands according to specs
+                                    var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']; //'#a65628', '#f781bf', '#999999'
                                     return cb[$scope.selectedPolygon[i].band - 1];
                                 }
                             }
@@ -367,7 +368,6 @@ angular.module("RIF")
 
                         //Multiple select with shift
                         //detect shift key (16) down
-                        //TODO: Change to last click location as start point
                         var bShift = false;
                         var multiStart = -1;
                         var multiStop = -1;
@@ -380,58 +380,48 @@ angular.module("RIF")
                         $scope.keyUp = function ($event) {
                             if (bShift && $event.keyCode === 16) {
                                 bShift = false;
-                                multiStart = -1;
                                 multiStop = -1;
                             }
                         };
 
                         //Table click event to update selectedPolygon 
                         $scope.rowClick = function (row) {
-                            //We are doing a single click select on the table
-                            //TODO: REFACTOR - NEEDS ALSO FIXING
-                            var thisPoly = row.entity.label;
-                            var thisPolyID = row.entity.id;
-                            var bFound = false;
-                            for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                if ($scope.selectedPolygon[i].id === thisPolyID) {
-                                    bFound = true;
-                                    $scope.selectedPolygon.splice(i, 1);
-                                    break;
-                                }
-                            }
-                            if (!bFound) {
-                                $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
-                            }
-
-                            //We are doing a multiple select on the table, shift key is down
-                            if (bShift) {
-                                //get array of rows in filtered order
-                                var myVisibleRows = $scope.gridApi.core.getVisibleRows();
-                                if (multiStart === -1) {
-                                    //get index of start multi select in the filtered table
-                                    multiStart = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
-                                } else {
-                                    //get index of end multi select in the filtered table
-                                    multiStop = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
-                                    //do the multiple selection
-                                    for (var i = Math.min(multiStop, multiStart);
-                                            i <= Math.min(multiStop, multiStart) + (Math.abs(multiStop - multiStart)); i++) {
-                                        var thisPoly = myVisibleRows[i].entity.label;
-                                        var thisPolyID = myVisibleRows[i].entity.id;
-                                        var bFound = false;
-                                        for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                                            if ($scope.selectedPolygon[j].id === thisPolyID) {
-                                                bFound = true;
-                                                break;
-                                            }
-                                        }
-                                        if (!bFound) {
-                                            $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
-                                        }
+                            var myVisibleRows = $scope.gridApi.core.getVisibleRows();
+                            if (!bShift) {
+                                //We are doing a single click select on the table
+                                var thisPoly = row.entity.label;
+                                var thisPolyID = row.entity.id;                              
+                                var bFound = false;
+                                for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+                                    if ($scope.selectedPolygon[i].id === thisPolyID) {
+                                        bFound = true;
+                                        $scope.selectedPolygon.splice(i, 1);
+                                        break;
                                     }
-                                    multiStart = -1;
+                                }                              
+                                if (!bFound) {
+                                    $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
+                                }
+                            } else {
+                                //We are doing a multiple select on the table, shift key is down
+                                multiStop = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
+                                for (var i = Math.min(multiStop, multiStart);
+                                        i <= Math.min(multiStop, multiStart) + (Math.abs(multiStop - multiStart)); i++) {
+                                    var thisPoly = myVisibleRows[i].entity.label;
+                                    var thisPolyID = myVisibleRows[i].entity.id;
+                                    var bFound = false;
+                                    for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+                                        if ($scope.selectedPolygon[j].id === thisPolyID) {
+                                            bFound = true;
+                                            break;
+                                        }
+                                    }                                  
+                                    if (!bFound) {
+                                        $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
+                                    }
                                 }
                             }
+                            multiStart = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
                         };
 
                         //Clear all selection from map and table

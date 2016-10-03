@@ -12,7 +12,7 @@ GO
 --table definition
 CREATE TABLE [rif40].[t_rif40_study_sql](
 	[username] [varchar](90) NOT NULL DEFAULT (SUSER_SNAME()),
-	[study_id] [integer] NOT NULL DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
+	[study_id] [integer] NOT NULL CONSTRAINT t_rif40_study_sql_study_id_seq DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
 	[statement_type] [varchar](30) NOT NULL,
 	[statement_number] [numeric](6, 0) NOT NULL,
 	[sql_text] [varchar](4000) NOT NULL,

@@ -13,8 +13,9 @@ Disease submission main 'trees' menu
         <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
     </div>
 </div>
+
 <!-- 5 Submission drop downs-->
-<div id="buttons" class='positioning' ng-controller="SumbmissionCtrl">
+<div id="buttons" class='positioning'>
     <div class='geoDrops'>
         <div>
             <div  class='styleUnderline'>
@@ -59,8 +60,7 @@ Disease submission main 'trees' menu
 </div>
 
 <!-- Four Tree Icons-->
-<div id="content" ng-controller="SumbmissionCtrl">
-
+<div id="content">
     <!-- Study area block -->
     <div ng-switch on=tree id='studyArea' class='blocks' ng-controller="ModalStudyAreaCtrl">   
         <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
@@ -69,7 +69,6 @@ Disease submission main 'trees' menu
             Study Area
         </div>    
     </div>
-
     <!-- Comparison area block -->
     <div ng-switch on=tree id='comparisonArea' class='blocks' ng-controller="ModalComparisonAreaCtrl">      
         <div class='headerBlock' ng-click="open()" ng-switch-when="false"></div>
@@ -97,17 +96,16 @@ Disease submission main 'trees' menu
 </div>
 
 <!-- Run and Retrieve buttons-->
-<div class='positioning'>
-    <div id='importExport' >
-        <div id='importExportContainer' class='buttonContainer'>
-            <div ng-controller="ModalRetrieveCtrl" id='retrieve' ng-click="open()">Save Study</div>
-            <div ng-controller="ModalResetCtrl" id='resetStudy' ng-click="open()">Reset</div>
-        </div>
-    </div>
-    <div id='runnable'>
-        <div id='runContainer'  class='buttonContainer'>
-            <div ng-controller="ModalRunCtrl" id='run' ng-click="open()">Run study</div>
-            <div ng-controller="ModalRunFileCtrl" id='fromFile' ng-click="open()">Run from file</div>
-        </div>
+<div class="subButtons">   
+    <div id='saveButton' class='subButtonContainer'> 
+        <div ng-controller="ModalRetrieveCtrl" id='retrieve' ng-click="open()">Save Study</div>
+        <div ng-controller="ModalResetCtrl" id='resetStudy' ng-click="open()">Reset</div>     
+    </div>  
+    <div id='runButton' class='subButtonContainer'> 
+        <div ng-controller="ModalRunCtrl" id='run' ng-click="open()">Run study</div>
+        <div ng-controller="ModalRunFileCtrl" id='fromFile' ng-click="open()">Open from file</div>
+    </div>  
+    <div id='statusButton' class='subButtonContainer'> 
+        <div ng-controller="ModalStatusCtrl" id='status' ng-click="open()">Status</div>
     </div>
 </div>

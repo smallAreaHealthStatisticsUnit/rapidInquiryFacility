@@ -19,48 +19,43 @@ Viewer
         <a href='#'>Export</a>
     </div>
     <div class='geoDropsMapping'>
-        <div>
-            <div id='geolevel'>
-                <div>Geolevel:</div>
-                <select>
-                    <option>1</option>
-                    <option>2</option>
-                    <option>3</option>
-                    <option>4</option>
-                    <option>5</option>
-                </select>
-            </div>
-        </div>
-        <div id='dataSet'>
-            <div>Data set:</div>
-            <select>
-                <option></option>
+        <div >
+            <div>Study ID:</div>
+            <select ng-model="studyID" ng-options="s for s in studyIDs">
             </select>
         </div>
-        <div id='zoomTo'>
-            <div>Zoom to:</div>
-            <select>
-                <option></option>
+        <div >
+            <div>Year:</div>
+            <select ng-model="year" ng-options="s for s in years">
+            </select>
+        </div>
+        <div>
+            <div>Sex:</div>
+            <select ng-model="sex" ng-options="s for s in sexes">
+            </select>
+        </div>  
+        <div>
+            <div>Attribute:</div>
+            <select ng-model="attribute" ng-options="s for s in attributes">
             </select>
         </div>  
     </div>
 </div>
 
-<div ng-controller="ViewerCtrl2" ui-layout="{flow : 'column'}">
-    <div id="qwerty" ui-layout-container size="{{size1}}"> 
+<div ui-layout="{flow : 'column'}">
+    <div ui-layout-container id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
         <div ui-layout="{flow : 'row'}">
-            <div ui-layout-container class="js-back">                             
-                ULSRR
+            <div ui-layout-container id="hSplit1" max-size="100%" class="js-back" size="{{hSplit1}}%">
             </div>
-            <div ui-layout-container class="js-back" size="{{size2}}">
-                POPULATION ng-controller="ViewerCtrl"
+            <div ui-layout-container class="js-back">
+                POPULATION ng-controller="ViewerCtrl2"
             </div>
         </div>
     </div>
 
     <div ui-layout-container> 
         <div ui-layout="{flow : 'row'}">
-            <div ui-layout-container class="leaflet-box">            
+            <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit2}}%">            
                 <div id="submenuMapping" >
                     <div>
                         <div class='mapOpts'>
@@ -71,7 +66,7 @@ Viewer
                             <input type="range" ng-model ="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
                         </div>
 
-                        <a href='#' rel='leanModal' class='settings' title="Settings" id='settingsButton'>
+                        <a ng-controller="ViewerCtrl2" ng-click="settings()" rel='leanModal' class='settings' title="Settings" id='settingsButton'>
                             <img src="images/settings.png" alt="settings">
                         </a>
                     </div>
@@ -84,4 +79,3 @@ Viewer
         </div>
     </div>
 </div>
-

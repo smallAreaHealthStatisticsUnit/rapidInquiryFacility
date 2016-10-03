@@ -570,7 +570,7 @@ RangeError: Invalid string length
   * Lookup tables; 
   * Hierarchy table - geolevel intersction generator (DB version);
   * SQL Server version needed to be rewritten to use global temporary tables because a) SQL Server always
-    unnests common tsble expressions (WITH clause) b) cannot be hinted to not do this and c) you have to
+    unnests common table expressions (WITH clause) b) cannot be hinted to not do this and c) you have to
 	use global temporary tables because dynamic SQL is in a different logon context to the script T-SQL
   * Hierarchy checks (as for Postgres)
  
@@ -586,7 +586,30 @@ RangeError: Invalid string length
   * Database load code restructure to use template SQL scripts;
   * Band id bug (causing map map PK to fail). Area id added via update so it is clear where the problem lies;
 * Refactor SQL code using template SQL files where possible; 
-* Introduction SQL Server database creation scripts with MD
+* Introduction SQL Server database creation scripts with MD;
+
+#### 19th to 23rd September
+
+* Port Latitude/Longitude to tile number and vice versa dfunctions from Postgres to SQL Server; confirmed results are the same;
+* SQL Server port testing - building of SAHSULAND:
+  * DB creation; user creation scripts slighty modified
+  * There is an issue if you have already created and Windows database user; you need to grant access to sahsuland_dev; however 
+    how you do this is very unobvious and hard to find in the documentation.  I used SQL Server Management Studio to do this (so 
+	you obviously can!), but forget to get it to show me the SQL command;
+  * Rebuilt sequences and tables scripts (and later all other install SQL scripts) so they are:
+    a) Run from one script
+    b) Are transactional
+    c) Stop on error
+    d) Table creation order is correct (i.e. referenced objects must exist)
+    e) Recreates OK
+    I suspect their will be more problems if there is data in the tables;
+  * Added functions and views. The function rif40_sequence_current_value() is created earlier by the sequences SQL script and 
+    cannot be recreated once tables have been created;
+  * Added log error handling, table and view triggers; data load tables and data load for SAHUSLAND data; 
+  * Removed [Postgres] foreign data wrapper (FDW) tables from SQL Server as obsolete ;
+  * Single script to (re-)create sahsuland_dev database objects and install data: rif40_sahsuland_dev_install.bat/
+    rif40_sahsuland_dev_install.sql
+  * Report on SQL Server and Postgres RIF40 database table and column differences
 
 #### Current TODO list (September):
 
@@ -610,7 +633,10 @@ RangeError: Invalid string length
   * Check Turf JS centroid code (figures are wrong);
   * Compare Turf/PostGIS/SQL Server area and centroid caculations;
   * Resolve SQL Server use of geography verses geometry and SQL Server geometry to geography casting; 
-* Map tile generator
+* Map tile generator; RIF integration preparation:
+  * One table partition per geolevel; add tile table to geography; and schema
+  * Partition geometry tables
+  * Add GID to lookup tables;
 
 #### October TODO list:
 

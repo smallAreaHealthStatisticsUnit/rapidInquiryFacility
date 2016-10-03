@@ -129,3 +129,4 @@ Search search path for table/view/foreign table; check resolvable
 
 Will need OracleFDW objects to check remote access';
 */
+GO

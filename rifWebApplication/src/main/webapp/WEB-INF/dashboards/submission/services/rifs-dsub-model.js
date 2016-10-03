@@ -136,12 +136,6 @@ angular.module("RIF")
             };
 
             return {
-                //method to reset all fields
-                reset_rif_job_submission: function () {
-
-                    //TODO: call all reset methods is services
-
-                },
                 //return the job submission as unformatted JSON
                 get_rif_job_submission_JSON: function () {
                     return updateModel();
@@ -190,15 +184,18 @@ angular.module("RIF")
                     }
 
                     //Statistics
-                    project += '<header>Statistics</header>' +
-                            '<section>Calculation Method:</section>' + _getAttr(modelJSON.rif_job_submission.calculation_methods.calculation_method.description);
-                    var statParams = "";
-                    for (var i = 0; i < modelJSON.rif_job_submission.calculation_methods.calculation_method.parameters.parameter.length; i++) {
-                        statParams += modelJSON.rif_job_submission.calculation_methods.calculation_method.parameters.parameter[i].name + ": " +
-                                modelJSON.rif_job_submission.calculation_methods.calculation_method.parameters.parameter[i].value + "; ";
+                    project += '<header>Statistics</header>';
+                    var statistics = modelJSON.rif_job_submission.calculation_methods.calculation_method;
+                    if (!angular.isUndefined(statistics.code_routine_name)) {
+                        project += '<section>Calculation Method:</section>' + _getAttr(statistics.code_routine_name);
+                        var statParams = "";
+                        for (var i = 0; i < statistics.parameters.parameter.length; i++) {
+                            statParams += statistics.parameters.parameter[i].name + ": " +
+                                    statistics.parameters.parameter[i].value + "; ";
+                        }
+                        statParams = statParams.substring(0, statParams.length - 2);
+                        project += '<section>Parameters:</section>' + _getAttr(statParams);
                     }
-                    statParams = statParams.substring(0, statParams.length - 2);
-                    project += '<section>Parameters:</section>' + _getAttr(statParams);
 
                     //Output
                     project += '<header>Output Options</header>';

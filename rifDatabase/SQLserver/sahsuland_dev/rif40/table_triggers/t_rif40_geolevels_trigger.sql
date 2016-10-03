@@ -374,3 +374,4 @@ IF @geolevel_postal_missing IS NOT NULL
 	END CATCH;	
    
 END;
+GO

@@ -17,7 +17,7 @@ GO
 
 CREATE TABLE [rif40].[t_rif40_study_areas](
 	[username] [varchar](90) NOT NULL DEFAULT (user_name()),
-	[study_id] [integer] NOT NULL DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
+	[study_id] [integer] NOT NULL CONSTRAINT t_rif40_study_area_study_id_seq DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
 	[area_id] [varchar](300) NOT NULL,
 	[band_id] [numeric](8, 0) NULL,
  CONSTRAINT [t_rif40_study_areas_pk] PRIMARY KEY CLUSTERED 

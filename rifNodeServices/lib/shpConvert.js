@@ -899,6 +899,8 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 					}	
 			
 					if (response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) { // Check bounding box present
+						response.file_list[shapefileData["shapefile_no"]-1].bbox=response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox; // Save bbox
+						
 						var msg="File: " + shapefileData["shapeFileName"] + 
 							"\nTotal time to process shapefile: " + shapefileData["elapsedReadTime"] + 
 							" S\nBounding box [" +
@@ -1476,7 +1478,6 @@ This error in actually originating from the error handler function
 	 */
 	shapeFileQueue.drain = function shapeFileQueueDrain() {
 		const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
-		const geojsonToCSV = require('../lib/geojsonToCSV');
 		
 		scopeChecker(__file, __line, {
 			response: response,
@@ -1711,7 +1712,8 @@ This error in actually originating from the error handler function
 						}
 						if (response.file_list[ngeolevels[i].i].topojson[j].geojson) {
 							geojsonFileList[ngeolevels[i].i].topojson[j] = {
-								geojson: response.file_list[ngeolevels[i].i].topojson[j].geojson
+								geojson: response.file_list[ngeolevels[i].i].topojson[j].geojson,
+								zoomlevel: response.file_list[ngeolevels[i].i].topojson[j].zoomlevel
 							}
 							response.file_list[ngeolevels[i].i].topojson[j].geojson=undefined;
 						}
@@ -1793,7 +1795,7 @@ This error in actually originating from the error handler function
 													geojsonFileList[ngeolevels[i].i] && 
 													geojsonFileList[ngeolevels[i].i].topojson) {
 													for (var j=0; j<response.file_list[ngeolevels[i].i].topojson.length; j++) {
-														response.file_list[ngeolevels[i].i].topojson[j].geojson=geojsonFileList[ngeolevels[i].i].topojson[j].geojson;					
+														response.file_list[ngeolevels[i].i].topojson[j].geojson=geojsonFileList[ngeolevels[i].i].topojson[j].geojson;															
 													}
 												}
 												else if (response.file_list[ngeolevels[i].i].topojson && 
@@ -1830,12 +1832,14 @@ This error in actually originating from the error handler function
 												nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, 
 													httpErrorResponse, response.fields, undefined /* optional callback */);													
 											}
-											try {
-												geojsonToCSV.geojsonToCSV(response, req, res, finalResponse); // Convert geoJSON to CSV
+											
+											const tileMaker = require('../lib/tileMaker');
+											try {										
+												tileMaker.tileMaker(response, req, res, finalResponse); // Call tile maker
 											}
 											catch (e) {	
 												serverLog.serverError2(__file, __line, "shapeFileQueueDrain", 
-													"Exception thrown by geojsonToCSV.geojsonToCSV() ", req, e, response);	
+													"Exception thrown by tileMaker.tileMaker() ", req, e, response);	
 											}
 
 										}

@@ -488,3 +488,4 @@ DEALLOCATE cov_cursor ;
 END;
 
 end;
+GO

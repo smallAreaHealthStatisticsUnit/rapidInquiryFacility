@@ -1,0 +1,17 @@
+<!-- 
+HTML partial for ui-router
+Disease submission modal to show study status
+-->
+<div class="msettingsLarge" ng-controller="ModalStatusCtrl">
+    <div class="msettings-ct">
+        <div class="msettings-header">
+            <h2>Submission Status</h2>
+            <a class="modal_close" ng-click="close()"></a>
+        </div>       
+        <div class='modalContainer retrieveModalDialog'>
+                <div ui-grid="statusTableOptions" ui-grid-auto-resize ui-grid-resize-columns 
+                     class="grid-status" ng-grid="statusTableOptions">                    
+                </div>
+        </div>
+    </div>
+</div>

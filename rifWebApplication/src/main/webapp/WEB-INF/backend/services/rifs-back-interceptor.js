@@ -11,7 +11,7 @@ angular.module("RIF")
                         var scope = $injector.get('$rootScope');
 
                         //login check here on all outgoing RIF requests to middleware
-                        if (typeof config.headers.rifUser !== "undefined") {
+                        if (!angular.isUndefined(config.headers.rifUser)) {
                             try {
                                 AuthService.isLoggedIn(AuthService.currentUser).then(loggedIn, loggedIn);
                                 function loggedIn(res) {
@@ -30,9 +30,9 @@ angular.module("RIF")
                     },
                     response: function (res) {
                         //called with the response object from the server
-                        if (typeof res.data[0] !== "undefined") {
-                            if (typeof res.data[0].errorMessages !== "undefined") {
-                                console.log(res.data[0].errorMessages[0]);
+                        if (!angular.isUndefined(res.data[0])) {
+                            if (!angular.isUndefined(res.data[0].errorMessages)) {
+                                console.log(res.data[0].errorMessages[0] + " " + res.config.url);
                                 var scope = $injector.get('$rootScope');
                                 scope.$root.$$childHead.showError(res.data[0].errorMessages[0]);                            
                                 return $q.reject();
@@ -44,10 +44,7 @@ angular.module("RIF")
                         return $q.reject(rejection);
                     },
                     responseError: function (rejection) {
-                        //for non-200 errors
-                        
-                        //RIF database appears to only return 200 responses
-
+                        //for non-200 status
                         return $q.reject(rejection);
                     }
                 };
@@ -55,5 +52,3 @@ angular.module("RIF")
         .config(function ($httpProvider) {
             $httpProvider.interceptors.push('authInterceptor');
         });
-
-

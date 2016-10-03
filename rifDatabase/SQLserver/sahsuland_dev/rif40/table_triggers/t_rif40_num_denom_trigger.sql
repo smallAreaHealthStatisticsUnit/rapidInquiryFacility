@@ -70,5 +70,6 @@ CREATE trigger [tr_num_denom]
 			RAISERROR(50078, 16, 1, @denom_status) with log;
 		END;
 
-  end  
+  end;
+GO  
 
