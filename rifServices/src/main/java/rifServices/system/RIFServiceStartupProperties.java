@@ -158,6 +158,10 @@ public final class RIFServiceStartupProperties {
     	return getProperty("extractDirectory");    	
     }
     
+    public static String getExtraDirectoryForExtractFiles() {
+    	return getProperty("extraDirectoryForExtractFiles");    	
+    }
+    
     public static DatabaseType getDatabaseType() {
     	
     	DatabaseType databaseType
@@ -223,8 +227,7 @@ public final class RIFServiceStartupProperties {
     public static String getTrustStorePassword() {
     	String property
     		= getProperty("database.sslTrustStorePassword");
-    	return property; 	
-    }
+    	return property; 	    }
     
     public static String getODBCDataSourceName() {
     	String property
