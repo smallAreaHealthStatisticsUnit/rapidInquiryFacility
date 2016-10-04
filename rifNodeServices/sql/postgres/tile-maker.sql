@@ -474,7 +474,7 @@ DECLARE
 	stp 			TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	took 			INTERVAL;
 	took2 			INTERVAL;
-	max_zoomlevel 	INTEGER:=7;	/* 11 */ 
+	max_zoomlevel 	INTEGER:=8;	/* 11 */ 
 BEGIN
 	WHILE new_zoomlevel <= (max_zoomlevel-1) LOOP
 		stp2:=clock_timestamp();
