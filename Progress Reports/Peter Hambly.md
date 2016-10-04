@@ -652,9 +652,13 @@ RangeError: Invalid string length
     * PNG tile dump to files (Postgres only - no raster support in SQL Server);	
 	
   
-#### Current TODO list (September):
+#### Current TODO list (October):
 
-* SQL load script generator: still todo:
+* Map tile generator; RIF integration preparation:
+  * One table partition per geolevel; add tile table to geography; and schema
+  * Partition geometry tables
+  * Add GID to lookup tables;
+* SQL load script generator: still todo, all can wait:
   * Confirm Postgres and SQL Server geolevel intersections are the same;
   * RIF production script:
     * DELETE/INSERT rif40_geographies/geolevels
@@ -674,12 +678,8 @@ RangeError: Invalid string length
   * Check Turf JS centroid code (figures are wrong);
   * Compare Turf/PostGIS/SQL Server area and centroid caculations;
   * Resolve SQL Server use of geography verses geometry and SQL Server geometry to geography casting; 
-* Map tile generator; RIF integration preparation:
-  * One table partition per geolevel; add tile table to geography; and schema
-  * Partition geometry tables
-  * Add GID to lookup tables;
-
-#### October TODO list:
+  
+#### November TODO list:
 
 * Get methods: 
   * ZIP results;

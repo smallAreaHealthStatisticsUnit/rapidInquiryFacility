@@ -222,7 +222,8 @@ SELECT c.zoomlevel, c.x, c.y, c.bbox,
   FROM c
 )
 SELECT 0 gid, d.zoomlevel, d.x, d.y, d.bbox, 
-       ST_AsGeoJson(d.intersection) AS optimised_geojson,
+       d.intersection,
+       ST_AsGeoJson(d.intersection)::JSON AS optimised_geojson,
        ST_AsPng(ST_AsRaster(d.intersection, 256, 256)) AS png_tile,
 	   to_json('X'::Text)::JSON AS optimised_topojson /* Dummy value */
   FROM d
@@ -351,7 +352,7 @@ $BODY$
 DECLARE
 	max_gid INTEGER;
 	c2_maxgid CURSOR FOR
-		SELECT MAX(gid) AS max_zoomlevel
+		SELECT MAX(gid) AS max_gid
 			  FROM intersection_cb_2014_us_500k;
 BEGIN
 	INSERT INTO intersection_cb_2014_us_500k(gid, zoomlevel, intersection)
@@ -380,6 +381,62 @@ BEGIN
 	 CLOSE c2_maxgid;
 --	 
 	 RETURN max_gid;
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE; 
+
+DROP FUNCTION IF EXISTS tileMaker_intersector3();
+CREATE OR REPLACE FUNCTION tileMaker_intersector3()
+RETURNS INTEGER
+AS
+$BODY$
+DECLARE
+	min_gid INTEGER;
+	c3_mingid CURSOR FOR
+		WITH a AS (
+			SELECT MIN(gid) AS min_gid
+				  FROM tile_intersects_cb_2014_us_500k
+				 WHERE intersection IS NULL
+		), b AS (
+			SELECT MAX(gid) AS max_gid
+				  FROM tile_intersects_cb_2014_us_500k
+		)
+		SELECT COALESCE(a.min_gid, b.max_gid) AS min_gid
+		  FROM a, b;
+BEGIN
+	WITH a AS (
+		SELECT COALESCE(MIN(gid), 0) AS min_gid
+  		  FROM tile_intersects_cb_2014_us_500k
+		 WHERE intersection IS NULL
+	) 
+	UPDATE tile_intersects_cb_2014_us_500k b
+	   SET intersection = (SELECT a1.intersection
+							 FROM intersection_cb_2014_us_500k a1
+							WHERE a1.gid = b.gid)
+	 WHERE intersection IS NULL AND EXISTS (SELECT c.gid
+											  FROM intersection_cb_2014_us_500k c, a
+											 WHERE c.gid = b.gid
+											   AND c.gid BETWEEN a.min_gid AND a.min_gid+500);
+	UPDATE tile_intersects_cb_2014_us_500k
+	   SET optimised_geojson = ST_AsGeoJson(intersection)::JSON
+	 WHERE optimised_geojson IS NULL AND intersection IS NOT NULL;
+	UPDATE tile_intersects_cb_2014_us_500k b
+	   SET png_tile = ST_AsPng(
+							ST_AsRaster(
+									ST_Transform(intersection, 3857 /* Spherical Mercator */), 
+									256				/* Scale X */, 
+									256				/* Scale Y */, 
+									ARRAY['8BUI'] 	/* 8-bit unsigned integer pixeltype */, 
+									ARRAY[1]		/* Value */, 
+									ARRAY[0] 		/* nodataval */) 
+								)
+	 WHERE png_tile IS NULL AND intersection IS NOT NULL;
+--	 
+	 OPEN c3_mingid;
+	 FETCH c3_mingid INTO min_gid;
+	 CLOSE c3_mingid;
+--	 
+	 RETURN min_gid;
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE; 
@@ -417,7 +474,7 @@ DECLARE
 	stp 			TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	took 			INTERVAL;
 	took2 			INTERVAL;
-	max_zoomlevel 	INTEGER:=9;	/* 11 */ 
+	max_zoomlevel 	INTEGER:=7;	/* 11 */ 
 BEGIN
 	WHILE new_zoomlevel <= (max_zoomlevel-1) LOOP
 		stp2:=clock_timestamp();
@@ -531,11 +588,10 @@ BEGIN
 		took2:=age(etp, stp2);
 		pct:=ROUND((new_max_gid::NUMERIC/max_gid::NUMERIC)*100, 2);
 		tps:=ROUND((new_max_gid::NUMERIC/EXTRACT(EPOCH FROM took)::NUMERIC), 0);
-		RAISE INFO 'Processed %/%; % %% intersections in % s, % total; % tiles/s', 
+		RAISE INFO 'Processed %/% intersections; % %% in %s; % tiles/s', 
 			new_max_gid, 
 			max_gid, 
 			pct, 
-			ROUND(EXTRACT(EPOCH FROM took2)::NUMERIC, 1), 
 			ROUND(EXTRACT(EPOCH FROM took)::NUMERIC, 1),
 			tps;
 --
@@ -549,33 +605,54 @@ $$;
 ALTER TABLE intersection_cb_2014_us_500k 
 	ADD CONSTRAINT intersection_cb_2014_us_500k_pk PRIMARY KEY (gid);	
 ANALYZE tile_intersects_cb_2014_us_500k;
-	
-UPDATE tile_intersects_cb_2014_us_500k b
-   SET optimised_geojson = (SELECT ST_AsGeoJson(a.intersection) AS optimised_geojson
-							  FROM intersection_cb_2014_us_500k a
-							 WHERE a.gid = b.gid)
- WHERE optimised_geojson IS NULL AND EXISTS (SELECT a.gid
-											   FROM intersection_cb_2014_us_500k a
-										      WHERE a.gid = b.gid);
--- May need to be split
-UPDATE tile_intersects_cb_2014_us_500k b
-   SET png_tile = (SELECT ST_AsPng(
-								ST_AsRaster(
-										ST_Transform(a.intersection, 3857 /*  Spherical Mercator */), 
-										256				/* Scale X */, 
-										256				/* Scale Y */, 
-										ARRAY['8BUI'] 	/* 8-bit unsigned integer pixeltype */, 
-										ARRAY[1]		/* Value */, 
-										ARRAY[0] 		/* nodataval */)) AS png_tile
-				     FROM intersection_cb_2014_us_500k a
-				    WHERE a.gid = b.gid)
- WHERE png_tile IS NULL AND EXISTS (SELECT a.gid
-							  FROM intersection_cb_2014_us_500k a
-							 WHERE a.gid = b.gid);							 
+
+DO LANGUAGE plpgsql $$
+DECLARE
+	new_max_gid INTEGER=0;
+	max_gid INTEGER=0;
+	c3_maxgid CURSOR FOR
+		SELECT MAX(gid) AS max_zoomlevel
+			  FROM tile_intersects_cb_2014_us_500k;
+	etp 			TIMESTAMP WITH TIME ZONE;
+	stp2 			TIMESTAMP WITH TIME ZONE;
+	stp 			TIMESTAMP WITH TIME ZONE:=clock_timestamp();
+	took 			INTERVAL;
+	took2 			INTERVAL;
+	pct 			NUMERIC;
+	tps				NUMERIC;
+BEGIN
+	 OPEN c3_maxgid;
+	 FETCH c3_maxgid INTO max_gid;
+	 CLOSE c3_maxgid;
+--
+	WHILE new_max_gid < max_gid LOOP
+		stp2:=clock_timestamp();
+		new_max_gid:=tileMaker_intersector3();
+		etp:=clock_timestamp();
+		took:=age(etp, stp);
+		took2:=age(etp, stp2);
+		pct:=ROUND((new_max_gid::NUMERIC/max_gid::NUMERIC)*100, 2);
+		tps:=ROUND((new_max_gid::NUMERIC/EXTRACT(EPOCH FROM took)::NUMERIC), 0);
+		RAISE INFO 'Processed %/% tiles (GeoJSON/PNG); % %% in %s; % tiles/s', 
+			new_max_gid, 
+			max_gid, 
+			pct, 
+			ROUND(EXTRACT(EPOCH FROM took)::NUMERIC, 1),
+			tps;
+	END LOOP;
+--	RAISE EXCEPTION 'Stop';
+END;
+$$;
+
+REINDEX TABLE tile_intersects_cb_2014_us_500k;
+ANALYZE tile_intersects_cb_2014_us_500k;
+						 
 DROP TABLE intersection_cb_2014_us_500k; 
 
-
 END;
+
+\dS+ tile_intersects_cb_2014_us_500k
+SELECT ST_Srid(intersection) FROM tile_intersects_cb_2014_us_500k LIMIT 1;
 
 /*
 SELECT lo_from_bytea(0, png_tile) FROM tile_intersects_cb_2014_us_500k WHERE gid=1;
