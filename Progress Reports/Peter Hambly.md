@@ -611,6 +611,40 @@ RangeError: Invalid string length
     rif40_sahsuland_dev_install.sql
   * Report on SQL Server and Postgres RIF40 database table and column differences
 
+#### 26th to 30th September
+
+* Prototyped tile manufacture using Node.js and Turf.
+  * Simplified geojson contains self intersection and side location conflict errors and needs to be made valid. There is 
+    no ST_MakeValid() for Turf and the kinks() function is not sufficent;
+  * The lack of a spatial index makes intersects (i.e. ST_Intersects) slow;
+  * ST_Intersction() or clipping functions are not available to chop off the surplus outside the tile;
+  * There is no ST_Contains() etc to detect if any of the boundaries are within the tile;  
+  * The was a clear need for an algorithm which excluded tiles where the parent (next lower zoomlevel) did not intersect;
+  * To easy way to crete PNG tiles; SVG was possible;
+  * Concluded it would have t o be done on the database as in the original Postgres prototype.
+  
+#### 3rd to 7th October  
+
+* Prototyped tile manufacture using PostGIS:
+  * New efficent tile intersect algorithm saving up to 94% of tiles:
+  
+ zoomlevel | xmin | ymin | xmax | ymax | possible_tiles | tiles | pct_saving
+-----------+------+------+------+------+----------------+-------+------------
+         0 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
+         1 |    0 |    0 |    1 |    1 |              4 |     3 |      25.00
+         2 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
+         3 |    0 |    1 |    7 |    4 |             32 |    10 |      68.75
+         4 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
+         5 |    0 |    6 |   31 |   17 |            384 |    46 |      88.02
+         6 |    0 |   13 |   63 |   29 |           1088 |   112 |      89.71
+         7 |    0 |   27 |  127 |   59 |           4224 |   338 |      92.00
+         8 |    0 |   54 |  255 |  118 |          16640 |  1139 |      93.16
+         9 |    1 |  108 |  511 |  237 |          66430 |  4093 |      93.84
+        10 |    2 |  217 | 1023 |  474 |         263676 | 15308 |      94.19
+        11 |    4 |  435 | 2046 |  948 |        1050102 | 58968 |      94.38
+		
+  * Re-wrote functions to be simpler (for SQL Server porting) and provide running updates;
+  
 #### Current TODO list (September):
 
 * SQL load script generator: still todo:
