@@ -628,22 +628,29 @@ RangeError: Invalid string length
 * Prototyped tile manufacture using PostGIS:
   * New efficent tile intersect algorithm saving up to 94% of tiles:
   
- zoomlevel | xmin | ymin | xmax | ymax | possible_tiles | tiles | pct_saving
------------+------+------+------+------+----------------+-------+------------
-         0 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
-         1 |    0 |    0 |    1 |    1 |              4 |     3 |      25.00
-         2 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
-         3 |    0 |    1 |    7 |    4 |             32 |    10 |      68.75
-         4 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
-         5 |    0 |    6 |   31 |   17 |            384 |    46 |      88.02
-         6 |    0 |   13 |   63 |   29 |           1088 |   112 |      89.71
-         7 |    0 |   27 |  127 |   59 |           4224 |   338 |      92.00
-         8 |    0 |   54 |  255 |  118 |          16640 |  1139 |      93.16
-         9 |    1 |  108 |  511 |  237 |          66430 |  4093 |      93.84
-        10 |    2 |  217 | 1023 |  474 |         263676 | 15308 |      94.19
-        11 |    4 |  435 | 2046 |  948 |        1050102 | 58968 |      94.38
+| zoomlevel | xmin | ymin | xmax | ymax | possible tiles | tiles | % saving |
+|-----------|------|------|------|------|----------------|-------|----------|
+|         0 |    0 |    0 |    0 |    0 |              1 |     1 |     0.00 |
+|         1 |    0 |    0 |    1 |    1 |              4 |     3 |    25.00 |
+|         2 |    0 |    0 |    3 |    2 |             12 |     5 |    58.33 |
+|         3 |    0 |    1 |    7 |    4 |             32 |    10 |    68.75 |
+|         4 |    0 |    3 |   15 |    8 |             96 |    22 |    77.08 |
+|         5 |    0 |    6 |   31 |   17 |            384 |    46 |    88.02 |
+|         6 |    0 |   13 |   63 |   29 |           1088 |   112 |    89.71 |
+|         7 |    0 |   27 |  127 |   59 |           4224 |   338 |    92.00 |
+|         8 |    0 |   54 |  255 |  118 |          16640 |  1139 |    93.16 |
+|         9 |    1 |  108 |  511 |  237 |          66430 |  4093 |    93.84 |
+|        10 |    2 |  217 | 1023 |  474 |         263676 | 15308 |    94.19 |
+|        11 |    4 |  435 | 2046 |  948 |        1050102 | 58968 |    94.38 |
 		
   * Re-wrote functions to be simpler (for SQL Server porting) and provide running updates;
+  * Tile intersection (i.e. adding data, cropping to tile boundary) is time expensive but 
+    geolevel 1 takes 210s to level 9 (to level 11 ~20x longer, estimated at: 70 minutes); to 
+	US county level will be several hours!
+  * Architecture will be as in the prototype: SQL script and tile script which will:
+    * Convert geoJSON/(Well known text for SQL Server) to topoJSON;
+    * PNG tile dump to files (Postgres only - no raster support in SQL Server);	
+	
   
 #### Current TODO list (September):
 
