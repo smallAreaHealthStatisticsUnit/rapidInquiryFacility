@@ -74,7 +74,6 @@ SELECT geolevel_name, geolevel_id, shapefile_table
 (3 rows)
  */
  
-/* 
 DROP TABLE IF EXISTS geometry_cb_2014_us_500k;
 CREATE TABLE geometry_cb_2014_us_500k
 AS
@@ -149,6 +148,7 @@ SELECT 2 geolevel,
        11 AS zoomlevel, 
        geom_11 AS geom
   FROM cb_2014_us_state_500k  
+ /* 
 UNION  
 SELECT 3 geolevel,
        areaid, 
@@ -184,7 +184,7 @@ SELECT 3 geolevel,
        areaid, 
        11 AS zoomlevel, 
        geom_11 AS geom
-  FROM cb_2014_us_county_500k    
+  FROM cb_2014_us_county_500k  */  
  ORDER BY 1, 3, 2;
 ALTER TABLE geometry_cb_2014_us_500k 
 	ADD CONSTRAINT geometry_cb_2014_us_500k_pk PRIMARY KEY (geolevel, zoomlevel, areaid);	
@@ -192,11 +192,11 @@ CREATE INDEX geometry_cb_2014_us_500k_geom_gix ON geometry_cb_2014_us_500k USING
 ANALYZE geometry_cb_2014_us_500k;
 -- Convert to IOT
 CLUSTER VERBOSE geometry_cb_2014_us_500k USING geometry_cb_2014_us_500k_pk;
- */ 
 
-SELECT geolevel, zoomlevel, areaid
+SELECT geolevel, areaid, COUNT(zoomlevel) AS zoomlevels
   FROM geometry_cb_2014_us_500k
- WHERE geolevel = 1
+ WHERE geolevel IN (1, 2)
+ GROUP BY geolevel, areaid
  ORDER BY 1, 2, 3;
  
 DROP TABLE IF EXISTS tile_limits_cb_2014_us_500k; 
@@ -345,24 +345,28 @@ WITH a AS (
 	  FROM b, geometry_cb_2014_us_500k c
 	 WHERE ((b.zoomlevel = c.zoomlevel AND b.zoomlevel BETWEEN 6 AND 11) OR 
 		    (c.zoomlevel = 6           AND b.zoomlevel NOT BETWEEN 6 AND 11))
-	   AND geolevel < 3 /* remove county */
+	 /*  AND geolevel < 3 -* remove county */
 	   AND ST_Intersects(ST_MakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326), c.geom) /* intersects */
 ), d AS (
 SELECT c.geolevel,
 	   c.zoomlevel, 
+	   c.areaid,
 	   c.x, 
 	   c.y, 
 	   c.bbox,
-	   ST_Collect(ST_Intersection(c.geom, c.bbox)) AS intersection
+	   ST_Collect(
+			ST_ClipByBox2D(c.geom, c.bbox)) AS intersection /* Can use ST_Intersection() */
   FROM c
  GROUP BY c.geolevel,
-	      c.zoomlevel,
+	      c.zoomlevel, 
+	      c.areaid,
 	      c.x, 
 		  c.y, 
 		  c.bbox
 ), e AS (
 	SELECT d.geolevel,
 	       d.zoomlevel, 
+	       d.areaid,
 	       d.x, 
 	       d.y, 
 	       d.bbox,
@@ -375,38 +379,40 @@ SELECT c.geolevel,
 SELECT 0 gid,
        e.geolevel,
 	   e.zoomlevel,
+	   e.areaid,
 	   e.x, e.y, e.bbox, 
        e.intersection,
-       ST_AsGeoJson(e.intersection)::JSON AS optimised_geojson,
-       ST_AsPng(ST_AsRaster(e.intersection, 256, 256)) AS png_tile,
-	   to_json('X'::Text)::JSON AS optimised_topojson /* Dummy value */
+       ST_AsGeoJson(e.intersection)::JSON AS optimised_geojson
   FROM e
  ORDER BY e.geolevel, e.zoomlevel, e.x, e.y;
- 
-SELECT geolevel, zoomlevel, x, y, ST_AsGeoJson(bbox) AS bbox
+
+SELECT geolevel, zoomlevel, areaid, x, y, 
+--       ST_AsGeoJson(bbox) AS bbox,   
+       ST_IsValid(intersection) AS valid,
+--       SUBSTRING(ST_AsText(intersection) FROM 1 FOR 30) AS wkt, 
+       LENGTH(ST_AsText(intersection)) AS wkt_len, 
+       LENGTH(ST_AsGeoJson(intersection)) AS geojson_len, 
+	   ST_GeometryType(intersection) AS geomtype 
   FROM tile_intersects_cb_2014_us_500k
- ORDER BY 1,2 LIMIT 20;
+ ORDER BY 1, 2, 3, 4, 5 LIMIT 20;
+ 
 /*
  zoomlevel | x | y |                                                                             bbox
 -----------+---+---+--------------------------------------------------------------------------------------------------------------------------------------------------------------
          0 | 0 | 0 | {"type":"Polygon","coordinates":[[[-180,85.0511287794693],[-180,-85.0511287794693],[180,-85.0511287794693],[180,85.0511287794693],[-180,85.0511287794693]]]}
 (1 row)
  */  
-
  
 ALTER TABLE tile_intersects_cb_2014_us_500k 
-	ADD CONSTRAINT tile_intersects_cb_2014_us_500k_pk PRIMARY KEY (geolevel, zoomlevel, x, y);
+	ADD CONSTRAINT tile_intersects_cb_2014_us_500k_pk PRIMARY KEY (geolevel, zoomlevel, areaid, x, y);
 
 -- PK is v.v slightly faster than the 3x hash
 --CREATE INDEX tile_intersects_cb_2014_us_500k_zoomlevel ON tile_intersects_cb_2014_us_500k USING HASH(zoomlevel);
 --CREATE INDEX tile_intersects_cb_2014_us_500k_x ON tile_intersects_cb_2014_us_500k USING HASH(x);
 --CREATE INDEX tile_intersects_cb_2014_us_500k_y ON tile_intersects_cb_2014_us_500k USING HASH(y);
-REINDEX TABLE tile_intersects_cb_2014_us_500k;
-ANALYZE VERBOSE tile_intersects_cb_2014_us_500k;
+--REINDEX TABLE tile_intersects_cb_2014_us_500k;
+ANALYZE VERBOSE tile_intersects_cb_2014_us_500k;  
 
-SELECT geolevel, zoomlevel, x, y, ST_AsGeoJson(bbox) AS bbox
-  FROM tile_intersects_cb_2014_us_500k;
-  
 /*
  zoomlevel | x | y |                                                                             bbox
 -----------+---+---+--------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -440,7 +446,7 @@ DECLARE
 	      FROM tile_intersects_cb_2014_us_500k
 		 WHERE geolevel = l_geolevel;
 BEGIN
-	INSERT INTO tile_intersects_cb_2014_us_500k(geolevel, zoomlevel, x, y, bbox, optimised_topojson) 
+	INSERT INTO tile_intersects_cb_2014_us_500k(geolevel, zoomlevel, areaid, x, y, bbox) 
 	WITH a AS (
 		SELECT MAX(zoomlevel)+1 AS next_zoomlevel
 		  FROM tile_intersects_cb_2014_us_500k
@@ -489,11 +495,10 @@ BEGIN
 		   AND (e.bbox && e2.geom) 			  /* Intersect by bounding box */
 		   AND ST_Intersects(e.bbox, e2.geom) /* intersects: (e.bbox && e.geom) is slower as it generates more tiles */
 	)
-	SELECT f.geolevel, f.zoomlevel, f.x, f.y, f.bbox, 
-		   TO_JSON(COUNT(areaid)::Text)::JSON AS optimised_topojson /* Dummy value */
+	SELECT f.geolevel, f.zoomlevel, f.areaid, f.x, f.y, f.bbox
 	  FROM f
-	 GROUP BY f.geolevel, f.zoomlevel, f.x, f.y, f.bbox
-	 ORDER BY f.geolevel, f.zoomlevel, f.x, f.y;	 
+	 GROUP BY f.geolevel, f.zoomlevel, f.areaid, f.x, f.y, f.bbox
+	 ORDER BY f.geolevel, f.zoomlevel, f.areaid, f.x, f.y;	 
 --	 
 	 OPEN c1_maxzl;
 	 FETCH c1_maxzl INTO new_zoomlevel;
@@ -516,7 +521,7 @@ DECLARE
 			  FROM intersection_cb_2014_us_500k
 			 WHERE l_geolevel = geolevel;
 BEGIN
-	INSERT INTO intersection_cb_2014_us_500k(gid, geolevel, zoomlevel, intersection)
+	INSERT INTO intersection_cb_2014_us_500k(gid, geolevel, zoomlevel, areaid, intersection)
 	WITH a AS (
 		SELECT COALESCE(MAX(gid), 0) AS max_gid
   		  FROM intersection_cb_2014_us_500k
@@ -527,27 +532,35 @@ BEGIN
 		 WHERE l_geolevel-1 = geolevel
 	), b AS (
 			SELECT c.gid, c.geolevel, c.bbox, c.zoomlevel,
-				   e.geom 
+				   e.areaid, e.geom 
 			  FROM a, a1, tile_intersects_cb_2014_us_500k c, geometry_cb_2014_us_500k e
-			 WHERE ((e.zoomlevel = c.zoomlevel AND c.zoomlevel BETWEEN 6 AND 11) OR 
-		            (e.zoomlevel = 6           AND c.zoomlevel NOT BETWEEN 6 AND 11))
-		       AND ((c.gid BETWEEN a.max_gid+1 AND a.max_gid+100)			 
-			    OR  (a.max_gid = 0 AND c.gid BETWEEN a1.max_prev_gid+1 AND a1.max_prev_gid+100))			 
+			 WHERE c.areaid = e.areaid 			 
 			   AND c.geolevel = l_geolevel		 
 			   AND e.geolevel = l_geolevel
+			   AND ((e.zoomlevel = c.zoomlevel AND c.zoomlevel BETWEEN 6 AND 11) OR 
+		            (e.zoomlevel = 6           AND c.zoomlevel NOT BETWEEN 6 AND 11))
+		       AND ((c.gid BETWEEN a.max_gid+1 AND a.max_gid+100)			 
+			    OR  (a.max_gid = 0 AND c.gid BETWEEN a1.max_prev_gid+1 AND a1.max_prev_gid+100))
 	), c AS (
-		SELECT b.gid, b.geolevel, b.zoomlevel, 
-			   ST_Collect(ST_Intersection(b.geom, b.bbox)) /* CollectionAggregate() in SQL Server */ AS intersection
+		SELECT b.gid, b.geolevel, b.zoomlevel, b.areaid, b.bbox,
+					ST_Collect( /* CollectionAggregate() in SQL Server */
+							ST_ClipByBox2D(b.geom, b.bbox))  AS intersection
 		  FROM b
-		 GROUP BY b.gid, b.geolevel, b.zoomlevel
-	 )
-	 SELECT c.gid, c.geolevel, c.zoomlevel, 
-	        CASE ST_GeometryType(c.intersection) /* Convert GeometryCollection to multipolygon */
-				 WHEN 'ST_GeometryCollection' THEN ST_Multi(ST_UnaryUnion(ST_MakeValid(c.intersection)))
-				 ELSE ST_Multi(c.intersection) 
-		    END AS intersection
-	   FROM c
-	  ORDER BY c.gid;
+		 GROUP BY b.gid, b.geolevel, b.zoomlevel, b.areaid, b.bbox
+	 ), d AS (
+		 SELECT c.gid, c.geolevel, c.zoomlevel, c.areaid, c.bbox, 
+				CASE ST_GeometryType(c.intersection) /* Convert GeometryCollection to multipolygon */
+					 WHEN 'ST_GeometryCollection' THEN ST_UnaryUnion(ST_MakeValid(c.intersection))
+					 ELSE ST_Multi(c.intersection) 
+				END AS intersection
+		   FROM c
+	  )
+	 SELECT d.gid, d.geolevel, d.zoomlevel, d.areaid,
+			ST_Multi(
+					/* ST_Difference(d.intersection,
+							ST_Difference(d.bbox,  */ d.intersection) /*))*/ AS intersection /* i.e. remove the bounding box! */
+	   FROM d
+	  ORDER BY d.gid;
 --	 
 	 OPEN c2_maxgid(l_geolevel);
 	 FETCH c2_maxgid INTO max_gid;
@@ -593,20 +606,20 @@ BEGIN
 											  FROM intersection_cb_2014_us_500k c, a
 											 WHERE c.gid = b.gid
 											   AND c.gid BETWEEN a.min_gid AND a.min_gid+500);
-	UPDATE tile_intersects_cb_2014_us_500k
-	   SET optimised_geojson = ST_AsGeoJson(intersection)::JSON
-	 WHERE optimised_geojson IS NULL AND intersection IS NOT NULL;
-	UPDATE tile_intersects_cb_2014_us_500k b
-	   SET png_tile = ST_AsPng(
-							ST_AsRaster(
-									ST_Transform(intersection, 3857 /* Spherical Mercator */), 
-									256				/* Scale X */, 
-									256				/* Scale Y */, 
-									ARRAY['8BUI'] 	/* 8-bit unsigned integer pixeltype */, 
-									ARRAY[1]		/* Value */, 
-									ARRAY[0] 		/* nodataval */) 
-								)
-	 WHERE png_tile IS NULL AND intersection IS NOT NULL;
+--	UPDATE tile_intersects_cb_2014_us_500k
+--	   SET optimised_geojson = ST_AsGeoJson(intersection)::JSON
+--	 WHERE optimised_geojson IS NULL AND intersection IS NOT NULL;
+--	UPDATE tile_intersects_cb_2014_us_500k b
+--	   SET png_tile = ST_AsPng(
+--							ST_AsRaster(
+--									ST_Transform(intersection, 3857 /* Spherical Mercator */), 
+--									256				/* Scale X */, 
+--									256				/* Scale Y */, 
+--									ARRAY['8BUI'] 	/* 8-bit unsigned integer pixeltype */, 
+--									ARRAY[1]		/* Value */, 
+--									ARRAY[0] 		/* nodataval */) 
+--								)
+--	 WHERE png_tile IS NULL AND intersection IS NOT NULL; 
 --	 
 	 OPEN c3_mingid;
 	 FETCH c3_mingid INTO min_gid;
@@ -701,7 +714,8 @@ BEGIN
 			took:=age(etp, stp);
 			took2:=age(etp, stp2);
 			RAISE INFO 'Processed intersects for geolevel %/% zoomlevel: % in %s, % total', 
-				i, max_geolevel, new_zoomlevel, ROUND(EXTRACT(EPOCH FROM took2)::NUMERIC, 1), ROUND(EXTRACT(EPOCH FROM took)::NUMERIC, 1);
+				i, max_geolevel, new_zoomlevel, 
+				ROUND(EXTRACT(EPOCH FROM took2)::NUMERIC, 1), ROUND(EXTRACT(EPOCH FROM took)::NUMERIC, 1);
 				
 		END LOOP;	
 	END LOOP;
@@ -712,16 +726,17 @@ REINDEX TABLE tile_intersects_cb_2014_us_500k;
 ANALYZE tile_intersects_cb_2014_us_500k;
 		
 SELECT geolevel, zoomlevel, 
+       COUNT(DISTINCT(areaid)) AS areas,
        MIN(x) AS xmin, MIN(y) AS ymin, 
        MAX(x) AS xmax, MAX(y) AS ymax, 
 	   (MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1) AS possible_tiles,
-       COUNT(zoomlevel) AS tiles,
-	   ROUND((((MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1)-COUNT(zoomlevel))::numeric/
+       COUNT(DISTINCT(x::Text||y::Text)) AS tiles,
+	   ROUND((((MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1)-COUNT(DISTINCT(x::Text||y::Text)))::numeric/
 			((MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1))::numeric)*100, 2) AS pct_saving
   FROM tile_intersects_cb_2014_us_500k
  GROUP BY geolevel, zoomlevel
  ORDER BY 1, 2;
-  
+ 
 /*
  geolevel | zoomlevel | xmin | ymin | xmax | ymax | possible_tiles | tiles | pct_saving
 ----------+-----------+------+------+------+------+----------------+-------+------------
@@ -768,11 +783,11 @@ Time: 107.764 ms
 
 CREATE TEMPORARY TABLE rownum_cb_2014_us_500k 
 AS
-SELECT ROW_NUMBER() OVER (ORDER BY geolevel, zoomlevel, x, y) AS gid, geolevel, zoomlevel, x, y
+SELECT ROW_NUMBER() OVER (ORDER BY geolevel, zoomlevel, areaid, x, y) AS gid, geolevel, zoomlevel, areaid, x, y
   FROM tile_intersects_cb_2014_us_500k
  ORDER BY 1;
 ALTER TABLE rownum_cb_2014_us_500k 
-	ADD CONSTRAINT rownum_cb_2014_us_500k_pk PRIMARY KEY (geolevel, zoomlevel, x, y);	
+	ADD CONSTRAINT rownum_cb_2014_us_500k_pk PRIMARY KEY (geolevel, zoomlevel, areaid, x, y);	
 ANALYZE rownum_cb_2014_us_500k;
 UPDATE tile_intersects_cb_2014_us_500k b
    SET gid = (SELECT a.gid
@@ -780,7 +795,8 @@ UPDATE tile_intersects_cb_2014_us_500k b
 			   WHERE a.zoomlevel = b.zoomlevel
 			     AND a.geolevel  = b.geolevel
    			     AND a.x         = b.x
-				 AND a.y         = b.y);				 
+				 AND a.y         = b.y
+				 AND a.areaid    = b.areaid);				 
 ALTER TABLE tile_intersects_cb_2014_us_500k 
 	ADD CONSTRAINT tile_intersects_cb_2014_us_500k_uk UNIQUE (gid);	
 ANALYZE tile_intersects_cb_2014_us_500k;	
@@ -790,26 +806,42 @@ SELECT geolevel, MIN(gid) AS min_gid, MAX(gid) AS max_gid
   FROM tile_intersects_cb_2014_us_500k
   GROUP BY geolevel
   ORDER BY 1;
-	
+   
 DROP TABLE IF EXISTS intersection_cb_2014_us_500k;
 CREATE TEMPORARY TABLE intersection_cb_2014_us_500k 
 AS	
 WITH a AS (
 		SELECT c.gid, c.geolevel, c.bbox, c.zoomlevel,
-		       e.geom 
+		       e.areaid, e.geom 
 		  FROM tile_intersects_cb_2014_us_500k c, geometry_cb_2014_us_500k e
-		 WHERE c.zoomlevel = 0
+		 WHERE c.geolevel  = e.geolevel
+		   AND c.areaid    = e.areaid
+		   AND c.zoomlevel = 0
 		   AND ((c.zoomlevel = e.zoomlevel AND c.zoomlevel BETWEEN 6 AND 11) OR 
 		        (e.zoomlevel = 6           AND c.zoomlevel NOT BETWEEN 6 AND 11))
 ), b AS (
-SELECT a.gid, a.geolevel, a.zoomlevel, ST_Intersection(a.geom, a.bbox) AS intersection  
+SELECT a.gid, a.geolevel, a.zoomlevel, a.areaid, ST_ClipByBox2D(a.geom, a.bbox) AS intersection  
   FROM a
+), c as (
+	SELECT b.gid, b.geolevel, b.zoomlevel, b.areaid, ST_Collect(b.intersection) AS intersection
+	  FROM b
+	 WHERE b.intersection IS NOT NULL
+	GROUP BY b.gid, b.geolevel, b.zoomlevel, b.areaid
 )
-SELECT b.gid, b.geolevel, b.zoomlevel, ST_Multi(ST_Collect(b.intersection)) AS intersection
-  FROM b
- WHERE b.intersection IS NOT NULL
- GROUP BY b.gid, b.geolevel, b.zoomlevel
- ORDER BY b.gid;
+SELECT c.gid, c.geolevel, c.zoomlevel, c.areaid, 
+       CASE ST_GeometryType(c.intersection) /* Convert GeometryCollection to multipolygon */
+				 WHEN 'ST_GeometryCollection' THEN ST_Multi(ST_UnaryUnion(ST_MakeValid(c.intersection)))
+				 ELSE ST_Multi(c.intersection) 
+		    END AS intersection
+  FROM c
+ ORDER BY c.gid;
+SELECT geolevel, zoomlevel,
+       ST_IsValid(intersection) AS valid, 
+	   ST_GeometryType(intersection) AS geomtype, 
+       COUNT(gid) AS total
+  FROM intersection_cb_2014_us_500k
+ GROUP BY geolevel, zoomlevel, ST_IsValid(intersection), ST_GeometryType(intersection)
+ ORDER BY geolevel, zoomlevel;
 DELETE FROM intersection_cb_2014_us_500k;
 
 DO LANGUAGE plpgsql $$
@@ -833,7 +865,6 @@ DECLARE
 	pct 			NUMERIC;
 	tps				NUMERIC;
 BEGIN
-
 	 OPEN c2_maxgeolevel;
 	 FETCH c2_maxgeolevel INTO max_geolevel;
 	 CLOSE c2_maxgeolevel;
@@ -867,7 +898,7 @@ BEGIN
 		END LOOP;
 	END LOOP;
 END;
-$$;
+$$; 
 
 WITH a AS (
 	SELECT gid, COUNT(gid) AS total
@@ -883,7 +914,10 @@ ALTER TABLE intersection_cb_2014_us_500k
 ANALYZE tile_intersects_cb_2014_us_500k;
 
 SELECT gid, geolevel, zoomlevel, 
-       LENGTH(ST_AsGeoJson(intersection)) AS intersection_len, 
+       ST_IsValid(intersection) AS valid,
+       SUBSTRING(ST_AsText(intersection) FROM 1 FOR 30) AS wkt, 
+       LENGTH(ST_AsText(intersection)) AS wkt_len, 
+--       LENGTH(ST_AsGeoJson(intersection)) AS geojson_len, 
 	   ST_GeometryType(intersection) AS geomtype, 
 	   ST_Srid(intersection) AS srid
   FROM intersection_cb_2014_us_500k
@@ -945,7 +979,25 @@ $$;
 
 REINDEX TABLE tile_intersects_cb_2014_us_500k;
 ANALYZE tile_intersects_cb_2014_us_500k;
-						 
+
+DROP TABLE IF EXISTS tiles_cb_2014_us_500k;
+CREATE TABLE tiles_cb_2014_us_500k
+AS
+SELECT geolevel,
+	   zoomlevel,
+	   x, 
+	   y,
+	   json_agg(optimised_geojson) AS optimised_geojson
+  FROM tile_intersects_cb_2014_us_500k
+ GROUP BY geolevel,
+	      zoomlevel,
+	      x, 
+	      y
+ ORDER BY 1, 2, 3, 4;
+ALTER TABLE tiles_cb_2014_us_500k 
+	ADD CONSTRAINT tiles_cb_2014_us_500k_pk PRIMARY KEY (geolevel, zoomlevel, x, y);			
+ANALYZE VERBOSE tiles_cb_2014_us_500k; 
+	
 DROP TABLE intersection_cb_2014_us_500k; 
 
 END;
