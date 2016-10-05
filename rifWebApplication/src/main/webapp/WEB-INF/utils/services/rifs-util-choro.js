@@ -13,6 +13,8 @@ angular.module("RIF")
                     method: "quantile",
                     renderer: []
                 };
+
+                //used in viewer SA test
                 function renderFeature(feature, scale, attr) {
                     //selected
                     if (feature.properties._selected === 1) {
@@ -25,11 +27,24 @@ angular.module("RIF")
                         return "#9BCD9B";
                     }
                 }
+
+                function renderFeature2(feature, value, scale, attr, selection) {
+                    //selected (a single polygon)
+                    if (selection === feature.properties.area_id) {
+                        return "green";
+                    }
+                    //choropleth
+                    if (scale && attr !== "") {
+                        return scale(value);
+                    } else {
+                        return "#9BCD9B";
+                    }
+                }
+
                 function choroScale(method, domain, rangeIn, flip) {
                     var scale;
                     var mx = Math.max.apply(Math, domain);
                     var mn = Math.min.apply(Math, domain);
-
                     //flip the colour ramp
                     var range = [];
                     if (!flip) {
@@ -72,11 +87,9 @@ angular.module("RIF")
                              */
                             var sd = ss.sample_standard_deviation(domain);
                             var mean = d3.mean(domain);
-
                             var below_mean = mean - sd / 2;
                             var above_mean = mean + sd / 2;
                             var breaks = [];
-
                             for (i = 0; below_mean > mn && i < 2; i++) {
                                 breaks.push(below_mean);
                                 below_mean = below_mean - sd;
@@ -86,19 +99,14 @@ angular.module("RIF")
                                 above_mean = above_mean + sd;
                             }
                             breaks.sort(d3.ascending);
-
                             //dynamic scale range as number of classes unknown
                             range = ColorBrewerService.getColorbrewer(viewMap.brewerName, breaks.length + 1);
-
                             scale = d3.scale.threshold()
                                     .domain(breaks)
                                     .range(range);
                             break;
                         case "logarithmic":
-                            //TODO: check, not implemented by Fred
-                            scale = d3.scale.log()
-                                    .domain([mn, mx])
-                                    .range(range);
+                            //TODO: check, not implemented by Fred         
                             break;
                     }
                     return {
@@ -138,6 +146,9 @@ angular.module("RIF")
                     },
                     getRenderFeature: function (layer, scale, attr) {
                         return renderFeature(layer, scale, attr);
+                    },
+                    getRenderFeature2: function (feature, layer, scale, attr, selected) {
+                        return renderFeature2(feature, layer, scale, attr, selected);
                     },
                     getChoroScale: function (method, domain, rangeIn, flip) {
                         return choroScale(method, domain, rangeIn, flip);

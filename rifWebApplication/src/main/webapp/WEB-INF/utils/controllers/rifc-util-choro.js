@@ -60,11 +60,18 @@ angular.module("RIF")
                     $scope.input.selectedN = Math.min.apply(Math, $scope.input.intervalRange);
                 }
 
-                //get the domain
+                //get the domain 
                 $scope.domain.length = 0;
-                $scope.$parent.topoLayer.eachLayer(function (layer) {
-                    $scope.domain.push(layer.feature.properties[$scope.input.selectedFeature]);
-                });
+                var set = 0;
+                for (var i = 0; $scope.$parent.rrTestData.length; i++) {
+                    if ($scope.$parent.rrTestData[i][0].name === $scope.input.selectedFeature) {
+                        set = i;
+                        break;
+                    }
+                }
+                for (var i = 0; i < $scope.$parent.rrTestData[0].length; i++) {
+                    $scope.domain.push($scope.$parent.rrTestData[set][i].srr);
+                }
 
                 //get the breaks
                 $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.selectedSchemeName,
@@ -74,7 +81,7 @@ angular.module("RIF")
             $scope.close = function () {
                 $uibModalInstance.dismiss();
             };
-            
+
             $scope.apply = function () {
                 //check breaks are numeric               
                 for (var i = 0; i < $scope.input.thisMap.breaks.length; i++) {
@@ -97,7 +104,6 @@ angular.module("RIF")
                         return;
                     }
                 }
-
                 $uibModalInstance.close($scope.input);
             };
         });

@@ -27,7 +27,7 @@ angular.module("RIF")
                 }, handleStudyError);
 
                 function handleStudyError(e) {
-                    $scope.showError("xCould not retrieve study status");
+                    $scope.showError("Could not retrieve study status");
                 }
 
                 $scope.open = function () {

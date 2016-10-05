@@ -5,6 +5,7 @@
 // how do we know that the geography is SAHSU? from the study ID?
 
 angular.module("RIF")
+
         .controller('ViewerCtrl2', ['$scope',
             function ($scope) {
 
@@ -13,31 +14,38 @@ angular.module("RIF")
                 };
 
             }])
-        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService', 'D3DistHisto',
-            function ($scope, user, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService, D3DistHisto) {
+        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService',
+            function ($scope, user, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService) {
 
                 $scope.rrTestData = d3.range(1000).map(d3.random.bates(10));
 
                 //ui-container sizes
+                $scope.distHistoCurrentHeight = 200;
+                $scope.distHistoCurrentWidth = 200;
                 $scope.vSplit1 = ViewerStateService.getState().vSplit1;
                 $scope.hSplit1 = ViewerStateService.getState().hSplit1;
                 $scope.hSplit2 = ViewerStateService.getState().hSplit2;
+
+                //TODO: if browser window resized - see mapping controller
+
+                $scope.$on('ui.layout.loaded', function () {
+                    $scope.distHistoCurrentHeight = d3.select("#hSplit1").node().getBoundingClientRect().height;
+                    $scope.distHistoCurrentWidth = d3.select("#hSplit1").node().getBoundingClientRect().width;
+                });
 
                 $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
                     //Monitor split sizes                  
                     if (beforeContainer.id === "vSplit1") {
                         ViewerStateService.getState().vSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
+                        $scope.distHistoCurrentWidth = beforeContainer.size;
                     }
                     if (beforeContainer.id === "hSplit1") {
                         ViewerStateService.getState().hSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
+                        $scope.distHistoCurrentHeight = beforeContainer.size;
                     }
                     if (beforeContainer.id === "hSplit2") {
                         ViewerStateService.getState().hSplit2 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                     }
-
-                    //Rescale D3 graphs
-                    D3DistHisto.getPlot(d3.select("#hSplit1").node().getBoundingClientRect().width,
-                            d3.select("#hSplit1").node().getBoundingClientRect().height, $scope.rrTestData, '#hSplit1');
 
                     //Rescale leaflet container        
                     leafletData.getMap("viewermap").then(function (map) {
@@ -65,8 +73,6 @@ angular.module("RIF")
                 function handleAttributeError(e) {
                     console.log("attribute error");
                 }
-
-
 
                 //leaflet render
                 $scope.transparency = 0.7;
@@ -116,9 +122,6 @@ angular.module("RIF")
                     //refresh map with saved state
                     $scope.parent.renderMap("viewermap");
                     $scope.parent.refresh(ChoroService.getViewMap().invert, ChoroService.getViewMap().method);
-
-                    D3DistHisto.getPlot(d3.select("#hSplit1").node().getBoundingClientRect().width,
-                            d3.select("#hSplit1").node().getBoundingClientRect().height, $scope.rrTestData, '#hSplit1');
                 });
 
                 //Clear all selection from map and table

@@ -9,7 +9,8 @@
 angular.module("RIF")
         .factory('LeafletDrawService',
                 function ($rootScope) {
-                    function extendLeafletDrawCircle() {
+                    function
+                            extendLeafletDrawCircle() {
 
                         //increment of band count, 1st band is #1, to a max of 6
                         var thisBand = 1;

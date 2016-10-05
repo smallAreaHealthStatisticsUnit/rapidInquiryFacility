@@ -43,13 +43,7 @@ RIF D3
     left: 10px;
 }
 
-.axis path,
-.axis line {
-    stroke: #999999;
-    shape-rendering: crispEdges;
-    opacity: 0.3;
-}
-
+.y.axis path,
 .x.axis path {
     fill: none; 
     stroke: #999999; 
@@ -62,7 +56,7 @@ RIF D3
 }
 
 .bar rect {
-   fill: steelblue;
+    fill: steelblue;
 }
 
 .tick {
@@ -72,4 +66,163 @@ RIF D3
 .bar text {
     fill: #999999;
     font: 10px sans-serif;
+}
+
+
+
+
+
+/*RR CHART*/
+
+#rrchart g.y text{
+    text-transform:uppercase;
+    font-size: 12px;
+    fill: rgb(145, 145, 145);
+}
+
+#rrchart .axis .tick{
+    fill: #919191;
+}
+
+#rrchart .area {
+    stroke: rgba(127,130,201,0.9);
+    fill: #D9D9D9;
+    stroke-width: 0.4;
+}
+
+.line {
+    fill: none;
+    stroke: rgba(127,130,201,0.9);;
+    stroke-width: 1.5px;
+}
+
+.brush .extent {
+    stroke: #fff;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
+
+.bivariateHiglighter {
+    stroke: #EEA9B8;
+    fill:#EEA9B8;    
+    stroke-width: 1;
+}
+#lineBivariatesvg text {
+    fill: #919191;
+}
+#currentFiguresLineBivariate {
+    font-weight: 600;
+    font-size:16px;
+    fill: #777777;
+}
+
+#labelLineBivariate {
+    text-transform:uppercase;
+    font-size: 11px;   
+    fill: #777777;
+}
+
+/*MULTIPLE AREA CHARTS*/
+
+svg.areaCharts {
+    font-size: 10px;
+    text-transform:uppercase
+}
+svg.areaCharts path {
+    opacity:0.8;
+    /*stroke: #696969;*/
+}
+svg.areaCharts rect.overlayHover {
+    fill: none;
+    pointer-events: all;
+}
+svg.areaCharts .lineHover{
+    stroke:#7D9EC0;
+    pointer-events: none;
+}
+
+svg.areaCharts g.context {
+    display:none
+}
+
+svg.areaCharts .yClickWrapper{
+    fill:transparent;
+}
+
+div.mapInfoBottom a.brushButton{
+    float: right;
+    font-size: 14px;
+    margin-right: 20px;
+    text-transform:uppercase
+}
+
+div.mapInfoBottom a.brushButton:hover{
+    cursor:pointer
+}
+
+text.country-title {
+    font-size: 10px;
+    fill: rgb(145, 145, 145);
+    font-weight:600;
+}
+
+.areaValue {
+    font-size: 11px;
+    fill: rgb(145, 145, 145);
+    font-weight:900;
+}
+
+text.brushbutton{
+    fill: rgb(145, 145, 145);
+}
+
+text.instructions {
+    font-size: 16px;
+}
+svg.areaCharts .axis .tick {
+    fill: #919191;
+}
+
+g.context g.brush rect.background {
+    fill: rgba(0,0,0,.1);
+}
+
+g.context g.axis path {
+    stroke-opacity: 0;
+}
+
+g.context g.axis line {
+    stroke-opacity: .1;
+}
+
+g path.areaChart1 {
+    fill: #7f82c9;
+}
+
+g path.areaChart2 {
+    fill: #c97f82;
+}
+
+g path.areaChart3 {
+    fill: #82c97f;
+}
+
+g path.areaChart4 {
+    fill: #c9c67f;
+}
+
+svg.areaCharts .axis path, .axis line {
+    fill: none;
+    stroke: #aaa;
+    shape-rendering: crispEdges;
+}
+
+svg.areaCharts .brush .extent {
+    stroke: #f09f8c;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
+
+svg.areaCharts g.context rect.background{
+    visibility: visible !important;
 }

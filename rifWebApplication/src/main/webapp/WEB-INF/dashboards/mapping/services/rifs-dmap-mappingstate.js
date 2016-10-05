@@ -5,6 +5,11 @@ angular.module("RIF")
         .factory('MappingStateService',
                 function () {
                     var s = {
+                        selected: null,
+                        selectedSet: "areaChart1",
+                        areaContainerV: 0,
+                        rrContainerH: 0,
+                        rrContainerV: 0,
                         zoomLevel: -1,
                         view: [0, 0],
                         vSplit1: 25,

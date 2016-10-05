@@ -93,7 +93,8 @@ angular.module("RIF",
                         })
                         .state('state3', {
                             url: '/mapping',
-                            templateUrl: "dashboards/mapping/partials/rifp-dmap-main.html"
+                            templateUrl: "dashboards/mapping/partials/rifp-dmap-main.html",
+                            controller: 'DiseaseMappingCtrl'
                         })
                         .state('state4', {
                             url: '/status',

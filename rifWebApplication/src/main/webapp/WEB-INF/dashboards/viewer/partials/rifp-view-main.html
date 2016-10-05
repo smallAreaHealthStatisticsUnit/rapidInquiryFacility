@@ -43,9 +43,10 @@ Viewer
 </div>
 
 <div ui-layout="{flow : 'column'}">
-    <div ui-layout-container id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
+    <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container id="hSplit1" max-size="100%" class="js-back" size="{{hSplit1}}%">
+                <dist-histo chart-data="rrTestData" width="distHistoCurrentWidth" height="distHistoCurrentHeight"></dist-histo>
             </div>
             <div ui-layout-container class="js-back">
                 POPULATION ng-controller="ViewerCtrl2"
@@ -53,7 +54,7 @@ Viewer
         </div>
     </div>
 
-    <div ui-layout-container> 
+    <div ui-layout-container ui-layout-loaded> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit2}}%">            
                 <div id="submenuMapping" >

@@ -1,54 +1,93 @@
 /* global L, d3 */
 
 angular.module("RIF")
-
-        .controller('DiseaseMappingCtrl2', ['$scope',
-            function ($scope) {
-
-                //TEST DATA FOR d3
-                $scope.myData = [10, 25, 60, 40, 70];
-                $scope.myData2 = [10, 25, 60, 40, 70, 80];
-                $scope.rrTestData = [];
-                for (var i = 0, t = 400; i < t; i++) {
-                    $scope.rrTestData.push(Math.round(Math.random() * 2));
-                }
-
-            }])
-        .controller('DiseaseMappingCtrl', ['$scope', 'leafletData', 'LeafletBaseMapService', '$timeout', 'MappingStateService', 'D3RR', 'user',
-            function ($scope, leafletData, LeafletBaseMapService, $timeout, MappingStateService, D3RR, user) {
+        .controller('DiseaseMappingCtrl', ['$scope', 'leafletData', 'LeafletBaseMapService', '$timeout', 'MappingStateService', 'user', '$window', 'ChoroService', '$rootScope',
+            function ($scope, leafletData, LeafletBaseMapService, $timeout, MappingStateService, user, $window, ChoroService, $rootScope) {
 
                 //ui-container sizes
-                $scope.rrCurrentWidth = d3.select("#rr").node().getBoundingClientRect().width;
-                $scope.rrCurrentHeight = d3.select("#rr").node().getBoundingClientRect().height;
+                $scope.rrCurrentWidth = 100;
+                $scope.rrCurrentHeight = 100;
+                $scope.areaCurrentHeight = 500;
+                $scope.areaCurrentWidth = 100;
                 $scope.vSplit1 = MappingStateService.getState().vSplit1;
                 $scope.hSplit1 = MappingStateService.getState().hSplit1;
+
+                /////////////////////////////////////////////////////
+                //TEST options for D3 RR
+                $scope.opt = {
+                    id_field: "gid",
+                    x_field: "x_order",
+                    risk_field: "srr",
+                    cl_field: "cl",
+                    cu_field: "ul"
+                };
+
+                $scope.opt2 = {
+                    id_field: "gid",
+                    x_field: "x_order",
+                    risk_field: "srr",
+                    rSet: 4
+                };
+                ///////////////////////////////////////////
+
+                //Synchronisation
+                $scope.thisPoly = null;
+                
+                $scope.$on('xxxx', function (event, data) {
+                    $scope.thisPoly = data;
+                    //lines on area charts
+                    $rootScope.$broadcast('rrDropLineRedraw', $scope.thisPoly);
+                    $rootScope.$broadcast('areaDropLineRedraw', $scope.thisPoly);
+                    //highlight map
+                    $scope.topoLayer.eachLayer(handleLayer);
+                });
+                
+                //get geography
+                user.getTiles(user.currentUser, "SAHSU", "LEVEL4").then(handleTopoJSON, handleTopoJSON);
+
+                //Browser window resize - HACK:
+                angular.element($window).bind('resize', function () {
+                    $scope.vSplit1++;
+                    $scope.hSplit1--;
+                    $scope.$emit('ui.layout.loaded', null);
+                });
+
+                $scope.$on('ui.layout.loaded', function () {
+                    $scope.rrCurrentHeight = d3.select("#rr").node().getBoundingClientRect().height;
+                    $scope.rrCurrentWidth = d3.select("#rr").node().getBoundingClientRect().width;
+                    $scope.areaCurrentWidth = d3.select(".mapInfoBottom").node().getBoundingClientRect().width;
+                    $scope.areaCurrentHeight = d3.select(".mapInfoBottom").node().getBoundingClientRect().height - 30;
+                });
 
                 $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
                     //Monitor split sizes
                     if (beforeContainer.id === "vSplit1") {
                         MappingStateService.getState().vSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
+                        $scope.rrCurrentWidth = afterContainer.size;
+                        $scope.areaCurrentWidth = d3.select(".mapInfoBottom").node().getBoundingClientRect().width;
+                        $scope.areaCurrentHeight = d3.select(".mapInfoBottom").node().getBoundingClientRect().height;
                     }
                     if (beforeContainer.id === "hSplit1") {
                         MappingStateService.getState().hSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
+                        $scope.rrCurrentHeight = afterContainer.size;
                     }
+                    rescaleLeafletContainer();
+                });
 
-                    //Rescale D3 graphs
-                    D3RR.getPlot(d3.select("#rr").node().getBoundingClientRect().width,
-                            d3.select("#rr").node().getBoundingClientRect().height, "SOME DATA", '#rr');
-
-                    $scope.rrCurrentWidth = d3.select("#rr").node().getBoundingClientRect().width;
-                    $scope.rrCurrentHeight = d3.select("#rr").node().getBoundingClientRect().height;
-
-                    //Rescale leaflet container        
+                //Rescale leaflet container       
+                function rescaleLeafletContainer() {
                     leafletData.getMap("diseasemap").then(function (map) {
                         setTimeout(function () {
                             map.invalidateSize();
                         }, 50);
                     });
-                });
+                }
 
                 $scope.transparency = 0.7;
                 var maxbounds;
+                var thisMap = [];
+                $scope.domain = [];
+                var attr;
 
                 //get the user defined basemap
                 $scope.parent = {};
@@ -88,28 +127,34 @@ angular.module("RIF")
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
                     });
-                    
-                    //Draw D3 (TODO: into functions)
-                    D3RR.getPlot(d3.select("#rr").node().getBoundingClientRect().width,
-                            d3.select("#rr").node().getBoundingClientRect().height, "SOME DATA", '#rr');
                 });
-
+                //Render map functions
                 function style(feature) {
                     return {
-                        fillColor: '#ffcccc',
+                        fillColor: ChoroService.getRenderFeature(feature, thisMap.scale, attr),
                         weight: 1,
                         opacity: 1,
                         color: 'gray',
-                        dashArray: '3',
                         fillOpacity: $scope.transparency
                     };
                 }
 
                 function handleLayer(layer) {
+                    //find attr value                    
+                    //TODO: LookUp - will make more efficient when using API
+                    var thisAttr;
+                    for (var i = 0; i < $scope.testData1.length; i++) {
+                        if ($scope.testData1[i].gid === layer.feature.properties.area_id) {
+                            thisAttr = $scope.testData1[i].srr;
+                            break;
+                        }
+                    }
                     layer.setStyle({
+                        fillColor: ChoroService.getRenderFeature2(layer.feature, thisAttr, thisMap.scale, attr, $scope.thisPoly),
                         fillOpacity: $scope.transparency
                     });
                 }
+
                 $scope.changeOpacity = function () {
                     $scope.topoLayer.eachLayer(handleLayer);
                 };
@@ -121,7 +166,54 @@ angular.module("RIF")
                     });
                 };
 
-                user.getTiles(user.currentUser, "SAHSU", "LEVEL4").then(handleTopoJSON, handleTopoJSON);
+                //Hover box and Legend
+                var infoBox = L.control({position: 'bottomleft'});
+                var legend = L.control({position: 'topright'});
+                infoBox.onAdd = function () {
+                    this._div = L.DomUtil.create('div', 'info');
+                    this.update();
+                    return this._div;
+                };
+                infoBox.update = function (poly) {
+                    if (poly) {
+                        //  this._div.innerHTML = '<h4>' + poly[attr] + '</h4>';
+                        this._div.innerHTML = '<h4>' + poly.area_id + '</h4>';
+                    }
+                };
+
+                //information from choropleth modal to colour map                             
+                $scope.parent.refresh = function () {
+                    //get selected colour ramp
+                    var rangeIn = ChoroService.getViewMap().brewer;
+                    attr = ChoroService.getViewMap().feature;
+
+                    //not a choropleth, but single colour
+                    if (rangeIn.length === 1) {
+                        attr = "";
+                        leafletData.getMap("viewermap").then(function (map) {
+                            //remove existing legend
+                            if (legend._map) {
+                                map.removeControl(legend);
+                            }
+                        });
+                        $scope.topoLayer.eachLayer(handleLayer);
+                        return;
+                    }
+
+                    thisMap = ChoroService.getViewMap().renderer;
+
+                    //remove old legend and add new
+                    legend.onAdd = ChoroService.getMakeLegend(thisMap, attr);
+                    leafletData.getMap("diseasemap").then(function (map) {
+                        if (legend._map) { //This may break in future leaflet versions
+                            map.removeControl(legend);
+                        }
+                        legend.addTo(map);
+                    });
+
+                    //force a redraw
+                    $scope.topoLayer.eachLayer(handleLayer);
+                };
 
                 function handleTopoJSON(res) {
                     leafletData.getMap("diseasemap").then(function (map) {
@@ -131,25 +223,71 @@ angular.module("RIF")
                                 layer.on('mouseover', function (e) {
                                     this.setStyle({
                                         color: 'gray',
-                                        dashArray: 'none',
                                         weight: 1.5,
                                         fillOpacity: function () {
-                                            //set tranparency from slider
                                             return($scope.transparency - 0.3 > 0 ? $scope.transparency - 0.3 : 0.1);
                                         }()
                                     });
+                                    infoBox.addTo(map);
+                                    infoBox.update(layer.feature.properties);
+                                });
+                                layer.on('click', function (e) {
+                                    $scope.thisPoly = e.target.feature.properties.area_id;
+                                    $rootScope.$broadcast('xxxx', $scope.thisPoly);
                                 });
                                 layer.on('mouseout', function (e) {
-                                    $scope.topoLayer.resetStyle(e.target);
+                                    //$scope.topoLayer.resetStyle(e.target);
+                                    $scope.topoLayer.eachLayer(handleLayer);
+                                    map.removeControl(infoBox);
                                 });
                             }
                         });
                         $scope.topoLayer.addTo(map);
-                        maxbounds = $scope.topoLayer.getBounds();                       
+                        maxbounds = $scope.topoLayer.getBounds();
+                    }).then(function () {
+
+                        //make random test data
+                        var rrTestData2 = [];
+                        var attrs = [];
+                        for (var j = 0; j < 4; j++) {
+                            var thisAttr = "srr" + j;
+                            attrs.push(thisAttr);
+                            var rs = [];
+                            for (var i = 0; i < res.data.objects['2_1_1'].geometries.length; i++) {
+                                var tmp = (Math.random() * 2) - (Math.round(Math.random()));
+                                if (j === 1) {
+                                    tmp = tmp - Math.random();
+                                }
+                                if (j === 0) {
+                                    tmp = tmp + Math.random();
+                                }
+                                var errorBar = 0.3 * Math.random();
+                                rs.push(
+                                        {
+                                            name: thisAttr,
+                                            gid: res.data.objects['2_1_1'].geometries[i].properties.area_id,
+                                            x_order: i,
+                                            srr: tmp,
+                                            cl: tmp - errorBar,
+                                            ul: tmp + errorBar
+                                        });
+                            }
+                            rrTestData2.push(rs);
+                            ChoroService.setFeaturesToMap(attrs);
+
+                            //reorder
+                            rrTestData2[j].sort(function (a, b) {
+                                return parseFloat(a.srr) - parseFloat(b.srr);
+                            });
+                            for (var i = 0; i < res.data.objects['2_1_1'].geometries.length; i++) {
+                                rrTestData2[j][i]["x_order"] = i + 1;
+                            }
+                        }
+
+                        $scope.testData1 = angular.copy(rrTestData2[0]);
+                        $scope.rrTestData = angular.copy(rrTestData2);
                     });
                     $scope.parent.renderMap("diseasemap");
                 }
-            }]);
-
-
-        
+            }
+        ]);    

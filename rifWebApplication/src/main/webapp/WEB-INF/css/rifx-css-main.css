@@ -388,6 +388,19 @@ select {
 
 /* Left Col */
 
+.mapInfoTop {
+    width: 100%;
+    height: 25%;
+    position: relative;
+    overflow: auto;
+}
+.mapInfoBottom {
+    width: 100%;
+    height: 70%;
+    position: absolute;
+
+}
+
 #content #leftcol div#studyInfo {
     padding-bottom: 8%;
     margin-top: 3%;
@@ -425,6 +438,13 @@ div#studyInfo ul li.listHeader {
     margin-left: auto;
     margin-right: auto;
     width: 92%;
+}
+
+#studyInfo {
+    padding-top:20px;
+}
+#mAreaCharts {
+    height: 90%;
 }
 
 

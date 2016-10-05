@@ -55,42 +55,44 @@ Mapping
     </div>
 </div>
 
-<div ui-layout="{flow : 'column'}" ng-controller ="DiseaseMappingCtrl">
-    <div ui-layout-container class="html-back" id="vSplit1" max-size="100%" size="{{vSplit1}}%">
-        <div class='chartOptsMapping'>
-            <div id="studyLabel">
-                <h1 > Study Id  </h1>
-                <h2 id="invLabel" > Inv id  </h2>
+<div ui-layout="{flow : 'column'}">
+    <div ui-layout-container ui-layout-loaded class="html-back" id="vSplit1" max-size="100%" size="{{vSplit1}}%">
+        <div class="mapInfoTop">
+            <div class='chartOptsMapping'>
+                <div id="studyLabel">                
+                    <h1 > Study Id </h1>
+                    <h2 id="invLabel" > Inv id  </h2>
+                </div>
+            </div>
+            <div id='studyInfo'>
+                <ul class="resultFigures">
+                    <li class="riskFigures"> 
+                        <ul >
+                            <li class="listHeader"> Result figures </li>
+                            <li id='areaLevel' >Area level: <span class="figure">{{thisPoly}}</span></li>	
+                            <li id='totDenom'  >Population:<span class="figure">n/a</span></li>		
+                            <li id='observed' >Observed:<span class="figure">n/a</span></li> 
+                            <li id='expected' >Expected:<span class="figure">n/a</span></li> 
+
+                        </ul>	
+                    </li> 
+                    <li class="investigationFigures">
+                        <ul>
+                            <li class="listHeader"> Investigation info </li>
+                            <li id='nAreas' >Number of areas:<span class="figure">0.67</span></li>
+                            <li id='covariate' >Covariate adj:<span class="figure">0.67</span></li>
+                            <li id='ageGroup' >Age groups:<span class="figure">0.67</span></li>
+                            <li id='year' >Year(s):<span class="figure">0.67</span></li>
+                        </ul>	
+                    </li>	
+                </ul>
             </div>
         </div>
-        <div id='studyInfo'>
-            <ul class="resultFigures">
-                <li class="riskFigures"> 
-                    <ul >
-                        <li class="listHeader"> Result figures </li>
-                        <li id='areaLevel' >Area level:<span class="figure">n/a</span></li>	
-                        <li id='totDenom'  >Population:<span class="figure">n/a</span></li>		
-                        <li id='observed' >Observed:<span class="figure">n/a</span></li> 
-                        <li id='expected' >Expected:<span class="figure">n/a</span></li> 
-
-                    </ul>	
-                </li> 
-                <li class="investigationFigures">
-                    <ul>
-                        <li class="listHeader"> Investigation info </li>
-                        <li id='nAreas' >Number of areas:<span class="figure">0.67</span></li>
-                        <li id='covariate' >Covariate adj:<span class="figure">0.67</span></li>
-                        <li id='ageGroup' >Age groups:<span class="figure">0.67</span></li>
-                        <li id='year' >Year(s):<span class="figure">0.67</span></li>
-                    </ul>	
-                </li>	
-            </ul>
-        </div>
-        <div id='mAreaCharts' ng-controller ="DiseaseMappingCtrl2">          
-            <bars-chart chart-data="myData"></bars-chart>
+        <div class="mapInfoBottom">        
+            <marea-chart chart-data="rrTestData" options="opt2" width="areaCurrentWidth" height="areaCurrentHeight"></marea-chart>
         </div>
     </div>
-    <div ui-layout-container> 
+    <div ui-layout-container ui-layout-loaded> 
         <div ui-layout="{flow : 'row'}" >
             <div ui-layout-container id="hSplit1" max-size="100%" size="{{hSplit1}}%" class="leaflet-box">
                 <div id="submenuMapping">
@@ -110,6 +112,7 @@ Mapping
                 <leaflet id="diseasemap" tiles="tiles" width="100%" height="calc(100% - 40px)"></leaflet>     
             </div>
             <div ui-layout-container class="rr-back" id="rr">   
+                  <rr-chart chart-data="testData1" options="opt" width="rrCurrentWidth" height="rrCurrentHeight"></rr-chart>                        
             </div>
         </div>
     </div>
