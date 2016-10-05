@@ -650,7 +650,8 @@ RangeError: Invalid string length
   * Architecture will be as in the prototype: SQL script and tile script which will:
     * Convert geoJSON/(Well known text for SQL Server) to topoJSON;
     * PNG tile dump to files (Postgres only - no raster support in SQL Server);	
-  * Image of US outline tiles at zoomlevel 8: ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/US Outline.png "US outline tiles at zoomlevel 8")
+  * Image of US outline tiles at zoomlevel 8: 
+    ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/US Outline.png "US outline tiles at zoomlevel 8")
 	
   
 #### Current TODO list (October):
