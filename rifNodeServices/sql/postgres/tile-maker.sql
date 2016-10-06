@@ -550,15 +550,17 @@ BEGIN
 	 ), d AS (
 		 SELECT c.gid, c.geolevel, c.zoomlevel, c.areaid, c.bbox, 
 				CASE ST_GeometryType(c.intersection) /* Convert GeometryCollection to multipolygon */
-					 WHEN 'ST_GeometryCollection' THEN ST_UnaryUnion(ST_MakeValid(c.intersection))
+					 WHEN 'ST_GeometryCollection' THEN ST_Multi(ST_UnaryUnion(ST_MakeValid(c.intersection)))
 					 ELSE ST_Multi(c.intersection) 
 				END AS intersection
 		   FROM c
 	  )
 	 SELECT d.gid, d.geolevel, d.zoomlevel, d.areaid,
-			ST_Multi(
-					/* ST_Difference(d.intersection,
-							ST_Difference(d.bbox,  */ d.intersection) /*))*/ AS intersection /* i.e. remove the bounding box! */
+/*		    CASE 
+				WHEN ST_IsEmpty(ST_Difference(d.bbox, d.intersection)) THEN NULL 
+				ELSE ST_Multi(d.intersection)
+			END AS intersection */
+			ST_Multi(d.intersection) AS intersection  
 	   FROM d
 	  ORDER BY d.gid;
 --	 
@@ -606,6 +608,26 @@ BEGIN
 											  FROM intersection_cb_2014_us_500k c, a
 											 WHERE c.gid = b.gid
 											   AND c.gid BETWEEN a.min_gid AND a.min_gid+500);
+--		
+-- Trim off bounding box:
+--
+-- 1. C = ST_Difference(A, B) = geomA - ST_Intersection(A,B)
+--								 
+	UPDATE tile_intersects_cb_2014_us_500k
+	   SET trimmed_intersect = ST_Multi(ST_SymDifference(bbox, intersection))
+     WHERE intersection IS NOT NULL AND NOT ST_IsEmpty(ST_SymDifference(bbox, intersection));		
+--
+-- 2. T = ST_SymDifference(A, C) = A XOR C = C XOR A = ST_Union(geomA,geomB) - ST_Intersection(A,B).
+--	
+-- ST_Intersection is a binary AND; ST_Difference is a binary minus and ST_SymDifference binary XOR
+--
+-- T = geomA XOR (A - (A AND B))
+-- T = B - A
+-- 
+--	UPDATE tile_intersects_cb_2014_us_500k
+--	   SET trimmed_intersect = ST_Multi(ST_SymDifference(bbox, trimmed_intersect))
+--     WHERE trimmed_intersect IS NOT NULL AND NOT ST_IsEmpty(ST_SymDifference(bbox, trimmed_intersect));	
+--	 
 --	UPDATE tile_intersects_cb_2014_us_500k
 --	   SET optimised_geojson = ST_AsGeoJson(intersection)::JSON
 --	 WHERE optimised_geojson IS NULL AND intersection IS NOT NULL;
@@ -923,6 +945,10 @@ SELECT gid, geolevel, zoomlevel,
   FROM intersection_cb_2014_us_500k
   ORDER BY 1 LIMIT 40;
 
+SELECT AddGeometryColumn('tile_intersects_cb_2014_us_500k','trimmed_intersect', 4326, 'MULTIPOLYGON', 
+		2 		/* Dimension */, 
+		false 	/* use typmod geometry column instead of constraint-based */);
+			
 DO LANGUAGE plpgsql $$
 DECLARE
 	max_geolevel INTEGER;
@@ -964,7 +990,7 @@ BEGIN
 			took2:=age(etp, stp2);
 			pct:=ROUND((new_max_gid::NUMERIC/max_gid::NUMERIC)*100, 2);
 			tps:=ROUND((new_max_gid::NUMERIC/EXTRACT(EPOCH FROM took)::NUMERIC), 0);
-			RAISE INFO 'Processed %/% tiles (GeoJSON/PNG) for geolevel %/%; % %% in %s; % tiles/s', 
+			RAISE INFO 'Processed %/% tiles (Tile trims/GeoJSON/PNG) for geolevel %/%; % %% in %s; % tiles/s', 
 				new_max_gid, 
 				max_gid, 
 				i,
@@ -1000,6 +1026,35 @@ ANALYZE VERBOSE tiles_cb_2014_us_500k;
 	
 DROP TABLE intersection_cb_2014_us_500k; 
 
+WITH a AS (
+	SELECT gid, geolevel, zoomlevel, ST_Difference(bbox, trimmed_intersect) AS intersection
+	  FROM tile_intersects_cb_2014_us_500k
+)
+SELECT gid, geolevel, zoomlevel, 
+       ST_IsValid(intersection) AS valid,
+       SUBSTRING(ST_AsText(intersection) FROM 1 FOR 30) AS wkt, 
+       LENGTH(ST_AsText(intersection)) AS wkt_len, 
+--       LENGTH(ST_AsGeoJson(intersection)) AS geojson_len, 
+	   ST_GeometryType(intersection) AS geomtype, 
+	   ST_Srid(intersection) AS srid
+  FROM a
+ WHERE NOT ST_IsEmpty(intersection)
+  ORDER BY 1 LIMIT 40;
+  
+SELECT geolevel, zoomlevel, COUNT(gid) AS total
+  FROM tile_intersects_cb_2014_us_500k
+ WHERE trimmed_intersect IS NULL
+  GROUP BY geolevel, zoomlevel
+  ORDER BY geolevel, zoomlevel;
+/*
+ geolevel | zoomlevel | total
+----------+-----------+-------
+        1 |         5 |     4
+        1 |         6 |    28
+        2 |         5 |     1
+        2 |         6 |     7
+(4 rows)
+ */
 END;
 
 \dS+ tile_intersects_cb_2014_us_500k
