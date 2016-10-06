@@ -373,8 +373,14 @@ SELECT c.geolevel,
 	        CASE ST_GeometryType(d.intersection) /* Convert GeometryCollection to multipolygon */
 				 WHEN 'ST_GeometryCollection' THEN ST_Multi(ST_UnaryUnion(ST_MakeValid(d.intersection)))
 				 ELSE ST_Multi(d.intersection) 
-		    END AS intersection
-	   FROM d
+		    END AS intersection,
+			c.geom
+	   FROM d, c
+	  WHERE d.geolevel  = c.geolevel
+	    AND d.zoomlevel = c.zoomlevel
+	    AND d.areaid    = c.areaid
+	    AND d.x         = c.x 
+	    AND d.y         = c.y
 )
 SELECT 0 gid,
        e.geolevel,
@@ -382,7 +388,8 @@ SELECT 0 gid,
 	   e.areaid,
 	   e.x, e.y, e.bbox, 
        e.intersection,
-       ST_AsGeoJson(e.intersection)::JSON AS optimised_geojson
+	   e.geom,
+       ST_AsGeoJson(e.geom)::JSON AS optimised_geojson
   FROM e
  ORDER BY e.geolevel, e.zoomlevel, e.x, e.y;
 
@@ -521,7 +528,7 @@ DECLARE
 			  FROM intersection_cb_2014_us_500k
 			 WHERE l_geolevel = geolevel;
 BEGIN
-	INSERT INTO intersection_cb_2014_us_500k(gid, geolevel, zoomlevel, areaid, intersection)
+	INSERT INTO intersection_cb_2014_us_500k(gid, geolevel, zoomlevel, areaid, intersection, geom)
 	WITH a AS (
 		SELECT COALESCE(MAX(gid), 0) AS max_gid
   		  FROM intersection_cb_2014_us_500k
@@ -560,8 +567,13 @@ BEGIN
 				WHEN ST_IsEmpty(ST_Difference(d.bbox, d.intersection)) THEN NULL 
 				ELSE ST_Multi(d.intersection)
 			END AS intersection */
-			ST_Multi(d.intersection) AS intersection  
-	   FROM d
+			ST_Multi(d.intersection) AS intersection,
+			b.geom
+	   FROM d, b
+	  WHERE d.geolevel  = b.geolevel
+	    AND d.zoomlevel = b.zoomlevel
+	    AND d.areaid    = b.areaid
+	    AND d.gid		= b.gid
 	  ORDER BY d.gid;
 --	 
 	 OPEN c2_maxgid(l_geolevel);
@@ -608,6 +620,21 @@ BEGIN
 											  FROM intersection_cb_2014_us_500k c, a
 											 WHERE c.gid = b.gid
 											   AND c.gid BETWEEN a.min_gid AND a.min_gid+500);
+--											   
+	WITH a AS (
+		SELECT COALESCE(MIN(gid), 0) AS min_gid
+  		  FROM tile_intersects_cb_2014_us_500k
+		 WHERE geom IS NULL
+		   AND l_geolevel = geolevel
+	) 
+	UPDATE tile_intersects_cb_2014_us_500k b
+	   SET geom = (SELECT a1.geom
+					 FROM intersection_cb_2014_us_500k a1
+					WHERE a1.gid = b.gid)
+	 WHERE geom IS NULL AND EXISTS (SELECT c.gid
+											  FROM intersection_cb_2014_us_500k c, a
+											 WHERE c.gid = b.gid
+											   AND c.gid BETWEEN a.min_gid AND a.min_gid+500);
 --		
 -- Trim off bounding box:
 --
@@ -633,8 +660,9 @@ BEGIN
 	REINDEX TABLE tile_intersects_cb_2014_us_500k; 			
 --	 
 	UPDATE tile_intersects_cb_2014_us_500k
-	   SET optimised_geojson = ST_AsGeoJson(intersection)::JSON
-	 WHERE optimised_geojson IS NULL AND intersection IS NOT NULL;
+	   SET optimised_geojson = ST_AsGeoJson(geom)::JSON
+	 WHERE optimised_geojson IS NULL AND geom IS NOT NULL;
+--
 --	UPDATE tile_intersects_cb_2014_us_500k b
 --	   SET png_tile = ST_AsPng(
 --							ST_AsRaster(
@@ -858,16 +886,15 @@ SELECT c.gid, c.geolevel, c.zoomlevel, c.areaid,
        CASE ST_GeometryType(c.intersection) /* Convert GeometryCollection to multipolygon */
 				 WHEN 'ST_GeometryCollection' THEN ST_Multi(ST_UnaryUnion(ST_MakeValid(c.intersection)))
 				 ELSE ST_Multi(c.intersection) 
-		    END AS intersection
-  FROM c
+		    END AS intersection,
+	   a.geom
+  FROM c, a
+ WHERE a.geolevel  = c.geolevel
+   AND a.zoomlevel = c.zoomlevel
+   AND a.areaid    = c.areaid
+   AND a.gid       = c.gid
  ORDER BY c.gid;
-SELECT geolevel, zoomlevel,
-       ST_IsValid(intersection) AS valid, 
-	   ST_GeometryType(intersection) AS geomtype, 
-       COUNT(gid) AS total
-  FROM intersection_cb_2014_us_500k
- GROUP BY geolevel, zoomlevel, ST_IsValid(intersection), ST_GeometryType(intersection)
- ORDER BY geolevel, zoomlevel;
+ 
 DELETE FROM intersection_cb_2014_us_500k;
 
 DO LANGUAGE plpgsql $$
@@ -1095,6 +1122,13 @@ SELECT gid, geolevel, zoomlevel,
   
 SELECT ST_Srid(intersection) FROM tile_intersects_cb_2014_us_500k LIMIT 1;
 
+SELECT X, Y, areaid
+  FROM tile_intersects_cb_2014_us_500k
+ WHERE geolevel = 2 AND zoomlevel = 6 AND areaid = '00294478';
+   
+SELECT X, Y, areaid
+  FROM tile_intersects_cb_2014_us_500k
+   WHERE geolevel = 2 AND zoomlevel = 6 AND x = 17 AND y = 26 /* Florida, Georgia */ LIMIT 20;
 /*
 SELECT lo_from_bytea(0, png_tile) FROM tile_intersects_cb_2014_us_500k WHERE gid=1;
 \lo_export 4194857 'tile_1.png' 
