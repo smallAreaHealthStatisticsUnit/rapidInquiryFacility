@@ -142,6 +142,8 @@ final class SQLRIFSubmissionManager
 		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
 		this.mapDataManager = mapDataManager;
 		this.studyStateManager = studyStateManager;
+		
+		setEnableLogging(false);
 	}
 
 	// ==========================================
@@ -395,8 +397,8 @@ final class SQLRIFSubmissionManager
 
 		//Defensively copy parameters and guard against blocked users
 		
-		SQLStudySubmissionFileExportService fileExportService
-			= new SQLStudySubmissionFileExportService();
+		SQLPublishResultsSubmissionStep fileExportService
+			= new SQLPublishResultsSubmissionStep();
 		File scratchSpaceDirectory 
 			= new File(rifServiceStartupOptions.getExtractDirectory());
 		File extraFilesDirectory 
@@ -405,7 +407,7 @@ final class SQLRIFSubmissionManager
 			scratchSpaceDirectory, 
 			extraFilesDirectory);
 			
-		fileExportService.writeRIFStudyToZipFile(
+		fileExportService.performStep(
 			connection, 
 			user,
 			rifStudySubmission, 

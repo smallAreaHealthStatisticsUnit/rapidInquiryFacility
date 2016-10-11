@@ -464,5 +464,8 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		final User user,
 		final String studyID)
 		throws RIFServiceException;
-		
+	
+	public void test() 
+		throws RIFServiceException;
+	
 }

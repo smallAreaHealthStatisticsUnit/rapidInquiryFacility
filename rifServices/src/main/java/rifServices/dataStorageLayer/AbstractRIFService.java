@@ -304,6 +304,12 @@ public class AbstractRIFService {
 		return isInitialised;
 	}
 	
+	public void test() 
+		throws RIFServiceException {
+		
+		
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

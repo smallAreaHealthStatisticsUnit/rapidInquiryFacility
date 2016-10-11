@@ -18,7 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.sql.*;
+
 
 /**
  *
@@ -243,7 +243,7 @@ final class SQLStudyStateManager
 		PreparedStatement statement = null;
 		try {
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setString(1, studyState.getName());
+			statement.setString(1, studyState.getCode());
 			statement.setString(2, studyID);
 			statement.setString(3, user.getUserID());
 			statement.executeUpdate();
@@ -256,7 +256,7 @@ final class SQLStudyStateManager
 				= RIFServiceMessages.getMessage(
 					"studyStateManager.error.unableToUpdateStudyState", 
 					studyID, 
-					studyState.getName());
+					studyState.getCode());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 
@@ -309,7 +309,7 @@ final class SQLStudyStateManager
 		ResultSet resultSet = null;
 		try {
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			String studyStateName = studyState.getName();
+			String studyStateName = studyState.getCode();
 			statement.setString(1, studyStateName);
 			statement.setString(2, user.getUserID());
 			
@@ -336,7 +336,7 @@ final class SQLStudyStateManager
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"",
-					studyState.getName());
+					studyState.getCode());
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 

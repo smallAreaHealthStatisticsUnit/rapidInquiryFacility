@@ -78,7 +78,7 @@ import org.postgresql.core.BaseConnection;
  *
  */
 
-public class SQLStudySubmissionFileExportService {
+public class SQLPublishResultsSubmissionStep {
 
 	// ==========================================
 	// Section Constants
@@ -97,7 +97,7 @@ public class SQLStudySubmissionFileExportService {
 	// Section Construction
 	// ==========================================
 
-	public SQLStudySubmissionFileExportService() {
+	public SQLPublishResultsSubmissionStep() {
 
 	}
 
@@ -113,7 +113,7 @@ public class SQLStudySubmissionFileExportService {
 	}
 	
 	
-	public void writeRIFStudyToZipFile(			
+	public void performStep(			
 		final Connection connection,
 		final User user,
 		final RIFStudySubmission rifStudySubmission,
@@ -210,25 +210,6 @@ public class SQLStudySubmissionFileExportService {
 		return zipFileName.toString();
 	}
 	
-	/*
-	private String generateTemporaryStudyZipFileDirectory(
-		final File scratchSpaceDirectory,
-		final String baseFileName) {
-		
-
-		StringBuilder directoryPath = new StringBuilder();
-		directoryPath.append(scratchSpaceDirectory.getAbsolutePath());
-		directoryPath.append(File.separator);
-		directoryPath.append(baseFileName);
-		
-		
-		Files.createDirectory(Paths.get(directoryPath.toString()));
-		
-		return directoryPath.toString();
-	}
-	*/
-	
-
 	private String deriveExtractTableName(
 		final String studyID) {
 		
@@ -277,8 +258,7 @@ public class SQLStudySubmissionFileExportService {
 
 		return extractFileName.toString();
 	}
-	
-	
+		
 	private void exportTableToFile(
 		final Connection connection,
 		final String tableName, 

@@ -1,7 +1,6 @@
 package rifServices.system;
 
 import rifGenericLibrary.util.FieldValidationUtility;
-
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
@@ -11,6 +10,8 @@ import rifGenericLibrary.businessConceptLayer.Parameter;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Map;
+
 
 
 /**
@@ -81,6 +82,7 @@ import java.util.ArrayList;
 
 public final class RIFServiceStartupOptions {
 
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -437,6 +439,7 @@ public final class RIFServiceStartupOptions {
 	}
 	
 	public String getRIFServiceResourcePath() {
+		/*
 		String currentDirectoryPath = null;
 		if (rifServiceClassDirectoryPath == null) {
 			currentDirectoryPath = (new File(".")).getAbsolutePath();			
@@ -444,27 +447,65 @@ public final class RIFServiceStartupOptions {
 		else {
 			currentDirectoryPath = (new File(rifServiceClassDirectoryPath)).getAbsolutePath();			
 		}
-		
+		*/
 
 		StringBuilder path = new StringBuilder();
-		path.append(currentDirectoryPath);
-		path.append(File.separator);
+		//path.append(currentDirectoryPath);
+		//path.append(File.separator);
 
-		if (isWebDeployment == false) {
-			path.append("target");
-			path.append(File.separator);
-			path.append("classes");
+		if (isWebDeployment) {
+			System.out.println("RIFServiceStartupOptions is web deployment");
+			Map<String, String> environmentalVariables = System.getenv();
+
+
+			String catalineHome = "C:\\Program Files\\Apache Software Foundation\\Tomcat 8.0";
+			
+			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+			/*
+			String[] tokens2 = catalinaHome.split("\\");
+			if (tokens2 == null) {
+				System.out.println("tokens are null");
+			}
+			else {
+				for (String token2 : tokens2) {
+					System.out.println("token222:"+token2+"==");
+				}	
+			}
+			
+			String[] tokens3 = catalinaHome.split("\\");
+			if (tokens3 == null) {
+				System.out.println("tokens are null");
+			}
+			else {
+				for (String token3 : tokens3) {
+					System.out.println("token333:"+token3+"==");
+				}	
+			}
+			*/
+					
+			String catalinaHomeDirectoryPath = environmentalVariables.get("CATALINA_HOME");
+			System.out.println("C A T A L I N A  H O M E=="+catalinaHomeDirectoryPath+"==");
+			catalinaHomeDirectoryPath = catalinaHomeDirectoryPath.replace("\\", "\\\\");
+			path.append(catalinaHomeDirectoryPath);
+			path.append("\\\\");
+			path.append("webapps");
+			path.append("\\\\");
+			path.append("rifServices");
+			path.append("\\\\");
+			path.append("WEB-INF");	
+			path.append("\\\\");
+			path.append("classes");		
+			
 		}
 		else {
-			path.append("webapps");
+			System.out.println("RIFServiceStartupOptions is NOT web deployment");
+			path.append((new File(".")).getAbsolutePath());
 			path.append(File.separator);
-			path.append("rifServices");
+			path.append("target");
 			path.append(File.separator);
-			path.append("WEB-INF");
-			path.append(File.separator);
-			path.append("classes");
+			path.append("classes");			
 		}
-		
+				
 		return path.toString();
 	}
 	

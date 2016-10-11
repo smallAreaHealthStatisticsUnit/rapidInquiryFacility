@@ -1,6 +1,7 @@
-package rifGenericLibrary.system;
+package rifGenericLibrary.util;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -52,8 +53,9 @@ import java.io.File;
  *
  */
 
-public class ClassFileLocator {
+public class FilePathCleaner {
 
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -66,47 +68,47 @@ public class ClassFileLocator {
 	// Section Construction
 	// ==========================================
 
-	public ClassFileLocator() {
+	public FilePathCleaner() {
 
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	/*
+	 * This routine is used to ensure that in parts of the file path that have spaces, the fragment
+	 * is enclosed by spaces.  Otherwise, on a windows system, the spaces will tokenise parts of the
+	 * file path as command line arguments
+	 */
+	public static String correctWindowsPathForSpaces(
+		final String separatorCharacter,
+		final String originalPath) {
 
-    public static String getClassRootLocation(final String subProjectName) {
-    	String classPath = System.getProperty("java.class.path");
-    	
-    	//we will get every directory used in the classpath.  Now we want to 
-    	//find the directory that is the start of where the class files for the
-    	//rifServices project are located.  This location can be used to find
-    	//other resource files (eg: text and XML files).
-		String[] classPathEntries
-			= classPath.split(File.pathSeparator);
-		StringBuilder pathToFind = new StringBuilder();
-		pathToFind.append("rapidInquiryFacility");
-		pathToFind.append(File.separator);
-		//pathToFind.append("rifGenericLibrary");
-		pathToFind.append(subProjectName);
-		pathToFind.append(File.separator);
-		pathToFind.append("target");
-		pathToFind.append(File.separator);
-		pathToFind.append("classes");
-    	
-		String targetPath = pathToFind.toString();
+		StringBuilder cleanedPath = new StringBuilder();
+
+		String[] pathComponents = originalPath.split(separatorCharacter);		
 		
-		String targetClassesEntry = null;
-    	for (String classPathEntry : classPathEntries) {
-    		System.out.println("CE=="+classPathEntry+"==targetPath=="+targetPath+"==");
-    		if (classPathEntry.endsWith(pathToFind.toString())) {
-    			targetClassesEntry = classPathEntry;
-    			break;
-    		}
-    	}
-    	
-    	return targetClassesEntry;
-    	
-    }
+		for (int i = 0; i < pathComponents.length; i++) {
+			if (i != 0) {
+				cleanedPath.append(File.separator);
+			}
+
+			System.out.println("FilePathClener correctWindowsPath =="+i+"== is =="+pathComponents[i]+"==");
+			
+			if (pathComponents[i].contains(" ")) {
+				cleanedPath.append("\"");
+				cleanedPath.append(pathComponents[i]);
+				cleanedPath.append("\"");
+			}
+			else {
+				cleanedPath.append(pathComponents[i]);				
+			}
+		}
+		
+
+		
+		return cleanedPath.toString();
+	}
 	
 	
 	// ==========================================

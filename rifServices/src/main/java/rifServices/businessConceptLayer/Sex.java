@@ -139,7 +139,7 @@ public enum Sex {
 	/**
 	 * Gets the sex from the numeric code.
 	 *
-	 * @param name the name
+	 * @param code the name
 	 * @return the sex from name
 	 */
 	static public Sex getSexFromCode(

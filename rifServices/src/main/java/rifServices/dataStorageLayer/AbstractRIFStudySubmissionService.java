@@ -182,6 +182,63 @@ abstract class AbstractRIFStudySubmissionService
 	// Section Interfaces
 	// ==========================================
 	
+	
+	public void test()		
+		throws RIFServiceException {
+			
+		//Defensively copy parameters and guard against blocked users
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+
+		User user = User.newInstance("kgarwood", "kgarwood");
+
+		Connection connection = null;
+		try {
+			
+			System.out.println("Starting TEST");
+			//Assign pooled connection
+			connection 
+				= sqlConnectionManager.assignPooledWriteConnection(user);
+			
+			SampleTestObjectGenerator testDataGenerator
+				= new SampleTestObjectGenerator();
+			RIFStudySubmission studySubmission
+				= testDataGenerator.createSampleRIFJobSubmission();
+			
+			//Delegate operation to a specialised manager class			
+			RIFServiceStartupOptions rifServiceStartupOptions
+				= getRIFServiceStartupOptions();			
+			RunStudyThread runStudyThread = new RunStudyThread();
+			runStudyThread.initialise(
+				connection, 
+				user, 
+				studySubmission, 
+				rifServiceStartupOptions, 
+				rifServiceResources);
+			
+			Thread thread = new Thread(runStudyThread);
+			thread.start();
+		
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+			//Audit failure of operation
+			logException(
+				user,
+				"test",
+				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+	
+	}
+
+	
+	
 	public ArrayList<RIFOutputOption> getAvailableRIFOutputOptions(
 		final User _user)
 		throws RIFServiceException {
@@ -1030,6 +1087,7 @@ abstract class AbstractRIFStudySubmissionService
 		return result;	
 	}
 
+	
 	public ArrayList<MapArea> getMapAreas(
 		final User _user,
 		final Geography _geography,

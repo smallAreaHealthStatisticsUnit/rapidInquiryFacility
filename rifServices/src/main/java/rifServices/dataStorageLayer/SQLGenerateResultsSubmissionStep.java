@@ -1,6 +1,14 @@
-package rifServices.businessConceptLayer;
+package rifServices.dataStorageLayer;
+
+import rifServices.system.*;
+import rifGenericLibrary.dataStorageLayer.*;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
+
+import java.sql.*;
 
 /**
+ *
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -9,11 +17,13 @@ package rifServices.businessConceptLayer;
  * rates and relative risks for any given health outcome, for specified age 
  * and year ranges, for any given geographical area.
  *
+ * <p>
  * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
+ * </p>
  *
  * <pre> 
  * This file is part of the Rapid Inquiry Facility (RIF) project.
@@ -36,8 +46,8 @@ package rifServices.businessConceptLayer;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
+ * @version
  */
-
 /*
  * Code Road Map:
  * --------------
@@ -60,112 +70,134 @@ package rifServices.businessConceptLayer;
  *
  */
 
-public class StudyStateMachine {
+final class SQLGenerateResultsSubmissionStep 
+	extends AbstractSQLManager {
 
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private StudyState initialState = StudyState.STUDY_NOT_CREATED;
-	private StudyState finalState = StudyState.STUDY_RESULTS_COMPUTED;
-	
-	private StudyState currentState;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public StudyStateMachine() {
+	/**
+	 * Instantiates a new SQLRIF submission manager.
+	 */
+	public SQLGenerateResultsSubmissionStep(
+		final RIFDatabaseProperties rifDatabaseProperties) {
 
+		super(rifDatabaseProperties);		
+		setEnableLogging(false);
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void initialiseState() {
-		currentState = initialState;
-	}
-	
-	public StudyState getInitialState() {
-		return initialState;
-	}
-	
-	public StudyState getFinalState() {
-		return finalState;
-	}
-	
-	public StudyState previous() {
-		if (currentState == initialState) {
-			return currentState;
-		}
 		
-		if (currentState == StudyState.STUDY_RESULTS_COMPUTED) {
-			currentState = StudyState.STUDY_EXTRACTED;
-		}
-		else if (currentState == StudyState.STUDY_EXTRACTED) {
-			currentState = StudyState.STUDY_CREATED;		
-		}
-		//else if (currentState == StudyState.STUDY_VERIFIED) {
-		//	currentState = StudyState.STUDY_CREATED;		
-		//}
-		else if (currentState == StudyState.STUDY_CREATED) {
-			currentState = StudyState.STUDY_NOT_CREATED;		
-		}	
-		else {
-			assert false;
-		}
+	/**
+	 * submit rif study submission.
+	 *
+	 * @param connection the connection
+	 * @param user the user
+	 * @param rifStudySubmission the rif job submission
+	 * @throws RIFServiceException the RIF service exception
+	 */	
+
+	public String performStep(
+		final Connection connection,
+		final String studyID)
+		throws RIFServiceException {
+				
+		String result = null;
+		PreparedStatement runStudyStatement = null;
+		PreparedStatement computeResultsStatement = null;
+		ResultSet runStudyResultSet = null;
+		ResultSet computeResultSet = null;
 		
-		return currentState;
+		try {
+			
+			enableDatabaseDebugMessages(connection);		
+			
+			SQLFunctionCallerQueryFormatter runStudyQueryFormatter = new SQLFunctionCallerQueryFormatter();
+			runStudyQueryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
+			runStudyQueryFormatter.setFunctionName("rif40_run_study");
+			runStudyQueryFormatter.setNumberOfFunctionParameters(2);
+
+			logSQLQuery(
+				"runStudy", 
+				runStudyQueryFormatter,
+				studyID,
+				"0");
+			
+			runStudyStatement
+				= createPreparedStatement(
+					connection,
+					runStudyQueryFormatter);
+			runStudyStatement.setInt(1, Integer.valueOf(studyID));
+			runStudyStatement.setBoolean(2, true);
+			runStudyResultSet
+				= runStudyStatement.executeQuery();
+			runStudyResultSet.next();
+			
+			result = String.valueOf(runStudyResultSet.getBoolean(1));	
+			
+			SQLWarning warning = runStudyStatement.getWarnings();
+			while (warning != null) {
+				/*
+		        System.out.println("Message:" + warning.getMessage());
+		        System.out.println("SQLState:" + warning.getSQLState());
+		        System.out.print("Vendor error code: ");
+		        System.out.println(warning.getErrorCode());
+		        System.out.println("==");
+		        */
+		        warning = warning.getNextWarning();
+
+			}
+			
+			connection.commit();
+			
+			return result;
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			SQLQueryUtility.rollback(connection);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlRIFSubmissionManager.error.unableToRunStudy",
+					studyID);
+
+			RIFLogger rifLogger = RIFLogger.getLogger();
+			rifLogger.error(
+				SQLGenerateResultsSubmissionStep.class, 
+				errorMessage, 
+				sqlException);
+			
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			//Cleanup database resources			
+			SQLQueryUtility.close(runStudyStatement);
+			SQLQueryUtility.close(runStudyResultSet);
+			SQLQueryUtility.close(computeResultsStatement);
+			SQLQueryUtility.close(computeResultSet);
+		}
+	}
 		
-	}
-	
-	public StudyState next() {
-		if (currentState == finalState) {
-			return currentState;
-		}
-		
-		if (currentState == StudyState.STUDY_NOT_CREATED) {
-			currentState = StudyState.STUDY_CREATED;
-		}
-		else if (currentState == StudyState.STUDY_CREATED) {
-			currentState = StudyState.STUDY_EXTRACTED;
-		}
-		//else if (currentState == StudyState.STUDY_VERIFIED) {
-		//	currentState = StudyState.STUDY_EXTRACTED;		
-		//}
-		else if (currentState == StudyState.STUDY_EXTRACTED) {
-			currentState = StudyState.STUDY_RESULTS_COMPUTED;		
-		}
-		else {
-			System.out.println("StudyStateMachine -- next -- this should never happen.");
-			assert false;
-		}
-		
-		return currentState;
-	}
-	
-	public StudyState getCurrentStudyState() {
-		return currentState;
-	}
-	
-	public void setCurrentStudyState(final StudyState currentState) {
-		this.currentState = currentState;
-	}
-	
-	public boolean isFinished() {
-		if (currentState == finalState) {
-			return true;
-		}
-		return false;		
-	}
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-
+		
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

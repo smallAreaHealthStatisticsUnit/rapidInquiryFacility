@@ -109,7 +109,7 @@ final class HealthCodeTaxonomyProxy {
 	/**
 	 * Instantiates a new health code taxonomy.
 	 *
-	 * @param name the name
+	 * @param code the name
 	 * @param description the description
 	 * @param nameSpace the name space
 	 * @param version the version

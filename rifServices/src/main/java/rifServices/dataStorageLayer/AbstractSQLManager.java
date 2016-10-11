@@ -88,6 +88,8 @@ public abstract class AbstractSQLManager {
 	// ==========================================
 	private RIFDatabaseProperties rifDatabaseProperties;
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
+	private boolean enableLogging = true;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -99,6 +101,7 @@ public abstract class AbstractSQLManager {
 		final RIFDatabaseProperties rifDatabaseProperties) {
 
 		this.rifDatabaseProperties = rifDatabaseProperties;
+		
 	}
 
 	// ==========================================
@@ -108,7 +111,7 @@ public abstract class AbstractSQLManager {
 	public ValidationPolicy getValidationPolicy() {
 		return validationPolicy;
 	}
-	
+		
 	public void setValidationPolicy(
 		final ValidationPolicy validationPolicy) {
 		
@@ -217,6 +220,9 @@ public abstract class AbstractSQLManager {
 	*/
 	
 	
+	public void setEnableLogging(final boolean enableLogging) {
+		this.enableLogging = enableLogging;
+	}	
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -226,7 +232,13 @@ public abstract class AbstractSQLManager {
 		final String queryName,
 		final AbstractSQLQueryFormatter queryFormatter,
 		final String... parameters) {
+		
+		System.out.println("AbstractSQLManager logSQLQuery 1" + this.getClass().getName()+"==");
+		if (enableLogging == false) {
+			return;
+		}
 
+		
 		StringBuilder queryLog = new StringBuilder();
 		queryLog.append("==========================================================\n");
 		queryLog.append("QUERY NAME:");

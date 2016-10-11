@@ -66,34 +66,52 @@ import rifServices.system.RIFServiceMessages;
 public enum StudyState {
 	STUDY_NOT_CREATED(
 		"X",
+		"studyState.studyNotCreated.name",
 		"studyState.studyNotCreated.description"),
 	STUDY_CREATED(
 		"C",
-		"studyState.studyCreated.description"),
-	STUDY_VERIFIED(
-		"V",
-		"studyState.studyVerified.description"),
+		"studyState.studyCreated.name",
+		"studyState.studyCreated.description"),		
 	STUDY_EXTRACTED(
 		"E",
+		"studyState.studyExtracted.name",		
 		"studyState.studyExtracted.description"),
 	STUDY_RESULTS_COMPUTED(
 		"R",
-		"studyState.resultsComputed.description"),
+		"studyState.studyResultsComputed.name",		
+		"studyState.studyResultsComputed.description"),
 	STUDY_STATE_UNKNOWN(
 		"U", 
+		"studyState.studyStateUnknown.name",		
 		"studyState.studyStateUnknown.description");
+
+	/*
+	STUDY_VERIFIED(
+			"V",
+			"studyState.studyVerified.description"),
+	*/
 	
-	final String name;
+	final String code;
+	final String namePropertyName;
 	final String descriptionPropertyName;
 		
-	private StudyState(final String name, final String descriptionPropertyName) {
-		this.name = name;
+	private StudyState(
+		final String code, 
+		final String namePropertyName,
+		final String descriptionPropertyName) {
+
+		this.code = code;
+		this.namePropertyName = namePropertyName;
 		this.descriptionPropertyName = descriptionPropertyName;
 	}
 	
 	
+	public String getCode() {
+		return code;
+	}
+	
 	public String getName() {
-		return name;
+		return RIFServiceMessages.getMessage(namePropertyName);
 	}
 	
 	public String getDescription() {
@@ -105,25 +123,24 @@ public enum StudyState {
 			return null;
 		}
 		
-		if (STUDY_NOT_CREATED.getName().equals(studyStateName)) {
+		if (STUDY_NOT_CREATED.getCode().equals(studyStateName)) {
 			return STUDY_NOT_CREATED;
 		}
-		else if (STUDY_CREATED.getName().equals(studyStateName)) {
+		else if (STUDY_CREATED.getCode().equals(studyStateName)) {
 			return STUDY_CREATED;
 		}
-		else if (STUDY_VERIFIED.getName().equals(studyStateName)) {
-			return STUDY_VERIFIED;
-		}
-		else if (STUDY_EXTRACTED.getName().equals(studyStateName)) {
+		//else if (STUDY_VERIFIED.getName().equals(studyStateName)) {
+		//	return STUDY_VERIFIED;
+		//}
+		else if (STUDY_EXTRACTED.getCode().equals(studyStateName)) {
 			return STUDY_EXTRACTED;
 		}
-		else if (STUDY_RESULTS_COMPUTED.getName().equals(studyStateName)) {
+		else if (STUDY_RESULTS_COMPUTED.getCode().equals(studyStateName)) {
 			return STUDY_RESULTS_COMPUTED;
 		}
 		else {
 			return null;
 		}	
-	}
-		
+	}	
 	
 }

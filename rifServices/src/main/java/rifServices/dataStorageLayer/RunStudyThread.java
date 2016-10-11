@@ -7,7 +7,9 @@ import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
+import java.io.File;
 import java.sql.*;
 
 /**
@@ -94,10 +96,6 @@ public class RunStudyThread
 			Connection connection
 				= connectionManager.assignPooledWriteConnection(user);
 			
-			SQLStudyStateManager studyStateManager
-				= rifServiceResources.getStudyStateManager();
-			SQLRIFSubmissionManager studySubmissionManager
-				= rifServiceResources.getRIFSubmissionManager();
 			SampleTestObjectGenerator sampleTestObjectGenerator
 				= new SampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
@@ -108,12 +106,10 @@ public class RunStudyThread
 			runStudyThread.initialise(
 				connection, 
 				user, 
-				studyStateManager, 
-				studySubmissionManager, 
-				studySubmission);
-					
+				studySubmission,
+				rifServiceStartupOptions,
+				rifServiceResources);								
 			runStudyThread.run();
-			
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -132,13 +128,19 @@ public class RunStudyThread
 	// ==========================================
 	private Connection connection;
 	private User user;
-	private SQLStudyStateManager studyStateManager;
 	private SQLRIFSubmissionManager studySubmissionManager;
 	private RIFStudySubmission studySubmission;
 	private String studyID;
 	
 	private StudyStateMachine studyStateMachine;
 	
+	
+	
+	private SQLStudyStateManager studyStateManager;
+	private SQLCreateStudySubmissionStep createStudySubmissionStep;
+	private SQLGenerateResultsSubmissionStep generateResultsSubmissionStep;
+	private SQLSmoothResultsSubmissionStep smoothResultsSubmissionStep;
+	private SQLPublishResultsSubmissionStep publishResultsSubmissionStep;
 	
 	// ==========================================
 	// Section Construction
@@ -155,15 +157,50 @@ public class RunStudyThread
 	public void initialise(
 		final Connection connection,
 		final User user,
-		final SQLStudyStateManager studyStateManager, 
-		final SQLRIFSubmissionManager studySubmissionManager,
-		final RIFStudySubmission studySubmission) {
+		final RIFStudySubmission studySubmission,
+		final RIFServiceStartupOptions rifServiceStartupOptions,
+		final RIFServiceResources rifServiceResources) {
+		
 		
 		this.connection = connection;
-		this.user = user;
-		this.studyStateManager = studyStateManager;
-		this.studySubmissionManager = studySubmissionManager;
+		this.user = user;				
 		this.studySubmission = studySubmission;
+		
+		RIFDatabaseProperties rifDatabaseProperties 
+			= rifServiceStartupOptions.getRIFDatabaseProperties();
+		
+		studyStateManager = new SQLStudyStateManager(rifDatabaseProperties);
+		studySubmissionManager = rifServiceResources.getRIFSubmissionManager();
+		
+		createStudySubmissionStep 
+			= new SQLCreateStudySubmissionStep(
+				rifDatabaseProperties,
+				rifServiceResources.getSqlDiseaseMappingStudyManager(),
+				rifServiceResources.getSQLMapDataManager());
+
+		generateResultsSubmissionStep
+			= new SQLGenerateResultsSubmissionStep(rifDatabaseProperties);
+		
+		smoothResultsSubmissionStep = new SQLSmoothResultsSubmissionStep();
+		smoothResultsSubmissionStep.initialise(
+			"kgarwood", 
+			"kgarwood", 
+			rifServiceStartupOptions);
+
+		String extractDirectory
+			= rifServiceStartupOptions.getExtractDirectory();
+		File scratchSpaceDirectory = new File(extractDirectory);		
+		String extraDirectoryForExtractFilesPath
+			= rifServiceStartupOptions.getExtraExtractFilesDirectoryPath();
+		File extraDirectoryForExtractFiles 
+			= new File(extraDirectoryForExtractFilesPath);
+
+		publishResultsSubmissionStep
+			= new SQLPublishResultsSubmissionStep();
+		publishResultsSubmissionStep.initialise(
+			scratchSpaceDirectory, 
+			extraDirectoryForExtractFiles);
+			
 	}
 		
 	// ==========================================
@@ -175,42 +212,38 @@ public class RunStudyThread
 	// ==========================================
 	public void run() {
 		try {
-			if (studyID == null) {
-				//it means it hasn't been created yet
-				studyStateMachine.setCurrentStudyState(StudyState.STUDY_NOT_CREATED);				
-			}
-			else {
-				StudyState studyState = studyStateManager.getStudyState(connection, user, studyID);				
-				studyStateMachine.setCurrentStudyState(studyState);
-			}
-			
+
+			establishCurrentStudyState();
+
 			while (studyStateMachine.isFinished() == false) {
+				System.out.println("RunStudyThread run current state 1==");
+
 				StudyState currentState
 					= studyStateMachine.getCurrentStudyState();
-				System.out.println("RunStudyThread run current state has name=="+currentState.getName()+"=="+currentState.getDescription()+"==");
+				System.out.println("RunStudyThread run current state has name=="+currentState.getCode()+"=="+currentState.getDescription()+"==");
 
 				if (currentState == StudyState.STUDY_NOT_CREATED) {
-					System.out.println("About to create study...");
 					//Study has been extracted but neither the extract nor map tables
 					//for that study have been produced.
+					System.out.println("run create study BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 					createStudy();
+					System.out.println("run create study AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 				}
 				else if (currentState == StudyState.STUDY_CREATED) {
-					System.out.println("About to verify study...");
-					verifyStudyProperlyCreated();					
+					System.out.println("run generate results BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					generateResults();
+					System.out.println("run generate results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 				}
-				else if (currentState == StudyState.STUDY_VERIFIED) {
-					System.out.println("About to create extract table...");
-					createStudyExtractTable();
-				}
-				else if (currentState == StudyState.STUDY_RESULTS_COMPUTED) {
-					System.out.println("STUDY_RESULTS_COMPUTED");
+				else if (currentState == StudyState.STUDY_EXTRACTED) {
 					//we are done.  Break out of the loop so that the thread can stop
-					computeSmoothedResults();
+					System.out.println("run smooth results BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					smoothResults();
+					System.out.println("run smooth results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 				}
 				else {
-					System.out.println("About to advertise data set");
+					System.out.println("run advertise results BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 					advertiseDataSet();
+					System.out.println("run advertise results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 					break;
 				}
 				System.out.println("About to go to sleep");
@@ -219,15 +252,11 @@ public class RunStudyThread
 				System.out.println("About to wake up from a sleep");
 			}
 			
-			System.out.println("Fiiiiinished!!");
+			System.out.println("Finished!!");
 			
 		}
 		catch(InterruptedException interruptedException) {
 			interruptedException.printStackTrace(System.out);
-			//String errorMessage
-			//	= RIFServiceMessages.getMessage(
-			//		"",
-			//		);
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -239,13 +268,36 @@ public class RunStudyThread
 		}
 	}
 	
+	private void establishCurrentStudyState() 
+		throws RIFServiceException {
+		
+		/*
+		 * Determine the initial state of the study state machine.  If there is no
+		 * study ID yet, then it means it hasn't even been created yet and the first
+		 * step should be to call the create study submission step.  Otherwise, if it
+		 * already exists, then the study state manager will be able to determine the
+		 * state by checking RIF table status flags.
+		 */
+		if (studyID == null) {
+			//it means it hasn't been created yet
+			studyStateMachine.setCurrentStudyState(StudyState.STUDY_NOT_CREATED);				
+		}
+		else {
+			StudyState studyState 
+				= studyStateManager.getStudyState(
+					connection, 
+					user, 
+					studyID);				
+			studyStateMachine.setCurrentStudyState(studyState);
+		}		
+		
+	}
+	
 	private void createStudy() 
 		throws RIFServiceException {
 
 		System.out.println("CREATE STUDY =====================================START =============================");
-		
-		//Add the study submission to the database
-		studyID = studySubmissionManager.addStudyToDatabase(
+		studyID = createStudySubmissionStep.performStep(
 			connection, 
 			user, 
 			studySubmission);
@@ -268,6 +320,7 @@ public class RunStudyThread
 		
 	}
 	
+	/*
 	private void verifyStudyProperlyCreated() 
 		throws RIFServiceException {
 
@@ -291,15 +344,14 @@ public class RunStudyThread
 
 		studyStateMachine.next();
 	}
+	*/
 	
-	private void createStudyExtractTable() 
+	private void generateResults() 
 		throws RIFServiceException {
 
-		studySubmissionManager.createStudyExtractTable(
+		generateResultsSubmissionStep.performStep(
 			connection, 
-			user.getUserID(), 
-			studyID, 
-			studySubmission.getStudy());
+			studyID);
 		
 		String statusMessage
 			= RIFServiceMessages.getMessage(
@@ -309,15 +361,13 @@ public class RunStudyThread
 		studyStateMachine.next();	
 	}
 	
-	private void computeSmoothedResults() 
+	private void smoothResults() 
 		throws RIFServiceException {
-		
-		studySubmissionManager.computeSmoothedResults(
-			connection, 
-			studySubmission.getStudy(), 
-			studyID, 
-			user.getUserID());
-		
+
+		smoothResultsSubmissionStep.performStep(
+			studySubmission, 
+			studyID);
+
 		String statusMessage
 			= RIFServiceMessages.getMessage(
 				"studyState.studyResultsComputed.description");
@@ -331,6 +381,13 @@ public class RunStudyThread
 	
 	private void advertiseDataSet() 
 		throws RIFServiceException {
+		
+		//This is where we should save the study to a ZIP file
+		publishResultsSubmissionStep.performStep(
+			connection, 
+			user, 
+			studySubmission, 
+			studyID);
 		
 		String statusMessage
 			= RIFServiceMessages.getMessage(

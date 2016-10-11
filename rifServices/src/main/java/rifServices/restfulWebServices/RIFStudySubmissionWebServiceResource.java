@@ -695,6 +695,42 @@ public class RIFStudySubmissionWebServiceResource
 	}
 
 	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/test")
+	public Response getGeoLevelToMapAreas(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID) {
+		
+		
+		String result = "";
+				
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+
+			//Call service API
+			RIFStudySubmissionAPI studySubmissionService
+				= getRIFStudySubmissionService();	
+			studySubmissionService.test();
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);		
+	}
+	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getMapAreas")

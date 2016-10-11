@@ -121,7 +121,8 @@ final class HealthOutcomeManager {
 		if (targetPathValue == null) {
 			targetPathValue = ClassFileLocator.getClassRootLocation("rifServices");
 		}
-
+		System.out.println("HealthOutcomeManager init targetPathValue=="+targetPathValue+"==");
+		
 		//initialise each health code provider
 		try {			
 			StringBuilder icd9CodesFileLocation = new StringBuilder();

@@ -179,6 +179,7 @@ final class SQLInvestigationManager
 		ArrayList<HealthCode> healthCodes
 			= investigation.getHealthCodes();
 		healthOutcomeManager.checkNonExistentHealthCodes(healthCodes);
+
 		
 		HealthTheme healthTheme
 			= investigation.getHealthTheme();

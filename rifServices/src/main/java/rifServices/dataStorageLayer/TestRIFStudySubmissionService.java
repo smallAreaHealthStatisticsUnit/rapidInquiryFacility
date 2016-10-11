@@ -2,6 +2,7 @@ package rifServices.dataStorageLayer;
 
 
 import rifGenericLibrary.businessConceptLayer.User;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractCovariate;
 
@@ -16,6 +17,10 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.ontologyServices.HealthCodeProviderInterface;
 import rifGenericLibrary.util.FieldValidationUtility;
 
+
+import rifServices.system.RIFServiceStartupOptions;
+
+import java.io.File;
 import java.sql.Connection;
 import java.util.ArrayList;
 
@@ -102,8 +107,64 @@ public final class TestRIFStudySubmissionService
 	// Section Accessors and Mutators
 	// ==========================================
 
-
 	
+	/*
+	 * This is a method used to test whether the RIF will correctly write a 
+	 * study submission and its results to a single zip file
+	 */
+	public void writeStudyToZipFile(
+		final User user,
+		final RIFStudySubmission rifStudySubmission,
+		final Integer studyID) throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();	
+		
+		Connection connection = null;
+		try {			
+			
+			connection
+				= sqlConnectionManager.assignPooledWriteConnection(user);
+			
+			SQLPublishResultsSubmissionStep fileExportService
+				= new SQLPublishResultsSubmissionStep();
+			RIFServiceStartupOptions rifServiceStartupOptions
+				= getRIFServiceStartupOptions();
+			File scratchSpaceDirectory 
+				= new File(rifServiceStartupOptions.getExtractDirectory());
+			
+			File extraFilesDirectory 
+				= new File(rifServiceStartupOptions.getExtraExtractFilesDirectoryPath());
+			fileExportService.initialise(
+				scratchSpaceDirectory, 
+				extraFilesDirectory);
+			
+			fileExportService.performStep(
+				connection, 
+				user,
+				rifStudySubmission, 
+				String.valueOf(studyID));
+
+			
+			sqlConnectionManager.reclaimPooledWriteConnection(user, connection);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"submitStudy",
+				rifServiceException);	
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				user, 
+				connection);			
+		}
+		
+	}
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -114,7 +175,7 @@ public final class TestRIFStudySubmissionService
 
 	// ==========================================
 	// Section Override
-	// ==========================================
+	// ==========================================	
 	
 	/**
 	 * Test method used to ensure that service can identify age groups that
