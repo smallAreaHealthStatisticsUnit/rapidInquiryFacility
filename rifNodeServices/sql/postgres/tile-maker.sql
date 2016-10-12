@@ -5,77 +5,11 @@
 
 BEGIN;
 
-WITH a AS ( /* Geolevel summary */
-		SELECT a1.geography, 
-               MIN(geolevel_id) AS min_geolevel_id,
-               11::INTEGER AS zoomlevel,
-               a2.max_geolevel_id
-          FROM geolevels_cb_2014_us_500k a1, (
-                        SELECT geography, MAX(geolevel_id) AS max_geolevel_id
-  						  FROM geolevels_cb_2014_us_500k 
-						 GROUP BY geography
-						) a2
-         WHERE a1.geography     = 'cb_2014_us_500k' 
-           AND a1.geography     = a2.geography
-         GROUP BY a1.geography, a1.geolevel_name, a2.max_geolevel_id
-        HAVING MIN(geolevel_id) = 1
-), b AS ( /* Get bounds of geography */
-        SELECT a2.geography,
-               a2.min_geolevel_id,
-               a2.max_geolevel_id,
-               a2.zoomlevel,
-          CASE
-                                WHEN a2.zoomlevel <= 6 THEN ST_XMax(b.geom_6)                 	/* Optimised for zoom level 6 */
-                                WHEN a2.zoomlevel BETWEEN (6+1) AND 11 THEN ST_XMax(b.geom_11)	/* Optimised for zoom level 6-11 */
-                                ELSE NULL
-                   END AS Xmax,
-          CASE
-                                WHEN a2.zoomlevel <= 6 THEN ST_XMin(b.geom_6)                 	/* Optimised for zoom level 6 */
-                                WHEN a2.zoomlevel BETWEEN (6+1) AND 11 THEN ST_XMin(b.geom_11)	/* Optimised for zoom level 6-11 */
-                                ELSE NULL
-                   END AS Xmin,
-          CASE
-                                WHEN a2.zoomlevel <= 6 THEN ST_YMax(b.geom_6)                 	/* Optimised for zoom level 6 */
-                                WHEN a2.zoomlevel BETWEEN (6+1) AND 11 THEN ST_YMax(b.geom_11)	/* Optimised for zoom level 6-11 */
-                                ELSE NULL
-                   END AS Ymax,
-          CASE
-                                WHEN a2.zoomlevel <= 6 THEN ST_YMin(b.geom_6)                 	/* Optimised for zoom level 6 */
-                                WHEN a2.zoomlevel BETWEEN (6+1) AND 11 THEN ST_YMin(b.geom_11)	/* Optimised for zoom level 6-11 */
-                                ELSE NULL
-                   END AS Ymin
-      FROM cb_2014_us_nation_5m b, a a2  
-), d AS ( /* Convert XY bounds to tile numbers */
-        SELECT geography, min_geolevel_id, max_geolevel_id, zoomlevel,
-                   Xmin AS area_Xmin, Xmax AS area_Xmax, Ymin AS area_Ymin, Ymax AS area_Ymax,
-           tileMaker_latitude2tile(Ymin, zoomlevel) AS Y_mintile,
-           tileMaker_latitude2tile(Ymax, zoomlevel) AS Y_maxtile,
-           tileMaker_longitude2tile(Xmin, zoomlevel) AS X_mintile,
-           tileMaker_longitude2tile(Xmax, zoomlevel) AS X_maxtile
-      FROM b
-)
-SELECT * FROM d;
 /*
-    geography    | min_geolevel_id | max_geolevel_id | zoomlevel | area_xmin  | area_xmax | area_ymin  | area_ymax | y_mintile | y_maxtile | x_mintile | x_maxtile
------------------+-----------------+-----------------+-----------+------------+-----------+------------+-----------+-----------+-----------+-----------+-----------
- cb_2014_us_500k |               1 |               3 |        11 | -179.14734 | 179.77847 | -14.552549 | 71.352561 |      1107 |       435 |         4 |      2046
-(1 row)
- */
-SELECT geolevel_name, geolevel_id, shapefile_table
-  FROM geolevels_cb_2014_us_500k
- WHERE geography = 'cb_2014_us_500k';
-/*
-     geolevel_name      | geolevel_id |    shapefile_table
-------------------------+-------------+------------------------
- cb_2014_us_county_500k |           3 | cb_2014_us_county_500k
- cb_2014_us_nation_5m   |           1 | cb_2014_us_nation_5m
- cb_2014_us_state_500k  |           2 | cb_2014_us_state_500k
-(3 rows)
- */
- /*
 DROP TABLE IF EXISTS geometry_cb_2014_us_500k;
 CREATE TABLE geometry_cb_2014_us_500k
 AS
+WITH a AS (
 SELECT 1 geolevel,
        areaid, 
        6 AS zoomlevel, 
@@ -147,7 +81,6 @@ SELECT 2 geolevel,
        11 AS zoomlevel, 
        geom_11 AS geom
   FROM cb_2014_us_state_500k  
-
 UNION  
 SELECT 3 geolevel,
        areaid, 
@@ -190,7 +123,9 @@ ALTER TABLE geometry_cb_2014_us_500k
 CREATE INDEX geometry_cb_2014_us_500k_geom_gix ON geometry_cb_2014_us_500k USING GIST (geom);	
 ANALYZE geometry_cb_2014_us_500k;
 -- Convert to IOT
-CLUSTER VERBOSE geometry_cb_2014_us_500k USING geometry_cb_2014_us_500k_pk;   */ 
+CLUSTER VERBOSE geometry_cb_2014_us_500k USING geometry_cb_2014_us_500k_pk;  
+
+*/
 
 SELECT geolevel, areaid, COUNT(zoomlevel) AS zoomlevels
   FROM geometry_cb_2014_us_500k
@@ -259,61 +194,6 @@ SELECT * FROM tile_limits_cb_2014_us_500k;
 (12 rows)
  */
 
-/*
-WITH a AS (
-	SELECT zoomlevel, x_mintile, x_maxtile, y_mintile, y_maxtile	  
-	  FROM tile_limits_cb_2014_us_500k
-	 WHERE zoomlevel <= 11
-), x AS (
-	SELECT zoomlevel, generate_series(x_mintile, x_maxtile) AS x_series
-	  FROM a
-), y AS (	 
-	SELECT zoomlevel, generate_series(y_mintile, y_maxtile) AS y_series	
-	  FROM a       
-), b AS (
-	SELECT x.zoomlevel, 
-	       x.x_series AS x, 
-	       y.y_series AS y,      
-	       tileMaker_tile2longitude(x.x_series, x.zoomlevel) AS xmin, 
-		   tileMaker_tile2latitude(y.y_series, x.zoomlevel) AS ymin,
-		   tileMaker_tile2longitude(x.x_series+1, x.zoomlevel) AS xmax, 
-		   tileMaker_tile2latitude(y.y_series+1, x.zoomlevel) AS ymax
-      FROM x, y
-	 WHERE x.zoomlevel = y.zoomlevel
-), c AS (
-	SELECT b.zoomlevel,
-	       ST_Intersects(ST_MakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326), c.geom_6) AS intersects
-	  FROM b, cb_2014_us_nation_5m c
-)
-SELECT c.zoomlevel, 
-       COUNT(c.zoomlevel) AS total_tiles, 
-	   SUM(CASE WHEN c.intersects THEN 1 ELSE 0 END) AS intersected_tiles,
-	   ROUND((SUM(CASE WHEN c.intersects THEN 1 ELSE 0 END)::numeric/COUNT(c.zoomlevel)::numeric)*100, 2) AS intersect_pct
-  FROM c
- GROUP BY c.zoomlevel
- ORDER BY 1;
- */
-/*
- zoomlevel | total_tiles | intersected_tiles | intersect_pct
------------+-------------+-------------------+---------------
-         0 |           1 |                 1 |        100.00
-         1 |           4 |                 3 |         75.00
-         2 |          12 |                 5 |         41.67
-         3 |          32 |                10 |         31.25
-         4 |          96 |                22 |         22.92
-         5 |         384 |                46 |         11.98
-         6 |        1408 |               113 |          8.03
-         7 |        5504 |               339 |          6.16
-         8 |       21760 |              1139 |          5.23
-         9 |       86359 |              4087 |          4.73
-        10 |      344414 |             15287 |          4.44
-        11 |     1374939 |             58907 |          4.28
-(12 rows)
-
-Time: 254075.332 ms
-
-So potential speed gain ~25x or 10 seconds!
- */ 
 DROP TABLE IF EXISTS tile_intersects_cb_2014_us_500k;
 CREATE TABLE tile_intersects_cb_2014_us_500k
 AS
@@ -441,12 +321,7 @@ BEGIN
 						     AND c2.zoomlevel = d.zoomlevel
 							 AND c2.x         = d.x
 							 AND c2.y         = d.y
-							 AND c2.bbox      = d.bbox	
 							 AND c2.areaid    = d.areaid)
---	), e AS (
---		SELECT d.zoomlevel, d.x, d.y, d.bbox, COUNT(d.areaid) AS total_areaid
---		  FROM e1 d 
---		GROUP BY d.zoomlevel, d.x, d.y, d.bbox
 	), f AS (
 		SELECT e.zoomlevel, l_geolevel AS geolevel, e.x, e.y, e.bbox, e2.areaid, e2.geom
 		  FROM e, geometry_cb_2014_us_500k e2
@@ -458,7 +333,7 @@ BEGIN
 		   AND ST_Intersects(e.bbox, e2.geom) /* intersects: (e.bbox && e.geom) is slower as it generates many more tiles */
 	)
 	SELECT f.geolevel, f.zoomlevel, f.areaid, f.x, f.y, f.bbox, f.geom, 
-	       ST_AsGeoJson(f.geom)::JSON,
+	       ST_AsGeoJson(f.geom)::JSON AS optimised_geojson,
 	       ST_Within(f.bbox, f.geom) AS within
 	  FROM f
 --	 WHERE NOT ST_Within(f.bbox, f.geom) /* Exclude any tile bouning completely within the area */
@@ -470,7 +345,125 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE; 
 
-/*
+DROP FUNCTION IF EXISTS tileMaker_intersector2(INTEGER, INTEGER);
+CREATE OR REPLACE FUNCTION tileMaker_intersector2(l_geolevel INTEGER, l_zoomlevel INTEGER)
+RETURNS INTEGER
+AS
+$BODY$
+DECLARE
+	num_rows INTEGER;
+BEGIN
+	INSERT INTO tile_intersects_cb_2014_us_500k(geolevel, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 
+	WITH a AS (
+		SELECT DISTINCT geolevel, areaid
+		  FROM geometry_cb_2014_us_500k
+		 WHERE geolevel = l_geolevel
+		EXCEPT 
+		SELECT DISTINCT geolevel, areaid
+		  FROM tile_intersects_cb_2014_us_500k a
+		 WHERE zoomlevel = l_zoomlevel
+	), b AS (
+		SELECT a.geolevel, a.areaid, ST_Envelope(b.geom) AS bbox, b.geom
+		  FROM a, geometry_cb_2014_us_500k b
+		 WHERE a.geolevel = b.geolevel
+		   AND a.areaid   = b.areaid
+		   AND NOT ST_IsEmpty(b.geom)
+	), c AS (
+		SELECT l_zoomlevel AS zoomlevel, 
+			   b.geolevel, b.areaid,
+			   tileMaker_latitude2tile(ST_Ymin(bbox), l_zoomlevel) AS y_mintile,
+			   tileMaker_longitude2tile(ST_Xmin(bbox), l_zoomlevel) AS x_mintile,
+			   tileMaker_latitude2tile(ST_Ymax(bbox), l_zoomlevel) AS y_maxtile,
+			   tileMaker_longitude2tile(ST_Xmax(bbox), l_zoomlevel) AS x_maxtile,
+			   b.geom
+		   FROM b
+	), x AS (
+		SELECT c.zoomlevel, 
+			   c.geolevel, 
+			   c.areaid,
+			   generate_series(x_mintile, x_maxtile) AS x_series
+		  FROM c
+	), y AS (	 
+		SELECT c.zoomlevel, 
+			   c.geolevel, 
+			   c.areaid,
+			   generate_series(y_mintile, y_maxtile) AS y_series	
+		  FROM c 
+	), d AS (
+		SELECT x.zoomlevel, 
+			   x.geolevel, 
+			   x.areaid,
+			   x.x_series AS x, 
+			   y.y_series AS y,      
+			   tileMaker_tile2longitude(x.x_series, x.zoomlevel) AS xmin, 
+			   tileMaker_tile2latitude(y.y_series, x.zoomlevel) AS ymin,
+			   tileMaker_tile2longitude(x.x_series+1, x.zoomlevel) AS xmax, 
+			   tileMaker_tile2latitude(y.y_series+1, x.zoomlevel) AS ymax
+		  FROM x, y
+		 WHERE x.zoomlevel = y.zoomlevel	
+		   AND x.geolevel  = y.geolevel
+		   AND x.areaid    = y.areaid
+	), e AS (
+		SELECT d.zoomlevel, 
+			   d.geolevel, 
+			   d.areaid,
+			   d.x,
+			   d.y, 
+			   ST_MakeEnvelope(d.xmin, d.ymin, d.xmax, d.ymax, 4326) AS bbox
+		  FROM d
+	), f AS (
+		SELECT DISTINCT e.zoomlevel, 
+			   e.geolevel, 
+			   e.areaid, 
+			   e.x,
+			   e.y,
+			   e.bbox
+		  FROM e
+		 WHERE NOT EXISTS (SELECT c2.areaid
+							 FROM tile_intersects_cb_2014_us_500k c2
+							WHERE c2.geolevel  = e.geolevel
+							  AND c2.zoomlevel = e.zoomlevel
+							  AND c2.x         = e.x
+							  AND c2.y         = e.y	
+							  AND c2.areaid    = e.areaid)
+	), g AS (
+			SELECT f.zoomlevel, f.geolevel, f.x, f.y, f.bbox, e2.areaid, e2.geom
+			  FROM f, geometry_cb_2014_us_500k e2
+			 WHERE ((f.zoomlevel  = e2.zoomlevel AND f.zoomlevel BETWEEN 6 AND 11) OR 
+					(e2.zoomlevel = 6            AND f.zoomlevel NOT BETWEEN 6 AND 11))
+			   AND e2.geolevel  = f.geolevel
+			   AND e2.areaid    = f.areaid
+			   AND (f.bbox && e2.geom) 			  /* Intersect by bounding box */
+			   AND ST_Intersects(f.bbox, e2.geom) /* intersects: (e.bbox && e.geom) is slower as it generates many more tiles */
+	)
+	SELECT geolevel, zoomlevel, areaid, x, y, bbox, geom,	
+	       ST_AsGeoJson(g.geom)::JSON AS optimised_geojson,
+	       ST_Within(g.bbox, g.geom) AS within
+ 	  FROM g 
+	 ORDER BY geolevel, zoomlevel, areaid, x, y;	 
+	 GET DIAGNOSTICS num_rows = ROW_COUNT;
+--	 
+	 RETURN num_rows;
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE; 
+	/*			
+SELECT DISTINCT geolevel, areaid
+  FROM geometry_cb_2014_us_500k
+EXCEPT 
+SELECT DISTINCT geolevel, areaid
+  FROM tile_intersects_cb_2014_us_500k a
+ WHERE zoomlevel = (SELECT MAX(zoomlevel) AS max_zoomlevel
+					  FROM tile_intersects_cb_2014_us_500k);
+ geolevel |  areaid
+----------+----------
+        3 | 01805243
+        3 | 01805240
+        3 | 01805242
+        3 | 01805241
+
+        3 | 01805243 | MULTIPOLYGON EMPTY
+		
 SELECT geolevel, zoomlevel, areaid, x, y
   FROM tile_intersects_cb_2014_us_500k_t2
   EXCEPT
@@ -541,14 +534,13 @@ DECLARE
 			  FROM tile_intersects_cb_2014_us_500k;		  
 --
 	num_rows 		INTEGER:=0;
-	geolevel_rows	INTEGER:=0;
+	num_rows2 		INTEGER:=0;
 	etp 			TIMESTAMP WITH TIME ZONE;
 	stp2 			TIMESTAMP WITH TIME ZONE;
 	stp 			TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	took 			INTERVAL;
 	took2 			INTERVAL;
 --
-	done 			BOOLEAN:=FALSE;
 	tiles_per_s		NUMERIC;
 BEGIN
 	OPEN c1_maxgeolevel;
@@ -559,37 +551,15 @@ BEGIN
 --
 	FOR i IN 1 .. max_geolevel LOOP
 		FOR j IN 1 .. max_zoomlevel LOOP
-			geolevel_rows:=0;
-			done:=FALSE;
-			WHILE NOT done LOOP
---				RAISE INFO 'Call tileMaker_intersector() for geolevel: %; zoomlevel: %', i, j;
-				stp2:=clock_timestamp();
-				num_rows:=tileMaker_intersector(i, j);
-				IF num_rows != 0 THEN
-					geolevel_rows:=geolevel_rows+num_rows;
-					etp:=clock_timestamp();
-					took:=age(etp, stp);
-					took2:=age(etp, stp2);
-					tiles_per_s:=ROUND(num_rows::NUMERIC/EXTRACT(EPOCH FROM took2)::NUMERIC, 1);
-					IF geolevel_rows != num_rows THEN
-						RAISE INFO 'Processed % intersects, % total for geolevel %/% zoomlevel: %/% in %s, %s total; % tiles/s', 
-							num_rows, geolevel_rows, i, max_geolevel, j, max_zoomlevel, 
-							ROUND(EXTRACT(EPOCH FROM took2)::NUMERIC, 1), 
-							ROUND(EXTRACT(EPOCH FROM took)::NUMERIC, 1),
-							tiles_per_s;	
-					ELSE
-						RAISE INFO 'Processed % intersects for geolevel %/% zoomlevel: %/% in %s, %s total; % tiles/s', 
-							num_rows, i, max_geolevel, j, max_zoomlevel, 
-							ROUND(EXTRACT(EPOCH FROM took2)::NUMERIC, 1), 
-							ROUND(EXTRACT(EPOCH FROM took)::NUMERIC, 1),
-							tiles_per_s;
-					END IF;
-				ELSE		
-					done:=TRUE;
-				END IF;
-			END LOOP;	
-			RAISE INFO 'Processed % total intersects for geolevel %/% zoomlevel: %/% in %s, %s total; % tiles/s', 
-				geolevel_rows, i, max_geolevel, j, max_zoomlevel, 
+			stp2:=clock_timestamp();
+			num_rows:=tileMaker_intersector(i, j);
+			num_rows2:=tileMaker_intersector2(i, j);
+			etp:=clock_timestamp();
+			took:=age(etp, stp);
+			took2:=age(etp, stp2);
+			tiles_per_s:=ROUND(num_rows::NUMERIC/EXTRACT(EPOCH FROM took2)::NUMERIC, 1);
+			RAISE INFO 'Processed %+% total areaid intersects for geolevel %/% zoomlevel: %/% in %s, %s total; % intesects/s', 
+				num_rows, num_rows2, i, max_geolevel, j, max_zoomlevel, 
 				ROUND(EXTRACT(EPOCH FROM took2)::NUMERIC, 1), 
 				ROUND(EXTRACT(EPOCH FROM took)::NUMERIC, 1),
 				tiles_per_s;			
@@ -614,7 +584,7 @@ SELECT geolevel, zoomlevel,
  ORDER BY 1, 2;
  
 /*
-was:
+is:
  geolevel | zoomlevel | areas | xmin | ymin | xmax | ymax | possible_tiles | tiles | pct_saving
 ----------+-----------+-------+------+------+------+------+----------------+-------+------------
         1 |         0 |     1 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
@@ -643,33 +613,6 @@ was:
         3 |         7 |  3232 |    0 |   27 |  127 |   69 |           5504 |   348 |      93.68
 (24 rows)
 
-is now: 
-geolevel | zoomlevel | areas | xmin | ymin | xmax | ymax | possible_tiles | tiles | pct_saving
----------+-----------+-------+------+------+------+------+----------------+-------+------------
-       1 |         0 |     1 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
-       1 |         1 |     1 |    0 |    0 |    1 |    1 |              4 |     3 |      25.00
-       1 |         2 |     1 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
-       1 |         3 |     1 |    0 |    1 |    7 |    4 |             32 |    10 |      68.75
-       1 |         4 |     1 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
-       1 |         5 |     1 |    0 |    6 |   31 |   17 |            384 |    46 |      88.02
-       1 |         6 |     1 |    0 |   13 |   63 |   29 |           1088 |   112 |      89.71
-       1 |         7 |     1 |    0 |   27 |  127 |   59 |           4224 |   338 |      92.00
-       2 |         0 |    56 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
-       2 |         1 |    56 |    0 |    0 |    1 |    1 |              4 |     3 |      25.00
-       2 |         2 |    56 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
-       2 |         3 |    56 |    0 |    1 |    7 |    4 |             32 |    10 |      68.75
-       2 |         4 |    56 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
-       2 |         5 |    56 |    0 |    6 |   31 |   17 |            384 |    48 |      87.50
-       2 |         6 |    56 |    0 |   13 |   63 |   34 |           1408 |   117 |      91.69
-       2 |         7 |    56 |    0 |   27 |  127 |   69 |           5504 |   348 |      93.68
-       3 |         0 |  3232 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
-       3 |         1 |  3232 |    0 |    0 |    1 |    1 |              4 |     3 |      25.00
-       3 |         2 |  3232 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
-       3 |         3 |  3232 |    0 |    1 |    7 |    4 |             32 |    10 |      68.75
-       3 |         4 |  3232 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
-       3 |         5 |  3232 |    0 |    6 |   31 |   17 |            384 |    48 |      87.50
-       3 |         6 |  3229 |    0 |   13 |   63 |   33 |           1344 |   116 |      91.37 <== 1 missing
-       3 |         7 |  3229 |    0 |   27 |  127 |   67 |           5248 |   347 |      93.39 <== 1 missing
  geolevel | zoomlevel | xmin | ymin | xmax | ymax | possible_tiles | tiles | pct_saving
 ----------+-----------+------+------+------+------+----------------+-------+------------
         1 |         0 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
