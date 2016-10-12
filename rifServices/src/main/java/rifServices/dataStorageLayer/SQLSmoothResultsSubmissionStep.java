@@ -2,12 +2,17 @@ package rifServices.dataStorageLayer;
 
 
 import rifServices.businessConceptLayer.RIFStudySubmission;
+
+
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.io.*;
@@ -101,7 +106,7 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 		final String userID,
 		final String password,
 		final RIFServiceStartupOptions rifStartupOptions) {
-				
+
 		this.rifStartupOptions = rifStartupOptions;
 		
 		setUser(userID, password);
@@ -129,39 +134,48 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 	}
 		
 	public void performStep(
+		final Connection connection,
 		final RIFStudySubmission studySubmission, 
 		final String studyID) 
 		throws RIFServiceException {
-				
-		addParameterToVerify("study_id");		
 
-		//KLG: For now it only works with the first study.  For some reason, newer extract
-		//tables cause the R program we use to generate an error.
-		addParameter("study_id", "1");
+		try {		
+			addParameterToVerify("study_id");		
 
-		//add a parameter for investigation name.  This will appear as a column in the extract
-		//table that the R program will need to know about.  Note that specifying a single
-		//investigation name assumes that eventually we will make a study have one investigation
-		//rather than multiple investigations.
-		Investigation firstInvestigation
-			= studySubmission.getStudy().getInvestigations().get(0);
-		addParameter(
-			"investigation_name", 
-			firstInvestigation.getTitle());
-		addParameterToVerify("investigation_name");
+			//KLG: For now it only works with the first study.  For some reason, newer extract
+			//tables cause the R program we use to generate an error.
+			addParameter("study_id", "1");
 		
-		setCalculationMethod(studySubmission.getCalculationMethods().get(0));
+			//add a parameter for investigation name.  This will appear as a column in the extract
+			//table that the R program will need to know about.  Note that specifying a single
+			//investigation name assumes that eventually we will make a study have one investigation
+			//rather than multiple investigations.
+			Investigation firstInvestigation
+				= studySubmission.getStudy().getInvestigations().get(0);
+			addParameter(
+				"investigation_name", 
+				firstInvestigation.getTitle());
+			addParameterToVerify("investigation_name");
+
+			Integer investigationID
+				= getInvestigationID(
+					connection,
+					studyID, 
+					firstInvestigation);
+			System.out.println("Investigation name=="+firstInvestigation.getTitle() + "  ID=="+investigationID+"==");
+			
+			addParameterToVerify("investigation_id");
+			addParameter(
+				"investigation_id", 
+				String.valueOf(investigationID));
+			
+			setCalculationMethod(studySubmission.getCalculationMethods().get(0));
 		
-		validateCommandLineExpressionComponents();
-				
-		ArrayList<String> commandLineComponents
-			= generateCommandLineComponents();
-		
-		try {
+			validateCommandLineExpressionComponents();
+						
 			System.out.println("command=="+generateCommandLineExpression() + "==");
 			//ProcessBuilder processBuilder = new ProcessBuilder(commandLineComponents);
-						
-			
+								
 			File batchFile 
 				= createBatchFile(
 					rifStartupOptions.getExtractDirectory(), "kevTest22");
@@ -207,6 +221,41 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 		return commandLineInvocation.toString();		
 	}
 
+	
+	public Integer getInvestigationID(
+		final Connection connection,
+		final String studyID, 
+		final Investigation investigation) 
+		throws SQLException,
+		RIFServiceException {
+	
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.setDatabaseSchemaName("rif40");
+		queryFormatter.addFromTable("rif40_investigations");
+		queryFormatter.addSelectField("inv_id");
+		queryFormatter.addWhereParameter("study_id");
+		queryFormatter.addWhereParameter("inv_name");
+		
+		Integer investigationID = null;
+		PreparedStatement statement = null;		
+		ResultSet resultSet = null;
+		try {
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setInt(1, Integer.valueOf(studyID));
+			statement.setString(2, investigation.getTitle());
+			resultSet = statement.executeQuery();
+			resultSet.next();
+			investigationID = resultSet.getInt(1);
+		}
+		finally {
+			SQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);			
+		}
+		
+		return investigationID;
+	}
+	
 		
 	// ==========================================
 	// Section Errors and Validation
