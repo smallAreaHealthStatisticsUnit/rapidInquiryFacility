@@ -7,13 +7,11 @@ import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.system.ClassFileLocator;
 import rifGenericLibrary.util.FilePathCleaner;
 
 import java.util.ArrayList;
 import java.io.*;
 import java.util.Date;
-import java.util.Map;
 
 
 /**
@@ -220,11 +218,8 @@ public abstract class AbstractRService {
 		this.operatingSystemType = operatingSystemType;
 	}
 	
+	protected String generateCommandLineExpression() {
 
-	protected ArrayList<String> generateCommandLineComponents() {
-		System.out.println("===============================AbstractRService 1");
-		//Map<String, String> environmentVariables = System.getenv();
-		//String rHomeValue = environmentVariables.get("R_HOME");
 		commandLineComponents.clear();
 		
 		StringBuilder mainCommand = new StringBuilder();
@@ -247,10 +242,6 @@ public abstract class AbstractRService {
 		commandLineComponents.add(" --user_id=" + userID);
 		commandLineComponents.add(" --password=" + password);
 		
-		return commandLineComponents;		
-	}
-		
-	protected String generateCommandLineExpression() {
 		
 		StringBuilder expression = new StringBuilder();
 		for (int i = 0; i < commandLineComponents.size(); i++) {
@@ -281,6 +272,7 @@ public abstract class AbstractRService {
 		OutputStreamWriter outputStreamWriter
 			= new OutputStreamWriter(new FileOutputStream(file), "Cp1252");
 		BufferedWriter writer = new BufferedWriter(outputStreamWriter);
+		System.out.println("Writing batch file=="+generateCommandLineExpression());
 		writer.write(generateCommandLineExpression());
 		
 		writer.flush();
