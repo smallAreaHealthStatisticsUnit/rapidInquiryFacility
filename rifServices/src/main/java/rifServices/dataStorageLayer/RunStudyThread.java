@@ -320,32 +320,6 @@ public class RunStudyThread
 		
 	}
 	
-	/*
-	private void verifyStudyProperlyCreated() 
-		throws RIFServiceException {
-
-		String userID = user.getUserID();
-		studySubmissionManager.verifyStudyProperlyCreated(
-			connection, 
-			studyID, 
-			userID);
-		studySubmissionManager.createStudyStatusTable(
-			connection, 
-			userID, 
-			studyID);
-						
-		String statusMessage
-			= RIFServiceMessages.getMessage(
-				"studyState.studyVerified.description");
-		studyStateManager.addStatusMessage(
-			user, 
-			studyID, 
-			statusMessage);
-
-		studyStateMachine.next();
-	}
-	*/
-	
 	private void generateResults() 
 		throws RIFServiceException {
 
@@ -365,6 +339,7 @@ public class RunStudyThread
 		throws RIFServiceException {
 
 		smoothResultsSubmissionStep.performStep(
+			connection,
 			studySubmission, 
 			studyID);
 
