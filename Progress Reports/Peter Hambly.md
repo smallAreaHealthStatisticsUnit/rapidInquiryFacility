@@ -670,8 +670,8 @@ RangeError: Invalid string length
   * Image of US county tiles at zoomlevel 11 in Florida: 
     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/Florida4.png "US county tiles at zoomlevel 11 in Florida")
 	This clearly exhibits all the alogorithmic optimisations:
-	* No tiles where there is no landside
-	* No tiles where the area boundary is outsode of the tile
+	* No tiles where the entire tile contains no part of the US landmass;
+	* No tiles where the area boundary is outside of the tile
 
 #### 17th to 21st October
 
