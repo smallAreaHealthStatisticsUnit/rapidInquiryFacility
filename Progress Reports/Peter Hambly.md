@@ -652,8 +652,31 @@ RangeError: Invalid string length
     * PNG tile dump to files (Postgres only - no raster support in SQL Server);	
   * Image of US outline tiles at zoomlevel 8: 
     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/US Outline.png "US outline tiles at zoomlevel 8")
+
+#### 10th to 15th October
+ 
+* Postgres tile maker:
+  * Concluded that the old way of creating logical tiles was the best. Any trimming of PNG tiles must be done in SVG;
+  * The problem with trimming using PostGIS ST_INtersection is shown in this image of US county tiles at zoomlevel 7 in Florida: 
+    ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/Florida2.png "US county tiles at zoomlevel 11 in Florida")
+	Note the bounding box has been merged into the tile; so whilst it is possible to remove the "at sea" portion of the bounding box, 
+	the landside portion effectively divides counties which will cause all sorts of problems to the front end;
+  * Added within optimisation: by excluding any tile bounding completely within the area;
+  * Fix to insert any missing area ids if possible (i.e. have non empty geometry). This is caused by small areas, usually islands,
+    being simplified out of existance at a lower zoomlevel; 
+  * Optimsed code to use older, simpler algorithm. Need to test index usage and add partitioning;
+  * Tested to zoomlevel 11 in 2 1/2 hours;
+  * Image of US county tiles at zoomlevel 11 in Florida: 
+    ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/Florida4.png "US county tiles at zoomlevel 11 in Florida")
+	This clearly exhibits all the alogorithmic optimisations.
+
+#### 17th to 21st October
+
+* SQL Server tile maker:
+  * TO DO
+* RIF team meeting;
+* Add max zoomlevel to UI to speed up demos and testing;  
 	
-  
 #### Current TODO list (October):
 
 * Map tile generator; RIF integration preparation:
