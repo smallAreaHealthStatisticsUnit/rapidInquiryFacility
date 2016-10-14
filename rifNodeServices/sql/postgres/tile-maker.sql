@@ -5,11 +5,9 @@
 
 BEGIN;
 
-/*
 DROP TABLE IF EXISTS geometry_cb_2014_us_500k;
 CREATE TABLE geometry_cb_2014_us_500k
 AS
-WITH a AS (
 SELECT 1 geolevel,
        areaid, 
        6 AS zoomlevel, 
@@ -118,6 +116,7 @@ SELECT 3 geolevel,
        geom_11 AS geom
   FROM cb_2014_us_county_500k 
  ORDER BY 1, 3, 2;
+ 
 ALTER TABLE geometry_cb_2014_us_500k 
 	ADD CONSTRAINT geometry_cb_2014_us_500k_pk PRIMARY KEY (geolevel, zoomlevel, areaid);	
 CREATE INDEX geometry_cb_2014_us_500k_geom_gix ON geometry_cb_2014_us_500k USING GIST (geom);	
@@ -125,7 +124,12 @@ ANALYZE geometry_cb_2014_us_500k;
 -- Convert to IOT
 CLUSTER VERBOSE geometry_cb_2014_us_500k USING geometry_cb_2014_us_500k_pk;  
 
-*/
+COMMENT ON TABLE geometry_cb_2014_us_500k IS 'All geolevels geometry combined into a single table';
+COMMENT ON COLUMN geometry_cb_2014_us_500k.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.';
+COMMENT ON COLUMN geometry_cb_2014_us_500k.areaid IS 'Area ID.';
+COMMENT ON COLUMN geometry_cb_2014_us_500k.geolevel IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
+COMMENT ON COLUMN geometry_cb_2014_us_500k.geom IS 'Geometry data in SRID 4326 (WGS84).';
+\dS+ geometry_cb_2014_us_500k
 
 SELECT geolevel, areaid, COUNT(zoomlevel) AS zoomlevels
   FROM geometry_cb_2014_us_500k
@@ -157,10 +161,10 @@ WITH a AS (
 	   AND b.zoomlevel = 6
 ), d AS ( /* Convert XY bounds to tile numbers */
         SELECT b.zoomlevel,
-               COALESCE(b.Xmin, c.Xmin) AS area_Xmin, 
-			   COALESCE(b.Xmax, c.Xmax) AS area_Xmax, 
-			   COALESCE(b.Ymin, c.Ymin) AS area_Ymin, 
-			   COALESCE(b.Ymax, c.Ymax) AS area_Ymax,
+               COALESCE(b.Xmin, c.Xmin) AS x_min, 
+			   COALESCE(b.Xmax, c.Xmax) AS x_max, 
+			   COALESCE(b.Ymin, c.Ymin) AS y_min, 
+			   COALESCE(b.Ymax, c.Ymax) AS y_max,
                tileMaker_latitude2tile(COALESCE(b.Ymax, c.Ymax), b.zoomlevel) AS Y_mintile,
                tileMaker_latitude2tile(COALESCE(b.Ymin, c.Ymin), b.zoomlevel) AS Y_maxtile,
                tileMaker_longitude2tile(COALESCE(b.Xmin, c.Xmin), b.zoomlevel) AS X_mintile,
@@ -168,7 +172,7 @@ WITH a AS (
       FROM b, c
 )
 SELECT d.*,
-       ST_MakeEnvelope(d.area_Xmin, d.area_Ymin, d.area_Xmax, d.area_Ymax, 4326) AS bbox
+       ST_MakeEnvelope(d.x_min, d.y_min, d.x_max, d.y_max, 4326) AS bbox
   FROM d;
 
 ALTER TABLE tile_limits_cb_2014_us_500k 
@@ -176,8 +180,21 @@ ALTER TABLE tile_limits_cb_2014_us_500k
 ANALYZE tile_limits_cb_2014_us_500k;
 SELECT * FROM tile_limits_cb_2014_us_500k;
 
+COMMENT ON TABLE tile_limits_cb_2014_us_500k IS 'Tile limits';
+COMMENT ON COLUMN tile_limits_cb_2014_us_500k.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.';
+COMMENT ON COLUMN tile_limits_cb_2014_us_500k.x_min IS 'Min X (longitude)';
+COMMENT ON COLUMN tile_limits_cb_2014_us_500k.x_max IS 'Max X (longitude)';
+COMMENT ON COLUMN tile_limits_cb_2014_us_500k.y_min IS 'Min Y (latitude)';
+COMMENT ON COLUMN tile_limits_cb_2014_us_500k.y_max IS 'Max Y (latitude)';
+COMMENT ON COLUMN tile_limits_cb_2014_us_500k.bbox IS 'Bounding box polygon for geolevel 1 area';
+COMMENT ON COLUMN tile_limits_cb_2014_us_500k.x_mintile IS 'Min X tile number (longitude)';
+COMMENT ON COLUMN tile_limits_cb_2014_us_500k.x_maxtile IS 'Max X tile number (longitude)';
+COMMENT ON COLUMN tile_limits_cb_2014_us_500k.y_mintile IS 'Min Y tile number (latitude)';
+COMMENT ON COLUMN tile_limits_cb_2014_us_500k.y_maxtile IS 'Max Y tile number (latitude)';
+\dS+ tile_limits_cb_2014_us_500k
+
 /*
- zoomlevel |    area_xmin     |    area_xmax     |     area_ymin     | area_ymax | y_mintile | y_maxtile | x_mintile | x_maxtile
+ zoomlevel |         xmin     |         xmax     |          ymin     |      ymax | y_mintile | y_maxtile | x_mintile | x_maxtile
 -----------+------------------+------------------+-------------------+-----------+-----------+-----------+-----------+-----------
          0 | -179.13729006727 | 179.773803959804 | -14.3737802873213 | 71.352561 |         0 |         0 |         0 |         0
          1 | -179.13729006727 | 179.773803959804 | -14.3737802873213 | 71.352561 |         0 |         1 |         0 |         1
@@ -258,16 +275,6 @@ ALTER TABLE tile_intersects_cb_2014_us_500k
 --REINDEX TABLE tile_intersects_cb_2014_us_500k;
 ANALYZE VERBOSE tile_intersects_cb_2014_us_500k;  
 
-/*
- zoomlevel | x | y |                                                                             bbox
------------+---+---+--------------------------------------------------------------------------------------------------------------------------------------------------------------
-         0 | 0 | 0 | {"type":"Polygon","coordinates":[[[-180,85.0511287794693],[-180,-85.0511287794693],[180,-85.0511287794693],[180,85.0511287794693],[-180,85.0511287794693]]]}
-         1 | 0 | 0 | {"type":"Polygon","coordinates":[[[-180,85.0511287794693],[-180,0],[0,0],[0,85.0511287794693],[-180,85.0511287794693]]]}
-         1 | 0 | 1 | {"type":"Polygon","coordinates":[[[-180,0],[-180,-85.0511287794693],[0,-85.0511287794693],[0,0],[-180,0]]]}
-         1 | 1 | 0 | {"type":"Polygon","coordinates":[[[0,85.0511287794693],[0,0],[180,0],[180,85.0511287794693],[0,85.0511287794693]]]}
-(4 rows)
- */ 
-
 DROP FUNCTION IF EXISTS tileMaker_intersector(INTEGER, INTEGER);
 CREATE OR REPLACE FUNCTION tileMaker_intersector(l_geolevel INTEGER, l_zoomlevel INTEGER)
 RETURNS INTEGER
@@ -306,7 +313,7 @@ BEGIN
 			   tileMaker_longitude2tile(b.xmin, b.zoomlevel-1) AS parent_xmin
 		  FROM b
 	), d AS (
-		SELECT c.zoomlevel, c.x, c.y, c.bbox, p.areaid
+		SELECT c.zoomlevel, c.x, c.y, c.bbox, p.areaid, p.within
 		  FROM c, tile_intersects_cb_2014_us_500k p /* Parent */
 		 WHERE p.geolevel    = l_geolevel
 		   AND c.zoomlevel-1 = p.zoomlevel 	/* Join to parent tile from previous geolevel; i.e. exclude if not present */
@@ -334,9 +341,9 @@ BEGIN
 	)
 	SELECT f.geolevel, f.zoomlevel, f.areaid, f.x, f.y, f.bbox, f.geom, 
 	       ST_AsGeoJson(f.geom)::JSON AS optimised_geojson,
-	       ST_Within(f.bbox, f.geom) AS within
+	       true::BOOLEAN AS within
 	  FROM f
---	 WHERE NOT ST_Within(f.bbox, f.geom) /* Exclude any tile bouning completely within the area */
+	 WHERE NOT ST_Within(f.bbox, f.geom) /* Exclude any tile bounding completely within the area */
 	 ORDER BY f.geolevel, f.zoomlevel, f.areaid, f.x, f.y;	 
 	 GET DIAGNOSTICS num_rows = ROW_COUNT;
 --	 
@@ -344,6 +351,13 @@ BEGIN
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE; 
+
+COMMENT ON FUNCTION tileMaker_intersector(INTEGER, INTEGER) IS '
+Function:	 tileMaker_intersector2()
+Parameters:	 geolevel ID, zoomlevel
+Returns:	 Number of rows inserted
+Description: Insert tile area id intersections.  
+';
 
 DROP FUNCTION IF EXISTS tileMaker_intersector2(INTEGER, INTEGER);
 CREATE OR REPLACE FUNCTION tileMaker_intersector2(l_geolevel INTEGER, l_zoomlevel INTEGER)
@@ -446,91 +460,58 @@ BEGIN
 	 RETURN num_rows;
 END;
 $BODY$
-LANGUAGE plpgsql VOLATILE; 
-	/*			
-SELECT DISTINCT geolevel, areaid
-  FROM geometry_cb_2014_us_500k
-EXCEPT 
-SELECT DISTINCT geolevel, areaid
-  FROM tile_intersects_cb_2014_us_500k a
- WHERE zoomlevel = (SELECT MAX(zoomlevel) AS max_zoomlevel
-					  FROM tile_intersects_cb_2014_us_500k);
- geolevel |  areaid
-----------+----------
-        3 | 01805243
-        3 | 01805240
-        3 | 01805242
-        3 | 01805241
-
-        3 | 01805243 | MULTIPOLYGON EMPTY
-		
-SELECT geolevel, zoomlevel, areaid, x, y
-  FROM tile_intersects_cb_2014_us_500k_t2
-  EXCEPT
-SELECT geolevel, zoomlevel, areaid, x, y
-  FROM tile_intersects_cb_2014_us_500k;
-  
-intersects | parent_intersects | OK
-
-         t                   t   Intersection condition
-         f                   t   No intersect at this geolevel 
-         t                   f   Not possible; error [checked hence long 1460s run]
-         f                   f   Neither intersects 
-		 
-INFO:  Processed zoomlevel: 11 in 1460.186944 seconds reduced to:	
-
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 1 in 0.0s, 0.0 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 2 in 0.0s, 0.1 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 3 in 0.0s, 0.1 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 4 in 0.0s, 0.1 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 5 in 0.1s, 0.2 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 6 in 0.1s, 0.3 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 7 in 0.2s, 0.5 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 8 in 0.7s, 1.2 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 9 in 2.4s, 3.6 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 10 in 9.8s, 13.4 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 1/3 zoomlevel: 11 in 40.0s, 53.5 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 1 in 0.0s, 53.7 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 2 in 0.2s, 53.8 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 3 in 0.2s, 54.1 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 4 in 0.6s, 54.7 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 5 in 0.5s, 55.1 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 6 in 1.0s, 56.1 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 7 in 1.1s, 57.2 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 8 in 3.2s, 60.4 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 9 in 9.6s, 70.0 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 10 in 31.8s, 101.8 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 2/3 zoomlevel: 11 in 118.4s, 220.2 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 1 in 0.1s, 220.6 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 2 in 0.1s, 220.7 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 3 in 0.1s, 220.8 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 4 in 0.1s, 220.9 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 5 in 0.1s, 221.0 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 6 in 0.2s, 221.2 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 7 in 0.4s, 221.6 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 8 in 1.3s, 222.9 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 9 in 4.3s, 227.2 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 10 in 15.7s, 242.9 total
-psql:tile-maker.sql:677: INFO:  Processed intersects for geolevel 3/3 zoomlevel: 11 in 61.4s, 304.3 total
+LANGUAGE plpgsql VOLATILE;
+ 
+COMMENT ON FUNCTION tileMaker_intersector2(INTEGER, INTEGER) IS '
+Function:	 tileMaker_intersector2()
+Parameters:	 geolevel ID, zoomlevel
+Returns:	 Number of rows inserted
+Description: Insert any missing area ids if possible (i.e. have non empty geometry). This is caused by small areas, usually islands,
+             being simplified out of existance at a lower zoomlevel.  
+';
+/*								  		 
+psql:tile-maker.sql:550: INFO:  Processed 3+0 total areaid intersects for geolevel 1/3 zoomlevel: 1/11 in 0.1s, 0.1s total; 22.3 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 5+0 total areaid intersects for geolevel 1/3 zoomlevel: 2/11 in 0.2s, 0.4s total; 21.1 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 10+0 total areaid intersects for geolevel 1/3 zoomlevel: 3/11 in 0.4s, 0.8s total; 25.2 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 22+0 total areaid intersects for geolevel 1/3 zoomlevel: 4/11 in 0.8s, 1.5s total; 28.6 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 42+0 total areaid intersects for geolevel 1/3 zoomlevel: 5/11 in 1.5s, 3.0s total; 28.7 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 84+0 total areaid intersects for geolevel 1/3 zoomlevel: 6/11 in 2.9s, 5.9s total; 29.0 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 190+0 total areaid intersects for geolevel 1/3 zoomlevel: 7/11 in 8.6s, 14.5s total; 22.1 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 432+0 total areaid intersects for geolevel 1/3 zoomlevel: 8/11 in 26.1s, 40.6s total; 16.6 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 1003+0 total areaid intersects for geolevel 1/3 zoomlevel: 9/11 in 83.5s, 124.1s total; 12.0 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 2314+0 total areaid intersects for geolevel 1/3 zoomlevel: 10/11 in 270.7s, 394.7s total; 8.5 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 5240+0 total areaid intersects for geolevel 1/3 zoomlevel: 11/11 in 833.4s, 1228.1s total; 6.3 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 57+0 total areaid intersects for geolevel 2/3 zoomlevel: 1/11 in 2.5s, 1230.6s total; 22.8 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 67+0 total areaid intersects for geolevel 2/3 zoomlevel: 2/11 in 1.9s, 1232.4s total; 35.6 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 81+0 total areaid intersects for geolevel 2/3 zoomlevel: 3/11 in 1.5s, 1234.0s total; 53.4 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 95+0 total areaid intersects for geolevel 2/3 zoomlevel: 4/11 in 2.2s, 1236.2s total; 42.8 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 142+0 total areaid intersects for geolevel 2/3 zoomlevel: 5/11 in 3.9s, 1240.1s total; 36.6 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 241+0 total areaid intersects for geolevel 2/3 zoomlevel: 6/11 in 6.8s, 1246.9s total; 35.4 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 485+0 total areaid intersects for geolevel 2/3 zoomlevel: 7/11 in 19.5s, 1266.4s total; 24.8 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 1018+0 total areaid intersects for geolevel 2/3 zoomlevel: 8/11 in 69.1s, 1335.5s total; 14.7 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 2246+0 total areaid intersects for geolevel 2/3 zoomlevel: 9/11 in 245.9s, 1581.4s total; 9.1 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 4901+0 total areaid intersects for geolevel 2/3 zoomlevel: 10/11 in 857.4s, 2438.8s total; 5.7 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 10718+0 total areaid intersects for geolevel 2/3 zoomlevel: 11/11 in 2594.4s, 5033.1s total; 4.1 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 3233+0 total areaid intersects for geolevel 3/3 zoomlevel: 1/11 in 58.2s, 5091.4s total; 55.5 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 3291+0 total areaid intersects for geolevel 3/3 zoomlevel: 2/11 in 46.0s, 5137.3s total; 71.6 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 3390+0 total areaid intersects for geolevel 3/3 zoomlevel: 3/11 in 23.8s, 5161.1s total; 142.6 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 3439+0 total areaid intersects for geolevel 3/3 zoomlevel: 4/11 in 16.0s, 5177.1s total; 214.7 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 3657+0 total areaid intersects for geolevel 3/3 zoomlevel: 5/11 in 16.7s, 5193.8s total; 219.5 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 4063+3 total areaid intersects for geolevel 3/3 zoomlevel: 6/11 in 12.7s, 5206.5s total; 320.3 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 4986+0 total areaid intersects for geolevel 3/3 zoomlevel: 7/11 in 10.0s, 5216.5s total; 496.9 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 7124+3 total areaid intersects for geolevel 3/3 zoomlevel: 8/11 in 15.3s, 5231.8s total; 464.7 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 12268+5 total areaid intersects for geolevel 3/3 zoomlevel: 9/11 in 35.8s, 5267.6s total; 343.1 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 24459+0 total areaid intersects for geolevel 3/3 zoomlevel: 10/11 in 100.4s, 5368.0s total; 243.5 intesects/s
+psql:tile-maker.sql:550: INFO:  Processed 51437+1 total areaid intersects for geolevel 3/3 zoomlevel: 11/11 in 336.5s, 5704.6s total; 152.8 intesects/s
 DO
-Time: 304729.900 ms
-
-Faaste than the original UJS n ation run!
-
-INFO:  Processed zoomlevel: 11 in 52.88089 seconds	 
-
-DO
-Time: ~70s
-From before: 254 s
-
-So actual speed gain ~5x. Note using correct geom_<zoomlevel>, not geom_6 as before
+Time: 5704568.058 ms
  */
 DO LANGUAGE plpgsql $$
 DECLARE
 	max_geolevel 	INTEGER;
 	max_zoomlevel 	INTEGER;
 	c1_maxgeolevel 	CURSOR FOR
-		SELECT MAX(geolevel) AS max_geolevel, MAX(zoomlevel) AS max_zoomlevel
+		SELECT MAX(geolevel) AS max_geolevel
 			  FROM tile_intersects_cb_2014_us_500k;		  
 --
 	num_rows 		INTEGER:=0;
@@ -544,10 +525,17 @@ DECLARE
 	tiles_per_s		NUMERIC;
 BEGIN
 	OPEN c1_maxgeolevel;
-	FETCH c1_maxgeolevel INTO max_geolevel, max_zoomlevel;
+	FETCH c1_maxgeolevel INTO max_geolevel;
 	CLOSE c1_maxgeolevel;
-	 
-	max_zoomlevel 	:=7;	/* 11 */ 
+--	 
+	max_zoomlevel 	:=11;
+--
+-- Timing; 3 zoomlevels to:
+--
+-- Zoomlevel 7: 3 minutes
+-- Zoomlevel 8: 5 minutes (321)
+-- Zoomlevel 9: 11 minutes (673)
+-- Zoomlevel 11: 95 minutes (5704)
 --
 	FOR i IN 1 .. max_geolevel LOOP
 		FOR j IN 1 .. max_zoomlevel LOOP
@@ -570,7 +558,44 @@ $$;
 
 REINDEX TABLE tile_intersects_cb_2014_us_500k;
 ANALYZE tile_intersects_cb_2014_us_500k;
-		
+	
+SELECT DISTINCT geolevel, areaid
+  FROM geometry_cb_2014_us_500k
+EXCEPT 
+SELECT DISTINCT geolevel, areaid
+  FROM tile_intersects_cb_2014_us_500k a
+ WHERE zoomlevel = (SELECT MAX(zoomlevel) AS max_zoomlevel
+					  FROM tile_intersects_cb_2014_us_500k);
+/*
+ geolevel |  areaid
+----------+----------
+        3 | 01805243
+(1 row)
+ */	
+-- Missing area IDs
+WITH a AS (
+	SELECT DISTINCT geolevel, areaid
+	  FROM geometry_cb_2014_us_500k
+	EXCEPT 
+	SELECT DISTINCT geolevel, areaid
+	  FROM tile_intersects_cb_2014_us_500k
+)
+SELECT a.geolevel, a.areaid, g.zoomlevel, ST_IsEmpty(g.geom) AS is_empty
+  FROM a
+	LEFT OUTER JOIN geometry_cb_2014_us_500k g ON (a.areaid = g.areaid AND a.geolevel = g.geolevel)
+ ORDER BY 1, 2, 3;
+/*
+ geolevel |  areaid  | zoomlevel | is_empty
+----------+----------+-----------+----------
+        3 | 01805243 |         6 | t
+        3 | 01805243 |         7 | t
+        3 | 01805243 |         8 | t
+        3 | 01805243 |         9 | f
+        3 | 01805243 |        10 | f
+        3 | 01805243 |        11 | f
+(6 rows)
+ */
+ 
 SELECT geolevel, zoomlevel, 
        COUNT(DISTINCT(areaid)) AS areas,
        MIN(x) AS xmin, MIN(y) AS ymin, 
@@ -584,7 +609,8 @@ SELECT geolevel, zoomlevel,
  ORDER BY 1, 2;
  
 /*
-is:
+with within restrictor:
+
  geolevel | zoomlevel | areas | xmin | ymin | xmax | ymax | possible_tiles | tiles | pct_saving
 ----------+-----------+-------+------+------+------+------+----------------+-------+------------
         1 |         0 |     1 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
@@ -592,17 +618,21 @@ is:
         1 |         2 |     1 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
         1 |         3 |     1 |    0 |    1 |    7 |    4 |             32 |    10 |      68.75
         1 |         4 |     1 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
-        1 |         5 |     1 |    0 |    6 |   31 |   17 |            384 |    46 |      88.02
-        1 |         6 |     1 |    0 |   13 |   63 |   29 |           1088 |   112 |      89.71
-        1 |         7 |     1 |    0 |   27 |  127 |   59 |           4224 |   338 |      92.00
+        1 |         5 |     1 |    0 |    6 |   31 |   17 |            384 |    42 |      89.06
+        1 |         6 |     1 |    0 |   13 |   63 |   29 |           1088 |    84 |      92.28
+        1 |         7 |     1 |    0 |   27 |  127 |   59 |           4224 |   190 |      95.50
+        1 |         8 |     1 |    0 |   54 |  255 |  118 |          16640 |   432 |      97.40
+        1 |         9 |     1 |    1 |  108 |  511 |  237 |          66430 |  1003 |      98.49
         2 |         0 |    56 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
         2 |         1 |    56 |    0 |    0 |    1 |    1 |              4 |     3 |      25.00
         2 |         2 |    56 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
         2 |         3 |    56 |    0 |    1 |    7 |    4 |             32 |    10 |      68.75
         2 |         4 |    56 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
-        2 |         5 |    56 |    0 |    6 |   31 |   17 |            384 |    48 |      87.50
-        2 |         6 |    56 |    0 |   13 |   63 |   34 |           1408 |   117 |      91.69
-        2 |         7 |    56 |    0 |   27 |  127 |   69 |           5504 |   348 |      93.68
+        2 |         5 |    56 |    0 |    6 |   31 |   17 |            384 |    47 |      87.76
+        2 |         6 |    56 |    0 |   13 |   63 |   34 |           1408 |   110 |      92.19
+        2 |         7 |    56 |    0 |   27 |  127 |   69 |           5504 |   279 |      94.93
+        2 |         8 |    56 |    0 |   54 |  255 |  135 |          20992 |   663 |      96.84
+        2 |         9 |    56 |    1 |  108 |  511 |  271 |          83804 |  1566 |      98.13
         3 |         0 |  3232 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
         3 |         1 |  3232 |    0 |    0 |    1 |    1 |              4 |     3 |      25.00
         3 |         2 |  3232 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
@@ -610,52 +640,13 @@ is:
         3 |         4 |  3232 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
         3 |         5 |  3232 |    0 |    6 |   31 |   17 |            384 |    48 |      87.50
         3 |         6 |  3232 |    0 |   13 |   63 |   34 |           1408 |   117 |      91.69
-        3 |         7 |  3232 |    0 |   27 |  127 |   69 |           5504 |   348 |      93.68
-(24 rows)
+        3 |         7 |  3232 |    0 |   27 |  127 |   69 |           5504 |   330 |      94.00
+        3 |         8 |  3232 |    0 |   54 |  255 |  138 |          21760 |   989 |      95.45
+        3 |         9 |  3233 |    1 |  108 |  511 |  276 |          86359 |  3135 |      96.37
+(30 rows)
 
- geolevel | zoomlevel | xmin | ymin | xmax | ymax | possible_tiles | tiles | pct_saving
-----------+-----------+------+------+------+------+----------------+-------+------------
-        1 |         0 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
-        1 |         1 |    0 |    0 |    1 |    1 |              4 |     3 |      25.00
-        1 |         2 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
-        1 |         3 |    0 |    1 |    7 |    4 |             32 |    10 |      68.75
-        1 |         4 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
-        1 |         5 |    0 |    6 |   31 |   17 |            384 |    46 |      88.02
-        1 |         6 |    0 |   13 |   63 |   29 |           1088 |   112 |      89.71
-        1 |         7 |    0 |   27 |  127 |   59 |           4224 |   338 |      92.00
-        1 |         8 |    0 |   54 |  255 |  118 |          16640 |  1139 |      93.16
-        1 |         9 |    1 |  108 |  511 |  237 |          66430 |  4093 |      93.84
-        1 |        10 |    2 |  217 | 1023 |  474 |         263676 | 15308 |      94.19
-        1 |        11 |    4 |  435 | 2046 |  948 |        1050102 | 58968 |      94.38
-        2 |         0 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
-        2 |         1 |    0 |    0 |    1 |    1 |              4 |     3 |      25.00
-        2 |         2 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
-        2 |         3 |    0 |    1 |    7 |    4 |             32 |    10 |      68.75
-        2 |         4 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
-        2 |         5 |    0 |    6 |   31 |   17 |            384 |    48 |      87.50
-        2 |         6 |    0 |   13 |   63 |   34 |           1408 |   117 |      91.69
-        2 |         7 |    0 |   27 |  127 |   69 |           5504 |   348 |      93.68
-        2 |         8 |    0 |   54 |  255 |  135 |          20992 |  1150 |      94.52
-        2 |         9 |    1 |  108 |  511 |  271 |          83804 |  4110 |      95.10
-        2 |        10 |    2 |  217 | 1023 |  543 |         334194 | 15341 |      95.41
-        2 |        11 |    4 |  435 | 2046 | 1087 |        1334079 | 59070 |      95.57
-        3 |         0 |    0 |    0 |    0 |    0 |              1 |     1 |       0.00
-        3 |         1 |    0 |    0 |    1 |    1 |              4 |     3 |      25.00
-        3 |         2 |    0 |    0 |    3 |    2 |             12 |     5 |      58.33
-        3 |         3 |    0 |    1 |    7 |    4 |             32 |    10 |      68.75
-        3 |         4 |    0 |    3 |   15 |    8 |             96 |    22 |      77.08
-        3 |         5 |    0 |    6 |   31 |   17 |            384 |    48 |      87.50
-        3 |         6 |    0 |   13 |   63 |   34 |           1408 |   117 |      91.69
-        3 |         7 |    0 |   27 |  127 |   69 |           5504 |   348 |      93.68
-        3 |         8 |    0 |   54 |  255 |  135 |          20992 |  1150 |      94.52
-        3 |         9 |    1 |  108 |  511 |  271 |          83804 |  4110 |      95.10
-        3 |        10 |    2 |  217 | 1023 |  543 |         334194 | 15341 |      95.41
-        3 |        11 |    4 |  435 | 2046 | 1087 |        1334079 | 59070 |      95.57
-(36 rows)
-
-Time: 107.764 ms
  */  
-
+		  
 CREATE TEMPORARY TABLE rownum_cb_2014_us_500k 
 AS
 SELECT ROW_NUMBER() OVER (ORDER BY geolevel, zoomlevel, areaid, x, y) AS gid, geolevel, zoomlevel, areaid, x, y
@@ -688,6 +679,20 @@ SELECT geolevel, zoomlevel, within, COUNT(gid)
   FROM tile_intersects_cb_2014_us_500k
  GROUP BY geolevel, zoomlevel, within
  ORDER BY geolevel, zoomlevel, within;
+  
+COMMENT ON TABLE tile_intersects_cb_2014_us_500k IS 'Tile areaid intersections';COMMENT ON COLUMN tiles_cb_2014_us_500k.geography IS 'Geography';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.gid IS 'Primary key.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.geolevel IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.bbox IS 'Bounding box of tile as a polygon.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.geom IS 'Geometry of area.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.areaid IS 'Tile contains no area_ids flag: 0/1';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.within IS 'Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.optimised_geojson IS 'Tile multipolygon in GeoJSON format, optimised for zoomlevel N. ';
+
+\dS+ tile_intersects_cb_2014_us_500k
   
 --  Replace geolevel WITH geolevel_id
 
@@ -779,6 +784,7 @@ WITH a AS (
 COMMENT ON VIEW tiles_cb_2014_us_500k
   IS 'Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!';
 COMMENT ON COLUMN tiles_cb_2014_us_500k.geography IS 'Geography';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
 COMMENT ON COLUMN tiles_cb_2014_us_500k.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
 COMMENT ON COLUMN tiles_cb_2014_us_500k.no_area_ids IS 'Tile contains no area_ids flag: 0/1';
 COMMENT ON COLUMN tiles_cb_2014_us_500k.tile_id IS 'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>';
@@ -787,6 +793,8 @@ COMMENT ON COLUMN tiles_cb_2014_us_500k.y IS 'Y tile number. From 0 to (2**<zoom
 COMMENT ON COLUMN tiles_cb_2014_us_500k.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.';
 COMMENT ON COLUMN tiles_cb_2014_us_500k.optimised_geojson IS 'Tile multipolygon in GeoJSON format, optimised for zoomlevel N. ';
 COMMENT ON COLUMN tiles_cb_2014_us_500k.optimised_topojson IS 'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.';
+
+\dS+ tiles_cb_2014_us_500k
  
 -- Data
 SELECT no_area_ids, SUBSTRING(optimised_geojson::Text FROM 1 FOR 90) AS optimised_geojson
