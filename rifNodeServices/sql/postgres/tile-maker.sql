@@ -398,6 +398,81 @@ COMMENT ON COLUMN t_tiles_cb_2014_us_500k.optimised_geojson IS 'Tile multipolygo
 COMMENT ON COLUMN t_tiles_cb_2014_us_500k.optimised_topojson IS 'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.';
 
 \dS+ t_tiles_cb_2014_us_500k
+  
+CREATE VIEW tiles_cb_2014_us_500k AS 
+WITH a AS (
+         SELECT geography,
+            MAX(geolevel_id) AS max_geolevel_id
+           FROM geolevels_cb_2014_us_500k
+          GROUP BY geography
+        ), b AS (
+         SELECT a.geography,
+            generate_series(1, a.max_geolevel_id::integer, 1) AS geolevel_id
+           FROM a
+        ), c AS (
+         SELECT
+            b2.geolevel_name,
+            b.geolevel_id,
+            b.geography
+           FROM b, geolevels_cb_2014_us_500k b2
+		  WHERE b.geolevel_id = b2.geolevel_id
+        ), d AS (
+         SELECT generate_series(0, 11, 1) AS zoomlevel
+        ), ex AS (
+         SELECT d.zoomlevel,
+            generate_series(0, power(2::double precision, d.zoomlevel::double precision)::integer - 1, 1) AS xy_series
+           FROM d
+        ), ey AS (
+         SELECT c.geolevel_name,
+            c.geolevel_id,
+            c.geography,
+            ex.zoomlevel,
+            ex.xy_series
+           FROM c,
+            ex
+        )
+ SELECT z.geography,
+        z.geolevel_id,
+    z.geolevel_name,
+        CASE
+            WHEN h.tile_id IS NULL THEN 1
+            ELSE 0
+        END AS no_area_ids, 
+    COALESCE(h.tile_id, z.geolevel_id::Text||'_'||z.geolevel_name||'_'||z.zoomlevel||'_'||z.x::Text||'_'||z.y::Text) AS tile_id,
+    z.x,
+    z.y,
+    z.zoomlevel,
+    COALESCE(h.optimised_geojson, '{"type": "FeatureCollection","features":[]}'::json) AS optimised_geojson,
+    COALESCE(h.optimised_topojson, '{"type": "FeatureCollection","features":[]}'::json) AS optimised_topojson
+   FROM ( SELECT ey.geolevel_name,
+            ey.geolevel_id,
+            ey.geography,
+            ex.zoomlevel,
+            ex.xy_series AS x,
+            ey.xy_series AS y
+           FROM ey,
+            ex
+          WHERE ex.zoomlevel = ey.zoomlevel) z
+     LEFT JOIN t_tiles_cb_2014_us_500k h ON (
+		z.zoomlevel = h.zoomlevel AND 
+		z.x = h.x AND 
+		z.y = h.y AND 
+		z.geolevel_id = h.geolevel_id);
+
+COMMENT ON VIEW tiles_cb_2014_us_500k
+  IS 'Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.geography IS 'Geography';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.no_area_ids IS 'Tile contains no area_ids flag: 0/1';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.tile_id IS 'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.optimised_geojson IS 'Tile multipolygon in GeoJSON format, optimised for zoomlevel N. ';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.optimised_topojson IS 'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.';
+
+\dS+ tiles_cb_2014_us_500k
 
 DROP FUNCTION IF EXISTS tileMaker_intersector(INTEGER, INTEGER, INTEGER, BOOLEAN);
 CREATE OR REPLACE FUNCTION tileMaker_intersector(
@@ -909,81 +984,6 @@ ALTER TABLE t_tiles_cb_2014_us_500k
 ALTER TABLE t_tiles_cb_2014_us_500k 
 	ADD CONSTRAINT t_tiles_cb_2014_us_500k_uk UNIQUE (tile_id);			
 ANALYZE VERBOSE t_tiles_cb_2014_us_500k; 
-  
-CREATE VIEW tiles_cb_2014_us_500k AS 
-WITH a AS (
-         SELECT geography,
-            MAX(geolevel_id) AS max_geolevel_id
-           FROM geolevels_cb_2014_us_500k
-          GROUP BY geography
-        ), b AS (
-         SELECT a.geography,
-            generate_series(1, a.max_geolevel_id::integer, 1) AS geolevel_id
-           FROM a
-        ), c AS (
-         SELECT
-            b2.geolevel_name,
-            b.geolevel_id,
-            b.geography
-           FROM b, geolevels_cb_2014_us_500k b2
-		  WHERE b.geolevel_id = b2.geolevel_id
-        ), d AS (
-         SELECT generate_series(0, 11, 1) AS zoomlevel
-        ), ex AS (
-         SELECT d.zoomlevel,
-            generate_series(0, power(2::double precision, d.zoomlevel::double precision)::integer - 1, 1) AS xy_series
-           FROM d
-        ), ey AS (
-         SELECT c.geolevel_name,
-            c.geolevel_id,
-            c.geography,
-            ex.zoomlevel,
-            ex.xy_series
-           FROM c,
-            ex
-        )
- SELECT z.geography,
-        z.geolevel_id,
-    z.geolevel_name,
-        CASE
-            WHEN h.tile_id IS NULL THEN 1
-            ELSE 0
-        END AS no_area_ids, 
-    COALESCE(h.tile_id, z.geolevel_id::Text||'_'||z.geolevel_name||'_'||z.zoomlevel||'_'||z.x::Text||'_'||z.y::Text) AS tile_id,
-    z.x,
-    z.y,
-    z.zoomlevel,
-    COALESCE(h.optimised_geojson, '{"type": "FeatureCollection","features":[]}'::json) AS optimised_geojson,
-    COALESCE(h.optimised_topojson, '{"type": "FeatureCollection","features":[]}'::json) AS optimised_topojson
-   FROM ( SELECT ey.geolevel_name,
-            ey.geolevel_id,
-            ey.geography,
-            ex.zoomlevel,
-            ex.xy_series AS x,
-            ey.xy_series AS y
-           FROM ey,
-            ex
-          WHERE ex.zoomlevel = ey.zoomlevel) z
-     LEFT JOIN t_tiles_cb_2014_us_500k h ON (
-		z.zoomlevel = h.zoomlevel AND 
-		z.x = h.x AND 
-		z.y = h.y AND 
-		z.geolevel_id = h.geolevel_id);
-
-COMMENT ON VIEW tiles_cb_2014_us_500k
-  IS 'Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!';
-COMMENT ON COLUMN tiles_cb_2014_us_500k.geography IS 'Geography';
-COMMENT ON COLUMN tiles_cb_2014_us_500k.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
-COMMENT ON COLUMN tiles_cb_2014_us_500k.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
-COMMENT ON COLUMN tiles_cb_2014_us_500k.no_area_ids IS 'Tile contains no area_ids flag: 0/1';
-COMMENT ON COLUMN tiles_cb_2014_us_500k.tile_id IS 'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>';
-COMMENT ON COLUMN tiles_cb_2014_us_500k.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
-COMMENT ON COLUMN tiles_cb_2014_us_500k.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
-COMMENT ON COLUMN tiles_cb_2014_us_500k.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.';
-COMMENT ON COLUMN tiles_cb_2014_us_500k.optimised_geojson IS 'Tile multipolygon in GeoJSON format, optimised for zoomlevel N. ';
-COMMENT ON COLUMN tiles_cb_2014_us_500k.optimised_topojson IS 'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.';
-
-\dS+ tiles_cb_2014_us_500k
  
 -- Data
 SELECT no_area_ids, SUBSTRING(optimised_geojson::Text FROM 1 FOR 90) AS optimised_geojson
