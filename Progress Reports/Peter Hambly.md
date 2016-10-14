@@ -660,15 +660,18 @@ RangeError: Invalid string length
   * The problem with trimming using PostGIS ST_INtersection is shown in this image of US county tiles at zoomlevel 7 in Florida: 
     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/Florida2.png "US county tiles at zoomlevel 11 in Florida")
 	Note the bounding box has been merged into the tile; so whilst it is possible to remove the "at sea" portion of the bounding box, 
-	the landside portion effectively divides counties which will cause all sorts of problems to the front end;
+	the "landside" portion effectively divides counties which will cause all sorts of problems to the front end;
   * Added within optimisation: by excluding any tile bounding completely within the area;
   * Fix to insert any missing area ids if possible (i.e. have non empty geometry). This is caused by small areas, usually islands,
     being simplified out of existance at a lower zoomlevel; 
   * Optimsed code to use older, simpler algorithm. Need to test index usage and add partitioning;
   * Tested to zoomlevel 11 in 2 1/2 hours;
+  * It would be possible to speed up the process by ~25% if zoomlevel 1 is assumed to contain one area;
   * Image of US county tiles at zoomlevel 11 in Florida: 
     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/Florida4.png "US county tiles at zoomlevel 11 in Florida")
-	This clearly exhibits all the alogorithmic optimisations.
+	This clearly exhibits all the alogorithmic optimisations:
+	* No tiles where there is no landside
+	* No tiles where the area boundary is outsode of the tile
 
 #### 17th to 21st October
 
