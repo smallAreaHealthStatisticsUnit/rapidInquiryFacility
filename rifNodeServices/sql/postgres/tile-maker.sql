@@ -346,8 +346,7 @@ WITH a AS (
 		    (c.zoomlevel = 6           AND b.zoomlevel NOT BETWEEN 6 AND 11))
 	   AND ST_Intersects(ST_MakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326), c.geom) /* intersects */
 )
-SELECT 0 gid,
-       c.geolevel_id,
+SELECT c.geolevel_id,
 	   c.zoomlevel, 
 	   c.areaid,
 	   c.x, 
@@ -796,42 +795,14 @@ with within restrictor:
 (30 rows)
 
  */  
-		  
-CREATE TEMPORARY TABLE rownum_cb_2014_us_500k 
-AS
-SELECT ROW_NUMBER() OVER (ORDER BY geolevel_id, zoomlevel, areaid, x, y) AS gid, geolevel_id, zoomlevel, areaid, x, y
-  FROM tile_intersects_cb_2014_us_500k
- ORDER BY 1;
-ALTER TABLE rownum_cb_2014_us_500k 
-	ADD CONSTRAINT rownum_cb_2014_us_500k_pk PRIMARY KEY (geolevel_id, zoomlevel, areaid, x, y);	
-ANALYZE rownum_cb_2014_us_500k;
-UPDATE tile_intersects_cb_2014_us_500k b
-   SET gid = (SELECT a.gid
-                FROM rownum_cb_2014_us_500k a
-			   WHERE a.zoomlevel = b.zoomlevel
-			     AND a.geolevel_id  = b.geolevel_id
-   			     AND a.x         = b.x
-				 AND a.y         = b.y
-				 AND a.areaid    = b.areaid);				 
-ALTER TABLE tile_intersects_cb_2014_us_500k 
-	ADD CONSTRAINT tile_intersects_cb_2014_us_500k_uk UNIQUE (gid);	
-DROP TABLE rownum_cb_2014_us_500k;
 
-SELECT geolevel_id, MIN(gid) AS min_gid, MAX(gid) AS max_gid
-  FROM tile_intersects_cb_2014_us_500k
-  GROUP BY geolevel_id
-  ORDER BY 1;
-
-REINDEX TABLE tile_intersects_cb_2014_us_500k;
-ANALYZE tile_intersects_cb_2014_us_500k;
-
-SELECT geolevel_id, zoomlevel, within, COUNT(gid)
+EXPLAIN ANALYZE SELECT geolevel_id, zoomlevel, within, COUNT(areaid)
   FROM tile_intersects_cb_2014_us_500k
  GROUP BY geolevel_id, zoomlevel, within
  ORDER BY geolevel_id, zoomlevel, within;
   
-COMMENT ON TABLE tile_intersects_cb_2014_us_500k IS 'Tile areaid intersections';COMMENT ON COLUMN tiles_cb_2014_us_500k.geography IS 'Geography';
-COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.gid IS 'Primary key.';
+COMMENT ON TABLE tile_intersects_cb_2014_us_500k IS 'Tile areaid intersections';
+COMMENT ON COLUMN tiles_cb_2014_us_500k.geography IS 'Geography';
 COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
 COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.bbox IS 'Bounding box of tile as a polygon.';
 COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.geom IS 'Geometry of area.';
