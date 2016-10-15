@@ -28,7 +28,7 @@ DECLARE
 	trigger_sql	VARCHAR;
 BEGIN
 	FOR i IN 1 .. 3 LOOP
-		FOR j IN 1 .. 11 LOOP
+		FOR j IN 6 .. 11 LOOP
 			sql_stmt[COALESCE(array_length(sql_stmt, 1), 0)]:='CREATE TABLE '||l_table||
 							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' ('||E'\n'||
 					  '    CHECK ( geolevel_id = '||i::Text||' AND zoomlevel = '||j::Text||' )'||E'\n'||
@@ -51,11 +51,11 @@ BEGIN
 							'.geom IS ''Geometry data in SRID 4326 (WGS84).''';
 			IF trigger_sql IS NULL THEN
 				trigger_sql:='IF ( NEW.zoomlevel = '||j::Text||' AND NEW.geolevel_id = '||i::Text||' ) THEN'||E'\n'||
-							' 	INSERT INTO geometry_cb_2014_us_500k_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' VALUES (NEW.*);'||E'\n';
+							' 	INSERT INTO '||l_table||'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' VALUES (NEW.*);'||E'\n';
 			ELSE
 				trigger_sql:=trigger_sql||
 							'ELSIF ( NEW.zoomlevel = '||j::Text||' AND NEW.geolevel_id = '||i::Text||' ) THEN'||E'\n'||
-							' 	INSERT INTO geometry_cb_2014_us_500k_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' VALUES (NEW.*);'||E'\n';
+							' 	INSERT INTO '||l_table||'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' VALUES (NEW.*);'||E'\n';
 			END IF;
 		END LOOP;
 	END LOOP;
@@ -202,7 +202,7 @@ DECLARE
 	sql_stmt	VARCHAR[];
 BEGIN
 	FOR i IN 1 .. 3 LOOP
-		FOR j IN 1 .. 11 LOOP
+		FOR j IN 6 .. 11 LOOP
 			sql_stmt[COALESCE(array_length(sql_stmt, 1), 0)]:='ALTER TABLE '||l_table||
 							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||E'\n'||
 					  ' ADD CONSTRAINT '||l_table||
@@ -312,9 +312,141 @@ COMMENT ON COLUMN tile_limits_cb_2014_us_500k.y_maxtile IS 'Max Y tile number (l
 (12 rows)
  */
 
-DROP TABLE IF EXISTS tile_intersects_cb_2014_us_500k;
-CREATE TABLE tile_intersects_cb_2014_us_500k
-AS
+DROP TABLE IF EXISTS tile_intersects_cb_2014_us_500k CASCADE;
+CREATE TABLE tile_intersects_cb_2014_us_500k (
+	geolevel_id				INTEGER		NOT NULL,
+	zoomlevel				INTEGER		NOT NULL, 
+	areaid					text		NOT NULL,
+	x						INTEGER		NOT NULL, 
+	y						INTEGER		NOT NULL, 
+    optimised_geojson		JSON,
+	within					BOOLEAN		NOT NULL
+);
+
+SELECT AddGeometryColumn('tile_intersects_cb_2014_us_500k','bbox', 4326, 'POLYGON', 
+			2 		/* Dimension */, 
+			false 	/* use typmod geometry column instead of constraint-based */);
+SELECT AddGeometryColumn('tile_intersects_cb_2014_us_500k','geom', 4326, 'MULTIPOLYGON', 
+			2 		/* Dimension */, 
+			false 	/* use typmod geometry column instead of constraint-based */);
+
+COMMENT ON TABLE tile_intersects_cb_2014_us_500k IS 'Tile area ID intersects';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.areaid IS 'Area ID';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.optimised_geojson IS 'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.within IS 'Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.bbox IS 'Bounding box of tile as a polygon.';
+COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.geom IS 'Geometry of area.';
+		
+-- Partition
+DO LANGUAGE plpgsql $$
+DECLARE
+	l_table 	Text:='tile_intersects_cb_2014_us_500k';
+	sql_stmt	VARCHAR[];
+	trigger_sql	VARCHAR;
+BEGIN
+	FOR i IN 1 .. 3 LOOP
+		FOR j IN 0 .. 11 LOOP
+			sql_stmt[COALESCE(array_length(sql_stmt, 1), 0)]:='CREATE TABLE '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' ('||E'\n'||
+					  '    CHECK ( geolevel_id = '||i::Text||' AND zoomlevel = '||j::Text||' )'||E'\n'||
+					  ') INHERITS ('||l_table||')';	
+--
+			sql_stmt[array_length(sql_stmt, 1)]:='COMMENT ON TABLE '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' IS ''Tile area ID intersects''';
+			sql_stmt[array_length(sql_stmt, 1)]:='COMMENT ON COLUMN '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||
+							'.geolevel_id IS ''ID for ordering (1=lowest resolution). Up to 99 supported.''';
+			sql_stmt[array_length(sql_stmt, 1)]:='COMMENT ON COLUMN '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||
+							'.zoomlevel IS ''Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.''';
+			sql_stmt[array_length(sql_stmt, 1)]:='COMMENT ON COLUMN '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||
+							'.areaid IS ''Area ID.''';
+			sql_stmt[array_length(sql_stmt, 1)]:='COMMENT ON COLUMN '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||
+							'.x IS ''X tile number. From 0 to (2**<zoomlevel>)-1.''';
+			sql_stmt[array_length(sql_stmt, 1)]:='COMMENT ON COLUMN '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||
+							'.y IS ''Y tile number. From 0 to (2**<zoomlevel>)-1.''';
+			sql_stmt[array_length(sql_stmt, 1)]:='COMMENT ON COLUMN '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||
+							'.optimised_geojson IS ''Tile multipolygon in GeoJSON format, optimised for zoomlevel N.''';
+			sql_stmt[array_length(sql_stmt, 1)]:='COMMENT ON COLUMN '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||
+							'.within IS ''Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.''';
+			sql_stmt[array_length(sql_stmt, 1)]:='COMMENT ON COLUMN '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||
+							'.bbox IS ''Bounding box of tile as a polygon.''';
+			sql_stmt[array_length(sql_stmt, 1)]:='COMMENT ON COLUMN '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||
+							'.geom IS ''Geometry of area.''';
+--
+			sql_stmt[array_length(sql_stmt, 1)]:='ALTER TABLE '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||E'\n'||
+					  ' ADD CONSTRAINT '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||'_pk PRIMARY KEY (areaid, x, y)';
+			sql_stmt[array_length(sql_stmt, 1)]:='CREATE INDEX '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||'_geom_gix'||E'\n'||
+					  ' ON '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' USING GIST (geom);';
+-- Analyze
+			sql_stmt[array_length(sql_stmt, 1)]:='ANALYZE '||l_table||
+							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text;
+							
+			IF trigger_sql IS NULL THEN
+				trigger_sql:='IF ( NEW.zoomlevel = '||j::Text||' AND NEW.geolevel_id = '||i::Text||' ) THEN'||E'\n'||
+							' 	INSERT INTO '||l_table||'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' VALUES (NEW.*);'||E'\n';
+			ELSE
+				trigger_sql:=trigger_sql||
+							'ELSIF ( NEW.zoomlevel = '||j::Text||' AND NEW.geolevel_id = '||i::Text||' ) THEN'||E'\n'||
+							' 	INSERT INTO '||l_table||'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' VALUES (NEW.*);'||E'\n';
+			END IF;
+		END LOOP;
+	END LOOP;
+
+	sql_stmt[array_length(sql_stmt, 1)]:='CREATE OR REPLACE FUNCTION '||l_table||'_insert_trigger()'||E'\n'||
+		'RETURNS TRIGGER AS $trigger$'||E'\n'||
+		'BEGIN'||E'\n'||
+		trigger_sql||
+		'    ELSE'||E'\n'||
+		'        RAISE EXCEPTION ''Zoomlevel (%) or geolevel_id(%) out of range. '||
+					'Fix the %_insert_trigger() function!'','||E'\n'||
+		'			NEW.zoomlevel, NEW.geolevel_id, l_table;'||E'\n'||
+		'    END IF;'||E'\n'||
+		'    RETURN NULL;'||E'\n'||
+		'END;'||E'\n'||
+		'$trigger$'||E'\n'||
+		'LANGUAGE plpgsql';
+--
+	FOR i IN 0 .. (array_length(sql_stmt, 1)-1) LOOP
+		RAISE INFO 'SQL> %;', sql_stmt[i];
+		EXECUTE sql_stmt[i];
+	END LOOP;
+END;
+$$;
+	
+CREATE TRIGGER insert_tile_intersects_cb_2014_us_500k_trigger
+    BEFORE INSERT ON tile_intersects_cb_2014_us_500k
+    FOR EACH ROW EXECUTE PROCEDURE tile_intersects_cb_2014_us_500k_insert_trigger();
+	
+\dS+ tile_intersects_cb_2014_us_500k
+\dS+ tile_intersects_cb_2014_us_500k_geolevel_id_1_zoomlevel_0
+
+EXPLAIN ANALYZE INSERT INTO tile_intersects_cb_2014_us_500k (
+	geolevel_id,
+	zoomlevel, 
+	areaid,
+	x, 
+	y, 
+	bbox,
+	geom,
+    optimised_geojson,
+	within
+)
 WITH a AS (
 	SELECT zoomlevel, x_mintile, x_maxtile, y_mintile, y_maxtile	  
 	  FROM tile_limits_cb_2014_us_500k
@@ -344,6 +476,7 @@ WITH a AS (
 	  FROM b, geometry_cb_2014_us_500k c
 	 WHERE ((b.zoomlevel = c.zoomlevel AND b.zoomlevel BETWEEN 6 AND 11) OR 
 		    (c.zoomlevel = 6           AND b.zoomlevel NOT BETWEEN 6 AND 11))
+--	 WHERE c.zoomlevel = 6
 	   AND ST_Intersects(ST_MakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326), c.geom) /* intersects */
 )
 SELECT c.geolevel_id,
@@ -367,6 +500,15 @@ SELECT c.geolevel_id,
  
 ALTER TABLE tile_intersects_cb_2014_us_500k 
 	ADD CONSTRAINT tile_intersects_cb_2014_us_500k_pk PRIMARY KEY (geolevel_id, zoomlevel, areaid, x, y);
+	
+SELECT geolevel_id,
+					zoomlevel, 
+					areaid,
+					x, 
+					y, 
+					ST_AsGeoJson(bbox) AS bbox
+  FROM tile_intersects_cb_2014_us_500k
+ WHERE zoomlevel = 0 AND geolevel_id = 1;
 
 -- PK is v.v slightly faster than the 3x hash
 --CREATE INDEX tile_intersects_cb_2014_us_500k_zoomlevel ON tile_intersects_cb_2014_us_500k USING HASH(zoomlevel);
@@ -484,11 +626,17 @@ RETURNS INTEGER
 AS
 $BODY$
 DECLARE
+	c1_i1	CURSOR FOR
+		SELECT COUNT(areaid) AS total
+		  FROM tile_intersects_cb_2014_us_500k
+		 WHERE geolevel_id = l_geolevel_id
+		   AND zoomlevel   = l_zoomlevel;
+--
 	num_rows INTEGER;
 	explain_line	text;
 	explain_text	text:='';
 BEGIN
---	FOR explain_line IN EXPLAIN ANALYZE 
+	FOR explain_line IN EXPLAIN ANALYZE 
 	INSERT INTO tile_intersects_cb_2014_us_500k(geolevel_id, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 
 	WITH a	AS (
 		SELECT b.zoomlevel AS zoomlevel, b.x_mintile, b.x_maxtile, b.y_mintile, b.y_maxtile	  
@@ -522,19 +670,19 @@ BEGIN
 		SELECT c.zoomlevel, c.x, c.y, c.bbox, p.areaid, p.within
 		  FROM c, tile_intersects_cb_2014_us_500k p /* Parent */
 		 WHERE p.geolevel_id = l_geolevel_id
-		   AND c.zoomlevel-1 = p.zoomlevel 	/* Join to parent tile from previous geolevel_id; i.e. exclude if not present */
+		   AND p.zoomlevel 	 = l_zoomlevel -1/* Join to parent tile from previous geolevel_id; i.e. exclude if not present */
 		   AND c.parent_xmin = p.x  
 	       AND c.parent_ymin = p.y	
 	), e AS (
 		SELECT d.zoomlevel, d.x, d.y, d.bbox, d.areaid
 		  FROM d
 		 WHERE NOT EXISTS (SELECT c2.areaid
-						    FROM tile_intersects_cb_2014_us_500k c2
-						   WHERE c2.geolevel_id = l_geolevel_id
-						     AND c2.zoomlevel   = d.zoomlevel
-							 AND c2.x           = d.x
-							 AND c2.y           = d.y
-							 AND c2.areaid      = d.areaid)
+						     FROM tile_intersects_cb_2014_us_500k c2
+						    WHERE c2.geolevel_id = l_geolevel_id
+						      AND c2.zoomlevel   = l_zoomlevel
+						 	  AND c2.x           = d.x
+					 		  AND c2.y           = d.y
+							  AND c2.areaid      = d.areaid)
 	), f AS (
 		SELECT e.zoomlevel, l_geolevel_id AS geolevel_id, e.x, e.y, e.bbox, e2.areaid, e2.geom
 		  FROM e, geometry_cb_2014_us_500k e2
@@ -549,7 +697,7 @@ BEGIN
 	       true::BOOLEAN AS within
 	  FROM f
 	 WHERE NOT ST_Within(f.bbox, f.geom) /* Exclude any tile bounding completely within the area */
-	 ORDER BY f.geolevel_id, f.zoomlevel, f.areaid, f.x, f.y /*
+	 ORDER BY f.geolevel_id, f.zoomlevel, f.areaid, f.x, f.y 
 	LOOP
 		IF num_rows IS NULL THEN
 		END IF;
@@ -557,8 +705,11 @@ BEGIN
 	END LOOP; 
 	IF l_debug THEN
 		RAISE INFO '%', explain_text;
-	END IF */;
-	GET DIAGNOSTICS num_rows = ROW_COUNT;
+	END IF;
+--
+	OPEN c1_i1;
+	FETCH c1_i1 INTO num_rows;
+	CLOSE c1_i1;
 --	 
 	RETURN num_rows;
 END;
@@ -582,11 +733,18 @@ RETURNS INTEGER
 AS
 $BODY$
 DECLARE
+	c1_i2	CURSOR FOR
+		SELECT COUNT(areaid) AS total
+		  FROM tile_intersects_cb_2014_us_500k
+		 WHERE geolevel_id = l_geolevel_id
+		   AND zoomlevel   = l_zoomlevel
+		   AND NOT within;
+--			  
 	num_rows 		INTEGER;
 	explain_line	text;
 	explain_text	text:='';
 BEGIN
--- 	FOR explain_line IN EXPLAIN ANALYZE 
+ 	FOR explain_line IN EXPLAIN ANALYZE 
 	INSERT INTO tile_intersects_cb_2014_us_500k(geolevel_id, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 
 	WITH a AS (
 		SELECT DISTINCT geolevel_id, areaid
@@ -597,12 +755,13 @@ BEGIN
 		SELECT DISTINCT geolevel_id, areaid
 		  FROM tile_intersects_cb_2014_us_500k a
 		 WHERE zoomlevel = l_zoomlevel
+		   AND geolevel_id = l_geolevel_id
 	), b AS (
 		SELECT a.geolevel_id, a.areaid, ST_Envelope(b.geom) AS bbox, b.geom
 		  FROM a, geometry_cb_2014_us_500k b
-		 WHERE a.geolevel_id = b.geolevel_id
-		   AND zoomlevel   = l_zoomlevel
-		   AND a.areaid   = b.areaid
+		 WHERE a.geolevel_id = l_geolevel_id
+		   AND zoomlevel     = l_zoomlevel
+		   AND a.areaid      = b.areaid
 		   AND NOT ST_IsEmpty(b.geom)
 	), c AS (
 		SELECT l_zoomlevel AS zoomlevel, 
@@ -636,9 +795,9 @@ BEGIN
 			   tileMaker_tile2longitude(x.x_series+1, x.zoomlevel) AS xmax, 
 			   tileMaker_tile2latitude(y.y_series+1, x.zoomlevel) AS ymax
 		  FROM x, y
-		 WHERE x.zoomlevel = y.zoomlevel	
-		   AND x.geolevel_id  = y.geolevel_id
-		   AND x.areaid    = y.areaid
+		 WHERE x.zoomlevel   = y.zoomlevel	
+		   AND x.geolevel_id = y.geolevel_id
+		   AND x.areaid      = y.areaid
 	), e AS (
 		SELECT d.zoomlevel, 
 			   d.geolevel_id, 
@@ -657,16 +816,16 @@ BEGIN
 		  FROM e
 		 WHERE NOT EXISTS (SELECT c2.areaid
 							 FROM tile_intersects_cb_2014_us_500k c2
-							WHERE c2.geolevel_id  = e.geolevel_id
-							  AND c2.zoomlevel = e.zoomlevel
-							  AND c2.x         = e.x
-							  AND c2.y         = e.y	
-							  AND c2.areaid    = e.areaid)
+							WHERE c2.geolevel_id = l_geolevel_id
+							  AND c2.zoomlevel   = l_zoomlevel
+							  AND c2.x           = e.x
+							  AND c2.y           = e.y	
+							  AND c2.areaid      = e.areaid)
 	), g AS (
 			SELECT f.zoomlevel, f.geolevel_id, f.x, f.y, f.bbox, e2.areaid, e2.geom
 			  FROM f, geometry_cb_2014_us_500k e2
 			 WHERE e2.zoomlevel    = l_use_zoomlevel
-			   AND e2.geolevel_id  = f.geolevel_id
+			   AND e2.geolevel_id  = l_geolevel_id
 			   AND e2.areaid       = f.areaid
 			   AND (f.bbox && e2.geom) 			  /* Intersect by bounding box */
 			   AND ST_Intersects(f.bbox, e2.geom) /* intersects: (e.bbox && e.geom) is slower as it generates many more tiles */
@@ -675,14 +834,17 @@ BEGIN
 	       ST_AsGeoJson(g.geom)::JSON AS optimised_geojson,
 	       ST_Within(g.bbox, g.geom) AS within
  	  FROM g 
-	 ORDER BY geolevel_id, zoomlevel, areaid, x, y /*
+	 ORDER BY geolevel_id, zoomlevel, areaid, x, y
 	LOOP		
 		explain_text:=explain_text||E'\n'||explain_line;
 	END LOOP;
 	IF l_debug THEN
 		RAISE INFO '%', explain_text;
-	END IF */;
-	GET DIAGNOSTICS num_rows = ROW_COUNT;
+	END IF;
+--
+	OPEN c1_i2;
+	FETCH c1_i2 INTO num_rows;
+	CLOSE c1_i2;
 --	 
 	RETURN num_rows;
 END;
@@ -706,9 +868,17 @@ RETURNS INTEGER
 AS
 $BODY$
 DECLARE
+	c1_i3	CURSOR FOR
+		SELECT COUNT(tile_id) AS total
+		  FROM t_tiles_cb_2014_us_500k
+		 WHERE geolevel_id = l_geolevel_id
+		   AND zoomlevel   = l_zoomlevel;
+--
 	num_rows 		INTEGER;
 	explain_line	text;
 	explain_text	text:='';
+--
+	sql_stmt		text;
 BEGIN
  	FOR explain_line IN EXPLAIN ANALYZE 
 	INSERT INTO t_tiles_cb_2014_us_500k(
@@ -742,7 +912,15 @@ BEGIN
 	IF l_debug THEN
 		RAISE INFO '%', explain_text;
 	END IF;
-	GET DIAGNOSTICS num_rows = ROW_COUNT;
+--
+	sql_stmt:='REINDEX TABLE tile_intersects_cb_2014_us_500k'||'_geolevel_id_'||l_geolevel_id::Text||'_zoomlevel_'||l_zoomlevel::Text;
+	EXECUTE sql_stmt;
+	sql_stmt:='ANALYZE tile_intersects_cb_2014_us_500k'||'_geolevel_id_'||l_geolevel_id::Text||'_zoomlevel_'||l_zoomlevel::Text;
+	EXECUTE sql_stmt;
+--
+	OPEN c1_i3;
+	FETCH c1_i3 INTO num_rows;
+	CLOSE c1_i3;
 --	 
 	RETURN num_rows;
 END;
@@ -826,14 +1004,14 @@ BEGIN
 -- Timing; 3 zoomlevels to:
 --
 -- Zoomlevel 7: 3 minutes
--- Zoomlevel 8: 5 minutes (321..260..154..218 seconds with tile aggreagtion)
--- Zoomlevel 9: 11 minutes (673)
+-- Zoomlevel 8: 5 minutes (321..260..154..218..230..217 seconds with tile aggregation)
+-- Zoomlevel 9: 11 minutes (673..627)
 -- Zoomlevel 11: 95 minutes (5704)
 --
 	FOR i IN 1 .. max_geolevel_id LOOP
 		FOR j IN 1 .. max_zoomlevel LOOP
 			l_debug:=FALSE;
-			IF j=1 THEN
+			IF j = max_zoomlevel AND i = max_geolevel_id THEN
 				l_debug:=TRUE;
 			END IF;
 			l_use_zoomlevel=j;
@@ -856,8 +1034,8 @@ BEGIN
 			took4:=age(etp, stp2);
 --			
 			took:=age(etp, stp);
-			tiles_per_s:=ROUND(num_rows::NUMERIC/EXTRACT(EPOCH FROM took2)::NUMERIC, 1);
-			RAISE INFO 'Processed %+% total areaid intersects, % tiles for geolevel id %/% zoomlevel: %/% in %+%s+%, %s total; % intesects/s', 
+			tiles_per_s:=ROUND((num_rows+num_rows2+num_rows3)::NUMERIC/EXTRACT(EPOCH FROM took2)::NUMERIC, 1);
+			RAISE INFO 'Processed %+% total areaid intersects, % tiles for geolevel id %/% zoomlevel: %/% in %+%s+%s, %s total; % intesects/s', 
 				num_rows, num_rows2, num_rows3, 
 				i, max_geolevel_id, j, max_zoomlevel, 
 				ROUND(EXTRACT(EPOCH FROM took2)::NUMERIC, 1), 
@@ -869,9 +1047,6 @@ BEGIN
 	END LOOP;
 END;
 $$; 	
-
-REINDEX TABLE tile_intersects_cb_2014_us_500k;
-ANALYZE tile_intersects_cb_2014_us_500k;
 	
 SELECT DISTINCT geolevel_id, areaid
   FROM geometry_cb_2014_us_500k
@@ -961,23 +1136,10 @@ with within restrictor:
 
  */  
 
-EXPLAIN ANALYZE SELECT geolevel_id, zoomlevel, within, COUNT(areaid)
+SELECT geolevel_id, zoomlevel, within, COUNT(areaid)
   FROM tile_intersects_cb_2014_us_500k
  GROUP BY geolevel_id, zoomlevel, within
  ORDER BY geolevel_id, zoomlevel, within;
-  
-COMMENT ON TABLE tile_intersects_cb_2014_us_500k IS 'Tile areaid intersections';
-COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
-COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.bbox IS 'Bounding box of tile as a polygon.';
-COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.geom IS 'Geometry of area.';
-COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.areaid IS 'Tile contains no area_ids flag: 0/1';
-COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.within IS 'Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.';
-COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
-COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
-COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.';
-COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.optimised_geojson IS 'Tile multipolygon in GeoJSON format, optimised for zoomlevel N. ';
-
-\dS+ tile_intersects_cb_2014_us_500k
 
 ALTER TABLE t_tiles_cb_2014_us_500k 
 	ADD CONSTRAINT t_tiles_cb_2014_us_500k_pk PRIMARY KEY (geolevel_id, zoomlevel, x, y);
