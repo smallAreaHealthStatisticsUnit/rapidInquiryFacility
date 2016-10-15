@@ -5,6 +5,10 @@
 
 BEGIN;
 
+ALTER TABLE geolevels_cb_2014_us_500k DROP COLUMN IF EXISTS areaid_count CASCADE; 
+ALTER TABLE geolevels_cb_2014_us_500k ADD COLUMN areaid_count INTEGER;
+COMMENT ON COLUMN geolevels_cb_2014_us_500k.areaid_count IS 'Total number of area IDs within the geolevel';
+			  
 DROP TABLE IF EXISTS geometry_cb_2014_us_500k CASCADE;
 CREATE TABLE geometry_cb_2014_us_500k (
 	geolevel_id		INTEGER		NOT NULL,
@@ -232,6 +236,12 @@ $$;
 \dS+ geometry_cb_2014_us_500k_geolevel_id_3_zoomlevel_11
 \dS+ geometry_cb_2014_us_500k
 
+UPDATE geolevels_cb_2014_us_500k a
+   SET areaid_count = (
+			SELECT COUNT(DISTINCT(areaid)) AS areaid_count
+			  FROM geometry_cb_2014_us_500k b
+			 WHERE a.geolevel_id = b.geolevel_id);
+			 
 SELECT geolevel_id, areaid, COUNT(zoomlevel) AS zoomlevels
   FROM geometry_cb_2014_us_500k
  WHERE geolevel_id IN (1, 2)
@@ -344,12 +354,29 @@ COMMENT ON COLUMN tile_intersects_cb_2014_us_500k.geom IS 'Geometry of area.';
 -- Partition
 DO LANGUAGE plpgsql $$
 DECLARE
+	c2_areaid_count 	CURSOR FOR	
+		SELECT areaid_count
+		  FROM geolevels_cb_2014_us_500k	
+		 WHERE geolevel_id = 1;
+	l_areaid_count	INTEGER;
+	end_zoomlevel	INTEGER;
+--	
 	l_table 	Text:='tile_intersects_cb_2014_us_500k';
 	sql_stmt	VARCHAR[];
 	trigger_sql	VARCHAR;
 BEGIN
+	OPEN c2_areaid_count;
+	FETCH c2_areaid_count INTO l_areaid_count;
+	CLOSE c2_areaid_count;	
+--
 	FOR i IN 1 .. 3 LOOP
-		FOR j IN 0 .. 11 LOOP
+		IF i = 1 AND l_areaid_count = 1 THEN
+			end_zoomlevel=0;	
+		ELSE
+			end_zoomlevel=11;
+		END IF;
+--	
+		FOR j IN 0 .. end_zoomlevel LOOP
 			sql_stmt[COALESCE(array_length(sql_stmt, 1), 0)]:='CREATE TABLE '||l_table||
 							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' ('||E'\n'||
 					  '    CHECK ( geolevel_id = '||i::Text||' AND zoomlevel = '||j::Text||' )'||E'\n'||
@@ -474,9 +501,9 @@ WITH a AS (
 		   c.areaid,
 		   c.geom
 	  FROM b, geometry_cb_2014_us_500k c
-	 WHERE ((b.zoomlevel = c.zoomlevel AND b.zoomlevel BETWEEN 6 AND 11) OR 
-		    (c.zoomlevel = 6           AND b.zoomlevel NOT BETWEEN 6 AND 11))
---	 WHERE c.zoomlevel = 6
+--	 WHERE ((b.zoomlevel = c.zoomlevel AND b.zoomlevel BETWEEN 6 AND 11) OR 
+--		    (c.zoomlevel = 6           AND b.zoomlevel NOT BETWEEN 6 AND 11))
+	 WHERE c.zoomlevel = 6
 	   AND ST_Intersects(ST_MakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326), c.geom) /* intersects */
 )
 SELECT c.geolevel_id,
@@ -502,11 +529,11 @@ ALTER TABLE tile_intersects_cb_2014_us_500k
 	ADD CONSTRAINT tile_intersects_cb_2014_us_500k_pk PRIMARY KEY (geolevel_id, zoomlevel, areaid, x, y);
 	
 SELECT geolevel_id,
-					zoomlevel, 
-					areaid,
-					x, 
-					y, 
-					ST_AsGeoJson(bbox) AS bbox
+	   zoomlevel, 
+	   areaid,
+	   x, 
+	   y, 
+	   ST_AsGeoJson(bbox) AS bbox
   FROM tile_intersects_cb_2014_us_500k
  WHERE zoomlevel = 0 AND geolevel_id = 1;
 
@@ -543,64 +570,82 @@ COMMENT ON COLUMN t_tiles_cb_2014_us_500k.optimised_topojson IS 'Tile multipolyg
   
 CREATE VIEW tiles_cb_2014_us_500k AS 
 WITH a AS (
-         SELECT geography,
-            MAX(geolevel_id) AS max_geolevel_id
-           FROM geolevels_cb_2014_us_500k
-          GROUP BY geography
-        ), b AS (
+        SELECT geography,
+               MAX(geolevel_id) AS max_geolevel_id
+          FROM geolevels_cb_2014_us_500k
+         GROUP BY geography
+), b AS (
          SELECT a.geography,
-            generate_series(1, a.max_geolevel_id::integer, 1) AS geolevel_id
+                generate_series(1, a.max_geolevel_id::integer, 1) AS geolevel_id
            FROM a
-        ), c AS (
-         SELECT
-            b2.geolevel_name,
-            b.geolevel_id,
-            b.geography
-           FROM b, geolevels_cb_2014_us_500k b2
-		  WHERE b.geolevel_id = b2.geolevel_id
-        ), d AS (
-         SELECT generate_series(0, 11, 1) AS zoomlevel
-        ), ex AS (
+), c AS (
+        SELECT b2.geolevel_name,
+               b.geolevel_id,
+               b.geography,
+			   b2.areaid_count
+          FROM b, geolevels_cb_2014_us_500k b2
+		 WHERE b.geolevel_id = b2.geolevel_id
+), d AS (
+        SELECT generate_series(0, 11, 1) AS zoomlevel
+), ex AS (
          SELECT d.zoomlevel,
-            generate_series(0, power(2::double precision, d.zoomlevel::double precision)::integer - 1, 1) AS xy_series
+                generate_series(0, power(2::double precision, d.zoomlevel::double precision)::integer - 1, 1) AS xy_series
            FROM d
-        ), ey AS (
-         SELECT c.geolevel_name,
-            c.geolevel_id,
-            c.geography,
-            ex.zoomlevel,
-            ex.xy_series
-           FROM c,
-            ex
-        )
- SELECT z.geography,
-        z.geolevel_id,
-    z.geolevel_name,
-        CASE
-            WHEN h.tile_id IS NULL THEN 1
+), ey AS (
+        SELECT c.geolevel_name,
+			   c.areaid_count,
+               c.geolevel_id,
+               c.geography,
+               ex.zoomlevel,
+               ex.xy_series
+          FROM c,
+               ex 
+)
+SELECT z.geography,
+       z.geolevel_id,
+       z.geolevel_name,
+       CASE
+            WHEN h1.tile_id IS NULL AND h2.tile_id IS NULL THEN 1
             ELSE 0
-        END AS no_area_ids, 
-    COALESCE(h.tile_id, z.geolevel_id::Text||'_'||z.geolevel_name||'_'||z.zoomlevel||'_'||z.x::Text||'_'||z.y::Text) AS tile_id,
-    z.x,
-    z.y,
-    z.zoomlevel,
-    COALESCE(h.optimised_geojson, '{"type": "FeatureCollection","features":[]}'::json) AS optimised_geojson,
-    COALESCE(h.optimised_topojson, '{"type": "FeatureCollection","features":[]}'::json) AS optimised_topojson
-   FROM ( SELECT ey.geolevel_name,
-            ey.geolevel_id,
-            ey.geography,
-            ex.zoomlevel,
-            ex.xy_series AS x,
-            ey.xy_series AS y
-           FROM ey,
-            ex
-          WHERE ex.zoomlevel = ey.zoomlevel) z
-     LEFT JOIN t_tiles_cb_2014_us_500k h ON (
-		z.zoomlevel = h.zoomlevel AND 
-		z.x = h.x AND 
-		z.y = h.y AND 
-		z.geolevel_id = h.geolevel_id);
-
+       END AS no_area_ids, 
+       COALESCE(
+			COALESCE(h2.tile_id, 
+				h1.tile_id, 
+					z.geolevel_id::Text||'_'||z.geolevel_name||'_'||z.zoomlevel||'_'||z.x::Text||'_'||z.y::Text)) AS tile_id,
+       z.x,
+       z.y,
+       z.zoomlevel,
+       COALESCE(
+			COALESCE(h2.optimised_geojson, 
+				h1.optimised_geojson, 
+					'{"type": "FeatureCollection","features":[]}'::json)) AS optimised_geojson,
+       COALESCE(
+			COALESCE(h2.optimised_topojson, 
+				h1.optimised_topojson, 
+					'{"type": "FeatureCollection","features":[]}'::json)) AS optimised_topojson
+  FROM ( SELECT ey.geolevel_name,
+				ey.areaid_count,
+                ey.geolevel_id,
+                ey.geography,
+                ex.zoomlevel,
+                ex.xy_series AS x,
+                ey.xy_series AS y
+           FROM ey, ex /* Cross join */
+          WHERE ex.zoomlevel = ey.zoomlevel
+		) AS z 
+		     LEFT JOIN t_tiles_cb_2014_us_500k h1 ON ( /* Multiple area ids in the geolevel */
+		            z.areaid_count > 1 AND
+					z.zoomlevel    = h1.zoomlevel AND 
+					z.x            = h1.x AND 
+					z.y            = h1.y AND 
+					z.geolevel_id  = h1.geolevel_id)
+		     LEFT JOIN t_tiles_cb_2014_us_500k h2 ON ( /* Single area ids in the geolevel */
+		            z.areaid_count = 1 AND
+					h2.zoomlevel   = 0 AND 
+					h2.x           = 0 AND 
+					h2.y           = 0 AND 
+					h2.geolevel_id = 1);
+					
 COMMENT ON VIEW tiles_cb_2014_us_500k
   IS 'Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!';
 COMMENT ON COLUMN tiles_cb_2014_us_500k.geography IS 'Geography';
@@ -973,11 +1018,19 @@ Time: 5704568.058 ms
  */
 DO LANGUAGE plpgsql $$
 DECLARE
-	max_geolevel_id	INTEGER;
-	max_zoomlevel 	INTEGER;
+	max_geolevel_id		INTEGER;
+	max_zoomlevel 		INTEGER;
+	l_areaid_count		INTEGER;
+	start_geolevel_id	INTEGER;
+--
 	c1_maxgeolevel_id 	CURSOR FOR
-		SELECT MAX(geolevel_id) AS max_geolevel_id
-			  FROM tile_intersects_cb_2014_us_500k;		  
+		SELECT MAX(geolevel_id) AS max_geolevel_id,
+	           MAX(zoomlevel) AS max_zoomlevel
+	      FROM geometry_cb_2014_us_500k;
+	c2_areaid_count 	CURSOR FOR	
+		SELECT areaid_count
+		  FROM geolevels_cb_2014_us_500k	
+		 WHERE geolevel_id = 1;
 --
 	num_rows 		INTEGER:=0;
 	num_rows2 		INTEGER:=0;
@@ -996,19 +1049,48 @@ DECLARE
 	l_debug 		BOOLEAN;
 BEGIN
 	OPEN c1_maxgeolevel_id;
-	FETCH c1_maxgeolevel_id INTO max_geolevel_id;
+	FETCH c1_maxgeolevel_id INTO max_geolevel_id, max_zoomlevel;
 	CLOSE c1_maxgeolevel_id;
+	OPEN c2_areaid_count;
+	FETCH c2_areaid_count INTO l_areaid_count;
+	CLOSE c2_areaid_count;	
 --	 
-	max_zoomlevel 	:=8;
+--	max_zoomlevel 	:=10;		/* Override for test purposes */
+	IF l_areaid_count = 1 THEN	/* 0/0/0 tile only;  */			
+		start_geolevel_id=2;	
+	ELSE
+		start_geolevel_id=1;
+	END IF;
+--
+-- Create zoomleve l0 tiles. Intersect already created
+--	
+	FOR i IN 1 .. max_geolevel_id LOOP
+--			
+		stp2:=clock_timestamp();
+		num_rows3:=tileMaker_aggregator(i, 0, l_debug);	
+		etp:=clock_timestamp();
+		took4:=age(etp, stp2);
+--			
+		took:=age(etp, stp);
+		tiles_per_s:=ROUND(num_rows3::NUMERIC/EXTRACT(EPOCH FROM took4)::NUMERIC, 1);
+		RAISE INFO 'Processed % tile for geolevel id %/% zoomlevel: %/% in %s, %s total;% tiles/s', 
+			num_rows3, 
+			i, max_geolevel_id, 0, max_zoomlevel,  
+			ROUND(EXTRACT(EPOCH FROM took4)::NUMERIC, 1), 
+			ROUND(EXTRACT(EPOCH FROM took)::NUMERIC, 1),
+			tiles_per_s;	
+	END LOOP;
+		
 --
 -- Timing; 3 zoomlevels to:
 --
--- Zoomlevel 7: 3 minutes
--- Zoomlevel 8: 5 minutes (321..260..154..218..230..217 seconds with tile aggregation)
--- Zoomlevel 9: 11 minutes (673..627)
+-- Zoomlevel 7: 1 minute (75)
+-- Zoomlevel 8: 3 minutes (321..260..154..218..230..217..166 seconds with tile aggregation)
+-- Zoomlevel 9: 8 minutes (673..627..460)
+-- Zoomlevel 10: 24 minutes (1473)
 -- Zoomlevel 11: 95 minutes (5704)
 --
-	FOR i IN 1 .. max_geolevel_id LOOP
+	FOR i IN start_geolevel_id .. max_geolevel_id LOOP
 		FOR j IN 1 .. max_zoomlevel LOOP
 			l_debug:=FALSE;
 			IF j = max_zoomlevel AND i = max_geolevel_id THEN
@@ -1159,7 +1241,27 @@ SELECT no_area_ids, SUBSTRING(optimised_geojson::Text FROM 1 FOR 90) AS optimise
 SELECT no_area_ids, SUBSTRING(optimised_geojson::Text FROM 1 FOR 90) AS optimised_geojson
   FROM tiles_cb_2014_us_500k
  WHERE zoomlevel = 6 and geolevel_id = 3 and x = 17 and y = 260; 
- 
+
+-- Data
+SELECT no_area_ids, SUBSTRING(optimised_geojson::Text FROM 1 FOR 90) AS optimised_geojson
+  FROM tiles_cb_2014_us_500k
+ WHERE zoomlevel = 6 and geolevel_id = 1 and x = 17 and y = 26;
+-- Data
+SELECT no_area_ids, SUBSTRING(optimised_geojson::Text FROM 1 FOR 90) AS optimised_geojson
+  FROM tiles_cb_2014_us_500k
+ WHERE zoomlevel = 6 and geolevel_id = 1 and x = 26 and y = 26;
+-- No data
+SELECT no_area_ids, SUBSTRING(optimised_geojson::Text FROM 1 FOR 90) AS optimised_geojson
+  FROM tiles_cb_2014_us_500k
+ WHERE zoomlevel = 6 and geolevel_id = 1 and x = 17 and y = 260; 
+
+SELECT tile_id, zoomlevel, x, y
+  FROM t_tiles_cb_2014_us_500k h2
+ WHERE h2.zoomlevel   = 0 
+   AND h2.x           = 0  
+   AND h2.y           = 0   
+   AND h2.geolevel_id = 1;
+					
 END;
 --
 
