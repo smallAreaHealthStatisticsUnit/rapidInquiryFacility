@@ -1088,7 +1088,7 @@ BEGIN
 -- Zoomlevel 8: 3 minutes (321..260..154..218..230..217..166 seconds with tile aggregation)
 -- Zoomlevel 9: 8 minutes (673..627..460)
 -- Zoomlevel 10: 24 minutes (1473)
--- Zoomlevel 11: 95 minutes (5704)
+-- Zoomlevel 11: 80 minutes (4810)
 --
 	FOR i IN start_geolevel_id .. max_geolevel_id LOOP
 		FOR j IN 1 .. max_zoomlevel LOOP
