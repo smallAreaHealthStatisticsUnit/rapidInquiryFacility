@@ -980,41 +980,33 @@ Description: Aggreate JSON abd insert into t_tiles_cb_2014_us_500k.
 ';
 
 /*								  		 
-psql:tile-maker.sql:550: INFO:  Processed 3+0 total areaid intersects for geolevel 1/3 zoomlevel: 1/11 in 0.1s, 0.1s total; 22.3 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 5+0 total areaid intersects for geolevel 1/3 zoomlevel: 2/11 in 0.2s, 0.4s total; 21.1 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 10+0 total areaid intersects for geolevel 1/3 zoomlevel: 3/11 in 0.4s, 0.8s total; 25.2 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 22+0 total areaid intersects for geolevel 1/3 zoomlevel: 4/11 in 0.8s, 1.5s total; 28.6 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 42+0 total areaid intersects for geolevel 1/3 zoomlevel: 5/11 in 1.5s, 3.0s total; 28.7 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 84+0 total areaid intersects for geolevel 1/3 zoomlevel: 6/11 in 2.9s, 5.9s total; 29.0 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 190+0 total areaid intersects for geolevel 1/3 zoomlevel: 7/11 in 8.6s, 14.5s total; 22.1 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 432+0 total areaid intersects for geolevel 1/3 zoomlevel: 8/11 in 26.1s, 40.6s total; 16.6 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 1003+0 total areaid intersects for geolevel 1/3 zoomlevel: 9/11 in 83.5s, 124.1s total; 12.0 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 2314+0 total areaid intersects for geolevel 1/3 zoomlevel: 10/11 in 270.7s, 394.7s total; 8.5 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 5240+0 total areaid intersects for geolevel 1/3 zoomlevel: 11/11 in 833.4s, 1228.1s total; 6.3 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 57+0 total areaid intersects for geolevel 2/3 zoomlevel: 1/11 in 2.5s, 1230.6s total; 22.8 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 67+0 total areaid intersects for geolevel 2/3 zoomlevel: 2/11 in 1.9s, 1232.4s total; 35.6 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 81+0 total areaid intersects for geolevel 2/3 zoomlevel: 3/11 in 1.5s, 1234.0s total; 53.4 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 95+0 total areaid intersects for geolevel 2/3 zoomlevel: 4/11 in 2.2s, 1236.2s total; 42.8 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 142+0 total areaid intersects for geolevel 2/3 zoomlevel: 5/11 in 3.9s, 1240.1s total; 36.6 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 241+0 total areaid intersects for geolevel 2/3 zoomlevel: 6/11 in 6.8s, 1246.9s total; 35.4 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 485+0 total areaid intersects for geolevel 2/3 zoomlevel: 7/11 in 19.5s, 1266.4s total; 24.8 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 1018+0 total areaid intersects for geolevel 2/3 zoomlevel: 8/11 in 69.1s, 1335.5s total; 14.7 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 2246+0 total areaid intersects for geolevel 2/3 zoomlevel: 9/11 in 245.9s, 1581.4s total; 9.1 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 4901+0 total areaid intersects for geolevel 2/3 zoomlevel: 10/11 in 857.4s, 2438.8s total; 5.7 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 10718+0 total areaid intersects for geolevel 2/3 zoomlevel: 11/11 in 2594.4s, 5033.1s total; 4.1 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 3233+0 total areaid intersects for geolevel 3/3 zoomlevel: 1/11 in 58.2s, 5091.4s total; 55.5 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 3291+0 total areaid intersects for geolevel 3/3 zoomlevel: 2/11 in 46.0s, 5137.3s total; 71.6 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 3390+0 total areaid intersects for geolevel 3/3 zoomlevel: 3/11 in 23.8s, 5161.1s total; 142.6 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 3439+0 total areaid intersects for geolevel 3/3 zoomlevel: 4/11 in 16.0s, 5177.1s total; 214.7 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 3657+0 total areaid intersects for geolevel 3/3 zoomlevel: 5/11 in 16.7s, 5193.8s total; 219.5 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 4063+3 total areaid intersects for geolevel 3/3 zoomlevel: 6/11 in 12.7s, 5206.5s total; 320.3 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 4986+0 total areaid intersects for geolevel 3/3 zoomlevel: 7/11 in 10.0s, 5216.5s total; 496.9 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 7124+3 total areaid intersects for geolevel 3/3 zoomlevel: 8/11 in 15.3s, 5231.8s total; 464.7 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 12268+5 total areaid intersects for geolevel 3/3 zoomlevel: 9/11 in 35.8s, 5267.6s total; 343.1 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 24459+0 total areaid intersects for geolevel 3/3 zoomlevel: 10/11 in 100.4s, 5368.0s total; 243.5 intesects/s
-psql:tile-maker.sql:550: INFO:  Processed 51437+1 total areaid intersects for geolevel 3/3 zoomlevel: 11/11 in 336.5s, 5704.6s total; 152.8 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 1 tile for geolevel id 1/3 zoomlevel: 0/11 in 0.1s, 0.1s total;16.4 tiles/s
+psql:tile-maker.sql:1131: INFO:  Processed 1 tile for geolevel id 2/3 zoomlevel: 0/11 in 0.2s, 0.2s total;5.8 tiles/s
+psql:tile-maker.sql:1131: INFO:  Processed 1 tile for geolevel id 3/3 zoomlevel: 0/11 in 0.8s, 1.0s total;1.3 tiles/s
+psql:tile-maker.sql:1131: INFO:  Processed 57+0 total areaid intersects, 3 tiles for geolevel id 2/3 zoomlevel: 1/11 in 0.7+0.0s+0.3s, 1.9s total; 92.1 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 67+0 total areaid intersects, 5 tiles for geolevel id 2/3 zoomlevel: 2/11 in 0.8+0.0s+0.3s, 3.1s total; 88.3 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 81+0 total areaid intersects, 10 tiles for geolevel id 2/3 zoomlevel: 3/11 in 0.8+0.0s+0.4s, 4.3s total; 111.1 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 95+0 total areaid intersects, 22 tiles for geolevel id 2/3 zoomlevel: 4/11 in 1.6+0.0s+0.7s, 6.6s total; 71.7 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 142+0 total areaid intersects, 47 tiles for geolevel id 2/3 zoomlevel: 5/11 in 2.9+0.0s+1.1s, 10.6s total; 66.1 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 241+0 total areaid intersects, 110 tiles for geolevel id 2/3 zoomlevel: 6/11 in 5.7+0.0s+2.5s, 18.9s total; 61.2 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 485+0 total areaid intersects, 279 tiles for geolevel id 2/3 zoomlevel: 7/11 in 17.2+0.0s+8.2s, 44.3s total; 44.4 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 1018+0 total areaid intersects, 663 tiles for geolevel id 2/3 zoomlevel: 8/11 in 53.3+0.0s+25.5s, 123.0s total; 31.6 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 2246+0 total areaid intersects, 1566 tiles for geolevel id 2/3 zoomlevel: 9/11 in 192.8+0.0s+78.8s, 394.7s total; 19.8 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 4901+0 total areaid intersects, 3575 tiles for geolevel id 2/3 zoomlevel: 10/11 in 622.7+0.0s+276.1s, 1293.6s total; 13.6 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 10718+0 total areaid intersects, 8045 tiles for geolevel id 2/3 zoomlevel: 11/11 in 1893.1+0.0s+963.3s, 4150.0s total; 9.9 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 3233+0 total areaid intersects, 3 tiles for geolevel id 3/3 zoomlevel: 1/11 in 6.2+0.0s+0.6s, 4156.8s total; 524.0 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 3291+0 total areaid intersects, 5 tiles for geolevel id 3/3 zoomlevel: 2/11 in 6.3+0.0s+0.6s, 4163.8s total; 526.8 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 3390+0 total areaid intersects, 10 tiles for geolevel id 3/3 zoomlevel: 3/11 in 4.2+0.0s+0.6s, 4168.6s total; 809.1 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 3439+0 total areaid intersects, 22 tiles for geolevel id 3/3 zoomlevel: 4/11 in 3.4+0.0s+0.6s, 4172.7s total; 1016.8 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 3657+0 total areaid intersects, 48 tiles for geolevel id 3/3 zoomlevel: 5/11 in 3.4+0.0s+0.7s, 4176.9s total; 1078.5 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 4063+3 total areaid intersects, 117 tiles for geolevel id 3/3 zoomlevel: 6/11 in 3.5+0.0s+0.9s, 4181.4s total; 1190.5 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 4986+0 total areaid intersects, 330 tiles for geolevel id 3/3 zoomlevel: 7/11 in 5.2+0.0s+1.7s, 4188.3s total; 1020.0 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 7124+3 total areaid intersects, 989 tiles for geolevel id 3/3 zoomlevel: 8/11 in 11.8+0.0s+4.1s, 4204.2s total; 685.4 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 12268+5 total areaid intersects, 3135 tiles for geolevel id 3/3 zoomlevel: 9/11 in 32.0+0.0s+11.3s, 4247.6s total; 481.0 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 24459+0 total areaid intersects, 9405 tiles for geolevel id 3/3 zoomlevel: 10/11 in 95.5+0.0s+32.8s, 4375.9s total; 354.6 intesects/s
+psql:tile-maker.sql:1131: INFO:  Processed 51437+1 total areaid intersects, 24351 tiles for geolevel id 3/3 zoomlevel: 11/11 in 309.4+0.1s+124.9s, 4810.5s total; 244.9 intesects/s
 DO
-Time: 5704568.058 ms
+Time: 4810462.578 ms
  */
 DO LANGUAGE plpgsql $$
 DECLARE
