@@ -449,7 +449,7 @@ $(PGPASSFILE):
 $(POSTGRES_ETC_DIR):
 	@echo "Please create $(POSTGRES_ETC_DIR) as root/Administrator"
 psqlrc:	../etc/psqlrc $(POSTGRES_ETC_DIR)
-		$(COPY) ../etc/psqlrc $(POSTGRES_ETC_DIR)
+		-$(COPY) ../etc/psqlrc $(POSTGRES_ETC_DIR)
 #
 # R library directory - need to be created aka POSTGRES_ETC_DIR
 #
