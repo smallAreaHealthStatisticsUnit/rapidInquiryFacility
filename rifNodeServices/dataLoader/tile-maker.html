@@ -309,7 +309,7 @@ function geographyNameChange(value) {
 			  <fieldset>	
 			  <input type="hidden" id="batchMode" name="batchMode" value="true"/>
 			  <label title="Please upload one or more shapefiles; these may be in zip format and must contain the .dbf (table data), .shp (geospatial data) and .prj (projection) files" 
-			         class="customFileUpload">Select a file/files to upload
+			         class="customFileUpload">Select a file(s) to upload
 			    <input id="files" type="file" name="file_list" size="50" multiple="multiple" />
 			    <input type="text" id="customFileUploadInput" value="&nbsp;No files selected" readonly size="16"><br>			
 			  </label>	  
@@ -330,6 +330,15 @@ function geographyNameChange(value) {
 			           defaultValue="0.75" value="0.75" min="0.1" max="1" step="0.05" onchange="updateSimplificationFactorInput(this.value);" />
 			    <input type="text" id="simplificationFactorInput" value="0.75" readonly size="4">
 			  </label> 
+			  <label title="Max zoom level: select the maximum zoomlevel" for="maxzoomlevelSelect">Max zoomlevel:
+			    <select required id="maxzoomlevelSelect" name="max_zoomlevel" form="shpConvert">
+					<option value="11" selected="selected">11</option>
+					<option value="10">10</option>
+					<option value="9">9</option>
+					<option value="8">8</option>
+					<option value="7">7</option>
+			    </select> 		
+			  </label>			  
 			  <label title="Enable diagnostics" for="diagnostics">Diagnostics</label>  
 			  <input id="diagnostics" name="diagnostics" type="checkbox" name="verbose" value="true"></br>
 			  <label class="geographyEntry" title="Geography name">Geography name:

@@ -72,6 +72,9 @@ body {
 	width: 99.5%;
     text-align: center;
 }
+#simplificationFactor {
+    width: 100px; 
+}
 .ui-progressbar {
 /*	position: relative; */
 }
@@ -100,7 +103,7 @@ input[type="file"] { /* Disable to default file load look, use customFileUpload 
     display: none;
 }
 #quantizationSelect {
-    width: 200px; 
+    width: 160px; 
 }
 #quantizationSelect-button {
   vertical-align : middle;
@@ -140,7 +143,7 @@ input[type="file"] { /* Disable to default file load look, use customFileUpload 
 	outline:none !important 
 } 
 #files { /* Set file load button message width */ 
-    width: 400px; 
+    width: 300px; 
 }
 #shpConvertSubmit { /* Submit button */
     float:right;

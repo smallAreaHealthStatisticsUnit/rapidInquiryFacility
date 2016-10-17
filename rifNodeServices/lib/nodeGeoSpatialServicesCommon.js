@@ -640,6 +640,7 @@ getStatus = function getStatus(response, req, res, serverLog, httpErrorResponse)
 	
 	response.message="In: getShpConvertStatus()";	
 	var msg="getShpConvertStatus(): ";	
+	var lstart=new Date().getTime();
 	response.fields=req.query;
 	if (response.fields && response.fields["uuidV1"] && response.fields["statusFileName"]) { // Can get state
 		if (response.fields["diagnosticFileDir"] == undefined) {
@@ -689,16 +690,25 @@ getStatus = function getStatus(response, req, res, serverLog, httpErrorResponse)
 							// Need to test res was not finished by an expection to avoid "write after end" errors			
 										try {
 											res.write(output);                  // Write output  
-											res.end();		
+											res.end();	
+											if (response.message) {
+//												serverLog.serverLog2(__file, __line, "getStatus", 
+//													"Diagnostics >>>\n" +
+//													response.message + "\n<<< End of diagnostics", req);
+												console.error("getStatus() uuidV1: " + response.fields["uuidV1"] +
+													"; lstart: " + response.fields["lstart"] +
+													"(" + (lstart-response.fields["lstart"]) + // Difference - may be effected by clock sync
+													"mS)" + "; size: " + statusText.length + 
+													"; calls: " + response.fields["calls"] + 
+													"; index: " + response.fields["index"] +
+													"; statii: " + (response.status.length || 0));
+											}
 										}
 										catch(e) {
 											serverLog.serverError(__file, __line, "getStatus", "Error in sending response to client", req, e, response);
 										}
 									}
 									else {
-										serverLog.serverLog2(__file, __line, "getStatus", 
-											"Diagnostics >>>\n" +
-											response.message + "\n<<< End of diagnostics", req);
 										serverLog.serverError2(__file, __line, "getStatus", 
 											"Unable to return OK response to user - httpErrorResponse() already processed", 
 											req, undefined /* err */, response);

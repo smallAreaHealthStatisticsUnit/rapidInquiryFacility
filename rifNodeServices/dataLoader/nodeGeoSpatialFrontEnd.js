@@ -54,7 +54,9 @@ var jsonAddLayerParamsArray=[];
 var initHtml;
 var status;
 var uuidV1;
-		
+var calls=0;
+var jqXHRgetShpConvertStatus=undefined;
+	
 // Extend Leaflet to use topoJSON
 L.topoJson = L.GeoJSON.extend({  
   addData: function(jsonData) {    
@@ -298,6 +300,17 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	
 	var request = new XMLHttpRequest();
     var formData = new FormData(document.getElementById(output_type));
+	
+	calls=0;
+	if (jqXHRgetShpConvertStatus) {
+		try {
+			jqXHRgetShpConvertStatus.abort();
+			qXHRgetShpConvertStatus=undefined;
+		}
+		catch (e) {
+			console.log("Unable to abort previous getShpConvertStatus() request; call: " + calls)
+		}
+	}
 	
 	nodeGeoSpatialFrontEndInit();
 	
@@ -1500,19 +1513,26 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 	var atEnd=false;
 	var hasErrors=false;
 	var errorCount=0;
+
+	if (jqXHRgetShpConvertStatus) {
+		console.log("Previous getShpConvertStatus() request; call: " + calls + "; state: " + jqXHRgetShpConvertStatus.readyState)
+	}
+	calls++;
 	
-	var jqXHR=$.get("getShpConvertStatus", 
+	jqXHRgetShpConvertStatus=$.get("getShpConvertStatus", 
 		{ 
 			uuidV1: uuidV1, 
 			diagnosticFileDir: diagnosticFileDir,
 			statusFileName: statusFileName,
 			responseFileName: responseFileName,
-			lstart: lstart							// Added to prevent IE caching!
+			lstart: lstart,							// Added to prevent IE caching!
+			calls: calls,
+			index: index
 		}, function getShpConvertStatus(data, status, xhr) {
 			var nrecursionCount=recursionCount+1;
 			
 			if (data && data.status) {
-				var nIndex=data.status.length;
+				nIndex=data.status.length;
 				if (nIndex > index) { // Found new status's 
 					nrecursionCount=0;
 				}
@@ -1677,7 +1697,7 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 		}, // End of getShpConvertStatus() 
 		"json");
 		
-	jqXHR.fail(function getShpConvertStatusError(x, e) {
+	jqXHRgetShpConvertStatus.fail(function getShpConvertStatusError(x, e) {
 		var msg="";
 		var response;
 		try {
