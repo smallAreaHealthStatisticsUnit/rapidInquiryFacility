@@ -672,7 +672,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 					}
 					catch (e) {	
 						serverLog.serverError2(__file, __line, "createTilesSeriesEndUpdateCallback", 
-							"Exception thrown by tileMaker.tileMaker() ", req, e, response);	
+							"Exception thrown by geojsonToCSV.geojsonToCSV() ", req, e, response);	
 					}
 				}				
 			}, stack /* additionalInfo, errorName */);		

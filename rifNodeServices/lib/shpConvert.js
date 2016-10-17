@@ -1833,13 +1833,18 @@ This error in actually originating from the error handler function
 													httpErrorResponse, response.fields, undefined /* optional callback */);													
 											}
 											
-											const tileMaker = require('../lib/tileMaker');
-											try {										
-												tileMaker.tileMaker(response, req, res, finalResponse); // Call tile maker
+//											const tileMaker = require('../lib/tileMaker');
+											const geojsonToCSV = require('../lib/geojsonToCSV');
+											try {					
+// TileMaker code removed - done in DB for better performance and ability to handle self intersections etc...											
+//												tileMaker.tileMaker(response, req, res, finalResponse); // Call tile maker
+//
+// Call geojsonToCSV() - Convert geoJSON to CSV; save as CSV files; create load scripts for Postgres and MS SQL server
+													geojsonToCSV.geojsonToCSV(response, req, res, finalResponse); // Convert geoJSON to CSV
 											}
 											catch (e) {	
 												serverLog.serverError2(__file, __line, "shapeFileQueueDrain", 
-													"Exception thrown by tileMaker.tileMaker() ", req, e, response);	
+													"Exception thrown by geojsonToCSV.geojsonToCSV() ", req, e, response);	
 											}
 
 										}
