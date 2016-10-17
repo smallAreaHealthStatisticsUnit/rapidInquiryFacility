@@ -28,4 +28,4 @@ SELECT a.areaname,
 	   a.centroid_diff_km
   FROM a
  ORDER BY 1
- LIMIT 100;
+ LIMIT 100

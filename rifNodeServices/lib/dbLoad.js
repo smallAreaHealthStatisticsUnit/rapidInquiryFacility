@@ -458,6 +458,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 					response.fields["geographyDesc"] 								/* Geography description; e.g. "United states to county level" */,
 					"hierarchy_" + response.fields["geographyName"].toLowerCase()	/* Hierarchy table; e.g. hierarchy_cb_2014_us_500k */,
 					"geometry_" + response.fields["geographyName"].toLowerCase()	/* Geometry table; e.g. geometry_cb_2014_us_500k */,
+					"tile_" + response.fields["geographyName"].toLowerCase()	    /* Tile table; e.g. tiles_cb_2014_us_500k */,
 					response.fields["srid"] 										/* SRID; e.g. 4269 */,
 					defaultcomparea													/* Default comparision area */,
 					defaultstudyarea												/* Default study area */,
@@ -466,11 +467,13 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 					), 
 				sqlArray);
 			
-			var fieldArray = ['geography', 'description', 'hierarchytable', 'geometrytable', 'srid', 'defaultcomparea', 'defaultstudyarea', 'minzoomlevel', 'maxzoomlevel'];
+			var fieldArray = ['geography', 'description', 'hierarchytable', 'geometrytable', 'tiletable', 
+					'srid', 'defaultcomparea', 'defaultstudyarea', 'minzoomlevel', 'maxzoomlevel'];
 			var fieldDescArray = ['Geography name', 
 				'Description', 
 				'Hierarchy table', 
 				'Geometry table', 
+				'Tile table', 
 				'Projection SRID', 
 				'Default comparison area: lowest resolution geolevel', 
 				'Default study area: highest resolution geolevel',

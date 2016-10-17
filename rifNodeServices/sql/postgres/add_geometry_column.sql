@@ -12,4 +12,4 @@
  */
 SELECT AddGeometryColumn('%1','%2', %3, '%4', 
 			2 		/* Dimension */, 
-			false 	/* use typmod geometry column instead of constraint-based */);
+			false 	/* use typmod geometry column instead of constraint-based */)

@@ -12,6 +12,7 @@ CREATE TABLE %1 (
        description             VARCHAR(250) NOT NULL,
        hierarchytable          VARCHAR(30)  NOT NULL,
        geometrytable           VARCHAR(30)  NOT NULL,
+       tiletable               VARCHAR(30)  NOT NULL,
        srid                    INTEGER      NOT NULL DEFAULT 0,
        defaultcomparea         VARCHAR(30)  NULL,
        defaultstudyarea        VARCHAR(30)  NULL,
