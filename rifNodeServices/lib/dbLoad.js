@@ -348,7 +348,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			var sqlStmt=new Sql("Insert into hierarchy_" + response.fields["geographyName"].toLowerCase(),
 				getSqlFromFile("insert_hierarchy.sql", 
 					dbType, 
-					response.fields["geographyName"].toLowerCase()			/* Geography */), 
+					response.fields["geographyName"].toLowerCase()			/* 1: Geography */,
+					response.fields["max_zoomlevel"] 						/* 2: Max zoomlevel */), 
 				sqlArray);
 			
 			var sqlStmt=new Sql("Check intersctions  for geograpy: " + 
@@ -367,8 +368,17 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 		 *				SQL statements
 		 */	 
 		function createGeolevelsTable() {
-			sqlArray.push(new Sql("Geolevels meta data"));	
-			
+			sqlArray.push(new Sql("Geolevels meta data"));			
+
+			sqlArray.push(new Sql("Drop depedent objects: tiles view and generate_series() [MS SQL Server only]"));			
+			if (dbType == "MSSQLServer") { 
+				var sqlStmt=new Sql("Drop generate_series() function", 
+					getSqlFromFile("drop_generate_series.sql", dbType), sqlArray); 
+			}	
+			var sqlStmt=new Sql("Drop view " + "tiles_" + response.fields["geographyName"].toLowerCase(), 
+				getSqlFromFile("drop_view.sql", dbType, 
+					"tiles_" + response.fields["geographyName"].toLowerCase() /* View name */), sqlArray); 
+					
 			var sqlStmt=new Sql("Drop table geolevels_" + response.fields["geographyName"].toLowerCase(), 
 				getSqlFromFile("drop_table.sql", dbType, "geolevels_" + response.fields["geographyName"].toLowerCase() /* Table name */), 
 				sqlArray); 
@@ -835,8 +845,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			var sqlStmt=new Sql("Create function: tile2longitude.sql", 
 				getSqlFromFile("tile2longitude.sql", dbType), sqlArray); 
 			var sqlStmt=new Sql("Create function: tile2latitude.sql", 
-				getSqlFromFile("tile2latitude.sql", dbType), sqlArray); 
-				
+				getSqlFromFile("tile2latitude.sql", dbType), sqlArray); 			
 			
 			var singleBoundaryGeolevelTable;
 			for (var i=0; i<csvFiles.length; i++) {	
@@ -868,7 +877,93 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					response.fields["max_zoomlevel"] 								/* 4: max_zoomlevel */,
 					singleBoundaryGeolevelTable										/* 5: Geolevel id = 1 geometry table */
 				), sqlArray); 
-				
+					
+			var sqlStmt=new Sql("Drop table " + "t_tiles_" + response.fields["geographyName"].toLowerCase(), 
+				getSqlFromFile("drop_table.sql", dbType, 
+					"t_tiles_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray); 
+					
+			if (dbType == "MSSQLServer") { 
+				var sqlStmt=new Sql("Create tiles table", 
+					getSqlFromFile("create_tiles_table.sql", 
+						undefined /* Common */,	
+						"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 1: Tiles table name */,
+						"VARCHAR"															/* 2: JSON datatype (Postgres JSON, SQL server VARCHAR) */
+						), sqlArray); 
+			}
+			else if (dbType == "PostGres") { // No JSON in SQL Server
+				var sqlStmt=new Sql("Create tiles table", 
+					getSqlFromFile("create_tiles_table.sql", 
+						undefined /* Common */,	
+						"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 1: Tiles table name */,
+						"JSON"														/* 2: JSON datatype (Postgres JSON, SQL server VARCHAR) */
+						), sqlArray); 
+			}			
+			
+			var sqlStmt=new Sql("Comment tiles table",
+				getSqlFromFile("comment_table.sql", 
+					dbType, 
+					"t_tiles_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"Maptiles for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11"	/* Comment */), sqlArray);
+					
+			var fieldArray = ['geolevel_id', 'zoomlevel', 'x', 'y', 'optimised_geojson', 'optimised_topojson', 'tile_id'];
+			var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.',
+				'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
+				'X tile number. From 0 to (2**<zoomlevel>)-1',
+				'Y tile number. From 0 to (2**<zoomlevel>)-1',
+				'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.',
+				'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.',
+				'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>'];
+			for (var l=0; l< fieldArray.length; l++) {		
+				var sqlStmt=new Sql("Comment tiles table column",
+					getSqlFromFile("comment_column.sql", 
+						dbType, 
+						"t_tiles_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+						fieldArray[l]														/* Column name */,
+						fieldDescArray[l]													/* Comment */), 
+					sqlArray);
+			}				
+
+			if (dbType == "MSSQLServer") { 			
+				var sqlStmt=new Sql("Create generate_series() function", 
+					getSqlFromFile("generate_series.sql", dbType), sqlArray); 
+			}
+
+			var sqlStmt=new Sql("Create tiles view", 
+				getSqlFromFile("create_tiles_view.sql", 
+					dbType,	
+					"tiles_" + response.fields["geographyName"].toLowerCase() 		/* 1: Tiles view name */,
+					"geolevels_" + response.fields["geographyName"].toLowerCase()   /* 2: geolevel table; e.g. geolevels_cb_2014_us_county_500k */,
+					"NOT_USED"															/* 3: JSON datatype (Postgres JSON, SQL server VARCHAR) */,
+					"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 4: tiles table; e.g. t_tiles_cb_2014_us_500k */,
+					response.fields["max_zoomlevel"]								/* 5: Max zoomlevel; e.g. 11 */
+					), sqlArray); 		
+
+			var sqlStmt=new Sql("Comment tiles view",
+				getSqlFromFile("comment_view.sql", 
+					dbType, 
+					"tiles_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!"	/* Comment */), sqlArray);
+					
+			var fieldArray = ['geography', 'geolevel_id', 'zoomlevel', 'x', 'y', 'optimised_geojson', 'optimised_topojson', 'tile_id', 'geolevel_name', 'no_area_ids'];
+			var fieldDescArray = ['Geography',
+				'ID for ordering (1=lowest resolution). Up to 99 supported.',
+				'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
+				'X tile number. From 0 to (2**<zoomlevel>)-1',
+				'Y tile number. From 0 to (2**<zoomlevel>)-1',
+				'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.',
+				'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.',
+				'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>',
+				'Name of geolevel. This will be a column name in the numerator/denominator tables',
+				'Tile contains no area_ids flag: 0/1'];
+			for (var l=0; l< fieldArray.length; l++) {		
+				var sqlStmt=new Sql("Comment tiles view column",
+					getSqlFromFile("comment_column.sql", 
+						dbType, 
+						"tiles_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+						fieldArray[l]														/* Column name */,
+						fieldDescArray[l]													/* Comment */), 
+					sqlArray);
+			}				
 		} // End of createTilesTables()
 	
 		function Sql(comment, sql, sqlArray) { // Object constructor

@@ -675,10 +675,10 @@ RangeError: Invalid string length
 
 #### 17th to 21st October
 
-* SQL Server tile maker:
-  * TO DO
-* RIF team meeting;
 * Add max zoomlevel to UI to speed up demos and testing;  
+* SQL Server tile maker:
+  * Ported tiles table and view
+* RIF team meeting;
 	
 #### Current TODO list (October):
 

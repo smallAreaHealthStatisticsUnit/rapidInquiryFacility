@@ -1,6 +1,6 @@
 /*
- * SQL statement name: 	tileMaker_tile2latitude.sql
- * Type:				Postgres/PostGIS PL/pgsql function
+ * SQL statement name: 	tile_check.sql
+ * Type:				MS SQL Server function
  * Parameters:			
  *						1: Lowest resolution geolevels table
  *						2: Geography

@@ -1,5 +1,5 @@
 /*
- * SQL statement name: 	tileMaker_tile2latitude.sql
+ * SQL statement name: 	tile_check.sql
  * Type:				Postgres/PostGIS PL/pgsql function
  * Parameters:			
  *						1: Lowest resolution geolevels table
@@ -32,23 +32,23 @@ WITH a AS ( /* Geolevel summary */
                a2.max_geolevel_id,
                a2.zoomlevel,
           CASE
-                                WHEN a2.zoomlevel <= %3 THEN ST_XMax(b.geom_6)                 	/* Optimised for zoom level 6 */
-                                WHEN a2.zoomlevel BETWEEN (%3+1) AND %4 THEN ST_XMax(b.geom_11)	/* Optimised for zoom level 6-11 */
+                                WHEN a2.zoomlevel <= %3 THEN ST_XMax(b.geom_%3)                 	/* Optimised for zoom level 6 */
+                                WHEN a2.zoomlevel BETWEEN (%3+1) AND %4 THEN ST_XMax(b.geom_%4)	/* Optimised for zoom level 6-11 */
                                 ELSE NULL
                    END AS Xmax,
           CASE
-                                WHEN a2.zoomlevel <= %3 THEN ST_XMin(b.geom_6)                 	/* Optimised for zoom level 6 */
-                                WHEN a2.zoomlevel BETWEEN (%3+1) AND %4 THEN ST_XMin(b.geom_11)	/* Optimised for zoom level 6-11 */
+                                WHEN a2.zoomlevel <= %3 THEN ST_XMin(b.geom_%3)                 	/* Optimised for zoom level 6 */
+                                WHEN a2.zoomlevel BETWEEN (%3+1) AND %4 THEN ST_XMin(b.geom_%4)	/* Optimised for zoom level 6-11 */
                                 ELSE NULL
                    END AS Xmin,
           CASE
-                                WHEN a2.zoomlevel <= %3 THEN ST_YMax(b.geom_6)                 	/* Optimised for zoom level 6 */
-                                WHEN a2.zoomlevel BETWEEN (%3+1) AND %4 THEN ST_YMax(b.geom_11)	/* Optimised for zoom level 6-11 */
+                                WHEN a2.zoomlevel <= %3 THEN ST_YMax(b.geom_%3)                 	/* Optimised for zoom level 6 */
+                                WHEN a2.zoomlevel BETWEEN (%3+1) AND %4 THEN ST_YMax(b.geom_%4)	/* Optimised for zoom level 6-11 */
                                 ELSE NULL
                    END AS Ymax,
           CASE
-                                WHEN a2.zoomlevel <= %3 THEN ST_YMin(b.geom_6)                 	/* Optimised for zoom level 6 */
-                                WHEN a2.zoomlevel BETWEEN (%3+1) AND %4 THEN ST_YMin(b.geom_11)	/* Optimised for zoom level 6-11 */
+                                WHEN a2.zoomlevel <= %3 THEN ST_YMin(b.geom_%3)                 	/* Optimised for zoom level 6 */
+                                WHEN a2.zoomlevel BETWEEN (%3+1) AND %4 THEN ST_YMin(b.geom_%4)	/* Optimised for zoom level 6-11 */
                                 ELSE NULL
                    END AS Ymin
       FROM %5 b, a a2  

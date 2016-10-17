@@ -5,6 +5,7 @@ DECLARE
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
  * Parameters:
  *						1: geography; e.g. cb_2014_us_500k
+ *						2: Max zoomlevel
  *
  * Description:			Create insert statement into hierarchy table
  * Note:				%%%% becomes %% after substitution
@@ -103,10 +104,10 @@ x23 AS (
          		      	E'\t'||'       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.'||E'\n'||
  	       			E'\t'||'       Calculate the area of the higher resolution geolevel and the area of the intersected area */'||E'\n'||
 				'SELECT a'||i||'.areaid AS '||geolevel_name[i]||', a'||i+1||'.areaid AS '||geolevel_name[i+1]||','||E'\n'||
-				'       ST_Area(a'||i+1||'.geom_11) AS a'||i+1||'_area,'||E'\n'||
-				'       ST_Area(ST_Intersection(a'||i||'.geom_11, a'||i+1||'.geom_11)) AS a'||i||i+1||'_area'||E'\n'||
+				'       ST_Area(a'||i+1||'.geom_%2) AS a'||i+1||'_area,'||E'\n'||
+				'       ST_Area(ST_Intersection(a'||i||'.geom_%2, a'||i+1||'.geom_%2)) AS a'||i||i+1||'_area'||E'\n'||
 				'  FROM '||shapefile_table[i]||' a'||i||' CROSS JOIN '||shapefile_table[i+1]||' a'||i+1||''||E'\n'||
-				' WHERE ST_Intersects(a'||i||'.geom_11, a'||i+1||'.geom_11)'||E'\n'||
+				' WHERE ST_Intersects(a'||i||'.geom_%2, a'||i+1||'.geom_%2)'||E'\n'||
 				'), ';
 		ELSIF i < (num_geolevels-1) THEN
 			sql_stmt:=sql_stmt||
@@ -114,10 +115,10 @@ x23 AS (
          		      	E'\t'||'       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.'||E'\n'||
  	       			E'\t'||'       Calculate the area of the higher resolution geolevel and the area of the intersected area */'||E'\n'||
 				'SELECT a'||i||'.areaid AS '||geolevel_name[i]||', a'||i+1||'.areaid AS '||geolevel_name[i+1]||','||E'\n'||
-				'       ST_Area(a'||i+1||'.geom_11) AS a'||i+1||'_area,'||E'\n'||
-				'       ST_Area(ST_Intersection(a'||i||'.geom_11, a'||i+1||'.geom_11)) AS a'||i||i+1||'_area'||E'\n'||
+				'       ST_Area(a'||i+1||'.geom_%2) AS a'||i+1||'_area,'||E'\n'||
+				'       ST_Area(ST_Intersection(a'||i||'.geom_%2, a'||i+1||'.geom_%2)) AS a'||i||i+1||'_area'||E'\n'||
 				'  FROM '||shapefile_table[i]||' a'||i||' CROSS JOIN '||shapefile_table[i+1]||' a'||i+1||''||E'\n'||
-				' WHERE ST_Intersects(a'||i||'.geom_11, a'||i+1||'.geom_11)'||E'\n'||
+				' WHERE ST_Intersects(a'||i||'.geom_%2, a'||i+1||'.geom_%2)'||E'\n'||
 				'), ';
 		ELSIF i < num_geolevels THEN
 /* E.g.
@@ -135,10 +136,10 @@ x23 AS (
          		      	E'\t'||'       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.'||E'\n'||
  	       			E'\t'||'       Calculate the area of the higher resolution geolevel and the area of the intersected area */'||E'\n'||
 				'SELECT a'||i||'.areaid AS '||geolevel_name[i]||', a'||i+1||'.areaid AS '||geolevel_name[i+1]||','||E'\n'||
-				'       ST_Area(a'||i+1||'.geom_11) AS a'||i+1||'_area,'||E'\n'||
-				'       ST_Area(ST_Intersection(a'||i||'.geom_11, a'||i+1||'.geom_11)) AS a'||i||i+1||'_area'||E'\n'||
+				'       ST_Area(a'||i+1||'.geom_%2) AS a'||i+1||'_area,'||E'\n'||
+				'       ST_Area(ST_Intersection(a'||i||'.geom_%2, a'||i+1||'.geom_%2)) AS a'||i||i+1||'_area'||E'\n'||
 				'  FROM '||shapefile_table[i]||' a'||i||' CROSS JOIN '||shapefile_table[i+1]||' a'||i+1||''||E'\n'||
-				' WHERE ST_Intersects(a'||i||'.geom_11, a'||i+1||'.geom_11)'||E'\n'||
+				' WHERE ST_Intersects(a'||i||'.geom_%2, a'||i+1||'.geom_%2)'||E'\n'||
 				'), ';
 		END IF;
 	END LOOP;

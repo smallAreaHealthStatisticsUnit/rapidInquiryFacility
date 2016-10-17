@@ -4,6 +4,7 @@ DECLARE @l_geography AS VARCHAR(200)='%1';
  * Type:				Microsoft SQL Server T/sql anonymous block
  * Parameters:
  *						1: geography; e.g. cb_2014_us_500k
+ *						2: Max zoomlevel
  *
  * Description:			Create insert statement into hierarchy table
  * Note:				%%%% becomes %% after substitution
@@ -144,14 +145,14 @@ x23 AS (
 						@tab + '       Calculate the area of the higher resolution geolevel and the area of the intersected area */' + @crlf +
 					'       a' + CAST(@i AS VARCHAR) + '.areaid AS ' + @geolevel_name + ',' + @crlf + 
 					'       a' + CAST(@i+1 AS VARCHAR) + '.areaid AS ' + @n_geolevel_name + ',' + @crlf +
-					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_11.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
-					'       a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_11).STArea() AS a' + 
+					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_%2.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
+					'       a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_%2).STArea() AS a' + 
 						CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_area' + @crlf + 
 				    '  INTO ##x' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_' + CAST(@@spid AS VARCHAR) + @crlf + 
 					'  FROM ' + @shapefile_table + ' a' + CAST(@i AS VARCHAR) + 
 					' CROSS JOIN ' + @n_shapefile_table + ' a' + CAST(@i+1 AS VARCHAR) + '' + @crlf + 
-					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
-						'.geom_11) = 1';
+					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
+						'.geom_%2) = 1';
 				PRINT 'SQL> ' + @sql_stmt;
 				EXECUTE @rowcount = sp_executesql @sql_stmt;	
 			END;			
@@ -177,13 +178,13 @@ SELECT a2.areaid AS cb_2014_us_state_500k,
 						@tab + '       Calculate the area of the higher resolution geolevel and the area of the intersected area */' + @crlf + 
 					'       a' + CAST(@i AS VARCHAR) + '.areaid AS ' + @geolevel_name + ',' + @crlf + 
 					'       a' + CAST(@i+1 AS VARCHAR) + '.areaid AS ' + @n_geolevel_name + ',' + @crlf + 
-					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_11.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
-					'       a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_11).STArea() AS a' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_area' + @crlf + 
+					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_%2.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
+					'       a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_%2).STArea() AS a' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_area' + @crlf + 
 				    '  INTO ##x' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_' + CAST(@@spid AS VARCHAR) + @crlf + 
 					'  FROM ' + @shapefile_table + ' a' + CAST(@i AS VARCHAR) + 
 					' CROSS JOIN ' + @n_shapefile_table + ' a' + CAST(@i+1 AS VARCHAR) + '' + @crlf + 
-					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_11.ST_Intersects(a' + CAST(@i+1 AS VARCHAR) + 
-						'.geom_11) = 1';
+					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_%2.ST_Intersects(a' + CAST(@i+1 AS VARCHAR) + 
+						'.geom_%2) = 1';
 				PRINT 'SQL> ' + @sql_stmt;
 				EXECUTE @rowcount = sp_executesql @sql_stmt;
 			END;
@@ -218,12 +219,12 @@ Postgres Original:
 						@tab + '       Calculate the area of the higher resolution geolevel and the area of the intersected area */' + @crlf + 
 					'       a' + CAST(@i AS VARCHAR) + '.areaid AS ' + @geolevel_name + ',' + @crlf + 
 					'       a' + CAST(@i+1 AS VARCHAR) + '.areaid AS ' + @n_geolevel_name + ',' + @crlf + 
-					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_11.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
-					'       a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_11).STArea() AS a' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_area' + @crlf + 
+					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_%2.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
+					'       a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_%2).STArea() AS a' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_area' + @crlf + 
 				    '  INTO ##x' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_' + CAST(@@spid AS VARCHAR) + @crlf + 
 					'  FROM ' + @shapefile_table + ' a' + CAST(@i AS VARCHAR) + ' CROSS JOIN ' + @n_shapefile_table + ' a' + CAST(@i+1 AS VARCHAR) + '' + @crlf + 
-					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
-						'.geom_11) = 1';
+					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
+						'.geom_%2) = 1';
 				PRINT 'SQL> ' + @sql_stmt;
 				EXECUTE @rowcount = sp_executesql @sql_stmt;
 			END;

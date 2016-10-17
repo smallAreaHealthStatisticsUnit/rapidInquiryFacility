@@ -85,6 +85,7 @@ var geojsonToCSV = function geojsonToCSV(response, req, res, endCallback) {
 			callback: topojsonCallback,
 			response: response,
 			fields: response.fields,
+			max_zoomlevel: response.fields["max_zoomlevel"],
 			uuidV1: response.fields["uuidV1"]
 		});
 		
@@ -98,7 +99,11 @@ var geojsonToCSV = function geojsonToCSV(response, req, res, endCallback) {
 					try {
 						topojson.wkt[k]=wellknown.stringify(topojson.geojson.features[k]);	
 //						if (k<=9) {
-							
+						
+						if (topojson.zoomlevel > response.fields["max_zoomlevel"]) {
+							throw new Error("geoJSON2WKTSeries() zoomlevel (" + topojson.zoomlevel + 
+								") > max_zoomlevel (" + response.fields["max_zoomlevel"] + ")");
+						}
 						var zoomlevelFieldName="WKT_" + topojson.zoomlevel;
 						var row = {};
 						if (csvFiles[i].rows[k] && csvFiles[i].rows[k].GID) { // Already added
