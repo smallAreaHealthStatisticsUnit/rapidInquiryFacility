@@ -11,8 +11,11 @@ CREATE TABLE %1 (
        geography               VARCHAR(50)  NOT NULL,
        description             VARCHAR(250) NOT NULL,
        hierarchytable          VARCHAR(30)  NOT NULL,
-       srid                    INTEGER      NULL DEFAULT 0,
+       geometrytable           VARCHAR(30)  NOT NULL,
+       srid                    INTEGER      NOT NULL DEFAULT 0,
        defaultcomparea         VARCHAR(30)  NULL,
        defaultstudyarea        VARCHAR(30)  NULL,
+       minzoomlevel       	   INTEGER      NOT NULL DEFAULT 6,
+       maxzoomlevel       	   INTEGER      NOT NULL DEFAULT 11,
        CONSTRAINT %1_pk PRIMARY KEY(geography)
 	)

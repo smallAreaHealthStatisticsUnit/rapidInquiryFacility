@@ -90,10 +90,12 @@ var getSqlFromFile = function getSqlFromFile(fileName, dbType, parameters) {
 	var sqlText=sqlBuffer.toString();
 	
 	if (parameters) { // Replace %1 with arguments[2] etc; ignore %%
-		for (var i = 2; i < arguments.length; i++) {
-//			console.error("getSqlFromFile(): replace %" + (i-1) + " with: " + arguments[i]);
-			sqlText=sqlText.replace(new RegExp('%' + (i-1), 'g'), arguments[i]); 
+//		for (var i = 2; i < arguments.length; i++) {
+		for (var i = (arguments.length-1); i > 1 ; i--) { // Do it backwards to handle %10 etc
+			var regex='%' + (i-1);
+			sqlText=sqlText.replace(new RegExp(regex, 'g'), arguments[i]); 
 				// No negative lookbehind in javascript so cannot ignore %%1
+//			console.error("getSqlFromFile(): replace: " + regex + " with: " + arguments[i] /* + "; new SQL: " + sqlText */);
 		}
 	}
 	// Replace %% with %
@@ -383,7 +385,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			
 			var fieldArray = ['geography', 'geolevel_name', 'geolevel_id', 'description', 'lookup_table',
 							  'lookup_desc_column', 'shapefile', 'shapefile_table', 'shapefile_area_id_column', 'shapefile_desc_column',
-							  'resolution', 'comparea', 'listing'];
+							  'resolution', 'comparea', 'listing', 'areaid_count'];
 			var fieldDescArray = [
 				'Geography (e.g EW2001)',
 				'Name of geolevel. This will be a column name in the numerator/denominator tables',
@@ -397,7 +399,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				'Column containing the AREA_ID descriptions in SHAPEFILE_TABLE',
 				'Can use a map for selection at this resolution (0/1)',
 				'Able to be used as a comparison area (0/1)',
-				'Able to be used in a disease map listing (0/1)'];
+				'Able to be used in a disease map listing (0/1)',
+				'Total number of area IDs within the geolevel'];
 			for (var l=0; l< fieldArray.length; l++) {			
 				var sqlStmt=new Sql("Comment geolevels meta data column",
 					getSqlFromFile("comment_column.sql", 
@@ -454,18 +457,25 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 					response.fields["geographyName"] 								/* Geography; e.g. cb_2014_us_500k */,
 					response.fields["geographyDesc"] 								/* Geography description; e.g. "United states to county level" */,
 					"hierarchy_" + response.fields["geographyName"].toLowerCase()	/* Hierarchy table; e.g. hierarchy_cb_2014_us_500k */,
+					"geometry_" + response.fields["geographyName"].toLowerCase()	/* Geometry table; e.g. geometry_cb_2014_us_500k */,
 					response.fields["srid"] 										/* SRID; e.g. 4269 */,
 					defaultcomparea													/* Default comparision area */,
-					defaultstudyarea 												/* Default study area */), 
+					defaultstudyarea												/* Default study area */,
+					response.fields["min_zoomlevel"] 								/* Min zoomlevel */,
+					response.fields["max_zoomlevel"] 								/* Max zoomlevel */
+					), 
 				sqlArray);
 			
-			var fieldArray = ['geography', 'description', 'hierarchytable', 'srid', 'defaultcomparea', 'defaultstudyarea'];
+			var fieldArray = ['geography', 'description', 'hierarchytable', 'geometrytable', 'srid', 'defaultcomparea', 'defaultstudyarea', 'minzoomlevel', 'maxzoomlevel'];
 			var fieldDescArray = ['Geography name', 
 				'Description', 
 				'Hierarchy table', 
+				'Geometry table', 
 				'Projection SRID', 
 				'Default comparison area: lowest resolution geolevel', 
-				'Default study area: highest resolution geolevel'];
+				'Default study area: highest resolution geolevel',
+				'Min zoomlevel',
+				'Max zoomlevel'];
 			for (var l=0; l< fieldArray.length; l++) {		
 				var sqlStmt=new Sql("Comment geography meta data column",
 					getSqlFromFile("comment_column.sql", 
@@ -792,7 +802,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 					"geom_" + response.fields["max_zoomlevel"]	/* 1: geometry column; e.g. geom_11 */,
 					csvFiles[i].tableName  						/* Table name */), sqlArray);
 			
-			// Set default satudy and comparison areas
+			// Set default study and comparison areas
 			if (csvFiles[i].geolevel == 1) {
 				defaultcomparea=response.fields[csvFiles[i].file_name_no_ext + "_areaID"]; // E.g. cb_2014_us_nation_5m_areaID
 			}
