@@ -76,6 +76,11 @@ $(document).ready(function documentReady() {
 					  .selectmenu()
 					  .selectmenu( "menuWidget" )
 						.addClass( "overflow" );
+					
+					$( "#maxzoomlevelSelect" )							// Max zoomlevel selector
+					  .selectmenu()
+					  .selectmenu( "menuWidget" )
+						.addClass( "overflow" );
 						
 					$( "#quantizationSelect" ).on( "selectmenuchange", function(event, ui) { // Dummy change function for test purposes
 						quantizationSelectChange(this.value);
@@ -325,7 +330,7 @@ function geographyNameChange(value) {
 					<option value="1500">1 in 1,500</option>
 			    </select> 		
 			  </label>
-			  <label title="Please enter the amount of points to keep when simplifiying each zoomlevel between 0 and 1; so 0.75 is keep 75% of the points">Simplification factor:
+			  <label title="Please enter the amount of points to keep when simplifiying each zoomlevel between 0 and 1; so 0.75 is keep 75% of the points">Simplification:
 			    <input id="simplificationFactor" name="simplificationFactor" type="range"
 			           defaultValue="0.75" value="0.75" min="0.1" max="1" step="0.05" onchange="updateSimplificationFactorInput(this.value);" />
 			    <input type="text" id="simplificationFactorInput" value="0.75" readonly size="4">

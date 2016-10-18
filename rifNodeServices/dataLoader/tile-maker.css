@@ -72,9 +72,6 @@ body {
 	width: 99.5%;
     text-align: center;
 }
-#simplificationFactor {
-    width: 100px; 
-}
 .ui-progressbar {
 /*	position: relative; */
 }
@@ -102,11 +99,24 @@ th, td, tr  {
 input[type="file"] { /* Disable to default file load look, use customFileUpload */
     display: none;
 }
+
+#simplificationFactor {
+    width: 80px; 
+}
+#maxzoomlevelSelect {
+    width: 80px; 
+}
+#maxzoomlevelSelect-button {
+	vertical-align : middle;
+} 
+#diagnostics {
+    width: 0px; 
+}
 #quantizationSelect {
-    width: 160px; 
+    width: 170px; 
 }
 #quantizationSelect-button {
-  vertical-align : middle;
+	vertical-align : middle;
 } /*
 .entry {
     position: relative;

@@ -314,6 +314,8 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	
 	nodeGeoSpatialFrontEndInit();
 	
+	$( "#shpConvertGetResults, #shpConvertGetConfig" ).button( "option", "disabled", true );
+	
 	if (files.length == 0) {
 		errorPopup("No files selected");
 		return;
