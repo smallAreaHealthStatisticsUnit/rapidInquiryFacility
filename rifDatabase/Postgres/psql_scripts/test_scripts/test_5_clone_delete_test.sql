@@ -134,10 +134,10 @@ BEGIN
 	END IF;
 	RAISE INFO 'test_5_clone_delete_test.sql: T5--07: old study: %, new: %', old_study_id::VARCHAR, new_study_id::VARCHAR;
 --
-	IF NOT rif40_sm_pkg.rif40_run_study(new_study_id) THEN
+	IF NOT rif40_sm_pkg.rif40_run_study(new_study_id, FALSE /* Debug */) THEN
 		RAISE WARNING 'test_5_clone_delete_test.sql: T5--08: Study: % run failed; see trace', new_study_id::VARCHAR;
 		PERFORM rif40_sm_pkg.rif40_reset_study(new_study_id);
-		IF NOT rif40_sm_pkg.rif40_run_study(new_study_id) THEN
+		IF NOT rif40_sm_pkg.rif40_run_study(new_study_id, FALSE /* Debug */) THEN
 			RAISE EXCEPTION 'test_5_clone_delete_test.sql: T5--09: Study: % run failed again; see trace', new_study_id::VARCHAR;
 		END IF;	
 	ELSE
