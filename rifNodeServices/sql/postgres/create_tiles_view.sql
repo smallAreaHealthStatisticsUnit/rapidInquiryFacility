@@ -43,30 +43,8 @@ WITH a AS (
                ex.xy_series
           FROM c,
                ex 
-)
-SELECT z.geography,
-       z.geolevel_id,
-       z.geolevel_name,
-       CASE
-            WHEN h1.tile_id IS NULL AND h2.tile_id IS NULL THEN 1
-            ELSE 0
-       END AS no_area_ids, 
-       COALESCE(
-			COALESCE(h2.tile_id, 
-				h1.tile_id, 
-					z.geolevel_id::VARCHAR||'_'||z.geolevel_name||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR)) AS tile_id,
-       z.x,
-       z.y,
-       z.zoomlevel,
-       COALESCE(
-			COALESCE(h2.optimised_geojson, 
-				h1.optimised_geojson, 
-					'{"type": "FeatureCollection","features":[]}'::JSON)) AS optimised_geojson,
-       COALESCE(
-			COALESCE(h2.optimised_topojson, 
-				h1.optimised_topojson, 
-					'{"type": "FeatureCollection","features":[]}'::JSON)) AS optimised_topojson
-  FROM ( SELECT ey.geolevel_name,
+), z AS ( 
+		SELECT ey.geolevel_name,
 				ey.areaid_count,
                 ey.geolevel_id,
                 ey.geography,
@@ -75,16 +53,36 @@ SELECT z.geography,
                 ey.xy_series AS y
            FROM ey, ex /* Cross join */
           WHERE ex.zoomlevel = ey.zoomlevel
-		) AS z 
-		     LEFT JOIN %4 h1 ON ( /* Multiple area ids in the geolevel */
-		            z.areaid_count > 1 AND
-					z.zoomlevel    = h1.zoomlevel AND 
-					z.x            = h1.x AND 
-					z.y            = h1.y AND 
-					z.geolevel_id  = h1.geolevel_id)
-		     LEFT JOIN %4 h2 ON ( /* Single area ids in the geolevel */
-		            z.areaid_count = 1 AND
-					h2.zoomlevel   = 0 AND 
-					h2.x           = 0 AND 
-					h2.y           = 0 AND 
-					h2.geolevel_id = 1)
+)
+SELECT z.geography,
+       z.geolevel_id,
+       z.geolevel_name,
+       CASE
+            WHEN h1.tile_id IS NULL AND h2.tile_id IS NULL THEN 1
+            ELSE 0
+       END AS no_area_ids, 
+       COALESCE(h1.tile_id, 
+				h2.tile_id, 
+				z.geolevel_id::VARCHAR||'_'||z.geolevel_name||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR) AS tile_id,
+       z.x,
+       z.y,
+       z.zoomlevel,
+       COALESCE(h1.optimised_geojson, 
+				h2.optimised_geojson, 
+				'{"type": "FeatureCollection","features":[]}'::JSON) AS optimised_geojson,
+       COALESCE(h1.optimised_topojson, 
+				h2.optimised_topojson, 
+				'{"type": "FeatureCollection","features":[]}'::JSON) AS optimised_topojson
+  FROM z 
+		 LEFT JOIN %4 h1 ON ( /* Multiple area ids in the geolevel */
+				z.areaid_count > 1 AND
+				z.zoomlevel    = h1.zoomlevel AND 
+				z.x            = h1.x AND 
+				z.y            = h1.y AND 
+				z.geolevel_id  = h1.geolevel_id)
+		 LEFT JOIN %4 h2 ON ( /* Single area ids in the geolevel */
+				z.areaid_count = 1 AND
+				h2.zoomlevel   = 0 AND 
+				h2.x           = 0 AND 
+				h2.y           = 0 AND 
+				h2.geolevel_id = 1)

@@ -957,7 +957,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				'Tile contains no area_ids flag: 0/1'];
 			for (var l=0; l< fieldArray.length; l++) {		
 				var sqlStmt=new Sql("Comment tiles view column",
-					getSqlFromFile("comment_column.sql", 
+					getSqlFromFile("comment_view_column.sql", 
 						dbType, 
 						"tiles_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
 						fieldArray[l]														/* Column name */,

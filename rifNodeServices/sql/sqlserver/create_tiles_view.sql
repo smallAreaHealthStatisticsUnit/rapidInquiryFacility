@@ -18,9 +18,8 @@ WITH a AS (
           FROM %2
          GROUP BY geography
 ), b AS (
-         SELECT a.geography,
-                generate_series(1, CAST(a.max_geolevel_id AS INTEGER), 1) AS geolevel_id
-           FROM a
+		SELECT a.geography, z.IntValue AS geolevel_id 
+		  FROM a CROSS APPLY $(USERNAME).generate_series(0, CAST(a.max_geolevel_id AS INTEGER), 1) z
 ), c AS (
         SELECT b2.geolevel_name,
                b.geolevel_id,
@@ -29,11 +28,11 @@ WITH a AS (
           FROM b, %2 b2
 		 WHERE b.geolevel_id = b2.geolevel_id
 ), d AS (
-        SELECT generate_series(0, %5, 1) AS zoomlevel
+        SELECT z.IntValue AS zoomlevel
+		  FROM $(USERNAME).generate_series(0, %5, 1) z
 ), ex AS (
-         SELECT d.zoomlevel,
-                generate_series(0, CAST(POWER(2 /* ::double precision */, d.zoomlevel /* ::double precision */) AS INTEGER) - 1, 1) AS xy_series
-           FROM d
+        SELECT d.zoomlevel, z.IntValue AS xy_series
+          FROM d CROSS APPLY $(USERNAME).generate_series(0, CAST(POWER(2, d.zoomlevel) AS INTEGER) - 1, 1) z
 ), ey AS (
         SELECT c.geolevel_name,
 			   c.areaid_count,
@@ -43,6 +42,16 @@ WITH a AS (
                ex.xy_series
           FROM c,
                ex 
+), z AS ( 
+		SELECT ey.geolevel_name,
+			   ey.areaid_count,
+               ey.geolevel_id,
+               ey.geography,
+               ex.zoomlevel,
+               ex.xy_series AS x,
+               ey.xy_series AS y
+          FROM ey, ex /* Cross join */
+         WHERE ex.zoomlevel = ey.zoomlevel
 )
 SELECT z.geography,
        z.geolevel_id,
@@ -51,9 +60,8 @@ SELECT z.geography,
             WHEN h1.tile_id IS NULL AND h2.tile_id IS NULL THEN 1
             ELSE 0
        END AS no_area_ids, 
-       COALESCE(
-			COALESCE(h2.tile_id, 
-				h1.tile_id, 
+       COALESCE(h1.tile_id, 
+				h2.tile_id, 
 				CAST(z.geolevel_id AS VARCHAR) + 
 					'_' +
 					z.geolevel_name +
@@ -63,38 +71,26 @@ SELECT z.geography,
 					CAST(z.x AS VARCHAR) +
 					'_' +
 					CAST(z.y AS VARCHAR)
-				)
-			) AS tile_id,
+				) AS tile_id,
        z.x,
        z.y,
        z.zoomlevel,
-       COALESCE(
-			COALESCE(h2.optimised_geojson, 
-				h1.optimised_geojson, 
-					'{"type": "FeatureCollection","features":[]}')) AS optimised_geojson,
-       COALESCE(
-			COALESCE(h2.optimised_topojson, 
-				h1.optimised_topojson, 
-					'{"type": "FeatureCollection","features":[]}')) AS optimised_topojson
-  FROM ( SELECT ey.geolevel_name,
-				ey.areaid_count,
-                ey.geolevel_id,
-                ey.geography,
-                ex.zoomlevel,
-                ex.xy_series AS x,
-                ey.xy_series AS y
-           FROM ey, ex /* Cross join */
-          WHERE ex.zoomlevel = ey.zoomlevel
-		) AS z 
-		     LEFT JOIN %4 h1 ON ( /* Multiple area ids in the geolevel */
-		            z.areaid_count > 1 AND
-					z.zoomlevel    = h1.zoomlevel AND 
-					z.x            = h1.x AND 
-					z.y            = h1.y AND 
-					z.geolevel_id  = h1.geolevel_id)
-		     LEFT JOIN %4 h2 ON ( /* Single area ids in the geolevel */
-		            z.areaid_count = 1 AND
-					h2.zoomlevel   = 0 AND 
-					h2.x           = 0 AND 
-					h2.y           = 0 AND 
-					h2.geolevel_id = 1)
+       COALESCE(h1.optimised_geojson, 
+				h2.optimised_geojson, 
+				'{"type": "FeatureCollection","features":[]}') AS optimised_geojson,
+       COALESCE(h1.optimised_topojson, 
+				h2.optimised_topojson, 
+				'{"type": "FeatureCollection","features":[]}') AS optimised_topojson
+  FROM z 
+		 LEFT JOIN %4 h1 ON ( /* Multiple area ids in the geolevel */
+				z.areaid_count > 1 AND
+				z.zoomlevel    = h1.zoomlevel AND 
+				z.x            = h1.x AND 
+				z.y            = h1.y AND 
+				z.geolevel_id  = h1.geolevel_id)
+		 LEFT JOIN %4 h2 ON ( /* Single area ids in the geolevel */
+				z.areaid_count = 1 AND
+				h2.zoomlevel   = 0 AND 
+				h2.x           = 0 AND 
+				h2.y           = 0 AND 
+				h2.geolevel_id = 1)
