@@ -1020,7 +1020,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					"tile_limits_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
 				sqlArray);	
 			var sqlStmt=new Sql("Analyze table",
-				"SELECT * FROM tile_limits_" + response.fields["geographyName"].toLowerCase(), 
+				"SELECT zoomlevel, x_min, x_max, y_min, y_max, y_mintile, y_maxtile, x_mintile, x_maxtile FROM tile_limits_" + 
+					response.fields["geographyName"].toLowerCase(), 
 				sqlArray);	
 					
 		} // End of createTilesTables()

@@ -234,7 +234,7 @@ var geojsonToCSV = function geojsonToCSV(response, req, res, endCallback) {
 				geolevelDescription: (response.file_list[i].desc || "Not defined"),
 				topojson_arcs: undefined,
 				topojson_points: undefined,
-				bbox: response.file_list[i].geojson.bbox,
+				bbox: response.file_list[i].bbox,
 				rows: [],
 			};
 					
