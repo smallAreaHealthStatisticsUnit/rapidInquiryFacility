@@ -965,6 +965,144 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					sqlArray);
 			}				
 		} // End of createTilesTables()
+		
+		/*
+		 * Function: 	createGeometryTables()
+		 * Parameters:	None
+		 * Description:	Create geometry tables 
+		 *				SQL statements
+		 */			
+		function createGeometryTables() {
+			var sqlStmt;	
+			
+			sqlArray.push(new Sql("Create geometry tables"));		
+			
+			
+			if (dbType == "PostGres") { // Partition Postgres
+				var sqlStmt=new Sql("Drop geometry table " + "geometry_" + response.fields["geographyName"].toLowerCase(), 
+					getSqlFromFile("drop_table_cascade.sql", dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase() 		/* Table name */
+						), sqlArray); 
+			}
+			else if (dbType == "MSSQLServer") {// MS SQL Server
+				var sqlStmt=new Sql("Drop geometry table " + "geometry_" + response.fields["geographyName"].toLowerCase(), 
+					getSqlFromFile("drop_table.sql", dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase() 		/* Table name */
+						), sqlArray); 
+			}
+			
+			var sqlStmt=new Sql("Create geometry table " + "geometry_" + response.fields["geographyName"].toLowerCase(), 
+				getSqlFromFile("create_geometry_table.sql", 
+					undefined /* Common */, 
+					"geometry_" + response.fields["geographyName"].toLowerCase() /* Table name */), 
+				sqlArray); 
+					
+			var sqlStmt=new Sql("Add geometry column",
+				getSqlFromFile("add_geometry_column2.sql", dbType, 
+					"geometry_" + response.fields["geographyName"].toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
+					'geom' 															/* 2: column name; e.g. geographic_centroid */,
+					4326															/* 3: Column SRID; e.g. 4326 */,
+					'MULTIPOLYGON' 													/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
+					sqlArray);
+					
+			var sqlStmt=new Sql("Comment geometry table",
+				getSqlFromFile("comment_table.sql", 
+					dbType, 
+					"geometry_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"All geolevels geometry combined into a single table for a single geography"	/* Comment */), sqlArray);
+					
+			var fieldArray = ['geolevel_id', 'zoomlevel', 'areaid', 'geom'];
+			var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.',
+				'Zoom level: 0 to maxoomlevel (11). Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
+				'Area ID.',
+				'Geometry data in SRID 4326 (WGS84).'];
+			for (var l=0; l< fieldArray.length; l++) {		
+				var sqlStmt=new Sql("Comment geometry table column",
+					getSqlFromFile("comment_column.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase(),		/* Geometry table name */
+						fieldArray[l]														/* Column name */,
+						fieldDescArray[l]													/* Comment */), 
+					sqlArray);
+			}	
+
+			if (dbType == "PostGres") { // Partition Postgres
+				var sqlStmt=new Sql("Create partitioned tables and insert function for geometry table; comment partitioned tables and columns",
+					getSqlFromFile("partition_geometry_table1.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 1: Geometry table name */,
+						response.fields["max_zoomlevel"]									/* 2: Max zoomlevel; e.g. 11 */), 
+					sqlArray);			
+
+				var sqlStmt=new Sql("Partition geometry table: insert trigger",
+					getSqlFromFile("partition_geometry_trigger.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+					sqlArray);						
+			}
+			
+			var sqlFrag=undefined;
+			for (var i=0; i<csvFiles.length; i++) { // Main file process loop				
+				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+					sqlFrag="INSERT INTO geometry_cb_2014_us_500k(geolevel_id, areaid, zoomlevel, geom)\n";
+					if (dbType == "PostGres") {
+						sqlFrag+="SELECT " + csvFiles[i].geolevel + " geolevel_id,\n" +
+"       areaid,\n" + 
+"        " + k + " AS zoomlevel,\n" +
+"       geom_" + k + " AS geom\n" +
+"  FROM " + csvFiles[i].tableName + "\n";		
+					}
+					else if (dbType == "MSSQLServer") { 	
+						sqlFrag+="SELECT " + csvFiles[i].geolevel + " geolevel_id,\n" +
+"       areaid,\n" + 
+"        " + k + " AS zoomlevel,\n" +
+"       geometry::STGeomFromWKB(geom_" + k + ".STAsBinary(), 4326) AS geom\n" +
+"  FROM " + csvFiles[i].tableName + "\n";	
+					}
+					sqlFrag+="ORDER BY 1, 3, 2";
+					var sqlStmt=new Sql("Insert into geometry table",
+						sqlFrag, 
+						sqlArray);
+				} // End of for zoomlevels loop
+			} // End of main file process loop			
+
+			if (dbType == "PostGres") { // Partition Postgres
+				var sqlStmt=new Sql("Add primary key, index and cluster (convert to index organized table)",
+					getSqlFromFile("partition_geometry_table2.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 1: Geometry table name */,
+						response.fields["max_zoomlevel"]									/* 2: Max zoomlevel; e.g. 11 */), 
+					sqlArray);	
+			}		
+			else if (dbType == "MSSQLServer") { // Add primary key, index and cluster (convert to index organized table)
+				var sqlStmt=new Sql("Add primary key",
+					getSqlFromFile("add_primary_key.sql", 
+						undefined /* Common */, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"geolevel_id, areaid, zoomlevel"									/* Primary key */), 
+					sqlArray);	
+				var sqlStmt=new Sql("Create spatial index",
+					getSqlFromFile("create_spatial_index.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()			/* Table name */, 
+						"geometry_" + response.fields["geographyName"].toLowerCase() + "_gix"	/* Index name */, 
+						"geom"																	/* Geometry field name */), 
+					sqlArray);	
+				var sqlStmt=new Sql("Analyze table",
+					getSqlFromFile("analyze_table.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+					sqlArray);	
+			}
+
+			var sqlStmt=new Sql("Update areaid_count column in geolevels table using geometry table", 
+				getSqlFromFile("geolevels_areaid_update.sql", 
+					undefined /* Common */, 
+					"geolevels_" + response.fields["geographyName"].toLowerCase() /* Geolevels table */,
+					"geometry_" + response.fields["geographyName"].toLowerCase() /* Geometry table */), 
+				sqlArray);
+				
+		} // End of createGeometryTables()
 	
 		function Sql(comment, sql, sqlArray) { // Object constructor
 			this.comment=comment;
@@ -999,6 +1137,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 		createGeolevelsTable();
 		createGeolevelsLookupTables();
 		createHierarchyTable();
+		createGeometryTables();
 		createTilesTables();
 		
 		commitTransaction();

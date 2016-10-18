@@ -18,7 +18,7 @@ SELECT AddGeometryColumn('geometry_cb_2014_us_500k','geom', 4326, 'MULTIPOLYGON'
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
-COMMENT ON TABLE geometry_cb_2014_us_500k IS 'All geolevels geometry combined into a single table';
+COMMENT ON TABLE geometry_cb_2014_us_500k IS 'All geolevels geometry combined into a single table for a single geography';
 COMMENT ON COLUMN geometry_cb_2014_us_500k.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11.';
 COMMENT ON COLUMN geometry_cb_2014_us_500k.areaid IS 'Area ID.';
 COMMENT ON COLUMN geometry_cb_2014_us_500k.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
