@@ -1557,7 +1557,8 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 					if (data.status[i]) {
 						consoleLog("+" + data.status[i]["etime"] + data.status[i].httpStatus + " " + 
 							" [" + data.status[i].sfile + ":" + data.status[i].sline + ":" + 
-							data.status[i].calling_function + "]: " + data.status[i].statusText);	
+							data.status[i].calling_function + "] (i: " + i + "/" + data.status.length + "; index: " + index + "): " + 
+							data.status[i].statusText);	
 							
 						if (data.status[i].statusText == "BATCH_END") {
 							consoleLog("Enable shpConvertGetResults button");
@@ -1688,9 +1689,22 @@ function waitForServerResponse(uuidV1, diagnosticFileDir, statusFileName, respon
 				} // End of hasErrors
 				
 				if (nrecursionCount >= 90 && atEnd == false) { // Status timeout detector
-					displayProgress("Processing failed, no success or failure detected, no status change in " + 
-						nrecursionCount + " seconds");
-					consoleError("Status update recursion limit reached with no new status: " + nrecursionCount);
+					
+					for (var i=0; i<data.status.length; i++) { // Add new statii; look for end
+						if (data.status[i] && data.status[i].statusText == "BATCH_END") {
+							atEnd=true;
+						}
+					}
+					if (atEnd) {
+						displayProgress("Processing failed, no success or failure detected, atEnd detected, no status change in " + 
+							nrecursionCount + " seconds");
+						consoleError("Status update recursion limit reached with no new status: " + nrecursionCount);
+					}
+					else {
+						displayProgress("Processing failed, no success or failure detected, no status change in " + 
+							nrecursionCount + " seconds");
+						consoleError("Status update recursion limit reached with no new status: " + nrecursionCount);				
+					}
 				}
 			}
 			else {
