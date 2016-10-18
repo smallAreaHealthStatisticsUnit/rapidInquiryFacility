@@ -8,6 +8,6 @@
  * Note:				%% becomes % after substitution
  */
 CREATE TABLE %1 (
-	geolevel_id		INTEGER		NOT NULL,
-	areaid			VARCHAR		NOT NULL,
-	zoomlevel		INTEGER		NOT NULL)
+	geolevel_id		INTEGER			NOT NULL,
+	areaid			VARCHAR(200)	NOT NULL,
+	zoomlevel		INTEGER			NOT NULL)
