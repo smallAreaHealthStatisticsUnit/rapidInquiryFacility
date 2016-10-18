@@ -523,6 +523,230 @@ public final class SampleTestObjectGenerator {
 	}
 	
 	
+	public RIFStudySubmission createTypicalStudySubmission() {
+
+		RIFStudySubmission rifStudySubmission = RIFStudySubmission.newInstance();
+		rifStudySubmission.setNewRecord(false);
+
+		rifStudySubmission.setJobSubmissionTime(new Date());
+		
+		Project project = Project.newInstance();
+		project.setName("TEST");
+		project.setDescription("Test Project. Will be disabled when in production.");		
+		rifStudySubmission.setProject(project);
+		
+	
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.newInstance();
+		diseaseMappingStudy.setNewRecord(false);
+		diseaseMappingStudy.setName("public health study with results");
+		diseaseMappingStudy.setDescription("Examining air pollution");
+		Geography geography 
+			= Geography.newInstance(
+				"SAHSU", 
+				"SAHSU example database");
+		diseaseMappingStudy.setGeography(geography);
+	
+
+		//Set the study area
+		DiseaseMappingStudyArea diseaseMappingStudyArea
+			= DiseaseMappingStudyArea.newInstance();
+		diseaseMappingStudyArea.setNewRecord(false);		
+		GeoLevelSelect studyAreaGeoLevelSelect = GeoLevelSelect.newInstance("LEVEL2");
+		studyAreaGeoLevelSelect.setNewRecord(false);
+		GeoLevelArea studyAreaGeoLevelArea = GeoLevelArea.newInstance("Abellan");
+		studyAreaGeoLevelArea.setNewRecord(false);
+		GeoLevelView studyAreaGeoLevelView = GeoLevelView.newInstance("LEVEL4");
+		studyAreaGeoLevelView.setNewRecord(false);
+		GeoLevelToMap studyAreaGeoLevelToMap = GeoLevelToMap.newInstance("LEVEL4");
+		studyAreaGeoLevelToMap.setNewRecord(false);		
+		diseaseMappingStudyArea.setGeoLevelSelect(studyAreaGeoLevelSelect);
+		diseaseMappingStudyArea.setGeoLevelArea(studyAreaGeoLevelArea);
+		diseaseMappingStudyArea.setGeoLevelView(studyAreaGeoLevelView);
+		diseaseMappingStudyArea.setGeoLevelToMap(studyAreaGeoLevelToMap);		
+		diseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);
+
+		//Where to find out what levels the study area has?
+		MapArea mapArea1 = MapArea.newInstance(
+			"01.001.000100.1", 
+			"01.001.000100.1", 
+			"Abellan LEVEL4(01.001.000100.1)");
+		mapArea1.setNewRecord(false);
+					
+		MapArea mapArea2 = MapArea.newInstance(
+			"01.001.000100.2", 
+			"01.001.000100.2", 
+			"Abellan LEVEL4(01.001.000100.2)");
+		mapArea2.setNewRecord(false);
+					
+		MapArea mapArea3 = MapArea.newInstance(
+			"01.001.000200.1", 
+			"01.001.000200.1", 
+			"Abellan LEVEL4(01.001.000200.1)");
+		mapArea3.setNewRecord(false);
+			
+		MapArea mapArea4 = MapArea.newInstance(
+			"01.001.000300.1", 
+			"01.001.000300.1", 
+			"Abellan LEVEL4(01.001.000300.1)");
+		mapArea4.setNewRecord(false);
+							
+		diseaseMappingStudyArea.addMapArea(mapArea1);
+		diseaseMappingStudyArea.addMapArea(mapArea2);
+		diseaseMappingStudyArea.addMapArea(mapArea3);
+		diseaseMappingStudyArea.addMapArea(mapArea4);
+	
+		//Set the 
+		ComparisonArea comparisonArea
+			= ComparisonArea.newInstance();
+		MapArea mapArea5 = MapArea.newInstance(
+			"01.002", 
+			"01.002", 
+			"Abellan LEVEL2(01.002)");
+		mapArea5.setNewRecord(false);
+		comparisonArea.addMapArea(mapArea5);
+		
+		//default comparison area LEVEL2 default study area LEVEL4
+		GeoLevelSelect comparisonAreaGeoLevelSelect = GeoLevelSelect.newInstance("LEVEL1");
+		comparisonAreaGeoLevelSelect.setNewRecord(false);
+		GeoLevelArea comparisonAreaGeoLevelArea = GeoLevelArea.newInstance("Abellan");
+		comparisonAreaGeoLevelArea.setNewRecord(false);
+		GeoLevelView comparisonAreaGeoLevelView = GeoLevelView.newInstance("LEVEL2");
+		studyAreaGeoLevelView.setNewRecord(false);
+		GeoLevelToMap comparisonAreaGeoLevelToMap = GeoLevelToMap.newInstance("LEVEL2");
+		comparisonAreaGeoLevelToMap.setNewRecord(false);		
+
+		comparisonArea.setGeoLevelSelect(comparisonAreaGeoLevelSelect);
+		comparisonArea.setGeoLevelArea(comparisonAreaGeoLevelArea);
+		comparisonArea.setGeoLevelView(studyAreaGeoLevelView);
+		comparisonArea.setGeoLevelToMap(comparisonAreaGeoLevelToMap);		
+		diseaseMappingStudy.setComparisonArea(comparisonArea);
+			
+		//study level geolevel is LEVEL4
+		
+		//sahsuland_pop (denominator table)
+		
+		Investigation investigation = Investigation.newInstance();
+		investigation.setTitle("INV1");
+		investigation.setDescription("Lung cancer");
+		
+		HealthTheme healthTheme
+			= HealthTheme.newInstance(
+				"SAHSULAND",
+				"SAHSU land cancer incidence example data");
+		investigation.setHealthTheme(healthTheme);
+		
+		NumeratorDenominatorPair ndPair
+		= NumeratorDenominatorPair.newInstance(
+			"SAHSULAND_CANCER",
+			"Cancer cases in SAHSU land", 
+			"SAHSULAND_POP",
+			"SAHSU land population");
+		investigation.setNdPair(ndPair);
+		
+		//Set age groups, year range and sex
+		AgeGroup lowerLimitAgeGroup = AgeGroup.newInstance("0", "0", "0", "0");
+		AgeGroup upperLimitAgeGroup = AgeGroup.newInstance("21", "85", "255", "85PLUS");
+		AgeBand ageBand1 = AgeBand.newInstance(lowerLimitAgeGroup, upperLimitAgeGroup);
+		ageBand1.setNewRecord(false);
+
+		YearRange yearRange = YearRange.newInstance("1989", "1996");
+		yearRange.setNewRecord(false);
+		investigation.setYearRange(yearRange);
+		investigation.setInterval("1");;
+		investigation.addYearInterval(YearInterval.newInstance("1989", "1996"));				
+		investigation.addAgeBand(ageBand1);		
+		investigation.setSex(Sex.BOTH);
+
+		//Add health codes.  ICD10: C34 and ICD9: codes from 162.0 to 162.9
+		HealthCode icd10C34 
+			= HealthCode.newInstance(
+				"C34", 
+				"icd10", 
+				"Malignant neoplasm of bronchus and lung", 
+				false);
+		investigation.addHealthCode(icd10C34);
+
+/*		
+		HealthCode icd91620
+			= HealthCode.newInstance(
+				"1620", 
+				"icd9", 
+				"Malignant neo trachea", 
+				false);
+		investigation.addHealthCode(icd91620);				
+		HealthCode icd91622
+			= HealthCode.newInstance(
+				"1622", 
+				"icd9", 
+				"Malig neo main bronchus", 
+				false);
+		investigation.addHealthCode(icd91622);		
+		HealthCode icd91623
+			= HealthCode.newInstance(
+				"1623", 
+				"icd9", 
+				"Mal neo upper lobe lung", 
+				false);		
+		investigation.addHealthCode(icd91623);				
+		HealthCode icd91624
+			= HealthCode.newInstance(
+				"1624", 
+				"icd9", 
+				"Mal neo middle lobe lung", 
+				false);		
+		investigation.addHealthCode(icd91624);
+		HealthCode icd91625
+			= HealthCode.newInstance(
+				"1625", 
+				"icd9", 
+				"Mal neo lower lobe lung", 
+				false);		
+		investigation.addHealthCode(icd91625);
+		HealthCode icd91628
+			= HealthCode.newInstance(
+				"1625", 
+				"icd9", 
+				"Mal neo bronch/lung NEC", 
+				false);		
+		investigation.addHealthCode(icd91628);		
+		HealthCode icd91629
+			= HealthCode.newInstance(
+				"1629", 
+				"icd9", 
+				"Mal neo bronch/lung NOS", 
+				false);		
+		investigation.addHealthCode(icd91629);				
+*/	
+		
+		//SES LEVEL4 SAHSU min 1.0 max 5.0
+		AdjustableCovariate adjustableCovariate1
+			= AdjustableCovariate.newInstance(
+				"SES", 
+				"1", 
+				"5",
+				CovariateType.NTILE_INTEGER_SCORE);
+		adjustableCovariate1.setNewRecord(false);
+		investigation.addCovariate(adjustableCovariate1);
+		diseaseMappingStudy.addInvestigation(investigation);		
+				
+		rifStudySubmission.setStudy(diseaseMappingStudy);
+
+		CalculationMethod bymMethod = createSampleBYMMethod();
+		rifStudySubmission.addCalculationMethod(bymMethod);
+		
+		
+		ComparisonArea compArea
+			= diseaseMappingStudy.getComparisonArea();
+		System.out.println("Number of areas=="+compArea.getMapAreas().size()+"==");
+		
+		
+		return rifStudySubmission;
+	}
+	
+	
+	
+	
 	public File generateSampleOutputFile() {
 		StringBuilder fileName = new StringBuilder();
 		fileName.append(".");

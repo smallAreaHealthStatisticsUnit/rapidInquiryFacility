@@ -99,8 +99,9 @@ public class RunStudyThread
 			SampleTestObjectGenerator sampleTestObjectGenerator
 				= new SampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
-				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
-				
+				= sampleTestObjectGenerator.createTypicalStudySubmission();
+			//= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+
 			RunStudyThread runStudyThread = new RunStudyThread();
 			
 			runStudyThread.initialise(
