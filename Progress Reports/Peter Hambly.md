@@ -677,7 +677,7 @@ RangeError: Invalid string length
 
 * Add max zoomlevel to UI to speed up demos and testing;  
 * SQL Server tile maker:
-  * Ported tiles table and view
+  * Ported tiles table and view, geometry table, tile limits table
 * RIF team meeting;
 	
 #### Current TODO list (October):
