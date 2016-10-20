@@ -1,5 +1,7 @@
 /* global d3 */
 
+//http://bl.ocks.org/mbostock/34f08d5e11952a80609169b7917d4172 //brushing
+
 //http://bl.ocks.org/mbostock/3048450
 
 angular.module("RIF")
@@ -22,37 +24,31 @@ angular.module("RIF")
                         var margin = {top: 30, right: 40, bottom: 30, left: 10};
                         var width = scope.width - margin.left - margin.right;
                         var height = scope.height - margin.top - margin.bottom;
-
-                        var formatCount = d3.format(".0f"),
-                                myFormatter = function (d) {
-                                    return (d / 1e6 >= 1) ? (d / 1e6 + "M") :
-                                            (d / 1e3 >= 1) ? (d / 1e3 + "K") : d;
-                                };
-
-                        var nbins = Math.floor(width / 30);
+                        /*
+                         var formatCount = d3.format(".0f"),
+                         myFormatter = function (d) {
+                         return (d / 1e6 >= 1) ? (d / 1e6 + "M") :
+                         (d / 1e3 >= 1) ? (d / 1e3 + "K") : d;
+                         };
+                         */
+                        var nbins = Math.floor(width / 20);
                         var max = d3.max(scope.data);
+                        var min = d3.min(scope.data);
 
-                        var x = d3.scale.linear()
-                                .domain([0, max])
+                        var x = d3.scaleLinear()
+                                .domain([min, max])
                                 .range([0, width]);
 
-                        var bins = d3.layout.histogram()
-                                .bins(x.ticks(nbins))
+                        var bins = d3.histogram()
+                                .domain(x.domain())
+                                .thresholds(x.ticks(nbins))
                                 (scope.data);
 
-                        var y = d3.scale.linear()
+                        var y = d3.scaleLinear()
                                 .domain([0, d3.max(bins, function (d) {
-                                        return d.y;
+                                        return d.length;
                                     })])
                                 .range([height, 0]);
-
-                        var xAxis = d3.svg.axis()
-                                .scale(x)
-                                .orient("bottom")
-                                .ticks(bins.length)
-                                .tickFormat(function (d) {
-                                    return myFormatter(d);
-                                });
 
                         d3.select("#distHisto").remove();
 
@@ -69,30 +65,33 @@ angular.module("RIF")
                                 .enter().append("g")
                                 .attr("class", "bar")
                                 .attr("transform", function (d) {
-                                    return "translate(" + x(d.x) + "," + y(d.y) + ")";
+                                    return "translate(" + x(d.x0) + "," + y(d.length) + ")";
                                 });
 
-                        if (!angular.isUndefined(bins[ 0 ])) {
+                        if (width > 0 & !angular.isUndefined(bins[ 0 ])) {
+
                             bar.append("rect")
-                                    .attr("x", 1)
-                                    .attr("width", x(bins[ 0 ].dx) - 1)
+                                    .attr("x", 0)
+                                    .attr("width", function (d) {
+                                        return x(d.x1) - x(d.x0);
+                                    })
                                     .attr("height", function (d) {
-                                        return height - y(d.y);
+                                        return height - y(d.length);
                                     });
-
-                            bar.append("text")
-                                    .attr("dy", ".70em")
-                                    .attr("y", -10)
-                                    .attr("x", x(bins[ 0 ].dx) / 2)
-                                    .attr("text-anchor", "middle")
-                                    .text(function (d) {
-                                        return formatCount(d.y);
-                                    });
-
+                            /*
+                             bar.append("text")
+                             .attr("dy", ".75em")
+                             .attr("y", 6)
+                             .attr("x", (x(bins[0].x1) - x(bins[0].x0)) / 2)
+                             .attr("text-anchor", "middle")
+                             .text(function (d) {
+                             return formatCount(d.length);
+                             });
+                             */
                             svg.append("g")
-                                    .attr("class", "x axis")
-                                    .attr("transform", "translate(10," + height + ")")
-                                    .call(xAxis);
+                                    .attr("class", "axis axis--x")
+                                    .attr("transform", "translate(0," + height + ")")
+                                    .call(d3.axisBottom(x));
                         }
                     };
                 }

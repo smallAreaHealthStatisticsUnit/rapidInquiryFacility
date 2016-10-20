@@ -11,6 +11,7 @@
 }
 .modal-dialog .ui-layout-column {
     border-top: none;
+        overflow: hidden;
 }
 
 .leaflet-box {

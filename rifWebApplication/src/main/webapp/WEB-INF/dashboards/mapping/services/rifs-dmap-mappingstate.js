@@ -1,12 +1,16 @@
-/* SERVICE to store state of mapping tab
- * 
+/* 
+ * SERVICE to store state of mapping tab
  */
 angular.module("RIF")
         .factory('MappingStateService',
                 function () {
                     var s = {
+                        cleanState: true,
+                        gid: null,
                         selected: null,
                         selectedSet: "areaChart1",
+                        brushStartLoc: null,
+                        brushEndLoc: null,
                         areaContainerV: 0,
                         rrContainerH: 0,
                         rrContainerV: 0,

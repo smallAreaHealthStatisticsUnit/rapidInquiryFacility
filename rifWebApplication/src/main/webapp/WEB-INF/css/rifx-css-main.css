@@ -281,6 +281,9 @@ body {
 #zoomExtent {
     background: transparent url("../images/zoom_extend.png") no-repeat;
 }
+#zoomSelection {
+    background: transparent url("../images/zoom_selection.png") no-repeat;
+}
 #choroplethBtn {
     background: transparent url("../images/things_digital.png") no-repeat;
 }
@@ -392,13 +395,13 @@ select {
     width: 100%;
     height: 25%;
     position: relative;
-    overflow: auto;
+    overflow: hidden;
 }
 .mapInfoBottom {
     width: 100%;
-    height: 70%;
+    height: 74%;
     position: absolute;
-
+    overflow: hidden;
 }
 
 #content #leftcol div#studyInfo {
@@ -602,7 +605,6 @@ div#studyInfo ul li.listHeader {
     float: right;
     margin-top: 5px;
 }
-
 
 #footer {
     width: 100%;
@@ -834,7 +836,6 @@ input[type="file"].fileOpener {
     font-size: 14px !important;
     border-bottom: solid 1px #CAE1FF !important;
     margin-bottom: 20px !important;
-
 }
 
 .dropDownLabel {
@@ -928,7 +929,6 @@ div.headerBlock{
 #comparisonArea .headerBlockActive {
     background: white url(../images/trees/tree2.png) no-repeat center bottom;
 }
-
 
 #invParameters .headerBlockActive {
     background: white url(../images/trees/tree3.png) no-repeat center bottom;
@@ -1102,92 +1102,55 @@ textarea.description {
     height: 50%;
     position: relative;
 }
-#parameterWrap > div {
-    min-height: 450px;
+
+.pbox {
+    margin:1% 1% 0% 2%;
+    float:left;
+    background-color: #d9f1fd; 
+    width:46%;
+    height:170px;
+    border-radius: 10px 10px 10px 10px;
+    -moz-border-radius: 10px 10px 10px 10px;
+    -webkit-border-radius: 10px 10px 10px 10px;
 }
-#parameterHeader,
-#parameterWrap > div { min-height: 0px; }
-#parameterHeader {
-    min-height: 60px;
-}
-#parameterWrap {
-    height: 100%;
-    overflow: hidden;
-    position: relative;
-}
-#ParameterLeft {
-    float: left;
-    width: 50%;
-    height: 90%;
-}
-#ParameterRight > div:first-child,
-#ParameterLeft > div:first-child {
-    margin-top: 3% !important;
-}
-#ParameterRight > div,
-#ParameterLeft > div {
-    margin-left: 5%;
-    margin-right: 5%;
+.pboxLabel {
+    padding: 2%;
+    font-size: 20px;
+    text-transform: uppercase;
 }
 
-#ParameterRight {
-    float: right;
-    width: 50%;
-    height: 90%;
-}  
-
-#covariatesWrapper {
-    position: relative;
-}
-#ageGroupsWrapper {
-    /* Firefox */
-    height: -moz-calc(100% - 80px);
-    /* WebKit */
-    height: -webkit-calc(100% - 80px);
-    /* Opera */
-    height: -o-calc(100% - 80px);
-    /* Standard */
-    height: calc(100% - 80px);
-    float: right;
-    margin-right: 10% !important;
-}
-#covariateLabel,
-#ageGroupsLabel {
+.pboxName {
+    padding: 10px;
     font-size: 14px;
     text-transform: uppercase;
-    padding-top: 13px;
-}
-#covariateLabel {
-    padding-left: 0px;
-}
-
-.covariatesAvailable {
-    display: block !important;
-    max-height: 150px !important;
-    z-index: 1;
-}
-.covariatesAvailable div, .modelsAvailable div  {
-    padding: 3px 5px;
+    width: 80%;
+    color: #848484;
+    margin-left: 5%;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    border: none;
 }
 
-.covariatesAvailable input[type='checkbox'],  .modelsAvailable input[type='checkbox'] {
-    float: left;
-}
-.covariatesAvailable label ,.modelsAvailable label {
-    display: block;
-    width: 100%;
-}
-.modelsAvailable label{
-    font-weight: bold;
-}
-
-.modelsAvailable div div {
-    padding-left: 20px;
+.pboxDrop {
+    padding: 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    width: 50%;
+    color: #848484;
+    background-color: white;  
+    margin-left: 5%;
+    margin-bottom: 2px; 
+    display: inline-block;
 }
 
-.modelsAvailable div input[type="text"] {
-    width: 80px !important;
-    margin: 0 !important;
+.pboxCaption {
+    font-size: 14px;
+    display:inline-block;
+    margin-left: 5px;
 }
 
 #clearParameters {
@@ -1208,6 +1171,8 @@ textarea.description {
     font-weight: bold;
     border: 1px solid #F2F2F2;
 }
+
+
 .done{
     position: absolute;
     top: 0;
@@ -1239,21 +1204,6 @@ textarea.description {
     cursor: pointer;
 }
 
-.removeInvestigation {
-    background: transparent url("images/delete.png") no-repeat center center;
-    opacity: 0.3;
-    width: 7%;
-}
-.removeInvestigation:hover {
-    opacity: 1;
-    cursor: pointer
-}
-.reset {
-    float: left;
-}
-.reset:hover {
-    cursor: pointer;
-}
 
 .runDialog {
     position:relative
@@ -1663,11 +1613,11 @@ header:first-child {
     cursor: pointer;
 }
 
-/* LEGEND */
+/* LEAFLET LEGEND */
 .info {
     padding: 6px 8px;
     background: white;
-    background: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,1);
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
 }

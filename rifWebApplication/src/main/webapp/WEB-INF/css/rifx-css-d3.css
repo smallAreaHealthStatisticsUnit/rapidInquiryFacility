@@ -57,6 +57,7 @@ RIF D3
 
 .bar rect {
     fill: steelblue;
+    stroke: white;
 }
 
 .tick {
@@ -92,7 +93,13 @@ RIF D3
 
 .line {
     fill: none;
-    stroke: rgba(127,130,201,0.9);;
+    stroke: rgba(127,130,201,0.9);
+    stroke-width: 1.5px;
+}
+
+#refLine {
+    fill: none;
+    stroke: #ADD8E6;
     stroke-width: 1.5px;
 }
 
@@ -105,7 +112,7 @@ RIF D3
 .bivariateHiglighter {
     stroke: #EEA9B8;
     fill:#EEA9B8;    
-    stroke-width: 1;
+    stroke-width: 2;
 }
 #lineBivariatesvg text {
     fill: #919191;
@@ -226,3 +233,15 @@ svg.areaCharts .brush .extent {
 svg.areaCharts g.context rect.background{
     visibility: visible !important;
 }
+
+/*area plots*/
+.selection {
+    fill: #325e82;
+}
+
+.handle {
+    fill: #aaa;
+}
+
+
+

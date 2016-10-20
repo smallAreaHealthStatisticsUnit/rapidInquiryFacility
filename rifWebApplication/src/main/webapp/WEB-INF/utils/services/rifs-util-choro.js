@@ -4,15 +4,28 @@ angular.module("RIF")
         .factory('ChoroService', ['ColorBrewerService',
             function (ColorBrewerService) {
                 var features = [];
-                var viewMap = {
-                    brewerName: "LightGreen",
-                    brewer: ["#9BCD9B"],
-                    intervals: 1,
-                    feature: "",
-                    invert: false,
-                    method: "quantile",
-                    renderer: []
-                };
+
+                var maps = [{
+                        //Disease map: index 0
+                        brewerName: "LightGreen",
+                        brewer: ["#9BCD9B"],
+                        intervals: 1,
+                        feature: "",
+                        invert: false,
+                        method: "quantile",
+                        renderer: []
+                    },
+                    {
+                        //Viewer map: index 1
+                        brewerName: "LightGreen",
+                        brewer: ["#9BCD9B"],
+                        intervals: 1,
+                        feature: "",
+                        invert: false,
+                        method: "quantile",
+                        renderer: []
+                    }
+                ];
 
                 //used in viewer SA test
                 function renderFeature(feature, scale, attr) {
@@ -31,13 +44,17 @@ angular.module("RIF")
                 function renderFeature2(feature, value, scale, attr, selection) {
                     //selected (a single polygon)
                     if (selection === feature.properties.area_id) {
-                        return "green";
+                        if (scale && attr !== "") {
+                            return [scale(value), "green", 5];
+                        } else {
+                            return ["#9BCD9B", "green", 5];
+                        }
                     }
                     //choropleth
                     if (scale && attr !== "") {
-                        return scale(value);
+                        return [scale(value), "gray", 1];
                     } else {
-                        return "#9BCD9B";
+                        return ["#9BCD9B", "gray", 1];
                     }
                 }
 
@@ -56,13 +73,13 @@ angular.module("RIF")
                     //find the breaks
                     switch (method) {
                         case "quantile":
-                            scale = d3.scale.quantile()
+                            scale = d3.scaleQuantile()
                                     .domain(domain)
                                     .range(range);
                             var breaks = scale.quantiles();
                             break;
                         case "quantize":
-                            scale = d3.scale.quantize()
+                            scale = d3.scaleQuantize()
                                     .domain([mn, mx])
                                     .range(range);
                             var breaks = [];
@@ -76,7 +93,7 @@ angular.module("RIF")
                             var breaks = ss.jenks(domain, range.length);
                             breaks.pop(); //remove max
                             breaks.shift(); //remove min
-                            scale = d3.scale.threshold()
+                            scale = d3.scaleThreshold()
                                     .domain(breaks)
                                     .range(range);
                             break;
@@ -85,6 +102,13 @@ angular.module("RIF")
                              * Implementation derived by ArcMap Stand. Deviation classification
                              * 5 intervals of which those around the mean are 1/2 the Standard Deviation
                              */
+                            if (maps[0].brewerName === "LightGreen") { //TODO: diseasMap
+                                scale = d3.scaleQuantile()
+                                        .domain(domain)
+                                        .range(range);
+                                var breaks = scale.quantiles();
+                                break;
+                            }
                             var sd = ss.sample_standard_deviation(domain);
                             var mean = d3.mean(domain);
                             var below_mean = mean - sd / 2;
@@ -100,8 +124,8 @@ angular.module("RIF")
                             }
                             breaks.sort(d3.ascending);
                             //dynamic scale range as number of classes unknown
-                            range = ColorBrewerService.getColorbrewer(viewMap.brewerName, breaks.length + 1);
-                            scale = d3.scale.threshold()
+                            range = ColorBrewerService.getColorbrewer(maps[0].brewerName, breaks.length + 1);
+                            scale = d3.scaleThreshold()
                                     .domain(breaks)
                                     .range(range);
                             break;
@@ -141,8 +165,8 @@ angular.module("RIF")
                     getFeaturesToMap: function () {
                         return features;
                     },
-                    getViewMap: function () {
-                        return viewMap;
+                    getMaps: function (i) {
+                        return maps[i];
                     },
                     getRenderFeature: function (layer, scale, attr) {
                         return renderFeature(layer, scale, attr);
