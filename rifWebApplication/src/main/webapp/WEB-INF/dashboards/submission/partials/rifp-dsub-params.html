@@ -29,43 +29,32 @@ Disease submission modal investigation parameters (tree #3)
                                     <div class='done' ng-click="addInvestigation()"> <a>Done</a></div> 
                                     <div id='clearParameters' ng-click="clearInvestigations()"> Clear </div>
                                 </div>
-                                <div id="parameterWrap">
-                                    <div id="ParameterLeft">
-                                        <div class='availablesWrapper'>                                            
-                                            <input type="text" ng-model="title" id='invTitle' class='dropdownSelectSingleSmall'>                                                               
-                                            <div class="dropdownSelectSmallLabel">Title</div>
-                                        </div>
-                                        <div class='availablesWrapper'>                                           
-                                            <select type="text" ng-model="startYear" id='startYear' class='dropdownSelectSmall' ng-options="s for s in years" ng-change="yearsChanged()"></select>
-                                            <div class="dropdownSelectSmallLabel">Start Year</div>
-                                        </div>
-                                        <div class='availablesWrapper'>
-                                            <select type="text" ng-model="endYear" id='endYear' class='dropdownSelectSmall'  ng-options="s for s in years" ng-change="yearsChanged()"></select>
-                                            <div class="dropdownSelectSmallLabel">End Year</div>
-                                        </div>
-                                        <div class='availablesWrapper'>
-                                            <select type="text" ng-model="yearInterval" id='yearInterval' class='dropdownSelectSmall' ng-options="s for s in intervals"></select>
-                                            <div class="dropdownSelectSmallLabel">Year Interval</div>
-                                        </div>
-                                    </div>                                    
-                                    <div id="ParameterRight">
-                                        <div class='availablesWrapper'>
-                                            <select type="text" ng-model="sex" id='genderAvailable' class='dropdownSelectSmall' ng-options="g for g in sexes"></select>
-                                            <div class="dropdownSelectSmallLabel">Sex</div>
-                                        </div>
-                                        <div class='availablesWrapper'>
-                                            <select type="text" ng-model="covariate" id='covariates' class='dropdownSelectSmall' ng-options="g for g in covariates"></select>
-                                            <div class="dropdownSelectSmallLabel">Covariate</div>
-                                        </div>
-                                        <div class='availablesWrapper'>
-                                            <select type="text" ng-model="lowerAge" id='lowerAges' class='dropdownSelectSmall' ng-options="g for g in ages" ng-change="agesChanged()"></select>
-                                            <div class="dropdownSelectSmallLabel">Lower Age Band</div>
-                                        </div>
-                                        <div class='availablesWrapper'>
-                                            <select type="text" ng-model="upperAge" id='upperAges' class='dropdownSelectSmall' ng-options="g for g in ages" ng-change="agesChanged()"></select>
-                                            <div class="dropdownSelectSmallLabel">Upper Age Band</div>
-                                        </div>
-                                    </div>
+                                <div class="pbox">
+                                    <div class="pboxLabel">Investigation Name</div>
+                                    <input type="text" class="pboxName" ng-model="title">
+                                </div>
+                                <div class="pbox">
+                                    <div class="pboxLabel">Adjust for</div>
+                                    <select type="text" class="pboxDrop" ng-model="sex" ng-options="g for g in sexes"></select>
+                                    <div class="pboxCaption">Sex</div>
+                                    <select type="text" class="pboxDrop" ng-model="covariate" ng-options="g for g in covariates"></select>
+                                    <div class="pboxCaption">Covariate</div>
+                                </div>
+                                <div class="pbox">
+                                    <div class="pboxLabel">Age Range</div>
+                                    <select type="text" class="pboxDrop" ng-model="lowerAge" ng-options="g for g in ages" ng-change="agesChanged()"></select>
+                                    <div class="pboxCaption">Start</div>
+                                    <select type="text" class="pboxDrop"ng-model="upperAge" ng-options="g for g in ages" ng-change="agesChanged()"></select>
+                                    <div class="pboxCaption">End</div>
+                                </div>
+                                <div class="pbox">
+                                    <div class="pboxLabel">Year Range</div>
+                                    <select type="text" class="pboxDrop" ng-model="startYear" ng-options="s for s in years" ng-change="yearsChanged()"></select>
+                                    <div class="pboxCaption">Start</div>
+                                    <select type="text" class="pboxDrop"ng-model="endYear" ng-options="s for s in years" ng-change="yearsChanged()"></select>
+                                    <div class="pboxCaption">End</div>
+                                    <select type="text" class="pboxDrop"ng-model="yearInterval" ng-options="s for s in intervals"></select>
+                                    <div class="pboxCaption">Interval</div>
                                 </div>
                             </div>
                             <div ui-layout-container class=" recap-back" >                

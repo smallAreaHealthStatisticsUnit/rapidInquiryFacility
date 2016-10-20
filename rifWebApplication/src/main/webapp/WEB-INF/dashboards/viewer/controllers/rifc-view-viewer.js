@@ -17,7 +17,7 @@ angular.module("RIF")
         .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService',
             function ($scope, user, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService) {
 
-                $scope.rrTestData = d3.range(1000).map(d3.random.bates(10));
+                $scope.rrTestData = d3.range(1000).map(d3.randomBates(10));
 
                 //ui-container sizes
                 $scope.distHistoCurrentHeight = 200;
@@ -121,7 +121,7 @@ angular.module("RIF")
                     });
                     //refresh map with saved state
                     $scope.parent.renderMap("viewermap");
-                    $scope.parent.refresh(ChoroService.getViewMap().invert, ChoroService.getViewMap().method);
+                    $scope.parent.refresh(ChoroService.getMaps(1).invert, ChoroService.getMaps(1).method);
                 });
 
                 //Clear all selection from map and table
@@ -202,8 +202,8 @@ angular.module("RIF")
                 //information from choropleth modal to colour map                             
                 $scope.parent.refresh = function () {
                     //get selected colour ramp
-                    var rangeIn = ChoroService.getViewMap().brewer;
-                    attr = ChoroService.getViewMap().feature;
+                    var rangeIn = ChoroService.getMaps(1).brewer;
+                    attr = ChoroService.getMaps(1).feature;
 
                     //not a choropleth, but single colour
                     if (rangeIn.length === 1) {
@@ -218,7 +218,7 @@ angular.module("RIF")
                         return;
                     }
 
-                    thisMap = ChoroService.getViewMap().renderer;
+                    thisMap = ChoroService.getMaps(1).renderer;
 
                     //remove old legend and add new
                     legend.onAdd = ChoroService.getMakeLegend(thisMap, attr);

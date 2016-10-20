@@ -14,7 +14,6 @@ Mapping
     </div>
 </div>
 
-
 <div id="buttons">
     <div class='export'>
         <a href='#'>Export</a>
@@ -98,10 +97,11 @@ Mapping
                 <div id="submenuMapping">
                     <div>
                         <div class='mapOpts'>
-                            <a ng-controller="ChoroplethModalCtrl" ng-click="open()"class='mapOpt' id="choroplethBtn" title="Choropleth map"></a>
+                            <a ng-controller="ChoroplethModalCtrl" ng-click="open(0)"class='mapOpt' id="choroplethBtn" title="Choropleth map"></a>
                             <a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap')" class='mapOpt' id="baseMapBtn" title="Base map"></a>	
                             <a class='mapOpt' id="clearSelection" title="Clear selection" ng-click="clear()"></a>   
                             <a class='mapOpt' id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent()"></a>  
+                            <a class='mapOpt' id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected()"></a>  
                             <input type="range" ng-model ="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
                         </div>
                         <a href='#' rel='leanModal' class='settings' title="Settings" id='settingsButton'>

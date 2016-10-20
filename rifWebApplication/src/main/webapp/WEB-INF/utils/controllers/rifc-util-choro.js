@@ -7,7 +7,8 @@ angular.module("RIF")
         .controller('ChoroplethModalCtrl', ['$scope', '$uibModal', 'ChoroService', 'ColorBrewerService',
             function ($scope, $uibModal, ChoroService, ColorBrewerService) {
 
-                $scope.open = function () {
+                $scope.open = function (map) {
+                    $scope.map = map;
                     var modalInstance = $uibModal.open({
                         animation: true,
                         templateUrl: 'utils/partials/rifp-util-choro.html',
@@ -19,14 +20,13 @@ angular.module("RIF")
                         $scope.$$childHead.renderSwatch();
                     });
                     modalInstance.result.then(function (modal) {
-                        ChoroService.getViewMap().brewerName = modal.selectedSchemeName;
-                        ChoroService.getViewMap().invert = modal.checkboxInvert;
-                        ChoroService.getViewMap().brewer = ColorBrewerService.getColorbrewer(modal.selectedSchemeName, modal.selectedN);
-                        ChoroService.getViewMap().intervals = modal.selectedN;
-                        ChoroService.getViewMap().feature = modal.selectedFeature;
-                        ChoroService.getViewMap().method = modal.method;
-                        ChoroService.getViewMap().renderer = modal.thisMap;
-
+                        ChoroService.getMaps(map).brewerName = modal.selectedSchemeName;
+                        ChoroService.getMaps(map).invert = modal.checkboxInvert;
+                        ChoroService.getMaps(map).brewer = ColorBrewerService.getColorbrewer(modal.selectedSchemeName, modal.selectedN);
+                        ChoroService.getMaps(map).intervals = modal.selectedN;
+                        ChoroService.getMaps(map).feature = modal.selectedFeature;
+                        ChoroService.getMaps(map).method = modal.method;
+                        ChoroService.getMaps(map).renderer = modal.thisMap;
                         $scope.parent.refresh();
                     });
                 };
@@ -35,18 +35,18 @@ angular.module("RIF")
             //get list of available colour schemes for drop-down and defaults
             $scope.input = {};
             $scope.input.mySchemes = ColorBrewerService.getSchemeList();
-            $scope.input.checkboxInvert = ChoroService.getViewMap().invert;
-            $scope.input.selectedSchemeName = ChoroService.getViewMap().brewerName;
+            $scope.input.checkboxInvert = ChoroService.getMaps($scope.$parent.map).invert;
+            $scope.input.selectedSchemeName = ChoroService.getMaps($scope.$parent.map).brewerName;
             $scope.input.intervalRange = ColorBrewerService.getSchemeIntervals($scope.input.selectedSchemeName);
-            $scope.input.selectedN = ChoroService.getViewMap().intervals;
-            $scope.input.method = ChoroService.getViewMap().method;
+            $scope.input.selectedN = ChoroService.getMaps($scope.$parent.map).intervals;
+            $scope.input.method = ChoroService.getMaps($scope.$parent.map).method;
 
             //list of attributes
             $scope.input.features = ChoroService.getFeaturesToMap();
-            if ($scope.input.features.indexOf(ChoroService.getViewMap().feature) === -1) {
+            if ($scope.input.features.indexOf(ChoroService.getMaps($scope.$parent.map).feature) === -1) {
                 $scope.input.selectedFeature = $scope.input.features[0];
             } else {
-                $scope.input.selectedFeature = ChoroService.getViewMap().feature;
+                $scope.input.selectedFeature = ChoroService.getMaps($scope.$parent.map).feature;
             }
 
             $scope.domain = [];
@@ -74,6 +74,7 @@ angular.module("RIF")
                 }
 
                 //get the breaks
+                ChoroService.getMaps($scope.$parent.map).brewerName = $scope.input.selectedSchemeName;
                 $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.selectedSchemeName,
                         $scope.input.selectedN), $scope.input.checkboxInvert);
             };

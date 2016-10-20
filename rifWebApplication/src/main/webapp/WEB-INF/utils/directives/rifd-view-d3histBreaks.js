@@ -1,7 +1,7 @@
 /* global d3 */
 
 angular.module("RIF")
-        .directive('histImg', function ($parse) {
+        .directive('histImgBreaks', function ($parse) {
             var directiveDefinitionObject = {
                 restrict: 'E',
                 replace: false,
@@ -16,36 +16,36 @@ angular.module("RIF")
                         d3.select("#domainHistogram").remove();
 
                         var border = 0.5;
+                        var nbins = 100;
                         var bordercolor = 'gray';
 
                         var margin = {top: 10, right: 30, bottom: 20, left: 30};
+
+
                         var width = 800 - margin.left - margin.right;
                         var height = 175 - margin.top - margin.bottom;
 
+
                         var max = d3.max(scope.data);
                         var min = d3.min(scope.data);
-                        var x = d3.scale.linear()
+
+                        var x = d3.scaleLinear()
                                 .domain([min, max])
                                 .range([0, width]);
 
-                        var data = d3.layout.histogram()
-                                .bins(x.ticks(100))
+                        var bins = d3.histogram()
+                                .domain(x.domain())
+                                .thresholds(x.ticks(nbins))
                                 (scope.data);
 
-                        var yMax = d3.max(data, function (d) {
-                            return d.length;
-                        });
-                        var yMin = d3.min(data, function (d) {
-                            return d.length;
-                        });
-
-                        var y = d3.scale.linear()
-                                .domain([0, yMax])
+                        var y = d3.scaleLinear()
+                                .domain([0, d3.max(bins, function (d) {
+                                        return d.length;
+                                    })])
                                 .range([height, 0]);
 
-                        var xAxis = d3.svg.axis()
-                                .scale(x)
-                                .orient("bottom");
+                        var xAxis = d3.axisBottom()
+                                .scale(x);
 
                         //canvas
                         var svg = d3.select(element[0]).append("svg")
@@ -68,11 +68,20 @@ angular.module("RIF")
 
                         //bins
                         var bar = svg.selectAll(".bar")
-                                .data(data)
+                                .data(bins)
                                 .enter().append("g")
                                 .attr("class", "bar")
                                 .attr("transform", function (d) {
-                                    return "translate(" + x(d.x) + "," + y(d.y) + ")";
+                                    return "translate(" + x(d.x0) + "," + y(d.length) + ")";
+                                });
+
+                        bar.append("rect")
+                                .attr("x", 0)
+                                .attr("width", function (d) {
+                                    return x(d.x1) - x(d.x0);
+                                })
+                                .attr("height", function (d) {
+                                    return height - y(d.length);
                                 });
 
                         //vertical reference lines
@@ -90,14 +99,6 @@ angular.module("RIF")
                                 .attr('y1', 0)
                                 .attr('y2', height);
 
-                        bar.append("rect")
-                                .attr("x", 1)
-                                .attr("width", (x(data[0].dx) - x(0)) - 1)
-                                .attr("height", function (d) {
-                                    return height - y(d.y);
-                                })
-                                .attr("fill", "#1caff6");
-
                         svg.append("g")
                                 .attr("class", "x axis")
                                 .attr("transform", "translate(0," + height + ")")
@@ -106,7 +107,6 @@ angular.module("RIF")
                         svg.select(".x.axis")
                                 .selectAll(".text")
                                 .style("fill", "#999999");
-
                     });
                 }
             };

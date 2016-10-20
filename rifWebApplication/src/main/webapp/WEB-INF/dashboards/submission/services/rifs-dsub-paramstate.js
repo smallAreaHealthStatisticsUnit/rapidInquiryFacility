@@ -6,7 +6,7 @@ angular.module("RIF")
                 function (SubmissionStateService) {
                     var s = {
                         activeHealthTheme: "",
-                        title: "Investigation",
+                        title: "My_New_Investigation",
                         start: 1,
                         end: 1,
                         interval: 1,
