@@ -6,43 +6,44 @@
  *						2: Geometry table; e.g. geometry_cb_2014_us_500k
  *						3: max_zoomlevel
  *
- * Description:			Comment table
+ * Description:			Create tile limits table
  * Note:				%% becomes % after substitution
  */
-CREATE TABLE %1
-AS 
 WITH a AS (
 	SELECT z.IntValue AS zoomlevel
 	  FROM $(USERNAME).generate_series(0, %3, 1) z
- ), b AS ( /* Get bounds of geography */
+), b AS ( /* Get bounds of geography */
         SELECT a.zoomlevel,
-		       STXMax(b.geom) AS Xmax,
-		       STXMin(b.geom) AS Xmin,
-		       STYMax(b.geom) AS Ymax,
-		       STYMin(b.geom) AS Ymin
+			   geometry::EnvelopeAggregate(b.geom).STPointN(1).STX AS Xmin,
+			   geometry::EnvelopeAggregate(b.geom).STPointN(1).STY AS Ymin,
+			   geometry::EnvelopeAggregate(b.geom).STPointN(3).STX AS Xmax,
+			   geometry::EnvelopeAggregate(b.geom).STPointN(3).STY AS Ymax
       FROM a 
 			LEFT OUTER JOIN %2 b ON (b.geolevel_id = 1 AND a.zoomlevel = b.zoomlevel)
+	 GROUP BY a.zoomlevel
 ), c AS (
         SELECT b.zoomlevel,
-		       STXMax(b.geom) AS Xmax,
-		       STXMin(b.geom) AS Xmin,
-		       STYMax(b.geom) AS Ymax,
-		       STYMin(b.geom) AS Ymin
+			   geometry::EnvelopeAggregate(b.geom).STPointN(1).STX AS Xmin,
+			   geometry::EnvelopeAggregate(b.geom).STPointN(1).STY AS Ymin,
+			   geometry::EnvelopeAggregate(b.geom).STPointN(3).STX AS Xmax,
+			   geometry::EnvelopeAggregate(b.geom).STPointN(3).STY AS Ymax
       FROM %2 b
 	 WHERE b.geolevel_id  = 1
 	   AND b.zoomlevel = 6
+	 GROUP BY b.zoomlevel
 ), d AS ( /* Convert XY bounds to tile numbers */
         SELECT b.zoomlevel,
                COALESCE(b.Xmin, c.Xmin) AS x_min, 
 			   COALESCE(b.Xmax, c.Xmax) AS x_max, 
 			   COALESCE(b.Ymin, c.Ymin) AS y_min, 
 			   COALESCE(b.Ymax, c.Ymax) AS y_max,
-               tileMaker_latitude2tile(COALESCE(b.Ymax, c.Ymax), b.zoomlevel) AS Y_mintile,
-               tileMaker_latitude2tile(COALESCE(b.Ymin, c.Ymin), b.zoomlevel) AS Y_maxtile,
-               tileMaker_longitude2tile(COALESCE(b.Xmin, c.Xmin), b.zoomlevel) AS X_mintile,
-               tileMaker_longitude2tile(COALESCE(b.Xmax, c.Xmax), b.zoomlevel) AS X_maxtile
+               $(USERNAME).tileMaker_latitude2tile(COALESCE(b.Ymax, c.Ymax), b.zoomlevel) AS Y_mintile,
+               $(USERNAME).tileMaker_latitude2tile(COALESCE(b.Ymin, c.Ymin), b.zoomlevel) AS Y_maxtile,
+               $(USERNAME).tileMaker_longitude2tile(COALESCE(b.Xmin, c.Xmin), b.zoomlevel) AS X_mintile,
+               $(USERNAME).tileMaker_longitude2tile(COALESCE(b.Xmax, c.Xmax), b.zoomlevel) AS X_maxtile
       FROM b, c
 )
 SELECT d.*,
-       STMakeEnvelope(d.x_min, d.y_min, d.x_max, d.y_max, 4326) AS bbox
+       $(USERNAME).tileMaker_STMakeEnvelope(d.x_min, d.y_min, d.x_max, d.y_max, 4326) AS bbox
+  INTO %1
   FROM d

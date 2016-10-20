@@ -890,7 +890,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					getSqlFromFile("create_tiles_table.sql", 
 						undefined /* Common */,	
 						"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 1: Tiles table name */,
-						"VARCHAR"															/* 2: JSON datatype (Postgres JSON, SQL server VARCHAR) */
+						"Text"															/* 2: JSON datatype (Postgres JSON, SQL server Text) */
 						), sqlArray); 
 			}
 			else if (dbType == "PostGres") { // No JSON in SQL Server
@@ -898,7 +898,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					getSqlFromFile("create_tiles_table.sql", 
 						undefined /* Common */,	
 						"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 1: Tiles table name */,
-						"JSON"														/* 2: JSON datatype (Postgres JSON, SQL server VARCHAR) */
+						"JSON"														/* 2: JSON datatype (Postgres JSON, SQL server Text) */
 						), sqlArray); 
 			}			
 			
@@ -969,16 +969,23 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			}				
 
 			sqlArray.push(new Sql("Create tile limits table"));
-			
+		
+			if (dbType == "MSSQLServer") { 	
+				var sqlStmt=new Sql("Create tileMaker_STMakeEnvelope()", 
+					getSqlFromFile("tileMaker_STMakeEnvelope.sql", dbType), 
+					sqlArray); 
+			}
+				
 			var sqlStmt=new Sql("Drop table " + "tile_limits_" + response.fields["geographyName"].toLowerCase(), 
 				getSqlFromFile("drop_table.sql", dbType, 
 					"tile_limits_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray); 
 		
 			var sqlStmt=new Sql("Create table " + "tile_limits_" + response.fields["geographyName"].toLowerCase(), 
 				getSqlFromFile("create_tile_limits_table.sql", dbType, 
-					"tile_limits_" + response.fields["geographyName"].toLowerCase() /* Tile limits table */,
-					"geometry_" + response.fields["geographyName"].toLowerCase() /* Geometry table */,
-					response.fields["max_zoomlevel"] 								/* 4: max_zoomlevel */), sqlArray); 
+					"tile_limits_" + response.fields["geographyName"].toLowerCase() /* 1: Tile limits table */,
+					"geometry_" + response.fields["geographyName"].toLowerCase() 	/* 2: Geometry table */,
+					response.fields["max_zoomlevel"] 								/* 3: max_zoomlevel */), 
+				sqlArray); 
 
 			var sqlStmt=new Sql("Comment tile limits table",
 				getSqlFromFile("comment_table.sql", 
@@ -1007,7 +1014,16 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						fieldDescArray[l]													/* Comment */), 
 					sqlArray);
 			}	
-			
+
+
+			if (dbType == "MSSQLServer") { 	
+				var sqlStmt=new Sql("Make primary key not null",
+					getSqlFromFile("not_null.sql", 
+						dbType, 
+						"tile_limits_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"zoomlevel"															/* Primary key */), 
+					sqlArray);
+			}			
 			var sqlStmt=new Sql("Add primary key",
 				getSqlFromFile("add_primary_key.sql", 
 					undefined /* Common */, 
@@ -1135,8 +1151,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			}		
 			else if (dbType == "MSSQLServer") { 
 			
-				sqlArray.push(new Sql("No partitioning on SQL SErver as it requires an Enterprise license; which\n" + 
-					"means you have to do it yourself using the generated scripts as a start.")); // Comment
+				sqlArray.push(new Sql("No partitioning on SQL Server as it requires an Enterprise license; which"));
+				sqlArray.push(new Sql("means you have to do it yourself using the generated scripts as a start.")); // Comment
 					
 				// Add primary key, index and cluster (convert to index organized table)
 				var sqlStmt=new Sql("Add primary key",
@@ -1165,7 +1181,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 
 			var sqlStmt=new Sql("Update areaid_count column in geolevels table using geometry table", 
 				getSqlFromFile("geolevels_areaid_update.sql", 
-					undefined /* Common */, 
+					dbType, 
 					"geolevels_" + response.fields["geographyName"].toLowerCase() /* Geolevels table */,
 					"geometry_" + response.fields["geographyName"].toLowerCase() /* Geometry table */), 
 				sqlArray);
