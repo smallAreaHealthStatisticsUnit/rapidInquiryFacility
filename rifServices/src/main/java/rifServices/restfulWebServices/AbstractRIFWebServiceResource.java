@@ -1196,10 +1196,7 @@ abstract class AbstractRIFWebServiceResource {
 			result);
 
 	}	
-	
-	
-	
-	
+		
 	protected Response getStudySubmission(
 		final HttpServletRequest servletRequest,
 		final String userID,
@@ -1386,6 +1383,9 @@ abstract class AbstractRIFWebServiceResource {
 		return(new String(data));
 	}
 	
+	
+	
+	
 	//TOUR_WEB_SERVICES-5
 	/*
 	 * So far in our tour, we have created a GeoLevelAreasProxy object that can contain
@@ -1403,8 +1403,6 @@ abstract class AbstractRIFWebServiceResource {
 		final Object objectToWrite) 
 		throws Exception {
 
-		printClientInformation("serialiseSingleItemAsArrayResult", servletRequest);
-		
 		final ArrayList<Object> objectArrayList = new ArrayList<Object>();
 		objectArrayList.add(objectToWrite);
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -1431,17 +1429,29 @@ abstract class AbstractRIFWebServiceResource {
 		responseText.append("\"}]");
 
 		return responseText.toString();
-		
-		/*
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.writeValue(out, result);
-		final byte[] data = out.toByteArray();
-		return(new String(data));
-		*/
 	}
 	
-
+	protected String serialiseNamedArray(
+		final String arrayName, 
+		ArrayList<String> listItems) {
+		
+		StringBuilder json = new StringBuilder();
+		json.append("{\"");
+		json.append(arrayName);
+		json.append("{\":[");
+		for (int i = 0 ; i < listItems.size(); i++) {
+			if (i != 0) {
+				json.append(",");
+			}
+			json.append("\"");
+			json.append(String.valueOf(listItems.get(i)));
+			json.append("\"");
+		}
+		
+		json.append("]}");
+		
+		return json.toString();
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

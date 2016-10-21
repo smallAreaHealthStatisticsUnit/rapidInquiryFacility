@@ -2542,6 +2542,157 @@ abstract class AbstractRIFStudyRetrievalService
 		return results;		
 	}
 	
+	public ArrayList<Integer> getYearsForStudy(
+		final User _user, 
+		final String studyID)
+		throws RIFServiceException {
+		
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+	
+		ArrayList<Integer> results = new ArrayList<Integer>();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getYearsForStudy",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getYearsForStudy",
+				"studyID",
+				studyID);
+		
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getYearsForStudy", 
+				"studyID", 
+				studyID);
+								
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getYearsForStudy",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID);
+			rifLogger.info(
+			getClass(),
+			auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class			
+			SQLSmoothedResultManager smoothedResultManager
+				= rifServiceResources.getSQLSmoothedResultManager();
+			results
+				= smoothedResultManager.getYears(
+					connection, 
+					studyID);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getYearsForStudy",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+	
+		return results;		
+	}
+		
+	public ArrayList<Sex> getSexesForStudy(
+		final User _user,
+		final String studyID)
+		throws RIFServiceException {
+			
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLConnectionManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+		
+		ArrayList<Sex> results = new ArrayList<Sex>();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSexesForStudy",
+				"user",
+				user);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getSexesForStudy",
+				"studyID",
+				studyID);
+			
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getSexesForStudy", 
+				"studyID", 
+				studyID);
+									
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFServiceMessages.getMessage("logging.getSexesForStudy",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID);
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+				= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class			
+			SQLSmoothedResultManager smoothedResultManager
+				= rifServiceResources.getSQLSmoothedResultManager();
+			results
+				= smoothedResultManager.getSexes(
+					connection, 
+					studyID);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getSexesForStudy",
+				rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+				user, 
+				connection);			
+		}
+		
+		return results;		
+	}
+	
 	
 	
 	// ==========================================
