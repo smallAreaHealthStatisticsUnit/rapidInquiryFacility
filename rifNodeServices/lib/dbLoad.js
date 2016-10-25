@@ -129,6 +129,116 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 	});
 
 	/*
+	 * Function: 	createSqlServerFmtFiles()
+	 * Parameters:	Directory to create in, CSV files object
+	 * Description:	Create MS SQL Server bulk load format files
+	 *				The insistence on quotes excludes the header row
+	 *
+	 * Exammple file format:
+	 
+<?xml version="1.0"?>
+<!-- MS SQL Server bulk load format files
+	 The insistence on quotes excludes the header row -->
+<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ <RECORD>
+  <FIELD ID="0" xsi:type="CharTerm" TERMINATOR='"' />
+   <FIELD ID="1" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="2" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="3" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="4" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="5" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="6" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="7" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="8" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="9" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="10" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="11" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="12" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="13" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="14" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="15" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="16" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="17" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="18" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="19" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="20" xsi:type="CharTerm" TERMINATOR='"\r\n' />
+ </RECORD>
+ <ROW>
+   <COLUMN SOURCE="1" NAME="statefp" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="2" NAME="countyfp" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="3" NAME="countyns" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="4" NAME="affgeoid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="5" NAME="geoid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="6" NAME="name" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="7" NAME="lsad" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="8" NAME="aland" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="9" NAME="awater" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="10" NAME="gid" xsi:type="SQLINT" />
+   <COLUMN SOURCE="11" NAME="areaid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="12" NAME="areaname" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="13" NAME="area_km2" xsi:type="SQLNUMERIC" />
+   <COLUMN SOURCE="14" NAME="geographic_centroid_wkt" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="15" NAME="wkt_11" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="16" NAME="wkt_10" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="17" NAME="wkt_9" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="18" NAME="wkt_8" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="19" NAME="wkt_7" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="20" NAME="wkt_6" xsi:type="SQLVARYCHAR" />
+ </ROW>
+</BCPFORMAT>	 
+	 
+	 */	 
+	var createSqlServerFmtFiles=function createSqlServerFmtFiles(dir, csvFiles) {	
+		for (var i=0; i<csvFiles.length; i++) {
+			var fmtScriptName="mssql_" + csvFiles[i].tableName + ".fmt";
+			var fmtStream = fs.createWriteStream(dir + "/" + fmtScriptName, { flags : 'w' });	
+			fmtStream.on('finish', function fmtStreamClose() {
+				response.message+="\nstreamClose() MS SQL Server bulk load format file";
+			});		
+			fmtStream.on('error', function fmtStreamError(e) {
+				serverLog.serverLog2(__file, __line, dbType + "StreamError", 
+					"WARNING: Exception in MS SQL Server bulk load format file write: " + fmtScriptName, req, e, response);										
+			});
+			
+			var fmtBuf='<?xml version="1.0"?>\n' +
+			'<!-- MS SQL Server bulk load format files\n' +
+'	 The insistence on quotes excludes the header row -->\n' +
+'<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"\n' +
+'  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n' +
+' <RECORD>\n' + 
+'   <FIELD ID="0" xsi:type="CharTerm" TERMINATOR=' + "'" + '"' + "' />\n";
+			var columnList=Object.keys(csvFiles[i].rows[0]);
+			
+			for (var j=1; j<=columnList.length; j++) {
+				if (j<columnList.length) {
+					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '","' + "' />\n";
+				}
+				else {
+					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '"\\r\\n' + "' />\n";
+				}
+			}
+			fmtBuf+=' </RECORD>\n'; 
+			fmtBuf+=' <ROW>\n'; 
+			for (var j=1; j<=columnList.length; j++) {
+				var bcpDtype="SQLVARYCHAR";
+				var column=columnList[(j-1)].toLowerCase();
+				if (column == "gid") {
+					bcpDtype="SQLINT"; // Integer
+				}
+				else if (column == "area_km2") {
+					bcpDtype="SQLNUMERIC"; // Numeric
+				}
+				fmtBuf+='   <COLUMN SOURCE="' + j + '" NAME="' + column + '" xsi:type="' + bcpDtype + '" />\n';
+			}			
+			fmtBuf+=' </ROW>\n'; 
+			fmtBuf+='</BCPFORMAT>\n'; 
+			fmtStream.write(fmtBuf);
+			fmtStream.end();
+		} // End of for csvFiles
+	} // End of createSqlServerFmtFiles()
+	
+	/*
 	 * Function: 	createSQLScriptHeader()
 	 * Parameters:	Script file name (full path), dbbase type as a string ("PostGres" or "MSSQLServer")
 	 * Description:	Create header for SQL script
@@ -1334,116 +1444,6 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			}
 		}
 	} // End of addSQLStatements()
-
-	/*
-	 * Function: 	createSqlServerFmtFiles()
-	 * Parameters:	Directory to create in, CSV files object
-	 * Description:	Create MS SQL Server bulk load format files
-	 *				The insistence on quotes excludes the header row
-	 *
-	 * Exammple file format:
-	 
-<?xml version="1.0"?>
-<!-- MS SQL Server bulk load format files
-	 The insistence on quotes excludes the header row -->
-<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
- <RECORD>
-  <FIELD ID="0" xsi:type="CharTerm" TERMINATOR='"' />
-   <FIELD ID="1" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="2" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="3" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="4" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="5" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="6" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="7" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="8" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="9" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="10" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="11" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="12" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="13" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="14" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="15" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="16" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="17" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="18" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="19" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="20" xsi:type="CharTerm" TERMINATOR='"\r\n' />
- </RECORD>
- <ROW>
-   <COLUMN SOURCE="1" NAME="statefp" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="2" NAME="countyfp" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="3" NAME="countyns" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="4" NAME="affgeoid" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="5" NAME="geoid" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="6" NAME="name" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="7" NAME="lsad" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="8" NAME="aland" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="9" NAME="awater" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="10" NAME="gid" xsi:type="SQLINT" />
-   <COLUMN SOURCE="11" NAME="areaid" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="12" NAME="areaname" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="13" NAME="area_km2" xsi:type="SQLNUMERIC" />
-   <COLUMN SOURCE="14" NAME="geographic_centroid_wkt" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="15" NAME="wkt_11" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="16" NAME="wkt_10" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="17" NAME="wkt_9" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="18" NAME="wkt_8" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="19" NAME="wkt_7" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="20" NAME="wkt_6" xsi:type="SQLVARYCHAR" />
- </ROW>
-</BCPFORMAT>	 
-	 
-	 */	 
-	var createSqlServerFmtFiles=function createSqlServerFmtFiles(dir, csvFiles) {	
-		for (var i=0; i<csvFiles.length; i++) {
-			var fmtScriptName="mssql_" + csvFiles[i].tableName + ".fmt";
-			var fmtStream = fs.createWriteStream(dir + "/" + fmtScriptName, { flags : 'w' });	
-			fmtStream.on('finish', function fmtStreamClose() {
-				response.message+="\nstreamClose() MS SQL Server bulk load format file";
-			});		
-			fmtStream.on('error', function fmtStreamError(e) {
-				serverLog.serverLog2(__file, __line, dbType + "StreamError", 
-					"WARNING: Exception in MS SQL Server bulk load format file write: " + fmtScriptName, req, e, response);										
-			});
-			
-			var fmtBuf='<?xml version="1.0"?>\n' +
-			'<!-- MS SQL Server bulk load format files\n' +
-'	 The insistence on quotes excludes the header row -->\n' +
-'<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"\n' +
-'  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n' +
-' <RECORD>\n' + 
-'   <FIELD ID="0" xsi:type="CharTerm" TERMINATOR=' + "'" + '"' + "' />\n";
-			var columnList=Object.keys(csvFiles[i].rows[0]);
-			
-			for (var j=1; j<=columnList.length; j++) {
-				if (j<columnList.length) {
-					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '","' + "' />\n";
-				}
-				else {
-					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '"\\r\\n' + "' />\n";
-				}
-			}
-			fmtBuf+=' </RECORD>\n'; 
-			fmtBuf+=' <ROW>\n'; 
-			for (var j=1; j<=columnList.length; j++) {
-				var bcpDtype="SQLVARYCHAR";
-				var column=columnList[(j-1)].toLowerCase();
-				if (column == "gid") {
-					bcpDtype="SQLINT"; // Integer
-				}
-				else if (column == "area_km2") {
-					bcpDtype="SQLNUMERIC"; // Numeric
-				}
-				fmtBuf+='   <COLUMN SOURCE="' + j + '" NAME="' + column + '" xsi:type="' + bcpDtype + '" />\n';
-			}			
-			fmtBuf+=' </ROW>\n'; 
-			fmtBuf+='</BCPFORMAT>\n'; 
-			fmtStream.write(fmtBuf);
-			fmtStream.end();
-		} // End of for csvFiles
-	} // End of createSqlServerFmtFiles()
 	
 	var pgScript="pg_" + response.fields["geographyName"] + ".sql"
 	var mssqlScript="mssql_" + response.fields["geographyName"] + ".sql"
