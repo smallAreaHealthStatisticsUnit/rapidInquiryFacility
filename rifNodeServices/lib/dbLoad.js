@@ -1015,7 +1015,6 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					sqlArray);
 			}	
 
-
 			if (dbType == "MSSQLServer") { 	
 				var sqlStmt=new Sql("Make primary key not null",
 					getSqlFromFile("not_null.sql", 
@@ -1040,6 +1039,95 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					response.fields["geographyName"].toLowerCase(), 
 				sqlArray);	
 					
+			if (dbType == "MSSQLServer") { 
+				var sqlStmt=new Sql("Drop table " + "tile_intersects_" + response.fields["geographyName"].toLowerCase(), 
+					getSqlFromFile("drop_table.sql", dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray);
+			}
+			else if (dbType == "PostGres") { 
+				var sqlStmt=new Sql("Drop table " + "tile_intersects_" + response.fields["geographyName"].toLowerCase(), 
+					getSqlFromFile("drop_table_cascade.sql", dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray);						
+			}
+			
+			if (dbType == "MSSQLServer") { // No JSON in SQL Server
+				var sqlStmt=new Sql("Create tile intersects table",
+					getSqlFromFile("create_tile_intersects_table.sql", 
+						undefined /* Common */, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"Text"									/* JSON datatype (Postgres: JSON, MS SQL Server: Text) */,
+						"bit"									/* STWithin() return datatype: bit (0/1) */), 
+					sqlArray);					
+			}					
+			else if (dbType == "PostGres") { // No JSON in SQL Server					
+				var sqlStmt=new Sql("Create tile intersects table",
+					getSqlFromFile("create_tile_intersects_table.sql", 
+						undefined /* Common */, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"JSON"									/* JSON datatype (Postgres: JSON, MS SQL Server: Text) */,
+						"BOOLEAN"								/* ST_Within() return datatype: bit (0/1) */), 
+					sqlArray);						
+			}
+
+			var sqlStmt=new Sql("Add geometry column: bbox",
+				getSqlFromFile("add_geometry_column.sql", dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()
+											/* 1: Table name; e.g. cb_2014_us_county_500k */,
+					'bbox' 					/* 2: column name; e.g. geographic_centroid */,
+					4326 					/* 3: Column SRID; e.g. 4326 */,
+					'POLYGON' 				/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray);
+			var sqlStmt=new Sql("Add geometry column: geom",
+				getSqlFromFile("add_geometry_column.sql", dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()
+											/* 1: Table name; e.g. cb_2014_us_county_500k */,
+					'geom' 					/* 2: column name; e.g. geographic_centroid */,
+					4326 					/* 3: Column SRID; e.g. 4326 */,
+					'MULTIPOLYGON' 			/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray);
+					
+			var sqlStmt=new Sql("Comment tile intersects table",
+				getSqlFromFile("comment_table.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"Tile intersects"	/* Comment */), sqlArray);
+					
+			var fieldArray = ['geolevel_id', 'zoomlevel', 'areaid', 'x', 'y', 'optimised_geojson',
+				'within', 'bbox', 'geom'];
+			var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.',
+				'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
+				'Area ID',
+				'X tile number. From 0 to (2**<zoomlevel>)-1',
+				'Y tile number. From 0 to (2**<zoomlevel>)-1',
+				'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.',
+				'Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.',
+				'Bounding box of tile as a polygon.',
+				'Geometry of area.'];
+			for (var l=0; l< fieldArray.length; l++) {		
+				var sqlStmt=new Sql("Comment tile intersects table column",
+					getSqlFromFile("comment_column.sql", 
+						dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase(),/* Table name */
+						fieldArray[l]														/* Column name */,
+						fieldDescArray[l]													/* Comment */), 
+					sqlArray);
+			}			
+
+			if (dbType == "PostGres") { // Partition Postgres
+				var sqlStmt=new Sql("Create partitioned tables and insert function for tile intersects table; comment partitioned tables and columns",
+					getSqlFromFile("partition_tile_intersects_table.sql", 
+						dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 1: Tile iontersects table name */,
+						response.fields["max_zoomlevel"]									/* 2: Max zoomlevel; e.g. 11 */,
+						"geolevels_" + response.fields["geographyName"].toLowerCase()		/* 3: Geolevels table; 
+																								e.g. geolevels_cb_2014_us_500k */), 
+					sqlArray);			
+
+				var sqlStmt=new Sql("Partition tile intersects table: insert trigger",
+					getSqlFromFile("partition_trigger.sql", 
+						dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+					sqlArray);						
+			}
+			
 		} // End of createTilesTables()
 		
 		/*
@@ -1110,7 +1198,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					sqlArray);			
 
 				var sqlStmt=new Sql("Partition geometry table: insert trigger",
-					getSqlFromFile("partition_geometry_trigger.sql", 
+					getSqlFromFile("partition_trigger.sql", 
 						dbType, 
 						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
 					sqlArray);						
