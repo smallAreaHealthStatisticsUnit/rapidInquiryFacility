@@ -1201,7 +1201,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
 					"tile_intersects_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
-					"Tile intersects"	/* Comment */), sqlArray);
+					"Tile area id intersects"	/* Comment */), sqlArray);
 					
 			var fieldArray = ['geolevel_id', 'zoomlevel', 'areaid', 'x', 'y', 'optimised_geojson',
 				'within', 'bbox', 'geom'];
@@ -1267,7 +1267,53 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					dbType, 
 					"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
 					), sqlArray);
+
+			if (dbType == "PostGres") { // Postgres tile manufacture
+				var sqlStmt=new Sql("Create tile intersects table INSERT function",
+					getSqlFromFile("tileMaker_intersector_function.sql", 
+						dbType, 
+						"tileMaker_intersector_" + response.fields["geographyName"].toLowerCase()	
+																							/* 1: function name; e.g. tileMaker_intersector_cb_2014_us_500k */,
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
+						"tile_limits_" + response.fields["geographyName"].toLowerCase()		/* 3: tile limits table; e.g. tile_limits_cb_2014_us_500k */,
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 4: geometry table; e.g. geometry_cb_2014_us_500k */), 
+					sqlArray);
+
+				var sqlStmt=new Sql("Create second tile intersects table INSERT function (simplification errors)",
+					getSqlFromFile("tileMaker_intersector_function2.sql", 
+						dbType, 
+						"tileMaker_intersector2_" + response.fields["geographyName"].toLowerCase()	
+																							/* 1: function name; e.g. tileMaker_intersector2_cb_2014_us_500k */,
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 3: geometry table; e.g. geometry_cb_2014_us_500k */), 
+					sqlArray);		
+
+				var sqlStmt=new Sql("Create tiles table INSERT function (tile aggregator)",
+					getSqlFromFile("tileMaker_aggregator_function.sql", 
+						dbType, 
+						"tileMaker_aggregator_" + response.fields["geographyName"].toLowerCase()	
+																							/* 1: function name; e.g. tileMaker_aggregator_cb_2014_us_500k */,
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
+						"t_tiles_" + response.fields["geographyName"].toLowerCase()			/* 3: tiles table; e.g. t_tiles_cb_2014_us_500k */,
+						"geolevels_" + response.fields["geographyName"].toLowerCase()		/* 4: geolevels table; e.g. geolevels_cb_2014_us_500k */), 
+					sqlArray);		
+
+				var sqlStmt=new Sql("Create tiles table INSERT function (tile aggregator)",
+					getSqlFromFile("tileMaker_main_function.sql", 
+						dbType, 
+						response.fields["geographyName"].toLowerCase()						/* 1: geography; e.g. cb_2014_us_500k */,
+ 						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 2: geometry table; e.g. geometry_cb_2014_us_500k */,
+ 						"geolevels_" + response.fields["geographyName"].toLowerCase()		/* 3: geolevels table; e.g. geolevels_cb_2014_us_500k */), 
+					sqlArray);				
 					
+			}	
+			
+			var sqlStmt=new Sql("Tile intersects table % savings",
+				getSqlFromFile("tile_intersects_select2.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					), sqlArray);			
+			
 		} // End of createTilesTables()
 		
 		/*
