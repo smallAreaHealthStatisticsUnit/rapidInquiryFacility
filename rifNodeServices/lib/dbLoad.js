@@ -337,6 +337,9 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			tableList.push("geography_" + response.fields["geographyName"].toLowerCase());
 			tableList.push("hierarchy_" + response.fields["geographyName"].toLowerCase());
 			tableList.push("geometry_" + response.fields["geographyName"].toLowerCase());
+			tableList.push("tile_intersects_" + response.fields["geographyName"].toLowerCase());
+			tableList.push("tile_limits_" + response.fields["geographyName"].toLowerCase());
+			tableList.push("t_tiles_" + response.fields["geographyName"].toLowerCase());
 			
 			for (var i=0; i<tableList.length; i++) {												
 				var sqlStmt=new Sql("Describe table " + tableList[i], 
@@ -1180,14 +1183,14 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			}
 
 			var sqlStmt=new Sql("Add geometry column: bbox",
-				getSqlFromFile("add_geometry_column.sql", dbType, 
+				getSqlFromFile("add_geometry_column2.sql", dbType, 
 					"tile_intersects_" + response.fields["geographyName"].toLowerCase()
 											/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'bbox' 					/* 2: column name; e.g. geographic_centroid */,
 					4326 					/* 3: Column SRID; e.g. 4326 */,
 					'POLYGON' 				/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray);
 			var sqlStmt=new Sql("Add geometry column: geom",
-				getSqlFromFile("add_geometry_column.sql", dbType, 
+				getSqlFromFile("add_geometry_column2.sql", dbType, 
 					"tile_intersects_" + response.fields["geographyName"].toLowerCase()
 											/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'geom' 					/* 2: column name; e.g. geographic_centroid */,
@@ -1237,7 +1240,34 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
 					sqlArray);						
 			}
-			
+
+			var sqlStmt=new Sql("INSERT into tile intersects table",
+				getSqlFromFile("tile_intersects_insert.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase(),	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					"tile_limits_" + response.fields["geographyName"].toLowerCase(),		/* Tile limits table name; e.g. tile_limits_cb_2014_us_500k */
+					"geometry_" + response.fields["geographyName"].toLowerCase()			/* Geometry table name; e.g. geometry_cb_2014_us_500k */
+					), sqlArray);
+
+			var sqlStmt=new Sql("Add primary key",
+				getSqlFromFile("add_primary_key.sql", 
+					undefined /* Common */, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Tile intersects table name */,
+					"geolevel_id, zoomlevel, areaid, x, y"									/* Primary key */), 
+				sqlArray);	
+				
+			var sqlStmt=new Sql("Analyze table",
+				getSqlFromFile("analyze_table.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+				sqlArray);	
+				
+			var sqlStmt=new Sql("SELECT from tile intersects table",
+				getSqlFromFile("tile_intersects_select.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					), sqlArray);
+					
 		} // End of createTilesTables()
 		
 		/*
@@ -1329,7 +1359,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						sqlFrag+="SELECT " + csvFiles[i].geolevel + " geolevel_id,\n" +
 "       areaid,\n" + 
 "        " + k + " AS zoomlevel,\n" +
-"       geometry::STGeomFromWKB(geom_" + k + ".STAsBinary(), 4326) AS geom\n" +
+"       geometry::STGeomFromWKB(geom_" + k + ".STAsBinary(), 4326).MakeValid() AS geom\n" +
 "  FROM " + csvFiles[i].tableName + "\n";	
 					}
 					sqlFrag+="ORDER BY 1, 3, 2";
