@@ -12,10 +12,10 @@
 DECLARE c1_maxgeolevel_id 	CURSOR FOR
 		SELECT MAX(geolevel_id) AS max_geolevel_id,
 	           MAX(zoomlevel) AS max_zoomlevel
-	      FROM geometry_cb_2014_us_500k;
+	      FROM %1;
 DECLARE c2_areaid_count 	CURSOR FOR	
 		SELECT areaid_count
-		  FROM geolevels_cb_2014_us_500k	
+		  FROM %2	
 		 WHERE geolevel_id = 1;
 --
 DECLARE @max_geolevel_id INTEGER;
@@ -63,6 +63,8 @@ BEGIN
 	FETCH c2_areaid_count INTO @areaid_count;
 	CLOSE c2_areaid_count;
 	DEALLOCATE c2_areaid_count;
+--
+	SET @max_zoomlevel=6;
 --
 	IF @areaid_count = 1 	/* 0/0/0 tile only;  */			
 		SET @start_geolevel_id=2;	
@@ -120,16 +122,16 @@ BEGIN
 				  FROM b
 			), d AS (
 				SELECT c.zoomlevel, c.x, c.y, c.bbox, p.areaid, p.within
-				  FROM c, tile_intersects_cb_2014_us_500k p /* Parent */
+				  FROM c, %3 p /* Parent */
 				 WHERE p.geolevel_id = @geolevel_id
-				   AND p.zoomlevel 	 = @zoomlevel -1/* Join to parent tile from previous geolevel_id; i.e. exclude if not present */
+				   AND p.zoomlevel 	 = @zoomlevel -1 /* Join to parent tile from previous geolevel_id; i.e. exclude if not present */
 				   AND c.parent_xmin = p.x  
 				   AND c.parent_ymin = p.y	
 			), e AS (
 				SELECT d.zoomlevel, d.x, d.y, d.bbox, d.areaid
 				  FROM d
 				 WHERE NOT EXISTS (SELECT c2.areaid
-									 FROM tile_intersects_cb_2014_us_500k c2
+									 FROM %3 c2
 									WHERE c2.geolevel_id = @geolevel_id
 									  AND c2.zoomlevel   = @zoomlevel
 									  AND c2.x           = d.x
@@ -139,14 +141,14 @@ BEGIN
 				SELECT e.zoomlevel, 
 				       @geolevel_id AS geolevel_id, 
 					   e.x, e.y, e.bbox, e2.areaid, e2.geom
-				  FROM e, geometry_cb_2014_us_500k e2
+				  FROM e, %1 e2
 				 WHERE e2.zoomlevel    = @l_use_zoomlevel
 				   AND e2.geolevel_id  = @geolevel_id
 				   AND e2.areaid       = e.areaid
 				   AND e.bbox.STIntersects(e2.geom.STEnvelope()) = 1	/* Intersect by bounding box */
 				   AND e.bbox.STIntersects(e2.geom) = 1 				/* intersects: (e.bbox && e.geom) is slower as it generates many more tiles */
 			)
-			INSERT INTO tile_intersects_cb_2014_us_500k(geolevel_id, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 			
+			INSERT INTO %3(geolevel_id, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 			
 			SELECT f.geolevel_id, f.zoomlevel, f.areaid, f.x, f.y, f.bbox, f.geom, 
 				   NULL AS optimised_geojson,
 				   1 AS within
@@ -171,17 +173,17 @@ BEGIN
 --	
 			WITH a AS (
 				SELECT DISTINCT geolevel_id, areaid
-				  FROM geometry_cb_2014_us_500k
+				  FROM %1
 				 WHERE geolevel_id = @geolevel_id
 				   AND zoomlevel   = @zoomlevel
 				EXCEPT 
 				SELECT DISTINCT geolevel_id, areaid
-				  FROM tile_intersects_cb_2014_us_500k a
+				  FROM %3 a
 				 WHERE geolevel_id = @geolevel_id
 				   AND zoomlevel   = @zoomlevel
 			), b AS (
 				SELECT a.geolevel_id, a.areaid, b.geom.STEnvelope() AS bbox, b.geom
-				  FROM a, geometry_cb_2014_us_500k b
+				  FROM a, %1 b
 				 WHERE a.geolevel_id = @geolevel_id
 				   AND zoomlevel     = @zoomlevel
 				   AND a.areaid      = b.areaid
@@ -250,7 +252,7 @@ BEGIN
 					   e.y
 				  FROM e
 				 WHERE NOT EXISTS (SELECT c2.areaid
-									 FROM tile_intersects_cb_2014_us_500k c2
+									 FROM %3 c2
 									WHERE c2.geolevel_id = @geolevel_id
 									  AND c2.zoomlevel   = @zoomlevel
 									  AND c2.x           = e.x
@@ -271,14 +273,14 @@ BEGIN
 				   AND e.geolevel_id = f1.geolevel_id
 			), g AS (
 					SELECT f.zoomlevel, f.geolevel_id, f.x, f.y, f.bbox, e2.areaid, e2.geom
-					  FROM f, geometry_cb_2014_us_500k e2
+					  FROM f, %1 e2
 					 WHERE e2.zoomlevel    = @l_use_zoomlevel
 					   AND e2.geolevel_id  = @geolevel_id
 					   AND e2.areaid       = f.areaid
 				       AND f.bbox.STIntersects(e2.geom.STEnvelope()) = 1	/* Intersect by bounding box */
 					   AND f.bbox.STIntersects(e2.geom) = 1 /* intersects: (e.bbox && e.geom) is slower as it generates many more tiles */
 			)
-			INSERT INTO tile_intersects_cb_2014_us_500k(geolevel_id, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 
+			INSERT INTO %3(geolevel_id, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 
 			SELECT geolevel_id, zoomlevel, areaid, x, y, bbox, geom,	
 				   NULL AS optimised_geojson,
 				   g.bbox.STWithin(g.geom) AS within
@@ -302,8 +304,8 @@ BEGIN
 			SET @cisecs=CAST(ROUND(@isecs, 1) AS VARCHAR(40))
 --
 -- Processed 57+0 total areaid intersects, 3 tiles for geolevel id 2/3 zoomlevel: 1/11 in 0.7+0.0s+0.3s, 1.9s total; 92.1 intesects/s
-			RAISERROR('%d/%d Processed %d+%d for geolevel id: %d/%d; zoomlevel: %d/%d; in %s+%s %s total; %s intesects/s)', 10, 1,
-				@i, @j, @rowc, @rowc2, @geolevel_id, @max_geolevel_id, @zoomlevel, @max_zoomlevel, @cesecs, @cesecs2, @cesecs3, @cisecs) WITH NOWAIT;
+			RAISERROR('Processed %d+%d for geolevel id: %d/%d; zoomlevel: %d/%d; in %s+%s %s total; %s intesects/s)', 10, 1,
+				@rowc, @rowc2, @geolevel_id, @max_geolevel_id, @zoomlevel, @max_zoomlevel, @cesecs, @cesecs2, @cesecs3, @cisecs) WITH NOWAIT;
 			SET @j+=1;	
 		END;
 		SET @i+=1;	

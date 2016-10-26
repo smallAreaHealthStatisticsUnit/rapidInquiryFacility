@@ -1307,7 +1307,6 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					sqlArray);				
 					
 			}	
-			/*
 			else if (dbType == "MSSQLServer") { // MSSQLServer tile manufacture
 				var sqlStmt=new Sql("INSERT into tile intersects table (MSSQLServer tile manufacture)",
 					getSqlFromFile("tile_intersects_insert2.sql", 
@@ -1316,7 +1315,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
  						"geolevels_" + response.fields["geographyName"].toLowerCase()	/* 2: Geolevels table name; e.g. geolevels_cb_2014_us_500k */,
  						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 3: Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
 						), sqlArray);
-			} */
+			} 
 			
 			var sqlStmt=new Sql("Tile intersects table % savings",
 				getSqlFromFile("tile_intersects_select2.sql", 
@@ -1356,14 +1355,30 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					"geometry_" + response.fields["geographyName"].toLowerCase() /* Table name */), 
 				sqlArray); 
 					
-			var sqlStmt=new Sql("Add geometry column",
+			var sqlStmt=new Sql("Add geom geometry column",
 				getSqlFromFile("add_geometry_column2.sql", dbType, 
 					"geometry_" + response.fields["geographyName"].toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'geom' 															/* 2: column name; e.g. geographic_centroid */,
 					4326															/* 3: Column SRID; e.g. 4326 */,
 					'MULTIPOLYGON' 													/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
 					sqlArray);
-					
+			if (dbType == "MSSQLServer") { // Add bounding box for implement PostGIS && operator
+ 				var sqlStmt=new Sql("Add bbox geometry column",
+				getSqlFromFile("add_geometry_column2.sql", dbType, 
+					"geometry_" + response.fields["geographyName"].toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
+					'bbox' 															/* 2: column name; e.g. geographic_centroid */,
+					4326															/* 3: Column SRID; e.g. 4326 */,
+					'POLYGON' 														/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
+					sqlArray);
+				var sqlStmt=new Sql("Comment geometry table column",
+					getSqlFromFile("comment_column.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase(), /* Geometry table name */
+						'bbox'														/* Column name */,
+						'Bounding box'												/* Comment */), 
+					sqlArray);
+			}
+			
 			var sqlStmt=new Sql("Comment geometry table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
@@ -1425,6 +1440,15 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				} // End of for zoomlevels loop
 			} // End of main file process loop			
 
+			if (dbType == "MSSQLServer") { // Update bounding box for implement PostGIS && operator
+				var sqlStmt=new Sql("Update bounding box for implement PostGIS && operator",
+					getSqlFromFile("geometry_bbox_update.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 1: Geometry table name */), 
+					sqlArray);
+			
+			}
+			
 			if (dbType == "PostGres") { // Partition Postgres
 				var sqlStmt=new Sql("Add primary key, index and cluster (convert to index organized table)",
 					getSqlFromFile("partition_geometry_table2.sql", 
@@ -1445,7 +1469,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
 						"geolevel_id, areaid, zoomlevel"									/* Primary key */), 
 					sqlArray);	
-				var sqlStmt=new Sql("Create spatial index",
+				var sqlStmt=new Sql("Create spatial index on geom",
 					getSqlFromFile("create_spatial_geometry_index.sql", 
 						dbType, 
 						"geometry_" + response.fields["geographyName"].toLowerCase() + "_gix"	/* Index name */, 
@@ -1456,13 +1480,26 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						csvFiles[0].bbox[2]														/* 6: Xmax (4326); e.g.  179.773803959804 */,
 						csvFiles[0].bbox[3]														/* 7: Ymax (4326); e.g. 71.352561 */), 
 					sqlArray);	
+					
+				var sqlStmt=new Sql("Create spatial index on bbox",
+					getSqlFromFile("create_spatial_geometry_index.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase() + "_gix2"	/* Index name */, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()			/* Table name */, 
+						"bbox"																	/* Geometry field name */,
+						csvFiles[0].bbox[0]														/* 4: Xmin (4326); e.g. -179.13729006727 */,
+						csvFiles[0].bbox[1]														/* 5: Ymin (4326); e.g. -14.3737802873213 */, 
+						csvFiles[0].bbox[2]														/* 6: Xmax (4326); e.g.  179.773803959804 */,
+						csvFiles[0].bbox[3]														/* 7: Ymax (4326); e.g. 71.352561 */), 
+					sqlArray);	
+					
 				var sqlStmt=new Sql("Analyze table",
 					getSqlFromFile("analyze_table.sql", 
 						dbType, 
 						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
 					sqlArray);	
 			}
-
+					
 			var sqlStmt=new Sql("Update areaid_count column in geolevels table using geometry table", 
 				getSqlFromFile("geolevels_areaid_update.sql", 
 					dbType, 
