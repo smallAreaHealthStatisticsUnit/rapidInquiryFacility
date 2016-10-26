@@ -1307,6 +1307,16 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					sqlArray);				
 					
 			}	
+			/*
+			else if (dbType == "MSSQLServer") { // MSSQLServer tile manufacture
+				var sqlStmt=new Sql("INSERT into tile intersects table (MSSQLServer tile manufacture)",
+					getSqlFromFile("tile_intersects_insert2.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()	/* 1: Geometry table name; e.g. geometry_cb_2014_us_500k */,
+ 						"geolevels_" + response.fields["geographyName"].toLowerCase()	/* 2: Geolevels table name; e.g. geolevels_cb_2014_us_500k */,
+ 						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 3: Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+						), sqlArray);
+			} */
 			
 			var sqlStmt=new Sql("Tile intersects table % savings",
 				getSqlFromFile("tile_intersects_select2.sql", 
@@ -1461,7 +1471,10 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				sqlArray);
 				
 		} // End of createGeometryTables()
-	
+/*
+psql -d sahsuland_dev -U peter -w -e -f pg_cb_2014_us_500k.sql
+sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
+*/	
 		function Sql(comment, sql, sqlArray) { // Object constructor
 			this.comment=comment;
 			this.sql=sql;	
