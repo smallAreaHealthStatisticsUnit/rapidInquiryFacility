@@ -677,14 +677,22 @@ RangeError: Invalid string length
 
 * Add max zoomlevel to UI to speed up demos and testing;  
 * SQL Server tile maker:
-  * Ported tiles table and view, geometry table, tile limits table
+  * Ported tiles table and view, geometry table, tile limits table:
+  * Partition geometry tables (Postgres only)
 * RIF team meeting;
 	
-#### Current TODO list (October):
+#### 24th to 28th October
 
-* Map tile generator; RIF integration preparation:
-  * One table partition per geolevel; add tile table to geography; and schema
-  * Partition geometry tables
+* SQL Server tile maker: tile intersects complete. Still unhappy about the performance; also second part of insert 
+  (Insert tile area id intersections missing where not in the previous layer; 
+  this is usually due to it being simplified out of existance) is not working.
+* One table partition per geolevel; add tile table to geography; and schema
+* Resolved SQL Server use of geography verses geometry and SQL Server geometry to geography casting; 
+  
+#### Current TODO list (November):
+
+* Need to fix QGIS (add geometry_columns table) as fix #8525 does not work
+* Map tile generator; RIF integration preparation
   * Add GID to lookup tables;
 * SQL load script generator: still todo, all can wait:
   * Confirm Postgres and SQL Server geolevel intersections are the same;
@@ -693,27 +701,24 @@ RangeError: Invalid string length
 	* Add tile table to geolevels;
 	* Add gid to lookup_table;
 	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
-  * Add trigger verification code from Postgres;
-  * SQL server RHR force to support mixed LH and RH in multipolygons
-    [c.%1.STUnion(%1.STStartPoint()) is also possible instead of c.%1.ReorientObject()] where %1 is the geometry column
-  * Fix in Node:
-    - Self-intersection at or near point -76.329400888614401 39.31505881204005
-    - Too few points in geometry component at or near point -91.774770828512843 46.946012696542709
-  * Add CSV files meta to XML config;
-  * Drive database script generator from XML config file (not internal data structures);
-  * Missing comments on other columns from shapefile via extended attributes XML file;
-  * Dump SQL to XML/JSON files (Postgres and SQL Server) so Kevin does not need to generate it;
-  * Check Turf JS centroid code (figures are wrong);
-  * Compare Turf/PostGIS/SQL Server area and centroid caculations;
-  * Resolve SQL Server use of geography verses geometry and SQL Server geometry to geography casting; 
   
-#### November TODO list:
+#### December TODO list:
 
 * Get methods: 
   * ZIP results;
   * Run front end and batch from XML config file.
+  * Add CSV files meta to XML config;
+  * Drive database script generator from XML config file (not internal data structures);
+  * Missing comments on other columns from shapefile via extended attributes XML file;
+  * Dump SQL to XML/JSON files (Postgres and SQL Server) so Kevin does not need to generate it;
+  * Add trigger verification code from Postgres;
+  * Fix in Node:
+    - Self-intersection at or near point -76.329400888614401 39.31505881204005
+    - Too few points in geometry component at or near point -91.774770828512843 46.946012696542709
+  * Check Turf JS centroid code (figures are wrong);
+  * Compare Turf/PostGIS/SQL Server area and centroid caculations;
 
-SQL Server porting started in August; so far I was able to use Turf. The Node.js backend needs to be 
+SQL Server porting started in August(nearly complete 27/10/2016); so far I was able to use Turf. The Node.js backend needs to be 
 able to run the scripts so that the fixed and validated geometry data becomes available.
 
 Note: no bounding box (bbox) in tiles.
@@ -737,6 +742,9 @@ Note: no bounding box (bbox) in tiles.
 * Calucation of quantization and the max zoomlevel using area. Enforcement in browser. 
 * Hover support for area name, area_km2 and shapefile supplied data at highest resolution
 
+* SQL server RHR force to support mixed LH and RH in multipolygons
+  [c.%1.STUnion(%1.STStartPoint()) is also possible instead of c.%1.ReorientObject()] where %1 is the geometry column [Needs Turf support]
+	
 * Display of zoomlevel contextual information: total topojson size, suppressed or not. 
 * Status in write JSON file Re-test COA2011: json memory and timeout issues are solved
 * Add simplify to zoomlevel 11, spherical simplify limit (in Steraradians) [Probably no, only use quantization at max zoomlevel] .
