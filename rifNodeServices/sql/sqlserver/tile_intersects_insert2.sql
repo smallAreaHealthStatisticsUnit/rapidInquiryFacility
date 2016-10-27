@@ -8,6 +8,11 @@
  *
  * Description:			Insert into tile intersects table
  * Note:				%% becomes % after substitution
+ *
+ * To performance trace add to script:
+ *
+ * SET STATISTICS PROFILE ON
+ * SET STATISTICS TIME ON 
  */
 DECLARE c1_maxgeolevel_id 	CURSOR FOR
 		SELECT MAX(geolevel_id) AS max_geolevel_id,
@@ -64,7 +69,9 @@ BEGIN
 	CLOSE c2_areaid_count;
 	DEALLOCATE c2_areaid_count;
 --
-	SET @max_zoomlevel=6;
+-- For testing...
+--
+--	SET @max_zoomlevel=6;
 --
 	IF @areaid_count = 1 	/* 0/0/0 tile only;  */			
 		SET @start_geolevel_id=2;	
@@ -145,7 +152,7 @@ BEGIN
 				 WHERE e2.zoomlevel    = @l_use_zoomlevel
 				   AND e2.geolevel_id  = @geolevel_id
 				   AND e2.areaid       = e.areaid
-				   AND e.bbox.STIntersects(e2.geom.STEnvelope()) = 1	/* Intersect by bounding box */
+				   AND e.bbox.STIntersects(e2.bbox) = 1					/* Intersect by bounding box */
 				   AND e.bbox.STIntersects(e2.geom) = 1 				/* intersects: (e.bbox && e.geom) is slower as it generates many more tiles */
 			)
 			INSERT INTO %3(geolevel_id, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 			
@@ -277,7 +284,7 @@ BEGIN
 					 WHERE e2.zoomlevel    = @l_use_zoomlevel
 					   AND e2.geolevel_id  = @geolevel_id
 					   AND e2.areaid       = f.areaid
-				       AND f.bbox.STIntersects(e2.geom.STEnvelope()) = 1	/* Intersect by bounding box */
+				       AND f.bbox.STIntersects(e2.bbox) = 1	/* Intersect by bounding box */
 					   AND f.bbox.STIntersects(e2.geom) = 1 /* intersects: (e.bbox && e.geom) is slower as it generates many more tiles */
 			)
 			INSERT INTO %3(geolevel_id, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 
@@ -287,7 +294,10 @@ BEGIN
 			  FROM g 
 			 ORDER BY geolevel_id, zoomlevel, areaid, x, y;	
 --			 
-			SET @rowc2 = @@ROWCOUNT;			
+			SET @rowc2 = @@ROWCOUNT;		
+--
+			ALTER INDEX ALL ON %3 REORGANIZE; 
+--			
 			SET @etime2 = CAST(GETDATE() - @lstart AS TIME);
 			SET @esecs2 = (DATEPART(MILLISECOND, @etime2));
 			SET @esecs2 = @esecs/210;
@@ -304,7 +314,7 @@ BEGIN
 			SET @cisecs=CAST(ROUND(@isecs, 1) AS VARCHAR(40))
 --
 -- Processed 57+0 total areaid intersects, 3 tiles for geolevel id 2/3 zoomlevel: 1/11 in 0.7+0.0s+0.3s, 1.9s total; 92.1 intesects/s
-			RAISERROR('Processed %d+%d for geolevel id: %d/%d; zoomlevel: %d/%d; in %s+%s %s total; %s intesects/s)', 10, 1,
+			RAISERROR('Processed %d+%d for geolevel id: %d/%d; zoomlevel: %d/%d; in %s+%s, %s s total; %s intesects/s)', 10, 1,
 				@rowc, @rowc2, @geolevel_id, @max_geolevel_id, @zoomlevel, @max_zoomlevel, @cesecs, @cesecs2, @cesecs3, @cisecs) WITH NOWAIT;
 			SET @j+=1;	
 		END;

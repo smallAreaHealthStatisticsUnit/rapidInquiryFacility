@@ -1249,13 +1249,24 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					"geometry_" + response.fields["geographyName"].toLowerCase()			/* Geometry table name; e.g. geometry_cb_2014_us_500k */
 					), sqlArray);
 
-			var sqlStmt=new Sql("Add primary key",
-				getSqlFromFile("add_primary_key.sql", 
-					undefined /* Common */, 
-					"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Tile intersects table name */,
-					"geolevel_id, zoomlevel, areaid, x, y"									/* Primary key */), 
-				sqlArray);	
-				
+					
+			if (dbType == "PostGres") { 
+				var sqlStmt=new Sql("Add primary key",
+					getSqlFromFile("add_primary_key.sql", 
+						undefined /* Common */, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Tile intersects table name */,
+						"geolevel_id, zoomlevel, areaid, x, y"									/* Primary key */), 
+					sqlArray);	
+			}
+			else if (dbType == "MSSQLServer") { // Force PK to be non clustered so inserts are fast
+				var sqlStmt=new Sql("Add non clustered primary key",
+					getSqlFromFile("add_primary_key.sql", 
+						dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Tile intersects table name */,
+						"geolevel_id, zoomlevel, areaid, x, y"									/* Primary key */), 
+					sqlArray);	
+			}	
+			
 			var sqlStmt=new Sql("Analyze table",
 				getSqlFromFile("analyze_table.sql", 
 					dbType, 
