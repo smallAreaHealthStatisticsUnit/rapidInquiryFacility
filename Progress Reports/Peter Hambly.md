@@ -688,6 +688,7 @@ RangeError: Invalid string length
   this is usually due to it being simplified out of existance) is not working.
 * One table partition per geolevel; add tile table to geography; and schema
 * Resolved SQL Server use of geography verses geometry and SQL Server geometry to geography casting; 
+* Found status bug in UI (race in last two status updates, BATCH_END is missing). Need to find non async status update near the end...
   
 #### Current TODO list (November):
 
