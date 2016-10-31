@@ -21,4 +21,5 @@ June 2016 progress report
 ##August
 - Amended R smoothing program to create database records of the required format
 
-
+##September
+- No changes required
