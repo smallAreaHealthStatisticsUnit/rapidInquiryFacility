@@ -690,11 +690,20 @@ RangeError: Invalid string length
 * Resolved SQL Server use of geography verses geometry and SQL Server geometry to geography casting; 
 * Found status bug in UI (race in last two status updates, BATCH_END is missing). Need to find non async status update near the end...
   
+#### 31st October to 4th November
+
+* Fix for SQL Server QGIS (add geometry_columns table) as fix #8525 does not work (half works!) - add geometry_columns (PostGIS control table)
+* SQL Server map tiles mssing a few at all levels. Tiles are in the database and are valid, appears to be a bug with QGIS which is complaining of broken polygons:
+```Exception: IllegalArgumentException: Invalid number of points in LinearRing found 3 - must be 0 or >= 4;```
+  * Technically these are triangles, and will be small offshore islands that have been oversimplified (and almost certainly invisible at this scale);
+  * Highlights the problems of standards for GIS, QGIS uses the same library as Postgres/PostGIS (GeOS); SQL Server is more relaxed;
+  * Should convert to topoJSON fine
+
 #### Current TODO list (November):
 
-* Need to fix QGIS (add geometry_columns table) as fix #8525 does not work
 * Map tile generator; RIF integration preparation
   * Add GID to lookup tables;
+  * Add areaid as well as <geolevel_name> in lookup tables;
 * SQL load script generator: still todo, all can wait:
   * Confirm Postgres and SQL Server geolevel intersections are the same;
   * RIF production script:

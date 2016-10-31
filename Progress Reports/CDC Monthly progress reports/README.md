@@ -13,7 +13,7 @@
 
 Completion activities on the RIF Postgres database: Postgres database test harness, partitioning; database trigger testing, confirm port to Linux. 
 
-### 2017
+### 2016
 
 ## January to March 2016
 
@@ -29,3 +29,6 @@ in ordered chunks of parallel processing). Added zip file support; large (>1GB) 
 refactor and removal of duplicate code. JQuery UI frontend, zip, dbf and ESRI extended attributes file support.
 
 * [July 2016](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2016/July%202016.md)
+* [August 2016](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2016/August%202016.md)
+* [September 2016](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2016/September%202016.md)
+* [October 2016](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2016/October%202016.md)
