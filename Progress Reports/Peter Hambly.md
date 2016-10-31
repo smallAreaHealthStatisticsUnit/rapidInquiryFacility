@@ -647,7 +647,7 @@ RangeError: Invalid string length
   * Tile intersection (i.e. adding data, cropping to tile boundary) is time expensive but 
     geolevel 1 takes 210s to level 9 (to level 11 ~20x longer, estimated at: 70 minutes); to 
 	US county level will be several hours!
-  * Architecture will be as in the prototype: SQL script and tile script which will:
+  * Architecture will be as in the prototype: SQL script and a Node.js tile creation script which will:
     * Convert geoJSON/(Well known text for SQL Server) to topoJSON;
     * PNG tile dump to files (Postgres only - no raster support in SQL Server);	
   * Image of US outline tiles at zoomlevel 8: 
