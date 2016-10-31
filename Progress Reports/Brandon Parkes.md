@@ -20,7 +20,5 @@ June 2016 progress report
 
 ##August
 - Amended R smoothing program to create database records of the required format
-##September
-- No changes required
-##October
-- Change to the way study areas are related to comaprison areas. Previously, separate comparision areas could be used for study areas (based on the study id), amended so a single comparison area is used
+
+
