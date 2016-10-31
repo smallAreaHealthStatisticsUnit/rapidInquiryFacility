@@ -22,9 +22,8 @@ creation and data extraction has now been moved to Peter towards the end of Octo
 
 | Week | Week Starting     | PH                                                                   | KG                                                                                                | DM                                                                                             | BP                                                                  | MD                                             | Milestone                                                 | Notes |
 |------|-------------------|----------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|------------------------------------------------|-----------------------------------------------------------|-------|
-                                                                                                  |                                                                                                |                                                                     |                                                |                                                           |       |
 | 40   | 03 October 2016   |                                                                      |                                                                                                   | Allocated to JG                                                                                |                                                                     |                                                |                                                           |       |
-| 41   | 10 October 2016   | Not allocated (for overrun - 9 days); now: Map tile generation       | 7. Data Loader (35 days) - start liable for 2/3 weeks delays caused by more work on GET methods   | 6.3 Middleware services - other (10 days) [Potentially Kevin as well]: data viewer get methods |                                                                     |                                                |                                                           |       |
+| 41   | 10 October 2016   | Not allocated (for overrun - 9 days); now: Map tile generation       | 7. Data Loader (35 days) - start liable for 2/3 weeks delays caused by more work on GET methods   | 6.3 Middleware services - SQL Server porting (10 days): data viewer get methods                |                                                                     | 6.3 SQL Server porting (10 days)               |                                                           |       |
 | 42   | 17 October 2016   |                                                                      |                                                                                                   |                                                                                                |                                                                     |                                                |                                                           |       |
 | 43   | 24 October 2016   |                                                                      |                                                                                                   |                                                                                                |                                                                     |                                                |                                                           |       |
 | 44   | 31 October 2016   | SQL Server study submission and data extraction                      |                                                                                                   | Allocated to JG                                                                                | Documentation, manual                                               |                                                |                                                           |       |
@@ -92,7 +91,7 @@ TO BE ADDED
 |        10 | 24 mins  |            |  
 |        11 | 80 mins  |            |
 
-  * SQL Server requires more tuning
+  * SQL Server is 10x slower at intersection and requires more tuning;
   * Architecture will be as in the prototype: a SQL script and a Node.js tile creation script which will:
     * Convert geoJSON/(Well known text for SQL Server) to topoJSON;
     * PNG tile dump to files (Postgres only - no raster support in SQL Server);	
@@ -111,6 +110,7 @@ TO BE ADDED
 
 #### November:
 
+* SQL Server tile intersection tuning
 * Map tile generator; RIF integration preparation
 
 ## Databases
