@@ -697,7 +697,18 @@ RangeError: Invalid string length
 ```Exception: IllegalArgumentException: Invalid number of points in LinearRing found 3 - must be 0 or >= 4;```
   * Technically these are triangles, and will be small offshore islands that have been oversimplified (and almost certainly invisible at this scale);
   * Highlights the problems of standards for GIS, QGIS uses the same library as Postgres/PostGIS (GeOS); SQL Server is more relaxed;
-  * Should convert to topoJSON fine
+  * Should convert to topoJSON fine;
+* Tile intersection (i.e. adding data, cropping to tile boundary) is time expensive but acceptable to US county level takes 90 minutes in PostGIS!
+  
+| Zoomlevel | PostGIS  | SQL Server |
+| ----------| ---------|------------|
+|         7 | 75 secs  |            |
+|         8 | 166 secs | 27 mins    |
+|         9 | 8 mins   |            |
+|        10 | 24 mins  |            |  
+|        11 | 80 mins  |            |
+
+  * SQL Server requires more tuning!
 
 #### Current TODO list (November):
 

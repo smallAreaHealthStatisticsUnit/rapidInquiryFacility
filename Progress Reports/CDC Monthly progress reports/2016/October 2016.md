@@ -82,9 +82,17 @@ TO BE ADDED
 |        11 |    4 |  435 | 2046 |  948 |        1050102 | 58968 |    94.38 |
 		
   * Re-wrote functions to be simpler (for SQL Server porting) and provide running updates;
-  * Tile intersection (i.e. adding data, cropping to tile boundary) is time expensive but 
-    geolevel 1 takes 210s to level 9 (to level 11 ~20x longer, estimated at: 70 minutes); to 
-	US county level will be several hours!
+  * Tile intersection (i.e. adding data, cropping to tile boundary) is time expensive but acceptable to US county level takes 90 minutes in PostGIS!
+  
+| Zoomlevel | PostGIS  | SQL Server |
+| ----------| ---------|------------|
+|         7 | 75 secs  |            |
+|         8 | 166 secs | 27 mins    |
+|         9 | 8 mins   |            |
+|        10 | 24 mins  |            |  
+|        11 | 80 mins  |            |
+
+  * SQL Server requires more tuning
   * Architecture will be as in the prototype: a SQL script and a Node.js tile creation script which will:
     * Convert geoJSON/(Well known text for SQL Server) to topoJSON;
     * PNG tile dump to files (Postgres only - no raster support in SQL Server);	
