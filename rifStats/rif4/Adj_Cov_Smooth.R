@@ -105,7 +105,7 @@ processCommandLineArguments <- function() {
       } else if (grepl('investigation_name', parametersDataFrame[i, 1]) == TRUE){
         investigationName <<- parametersDataFrame[i, 2]
       } else if (grepl('investigation_id', parametersDataFrame[i, 1]) == TRUE){
-        investigationId <<- parametersDataFrame[i, 2]
+        investigationId <<- as.integer(parametersDataFrame[i, 2])
       } else if (grepl('odbc_data_source', parametersDataFrame[i, 1]) == TRUE){
         odbcDataSource <<- parametersDataFrame[i, 2]
       } else if (grepl('models', parametersDataFrame[i, 1]) == TRUE){
