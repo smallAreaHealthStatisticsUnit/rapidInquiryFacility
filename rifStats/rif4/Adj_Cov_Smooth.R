@@ -54,7 +54,7 @@ temporarySmoothedResultsTableName <- ""
 #The name of the investigation. Is an input parameter, but default is set here fro debug purposes
 investigationName <- "inv_1"
 #The id of the investigation - used when writing the results back to the database. Input paremeter
-investigationId <- 1
+investigationId <- "1"
 
 ##====================================================================
 ## FUNCTION: processCommandLineArguments
@@ -105,7 +105,7 @@ processCommandLineArguments <- function() {
       } else if (grepl('investigation_name', parametersDataFrame[i, 1]) == TRUE){
         investigationName <<- parametersDataFrame[i, 2]
       } else if (grepl('investigation_id', parametersDataFrame[i, 1]) == TRUE){
-        investigationId <<- as.integer(parametersDataFrame[i, 2])
+        investigationId <<- parametersDataFrame[i, 2]
       } else if (grepl('odbc_data_source', parametersDataFrame[i, 1]) == TRUE){
         odbcDataSource <<- parametersDataFrame[i, 2]
       } else if (grepl('models', parametersDataFrame[i, 1]) == TRUE){
@@ -861,7 +861,7 @@ convertToDBFormat=function(dataIn){
   dataOut = data.frame(area_id,gid,gid_rowindex,username)
   study_id = dataIn$study_id
   dataOut = cbind(dataOut, study_id)
-  inv_id = investigationId #Input parameter
+  inv_id = as.integer(as.character(investigationId)) #Input parameter
   dataOut = cbind(dataOut, inv_id)
  
   band_id = dataIn$band_id
