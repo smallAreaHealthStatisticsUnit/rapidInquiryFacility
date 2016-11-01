@@ -81,11 +81,11 @@ TO BE ADDED
 |        11 |    4 |  435 | 2046 |  948 |        1050102 | 58968 |    94.38 |
 		
   * Re-wrote functions to be simpler (for SQL Server porting) and provide running updates;
-  * Tile intersection (i.e. adding data, cropping to tile boundary) is time expensive but acceptable to US county level takes 90 minutes in PostGIS!
+  * Tile intersection (i.e. adding data, cropping to tile boundary) is time expensive but acceptable to US county level takes 80 minutes in PostGIS!
   
 | Zoomlevel | PostGIS  | SQL Server |
 | ----------| ---------|------------|
-|         7 | 75 secs  |            |
+|         7 | 75 secs  | 393 secs   |
 |         8 | 166 secs | 27 mins    |
 |         9 | 8 mins   |            |
 |        10 | 24 mins  |            |  

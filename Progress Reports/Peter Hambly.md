@@ -702,7 +702,7 @@ RangeError: Invalid string length
   
 | Zoomlevel | PostGIS  | SQL Server |
 | ----------| ---------|------------|
-|         7 | 75 secs  |            |
+|         7 | 75 secs  | 393 secs   |
 |         8 | 166 secs | 27 mins    |
 |         9 | 8 mins   |            |
 |        10 | 24 mins  |            |  
