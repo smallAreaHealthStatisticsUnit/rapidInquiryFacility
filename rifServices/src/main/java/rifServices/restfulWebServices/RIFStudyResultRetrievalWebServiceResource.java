@@ -312,14 +312,119 @@ public class RIFStudyResultRetrievalWebServiceResource
 	}	
 
 	
+	/**
+	 * STUB
+	 * @param userID
+	 * @param study_id
+	 * @return
+	 */
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getYearsForStudy")
+	public Response getYearsForStudy(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("study_id") String studyID) {
+				
+		String result = "";
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			ArrayList<Integer> years
+				= studyResultRetrievalService.getYearsForStudy(
+					user, 
+					studyID);
+			ArrayList<String> yearsAsStrings = new ArrayList<String>();
+			for (Integer year : years) {
+				yearsAsStrings.add(String.valueOf(year));
+			}
+			
+			result 
+				= serialiseNamedArray("years", yearsAsStrings);
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);		
+	}	
+	
 	
 	/**
 	 * STUB
 	 * @param userID
-	 * @param geographyName
-	 * @param geoLevelSelectName
-	 * @param geoLevelToMapName
-	 * @param mapAreaValues
+	 * @param study_id
+	 * @return
+	 */
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getSexesForStudy")
+	public Response getSexesForStudy(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("study_id") String studyID) {
+				
+		String result = "";
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			
+			ArrayList<Sex> sexes
+				= studyResultRetrievalService.getSexesForStudy(
+					user, 
+					studyID);
+			String[] sexNames = new String[sexes.size()];
+			for (int i = 0; i < sexNames.length; i++) {
+				sexNames[i] = sexes.get(i).getName();
+			}
+
+			SexesProxy sexesProxy = new SexesProxy();
+			sexesProxy.setNames(sexNames);
+			
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					sexesProxy);
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);		
+	}	
+	
+	
+	
+	
+	
+	/**
+	 * STUB
+	 * @param userID
+	 * @param study_id
 	 * @return
 	 */
 	@GET

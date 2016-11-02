@@ -345,6 +345,17 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		final GeoLevelAttributeSource geoLevelAttributeSource)
 		throws RIFServiceException;
 	
+	
+	public ArrayList<Integer> getYearsForStudy(
+		final User user, 
+		final String studyID)
+		throws RIFServiceException;
+	
+	public ArrayList<Sex> getSexesForStudy(
+		final User user,
+		final String studyID)
+		throws RIFServiceException;
+
 	/**
 	 * returns field with the following headers:
 	 * GID, SMR, CL, CU
@@ -356,7 +367,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		final User user,
 		final StudySummary studySummary)
 		throws RIFServiceException;
-
 
 	/**
 	 * obtains RR (unsmoothed - adjusted) and its confidence intervals for the

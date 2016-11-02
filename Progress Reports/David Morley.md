@@ -30,7 +30,6 @@ Principal Work Area: JavaScript User interface development
 - Choropleth mapping for a test dataset in dataviewer
 - Integrated taxonomy service into parameters modal
 
-
 ##August
 
 - Added histogram to choropleth map break selector
@@ -48,4 +47,11 @@ Principal Work Area: JavaScript User interface development
 - Added container for status updates
 - Improved look of interface CSS
 - Work with KG on D3 graphs for data viewer
+
+##October
+
+- All d3 charts added and are linked/interactive
+- All data comes from database - no hardtyping
+- Improved dialogue for disease parameters
+- UI is end-to-end study run ready
 

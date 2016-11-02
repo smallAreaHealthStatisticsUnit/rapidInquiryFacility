@@ -1,5 +1,5 @@
 /*
- * SQL statement name: 	partition_geometry_trigger.sql
+ * SQL statement name: 	partition_trigger.sql
  * Type:				Postgres/PostGIS psql
  * Parameters:
  *						1: geometry table; e.g. geometry_cb_2014_us_500k

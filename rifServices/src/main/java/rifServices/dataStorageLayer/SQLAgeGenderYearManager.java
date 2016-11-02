@@ -313,6 +313,7 @@ final class SQLAgeGenderYearManager
 		return results;		
 	}
 	
+	
 	/**
 	 * Gets the year range.
 	 *

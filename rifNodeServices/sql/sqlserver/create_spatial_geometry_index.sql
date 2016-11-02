@@ -14,4 +14,4 @@
  * Note:				%% becomes % after substitution
  */
 CREATE SPATIAL INDEX %1 ON %2 (%3)
-	WITH ( BOUNDING_BOX = (xmin=%4 ymin=%5, xmax=%6, ymax=%7))
+	WITH ( BOUNDING_BOX = (xmin=%4, ymin=%5, xmax=%6, ymax=%7))

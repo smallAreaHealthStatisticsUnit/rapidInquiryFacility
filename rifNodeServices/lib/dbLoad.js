@@ -129,6 +129,116 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 	});
 
 	/*
+	 * Function: 	createSqlServerFmtFiles()
+	 * Parameters:	Directory to create in, CSV files object
+	 * Description:	Create MS SQL Server bulk load format files
+	 *				The insistence on quotes excludes the header row
+	 *
+	 * Exammple file format:
+	 
+<?xml version="1.0"?>
+<!-- MS SQL Server bulk load format files
+	 The insistence on quotes excludes the header row -->
+<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ <RECORD>
+  <FIELD ID="0" xsi:type="CharTerm" TERMINATOR='"' />
+   <FIELD ID="1" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="2" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="3" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="4" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="5" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="6" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="7" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="8" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="9" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="10" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="11" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="12" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="13" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="14" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="15" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="16" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="17" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="18" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="19" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="20" xsi:type="CharTerm" TERMINATOR='"\r\n' />
+ </RECORD>
+ <ROW>
+   <COLUMN SOURCE="1" NAME="statefp" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="2" NAME="countyfp" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="3" NAME="countyns" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="4" NAME="affgeoid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="5" NAME="geoid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="6" NAME="name" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="7" NAME="lsad" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="8" NAME="aland" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="9" NAME="awater" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="10" NAME="gid" xsi:type="SQLINT" />
+   <COLUMN SOURCE="11" NAME="areaid" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="12" NAME="areaname" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="13" NAME="area_km2" xsi:type="SQLNUMERIC" />
+   <COLUMN SOURCE="14" NAME="geographic_centroid_wkt" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="15" NAME="wkt_11" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="16" NAME="wkt_10" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="17" NAME="wkt_9" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="18" NAME="wkt_8" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="19" NAME="wkt_7" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="20" NAME="wkt_6" xsi:type="SQLVARYCHAR" />
+ </ROW>
+</BCPFORMAT>	 
+	 
+	 */	 
+	var createSqlServerFmtFiles=function createSqlServerFmtFiles(dir, csvFiles) {	
+		for (var i=0; i<csvFiles.length; i++) {
+			var fmtScriptName="mssql_" + csvFiles[i].tableName + ".fmt";
+			var fmtStream = fs.createWriteStream(dir + "/" + fmtScriptName, { flags : 'w' });	
+			fmtStream.on('finish', function fmtStreamClose() {
+				response.message+="\nstreamClose() MS SQL Server bulk load format file";
+			});		
+			fmtStream.on('error', function fmtStreamError(e) {
+				serverLog.serverLog2(__file, __line, dbType + "StreamError", 
+					"WARNING: Exception in MS SQL Server bulk load format file write: " + fmtScriptName, req, e, response);										
+			});
+			
+			var fmtBuf='<?xml version="1.0"?>\n' +
+			'<!-- MS SQL Server bulk load format files\n' +
+'	 The insistence on quotes excludes the header row -->\n' +
+'<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"\n' +
+'  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n' +
+' <RECORD>\n' + 
+'   <FIELD ID="0" xsi:type="CharTerm" TERMINATOR=' + "'" + '"' + "' />\n";
+			var columnList=Object.keys(csvFiles[i].rows[0]);
+			
+			for (var j=1; j<=columnList.length; j++) {
+				if (j<columnList.length) {
+					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '","' + "' />\n";
+				}
+				else {
+					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '"\\r\\n' + "' />\n";
+				}
+			}
+			fmtBuf+=' </RECORD>\n'; 
+			fmtBuf+=' <ROW>\n'; 
+			for (var j=1; j<=columnList.length; j++) {
+				var bcpDtype="SQLVARYCHAR";
+				var column=columnList[(j-1)].toLowerCase();
+				if (column == "gid") {
+					bcpDtype="SQLINT"; // Integer
+				}
+				else if (column == "area_km2") {
+					bcpDtype="SQLNUMERIC"; // Numeric
+				}
+				fmtBuf+='   <COLUMN SOURCE="' + j + '" NAME="' + column + '" xsi:type="' + bcpDtype + '" />\n';
+			}			
+			fmtBuf+=' </ROW>\n'; 
+			fmtBuf+='</BCPFORMAT>\n'; 
+			fmtStream.write(fmtBuf);
+			fmtStream.end();
+		} // End of for csvFiles
+	} // End of createSqlServerFmtFiles()
+	
+	/*
 	 * Function: 	createSQLScriptHeader()
 	 * Parameters:	Script file name (full path), dbbase type as a string ("PostGres" or "MSSQLServer")
 	 * Description:	Create header for SQL script
@@ -227,6 +337,9 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			tableList.push("geography_" + response.fields["geographyName"].toLowerCase());
 			tableList.push("hierarchy_" + response.fields["geographyName"].toLowerCase());
 			tableList.push("geometry_" + response.fields["geographyName"].toLowerCase());
+			tableList.push("tile_intersects_" + response.fields["geographyName"].toLowerCase());
+			tableList.push("tile_limits_" + response.fields["geographyName"].toLowerCase());
+			tableList.push("t_tiles_" + response.fields["geographyName"].toLowerCase());
 			
 			for (var i=0; i<tableList.length; i++) {												
 				var sqlStmt=new Sql("Describe table " + tableList[i], 
@@ -890,7 +1003,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					getSqlFromFile("create_tiles_table.sql", 
 						undefined /* Common */,	
 						"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 1: Tiles table name */,
-						"VARCHAR"															/* 2: JSON datatype (Postgres JSON, SQL server VARCHAR) */
+						"Text"															/* 2: JSON datatype (Postgres JSON, SQL server Text) */
 						), sqlArray); 
 			}
 			else if (dbType == "PostGres") { // No JSON in SQL Server
@@ -898,7 +1011,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					getSqlFromFile("create_tiles_table.sql", 
 						undefined /* Common */,	
 						"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 1: Tiles table name */,
-						"JSON"														/* 2: JSON datatype (Postgres JSON, SQL server VARCHAR) */
+						"JSON"														/* 2: JSON datatype (Postgres JSON, SQL server Text) */
 						), sqlArray); 
 			}			
 			
@@ -969,16 +1082,23 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			}				
 
 			sqlArray.push(new Sql("Create tile limits table"));
-			
+		
+			if (dbType == "MSSQLServer") { 	
+				var sqlStmt=new Sql("Create tileMaker_STMakeEnvelope()", 
+					getSqlFromFile("tileMaker_STMakeEnvelope.sql", dbType), 
+					sqlArray); 
+			}
+				
 			var sqlStmt=new Sql("Drop table " + "tile_limits_" + response.fields["geographyName"].toLowerCase(), 
 				getSqlFromFile("drop_table.sql", dbType, 
 					"tile_limits_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray); 
 		
 			var sqlStmt=new Sql("Create table " + "tile_limits_" + response.fields["geographyName"].toLowerCase(), 
 				getSqlFromFile("create_tile_limits_table.sql", dbType, 
-					"tile_limits_" + response.fields["geographyName"].toLowerCase() /* Tile limits table */,
-					"geometry_" + response.fields["geographyName"].toLowerCase() /* Geometry table */,
-					response.fields["max_zoomlevel"] 								/* 4: max_zoomlevel */), sqlArray); 
+					"tile_limits_" + response.fields["geographyName"].toLowerCase() /* 1: Tile limits table */,
+					"geometry_" + response.fields["geographyName"].toLowerCase() 	/* 2: Geometry table */,
+					response.fields["max_zoomlevel"] 								/* 3: max_zoomlevel */), 
+				sqlArray); 
 
 			var sqlStmt=new Sql("Comment tile limits table",
 				getSqlFromFile("comment_table.sql", 
@@ -1007,7 +1127,15 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						fieldDescArray[l]													/* Comment */), 
 					sqlArray);
 			}	
-			
+
+			if (dbType == "MSSQLServer") { 	
+				var sqlStmt=new Sql("Make primary key not null",
+					getSqlFromFile("not_null.sql", 
+						dbType, 
+						"tile_limits_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"zoomlevel"															/* Primary key */), 
+					sqlArray);
+			}			
 			var sqlStmt=new Sql("Add primary key",
 				getSqlFromFile("add_primary_key.sql", 
 					undefined /* Common */, 
@@ -1024,6 +1152,188 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					response.fields["geographyName"].toLowerCase(), 
 				sqlArray);	
 					
+			if (dbType == "MSSQLServer") { 
+				var sqlStmt=new Sql("Drop table " + "tile_intersects_" + response.fields["geographyName"].toLowerCase(), 
+					getSqlFromFile("drop_table.sql", dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray);
+			}
+			else if (dbType == "PostGres") { 
+				var sqlStmt=new Sql("Drop table " + "tile_intersects_" + response.fields["geographyName"].toLowerCase(), 
+					getSqlFromFile("drop_table_cascade.sql", dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray);						
+			}
+			
+			if (dbType == "MSSQLServer") { // No JSON in SQL Server
+				var sqlStmt=new Sql("Create tile intersects table",
+					getSqlFromFile("create_tile_intersects_table.sql", 
+						undefined /* Common */, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"Text"									/* JSON datatype (Postgres: JSON, MS SQL Server: Text) */,
+						"bit"									/* STWithin() return datatype: bit (0/1) */), 
+					sqlArray);					
+			}					
+			else if (dbType == "PostGres") { // No JSON in SQL Server					
+				var sqlStmt=new Sql("Create tile intersects table",
+					getSqlFromFile("create_tile_intersects_table.sql", 
+						undefined /* Common */, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"JSON"									/* JSON datatype (Postgres: JSON, MS SQL Server: Text) */,
+						"BOOLEAN"								/* ST_Within() return datatype: bit (0/1) */), 
+					sqlArray);						
+			}
+
+			var sqlStmt=new Sql("Add geometry column: bbox",
+				getSqlFromFile("add_geometry_column2.sql", dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()
+											/* 1: Table name; e.g. cb_2014_us_county_500k */,
+					'bbox' 					/* 2: column name; e.g. geographic_centroid */,
+					4326 					/* 3: Column SRID; e.g. 4326 */,
+					'POLYGON' 				/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray);
+			var sqlStmt=new Sql("Add geometry column: geom",
+				getSqlFromFile("add_geometry_column2.sql", dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()
+											/* 1: Table name; e.g. cb_2014_us_county_500k */,
+					'geom' 					/* 2: column name; e.g. geographic_centroid */,
+					4326 					/* 3: Column SRID; e.g. 4326 */,
+					'MULTIPOLYGON' 			/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray);
+					
+			var sqlStmt=new Sql("Comment tile intersects table",
+				getSqlFromFile("comment_table.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"Tile area id intersects"	/* Comment */), sqlArray);
+					
+			var fieldArray = ['geolevel_id', 'zoomlevel', 'areaid', 'x', 'y', 'optimised_geojson',
+				'within', 'bbox', 'geom'];
+			var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.',
+				'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
+				'Area ID',
+				'X tile number. From 0 to (2**<zoomlevel>)-1',
+				'Y tile number. From 0 to (2**<zoomlevel>)-1',
+				'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.',
+				'Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.',
+				'Bounding box of tile as a polygon.',
+				'Geometry of area.'];
+			for (var l=0; l< fieldArray.length; l++) {		
+				var sqlStmt=new Sql("Comment tile intersects table column",
+					getSqlFromFile("comment_column.sql", 
+						dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase(),/* Table name */
+						fieldArray[l]														/* Column name */,
+						fieldDescArray[l]													/* Comment */), 
+					sqlArray);
+			}			
+
+			if (dbType == "PostGres") { // Partition Postgres
+				var sqlStmt=new Sql("Create partitioned tables and insert function for tile intersects table; comment partitioned tables and columns",
+					getSqlFromFile("partition_tile_intersects_table.sql", 
+						dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 1: Tile iontersects table name */,
+						response.fields["max_zoomlevel"]									/* 2: Max zoomlevel; e.g. 11 */,
+						"geolevels_" + response.fields["geographyName"].toLowerCase()		/* 3: Geolevels table; 
+																								e.g. geolevels_cb_2014_us_500k */), 
+					sqlArray);			
+
+				var sqlStmt=new Sql("Partition tile intersects table: insert trigger",
+					getSqlFromFile("partition_trigger.sql", 
+						dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+					sqlArray);						
+			}
+
+			var sqlStmt=new Sql("INSERT into tile intersects table",
+				getSqlFromFile("tile_intersects_insert.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase(),	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					"tile_limits_" + response.fields["geographyName"].toLowerCase(),		/* Tile limits table name; e.g. tile_limits_cb_2014_us_500k */
+					"geometry_" + response.fields["geographyName"].toLowerCase()			/* Geometry table name; e.g. geometry_cb_2014_us_500k */
+					), sqlArray);
+
+					
+			if (dbType == "PostGres") { 
+				var sqlStmt=new Sql("Add primary key",
+					getSqlFromFile("add_primary_key.sql", 
+						undefined /* Common */, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Tile intersects table name */,
+						"geolevel_id, zoomlevel, areaid, x, y"									/* Primary key */), 
+					sqlArray);	
+			}
+			else if (dbType == "MSSQLServer") { // Force PK to be non clustered so inserts are fast
+				var sqlStmt=new Sql("Add non clustered primary key",
+					getSqlFromFile("add_primary_key.sql", 
+						dbType, 
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Tile intersects table name */,
+						"geolevel_id, zoomlevel, areaid, x, y"									/* Primary key */), 
+					sqlArray);	
+			}	
+			
+			var sqlStmt=new Sql("Analyze table",
+				getSqlFromFile("analyze_table.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+				sqlArray);	
+				
+			var sqlStmt=new Sql("SELECT from tile intersects table",
+				getSqlFromFile("tile_intersects_select.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					), sqlArray);
+
+			if (dbType == "PostGres") { // Postgres tile manufacture
+				var sqlStmt=new Sql("Create tile intersects table INSERT function",
+					getSqlFromFile("tileMaker_intersector_function.sql", 
+						dbType, 
+						"tileMaker_intersector_" + response.fields["geographyName"].toLowerCase()	
+																							/* 1: function name; e.g. tileMaker_intersector_cb_2014_us_500k */,
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
+						"tile_limits_" + response.fields["geographyName"].toLowerCase()		/* 3: tile limits table; e.g. tile_limits_cb_2014_us_500k */,
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 4: geometry table; e.g. geometry_cb_2014_us_500k */), 
+					sqlArray);
+
+				var sqlStmt=new Sql("Create second tile intersects table INSERT function (simplification errors)",
+					getSqlFromFile("tileMaker_intersector_function2.sql", 
+						dbType, 
+						"tileMaker_intersector2_" + response.fields["geographyName"].toLowerCase()	
+																							/* 1: function name; e.g. tileMaker_intersector2_cb_2014_us_500k */,
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 3: geometry table; e.g. geometry_cb_2014_us_500k */), 
+					sqlArray);		
+
+				var sqlStmt=new Sql("Create tiles table INSERT function (tile aggregator)",
+					getSqlFromFile("tileMaker_aggregator_function.sql", 
+						dbType, 
+						"tileMaker_aggregator_" + response.fields["geographyName"].toLowerCase()	
+																							/* 1: function name; e.g. tileMaker_aggregator_cb_2014_us_500k */,
+						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
+						"t_tiles_" + response.fields["geographyName"].toLowerCase()			/* 3: tiles table; e.g. t_tiles_cb_2014_us_500k */,
+						"geolevels_" + response.fields["geographyName"].toLowerCase()		/* 4: geolevels table; e.g. geolevels_cb_2014_us_500k */), 
+					sqlArray);		
+
+				var sqlStmt=new Sql("Create tiles table INSERT function (tile aggregator)",
+					getSqlFromFile("tileMaker_main_function.sql", 
+						dbType, 
+						response.fields["geographyName"].toLowerCase()						/* 1: geography; e.g. cb_2014_us_500k */,
+ 						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 2: geometry table; e.g. geometry_cb_2014_us_500k */,
+ 						"geolevels_" + response.fields["geographyName"].toLowerCase()		/* 3: geolevels table; e.g. geolevels_cb_2014_us_500k */), 
+					sqlArray);				
+					
+			}	
+			else if (dbType == "MSSQLServer") { // MSSQLServer tile manufacture
+				var sqlStmt=new Sql("INSERT into tile intersects table (MSSQLServer tile manufacture)",
+					getSqlFromFile("tile_intersects_insert2.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()	/* 1: Geometry table name; e.g. geometry_cb_2014_us_500k */,
+ 						"geolevels_" + response.fields["geographyName"].toLowerCase()	/* 2: Geolevels table name; e.g. geolevels_cb_2014_us_500k */,
+ 						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 3: Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+						), sqlArray);
+			} 
+			
+			var sqlStmt=new Sql("Tile intersects table % savings",
+				getSqlFromFile("tile_intersects_select2.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					), sqlArray);			
+			
 		} // End of createTilesTables()
 		
 		/*
@@ -1056,14 +1366,30 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					"geometry_" + response.fields["geographyName"].toLowerCase() /* Table name */), 
 				sqlArray); 
 					
-			var sqlStmt=new Sql("Add geometry column",
+			var sqlStmt=new Sql("Add geom geometry column",
 				getSqlFromFile("add_geometry_column2.sql", dbType, 
 					"geometry_" + response.fields["geographyName"].toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'geom' 															/* 2: column name; e.g. geographic_centroid */,
 					4326															/* 3: Column SRID; e.g. 4326 */,
 					'MULTIPOLYGON' 													/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
 					sqlArray);
-					
+			if (dbType == "MSSQLServer") { // Add bounding box for implement PostGIS && operator
+ 				var sqlStmt=new Sql("Add bbox geometry column",
+				getSqlFromFile("add_geometry_column2.sql", dbType, 
+					"geometry_" + response.fields["geographyName"].toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
+					'bbox' 															/* 2: column name; e.g. geographic_centroid */,
+					4326															/* 3: Column SRID; e.g. 4326 */,
+					'POLYGON' 														/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
+					sqlArray);
+				var sqlStmt=new Sql("Comment geometry table column",
+					getSqlFromFile("comment_column.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase(), /* Geometry table name */
+						'bbox'														/* Column name */,
+						'Bounding box'												/* Comment */), 
+					sqlArray);
+			}
+			
 			var sqlStmt=new Sql("Comment geometry table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
@@ -1094,7 +1420,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					sqlArray);			
 
 				var sqlStmt=new Sql("Partition geometry table: insert trigger",
-					getSqlFromFile("partition_geometry_trigger.sql", 
+					getSqlFromFile("partition_trigger.sql", 
 						dbType, 
 						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
 					sqlArray);						
@@ -1115,7 +1441,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						sqlFrag+="SELECT " + csvFiles[i].geolevel + " geolevel_id,\n" +
 "       areaid,\n" + 
 "        " + k + " AS zoomlevel,\n" +
-"       geometry::STGeomFromWKB(geom_" + k + ".STAsBinary(), 4326) AS geom\n" +
+"       geometry::STGeomFromWKB(geom_" + k + ".STAsBinary(), 4326).MakeValid() AS geom\n" +
 "  FROM " + csvFiles[i].tableName + "\n";	
 					}
 					sqlFrag+="ORDER BY 1, 3, 2";
@@ -1125,6 +1451,15 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				} // End of for zoomlevels loop
 			} // End of main file process loop			
 
+			if (dbType == "MSSQLServer") { // Update bounding box for implement PostGIS && operator
+				var sqlStmt=new Sql("Update bounding box for implement PostGIS && operator",
+					getSqlFromFile("geometry_bbox_update.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 1: Geometry table name */), 
+					sqlArray);
+			
+			}
+			
 			if (dbType == "PostGres") { // Partition Postgres
 				var sqlStmt=new Sql("Add primary key, index and cluster (convert to index organized table)",
 					getSqlFromFile("partition_geometry_table2.sql", 
@@ -1135,8 +1470,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			}		
 			else if (dbType == "MSSQLServer") { 
 			
-				sqlArray.push(new Sql("No partitioning on SQL SErver as it requires an Enterprise license; which\n" + 
-					"means you have to do it yourself using the generated scripts as a start.")); // Comment
+				sqlArray.push(new Sql("No partitioning on SQL Server as it requires an Enterprise license; which"));
+				sqlArray.push(new Sql("means you have to do it yourself using the generated scripts as a start.")); // Comment
 					
 				// Add primary key, index and cluster (convert to index organized table)
 				var sqlStmt=new Sql("Add primary key",
@@ -1145,7 +1480,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
 						"geolevel_id, areaid, zoomlevel"									/* Primary key */), 
 					sqlArray);	
-				var sqlStmt=new Sql("Create spatial index",
+				var sqlStmt=new Sql("Create spatial index on geom",
 					getSqlFromFile("create_spatial_geometry_index.sql", 
 						dbType, 
 						"geometry_" + response.fields["geographyName"].toLowerCase() + "_gix"	/* Index name */, 
@@ -1156,22 +1491,38 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						csvFiles[0].bbox[2]														/* 6: Xmax (4326); e.g.  179.773803959804 */,
 						csvFiles[0].bbox[3]														/* 7: Ymax (4326); e.g. 71.352561 */), 
 					sqlArray);	
+					
+				var sqlStmt=new Sql("Create spatial index on bbox",
+					getSqlFromFile("create_spatial_geometry_index.sql", 
+						dbType, 
+						"geometry_" + response.fields["geographyName"].toLowerCase() + "_gix2"	/* Index name */, 
+						"geometry_" + response.fields["geographyName"].toLowerCase()			/* Table name */, 
+						"bbox"																	/* Geometry field name */,
+						csvFiles[0].bbox[0]														/* 4: Xmin (4326); e.g. -179.13729006727 */,
+						csvFiles[0].bbox[1]														/* 5: Ymin (4326); e.g. -14.3737802873213 */, 
+						csvFiles[0].bbox[2]														/* 6: Xmax (4326); e.g.  179.773803959804 */,
+						csvFiles[0].bbox[3]														/* 7: Ymax (4326); e.g. 71.352561 */), 
+					sqlArray);	
+					
 				var sqlStmt=new Sql("Analyze table",
 					getSqlFromFile("analyze_table.sql", 
 						dbType, 
 						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
 					sqlArray);	
 			}
-
+					
 			var sqlStmt=new Sql("Update areaid_count column in geolevels table using geometry table", 
 				getSqlFromFile("geolevels_areaid_update.sql", 
-					undefined /* Common */, 
+					dbType, 
 					"geolevels_" + response.fields["geographyName"].toLowerCase() /* Geolevels table */,
 					"geometry_" + response.fields["geographyName"].toLowerCase() /* Geometry table */), 
 				sqlArray);
 				
 		} // End of createGeometryTables()
-	
+/*
+psql -d sahsuland_dev -U peter -w -e -f pg_cb_2014_us_500k.sql
+sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
+*/	
 		function Sql(comment, sql, sqlArray) { // Object constructor
 			this.comment=comment;
 			this.sql=sql;	
@@ -1230,116 +1581,6 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			}
 		}
 	} // End of addSQLStatements()
-
-	/*
-	 * Function: 	createSqlServerFmtFiles()
-	 * Parameters:	Directory to create in, CSV files object
-	 * Description:	Create MS SQL Server bulk load format files
-	 *				The insistence on quotes excludes the header row
-	 *
-	 * Exammple file format:
-	 
-<?xml version="1.0"?>
-<!-- MS SQL Server bulk load format files
-	 The insistence on quotes excludes the header row -->
-<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
- <RECORD>
-  <FIELD ID="0" xsi:type="CharTerm" TERMINATOR='"' />
-   <FIELD ID="1" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="2" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="3" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="4" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="5" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="6" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="7" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="8" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="9" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="10" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="11" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="12" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="13" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="14" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="15" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="16" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="17" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="18" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="19" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="20" xsi:type="CharTerm" TERMINATOR='"\r\n' />
- </RECORD>
- <ROW>
-   <COLUMN SOURCE="1" NAME="statefp" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="2" NAME="countyfp" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="3" NAME="countyns" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="4" NAME="affgeoid" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="5" NAME="geoid" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="6" NAME="name" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="7" NAME="lsad" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="8" NAME="aland" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="9" NAME="awater" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="10" NAME="gid" xsi:type="SQLINT" />
-   <COLUMN SOURCE="11" NAME="areaid" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="12" NAME="areaname" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="13" NAME="area_km2" xsi:type="SQLNUMERIC" />
-   <COLUMN SOURCE="14" NAME="geographic_centroid_wkt" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="15" NAME="wkt_11" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="16" NAME="wkt_10" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="17" NAME="wkt_9" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="18" NAME="wkt_8" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="19" NAME="wkt_7" xsi:type="SQLVARYCHAR" />
-   <COLUMN SOURCE="20" NAME="wkt_6" xsi:type="SQLVARYCHAR" />
- </ROW>
-</BCPFORMAT>	 
-	 
-	 */	 
-	var createSqlServerFmtFiles=function createSqlServerFmtFiles(dir, csvFiles) {	
-		for (var i=0; i<csvFiles.length; i++) {
-			var fmtScriptName="mssql_" + csvFiles[i].tableName + ".fmt";
-			var fmtStream = fs.createWriteStream(dir + "/" + fmtScriptName, { flags : 'w' });	
-			fmtStream.on('finish', function fmtStreamClose() {
-				response.message+="\nstreamClose() MS SQL Server bulk load format file";
-			});		
-			fmtStream.on('error', function fmtStreamError(e) {
-				serverLog.serverLog2(__file, __line, dbType + "StreamError", 
-					"WARNING: Exception in MS SQL Server bulk load format file write: " + fmtScriptName, req, e, response);										
-			});
-			
-			var fmtBuf='<?xml version="1.0"?>\n' +
-			'<!-- MS SQL Server bulk load format files\n' +
-'	 The insistence on quotes excludes the header row -->\n' +
-'<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"\n' +
-'  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n' +
-' <RECORD>\n' + 
-'   <FIELD ID="0" xsi:type="CharTerm" TERMINATOR=' + "'" + '"' + "' />\n";
-			var columnList=Object.keys(csvFiles[i].rows[0]);
-			
-			for (var j=1; j<=columnList.length; j++) {
-				if (j<columnList.length) {
-					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '","' + "' />\n";
-				}
-				else {
-					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '"\\r\\n' + "' />\n";
-				}
-			}
-			fmtBuf+=' </RECORD>\n'; 
-			fmtBuf+=' <ROW>\n'; 
-			for (var j=1; j<=columnList.length; j++) {
-				var bcpDtype="SQLVARYCHAR";
-				var column=columnList[(j-1)].toLowerCase();
-				if (column == "gid") {
-					bcpDtype="SQLINT"; // Integer
-				}
-				else if (column == "area_km2") {
-					bcpDtype="SQLNUMERIC"; // Numeric
-				}
-				fmtBuf+='   <COLUMN SOURCE="' + j + '" NAME="' + column + '" xsi:type="' + bcpDtype + '" />\n';
-			}			
-			fmtBuf+=' </ROW>\n'; 
-			fmtBuf+='</BCPFORMAT>\n'; 
-			fmtStream.write(fmtBuf);
-			fmtStream.end();
-		} // End of for csvFiles
-	} // End of createSqlServerFmtFiles()
 	
 	var pgScript="pg_" + response.fields["geographyName"] + ".sql"
 	var mssqlScript="mssql_" + response.fields["geographyName"] + ".sql"

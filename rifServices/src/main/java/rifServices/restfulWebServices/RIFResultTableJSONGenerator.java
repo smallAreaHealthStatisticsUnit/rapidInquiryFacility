@@ -103,17 +103,19 @@ public final class RIFResultTableJSONGenerator {
 		result.append("{");
 		
 		//write out table header
-		result.append("smoothed_results_header:{");
+		result.append("\"smoothed_results_header\":[");
 		for (int ithColumnName = 0; ithColumnName < numberOfColumns; ithColumnName++) {
 			if (ithColumnName != 0) {
 				result.append(",");
 			}
+			result.append("\"");
 			result.append(columnNames[ithColumnName]);
+			result.append("\"");
 		}
-		result.append("}");
+		result.append("],");
 		
 		//write out data
-		result.append("smoothed_results:{");		
+		result.append("\"smoothed_results\":[");		
 		for (int currentRow = 0; currentRow < numberOfRows; currentRow++) {
 			if (currentRow != 0) {
 				result.append(",");
@@ -125,7 +127,9 @@ public final class RIFResultTableJSONGenerator {
 					result.append(",");
 				}
 				
+				result.append("\"");
 				result.append(columnNames[currentColumn]);
+				result.append("\"");
 				result.append(":");
 				if (dataTypes[currentColumn] == RIFResultTable.ColumnDataType.TEXT) {
 					result.append("\"");
@@ -141,15 +145,10 @@ public final class RIFResultTableJSONGenerator {
 			result.append("}");
 			
 		}		
-		result.append("}");
+		result.append("]");
 
-		
-		
-		
-		
 		//finish off the whole data set
 		result.append("}");
-
 		
 		return result.toString();		
 	}

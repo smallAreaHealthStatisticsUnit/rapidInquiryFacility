@@ -113,33 +113,6 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 			
 			SQLSmoothedResultManager manager
 				= new SQLSmoothedResultManager(rifServiceStartupOptions.getRIFDatabaseProperties());
-			//manager.extractCursorResults(connection);
-	
-
-			/*			
-			
-			RIFResultTable rifResultTable
-				= manager.getSmoothedResults(
-					connection, 
-					"1",
-					Sex.MALES,
-					1990);
-
-			ArrayList<String> attributesToRetrieve = new ArrayList<String>();
-			attributesToRetrieve.add("area_id");
-			attributesToRetrieve.add("observed");
-			attributesToRetrieve.add("expected");
-
-
-*/
-/*			
-			System.out.println("test 1");
-			RIFResultTable rifResultTable
-				= manager.getSmoothedResultsForAttributes(
-					connection, 
-					attributesToRetrieve,
-					"1");
-*/
 
 			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
 			mapAreas.add(MapArea.newInstance("01.001.000100.1", "01.001.000100.1", "01.001.000100.1"));
@@ -165,9 +138,6 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 	// Section Properties
 	// ==========================================
 	
-	//private Hashtable<String, Connection> connectionFromQueryParameterKey;
-	//private Hashtable<String, ResultSet> resultSetFromQueryParameterKey;
-	
 	private ArrayList<String> allAttributeColumnNames;
 	private Hashtable<String, String> columnDescriptionFromName;
 	private HashSet<String> numericColumns;
@@ -182,11 +152,7 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 		final RIFDatabaseProperties rifDatabaseProperties) {
 
 		super(rifDatabaseProperties);
-		
-		
-		//connectionFromQueryParameterKey = new Hashtable<String, Connection>();
-		//resultSetFromQueryParameterKey = new Hashtable<String, ResultSet>();
-		
+				
 		numericColumns = new HashSet<String>();
 		doublePrecisionColumns = new HashSet<String>();
 		textColumns = new HashSet<String>();
@@ -275,6 +241,103 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	public ArrayList<Sex> getSexes(
+		final Connection connection,
+		final String studyID) 
+		throws RIFServiceException {
+		
+		String mapTableName
+			= deriveMapTableName(studyID);
+		
+		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		queryFormatter.setUseDistinct(true);
+		queryFormatter.addSelectField("genders");
+		queryFormatter.addFromTable(mapTableName);
+				
+		
+		System.out.println("=======");
+		System.out.println(queryFormatter.generateQuery());
+		System.out.println("=======");
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		ArrayList<Sex> results = new ArrayList<Sex>();
+		try {
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				int sexID = resultSet.getInt(1);
+				Sex currentSex = Sex.getSexFromCode(sexID);
+				results.add(currentSex);
+			}
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"smoothedResultsManager.error.unableToGetSexesForStudy",
+					studyID);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}		
+		
+		return results;
+	}
+		
+	public ArrayList<Integer> getYears(
+		final Connection connection,
+		final String studyID) 
+		throws RIFServiceException {
+				
+		String extractTableName
+			= deriveExtractTableName(studyID);
+		SQLSelectQueryFormatter queryFormatter
+			= new SQLSelectQueryFormatter();
+		queryFormatter.setUseDistinct(true);
+		queryFormatter.addSelectField("year");
+		queryFormatter.addFromTable(extractTableName);
+		queryFormatter.addOrderByCondition("year");
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;		
+		ArrayList<Integer> results = new ArrayList<Integer>();
+		try {
+			statement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				results.add(resultSet.getInt(1));
+			}
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"smoothedResultsManager.error.unableToGetYearsForStudy", 
+					studyID);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+		}		
+		
+		return results;
+	}
+	
 	/**
 	 * eg: adjusted, observed, expected, lower95, upper95 etc.
 	 * @return
@@ -618,18 +681,7 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 			queryFormatter.addQueryPhrase(indentationLevel, tableName + "." + columnName);
 		}	
 	}
-/*
-	public ResultTable getSmoothedResults(
-		final Connection connection,
-		final String studyID,
-		final String[] fieldNames) 
-		throws RIFServiceException {
-		
-		
-		
-		
-	}
-*/	
+	
 
 	private RIFResultTable.ColumnDataType[] deriveColumnDataTypes(
 		final String[] columnNames) {
