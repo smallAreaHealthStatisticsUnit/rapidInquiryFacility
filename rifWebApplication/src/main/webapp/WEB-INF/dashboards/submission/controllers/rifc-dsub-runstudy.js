@@ -20,7 +20,7 @@ angular.module("RIF")
                     });
                 };
             }])
-        .controller('ModalRunInstanceCtrl', function ($scope, $uibModalInstance, SubmissionStateService, user) {
+        .controller('ModalRunInstanceCtrl', function ($scope, $uibModalInstance, SubmissionStateService, user, ModelService) {
             $scope.input = {};
             $scope.input.studyDescription = SubmissionStateService.getState().studyDescription;
             //    $scope.input.name = SubmissionStateService.getState().projectName;
@@ -64,14 +64,22 @@ angular.module("RIF")
                     return;
                 }
 
-                //2: In depth check on JSON
-                                
                 //If tests passed, then submitStudy
+                //TODO: error if year params not set (if loaded from file)
                 
-                //TODO: reset to default state after submission?
+    //            var thisStudy = ModelService.get_rif_job_submission_JSON();         
+    //            user.submitStudy(user.currentUser, thisStudy).then(handleSubmit, handleSubmitError);
 
                 $uibModalInstance.close($scope.input);
             };
+
+            function handleSubmit() {
+                console.log("submit called");
+            }
+            function handleSubmitError(e) {
+                console.log("submit called with Error");
+            }
+
             $scope.updateModel = function () {
                 SubmissionStateService.getState().studyDescription = $scope.input.studyDescription;
                 SubmissionStateService.getState().projectDescription = $scope.input.project.description;

@@ -51,6 +51,7 @@ angular.module("RIF",
             "ui.grid.treeView",
             "ui.grid.edit",
             "ui.grid.autoResize",
+            "ui.grid.moveColumns",
             "ngAnimate",
             "ngSanitize",
             "ngNotificationsBar",
@@ -97,8 +98,9 @@ angular.module("RIF",
                             controller: 'DiseaseMappingCtrl'
                         })
                         .state('state4', {
-                            url: '/status',
-                            templateUrl: "dashboards/status/partials/rifp-status-main.html"
+                            url: '/mapping2',
+                            templateUrl: "dashboards/mapping2/partials/rifp-dmap2-main.html",
+                            controller: 'MappingCtrl'
                         });
                 $urlRouterProvider.otherwise("/login");  //login submission
             }])

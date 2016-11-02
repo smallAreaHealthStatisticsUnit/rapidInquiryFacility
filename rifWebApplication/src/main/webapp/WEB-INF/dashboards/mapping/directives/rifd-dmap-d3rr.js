@@ -38,12 +38,12 @@ angular.module("RIF")
                         var xHeight = scope.height - margin.top - margin.bottom;
                         var xWidth = scope.width - margin.left - margin.right - 4;
 
-                        var idField = scope.opt.id_field;
                         var orderField = scope.opt.x_field;
                         var lineField = scope.opt.risk_field;
                         var lowField = scope.opt.cl_field;
                         var highField = scope.opt.cu_field;
                         var dataLength = scope.data.length;
+                        var labelField = scope.opt.label_field;
 
                         //the drop reference line
                         var selected = MappingStateService.getState().selected;
@@ -145,7 +145,7 @@ angular.module("RIF")
                             svg.append("text")
                                     .attr("transform", "translate(60,20)")
                                     .attr("id", "labelLineBivariate")
-                                    .text(lineField);
+                                    .text(labelField);
 
                             var currentFigures = svg.append("text")
                                     .attr("transform", "translate(60,40)")
@@ -177,18 +177,18 @@ angular.module("RIF")
                             d3.select("#bivariateHiglighter").remove();
 
                             if (selected !== null) {
-                                if (selected.x_order > x.domain()[0] && selected.x_order < x.domain()[1]) {
+                                if (selected.x_order >= x.domain()[0] && selected.x_order <= x.domain()[1]) {
                                     highlighter.style("stroke", "#EEA9B8");
                                     pointerLighter.style("stroke", "#EEA9B8");
                                     pointerLighter.style("fill", "#EEA9B8");
                                     highlighter.attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
-                                    pointerLighter.attr("transform", "translate(" + x(selected.x_order) + "," + y(selected.srr) + ")");
+                                    pointerLighter.attr("transform", "translate(" + x(selected.x_order) + "," + y(selected.rr) + ")");
                                 } else {
                                     highlighter.style("stroke", "transparent");
                                     pointerLighter.style("stroke", "transparent");
                                     pointerLighter.style("fill", "transparent");
                                 }
-                                currentFigures.text(selected.srr.toFixed(3) + " (" + selected.cl.toFixed(2) + " - " + selected.ul.toFixed(2) + ")");
+                                currentFigures.text(selected.rr.toFixed(3) + " (" + selected.cl.toFixed(2) + " - " + selected.ul.toFixed(2) + ")");
                             } else {
                                 highlighter.style("stroke", "transparent");
                                 pointerLighter.style("stroke", "transparent");
@@ -224,9 +224,8 @@ angular.module("RIF")
                             focus.select(".line").attr("d", line);
                             scope.updateLine();
                         });
-
                     };
                 }
             };
             return directiveDefinitionObject;
-        });
+    });

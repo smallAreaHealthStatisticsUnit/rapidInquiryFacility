@@ -3,8 +3,25 @@
 angular.module("RIF")
         .factory('LeafletBaseMapService',
                 function () {
-                    var currentBaseMap = 'OpenStreetMap Mapnik'; //default basemap
-                    var noBaseMap = false; //from checkbox                  
+
+                    var defaultBaseMap = 'OpenStreetMap Mapnik';
+
+                    //for disease mapping
+                    var baseMapInUse = {
+                        area: defaultBaseMap,
+                        viewermap: defaultBaseMap,
+                        diseasemap: defaultBaseMap,
+                        diseasemap1: defaultBaseMap,
+                        diseasemap2: defaultBaseMap
+                    };
+                    //from checkbox, disable basemap
+                    var noBaseMap = {
+                        area: false,
+                        viewermap: false,
+                        diseasemap: false,
+                        diseasemap1: false,
+                        diseasemap2: false
+                    };
 
                     //https://leaflet-extras.github.io/leaflet-providers/preview/
                     var basemaps = [];
@@ -160,18 +177,18 @@ angular.module("RIF")
                             }
                         },
                         //state on current basemap
-                        setCurrentBase: function (layer) {
-                            currentBaseMap = layer;
+                        setCurrentBaseMapInUse: function (map, layer) {
+                            baseMapInUse[map] = layer;
                         },
-                        getCurrentBase: function () {
-                            return currentBaseMap;
+                        getCurrentBaseMapInUse: function (map) {
+                            return baseMapInUse[map];
                         },
                         //state on map T/F
-                        setNoBaseMap: function (checkBox) {
-                            noBaseMap = checkBox;
+                        setNoBaseMap: function (map, checkBox) {
+                            noBaseMap[map] = checkBox;
                         },
-                        getNoBaseMap: function () {
-                            return noBaseMap;
-                        }                     
+                        getNoBaseMap: function (map) {
+                            return noBaseMap[map];
+                        }
                     };
                 });

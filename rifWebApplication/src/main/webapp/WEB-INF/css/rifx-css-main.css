@@ -215,6 +215,15 @@ body {
     background-color: white !important;
 }
 
+#diseasemap1 {
+    display: inline-block;
+    float: left;
+}
+#diseasemap2 {
+    display: inline-block;
+    float:right;
+}
+
 #logOut {
     color: white;
 }
@@ -289,6 +298,22 @@ body {
 }
 #showCentroids {
     background: transparent url("../images/flag_flyaway_blue.png") no-repeat;
+}
+#lockExtentFalse {
+    width: 32px;
+    height: 32px;
+    float:right;
+    margin-right: 10px;
+    margin: 5px 0px 0px 5px;
+    background: transparent url("../images/lock_open.png") no-repeat;
+}
+#lockExtentTrue {
+    width: 32px;
+    height: 32px;
+    float:right;
+    margin-right: 10px;
+    margin: 5px 0px 0px 5px;
+    background: transparent url("../images/lock.png") no-repeat;
 }
 
 .mapOpts .mapOpt {
@@ -533,6 +558,7 @@ div#studyInfo ul li.listHeader {
     font-size: 15px;
     right: 0.5%;
 }
+
 
 .clearSelection {
     background: url('../images/clear.png')  no-repeat  ;
@@ -1112,39 +1138,41 @@ textarea.description {
     border-radius: 10px 10px 10px 10px;
     -moz-border-radius: 10px 10px 10px 10px;
     -webkit-border-radius: 10px 10px 10px 10px;
+    border:1px solid #cccccc;
 }
 .pboxLabel {
-    padding: 2%;
+    padding: 2% 2% 2% 5%;
     font-size: 20px;
     text-transform: uppercase;
 }
 
 .pboxName {
     padding: 10px;
-    font-size: 14px;
+    font-size: 1.1em;
+    background: #F7F7F7;
+    border:1px solid #cccccc;
+    color:#999999;
     text-transform: uppercase;
     width: 80%;
-    color: #848484;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    border:1px solid #cccccc;
     margin-left: 5%;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-    border: none;
 }
 
 .pboxDrop {
-    padding: 8px;
-    font-size: 14px;
     text-transform: uppercase;
     width: 50%;
-    color: #848484;
-    background-color: white;  
     margin-left: 5%;
     margin-bottom: 2px; 
     display: inline-block;
+    padding: 10px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    font-size: 1.1em;
+    background: #F7F7F7;
+    border:1px solid #cccccc;
+    color:#999999;
 }
 
 .pboxCaption {
@@ -1236,7 +1264,7 @@ textarea.description {
     padding: 10px;
     margin-bottom: 10px;
     margin-right: 10px;
-    width: calc(100% - 96px) !important;
+    width: 100% !important;
     font-size: 14px;
     text-transform: uppercase;
     -webkit-appearance: none;
@@ -1245,6 +1273,8 @@ textarea.description {
     -moz-box-shadow: none;
     box-shadow: none;
     border: solid 2px #1caff6;;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
     -webkit-transition: border 0.3s;
     -moz-transition: border 0.3s;
     -o-transition: border 0.3s;
@@ -1260,6 +1290,8 @@ textarea.description {
     width: calc(100% - 120px) !important;
     font-size: 14px;
     text-transform: uppercase;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
     -webkit-appearance: none;
     -moz-appearance: none;
     -webkit-box-shadow: none;
@@ -1297,11 +1329,43 @@ textarea.description {
     color:#1caff6;
     font-family:arial;
     font-size:14px;
-    font-weight:bold;
+    font-weight:bold; 
     text-decoration:none;
     text-shadow:0px 1px 0px #ffffff;
 }
 .ICDsearchButton:hover{
+    text-decoration: underline;
+}
+
+.mapListButton {
+    position: absolute;
+    left: 2%;
+    top: 2%;
+    padding: 10px;
+    -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+    box-shadow:inset 0px 1px 0px 0px #ffffff;
+    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #f9f9f9), color-stop(1, #e9e9e9));
+    background:-moz-linear-gradient(top, #f9f9f9 5%, #e9e9e9 100%);
+    background:-webkit-linear-gradient(top, #f9f9f9 5%, #e9e9e9 100%);
+    background:-o-linear-gradient(top, #f9f9f9 5%, #e9e9e9 100%);
+    background:-ms-linear-gradient(top, #f9f9f9 5%, #e9e9e9 100%);
+    background:linear-gradient(to bottom, #f9f9f9 5%, #e9e9e9 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f9f9f9', endColorstr='#e9e9e9',GradientType=0);
+    background-color:#f9f9f9;
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    border:1px solid #dcdcdc;
+    cursor:pointer;
+    color:#1caff6;
+    font-family:arial;
+    font-size:14px;
+    font-weight:bold; 
+    text-decoration:none;
+    text-shadow:0px 1px 0px #ffffff;
+}
+.mapListButton:hover{
     text-decoration: underline;
 }
 
@@ -1331,8 +1395,8 @@ div.world{
     opacity: 1;
     width: 100%;
     height: 100%;
-    /*background: transparent url("../images/industry-sunrise-clouds-fog-39553.jpeg"); */
-    /*background: transparent url("../images/squirrels.jpg");*/  
+    background: transparent url("../images/industry-sunrise-clouds-fog-39553.jpeg"); 
+    /* background: transparent url("../images/squirrels.jpg"); */
     background-size: cover;
     position: absolute;
 }
@@ -1506,36 +1570,38 @@ input[type=number]+ label  {
     float:left
 } 
 
-#submenuMapping{
+.submenuMapping{
     height:40px;
     background-color: #F5F5F5;
     border-bottom:1px solid #E3E3E3;
 }
 
-#submenuMapping div a img{
+.submenuMapping div a img{
     margin:5px 0px;
 }
 
-#submenuMapping div {
+.submenuMapping div {
     height: 100%;	
 }
 
-#submenuMapping div a img.active{
+.submenuMapping div a img.active{
     -moz-opacity: 1;
     -khtml-opacity: 1;
     opacity: 1;
 }
 
-#submenuMapping div a.settings {
+.submenuMapping div a.settings {
     float:right;
     margin-right: 10px;
 } 
 
-#submenuMapping a {
+.submenuMapping a {
     width:32px;
     height:32px;
     float:left
 } 
+
+
 
 div#studyLabel{
     text-transform: uppercase; 

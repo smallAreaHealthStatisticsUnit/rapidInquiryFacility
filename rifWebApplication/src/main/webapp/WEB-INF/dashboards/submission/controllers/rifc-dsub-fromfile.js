@@ -7,10 +7,6 @@ angular.module("RIF")
             function ($q, user, $scope, $uibModal,
                     StudyAreaStateService, CompAreaStateService, SubmissionStateService, StatsStateService, ParameterStateService) {
 
-                $scope.showContent = function ($fileContent) {
-                    $scope.content = $fileContent.toString();
-                };
-
                 var rifJob;
                 var tmpProjects;
                 var tmpGeography;
@@ -28,78 +24,6 @@ angular.module("RIF")
                 var tmpInterval;
                 var tmpSex;
                 var tmpCovariate;
-
-                $scope.uploadFile = function () {
-
-                    //check initial file structure
-                    var d1 = $q.defer();
-                    var p1 = d1.promise;
-                    d1.resolve(uploadCheckStructure());
-                    p1.then(function (value) {
-                        return value;
-                    }, fromFileError);
-
-                    //check geography exists
-                    var p2 = uploadCheckGeography();
-
-                    //check health theme
-                    var d3 = $q.defer();
-                    var p3 = d3.promise;
-                    d3.resolve(uploadHealthThemes());
-                    p3.then(function (value) {
-                        return value;
-                    }, fromFileError);
-
-                    //check numerator-denominator match
-                    var d4 = $q.defer();
-                    var p4 = d4.promise;
-                    d4.resolve(uploadFractions());
-                    p4.then(function (value) {
-                        return value;
-                    }, fromFileError);
-
-                    //check stats and parameter match
-                    var d5 = $q.defer();
-                    var p5 = d5.promise;
-                    d5.resolve(uploadStats());
-                    p5.then(function (value) {
-                        return value;
-                    }, fromFileError);
-
-                    //check project matches
-                    var d6 = $q.defer();
-                    var p6 = d6.promise;
-                    d6.resolve(uploadProjects());
-                    p6.then(function (value) {
-                        return value;
-                    }, fromFileError);
-
-                    //check investigations
-                    var d7 = $q.defer();
-                    var p7 = d7.promise;
-                    d7.resolve(uploadInvestigations());
-                    p7.then(function (value) {
-                        return value;
-                    }, fromFileError);
-
-                    //resolve all the promises
-                    $q.all([p1, p2, p3, p4, p5, p6, p7]).then(function (result) {
-                        var bPass = true;
-                        for (var i = 0; i < result.length; i++) {
-                            if (result[i] !== true) {
-                                bPass = false;
-                                $scope.showError(result[i]);
-                                break;
-                            }
-                        }
-                        if (bPass) {
-                            //All tests passed
-                            confirmStateChanges();
-                            $scope.showSuccess("RIF study opened from file");
-                            $scope.$parent.resetState();
-                        }
-                    });
-                };
 
                 /*
                  * THE FUNCIONS FOR CHECKING RIFJOB
@@ -335,7 +259,87 @@ angular.module("RIF")
                     $scope.showError("Could not upload the file");
                 }
 
+
                 $scope.open = function () {
+                    $scope.modalHeader = "Open study from file";
+                    $scope.accept = ".json";
+
+                    $scope.showContent = function ($fileContent) {
+                        $scope.content = $fileContent.toString();
+                    };
+
+                    $scope.uploadFile = function () {
+
+                        //check initial file structure
+                        var d1 = $q.defer();
+                        var p1 = d1.promise;
+                        d1.resolve(uploadCheckStructure());
+                        p1.then(function (value) {
+                            return value;
+                        }, fromFileError);
+
+                        //check geography exists
+                        var p2 = uploadCheckGeography();
+
+                        //check health theme
+                        var d3 = $q.defer();
+                        var p3 = d3.promise;
+                        d3.resolve(uploadHealthThemes());
+                        p3.then(function (value) {
+                            return value;
+                        }, fromFileError);
+
+                        //check numerator-denominator match
+                        var d4 = $q.defer();
+                        var p4 = d4.promise;
+                        d4.resolve(uploadFractions());
+                        p4.then(function (value) {
+                            return value;
+                        }, fromFileError);
+
+                        //check stats and parameter match
+                        var d5 = $q.defer();
+                        var p5 = d5.promise;
+                        d5.resolve(uploadStats());
+                        p5.then(function (value) {
+                            return value;
+                        }, fromFileError);
+
+                        //check project matches
+                        var d6 = $q.defer();
+                        var p6 = d6.promise;
+                        d6.resolve(uploadProjects());
+                        p6.then(function (value) {
+                            return value;
+                        }, fromFileError);
+
+                        //check investigations
+                        var d7 = $q.defer();
+                        var p7 = d7.promise;
+                        d7.resolve(uploadInvestigations());
+                        p7.then(function (value) {
+                            return value;
+                        }, fromFileError);
+
+                        //resolve all the promises
+                        $q.all([p1, p2, p3, p4, p5, p6, p7]).then(function (result) {
+                            var bPass = true;
+                            for (var i = 0; i < result.length; i++) {
+                                if (result[i] !== true) {
+                                    bPass = false;
+                                    $scope.showError(result[i]);
+                                    break;
+                                }
+                            }
+                            if (bPass) {
+                                //All tests passed
+                                confirmStateChanges();
+                                $scope.showSuccess("RIF study opened from file");
+                                $scope.$parent.resetState();
+                            }
+                        });
+                    };
+
                     var modalInstance = $uibModal.open({
                         animation: true,
                         templateUrl: 'dashboards/submission/partials/rifp-dsub-fromfile.html',

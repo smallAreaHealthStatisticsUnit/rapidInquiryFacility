@@ -11,9 +11,9 @@
 
 /* global L, d3, key, topojson */
 angular.module("RIF")
-        .directive('submissionMapTable', ['leafletData', 'ModalAreaService', 'LeafletDrawService',
+        .directive('submissionMapTable', ['leafletData', 'ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService',
             'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService',
-            function (leafletData, ModalAreaService, LeafletDrawService,
+            function (leafletData, ModalAreaService, LeafletDrawService, $uibModal, JSONService,
                     GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
@@ -43,7 +43,7 @@ angular.module("RIF")
                         $scope.selectedPolygonCount = $scope.selectedPolygon.length;
 
                         //band colour look-up for selected districts
-                        $scope.possibleBands = [1, 2, 3, 4, 5, 6];
+                        $scope.possibleBands = $scope.input.bands;
                         $scope.currentBand = 1; //from dropdown
 
                         //d3 polygon rendering, changed by slider
@@ -219,13 +219,13 @@ angular.module("RIF")
 
                         //Set the user defined basemap
                         $scope.parent = {};
-                        $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBase());
+                        $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
 
                         $scope.parent.renderMap = function (mapID) {
                             leafletData.getMap(mapID).then(function (map) {
                                 map.removeLayer($scope.parent.thisLayer);
-                                if (!LeafletBaseMapService.getNoBaseMap()) {
-                                    $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBase());
+                                if (!LeafletBaseMapService.getNoBaseMap("area")) {                                    
+                                    $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
                                     map.addLayer($scope.parent.thisLayer);
                                 }
                                 //restore setView
@@ -240,7 +240,7 @@ angular.module("RIF")
 
                         //Add Leaflet.Draw capabilities
                         var drawnItems;
-                        LeafletDrawService.get_CircleCapability();
+                        LeafletDrawService.get_CircleCapability(Math.max.apply(null, $scope.possibleBands));
                         LeafletDrawService.get_PolygonCapability();
 
                         //Add Leaflet.Draw toolbar
@@ -318,7 +318,7 @@ angular.module("RIF")
                             if (!shape.circle) {
                                 removeMapDrawItems();
                                 //auto increase band dropdown
-                                if ($scope.currentBand < 6) {
+                                if ($scope.currentBand < Math.max.apply(null, $scope.possibleBands)) {
                                     $scope.currentBand++;
                                 }
                             }
@@ -338,7 +338,7 @@ angular.module("RIF")
                                 if ($scope.selectedPolygon[i].id === feature) {
                                     bFound = true;
                                     //max possible is six bands according to specs
-                                    var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']; //'#a65628', '#f781bf', '#999999'
+                                    var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
                                     return cb[$scope.selectedPolygon[i].band - 1];
                                 }
                             }
@@ -390,7 +390,7 @@ angular.module("RIF")
                             if (!bShift) {
                                 //We are doing a single click select on the table
                                 var thisPoly = row.entity.label;
-                                var thisPolyID = row.entity.id;                              
+                                var thisPolyID = row.entity.id;
                                 var bFound = false;
                                 for (var i = 0; i < $scope.selectedPolygon.length; i++) {
                                     if ($scope.selectedPolygon[i].id === thisPolyID) {
@@ -398,7 +398,7 @@ angular.module("RIF")
                                         $scope.selectedPolygon.splice(i, 1);
                                         break;
                                     }
-                                }                              
+                                }
                                 if (!bFound) {
                                     $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
                                 }
@@ -415,7 +415,7 @@ angular.module("RIF")
                                             bFound = true;
                                             break;
                                         }
-                                    }                                  
+                                    }
                                     if (!bFound) {
                                         $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
                                     }
@@ -466,6 +466,62 @@ angular.module("RIF")
                             });
                         };
 
+                        //Update selectedPolygon from a user csv list
+                        $scope.openFromList = function () {
+                            $scope.modalHeader = "Upload ID file";
+                            $scope.accept = ".csv";
+
+                            $scope.showContent = function ($fileContent) {
+                                $scope.content = $fileContent.toString();
+                            };
+
+                            $scope.uploadFile = function () {
+                                try {
+                                    //parse the csv file
+                                    var listOfIDs = JSON.parse(JSONService.getCSV2JSON($scope.content));
+
+                                    //attempt to fill 'selectedPolygon' with valid entries
+                                    $scope.clear();
+                                    var bPushed = false;
+                                    var bInvalid = false;
+                                    for (var i = 0; i < listOfIDs.length; i++) {
+                                        for (var j = 0; j < $scope.gridOptions.data.length; j++) {
+                                            if ($scope.gridOptions.data[j].id === listOfIDs[i].ID) {
+                                                var thisBand = Number(listOfIDs[i].Band);
+                                                if ($scope.possibleBands.indexOf(thisBand) !== -1) {
+                                                    bPushed = true;
+                                                    $scope.selectedPolygon.push({id: $scope.gridOptions.data[j].id, gid: $scope.gridOptions.data[j].id,
+                                                        label: $scope.gridOptions.data[j].label, band: Number(listOfIDs[i].Band)});
+                                                    break;
+                                                } else {
+                                                    bInvalid = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (!bPushed) {
+                                        $scope.$parent.$$childHead.$parent.$parent.$$childHead.showWarning("No valid districts found in your list");
+                                    } else if (!bInvalid) {
+                                        $scope.$parent.$$childHead.$parent.$parent.$$childHead.showSuccess("List uploaded sucessfully");
+                                    } else {
+                                        $scope.$parent.$$childHead.$parent.$parent.$$childHead.showSuccess("List uploaded sucessfully, but some enteries were not valid");
+                                    }
+                                } catch (e) {
+                                    $scope.$parent.$$childHead.$parent.$parent.$$childHead.showError("Could not read or process the file: Please check formatting");
+                                }
+                            };
+
+                            var modalInstance = $uibModal.open({
+                                animation: true,
+                                templateUrl: 'dashboards/submission/partials/rifp-dsub-fromfile.html',
+                                controller: 'ModalFileListInstanceCtrl',
+                                windowClass: 'stats-Modal',
+                                backdrop: 'static',
+                                scope: $scope,
+                                keyboard: false
+                            });
+                        };
+
                         //This function fires all the rendering from UI events
                         //Watch selectedPolygon array for any changes
                         $scope.$watchCollection('selectedPolygon', function (newNames, oldNames) {
@@ -493,4 +549,13 @@ angular.module("RIF")
                         });
                     }
                 };
-            }]);
+            }])
+        .controller('ModalFileListInstanceCtrl', function ($scope, $uibModalInstance) {
+            $scope.close = function () {
+                $uibModalInstance.dismiss();
+            };
+            $scope.submit = function () {
+                $scope.uploadFile();
+                $uibModalInstance.close();
+            };
+        });

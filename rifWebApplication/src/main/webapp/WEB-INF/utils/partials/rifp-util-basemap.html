@@ -6,12 +6,12 @@
         </div>
         <form>
             <div class="save-basemap">
-                <input type="checkbox" name="basemap" ng-model="checkboxBaseMap" ng-change="setNoBaseMapCheck(checkboxBaseMap)"> 
+                <input type="checkbox" name="basemap" ng-model="input.checkboxBaseMap" ng-change="setNoBaseMapCheck(input.checkboxBaseMap)"> 
                 <label for = "nobasemap"> No basemap </label>
             </div>
             <div class="txt-fld" id="basemapselector">
                 <label for="fldSlct">Base map provider</label>
-                <select id='baseMapSlct' ng-model="selectedBaseMap" ng-change="setSelected(selectedBaseMap)" ng-init="selectedBaseMap">
+                <select id='baseMapSlct' ng-model="input.selectedBaseMap" ng-change="setSelected(input.selectedBaseMap)" ng-init="input.selectedBaseMap">
                     <option ng-repeat="layer in myBaseMaps" value="{{layer}}" >     
                         {{layer}}
                     </option>

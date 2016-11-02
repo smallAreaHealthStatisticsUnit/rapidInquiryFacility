@@ -1,5 +1,5 @@
-/* CONTROLLER for disease submission investigation parameters modal
- * 
+/* 
+ * CONTROLLER for disease submission investigation parameters modal
  */
 angular.module("RIF")
         .controller('ModalParametersCtrl', ['$timeout', '$q', '$scope', '$uibModal', 'SubmissionStateService', 'ParameterStateService', 'user', 'StudyAreaStateService',
@@ -21,7 +21,7 @@ angular.module("RIF")
                         {name: 'term_description', enableHiding: false}
                     ],
                     onRegisterApi: function (gridApi) {
-                        $scope.gridApi2 = gridApi;
+                        $scope.gridApi1 = gridApi;
                     }
                 };
                 function rowTemplate() {
@@ -52,7 +52,6 @@ angular.module("RIF")
                  * TABLE SET UP (2)
                  * table setups recap table
                  */
-
                 $scope.thisICDselection = ParameterStateService.getState().terms;
 
                 $scope.gridOptionsRecap = {
@@ -68,7 +67,7 @@ angular.module("RIF")
 
                     ],
                     onRegisterApi: function (gridApi) {
-                        $scope.gridApi3 = gridApi;
+                        $scope.gridApi2 = gridApi;
                     }
                 };
                 function rowTemplateRecap() {
@@ -253,6 +252,7 @@ angular.module("RIF")
                             $scope.intervals.push(i);
                         }
                     }
+                    $scope.yearInterval = $scope.intervals[0];
                 };
                 //make sure age bands are ascending
                 $scope.agesChanged = function () {
@@ -260,7 +260,6 @@ angular.module("RIF")
                         $scope.upperAge = [$scope.lowerAge, $scope.lowerAge = $scope.upperAge][0];
                     }
                 };
-
 
                 /*
                  * ICD SEARCH

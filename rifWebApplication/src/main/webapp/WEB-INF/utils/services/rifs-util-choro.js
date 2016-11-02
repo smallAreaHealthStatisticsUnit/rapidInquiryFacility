@@ -10,7 +10,7 @@ angular.module("RIF")
                         brewerName: "LightGreen",
                         brewer: ["#9BCD9B"],
                         intervals: 1,
-                        feature: "",
+                        feature: "smoothed_smr",
                         invert: false,
                         method: "quantile",
                         renderer: []
@@ -27,15 +27,15 @@ angular.module("RIF")
                     }
                 ];
 
-                //used in viewer SA test
-                function renderFeature(feature, scale, attr) {
+                //used in viewer
+                function renderFeature(scale, attr, selected) {
                     //selected
-                    if (feature.properties._selected === 1) {
+                    if (selected) {
                         return "green";
                     }
                     //choropleth
                     if (scale && attr !== "") {
-                        return scale(feature.properties[attr]);
+                        return scale(attr);
                     } else {
                         return "#9BCD9B";
                     }
@@ -144,7 +144,7 @@ angular.module("RIF")
                 function makeLegend(thisMap, attr) {
                     return (function () {
                         var div = L.DomUtil.create('div', 'info legend');
-                        div.innerHTML += '<h4>' + attr + '</h4>';
+                        div.innerHTML += '<h4>' + attr.toUpperCase() + '</h4>';
                         for (var i = 0; i < thisMap.range.length; i++) {
                             div.innerHTML += '<i style="background:' + thisMap.range[i] + '"></i>';
                             if (i === 0) { //first break

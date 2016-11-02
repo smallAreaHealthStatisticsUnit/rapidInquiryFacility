@@ -47,7 +47,8 @@ angular.module("RIF")
             $scope.input.studyResolution = StudyAreaStateService.getState().studyResolution;
             $scope.input.zoomLevel = StudyAreaStateService.getState().zoomLevel;
             $scope.input.view = StudyAreaStateService.getState().view;
-            $scope.input.geography = StudyAreaStateService.getState().geography;
+            $scope.input.geography = StudyAreaStateService.getState().geography;           
+            $scope.input.bands = [1, 2, 3, 4, 5, 6];
 
             $scope.close = function () {
                 $uibModalInstance.dismiss();

@@ -7,7 +7,7 @@ Mapping
         <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
     </div>
     <div class='nav'>
-        <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Status</a>
+        <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">TEST</a>
         <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
         <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
         <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
@@ -19,36 +19,19 @@ Mapping
         <a href='#'>Export</a>
     </div>
     <div class='geoDropsMapping'>
+        <div >
+            <div>Study ID:</div>
+            <select ng-model="studyID" ng-options="s for s in studyIDs">
+            </select>
+        </div>
+        <div >
+            <div>Year:</div>
+            <select ng-model="year" ng-options="s for s in years">
+            </select>
+        </div>
         <div>
-            <div id='studyId'>
-                <div>Study:</div>
-                <select>
-                    <option>.</option>
-                </select>
-            </div>
-        </div>
-        <div id='invId'>
-            <div>Investigation:</div>
-            <select>
-                <option>.</option>
-            </select>
-        </div>
-        <div id='Resultset'>
-            <div>Result set:</div>
-            <select>
-                <option>.</option>
-            </select>
-        </div>
-        <div id='gendersAvailable'>
-            <div>Gender:</div>
-            <select>
-                <option>.</option>
-            </select>
-        </div>
-        <div id='yearsAvailable'>
-            <div>Years:</div>
-            <select>
-                <option>.</option>
+            <div>Sex:</div>
+            <select ng-model="sex" ng-options="s for s in sexes">
             </select>
         </div>
     </div>
@@ -59,8 +42,8 @@ Mapping
         <div class="mapInfoTop">
             <div class='chartOptsMapping'>
                 <div id="studyLabel">                
-                    <h1 > Study Id </h1>
-                    <h2 id="invLabel" > Inv id  </h2>
+                    <h1>&nbsp</h1> <!--TODO: placeholders for redundant information-->
+                    <h2 id="invLabel" >&nbsp</h2>
                 </div>
             </div>
             <div id='studyInfo'>
@@ -69,32 +52,32 @@ Mapping
                         <ul >
                             <li class="listHeader"> Result figures </li>
                             <li id='areaLevel' >Area level: <span class="figure">{{thisPoly}}</span></li>	
-                            <li id='totDenom'  >Population:<span class="figure">n/a</span></li>		
-                            <li id='observed' >Observed:<span class="figure">n/a</span></li> 
-                            <li id='expected' >Expected:<span class="figure">n/a</span></li> 
+                            <li id='totDenom'  >Population:<span class="figure">{{thisResultFigures.population}}</span></li>		
+                            <li id='observed' >Observed:<span class="figure">{{thisResultFigures.observed}}</span></li> 
+                            <li id='expected' >Expected:<span class="figure">{{thisResultFigures.expected}}</span></li> 
 
                         </ul>	
                     </li> 
                     <li class="investigationFigures">
                         <ul>
                             <li class="listHeader"> Investigation info </li>
-                            <li id='nAreas' >Number of areas:<span class="figure">0.67</span></li>
-                            <li id='covariate' >Covariate adj:<span class="figure">0.67</span></li>
-                            <li id='ageGroup' >Age groups:<span class="figure">0.67</span></li>
-                            <li id='year' >Year(s):<span class="figure">0.67</span></li>
+                            <li id='nAreas' >Number of areas:<span class="figure">{{numberOfAreas}}</span></li>
+                            <li id='covariate' >Covariate adj:<span class="figure">xxx</span></li>
+                            <li id='ageGroup' >Age groups:<span class="figure">yyy</span></li>
+                            <li id='year' >Year(s):<span class="figure">zzz</span></li>
                         </ul>	
                     </li>	
                 </ul>
             </div>
         </div>
         <div class="mapInfoBottom">        
-            <marea-chart chart-data="rrTestData" options="opt2" width="areaCurrentWidth" height="areaCurrentHeight"></marea-chart>
+            <marea-chart chart-data="rrAreaData" options="optionsAreas" width="areaCurrentWidth" height="areaCurrentHeight"></marea-chart>
         </div>
     </div>
     <div ui-layout-container ui-layout-loaded> 
         <div ui-layout="{flow : 'row'}" >
             <div ui-layout-container id="hSplit1" max-size="100%" size="{{hSplit1}}%" class="leaflet-box">
-                <div id="submenuMapping">
+                <div class="submenuMapping">
                     <div>
                         <div class='mapOpts'>
                             <a ng-controller="ChoroplethModalCtrl" ng-click="open(0)"class='mapOpt' id="choroplethBtn" title="Choropleth map"></a>
@@ -112,7 +95,7 @@ Mapping
                 <leaflet id="diseasemap" tiles="tiles" width="100%" height="calc(100% - 40px)"></leaflet>     
             </div>
             <div ui-layout-container class="rr-back" id="rr">   
-                  <rr-chart chart-data="testData1" options="opt" width="rrCurrentWidth" height="rrCurrentHeight"></rr-chart>                        
+                <rr-chart chart-data="rrChartData" options="optionsRR" width="rrCurrentWidth" height="rrCurrentHeight"></rr-chart>                        
             </div>
         </div>
     </div>

@@ -25,9 +25,14 @@ angular.module("RIF")
                         var width = 800 - margin.left - margin.right;
                         var height = 175 - margin.top - margin.bottom;
 
-
-                        var max = d3.max(scope.data);
-                        var min = d3.min(scope.data);
+                        //Some numbers in the database appear to be stored as strings
+                        for (var i = 0; i < scope.data.length; i++) {
+                            scope.data[i] = Number(scope.data[i]);
+                        }
+                        
+                        //Scales
+                        var max = d3.max(d3.values(scope.data));
+                        var min = d3.min(d3.values(scope.data));
 
                         var x = d3.scaleLinear()
                                 .domain([min, max])

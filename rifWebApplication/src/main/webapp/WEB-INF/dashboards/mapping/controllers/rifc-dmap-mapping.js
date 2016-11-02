@@ -12,28 +12,34 @@ angular.module("RIF")
                 $scope.vSplit1 = MappingStateService.getState().vSplit1;
                 $scope.hSplit1 = MappingStateService.getState().hSplit1;
 
-                /////////////////////////////////////////////////////
-                //TEST options for D3 RR
-                $scope.opt = {
-                    id_field: "gid",
+                //Options for d3 directives
+                $scope.optionsRR = {
                     x_field: "x_order",
-                    risk_field: "srr",
+                    risk_field: "rr", //for label
                     cl_field: "cl",
-                    cu_field: "ul"
+                    cu_field: "ul",
+                    label_field: ""
                 };
 
-                $scope.opt2 = {
-                    id_field: "gid",
+                $scope.optionsAreas = {
+                    id_field: "gid", //TODO: not needed?
                     x_field: "x_order",
-                    risk_field: "srr",
+                    risk_field: "rr",
                     rSet: 4
                 };
-                ///////////////////////////////////////////
 
                 //invalidate d3 areas for refresh on tab close
                 $scope.$on("$destroy", function () {
                     MappingStateService.getState().cleanState = true;
                 });
+
+                //Drop-downs
+                $scope.studyIDs = [1];
+                $scope.studyID = $scope.studyIDs[0];
+                $scope.years = [1990, 1991, 1992, 1993];
+                $scope.year = $scope.years[0];
+                $scope.sexes = ["Male", "Female", "Both"];
+                $scope.sex = $scope.sexes[0];
 
                 //Synchronisation
                 $scope.thisPoly = null;
@@ -41,8 +47,15 @@ angular.module("RIF")
 
                     $scope.thisPoly = data;
                     MappingStateService.getState().gid = data;
+                    //display attributes from table
+                    for (var i = 0; i < $scope.tableData.length; i++) {
+                        if ($scope.tableData[i].area_id === data) {
+                            $scope.thisResultFigures = $scope.tableData[i];
+                            break;
+                        }
+                    }
+                    $scope.thisResultFigures.expected = Number($scope.thisResultFigures.expected).toFixed(3);
                     $scope.$apply();
-
                     //lines on area charts
                     $rootScope.$broadcast('areaDropLineRedraw', data);
                     $rootScope.$broadcast('rrDropLineRedraw', data);
@@ -67,7 +80,7 @@ angular.module("RIF")
                     $scope.rrCurrentHeight = d3.select("#rr").node().getBoundingClientRect().height;
                     $scope.rrCurrentWidth = d3.select("#rr").node().getBoundingClientRect().width;
                     $scope.areaCurrentWidth = d3.select(".mapInfoBottom").node().getBoundingClientRect().width;
-                    $scope.areaCurrentHeight = d3.select(".mapInfoBottom").node().getBoundingClientRect().height;                
+                    $scope.areaCurrentHeight = d3.select(".mapInfoBottom").node().getBoundingClientRect().height;
                 });
 
                 $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
@@ -102,16 +115,15 @@ angular.module("RIF")
 
                 //get the user defined basemap
                 $scope.parent = {};
-                $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBase());
+                $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("diseasemap"));
                 //called on bootstrap and on modal submit
                 $scope.parent.renderMap = function (mapID) {
                     leafletData.getMap(mapID).then(function (map) {
                         map.removeLayer($scope.parent.thisLayer);
-                        if (!LeafletBaseMapService.getNoBaseMap()) {
-                            $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBase());
+                        if (!LeafletBaseMapService.getNoBaseMap("diseasemap")) {
+                            $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("diseasemap"));
                             map.addLayer($scope.parent.thisLayer);
                         }
-
                         //restore setView
                         if (maxbounds && MappingStateService.getState().zoomLevel === -1) {
                             map.fitBounds(maxbounds);
@@ -144,7 +156,7 @@ angular.module("RIF")
                 //Render map functions
                 function style(feature) {
                     return {
-                        fillColor: ChoroService.getRenderFeature(feature, thisMap.scale, attr),
+                        fillColor: ChoroService.getRenderFeature(thisMap.scale, attr, false),
                         weight: 1,
                         opacity: 1,
                         color: 'gray',
@@ -154,20 +166,22 @@ angular.module("RIF")
                 function handleLayer(layer) {
                     //find attr value                    
                     //TODO: LookUp - will make more efficient when using API
-                    var thisAttr;
-                    for (var i = 0; i < $scope.testData1.length; i++) {
-                        if ($scope.testData1[i].gid === layer.feature.properties.area_id) {
-                            thisAttr = $scope.testData1[i].srr;
-                            break;
+                    if (!angular.isUndefined($scope.tableData)) {
+                        var thisAttr;
+                        for (var i = 0; i < $scope.tableData.length; i++) {
+                            if ($scope.tableData[i].area_id === layer.feature.properties.area_id) {
+                                thisAttr = $scope.tableData[i]['smoothed_smr'];
+                                break;
+                            }
                         }
+                        var polyStyle = ChoroService.getRenderFeature2(layer.feature, thisAttr, thisMap.scale, attr, $scope.thisPoly);
+                        layer.setStyle({
+                            weight: polyStyle[2],
+                            color: polyStyle[1],
+                            fillColor: polyStyle[0],
+                            fillOpacity: $scope.transparency
+                        });
                     }
-                    var polyStyle = ChoroService.getRenderFeature2(layer.feature, thisAttr, thisMap.scale, attr, $scope.thisPoly);
-                    layer.setStyle({
-                        weight: polyStyle[2],
-                        color: polyStyle[1],
-                        fillColor: polyStyle[0],
-                        fillOpacity: $scope.transparency
-                    });
                 }
 
                 //map layer opacity with slider
@@ -216,9 +230,17 @@ angular.module("RIF")
                     return this._div;
                 };
                 infoBox.update = function (poly) {
-                    if (poly) {
-                        //  this._div.innerHTML = '<h4>' + poly[attr] + '</h4>';
-                        this._div.innerHTML = '<h4>' + poly.area_id + '</h4>';
+                    var thisAttr;
+                    for (var i = 0; i < $scope.rrChartData.length; i++) {
+                        if ($scope.rrChartData[i].gid === poly) {
+                            thisAttr = $scope.rrChartData[i].rr;
+                            break;
+                        }
+                    }
+                    if (ChoroService.getMaps(0).feature !== "") {
+                        this._div.innerHTML = '<h4>ID: ' + poly + '</br>' + ChoroService.getMaps(0).feature.toUpperCase() + ": " + Number(thisAttr).toFixed(3) + '</h4>';
+                    } else {
+                        this._div.innerHTML = '<h4>ID: ' + poly + '</h4>';
                     }
                 };
 
@@ -270,7 +292,7 @@ angular.module("RIF")
                                         }()
                                     });
                                     infoBox.addTo(map);
-                                    infoBox.update(layer.feature.properties);
+                                    infoBox.update(layer.feature.properties.area_id);
                                 });
                                 layer.on('click', function (e) {
                                     $scope.thisPoly = e.target.feature.properties.area_id;
@@ -285,49 +307,77 @@ angular.module("RIF")
                         $scope.topoLayer.addTo(map);
                         maxbounds = $scope.topoLayer.getBounds();
                     }).then(function () {
-                        //make random test data
-                        var rrTestData2 = [];
-                        var attrs = [];
-                        for (var j = 0; j < 4; j++) {
-                            var thisAttr = "srr" + j;
-                            attrs.push(thisAttr);
-                            var rs = [];
-                            for (var i = 0; i < res.data.objects['2_1_1'].geometries.length; i++) {
-                                var tmp = (Math.random() * 2) - (Math.round(Math.random()));
-                                if (j === 1) {
-                                    tmp = tmp - Math.random();
-                                }
-                                if (j === 0) {
-                                    tmp = tmp + Math.random();
-                                }
-                                var errorBar = 0.3 * Math.random();
-                                rs.push(
-                                        {
-                                            name: thisAttr,
-                                            gid: res.data.objects['2_1_1'].geometries[i].properties.area_id,
-                                            x_order: i,
-                                            srr: tmp,
-                                            cl: tmp - errorBar,
-                                            ul: tmp + errorBar
-                                        });
-                            }
-                            rrTestData2.push(rs);
-                            ChoroService.setFeaturesToMap(attrs);
-
-                            //reorder
-                            rrTestData2[j].sort(function (a, b) {
-                                return parseFloat(a.srr) - parseFloat(b.srr);
-                            });
-                            for (var i = 0; i < res.data.objects['2_1_1'].geometries.length; i++) {
-                                rrTestData2[j][i]["x_order"] = i + 1;
-                            }
-                        }
-                        $scope.testData1 = angular.copy(rrTestData2[0]);
-                        $scope.rrTestData = angular.copy(rrTestData2);
+                        $scope.getAttributeTable();
                     }).then(function () {
                         $scope.parent.renderMap("diseasemap");
                         $scope.parent.refresh();
                     });
                 }
+
+                $scope.getAttributeTable = function () {
+
+                    user.getSmoothedResults(user.currentUser, 1, 1, 1990)
+                            .then(handleSmoothedResults, attributeError);
+
+                    function handleSmoothedResults(res) {
+
+                        //   if () { //if in rrSets
+                        //       
+                        //  }
+                        //make array for choropleth
+                        $scope.tableData = [];
+                        for (var i = 0; i < res.data.smoothed_results.length; i++) {
+                            $scope.tableData.push(res.data.smoothed_results[i]);
+                        }
+
+                        //Get names of the 4 selected result sets
+                        var rrSets = ["smoothed_smr", "smoothed_smr", "smoothed_smr", "smoothed_smr"];
+                        $scope.optionsRR.label_field = rrSets[0];
+
+                        var tempData = [];
+                        for (var j = 0; j < rrSets.length; j++) {
+                            var rs = [];
+                            for (var i = 0; i < res.data.smoothed_results.length; i++) {
+                                //make array for d3 areas
+                                rs.push(
+                                        {
+                                            name: rrSets[j],
+                                            gid: res.data.smoothed_results[i].area_id,
+                                            x_order: i,
+                                            rr: res.data.smoothed_results[i][rrSets[j]],
+                                            cl: res.data.smoothed_results[i][rrSets[j] + "_lower95"],
+                                            ul: res.data.smoothed_results[i][rrSets[j] + "_upper95"]
+                                        }
+                                );
+                            }
+                            tempData.push(rs);
+
+                            //reorder
+                            tempData[j].sort(function (a, b) {
+                                return parseFloat(a.rr) - parseFloat(b.rr);
+                            });
+                            for (var i = 0; i < res.data.smoothed_results.length; i++) {
+                                tempData[j][i]["x_order"] = i + 1;
+                            }
+                        }
+
+                        //Summary information
+                        $scope.numberOfAreas = res.data.smoothed_results.length;
+
+                        //Choropleth tableData
+                        //Features to map are limited to pre-defined RR columns
+                        ChoroService.setFeaturesToMap(rrSets);
+
+                        $scope.rrChartData = angular.copy(tempData[0]); //for RR chart (detailed) - same as choropleth attribute
+                        $scope.rrAreaData = angular.copy(tempData); //for multiple areas
+                    }
+
+                    function attributeError(e) {
+                        console.log(e);
+                    }
+                };
+
+
+
             }
         ]);    

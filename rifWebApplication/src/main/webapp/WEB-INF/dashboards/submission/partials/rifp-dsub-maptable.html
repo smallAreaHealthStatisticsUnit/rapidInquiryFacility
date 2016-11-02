@@ -4,7 +4,6 @@ Used in Study Area and Comparison Area Modals, each with own respective controll
 Used by rifd-dsub-maptable.js
 !refresh is a hack to ensure the table redraws itself
 -->
-
 <div class='modalAreaSelectionMenu'>
     <div id='selectAtSelection' class='styleUnderline dropdowns availablesWrapper'>
         <select type="text" ng-model="input.studyResolution" id='selectAt' class='dropdownSelect' ng-options="l for l in geoLevelsViews"></select>
@@ -17,10 +16,9 @@ Used by rifd-dsub-maptable.js
         <div id='resolutionAvailable' class='availables'></div>
     </div>
 </div>      
-
+<button class="mapListButton" ng-click="openFromList()">Upload from List</button>
 <div class='modalAreaSelectionContent'>
     <div ng-if="!refresh" class="grid" ui-grid="gridOptions" ui-grid-selection ui-grid-resize-columns></div>
-
     <div id='areaSelectionMap'>
         <div id="submenuMappingSubmission">   
             <div class='mapOpts'>
@@ -37,7 +35,7 @@ Used by rifd-dsub-maptable.js
                 <input type="range" ng-model ="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
             </div>
         </div>   
-        <leaflet id= "area" tiles="tiles" width="100%" height="100%" geojson="geojson"></leaflet>
+        <leaflet id= "area" tiles="tiles" width="100%" height="100%" geojson="geojson"></leaflet>      
     </div>  
 
     <div id='mapSelectionCounter' class='mapCounter'>

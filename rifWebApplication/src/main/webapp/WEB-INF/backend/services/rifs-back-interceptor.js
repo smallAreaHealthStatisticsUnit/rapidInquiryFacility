@@ -22,7 +22,7 @@ angular.module("RIF")
                                     }
                                 }
                             } catch (e) {
-                                scope.$root.$$childHead.showError("Session Expired: Could not connect to server");
+                                scope.$root.$$childHead.showError("Could not connect to server");
                                 $injector.get('$state').transitionTo('state0');
                             }
                         }

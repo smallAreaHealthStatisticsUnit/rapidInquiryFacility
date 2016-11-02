@@ -74,9 +74,11 @@ angular.module("RIF")
                                 return d[orderField];
                             });
                             x.domain(xDomain);
-                            var yDomain = d3.extent(scope.data[i], function (d) {
-                                return d[lineField];
-                            });
+                            //force y domain to be 0 to 2
+                            var yDomain = [0, 2];
+                            //var yDomain = d3.extent(scope.data[i], function (d) {
+                            //    return d[lineField];
+                            //});
                             y[i].domain(yDomain);
                         }
 
@@ -124,20 +126,30 @@ angular.module("RIF")
                                 var yAxis = d3.axisLeft()
                                         .scale(y[i]);
 
+                                //Area fill is around y = 1, only if 1 is within domain
+                                //Not needed if yDomain is forced to be [0,2]
+                                //var yDomainMaxFill = y[i].domain()[1];
+                                //if (yDomainMaxFill >= 1) {
+                                //    yDomainMaxFill = 1;
+                                //}
+                                var yDomainMaxFill = 1;
+                                
+                                //TODO: will be a problem id data <0 or >2
+
                                 var area = d3.area()
                                         .x(function (d) {
                                             return x(d[orderField]);
                                         })
                                         .y0(function (d) {
-                                            if (d[lineField] < 1) {
+                                            if (d[lineField] < yDomainMaxFill) {
                                                 return y[i](d[lineField]);
                                             } else {
-                                                return y[i](1);
+                                                return y[i](yDomainMaxFill);
                                             }
                                         })
                                         .y1(function (d) {
-                                            if (d[lineField] < 1) {
-                                                return y[i](1);
+                                            if (d[lineField] < yDomainMaxFill) {
+                                                return y[i](yDomainMaxFill);
                                             } else {
                                                 return y[i](d[lineField]);
                                             }
@@ -157,7 +169,6 @@ angular.module("RIF")
                                             areaClickXPos = snapToBounds(xy[0]);
                                             areaSetIndex = d3.select(this).attr("id");
                                             MappingStateService.getState().selectedSet = areaSetIndex;
-                                            //  MappingStateService.getState().selected.x_order = areaClickXPos;
                                             var nPos = chartList.indexOf(areaSetIndex);
                                             var thisGid = scope.data[nPos][areaClickXPos].gid;
                                             $rootScope.$broadcast('syncMappingEvents', thisGid, true);
@@ -165,8 +176,8 @@ angular.module("RIF")
 
                                 var currentFigures = svg.append("text")
                                         .attr("transform", "translate(50," + (70 + (xHeight * i)) + ")")
-                                        .attr("id", "currentFiguresLineBivariate")
-                                        .text("ResultSet " + i);
+                                        .attr("id", "labelbowTie")
+                                        .text(scope.data[0][i].name);
 
                                 //Zoom-brush box on 1st graph
                                 if (i === 0) {
@@ -225,7 +236,7 @@ angular.module("RIF")
                                 for (var j = 0; j < length; j++) {
                                     if (scope.data[i][j].gid === gid) {
                                         thisX = scope.data[i][j].x_order;
-                                        thisY = scope.data[i][j].srr;
+                                        thisY = scope.data[i][j].rr;
                                         break;
                                     }
                                 }
@@ -240,7 +251,7 @@ angular.module("RIF")
                                         .attr("stroke-width", 1);
 
                                 focus.append("text")
-                                        .attr("transform", "translate(110," + (20 + xHeight * i) + ")")
+                                        .attr("transform", "translate(" + xWidth / 2 + "," + (20 + xHeight * i) + ")")
                                         .attr("class", "areaValue")
                                         .text(thisY.toFixed(3));
                             });
@@ -280,7 +291,7 @@ angular.module("RIF")
                                 }
                             } else if (code === 39) {
                                 //right arrow  
-                                if (xPosition + 1 < length) {
+                                if (xPosition + 1 <= length) {
                                     xPosition++;
                                     areaIncrementShift();
                                 }

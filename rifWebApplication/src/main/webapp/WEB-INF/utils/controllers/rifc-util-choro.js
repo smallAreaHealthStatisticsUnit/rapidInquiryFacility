@@ -62,15 +62,8 @@ angular.module("RIF")
 
                 //get the domain 
                 $scope.domain.length = 0;
-                var set = 0;
-                for (var i = 0; $scope.$parent.rrTestData.length; i++) {
-                    if ($scope.$parent.rrTestData[i][0].name === $scope.input.selectedFeature) {
-                        set = i;
-                        break;
-                    }
-                }
-                for (var i = 0; i < $scope.$parent.rrTestData[0].length; i++) {
-                    $scope.domain.push($scope.$parent.rrTestData[set][i].srr);
+                for (var i = 0; i < $scope.$parent.tableData.length; i++) {
+                    $scope.domain.push(Number($scope.$parent.tableData[i][$scope.input.selectedFeature]));
                 }
 
                 //get the breaks

@@ -9,10 +9,9 @@
 angular.module("RIF")
         .factory('LeafletDrawService',
                 function ($rootScope) {
-                    function
-                            extendLeafletDrawCircle() {
+                    function extendLeafletDrawCircle(maxBand) {
 
-                        //increment of band count, 1st band is #1, to a max of 6
+                        //increment of band count, 1st band is #1, to a max of maxBand
                         var thisBand = 1;
 
                         L.SimpleShape = {};
@@ -82,8 +81,34 @@ angular.module("RIF")
                                     this._isConcentricing = true;
                                 }
 
-                                //stop drawing on right click or if band = max
-                                if (e.originalEvent.buttons === 2 | thisBand === 6) {
+                                //Draw a single circle only (comparison area)
+                                if (maxBand === 1) {
+                                    this._map.addLayer(this._shape);
+                                    this._fireCreatedEvent();
+                                    if (this._shape) {
+                                        this._fireCreatedEvent();
+                                        //fire event in directive     
+                                        $rootScope.$broadcast('makeDrawSelection', {
+                                            data: this._shape,
+                                            circle: true,
+                                            band: thisBand
+                                        });
+                                    }
+                                    this.disable();
+                                    if (this.options.repeatMode) {
+                                        this.enable();
+                                    }
+                                    this._isConcentricing = false;
+                                    //remove shape
+                                    this.maxRadius.r = -1;
+                                    //make selection
+                                    $rootScope.$broadcast('removeDrawnItems');
+                                    return;
+                                }
+
+                                //Multiple bands (study area)
+                                //stop drawing on right click or if band = maxBand
+                                if (e.originalEvent.buttons === 2 | thisBand === maxBand) {
                                     if (this._shape) {
                                         this._fireCreatedEvent();
                                         //fire event in directive     
@@ -107,7 +132,6 @@ angular.module("RIF")
                                     $rootScope.$broadcast('removeDrawnItems');
                                 } else {
                                     this._map.addLayer(this._shape);
-
                                     this._fireCreatedEvent();
 
                                     //fire event in directive
@@ -304,8 +328,8 @@ angular.module("RIF")
                     }
 
                     return {
-                        get_CircleCapability: function () {
-                            return extendLeafletDrawCircle();
+                        get_CircleCapability: function (max) {
+                            return extendLeafletDrawCircle(max);
                         },
                         get_PolygonCapability: function () {
                             return extendLeafletDrawPolygon();

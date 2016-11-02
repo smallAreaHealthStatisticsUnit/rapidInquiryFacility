@@ -56,7 +56,7 @@ RIF D3
 }
 
 .bar rect {
-    fill: steelblue;
+    fill: #a7c97f;
     stroke: white;
 }
 
@@ -69,7 +69,9 @@ RIF D3
     font: 10px sans-serif;
 }
 
-
+.xlabel {
+    text-transform: uppercase;
+}
 
 
 
@@ -122,7 +124,6 @@ RIF D3
     font-size:16px;
     fill: #777777;
 }
-
 #labelLineBivariate {
     text-transform:uppercase;
     font-size: 11px;   
@@ -131,6 +132,15 @@ RIF D3
 
 /*MULTIPLE AREA CHARTS*/
 
+#labelbowTie {
+    text-transform:uppercase;
+    font-size: 11px;   
+    fill: #777777;
+}
+.areaValue {
+    font-size: 11px;
+    fill: rgb(145, 145, 145);
+}
 svg.areaCharts {
     font-size: 10px;
     text-transform:uppercase
@@ -171,12 +181,6 @@ text.country-title {
     font-size: 10px;
     fill: rgb(145, 145, 145);
     font-weight:600;
-}
-
-.areaValue {
-    font-size: 11px;
-    fill: rgb(145, 145, 145);
-    font-weight:900;
 }
 
 text.brushbutton{
@@ -241,6 +245,48 @@ svg.areaCharts g.context rect.background{
 
 .handle {
     fill: #aaa;
+}
+
+/*POP PYRAMID*/
+.femaleBarLabel {
+    font: 14px sans-serif;
+    font-weight : bold;
+    fill : "green";	
+    text-anchor : "middle";		
+}
+
+.maleBarLabel {
+    font: 14px sans-serif;
+    font-weight : bold;
+    fill : "black";	
+    text-anchor : "middle";		
+}
+
+.maleBar {
+    height : 70;
+    fill : #c97f82;
+    stroke: black;
+    stroke-width : 0;
+}
+
+.totalPopulationBar {
+    height : 70;
+    fill : none;
+    stroke: lightgray;
+    stroke-width : 1;
+}
+
+.xAxisDashedLines {
+    stroke: gray;
+    stroke-width : 1;
+    stroke-dasharray : 5, 5;    		
+}
+
+.femaleBar {
+    height : 70;
+    fill : #7f82c9;
+    stroke: black;
+    stroke-width : 0;
 }
 
 

@@ -45,6 +45,7 @@ angular.module("RIF")
             $scope.input.zoomLevel = CompAreaStateService.getState().zoomLevel;
             $scope.input.view = CompAreaStateService.getState().view;
             $scope.input.geography = CompAreaStateService.getState().geography;
+            $scope.input.bands = [1];
 
             $scope.close = function () {
                 $uibModalInstance.dismiss();

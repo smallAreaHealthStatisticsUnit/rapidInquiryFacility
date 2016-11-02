@@ -7,7 +7,7 @@ Viewer
         <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
     </div>
     <div class='nav'>
-        <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">Status</a>
+        <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">TEST</a>
         <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
         <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
         <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
@@ -33,12 +33,7 @@ Viewer
             <div>Sex:</div>
             <select ng-model="sex" ng-options="s for s in sexes">
             </select>
-        </div>  
-        <div>
-            <div>Attribute:</div>
-            <select ng-model="attribute" ng-options="s for s in attributes">
-            </select>
-        </div>  
+        </div>
     </div>
 </div>
 
@@ -46,10 +41,10 @@ Viewer
     <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container id="hSplit1" max-size="100%" class="js-back" size="{{hSplit1}}%">
-                <dist-histo chart-data="rrTestData" width="distHistoCurrentWidth" height="distHistoCurrentHeight"></dist-histo>
+                <dist-histo chart-data="histoData" name="distHistoName" width="distHistoCurrentWidth" height="distHistoCurrentHeight"></dist-histo>
             </div>
-            <div ui-layout-container class="js-back">
-                POPULATION ng-controller="ViewerCtrl2"
+            <div ui-layout-container id="hSplit3" max-size="100%" class="js-back">
+                <pyramid chart-data="populationData" width="pyramidCurrentWidth" height="pyramidCurrentHeight"></pyramid>
             </div>
         </div>
     </div>
@@ -57,7 +52,7 @@ Viewer
     <div ui-layout-container ui-layout-loaded> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit2}}%">            
-                <div id="submenuMapping" >
+                <div class="submenuMapping" >
                     <div>
                         <div class='mapOpts'>
                             <a ng-controller="ChoroplethModalCtrl" ng-click="open(1)"class='mapOpt' id="choroplethBtn" title="Choropleth map"></a>
@@ -75,7 +70,7 @@ Viewer
                 <leaflet id="viewermap" tiles="tiles" width="100%" height="calc(100% - 40px)"></leaflet>  
             </div>
             <div ui-layout-container class="js-back">
-                <div ui-grid="viewerTableOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns class="grid-viewer" ng-grid="viewerTableOptions"></div>
+                <div ui-grid="viewerTableOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns ui-grid-move-columns class="grid-viewer" ng-grid="viewerTableOptions"></div>
             </div>
         </div>
     </div>

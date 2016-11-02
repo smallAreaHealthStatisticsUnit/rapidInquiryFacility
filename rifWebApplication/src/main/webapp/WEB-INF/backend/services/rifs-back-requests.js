@@ -10,12 +10,30 @@ angular.module("RIF")
             function ($http, rifAPI1, rifAPI2, taxonomyAPI) {
                 var self = this;
                 self.currentUser = "";
+               
                 //identify specific middleware calls in the interceptor
                 var config = {
                     headers: {
                         "rifUser": "rif"
                     }
                 };
+                
+                //submit a study               
+                self.submitStudy = function (username, jsonObj) {
+                    var blob = new Blob([JSON.stringify(jsonObj)], {
+                        type: "text/plain"
+                    });
+                    
+                    var formData = new FormData();
+                    formData.append("userID", username);
+                    formData.append("fileField", blob, "submissionFile.txt");
+
+                    return $http.post(rifAPI1 + "submitStudy/", formData, {
+                        transformRequest: angular.identity,
+                        headers: {'Content-Type': undefined}
+                    });
+                };
+                
                 //login
                 self.login = function (username, password) {
                     //http://localhost:8080/rifServices/studySubmission/login?userID=kgarwood&password=xyz
@@ -126,8 +144,12 @@ angular.module("RIF")
                     //[{"studyID":"4","studyName":"05: Attempting to change the state (<var>=><var>) of a ...
                     return $http.get(rifAPI1 + 'getStudySummaries?userID=' + username, config);
                 };
-
                 //results for viewer
+                self.getSmoothedResults = function (username, studyID, sex, year) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getSmoothedResults?userID=kgarwood&studyID=1&sex=1&year=1990
+                    return $http.get(rifAPI2 + 'getSmoothedResults?userID=' + username + '&studyID=' + studyID +
+                            '&sex=' + sex + '&year=' + year, config);
+                };
                 self.getSmoothedResultsForAttributes = function (username, studyID, sex, year, smoothedAttribute1, smoothedAttribute2) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/getSmoothedResultsForAttributes?
                     //userID=kgarwood&studyID=1&sex=1&year=1990&smoothedAttribute=lower95&smoothedAttribute=upper95                    
@@ -145,5 +167,4 @@ angular.module("RIF")
                     //{smoothed_results_header:{population_label,males,females}smoothed_results:{{population_la...
                     return $http.get(rifAPI2 + 'getAllPopulationPyramidData?userID=' + username + '&studyID=' + studyID + '&year=' + year, config);
                 };
-
             }]);
