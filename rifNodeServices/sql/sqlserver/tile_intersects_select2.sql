@@ -43,4 +43,3 @@ SELECT geolevel_id, zoomlevel,
   FROM tile_intersects_cb_2014_us_500k
  GROUP BY geolevel_id, zoomlevel
  ORDER BY 1, 2
-G

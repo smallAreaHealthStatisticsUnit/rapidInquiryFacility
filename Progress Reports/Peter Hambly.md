@@ -626,7 +626,7 @@ RangeError: Invalid string length
 #### 3rd to 7th October  
 
 * Prototyped tile manufacture using PostGIS:
-  * New efficent tile intersect algorithm saving up to 94% of tiles:
+  * New efficient tile intersect algorithm saving up to 94% of tiles:
   
 | zoomlevel | xmin | ymin | xmax | ymax | possible tiles | tiles | % saving |
 |-----------|------|------|------|------|----------------|-------|----------|
@@ -708,7 +708,15 @@ RangeError: Invalid string length
 |        10 | 24 mins  |            |  
 |        11 | 80 mins  |            |
 
-  * SQL Server requires more tuning!
+  * SQL Server requires more tuning! After a good tune:
+  
+| Zoomlevel | PostGIS  | SQL Server |
+| ----------| ---------|------------|
+|         7 | 75 secs  | 69 secs    |
+|         8 | 166 secs | 4 mins     |
+|         9 | 8 mins   |            |
+|        10 | 24 mins  |            |  
+|        11 | 80 mins  |            |
 
 #### Current TODO list (November):
 

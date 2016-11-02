@@ -63,7 +63,7 @@ TO BE ADDED
 ### Node geospatial services (tile-maker) - Peter
 
 * Prototyped tile manufacture using PostGIS:
-  * New efficent tile intersect algorithm saving up to 94% of tiles:
+  * New efficient tile intersect algorithm saving up to 94% of tiles:
   
 | zoomlevel | xmin | ymin | xmax | ymax | possible tiles | tiles | % saving |
 |-----------|------|------|------|------|----------------|-------|----------|

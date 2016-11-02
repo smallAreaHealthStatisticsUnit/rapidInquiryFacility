@@ -14,6 +14,13 @@
  * SET STATISTICS PROFILE ON
  * SET STATISTICS TIME ON 
  */
+-- For testing
+--
+--DECLARE @start_zoomlevel INTEGER=6;
+--DECLARE @start_geolevel_id INTEGER=3;
+DECLARE @start_zoomlevel INTEGER=1;
+DECLARE @start_geolevel_id INTEGER=1;
+
 DECLARE c1_maxgeolevel_id 	CURSOR FOR
 		SELECT MAX(geolevel_id) AS max_geolevel_id,
 	           MAX(zoomlevel) AS max_zoomlevel
@@ -26,7 +33,6 @@ DECLARE c2_areaid_count 	CURSOR FOR
 DECLARE @max_geolevel_id INTEGER;
 DECLARE @max_zoomlevel INTEGER;
 DECLARE @areaid_count INTEGER;
-DECLARE @start_geolevel_id INTEGER;
 DECLARE @l_use_zoomlevel INTEGER;
 DECLARE @geolevel_id INTEGER;
 DECLARE @zoomlevel INTEGER;
@@ -40,24 +46,18 @@ DECLARE @rowc2 INTEGER;
 DECLARE @pstart DATETIME;
 DECLARE @lstart DATETIME;
 --
-DECLARE @lend DATETIME;
 DECLARE @etime TIME;
-DECLARE @cesecs VARCHAR(40);
-DECLARE @esecs NUMERIC;
-
-DECLARE @lend2 DATETIME;
-DECLARE @etime2 TIME;
+--
+DECLARE @isecs   NUMERIC;
+DECLARE @cisecs  VARCHAR(40);
+--
+DECLARE @cesecs  VARCHAR(40);
+DECLARE @esecs   NUMERIC;
+DECLARE @cesecs1 VARCHAR(40);
 DECLARE @cesecs2 VARCHAR(40);
-DECLARE @esecs2 NUMERIC;
-
-DECLARE @isecs NUMERIC;
-DECLARE @cisecs VARCHAR(40);
-
-DECLARE @lend3 DATETIME;
-DECLARE @etime3 TIME;
 DECLARE @cesecs3 VARCHAR(40);
-DECLARE @esecs3 NUMERIC;
-
+DECLARE @cesecs4 VARCHAR(40);
+--
 BEGIN
 	OPEN c1_maxgeolevel_id;
 	FETCH c1_maxgeolevel_id INTO @max_geolevel_id, @max_zoomlevel;
@@ -69,23 +69,25 @@ BEGIN
 	CLOSE c2_areaid_count;
 	DEALLOCATE c2_areaid_count;
 --
--- For testing...
---
---	SET @max_zoomlevel=6;
---
 	IF @areaid_count = 1 	/* 0/0/0 tile only;  */			
 		SET @start_geolevel_id=2;	
 	ELSE
 		SET @start_geolevel_id=1;
 --
 	SET @i=@start_geolevel_id;
+	DELETE FROM %3
+	 WHERE zoomlevel >= @start_zoomlevel;
+--
+-- Override for test purposes
+--
+--	SET @max_zoomlevel=7;
 --
 	SET @pstart = GETDATE();	
 --
 	WHILE @i <= @max_geolevel_id /* FOR i IN start_geolevel_id .. max_geolevel_id LOOP */
 	BEGIN
 		SET @geolevel_id=@i;	
-		SET @j=1;	
+		SET @j=@start_zoomlevel;	
 		WHILE @j <= @max_zoomlevel /* FOR j IN 1 .. max_zoomlevel LOOP */
 		BEGIN
 			SET @lstart = GETDATE();
@@ -96,9 +98,7 @@ BEGIN
 				SET @l_use_zoomlevel=6;
 --			
 -- Intersector2: tile intersects table INSERT function. Zoomlevels <6 use zoomlevel 6 data
---				Insert tile area id intersections missing where not in the previous layer; 
---				this is usually due to it being simplified out of existance.  
---	
+--				  
 			WITH a	AS (
 				SELECT b.zoomlevel AS zoomlevel, b.x_mintile, b.x_maxtile, b.y_mintile, b.y_maxtile	  
 				  FROM tile_limits_cb_2014_us_500k b
@@ -117,48 +117,48 @@ BEGIN
 					   $(USERNAME).tileMaker_tile2latitude(y.y_series, x.zoomlevel) AS ymin,
 					   $(USERNAME).tileMaker_tile2longitude(x.x_series+1, x.zoomlevel) AS xmax, 
 					   $(USERNAME).tileMaker_tile2latitude(y.y_series+1, x.zoomlevel) AS ymax
-				  FROM x, y
+				  FROM x, y /* Explicit cross join */
 				 WHERE x.zoomlevel = y.zoomlevel
-			), c AS ( /* Calculate bounding box, parent X/Y min */
-				SELECT b.zoomlevel, 
-					   b.x,
-					   b.y, 
-					   $(USERNAME).tileMaker_STMakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326) AS bbox,
-					   $(USERNAME).tileMaker_latitude2tile(b.ymin, b.zoomlevel-1) AS parent_ymin,
-					   $(USERNAME).tileMaker_longitude2tile(b.xmin, b.zoomlevel-1) AS parent_xmin
-				  FROM b
-			), d AS (
-				SELECT c.zoomlevel, c.x, c.y, c.bbox, p.areaid, p.within
-				  FROM c, %3 p /* Parent */
-				 WHERE p.geolevel_id = @geolevel_id
-				   AND p.zoomlevel 	 = @zoomlevel -1 /* Join to parent tile from previous geolevel_id; i.e. exclude if not present */
-				   AND c.parent_xmin = p.x  
-				   AND c.parent_ymin = p.y	
+			) /* Calculate bounding box, parent X/Y min */
+			SELECT b.zoomlevel, 
+				   b.x,
+				   b.y, 
+				   $(USERNAME).tileMaker_STMakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326) AS bbox,
+				   $(USERNAME).tileMaker_latitude2tile(b.ymin, b.zoomlevel-1) AS parent_ymin,
+				   $(USERNAME).tileMaker_longitude2tile(b.xmin, b.zoomlevel-1) AS parent_xmin
+			  INTO #temp
+			  FROM b
+			 ORDER BY b.zoomlevel, b.x, b.y
+--
+			SET @etime = CAST(GETDATE() - @lstart AS TIME);
+			SET @esecs = (DATEPART(MILLISECOND, @etime));
+			SET @esecs = @esecs/10;
+			SET @cesecs1 = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
+					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
+			SET @lstart = GETDATE();
+--					
+			WITH d AS ( /* Get parent tiles */
+				SELECT p.x, p.y, p.areaid
+				  FROM %3 p /* Parent */
+				 WHERE p.zoomlevel    = @zoomlevel -1 	/* previous geolevel_id: c.zoomlevel -1 */
+				   AND p.geolevel_id  = @geolevel_id 
 			), e AS (
-				SELECT d.zoomlevel, d.x, d.y, d.bbox, d.areaid
-				  FROM d
-				 WHERE NOT EXISTS (SELECT c2.areaid
-									 FROM %3 c2
-									WHERE c2.geolevel_id = @geolevel_id
-									  AND c2.zoomlevel   = @zoomlevel
-									  AND c2.x           = d.x
-									  AND c2.y           = d.y
-									  AND c2.areaid      = d.areaid)
+				SELECT c.zoomlevel, c.x, c.y, d.areaid, c.bbox
+				  FROM #temp c, d
+				 WHERE c.parent_xmin = d.x  			/* Join to parent tile from previous geolevel_id; i.e. exclude if not present */
+				   AND c.parent_ymin = d.y
 			), f AS (
-				SELECT e.zoomlevel, 
-				       @geolevel_id AS geolevel_id, 
-					   e.x, e.y, e.bbox, e2.areaid, e2.geom
+				SELECT @geolevel_id AS geolevel_id, e.zoomlevel, e.x, e.y, e.bbox, e2.areaid, e2.geom
 				  FROM e, %1 e2
 				 WHERE e2.zoomlevel    = @l_use_zoomlevel
 				   AND e2.geolevel_id  = @geolevel_id
 				   AND e2.areaid       = e.areaid
-				   AND e.bbox.STIntersects(e2.bbox) = 1					/* Intersect by bounding box */
-				   AND e.bbox.STIntersects(e2.geom) = 1 				/* intersects: (e.bbox && e.geom) is slower as it generates many more tiles */
+				   AND e.bbox.STIntersects(e2.bbox) = 1	/* Intersect by bounding box */		 
 			)
 			INSERT INTO %3(geolevel_id, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 			
 			SELECT f.geolevel_id, f.zoomlevel, f.areaid, f.x, f.y, f.bbox, f.geom, 
 				   NULL AS optimised_geojson,
-				   1 AS within
+				   1 AS within 
 			  FROM f
 			 WHERE NOT f.bbox.STWithin(f.geom) = 1 /* Exclude any tile bounding completely within the area */
 			 ORDER BY f.geolevel_id, f.zoomlevel, f.areaid, f.x, f.y;
@@ -167,8 +167,10 @@ BEGIN
 			SET @etime = CAST(GETDATE() - @lstart AS TIME);
 			SET @esecs = (DATEPART(MILLISECOND, @etime));
 			SET @esecs = @esecs/10;
-			SET @cesecs = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
+			SET @cesecs2 = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
 					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
+						
+			DROP TABLE #temp;
 --
 -- Run 2
 --
@@ -199,9 +201,9 @@ BEGIN
 				SELECT @zoomlevel AS zoomlevel, 
 					   b.geolevel_id, 
 					   b.areaid,
-					   $(USERNAME).tileMaker_latitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(1).STY   /* Ymin */, @zoomlevel) AS y_mintile,
-					   $(USERNAME).tileMaker_longitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(1).STX  /* Xmin */, @zoomlevel) AS x_mintile,
-					   $(USERNAME).tileMaker_latitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(3).STY /* Ymax */, @zoomlevel) AS y_maxtile,
+					   $(USERNAME).tileMaker_latitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(1).STY  /* Ymin */, @zoomlevel) AS y_mintile,
+					   $(USERNAME).tileMaker_longitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(1).STX /* Xmin */, @zoomlevel) AS x_mintile,
+					   $(USERNAME).tileMaker_latitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(3).STY  /* Ymax */, @zoomlevel) AS y_maxtile,
 					   $(USERNAME).tileMaker_longitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(3).STX /* Xmax */, @zoomlevel) AS x_maxtile
 				   FROM b
 				  GROUP BY b.geolevel_id, 
@@ -292,30 +294,43 @@ BEGIN
 				   NULL AS optimised_geojson,
 				   g.bbox.STWithin(g.geom) AS within
 			  FROM g 
+		     WHERE 1 = 2 /* REMOVE ME */
 			 ORDER BY geolevel_id, zoomlevel, areaid, x, y;	
 --			 
-			SET @rowc2 = @@ROWCOUNT;		
+			SET @rowc2 = @@ROWCOUNT;	
+--			
+			SET @etime = CAST(GETDATE() - @lstart AS TIME);
+			SET @esecs = (DATEPART(MILLISECOND, @etime));
+			SET @esecs = @esecs/10;
+			SET @cesecs3 = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
+					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
+			SET @lstart = GETDATE();	
 --
 			ALTER INDEX ALL ON %3 REORGANIZE; 
 --			
-			SET @etime2 = CAST(GETDATE() - @lstart AS TIME);
-			SET @esecs2 = (DATEPART(MILLISECOND, @etime2));
-			SET @esecs2 = @esecs/210;
-			SET @cesecs2 = CAST((DATEPART(HOUR, @etime2) * 3600) + (DATEPART(MINUTE, @etime2) * 60) + (DATEPART(SECOND, @etime2)) AS VARCHAR(40)) + 
-					'.' + CAST(ROUND(@esecs2, 1) AS VARCHAR(40));
+			SET @etime = CAST(GETDATE() - @lstart AS TIME);
+			SET @esecs = (DATEPART(MILLISECOND, @etime));
+			SET @esecs = @esecs/10;
+			SET @cesecs4 = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
+					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
 --
-			SET @etime3 = CAST(GETDATE() - @pstart AS TIME);
-			SET @esecs3 = (DATEPART(MILLISECOND, @etime3));
-			SET @esecs3 = @esecs3/10;
-			SET @cesecs3 = CAST((DATEPART(HOUR, @etime3) * 3600) + (DATEPART(MINUTE, @etime3) * 60) + (DATEPART(SECOND, @etime3)) AS VARCHAR(40)) + 
-					'.' + CAST(ROUND(@esecs3, 1) AS VARCHAR(40));
-					
-			SET @isecs=0;
+-- Overall
+--
+			SET @etime = CAST(GETDATE() - @pstart AS TIME);
+			SET @esecs = (DATEPART(MILLISECOND, @etime));
+			SET @esecs = @esecs/10;
+			SET @cesecs = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
+					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
+--
+			IF (DATEPART(SECOND, @etime) > 0)
+				SET @isecs=@rowc/((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)));
+			ELSE 
+				SET @isecs=0;
 			SET @cisecs=CAST(ROUND(@isecs, 1) AS VARCHAR(40))
 --
 -- Processed 57+0 total areaid intersects, 3 tiles for geolevel id 2/3 zoomlevel: 1/11 in 0.7+0.0s+0.3s, 1.9s total; 92.1 intesects/s
-			RAISERROR('Processed %d+%d for geolevel id: %d/%d; zoomlevel: %d/%d; in %s+%s, %s s total; %s intesects/s)', 10, 1,
-				@rowc, @rowc2, @geolevel_id, @max_geolevel_id, @zoomlevel, @max_zoomlevel, @cesecs, @cesecs2, @cesecs3, @cisecs) WITH NOWAIT;
+			RAISERROR('Processed %d+%d for geolevel id: %d/%d; zoomlevel: %d/%d; in %s+%s+%s+%s, %s total; %s intesects/s)', 10, 1,
+				@rowc, @rowc2, @geolevel_id, @max_geolevel_id, @zoomlevel, @max_zoomlevel, @cesecs1, @cesecs2, @cesecs3, @cesecs4, @cesecs, @cisecs) WITH NOWAIT;
 			SET @j+=1;	
 		END;
 		SET @i+=1;	
