@@ -22,14 +22,14 @@ rm(list=ls())
 userID <- ""
 password <- ""
 dbName <- "rif_studies"
-dbHost <- "networkRif"
+dbHost <- ""
 dbPort <- ""
 dbConnectionString <- ""
-odbcDataSource <- ""
+odbcDataSource <- "networkRif"
 numberOfInvestigations <- ""
 
 #The identifier of the study whose extract table fields need to be smoothed.
-studyID <- "1"
+studyID <- "170"
 
 #We expect model to have one of the three values: 'BYM', 'CAR' or 'HET'
 model <- "BYM"
@@ -52,9 +52,9 @@ mapTableName <- ""
 temporarySmoothedResultsTableName <- ""
 
 #The name of the investigation. Is an input parameter, but default is set here fro debug purposes
-investigationName <- "inv_1"
+investigationName <- "inv1"
 #The id of the investigation - used when writing the results back to the database. Input paremeter
-investigationId <- "1"
+investigationId <- "159"
 
 ##====================================================================
 ## FUNCTION: processCommandLineArguments
@@ -84,7 +84,7 @@ processCommandLineArguments <- function() {
     names(parametersDataFrame)[1] <- paste("name")
     names(parametersDataFrame)[2] <- paste("value")	
     
-    print("About to work out")
+    print("Parsing parameters")
     for (i in 1:nrow(parametersDataFrame)) {
       print(parametersDataFrame[i,1])
       
@@ -112,7 +112,7 @@ processCommandLineArguments <- function() {
         model <<- parametersDataFrame[i, 2]				
       }	else if (grepl('adj', parametersDataFrame[i, 1]) == TRUE){
         if (parametersDataFrame[i, 2] == 'TRUE') {
-          adj = TRUE
+          adj <<- TRUE
         }
       }
     }
@@ -656,6 +656,7 @@ performSmoothingActivity <- function() {
   # code that sets up the INLA formula
   if (adj==FALSE){
     if (model=='BYM'){
+      print("Bayes smoothing with BYM model type no adjustment")
       formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = FALSE,
                          hyper=list(prec.unstruct=list(param=c(0.5,0.0005)), 
                                     prec.spatial=list(param=c(0.5,0.0005))))
@@ -668,6 +669,7 @@ performSmoothingActivity <- function() {
       data$BYM_ssRRU95_UNADJ=NA
     }
     if (model=='HET'){
+      print("Bayes smoothing with HET model type no adjustment")
       formula=observed~f(area_order, model='iid',
                          hyper=list(prec=list(param=c(0.5,0.0005))))
       data$HET_RR_UNADJ=NA
@@ -675,6 +677,7 @@ performSmoothingActivity <- function() {
       data$HET_RRU95_UNADJ=NA
     }
     if (model=='CAR'){
+      print("Bayes smoothing with CAR model type no adjustment")
       formula=observed~f(area_order, model='besag',graph=IM,
                          hyper=list(prec=list(param=c(0.5,0.0005))))
       data$CAR_RR_UNADJ=NA
@@ -683,6 +686,7 @@ performSmoothingActivity <- function() {
     }
   }else {
     if (model=='BYM'){
+      print("Bayes smoothing with BYM model type, adjusted")
       formula=observed~f(area_order,model='bym',graph=IM, 
                          hyper=list(prec.unstruct=list(param=c(0.5,0.0005)), 
                                     prec.spatial=list(param=c(0.5,0.0005))))
@@ -695,6 +699,7 @@ performSmoothingActivity <- function() {
       data$BYM_ssRRU95_ADJ=NA
     }
     if (model=='HET'){
+      print("Bayes smoothing with HET model type, adjusted")
       formula=observed~f(area_order, model='iid',
                          hyper=list(prec=list(param=c(0.5,0.0005))))
       data$HET_RR_ADJ=NA
@@ -702,6 +707,7 @@ performSmoothingActivity <- function() {
       data$HET_RRU95_ADJ=NA
     }
     if (model=='CAR'){
+      print("Bayes smoothing with CAR model type, adjusted")
       formula=observed~f(area_order, model='besag',graph=IM,
                          hyper=list(prec=list(param=c(0.5,0.0005))))
       data$CAR_RR_ADJ=NA
@@ -939,14 +945,19 @@ convertToDBFormat=function(dataIn){
 
 
 saveDataFrameToDatabaseTable <- function(data) {
+  print(paste0("Creating ",temporarySmoothedResultsTableName))
   
   sqlSave(connDB, data, tablename=temporarySmoothedResultsTableName)
   #sqlSave(connDB, data, tablename = "kgarwood.rifSmoothTest")
   #Add indices to the new table so that its join with s[study_id]_map will be more 
   #efficient
+  print("Creating study_id index on temporary table")
   sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "study_id"))
+  print("Creating area_id index on temporary table")
   sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "area_id"))
+  print("Creating genders index on temporary table")
   sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "genders"))
+  print("Created indices on temporary table")
   #sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "band_id"))
   #sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "inv_id"))
   #sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "adjusted"))
@@ -1008,8 +1019,9 @@ updateMapTableFromSmoothedResultsTable <- function() {
     "a.genders=b.genders AND ",
     "a.area_id=b.area_id");
   
-  #print(updateMapTableSQLQuery)
   sqlQuery(connDB, updateMapTableSQLQuery)				
+  #print(updateMapTableSQLQuery)
+  print(paste0("Updated map table: ", mapTableName))
 }
 
 #make and ODBC connection
@@ -1020,16 +1032,18 @@ updateMapTableFromSmoothedResultsTable <- function() {
 processCommandLineArguments()
 establishTableNames(studyID)
 #connDB <- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password))
-connDB = odbcConnect(dbHost)
+connDB = odbcConnect(odbcDataSource)
 
 #odbcSetAutoCommit(connDB, autoCommit=FALSE)
+print("Performing basic stats and smoothing")
 result <- performSmoothingActivity()
+print("Creating temporary table")
 saveDataFrameToDatabaseTable(result)
+print("Updating map table")
 updateMapTableFromSmoothedResultsTable()
-
-
+print("Dropping temporary table")
 sqlDrop(connDB, temporarySmoothedResultsTableName)
-
+print("Closing database connection")
 #print(paste0("RESULT==", result, "=="))
 odbcClose(connDB)
 #quit(status=result)
