@@ -27,6 +27,7 @@ angular.module("RIF")
                     var formData = new FormData();
                     formData.append("userID", username);
                     formData.append("fileField", blob, "submissionFile.txt");
+                    formData.append("fileFormat", "JSON");
 
                     return $http.post(rifAPI1 + "submitStudy/", formData, {
                         transformRequest: angular.identity,

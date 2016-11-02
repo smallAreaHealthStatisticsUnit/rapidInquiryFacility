@@ -30,10 +30,10 @@ angular.module("RIF")
                                         name: StudyAreaStateService.getState().selectAt
                                     },
                                     "geolevel_area": {
-                                        name: "TODO: UNKNOWN VARIABLE"
+                                        name: ""
                                     },
                                     "geolevel_view": {
-                                        name: "TODO: UNKNOWN VARIABLE"
+                                        name: StudyAreaStateService.getState().studyResolution
                                     },
                                     "geolevel_to_map": {
                                         name: StudyAreaStateService.getState().studyResolution
@@ -49,10 +49,10 @@ angular.module("RIF")
                                         name: CompAreaStateService.getState().selectAt
                                     },
                                     "geolevel_area": {
-                                        name: "TODO: UNKNOWN VARIABLE"
+                                        name: ""
                                     },
                                     "geolevel_view": {
-                                        name: "TODO: UNKNOWN VARIABLE"
+                                        name: CompAreaStateService.getState().studyResolution
                                     },
                                     "geolevel_to_map": {
                                         name: CompAreaStateService.getState().studyResolution
