@@ -1204,14 +1204,15 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					"Tile area id intersects"	/* Comment */), sqlArray);
 					
 			var fieldArray = ['geolevel_id', 'zoomlevel', 'areaid', 'x', 'y', 'optimised_geojson',
-				'within', 'bbox', 'geom'];
+				'within', 'optimised_wkt', 'bbox', 'geom'];
 			var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.',
 				'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
 				'Area ID',
 				'X tile number. From 0 to (2**<zoomlevel>)-1',
 				'Y tile number. From 0 to (2**<zoomlevel>)-1',
-				'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.',
+				'Tile areaid intersect multipolygon in GeoJSON format, optimised for zoomlevel N.',
 				'Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.',
+				'Tile areaid intersect multipolygon in WKT format, optimised for zoomlevel N.',
 				'Bounding box of tile as a polygon.',
 				'Geometry of area.'];
 			for (var l=0; l< fieldArray.length; l++) {		
@@ -1333,7 +1334,13 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					dbType, 
 					"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
 					), sqlArray);			
-			
+	
+			var sqlStmt=new Sql("Tile intersects table % WKT update",
+				getSqlFromFile("tile_intersects_wkt_update.sql", 
+					dbType, 
+					"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					), sqlArray);		
+					
 		} // End of createTilesTables()
 		
 		/*
