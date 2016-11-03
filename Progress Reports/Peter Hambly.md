@@ -712,11 +712,13 @@ RangeError: Invalid string length
   
 | Zoomlevel | PostGIS  | SQL Server |
 | ----------| ---------|------------|
-|         7 | 75 secs  | 69 secs    |
-|         8 | 166 secs | 4 mins     |
-|         9 | 8 mins   |            |
+|         7 | 75 secs  | 51 secs    |
+|         8 | 166 secs | 143 secs   |
+|         9 | 8 mins   | 8 mins     |
 |        10 | 24 mins  |            |  
 |        11 | 80 mins  |            |
+
+  * Postgres also aggregates GeoJSON into collections and still has the older NOT EXISTS code to eliminate tiles with no parent
 
 #### Current TODO list (November):
 
@@ -742,6 +744,7 @@ RangeError: Invalid string length
   * Dump SQL to XML/JSON files (Postgres and SQL Server) so Kevin does not need to generate it;
   * Add trigger verification code from Postgres;
   * Fix in Node:
+    - Triangles (to keep QGIS happy)
     - Self-intersection at or near point -76.329400888614401 39.31505881204005
     - Too few points in geometry component at or near point -91.774770828512843 46.946012696542709
   * Check Turf JS centroid code (figures are wrong);

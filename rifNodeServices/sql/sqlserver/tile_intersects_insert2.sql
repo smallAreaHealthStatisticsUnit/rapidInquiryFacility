@@ -13,7 +13,10 @@
  *
  * SET STATISTICS PROFILE ON
  * SET STATISTICS TIME ON 
+ *
+ * You may need to change #temp to temp (i.e. make it a real table to profile it)
  */
+--
 -- For testing
 --
 --DECLARE @start_zoomlevel INTEGER=6;
@@ -44,6 +47,7 @@ DECLARE @rowc INTEGER;
 DECLARE @rowc2 INTEGER;
 --
 DECLARE @pstart DATETIME;
+DECLARE @sstart DATETIME;
 DECLARE @lstart DATETIME;
 --
 DECLARE @etime TIME;
@@ -57,6 +61,7 @@ DECLARE @cesecs1 VARCHAR(40);
 DECLARE @cesecs2 VARCHAR(40);
 DECLARE @cesecs3 VARCHAR(40);
 DECLARE @cesecs4 VARCHAR(40);
+DECLARE @cesecs5 VARCHAR(40);
 --
 BEGIN
 	OPEN c1_maxgeolevel_id;
@@ -90,6 +95,7 @@ BEGIN
 		SET @j=@start_zoomlevel;	
 		WHILE @j <= @max_zoomlevel /* FOR j IN 1 .. max_zoomlevel LOOP */
 		BEGIN
+			SET @sstart = GETDATE();
 			SET @lstart = GETDATE();
 			SET @zoomlevel=@j;			
 --
@@ -98,7 +104,11 @@ BEGIN
 				SET @l_use_zoomlevel=6;
 --			
 -- Intersector2: tile intersects table INSERT function. Zoomlevels <6 use zoomlevel 6 data
---				  
+--				
+-- Step 1: Calculate bounding box, parent X/Y min
+--		   This is separate to prevent SQL Server unnesting the cross join because it thinks it is very inefficent
+--		   This could probably be improved with manual statistics for the function, but there is no method for this in SQL Server
+--  
 			WITH a	AS (
 				SELECT b.zoomlevel AS zoomlevel, b.x_mintile, b.x_maxtile, b.y_mintile, b.y_maxtile	  
 				  FROM tile_limits_cb_2014_us_500k b
@@ -126,9 +136,9 @@ BEGIN
 				   $(USERNAME).tileMaker_STMakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326) AS bbox,
 				   $(USERNAME).tileMaker_latitude2tile(b.ymin, b.zoomlevel-1) AS parent_ymin,
 				   $(USERNAME).tileMaker_longitude2tile(b.xmin, b.zoomlevel-1) AS parent_xmin
-			  INTO #temp
+			  INTO #temp2
 			  FROM b
-			 ORDER BY b.zoomlevel, b.x, b.y
+			 ORDER BY b.zoomlevel, b.x, b.y;
 --
 			SET @etime = CAST(GETDATE() - @lstart AS TIME);
 			SET @esecs = (DATEPART(MILLISECOND, @etime));
@@ -136,31 +146,75 @@ BEGIN
 			SET @cesecs1 = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
 					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
 			SET @lstart = GETDATE();
---					
+--				
+-- Step 2: Join to parent tile from previous geolevel_id; i.e. exclude if not present, intersect by bounding box (this in combination 
+--         removes most tiles not containing data efficiently). This was the cause of most performance problems when SQL Server decided to 
+--         change this order. The COUNT(*) always returns 1; it is to prevent SQL Server unesting the query!
+-- 		   This may cause problems in future if SQL Server becomes intelligent enough to spot this; although hopefully it will by then 
+-- 	       spot the STIntersect() is an expensive operation even with indexes
+--
 			WITH d AS ( /* Get parent tiles */
-				SELECT p.x, p.y, p.areaid
+				SELECT p.x, p.y, p.areaid, COUNT(p.x) AS total
 				  FROM %3 p /* Parent */
 				 WHERE p.zoomlevel    = @zoomlevel -1 	/* previous geolevel_id: c.zoomlevel -1 */
 				   AND p.geolevel_id  = @geolevel_id 
-			), e AS (
+				 GROUP BY p.x, p.y, p.areaid
+			), e AS (	
 				SELECT c.zoomlevel, c.x, c.y, d.areaid, c.bbox
-				  FROM #temp c, d
+				  FROM #temp2 c, d
 				 WHERE c.parent_xmin = d.x  			/* Join to parent tile from previous geolevel_id; i.e. exclude if not present */
 				   AND c.parent_ymin = d.y
-			), f AS (
-				SELECT @geolevel_id AS geolevel_id, e.zoomlevel, e.x, e.y, e.bbox, e2.areaid, e2.geom
-				  FROM e, %1 e2
-				 WHERE e2.zoomlevel    = @l_use_zoomlevel
-				   AND e2.geolevel_id  = @geolevel_id
-				   AND e2.areaid       = e.areaid
-				   AND e.bbox.STIntersects(e2.bbox) = 1	/* Intersect by bounding box */		 
+			)
+			SELECT e.zoomlevel, e.x, e.y, e.areaid, e.bbox, e2.geom		
+			  INTO #temp
+			  FROM e, %1 e2
+			 WHERE e2.zoomlevel    = @l_use_zoomlevel
+			   AND e2.geolevel_id  = @geolevel_id
+			   AND e2.areaid       = e.areaid
+			   AND e.bbox.STIntersects(e2.bbox) = 1		/* Intersect by bounding box */	
+			 ORDER BY e.zoomlevel, e.x, e.y, e.areaid;
+			DROP TABLE #temp2;
+--
+			SET @etime = CAST(GETDATE() - @lstart AS TIME);
+			SET @esecs = (DATEPART(MILLISECOND, @etime));
+			SET @esecs = @esecs/10;
+			SET @cesecs5 = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
+					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
+			SET @lstart = GETDATE();
+--
+-- Do NOT index #temp; it i slower and gives the wrong answer
+--
+/*
+			ALTER TABLE #temp ALTER COLUMN x INTEGER NOT NULL;
+			ALTER TABLE #temp ALTER COLUMN y INTEGER NOT NULL;
+			ALTER TABLE #temp ALTER COLUMN areaid INTEGER NOT NULL;
+			ALTER TABLE #temp ADD PRIMARY KEY (x, y, areaid);
+			CREATE SPATIAL INDEX #temp_gix ON #temp (geom)
+				WITH ( BOUNDING_BOX = (xmin=-179.148909, ymin=-14.548699000000001, xmax=179.77847, ymax=71.36516200000001));	
+			CREATE SPATIAL INDEX #temp_gix2 ON #temp (bbox)
+				WITH ( BOUNDING_BOX = (xmin=-179.148909, ymin=-14.548699000000001, xmax=179.77847, ymax=71.36516200000001));			
+--
+			SET @etime = CAST(GETDATE() - @lstart AS TIME);
+			SET @esecs = (DATEPART(MILLISECOND, @etime));
+			SET @esecs = @esecs/10;
+			SET @cesecs6 = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
+					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
+			SET @lstart = GETDATE();
+			*/
+--		
+-- Step 3: intersects tile bounding box with geometry, exclude any tile bounded completely within the area
+--
+			WITH f AS (
+				SELECT @geolevel_id AS geolevel_id, e.zoomlevel, e.x, e.y, e.bbox, e.areaid, e.geom
+				  FROM #temp e  
+				 WHERE e.bbox.STIntersects(e.geom) = 1 /* intersects tile bounding box with geometry */ 
 			)
 			INSERT INTO %3(geolevel_id, zoomlevel, areaid, x, y, bbox, geom, optimised_geojson, within) 			
 			SELECT f.geolevel_id, f.zoomlevel, f.areaid, f.x, f.y, f.bbox, f.geom, 
 				   NULL AS optimised_geojson,
 				   1 AS within 
 			  FROM f
-			 WHERE NOT f.bbox.STWithin(f.geom) = 1 /* Exclude any tile bounding completely within the area */
+			 WHERE NOT f.bbox.STWithin(f.geom) = 1 /* Exclude any tile bounded completely within the area */
 			 ORDER BY f.geolevel_id, f.zoomlevel, f.areaid, f.x, f.y;
 --
 			SET @rowc = @@ROWCOUNT;
@@ -169,7 +223,7 @@ BEGIN
 			SET @esecs = @esecs/10;
 			SET @cesecs2 = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
 					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
-						
+--						
 			DROP TABLE #temp;
 --
 -- Run 2
@@ -294,7 +348,6 @@ BEGIN
 				   NULL AS optimised_geojson,
 				   g.bbox.STWithin(g.geom) AS within
 			  FROM g 
-		     WHERE 1 = 2 /* REMOVE ME */
 			 ORDER BY geolevel_id, zoomlevel, areaid, x, y;	
 --			 
 			SET @rowc2 = @@ROWCOUNT;	
@@ -306,6 +359,8 @@ BEGIN
 					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
 			SET @lstart = GETDATE();	
 --
+-- Rebuild tile intersects index
+--
 			ALTER INDEX ALL ON %3 REORGANIZE; 
 --			
 			SET @etime = CAST(GETDATE() - @lstart AS TIME);
@@ -314,14 +369,17 @@ BEGIN
 			SET @cesecs4 = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
 					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
 --
--- Overall
+-- Calculate overall time since start
 --
 			SET @etime = CAST(GETDATE() - @pstart AS TIME);
 			SET @esecs = (DATEPART(MILLISECOND, @etime));
 			SET @esecs = @esecs/10;
 			SET @cesecs = CAST((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)) AS VARCHAR(40)) + 
 					'.' + CAST(ROUND(@esecs, 1) AS VARCHAR(40));
---
+--		
+-- Calculate intersects/s for this geolevel/zoomlevel combination
+--			
+			SET @etime = CAST(GETDATE() - @sstart AS TIME); -- For all queries in fop loop
 			IF (DATEPART(SECOND, @etime) > 0)
 				SET @isecs=@rowc/((DATEPART(HOUR, @etime) * 3600) + (DATEPART(MINUTE, @etime) * 60) + (DATEPART(SECOND, @etime)));
 			ELSE 
@@ -329,8 +387,17 @@ BEGIN
 			SET @cisecs=CAST(ROUND(@isecs, 1) AS VARCHAR(40))
 --
 -- Processed 57+0 total areaid intersects, 3 tiles for geolevel id 2/3 zoomlevel: 1/11 in 0.7+0.0s+0.3s, 1.9s total; 92.1 intesects/s
-			RAISERROR('Processed %d+%d for geolevel id: %d/%d; zoomlevel: %d/%d; in %s+%s+%s+%s, %s total; %s intesects/s)', 10, 1,
-				@rowc, @rowc2, @geolevel_id, @max_geolevel_id, @zoomlevel, @max_zoomlevel, @cesecs1, @cesecs2, @cesecs3, @cesecs4, @cesecs, @cisecs) WITH NOWAIT;
+--
+			RAISERROR('Processed %d+%d for geolevel id: %d/%d; zoomlevel: %d/%d; in #temp2: %s, #temp: %s, insert: %s, insert2: %s, re-index: %s, %s total; %s intesects/s)', 10, 1,
+				@rowc, @rowc2, @geolevel_id, @max_geolevel_id, @zoomlevel, @max_zoomlevel, 
+				@cesecs1, -- #temp2 create
+				@cesecs5, -- #temp create
+				@cesecs2, -- INSERT into tile intersects table
+				@cesecs3, -- 2nd INSERT into tile intersects table (Insert tile area id intersections missing where not in the previous layer)
+				@cesecs4, -- Re-index tile intersects table
+				@cesecs, -- Overall running total
+				@cisecs  -- Intersects/sec
+				) WITH NOWAIT;
 			SET @j+=1;	
 		END;
 		SET @i+=1;	
