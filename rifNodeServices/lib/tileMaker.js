@@ -62,7 +62,8 @@ const async = require('async'),
 		}),
 	  reproject = require("reproject"),
 	  proj4 = require("proj4"),
-	  wellknown = require('wellknown');
+	  wellknown = require('wellknown'),
+	  topojson = require('topojson');
 
 /*
  * Function: 	writeSVGTile
@@ -244,23 +245,72 @@ var pgTileMaker = function pgTileMaker(client, callback) {
 		callback(nerr);	
 	}
 
-	function Tile(tileId, geolevel_id, geolevel_name, zoomlevel, x, y, tileArray) { // Object constructor
+	var lstart = new Date().getTime();
+	
+	var topojson_options = {
+		verbose: false
+	};
+	topojson_options["property-transform"] = function(d) {					
+		return d.properties;
+	};
+	topojson_options.id = function(d) {
+		if (!d.properties["id"]) {
+			throw new Error("FIELD PROCESSING ERROR! Invalid id field: d.properties.id does not exist in geoJSON");
+		}
+		else {
+			return d.properties["id"];
+		}							
+	};						
+			
+	function Tile(tileId, geolevel_id, geolevel_name, zoomlevel, x, y, geojson, topojson_options, tileArray) { // Object constructor
 		this.tileId=tileId;
-		this.geojson={type: "FeatureCollection", bbox: undefined, features: []};
+		this.geojson={type: "FeatureCollection", bbox: undefined, features: [geojson]};
 		this.geolevel_id=geolevel_id;	
 		this.geolevel_name=geolevel_name;	
 		this.zoomlevel=zoomlevel;
 		this.x=x;
-		this.y=y;	
+		this.y=y;
+		this.topojson_options=topojson_options;		
 
 		if (tileArray) {
 			tileArray.push(this);	
 			this.id=tileArray.length;
+			this.geojson.features[0].properties.id=tileArray.length;
 		}
 		else {
 			throw new Error("No tileArray defined");
 		}		
 	}
+	Tile.prototype = { // Add methods
+		addFeature: function(geojson) {
+			this.geojson.features.push(geojson);
+			this.geojson.features[(this.geojson.features.length-1)].properties.id=this.id;
+		},
+		addTopoJson: function() {
+			var bbox=turf.bbox(this.geojson);
+			this.geojson.bbox=bbox;
+			var numFeatures=(this.geojson.features.length || 0);	
+			if (this.id == 1) {
+				this.topojson_options.verbose=true;
+				console.error("GEOJSON: " + JSON.stringify(this.geojson, null, 2).substring(0, 1000));
+			}
+			else {
+				this.topojson_options.verbose=false;
+			}
+			this.topojson=topojson.topology({   // Convert geoJSON to topoJSON
+				collection: this.geojson
+				}, this.topojson_options);
+			
+			console.error('Made tile ' + this.id + ': "' + this.tileId + 
+				'", ' +  numFeatures + ' features' + 
+				'; bounding box: ' + JSON.stringify(bbox));	
+			if (this.id == 1) {
+				console.error("TOPOJSON: " + JSON.stringify(this.topojson, null, 2).substring(0, 1000));
+			}	
+				
+			this.geojson=undefined;
+		}
+	};
 	
 //
 // Add $user to path
@@ -371,49 +421,46 @@ REFERENCE (from shapefile) {
 			[-157.89897200000001,
 			56.347497000000004],
  */			
+				
 				var tileArray=getTileArray();
 				var geojson={
 					type: "Feature",
 					properties: {
+						id: 	  undefined,
 						areaID:   row.areaid,
 						areaName: row.areaname
 					}, 
-					geometry: []};
-				var wktjson=wellknown.parse(row.optimised_wkt);		
+					geometry: wellknown.parse(row.optimised_wkt)
+				};
 //				console.error("wktjson: " + JSON.stringify(wktjson, null, 2).substring(0, 1000));	
-				geojson.geometry=wktjson;
 					
 				if (tileArray.length == 0) {
-					var geojsonTile=new Tile(row.tile_id, row.geolevel_id, row.geolevel_name, row.zoomlevel, row.x, row.y, tileArray);
-					geojsonTile.geojson.features.push(geojson);
-					console.error('Tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + "; properties: " + 
-						JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));
+					var geojsonTile=new Tile(row.tile_id, row.geolevel_id, row.geolevel_name, row.zoomlevel, row.x, row.y, geojson, topojson_options, tileArray);
+//					console.error('Tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + "; properties: " + 
+//						JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));
 				}
 				else {
 					var geojsonTile=tileArray[(tileArray.length-1)];
 					if (geojsonTile.tileId == row.tile_id) {
-						geojsonTile.geojson.features.push(geojson);
-						console.error('Add areaID: ' + row.areaid + "; properties: " + 
-							JSON.stringify(geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties, null, 2));
+						geojsonTile.addFeature(geojson);
+//						console.error('Add areaID: ' + row.areaid + "; properties: " + 
+//							JSON.stringify(geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties, null, 2));
 					}
-					else {		
-						if (geojsonTile.id == 1) {
-							console.error("GEOJSON: " + JSON.stringify(geojsonTile.geojson, null, 2).substring(0, 1000));
-						}
-						geojsonTile.geojson.bbox=turf.bbox(geojsonTile.geojson);
-						console.error('Previous tile: "' + geojsonTile.tileId + 
-							'", ' + (geojsonTile.geojson.features.length || 0) + ' features' + 
-							'; bounding box: ' + JSON.stringify(geojsonTile.geojson.bbox));			
-						geojsonTile=new Tile(row.tile_id, row.geolevel_id, row.geolevel_name, row.zoomlevel, row.x, row.y, tileArray);
-						geojsonTile.geojson.features.push(geojson);
-						console.error('Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + "; properties: " + 
-							JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));		
+					else {	
+						geojsonTile.addTopoJson();	
+						
+						geojsonTile=new Tile(row.tile_id, row.geolevel_id, row.geolevel_name, row.zoomlevel, row.x, row.y, geojson, topojson_options, tileArray);
+					
+//						console.error('Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + "; features[0] properties: " + 
+//							JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));		
 					}	
 				}				
 			});
 			
 			query.on('end', function(result) {
-				console.error(result.rowCount + ' tile intersects processed; ' + tileArray.length + " tiles");
+				var end = new Date().getTime();
+				var elapsedTime=(end - lstart)/1000; // in S
+				console.error(result.rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S");
 				callback();
 			});		
 		});

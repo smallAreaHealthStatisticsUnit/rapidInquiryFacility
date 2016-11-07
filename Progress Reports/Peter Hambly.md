@@ -727,6 +727,7 @@ RangeError: Invalid string length
   * Add GID to lookup tables;
   * Add areaid as well as <geolevel_name> in lookup tables;
 * SQL load script generator: still todo, all can wait:
+  * Add search path to user schema, check user schema exists, to Postgres version
   * Confirm Postgres and SQL Server geolevel intersections are the same;
   * RIF production script:
     * DELETE/INSERT rif40_geographies/geolevels
