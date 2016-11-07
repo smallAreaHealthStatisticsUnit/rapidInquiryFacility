@@ -135,8 +135,6 @@ public class RunStudyThread
 	
 	private StudyStateMachine studyStateMachine;
 	
-	
-	
 	private SQLStudyStateManager studyStateManager;
 	private SQLCreateStudySubmissionStep createStudySubmissionStep;
 	private SQLGenerateResultsSubmissionStep generateResultsSubmissionStep;
@@ -166,6 +164,9 @@ public class RunStudyThread
 		this.connection = connection;
 		this.user = user;				
 		this.studySubmission = studySubmission;
+		
+		
+		System.out.println("RunStudyThread initialise=="+rifServiceStartupOptions.useStrictValidationPolicy()+"==");
 		
 		RIFDatabaseProperties rifDatabaseProperties 
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
@@ -339,10 +340,12 @@ public class RunStudyThread
 	private void smoothResults() 
 		throws RIFServiceException {
 
+		System.out.println("Smooth results 1");
 		smoothResultsSubmissionStep.performStep(
 			connection,
 			studySubmission, 
 			studyID);
+		System.out.println("Smooth results 2");
 
 		String statusMessage
 			= RIFServiceMessages.getMessage(
@@ -351,7 +354,8 @@ public class RunStudyThread
 			user, 
 			studyID, 
 			statusMessage);
-				
+
+		
 		studyStateMachine.next();
 	}
 	

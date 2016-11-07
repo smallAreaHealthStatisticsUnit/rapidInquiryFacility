@@ -612,6 +612,8 @@ final class HealthOutcomeManager {
 	 * @param healthCodes
 	 * @throws RIFServiceException
 	 */
+	
+	/*
 	public void checkNonExistentHealthCodes(
 		final ArrayList<HealthCode> healthCodes) 
 		throws RIFServiceException {
@@ -659,7 +661,7 @@ final class HealthOutcomeManager {
 			throw rifServiceException;
 		}
 	}
-			
+	*/	
 	
 	
 	// ==========================================

@@ -230,7 +230,8 @@ final class AgeBandContentHandler
 			deactivate();
 		}
 		else if (equalsFieldName(qualifiedName, "id") == true) {
-			currentAgeGroup.setName(getCurrentFieldValue());
+			currentAgeGroup.setIdentifier(getCurrentFieldValue());
+			//currentAgeGroup.setName(getCurrentFieldValue());
 		}		
 		else if (equalsFieldName(qualifiedName, "name") == true) {
 			currentAgeGroup.setName(getCurrentFieldValue());

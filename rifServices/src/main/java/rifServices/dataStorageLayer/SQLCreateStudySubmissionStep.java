@@ -120,11 +120,11 @@ final class SQLCreateStudySubmissionStep
 		final RIFStudySubmission studySubmission) 
 		throws RIFServiceException {
 
-		
 		//Validate parameters
-		ValidationPolicy validationPolicy = getValidationPolicy();
-		studySubmission.checkErrors(validationPolicy);
-		
+		//ValidationPolicy validationPolicy = getValidationPolicy();
+		//studySubmission.checkErrors(validationPolicy);
+		studySubmission.checkErrors(ValidationPolicy.RELAXED);
+
 		//perform various checks for non-existent objects
 		//such as geography,  geo level selects, covariates
 		checkNonExistentItems(

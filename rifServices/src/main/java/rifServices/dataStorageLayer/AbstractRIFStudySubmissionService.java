@@ -10,6 +10,7 @@ import rifGenericLibrary.util.FieldValidationUtility;
 
 
 
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.sql.Connection;
@@ -1866,7 +1867,7 @@ abstract class AbstractRIFStudySubmissionService
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 
 			//Delegate operation to a specialised manager class
-						
+			/*			
 			SQLRIFSubmissionManager rifSubmissionManager
 				= rifServiceResources.getRIFSubmissionManager();
 			result
@@ -1875,7 +1876,21 @@ abstract class AbstractRIFStudySubmissionService
 					user, 
 					rifStudySubmission,
 					getRIFServiceStartupOptions());	
+			*/
 			
+			//Delegate operation to a specialised manager class			
+			RIFServiceStartupOptions rifServiceStartupOptions
+				= getRIFServiceStartupOptions();			
+			RunStudyThread runStudyThread = new RunStudyThread();
+			runStudyThread.initialise(
+				connection, 
+				user, 
+				rifStudySubmission, 
+				rifServiceStartupOptions, 
+				rifServiceResources);
+			
+			Thread thread = new Thread(runStudyThread);
+			thread.run();	
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation

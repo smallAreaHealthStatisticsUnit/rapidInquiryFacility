@@ -470,6 +470,7 @@ final class SQLAgeGenderYearManager
 		throws RIFServiceException {
 			
 		for (AgeBand ageBand : ageBands) {
+			System.out.println("SQGYM checkNonExistentAgeGroups age band=="+ ageBand.getDisplayName()+"==");
 			AgeGroup lowerAgeGroup = ageBand.getLowerLimitAgeGroup();
 			checkNonExistentAgeGroup(
 				connection, 
@@ -489,6 +490,8 @@ final class SQLAgeGenderYearManager
 		final AgeGroup ageGroup) 
 		throws RIFServiceException {
 			
+		System.out.println("checkNonExistentAgeGroup name=="+ageGroup.getName()+"==");
+		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
@@ -510,9 +513,12 @@ final class SQLAgeGenderYearManager
 			queryFormatter.addWhereParameter(
 				"rif40_tables", 
 				"table_name");
+			
 			queryFormatter.addWhereParameter(
 				"rif40_age_groups", 
 				"fieldname");		
+			
+			
 			
 			/*
 			SQLRecordExistsQueryFormatter queryFormatter
@@ -528,7 +534,7 @@ final class SQLAgeGenderYearManager
 			String denominatorTableName
 				= ndPair.getDenominatorTableName();			
 			logSQLQuery(
-				"getYearRange",
+				"checkNonExistentAgeGroup",
 				queryFormatter,
 				"0",
 				denominatorTableName,

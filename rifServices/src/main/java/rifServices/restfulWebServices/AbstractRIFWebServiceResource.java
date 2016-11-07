@@ -17,6 +17,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 
 
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.dataStorageLayer.ProductionRIFStudyServiceBundle;
@@ -25,6 +26,7 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.RIFServiceError;
 import rifServices.businessConceptLayer.*;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.fileFormats.RIFStudySubmissionXMLReader;
 import rifServices.fileFormats.RIFStudySubmissionXMLWriter;
 
@@ -122,6 +124,8 @@ abstract class AbstractRIFWebServiceResource {
 				true,
 				false);
 		
+		
+		System.out.println("AbstractRIFWebServiceResource validation policy=="+rifServiceStartupOptions.useStrictValidationPolicy()+"==");
 		webServiceResponseGenerator = new WebServiceResponseGenerator();
 		
 		try {
@@ -1251,6 +1255,15 @@ abstract class AbstractRIFWebServiceResource {
 		final InputStream inputStream) {
 		
 		String result = "";
+
+		System.out.println("ARWS-submitStudy122 userID=="+userID+"==");
+		System.out.println("ARWS-submitStudy122 fileFormat=="+format+"==");
+		if (inputStream == null) {
+			System.out.println("ARWS-submitStudy123 nothing submitted for input study");
+		}
+		else {
+			System.out.println("ARWS-submitStudy123 something specified for the input file");			
+		}
 		
 		try {			
 			//Convert URL parameters to RIF service API parameters			
@@ -1258,18 +1271,23 @@ abstract class AbstractRIFWebServiceResource {
 			
 			RIFStudySubmission rifStudySubmission = null;
 			
-			if (StudySubmissionFormat.JSON.matchesFormat(format)) {
+			String tmpFormat = "JSON";
+			System.out.println("ARWS-submitStudy122 fileFormat=="+format+"==");
+			if (StudySubmissionFormat.JSON.matchesFormat(tmpFormat)) {
+				System.out.println("ARWS-submitStudy122 JSON");				
 				rifStudySubmission
 					= getRIFSubmissionFromJSONSource(inputStream);
 			}
 			else {
+				System.out.println("ARWS-submitStudy122 ");				
 				rifStudySubmission
 					= getRIFSubmissionFromXMLSource(inputStream);
 			}
+			
+			rifStudySubmission.checkErrors(ValidationPolicy.RELAXED);
 
 			RIFStudySubmissionAPI studySubmissionService
-				= getRIFStudySubmissionService();
-			
+				= getRIFStudySubmissionService();			
 			studySubmissionService.submitStudy(
 				user, 
 				rifStudySubmission, 
@@ -1297,6 +1315,7 @@ abstract class AbstractRIFWebServiceResource {
 		throws RIFServiceException {
 		
 		try {
+			System.out.println("ARWS - getRIFSubmissionFromJSONSource start");
 			BufferedReader reader 
 				= new BufferedReader(
 					new InputStreamReader(inputStream, "UTF-8"));
@@ -1314,7 +1333,8 @@ abstract class AbstractRIFWebServiceResource {
 			
 			String xml = XML.toString(jsonObject);
 			InputStream xmlInputStream 
-				= new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));			
+				= new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+			System.out.println("ARWS - getRIFSubmissionFromJSONSource JSON TO XML=="+xml+"==");			
 			return getRIFSubmissionFromXMLSource(xmlInputStream);			
 		}
 		catch(Exception exception) {
@@ -1330,22 +1350,20 @@ abstract class AbstractRIFWebServiceResource {
 		
 	}
 	
-	
 	private RIFStudySubmission getRIFSubmissionFromXMLSource(
 		final InputStream inputStream) 
 		throws RIFServiceException {
+
+		System.out.println("ARWS - getRIFSubmissionFromXMLSource start");
 				
 		RIFStudySubmissionXMLReader rifStudySubmissionReader2
 			= new RIFStudySubmissionXMLReader();
 		rifStudySubmissionReader2.readFile(inputStream);
 		RIFStudySubmission rifStudySubmission
 			= rifStudySubmissionReader2.getStudySubmission();
+		System.out.println("ARWS - getRIFSubmissionFromXMLSource stop");
 		return rifStudySubmission;
 	}
-	
-	
-	
-	
 	
 	
 	protected User createUser(

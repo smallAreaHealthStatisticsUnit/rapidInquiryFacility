@@ -364,7 +364,8 @@ final class SQLRIFSubmissionManager
 				user,
 				studySubmission,
 				String.valueOf(studyID));
-			
+
+			System.out.println("STUDY =="+studyID+"==successfully submitted!!!!");
 			return studyID;
 		}
 		catch(SQLException sqlException) {
@@ -1137,15 +1138,14 @@ final class SQLRIFSubmissionManager
 			
 			SQLWarning warning = runStudyStatement.getWarnings();
 			while (warning != null) {
-				/*
+
 		        System.out.println("Message:" + warning.getMessage());
 		        System.out.println("SQLState:" + warning.getSQLState());
 		        System.out.print("Vendor error code: ");
 		        System.out.println(warning.getErrorCode());
 		        System.out.println("==");
-		        */
-		        warning = warning.getNextWarning();
 
+		        warning = warning.getNextWarning();
 			}
 			
 			connection.commit();
@@ -1738,6 +1738,14 @@ final class SQLRIFSubmissionManager
 					connection,
 					queryFormatter);	
 			int i = 1;
+			
+			System.out.println("===========================================");
+			System.out.println("===========================================");
+			System.out.println("Adding 1=="+ diseaseMappingStudyArea.getMapAreas().size()+"==");
+			System.out.println("Adding 2=="+ allMapAreas.size()+"==");
+			System.out.println("===========================================");
+			System.out.println("===========================================");
+			
 			for (MapArea currentMapArea : allMapAreas) {
 				statement.setString(1, currentMapArea.getLabel());
 

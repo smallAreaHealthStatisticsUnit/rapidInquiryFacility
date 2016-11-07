@@ -452,10 +452,11 @@ final class SQLMapDataManager
 		final AbstractGeographicalArea geographicalArea)
 		throws RIFServiceException {
 		
+		System.out.println("SQLMapDataManager getAllRelevantAreas!!!!!!!!!!!");
 		ArrayList<MapArea> allRelevantMapAreas = new ArrayList<MapArea>();
-		
-		//GeoLevelSelect geoLevelSelect
-		//	= geographicalArea.getGeoLevelSelect();
+
+		GeoLevelSelect geoLevelSelect
+			= geographicalArea.getGeoLevelSelect();		
 		GeoLevelToMap geoLevelToMap
 			= geographicalArea.getGeoLevelToMap();
 		
@@ -535,7 +536,8 @@ final class SQLMapDataManager
 				queryFormatter.addQueryPhrase(" AND (");			
 				queryFormatter.padAndFinishLine();
 				
-				String geoLevelSelectLevelName = geoLevelToMap.getName();
+				String geoLevelSelectLevelName = geoLevelSelect.getName();
+				//String geoLevelSelectLevelName = geoLevelToMap.getName();
 			
 				for (int i = 0 ; i < selectedMapAreas.size(); i++) {
 					if (i != 0) {
@@ -543,7 +545,8 @@ final class SQLMapDataManager
 						queryFormatter.addQueryPhrase(1, " OR ");
 					}
 					
-					queryFormatter.addQueryPhrase(geoLevelToMapTableName);					
+					queryFormatter.addQueryPhrase(mapAreaResolutionMappingTableName);					
+					//queryFormatter.addQueryPhrase(geoLevelToMapTableName);					
 					queryFormatter.addQueryPhrase(".");
 					queryFormatter.addQueryPhrase(geoLevelSelectLevelName);
 					queryFormatter.addQueryPhrase("=\'");

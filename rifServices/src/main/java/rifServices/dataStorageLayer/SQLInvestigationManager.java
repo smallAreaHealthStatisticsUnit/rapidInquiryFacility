@@ -176,9 +176,9 @@ final class SQLInvestigationManager
 
 		//we will not check whether the health codes exist
 		//for now, we'll assume they do
-		ArrayList<HealthCode> healthCodes
-			= investigation.getHealthCodes();
-		healthOutcomeManager.checkNonExistentHealthCodes(healthCodes);
+		//ArrayList<HealthCode> healthCodes
+		//	= investigation.getHealthCodes();
+		//healthOutcomeManager.checkNonExistentHealthCodes(healthCodes);
 
 		
 		HealthTheme healthTheme
