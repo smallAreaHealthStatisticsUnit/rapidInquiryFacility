@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -63,8 +63,8 @@ import java.io.*;
  *
  */
 
-final class ChangeAuditManager 
-	extends AbstractDataLoaderStepManager {
+final public class PGSQLChangeAuditManager 
+	extends AbstractPGSQLDataLoaderStepManager {
 	
 	// ==========================================
 	// Section Constants
@@ -78,7 +78,7 @@ final class ChangeAuditManager
 	// Section Construction
 	// ==========================================
 
-	public ChangeAuditManager() {
+	public PGSQLChangeAuditManager() {
 						
 	}
 
@@ -126,10 +126,6 @@ final class ChangeAuditManager
 			SQLQueryUtility.close(clearChangeLogStatement);
 			SQLQueryUtility.close(clearValidationFailuresLogStatement);
 		}
-		
-		
-		
-		
 	}
 	
 	

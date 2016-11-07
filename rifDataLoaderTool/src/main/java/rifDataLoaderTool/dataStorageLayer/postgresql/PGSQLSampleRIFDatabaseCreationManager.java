@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -75,7 +75,7 @@ import java.util.PropertyResourceBundle;
  *
  */
 
-public class SampleRIFDatabaseCreationManager {
+public class PGSQLSampleRIFDatabaseCreationManager {
 	
 	// ==========================================
 	// Section Constants
@@ -90,7 +90,7 @@ public class SampleRIFDatabaseCreationManager {
 	// Section Construction
 	// ==========================================
 
-	public SampleRIFDatabaseCreationManager(
+	public PGSQLSampleRIFDatabaseCreationManager(
 		final DataLoaderToolSettings dataLoaderToolSettings) {
 
 		this.dataLoaderToolSettings = dataLoaderToolSettings;

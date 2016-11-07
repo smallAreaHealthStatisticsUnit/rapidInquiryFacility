@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import java.util.Date;
 
@@ -64,7 +64,7 @@ import java.sql.*;
  *
  */
 
-final class UserManager {
+final class PGSQLUserManager {
 
 	// ==========================================
 	// Section Constants
@@ -78,7 +78,7 @@ final class UserManager {
 	// Section Construction
 	// ==========================================
 
-	public UserManager() {
+	public PGSQLUserManager() {
 
 	}
 

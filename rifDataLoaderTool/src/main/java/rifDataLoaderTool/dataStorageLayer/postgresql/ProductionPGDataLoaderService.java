@@ -1,4 +1,5 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
+
 
 
 /**
@@ -51,8 +52,8 @@ package rifDataLoaderTool.dataStorageLayer;
  *
  */
 
-public class ProductionDataLoaderService 
-	extends AbstractDataLoaderService {
+public class ProductionPGDataLoaderService 
+	extends AbstractPGSQLDataLoaderService {
 
 	// ==========================================
 	// Section Constants
@@ -66,7 +67,7 @@ public class ProductionDataLoaderService
 	// Section Construction
 	// ==========================================
 
-	public ProductionDataLoaderService() {
+	public ProductionPGDataLoaderService() {
 
 	}
 

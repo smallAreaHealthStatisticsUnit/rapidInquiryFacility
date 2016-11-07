@@ -1,10 +1,9 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -67,8 +66,8 @@ import java.io.*;
  *
  */
 
-final class ConvertWorkflowManager 
-	extends AbstractDataLoaderStepManager {
+final public class PGSQLConvertWorkflowManager 
+	extends AbstractPGSQLDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -83,7 +82,7 @@ final class ConvertWorkflowManager
 	// Section Construction
 	// ==========================================
 
-	public ConvertWorkflowManager() {
+	public PGSQLConvertWorkflowManager() {
 
 	}
 

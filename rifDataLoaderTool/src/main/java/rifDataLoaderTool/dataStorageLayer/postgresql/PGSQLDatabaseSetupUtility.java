@@ -1,21 +1,14 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 
 import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
+
 import rifGenericLibrary.dataStorageLayer.SQLCreateDatabaseQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLDropDatabaseQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-
-
-
-import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
-
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 import java.io.*;
@@ -74,10 +67,10 @@ import java.util.ArrayList;
  *
  */
 
-public class RIFDatabaseSetupUtility {
+public class PGSQLDatabaseSetupUtility {
 
 	public static void main(String[] arguments) {
-		RIFDatabaseSetupUtility initialiser = new RIFDatabaseSetupUtility();
+		PGSQLDatabaseSetupUtility initialiser = new PGSQLDatabaseSetupUtility();
 		File file = new File("C://rif_scratch//SampleDBCreationScript.txt");
 		DataLoaderToolSettings settings = new DataLoaderToolSettings();
 		RIFDatabaseConnectionParameters dbParameters
@@ -108,7 +101,7 @@ public class RIFDatabaseSetupUtility {
 	// Section Construction
 	// ==========================================
 
-	public RIFDatabaseSetupUtility() {
+	public PGSQLDatabaseSetupUtility() {
 
 	}
 

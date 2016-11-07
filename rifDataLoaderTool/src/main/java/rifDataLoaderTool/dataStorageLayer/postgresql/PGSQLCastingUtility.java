@@ -60,7 +60,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class PostgreSQLCastingUtility {
+public final class PGSQLCastingUtility {
 	
 	// ==========================================
 	// Section Constants
@@ -74,7 +74,7 @@ public final class PostgreSQLCastingUtility {
 	// Section Construction
 	// ==========================================
 
-	public PostgreSQLCastingUtility() {
+	public PGSQLCastingUtility() {
 
 	}
 

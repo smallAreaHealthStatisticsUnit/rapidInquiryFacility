@@ -1,10 +1,9 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
 import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -68,8 +67,8 @@ import java.io.*;
  *
  */
 
-final class DataSetManager 
-	extends AbstractDataLoaderStepManager {
+final public class PGSQLDataSetManager 
+	extends AbstractPGSQLDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -83,7 +82,7 @@ final class DataSetManager
 	// Section Construction
 	// ==========================================
 
-	public DataSetManager() {
+	public PGSQLDataSetManager() {
 		
 	}
 

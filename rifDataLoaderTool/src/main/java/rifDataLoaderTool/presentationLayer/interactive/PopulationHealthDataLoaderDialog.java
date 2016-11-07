@@ -1,12 +1,9 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.system.*;
-
-
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
-import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
-
+import rifDataLoaderTool.dataStorageLayer.postgresql.ProductionPGDataLoaderService;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.User;
@@ -79,8 +76,8 @@ class PopulationHealthDataLoaderDialog
 
 
 		try {
-			ProductionDataLoaderService service
-				= new ProductionDataLoaderService();
+			ProductionPGDataLoaderService service
+				= new ProductionPGDataLoaderService();
 			DataLoaderToolSession session
 				= new DataLoaderToolSession();
 			session.setDataLoaderService(service);
@@ -483,7 +480,7 @@ class PopulationHealthDataLoaderDialog
 			
 			DataLoaderServiceAPI dataLoaderService
 				= session.getDataLoaderService();
-			dataLoaderService = new ProductionDataLoaderService();	
+			dataLoaderService = new ProductionPGDataLoaderService();	
 			
 			DataLoaderToolSettings dataLoaderToolSettings
 				= session.getDataLoaderToolSettings();

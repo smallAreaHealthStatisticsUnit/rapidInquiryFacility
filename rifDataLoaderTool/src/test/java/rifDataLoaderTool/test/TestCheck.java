@@ -1,11 +1,11 @@
 package rifDataLoaderTool.test;
 
 
-import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
 import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
+import rifDataLoaderTool.dataStorageLayer.postgresql.TestPGDataLoaderService;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import static org.junit.Assert.*;
@@ -92,7 +92,7 @@ public class TestCheck extends AbstractRIFDataLoaderTestCase {
 		linearWorkflow.setStopWorkflowState(WorkflowState.CLEAN);
 	
 		User rifManager = getRIFManager();
-		TestDataLoaderService dataLoaderService
+		TestPGDataLoaderService dataLoaderService
 			= getDataLoaderService();
 		try {
 

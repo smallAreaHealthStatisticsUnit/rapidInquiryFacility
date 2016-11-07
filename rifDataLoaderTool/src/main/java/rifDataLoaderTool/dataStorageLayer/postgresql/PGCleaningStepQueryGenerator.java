@@ -60,7 +60,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class PostgresCleaningStepQueryGenerator 
+public final class PGCleaningStepQueryGenerator 
 	implements CleanWorkflowQueryGeneratorAPI {
 
 	// ==========================================
@@ -75,7 +75,7 @@ public final class PostgresCleaningStepQueryGenerator
 	// Section Construction
 	// ==========================================
 
-	public PostgresCleaningStepQueryGenerator() {
+	public PGCleaningStepQueryGenerator() {
 
 	}
 

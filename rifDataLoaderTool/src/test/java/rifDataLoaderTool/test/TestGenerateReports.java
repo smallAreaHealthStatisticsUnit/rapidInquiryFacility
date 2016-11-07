@@ -2,7 +2,7 @@ package rifDataLoaderTool.test;
 
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
 import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
-import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.postgresql.TestPGDataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -84,7 +84,7 @@ public class TestGenerateReports extends AbstractRIFDataLoaderTestCase {
 	public void test1() {
 
 		User rifManager = getRIFManager();
-		TestDataLoaderService dataLoaderService
+		TestPGDataLoaderService dataLoaderService
 			= getDataLoaderService();
 		SampleDataGenerator sampleDataGenerator
 			= new SampleDataGenerator();

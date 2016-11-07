@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -75,8 +75,8 @@ import java.io.*;
  *
  */
 
-final class ExtractWorkflowManager 
-	extends AbstractDataLoaderStepManager {
+final class PGSQLExtractWorkflowManager 
+	extends AbstractPGSQLDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -86,15 +86,15 @@ final class ExtractWorkflowManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DataSetManager dataSetManager;
+	private PGSQLDataSetManager dataSetManager;
 
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public ExtractWorkflowManager(
-		final DataSetManager dataSetManager) {
+	public PGSQLExtractWorkflowManager(
+		final PGSQLDataSetManager dataSetManager) {
 
 		this.dataSetManager = dataSetManager;
 	}

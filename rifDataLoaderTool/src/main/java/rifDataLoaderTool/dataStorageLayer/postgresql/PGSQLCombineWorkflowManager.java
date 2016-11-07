@@ -1,17 +1,18 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
-
-import rifGenericLibrary.businessConceptLayer.User;
+import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.system.RIFServiceException;
 
+import java.sql.*;
 import java.io.*;
-import java.sql.Connection;
 
 /**
  *
- *
+ * Manages all database operations used to convert a cleaned table into tabular data
+ * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
+ * 
  * <hr>
- * Copyright 2015 Imperial College London, developed by the Small Area
+ * Copyright 2014 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -57,8 +58,8 @@ import java.sql.Connection;
  *
  */
 
-public class TestDataLoaderService 
-	extends AbstractDataLoaderService {
+final public class PGSQLCombineWorkflowManager 
+	extends AbstractPGSQLDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -66,67 +67,31 @@ public class TestDataLoaderService
 
 	// ==========================================
 	// Section Properties
-	// ==========================================
+	// ==========================================	
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public TestDataLoaderService() {
-		
+	public PGSQLCombineWorkflowManager() {
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
-	/**
-	 * Migrate this later on to a test method
-	 * @param methodName
-	 * @param rifManager
-	 * @param dataSetConfiguration
-	 * @throws RIFServiceException
-	 */
-	public void clearAllDataSets(
-		final User rifManager,
-		final Writer logFileWriter) {	
-		//Defensively copy parameters and guard against blocked rifManagers
 
-
-		try {
-			SQLConnectionManager sqlConnectionManager
-				= getSQLConnectionManger();
-			Connection connection 
-				= sqlConnectionManager.assignPooledWriteConnection(
-					rifManager);
-		
-			DataSetManager dataSetManager = getDataSetManager();
-			dataSetManager.clearAllDataSets(
-				connection,
-				logFileWriter);
-			
-			ChangeAuditManager changeAuditManager
-				= getChangeAuditManager();
-			changeAuditManager.clearChangeLogs(
-				connection,
-				logFileWriter);			
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				rifManager,
-				"clearAllDataSets",
-				rifServiceException);
-		}
-	}
-	
-	public void closeAllConnectionsForUser(
-		final User user) 
+	public void combineConfiguration(
+		final Connection connection,
+		final Writer logFileWriter,
+		final String exportDirectoryPath,
+		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
-		
-		SQLConnectionManager sqlConnectionManager
-			= getSQLConnectionManger();
-		sqlConnectionManager.closeConnectionsForUser(user.getUserID());
+	
+		//validate parameters
+		dataSetConfiguration.checkErrors();
+			
+		//@TODO
 	}
 	
 	

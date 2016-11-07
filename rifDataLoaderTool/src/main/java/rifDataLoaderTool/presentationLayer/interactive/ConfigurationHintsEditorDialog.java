@@ -3,7 +3,7 @@ package rifDataLoaderTool.presentationLayer.interactive;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.postgresql.ProductionPGDataLoaderService;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
 

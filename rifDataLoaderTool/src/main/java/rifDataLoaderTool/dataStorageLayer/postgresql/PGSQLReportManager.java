@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
@@ -60,8 +60,8 @@ import java.util.ArrayList;
  *
  */
 
-class PostgreSQLReportManager 
-	extends AbstractDataLoaderStepManager {
+class PGSQLReportManager 
+	extends AbstractPGSQLDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -76,7 +76,7 @@ class PostgreSQLReportManager
 	// Section Construction
 	// ==========================================
 
-	public PostgreSQLReportManager() {
+	public PGSQLReportManager() {
 
 	}
 	

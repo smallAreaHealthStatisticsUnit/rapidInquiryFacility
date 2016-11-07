@@ -1,6 +1,6 @@
 package rifDataLoaderTool.test;
 
-import rifDataLoaderTool.dataStorageLayer.TestDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.postgresql.TestPGDataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
@@ -10,6 +10,7 @@ import rifGenericLibrary.util.FieldValidationUtility;
 
 import org.junit.After;
 import org.junit.Before;
+
 import java.io.File;
 import java.text.Collator;
 
@@ -78,7 +79,7 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	
 	private File exportDirectory;
 	
-	private TestDataLoaderService dataLoaderService;
+	private TestPGDataLoaderService dataLoaderService;
 
 	/** The test user. */
 	private User validAdministrationUser;
@@ -117,7 +118,7 @@ public abstract class AbstractRIFDataLoaderTestCase {
 
 	@Before
 	public void setUp() {
-		dataLoaderService = new TestDataLoaderService();
+		dataLoaderService = new TestPGDataLoaderService();
 		try {
 			DataLoaderToolSettings dataLoaderToolSettings
 				= new DataLoaderToolSettings();
@@ -154,7 +155,7 @@ public abstract class AbstractRIFDataLoaderTestCase {
 		return rifManager;		
 	}
 	
-	protected TestDataLoaderService getDataLoaderService() {
+	protected TestPGDataLoaderService getDataLoaderService() {
 
 		return dataLoaderService;
 	}

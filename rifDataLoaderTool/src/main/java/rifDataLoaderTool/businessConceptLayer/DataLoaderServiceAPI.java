@@ -94,11 +94,15 @@ public interface DataLoaderServiceAPI {
 				
 	public String[] getCleaningFunctionNames(final User rifManager) 
 		throws RIFServiceException;
-	public String getDescriptionForCleaningFunction(final String cleaningFunctionName) 
+	public String getDescriptionForCleaningFunction(
+		final User rifManager,
+		final String cleaningFunctionName) 
 		throws RIFServiceException;
 	public String[] getValidationFunctionNames(final User rifManager) 
 		throws RIFServiceException;
-	public String getDescriptionForValidationFunction(final String validationFunctionName) 
+	public String getDescriptionForValidationFunction(
+		final User rifManager, 
+		final String validationFunctionName) 
 		throws RIFServiceException;
 	
 	public void generateShapeFileScripts(final ArrayList<ShapeFile> shapeFiles)

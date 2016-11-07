@@ -1,11 +1,10 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -70,8 +69,8 @@ import java.util.Date;
  *
  */
 
-final class PublishWorkflowManager 
-	extends AbstractDataLoaderStepManager {
+final class PGSQLPublishWorkflowManager 
+	extends AbstractPGSQLDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -85,7 +84,7 @@ final class PublishWorkflowManager
 	// Section Construction
 	// ==========================================
 
-	public PublishWorkflowManager() {
+	public PGSQLPublishWorkflowManager() {
 
 	}
 

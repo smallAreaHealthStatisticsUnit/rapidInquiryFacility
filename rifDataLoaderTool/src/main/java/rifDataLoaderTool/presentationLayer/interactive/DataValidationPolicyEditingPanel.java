@@ -220,10 +220,12 @@ class DataValidationPolicyEditingPanel
 		
 		DataLoaderServiceAPI dataLoaderService
 			= getSession().getDataLoaderService();
+		DataLoaderToolSession session = getSession();		
 		String functionDescription = "";
 		try {
 			functionDescription
 				= dataLoaderService.getDescriptionForValidationFunction(
+					session.getRIFManager(),
 					selectedValidationFunctionName);
 		}
 		catch(RIFServiceException rifServiceException) {

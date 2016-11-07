@@ -216,12 +216,15 @@ class DataCleaningPolicyEditingPanel
 	protected void updateSelectedFunctionDescription() {
 		String selectedCleaningFunctionName = getSelectedFunctionName();
 		
+		DataLoaderToolSession session = getSession();
 		DataLoaderServiceAPI dataLoaderService
 			= getSession().getDataLoaderService();
 		String functionDescription = "";
 		try {
 			functionDescription
-				= dataLoaderService.getDescriptionForCleaningFunction(selectedCleaningFunctionName);
+				= dataLoaderService.getDescriptionForCleaningFunction(
+					session.getRIFManager(),
+					selectedCleaningFunctionName);
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(

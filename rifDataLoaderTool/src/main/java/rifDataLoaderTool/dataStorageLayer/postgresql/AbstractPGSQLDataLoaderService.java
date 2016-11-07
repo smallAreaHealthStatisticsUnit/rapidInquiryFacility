@@ -1,16 +1,13 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.postgresql.*;
-import rifDataLoaderTool.dataStorageLayer.SQLConnectionManager;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
 
 import org.apache.commons.io.FileUtils;
 
@@ -20,7 +17,7 @@ import java.io.*;
 import java.nio.file.*;
 
 /**
- * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.AbstractDataLoaderService}.
+ * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.postgresql.AbstractPGSQLDataLoaderService}.
  * Almost every method in this class has the following common steps:
  * <ol>
  * <li>
@@ -104,7 +101,7 @@ import java.nio.file.*;
  *
  */
 
-abstract class AbstractDataLoaderService 
+abstract class AbstractPGSQLDataLoaderService 
 	implements DataLoaderServiceAPI {
 	
 	// ==========================================
@@ -118,73 +115,71 @@ abstract class AbstractDataLoaderService
 	private DataLoaderToolSettings dataLoaderToolSettings;
 	
 	private SQLConnectionManager sqlConnectionManager;
-	private DataSetManager dataSetManager;
-	private ExtractWorkflowManager extractWorkflowManager;
-	
-	private ChangeAuditManager changeAuditManager;
-	private CleanWorkflowManager cleanWorkflowManager;
-	
-	private CombineWorkflowManager combineWorkflowManager;
-	private SplitWorkflowManager splitWorkflowManager;
-	private ConvertWorkflowManager convertWorkflowManager;
-	private OptimiseWorkflowManager optimiseWorkflowManager;
-	
-	private CheckWorkflowManager checkWorkflowManager;
-	
-	private PostgreSQLReportManager reportManager;
-	private PublishWorkflowManager publishWorkflowManager;
+		
+	private PGSQLDatabaseSchemaInformationManager databaseSchemaInformationManager;
+	private PGSQLDataSetManager dataSetManager;
+	private PGSQLExtractWorkflowManager extractWorkflowManager;	
+	private PGSQLChangeAuditManager changeAuditManager;
+	private PGSQLCleanWorkflowManager cleanWorkflowManager;	
+	private PGSQLCombineWorkflowManager combineWorkflowManager;
+	private PGSQLSplitWorkflowManager splitWorkflowManager;
+	private PGSQLConvertWorkflowManager convertWorkflowManager;
+	private PGSQLOptimiseWorkflowManager optimiseWorkflowManager;
+	private PGSQLCheckWorkflowManager checkWorkflowManager;
+	private PGSQLReportManager reportManager;
+	private PGSQLPublishWorkflowManager publishWorkflowManager;
 		
 	private ArrayList<DataSetConfiguration> dataSetConfigurations;
-	
-	
-	
+		
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public AbstractDataLoaderService() {
+	public AbstractPGSQLDataLoaderService() {
 					
 		dataSetConfigurations 
 			= new ArrayList<DataSetConfiguration>();
 		
-
-		dataSetManager = new DataSetManager();
+		databaseSchemaInformationManager
+			= new PGSQLDatabaseSchemaInformationManager();
+		
+		dataSetManager = new PGSQLDataSetManager();
 		extractWorkflowManager
-			= new ExtractWorkflowManager(
+			= new PGSQLExtractWorkflowManager(
 				dataSetManager);
 		
 		changeAuditManager
-			= new ChangeAuditManager();
+			= new PGSQLChangeAuditManager();
 		
-		PostgresCleaningStepQueryGenerator cleanWorkflowQueryGenerator
-			= new PostgresCleaningStepQueryGenerator();
+		PGCleaningStepQueryGenerator cleanWorkflowQueryGenerator
+			= new PGCleaningStepQueryGenerator();
 		cleanWorkflowManager
-			= new CleanWorkflowManager(
+			= new PGSQLCleanWorkflowManager(
 				dataSetManager,
 				changeAuditManager,
 				cleanWorkflowQueryGenerator);
 					
 		convertWorkflowManager
-			= new ConvertWorkflowManager();
+			= new PGSQLConvertWorkflowManager();
 		
 		combineWorkflowManager
-			= new CombineWorkflowManager();
+			= new PGSQLCombineWorkflowManager();
 				
 		splitWorkflowManager
-			= new SplitWorkflowManager();
+			= new PGSQLSplitWorkflowManager();
 		
 		optimiseWorkflowManager
-			= new OptimiseWorkflowManager();
+			= new PGSQLOptimiseWorkflowManager();
 				
 		checkWorkflowManager
-			= new CheckWorkflowManager(
+			= new PGSQLCheckWorkflowManager(
 				optimiseWorkflowManager);
 		
 		publishWorkflowManager
-			= new PublishWorkflowManager();
+			= new PGSQLPublishWorkflowManager();
 		
 		reportManager
-			= new PostgreSQLReportManager();
+			= new PGSQLReportManager();
 	}
 	
 	public void initialiseService(final DataLoaderToolSettings dataLoaderToolSettings) 
@@ -231,11 +226,11 @@ abstract class AbstractDataLoaderService
 		sqlConnectionManager.deregisterAllUsers();
 	}
 	
-	protected DataSetManager getDataSetManager() {
+	protected PGSQLDataSetManager getDataSetManager() {
 		return dataSetManager;
 	}
 	
-	protected ChangeAuditManager getChangeAuditManager() {
+	protected PGSQLChangeAuditManager getChangeAuditManager() {
 		return changeAuditManager;
 	}
 	
@@ -701,8 +696,7 @@ abstract class AbstractDataLoaderService
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
-		
-		
+				
 		//Defensively copy parameters and guard against blocked rifManagers
 		User rifManager = User.createCopy(_rifManager);
 		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
@@ -792,8 +786,7 @@ abstract class AbstractDataLoaderService
 				"getCleanedTableData",
 				"dataSetConfiguration",
 				dataSetConfiguration);
-			
-			
+				
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
@@ -831,7 +824,6 @@ abstract class AbstractDataLoaderService
 
 	}
 
-	
 	public void combineConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,		
@@ -1418,7 +1410,6 @@ abstract class AbstractDataLoaderService
 		throws RIFServiceException,
 		RIFServiceException {
 
-		
 		//Defensively copy parameters and guard against blocked rifManagers
 		User rifManager = User.createCopy(_rifManager);
 		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
@@ -1708,51 +1699,31 @@ abstract class AbstractDataLoaderService
 		final DataSetFieldConfiguration _dataSetFieldConfiguration)
 		throws RIFServiceException {
 		
-/*		
+		
+		String[][] results = new String[0][0];
 		//Defensively copy parameters and guard against blocked rifManagers
 		User rifManager = User.createCopy(_rifManager);
 		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
-			return null;
+			return results;
 		}
-		
-		DataSetConfiguration dataSetConfiguration
-			= DataSetConfiguration.createCopy(_dataSetConfiguration);
 		DataSetFieldConfiguration dataSetFieldConfiguration
-			=dataSetConfiguration.getFieldHavingConvertFieldName(fieldName);
-
-		String[][] results = new String[0][0];
+			= DataSetFieldConfiguration.createCopy(_dataSetFieldConfiguration);
+				
 		try {
 			
 			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
+			checkCommonParameters(
 				"getVarianceInFieldData",
-				"rifManager",
-				rifManager);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getVarianceInFieldData",
-				"dataSetFieldConfiguration",
+				rifManager,
 				dataSetFieldConfiguration);
-			
-			//Check for security violations
-			validateUser(rifManager);
-
-			String coreDataSetName
-				= dataSetFieldConfiguration.getCoreFieldName()
-			String loadTableName
-				= RIFTemporaryTablePrefixes.LOAD.getTableName(coreDataSetName);
-			String fieldOfInterest
-				= tableFieldCleaningConfiguration.getLoadTableFieldName();
-			
+						
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFDataLoaderToolMessages.getMessage("logging.getVarianceInFieldData",
 					rifManager.getUserID(),
 					rifManager.getIPAddress(),
-					loadTableName,
-					fieldOfInterest);
+					dataSetFieldConfiguration.getDisplayName());
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
@@ -1760,27 +1731,27 @@ abstract class AbstractDataLoaderService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
-
-			results
-				= cleanWorkflowManager.getVarianceInFieldData(
-					connection, 
-					tableFieldCleaningConfiguration);
+			
+			results 
+				= databaseSchemaInformationManager.getVarianceInFieldData(
+				connection, 
+				dataSetFieldConfiguration);
+					
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				rifManager, 
 				connection);
-			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
 				rifManager,
-				"cleaningDetectedErrorValue",
+				"convertConfiguration",
 				rifServiceException);
+			throw rifServiceException;
 		}		
 
+				
 		return results;
-*/
-		return null;
 	}
 	
 	
@@ -1869,127 +1840,266 @@ abstract class AbstractDataLoaderService
 	
 	public String[] getCleaningFunctionNames(final User _rifManager) 
 			throws RIFServiceException {
-	
-		String[] validationFunctionNames = new String[4];
-		validationFunctionNames[0] = "clean_age";
-		validationFunctionNames[1] = "clean_date";
-		validationFunctionNames[2] = "clean_uk_postal_code";
-		validationFunctionNames[3] = "clean_year";
-		return validationFunctionNames;
-		
-		//return getDatabaseFunctionNames(_rifManager, "^clean.*");
-	}
-/*	
-	public String[] getDatabaseFunctionNames(
-		final User _rifManager,
-		final String functionNamePattern) 
-		throws RIFServiceException {
 
+		
+		String[] result = new String[0];
+		
 		//Defensively copy parameters and guard against blocked rifManagers
 		User rifManager = User.createCopy(_rifManager);
-
-		if (sqlConnectionManager == null) {
-			System.out.println("getDBFunctionNames 1");
-		}
-		else if (rifManager == null) {
-			System.out.println("getDBFunctionNames 2");
-		}
 		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
-			return new String[0];
+			return result;
 		}
-		
-		ArrayList<String> results = new ArrayList<String>();
-		ResultSet resultSet = null;
-		PreparedStatement statement = null;
+				
 		try {
-			SQLGeneralQueryFormatter queryFormatter 
-				= new SQLGeneralQueryFormatter();
-			queryFormatter.addQueryLine(0, "SELECT");
-			queryFormatter.addQueryLine(1, "pg_proc.proname AS function_name");
-			queryFormatter.addQueryLine(0, "FROM");
-			queryFormatter.addQueryLine(1, "pg_proc");
-			queryFormatter.addQueryLine(0, "INNER JOIN pg_namespace ON ");
-			queryFormatter.addQueryLine(1, "pg_proc.pronamespace = pg_namespace.oid");
-			queryFormatter.addQueryLine(0, "WHERE");
-			queryFormatter.addQueryPhrase(1, "pg_namespace = 'public' AND ");
-			queryFormatter.addQueryPhrase("pg_proc.proname ~ ? ");
-			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryLine(0, "ORDER BY");
-			queryFormatter.addQueryLine(1, "pg_proc.proname");
 			
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getCleaningFunctionNames",
+				"rifManager",
+				rifManager);
+			rifManager.checkSecurityViolations();
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFDataLoaderToolMessages.getMessage("logging.getCleaningFunctionNames",
+					rifManager.getUserID(),
+					rifManager.getIPAddress());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+	
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
 					rifManager);
-			System.out.println("ADLS queryFormatter=="+queryFormatter.generateQuery()+"==");
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			String functionFilterExpression = "^clean.*";
-			statement.setString(1, functionFilterExpression);
+	
+			result
+				= databaseSchemaInformationManager.getValidationFunctionNames(connection);
 			
-			
-			resultSet = statement.executeQuery();
-			while (resultSet.next()) {
-				results.add(resultSet.getString(1));
-			}
-			
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				rifManager, 
+				connection);
 		}
-		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
-			SQLQueryUtility.close(resultSet);
-			SQLQueryUtility.close(statement);
-		}
-		
-		return results.toArray(new String[0]);
-		
-		//@TODO: make this come from the database
-		String[] cleaningFunctionNames = new String[5];
-		cleaningFunctionNames[0] = "clean_uk_postal_code";
-		cleaningFunctionNames[1] = "clean_icd_code";
-		cleaningFunctionNames[2] = "clean_sex";
-		cleaningFunctionNames[3] = "clean_age";
-		cleaningFunctionNames[4] = "clean_year";
-		
-		return cleaningFunctionNames;
-		
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"getCleaningFunctionNames",
+				rifServiceException);
+			throw rifServiceException;
+		}		
+
+		return result;		
 	}
-*/
-	
-	
-	
+
 	public String getDescriptionForCleaningFunction(
+		final User _rifManager,
 		final String cleaningFunctionName) 
 		throws RIFServiceException {
+
 		
-		//@TODO: make this come from the database
-		return "Description of " + cleaningFunctionName;
+		String result = "";
+		
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return result;
+		}
+				
+		try {
+			
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getDescriptionForCleaningFunction",
+				"rifManager",
+				rifManager);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getDescriptionForCleaningFunction",
+				"cleaningFunctionName",
+				cleaningFunctionName);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getDescriptionForCleaningFunction", 
+				"cleaningFunctionName", 
+				cleaningFunctionName);			
+			rifManager.checkSecurityViolations();
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFDataLoaderToolMessages.getMessage("logging.getDescriptionForCleaningFunction",
+					rifManager.getUserID(),
+					rifManager.getIPAddress());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+	
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(rifManager);
+	
+			result
+				= databaseSchemaInformationManager.getFunctionDescription(
+					connection, 
+					cleaningFunctionName);
+			
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				rifManager, 
+				connection);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"getDescriptionForCleaningFunction",
+				rifServiceException);
+			throw rifServiceException;
+		}		
+
+		return result;		
 	}
 	
-	public String[] getValidationFunctionNames(final User _rifManager) 
+	public String[] getValidationFunctionNames(
+		final User _rifManager) 
 		throws RIFServiceException {
 
-		//return getDatabaseFunctionNames(_rifManager, "^is_valid.*");
+		
+		String[] result = new String[0];
+		
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return result;
+		}
+				
+		try {
+			
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getDescriptionForValidationFunction",
+				"rifManager",
+				rifManager);
+			rifManager.checkSecurityViolations();
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFDataLoaderToolMessages.getMessage("logging.getValidationFunctionNames",
+					rifManager.getUserID(),
+					rifManager.getIPAddress());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+	
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(
+					rifManager);
+	
+			result
+				= databaseSchemaInformationManager.getValidationFunctionNames(
+					connection);
+			
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				rifManager, 
+				connection);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"getValidationFunctionNames",
+				rifServiceException);
+			throw rifServiceException;
+		}		
 
-		//@TODO: make this come from the database
-		String[] validationFunctionNames = new String[4];
-		validationFunctionNames[0] = "is_valid_uk_postal_code";
-		//validationFunctionNames[1] = "is_valid_icd_code";
-		//validationFunctionNames[2] = "is_valid_sex";
-		//validationFunctionNames[3] = "is_valid_age";
-		return validationFunctionNames;
+		return result;		
 	}
 
+	
 	public String getDescriptionForValidationFunction(
+		final User _rifManager,
 		final String validationFunctionName) 
 		throws RIFServiceException {
-
-		//@TODO: make this come from the database
-		return "Description of " + validationFunctionName;
 		
+		String result = "";
+		
+		//Defensively copy parameters and guard against blocked rifManagers
+		User rifManager = User.createCopy(_rifManager);
+		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
+			return result;
+		}
+				
+		try {
+			
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getDescriptionForValidationFunction",
+				"rifManager",
+				rifManager);
+			fieldValidationUtility.checkNullMethodParameter(
+				"getDescriptionForValidationFunction",
+				"validationFunctionName",
+				validationFunctionName);
+
+			rifManager.checkSecurityViolations();
+			fieldValidationUtility.checkMaliciousMethodParameter(
+				"getDescriptionForValidationFunction", 
+				"rifManager", 
+				validationFunctionName);			
+			
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+				= RIFDataLoaderToolMessages.getMessage("logging.getDescriptionForValidationFunction",
+					rifManager.getUserID(),
+					rifManager.getIPAddress(),
+					validationFunctionName);
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+	
+			Connection connection 
+				= sqlConnectionManager.assignPooledWriteConnection(
+					rifManager);
+	
+			result
+				= databaseSchemaInformationManager.getFunctionDescription(
+					connection, 
+					validationFunctionName);
+			
+			sqlConnectionManager.reclaimPooledWriteConnection(
+				rifManager, 
+				connection);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				rifManager,
+				"getDescriptionForValidationFunction",
+				rifServiceException);
+			throw rifServiceException;
+		}		
+
+		return result;		
 	}
 
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
+	private void checkEmptyUser(
+		final User user)
+		throws RIFServiceException {
+		
+		
+	}
+	
 	private void checkCommonParameters(
 		final String methodName,
 		final User rifManager,
@@ -2014,14 +2124,30 @@ abstract class AbstractDataLoaderService
 		dataSetConfiguration.checkSecurityViolations();
 	}
 	
+
+	private void checkCommonParameters(
+		final String methodName,
+		final User rifManager,
+		final DataSetFieldConfiguration dataSetFieldConfiguration) 
+		throws RIFServiceException {
 	
-	
-	
-	
-	
-	
-	
-	
+		//Check for empty parameters
+		FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+		fieldValidationUtility.checkNullMethodParameter(
+			methodName,
+			"rifManager",
+			rifManager);
+		fieldValidationUtility.checkNullMethodParameter(
+			methodName,
+			"dataSetConfiguration",
+			dataSetFieldConfiguration);
+		
+		rifManager.checkErrors();
+
+		//validateUser(rifManager);
+		dataSetFieldConfiguration.checkSecurityViolations();
+	}
 	
 	//Audit failure of operation
 	public void logException(
@@ -2046,9 +2172,6 @@ abstract class AbstractDataLoaderService
 
 		//@TODO: harmonise this with the underlying AbstractRIFService call
 	}
-	
-	
-	
 	
 	// ==========================================
 	// Section Interfaces

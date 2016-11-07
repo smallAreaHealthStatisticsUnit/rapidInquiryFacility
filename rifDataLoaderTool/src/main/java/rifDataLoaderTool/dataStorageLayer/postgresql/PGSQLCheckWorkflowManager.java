@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
@@ -8,7 +8,6 @@ import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
@@ -72,8 +71,8 @@ import java.io.*;
  *
  */
 
-final class CheckWorkflowManager 
-	extends AbstractDataLoaderStepManager {
+final public class PGSQLCheckWorkflowManager 
+	extends AbstractPGSQLDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -82,14 +81,14 @@ final class CheckWorkflowManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private OptimiseWorkflowManager optimiseWorkflowManager;
+	private PGSQLOptimiseWorkflowManager optimiseWorkflowManager;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CheckWorkflowManager(
-		final OptimiseWorkflowManager optimiseWorkflowManager) {
+	public PGSQLCheckWorkflowManager(
+		final PGSQLOptimiseWorkflowManager optimiseWorkflowManager) {
 	
 		this.optimiseWorkflowManager = optimiseWorkflowManager;
 	}

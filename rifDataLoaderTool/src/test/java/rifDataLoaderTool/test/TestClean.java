@@ -2,6 +2,7 @@ package rifDataLoaderTool.test;
 
 
 import rifDataLoaderTool.dataStorageLayer.*;
+import rifDataLoaderTool.dataStorageLayer.postgresql.TestPGDataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -84,7 +85,7 @@ public class TestClean extends AbstractRIFDataLoaderTestCase {
 	public void test2() {
 		
 		User rifManager = getRIFManager();
-		TestDataLoaderService dataLoaderService
+		TestPGDataLoaderService dataLoaderService
 			= getDataLoaderService();
 		
 		File testLogFile = new File("C://rif_scripts//test_data//log1.txt");

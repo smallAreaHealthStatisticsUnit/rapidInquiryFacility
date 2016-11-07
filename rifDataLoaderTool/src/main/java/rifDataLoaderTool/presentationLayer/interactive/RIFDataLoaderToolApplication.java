@@ -1,8 +1,7 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
-import rifDataLoaderTool.dataStorageLayer.ProductionDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.postgresql.ProductionPGDataLoaderService;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.fileFormats.RIFDataLoaderSettingsWriter;
@@ -15,7 +14,9 @@ import rifGenericLibrary.system.RIFServiceException;
 
 
 
+
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -79,8 +80,8 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		//try {
 			DataLoaderToolSession session 
 				= new DataLoaderToolSession();
-			ProductionDataLoaderService dataLoaderService
-				= new ProductionDataLoaderService();
+			ProductionPGDataLoaderService dataLoaderService
+				= new ProductionPGDataLoaderService();
 			session.setDataLoaderService(dataLoaderService);
 		
 			RIFDataLoaderToolApplication rifDataLoaderToolApplication

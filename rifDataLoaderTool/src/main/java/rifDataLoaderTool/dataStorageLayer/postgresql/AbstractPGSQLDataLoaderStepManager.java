@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -75,7 +75,7 @@ import java.io.*;
  *
  */
 
-abstract class AbstractDataLoaderStepManager {
+abstract class AbstractPGSQLDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -90,7 +90,7 @@ abstract class AbstractDataLoaderStepManager {
 	// Section Construction
 	// ==========================================
 
-	public AbstractDataLoaderStepManager() {
+	public AbstractPGSQLDataLoaderStepManager() {
 
 	}
 

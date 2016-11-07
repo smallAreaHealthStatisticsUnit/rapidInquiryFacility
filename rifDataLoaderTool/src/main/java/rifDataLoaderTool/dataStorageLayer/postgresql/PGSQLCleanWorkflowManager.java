@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
@@ -8,7 +8,6 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifDataLoaderTool.dataStorageLayer.postgresql.*;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.SQLCountQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
@@ -69,8 +68,8 @@ import java.sql.*;
  *
  */
 
-final class CleanWorkflowManager 
-	extends AbstractDataLoaderStepManager {
+final public class PGSQLCleanWorkflowManager 
+	extends AbstractPGSQLDataLoaderStepManager {
 
 	// ==========================================
 	// Section Constants
@@ -79,16 +78,16 @@ final class CleanWorkflowManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ChangeAuditManager changeAuditManager;
-	private DataSetManager dataSetManager;
+	private PGSQLChangeAuditManager changeAuditManager;
+	private PGSQLDataSetManager dataSetManager;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CleanWorkflowManager(
-		final DataSetManager dataSetManager,
-		final ChangeAuditManager changeAuditManager,
+	public PGSQLCleanWorkflowManager(
+		final PGSQLDataSetManager dataSetManager,
+		final PGSQLChangeAuditManager changeAuditManager,
 		final CleanWorkflowQueryGeneratorAPI queryGenerator) {
 
 		this.dataSetManager = dataSetManager;
@@ -160,8 +159,8 @@ final class CleanWorkflowManager
 			 * Part I: Perform search and replace values to help substitute
 			 * poor field values for better ones
 			 */
-			PostgreSQLDataTypeSearchReplaceUtility searchReplaceUtility
-				= new PostgreSQLDataTypeSearchReplaceUtility();
+			PGSQLDataTypeSearchReplaceUtility searchReplaceUtility
+				= new PGSQLDataTypeSearchReplaceUtility();
 			String searchReplaceQuery
 				= searchReplaceUtility.generateSearchReplaceTableStatement(dataSetConfiguration);
 			
@@ -194,8 +193,8 @@ final class CleanWorkflowManager
 			 * Part II: Now validate the results, and change the field value to 
 			 * 'rif_error' if it fails validation
 			 */
-			PostgreSQLDataTypeValidationUtility validationUtility
-				= new PostgreSQLDataTypeValidationUtility();
+			PGSQLDataTypeValidationUtility validationUtility
+				= new PGSQLDataTypeValidationUtility();
 			String validationQuery
 				= validationUtility.generateValidationTableStatement(dataSetConfiguration);
 
@@ -227,7 +226,7 @@ final class CleanWorkflowManager
 			 * double, etc).  If any of the field values have 'rif_error' then cast the
 			 * NULL value.
 			 */
-			PostgreSQLCastingUtility castingUtility = new PostgreSQLCastingUtility();
+			PGSQLCastingUtility castingUtility = new PGSQLCastingUtility();
 			String castingQuery
 				= castingUtility.generateCastingTableQuery(dataSetConfiguration);
 

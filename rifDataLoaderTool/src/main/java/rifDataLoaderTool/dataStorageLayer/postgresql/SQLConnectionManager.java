@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer;
+package rifDataLoaderTool.dataStorageLayer.postgresql;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
