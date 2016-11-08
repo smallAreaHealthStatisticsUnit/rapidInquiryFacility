@@ -234,17 +234,58 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 
 var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 	
-	scopeChecker(__file, __line, {
+	scopeChecker(__file, __line, { // Check callback
 		callback: pgTileMakerCallback
 	});
 
+	/*
+	 * Function: 	pgErrorHandler()
+	 * Parameters:	Error object
+	 * Returns:		Nothing
+	 * Description:	Creates new Error; raise using pgTileMakerCallback
+	 */
 	var pgErrorHandler = function pgErrorHandler(err) {
-		var nerr=new Error(err.message + "\nSQL> " + sql + ";");
-		nerr.stack=err.stack;
+		var nerr;
+		if (err) {
+			nerr=new Error(err.message + "\nSQL> " + sql + ";");
+			nerr.stack=err.stack;
+		}
+		else {
+			nerr=new Error("pgErrorHandler() No error object passed")
+		}
+		
 		pgTileMakerCallback(nerr);	
 	} // End of pgErrorHandler()						
-			
-	function Tile(row, geojson, topojson_options, tileArray) { // Object constructor
+
+	/*
+	 * Function: 	TopojsonOptions()
+	 * Parameters:	None
+	 * Returns:		Object
+	 * Description:	Topojson module options object constructor
+	 */
+	function TopojsonOptions() { 
+		this.verbose=false;
+
+		this["property-transform"] = function TopojsonOptionsProperties(d) {					
+			return d.properties;
+		};
+		this.id = function TopojsonOptionsId(d) {
+			if (!d.properties["id"]) {
+				throw new Error("FIELD PROCESSING ERROR! Invalid id field: d.properties.id does not exist in geoJSON");
+			}
+			else {
+				return d.properties["id"];
+			}							
+		};
+	} // End of TopojsonOptions() object constructor
+
+	/*
+	 * Function: 	Tile()
+	 * Parameters:	Row object (from SQL query), geojson, topojson module options object, tile array
+	 * Returns:		Object
+	 * Description:	Create internal tile object
+	 */	
+	function Tile(row, geojson, topojson_options, tileArray) { 
 	
 		this.tileId=row.tile_id;
 		this.geojson={type: "FeatureCollection", bbox: undefined, features: [geojson]};
@@ -257,8 +298,9 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 
 		if (tileArray) {
 			tileArray.push(this);	
-			this.id=tileArray.length;
-			this.geojson.features[0].properties.id=tileArray.length;
+			tileNo++;
+			this.id=tileNo;
+			this.geojson.features[0].properties.id=this.id;
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 'areaid'];
@@ -271,8 +313,14 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 		else {
 			throw new Error("No tileArray defined");
 		}		
-	}
+	} // End of ~Tile() object constructor
 	Tile.prototype = { // Add methods
+		/*
+		 * Function: 	addFeature()
+		 * Parameters:	Row object (from SQL query), geojson
+		 * Returns:		Nothing
+		 * Description:	Add geoJSON feature to object
+		 */			
 		addFeature: function(row, geojson) {
 			this.geojson.features.push(geojson);
 			this.geojson.features[(this.geojson.features.length-1)].properties.id=this.id;
@@ -285,6 +333,12 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 				}
 			}
 		},
+		/*
+		 * Function: 	addTopoJson()
+		 * Parameters:	None
+		 * Returns:		Nothing
+		 * Description:	Convert geoJSON featureList to topojson, add to object, free up memory used for geoJSON
+		 */			
 		addTopoJson: function() {
 			var bbox=turf.bbox(this.geojson);
 			this.geojson.bbox=bbox;
@@ -309,10 +363,14 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 				
 			this.geojson=undefined; // Free up memory used for geoJSON
 		}
-	}; // End of Tile object
+	}; // End of Tile() object
 
-	function tileIntersectsRowProcessing(row) {
-/*
+	
+	/*
+	 * Function: 	tileIntersectsRowProcessing()
+	 * Parameters:	Row object (from SQL query)
+	 * Returns:		Nothing
+	 * Description:	Per row tile intersect processing
 
 Generates GEOJSON: {
   "type": "FeatureCollection",
@@ -387,7 +445,8 @@ REFERENCE (from shapefile) {
 			56.346443],
 			[-157.89897200000001,
 			56.347497000000004],
- */			
+ */	
+	function tileIntersectsRowProcessing(row) {
 				
 		var tileArray=getTileArray();
 		var geojson={
@@ -403,8 +462,8 @@ REFERENCE (from shapefile) {
 			
 		if (tileArray.length == 0) {
 			var geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
-//					console.error('Tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + "; properties: " + 
-//						JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));
+//			console.error('Tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + "; properties: " + 
+//				JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));
 		}
 		else {
 			var geojsonTile=tileArray[(tileArray.length-1)];
@@ -418,22 +477,17 @@ REFERENCE (from shapefile) {
 				
 				geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
 			
-//						console.error('Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + "; features[0] properties: " + 
-//							JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));		
+//				console.error('Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + "; features[0] properties: " + 
+//					JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));		
 			}	
 		}	
 	} // End of tileIntersectsRowProcessing()	
-		
-	var tileArray = [];	
-	function getTileArray() {
-		return tileArray;
-	} // End of getTileArray()
 		
 	function addUserToPath(addUserToPathCallback) {
 	//
 	// Add $user to path
 	//	
-		var sql="SELECT reset_val FROM pg_settings WHERE name='search_path'";
+		sql="SELECT reset_val FROM pg_settings WHERE name='search_path'";
 		var query=client.query(sql, function getSearchPath(err, result) {
 			if (err) {
 				pgErrorHandler(err);
@@ -448,27 +502,50 @@ REFERENCE (from shapefile) {
 			});
 		});	
 	} // End of addUserToPath()
-	
-	function getNumGeolevelsZoomlevels(getNumGeolevelsZoomlevelsCallback) {
-		var sql="SELECT MAX(geolevel_id) AS max_geolevel_id,\n" +
-	            "       MAX(zoomlevel) AS max_zoomlevel\n" +
-			    "  FROM geometry_cb_2014_us_500k";
-				
+
+	/*
+	 * Function: 	getNumGeolevelsZoomlevels()
+	 * Parameters:	Geography  tablr name, callback: tileIntersectsProcessingGeolevelLoop()
+	 * Returns:		Nothing
+	 * Description:	Conveet geoJSON featureList to topojson, add to object, free up memory used for geoJSON
+	 */		
+	function getNumGeolevelsZoomlevels(geographyTable, getNumGeolevelsZoomlevelsCallback) {
+		sql="SELECT * FROM " + geographyTable;
 		var query=client.query(sql, function setSearchPath(err, result) {
 			if (err) {
 				pgErrorHandler(err);
 			}
-			numZoomlevels=result.rows[0].max_zoomlevel;
-			numGeolevels=result.rows[0].max_geolevel_id;
-			
-			getNumGeolevelsZoomlevelsCallback();	
-		});				
-	}
+			if (result.rows.length != 1) {
+				pgErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"));
+			}
+			var geographyTableData=result.rows[0];
+			sql="SELECT MAX(geolevel_id) AS max_geolevel_id,\n" +
+					"       MAX(zoomlevel) AS max_zoomlevel\n" +
+					"  FROM " + geographyTableData.geometrytable;
+					
+			var query=client.query(sql, function setSearchPath(err, result) {
+				if (err) {
+					pgErrorHandler(err);
+				}
+				numZoomlevels=result.rows[0].max_zoomlevel;
+				numGeolevels=result.rows[0].max_geolevel_id;
+				
+				getNumGeolevelsZoomlevelsCallback(geographyTableData);	
+			});		
+		});			
+	} // End of getNumGeolevelsZoomlevels()
 	
-	function tileIntersectsProcessingLoops() {
+	function tileIntersectsProcessingGeolevelLoop(geographyTableData) {
+		
 		 var geolevel_id=2;
 		 var tileIntersectsTable='tile_intersects_cb_2014_us_500k';
 		 var geolevelName= 'cb_2014_us_state_500k';
+		 
+		 tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolevelName, geolevel_id);
+		 
+	} // End of tileIntersectsProcessingGeolevelLoop()
+	
+	function tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolevelName, geolevel_id) {
 		 
 // 
 // Primary key: geolevel_id, zoomlevel, areaid, x, y
@@ -480,22 +557,26 @@ REFERENCE (from shapefile) {
 			"   AND z.zoomlevel   = $1\n" + 
 			"   AND z.areaid      = a." + geolevelName + "\n" + 
 			" ORDER BY 1";
-			
+	
 		var zoomlevel=0;
-		async.whilst(
-			function () {
-				var res=false;
-				if (zoomlevel<=5) { res=true; }; 
-				zoomlevel++;
-				return (res);
-			},
-			function(callback) {		
+		zstart = new Date().getTime(); // Set timer for zoomlevel
+		async.doWhilst(
+			function zoomlevelProcessing(callback) {		
 				tileIntersectsProcessing(sql, zoomlevel, geolevel_id, callback);
 			}, 
-			function (err) {
+			function zoomlevelTest() { // Mimic for loop
+				var res=false;
+				
+				zstart = new Date().getTime(); // Set timer for zoomlevel
+				
+				zoomlevel++;
+				if (zoomlevel<=5) { res=true; }; 
+				return (res);
+			},
+			function zoomlevelProcessingEndCallback(err) {
 				pgTileMakerCallback(err);
 			});
-	} // End of tileIntersectsProcessingLoops()
+	} // End of tileIntersectsProcessingZoomlevelLoop()
 	
 	function tileIntersectsProcessing(sql, zoomlevel, geolevel_id, tileIntersectsProcessingCallback) {
 
@@ -507,37 +588,37 @@ REFERENCE (from shapefile) {
 		});
 		
 		query.on('end', function(result) {
+			// Process last tile
+			var geojsonTile=tileArray[(tileArray.length-1)];
+			geojsonTile.addTopoJson();	
+				
 			var end = new Date().getTime();
-			var elapsedTime=(end - lstart)/1000; // in S
+			var elapsedTime=(end - zstart)/1000; // in S
+			var tElapsedTime=(end - lstart)/1000; // in S
 			console.error('Geolevel: ' + geolevel_id + '; zooomlevel: ' + zoomlevel + '; ' + 
 				result.rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S; " +  
-				Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S");
+				Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S; total: " + tElapsedTime + " S");
+			tileArray=[];
 			tileIntersectsProcessingCallback();
 		});	
 	} // End of tileIntersectsProcessing()
-		
-	var lstart = new Date().getTime();
+		 		
+	var tileArray = [];	
+	function getTileArray() {
+		return tileArray;
+	} // End of getTileArray()
 	
-	var topojson_options = {
-		verbose: false
-	};
-	topojson_options["property-transform"] = function(d) {					
-		return d.properties;
-	};
-	topojson_options.id = function(d) {
-		if (!d.properties["id"]) {
-			throw new Error("FIELD PROCESSING ERROR! Invalid id field: d.properties.id does not exist in geoJSON");
-		}
-		else {
-			return d.properties["id"];
-		}							
-	};
+	var lstart = new Date().getTime();				// Overall processing start time
+	var zstart;										// Zoomlevel processing start time
+	var tileNo=0;									// Overall time counter
+	var topojson_options = new TopojsonOptions();	// Topojson processor options
+	var sql;										// SQL Statement
 	
 	var numZoomlevels;
 	var numGeolevels;
-	
+	var geographyTable="geography_cb_2014_us_500k";
 	addUserToPath(function addUserToPathCallback2(err) {
-		getNumGeolevelsZoomlevels(tileIntersectsProcessingLoops);
+		getNumGeolevelsZoomlevels(geographyTable, tileIntersectsProcessingGeolevelLoop);
 	});
 }
 
