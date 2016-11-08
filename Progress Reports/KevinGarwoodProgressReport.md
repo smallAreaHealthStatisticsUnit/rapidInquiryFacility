@@ -184,3 +184,15 @@ We can spend more time developing more test data and shortly we hope we can load
 I observe that we can take steps to reduce the amount of data we retrieve.  First, it doesn’t make sense to return a lot of the columns that appear in the smoothed data sets; they exist mainly to facilitate linking with other database tables and other fields look as though their value is the same for all rows.  Second, the results contain far too many significant digits than are warranted by the calculations.  By reducing the number of digits, we reduce the length of the JSON data that are returned to the web client.
 The Work.  I’ve developed three methods that can retrieve all the data set or specific columns from a data set. The work for managing paged results will then be moved to the web clients.
 
+##Sept to October 2016
+Created middleware methods to support the data viewer tool.  Trying to fix bugs related to the overall process of submitting a study, having it register in the database, having it successfully smoothed by the R program, and advertising that it has been done to the data viewer.  All of this is working, except for two problems that we expected would come up during test.  First, the run_study method in 
+the database has not been well tested with various study submission test data.  Second, we have experienced some integration issues in coordinating the activities of the R-based smoothing code with the extract and map tables that are created the process of running the study.
+
+I've also spent three separate weeks working on an unrelated project.  Currently in the process of training up some of the other developers so they may make more changes to the middleware code.
+
+
+
+
+
+
+
