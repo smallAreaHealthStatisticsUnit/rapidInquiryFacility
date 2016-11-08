@@ -232,35 +232,17 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 } // End of tileMaker()
 
 
-var pgTileMaker = function pgTileMaker(client, callback) {
+var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 	
 	scopeChecker(__file, __line, {
-		callback: callback
+		callback: pgTileMakerCallback
 	});
 
-	var sql;
 	var pgErrorHandler = function pgErrorHandler(err) {
 		var nerr=new Error(err.message + "\nSQL> " + sql + ";");
 		nerr.stack=err.stack;
-		callback(nerr);	
-	}
-		
-	var lstart = new Date().getTime();
-	
-	var topojson_options = {
-		verbose: false
-	};
-	topojson_options["property-transform"] = function(d) {					
-		return d.properties;
-	};
-	topojson_options.id = function(d) {
-		if (!d.properties["id"]) {
-			throw new Error("FIELD PROCESSING ERROR! Invalid id field: d.properties.id does not exist in geoJSON");
-		}
-		else {
-			return d.properties["id"];
-		}							
-	};						
+		pgTileMakerCallback(nerr);	
+	} // End of pgErrorHandler()						
 			
 	function Tile(row, geojson, topojson_options, tileArray) { // Object constructor
 	
@@ -447,7 +429,7 @@ REFERENCE (from shapefile) {
 		return tileArray;
 	} // End of getTileArray()
 		
-	function addUserToPath(callback) {
+	function addUserToPath(addUserToPathCallback) {
 	//
 	// Add $user to path
 	//	
@@ -462,31 +444,62 @@ REFERENCE (from shapefile) {
 				if (err) {
 					pgErrorHandler(err);
 				}
-				callback();	
+				addUserToPathCallback();	
 			});
 		});	
 	} // End of addUserToPath()
 	
-	function tileIntersectsProcessing() {
-			/*
-		SELECT MAX(geolevel_id) AS max_geolevel_id,
-	           MAX(zoomlevel) AS max_zoomlevel
-	      FROM geometry_cb_2014_us_500k;
-	c2_areaid_count 	CURSOR FOR	
-		SELECT areaid_count
-		  FROM geolevels_cb_2014_us_500k	
-		 WHERE geolevel_id = 1; */
+	function getNumGeolevelsZoomlevels(getNumGeolevelsZoomlevelsCallback) {
+		var sql="SELECT MAX(geolevel_id) AS max_geolevel_id,\n" +
+	            "       MAX(zoomlevel) AS max_zoomlevel\n" +
+			    "  FROM geometry_cb_2014_us_500k";
+				
+		var query=client.query(sql, function setSearchPath(err, result) {
+			if (err) {
+				pgErrorHandler(err);
+			}
+			numZoomlevels=result.rows[0].max_zoomlevel;
+			numGeolevels=result.rows[0].max_geolevel_id;
+			
+			getNumGeolevelsZoomlevelsCallback();	
+		});				
+	}
+	
+	function tileIntersectsProcessingLoops() {
+		 var geolevel_id=2;
+		 var tileIntersectsTable='tile_intersects_cb_2014_us_500k';
+		 var geolevelName= 'cb_2014_us_state_500k';
+		 
 // 
 // Primary key: geolevel_id, zoomlevel, areaid, x, y
 //			
-		sql="SELECT z.geolevel_id::VARCHAR||'_'||'cb_2014_us_state_500k'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
+		var sql="SELECT z.geolevel_id::VARCHAR||'_'||'" + geolevelName + "'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
 			"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, a.*\n" +				
-			"  FROM tile_intersects_cb_2014_us_500k z, lookup_cb_2014_us_state_500k a\n" +
-			" WHERE z.geolevel_id = 2\n" + 
-			"   AND z.zoomlevel   = 5\n" + 
-			"   AND z.areaid      = a.cb_2014_us_state_500k\n" + 
-			" ORDER BY 1 /* LIMIT 200 */";
-		var query = client.query(sql);
+			"  FROM " + tileIntersectsTable + " z, lookup_" + geolevelName + " a\n" +
+			" WHERE z.geolevel_id = $2\n" + 
+			"   AND z.zoomlevel   = $1\n" + 
+			"   AND z.areaid      = a." + geolevelName + "\n" + 
+			" ORDER BY 1";
+			
+		var zoomlevel=0;
+		async.whilst(
+			function () {
+				var res=false;
+				if (zoomlevel<=5) { res=true; }; 
+				zoomlevel++;
+				return (res);
+			},
+			function(callback) {		
+				tileIntersectsProcessing(sql, zoomlevel, geolevel_id, callback);
+			}, 
+			function (err) {
+				pgTileMakerCallback(err);
+			});
+	} // End of tileIntersectsProcessingLoops()
+	
+	function tileIntersectsProcessing(sql, zoomlevel, geolevel_id, tileIntersectsProcessingCallback) {
+
+		var query = client.query(sql, [zoomlevel, geolevel_id]);
 		query.on('error', pgErrorHandler);
 
 		query.on('row', function tileIntersectsRow(row) {
@@ -496,13 +509,36 @@ REFERENCE (from shapefile) {
 		query.on('end', function(result) {
 			var end = new Date().getTime();
 			var elapsedTime=(end - lstart)/1000; // in S
-			console.error(result.rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S; " +  
+			console.error('Geolevel: ' + geolevel_id + '; zooomlevel: ' + zoomlevel + '; ' + 
+				result.rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S; " +  
 				Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S");
-			callback();
+			tileIntersectsProcessingCallback();
 		});	
 	} // End of tileIntersectsProcessing()
+		
+	var lstart = new Date().getTime();
 	
-	addUserToPath(tileIntersectsProcessing);
+	var topojson_options = {
+		verbose: false
+	};
+	topojson_options["property-transform"] = function(d) {					
+		return d.properties;
+	};
+	topojson_options.id = function(d) {
+		if (!d.properties["id"]) {
+			throw new Error("FIELD PROCESSING ERROR! Invalid id field: d.properties.id does not exist in geoJSON");
+		}
+		else {
+			return d.properties["id"];
+		}							
+	};
+	
+	var numZoomlevels;
+	var numGeolevels;
+	
+	addUserToPath(function addUserToPathCallback2(err) {
+		getNumGeolevelsZoomlevels(tileIntersectsProcessingLoops);
+	});
 }
 
 module.exports.pgTileMaker = pgTileMaker;
