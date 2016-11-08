@@ -328,165 +328,181 @@ var pgTileMaker = function pgTileMaker(client, callback) {
 			this.geojson=undefined; // Free up memory used for geoJSON
 		}
 	}; // End of Tile object
-	
-//
-// Add $user to path
-//	
-	sql="SELECT reset_val FROM pg_settings WHERE name='search_path'";
-	var query=client.query(sql, function getSearchPath(err, result) {
-		if (err) {
-			pgErrorHandler(err);
-		}
-		sql='SET SEARCH_PATH TO "$user",' + result.rows[0].reset_val;
-		
-		var tileArray = [];	
-		function getTileArray() {
-			return tileArray;
-		}
 
-		function tileIntersectsRowProcessing(row) {
-	/*
+	function tileIntersectsRowProcessing(row) {
+/*
 
-	Generates GEOJSON: {
-	  "type": "FeatureCollection",
-	  "features": [
-		{
-		  "type": "Feature",
-		  "properties": {
-			"areaID": "01785533",
-			"areaName": "Alaska"
-		  },
-		  "geometry": {
-			"type": "MultiPolygon",
-			"coordinates": [
+Generates GEOJSON: {
+  "type": "FeatureCollection",
+  "features": [
+	{
+	  "type": "Feature",
+	  "properties": {
+		"areaID": "01785533",
+		"areaName": "Alaska"
+	  },
+	  "geometry": {
+		"type": "MultiPolygon",
+		"coordinates": [
+		  [
+			[
 			  [
-				[
-				  [
-					-179.148191144524,
-					51.2701475586686
-				  ],
-				  [
-					-179.145678650359,
-					51.2714362678723
-				  ],
-				  [
-					-179.146755433572,
-					51.2753023954834
-				  ],
-				  [
-					-179.144960794883,
-					51.2785671254661
-				  ],
-				  [
-					-179.14029473429,
-					51.2834642204402
-				  ],
-				  [
-					-179.135628673697,
-					51.2862993806884
-				  ],
-				  [
-					-179.130603685366,
-					51.2874162619983
-				  ],
-								
-	REFERENCE (from shapefile) {
-		"type": "FeatureCollection",
-		"bbox": [-179.148909,
-		-14.548699000000001,
-		179.77847,
-		71.36516200000001],
-		"features": [{
-			"type": "Feature",
-			"properties": {
-				"STATEFP": "02",
-				"STATENS": "01785533",
-				"AFFGEOID": "0400000US02",
-				"GEOID": "02",
-				"STUSPS": "AK",
-				"NAME": "Alaska",
-				"LSAD": "00",
-				"ALAND": 1477849359548,
-				"AWATER": 245487700921,
-				"GID": 1,
-				"AREAID": "01785533",
-				"AREANAME": "Alaska",
-				"AREA_KM2": 1516559.358611932,
-				"GEOGRAPHIC_CENTROID_WKT": "POINT (-150.4186689317295 58.382944477050366)"
-			},
-			"geometry": {
-				"type": "MultiPolygon",
-				"coordinates": [[[[-157.903963,
-				56.346443],
-				[-157.89897200000001,
-				56.347497000000004],
-	 */			
-					
-			var tileArray=getTileArray();
-			var geojson={
-				type: "Feature",
-				properties: {
-					id: 	  undefined,
-					areaID:   row.areaid,
-					areaName: row.areaname
-				}, 
-				geometry: wellknown.parse(row.optimised_wkt)
-			};
-	//				console.error("wktjson: " + JSON.stringify(wktjson, null, 2).substring(0, 1000));	
+				-179.148191144524,
+				51.2701475586686
+			  ],
+			  [
+				-179.145678650359,
+				51.2714362678723
+			  ],
+			  [
+				-179.146755433572,
+				51.2753023954834
+			  ],
+			  [
+				-179.144960794883,
+				51.2785671254661
+			  ],
+			  [
+				-179.14029473429,
+				51.2834642204402
+			  ],
+			  [
+				-179.135628673697,
+				51.2862993806884
+			  ],
+			  [
+				-179.130603685366,
+				51.2874162619983
+			  ],
+							
+REFERENCE (from shapefile) {
+	"type": "FeatureCollection",
+	"bbox": [-179.148909,
+	-14.548699000000001,
+	179.77847,
+	71.36516200000001],
+	"features": [{
+		"type": "Feature",
+		"properties": {
+			"STATEFP": "02",
+			"STATENS": "01785533",
+			"AFFGEOID": "0400000US02",
+			"GEOID": "02",
+			"STUSPS": "AK",
+			"NAME": "Alaska",
+			"LSAD": "00",
+			"ALAND": 1477849359548,
+			"AWATER": 245487700921,
+			"GID": 1,
+			"AREAID": "01785533",
+			"AREANAME": "Alaska",
+			"AREA_KM2": 1516559.358611932,
+			"GEOGRAPHIC_CENTROID_WKT": "POINT (-150.4186689317295 58.382944477050366)"
+		},
+		"geometry": {
+			"type": "MultiPolygon",
+			"coordinates": [[[[-157.903963,
+			56.346443],
+			[-157.89897200000001,
+			56.347497000000004],
+ */			
 				
-			if (tileArray.length == 0) {
-				var geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
-	//					console.error('Tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + "; properties: " + 
-	//						JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));
+		var tileArray=getTileArray();
+		var geojson={
+			type: "Feature",
+			properties: {
+				id: 	  undefined,
+				areaID:   row.areaid,
+				areaName: row.areaname
+			}, 
+			geometry: wellknown.parse(row.optimised_wkt)
+		};
+//				console.error("wktjson: " + JSON.stringify(wktjson, null, 2).substring(0, 1000));	
+			
+		if (tileArray.length == 0) {
+			var geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
+//					console.error('Tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + "; properties: " + 
+//						JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));
+		}
+		else {
+			var geojsonTile=tileArray[(tileArray.length-1)];
+			if (geojsonTile.tileId == row.tile_id) {
+				geojsonTile.addFeature(row, geojson);
+//						console.error('Add areaID: ' + row.areaid + "; properties: " + 
+//							JSON.stringify(geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties, null, 2));
 			}
-			else {
-				var geojsonTile=tileArray[(tileArray.length-1)];
-				if (geojsonTile.tileId == row.tile_id) {
-					geojsonTile.addFeature(row, geojson);
-	//						console.error('Add areaID: ' + row.areaid + "; properties: " + 
-	//							JSON.stringify(geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties, null, 2));
-				}
-				else {	
-					geojsonTile.addTopoJson();	
-					
-					geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
+			else {	
+				geojsonTile.addTopoJson();	
 				
-	//						console.error('Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + "; features[0] properties: " + 
-	//							JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));		
-				}	
+				geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
+			
+//						console.error('Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + "; features[0] properties: " + 
+//							JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));		
 			}	
-		} // End of tileIntersectsRowProcessing()	
-	
-		var query=client.query(sql, function setSearchPath(err, result) {
+		}	
+	} // End of tileIntersectsRowProcessing()	
+		
+	var tileArray = [];	
+	function getTileArray() {
+		return tileArray;
+	} // End of getTileArray()
+		
+	function addUserToPath(callback) {
+	//
+	// Add $user to path
+	//	
+		var sql="SELECT reset_val FROM pg_settings WHERE name='search_path'";
+		var query=client.query(sql, function getSearchPath(err, result) {
 			if (err) {
 				pgErrorHandler(err);
 			}
+			sql='SET SEARCH_PATH TO "$user",' + result.rows[0].reset_val;
+		
+			var query=client.query(sql, function setSearchPath(err, result) {
+				if (err) {
+					pgErrorHandler(err);
+				}
+				callback();	
+			});
+		});	
+	} // End of addUserToPath()
+	
+	function tileIntersectsProcessing() {
+			/*
+		SELECT MAX(geolevel_id) AS max_geolevel_id,
+	           MAX(zoomlevel) AS max_zoomlevel
+	      FROM geometry_cb_2014_us_500k;
+	c2_areaid_count 	CURSOR FOR	
+		SELECT areaid_count
+		  FROM geolevels_cb_2014_us_500k	
+		 WHERE geolevel_id = 1; */
 // 
 // Primary key: geolevel_id, zoomlevel, areaid, x, y
 //			
-			sql="SELECT z.geolevel_id::VARCHAR||'_'||'cb_2014_us_state_500k'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
-				"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, a.*\n" +				
-				"  FROM tile_intersects_cb_2014_us_500k z, lookup_cb_2014_us_state_500k a\n" +
-				" WHERE z.geolevel_id = 2\n" + 
-				"   AND z.zoomlevel   = 5\n" + 
-				"   AND z.areaid      = a.cb_2014_us_state_500k\n" + 
-				" ORDER BY 1 /* LIMIT 200 */";
-			var query = client.query(sql);
-			query.on('error', pgErrorHandler);
+		sql="SELECT z.geolevel_id::VARCHAR||'_'||'cb_2014_us_state_500k'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
+			"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, a.*\n" +				
+			"  FROM tile_intersects_cb_2014_us_500k z, lookup_cb_2014_us_state_500k a\n" +
+			" WHERE z.geolevel_id = 2\n" + 
+			"   AND z.zoomlevel   = 5\n" + 
+			"   AND z.areaid      = a.cb_2014_us_state_500k\n" + 
+			" ORDER BY 1 /* LIMIT 200 */";
+		var query = client.query(sql);
+		query.on('error', pgErrorHandler);
 
-			query.on('row', function tileIntersectsRow(row) {
-				tileIntersectsRowProcessing(row);			
-			});
-			
-			query.on('end', function(result) {
-				var end = new Date().getTime();
-				var elapsedTime=(end - lstart)/1000; // in S
-				console.error(result.rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S; " +  
-					Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S");
-				callback();
-			});		
+		query.on('row', function tileIntersectsRow(row) {
+			tileIntersectsRowProcessing(row);			
 		});
-	});		
+		
+		query.on('end', function(result) {
+			var end = new Date().getTime();
+			var elapsedTime=(end - lstart)/1000; // in S
+			console.error(result.rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S; " +  
+				Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S");
+			callback();
+		});	
+	} // End of tileIntersectsProcessing()
+	
+	addUserToPath(tileIntersectsProcessing);
 }
 
 module.exports.pgTileMaker = pgTileMaker;
