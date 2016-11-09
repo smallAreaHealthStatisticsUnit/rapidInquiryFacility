@@ -721,10 +721,14 @@ RangeError: Invalid string length
   * Postgres also aggregates GeoJSON into collections and still has the older NOT EXISTS code to eliminate tiles with no parent
 * Added Wellknown text output to tile intersects table for topoJSON conversion program
  
+#### 7th to 11th November
+
+* Map tile generator prototype; topoJSON tiles and SVG tile creation
+
 #### Current TODO list (November):
 
 * Map tile generator; RIF integration preparation
-  * Add GID to lookup tables;
+  * Add GID, shapefile fields to lookup tables;
   * Add areaid as well as <geolevel_name> in lookup tables;
 * SQL load script generator: still todo, all can wait:
   * Add search path to user schema, check user schema exists, to Postgres version
