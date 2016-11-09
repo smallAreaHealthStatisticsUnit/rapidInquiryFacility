@@ -108,6 +108,8 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
 		'   ' + svgString + '\n' +
 		'  </svg>';
 //	console.error(svgFileName + "; size: " + nodeGeoSpatialServicesCommon.fileSize(sizeof(svgString)));
+
+	return svgString;
 } // End of createSVGTile()
 	
 /*
@@ -116,40 +118,40 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
  * Returns:		tile X
  * Description: Create SVG tile from geoJSON
  */
-var writeSVGTile = function writeSVGTile(path, geolevel_id, zoomlevel, X, Y, callback, svgString) {
+var writeSVGTile = function writeSVGTile(path, geolevel_id, zoomlevel, X, Y, callback, svgTile) {
 	scopeChecker(__file, __line, {
 		path: path,
 		callback: callback, 
-		svgString: svgString
+		svgTile: svgTile
 	});
 	
 //	
 // Create directory: path/geolevel/zoomlevel/X as required
 //		  
-	var dirArray=[path, geolevel_id, zoomlevel, Y];
+	var dirArray=[path, geolevel_id, zoomlevel, X];
 	var dir=nodeGeoSpatialServicesCommon.createTemporaryDirectory(dirArray);
 	var svgFileName=dir + "/" + Y + ".svg";
-	
+
 //
 // Create stream for tile
 //	
 	var svgStream = fs.createWriteStream(svgFileName, { flags : 'w' });	
 	svgStream.on('finish', 
 		function svgStreamClose() {
-			console.error("Wrote tile: " + svgFileName);
+			console.error("Wrote svg file: " + svgFileName + "; size: " + nodeGeoSpatialServicesCommon.fileSize(sizeof(svgTile)));
 			callback();
 		});		
 	svgStream.on('error', 
 		function svgStreamError(e) {
 			callback(e);						
 		});
-
-	console.error(svgFileName + ": " + svgString.substring(0, 132));
+		
 //
 // Write SVG file
 //		
-	svgStream.write(svgString);
+	svgStream.write(svgTile);
 	svgStream.end();
+	
 } // End of writeSVGTile()
 
 /*
@@ -740,6 +742,51 @@ REFERENCE (from shapefile) {
 	 */			
 	function tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, tileIntersectsProcessingCallback) {
 
+		/*
+		 * Function: 	tileInsert()
+		 * Parameters:	Exepcted rows
+		 * Returns:		Nothing
+		 * Description:	Multi row insert in t_tile_<geography> table
+		 */	
+		function tileInsert(expectedRows) {
+			sql="INSERT INTO t_tiles_" + geography +
+				 '	(geolevel_id, zoomlevel, x, y, optimised_topojson, tile_id)\nVALUES ';
+			var j=1;
+			var insertArray=[];
+			for (var i=0; i<tileArray.length; i++) {
+				if (i>0) {
+					sql+=",\n";
+				}
+				sql+='($' + j + ',$' + (j+1) + ',$' + (j+2) + ',$' + (j+3) + ',$' + (j+4) + ',$' + (j+5) + ') /* Row ' + i + ' */';
+				j+=6;
+				insertArray=insertArray.concat(tileArray[i].insertArray)
+			}
+//			console.error("INSERT SQL> " + sql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
+	/*
+	SELECT geolevel_id, zoomlevel, x, y, tile_id, LENGTH(optimised_topojson::Text) AS len
+	FROM t_tiles_cb_2014_us_500k
+	WHERE LENGTH(optimised_topojson::Text) < 1000
+	ORDER BY geolevel_id, zoomlevel, x, y;
+
+	*/
+			var query=client.query(sql, insertArray, function tilesInsert(err, result) {
+				if (err) {
+					pgErrorHandler(err, sql);
+				}
+				else if (result == undefined) {
+					pgErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: result undefined != expected: " + expectedRows), sql);
+					
+				}
+				else if (expectedRows != result.rowCount) {
+					pgErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
+				}
+				else {
+					tileArray=[];  // Re-initialize tile array
+					tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
+				}	
+			});	
+		} // End of tileInsert()
+			
 		var query = client.query(sql, [zoomlevel, geolevel_id]);
 		query.on('error', pgErrorHandler);
 
@@ -763,56 +810,33 @@ REFERENCE (from shapefile) {
 				"; total: " + tileNo + " tiles in " + tElapsedTime + " S; size: " + nodeGeoSpatialServicesCommon.fileSize(totalTileSize));
 			var expectedRows=tileArray.length;
 			
-			if (tileArray.length > 0) {
-				
-				
-				
-				// Write SVG tiles to disk
+			if (tileArray.length > 0) {	
+				async.forEachOfSeries(tileArray, 
+				function writeSVGTileSeries(value, j, writeSVGTileCallback) { // Processing code	
+					// Write SVG tiles to disk
 
-//				writeSVGTile('C:\Users\Peter\Google Drive\work\tiles', geolevel_id, zoomlevel, X, Y, callback, svgTile);
-
-				sql="INSERT INTO t_tiles_" + geography +
-					 '	(geolevel_id, zoomlevel, x, y, optimised_topojson, tile_id)\nVALUES ';
-				var j=1;
-				var insertArray=[];
-				for (var i=0; i<tileArray.length; i++) {
-					if (i>0) {
-						sql+=",\n";
+						writeSVGTile('/Users/Peter/Google Drive/work/tiles', 
+							value.geolevel_id, value.zoomlevel, value.x, value.y, writeSVGTileCallback, value.svgTile);
+	//  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\phantomjs-prebuilt\lib\phantom\bin\phantomjs.exe
+					},
+					function writeSVGTileEnd(err) { //  Callback
+		
+						if (err) {
+							pgErrorHandler(err);
+						}
+						else {
+							tileInsert(expectedRows);	
+						}
 					}
-					sql+='($' + j + ',$' + (j+1) + ',$' + (j+2) + ',$' + (j+3) + ',$' + (j+4) + ',$' + (j+5) + ') /* Row ' + i + ' */';
-					j+=6;
-					insertArray=insertArray.concat(tileArray[i].insertArray)
-				}
-//				console.error("INSERT SQL> " + sql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
-	 /*
-	 SELECT geolevel_id, zoomlevel, x, y, tile_id, LENGTH(optimised_topojson::Text) AS len
- 	   FROM t_tiles_cb_2014_us_500k
-	  WHERE LENGTH(optimised_topojson::Text) < 1000
-	  ORDER BY geolevel_id, zoomlevel, x, y;
-	  
-	 */
-				var query=client.query(sql, insertArray, function tilesInsert(err, result) {
-					if (err) {
-						pgErrorHandler(err, sql);
-					}
-					else if (result == undefined) {
-						pgErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: result undefined != expected: " + expectedRows), sql);
-						
-					}
-					else if (expectedRows != result.rowCount) {
-						pgErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
-					}
-						
-					tileArray=[];  // Re-initialize tile array
-					tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
-				});			
+				); // End of async.forEachOfSeries(tileArray, ...)	
+											
 			}
 			else {
 				tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
 			}
 		});	
 	} // End of tileIntersectsProcessing()
-		 		
+			
 	var tileArray = [];	
 	var totalTileSize=0;
 	/*

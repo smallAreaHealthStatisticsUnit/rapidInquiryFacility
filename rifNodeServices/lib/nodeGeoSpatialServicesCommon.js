@@ -92,6 +92,7 @@ createTemporaryDirectory = function createTemporaryDirectory(dirArray, response,
 			tdir+="/" + dirArray[i];
 		}	
 		try {
+//			console.error("createTemporaryDirectory(): " + tdir);
 			var stats=fs.statSync(tdir);
 		} catch (e) { 
 			if (e.code == 'ENOENT') {
