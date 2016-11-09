@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer.postgresql;
+package rifDataLoaderTool.dataStorageLayer.pg;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -67,9 +67,7 @@ import java.util.ArrayList;
  *
  */
 
-public class PGSQLDataTypeSearchReplaceUtility {
-
-	
+public class PGSQLDataTypeValidationUtility {
 	
 	// ==========================================
 	// Section Constants
@@ -83,7 +81,7 @@ public class PGSQLDataTypeSearchReplaceUtility {
 	// Section Construction
 	// ==========================================
 
-	public PGSQLDataTypeSearchReplaceUtility() {
+	public PGSQLDataTypeValidationUtility() {
 
 	}
 
@@ -91,45 +89,46 @@ public class PGSQLDataTypeSearchReplaceUtility {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public String generateSearchReplaceTableStatement(
+	public String generateValidationTableStatement(
 		final DataSetConfiguration dataSetConfiguration) {
 
 
-
 		/*
-		 * CREATE TABLE cln_srch_my_numerator1 AS 
+		 * DROP IF EXISTS cln_val_my_numerator1;
+		 * CREATE TABLE cln_val_my_numerator1 AS
 		 * SELECT
-		 *    data_set_id, -- no cleaning 
+		 *    data_set_id,
 		 *    row_number,
 		 *    patient_id,
-		 *    CASE -- application of cleaning rules
-		 *    	WHEN sex ~ ^[mM] THEN '1'
-		 *      WHEN sex ~ ^[fF] THEN '2'
-		 *      ELSE sex //no cleaning functions match, pass original value 
+		 *    CASE
+		 *       WHEN sex ~ ^[0|1|2|3] THEN sex
+		 *       ELSE 'rif_error'
 		 *    END AS sex,
-		 *    ntile(score, 5) OVER score,
-		 *    dob,
-		 *    clean_uk_postal_code(postal_code) AS postal_code, -- clean function
-		 *    clean_icd_code(icd_1) AS icd_1,
-		 *    level1,
-		 *    level2,
-		 *    
-		 *    
+		 *    CASE
+		 *       WHEN is_valid_postal_code(postal_code) THEN postal_code
+		 *       ELSE 'rif_error'
+		 *    END AS postal_code
 		 * FROM
-		 *    load_my_numerator1;
-		 */
-	
+		 *     cln_srch_my_numerator1; --the search and replace table
+		 * ALTER TABLE cln_srch_my_numerator1 ADD PRIMARY KEY (data_set_id, row_number);    
+		 */	
+		
+		
 		//eg: my_numerator1
 		String coreDataSetName
 			= dataSetConfiguration.getName();
-		String loadTableName
-			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(coreDataSetName);
+		
+		
+		//eg: cln_val_my_numerator1
+		String cleanValidationTableName
+			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName);
 		String cleanSearchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		
 		//add comments to the SQL query
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
+		
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage(
 				"queryComments.clean.validationQuery.comment1");
@@ -143,8 +142,9 @@ public class PGSQLDataTypeSearchReplaceUtility {
 		//delete any version of the same table
 		SQLDeleteTableQueryFormatter deleteQueryFormatter
 			= new SQLDeleteTableQueryFormatter();
-		deleteQueryFormatter.setTableToDelete(cleanSearchReplaceTableName);
+		deleteQueryFormatter.setTableToDelete(cleanValidationTableName);
 		queryFormatter.addQueryPhrase(deleteQueryFormatter.generateQuery());
+		queryFormatter.finishLine();
 		
 		
 		/*
@@ -157,72 +157,61 @@ public class PGSQLDataTypeSearchReplaceUtility {
 		 *    ...
 		 */
 		SQLGeneralQueryFormatter createValidationCTASQueryFormatter
-			= new SQLGeneralQueryFormatter();	
-		createValidationCTASQueryFormatter.setEndWithSemiColon(true);
-		createSearchReplaceCTASStatement(
+			= new SQLGeneralQueryFormatter();		
+		createValidationCTASStatement(
 			createValidationCTASQueryFormatter,
-			loadTableName,
 			cleanSearchReplaceTableName,
-			dataSetConfiguration,
-			false);
-		
+			cleanValidationTableName,
+			dataSetConfiguration);
 		queryFormatter.addQuery(createValidationCTASQueryFormatter);
 				
 		//Add primary key statement
 		SQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
 			= new SQLCreatePrimaryKeyQueryFormatter();
-		createPrimaryKeyQueryFormatter.setTable(cleanSearchReplaceTableName);
+		createPrimaryKeyQueryFormatter.setTable(cleanValidationTableName);
 		createPrimaryKeyQueryFormatter.setPrimaryKeyPhrase("data_set_id, row_number");
 		queryFormatter.addQuery(createPrimaryKeyQueryFormatter);
 
+		System.out.println(queryFormatter.generateQuery());
+		
 		return queryFormatter.generateQuery();
 	}
 	
-	private void createSearchReplaceCTASStatement(
+	private void createValidationCTASStatement(
 		final SQLGeneralQueryFormatter queryFormatter,
-		final String loadTableName,
 		final String cleanSearchReplaceTableName,
-		final DataSetConfiguration dataSetConfiguration,
-		final boolean includeIgnoredFields) {
+		final String cleanValidationTableName,
+		final DataSetConfiguration dataSetConfiguration) {
 				
 		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
-		queryFormatter.addQueryPhrase(cleanSearchReplaceTableName);
-		queryFormatter.addQueryPhrase(" AS ");
+		queryFormatter.addQueryPhrase(cleanValidationTableName);
+		queryFormatter.addQueryPhrase(" AS ");		
 		queryFormatter.padAndFinishLine();		
 		queryFormatter.addPaddedQueryLine(0, "SELECT");
 		
 		queryFormatter.addQueryLine(1, "data_set_id,");
 		queryFormatter.addQueryLine(1, "row_number,");
 	
-		ArrayList<DataSetFieldConfiguration> fieldConfigurations 
-			= new ArrayList<DataSetFieldConfiguration>();
-		if (includeIgnoredFields) {
-			fieldConfigurations
-				= dataSetConfiguration.getFieldConfigurations();			
-		}
-		else {
-			fieldConfigurations
-				= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
-		}
-		
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 		for (int i = 0; i < numberOfFieldConfigurations; i++) {
 			if (i != 0) {
 				queryFormatter.addQueryPhrase(",");
 				queryFormatter.finishLine();
 			}
-			addDataSetFieldCleaningFragment(
+			addDataSetFieldValidationFragment(
 				1,
 				queryFormatter,
 				fieldConfigurations.get(i));			
 		}
 		queryFormatter.finishLine();
 		queryFormatter.addPaddedQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, loadTableName);
+		queryFormatter.addQueryPhrase(1, cleanSearchReplaceTableName);
 	}
 	
 	
-	private void addDataSetFieldCleaningFragment(
+	private void addDataSetFieldValidationFragment(
 		final int baseIndentationLevel,
 		final SQLGeneralQueryFormatter queryFormatter,
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
@@ -234,87 +223,114 @@ public class PGSQLDataTypeSearchReplaceUtility {
 		
 		RIFDataType rifDataType
 			= dataSetFieldConfiguration.getRIFDataType();
-		RIFFieldActionPolicy fieldCleaningPolicy
-			= rifDataType.getFieldCleaningPolicy();
-
-		
-		if (fieldCleaningPolicy == RIFFieldActionPolicy.DO_NOTHING) {
+		RIFFieldActionPolicy fieldValidationPolicy
+			= rifDataType.getFieldValidationPolicy();
+		if (fieldValidationPolicy == RIFFieldActionPolicy.DO_NOTHING) {
 			//just allow load field value to pass
-			
-			queryFormatter.addQueryPhrase(baseIndentationLevel, loadFieldName);
-			queryFormatter.addQueryPhrase(" AS ");
-			queryFormatter.addQueryPhrase(cleanFieldName);			
-
-/*			
 			queryFormatter.addQueryPhrase(
 				baseIndentationLevel, 
-				loadFieldName);
-*/				
+				cleanFieldName); //xxx
 		}
-		else if (fieldCleaningPolicy == RIFFieldActionPolicy.USE_RULES) {
+		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_RULES) {
 			/*
 			 * eg:
 			 *
 			 * CASE
-			 *    WHEN sex ~ '^male|MALE$' THEN 0
-			 *    WHEN sex ~ '^[mM]$' THEN 0
-			 *    ...
-			 *    ...
-			 *    WHEN sex ~ '^female|FEMALE$' THEN 1			 *    
-			 *    ELSE sex
-			 * END AS sex, //using validation rule
+			 *    WHEN age ~ '^[0-9]+' THEN age
+			 *    ELSE 'rif_error'
+			 * END AS age, //using validation rule
 			 * 
 			 */
-			
-			queryFormatter.addQueryPhrase(baseIndentationLevel, "CASE");
-			queryFormatter.padAndFinishLine();
-
-			
-			ArrayList<CleaningRule> cleaningRules
-				= rifDataType.getCleaningRules();
-			
-			
-			for (CleaningRule cleaningRule : cleaningRules) {
-				queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
-				queryFormatter.addQueryPhrase(loadFieldName);
-				queryFormatter.addQueryPhrase(" ~ ");
-				queryFormatter.addQueryPhrase("'");
-				queryFormatter.addQueryPhrase(cleaningRule.getSearchValue());
-				queryFormatter.addQueryPhrase("'");
-				queryFormatter.addQueryPhrase(" THEN '");
-				queryFormatter.addQueryPhrase(cleaningRule.getReplaceValue());
-				queryFormatter.addQueryPhrase("'");
-				queryFormatter.padAndFinishLine();
+			ArrayList<ValidationRule> validationRules 
+				= rifDataType.getValidationRules();
+			if (validationRules.isEmpty()) {
+				queryFormatter.addQueryPhrase(baseIndentationLevel, cleanFieldName);
 			}
-			
-			//does not fit any of the regular expressions, therefore is not valid
-			queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "ELSE ");
-			queryFormatter.addQueryPhrase(loadFieldName);
-			queryFormatter.padAndFinishLine();
+			else {
+				
+				queryFormatter.addQueryPhrase(baseIndentationLevel, "CASE");
+				queryFormatter.padAndFinishLine();
 
-			queryFormatter.addQueryPhrase(baseIndentationLevel, "END AS ");
-			queryFormatter.addQueryPhrase(cleanFieldName);
+				for (ValidationRule validationRule : validationRules) {
+					queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
+					queryFormatter.addQueryPhrase(cleanFieldName);//xxx
+					queryFormatter.addQueryPhrase(" ~ ");
+					queryFormatter.addQueryPhrase("'");
+					queryFormatter.addQueryPhrase(validationRule.getValidValue());
+					queryFormatter.addQueryPhrase("'");
+					queryFormatter.addQueryPhrase(" THEN ");
+					queryFormatter.addQueryPhrase(cleanFieldName);//xxx
+					queryFormatter.padAndFinishLine();
+				}
+			
+				if (dataSetFieldConfiguration.isEmptyValueAllowed()) {
+					queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
+					queryFormatter.addQueryPhrase(cleanFieldName);//xxx
+					queryFormatter.addQueryPhrase(" ='' ");
+					queryFormatter.addQueryPhrase("THEN ");
+					queryFormatter.addQueryPhrase(cleanFieldName);//xxx
+					String allowBlankValuesMessage
+						= RIFDataLoaderToolMessages.getMessage(
+							"sqlQuery.comment.allowBlankValues");
+					queryFormatter.addComment(allowBlankValuesMessage);		
+					queryFormatter.padAndFinishLine();
+				}	
+
+				//does not fit any of the regular expressions, therefore is not valid
+				queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "ELSE 'rif_error'");
+				queryFormatter.padAndFinishLine();
+
+				queryFormatter.addQueryPhrase(baseIndentationLevel, "END AS ");
+				queryFormatter.addQueryPhrase(cleanFieldName);
+			
+			}
 		}
-		else if (fieldCleaningPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
+		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
+			
+				
 			/*
 			 * eg: 
 			 * 
-			 * clean_icd(icd_1) AS icd_1
+			 * is_valid_uk_postal_code(postal_code)
 			 * 
 			 */
-			String cleaningFunctionName
-				= rifDataType.getCleaningFunctionName();
-			queryFormatter.addQueryPhrase(
-				baseIndentationLevel, 
-				cleaningFunctionName);
+			queryFormatter.addQueryPhrase(baseIndentationLevel, "CASE");
+			queryFormatter.padAndFinishLine();
+			
+			queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
+			
+			String validationFunctionName
+				= rifDataType.getValidationFunctionName();
+			String parameterValuesPhrase
+				= rifDataType.getValidationFunctionParameterValues();	
+			queryFormatter.addQueryPhrase(validationFunctionName);
 			queryFormatter.addQueryPhrase("(");
 			queryFormatter.addQueryPhrase(loadFieldName);
-			queryFormatter.addQueryPhrase(") AS ");
-			queryFormatter.addQueryPhrase(cleanFieldName);			
+			
+			if (RIFDataTypeFactory.isDateDataType(rifDataType)) {
+				//in the case of dates, we call a validation function, but
+				//we also make use of the validation expressions to obtain
+				//the date format that should be used
+				ArrayList<ValidationRule> validationRules
+					= rifDataType.getValidationRules();
+				queryFormatter.addQueryPhrase(",'");
+				queryFormatter.addQueryPhrase(validationRules.get(0).getValidValue());
+				queryFormatter.addQueryPhrase("'");
+			}
+			queryFormatter.addQueryPhrase(") THEN ");
+			queryFormatter.addQueryPhrase(loadFieldName);
+			queryFormatter.padAndFinishLine();
+				
+			queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "ELSE 'rif_error'");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryPhrase(baseIndentationLevel, "END AS ");
+			queryFormatter.addQueryPhrase(cleanFieldName);
+
 		}
 		else {
 			assert false;
-		}
+		}		
+
 	}
 	
 	

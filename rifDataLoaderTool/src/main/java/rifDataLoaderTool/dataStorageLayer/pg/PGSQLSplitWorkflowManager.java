@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer.postgresql;
+package rifDataLoaderTool.dataStorageLayer.pg;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.system.RIFServiceException;
@@ -58,7 +58,7 @@ import java.io.*;
  *
  */
 
-final public class PGSQLCombineWorkflowManager 
+final class PGSQLSplitWorkflowManager 
 	extends AbstractPGSQLDataLoaderStepManager {
 
 	// ==========================================
@@ -73,7 +73,7 @@ final public class PGSQLCombineWorkflowManager
 	// Section Construction
 	// ==========================================
 
-	public PGSQLCombineWorkflowManager() {
+	public PGSQLSplitWorkflowManager() {
 
 	}
 
@@ -81,7 +81,7 @@ final public class PGSQLCombineWorkflowManager
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void combineConfiguration(
+	public void splitConfiguration(
 		final Connection connection,
 		final Writer logFileWriter,
 		final String exportDirectoryPath,

@@ -1,6 +1,6 @@
 package rifDataLoaderTool.test;
 
-import rifDataLoaderTool.dataStorageLayer.postgresql.TestPGDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.pg.TestPGDataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;

@@ -1,8 +1,8 @@
-package rifDataLoaderTool.dataStorageLayer.postgresql;
+package rifDataLoaderTool.dataStorageLayer.pg;
 
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.dataStorageLayer.postgresql.*;
+import rifDataLoaderTool.dataStorageLayer.pg.*;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -17,7 +17,7 @@ import java.io.*;
 import java.nio.file.*;
 
 /**
- * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.postgresql.AbstractPGSQLDataLoaderService}.
+ * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.pg.AbstractPGSQLDataLoaderService}.
  * Almost every method in this class has the following common steps:
  * <ol>
  * <li>

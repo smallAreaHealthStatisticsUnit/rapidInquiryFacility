@@ -5,7 +5,7 @@ import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
-import rifDataLoaderTool.dataStorageLayer.postgresql.TestPGDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.pg.TestPGDataLoaderService;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import static org.junit.Assert.*;

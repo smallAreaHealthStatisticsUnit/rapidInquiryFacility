@@ -2,7 +2,7 @@ package rifDataLoaderTool.test;
 
 
 import rifDataLoaderTool.dataStorageLayer.*;
-import rifDataLoaderTool.dataStorageLayer.postgresql.TestPGDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.pg.TestPGDataLoaderService;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;

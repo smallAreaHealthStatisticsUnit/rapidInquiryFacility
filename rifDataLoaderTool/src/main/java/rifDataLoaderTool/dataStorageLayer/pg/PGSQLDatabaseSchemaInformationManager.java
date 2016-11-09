@@ -1,4 +1,4 @@
-package rifDataLoaderTool.dataStorageLayer.postgresql;
+package rifDataLoaderTool.dataStorageLayer.pg;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifGenericLibrary.businessConceptLayer.User;

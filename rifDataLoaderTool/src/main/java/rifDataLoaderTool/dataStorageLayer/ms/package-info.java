@@ -6,4 +6,4 @@
  * @author kgarwood
  *
  */
-package rifDataLoaderTool.dataStorageLayer.sqlServer;
+package rifDataLoaderTool.dataStorageLayer.ms;

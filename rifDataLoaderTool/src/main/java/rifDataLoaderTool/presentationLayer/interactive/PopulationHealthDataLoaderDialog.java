@@ -3,7 +3,7 @@ package rifDataLoaderTool.presentationLayer.interactive;
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
-import rifDataLoaderTool.dataStorageLayer.postgresql.ProductionPGDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.pg.ProductionPGDataLoaderService;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.User;
