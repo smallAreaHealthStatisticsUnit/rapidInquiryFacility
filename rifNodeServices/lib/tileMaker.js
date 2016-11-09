@@ -64,7 +64,8 @@ const async = require('async'),
 	  proj4 = require("proj4"),
 	  wellknown = require('wellknown'),
 	  topojson = require('topojson'),
-	  sizeof = require('object-sizeof');
+	  sizeof = require('object-sizeof'),
+	  svg2png = require('svg2png');
 
 /*
  * Function: 	createSVGTile

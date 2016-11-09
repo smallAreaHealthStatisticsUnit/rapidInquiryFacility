@@ -727,6 +727,7 @@ RangeError: Invalid string length
 
 #### Current TODO list (November):
 
+* JSZip 3.0 upgrade required (forced to 2.6.0) for present
 * Map tile generator; RIF integration preparation
   * Add GID, shapefile fields to lookup tables;
   * Add areaid as well as <geolevel_name> in lookup tables;

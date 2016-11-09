@@ -44,6 +44,10 @@
 //
 // Peter Hambly, SAHSU
 
+const os = require('os'),
+	  fs = require('fs'),
+	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
+	  
 /*
  * Function: 	httpErrorResponse() 
  * Parameters:  File called from, line number called from, procedure called from, 
@@ -68,7 +72,6 @@
  * fields: 			Array of fields; includes all from request plus any additional fields set as a result of processing 
  */		
 httpErrorResponse=function(file, line, calling_function, serverLog, status, req, res, msg, err, g_response) {
-	const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon');
 	
 	var l_response = {                 // Set output response    
 		error: '',
@@ -127,6 +130,7 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			}
 
 			if (g_response && g_response.fields["diagnosticFileDir"] && g_response.fields["responseFileName"]) { // Save to response file
+				var fs = require('fs');
 				fs.writeFileSync(g_response.fields["diagnosticFileDir"] + "/" + g_response.fields["responseFileName"], 
 					output);	
 			}

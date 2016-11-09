@@ -61,7 +61,8 @@
  
 const nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
 	  serverLog = require('../lib/serverLog'),
-      os = require('os');
+	  os = require('os'),
+	  fs = require('fs');
  
 /*
  * Function:	createTemporaryDirectory()
@@ -252,8 +253,10 @@ responseProcessing = function responseProcessing(req, res, response, serverLog, 
 						}
 						else {	
 							try { // Have tested res was not finished by an expection to avoid "write after end" errors
-								res.write(output);                  // Write output  
-								res.end();	
+								if (!res.finished) {
+									res.write(output);                  // Write output  
+									res.end();	
+								}
 
 								if (response.fields.verbose || output.length > (10*1024*1024) /* 10MB */) {
 									serverLog.serverLog2(__file, __line, "writeResponseFileCallback", 

@@ -220,6 +220,7 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/request-debug/package.json \
 	node_modules/cjson/package.json \
 	node_modules/wellknown/package.json \
+	node_modules/svg2png/package.json \
 	node_modules/connect-busboy/package.json
 #
 MODULES=$(patsubst %/package.json,%,$(MODULE_JSON))
@@ -260,7 +261,7 @@ $(MODULES):
 	
 #- clean: clean Node modules; avoid Windows path length stupidities with rimraf	
 clean:
-	 $(NPM) install rimraf 
+	 -$(NPM) install rimraf 
 	 $(NODE) node_modules\rimraf\bin.js $(MODULES)
 	 
 #- install:  No install target (dummy)	 
