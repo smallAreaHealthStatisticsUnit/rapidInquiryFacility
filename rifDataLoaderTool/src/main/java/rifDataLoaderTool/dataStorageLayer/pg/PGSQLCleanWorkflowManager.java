@@ -3,7 +3,6 @@ package rifDataLoaderTool.dataStorageLayer.pg;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.CleanWorkflowQueryGeneratorAPI;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
@@ -87,8 +86,7 @@ final public class PGSQLCleanWorkflowManager
 
 	public PGSQLCleanWorkflowManager(
 		final PGSQLDataSetManager dataSetManager,
-		final PGSQLChangeAuditManager changeAuditManager,
-		final CleanWorkflowQueryGeneratorAPI queryGenerator) {
+		final PGSQLChangeAuditManager changeAuditManager) {
 
 		this.dataSetManager = dataSetManager;
 		this.changeAuditManager = changeAuditManager;

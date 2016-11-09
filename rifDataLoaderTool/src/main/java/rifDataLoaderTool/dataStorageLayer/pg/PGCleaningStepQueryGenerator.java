@@ -60,8 +60,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class PGCleaningStepQueryGenerator 
-	implements CleanWorkflowQueryGeneratorAPI {
+public final class PGCleaningStepQueryGenerator {
 
 	// ==========================================
 	// Section Constants

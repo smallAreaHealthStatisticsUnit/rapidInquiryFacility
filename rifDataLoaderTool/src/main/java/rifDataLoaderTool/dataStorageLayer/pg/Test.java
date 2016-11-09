@@ -1,12 +1,40 @@
-package rifDataLoaderTool.businessConceptLayer;
-
-
+package rifDataLoaderTool.dataStorageLayer.pg;
 
 /**
- * API of code generation classes that can support database calls related to cleaning
- * data.  Code generator classes will be developed for both Postgresql and Microsoft
- * SQL Server databases.
  *
+ * This manager class is used in the red-highlighted step that is part of
+ * the following sequence of activities:
+ * <p>
+ * <ol>
+ * <li>
+ * <b>Extract</b>
+ * </li>
+ * <li>
+ * </li>
+ * <li>
+ * </li>
+ * <li>
+ * </li>
+ * <li>
+ * </li>
+ * <li>
+ * </li>
+ * <li>
+ * </li>
+ * <li>
+ * </li>
+ * <li>
+ * </li>
+ * <li>
+ * </li>
+ * </ol>
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
@@ -54,31 +82,40 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public interface CleanWorkflowQueryGeneratorAPI {
+public class Test {
 
-	public String generateSearchReplaceTableQuery(
-		final DataSetConfiguration dataSetConfiguration);	
-	public String generateDropSearchReplaceTableQuery(
-		final DataSetConfiguration dataSetConfiguration);
+	// ==========================================
+	// Section Constants
+	// ==========================================
 
-	public String generateValidationTableQuery(
-		final DataSetConfiguration dataSetConfiguration);
-	public String generateDropValidationTableQuery(
-		final DataSetConfiguration dataSetConfiguration);
-	
-	public String generateCastingTableQuery(
-		final DataSetConfiguration dataSetConfiguration);
-	public String generateDropCastingTableQuery(
-		final DataSetConfiguration dataSetConfiguration);
+	// ==========================================
+	// Section Properties
+	// ==========================================
 
-	public String generateDeleteAuditsQuery(
-		final DataSetConfiguration dataSetConfiguration);
-	public String generateAuditChangesQuery(
-		final DataSetConfiguration dataSetConfiguration);
-	public String generateAuditErrorsQuery(
-		final DataSetConfiguration dataSetConfiguration);
-	public String generateAuditBlanksQuery(
-		final DataSetConfiguration dataSetConfiguration);	
+	// ==========================================
+	// Section Construction
+	// ==========================================
+
+	public Test() {
+
+	}
+
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
+
+	// ==========================================
+	// Section Override
+	// ==========================================
+
 }
 
 

@@ -150,13 +150,10 @@ abstract class AbstractPGSQLDataLoaderService
 		changeAuditManager
 			= new PGSQLChangeAuditManager();
 		
-		PGCleaningStepQueryGenerator cleanWorkflowQueryGenerator
-			= new PGCleaningStepQueryGenerator();
 		cleanWorkflowManager
 			= new PGSQLCleanWorkflowManager(
 				dataSetManager,
-				changeAuditManager,
-				cleanWorkflowQueryGenerator);
+				changeAuditManager);
 					
 		convertWorkflowManager
 			= new PGSQLConvertWorkflowManager();

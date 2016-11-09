@@ -1,4 +1,7 @@
 /**
+ * 
+ * 
+ * 
  * <p>
  * This is the most important package for new RIF developers.  It contains definitions of
  * all the main domain concepts used in the RIF, as well as the interface methods ({@link 
