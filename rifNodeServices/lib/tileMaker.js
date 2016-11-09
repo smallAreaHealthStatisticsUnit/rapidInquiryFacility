@@ -63,7 +63,8 @@ const async = require('async'),
 	  reproject = require("reproject"),
 	  proj4 = require("proj4"),
 	  wellknown = require('wellknown'),
-	  topojson = require('topojson');
+	  topojson = require('topojson'),
+	  sizeof = require('object-sizeof');
 
 /*
  * Function: 	writeSVGTile
@@ -253,8 +254,14 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 		else {
 			nerr=new Error("pgErrorHandler() No error object passed")
 		}
-		
-		pgTileMakerCallback(nerr);	
+		try {
+//			console.error("pgErrorHandler() Error: " + nerr.message);
+			endTransaction(nerr, pgTileMakerCallback);
+		}
+		catch (e) {
+			console.error("pgErrorHandler() Caught error in end transaction: " + e.message);
+			pgTileMakerCallback(nerr);
+		}
 	} // End of pgErrorHandler()						
 
 	/*
@@ -294,6 +301,7 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 		this.zoomlevel=row.zoomlevel;
 		this.x=row.x;
 		this.y=row.y;
+		
 		this.topojson_options=topojson_options;		
 
 		if (tileArray) {
@@ -336,47 +344,61 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 		/*
 		 * Function: 	addTopoJson()
 		 * Parameters:	None
-		 * Returns:		Nothing
+		 * Returns:		Size of stringified tile topoJSON
 		 * Description:	Convert geoJSON featureList to topojson, add to object, free up memory used for geoJSON
 		 */			
 		addTopoJson: function() {
-			var bbox=turf.bbox(this.geojson);
-			this.geojson.bbox=bbox;
-			var numFeatures=(this.geojson.features.length || 0);	
-			if (this.id == 1) {
-				this.topojson_options.verbose=true;
-				console.error("GEOJSON: " + JSON.stringify(this.geojson, null, 2).substring(0, 1000));
-			}
-			else {
-				this.topojson_options.verbose=false;
-			}
-			this.topojson=topojson.topology({   // Convert geoJSON to topoJSON
-				collection: this.geojson
-				}, this.topojson_options);
+			var tileSize=0;
 			
-			console.error('Made tile ' + this.id + ': "' + this.tileId + 
-				'", ' +  numFeatures + ' features' + 
-				'; bounding box: ' + JSON.stringify(bbox));	
-			if (this.id == 1) {
-				console.error("TOPOJSON: " + JSON.stringify(this.topojson, null, 2).substring(0, 1000));
-			}	
+			if (this.geojson) {
+				var bbox=turf.bbox(this.geojson);
+				this.geojson.bbox=bbox;
+				var numFeatures=(this.geojson.features.length || 0);	
+				if (this.id == 1) {
+					this.topojson_options.verbose=true;
+					console.error("GEOJSON: " + JSON.stringify(this.geojson, null, 2).substring(0, 1000));
+				}
+				else {
+					this.topojson_options.verbose=false;
+				}
+				this.topojson=topojson.topology({   // Convert geoJSON to topoJSON
+					collection: this.geojson
+					}, this.topojson_options);
+					
+				this.insertArray=[this.geolevel_id, this.zoomlevel, this.x, this.y, JSON.stringify(this.topojson), this.tileId];
+				tileSize=sizeof(this.insertArray);
+				console.error('INSERT tile ' + this.id + ': "' + this.tileId + 
+					'", ' +  numFeatures + ' feature(s)' + 
+					'; size: ' + (nodeGeoSpatialServicesCommon.fileSize(tileSize)||'N/A') +
+					'; bounding box: ' + JSON.stringify(bbox));	
+				if (this.id == 1) {
+					console.error("TOPOJSON: " + JSON.stringify(this.topojson, null, 2).substring(0, 1000));
+				}	
+					
+				this.geojson=undefined; // Free up memory used for geoJSON
+			
+				// Write tile to disk
 				
-			this.geojson=undefined; // Free up memory used for geoJSON
-			
-			// Insert tile into database
-			
-			// Write tile to disk
-			
-			this.topojson=undefined; // Free up memory used for topojson
-			
+				this.topojson=undefined; // Free up memory used for topojson	
+			}	
+			else {
+				throw new Error("addTopoJson(): no geoJSON for tile: " + this.tileId)
+			}
+//			console.error("addTopoJson(): " + tileSize)
+			return tileSize;
 		}
 	}; // End of Tile() object
 
-	
+/*
+			var sql="INSERT INTO t_tiles_" + this.geography +
+			     '	(geolevel_id, zoomlevel, x, y, optimised_topojson, tile_id)\n' +
+				'VALUES ($1, $2, $3, $4, $5, $6)';
+				console.error("INSERT SQL> " + sql + "\nValues: " + JSON.stringify(insertArray).substring(0, 1000));
+ */				
 	/*
 	 * Function: 	tileIntersectsRowProcessing()
 	 * Parameters:	Row object (from SQL query)
-	 * Returns:		Nothing
+	 * Returns:		Size of stringified tile topoJSON
 	 * Description:	Per row tile intersect processing
 
 Generates GEOJSON: {
@@ -465,6 +487,7 @@ REFERENCE (from shapefile) {
 			}, 
 			geometry: wellknown.parse(row.optimised_wkt)
 		};
+		var tileSize=0;
 //				console.error("wktjson: " + JSON.stringify(wktjson, null, 2).substring(0, 1000));	
 			
 		if (tileArray.length == 0) { // First row in zoomlevel/geolevel combination
@@ -473,24 +496,63 @@ REFERENCE (from shapefile) {
 //				JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));
 		}
 		else {
-			var geojsonTile=tileArray[(tileArray.length-1)]; // Get lasgt tile from array
+			var geojsonTile=tileArray[(tileArray.length-1)]; // Get last tile from array
 			if (geojsonTile.tileId == row.tile_id) { 	// Same tile
 				geojsonTile.addFeature(row, geojson);	// Add geoJSON feature to collection
 //						console.error('Add areaID: ' + row.areaid + "; properties: " + 
 //							JSON.stringify(geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties, null, 2));
 			}
-			else {	
-				geojsonTile.addTopoJson();				// Complete tile (add topoJSOB)
-				
+			else {										// New tile
+				tileSize=geojsonTile.addTopoJson();		// Complete last tile
 				geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
 														// Create new tile
-			
 //				console.error('Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + "; features[0] properties: " + 
-//					JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));		
+//					JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));	
+		
 			}	
 		}	
+		
+		return tileSize;
 	} // End of tileIntersectsRowProcessing()	
 
+	/*
+	 * Function: 	endTransaction()
+	 * Parameters:	Callback: addUserToPath()
+	 * Returns:		Nothing
+	 * Description:	End transaction: COMMIT or rollback if error
+	 */	
+	function endTransaction(terr, endTransactionCallback) {
+		if (terr) {
+			sql='ROLLBACK TRANSACTION';	
+		}
+		else {
+			sql='COMMIT TRANSACTION';		
+		}	
+		var query=client.query(sql, function endTransaction(err, result) {
+			if (err) {
+				throw err; // Avoid recursion
+			}
+			console.error(sql);
+			endTransactionCallback(terr || err);	
+		});		
+	}
+	
+	/*
+	 * Function: 	startTransaction()
+	 * Parameters:	Callback: addUserToPath()
+	 * Returns:		Nothing
+	 * Description:	Start transaction
+	 */	
+	function startTransaction(startTransactionCallback) {
+		sql='BEGIN TRANSACTION';	
+		var query=client.query(sql, function beginTransaction(err, result) {
+			if (err) {
+				pgErrorHandler(err);
+			}
+			startTransactionCallback();	
+		});		
+	}
+	
 	/*
 	 * Function: 	addUserToPath()
 	 * Parameters:	Callback: getNumGeolevelsZoomlevels()
@@ -533,18 +595,28 @@ REFERENCE (from shapefile) {
 				pgErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"));
 			}
 			var geographyTableData=result.rows[0];
-			sql="SELECT MAX(geolevel_id) AS max_geolevel_id,\n" +
-					"       MAX(zoomlevel) AS max_zoomlevel\n" +
-					"  FROM " + geographyTableData.geometrytable;
-					
-			var query=client.query(sql, function setSearchPath(err, result) {
+			
+			sql="TRUNCATE TABLE t_tiles_" + geographyTableData.geography;
+			console.error(sql);
+			var query=client.query(sql, function t_tilesDelete(err, result) {
 				if (err) {
 					pgErrorHandler(err);
 				}
-				numZoomlevels=result.rows[0].max_zoomlevel;
-				numGeolevels=result.rows[0].max_geolevel_id;
-				
-				getNumGeolevelsZoomlevelsCallback(geographyTableData);	
+				else {
+					sql="SELECT MAX(geolevel_id) AS max_geolevel_id,\n" +
+							"       MAX(zoomlevel) AS max_zoomlevel\n" +
+							"  FROM " + geographyTableData.geometrytable;
+							
+					var query=client.query(sql, function setSearchPath(err, result) {
+						if (err) {
+							pgErrorHandler(err);
+						}
+						numZoomlevels=result.rows[0].max_zoomlevel;
+						numGeolevels=result.rows[0].max_geolevel_id;
+						
+						getNumGeolevelsZoomlevelsCallback(geographyTableData);	
+					});		
+				}
 			});		
 		});			
 	} // End of getNumGeolevelsZoomlevels()
@@ -575,7 +647,8 @@ REFERENCE (from shapefile) {
 		var i=0;
 		async.doWhilst(
 			function geolevelProcessing(callback) {		
-				tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolvelTableData[i].geolevel_name, geolvelTableData[i].geolevel_id, callback);
+				tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolvelTableData[i].geolevel_name, geolvelTableData[i].geolevel_id, 
+					geographyTableData.geography, callback);
 			}, 
 			function geolevelTest() { // Mimic for loop
 				var res=false;
@@ -585,7 +658,7 @@ REFERENCE (from shapefile) {
 				return (res);
 			},
 			function geolevelProcessingEndCallback(err) { // Call main tileMaker complete callback
-				pgTileMakerCallback(err);
+				endTransaction(err, pgTileMakerCallback);
 			});
 			
 		});
@@ -594,17 +667,17 @@ REFERENCE (from shapefile) {
 
 	/*
 	 * Function: 	tileIntersectsProcessingZoomlevelLoop()
-	 * Parameters:	Tile intersects table name, geolevel name, geolevel id, geolevel processing callback (callback from geolevelProcessing async)
+	 * Parameters:	Tile intersects table name, geolevel name, geolevel id, geography, geolevel processing callback (callback from geolevelProcessing async)
 	 * Returns:		Nothing
 	 * Description:	Asynchronous do while loop to process all zoomlevels in a geolevel; calls tileIntersectsProcessing() for each zoomlevel
 	 */		
-	function tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolevelName, geolevel_id, geolevelProcessingCallback) {
+	function tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolevelName, geolevel_id, geography, geolevelProcessingCallback) {
 		 
 // 
 // Primary key: geolevel_id, zoomlevel, areaid, x, y
 //			
 		sql="SELECT z.geolevel_id::VARCHAR||'_'||'" + geolevelName + "'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
-			"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, a.*\n" +				
+			"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, z.x, z.y, a.*\n" +				
 			"  FROM " + tileIntersectsTable + " z, lookup_" + geolevelName + " a\n" +
 			" WHERE z.geolevel_id = $2\n" + 
 			"   AND z.zoomlevel   = $1\n" + 
@@ -615,7 +688,7 @@ REFERENCE (from shapefile) {
 		zstart = new Date().getTime(); // Set timer for zoomlevel
 		async.doWhilst(
 			function zoomlevelProcessing(callback) {		
-				tileIntersectsProcessing(sql, zoomlevel, geolevel_id, callback);
+				tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, callback);
 			}, 
 			function zoomlevelTest() { // Mimic for loop
 				var res=false;
@@ -630,7 +703,8 @@ REFERENCE (from shapefile) {
 				 * 8: 2681 tiles in 363.273 S
 				 */
 				var maxZoomlevel=numZoomlevels;
-	//			maxZoomlevel=5;
+				// For testing
+				maxZoomlevel=5;
 				if (zoomlevel<= maxZoomlevel) { res=true; }; 
 				return (res);
 			},
@@ -641,39 +715,47 @@ REFERENCE (from shapefile) {
 
 	/*
 	 * Function: 	tileIntersectsProcessing()
-	 * Parameters:	SQL statement, zoomlevel, geolevel id, tile intersects processing callback (callback from zoomlevelProcessing async)
+	 * Parameters:	SQL statement, zoomlevel, geolevel id, geography, tile intersects processing callback (callback from zoomlevelProcessing async)
 	 * Returns:		Nothing
 	 * Description:	Asynchronous SQL fetch for all tile intersects in a geolevel/zoomlevel. Calls tileIntersectsRowProcessingI() for each row. 
 	 *				Process last tile if required
 	 */			
-	function tileIntersectsProcessing(sql, zoomlevel, geolevel_id, tileIntersectsProcessingCallback) {
+	function tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, tileIntersectsProcessingCallback) {
 
 		var query = client.query(sql, [zoomlevel, geolevel_id]);
 		query.on('error', pgErrorHandler);
 
 		query.on('row', function tileIntersectsRow(row) {
-			tileIntersectsRowProcessing(row);			
+			totalTileSize+=tileIntersectsRowProcessing(row, geography);			
 		});
 		
 		query.on('end', function(result) {
 			// Process last tile if it exists
 			var geojsonTile=tileArray[(tileArray.length-1)];
 			if (geojsonTile) {
-				geojsonTile.addTopoJson();		
+				totalTileSize+=geojsonTile.addTopoJson();				// Complete final tile	
 			}
-				
+			
 			var end = new Date().getTime();
 			var elapsedTime=(end - zstart)/1000; // in S
 			var tElapsedTime=(end - lstart)/1000; // in S
 			console.error('Geolevel: ' + geolevel_id + '; zooomlevel: ' + zoomlevel + '; ' + 
 				result.rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S; " +  
-				Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S; total: " + tileNo + " tiles in " + tElapsedTime + " S");
+				Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S" + 
+				"; total: " + tileNo + " tiles in " + tElapsedTime + " S; size: " + nodeGeoSpatialServicesCommon.fileSize(totalTileSize));
 			tileArray=[];  // Re-initialize tile array
-			tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
+			tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async	
 		});	
 	} // End of tileIntersectsProcessing()
 		 		
 	var tileArray = [];	
+	var totalTileSize=0;
+	/*
+	 * Function: 	getTileArray()
+	 * Parameters:	None
+	 * Returns:		Tile array
+	 * Description:	Fetch tile array. So async modules can access the tile array
+	 */
 	function getTileArray() {
 		return tileArray;
 	} // End of getTileArray()
@@ -684,11 +766,13 @@ REFERENCE (from shapefile) {
 	var topojson_options = new TopojsonOptions();	// Topojson processor options
 	var sql;										// SQL Statement
 	
-	var numZoomlevels;
+	var numZoomlevels; 
 	var numGeolevels;
 	var geographyTable="geography_cb_2014_us_500k";
-	addUserToPath(function addUserToPathCallback2(err) {
-		getNumGeolevelsZoomlevels(geographyTable, tileIntersectsProcessingGeolevelLoop);
+	startTransaction(function startTransactionCallback2(err) {
+		addUserToPath(function addUserToPathCallback2(err) {
+			getNumGeolevelsZoomlevels(geographyTable, tileIntersectsProcessingGeolevelLoop);
+		});
 	});
 }
 
