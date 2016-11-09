@@ -21,7 +21,7 @@ import rifGenericLibrary.system.RIFGenericLibraryMessages;
  * to the first step, but all changed all the work done before will be discarded.
  * 
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 

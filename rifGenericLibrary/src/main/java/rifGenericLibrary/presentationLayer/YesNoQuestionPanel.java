@@ -11,7 +11,7 @@ import java.awt.*;
  *
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 

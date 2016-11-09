@@ -25,7 +25,7 @@ import java.io.*;
  * manages database calls related to cleaning a data source.
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 

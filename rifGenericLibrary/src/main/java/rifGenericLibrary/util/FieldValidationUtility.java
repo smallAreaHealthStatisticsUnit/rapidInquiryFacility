@@ -21,7 +21,7 @@ import java.util.HashMap;
  * http://www.symantec.com/connect/articles/detection-sql-injection-and-cross-site-scripting-attacks
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
