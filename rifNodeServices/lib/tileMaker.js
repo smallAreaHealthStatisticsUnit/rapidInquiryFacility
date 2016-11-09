@@ -241,14 +241,14 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 
 	/*
 	 * Function: 	pgErrorHandler()
-	 * Parameters:	Error object
+	 * Parameters:	Error object, SQL query
 	 * Returns:		Nothing
 	 * Description:	Creates new Error; raise using pgTileMakerCallback
 	 */
-	var pgErrorHandler = function pgErrorHandler(err) {
+	var pgErrorHandler = function pgErrorHandler(err, sqlInError) {
 		var nerr;
-		if (err) {
-			nerr=new Error(err.message + "\nSQL> " + sql + ";");
+		if (err) {	
+			nerr=new Error(err.message + "\nSQL> " + (sqlInError||sql));
 			nerr.stack=err.stack;
 		}
 		else {
@@ -256,7 +256,7 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 		}
 		try {
 //			console.error("pgErrorHandler() Error: " + nerr.message);
-			endTransaction(nerr, pgTileMakerCallback);
+			endTransaction(nerr, pgTileMakerCallback, (sqlInError||sql));
 		}
 		catch (e) {
 			console.error("pgErrorHandler() Caught error in end transaction: " + e.message);
@@ -367,7 +367,7 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 					
 				this.insertArray=[this.geolevel_id, this.zoomlevel, this.x, this.y, JSON.stringify(this.topojson), this.tileId];
 				tileSize=sizeof(this.insertArray);
-				console.error('INSERT tile ' + this.id + ': "' + this.tileId + 
+				console.error('Make tile ' + this.id + ': "' + this.tileId + 
 					'", ' +  numFeatures + ' feature(s)' + 
 					'; size: ' + (nodeGeoSpatialServicesCommon.fileSize(tileSize)||'N/A') +
 					'; bounding box: ' + JSON.stringify(bbox));	
@@ -388,13 +388,7 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 			return tileSize;
 		}
 	}; // End of Tile() object
-
-/*
-			var sql="INSERT INTO t_tiles_" + this.geography +
-			     '	(geolevel_id, zoomlevel, x, y, optimised_topojson, tile_id)\n' +
-				'VALUES ($1, $2, $3, $4, $5, $6)';
-				console.error("INSERT SQL> " + sql + "\nValues: " + JSON.stringify(insertArray).substring(0, 1000));
- */				
+			
 	/*
 	 * Function: 	tileIntersectsRowProcessing()
 	 * Parameters:	Row object (from SQL query)
@@ -517,22 +511,30 @@ REFERENCE (from shapefile) {
 
 	/*
 	 * Function: 	endTransaction()
-	 * Parameters:	Callback: addUserToPath()
+	 * Parameters:	Error object, Callback: addUserToPath(), SQL causing error
 	 * Returns:		Nothing
 	 * Description:	End transaction: COMMIT or rollback if error
 	 */	
-	function endTransaction(terr, endTransactionCallback) {
+	function endTransaction(terr, endTransactionCallback, sqlInError) {
 		if (terr) {
 			sql='ROLLBACK TRANSACTION';	
 		}
 		else {
 			sql='COMMIT TRANSACTION';		
 		}	
-		var query=client.query(sql, function endTransaction(err, result) {
+		var query=client.query(sql, function endTransactionQuery(err, result) {
 			if (err) {
-				throw err; // Avoid recursion
+				if (err != terr) {
+					throw err; // New error - avoid recursion
+				}	
 			}
-			console.error(sql);
+			if ((terr || err) && sqlInError) {
+				console.error("endTransaction(): " + sql + "\nSQL in error> " + sqlInError);
+				sql=sqlInError;		// Restore SQL in error
+			}
+			else {
+				console.error("endTransaction(): " + sql);
+			}
 			endTransactionCallback(terr || err);	
 		});		
 	}
@@ -547,7 +549,7 @@ REFERENCE (from shapefile) {
 		sql='BEGIN TRANSACTION';	
 		var query=client.query(sql, function beginTransaction(err, result) {
 			if (err) {
-				pgErrorHandler(err);
+				pgErrorHandler(err, sql);
 			}
 			startTransactionCallback();	
 		});		
@@ -566,13 +568,13 @@ REFERENCE (from shapefile) {
 		sql="SELECT reset_val FROM pg_settings WHERE name='search_path'";
 		var query=client.query(sql, function getSearchPath(err, result) {
 			if (err) {
-				pgErrorHandler(err);
+				pgErrorHandler(err, sql);
 			}
 			sql='SET SEARCH_PATH TO "$user",' + result.rows[0].reset_val;
 		
 			var query=client.query(sql, function setSearchPath(err, result) {
 				if (err) {
-					pgErrorHandler(err);
+					pgErrorHandler(err, sql);
 				}
 				addUserToPathCallback();	
 			});
@@ -589,10 +591,10 @@ REFERENCE (from shapefile) {
 		sql="SELECT * FROM " + geographyTable;
 		var query=client.query(sql, function setSearchPath(err, result) {
 			if (err) {
-				pgErrorHandler(err);
+				pgErrorHandler(err, sql);
 			}
 			if (result.rows.length != 1) {
-				pgErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"));
+				pgErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
 			}
 			var geographyTableData=result.rows[0];
 			
@@ -600,7 +602,7 @@ REFERENCE (from shapefile) {
 			console.error(sql);
 			var query=client.query(sql, function t_tilesDelete(err, result) {
 				if (err) {
-					pgErrorHandler(err);
+					pgErrorHandler(err, sql);
 				}
 				else {
 					sql="SELECT MAX(geolevel_id) AS max_geolevel_id,\n" +
@@ -609,7 +611,7 @@ REFERENCE (from shapefile) {
 							
 					var query=client.query(sql, function setSearchPath(err, result) {
 						if (err) {
-							pgErrorHandler(err);
+							pgErrorHandler(err, sql);
 						}
 						numZoomlevels=result.rows[0].max_zoomlevel;
 						numGeolevels=result.rows[0].max_geolevel_id;
@@ -635,11 +637,11 @@ REFERENCE (from shapefile) {
 		sql="SELECT * FROM " + geolevelsTable + " WHERE geography = '" +geographyTableData.geography  + "' ORDER BY geolevel_id";
 		var query=client.query(sql, function setSearchPath(err, result) {
 			if (err) {
-				pgErrorHandler(err);
+				pgErrorHandler(err, sql);
 			}		  
 			if (result.rows.length < 1) {
 				pgErrorHandler(new Error("tileIntersectsProcessingGeolevelLoop() geolevelsTable table: " + geolevelsTable + 
-					" fetch rows <1 (" + result.rows.length + ") for geography: " + geographyTableData.geography));	
+					" fetch rows <1 (" + result.rows.length + ") for geography: " + geographyTableData.geography), sql);	
 			}
 			var geolvelTableData=result.rows;
 			console.error("Geography: " + geographyTableData.geography + "; geolevels: " + result.rows.length);
@@ -658,7 +660,7 @@ REFERENCE (from shapefile) {
 				return (res);
 			},
 			function geolevelProcessingEndCallback(err) { // Call main tileMaker complete callback
-				endTransaction(err, pgTileMakerCallback);
+				endTransaction(err, pgTileMakerCallback, sql);
 			});
 			
 		});
@@ -743,8 +745,42 @@ REFERENCE (from shapefile) {
 				result.rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S; " +  
 				Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S" + 
 				"; total: " + tileNo + " tiles in " + tElapsedTime + " S; size: " + nodeGeoSpatialServicesCommon.fileSize(totalTileSize));
-			tileArray=[];  // Re-initialize tile array
-			tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async	
+			var expectedRows=tileArray.length;
+			
+			if (tileArray.length > 0) {
+				sql="INSERT INTO t_tiles_" + geography +
+					 '	(geolevel_id, zoomlevel, x, y, optimised_topojson, tile_id)\nVALUES ';
+				var j=1;
+				var insertArray=[];
+				for (var i=0; i<tileArray.length; i++) {
+					if (i>0) {
+						sql+=",\n";
+					}
+					sql+='($' + j + ',$' + (j+1) + ',$' + (j+2) + ',$' + (j+3) + ',$' + (j+4) + ',$' + (j+5) + ') /* Row ' + i + ' */';
+					j+=6;
+					insertArray=insertArray.concat(tileArray[i].insertArray)
+				}
+//				console.error("INSERT SQL> " + sql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
+	 
+				var query=client.query(sql, insertArray, function tilesInsert(err, result) {
+					if (err) {
+						pgErrorHandler(err, sql);
+					}
+					else if (result == undefined) {
+						pgErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: result undefined != expected: " + expectedRows), sql);
+						
+					}
+					else if (expectedRows != result.rowCount) {
+						pgErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
+					}
+						
+					tileArray=[];  // Re-initialize tile array
+					tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
+				});			
+			}
+			else {
+				tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
+			}
 		});	
 	} // End of tileIntersectsProcessing()
 		 		
