@@ -67,23 +67,66 @@ const async = require('async'),
 	  sizeof = require('object-sizeof');
 
 /*
- * Function: 	writeSVGTile
+ * Function: 	createSVGTile
  * Parameters:	path, geolevel, zoomlevel, X, Y, callback, insertion geoJSON
  * Returns:		tile X
  * Description: Create SVG tile from geoJSON
  */
-var writeSVGTile = function writeSVGTile(path, geolevel, zoomlevel, X, Y, callback, intersection) {
+var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson) {
+	scopeChecker(__file, __line, {
+		geojson: geojson,
+		bbox: geojson.bbox
+	});
+//
+// Get bounding box from intersection, reproject to 3857
+//
+	var bboxPolygon = turf.bboxPolygon(geojson.bbox);		
+	var bbox3857Polygon = reproject.reproject(
+		bboxPolygon,'EPSG:4326','EPSG:3857',proj4.defs);
+	var mapExtent={ 
+		left: bbox3857Polygon.geometry.coordinates[0][0][0], 	// Xmin
+		bottom: bbox3857Polygon.geometry.coordinates[0][1][1], 	// Ymin
+		right: bbox3857Polygon.geometry.coordinates[0][2][0], 	// Xmax
+		top: bbox3857Polygon.geometry.coordinates[0][3][1] 		// Ymax
+	};	
+
+	var svgFileName=geolevel_id + "/" + zoomlevel + "/" + x + "/" + y + ".svg";	
+	var svgOptions = {
+		mapExtent: mapExtent,
+		attributes: { id: svgFileName }
+	};
+	
+//
+// Reproject intersection to 3857 and convert to SVG
+//	
+	var intersection3857 = reproject.reproject(
+		geojson,'EPSG:4326','EPSG:3857',proj4.defs);
+	var svgString = converter.convert(intersection3857, svgOptions);
+	svgString='<?xml version="1.0" standalone="no"?>\n' +
+		' <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
+		'  <svg width="256" height="256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + 
+		'   ' + svgString + '\n' +
+		'  </svg>';
+//	console.error(svgFileName + "; size: " + nodeGeoSpatialServicesCommon.fileSize(sizeof(svgString)));
+} // End of createSVGTile()
+	
+/*
+ * Function: 	writeSVGTile
+ * Parameters:	path, geolevel, zoomlevel, X, Y, callback, SVG string
+ * Returns:		tile X
+ * Description: Create SVG tile from geoJSON
+ */
+var writeSVGTile = function writeSVGTile(path, geolevel_id, zoomlevel, X, Y, callback, svgString) {
 	scopeChecker(__file, __line, {
 		path: path,
 		callback: callback, 
-		intersection: intersection,
-		bbox: intersection.bbox
+		svgString: svgString
 	});
 	
 //	
 // Create directory: path/geolevel/zoomlevel/X as required
 //		  
-	var dirArray=[path, geolevel, zoomlevel, Y];
+	var dirArray=[path, geolevel_id, zoomlevel, Y];
 	var dir=nodeGeoSpatialServicesCommon.createTemporaryDirectory(dirArray);
 	var svgFileName=dir + "/" + Y + ".svg";
 	
@@ -101,34 +144,6 @@ var writeSVGTile = function writeSVGTile(path, geolevel, zoomlevel, X, Y, callba
 			callback(e);						
 		});
 
-//
-// Get bounding box from intersection, reproject to 3857
-//
-	var bboxPolygon = turf.bboxPolygon(intersection.bbox);		
-	var bbox3857Polygon = reproject.reproject(
-		bboxPolygon,'EPSG:4326','EPSG:3857',proj4.defs);
-	var mapExtent={ 
-		left: bbox3857Polygon.geometry.coordinates[0][0][0], 	// Xmin
-		bottom: bbox3857Polygon.geometry.coordinates[0][1][1], 	// Ymin
-		right: bbox3857Polygon.geometry.coordinates[0][2][0], 	// Xmax
-		top: bbox3857Polygon.geometry.coordinates[0][3][1] 		// Ymax
-	};		
-	var svgOptions = {
-		mapExtent: mapExtent,
-		attributes: { id: svgFileName }
-	};
-	
-//
-// Reproject intersection to 3857 and convert to SVG
-//	
-	var intersection3857 = reproject.reproject(
-		intersection,'EPSG:4326','EPSG:3857',proj4.defs);
-	var svgString = converter.convert(intersection3857, svgOptions);
-	svgString='<?xml version="1.0" standalone="no"?>\n' +
-		' <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
-		'  <svg width="256" height="256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + 
-		'   ' + svgString + '\n' +
-		'  </svg>';
 	console.error(svgFileName + ": " + svgString.substring(0, 132));
 //
 // Write SVG file
@@ -361,6 +376,10 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 				else {
 					this.topojson_options.verbose=false;
 				}
+				
+				// Create SVG tile		
+				this.svgTile=createSVGTile(this.geolevel_id, this.zoomlevel, this.x, this.y, this.geojson);
+				
 				this.topojson=topojson.topology({   // Convert geoJSON to topoJSON
 					collection: this.geojson
 					}, this.topojson_options);
@@ -374,11 +393,8 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 				if (this.id == 1) {
 					console.error("TOPOJSON: " + JSON.stringify(this.topojson, null, 2).substring(0, 1000));
 				}	
-					
-				this.geojson=undefined; // Free up memory used for geoJSON
 			
-				// Write tile to disk
-				
+				this.geojson=undefined; // Free up memory used for geoJSON
 				this.topojson=undefined; // Free up memory used for topojson	
 			}	
 			else {
@@ -748,6 +764,13 @@ REFERENCE (from shapefile) {
 			var expectedRows=tileArray.length;
 			
 			if (tileArray.length > 0) {
+				
+				
+				
+				// Write SVG tiles to disk
+
+//				writeSVGTile('C:\Users\Peter\Google Drive\work\tiles', geolevel_id, zoomlevel, X, Y, callback, svgTile);
+
 				sql="INSERT INTO t_tiles_" + geography +
 					 '	(geolevel_id, zoomlevel, x, y, optimised_topojson, tile_id)\nVALUES ';
 				var j=1;
@@ -761,7 +784,13 @@ REFERENCE (from shapefile) {
 					insertArray=insertArray.concat(tileArray[i].insertArray)
 				}
 //				console.error("INSERT SQL> " + sql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
-	 
+	 /*
+	 SELECT geolevel_id, zoomlevel, x, y, tile_id, LENGTH(optimised_topojson::Text) AS len
+ 	   FROM t_tiles_cb_2014_us_500k
+	  WHERE LENGTH(optimised_topojson::Text) < 1000
+	  ORDER BY geolevel_id, zoomlevel, x, y;
+	  
+	 */
 				var query=client.query(sql, insertArray, function tilesInsert(err, result) {
 					if (err) {
 						pgErrorHandler(err, sql);
