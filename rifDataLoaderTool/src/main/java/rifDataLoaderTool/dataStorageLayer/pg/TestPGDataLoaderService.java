@@ -94,7 +94,7 @@ public class TestPGDataLoaderService
 
 
 		try {
-			SQLConnectionManager sqlConnectionManager
+			PGSQLConnectionManager sqlConnectionManager
 				= getSQLConnectionManger();
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(
@@ -124,7 +124,7 @@ public class TestPGDataLoaderService
 		final User user) 
 		throws RIFServiceException {
 		
-		SQLConnectionManager sqlConnectionManager
+		PGSQLConnectionManager sqlConnectionManager
 			= getSQLConnectionManger();
 		sqlConnectionManager.closeConnectionsForUser(user.getUserID());
 	}

@@ -2,7 +2,6 @@ package rifDataLoaderTool.dataStorageLayer.pg;
 
 import rifDataLoaderTool.system.*;
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.dataStorageLayer.pg.*;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -55,7 +54,7 @@ import java.nio.file.*;
  * </ol>
  *
  * <hr>
- * Copyright 2014 Imperial College London, developed by the Small Area
+ * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
@@ -114,7 +113,7 @@ abstract class AbstractPGSQLDataLoaderService
 	// ==========================================
 	private DataLoaderToolSettings dataLoaderToolSettings;
 	
-	private SQLConnectionManager sqlConnectionManager;
+	private PGSQLConnectionManager sqlConnectionManager;
 		
 	private PGSQLDatabaseSchemaInformationManager databaseSchemaInformationManager;
 	private PGSQLDataSetManager dataSetManager;
@@ -190,7 +189,7 @@ abstract class AbstractPGSQLDataLoaderService
 			= dataLoaderToolSettings.getDatabaseConnectionParameters();
 		
 		sqlConnectionManager
-			= new SQLConnectionManager(
+			= new PGSQLConnectionManager(
 				dbParameters.getDatabaseURL());
 		
 		sqlConnectionManager.initialiseConnectionQueue();
@@ -234,7 +233,7 @@ abstract class AbstractPGSQLDataLoaderService
 		return changeAuditManager;
 	}
 	
-	protected SQLConnectionManager getSQLConnectionManger() {
+	protected PGSQLConnectionManager getSQLConnectionManger() {
 		return sqlConnectionManager;
 	}
 	

@@ -97,7 +97,7 @@ import java.util.PropertyResourceBundle;
  *
  */
 
-final class SQLConnectionManager {
+final class PGSQLConnectionManager {
 
 	// ==========================================
 	// Section Constants
@@ -130,7 +130,7 @@ final class SQLConnectionManager {
 	 *
 	 * @param rifServiceStartupOptions the rif service startup options
 	 */
-	public SQLConnectionManager(
+	public PGSQLConnectionManager(
 		final String databaseURL) {
 			
 		registeredUserIDs = new HashSet<String>();
@@ -328,7 +328,7 @@ final class SQLConnectionManager {
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				SQLConnectionManager.class, 
+				PGSQLConnectionManager.class, 
 				errorMessage, 
 				exception);
 			
@@ -378,7 +378,7 @@ final class SQLConnectionManager {
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				SQLConnectionManager.class, 
+				PGSQLConnectionManager.class, 
 				errorMessage, 
 				exception);
 			
