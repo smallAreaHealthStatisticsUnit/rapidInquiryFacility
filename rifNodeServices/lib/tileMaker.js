@@ -65,11 +65,11 @@ const async = require('async'),
 	  wellknown = require('wellknown'),
 	  topojson = require('topojson'),
 	  sizeof = require('object-sizeof'),
-	  svg2png = require('svg2png');
+	  svg2png = require('svg2png-many');
 
 /*
  * Function: 	createSVGTile
- * Parameters:	path, geolevel, zoomlevel, X, Y, callback, insertion geoJSON
+ * Parameters:	geolevel, zoomlevel, X, Y, callback, insertion geoJSON
  * Returns:		tile X
  * Description: Create SVG tile from geoJSON
  */
@@ -113,6 +113,18 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
 	return svgString;
 } // End of createSVGTile()
 	
+/*
+ * Function: 	getSVGTileFileName
+ * Parameters:	path, geolevel, zoomlevel, X, Y
+ * Returns:		tile X
+ * Description: Get SVG tile name (without extension)
+ */
+var getSVGTileFileName = function getSVGTileFileName(path, geolevel_id, zoomlevel, x, y) {	
+	var svgFileName=path + "/" + geolevel_id + "/" + zoomlevel + "/" + x + "/" + y;
+	
+	return svgFileName;
+}
+
 /*
  * Function: 	writeSVGTile
  * Parameters:	path, geolevel, zoomlevel, X, Y, callback, SVG string
@@ -783,6 +795,7 @@ REFERENCE (from shapefile) {
 				}
 				else {
 					tileArray=[];  // Re-initialize tile array
+					svgArray={};
 					tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
 				}	
 			});	
@@ -818,6 +831,9 @@ REFERENCE (from shapefile) {
 
 						writeSVGTile('/Users/Peter/Google Drive/work/tiles', 
 							value.geolevel_id, value.zoomlevel, value.x, value.y, writeSVGTileCallback, value.svgTile);
+							var svgTileFileName=getSVGTileFileName('/Users/Peter/Google Drive/work/tiles', 
+							value.geolevel_id, value.zoomlevel, value.x, value.y)
+						svgArray[svgTileFileName + '.svg']=svgTileFileName + '.png';
 	//  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\phantomjs-prebuilt\lib\phantom\bin\phantomjs.exe
 					},
 					function writeSVGTileEnd(err) { //  Callback
@@ -826,7 +842,29 @@ REFERENCE (from shapefile) {
 							pgErrorHandler(err);
 						}
 						else {
-							tileInsert(expectedRows);	
+//							console.error(JSON.stringify(svgArray, null, 2));
+							var sizes = {
+								height: 256,
+								width: 256
+							};
+							var parallelPages = 10;
+							svg2png.svg2PngFiles(svgArray, sizes, parallelPages).then(results => {
+								process.env.VERBOSE='true'; // Enable log messages
+								if (Array.isArray(results)) {
+									console.error(results.length + ' SVG files have been converted successfully');
+								} else {
+									console.error('SVG convert completed with result ' + results);
+								}
+								
+								tileInsert(expectedRows);
+								
+							}, errors => {
+								if (!Array.isArray(errors)) {
+									errors = [errors];
+								}
+								console.error('Completed with ' + errors.length + ' errors');
+								errors.forEach(error => console.error(error.stack || error));
+							});					
 						}
 					}
 				); // End of async.forEachOfSeries(tileArray, ...)	
@@ -839,6 +877,7 @@ REFERENCE (from shapefile) {
 	} // End of tileIntersectsProcessing()
 			
 	var tileArray = [];	
+	var svgArray = [];
 	var totalTileSize=0;
 	/*
 	 * Function: 	getTileArray()
