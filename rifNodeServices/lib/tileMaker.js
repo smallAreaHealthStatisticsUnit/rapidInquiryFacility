@@ -65,11 +65,11 @@ const async = require('async'),
 	  wellknown = require('wellknown'),
 	  topojson = require('topojson'),
 	  sizeof = require('object-sizeof'),
-	  svg2png = require('svg2png');
+	  svg2png = require('svg2png-many');
 
 /*
  * Function: 	createSVGTile
- * Parameters:	path, geolevel, zoomlevel, X, Y, callback, insertion geoJSON
+ * Parameters:	geolevel, zoomlevel, X, Y, callback, insertion geoJSON
  * Returns:		tile X
  * Description: Create SVG tile from geoJSON
  */
@@ -113,6 +113,18 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
 	return svgString;
 } // End of createSVGTile()
 	
+/*
+ * Function: 	getSVGTileFileName
+ * Parameters:	path, geolevel, zoomlevel, X, Y
+ * Returns:		tile X
+ * Description: Get SVG tile name (without extension)
+ */
+var getSVGTileFileName = function getSVGTileFileName(path, geolevel_id, zoomlevel, x, y) {	
+	var svgFileName=path + "/" + geolevel_id + "/" + zoomlevel + "/" + x + "/" + y;
+	
+	return svgFileName;
+}
+
 /*
  * Function: 	writeSVGTile
  * Parameters:	path, geolevel, zoomlevel, X, Y, callback, SVG string
@@ -679,13 +691,50 @@ REFERENCE (from shapefile) {
 				return (res);
 			},
 			function geolevelProcessingEndCallback(err) { // Call main tileMaker complete callback
-				endTransaction(err, pgTileMakerCallback, sql);
+			
+				convertSVG2Png(function convertSVG2PngCallback() {	// Convert all SVG to PNG
+					endTransaction(err, pgTileMakerCallback, sql);			
+				});
 			});
 			
 		});
 		 
 	} // End of tileIntersectsProcessingGeolevelLoop()
 
+	/*
+	 * Function: 	convertSVG2Png()
+	 * Parameters:	Callback: end of transcation
+	 * Returns:		Nothing
+	 * Description:	Converts all SVG files in svgFileList to PNG
+	 */	
+	function convertSVG2Png(convertSVG2PngEndCallback) {
+		var sizes = {
+			height: 256,
+			width: 256
+		};
+		var parallelPages = 10;
+		process.env.VERBOSE='true'; // Enable log messages
+		svg2png.svg2PngFiles(svgFileList, sizes, parallelPages).then(results => {
+			if (Array.isArray(results)) {
+				console.error(results.length + ' SVG files have been converted successfully');
+			} 
+			else {
+				console.error('SVG convert completed with result ' + results);
+			}
+			
+			svgFileList={};
+			convertSVG2PngEndCallback();
+			
+		}, errors => {
+			if (!Array.isArray(errors)) {
+				errors = [errors];
+			}
+			var err=new Error('convertSVG2Png() completed with ' + errors.length + ' error(s)');
+			errors.forEach(error => err.message+='\n' + (error.stack || error));
+			pgErrorHandler(err, undefined);
+		});	
+	} // End of convertSVG2Png()
+				
 	/*
 	 * Function: 	tileIntersectsProcessingZoomlevelLoop()
 	 * Parameters:	Tile intersects table name, geolevel name, geolevel id, geography, geolevel processing callback (callback from geolevelProcessing async)
@@ -818,6 +867,9 @@ REFERENCE (from shapefile) {
 
 						writeSVGTile('/Users/Peter/Google Drive/work/tiles', 
 							value.geolevel_id, value.zoomlevel, value.x, value.y, writeSVGTileCallback, value.svgTile);
+							var svgTileFileName=getSVGTileFileName('/Users/Peter/Google Drive/work/tiles', 
+							value.geolevel_id, value.zoomlevel, value.x, value.y)
+						svgFileList[svgTileFileName + '.svg']=svgTileFileName + '.png';
 	//  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\phantomjs-prebuilt\lib\phantom\bin\phantomjs.exe
 					},
 					function writeSVGTileEnd(err) { //  Callback
@@ -826,7 +878,7 @@ REFERENCE (from shapefile) {
 							pgErrorHandler(err);
 						}
 						else {
-							tileInsert(expectedRows);	
+							tileInsert(expectedRows);				
 						}
 					}
 				); // End of async.forEachOfSeries(tileArray, ...)	
@@ -839,6 +891,7 @@ REFERENCE (from shapefile) {
 	} // End of tileIntersectsProcessing()
 			
 	var tileArray = [];	
+	var svgFileList = {};
 	var totalTileSize=0;
 	/*
 	 * Function: 	getTileArray()

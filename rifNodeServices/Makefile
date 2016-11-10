@@ -221,6 +221,7 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/cjson/package.json \
 	node_modules/wellknown/package.json \
 	node_modules/svg2png/package.json \
+	node_modules/svg2png-many/package.json \
 	node_modules/connect-busboy/package.json
 #
 MODULES=$(patsubst %/package.json,%,$(MODULE_JSON))
