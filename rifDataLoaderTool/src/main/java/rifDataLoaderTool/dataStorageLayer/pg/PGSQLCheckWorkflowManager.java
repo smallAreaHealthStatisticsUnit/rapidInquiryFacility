@@ -176,7 +176,11 @@ final public class PGSQLCheckWorkflowManager
 				logFileWriter, 
 				dataSetConfiguration, RIFTemporaryTablePrefixes.CHECK);
 			
-				
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * There may be issues with porting the way the WITH statement
+			 * is written?
+			 */	
 			SQLGeneralQueryFormatter queryFormatter 
 				= new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
@@ -385,6 +389,11 @@ final public class PGSQLCheckWorkflowManager
 		PreparedStatement statement = null;
 		try {
 
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * There may be issues with porting the way the WITH statement
+			 * is written?
+			 */	
 			
 			/*
 			 * Trying to create a table such as:
@@ -817,7 +826,12 @@ final public class PGSQLCheckWorkflowManager
 						rifSchemaArea,
 						convertFieldName)  == false) &&
 					(isYearField(convertFieldName) == false)) {
-								
+
+					/*
+					 * #POSSIBLE_PORTING_ISSUE
+					 * Coalesce may be implemented the same way for both
+					 * SQL Server and PostgreSQL?
+					 */	
 					queryFormatter.addQueryPhrase(",");
 					queryFormatter.finishLine();		
 					queryFormatter.addQueryPhrase(2, "COALESCE(tmp_");

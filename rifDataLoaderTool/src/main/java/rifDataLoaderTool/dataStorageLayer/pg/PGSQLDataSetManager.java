@@ -213,7 +213,12 @@ final public class PGSQLDataSetManager
 			addDataSetStatement.setString(
 				2, 
 				dataSetConfiguration.getVersion());
-			
+
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * Is CURRVAL with the name of a sequence portable to 
+			 * SQL Server?
+			 */				
 			addDataSetStatement.executeUpdate();
 			getIdentifierQueryFormatter.addQueryPhrase(0, "SELECT CURRVAL('data_set_sequence');");
 			getIdentifierStatement

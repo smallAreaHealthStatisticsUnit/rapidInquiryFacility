@@ -253,6 +253,11 @@ final class PGSQLExtractWorkflowManager
 		
 		try {
 			
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * It is likely that SQL Server will have at least a slightly
+			 * different syntax for importing CSV files than PostgreSQL.
+			 */				
 			//COPY t FROM STDIN
 			SQLGeneralQueryFormatter queryFormatter
 				= new SQLGeneralQueryFormatter();
@@ -335,6 +340,11 @@ final class PGSQLExtractWorkflowManager
 				
 		PreparedStatement statement = null;
 		try {
+			
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * Do PostgreSQL and SQL Server provide support for BIGSERIAL?
+			 */				
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
 			queryFormatter.addQueryPhrase(targetExtractTable);
@@ -429,7 +439,13 @@ final class PGSQLExtractWorkflowManager
 				
 		PreparedStatement statement = null;
 		try {
-	
+			
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * Porting need to consider that in the PostgreSQL query formatter,
+			 * it uses a drop-if-exists, which is a construction that may be
+			 * supported differently in SQL Server
+			 */				
 			SQLDeleteTableQueryFormatter deleteExtractTableQueryFormatter
 				= new SQLDeleteTableQueryFormatter();
 			deleteExtractTableQueryFormatter.setTableToDelete(tableToDelete);

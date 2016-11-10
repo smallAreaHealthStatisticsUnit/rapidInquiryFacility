@@ -18,7 +18,17 @@ import java.util.Scanner;
 import java.util.ArrayList;
 
 /**
- *
+ * This is a mostly undeveloped class. Its intent was to help RIF managers
+ * initially create the database that the Data Loader Tool will use to 
+ * transform data.
+ * 
+ * <p>
+ * I originally wanted to just read in a text file and execute it through a
+ * single PostgreSQL call. But I ran into trouble with this.  Functions
+ * like <code>addBasicCleaningProcedures()</code> where functionality is 
+ * specified through concatenated strings - well there MUST be a better 
+ * alternative to this and we need to look at it more.
+ * </p>
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
@@ -82,7 +92,7 @@ public class PGSQLDatabaseSetupUtility {
 				settings,
 				file,
 				"postgres", 
-				"sellafield2014");
+				"sahsuland2014");
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -128,8 +138,6 @@ public class PGSQLDatabaseSetupUtility {
 			String[] sqlQueries
 				= readDBInitialisationScript(initialisationScriptFile);
 		
-			
-			System.out.println("Done");
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -223,6 +231,11 @@ public class PGSQLDatabaseSetupUtility {
 		PreparedStatement statement = null;
 		try {
 			
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * There may be issues with porting PostgreSQL's use of 
+			 * CREATE SEQUENCE and nextval(...) to SQL Server.
+			 */
 			StringBuilder creationScriptQueries = new StringBuilder();
 			creationScriptQueries.append("");
 			creationScriptQueries.append("DROP TABLE IF EXISTS data_set_configurations CASCADE; ");
@@ -395,7 +408,13 @@ public class PGSQLDatabaseSetupUtility {
 		final Connection connection,
 		final RIFDatabaseConnectionParameters dbParameters) 
 		throws SQLException {
-		
+
+		/*
+		 * #POSSIBLE_PORTING_ISSUE
+		 * One thing that would be useful is to have a DROP statement,
+		 * but perhaps DROP IF EXISTS is something that presents a porting
+		 * issue.
+		 */		
 		SQLDropDatabaseQueryFormatter dropDatabaseQueryFormatter
 			= new SQLDropDatabaseQueryFormatter();
 		dropDatabaseQueryFormatter.setDatabaseName(dbParameters.getDatabaseName());

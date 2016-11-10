@@ -1,13 +1,20 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
 
 /**
- *
+ * Performs a number of utility operations that involve getting various 
+ * kinds of information about the schema.  For example, it will retrieve
+ * the names of functions used for cleaning or validation.  These are 
+ * important for when users are able to define their own data types and
+ * specify database functions to do various activities.  It should also
+ * have a method to retrieve a frequency breakdown of values so that 
+ * RIF managers may check whether they have designed cleaning and validation
+ * rules to anticipate all the different types of values thay have in an
+ * imported data set.
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area

@@ -183,6 +183,11 @@ final class PGSQLOptimiseWorkflowManager
 			for (String indexFieldName : indexFieldNames) {
 				currentIndexFieldName = indexFieldName;
 	
+				/*
+				 * #POSSIBLE_PORTING_ISSUE
+				 * It is likely that SQL Server will have at least a slightly
+				 * different syntax for importing CSV files than PostgreSQL.
+				 */								
 				if (excludeFromIndexableFields(indexFieldName) == false) {					
 					SQLCreateIndexQueryFormatter queryFormatter
 						= new SQLCreateIndexQueryFormatter();

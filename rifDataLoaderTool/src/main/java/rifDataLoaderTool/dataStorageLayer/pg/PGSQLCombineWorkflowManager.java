@@ -7,9 +7,8 @@ import java.sql.*;
 import java.io.*;
 
 /**
- *
- * Manages all database operations used to convert a cleaned table into tabular data
- * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
+ * This is a stubbed class for a data transformation step that may be supported
+ * in the future - combine. Combine merges multiple tables into one.
  * 
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area

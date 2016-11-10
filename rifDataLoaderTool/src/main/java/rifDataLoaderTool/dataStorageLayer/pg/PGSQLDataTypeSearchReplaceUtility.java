@@ -18,7 +18,15 @@ import java.util.ArrayList;
 
 
 /**
- *
+ * This is the class that the cleaning activity uses to search for poor
+ * quality values and replace them with better quality values.  This class
+ * may present some porting issues because it heavily relies on regular
+ * expression patterns.  The web site: <a href="https://www.pg-versus-ms.com/">
+ * PostgreSQL vs MS SQL Server</a> page provides some interesting discussion
+ * on this matter.  As well, some of the search and replace functions that
+ * are advertised to RIF managers will almost certainly have to be re-implemented
+ * for both PostgreSQL and SQL Server databases.
+ * </a>
  *
  * <hr>
  * Copyright 2015 Imperial College London, developed by the Small Area
@@ -94,8 +102,12 @@ public class PGSQLDataTypeSearchReplaceUtility {
 	public String generateSearchReplaceTableStatement(
 		final DataSetConfiguration dataSetConfiguration) {
 
-
-
+		/*
+		 * #POSSIBLE_PORTING_ISSUE
+		 * Do PostgreSQL and SQL Server support regular expressions
+		 * in an identical way?
+		 */	
+		
 		/*
 		 * CREATE TABLE cln_srch_my_numerator1 AS 
 		 * SELECT

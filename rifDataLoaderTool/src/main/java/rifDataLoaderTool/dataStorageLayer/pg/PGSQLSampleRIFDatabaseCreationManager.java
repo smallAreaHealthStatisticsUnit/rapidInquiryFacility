@@ -127,7 +127,12 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			urlText.append("/");			
 			
 			String databaseURL = urlText.toString();	
-			
+
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * drop-if-exists may have to be implemented separately for
+			 * each database type
+			 */				
 			connection
 				= DriverManager.getConnection(databaseURL, userID, password);
 			SQLGeneralQueryFormatter queryFormatter
@@ -279,7 +284,12 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 		PreparedStatement createDataSetConfigurationTableStatement = null;
 		PreparedStatement sequenceOwnershipStatement = null;
 		try {
-			
+
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * CREATE SEQUENCE is something in PostgreSQL that will likely
+			 * require porting in SQL Server
+			 */							
 			//Create a sequence that will auto-increment
 			SQLGeneralQueryFormatter createIDSequenceQueryFormatter = new SQLGeneralQueryFormatter();
 			createIDSequenceQueryFormatter.addQueryPhrase(
@@ -312,6 +322,13 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 					createDataSetConfigurationsTableFormatter);
 			
 			createDataSetConfigurationTableStatement.executeUpdate();
+
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * CREATE SEQUENCE is something in PostgreSQL that will likely
+			 * require porting in SQL Server
+			 */							
+
 			
 			//Ensure that the id field owns the sequence so that no other table could
 			//increment it

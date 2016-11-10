@@ -10,8 +10,25 @@ import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import java.util.ArrayList;
 
 /**
- * Contains methods that generate Postgres-specific SQL code that supports
- * the cleaning step.
+ * Contains code used to create queries that will cast text field values to
+ * other data types such as date, integer and double precision.  Its input
+ * is a table of text field values that have already been subject to 
+ * search-and-replace and validation parts of the cleaning activity.
+ * 
+ * <p>
+ * When text field values are cast to different types, it considers the
+ * case when the validation activity has marked a field with <code>rif_error</code>.
+ * When this code encounters <code>rif_error</code> values, it will put 
+ * null values in the transformed table.
+ * </p>
+ * 
+ * <p>
+ * The result of using this code should be a table that now can use data types
+ * that would be expected in parts of the RIF schema.  For example, after this 
+ * step, a text field called <code>year</code> will be transformed into an 
+ * integer type, which is what the RIF production schema will expect in numerator
+ * and denominator tables.
+ * </p>
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
@@ -282,6 +299,12 @@ public final class PGSQLCastingUtility {
 			 * 
 			 * ELSE to_timestamp(birth_date, 'DD Mon YYYY');
 			 */
+			
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * Does SQL Server have something similar to 
+			 * to_timestamp() to do its conversion?
+			 */
 			queryFormatter.addQueryPhrase(
 				baseIndentationLevel + 1, 
 				"ELSE ");
@@ -293,6 +316,14 @@ public final class PGSQLCastingUtility {
 			queryFormatter.addQueryPhrase("')");
 		}
 		else if (RIFDataTypeFactory.isDoubleDataType(rifDataType)) {
+			
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * Both PostgreSQL and SQL Server appear to have
+			 * support for a cast method but SQL Server also
+			 * uses a convert() method, which may have implications
+			 * for transforming some data types.
+			 */
 			
 			/*
 			 * Generates a query fragment like:

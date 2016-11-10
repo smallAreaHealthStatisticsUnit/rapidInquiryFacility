@@ -554,10 +554,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		}
 		finally {
 			SQLQueryUtility.close(statement);
-		}		
-		
-		
-		
+		}			
 	}
 	
 	

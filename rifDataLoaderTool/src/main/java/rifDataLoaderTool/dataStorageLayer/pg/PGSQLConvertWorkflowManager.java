@@ -15,9 +15,21 @@ import java.text.Collator;
 import java.io.*;
 
 /**
- *
- * Manages all database operations used to convert a cleaned table into tabular data
- * expected by some part of the RIF (eg: numerator data, health codes, geospatial data etc)
+ * This class manages the code used to map fields from an imported table to
+ * fields that are expected for specific parts of the RIF schema.  Conversion
+ * can either involve something as simple as renaming a field name so it has
+ * an expected value or calling a conversion function to massage the values of
+ * one or more field values into an expected value.  The best example of this is
+ * <code>convert_age_sex(birth_date, event_date, sex) AS age_sex_group</code>
+ * operation, which will take multiple field values from the source data table 
+ * and create a single age_sex_group column that the RIF expects to appear in
+ * its <code>numerator</code> and <code>denominator</code> tables.
+ * 
+ * <p>
+ * With respect to possible porting issues, functions like 
+ * <code>convert_age_sex</code> will likely have to be rewritten for both 
+ * PostgreSQL and SQL Server.
+ * </p>
  * 
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
@@ -283,6 +295,11 @@ final public class PGSQLConvertWorkflowManager
 				RIFConversionFunctionFactory rifConversionFunctionFactory
 					= RIFConversionFunctionFactory.newInstance();
 
+				/*
+				 * #POSSIBLE_PORTING_ISSUE
+				 * These conversion functions will have to be rewritten for both
+				 * SQL Server and PostgreSQL
+				 */				
 				RIFConversionFunction ageSexConversionFunction
 					= rifConversionFunctionFactory.getRIFConvertFunction("convert_age_sex");
 				ageSexConversionFunction.addActualParameter(ageFieldConfiguration);
@@ -338,30 +355,6 @@ final public class PGSQLConvertWorkflowManager
 		}
 
 	}
-	/*
-	private String concatenateFunctionParameters(
-		final ArrayList<CleanWorkflowFieldConfiguration> fieldConfigurations) {
-		
-		StringBuilder buffer = new StringBuilder();
-
-		int numberOfFieldConfigurations
-			= fieldConfigurations.size();
-
-		if (numberOfFieldConfigurations == 0) {
-			buffer.append(fieldConfigurations.get(0).getCleanedTableFieldName());
-		}
-		else {
-			for (int i = 0; i < numberOfFieldConfigurations; i++) {
-				if (i != 0) {
-					buffer.append(",");
-				}
-				buffer.append(fieldConfigurations.get(i).getCleanedTableFieldName());
-			}
-		}
-		
-		return buffer.toString();
-	}	
-	*/
 	
 	// ==========================================
 	// Section Errors and Validation

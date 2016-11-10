@@ -640,74 +640,6 @@ final public class PGSQLChangeAuditManager
 		
 		return queryFormatter.generateQuery();
 	}
-
-	/*
-	private void clearRowsFromAuditTrails(
-		final Connection connection, 
-		final Writer logFileWriter,
-		final DataSetConfiguration dataSetConfiguration) 
-		throws RIFServiceException,
-		SQLException {
-		
-		int dataSetIdentifier 
-			= getDataSetIdentifier(
-				connection, 
-				logFileWriter,
-				dataSetConfiguration);
-
-		SQLDeleteRowsQueryFormatter clearValidationLogQueryFormatter 
-			= new SQLDeleteRowsQueryFormatter();
-		clearValidationLogQueryFormatter.setFromTable("rif_failed_val_log");
-		clearValidationLogQueryFormatter.addWhereParameter("data_set_id");
-
-		SQLDeleteRowsQueryFormatter clearCleaningLogQueryFormatter 
-			= new SQLDeleteRowsQueryFormatter();
-		clearCleaningLogQueryFormatter.setFromTable("rif_change_log");
-		clearCleaningLogQueryFormatter.addWhereParameter("data_set_id");		
-		
-		PreparedStatement clearValidationLogStatement = null;
-		PreparedStatement clearCleaningLogStatement = null;
-		
-		try {
-
-			clearValidationLogStatement 
-				= createPreparedStatement(
-					connection, 
-					clearValidationLogQueryFormatter);
-			clearValidationLogStatement.setInt(
-				1, 
-				dataSetIdentifier);
-			clearValidationLogStatement.executeUpdate();
-			
-
-			clearCleaningLogStatement 
-				= createPreparedStatement(
-					connection, 
-					clearValidationLogQueryFormatter);
-			clearCleaningLogStatement.setInt(
-				1, 
-				dataSetIdentifier);
-			clearCleaningLogStatement.executeUpdate();
-			
-		}
-		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("");
-			RIFServiceException rifServiceException	
-				= new RIFServiceException(
-					RIFGenericLibraryError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			SQLQueryUtility.close(clearValidationLogStatement);
-			SQLQueryUtility.close(clearCleaningLogStatement);
-		}
-		
-		
-		
-	}
-	*/
 	
 	public int getDataSetIdentifier(
 		final Connection connection,
@@ -811,7 +743,12 @@ final public class PGSQLChangeAuditManager
 			addDataSetStatement.setString(
 				2, 
 				dataSetConfiguration.getVersion());
-			
+
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * The use of CURRVAL to create sequences may be something
+			 * PostgreSQL does that SQL Server does not?
+			 */
 			addDataSetStatement.executeUpdate();
 			getIdentifierQueryFormatter.addQueryPhrase(0, "SELECT CURRVAL('data_set_sequence');");
 			getIdentifierStatement

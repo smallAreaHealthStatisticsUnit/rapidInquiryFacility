@@ -282,15 +282,6 @@ final public class PGSQLCleanWorkflowManager
 				exportDirectoryPath, 
 				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
 				finalCleaningTableName);			
-
-			
-			/*
-			addPrimaryKey(
-				connection,
-				logFileWriter,
-				finalCleaningTableName,
-				"data_set_id, row_number");
-			*/
 			
 			/*
 			 * Part IV: Audit changes that happened between the load table
@@ -309,12 +300,7 @@ final public class PGSQLCleanWorkflowManager
 				logFileWriter,
 				exportDirectoryPath,
 				dataSetConfiguration);
-
-			//cleanupTemporaryCleanTables(
-			//	connection, 
-			//	logFileWriter, 
-			//	dataSetConfiguration);		
-			
+		
 			updateLastCompletedWorkState(
 				connection,
 				logFileWriter,
@@ -347,32 +333,6 @@ final public class PGSQLCleanWorkflowManager
 		}
 		
 	}
-	
-	private void cleanupTemporaryCleanTables(
-		final Connection connection,
-		final Writer logFileWriter,
-		final DataSetConfiguration dataSetConfiguration) 
-		throws RIFServiceException {
-				
-		String coreDataSetName
-			= dataSetConfiguration.getName();
-		
-		String searchReplaceTableName
-			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
-
-		deleteTable(
-			connection, 
-			logFileWriter, 
-			searchReplaceTableName);
-		
-		String validationTableName
-			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName);
-		deleteTable(
-			connection, 
-			logFileWriter, 
-			validationTableName);
-	}
-	
 	
 	public Integer getCleaningTotalBlankValues(
 		final Connection connection,
@@ -756,54 +716,6 @@ final public class PGSQLCleanWorkflowManager
 		}
 		
 		return results;
-		
-		/*
-		SQLFieldVarianceQueryFormatter queryFormatter
-			= new SQLFieldVarianceQueryFormatter();		
-		queryFormatter.setFieldOfInterest(fieldOfInterest);		
-		queryFormatter.setFromTable(loadTableName);
-		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		String[][] results = new String[0][0];
-		try {
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			resultSet = statement.executeQuery();
-			resultSet.last();
-			
-			int numberOfResults = resultSet.getRow();
-			results = new String[numberOfResults][2];
-			
-			resultSet.beforeFirst();
-			
-			int i = 0;
-			while (resultSet.next()) {
-				results[i][0] = resultSet.getString(1);
-				results[i][1] = resultSet.getString(2);
-			}
-			
-		}
-		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"fieldVarianceDialog.error.unableToObtainVariance",
-					loadTableName,
-					fieldOfInterest);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFDataLoaderToolError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			
-			throw rifServiceException;
-		}
-		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
-		}
-		
-		return results;
-		
-		*/
 	}
 	
 	// ==========================================

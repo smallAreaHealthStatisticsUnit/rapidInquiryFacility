@@ -193,28 +193,26 @@ final class PGSQLConnectionManager {
 
 		return registeredUserIDs.contains(userID);
 	}
-	
+
+	/*
+	 * At some point in the future, if the Data Loader is delivered via web application,
+	 * we may need a method to check if a user has been blocked because of suspicious
+	 * behaviour.  For now, assume that users are never blocked until we get more time
+	 * to deal with this issue.  It is unlikely it will present much of an issue
+	 * because initially, we expect that the Data Loader Tool will be used by a single
+	 * user who operates within a very secure network.
+	 */
 	public boolean isUserBlocked(
 		final User user) {
-		
-		/*
-		if (user == null) {
-			return false;
-		}
-		
-		String userID = user.getUserID();
-		if (userID == null) {
-			return false;
-		}
-		
-		return userIDsToBlock.contains(userID);
-		*/
 		
 		return false;
 	}
 	
 	/**
-	 * Register user.
+	 * Register user. Most of this has been commented out because for now
+	 * we are not looking at doing user sessions - when they use the data
+	 * loader tool, they operate in an administrative mode and their use
+	 * of connections does not time out.
 	 *
 	 * @param userID the user id
 	 * @param password the password
@@ -475,6 +473,14 @@ final class PGSQLConnectionManager {
 				databaseProperties.setProperty("user", userID);
 				databaseProperties.setProperty("password", password);
 			}
+			
+
+			/*
+			 * #POSSIBLE_PORTING_ISSUE
+			 * There may be some issues with setting some of the properties
+			 * of the database connections.  
+			 */
+			
 			//databaseProperties.setProperty("ssl", "true");
 			//databaseProperties.setProperty("logUnclosedConnections", "true");
 			databaseProperties.setProperty("prepareThreshold", "3");
