@@ -74,8 +74,6 @@
 // See: Node Makefile for build instructions
 //
 
-const tileMaker = require('./lib/tileMaker');
-
 /* 
  * Function: 	main()
  * Parameters: 	ARGV
@@ -117,7 +115,18 @@ function main() {
 	  type: "string",
       default: pg_default("PGHOST")
     })
-
+    .options("V", {
+      alias: "verbose",
+      describe: "Verbose mode",
+	  type: "boolean",
+      default: pg_default("VERBOSE")
+    })
+    .options("X", {
+      alias: "xmlfile",
+      describe: "XML Configuration file",
+	  type: "string",
+      default: undefined
+    })
     .options("help", {
       describe: "display this helpful message and exit",
       type: "boolean",
@@ -129,7 +138,10 @@ function main() {
     .argv;
 
 	if (argv.help) return optimist.showHelp();
-
+	if (argv.verbose) {
+		process.env.VERBOSE=true;
+	}
+	
 //
 // Load database module
 // Will eventually support SQL server as well
@@ -174,11 +186,14 @@ function pg_default(p_var) {
 	else if (p_var == "PGPORT") {
 		p_def=5432;
 	}
+	else if (p_var == "VERBOSE") {	
+		p_def=false; // Disable verbose log messages
+	}
 	
 	if (process.env[p_var]) { 
 //		console.error(p_var + ": " + (process.env[p_var]||'Not defined'));
 		return process.env[p_var];
-	} 
+	}
 	else { 
 		return p_def;
 	}
@@ -236,11 +251,13 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port) {
 		}
 		else {			
 
+			const tileMaker = require('./lib/tileMaker');
 // Call pgTileMaker()...
 			tileMaker.pgTileMaker(client1, endCallBack);
 		} // End of else connected OK 
 	}); // End of connect		
-	console.log('Connected to Postgres using: ' + conString);	
+	var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
+	console.log('Connected to Postgres using: ' + conString + "; debug: " + DEBUG);	
 
 	// Notice message event processors
 	client1.on('notice', function(msg) {

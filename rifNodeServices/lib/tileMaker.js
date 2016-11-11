@@ -708,23 +708,26 @@ REFERENCE (from shapefile) {
 	 * Description:	Converts all SVG files in svgFileList to PNG
 	 */	
 	function convertSVG2Png(convertSVG2PngEndCallback) {
+		var start = new Date().getTime();
 		var sizes = {
 			height: 256,
 			width: 256
 		};
-		var parallelPages = 10;
-		process.env.VERBOSE='true'; // Enable log messages
+		var parallelPages = 20;
+		console.error('Converting ' + Object.keys(svgFileList).length + ' SVG files to PNG');
 		svg2png.svg2PngFiles(svgFileList, sizes, parallelPages).then(results => {
+			var end = new Date().getTime();
+			var elapsedTime=(end - start)/1000; // in S
+			var tilesPerSec=Math.round((Object.keys(svgFileList).length/elapsedTime)*100)/100; 
 			if (Array.isArray(results)) {
-				console.error(results.length + ' SVG files have been converted successfully');
+				console.error(results.length + ' SVG files have been converted successfully in ' + elapsedTime + " S; " + tilesPerSec + " tiles/S");
 			} 
 			else {
-				console.error('SVG convert completed with result ' + results);
+				console.error('SVG convert completed with result ' + results + elapsedTime + " S; " + tilesPerSec + " tiles/S");
 			}
 			
 			svgFileList={};
-			convertSVG2PngEndCallback();
-			
+			convertSVG2PngEndCallback();		
 		}, errors => {
 			if (!Array.isArray(errors)) {
 				errors = [errors];
