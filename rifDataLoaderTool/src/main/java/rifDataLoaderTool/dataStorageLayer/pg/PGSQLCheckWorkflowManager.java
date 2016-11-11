@@ -34,7 +34,17 @@ import java.io.*;
  * </li>
  * </ul>
  *
- *
+ * <p>
+ * These values are stored in separate tables of the form 
+ * <code>aud_chg_[schema area]_counts</code> and 
+ * <code>aud_val_[schema area]_counts</code>.
+ * </p>
+ * 
+ * <p>
+ * This is also the class that contains code for identifying duplicate
+ * rows in a CSV file.
+ * </p>
+ * 
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
