@@ -3,9 +3,9 @@ package rifDataLoaderTool.dataStorageLayer.pg;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
 
 import java.util.ArrayList;
 
@@ -484,8 +484,8 @@ public final class PGCleaningStepQueryGenerator {
 	public String generateDropValidationTableQuery(
 		final DataSetConfiguration dataSetConfiguration) {
 
-		SQLDeleteTableQueryFormatter queryFormatter
-			= new SQLDeleteTableQueryFormatter();
+		PGSQLDeleteTableQueryFormatter queryFormatter
+			= new PGSQLDeleteTableQueryFormatter();
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.dropValidationQuery.comment1");		
 		queryFormatter.addCommentLine(queryCommentLine1);
@@ -510,7 +510,7 @@ public final class PGCleaningStepQueryGenerator {
 		 * WHERE
 		 *    data_set_id=?;
 		 */
-		SQLDeleteRowsQueryFormatter queryFormatter = new SQLDeleteRowsQueryFormatter();
+		PGSQLDeleteRowsQueryFormatter queryFormatter = new PGSQLDeleteRowsQueryFormatter();
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.deleteAuditsQuery.comment1");		
 		queryFormatter.addCommentLine(queryCommentLine1);
@@ -1094,7 +1094,7 @@ public final class PGCleaningStepQueryGenerator {
 	public String generateDropSearchReplaceTableQuery(
 		final DataSetConfiguration dataSetConfiguration) {
 
-		SQLDeleteTableQueryFormatter queryFormatter = new SQLDeleteTableQueryFormatter();
+		PGSQLDeleteTableQueryFormatter queryFormatter = new PGSQLDeleteTableQueryFormatter();
 		String queryCommentLine
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.dropSearchReplaceQuery.comments1");
 		queryFormatter.addCommentLine(queryCommentLine);
@@ -1315,8 +1315,8 @@ public final class PGCleaningStepQueryGenerator {
 	public String generateDropCastingTableQuery(
 		final DataSetConfiguration dataSetConfiguration) {
 
-		SQLDeleteTableQueryFormatter queryFormatter
-			= new SQLDeleteTableQueryFormatter();
+		PGSQLDeleteTableQueryFormatter queryFormatter
+			= new PGSQLDeleteTableQueryFormatter();
 		String queryCommentLine
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.dropCastQuery.comment1");
 		queryFormatter.addCommentLine(queryCommentLine);

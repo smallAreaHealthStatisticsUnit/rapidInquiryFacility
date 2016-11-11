@@ -5,6 +5,11 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.*;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -91,12 +96,12 @@ final public class PGSQLChangeAuditManager
 		final Writer logFileWriter)
 		throws RIFServiceException {
 
-		SQLDeleteRowsQueryFormatter clearChangeLogQueryFormatter
-			= new SQLDeleteRowsQueryFormatter();
+		PGSQLDeleteRowsQueryFormatter clearChangeLogQueryFormatter
+			= new PGSQLDeleteRowsQueryFormatter();
 		clearChangeLogQueryFormatter.setFromTable("rif_change_log");		
 
-		SQLDeleteRowsQueryFormatter clearValidationFailuresLogQueryFormatter
-			= new SQLDeleteRowsQueryFormatter();
+		PGSQLDeleteRowsQueryFormatter clearValidationFailuresLogQueryFormatter
+			= new PGSQLDeleteRowsQueryFormatter();
 		clearValidationFailuresLogQueryFormatter.setFromTable("rif_failed_val_log");			
 		
 		PreparedStatement clearChangeLogStatement = null;
@@ -123,8 +128,8 @@ final public class PGSQLChangeAuditManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(clearChangeLogStatement);
-			SQLQueryUtility.close(clearValidationFailuresLogStatement);
+			PGSQLQueryUtility.close(clearChangeLogStatement);
+			PGSQLQueryUtility.close(clearValidationFailuresLogStatement);
 		}
 	}
 	
@@ -228,7 +233,7 @@ final public class PGSQLChangeAuditManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 		
 		exportTable(
@@ -247,7 +252,7 @@ final public class PGSQLChangeAuditManager
 		
 		String cleanFieldName = dataSetFieldConfiguration.getCleanFieldName();
 		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addSelectField(searchReplaceTableName, "data_set_id");
 		queryFormatter.addSelectField(searchReplaceTableName, "row_number");
@@ -366,7 +371,7 @@ final public class PGSQLChangeAuditManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}	
 		
 		
@@ -546,8 +551,8 @@ final public class PGSQLChangeAuditManager
 		String cleanFieldName
 			= auditableField.getCleanFieldName();
 		
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter
+			= new PGSQLSelectQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 
 		queryFormatter.addSelectField(cleanSearchReplaceTableName, "data_set_id");
@@ -597,8 +602,8 @@ final public class PGSQLChangeAuditManager
 		String cleanFieldName
 			= auditableField.getCleanFieldName();
 		
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter
+			= new PGSQLSelectQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 
 		queryFormatter.addSelectField(finalCleanedTableName, "data_set_id");
@@ -651,7 +656,7 @@ final public class PGSQLChangeAuditManager
 		ResultSet resultSet = null;
 		PreparedStatement statement = null;
 		try {
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			queryFormatter.addSelectField("id");
 			queryFormatter.addFromTable("data_set_configurations");
 			queryFormatter.addWhereParameter("core_data_set_name");
@@ -689,8 +694,8 @@ final public class PGSQLChangeAuditManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(resultSet);
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
 		}
 	}
 	
@@ -722,8 +727,8 @@ final public class PGSQLChangeAuditManager
 		PreparedStatement getIdentifierStatement = null;		
 		PreparedStatement addDataSetStatement = null;
 		ResultSet resultSet = null;
-		SQLInsertQueryFormatter addDataSetQueryFormatter
-			= new SQLInsertQueryFormatter();		
+		PGSQLInsertQueryFormatter addDataSetQueryFormatter
+			= new PGSQLInsertQueryFormatter();		
 		
 		SQLGeneralQueryFormatter getIdentifierQueryFormatter
 			= new SQLGeneralQueryFormatter();
@@ -775,9 +780,9 @@ final public class PGSQLChangeAuditManager
 			throw rifServiceException;			
 		}
 		finally {
-			SQLQueryUtility.close(addDataSetStatement);			
-			SQLQueryUtility.close(getIdentifierStatement);			
-			SQLQueryUtility.close(resultSet);			
+			PGSQLQueryUtility.close(addDataSetStatement);			
+			PGSQLQueryUtility.close(getIdentifierStatement);			
+			PGSQLQueryUtility.close(resultSet);			
 		}
 		
 		return result;
@@ -789,8 +794,8 @@ final public class PGSQLChangeAuditManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 	
-		SQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
-			= new SQLDeleteRowsQueryFormatter();
+		PGSQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
+			= new PGSQLDeleteRowsQueryFormatter();
 		deleteDataSetStatementQueryFormatter.setFromTable("data_set_configurations");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("core_data_set_name");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("version");
@@ -823,7 +828,7 @@ final public class PGSQLChangeAuditManager
 			throw rifServiceException;			
 		}
 		finally {
-			SQLQueryUtility.close(deleteDataSetConfigurationStatement);
+			PGSQLQueryUtility.close(deleteDataSetConfigurationStatement);
 		}
 		
 	}
@@ -835,8 +840,8 @@ final public class PGSQLChangeAuditManager
 		throws RIFServiceException {
 				
 		PreparedStatement statement = null;
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
+		PGSQLRecordExistsQueryFormatter queryFormatter
+			= new PGSQLRecordExistsQueryFormatter();
 		queryFormatter.setFromTable("data_set_configurations");
 		queryFormatter.setLookupKeyFieldName("core_data_set_name");
 		queryFormatter.addWhereParameter("version");
@@ -881,7 +886,7 @@ final public class PGSQLChangeAuditManager
 		throws RIFServiceException {
 
 		//Create SQL query
-		SQLDeleteRowsQueryFormatter queryFormatter = new SQLDeleteRowsQueryFormatter();
+		PGSQLDeleteRowsQueryFormatter queryFormatter = new PGSQLDeleteRowsQueryFormatter();
 		queryFormatter.setFromTable("data_set_configurations");
 
 		PreparedStatement statement = null;
@@ -902,7 +907,7 @@ final public class PGSQLChangeAuditManager
 			throw RIFServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}		
 	}
 	

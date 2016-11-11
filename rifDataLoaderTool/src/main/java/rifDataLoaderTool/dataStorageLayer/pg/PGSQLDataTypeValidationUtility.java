@@ -3,16 +3,17 @@ package rifDataLoaderTool.dataStorageLayer.pg;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifGenericLibrary.dataStorageLayer.SQLCreatePrimaryKeyQueryFormatter;
+
+
+
+
+
+
+
+
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
-
-
-
-
-
-
-
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreatePrimaryKeyQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
 
 import java.util.ArrayList;
 
@@ -152,8 +153,8 @@ public class PGSQLDataTypeValidationUtility {
 		queryFormatter.addCommentLine(queryCommentLine2);
 		
 		//delete any version of the same table
-		SQLDeleteTableQueryFormatter deleteQueryFormatter
-			= new SQLDeleteTableQueryFormatter();
+		PGSQLDeleteTableQueryFormatter deleteQueryFormatter
+			= new PGSQLDeleteTableQueryFormatter();
 		deleteQueryFormatter.setTableToDelete(cleanValidationTableName);
 		queryFormatter.addQueryPhrase(deleteQueryFormatter.generateQuery());
 		queryFormatter.finishLine();
@@ -178,8 +179,8 @@ public class PGSQLDataTypeValidationUtility {
 		queryFormatter.addQuery(createValidationCTASQueryFormatter);
 				
 		//Add primary key statement
-		SQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
-			= new SQLCreatePrimaryKeyQueryFormatter();
+		PGSQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
+			= new PGSQLCreatePrimaryKeyQueryFormatter();
 		createPrimaryKeyQueryFormatter.setTable(cleanValidationTableName);
 		createPrimaryKeyQueryFormatter.setPrimaryKeyPhrase("data_set_id, row_number");
 		queryFormatter.addQuery(createPrimaryKeyQueryFormatter);

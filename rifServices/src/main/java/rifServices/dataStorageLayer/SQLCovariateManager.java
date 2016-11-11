@@ -2,9 +2,9 @@ package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
@@ -144,8 +144,8 @@ final class SQLCovariateManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			SQLSelectQueryFormatter queryFormatter 
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter 
+				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.addSelectField("covariate_name");
 			queryFormatter.addSelectField("min");
@@ -194,7 +194,7 @@ final class SQLCovariateManager
 		}
 		catch(SQLException exception) {
 			logSQLException(exception);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"covariateManager.db.unableToGetCovariatesForInvestigation",
@@ -208,8 +208,8 @@ final class SQLCovariateManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}	
 	}
 		
@@ -243,7 +243,7 @@ final class SQLCovariateManager
 		ArrayList<AbstractCovariate> results = new ArrayList<AbstractCovariate>();		
 		try {
 			//Create SQL query		
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.addSelectField("covariate_name");
 			queryFormatter.addSelectField("min");
@@ -297,7 +297,7 @@ final class SQLCovariateManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("covariateManager.db.unableToGetCovariates");
 
@@ -313,8 +313,8 @@ final class SQLCovariateManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(dbResultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(dbResultSet);
 		}		
 		return results;
 	}
@@ -390,8 +390,8 @@ final class SQLCovariateManager
 		AbstractCovariate currentCovariate = null;
 		try {
 		
-			SQLRecordExistsQueryFormatter queryFormatter
-				= new SQLRecordExistsQueryFormatter();
+			PGSQLRecordExistsQueryFormatter queryFormatter
+				= new PGSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setFromTable("rif40_covariates");
 			queryFormatter.setLookupKeyFieldName("covariate_name");
@@ -431,8 +431,8 @@ final class SQLCovariateManager
 							RIFServiceError.NON_EXISTENT_COVARIATE, 
 							errorMessage);
 			
-					SQLQueryUtility.close(statement);
-					SQLQueryUtility.close(resultSet);
+					PGSQLQueryUtility.close(statement);
+					PGSQLQueryUtility.close(resultSet);
 
 					connection.commit();
 					
@@ -447,7 +447,7 @@ final class SQLCovariateManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -467,8 +467,8 @@ final class SQLCovariateManager
 			throw rifServiceException;			
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 		
 	}

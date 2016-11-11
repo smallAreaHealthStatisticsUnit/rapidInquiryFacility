@@ -1,8 +1,8 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
@@ -152,8 +152,8 @@ final class SQLAgeGenderYearManager
 
 			//Create query
 			Integer ageGroupID = null;
-			SQLSelectQueryFormatter getAgeIDQueryFormatter 
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter getAgeIDQueryFormatter 
+				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(getAgeIDQueryFormatter);
 			getAgeIDQueryFormatter.addSelectField("age_group_id");
 			getAgeIDQueryFormatter.addFromTable("rif40_tables");
@@ -207,8 +207,8 @@ final class SQLAgeGenderYearManager
 			//"2" may represent age ranges that are broken down every 4 years
 			//After obtaining the list of age groups having the correct age group id
 			//sort them by low_age
-			SQLSelectQueryFormatter getAgesForAgeGroupID 
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter getAgesForAgeGroupID 
+				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(getAgesForAgeGroupID);
 
 			getAgesForAgeGroupID.addSelectField("age_group_id");
@@ -222,23 +222,23 @@ final class SQLAgeGenderYearManager
 				(sortingOrder == AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
 				getAgesForAgeGroupID.addOrderByCondition(
 					"low_age", 
-					SQLSelectQueryFormatter.SortOrder.ASCENDING);			
+					PGSQLSelectQueryFormatter.SortOrder.ASCENDING);			
 			}
 			else if (sortingOrder == AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
 					"low_age",
-					SQLSelectQueryFormatter.SortOrder.DESCENDING);
+					PGSQLSelectQueryFormatter.SortOrder.DESCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
 					"high_age",
-					SQLSelectQueryFormatter.SortOrder.ASCENDING);		
+					PGSQLSelectQueryFormatter.SortOrder.ASCENDING);		
 			}
 			else {
 				//it must be descending lower limit.		
 				getAgesForAgeGroupID.addOrderByCondition(
 					"high_age",
-					SQLSelectQueryFormatter.SortOrder.DESCENDING);		
+					PGSQLSelectQueryFormatter.SortOrder.DESCENDING);		
 				assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 			}
 
@@ -270,7 +270,7 @@ final class SQLAgeGenderYearManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
 
@@ -288,10 +288,10 @@ final class SQLAgeGenderYearManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(getAgeIDStatement);
-			SQLQueryUtility.close(getAgeIDResultSet);			
-			SQLQueryUtility.close(getAgesForAgeGroupStatement);
-			SQLQueryUtility.close(getAgesForAgeGroupResultSet);
+			PGSQLQueryUtility.close(getAgeIDStatement);
+			PGSQLQueryUtility.close(getAgeIDResultSet);			
+			PGSQLQueryUtility.close(getAgesForAgeGroupStatement);
+			PGSQLQueryUtility.close(getAgesForAgeGroupResultSet);
 		}
 		return results;		
 	}
@@ -340,7 +340,7 @@ final class SQLAgeGenderYearManager
 		try {
 
 			//Create query
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("year_start");
 			queryFormatter.addSelectField("year_stop");
@@ -402,7 +402,7 @@ final class SQLAgeGenderYearManager
 
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlAgeGenderYearManager.error.unableToGetStartEndYear",
@@ -422,8 +422,8 @@ final class SQLAgeGenderYearManager
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);			
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);			
 		}
 	}
 	
@@ -497,8 +497,8 @@ final class SQLAgeGenderYearManager
 		try {
 
 			//Create query
-			SQLSelectQueryFormatter queryFormatter
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter
+				= new PGSQLSelectQueryFormatter();
 			queryFormatter.addSelectField("fieldname");
 			queryFormatter.addFromTable("rif40_age_groups");
 			queryFormatter.addFromTable("rif40_tables");
@@ -584,7 +584,7 @@ final class SQLAgeGenderYearManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -605,8 +605,8 @@ final class SQLAgeGenderYearManager
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}			
 	}
 	

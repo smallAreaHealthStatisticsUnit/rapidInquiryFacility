@@ -4,6 +4,10 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.*;
 import rifGenericLibrary.system.*;
 import rifGenericLibrary.dataStorageLayer.*;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLAddCommentQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateIndexQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLImportTableFromCSVQueryFormatter;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -199,8 +203,8 @@ public class PostgreSQLDataLoadingScriptWriter {
 		String publishTableName
 			= rifSchemaArea.getPublishedTableName(coreDataSetName);
 			
-		SQLCreateTableQueryFormatter createTableQueryFormatter
-			= new SQLCreateTableQueryFormatter();
+		PGSQLCreateTableQueryFormatter createTableQueryFormatter
+			= new PGSQLCreateTableQueryFormatter();
 		createTableQueryFormatter.setEndWithSemiColon(true);
 		createTableQueryFormatter.setTableName(publishTableName);
 
@@ -284,8 +288,8 @@ public class PostgreSQLDataLoadingScriptWriter {
 		csvFileName.append(publishTableName);
 		csvFileName.append(".csv");
 		
-		SQLImportTableFromCSVQueryFormatter queryFormatter
-			= new SQLImportTableFromCSVQueryFormatter();
+		PGSQLImportTableFromCSVQueryFormatter queryFormatter
+			= new PGSQLImportTableFromCSVQueryFormatter();
 		queryFormatter.setEndWithSemiColon(true);
 		queryFormatter.setImportFileName(csvFileName.toString());
 		queryFormatter.setTableToImport(publishTableName);
@@ -343,8 +347,8 @@ public class PostgreSQLDataLoadingScriptWriter {
 			if ((fieldConfiguration.getFieldRequirementLevel() == FieldRequirementLevel.REQUIRED_BY_RIF) ||
 				(fieldConfiguration.optimiseUsingIndex())) {
 				
-				SQLCreateIndexQueryFormatter queryFormatter
-					= new SQLCreateIndexQueryFormatter();
+				PGSQLCreateIndexQueryFormatter queryFormatter
+					= new PGSQLCreateIndexQueryFormatter();
 				queryFormatter.setIndexTable(publishTableName);
 				queryFormatter.setIndexTableField(fieldConfiguration.getConvertFieldName());
 				queryFormatter.setEndWithSemiColon(true);
@@ -374,15 +378,15 @@ public class PostgreSQLDataLoadingScriptWriter {
 		String publishTableName
 			= RIFTemporaryTablePrefixes.PUBLISH.getTableName(coreDataSetName);
 		
-		SQLAddCommentQueryFormatter tableCommentQueryFormatter
-			= new SQLAddCommentQueryFormatter();
+		PGSQLAddCommentQueryFormatter tableCommentQueryFormatter
+			= new PGSQLAddCommentQueryFormatter();
 		tableCommentQueryFormatter.setEndWithSemiColon(true);
 		tableCommentQueryFormatter.setTableName(publishTableName);
 		tableCommentQueryFormatter.setComment(dataSetConfiguration.getDescription());
 		writeQuery(fileWriter, tableCommentQueryFormatter);
 				
-		SQLAddCommentQueryFormatter tableFieldCommentQueryFormatter
-			= new SQLAddCommentQueryFormatter();
+		PGSQLAddCommentQueryFormatter tableFieldCommentQueryFormatter
+			= new PGSQLAddCommentQueryFormatter();
 		tableFieldCommentQueryFormatter.setEndWithSemiColon(true);		
 		tableFieldCommentQueryFormatter.setTableName(publishTableName);
 		tableFieldCommentQueryFormatter.setTableFieldName("data_set_id");

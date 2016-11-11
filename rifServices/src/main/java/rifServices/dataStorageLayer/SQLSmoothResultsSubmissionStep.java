@@ -9,8 +9,8 @@ import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -229,7 +229,7 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 		throws SQLException,
 		RIFServiceException {
 	
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addFromTable("rif40_investigations");
 		queryFormatter.addSelectField("inv_id");
@@ -249,8 +249,8 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 			investigationID = resultSet.getInt(1);
 		}
 		finally {
-			SQLQueryUtility.close(resultSet);			
-			SQLQueryUtility.close(statement);			
+			PGSQLQueryUtility.close(resultSet);			
+			PGSQLQueryUtility.close(statement);			
 		}
 		
 		return investigationID;

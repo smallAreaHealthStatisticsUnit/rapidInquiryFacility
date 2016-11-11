@@ -6,10 +6,10 @@ import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudySummary;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLUpdateQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLUpdateQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 
@@ -146,7 +146,7 @@ final class SQLStudyStateManager
 			 * 	study_id=? AND
 			 * 	username=?
 			 */
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			queryFormatter.setDatabaseSchemaName("rif40");
 			//queryFormatter.set
 			configureQueryFormatterForDB(queryFormatter);		
@@ -203,8 +203,8 @@ final class SQLStudyStateManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(dbResultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(dbResultSet);
 		}
 		
 		assert result != null;
@@ -233,7 +233,7 @@ final class SQLStudyStateManager
 		 * 	study_id=? AND
 		 * 	username=?
 		 */
-		SQLUpdateQueryFormatter queryFormatter = new SQLUpdateQueryFormatter();
+		PGSQLUpdateQueryFormatter queryFormatter = new PGSQLUpdateQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setUpdateTable("rif_studies");
 		queryFormatter.addUpdateField("study_state");
@@ -264,7 +264,7 @@ final class SQLStudyStateManager
 			throw rifServiceException;
 		}
 		finally {			
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 	}
 	
@@ -295,7 +295,7 @@ final class SQLStudyStateManager
 		 * 	rif40.rif40_studies.study_state=? AND
 		 *  username=?
 		 */		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");	
 		queryFormatter.addSelectField("study_id");		
 		queryFormatter.addSelectField("study_name");
@@ -344,8 +344,8 @@ final class SQLStudyStateManager
 			
 		}
 		finally {
-			SQLQueryUtility.close(resultSet);
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
 		}
 		
 		return results;
@@ -379,7 +379,7 @@ final class SQLStudyStateManager
 		 * ORDER BY
 		 * 	study_name
 		 */
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addSelectField("study_id");		
 		queryFormatter.addSelectField("study_name");
@@ -427,8 +427,8 @@ final class SQLStudyStateManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 		
 		return results;
@@ -549,8 +549,8 @@ final class SQLStudyStateManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			SQLRecordExistsQueryFormatter queryFormatter
-				= new SQLRecordExistsQueryFormatter();
+			PGSQLRecordExistsQueryFormatter queryFormatter
+				= new PGSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("study_id");
 			queryFormatter.setFromTable("rif40_studies");		
@@ -591,7 +591,7 @@ final class SQLStudyStateManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("abstractStudy.label");			
 			String errorMessage
@@ -614,8 +614,8 @@ final class SQLStudyStateManager
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);			
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);			
 		}		
 	}
 	

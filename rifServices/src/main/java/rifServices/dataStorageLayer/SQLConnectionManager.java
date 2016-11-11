@@ -1,13 +1,11 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.businessConceptLayer.User;
-
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
-
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -698,7 +696,7 @@ public final class SQLConnectionManager
 					password);
 			*/
 			statement
-				= SQLQueryUtility.createPreparedStatement(
+				= PGSQLQueryUtility.createPreparedStatement(
 					connection, 
 					initialisationQuery);
 			if (isFirstConnectionForUser) {	
@@ -721,7 +719,7 @@ public final class SQLConnectionManager
 			connection.setAutoCommit(false);
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 
 		return connection;

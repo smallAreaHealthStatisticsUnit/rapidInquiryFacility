@@ -6,7 +6,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
@@ -212,7 +212,7 @@ final public class PGSQLConvertWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}		
 	}
 

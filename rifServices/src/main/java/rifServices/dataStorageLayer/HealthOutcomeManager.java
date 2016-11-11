@@ -14,8 +14,8 @@ import rifServices.ontologyServices.RIFXMLTaxonomyProvider;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.ClassFileLocator;
 import rifGenericLibrary.util.RIFLogger;
@@ -345,8 +345,8 @@ final class HealthOutcomeManager {
 		final Investigation investigation) 
 		throws RIFServiceException {
 			
-		SQLSelectQueryFormatter queryFormatter 
-			= new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter 
+			= new PGSQLSelectQueryFormatter();
 		queryFormatter.addSelectField("condition");
 		queryFormatter.addFromTable("t_rif40_inv_conditions");
 		queryFormatter.addWhereParameter("inv_id");
@@ -358,7 +358,7 @@ final class HealthOutcomeManager {
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= SQLQueryUtility.createPreparedStatement(
+				= PGSQLQueryUtility.createPreparedStatement(
 					connection, 
 					queryFormatter);
 			Integer investigationID
@@ -402,8 +402,8 @@ final class HealthOutcomeManager {
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}	
 		
 		return results;

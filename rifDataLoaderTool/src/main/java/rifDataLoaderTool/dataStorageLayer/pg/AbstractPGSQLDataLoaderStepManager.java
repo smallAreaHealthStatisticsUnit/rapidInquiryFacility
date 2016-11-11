@@ -9,9 +9,14 @@ import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.*;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLExportTableToCSVQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSchemaCommentQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLUpdateQueryFormatter;
 import rifGenericLibrary.system.*;
 import rifGenericLibrary.util.RIFLogger;
 
@@ -111,7 +116,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		throws SQLException,
 		RIFServiceException {
 				
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			
 		//SELECT field1, field2, fields3...
 		for (String fieldName : fieldNames) {
@@ -185,8 +190,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			return rifResultTable;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 				
 	}
@@ -291,8 +296,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw RIFServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(resultSet);
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -308,8 +313,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		PreparedStatement statement = null;
 		try {
 
-			SQLSchemaCommentQueryFormatter queryFormatter
-				= new SQLSchemaCommentQueryFormatter();
+			PGSQLSchemaCommentQueryFormatter queryFormatter
+				= new PGSQLSchemaCommentQueryFormatter();
 			queryFormatter.setTableComment(
 				targetTable, 
 				dataSetConfiguration.getDescription());
@@ -361,7 +366,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw rifServiceException;			
 		}		
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 	}
 
@@ -491,8 +496,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			//field names we'd like to give the auto-named fields (eg: field1
 			//could become year)
 			
-			SQLSchemaCommentQueryFormatter queryFormatter
-				= new SQLSchemaCommentQueryFormatter();
+			PGSQLSchemaCommentQueryFormatter queryFormatter
+				= new PGSQLSchemaCommentQueryFormatter();
 			queryFormatter.setTableColumnComment(
 				targetTable, 
 				columnName, 
@@ -510,7 +515,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			statement.executeUpdate();			
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -553,7 +558,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}			
 	}
 	
@@ -604,8 +609,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 						
 		BufferedWriter writer = null;		
 		try {
-			SQLExportTableToCSVQueryFormatter queryFormatter
-				= new SQLExportTableToCSVQueryFormatter();
+			PGSQLExportTableToCSVQueryFormatter queryFormatter
+				= new PGSQLExportTableToCSVQueryFormatter();
 			queryFormatter.setTableToExport(tableName);
 			queryFormatter.setOutputFileName(exportFileName.toString());
 			
@@ -654,8 +659,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		final String targetTableName) 
 		throws RIFServiceException {
 		
-		SQLDeleteTableQueryFormatter queryFormatter 
-			= new SQLDeleteTableQueryFormatter();
+		PGSQLDeleteTableQueryFormatter queryFormatter 
+			= new PGSQLDeleteTableQueryFormatter();
 		queryFormatter.setTableToDelete(targetTableName);
 		PreparedStatement statement = null;
 		try {
@@ -680,7 +685,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}		
 	}
 
@@ -722,7 +727,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 	}
 	
@@ -768,7 +773,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 
 	}
@@ -780,7 +785,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		final WorkflowState workFlowState) 
 		throws RIFServiceException {
 				
-		SQLUpdateQueryFormatter queryFormatter = new SQLUpdateQueryFormatter();
+		PGSQLUpdateQueryFormatter queryFormatter = new PGSQLUpdateQueryFormatter();
 		PreparedStatement statement = null;
 		try {
 			
@@ -827,7 +832,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		final AbstractSQLQueryFormatter queryFormatter) 
 		throws SQLException {
 				
-		return SQLQueryUtility.createPreparedStatement(
+		return PGSQLQueryUtility.createPreparedStatement(
 			connection,
 			queryFormatter);
 
@@ -838,7 +843,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		final String query) 
 		throws SQLException {
 				
-		return SQLQueryUtility.createPreparedStatement(
+		return PGSQLQueryUtility.createPreparedStatement(
 			connection,
 			query);
 	}

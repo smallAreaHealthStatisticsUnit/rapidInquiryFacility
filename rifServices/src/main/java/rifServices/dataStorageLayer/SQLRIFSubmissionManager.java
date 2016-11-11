@@ -8,6 +8,15 @@ import rifServices.fileFormats.RIFZipFileWriter;
 import rifServices.system.*;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.*;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSchemaCommentQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.util.FieldValidationUtility;
@@ -167,8 +176,8 @@ final class SQLRIFSubmissionManager
 		PreparedStatement deleteInvestigationsStatement = null;
 		PreparedStatement deleteStudiesStatement = null;
 		try {
-			SQLDeleteRowsQueryFormatter deleteComparisonAreasQueryFormatter
-				= new SQLDeleteRowsQueryFormatter();
+			PGSQLDeleteRowsQueryFormatter deleteComparisonAreasQueryFormatter
+				= new PGSQLDeleteRowsQueryFormatter();
 			configureQueryFormatterForDB(deleteComparisonAreasQueryFormatter);
 			deleteComparisonAreasQueryFormatter.setFromTable("t_rif40_comparison_areas");
 			deleteComparisonAreasQueryFormatter.addWhereParameter("username");
@@ -185,8 +194,8 @@ final class SQLRIFSubmissionManager
 			deleteComparisonAreasStatement.setString(1, userID);
 			deleteComparisonAreasStatement.executeUpdate();
 			
-			SQLDeleteRowsQueryFormatter deleteStudyAreasQueryFormatter
-				= new SQLDeleteRowsQueryFormatter();
+			PGSQLDeleteRowsQueryFormatter deleteStudyAreasQueryFormatter
+				= new PGSQLDeleteRowsQueryFormatter();
 			configureQueryFormatterForDB(deleteStudyAreasQueryFormatter);
 			deleteStudyAreasQueryFormatter.setFromTable("t_rif40_study_areas");
 			deleteStudyAreasQueryFormatter.addWhereParameter("username");
@@ -203,8 +212,8 @@ final class SQLRIFSubmissionManager
 			deleteStudyAreasStatement.setString(1, userID);
 			deleteStudyAreasStatement.executeUpdate();
 			
-			SQLDeleteRowsQueryFormatter deleteInvestigationsQueryFormatter
-				= new SQLDeleteRowsQueryFormatter();
+			PGSQLDeleteRowsQueryFormatter deleteInvestigationsQueryFormatter
+				= new PGSQLDeleteRowsQueryFormatter();
 			configureQueryFormatterForDB(deleteInvestigationsQueryFormatter);
 			deleteInvestigationsQueryFormatter.setFromTable("t_rif40_investigations");
 			deleteInvestigationsQueryFormatter.addWhereParameter("username");
@@ -222,8 +231,8 @@ final class SQLRIFSubmissionManager
 			deleteInvestigationsStatement.setString(1, userID);
 			deleteInvestigationsStatement.executeUpdate();
 			
-			SQLDeleteRowsQueryFormatter deleteStudiesQueryFormatter
-				= new SQLDeleteRowsQueryFormatter();
+			PGSQLDeleteRowsQueryFormatter deleteStudiesQueryFormatter
+				= new PGSQLDeleteRowsQueryFormatter();
 			configureQueryFormatterForDB(deleteStudiesQueryFormatter);
 			deleteStudiesQueryFormatter.setFromTable("t_rif40_studies");
 			deleteStudiesQueryFormatter.addWhereParameter("username");
@@ -246,7 +255,7 @@ final class SQLRIFSubmissionManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToClearSubmissionsForUser",
@@ -258,9 +267,9 @@ final class SQLRIFSubmissionManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(deleteComparisonAreasStatement);
-			SQLQueryUtility.close(deleteStudyAreasStatement);
-			SQLQueryUtility.close(deleteInvestigationsStatement);
+			PGSQLQueryUtility.close(deleteComparisonAreasStatement);
+			PGSQLQueryUtility.close(deleteStudyAreasStatement);
+			PGSQLQueryUtility.close(deleteInvestigationsStatement);
 		}
 	}
 	
@@ -370,7 +379,7 @@ final class SQLRIFSubmissionManager
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
@@ -520,7 +529,7 @@ final class SQLRIFSubmissionManager
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
@@ -558,8 +567,8 @@ final class SQLRIFSubmissionManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(resultSet);
-			SQLQueryUtility.close(statement);			
+			PGSQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);			
 		}
 				
 	}
@@ -580,8 +589,8 @@ final class SQLRIFSubmissionManager
 				userID, 
 				studyID);
 				
-		SQLCreateTableQueryFormatter queryFormatter 
-			= new SQLCreateTableQueryFormatter();
+		PGSQLCreateTableQueryFormatter queryFormatter 
+			= new PGSQLCreateTableQueryFormatter();
 		queryFormatter.setTableName(extractTableName);			
 		queryFormatter.addSmallIntegerFieldDeclaration(
 			"year", 
@@ -726,7 +735,7 @@ final class SQLRIFSubmissionManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToCreateExtractTable",
@@ -745,7 +754,7 @@ final class SQLRIFSubmissionManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -822,12 +831,12 @@ final class SQLRIFSubmissionManager
 				studyID);
 		
 		
-		SQLDeleteTableQueryFormatter deleteTableQueryFormatter
-			= new SQLDeleteTableQueryFormatter();
+		PGSQLDeleteTableQueryFormatter deleteTableQueryFormatter
+			= new PGSQLDeleteTableQueryFormatter();
 		deleteTableQueryFormatter.setTableToDelete(statusTableName);
 		
-		SQLCreateTableQueryFormatter createTableQueryFormatter
-			= new SQLCreateTableQueryFormatter();
+		PGSQLCreateTableQueryFormatter createTableQueryFormatter
+			= new PGSQLCreateTableQueryFormatter();
 		createTableQueryFormatter.useTemporaryTable();
 		createTableQueryFormatter.setTableName(statusTableName);
 		createTableQueryFormatter.addDateFieldDeclaration("log_time", false);		
@@ -857,7 +866,7 @@ final class SQLRIFSubmissionManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToCreateStatusTable",
@@ -876,8 +885,8 @@ final class SQLRIFSubmissionManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(deleteTableStatement);			
-			SQLQueryUtility.close(createTableStatement);			
+			PGSQLQueryUtility.close(deleteTableStatement);			
+			PGSQLQueryUtility.close(createTableStatement);			
 		}		
 	}
 	
@@ -895,8 +904,8 @@ final class SQLRIFSubmissionManager
 		
 		try {
 			//Create the map table
-			SQLCreateTableQueryFormatter queryFormatter 
-				= new SQLCreateTableQueryFormatter();
+			PGSQLCreateTableQueryFormatter queryFormatter 
+				= new PGSQLCreateTableQueryFormatter();
 			queryFormatter.setTableName(mapTableName);			
 			queryFormatter.addTextFieldDeclaration(
 				"area_id", 
@@ -1017,7 +1026,7 @@ final class SQLRIFSubmissionManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToCreateMapTable",
@@ -1037,8 +1046,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 		
 	}	
@@ -1050,8 +1059,8 @@ final class SQLRIFSubmissionManager
 		throws SQLException, 
 		RIFServiceException {
 	
-		SQLSchemaCommentQueryFormatter queryFormatter
-			= new SQLSchemaCommentQueryFormatter();
+		PGSQLSchemaCommentQueryFormatter queryFormatter
+			= new PGSQLSchemaCommentQueryFormatter();
 		queryFormatter.setTableComment(tableName, comment);
 		
 		logSQLQuery(
@@ -1065,7 +1074,7 @@ final class SQLRIFSubmissionManager
 			statement.executeUpdate();
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}		
 	}
 
@@ -1078,8 +1087,8 @@ final class SQLRIFSubmissionManager
 		throws SQLException, 
 		RIFServiceException {
 		
-		SQLSchemaCommentQueryFormatter queryFormatter
-			= new SQLSchemaCommentQueryFormatter();
+		PGSQLSchemaCommentQueryFormatter queryFormatter
+			= new PGSQLSchemaCommentQueryFormatter();
 		queryFormatter.setTableColumnComment(tableName, columnName, comment);
 		
 		logSQLQuery(
@@ -1093,7 +1102,7 @@ final class SQLRIFSubmissionManager
 			statement.executeUpdate();
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}		
 	}
 	
@@ -1113,7 +1122,7 @@ final class SQLRIFSubmissionManager
 			
 			enableDatabaseDebugMessages(connection);		
 			
-			SQLFunctionCallerQueryFormatter runStudyQueryFormatter = new SQLFunctionCallerQueryFormatter();
+			PGSQLFunctionCallerQueryFormatter runStudyQueryFormatter = new PGSQLFunctionCallerQueryFormatter();
 			runStudyQueryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
 			runStudyQueryFormatter.setFunctionName("rif40_run_study");
 			runStudyQueryFormatter.setNumberOfFunctionParameters(2);
@@ -1155,7 +1164,7 @@ final class SQLRIFSubmissionManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToRunStudy",
@@ -1175,10 +1184,10 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(runStudyStatement);
-			SQLQueryUtility.close(runStudyResultSet);
-			SQLQueryUtility.close(computeResultsStatement);
-			SQLQueryUtility.close(computeResultSet);
+			PGSQLQueryUtility.close(runStudyStatement);
+			PGSQLQueryUtility.close(runStudyResultSet);
+			PGSQLQueryUtility.close(computeResultsStatement);
+			PGSQLQueryUtility.close(computeResultSet);
 		}
 	}
 
@@ -1195,7 +1204,7 @@ final class SQLRIFSubmissionManager
 		
 		try {
 			
-			SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
+			PGSQLFunctionCallerQueryFormatter queryFormatter = new PGSQLFunctionCallerQueryFormatter();
 			queryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
 			queryFormatter.setFunctionName("rif40_delete_study");
 			queryFormatter.setNumberOfFunctionParameters(1);
@@ -1223,7 +1232,7 @@ final class SQLRIFSubmissionManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToDeleteStudy",
@@ -1243,8 +1252,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 	}
 	
@@ -1286,8 +1295,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 		
 	}
@@ -1306,8 +1315,8 @@ final class SQLRIFSubmissionManager
 		try {
 			
 			//add information about who can share the study
-			SQLInsertQueryFormatter studyQueryFormatter
-				= new SQLInsertQueryFormatter();
+			PGSQLInsertQueryFormatter studyQueryFormatter
+				= new PGSQLInsertQueryFormatter();
 			studyQueryFormatter.setIntoTable("rif40_studies");
 			studyQueryFormatter.addInsertField("geography");
 			studyQueryFormatter.addInsertField("project");
@@ -1427,8 +1436,8 @@ final class SQLRIFSubmissionManager
 			addStudyStatement.executeUpdate();			
 			
 			//add information about who can share the study
-			SQLInsertQueryFormatter studyShareQueryFormatter
-				= new SQLInsertQueryFormatter();
+			PGSQLInsertQueryFormatter studyShareQueryFormatter
+				= new PGSQLInsertQueryFormatter();
 			studyShareQueryFormatter.setIntoTable("rif40_study_shares");
 			studyShareQueryFormatter.addInsertField("grantee_username");
 
@@ -1441,8 +1450,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources	
-			SQLQueryUtility.close(studyShareStatement);
-			SQLQueryUtility.close(addStudyStatement);
+			PGSQLQueryUtility.close(studyShareStatement);
+			PGSQLQueryUtility.close(addStudyStatement);
 		}
 	}
 	
@@ -1465,8 +1474,8 @@ final class SQLRIFSubmissionManager
 				return;
 			}
 
-			SQLInsertQueryFormatter queryFormatter
-				= new SQLInsertQueryFormatter();
+			PGSQLInsertQueryFormatter queryFormatter
+				= new PGSQLInsertQueryFormatter();
 			queryFormatter.setIntoTable("rif40_investigations");		
 			queryFormatter.addInsertField("inv_name");
 			queryFormatter.addInsertField("inv_description");
@@ -1583,7 +1592,7 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 
 	}
@@ -1598,7 +1607,7 @@ final class SQLRIFSubmissionManager
 		throws SQLException,
 		RIFServiceException {
 		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 
 		queryFormatter.addSelectField("\"offset\"");
 		queryFormatter.addFromTable("rif40_age_groups");
@@ -1640,7 +1649,7 @@ final class SQLRIFSubmissionManager
 			return resultSet.getInt(1);
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 	}
 
@@ -1660,8 +1669,8 @@ final class SQLRIFSubmissionManager
 		
 		PreparedStatement statement = null;
 		try {
-			SQLFunctionCallerQueryFormatter queryFormatter 
-				= new SQLFunctionCallerQueryFormatter();
+			PGSQLFunctionCallerQueryFormatter queryFormatter 
+				= new PGSQLFunctionCallerQueryFormatter();
 			queryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
 			queryFormatter.setFunctionName("rif40_delete_study");
 			queryFormatter.setNumberOfFunctionParameters(1);
@@ -1678,7 +1687,7 @@ final class SQLRIFSubmissionManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToDeleteStudy",
@@ -1698,7 +1707,7 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}	
 	}
 		
@@ -1722,8 +1731,8 @@ final class SQLRIFSubmissionManager
 					geography,
 					diseaseMappingStudyArea);
 			
-			SQLInsertQueryFormatter queryFormatter
-				= new SQLInsertQueryFormatter();
+			PGSQLInsertQueryFormatter queryFormatter
+				= new PGSQLInsertQueryFormatter();
 			queryFormatter.setIntoTable("rif40_study_areas");
 			queryFormatter.addInsertField("area_id");
 			queryFormatter.addInsertField("band_id");
@@ -1776,7 +1785,7 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}	
 	}
 	
@@ -1788,8 +1797,8 @@ final class SQLRIFSubmissionManager
 	
 		PreparedStatement statement = null;
 		try {
-			SQLInsertQueryFormatter queryFormatter
-				= new SQLInsertQueryFormatter();
+			PGSQLInsertQueryFormatter queryFormatter
+				= new PGSQLInsertQueryFormatter();
 			queryFormatter.setIntoTable("rif40_comparison_areas");
 			queryFormatter.addInsertField("area_id");
 			
@@ -1837,7 +1846,7 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -1854,8 +1863,8 @@ final class SQLRIFSubmissionManager
 		PreparedStatement addCovariateStatement = null;
 		try {
 		
-			SQLSelectQueryFormatter getMinMaxCovariateValuesQueryFormatter
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter getMinMaxCovariateValuesQueryFormatter
+				= new PGSQLSelectQueryFormatter();
 			getMinMaxCovariateValuesQueryFormatter.addSelectField("min");
 			getMinMaxCovariateValuesQueryFormatter.addSelectField("max");
 			getMinMaxCovariateValuesQueryFormatter.addFromTable("rif40_covariates");
@@ -1863,8 +1872,8 @@ final class SQLRIFSubmissionManager
 			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("geolevel_name");
 			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("covariate_name");
 			
-			SQLInsertQueryFormatter addCovariateQueryFormatter
-				= new SQLInsertQueryFormatter();
+			PGSQLInsertQueryFormatter addCovariateQueryFormatter
+				= new PGSQLInsertQueryFormatter();
 			addCovariateQueryFormatter.setIntoTable("rif40_inv_covariates");
 			addCovariateQueryFormatter.addInsertField("geography");
 			addCovariateQueryFormatter.addInsertField("covariate_name");
@@ -1944,7 +1953,7 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(addCovariateStatement);
+			PGSQLQueryUtility.close(addCovariateStatement);
 		}
 	}
 		
@@ -1960,8 +1969,8 @@ final class SQLRIFSubmissionManager
 		PreparedStatement addHealthCodeStatement = null;
 		try {
 						
-			SQLSelectQueryFormatter getOutcomeGroupNameQueryFormatter
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter getOutcomeGroupNameQueryFormatter
+				= new PGSQLSelectQueryFormatter();
 			getOutcomeGroupNameQueryFormatter.addSelectField("outcome_group_name");
 			getOutcomeGroupNameQueryFormatter.addSelectField("field_name");			
 			getOutcomeGroupNameQueryFormatter.addFromTable("rif40_numerator_outcome_columns");
@@ -2000,8 +2009,8 @@ final class SQLRIFSubmissionManager
 			//KLG: TODO: try adding one health code maximum
 			if (totalHealthCodes > 0) {
 
-				SQLInsertQueryFormatter addHealthOutcomeQueryFormatter
-					= new SQLInsertQueryFormatter();
+				PGSQLInsertQueryFormatter addHealthOutcomeQueryFormatter
+					= new PGSQLInsertQueryFormatter();
 				addHealthOutcomeQueryFormatter.setIntoTable("rif40_inv_conditions");
 				addHealthOutcomeQueryFormatter.addInsertField("min_condition");
 				addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");				
@@ -2038,8 +2047,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources	
-			SQLQueryUtility.close(getOutcomeGroupNameStatement);
-			SQLQueryUtility.close(addHealthCodeStatement);
+			PGSQLQueryUtility.close(getOutcomeGroupNameStatement);
+			PGSQLQueryUtility.close(addHealthCodeStatement);
 		}		
 	}
 
@@ -2083,7 +2092,7 @@ final class SQLRIFSubmissionManager
 
 		String result = null;
 		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 		queryFormatter.addSelectField("outcome_type");
 		queryFormatter.addFromTable("rif40_outcome_groups");
 		queryFormatter.addFromTable("rif40_table_outcomes");
@@ -2112,8 +2121,8 @@ final class SQLRIFSubmissionManager
 			}
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -2183,7 +2192,7 @@ final class SQLRIFSubmissionManager
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);			
+			PGSQLQueryUtility.rollback(connection);			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToGetDiseaseMappingStudy",
@@ -2205,8 +2214,8 @@ final class SQLRIFSubmissionManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			SQLSelectQueryFormatter queryFormatter
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter
+				= new PGSQLSelectQueryFormatter();
 			queryFormatter.addFromTable("rif40_studies");
 			queryFormatter.addSelectField("study_name");
 			queryFormatter.addSelectField("geography");
@@ -2254,8 +2263,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}		
 	}
 		
@@ -2268,8 +2277,8 @@ final class SQLRIFSubmissionManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			SQLSelectQueryFormatter queryFormatter
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter
+				= new PGSQLSelectQueryFormatter();
 			queryFormatter.addFromTable("rif40_study_areas");
 			queryFormatter.addSelectField("area_id");
 			queryFormatter.addSelectField("band_id");
@@ -2304,8 +2313,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 	}	
 	
@@ -2318,8 +2327,8 @@ final class SQLRIFSubmissionManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter
+			= new PGSQLSelectQueryFormatter();
 			queryFormatter.addFromTable("rif40_comparison_areas");
 			queryFormatter.addSelectField("area_id");
 			queryFormatter.addWhereParameter("study_id");
@@ -2355,8 +2364,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 	}
 	
@@ -2369,8 +2378,8 @@ final class SQLRIFSubmissionManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			SQLSelectQueryFormatter queryFormatter
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter
+				= new PGSQLSelectQueryFormatter();
 			queryFormatter.addSelectField("inv_id");
 			queryFormatter.addSelectField("inv_name");
 			queryFormatter.addSelectField("inv_description");
@@ -2469,8 +2478,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 	}
 		
@@ -2492,8 +2501,8 @@ final class SQLRIFSubmissionManager
 		AgeGroup result = null;
 		try {
 			
-			SQLSelectQueryFormatter queryFormatter
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter
+				= new PGSQLSelectQueryFormatter();
 			queryFormatter.addFromTable("rif40_age_groups");
 			queryFormatter.addSelectField("low_age");
 			queryFormatter.addSelectField("high_age");
@@ -2524,8 +2533,8 @@ final class SQLRIFSubmissionManager
 					resultSet.getString(3));		
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);			
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);			
 		}
 		
 		return result;
@@ -2541,7 +2550,7 @@ final class SQLRIFSubmissionManager
 		NumeratorDenominatorPair result = null;
 		PreparedStatement statement = null;
 		try {
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("numerator_description");
@@ -2569,8 +2578,8 @@ final class SQLRIFSubmissionManager
 			result.setDenominatorTableDescription(resultSet.getString(3));
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -2585,8 +2594,8 @@ final class SQLRIFSubmissionManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			SQLSelectQueryFormatter queryFormatter
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter
+				= new PGSQLSelectQueryFormatter();
 			queryFormatter.addFromTable("rif40_studies");
 			queryFormatter.addSelectField("study_id");
 			queryFormatter.addSelectField("study_name");
@@ -2626,7 +2635,7 @@ final class SQLRIFSubmissionManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToGetStudySummariesForUser",
@@ -2646,8 +2655,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}		
 		
 	}
@@ -2732,8 +2741,8 @@ final class SQLRIFSubmissionManager
 		ResultSet checkProjectExistsResultSet = null;
 		try {
 			//Create SQL query
-			SQLRecordExistsQueryFormatter queryFormatter
-				= new SQLRecordExistsQueryFormatter();
+			PGSQLRecordExistsQueryFormatter queryFormatter
+				= new PGSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("project");
 			queryFormatter.setFromTable("rif40_projects");
@@ -2779,7 +2788,7 @@ final class SQLRIFSubmissionManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("project.label");			
 			String errorMessage
@@ -2802,8 +2811,8 @@ final class SQLRIFSubmissionManager
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(checkProjectExistsStatement);
-			SQLQueryUtility.close(checkProjectExistsResultSet);			
+			PGSQLQueryUtility.close(checkProjectExistsStatement);
+			PGSQLQueryUtility.close(checkProjectExistsResultSet);			
 		}		
 	}
 	

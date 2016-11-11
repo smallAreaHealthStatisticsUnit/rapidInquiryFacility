@@ -4,12 +4,12 @@ package rifDataLoaderTool.dataStorageLayer.pg;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -100,7 +100,7 @@ final public class PGSQLDataSetManager
 		ResultSet resultSet = null;
 		PreparedStatement statement = null;
 		try {
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			queryFormatter.addSelectField("id");
 			queryFormatter.addFromTable("data_set_configurations");
 			queryFormatter.addWhereParameter("core_data_set_name");
@@ -138,8 +138,8 @@ final public class PGSQLDataSetManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(resultSet);
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
 		}
 	}
 
@@ -192,8 +192,8 @@ final public class PGSQLDataSetManager
 		PreparedStatement getIdentifierStatement = null;		
 		PreparedStatement addDataSetStatement = null;
 		ResultSet resultSet = null;
-		SQLInsertQueryFormatter addDataSetQueryFormatter
-			= new SQLInsertQueryFormatter();		
+		PGSQLInsertQueryFormatter addDataSetQueryFormatter
+			= new PGSQLInsertQueryFormatter();		
 		
 		SQLGeneralQueryFormatter getIdentifierQueryFormatter
 			= new SQLGeneralQueryFormatter();
@@ -245,9 +245,9 @@ final public class PGSQLDataSetManager
 			throw rifServiceException;			
 		}
 		finally {
-			SQLQueryUtility.close(addDataSetStatement);			
-			SQLQueryUtility.close(getIdentifierStatement);			
-			SQLQueryUtility.close(resultSet);			
+			PGSQLQueryUtility.close(addDataSetStatement);			
+			PGSQLQueryUtility.close(getIdentifierStatement);			
+			PGSQLQueryUtility.close(resultSet);			
 		}
 		
 		return result;
@@ -259,8 +259,8 @@ final public class PGSQLDataSetManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 	
-		SQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
-			= new SQLDeleteRowsQueryFormatter();
+		PGSQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
+			= new PGSQLDeleteRowsQueryFormatter();
 		deleteDataSetStatementQueryFormatter.setFromTable("data_set_configurations");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("core_data_set_name");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("version");
@@ -297,7 +297,7 @@ final public class PGSQLDataSetManager
 			throw rifServiceException;			
 		}
 		finally {
-			SQLQueryUtility.close(deleteDataSetConfigurationStatement);
+			PGSQLQueryUtility.close(deleteDataSetConfigurationStatement);
 		}
 		
 	}
@@ -309,8 +309,8 @@ final public class PGSQLDataSetManager
 		throws RIFServiceException {
 				
 		PreparedStatement statement = null;
-		SQLRecordExistsQueryFormatter queryFormatter
-			= new SQLRecordExistsQueryFormatter();
+		PGSQLRecordExistsQueryFormatter queryFormatter
+			= new PGSQLRecordExistsQueryFormatter();
 		queryFormatter.setFromTable("data_set_configurations");
 		queryFormatter.setLookupKeyFieldName("core_data_set_name");
 		queryFormatter.addWhereParameter("version");
@@ -355,7 +355,7 @@ final public class PGSQLDataSetManager
 		throws RIFServiceException {
 
 		//Create SQL query
-		SQLDeleteRowsQueryFormatter queryFormatter = new SQLDeleteRowsQueryFormatter();
+		PGSQLDeleteRowsQueryFormatter queryFormatter = new PGSQLDeleteRowsQueryFormatter();
 		queryFormatter.setFromTable("data_set_configurations");
 
 		PreparedStatement statement = null;
@@ -376,7 +376,7 @@ final public class PGSQLDataSetManager
 			throw RIFServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}		
 	}
 	

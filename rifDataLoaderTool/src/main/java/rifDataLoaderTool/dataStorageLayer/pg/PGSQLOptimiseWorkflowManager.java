@@ -5,9 +5,9 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.dataStorageLayer.SQLCreateIndexQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteIndexQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateIndexQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteIndexQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
@@ -189,8 +189,8 @@ final class PGSQLOptimiseWorkflowManager
 				 * different syntax for importing CSV files than PostgreSQL.
 				 */								
 				if (excludeFromIndexableFields(indexFieldName) == false) {					
-					SQLCreateIndexQueryFormatter queryFormatter
-						= new SQLCreateIndexQueryFormatter();
+					PGSQLCreateIndexQueryFormatter queryFormatter
+						= new PGSQLCreateIndexQueryFormatter();
 					queryFormatter.setIndexTable(targetTable);				
 					queryFormatter.setIndexTableField(indexFieldName);
 
@@ -207,7 +207,7 @@ final class PGSQLOptimiseWorkflowManager
 							queryFormatter);
 					statement.executeUpdate();
 				
-					SQLQueryUtility.close(statement);				
+					PGSQLQueryUtility.close(statement);				
 				
 				}
 			}
@@ -229,7 +229,7 @@ final class PGSQLOptimiseWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -272,8 +272,8 @@ final class PGSQLOptimiseWorkflowManager
 			
 				if (excludeFromIndexableFields(indexFieldName) == false) {					
 			
-					SQLDeleteIndexQueryFormatter queryFormatter
-						= new SQLDeleteIndexQueryFormatter();
+					PGSQLDeleteIndexQueryFormatter queryFormatter
+						= new PGSQLDeleteIndexQueryFormatter();
 					queryFormatter.setIndexTable(targetTable);				
 					queryFormatter.setIndexTableField(indexFieldName);
 
@@ -290,7 +290,7 @@ final class PGSQLOptimiseWorkflowManager
 							queryFormatter);
 					statement.executeUpdate();
 				
-					SQLQueryUtility.close(statement);			
+					PGSQLQueryUtility.close(statement);			
 				}
 			}
 						

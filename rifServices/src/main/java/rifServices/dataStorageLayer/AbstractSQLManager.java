@@ -3,11 +3,10 @@ package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
-
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
@@ -151,7 +150,7 @@ public abstract class AbstractSQLManager {
 		final AbstractSQLQueryFormatter queryFormatter) 
 		throws SQLException {
 				
-		return SQLQueryUtility.createPreparedStatement(
+		return PGSQLQueryUtility.createPreparedStatement(
 			connection,
 			queryFormatter);
 
@@ -161,15 +160,15 @@ public abstract class AbstractSQLManager {
 		final Connection connection) 
 		throws RIFServiceException {
 			
-		SQLFunctionCallerQueryFormatter setupDatabaseLogQueryFormatter 
-			= new SQLFunctionCallerQueryFormatter();
+		PGSQLFunctionCallerQueryFormatter setupDatabaseLogQueryFormatter 
+			= new PGSQLFunctionCallerQueryFormatter();
 		setupDatabaseLogQueryFormatter.setDatabaseSchemaName("rif40_log_pkg");
 		setupDatabaseLogQueryFormatter.setFunctionName("rif40_log_setup");
 		setupDatabaseLogQueryFormatter.setNumberOfFunctionParameters(0);		
 		PreparedStatement setupLogStatement = null;
 		
-		SQLFunctionCallerQueryFormatter sendDebugToInfoQueryFormatter 
-			= new SQLFunctionCallerQueryFormatter();
+		PGSQLFunctionCallerQueryFormatter sendDebugToInfoQueryFormatter 
+			= new PGSQLFunctionCallerQueryFormatter();
 		sendDebugToInfoQueryFormatter.setDatabaseSchemaName("rif40_log_pkg");
 		sendDebugToInfoQueryFormatter.setFunctionName("rif40_send_debug_to_info");
 		sendDebugToInfoQueryFormatter.setNumberOfFunctionParameters(1);		
@@ -200,8 +199,8 @@ public abstract class AbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(setupLogStatement);
-			SQLQueryUtility.close(sendDebugToInfoStatement);	
+			PGSQLQueryUtility.close(setupLogStatement);
+			PGSQLQueryUtility.close(sendDebugToInfoStatement);	
 		}		
 	}
 	

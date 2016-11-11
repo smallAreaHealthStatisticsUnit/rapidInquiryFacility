@@ -5,10 +5,11 @@ import rifServices.system.RIFServiceError;
 import rifServices.fileFormats.RIFZipFileWriter;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.businessConceptLayer.User;
+
 
 
 import java.nio.file.*;

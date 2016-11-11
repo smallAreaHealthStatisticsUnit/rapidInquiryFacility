@@ -7,8 +7,8 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFDateFormat;
@@ -514,7 +514,7 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 		final String outputFilePath)
 		throws Exception {
 				
-		SQLFunctionCallerQueryFormatter queryFormatter = new SQLFunctionCallerQueryFormatter();
+		PGSQLFunctionCallerQueryFormatter queryFormatter = new PGSQLFunctionCallerQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40_dmp_pkg");
 		queryFormatter.setFunctionName("csv_dump");
 		queryFormatter.setNumberOfFunctionParameters(1);
@@ -544,7 +544,7 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 			connection.commit();
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 
 	}

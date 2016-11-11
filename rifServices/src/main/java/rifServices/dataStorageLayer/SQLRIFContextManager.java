@@ -1,10 +1,10 @@
 package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLAggregateValueQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLAggregateValueQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.GeoLevelSelect;
@@ -135,7 +135,7 @@ final class SQLRIFContextManager
 		try {
 		
 			//Create SQL query		
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("geography");
@@ -169,7 +169,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeographies");
 			
@@ -186,8 +186,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(dbResultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(dbResultSet);
 		}		
 	}
 
@@ -218,7 +218,7 @@ final class SQLRIFContextManager
 		try {
 		
 			//Create SQL query		
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("theme");
@@ -251,7 +251,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetHealthThemes");
@@ -268,8 +268,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(dbResultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(dbResultSet);
 		}		
 	}
 	
@@ -312,7 +312,7 @@ final class SQLRIFContextManager
 		try {
 		
 			//Create SQL query		
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("numerator_description");
@@ -373,7 +373,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
@@ -392,8 +392,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(dbResultSet);			
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(dbResultSet);			
 		}
 		
 	}
@@ -426,7 +426,7 @@ final class SQLRIFContextManager
 	
 		try {
 			//Create SQL query		
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("numerator_table");
@@ -484,7 +484,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
@@ -503,8 +503,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(dbResultSet);			
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(dbResultSet);			
 		}
 		
 		return results;
@@ -553,8 +553,8 @@ final class SQLRIFContextManager
 					
 			//Obtain the maximum value for geolevel_id. We need to return
 			//all geolevel choices which have a priority less than this
-			SQLAggregateValueQueryFormatter maximumGeoLevelIDQueryFormatter
-				= new SQLAggregateValueQueryFormatter(SQLAggregateValueQueryFormatter.OperationType.MAX);
+			PGSQLAggregateValueQueryFormatter maximumGeoLevelIDQueryFormatter
+				= new PGSQLAggregateValueQueryFormatter(PGSQLAggregateValueQueryFormatter.OperationType.MAX);
 			configureQueryFormatterForDB(maximumGeoLevelIDQueryFormatter);
 			maximumGeoLevelIDQueryFormatter.setCountableFieldName("geolevel_id");
 			maximumGeoLevelIDQueryFormatter.setFromTable("rif40_geolevels");
@@ -583,8 +583,8 @@ final class SQLRIFContextManager
 			}
 		
 			//Create SQL query		
-			SQLSelectQueryFormatter getGeoLevelSelectValuesQueryFormatter 
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter getGeoLevelSelectValuesQueryFormatter 
+				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(getGeoLevelSelectValuesQueryFormatter);
 			getGeoLevelSelectValuesQueryFormatter.addSelectField("geolevel_name");
 			getGeoLevelSelectValuesQueryFormatter.addFromTable("rif40_geolevels");
@@ -620,7 +620,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {		
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -630,10 +630,10 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(getMaxGeoLevelIDStatement);
-			SQLQueryUtility.close(getMaxGeoLevelIDResultSet);			
-			SQLQueryUtility.close(getGeoLevelSelectStatement);
-			SQLQueryUtility.close(getGeoLevelSelectResultSet);			
+			PGSQLQueryUtility.close(getMaxGeoLevelIDStatement);
+			PGSQLQueryUtility.close(getMaxGeoLevelIDResultSet);			
+			PGSQLQueryUtility.close(getGeoLevelSelectStatement);
+			PGSQLQueryUtility.close(getGeoLevelSelectResultSet);			
 		}		
 		return results;		
 	}
@@ -664,7 +664,7 @@ final class SQLRIFContextManager
 		try {
 		
 			//Create SQL query		
-			SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("defaultcomparea");
 			queryFormatter.addFromTable("rif40_geographies");
@@ -703,7 +703,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelSelect");
 
@@ -721,8 +721,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(dbResultSet);			
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(dbResultSet);			
 		}		
 	}
 
@@ -752,8 +752,8 @@ final class SQLRIFContextManager
 
 		//First, obtain the name of the table that will contain the names of 
 		//areas		
-		SQLSelectQueryFormatter lookupTableQueryFormatter 
-			= new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter lookupTableQueryFormatter 
+			= new PGSQLSelectQueryFormatter();
 		configureQueryFormatterForDB(lookupTableQueryFormatter);
 		lookupTableQueryFormatter.addSelectField("lookup_table");
 		lookupTableQueryFormatter.addFromTable("rif40_geolevels");
@@ -804,8 +804,8 @@ final class SQLRIFContextManager
 			}
 
 			//Given the lookup table name, retrieve the areas
-			SQLSelectQueryFormatter geographicAreaQueryFormatter
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter geographicAreaQueryFormatter
+				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(geographicAreaQueryFormatter);
 			geographicAreaQueryFormatter.addSelectField(geoLevelSelect.getName());		
 			geographicAreaQueryFormatter.addSelectField("name");
@@ -846,7 +846,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -857,10 +857,10 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(lookupTableStatement);
-			SQLQueryUtility.close(lookupTableResultSet);				
-			SQLQueryUtility.close(geographicAreaStatement);
-			SQLQueryUtility.close(geographicAreaResultSet);			
+			PGSQLQueryUtility.close(lookupTableStatement);
+			PGSQLQueryUtility.close(lookupTableResultSet);				
+			PGSQLQueryUtility.close(geographicAreaStatement);
+			PGSQLQueryUtility.close(geographicAreaResultSet);			
 		}
 				
 		return results;		
@@ -904,8 +904,8 @@ final class SQLRIFContextManager
 		try {
 			
 			//Create SQL query		
-			SQLSelectQueryFormatter geoLevelIDQueryFormatter 
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter geoLevelIDQueryFormatter 
+				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(geoLevelIDQueryFormatter);
 			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
 			geoLevelIDQueryFormatter.addFromTable("rif40_geolevels");
@@ -940,8 +940,8 @@ final class SQLRIFContextManager
 				throw rifServiceException;
 			}
 		
-			SQLSelectQueryFormatter geoLevelViewsQueryFormatter 
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter geoLevelViewsQueryFormatter 
+				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(geoLevelViewsQueryFormatter);
 			geoLevelViewsQueryFormatter.addSelectField("geolevel_name");
 			geoLevelViewsQueryFormatter.addFromTable("rif40_geolevels");
@@ -978,7 +978,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -989,10 +989,10 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(geoLevelIDStatement);
-			SQLQueryUtility.close(geoLevelIDResultSet);			
-			SQLQueryUtility.close(geoLevelViewsStatement);
-			SQLQueryUtility.close(geoLevelViewsResultSet);			
+			PGSQLQueryUtility.close(geoLevelIDStatement);
+			PGSQLQueryUtility.close(geoLevelIDResultSet);			
+			PGSQLQueryUtility.close(geoLevelViewsStatement);
+			PGSQLQueryUtility.close(geoLevelViewsResultSet);			
 		}		
 	}
 		
@@ -1027,8 +1027,8 @@ final class SQLRIFContextManager
 		try {
 			
 			//Create SQL query		
-			SQLSelectQueryFormatter geoLevelIDQueryFormatter 
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter geoLevelIDQueryFormatter 
+				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(geoLevelIDQueryFormatter);
 			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
 			geoLevelIDQueryFormatter.addFromTable("rif40_geolevels");
@@ -1078,8 +1078,8 @@ final class SQLRIFContextManager
 				throw rifServiceException;
 			}
 			
-			SQLSelectQueryFormatter geoLevelToMapQueryFormatter 
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter geoLevelToMapQueryFormatter 
+				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(geoLevelToMapQueryFormatter);
 			geoLevelToMapQueryFormatter.addSelectField("geolevel_name");
 			geoLevelToMapQueryFormatter.addFromTable("rif40_geolevels");
@@ -1115,7 +1115,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelToMap");
 			RIFServiceException rifServiceException
@@ -1133,10 +1133,10 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(geoLevelIDStatement);
-			SQLQueryUtility.close(geoLevelIDResultSet);			
-			SQLQueryUtility.close(geoLevelToMapStatement);
-			SQLQueryUtility.close(geoLevelToMapResultSet);			
+			PGSQLQueryUtility.close(geoLevelIDStatement);
+			PGSQLQueryUtility.close(geoLevelIDResultSet);			
+			PGSQLQueryUtility.close(geoLevelToMapStatement);
+			PGSQLQueryUtility.close(geoLevelToMapResultSet);			
 		}
 			
 	}
@@ -1201,8 +1201,8 @@ final class SQLRIFContextManager
 		try {
 		
 			//Create SQL query
-			SQLRecordExistsQueryFormatter queryFormatter
-				= new SQLRecordExistsQueryFormatter();
+			PGSQLRecordExistsQueryFormatter queryFormatter
+				= new PGSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setFromTable("rif40_geographies");
 			queryFormatter.setLookupKeyFieldName("geography");
@@ -1245,7 +1245,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {	
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("geography.label");
 			String errorMessage
@@ -1268,8 +1268,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(checkGeographyExistsStatement);
-			SQLQueryUtility.close(checkGeographyExistsResultSet);			
+			PGSQLQueryUtility.close(checkGeographyExistsStatement);
+			PGSQLQueryUtility.close(checkGeographyExistsResultSet);			
 		}
 	}
 	
@@ -1292,8 +1292,8 @@ final class SQLRIFContextManager
 		try {
 
 			//Create SQL query
-			SQLRecordExistsQueryFormatter queryFormatter
-				= new SQLRecordExistsQueryFormatter();
+			PGSQLRecordExistsQueryFormatter queryFormatter
+				= new PGSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("geolevel_name");
 			queryFormatter.setFromTable("rif40_geolevels");
@@ -1343,7 +1343,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("geoLevelSelect.label");			
 			String errorMessage
@@ -1366,8 +1366,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(checkGeoLevelViewExistsStatement);
-			SQLQueryUtility.close(checkGeoLevelViewExistsResultSet);			
+			PGSQLQueryUtility.close(checkGeoLevelViewExistsStatement);
+			PGSQLQueryUtility.close(checkGeoLevelViewExistsResultSet);			
 		}		
 	}
 		
@@ -1402,7 +1402,7 @@ final class SQLRIFContextManager
 		ResultSet geoLevelAreaExistsResultSet = null;
 		ResultSet getLookupTableResultSet = null;
 		try {
-			SQLSelectQueryFormatter lookupTableQueryQueryFormatter = new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter lookupTableQueryQueryFormatter = new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(lookupTableQueryQueryFormatter);
 			lookupTableQueryQueryFormatter.addSelectField("lookup_table");
 			lookupTableQueryQueryFormatter.addFromTable("rif40_geolevels");
@@ -1435,8 +1435,8 @@ final class SQLRIFContextManager
 			}
 		
 			//Check whether the name exists
-			SQLRecordExistsQueryFormatter recordExistsQueryFormatter 
-				= new SQLRecordExistsQueryFormatter();
+			PGSQLRecordExistsQueryFormatter recordExistsQueryFormatter 
+				= new PGSQLRecordExistsQueryFormatter();
 			recordExistsQueryFormatter.setFromTable(geoLevelSelectLookupTable);
 			recordExistsQueryFormatter.setLookupKeyFieldName("name");
 		
@@ -1478,7 +1478,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -1488,10 +1488,10 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(getLookupTableStatement);
-			SQLQueryUtility.close(getLookupTableResultSet);			
-			SQLQueryUtility.close(getLookupTableStatement);
-			SQLQueryUtility.close(getLookupTableResultSet);			
+			PGSQLQueryUtility.close(getLookupTableStatement);
+			PGSQLQueryUtility.close(getLookupTableResultSet);			
+			PGSQLQueryUtility.close(getLookupTableStatement);
+			PGSQLQueryUtility.close(getLookupTableResultSet);			
 		}	
 		
 	}
@@ -1540,8 +1540,8 @@ final class SQLRIFContextManager
 		try {
 		
 			//Obtain the minimimum geolevel ID that the geoLevelMap needs to have
-			SQLSelectQueryFormatter geoLevelIDQueryFormatter 
-				= new SQLSelectQueryFormatter();
+			PGSQLSelectQueryFormatter geoLevelIDQueryFormatter 
+				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(geoLevelIDQueryFormatter);		
 			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
 			geoLevelIDQueryFormatter.addFromTable("rif40_geolevels");
@@ -1572,8 +1572,8 @@ final class SQLRIFContextManager
 				geoLevelID = geoLevelIDResultSet.getInt(1);
 			}
 			
-			SQLRecordExistsQueryFormatter geoLevelMapExistsQueryFormatter
-				= new SQLRecordExistsQueryFormatter();
+			PGSQLRecordExistsQueryFormatter geoLevelMapExistsQueryFormatter
+				= new PGSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(geoLevelMapExistsQueryFormatter);		
 			geoLevelMapExistsQueryFormatter.setFromTable("rif40_geolevels");
 			geoLevelMapExistsQueryFormatter.addWhereParameter("geography");
@@ -1642,7 +1642,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -1653,10 +1653,10 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(geoLevelIDStatement);
-			SQLQueryUtility.close(geoLevelIDResultSet);			
-			SQLQueryUtility.close(geoLevelValueExistsStatement);
-			SQLQueryUtility.close(geoLevelValueExistsResultSet);			
+			PGSQLQueryUtility.close(geoLevelIDStatement);
+			PGSQLQueryUtility.close(geoLevelIDResultSet);			
+			PGSQLQueryUtility.close(geoLevelValueExistsStatement);
+			PGSQLQueryUtility.close(geoLevelValueExistsResultSet);			
 		}				
 	}
 
@@ -1677,8 +1677,8 @@ final class SQLRIFContextManager
 		final boolean isToMapValue) 
 		throws RIFServiceException {
 
-		SQLRecordExistsQueryFormatter queryFormatter 
-			= new SQLRecordExistsQueryFormatter();
+		PGSQLRecordExistsQueryFormatter queryFormatter 
+			= new PGSQLRecordExistsQueryFormatter();
 		configureQueryFormatterForDB(queryFormatter);		
 		queryFormatter.setFromTable("rif40_geolevels");
 		queryFormatter.addWhereParameter("geography");
@@ -1765,7 +1765,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				SQLRIFContextManager.class, 
@@ -1776,8 +1776,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);			
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);			
 		}
 		
 	}
@@ -1797,8 +1797,8 @@ final class SQLRIFContextManager
 		PreparedStatement checkHealthThemeExistsStatement = null;
 		ResultSet checkHealthThemeExistsResultSet = null;
 		try {
-			SQLRecordExistsQueryFormatter queryFormatter
-				= new SQLRecordExistsQueryFormatter();
+			PGSQLRecordExistsQueryFormatter queryFormatter
+				= new PGSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setLookupKeyFieldName("description");
 			queryFormatter.setFromTable("rif40_health_study_themes");
@@ -1841,7 +1841,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("healthTheme.label");
 			String errorMessage
@@ -1864,8 +1864,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(checkHealthThemeExistsStatement);
-			SQLQueryUtility.close(checkHealthThemeExistsResultSet);			
+			PGSQLQueryUtility.close(checkHealthThemeExistsStatement);
+			PGSQLQueryUtility.close(checkHealthThemeExistsResultSet);			
 		}		
 	}	
 
@@ -1886,8 +1886,8 @@ final class SQLRIFContextManager
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
 		try {
-			SQLRecordExistsQueryFormatter ndPairExistsQueryFormatter
-				= new SQLRecordExistsQueryFormatter();
+			PGSQLRecordExistsQueryFormatter ndPairExistsQueryFormatter
+				= new PGSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(ndPairExistsQueryFormatter);		
 			ndPairExistsQueryFormatter.setFromTable("rif40_num_denom");
 			ndPairExistsQueryFormatter.addWhereParameter("geography");
@@ -1933,7 +1933,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);			
+			PGSQLQueryUtility.rollback(connection);			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -1954,8 +1954,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(getNDPairExistsStatement);
-			SQLQueryUtility.close(getNDPairExistsResultSet);						
+			PGSQLQueryUtility.close(getNDPairExistsStatement);
+			PGSQLQueryUtility.close(getNDPairExistsResultSet);						
 		}		
 	}
 
@@ -1976,8 +1976,8 @@ final class SQLRIFContextManager
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
 		try {
-			SQLRecordExistsQueryFormatter queryFormatter
-				= new SQLRecordExistsQueryFormatter();
+			PGSQLRecordExistsQueryFormatter queryFormatter
+				= new PGSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setFromTable("rif40_num_denom");
 			queryFormatter.addWhereParameter("geography");
@@ -2023,7 +2023,7 @@ final class SQLRIFContextManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);			
+			PGSQLQueryUtility.rollback(connection);			
 			String recordType
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.numerator.label");
 			String errorMessage
@@ -2046,8 +2046,8 @@ final class SQLRIFContextManager
 		}
 		finally {
 			//Cleanup database resources
-			SQLQueryUtility.close(getNDPairExistsStatement);
-			SQLQueryUtility.close(getNDPairExistsResultSet);						
+			PGSQLQueryUtility.close(getNDPairExistsStatement);
+			PGSQLQueryUtility.close(getNDPairExistsResultSet);						
 		}		
 	}
 	

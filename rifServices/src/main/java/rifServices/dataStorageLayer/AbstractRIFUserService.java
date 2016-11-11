@@ -7,8 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractCovariate;
@@ -1464,8 +1464,8 @@ class AbstractRIFUserService extends AbstractRIFService {
 		final String studyID)
 		throws RIFServiceException {
 					
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter
+			= new PGSQLSelectQueryFormatter();
 		queryFormatter.addSelectField("study_name");
 		queryFormatter.addFromTable("rif40_studies");
 		queryFormatter.addWhereParameter("study_id");
@@ -1474,7 +1474,7 @@ class AbstractRIFUserService extends AbstractRIFService {
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= SQLQueryUtility.createPreparedStatement(
+				= PGSQLQueryUtility.createPreparedStatement(
 					connection, 
 					queryFormatter);
 			statement.setInt(
@@ -1509,8 +1509,8 @@ class AbstractRIFUserService extends AbstractRIFService {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 			
 	}

@@ -2,6 +2,8 @@ package rifServices.dataStorageLayer;
 
 import rifServices.system.*;
 import rifGenericLibrary.dataStorageLayer.*;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 
@@ -124,7 +126,7 @@ final class SQLGenerateResultsSubmissionStep
 			
 			enableDatabaseDebugMessages(connection);		
 			
-			SQLFunctionCallerQueryFormatter runStudyQueryFormatter = new SQLFunctionCallerQueryFormatter();
+			PGSQLFunctionCallerQueryFormatter runStudyQueryFormatter = new PGSQLFunctionCallerQueryFormatter();
 			runStudyQueryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
 			runStudyQueryFormatter.setFunctionName("rif40_run_study");
 			runStudyQueryFormatter.setNumberOfFunctionParameters(2);
@@ -167,7 +169,7 @@ final class SQLGenerateResultsSubmissionStep
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			SQLQueryUtility.rollback(connection);
+			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToRunStudy",
@@ -187,10 +189,10 @@ final class SQLGenerateResultsSubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			SQLQueryUtility.close(runStudyStatement);
-			SQLQueryUtility.close(runStudyResultSet);
-			SQLQueryUtility.close(computeResultsStatement);
-			SQLQueryUtility.close(computeResultSet);
+			PGSQLQueryUtility.close(runStudyStatement);
+			PGSQLQueryUtility.close(runStudyResultSet);
+			PGSQLQueryUtility.close(computeResultsStatement);
+			PGSQLQueryUtility.close(computeResultSet);
 		}
 	}
 		

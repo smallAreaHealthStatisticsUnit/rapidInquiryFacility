@@ -5,10 +5,9 @@ import java.util.Date;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.businessConceptLayer.RIFUserRole;
-
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.SQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
@@ -94,8 +93,8 @@ final class PGSQLUserManager {
 		final Date expirationDate)
 		throws RIFServiceException {
 
-		SQLFunctionCallerQueryFormatter queryFormatter
-			= new SQLFunctionCallerQueryFormatter();
+		PGSQLFunctionCallerQueryFormatter queryFormatter
+			= new PGSQLFunctionCallerQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_add_user");
 		queryFormatter.setNumberOfFunctionParameters(4);
@@ -136,7 +135,7 @@ final class PGSQLUserManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -149,8 +148,8 @@ final class PGSQLUserManager {
 		final Date expirationDate) 
 		throws RIFServiceException {
 		
-		SQLFunctionCallerQueryFormatter queryFormatter
-			= new SQLFunctionCallerQueryFormatter();
+		PGSQLFunctionCallerQueryFormatter queryFormatter
+			= new PGSQLFunctionCallerQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_alter_user");
 		queryFormatter.setNumberOfFunctionParameters(4);
@@ -192,7 +191,7 @@ final class PGSQLUserManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}			
 	}
 			
@@ -201,8 +200,8 @@ final class PGSQLUserManager {
 		final User user) 
 		throws RIFServiceException {
 					
-		SQLFunctionCallerQueryFormatter queryFormatter
-			= new SQLFunctionCallerQueryFormatter();
+		PGSQLFunctionCallerQueryFormatter queryFormatter
+			= new PGSQLFunctionCallerQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_delete_user");
 		queryFormatter.setNumberOfFunctionParameters(1);
@@ -226,7 +225,7 @@ final class PGSQLUserManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}			
 			
 	}

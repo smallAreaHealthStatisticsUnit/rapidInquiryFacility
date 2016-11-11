@@ -1,18 +1,15 @@
 package rifServices.dataStorageLayer;
 
 import rifServices.system.RIFServiceStartupOptions;
-
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
 import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.Sex;
-
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.SQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLCountTableRowsQueryFormatter;
-
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCountTableRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.businessConceptLayer.User;
@@ -250,7 +247,7 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 		String mapTableName
 			= deriveMapTableName(studyID);
 		
-		SQLSelectQueryFormatter queryFormatter = new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 		queryFormatter.setUseDistinct(true);
 		queryFormatter.addSelectField("genders");
 		queryFormatter.addFromTable(mapTableName);
@@ -286,8 +283,8 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}		
 		
 		return results;
@@ -300,8 +297,8 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 				
 		String extractTableName
 			= deriveExtractTableName(studyID);
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter
+			= new PGSQLSelectQueryFormatter();
 		queryFormatter.setUseDistinct(true);
 		queryFormatter.addSelectField("year");
 		queryFormatter.addFromTable(extractTableName);
@@ -331,8 +328,8 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}		
 		
 		return results;
@@ -628,10 +625,10 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 			throw rifServiceException;			
 		}
 		finally {
-			SQLQueryUtility.close(totalRowCountResultSet);
-			SQLQueryUtility.close(smoothedResultSet);
-			SQLQueryUtility.close(countTableRowsStatement);
-			SQLQueryUtility.close(retrieveDataStatement);
+			PGSQLQueryUtility.close(totalRowCountResultSet);
+			PGSQLQueryUtility.close(smoothedResultSet);
+			PGSQLQueryUtility.close(countTableRowsStatement);
+			PGSQLQueryUtility.close(retrieveDataStatement);
 		}
 			
 	}
@@ -709,7 +706,7 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 		
 		String extractTableName = deriveExtractTableName(studyID);
 		
-		SQLCountTableRowsQueryFormatter getPyramidResultsCounter = new SQLCountTableRowsQueryFormatter();
+		PGSQLCountTableRowsQueryFormatter getPyramidResultsCounter = new PGSQLCountTableRowsQueryFormatter();
 		getPyramidResultsCounter.setCountFieldName("age_group", true);
 		getPyramidResultsCounter.setTableName(extractTableName);
 		
@@ -819,11 +816,11 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(resultCounterStatement);
-			SQLQueryUtility.close(resultCounterSet);			
+			PGSQLQueryUtility.close(resultCounterStatement);
+			PGSQLQueryUtility.close(resultCounterSet);			
 
-			SQLQueryUtility.close(mainResultsStatement);
-			SQLQueryUtility.close(mainResultSet);		
+			PGSQLQueryUtility.close(mainResultsStatement);
+			PGSQLQueryUtility.close(mainResultSet);		
 		}
 	}
 
@@ -837,7 +834,7 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 		
 		String extractTableName = deriveExtractTableName(studyID);
 		
-		SQLCountTableRowsQueryFormatter getPyramidResultsCounter = new SQLCountTableRowsQueryFormatter();
+		PGSQLCountTableRowsQueryFormatter getPyramidResultsCounter = new PGSQLCountTableRowsQueryFormatter();
 		getPyramidResultsCounter.setCountFieldName("age_group", true);
 		getPyramidResultsCounter.setTableName(extractTableName);
 		
@@ -973,11 +970,11 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(resultCounterStatement);
-			SQLQueryUtility.close(resultCounterSet);			
+			PGSQLQueryUtility.close(resultCounterStatement);
+			PGSQLQueryUtility.close(resultCounterSet);			
 
-			SQLQueryUtility.close(mainResultsStatement);
-			SQLQueryUtility.close(mainResultSet);		
+			PGSQLQueryUtility.close(mainResultsStatement);
+			PGSQLQueryUtility.close(mainResultSet);		
 		}
 	}
 	
@@ -1006,8 +1003,8 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 	public void extractCursorResults(final Connection connection) 
 		throws RIFServiceException {
 			
-		SQLSelectQueryFormatter queryFormatter
-			= new SQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter
+			= new PGSQLSelectQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif_studies");
 		queryFormatter.addSelectField("area_id");
 		queryFormatter.addSelectField("observed");
@@ -1041,8 +1038,8 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 			
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 		
 	}

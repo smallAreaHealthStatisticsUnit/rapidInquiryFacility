@@ -5,11 +5,10 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
-
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -163,8 +162,8 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			throw rifServiceException;			
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(connection);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(connection);
 		}
 		
 	}
@@ -211,8 +210,8 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			throw rifServiceException;			
 		}
 		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(connection);
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(connection);
 		}
 		
 	}
@@ -224,8 +223,8 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 		PreparedStatement statement = null;
 		try {			
 			//create covariates table
-			SQLCreateTableQueryFormatter createCovariateTableQueryFormatter
-				= new SQLCreateTableQueryFormatter();
+			PGSQLCreateTableQueryFormatter createCovariateTableQueryFormatter
+				= new PGSQLCreateTableQueryFormatter();
 			createCovariateTableQueryFormatter.setTableName("rif40_covariates");
 			createCovariateTableQueryFormatter.addTextFieldDeclaration(
 				"geography", 
@@ -253,7 +252,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 				false);
 		
 			statement
-				= SQLQueryUtility.createPreparedStatement(
+				= PGSQLQueryUtility.createPreparedStatement(
 					connection, 
 					createCovariateTableQueryFormatter);
 		
@@ -271,7 +270,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 			
 		}
 	}
@@ -296,14 +295,14 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 				0, 
 				"CREATE SEQUENCE data_set_sequence;");
 			createIDSequenceStatement
-				= SQLQueryUtility.createPreparedStatement(
+				= PGSQLQueryUtility.createPreparedStatement(
 						connection, 
 						createIDSequenceQueryFormatter);
 			createIDSequenceStatement.executeUpdate();
 			
 			//Make the 'id' field get its value from the sequence
-			SQLCreateTableQueryFormatter createDataSetConfigurationsTableFormatter 
-				= new SQLCreateTableQueryFormatter();
+			PGSQLCreateTableQueryFormatter createDataSetConfigurationsTableFormatter 
+				= new PGSQLCreateTableQueryFormatter();
 			createDataSetConfigurationsTableFormatter.setTableName("data_set_configurations");
 			createDataSetConfigurationsTableFormatter.addSequenceField("id", "data_set_sequence");
 			createDataSetConfigurationsTableFormatter.addTextFieldDeclaration("core_data_set_name", 50, false);
@@ -317,7 +316,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 				false);
 			
 			createDataSetConfigurationTableStatement
-				= SQLQueryUtility.createPreparedStatement(
+				= PGSQLQueryUtility.createPreparedStatement(
 					connection, 
 					createDataSetConfigurationsTableFormatter);
 			
@@ -338,7 +337,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			sequenceOwnershipQueryFormatter.addQueryPhrase("OWNED BY ");
 			sequenceOwnershipQueryFormatter.addQueryPhrase("data_set_configurations.id;");
 			sequenceOwnershipStatement
-				= SQLQueryUtility.createPreparedStatement(
+				= PGSQLQueryUtility.createPreparedStatement(
 					connection, 
 					sequenceOwnershipQueryFormatter);
 			sequenceOwnershipStatement.executeUpdate();			
@@ -355,9 +354,9 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(createIDSequenceStatement);
-			SQLQueryUtility.close(createDataSetConfigurationTableStatement);
-			SQLQueryUtility.close(sequenceOwnershipStatement);		
+			PGSQLQueryUtility.close(createIDSequenceStatement);
+			PGSQLQueryUtility.close(createDataSetConfigurationTableStatement);
+			PGSQLQueryUtility.close(sequenceOwnershipStatement);		
 		}	
 		
 	}
@@ -368,8 +367,8 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 		
 		PreparedStatement statement = null;
 		try {
-			SQLCreateTableQueryFormatter queryFormatter
-				= new SQLCreateTableQueryFormatter();
+			PGSQLCreateTableQueryFormatter queryFormatter
+				= new PGSQLCreateTableQueryFormatter();
 			queryFormatter.setTableName("rif_change_log");
 
 			queryFormatter.addIntegerFieldDeclaration(
@@ -399,7 +398,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 		
 			queryFormatter.addCreationTimestampField("time_stamp");
 			statement
-				= SQLQueryUtility.createPreparedStatement(
+				= PGSQLQueryUtility.createPreparedStatement(
 				connection, 
 				queryFormatter);
 			statement.executeUpdate();
@@ -423,8 +422,8 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 		
 		PreparedStatement statement = null;
 		try {
-			SQLCreateTableQueryFormatter queryFormatter
-				= new SQLCreateTableQueryFormatter();
+			PGSQLCreateTableQueryFormatter queryFormatter
+				= new PGSQLCreateTableQueryFormatter();
 			queryFormatter.setTableName("rif_failed_val_log");
 
 			queryFormatter.addIntegerFieldDeclaration(
@@ -448,7 +447,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 		
 			queryFormatter.addCreationTimestampField("time_stamp");
 			statement
-				= SQLQueryUtility.createPreparedStatement(
+				= PGSQLQueryUtility.createPreparedStatement(
 				connection, 
 				queryFormatter);
 			statement.executeUpdate();
@@ -472,12 +471,12 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 		
 		PreparedStatement deleteCovariateTableStatement = null;
 		try {
-			SQLDeleteTableQueryFormatter deleteCovariateTableQueryFormatter
-				= new SQLDeleteTableQueryFormatter();
+			PGSQLDeleteTableQueryFormatter deleteCovariateTableQueryFormatter
+				= new PGSQLDeleteTableQueryFormatter();
 			deleteCovariateTableQueryFormatter.setTableToDelete("rif40_covariates");
 
 			deleteCovariateTableStatement
-				= SQLQueryUtility.createPreparedStatement(
+				= PGSQLQueryUtility.createPreparedStatement(
 					connection, 
 					deleteCovariateTableQueryFormatter);
 			
@@ -495,7 +494,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(deleteCovariateTableStatement);
+			PGSQLQueryUtility.close(deleteCovariateTableStatement);
 		}	
 	}
 	

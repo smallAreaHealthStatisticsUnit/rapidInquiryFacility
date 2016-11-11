@@ -1,5 +1,6 @@
 package rifGenericLibrary.dataStorageLayer;
 
+
 /**
  * This is a query formatter that can be used when no other query formatting classes
  * (eg: SQLSelectQueryFormatter, SQLCountQueryFormatter do not seem to fit.)

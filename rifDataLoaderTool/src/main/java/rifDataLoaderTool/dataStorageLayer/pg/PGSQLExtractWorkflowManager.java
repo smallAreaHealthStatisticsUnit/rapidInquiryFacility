@@ -9,11 +9,11 @@ import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.dataStorageLayer.SQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLDeleteTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -126,7 +126,7 @@ final class PGSQLExtractWorkflowManager
 				sqlException);
 		}
 		finally {
-			SQLQueryUtility.close(connection);
+			PGSQLQueryUtility.close(connection);
 		}
 		return resultTable;
 	}
@@ -159,8 +159,8 @@ final class PGSQLExtractWorkflowManager
 			
 			//drop the table if it already exists so we can recreate it
 			//without raising a 'table already exists' exception
-			SQLCreateTableQueryFormatter createExtractTableQueryFormatter
-				 = new SQLCreateTableQueryFormatter();
+			PGSQLCreateTableQueryFormatter createExtractTableQueryFormatter
+				 = new PGSQLCreateTableQueryFormatter();
 			createExtractTableQueryFormatter.setTextFieldLength(TEXT_FIELD_WIDTH);
 			createExtractTableQueryFormatter.setTableName(targetExtractTable);
 
@@ -239,7 +239,7 @@ final class PGSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {			
-			SQLQueryUtility.close(createExtractTableStatement);
+			PGSQLQueryUtility.close(createExtractTableStatement);
 		}	
 	}
 	
@@ -321,7 +321,7 @@ final class PGSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}		
 		
 		
@@ -370,7 +370,7 @@ final class PGSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}		
 	}
 	public void addExtractTableData(
@@ -384,8 +384,8 @@ final class PGSQLExtractWorkflowManager
 			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(
 					dataSetConfiguration.getName());		
 		
-		SQLInsertQueryFormatter queryFormatter 
-			= new SQLInsertQueryFormatter();
+		PGSQLInsertQueryFormatter queryFormatter 
+			= new PGSQLInsertQueryFormatter();
 		queryFormatter.setIntoTable(loadTableName);
 		queryFormatter.addInsertField("data_source_id");
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
@@ -422,7 +422,7 @@ final class PGSQLExtractWorkflowManager
 				sqlException);
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -446,8 +446,8 @@ final class PGSQLExtractWorkflowManager
 			 * it uses a drop-if-exists, which is a construction that may be
 			 * supported differently in SQL Server
 			 */				
-			SQLDeleteTableQueryFormatter deleteExtractTableQueryFormatter
-				= new SQLDeleteTableQueryFormatter();
+			PGSQLDeleteTableQueryFormatter deleteExtractTableQueryFormatter
+				= new PGSQLDeleteTableQueryFormatter();
 			deleteExtractTableQueryFormatter.setTableToDelete(tableToDelete);
 
 			statement 
@@ -468,7 +468,7 @@ final class PGSQLExtractWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(statement);			
+			PGSQLQueryUtility.close(statement);			
 		}	
 	}
 		
