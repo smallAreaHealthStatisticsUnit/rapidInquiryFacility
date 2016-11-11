@@ -22,7 +22,18 @@ import java.io.*;
 
 
 /**
- * manages database calls related to cleaning a data source.
+ * Contains the code used to apply data quality assessments of 
+ * individual CSV fields.  The two types are:
+ * <ul>
+ * <li>
+ * report the percent of empty field values for a given column
+ * </li>
+ * <li>
+ * report the percent of empty field values for a given column for
+ * a given year.
+ * </li>
+ * </ul>
+ *
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area

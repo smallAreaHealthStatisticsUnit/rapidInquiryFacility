@@ -18,9 +18,19 @@ import java.util.ArrayList;
 import java.io.*;
 
 /**
- * Manages code used to store and retrieve information about data sources that are
- * processed by the RIF Data Loader Tool.
+ * This manager class provides the code used to record descriptions of data 
+ * cleaning changes.  It will audit two types of changes 
+ * <ul>
+ * <li>
+ * changes made: eg "Row W field X changed from Y to Z"
+ * </li>
+ * <li>
+ * validation failures: eg "row W field X had invalid field value Y"
+ * </li>
+ * </ul>
  *
+ * <p>
+ * The sentiment of these will be recorded in CSV tables.
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
