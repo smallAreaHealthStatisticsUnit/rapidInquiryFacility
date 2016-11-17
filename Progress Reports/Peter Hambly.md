@@ -725,6 +725,8 @@ RangeError: Invalid string length
 
 * Map tile generator prototype; topoJSON tiles and SVG tile creation
 
+#### 14th to 18th November
+
 #### Current TODO list (November):
 
 * JSZip 3.0 upgrade required (forced to 2.6.0) for present

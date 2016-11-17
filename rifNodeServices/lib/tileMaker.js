@@ -47,7 +47,8 @@
 const serverLog = require('../lib/serverLog'),
 	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
 	  httpErrorResponse = require('../lib/httpErrorResponse'),
-	  scopeChecker = require('../lib/scopeChecker');
+	  scopeChecker = require('../lib/scopeChecker'),
+	  svg2png = require('../lib/svg2png-many-mod');
 
 const async = require('async'),
 	  os = require('os'),
@@ -64,13 +65,12 @@ const async = require('async'),
 	  proj4 = require("proj4"),
 	  wellknown = require('wellknown'),
 	  topojson = require('topojson'),
-	  sizeof = require('object-sizeof'),
-	  svg2png = require('svg2png-many');
+	  sizeof = require('object-sizeof');
 
 /*
  * Function: 	createSVGTile
  * Parameters:	geolevel, zoomlevel, X, Y, callback, insertion geoJSON
- * Returns:		tile X
+ * Returns:		{svgString, clipRect}
  * Description: Create SVG tile from geoJSON
  */
 var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson) {
@@ -79,18 +79,44 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
 		bbox: geojson.bbox
 	});
 //
-// Get bounding box from intersection, reproject to 3857
+// Get bounding box from tile X/Y, reproject to 3857
 //
-	var bboxPolygon = turf.bboxPolygon(geojson.bbox);		
+	var bbox=geojson.bbox;
+	bbox[0]=tile2longitude(x, zoomlevel); 	/* Xmin (4326); e.g. -179.13729006727 */
+	bbox[1]=tile2latitude(y, zoomlevel);	/* Ymin (4326); e.g. -14.3737802873213 */
+	bbox[2]=tile2longitude(x+1, zoomlevel);	/* Xmax (4326); e.g.  179.773803959804 */
+	bbox[3]=tile2latitude(y+1, zoomlevel);	/* Ymax (4326); e.g. 71.352561 */
+	var bboxPolygon = turf.bboxPolygon(bbox);	
+	bboxPolygon.properties.id='bound';	
+// Could use: turf-bbox-clip:
+//	for (var i=0; i<geojson.features.length; i++) {
+//		turf.bbox-clip(geojson.features[i], bbox);		
+//	}
+	geojson.features.push(bboxPolygon);		// Add bounding box for debug purposes
 	var bbox3857Polygon = reproject.reproject(
-		bboxPolygon,'EPSG:4326','EPSG:3857',proj4.defs);
+		bboxPolygon, 'EPSG:4326', 'EPSG:3857', proj4.defs);
 	var mapExtent={ 
 		left: bbox3857Polygon.geometry.coordinates[0][0][0], 	// Xmin
 		bottom: bbox3857Polygon.geometry.coordinates[0][1][1], 	// Ymin
 		right: bbox3857Polygon.geometry.coordinates[0][2][0], 	// Xmax
 		top: bbox3857Polygon.geometry.coordinates[0][3][1] 		// Ymax
 	};	
+	var clipRect = { 
+		left: bbox3857Polygon.geometry.coordinates[0][0][0], 	// Xmin
+		top: bbox3857Polygon.geometry.coordinates[0][3][1],  	// Ymin
+		width: Math.abs(bbox3857Polygon.geometry.coordinates[0][2][0]-bbox3857Polygon.geometry.coordinates[0][0][0]), // Xmax-Xmin
+		height: Math.abs(bbox3857Polygon.geometry.coordinates[0][3][1]-bbox3857Polygon.geometry.coordinates[0][1][1]) // Ymax-Ymin 
+	};
+	var clipPath='<clipPath id="clipRect"><rect x="' + clipRect.left + '" y="' + clipRect.top + '" width="' + clipRect.width + '" height="' + clipRect.height + '" /></clipPath>';
+	/*
+	console.error('bbox: ' + JSON.stringify(bbox, null, 2));
+	console.error('bbox3857Polygon: ' + JSON.stringify(bbox3857Polygon, null, 2));
+	console.error('mapExtent: ' + JSON.stringify(mapExtent, null, 2));
+	console.error('clipRect: ' + JSON.stringify(clipRect, null, 2));
+	console.error('clipPath: ' + JSON.stringify(clipPath, null, 2));
 
+	throw new Error("XXX");
+*/
 	var svgFileName=geolevel_id + "/" + zoomlevel + "/" + x + "/" + y + ".svg";	
 	var svgOptions = {
 		mapExtent: mapExtent,
@@ -100,17 +126,22 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
 //
 // Reproject intersection to 3857 and convert to SVG
 //	
-	var intersection3857 = reproject.reproject(
-		geojson,'EPSG:4326','EPSG:3857',proj4.defs);
-	var svgString = converter.convert(intersection3857, svgOptions);
-	svgString='<?xml version="1.0" standalone="no"?>\n' +
-		' <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
-		'  <svg width="256" height="256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + 
-		'   ' + svgString + '\n' +
-		'  </svg>';
+	var geojson3857 = reproject.reproject(
+		geojson, 'EPSG:4326', 'EPSG:3857', proj4.defs);
+	var svgString = converter.convert(geojson3857, svgOptions);
+
+	var rval={
+		svgString: '<?xml version="1.0" standalone="no"?>\n' +
+			' <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
+			'  <svg width="256" height="256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + 
+			'   <defs>' + clipPath + '</defs>\n' +
+			'   ' + svgString + '\n' +
+			'  </svg>',
+		clipRect: clipRect
+	};
 //	console.error(svgFileName + "; size: " + nodeGeoSpatialServicesCommon.fileSize(sizeof(svgString)));
 
-	return svgString;
+	return rval;
 } // End of createSVGTile()
 	
 /*
@@ -162,7 +193,7 @@ var writeSVGTile = function writeSVGTile(path, geolevel_id, zoomlevel, X, Y, cal
 //
 // Write SVG file
 //		
-	svgStream.write(svgTile);
+	svgStream.write(svgTile.svgString);
 	svgStream.end();
 	
 } // End of writeSVGTile()
@@ -259,11 +290,11 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 		callback: endCallback
 	});
  
-	pgTileMaker(endCallback)										
+//	pgTileMaker(endCallback)										
 } // End of tileMaker()
 
 
-var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
+var pgTileMaker = function pgTileMaker(client, createPngfile, pgTileMakerCallback) {
 	
 	scopeChecker(__file, __line, { // Check callback
 		callback: pgTileMakerCallback
@@ -392,7 +423,7 @@ var pgTileMaker = function pgTileMaker(client, pgTileMakerCallback) {
 					this.topojson_options.verbose=false;
 				}
 				
-				// Create SVG tile		
+				// Create SVG tile				
 				this.svgTile=createSVGTile(this.geolevel_id, this.zoomlevel, this.x, this.y, this.geojson);
 				
 				this.topojson=topojson.topology({   // Convert geoJSON to topoJSON
@@ -713,9 +744,15 @@ REFERENCE (from shapefile) {
 			height: 256,
 			width: 256
 		};
+// 10:
+// 180 SVG files have been converted successfully in 102.967 S; 1.75 tiles/S		
+// 20:
+// 180 SVG files have been converted successfully in 101.856 S; 1.77 tiles/S
+// 40:
+// 180 SVG files have been converted successfully in 117.797 S; 1.53 tiles/S
 		var parallelPages = 20;
 		console.error('Converting ' + Object.keys(svgFileList).length + ' SVG files to PNG');
-		svg2png.svg2PngFiles(svgFileList, sizes, parallelPages).then(results => {
+		svg2png.svg2PngFiles(svgFileList, sizes, parallelPages, clipRectObj).then(results => {
 			var end = new Date().getTime();
 			var elapsedTime=(end - start)/1000; // in S
 			var tilesPerSec=Math.round((Object.keys(svgFileList).length/elapsedTime)*100)/100; 
@@ -782,6 +819,7 @@ REFERENCE (from shapefile) {
 				return (res);
 			},
 			function zoomlevelProcessingEndCallback(err) {
+				console.error('tileNo: ' + tileNo + '; numTiles: ' + numTiles);
 				geolevelProcessingCallback(err);
 			});
 	} // End of tileIntersectsProcessingZoomlevelLoop()
@@ -864,6 +902,7 @@ REFERENCE (from shapefile) {
 			var expectedRows=tileArray.length;
 			
 			if (tileArray.length > 0) {	
+				numTiles+=tileArray.length;
 				async.forEachOfSeries(tileArray, 
 				function writeSVGTileSeries(value, j, writeSVGTileCallback) { // Processing code	
 					// Write SVG tiles to disk
@@ -871,8 +910,9 @@ REFERENCE (from shapefile) {
 						writeSVGTile('/Users/Peter/Google Drive/work/tiles', 
 							value.geolevel_id, value.zoomlevel, value.x, value.y, writeSVGTileCallback, value.svgTile);
 							var svgTileFileName=getSVGTileFileName('/Users/Peter/Google Drive/work/tiles', 
-							value.geolevel_id, value.zoomlevel, value.x, value.y)
+								value.geolevel_id, value.zoomlevel, value.x, value.y)
 						svgFileList[svgTileFileName + '.svg']=svgTileFileName + '.png';
+						clipRectObj[svgTileFileName + '.svg']=value.svgTile.clipRect;
 	//  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\phantomjs-prebuilt\lib\phantom\bin\phantomjs.exe
 					},
 					function writeSVGTileEnd(err) { //  Callback
@@ -895,6 +935,7 @@ REFERENCE (from shapefile) {
 			
 	var tileArray = [];	
 	var svgFileList = {};
+	var clipRectObj = {}
 	var totalTileSize=0;
 	/*
 	 * Function: 	getTileArray()
@@ -914,6 +955,7 @@ REFERENCE (from shapefile) {
 	
 	var numZoomlevels; 
 	var numGeolevels;
+	var numTiles=0;
 	var geographyTable="geography_cb_2014_us_500k";
 	startTransaction(function startTransactionCallback2(err) {
 		addUserToPath(function addUserToPathCallback2(err) {

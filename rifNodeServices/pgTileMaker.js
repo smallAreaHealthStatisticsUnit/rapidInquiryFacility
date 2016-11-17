@@ -10,7 +10,7 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - Node.js test harness
+// Rapid Enquiry Facility (RIF) - RIF 4.0 Database postgres tile maker.
 //
 // Copyright:
 //
@@ -46,25 +46,29 @@
 //
 // Peter Hambly, SAHSU
 //
-// Usage: dbTileMaker [options]
+// Usage: pgTileMaker [options]
 //
 // Version: 0.1
 //
-// RIF 4.0 Database test harness.
+// RIF 4.0 Database postgres tile maker.
 //
 // Options:
-//  -d, --debug     RIF database PL/pgsql debug level      [default: 0]
-//  -D, --database  name of Postgres database              [default: PGDATABASE]
-//  -U, --username  Postgres database username             [default: PGUSER]
-//  -P, --port      Postgres database port                 [default: PGPORT]
-//  -H, --hostname  hostname of Postgres database          [default: PGHOST]
-//  --help          display this helpful message and exit  [default: false]
+// -D, --database  name of Postgres database              [default: "sahsuland_dev"]
+// -U, --username  Postgres database username             [default: "peter"]
+// -P, --port      Postgres database port                 [default: 5432]
+// -H, --hostname  hostname of Postgres database          [default: "localhost"]
+// -V, --verbose   Verbose mode                           [default: false]
+// -X, --xmlfile   XML Configuration file
+// -p, --pngfile   Make SVG/PNG files                     [default: false]
+// -h, --help      display this helpful message and exit  [default: false]
+//
+// Defaults are detected from the Postgres environment setup
 //
 // E.g.
 //
-// node dbTileMaker.js -H wpea-rif1 -D sahsuland_dev -U pch -d 1
+// node pgTileMaker.js -H wpea-rif1 -D sahsuland_dev -U pch
 //
-// Connects using Postgres native driver (not JDBC) as rif40.
+// Connects using Postgres native driver (not JDBC).
 //
 // Uses:
 //
@@ -88,7 +92,7 @@ function main() {
 	
 // Process Args using optimist
 	var argv = optimist
-    .usage("Usage: \033[1mdbTileMaker.\033[0m [options]\n\n"
+    .usage("Usage: \033[1mpgTileMaker.\033[0m [options]\n\n"
 + "Version: 0.1\n\n")
 
     .options("D", {
@@ -127,7 +131,14 @@ function main() {
 	  type: "string",
       default: undefined
     })
-    .options("help", {
+    .options("p", {
+      alias: "pngfile",
+      describe: "Make SVG/PNG files",
+	  type: "boolean",
+      default: false
+    })
+    .options("h", {
+      alias: "help",
       describe: "display this helpful message and exit",
       type: "boolean",
       default: false
@@ -155,7 +166,7 @@ function main() {
 	}
 	
 	// Create Postgres client;
-	pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"]);
+	pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"]);
 } /* End of main */
 
 /* 
@@ -202,11 +213,11 @@ function pg_default(p_var) {
 /* 
  * Function: 	pg_db_connect()
  * Parameters: 	Postgres PG package connection handle,
- *				database host, name, username, port
+ *				database host, name, username, port, generate PNG files
  * Returns:		Nothing
  * Description:	Connect to database, ...
  */
-function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port) {
+function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile) {
 	
 	var client1 = null; // Client 1: Master; hard to remove	
 
@@ -218,7 +229,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port) {
 		process.exit(1);	
 	}
 	
-	var conString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=dbTileMaker';
+	var conString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=pgTileMaker';
 
 // Use PGHOST, native authentication (i.e. same as psql)
 	client1 = new p_pg.Client(conString);
@@ -253,7 +264,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port) {
 
 			const tileMaker = require('./lib/tileMaker');
 // Call pgTileMaker()...
-			tileMaker.pgTileMaker(client1, endCallBack);
+			tileMaker.pgTileMaker(client1, p_pngfile, endCallBack);
 		} // End of else connected OK 
 	}); // End of connect		
 	var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
