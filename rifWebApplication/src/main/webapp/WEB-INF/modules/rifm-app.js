@@ -57,7 +57,7 @@ angular.module("RIF",
             "ngNotificationsBar",
             "ui.layout"
         ]
-        )      
+        )
         .config(['$stateProvider', '$urlRouterProvider',
             function ($stateProvider, $urlRouterProvider) {
 
@@ -95,11 +95,6 @@ angular.module("RIF",
                         .state('state3', {
                             url: '/mapping',
                             templateUrl: "dashboards/mapping/partials/rifp-dmap-main.html",
-                            controller: 'DiseaseMappingCtrl'
-                        })
-                        .state('state4', {
-                            url: '/mapping2',
-                            templateUrl: "dashboards/mapping2/partials/rifp-dmap2-main.html",
                             controller: 'MappingCtrl'
                         });
                 $urlRouterProvider.otherwise("/login");  //login submission
@@ -115,4 +110,3 @@ angular.module("RIF",
                 }
             });
         });
-

@@ -26,7 +26,7 @@ angular.module("RIF")
                         scope: $scope
                     });
                     modalInstance.result.then(function () {
-                        $scope.parent.renderMap($scope.id);
+                        $scope.renderMap($scope.id);
                     });
                 };
             }])

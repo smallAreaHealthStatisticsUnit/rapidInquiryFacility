@@ -5,22 +5,36 @@ angular.module("RIF")
             function (ColorBrewerService) {
                 var features = [];
 
-                var maps = [{
-                        //Disease map: index 0
+                var maps = [
+                    {
+                        //Viewer map: index 0
+                        map: "viewermap",
                         brewerName: "LightGreen",
                         brewer: ["#9BCD9B"],
                         intervals: 1,
-                        feature: "smoothed_smr",
+                        feature: "",
                         invert: false,
                         method: "quantile",
                         renderer: []
                     },
                     {
-                        //Viewer map: index 1
+                        //Disease left map: index 1
+                        map: "diseasemap1",
                         brewerName: "LightGreen",
                         brewer: ["#9BCD9B"],
                         intervals: 1,
                         feature: "",
+                        invert: false,
+                        method: "quantile",
+                        renderer: []
+                    },
+                    {
+                        //Disease right map: index 2
+                        map: "diseasemap2",
+                        brewerName: "LightGreen",
+                        brewer: ["#9BCD9B"],
+                        intervals: 1,
+                        feature: "", //smoothed_smr
                         invert: false,
                         method: "quantile",
                         renderer: []
@@ -58,7 +72,7 @@ angular.module("RIF")
                     }
                 }
 
-                function choroScale(method, domain, rangeIn, flip) {
+                function choroScale(method, domain, rangeIn, flip, map) {
                     var scale;
                     var mx = Math.max.apply(Math, domain);
                     var mn = Math.min.apply(Math, domain);
@@ -102,7 +116,7 @@ angular.module("RIF")
                              * Implementation derived by ArcMap Stand. Deviation classification
                              * 5 intervals of which those around the mean are 1/2 the Standard Deviation
                              */
-                            if (maps[0].brewerName === "LightGreen") { //TODO: diseasMap
+                            if (maps[0].brewerName === "LightGreen") {
                                 scale = d3.scaleQuantile()
                                         .domain(domain)
                                         .range(range);
@@ -124,7 +138,7 @@ angular.module("RIF")
                             }
                             breaks.sort(d3.ascending);
                             //dynamic scale range as number of classes unknown
-                            range = ColorBrewerService.getColorbrewer(maps[0].brewerName, breaks.length + 1);
+                            range = ColorBrewerService.getColorbrewer(maps[map].brewerName, breaks.length + 1);
                             scale = d3.scaleThreshold()
                                     .domain(breaks)
                                     .range(range);
@@ -145,14 +159,16 @@ angular.module("RIF")
                     return (function () {
                         var div = L.DomUtil.create('div', 'info legend');
                         div.innerHTML += '<h4>' + attr.toUpperCase() + '</h4>';
-                        for (var i = 0; i < thisMap.range.length; i++) {
-                            div.innerHTML += '<i style="background:' + thisMap.range[i] + '"></i>';
-                            if (i === 0) { //first break
-                                div.innerHTML += '<span>' + thisMap.mn.toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
-                            } else if (i === thisMap.range.length - 1) { //last break
-                                div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - ' + '&le;' + thisMap.mx.toFixed(2) + '</span>';
-                            } else {
-                                div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+                        if (!angular.isUndefined(thisMap.range)) {
+                            for (var i = 0; i < thisMap.range.length; i++) {
+                                div.innerHTML += '<i style="background:' + thisMap.range[i] + '"></i>';
+                                if (i === 0) { //first break
+                                    div.innerHTML += '<span>' + thisMap.mn.toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+                                } else if (i === thisMap.range.length - 1) { //last break
+                                    div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - ' + '&le;' + thisMap.mx.toFixed(2) + '</span>';
+                                } else {
+                                    div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+                                }
                             }
                         }
                         return div;

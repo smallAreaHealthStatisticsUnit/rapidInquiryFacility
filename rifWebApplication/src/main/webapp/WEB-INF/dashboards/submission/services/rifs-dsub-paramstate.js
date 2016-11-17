@@ -15,7 +15,8 @@ angular.module("RIF")
                         terms: [],
                         lowerAge: "",
                         upperAge: "",
-                        possibleCovariates: []
+                        possibleCovariates: [],
+                        possibleAges: []
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {

@@ -119,7 +119,7 @@ RIF D3
 #lineBivariatesvg text {
     fill: #919191;
 }
-#currentFiguresLineBivariate {
+.currentFiguresLineBivariate {
     font-weight: 600;
     font-size:16px;
     fill: #777777;
@@ -243,10 +243,6 @@ svg.areaCharts g.context rect.background{
     fill: #325e82;
 }
 
-.handle {
-    fill: #aaa;
-}
-
 /*POP PYRAMID*/
 .femaleBarLabel {
     font: 14px sans-serif;
@@ -289,5 +285,13 @@ svg.areaCharts g.context rect.background{
     stroke-width : 0;
 }
 
+/*MAPPING 2*/
+.zoom {
+  cursor: crosshair;
+  fill: none;
+  pointer-events: all;
+}
 
-
+.mask {
+    z-index: 999999999999;
+}

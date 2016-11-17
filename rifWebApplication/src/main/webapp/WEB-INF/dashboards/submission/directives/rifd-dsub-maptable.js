@@ -22,7 +22,7 @@ angular.module("RIF")
 
                         //Called on DOM render completion to ensure basemap is rendered
                         $timeout(function () {
-                            $scope.parent.renderMap("area");
+                            $scope.renderMap("area");
                         });
                         //map max bounds from topojson layer
                         var maxbounds;
@@ -50,7 +50,7 @@ angular.module("RIF")
                         $scope.transparency = 0.7;
 
                         getMyMap = function () {
-                            user.getTiles(user.currentUser, thisGeography, $scope.input.selectAt).then(function (topo) {
+                            user.getTiles(user.currentUser, thisGeography, $scope.input.selectAt, "area").then(function (topo) {
 
                                 //populate the table
                                 for (var i = 0; i < topo.data.objects['2_1_1'].geometries.length; i++) {
@@ -200,7 +200,7 @@ angular.module("RIF")
 
                         function handleGeographyError() {
                             //close the modal                           
-                            $scope.$parent.close();
+                            $scope.close();
                         }
 
                         /*
@@ -218,15 +218,14 @@ angular.module("RIF")
                         };
 
                         //Set the user defined basemap
-                        $scope.parent = {};
-                        $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
+                        $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
 
-                        $scope.parent.renderMap = function (mapID) {
+                        $scope.renderMap = function (mapID) {
                             leafletData.getMap(mapID).then(function (map) {
-                                map.removeLayer($scope.parent.thisLayer);
+                                map.removeLayer($scope.thisLayer);
                                 if (!LeafletBaseMapService.getNoBaseMap("area")) {                                    
-                                    $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
-                                    map.addLayer($scope.parent.thisLayer);
+                                    $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
+                                    map.addLayer($scope.thisLayer);
                                 }
                                 //restore setView
                                 map.setView($scope.input.view, $scope.input.zoomLevel);
@@ -236,7 +235,7 @@ angular.module("RIF")
                                 }, 50);
                             });
                         };
-                        $scope.parent.renderMap("area");
+                        $scope.renderMap("area");
 
                         //Add Leaflet.Draw capabilities
                         var drawnItems;

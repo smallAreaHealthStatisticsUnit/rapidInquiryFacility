@@ -5,15 +5,6 @@
 // how do we know that the geography is SAHSU? from the study ID?
 
 angular.module("RIF")
-
-        .controller('ViewerCtrl2', ['$scope',
-            function ($scope) {
-
-                $scope.settings = function () {
-                    console.log("settings button clicked");
-                };
-
-            }])
         .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService',
             function ($scope, user, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService) {
 
@@ -22,7 +13,7 @@ angular.module("RIF")
                 function getHistoData() {
                     $scope.histoData.length = 0;
                     for (var i = 0; i < $scope.viewerTableOptions.data.length; i++) {
-                        $scope.histoData.push($scope.viewerTableOptions.data[i][ChoroService.getMaps(1).feature]);
+                        $scope.histoData.push($scope.viewerTableOptions.data[i][ChoroService.getMaps(0).feature]);
                     }
                 }
 
@@ -97,7 +88,7 @@ angular.module("RIF")
                 //TODO: Will be called from options dropdowns
                 //draw relevant geography for this study
                 //  $scope.renderGeography = function () {
-                user.getTiles(user.currentUser, "SAHSU", "LEVEL4").then(handleTopoJSON, handleTopoJSON);
+                user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "viewer").then(handleTopoJSON, handleTopoJSON);
                 //   };
                 //  $scope.renderGeography();
 
@@ -111,15 +102,14 @@ angular.module("RIF")
                 $scope.populationData = [];
 
                 //get the user defined basemap
-                $scope.parent = {};
-                $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("viewermap"));
+                $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("viewermap"));
                 //called on bootstrap and on modal submit
-                $scope.parent.renderMap = function (mapID) {
+                $scope.renderMap = function (mapID) {
                     leafletData.getMap(mapID).then(function (map) {
-                        map.removeLayer($scope.parent.thisLayer);
+                        map.removeLayer($scope.thisLayer);
                         if (!LeafletBaseMapService.getNoBaseMap("viewermap")) {
-                            $scope.parent.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("viewermap"));
-                            map.addLayer($scope.parent.thisLayer);
+                            $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("viewermap"));
+                            map.addLayer($scope.thisLayer);
                         }
                         //restore setView
                         if (maxbounds && ViewerStateService.getState().zoomLevel === -1) {
@@ -133,7 +123,7 @@ angular.module("RIF")
                         }, 50);
                     });
                 };
-                $scope.parent.renderMap("viewermap");
+                $scope.renderMap("viewermap");
 
                 $timeout(function () {
                     leafletData.getMap("viewermap").then(function (map) {
@@ -159,6 +149,11 @@ angular.module("RIF")
                     leafletData.getMap("viewermap").then(function (map) {
                         map.fitBounds(maxbounds);
                     });
+                };
+
+                //export results
+                $scope.exportTableToCSV = function () {
+                    console.log("export to csv");
                 };
 
                 //UI-Grid setup options
@@ -202,7 +197,7 @@ angular.module("RIF")
                     var thisAttr;
                     for (var i = 0; i < $scope.viewerTableOptions.data.length; i++) {
                         if ($scope.viewerTableOptions.data[i].area_id === layer.feature.properties.area_id) {
-                            thisAttr = $scope.viewerTableOptions.data[i][ChoroService.getMaps(1).feature];
+                            thisAttr = $scope.viewerTableOptions.data[i][ChoroService.getMaps(0).feature];
                             break;
                         }
                     }
@@ -235,12 +230,12 @@ angular.module("RIF")
                         var thisAttr;
                         for (var i = 0; i < $scope.viewerTableOptions.data.length; i++) {
                             if ($scope.viewerTableOptions.data[i].area_id === poly) {
-                                thisAttr = $scope.viewerTableOptions.data[i][ChoroService.getMaps(1).feature];
+                                thisAttr = $scope.viewerTableOptions.data[i][ChoroService.getMaps(0).feature];
                                 break;
                             }
                         }
-                        if (ChoroService.getMaps(1).feature !== "") {
-                            this._div.innerHTML = '<h4>ID: ' + poly + '</br>' + ChoroService.getMaps(1).feature.toUpperCase() + ": " + Number(thisAttr).toFixed(3) + '</h4>';
+                        if (ChoroService.getMaps(0).feature !== "") {
+                            this._div.innerHTML = '<h4>ID: ' + poly + '</br>' + ChoroService.getMaps(0).feature.toUpperCase() + ": " + Number(thisAttr).toFixed(3) + '</h4>';
                         } else {
                             this._div.innerHTML = '<h4>ID: ' + poly + '</h4>';
                         }
@@ -248,11 +243,11 @@ angular.module("RIF")
                 };
 
                 //information from choropleth modal to colour map                             
-                $scope.parent.refresh = function () {
+                $scope.refresh = function () {
                     //get selected colour ramp
-                    var rangeIn = ChoroService.getMaps(1).brewer;
-                    $scope.distHistoName = ChoroService.getMaps(1).feature;
-                    attr = ChoroService.getMaps(1).feature;
+                    var rangeIn = ChoroService.getMaps(0).brewer;
+                    $scope.distHistoName = ChoroService.getMaps(0).feature;
+                    attr = ChoroService.getMaps(0).feature;
 
                     //not a choropleth, but single colour
                     if (rangeIn.length === 1) {
@@ -267,7 +262,7 @@ angular.module("RIF")
                         return;
                     }
 
-                    thisMap = ChoroService.getMaps(1).renderer;
+                    thisMap = ChoroService.getMaps(0).renderer;
 
                     //remove old legend and add new
                     legend.onAdd = ChoroService.getMakeLegend(thisMap, attr);
@@ -326,10 +321,14 @@ angular.module("RIF")
                     }).then(function () {
                         $scope.getAttributeTable();
                     }).then(function () {
-                        $scope.parent.renderMap("viewermap");
-                        $scope.parent.refresh();
+                        $scope.renderMap("viewermap");
+                        $scope.refresh();
                     });
                 }
+
+                $scope.tableData = {
+                    "viewermap": []
+                };
 
                 $scope.getAttributeTable = function () {
                     //All results in table
@@ -344,10 +343,9 @@ angular.module("RIF")
                         //fill results table
                         var colDef = [];
                         var attrs = [];
-                        $scope.tableData = [];
                         for (var i = 0; i < res.data.smoothed_results.length; i++) {
                             res.data.smoothed_results[i]._selected = 0;
-                            $scope.tableData.push(res.data.smoothed_results[i]);
+                            $scope.tableData.viewermap.push(res.data.smoothed_results[i]);
                         }
                         for (var i in res.data.smoothed_results[0]) {
                             var testCast = Number(res.data.smoothed_results[0][i]);
@@ -362,17 +360,16 @@ angular.module("RIF")
                             });
                         }
 
-                        if (ChoroService.getMaps(1).feature === "") {
-                            ChoroService.getMaps(1).feature = attrs[0];
+                        if (ChoroService.getMaps(0).feature === "") {
+                            ChoroService.getMaps(0).feature = attrs[0];
                             $scope.distHistoName = attrs[0];
-                        }
-                        else {
-                            $scope.distHistoName = ChoroService.getMaps(1).feature;
+                        } else {
+                            $scope.distHistoName = ChoroService.getMaps(0).feature;
                         }
 
                         ChoroService.setFeaturesToMap(attrs);
                         $scope.viewerTableOptions.columnDefs = colDef;
-                        $scope.viewerTableOptions.data = $scope.tableData;
+                        $scope.viewerTableOptions.data = $scope.tableData.viewermap;
 
                         getHistoData();
                     }

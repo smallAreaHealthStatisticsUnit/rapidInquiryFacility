@@ -172,7 +172,8 @@ angular.module("RIF")
                         setBaseMap: function (layer) {
                             for (var i = 0; i < basemaps.length; i++) {
                                 if (basemaps[i].name === layer) {
-                                    return basemaps[i].tile;
+                                    //Need to return a copy of the map as directive cannot share instance
+                                    return angular.copy(basemaps[i].tile);
                                 }
                             }
                         },

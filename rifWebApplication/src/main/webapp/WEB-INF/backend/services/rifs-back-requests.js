@@ -10,20 +10,20 @@ angular.module("RIF")
             function ($http, rifAPI1, rifAPI2, taxonomyAPI) {
                 var self = this;
                 self.currentUser = "";
-               
+
                 //identify specific middleware calls in the interceptor
                 var config = {
                     headers: {
                         "rifUser": "rif"
                     }
                 };
-                
+
                 //submit a study               
                 self.submitStudy = function (username, jsonObj) {
                     var blob = new Blob([JSON.stringify(jsonObj)], {
                         type: "text/plain"
                     });
-                    
+
                     var formData = new FormData();
                     formData.append("userID", username);
                     formData.append("fileField", blob, "submissionFile.txt");
@@ -34,7 +34,7 @@ angular.module("RIF")
                         headers: {'Content-Type': undefined}
                     });
                 };
-                
+
                 //login
                 self.login = function (username, password) {
                     //http://localhost:8080/rifServices/studySubmission/login?userID=kgarwood&password=xyz
@@ -112,7 +112,8 @@ angular.module("RIF")
                     return $http.get(rifAPI1 + 'getAgeGroups?userID=' + username + '&geographyName=' + geography + '&numeratorTableName=' + numerator, config);
                 };
                 //geography
-                self.getTiles = function (username, geography, geoLevel) {
+                self.getTiles = function (username, geography, geoLevel, leaflet) {
+                    config.leaflet = leaflet; //defines which map is target for these tiles
                     return $http.get(rifAPI1 + 'getTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
                             '&tileIdentifier=4&zoomFactor=2&yMax=55.5268097&xMax=-4.88653803&yMin=52.6875343&xMin=-7.58829451', config);
                 };

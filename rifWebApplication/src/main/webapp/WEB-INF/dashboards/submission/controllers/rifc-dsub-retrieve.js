@@ -6,7 +6,7 @@
 angular.module("RIF")
         .controller('ModalRetrieveCtrl', ['$scope', '$uibModal', 'ModelService',
             function ($scope, $uibModal, ModelService) {
-                
+                                
                 //get the study object
                 $scope.getBlob = function () {
                     var data = ModelService.get_rif_job_submission_JSON();

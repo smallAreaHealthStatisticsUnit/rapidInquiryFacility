@@ -236,44 +236,44 @@ body {
     font-weight: bold;
 }
 
-.chartOpts {
-    width: 25%;
-    min-width: 390px;
-    float: left;
-}
-.chartOpts a {
-    margin: 4px 20px;
-}
-.chartOpts #updateCharts {
-    background: transparent url("../images/update.png") no-repeat;
-    opacity: 0.2;
-}
-.chartOpts #updateCharts:hover {
-    opacity: 0.6;
-}
-.chartOptsMapping {
-    width: 100%;  
-}
-.chartOptsViewer {
-    width: 35%;  
-    min-width: 390px;  
-    float: left;
-    background-color: #CAE1FF;
+
+.submenuMapping{
+    height:40px;
+    background-color: #F5F5F5;
+    border-bottom:1px solid #E3E3E3;
 }
 
-.chartOptsViewer a{ 
-    margin:4px 20px;
+.mapBoxOpts {
+    list-style-type: none;
+    overflow: hidden;
 }
-.chartOptsViewer #updateCharts{ 
-    background: transparent url("../images/update.png") no-repeat;
-    opacity:0.2;
-}
-.chartOptsViewer #updateCharts:hover{ 
-    opacity:0.6;
-}
-.mapOpts {
+.mapBoxOpts li a {
+    width: 32px;
+    height: 32px;
+    margin: 5px 0px 0px 5px;
     float: left;
+    -moz-opacity: 0.7;
+    -khtml-opacity: 0.7;
+    opacity: 0.7;
 }
+.mapBoxOpts li a:hover {
+    -moz-opacity: 1;
+    -khtml-opacity: 1;
+    opacity: 1;
+    cursor: pointer;
+}
+.mapBoxOpts input {
+    float: left;
+    position: absolute;
+}
+.mapBoxOpts select {
+    float: right;
+}
+.mapBoxOpts label {
+    float: right;
+    margin: 11px 30px 0px 10px;
+}
+
 
 #baseMapBtn {
     background: transparent url("../images/layers_map.png") no-repeat;
@@ -300,37 +300,27 @@ body {
     background: transparent url("../images/flag_flyaway_blue.png") no-repeat;
 }
 #lockExtentFalse {
-    width: 32px;
-    height: 32px;
+    background: transparent url("../images/map_torn.png") no-repeat;
     float:right;
-    margin-right: 10px;
-    margin: 5px 0px 0px 5px;
-    background: transparent url("../images/lock_open.png") no-repeat;
 }
 #lockExtentTrue {
-    width: 32px;
-    height: 32px;
+    background: transparent url("../images/map.png") no-repeat;
+    float:right;
+}
+#lockSelectFalse {
+    background: transparent url("../images/link_unchain.png") no-repeat;
+    float:right;
+}
+#lockSelectTrue {
+    background: transparent url("../images/link.png") no-repeat;
+    float:right;
+}
+#copySymbology {
+    background: transparent url("../images/color_picker_switch.png") no-repeat;
     float:right;
     margin-right: 10px;
-    margin: 5px 0px 0px 5px;
-    background: transparent url("../images/lock.png") no-repeat;
 }
 
-.mapOpts .mapOpt {
-    width: 32px;
-    height: 32px;
-    display: block;
-    float: left;
-    -moz-opacity: 0.7;
-    -khtml-opacity: 0.7;
-    opacity: 0.7;
-    margin: 5px 0px 0px 5px;
-}
-.mapOpts a.mapOpt:hover {
-    -moz-opacity: 1;
-    -khtml-opacity: 1;
-    opacity: 1;
-}
 div.transparency {
     width: 50px !important
 }
@@ -414,21 +404,6 @@ select {
     text-transform: uppercase;
 }
 
-/* Left Col */
-
-.mapInfoTop {
-    width: 100%;
-    height: 25%;
-    position: relative;
-    overflow: hidden;
-}
-.mapInfoBottom {
-    width: 100%;
-    height: 74%;
-    position: absolute;
-    overflow: hidden;
-}
-
 #content #leftcol div#studyInfo {
     padding-bottom: 8%;
     margin-top: 3%;
@@ -461,7 +436,7 @@ div#studyInfo ul li.listHeader {
     border: none;
     margin-bottom: 3px;
 }
-#mAreaCharts,
+
 #studyInfo {
     margin-left: auto;
     margin-right: auto;
@@ -470,19 +445,6 @@ div#studyInfo ul li.listHeader {
 
 #studyInfo {
     padding-top:20px;
-}
-#mAreaCharts {
-    height: 90%;
-}
-
-
-#rr_chart {
-    border-top: 1px solid #C1C1C1;
-    height: 20%;
-    margin-top: 1px;
-    background-color: #FFFFFF;
-    overflow: hidden;
-    background-color: #F5F5F5;
 }
 
 .myButton {
@@ -537,7 +499,7 @@ div#studyInfo ul li.listHeader {
     bottom: 30px;
 }
 
-#areaSelectionMap, #comparisonAreaSelectionMap{
+#areaSelectionMap {
     position: absolute;
     margin-left: 34%;
     height: 85.5%;
@@ -557,11 +519,6 @@ div#studyInfo ul li.listHeader {
     text-transform: uppercase;
     font-size: 15px;
     right: 0.5%;
-}
-
-
-.clearSelection {
-    background: url('../images/clear.png')  no-repeat  ;
 }
 
 .counter {
@@ -718,14 +675,13 @@ div#studyInfo ul li.listHeader {
 #buttons>div {
     float:left;
 }
-#buttons .export{
-    margin: 14px 2px 0 8px;
-    min-width: 390px;
-    width: 25%;
+
+#buttons .export {
+    margin:  18px 10px 0px 50px;
+    float: right;
 }
+
 #buttons .export a{
-    margin: 5px 8px;
-    display: block;
     font-size: 22px;
     text-transform: uppercase;
     text-decoration: none;
@@ -734,11 +690,20 @@ div#studyInfo ul li.listHeader {
 #buttons .export a:hover{
     color: white;
     background-color: #8DB6CD;
+    cursor: pointer; 
 }
+
+#buttons .mappingPageLabel {
+    margin: 18px 10px 0px 50px;
+    font-size: 18px !important;
+    color: #8DB6CD;
+}
+
 #buttons .geoDropsMapping{	
     width: auto;
+    position: absolute;
 }
-#buttons .geoDropsMapping>div{
+#buttons .geoDropsMapping>div {
     float: left;
     padding: 6px 8px 0 0;
     font-size:11px
@@ -1536,138 +1501,6 @@ input[type=number]  {
 }
 input[type=number]+ label  {
     display: inline;
-}
-
-#submenuMappingSubmission{
-    height:40px;
-    background-color: #F5F5F5;
-    border-top:1px solid #E3E3E3;
-    border-bottom:1px solid #E3E3E3
-}
-
-#submenuMappingSubmission div a img{
-    margin:5px 0px;
-}
-
-#submenuMappingSubmission div {
-    height: 100%;	
-}
-
-#submenuMappingSubmission div a img.active{
-    -moz-opacity: 1;
-    -khtml-opacity: 1;
-    opacity: 1;
-}
-
-#submenuMappingSubmission div a.settings {
-    float:right;
-    margin-right: 10px;
-} 
-
-#submenuMappingSubmission a {
-    width:32px;
-    height:32px;
-    float:left
-} 
-
-.submenuMapping{
-    height:40px;
-    background-color: #F5F5F5;
-    border-bottom:1px solid #E3E3E3;
-}
-
-.submenuMapping div a img{
-    margin:5px 0px;
-}
-
-.submenuMapping div {
-    height: 100%;	
-}
-
-.submenuMapping div a img.active{
-    -moz-opacity: 1;
-    -khtml-opacity: 1;
-    opacity: 1;
-}
-
-.submenuMapping div a.settings {
-    float:right;
-    margin-right: 10px;
-} 
-
-.submenuMapping a {
-    width:32px;
-    height:32px;
-    float:left
-} 
-
-
-
-div#studyLabel{
-    text-transform: uppercase; 
-    background-color: #CAE1FF;
-    width: 100%;
-}
-div#studyLabel h1, div#studyLabel h2{
-    padding: 0 4%;
-    text-align:right;
-}
-
-div#studyLabel h1{
-    font-size: 120%;
-}
-
-div#studyLabel h2{
-    /* font-size: 100%; */
-}
-
-/*SUMMARY TABLE*/
-.modelViewer table {
-    background-color: #E3E3E3;
-}
-.modelViewer header {
-    font-size: 22px;
-    text-transform: uppercase;
-    padding: 30px 10px 10px 0px;
-    font-weight: bold;
-}
-header:first-child {
-    padding-top: 10px;
-}
-.modelViewer {
-    margin: 2% 2% 0% 2%;
-    width: 95%;
-    position: relative;
-    height: 94%;
-    border: 1px solid #CAE1FF;
-    background: white;
-    overflow: auto;
-    padding: 4px 9px;
-}
-.modelViewer section {
-    padding-left: 10px;
-    margin: 1px;
-    font-size: 14px;
-    color: #A1A1A1;
-    display: inline;
-    text-transform: uppercase;
-}
-.modelViewer attr {
-    font-size: 14px;
-    color: #000;
-}
-.modelViewer td {
-    padding-left: 50px;
-    padding-right: 50px;
-    font-size: 10px;
-    color: #000;
-    white-space: nowrap;
-}
-.modelViewer th {
-    text-align: center;
-    font-size: 10px;
-    color: #000;
-    background-color: #A1A1A1;
 }
 
 .toggleJSON {

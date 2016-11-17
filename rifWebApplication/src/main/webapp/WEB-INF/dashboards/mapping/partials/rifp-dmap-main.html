@@ -1,13 +1,9 @@
-<!-- 
-HTML partial for ui-router
-Mapping
--->
+
 <div id="navigation">
     <div class='logOutUsername' ng-controller="TabCtrl"> 
         <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
     </div>
     <div class='nav'>
-        <a ui-sref="state4" ng-class="{active: $state.includes('state4')}">TEST</a>
         <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
         <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
         <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
@@ -15,10 +11,24 @@ Mapping
 </div>
 
 <div id="buttons">
-    <div class='export'>
-        <a href='#'>Export</a>
-    </div>
     <div class='geoDropsMapping'>
+        <div class="mappingPageLabel">LEFT DISPLAY</div>
+        <div>
+            <div>Study ID:</div>
+            <select ng-model="studyID" ng-options="s for s in studyIDs">
+            </select>
+        </div>
+        <div >
+            <div>Year:</div>
+            <select ng-model="year" ng-options="s for s in years">
+            </select>
+        </div>
+        <div>
+            <div>Sex:</div>
+            <select ng-model="sex" ng-options="s for s in sexes">
+            </select>
+        </div>
+        <div class="mappingPageLabel">RIGHT DISPLAY</div>
         <div >
             <div>Study ID:</div>
             <select ng-model="studyID" ng-options="s for s in studyIDs">
@@ -38,64 +48,62 @@ Mapping
 </div>
 
 <div ui-layout="{flow : 'column'}">
-    <div ui-layout-container ui-layout-loaded class="html-back" id="vSplit1" max-size="100%" size="{{vSplit1}}%">
-        <div class="mapInfoTop">
-            <div class='chartOptsMapping'>
-                <div id="studyLabel">                
-                    <h1>&nbsp</h1> <!--TODO: placeholders for redundant information-->
-                    <h2 id="invLabel" >&nbsp</h2>
+    <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="50%"> 
+        <div ui-layout="{flow : 'row'}">
+            <div ui-layout-container class="leaflet-box" id="hSplit1" max-size="100%" size="60%">
+                <div class="submenuMapping" >
+                    <ul class="mapBoxOpts">
+                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open(1)" id="choroplethBtn" title="Choropleth map"></a></li>
+                        <li><a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap1')" id="baseMapBtn" title="Base map"></a></li>
+                        <li><a id="clearSelection" title="Clear selection" ng-click="clear('diseasemap1')"></a></li>
+                        <li><a id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent('diseasemap1')"></a></li>
+                        <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected('diseasemap1')"></a></li>
+                        <li><a id="copySymbology" title="Copy symbology" ng-click="copySymbology()"></a></li>                       
+                        <li>
+                            <input type="range" ng-model ="transparency['diseasemap1']" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity('diseasemap1')"/>
+                        </li>                         
+                        <li>
+                            <div ng-switch on=bLockCenters>
+                                <a ng-click="lockExtent()" title="Unlock map extents" id='lockExtentTrue' ng-switch-when="true"></a>
+                                <a ng-click="lockExtent()" title="Lock map extents" id='lockExtentFalse' ng-switch-when="false"></a>
+                            </div>
+                        </li>
+                        <li>
+                            <div ng-switch on=bLockSelect>
+                                <a ng-click="lockSelect()" title="Unlock selection" id='lockSelectTrue' ng-switch-when="true"></a>
+                                <a ng-click="lockSelect()" title="Lock selection" id='lockSelectFalse' ng-switch-when="false"></a>
+                            </div>
+                        </li>
+                    </ul>                 
                 </div>
+                <leaflet id="diseasemap1" tiles="thisLayer[diseasemap1]" width="100%" height="calc(100% - 40px)" lf-center="center1"></leaflet>  
             </div>
-            <div id='studyInfo'>
-                <ul class="resultFigures">
-                    <li class="riskFigures"> 
-                        <ul >
-                            <li class="listHeader"> Result figures </li>
-                            <li id='areaLevel' >Area level: <span class="figure">{{thisPoly}}</span></li>	
-                            <li id='totDenom'  >Population:<span class="figure">{{thisResultFigures.population}}</span></li>		
-                            <li id='observed' >Observed:<span class="figure">{{thisResultFigures.observed}}</span></li> 
-                            <li id='expected' >Expected:<span class="figure">{{thisResultFigures.expected}}</span></li> 
-
-                        </ul>	
-                    </li> 
-                    <li class="investigationFigures">
-                        <ul>
-                            <li class="listHeader"> Investigation info </li>
-                            <li id='nAreas' >Number of areas:<span class="figure">{{numberOfAreas}}</span></li>
-                            <li id='covariate' >Covariate adj:<span class="figure">xxx</span></li>
-                            <li id='ageGroup' >Age groups:<span class="figure">yyy</span></li>
-                            <li id='year' >Year(s):<span class="figure">zzz</span></li>
-                        </ul>	
-                    </li>	
-                </ul>
+            <div ui-layout-container class="rr-back" id="rr1" max-size="100%">            
+                <!--d3 RR chart1 and table data -->
+                <rr-zoom id="rrMap1" chart-data="rrChartData1" options="optionsRR1" width="currentWidth1" height="currentHeight1"></rr-zoom>           
             </div>
-        </div>
-        <div class="mapInfoBottom">        
-            <marea-chart chart-data="rrAreaData" options="optionsAreas" width="areaCurrentWidth" height="areaCurrentHeight"></marea-chart>
         </div>
     </div>
     <div ui-layout-container ui-layout-loaded> 
-        <div ui-layout="{flow : 'row'}" >
-            <div ui-layout-container id="hSplit1" max-size="100%" size="{{hSplit1}}%" class="leaflet-box">
-                <div class="submenuMapping">
-                    <div>
-                        <div class='mapOpts'>
-                            <a ng-controller="ChoroplethModalCtrl" ng-click="open(0)"class='mapOpt' id="choroplethBtn" title="Choropleth map"></a>
-                            <a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap')" class='mapOpt' id="baseMapBtn" title="Base map"></a>	
-                            <a class='mapOpt' id="clearSelection" title="Clear selection" ng-click="clear()"></a>   
-                            <a class='mapOpt' id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent()"></a>  
-                            <a class='mapOpt' id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected()"></a>  
-                            <input type="range" ng-model ="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
-                        </div>
-                        <a href='#' rel='leanModal' class='settings' title="Settings" id='settingsButton'>
-                            <img src="images/settings.png" alt="settings">
-                        </a>
-                    </div>
-                </div>               
-                <leaflet id="diseasemap" tiles="tiles" width="100%" height="calc(100% - 40px)"></leaflet>     
+        <div ui-layout="{flow : 'row'}">
+            <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="60%">            
+                <div class="submenuMapping" >
+                    <ul class="mapBoxOpts">
+                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open(2)" id="choroplethBtn" title="Choropleth map"></a></li>
+                        <li><a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap2')"  id="baseMapBtn" title="Base map"></a></li>	
+                        <li><a  id="clearSelection" title="Clear selection" ng-click="clear('diseasemap2')"></a></li>
+                        <li><a  id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent('diseasemap2')"></a></li>
+                        <li><a  id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected('diseasemap2')"></a></li> 
+                        <li>
+                            <input type="range" ng-model ="transparency['diseasemap2']" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity('diseasemap2')"/>
+                        </li>
+                    </ul>                 
+                </div>
+                <leaflet id="diseasemap2" tiles="thisLayer[diseasemap2]" width="100%" height="calc(100% - 40px)" lf-center="center2"></leaflet>  
             </div>
-            <div ui-layout-container class="rr-back" id="rr">   
-                <rr-chart chart-data="rrChartData" options="optionsRR" width="rrCurrentWidth" height="rrCurrentHeight"></rr-chart>                        
+            <div ui-layout-container class="rr-back" id="rr2" max-size="100%">            
+                <!--d3 RR chart2 and table data -->
+                <rr-zoom id="rrMap2" chart-data="rrChartData2" options="optionsRR2" width="currentWidth2" height="currentHeight2"></rr-zoom>    
             </div>
         </div>
     </div>

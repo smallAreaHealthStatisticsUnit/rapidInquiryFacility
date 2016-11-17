@@ -25,6 +25,8 @@ angular.module("RIF")
                 var tmpSex;
                 var tmpCovariate;
 
+                var tmpAgeRange;
+
                 /*
                  * THE FUNCIONS FOR CHECKING RIFJOB
                  */
@@ -201,6 +203,57 @@ angular.module("RIF")
                     return true;
                 }
 
+                function uploadPossibleAges() {
+                    if (ParameterStateService.getState().possibleAges.length === 0
+                            & !angular.isUndefined(tmpGeography)
+                            & !angular.isUndefined(tmpNumeratorName)) {
+                        //get possible ages
+                        var agesErr = user.getAgeGroups(user.currentUser, tmpGeography, tmpNumeratorName).then(fillHandleAgeGroups, fromFileError);
+
+                        function fillHandleAgeGroups(res) {
+                            if (!angular.isUndefined(res.data)) {
+                                var tmp = [];
+                                for (var i = 0; i < res.data[0].name.length; i++) {
+                                    tmp.push({id: i, name: res.data[0].name[i], lower_limit: res.data[1].lowerAgeLimit[i], upper_limit: res.data[2].upperAgeLimit[i]});
+                                }
+                                ParameterStateService.getState().possibleAges = tmp;
+                                return true;
+                            } else {
+                                return "Could not find valid age groups";
+                            }
+                        }
+                        return agesErr;
+                    } else {
+                        return true;
+                    }
+                }
+
+                function uploadPossibleCovariates() {
+                    if (ParameterStateService.getState().possibleCovariates.length === 0
+                            & !angular.isUndefined(tmpGeography)
+                            & !angular.isUndefined(tmpNumeratorName)) {
+                        //get possible covariates
+                        var covErr = user.getCovariates(user.currentUser, tmpGeography, tmpGeoLevel).then(fillHandleCovariates, fromFileError);
+                        function fillHandleCovariates(res) {
+                            if (!angular.isUndefined(res.data)) {
+                                var tmp = [];
+                                for (var i = 0; i < res.data.length; i++) {
+                                    tmp.push(res.data[i].name);
+                                    tmp.push({name: res.data[i].name, minimum_value: res.data[i].minimumValue,
+                                        maximum_value: res.data[i].maximumValue, covariate_type: res.data[i].covariateType});
+                                }
+                                ParameterStateService.getState().possibleCovariates = tmp;
+                                return true;
+                            } else {
+                                return "Could not find valid covariates";
+                            }
+                        }
+                        return covErr;
+                    } else {
+                        return true;
+                    }
+                }
+
                 /*
                  * All tests passed so commit changes to states
                  */
@@ -235,10 +288,11 @@ angular.module("RIF")
                     ParameterStateService.getState().title = inv[0].title;
                     ParameterStateService.getState().start = inv[0].year_range.lower_bound;
                     ParameterStateService.getState().end = inv[0].year_range.upper_bound;
+                    ParameterStateService.getState().lowerAge = inv[0].age_band.lower_age_group.name;
+                    ParameterStateService.getState().upperAge = inv[0].age_band.upper_age_group.name;
                     ParameterStateService.getState().interval = inv[0].years_per_interval;
                     ParameterStateService.getState().sex = inv[0].sex;
                     ParameterStateService.getState().covariate = tmpCovariate;
-
                     ParameterStateService.getState().activeHealthTheme = rifJob.disease_mapping_study.investigations.investigation[0].health_theme.name;
                     ParameterStateService.getState().terms = tmpFullICDselection;
                     if (tmpFullICDselection.length !== 0) {
@@ -258,7 +312,6 @@ angular.module("RIF")
                 function fromFileError() {
                     $scope.showError("Could not upload the file");
                 }
-
 
                 $scope.open = function () {
                     $scope.modalHeader = "Open study from file";
@@ -313,16 +366,32 @@ angular.module("RIF")
                             return value;
                         }, fromFileError);
 
-                        //check investigations
+                        //check possible ages filled
                         var d7 = $q.defer();
                         var p7 = d7.promise;
-                        d7.resolve(uploadInvestigations());
+                        d7.resolve(uploadPossibleAges());
                         p7.then(function (value) {
                             return value;
                         }, fromFileError);
 
+                        //check possible covariates filled
+                        var d8 = $q.defer();
+                        var p8 = d8.promise;
+                        d8.resolve(uploadPossibleCovariates());
+                        p8.then(function (value) {
+                            return value;
+                        }, fromFileError);
+
+                        //check investigations
+                        var d9 = $q.defer();
+                        var p9 = d9.promise;
+                        d9.resolve(uploadInvestigations());
+                        p9.then(function (value) {
+                            return value;
+                        }, fromFileError);
+
                         //resolve all the promises
-                        $q.all([p1, p2, p3, p4, p5, p6, p7]).then(function (result) {
+                        $q.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function (result) {
                             var bPass = true;
                             for (var i = 0; i < result.length; i++) {
                                 if (result[i] !== true) {
@@ -335,7 +404,7 @@ angular.module("RIF")
                                 //All tests passed
                                 confirmStateChanges();
                                 $scope.showSuccess("RIF study opened from file");
-                                $scope.$parent.resetState();
+                                $scope.$parent.resetState(); //TODO: inactive?
                             }
                         });
                     };

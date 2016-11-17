@@ -5,7 +5,7 @@
 angular.module("RIF")
         .factory('ModelService', function (StudyAreaStateService, CompAreaStateService, StatsStateService,
                 SubmissionStateService, ParameterStateService, user) {
-            updateModel = function () {
+            updateModel = function () {                               
                 var model = {
                     "rif_job_submission": {
                         "submitted_by": user.currentUser,
