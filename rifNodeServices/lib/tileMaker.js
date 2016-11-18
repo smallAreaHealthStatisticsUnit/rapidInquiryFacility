@@ -438,11 +438,11 @@ var pgTileMaker = function pgTileMaker(client, createPngfile, pgTileMakerCallbac
 				}
 				else {
 					this.topojson_options.verbose=false;
+				}		
+				
+				if (createPngfile) { // Create SVG tile			 	
+					this.svgTile=createSVGTile(this.geolevel_id, this.zoomlevel, this.x, this.y, this.geojson);
 				}
-				
-				// Create SVG tile				
-				this.svgTile=createSVGTile(this.geolevel_id, this.zoomlevel, this.x, this.y, this.geojson);
-				
 				this.topojson=topojson.topology({   // Convert geoJSON to topoJSON
 					collection: this.geojson
 					}, this.topojson_options);
@@ -740,9 +740,14 @@ REFERENCE (from shapefile) {
 			},
 			function geolevelProcessingEndCallback(err) { // Call main tileMaker complete callback
 			
-				convertSVG2Png(function convertSVG2PngCallback() {	// Convert all SVG to PNG
+				if (createPngfile) {
+					convertSVG2Png(function convertSVG2PngCallback() {	// Convert all SVG to PNG
+						endTransaction(err, pgTileMakerCallback, sql);			
+					});		
+				}
+				else {	
 					endTransaction(err, pgTileMakerCallback, sql);			
-				});
+				}
 			});
 			
 		});
@@ -852,11 +857,11 @@ REFERENCE (from shapefile) {
 
 		/*
 		 * Function: 	tileInsert()
-		 * Parameters:	Exepcted rows
+		 * Parameters:	Exepcted rows, callback
 		 * Returns:		Nothing
 		 * Description:	Multi row insert in t_tile_<geography> table
 		 */	
-		function tileInsert(expectedRows) {
+		function tileInsert(expectedRows, tileIntersectsProcessingCallback) {
 			sql="INSERT INTO t_tiles_" + geography +
 				 '	(geolevel_id, zoomlevel, x, y, optimised_topojson, tile_id)\nVALUES ';
 			var j=1;
@@ -917,33 +922,38 @@ REFERENCE (from shapefile) {
 				Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S" + 
 				"; total: " + tileNo + " tiles in " + tElapsedTime + " S; size: " + nodeGeoSpatialServicesCommon.fileSize(totalTileSize));
 			var expectedRows=tileArray.length;
-			
-			if (tileArray.length > 0) {	
-				numTiles+=tileArray.length;
-				async.forEachOfSeries(tileArray, 
-				function writeSVGTileSeries(value, j, writeSVGTileCallback) { // Processing code	
-					// Write SVG tiles to disk
+			numTiles+=tileArray.length;
+				
+			if (tileArray.length > 0) { 
+				if (createPngfile) { // Create SVG tiles	
+					async.forEachOfSeries(tileArray, 
+					function writeSVGTileSeries(value, j, writeSVGTileCallback) { // Processing code	
+						// Write SVG tiles to disk
 
-						writeSVGTile('/Users/Peter/Google Drive/work/tiles', 
-							value.geolevel_id, value.zoomlevel, value.x, value.y, writeSVGTileCallback, value.svgTile);
-							var svgTileFileName=getSVGTileFileName('/Users/Peter/Google Drive/work/tiles', 
-								value.geolevel_id, value.zoomlevel, value.x, value.y)
-						svgFileList[svgTileFileName + '.svg']=svgTileFileName + '.png';
-						clipRectObj[svgTileFileName + '.svg']=value.svgTile.clipRect;
-	//  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\phantomjs-prebuilt\lib\phantom\bin\phantomjs.exe
-					},
-					function writeSVGTileEnd(err) { //  Callback
-		
-						if (err) {
-							pgErrorHandler(err);
+							writeSVGTile('/Users/Peter/Google Drive/work/tiles', 
+								value.geolevel_id, value.zoomlevel, value.x, value.y, writeSVGTileCallback, value.svgTile);
+								var svgTileFileName=getSVGTileFileName('/Users/Peter/Google Drive/work/tiles', 
+									value.geolevel_id, value.zoomlevel, value.x, value.y)
+							svgFileList[svgTileFileName + '.svg']=svgTileFileName + '.png';
+							clipRectObj[svgTileFileName + '.svg']=value.svgTile.clipRect;
+		//  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\phantomjs-prebuilt\lib\phantom\bin\phantomjs.exe
+						},
+						function writeSVGTileEnd(err) { //  Callback
+			
+							if (err) {
+								pgErrorHandler(err);
+							}
+							else {
+								tileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()			
+							}
 						}
-						else {
-							tileInsert(expectedRows);				
-						}
-					}
-				); // End of async.forEachOfSeries(tileArray, ...)	
-											
-			}
+					); // End of async.forEachOfSeries(tileArray, ...)	
+				
+				}
+				else {
+					tileInsert(expectedRows, tileIntersectsProcessingCallback); // Calls tileIntersectsProcessingCallback()
+				}
+			}					
 			else {
 				tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
 			}
