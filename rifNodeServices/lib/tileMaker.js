@@ -81,11 +81,12 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
 //
 // Get bounding box from tile X/Y, reproject to 3857
 //
-	var bbox=geojson.bbox;
+	var bbox=[];
 	bbox[0]=tile2longitude(x, zoomlevel); 	/* Xmin (4326); e.g. -179.13729006727 */
 	bbox[1]=tile2latitude(y, zoomlevel);	/* Ymin (4326); e.g. -14.3737802873213 */
 	bbox[2]=tile2longitude(x+1, zoomlevel);	/* Xmax (4326); e.g.  179.773803959804 */
 	bbox[3]=tile2latitude(y+1, zoomlevel);	/* Ymax (4326); e.g. 71.352561 */
+	geojson.bbox=bbox;						// Bounding box of tile
 	var bboxPolygon = turf.bboxPolygon(bbox);	
 	bboxPolygon.properties.id='bound';	
 // Could use: turf-bbox-clip:
@@ -101,12 +102,20 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
 		right: bbox3857Polygon.geometry.coordinates[0][2][0], 	// Xmax
 		top: bbox3857Polygon.geometry.coordinates[0][3][1] 		// Ymax
 	};	
-	var clipRect = { 
+	/* 
+	var clipRect = { // EPSG 3857 clipRect
 		left: bbox3857Polygon.geometry.coordinates[0][0][0], 	// Xmin
 		top: bbox3857Polygon.geometry.coordinates[0][3][1],  	// Ymin
 		width: Math.abs(bbox3857Polygon.geometry.coordinates[0][2][0]-bbox3857Polygon.geometry.coordinates[0][0][0]), // Xmax-Xmin
 		height: Math.abs(bbox3857Polygon.geometry.coordinates[0][3][1]-bbox3857Polygon.geometry.coordinates[0][1][1]) // Ymax-Ymin 
-	};
+	}; */
+	var clipRect = { // Pixel clipRect
+		left: 0, 	
+		top: 0,  	
+		width: 256, 
+		height: 256
+	};	
+	
 	var clipPath='<clipPath id="clipRect"><rect x="' + clipRect.left + '" y="' + clipRect.top + '" width="' + clipRect.width + '" height="' + clipRect.height + '" /></clipPath>';
 	/*
 	console.error('bbox: ' + JSON.stringify(bbox, null, 2));
@@ -119,8 +128,11 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
 */
 	var svgFileName=geolevel_id + "/" + zoomlevel + "/" + x + "/" + y + ".svg";	
 	var svgOptions = {
-		mapExtent: mapExtent,
-		attributes: { id: svgFileName }
+		mapExtent: 	mapExtent,
+		attributes: { 
+			id: svgFileName /*, 
+			"clip-path": 'url(#clipRect)'  */
+			}
 	};
 	
 //
@@ -130,16 +142,21 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
 		geojson, 'EPSG:4326', 'EPSG:3857', proj4.defs);
 	var svgString = converter.convert(geojson3857, svgOptions);
 
+//
+// Clipping disabled; causes PhantomJS to hang...
+//
 	var rval={
 		svgString: '<?xml version="1.0" standalone="no"?>\n' +
 			' <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
 			'  <svg width="256" height="256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n' + 
-			'   <defs>' + clipPath + '</defs>\n' +
+//			'   <defs>' + clipPath + '</defs>\n' +
 			'   ' + svgString + '\n' +
 			'  </svg>',
 		clipRect: clipRect
 	};
-//	console.error(svgFileName + "; size: " + nodeGeoSpatialServicesCommon.fileSize(sizeof(svgString)));
+	console.error(svgFileName + "; size: " + nodeGeoSpatialServicesCommon.fileSize(sizeof(svgString)) +
+		'; clipPath: ' + JSON.stringify(clipPath, null, 2) +
+		'; mapExtent: ' + JSON.stringify(mapExtent, null, 2));
 
 	return rval;
 } // End of createSVGTile()

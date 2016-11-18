@@ -211,11 +211,11 @@ function convert(instance, srcPath, size, clipRect) {
             }).then(checkEvalError).then(function (dimensions) {
 				console.error('dimensions: ' + srcPath + '; dimensions: ' + JSON.stringify(dimensions));
                 return page.property('viewportSize', dimensions);
-            }).then(checkEvalError).then(function () {
+            })/*.then(checkEvalError).then(function () { // Clipping 
 				var nclipRect={top: clipRect.top, left: clipRect.left, width: size.width, height: size.height};
 				console.error('clipRect: ' + srcPath + '; clipRect: ' + JSON.stringify(nclipRect));
                 return page.property('clipRect', nclipRect);
-            });
+            }) */;
         }).then(function () {
             return page.renderBase64("PNG");
         }).then(function (imageBase64) {
