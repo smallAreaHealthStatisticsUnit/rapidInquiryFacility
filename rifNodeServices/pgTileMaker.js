@@ -180,10 +180,18 @@ function main() {
 		console.error('1: Could not load TileMakerConfig database module.', err);				
 		process.exit(1);
 	}
-	var tileMakerConfig=new TileMakerConfig.TileMakerConfig(argv["xmlfile"]);
 	
-	// Create Postgres client;
-	pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], tileMakerConfig);
+	var tileMakerConfig=new TileMakerConfig.TileMakerConfig(argv["xmlfile"]);	
+	tileMakerConfig.parseConfig(function (err, data) {
+		if (err) {
+			console.error(err.message);			
+			process.exit(1);		
+		}
+		tileMakerConfig.setXmlConfig(data);
+			
+		// Create Postgres client;
+		pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], tileMakerConfig);	
+	});
 } /* End of main */
 
 /* 
@@ -274,7 +282,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 					else {
 // Call pgTileMaker()...
 						console.log('Connected to Postgres [2nd attempt] using: ' + conString + "; debug: " + DEBUG);		
-						tileMaker.pgTileMaker(client1,  p_pngfile, tileMakerConfig, endCallBack);
+						tileMaker.dbTileMaker(client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack);
 					} // End of else connected OK 
 				}); // End of connect						
 			}
@@ -283,7 +291,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 // Call pgTileMaker()...
 
 			console.log('Connected to Postgres using: ' + conString + "; debug: " + DEBUG);	
-			tileMaker.pgTileMaker(client1, p_pngfile, tileMakerConfig, endCallBack);
+			tileMaker.dbTileMaker(client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack);
 		} // End of else connected OK 
 	}); // End of connect		
 

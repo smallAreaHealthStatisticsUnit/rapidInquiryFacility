@@ -180,10 +180,18 @@ function main() {
 		console.error('1: Could not load TileMakerConfig database module.', err);				
 		process.exit(1);
 	}
-	var tileMakerConfig=new TileMakerConfig.TileMakerConfig(argv["xmlfile"]);
+	var tileMakerConfig=new TileMakerConfig.TileMakerConfig(argv["xmlfile"]);	
+	tileMakerConfig.parseConfig(function (err, data) {
+		if (err) {
+			console.error(err.message);			
+			process.exit(1);		
+		}
+		tileMakerConfig.setXmlConfig(data);
+			
+		// Create SQL server client;
+		mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["password"], argv["pngfile"], tileMakerConfig);
+	});	
 	
-	// Create SQL server client;
-	mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["password"], argv["pngfile"], tileMakerConfig);
 } /* End of main */
 
 /* 
@@ -267,7 +275,7 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 			console.log('Connected to SQL server using: ' + JSON.stringify(config, null, 4) + "; debug: " + DEBUG);
 
 // Call mssqlTileMaker()...
-			tileMaker.mssqlTileMaker(client1, p_pngfile, tileMakerConfig, endCallBack);
+			tileMaker.dbTileMaker(client1, p_pngfile, tileMakerConfig, "MSSQLServer", endCallBack);
 		} // End of else connected OK 
 	}); // End of connect		
 

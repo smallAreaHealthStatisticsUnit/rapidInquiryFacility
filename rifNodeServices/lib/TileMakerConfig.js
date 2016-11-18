@@ -48,8 +48,10 @@ const fs = require('fs'),
       xml2js = require('xml2js');
 	  
 function TileMakerConfig(xmlConfigFileName) {
+	this.xmlConfig={xmlFileName: xmlConfigFileName};
 	this.xmlConfigFileName=xmlConfigFileName;
-	this.parseConfig(xmlConfigFileName);
+	
+	return this;
 } // End of TileMakerConfig() object constructor
 TileMakerConfig.prototype = { // Add methods
 	writeConfig: function() {
@@ -63,21 +65,25 @@ TileMakerConfig.prototype = { // Add methods
 			
 		fs.writeFileSync(this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName, xmlDoc);		
 	}, // End of writeConfig()
-	parseConfig: function(xmlConfigFileName) {
-
-		var parser = new xml2js.Parser();
-		fs.readFile(xmlConfigFileName, function(err, data) {
+	setXmlConfig: function(config) {
+		this.xmlConfig=config;
+		console.error("Parsed XML config file: " + this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName);
+	},
+	parseConfig: function(callback) {
+		var parser = new xml2js.Parser({async: false});
+		var data;
+		try {
+			data=fs.readFileSync(this.xmlConfigFileName);
+		}
+		catch (e) {
+			callback(new Error("Unable to open/read: " + xmlConfigFileName + ": " + e.message));
+		}
+		parser.parseString(data, function (err, result) {		
 			if (err) {
-				throw new Error("Unable to open/read: " + xmlConfigFileName + ": " + err.message);
+				callback(new Error("Unable to parse: " + xmlConfigFileName + ": " + err.message));
 			}
-			parser.parseString(data, function (err, result) {		
-				if (err) {
-					throw new Error("Unable to parse: " + xmlConfigFileName + ": " + err.message);
-				}
-				this.xmlConfig=result.geoDataLoader;
-				console.error("Parsed: " + this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName + "\n" +
-					JSON.stringify(this.xmlConfig, null, 4));
-			});
+			
+			callback(undefined, result.geoDataLoader);
 		});			
 	} // End of parseConfig()
 }

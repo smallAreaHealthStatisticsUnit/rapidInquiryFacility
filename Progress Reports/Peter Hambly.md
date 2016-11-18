@@ -727,6 +727,9 @@ RangeError: Invalid string length
 
 #### 14th to 18th November
 
+* Map tile generator: connect to SQL server
+* XML configuration file support
+
 #### Current TODO list (November):
 
 * JSZip 3.0 upgrade required (forced to 2.6.0) for present

@@ -308,21 +308,38 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 		callback: endCallback
 	});
  
-//	pgTileMaker(endCallback)										
+//	dbTileMaker(endCallback)										
 } // End of tileMaker()
 
+/*
+ * Function: 	dbTileMaker()
+ * Parameters:	Database client connectiom, create PNG files (true/false), tile make configuration, database type (PostGres or MSSQLServer), callback
+ * Returns:		Nothing
+ * Description:	Creates topoJSONtiles in the database, SVG and PNG tiles if required
+ */
+var dbTileMaker = function dbTileMaker(client, createPngfile, tileMakerConfig, dbType, dbTileMakerCallback) {
 
-var pgTileMaker = function pgTileMaker(client, createPngfile, tileMakerConfig, pgTileMakerCallback) {
-	
+	console.error("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName + "\n" +
+		JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
+					
 	scopeChecker(__file, __line, { // Check callback
-		callback: pgTileMakerCallback
+		callback: dbTileMakerCallback,
+		tileMakerConfig: tileMakerConfig,
+		xmlConfig: tileMakerConfig.xmlConfig,
+		xmlFileDir: tileMakerConfig.xmlConfig.xmlFileDir,
+		xmlFileName: tileMakerConfig.xmlConfig.xmlFileName, 
+		dbType: dbType
 	});
 
+	if (dbType != "PostGres" && dbType != "MSSQLServer") {
+		throw new Error("dbTileMaker(): Invalid dbType: " + dbType)
+	}
+	
 	/*
 	 * Function: 	pgErrorHandler()
 	 * Parameters:	Error object, SQL query
 	 * Returns:		Nothing
-	 * Description:	Creates new Error; raise using pgTileMakerCallback
+	 * Description:	Creates new Error; raise using dbTileMakerCallback
 	 */
 	var pgErrorHandler = function pgErrorHandler(err, sqlInError) {
 		var nerr;
@@ -335,11 +352,11 @@ var pgTileMaker = function pgTileMaker(client, createPngfile, tileMakerConfig, p
 		}
 		try {
 //			console.error("pgErrorHandler() Error: " + nerr.message);
-			endTransaction(nerr, pgTileMakerCallback, (sqlInError||sql));
+			endTransaction(nerr, dbTileMakerCallback, (sqlInError||sql));
 		}
 		catch (e) {
 			console.error("pgErrorHandler() Caught error in end transaction: " + e.message);
-			pgTileMakerCallback(nerr);
+			dbTileMakerCallback(nerr);
 		}
 	} // End of pgErrorHandler()						
 
@@ -743,11 +760,11 @@ REFERENCE (from shapefile) {
 			
 				if (createPngfile) {
 					convertSVG2Png(function convertSVG2PngCallback() {	// Convert all SVG to PNG
-						endTransaction(err, pgTileMakerCallback, sql);			
+						endTransaction(err, dbTileMakerCallback, sql);			
 					});		
 				}
 				else {	
-					endTransaction(err, pgTileMakerCallback, sql);			
+					endTransaction(err, dbTileMakerCallback, sql);			
 				}
 			});
 			
@@ -931,9 +948,9 @@ REFERENCE (from shapefile) {
 					function writeSVGTileSeries(value, j, writeSVGTileCallback) { // Processing code	
 						// Write SVG tiles to disk
 
-							writeSVGTile('/Users/Peter/Google Drive/work/tiles', 
+							writeSVGTile(tileMakerConfig.xmlConfig.xmlFileDir + "/" + "/tiles", 
 								value.geolevel_id, value.zoomlevel, value.x, value.y, writeSVGTileCallback, value.svgTile);
-								var svgTileFileName=getSVGTileFileName('/Users/Peter/Google Drive/work/tiles', 
+								var svgTileFileName=getSVGTileFileName(tileMakerConfig.xmlConfig.xmlFileDir + "/" + "/tiles", 
 									value.geolevel_id, value.zoomlevel, value.x, value.y)
 							svgFileList[svgTileFileName + '.svg']=svgTileFileName + '.png';
 							clipRectObj[svgTileFileName + '.svg']=value.svgTile.clipRect;
@@ -992,7 +1009,7 @@ REFERENCE (from shapefile) {
 	});
 }
 
-module.exports.pgTileMaker = pgTileMaker;
+module.exports.dbTileMaker = dbTileMaker;
 
 //
 // Eof
