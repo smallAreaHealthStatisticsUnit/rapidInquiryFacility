@@ -203,6 +203,7 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/helmet/package.json \
 	node_modules/pg/package.json \
 	node_modules/pg-native/package.json \
+	node_modules/mssql/package.json \
 	node_modules/msnodesqlv8/package.json \
 	node_modules/srs/package.json \
 	node_modules/xml2js/package.json \
@@ -222,7 +223,7 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/wellknown/package.json \
 	node_modules/svg2png/package.json \
 	node_modules/svg2png-many/package.json \
-	node_modules/connect-busboy/package.json
+	node_modules/connect-busboy/package.json 
 #
 MODULES=$(patsubst %/package.json,%,$(MODULE_JSON))
 MODULE_LIST=$(patsubst node_modules/%/package.json,%,$(MODULE_JSON))

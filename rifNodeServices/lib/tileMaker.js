@@ -48,6 +48,7 @@ const serverLog = require('../lib/serverLog'),
 	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
 	  httpErrorResponse = require('../lib/httpErrorResponse'),
 	  scopeChecker = require('../lib/scopeChecker'),
+	  TileMakerConfig = require('../lib/TileMakerConfig'),
 	  svg2png = require('../lib/svg2png-many-mod');
 
 const async = require('async'),
@@ -311,7 +312,7 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 } // End of tileMaker()
 
 
-var pgTileMaker = function pgTileMaker(client, createPngfile, pgTileMakerCallback) {
+var pgTileMaker = function pgTileMaker(client, createPngfile, tileMakerConfig, pgTileMakerCallback) {
 	
 	scopeChecker(__file, __line, { // Check callback
 		callback: pgTileMakerCallback

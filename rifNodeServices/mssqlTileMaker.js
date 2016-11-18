@@ -53,14 +53,14 @@
 // RIF 4.0 Database SQL server tile maker.
 //
 // Options:
-// -D, --database  name of SQL server database            [default: "sahsuland_dev"]
-// -U, --username  SQL server database username           [default: "peter"]
-// -P, --port      SQL server database port               [default: 5432]
-// -H, --hostname  hostname of SQL server database        [default: "localhost"]
-// -V, --verbose   Verbose mode                           [default: false]
-// -X, --xmlfile   XML Configuration file
-// -p, --pngfile   Make SVG/PNG files                     [default: false]
-// -h, --help      display this helpful message and exit  [default: false]
+// -D, --database    name of SQL server database           [default: <user default>]
+// -U, --username    SQL server database username          [default: NONE (use trusted connection)]
+// --password, --pw  SQL server database password
+//  -H, --hostname  hostname of SQL server database        [default: "localhost"]
+//  -V, --verbose   Verbose mode                           [default: false]
+//  -X, --xmlfile   XML Configuration file                 [default: "geoDataLoader.xml"]
+//  -p, --pngfile   Make SVG/PNG files                     [default: false]
+//  -h, --help      display this helpful message and exit  [default: false]
 //
 // Defaults are detected from the SQL server environment setup
 //
@@ -87,8 +87,7 @@
  */	
 function main() {
 	
-	var pg = null;
-	var optimist  = require('optimist');
+	const optimist  = require('optimist');
 	
 // Process Args using optimist
 	var argv = optimist
@@ -99,37 +98,38 @@ function main() {
       alias: "database",
       describe: "name of SQL server database",
 	  type: "string",
-      default: pg_default("PGDATABASE")
+      default: mssql_default("SQLCMDDBNAME")
     })
     .options("U", {
       alias: "username",
       describe: "SQL server database username",
 	  type: "string",
-      default: pg_default("PGUSER") 
-    })	
-    .options("P", {
-      alias: "port",
-      describe: "SQL server database port",
-	  type: "integer",
-      default: pg_default("PGPORT") 
+      default: mssql_default("SQLCMDUSER") 
+    })
+    .options("password", {
+      alias: "pw",
+      describe: "SQL server database password",
+	  type: "string",
+      default: mssql_default("SQLCMDPASSWORD") 
     })		
     .options("H", {
       alias: "hostname",
       describe: "hostname of SQL server database",
 	  type: "string",
-      default: pg_default("PGHOST")
+      default: mssql_default("SQLCMDSERVER")
     })
     .options("V", {
       alias: "verbose",
       describe: "Verbose mode",
 	  type: "boolean",
-      default: pg_default("VERBOSE")
+      default: mssql_default("VERBOSE")
     })
     .options("X", {
       alias: "xmlfile",
       describe: "XML Configuration file",
 	  type: "string",
-      default: undefined
+      default: "geoDataLoader.xml"
+	})
     .options("p", {
       alias: "pngfile",
       describe: "Make SVG/PNG files",
@@ -154,47 +154,58 @@ function main() {
 	
 //
 // Load database module
-// Will eventually support SQL server as well
 //
 	try {
-		pg=require('pg');
+		mssql=require('mssql');
 	}
 	catch(err) {
 		console.error('1: Could not load SQL server database module.', err);				
 		process.exit(1);
 	}
+
+//
+// TileMakerConfig
+//
+	try {
+		tileMaker=require('./lib/tileMaker');	
+	}
+	catch(err) {
+		console.error('1: Could not load Postgres database module.', err);				
+	}
+	
+	try {
+		TileMakerConfig = require('./lib/TileMakerConfig');
+	}
+	catch(err) {
+		console.error('1: Could not load TileMakerConfig database module.', err);				
+		process.exit(1);
+	}
+	var tileMakerConfig=new TileMakerConfig.TileMakerConfig(argv["xmlfile"]);
 	
 	// Create SQL server client;
-	mssql_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"]);
+	mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["password"], argv["pngfile"], tileMakerConfig);
 } /* End of main */
 
 /* 
- * Function: 	pg_default()
+ * Function: 	mssql_default()
  * Parameters: 	SQL server variable name
  * Returns:		Defaulted value
  * Description: Setup SQL server defaults (i.e. use PGDATABASE etc from env or set sensible default
  *				Used by optimist
  */
-function pg_default(p_var) {
+function mssql_default(p_var) {
 	var p_def;
 	
-	if (p_var == "PGDATABASE") {
-		p_def="sahsuland_dev";
+	if (p_var == "SQLCMDDBNAME") {
+		p_def=""; 			// User Default database
 	}
-	else if (p_var == "PGHOST") {
-		p_def="localhost";
+	else if (p_var == "SQLCMDSERVER") {
+		p_def="localhost" 	// default instance of SQL Server on the local computer
 	}
-	else if (p_var == "PGUSER") {
-		p_def=process.env["USERNAME"];
+	else if (p_var == "SQLCMDUSER") {
 		if (p_def === undefined) {
-			p_def=process.env["USER"];
-			if (p_def === undefined) {
-				p_def="<NO USER DEFINED>";
-			}
+			p_def="";
 		}
-	}	
-	else if (p_var == "PGPORT") {
-		p_def=5432;
 	}
 	else if (p_var == "VERBOSE") {	
 		p_def=false; // Disable verbose log messages
@@ -211,14 +222,12 @@ function pg_default(p_var) {
 	
 /* 
  * Function: 	mssql_db_connect()
- * Parameters: 	SQL server PG package connection handle,
- *				database host, name, username, port, generate PNG files
+ * Parameters: 	SQL server package connection handle,
+ *				database host, name, username, password, generate PNG files, tileMakerConfig object
  * Returns:		Nothing
  * Description:	Connect to database, ...
  */
-function mssql_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile) {
-	
-	var client1 = null; // Client 1: Master; hard to remove	
+function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p_pngfile, tileMakerConfig) {
 
 	var endCallBack = function endCallBack(err) {
 		if (err) {
@@ -227,54 +236,50 @@ function mssql_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfil
 		}
 		process.exit(1);	
 	}
-	
-	var conString = 'SQL server://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=mssqlTileMaker';
 
-// Use PGHOST, native authentication (i.e. same as psql)
-	client1 = new p_pg.Client(conString);
-// Connect to SQL server database
-	client1.connect(function(err) {
-		if (err) {
-			console.error('Could not connect to SQL server client ' + p_num + ' using: ' + conString, err);
-			if (p_hostname === 'localhost') {
-				
-// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
-// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
-// You do need entries for ::1 in pgpass			
-
-				console.log('Attempt 2 (::1 instead of localhost) to connect to SQL server using: ' + conString);
-				conString = 'SQL server://' + p_user + '@' + '[::1]' + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
-				client1 = new p_pg.Client(conString);
-// Connect to SQL server database
-				client1.connect(function(err) {
-					if (err) {
-						console.error('Could not connect [2nd attempt] to SQL server client ' + p_num + ' using: ' + conString, err);
-						process.exit(1);	
-					}
-					else {
-// Call mssqlTileMaker()...
-						tileMaker.mssqlTileMaker(client1, endCallBack);
-					} // End of else connected OK 
-				}); // End of connect				
-				console.log('Connected to SQL server [2nd attempt] using: ' + conString);				
-			}
+	var config = {
+		driver: 'msnodesqlv8',
+		server: p_hostname,
+		database: p_database,
+		options: {
+			trustedConnection: false,
+			useUTC: true,
+			appName: 'mssqlTileMaker.js'
 		}
-		else {			
+	};
+	if (p_user != "") {
+		config.user=p_user;
+		config.password=p_password;
+	}
+	else {
+		config.options.trustedConnection=true;
+	}
+	
 
-			const tileMaker = require('./lib/tileMaker');
+// Connect to SQL server database
+	var client1=p_mssql.connect(config, function(err) {
+		if (err) {
+			console.error('Could not connect to SQL server client using: ' + JSON.stringify(config, null, 4) + "\nError: " + err);
+			process.exit(1);	
+		}
+		else {				
+			var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
+			console.log('Connected to SQL server using: ' + JSON.stringify(config, null, 4) + "; debug: " + DEBUG);
+
 // Call mssqlTileMaker()...
-			tileMaker.mssqlTileMaker(client1, p_pngfile, endCallBack);
+			tileMaker.mssqlTileMaker(client1, p_pngfile, tileMakerConfig, endCallBack);
 		} // End of else connected OK 
 	}); // End of connect		
-	var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
-	console.log('Connected to SQL server using: ' + conString + "; debug: " + DEBUG);	
 
 	// Notice message event processors
-	client1.on('notice', function(msg) {
-		  console.log('PG: %s', msg);
-	});
+//	client1.on('notice', function(msg) {
+//		  console.log('MSSQL: %s', msg);
+//	});
 }
 
+var mssql = undefined;
+var tileMaker=undefined;
+var TileMakerConfig = undefined;
 main();
 
 //

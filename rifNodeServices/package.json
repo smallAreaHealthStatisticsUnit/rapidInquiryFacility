@@ -41,6 +41,7 @@
     "mapshaper": "^0.3.33",
     "morgan": "^1.7.0",
     "msnodesqlv8": "^0.1.46",
+    "mssql": "^3.3.0",
     "mutexjs": "^1.2.0",
     "node-uuid": "^1.4.7",
     "object-sizeof": "^1.1.1",

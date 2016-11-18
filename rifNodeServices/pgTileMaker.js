@@ -87,8 +87,7 @@
  */	
 function main() {
 	
-	var pg = null;
-	var optimist  = require('optimist');
+	const optimist  = require('optimist');
 	
 // Process Args using optimist
 	var argv = optimist
@@ -129,7 +128,7 @@ function main() {
       alias: "xmlfile",
       describe: "XML Configuration file",
 	  type: "string",
-      default: undefined
+      default: "geoDataLoader.xml"
     })
     .options("p", {
       alias: "pngfile",
@@ -155,18 +154,36 @@ function main() {
 	
 //
 // Load database module
-// Will eventually support SQL server as well
 //
 	try {
 		pg=require('pg');
 	}
 	catch(err) {
-		console.error('1: Could not load postgres database module.', err);				
+		console.error('1: Could not load Postgres database module.', err);				
 		process.exit(1);
 	}
 	
+//
+// TileMakerConfig
+//
+	try {
+		tileMaker=require('./lib/tileMaker');	
+	}
+	catch(err) {
+		console.error('1: Could not load Postgres database module.', err);				
+	}
+
+	try {
+		TileMakerConfig = require('./lib/TileMakerConfig');
+	}
+	catch(err) {
+		console.error('1: Could not load TileMakerConfig database module.', err);				
+		process.exit(1);
+	}
+	var tileMakerConfig=new TileMakerConfig.TileMakerConfig(argv["xmlfile"]);
+	
 	// Create Postgres client;
-	pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"]);
+	pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], tileMakerConfig);
 } /* End of main */
 
 /* 
@@ -213,11 +230,11 @@ function pg_default(p_var) {
 /* 
  * Function: 	pg_db_connect()
  * Parameters: 	Postgres PG package connection handle,
- *				database host, name, username, port, generate PNG files
+ *				database host, name, username, port, generate PNG files, tileMakerConfig object
  * Returns:		Nothing
  * Description:	Connect to database, ...
  */
-function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile) {
+function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, tileMakerConfig) {
 	
 	var client1 = null; // Client 1: Master; hard to remove	
 
@@ -231,6 +248,8 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile) 
 	
 	var conString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=pgTileMaker';
 
+	var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
+	
 // Use PGHOST, native authentication (i.e. same as psql)
 	client1 = new p_pg.Client(conString);
 // Connect to Postgres database
@@ -254,21 +273,19 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile) 
 					}
 					else {
 // Call pgTileMaker()...
-						tileMaker.pgTileMaker(client1, endCallBack);
+						console.log('Connected to Postgres [2nd attempt] using: ' + conString + "; debug: " + DEBUG);		
+						tileMaker.pgTileMaker(client1,  p_pngfile, tileMakerConfig, endCallBack);
 					} // End of else connected OK 
-				}); // End of connect				
-				console.log('Connected to Postgres [2nd attempt] using: ' + conString);				
+				}); // End of connect						
 			}
 		}
 		else {			
-
-			const tileMaker = require('./lib/tileMaker');
 // Call pgTileMaker()...
-			tileMaker.pgTileMaker(client1, p_pngfile, endCallBack);
+
+			console.log('Connected to Postgres using: ' + conString + "; debug: " + DEBUG);	
+			tileMaker.pgTileMaker(client1, p_pngfile, tileMakerConfig, endCallBack);
 		} // End of else connected OK 
 	}); // End of connect		
-	var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
-	console.log('Connected to Postgres using: ' + conString + "; debug: " + DEBUG);	
 
 	// Notice message event processors
 	client1.on('notice', function(msg) {
@@ -276,6 +293,10 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile) 
 	});
 }
 
+var pg = undefined;
+var TileMakerConfig = undefined;	
+var tileMaker=undefined;
+	
 main();
 
 //
