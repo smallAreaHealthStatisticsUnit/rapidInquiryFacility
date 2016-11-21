@@ -566,8 +566,15 @@ REFERENCE (from shapefile) {
 			[-157.89897200000001,
 			56.347497000000004],
  */	
-	function tileIntersectsRowProcessing(row) {
-				
+	function tileIntersectsRowProcessing(row, geography, dbType) {
+		
+		var wkt;
+		if (dbType == "PostGres") {
+			wkt=row.optimised_wkt;
+		}
+		else if (dbType == "MSSQLServer") {	
+			wkt=row.optimised_wkt.join("");
+		}
 		var tileArray=getTileArray();
 		var geojson={
 			type: "Feature",
@@ -576,7 +583,7 @@ REFERENCE (from shapefile) {
 				areaID:   row.areaid,
 				areaName: row.areaname
 			}, 
-			geometry: wellknown.parse(row.optimised_wkt)
+			geometry: wellknown.parse(wkt)
 		};
 		var tileSize=0;
 //				console.error("wktjson: " + JSON.stringify(wktjson, null, 2).substring(0, 1000));	
@@ -602,7 +609,7 @@ REFERENCE (from shapefile) {
 		
 			}	
 		}	
-		
+//		console.error(geography + '; Tile ' + geojsonTile.id)
 		return tileSize;
 	} // End of tileIntersectsRowProcessing()	
 
@@ -739,18 +746,35 @@ REFERENCE (from shapefile) {
 	 */		
 	function getNumGeolevelsZoomlevels(geographyTable, getNumGeolevelsZoomlevelsCallback) {
 		sql="SELECT * FROM " + geographyTable;
-		var query=client.query(sql, function setSearchPath(err, result) {
+		
+		var request;
+		if (dbType == "PostGres") {
+			request=client;
+		}		
+		else if (dbType == "MSSQLServer") {	
+			request=new dbSql.Request();
+		}		
+		var query=request.query(sql, function setSearchPath(err, result) {
 			if (err) {
 				dbErrorHandler(err, sql);
 			}
-			if (result.rows.length != 1) {
-				dbErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
+			var geographyTableData;
+			if (dbType == "PostGres") {
+				if (result.rows.length != 1) {
+					dbErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
+				}
+				geographyTableData=result.rows[0];
+			}		
+			else if (dbType == "MSSQLServer") {	
+				if (result.length != 1) {
+					dbErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
+				}
+				geographyTableData=result[0];
 			}
-			var geographyTableData=result.rows[0];
 			
 			sql="TRUNCATE TABLE t_tiles_" + geographyTableData.geography;
 			console.error(sql);
-			var query=client.query(sql, function t_tilesDelete(err, result) {
+			var query=request.query(sql, function t_tilesDelete(err, result) {
 				if (err) {
 					dbErrorHandler(err, sql);
 				}
@@ -759,18 +783,24 @@ REFERENCE (from shapefile) {
 							"       MAX(zoomlevel) AS max_zoomlevel\n" +
 							"  FROM " + geographyTableData.geometrytable;
 							
-					var query=client.query(sql, function setSearchPath(err, result) {
+					var query=request.query(sql, function setSearchPath(err, result) {
 						if (err) {
 							dbErrorHandler(err, sql);
 						}
-						numZoomlevels=result.rows[0].max_zoomlevel;
-						numGeolevels=result.rows[0].max_geolevel_id;
-						
+						if (dbType == "PostGres") {
+							numZoomlevels=result.rows[0].max_zoomlevel;
+							numGeolevels=result.rows[0].max_geolevel_id;
+						}		
+						else if (dbType == "MSSQLServer") {	
+							numZoomlevels=result[0].max_zoomlevel;
+							numGeolevels=result[0].max_geolevel_id;
+						}
 						getNumGeolevelsZoomlevelsCallback(geographyTableData);	
 					});		
 				}
 			});		
-		});			
+		});	
+
 	} // End of getNumGeolevelsZoomlevels()
 
 	/*
@@ -783,44 +813,58 @@ REFERENCE (from shapefile) {
 	
 		var tileIntersectsTable='tile_intersects_' + geographyTableData.geography;
 		var geolevelsTable='geolevels_' + geographyTableData.geography;
-		 
+		var request;
+		if (dbType == "PostGres") {
+			request=client;
+		}		
+		else if (dbType == "MSSQLServer") {	
+			request=new dbSql.Request();
+		}
+		
 		sql="SELECT * FROM " + geolevelsTable + " WHERE geography = '" +geographyTableData.geography  + "' ORDER BY geolevel_id";
-		var query=client.query(sql, function setSearchPath(err, result) {
+		var query=request.query(sql, function setSearchPath(err, result) {
 			if (err) {
 				dbErrorHandler(err, sql);
-			}		  
-			if (result.rows.length < 1) {
-				dbErrorHandler(new Error("tileIntersectsProcessingGeolevelLoop() geolevelsTable table: " + geolevelsTable + 
-					" fetch rows <1 (" + result.rows.length + ") for geography: " + geographyTableData.geography), sql);	
 			}
-			var geolvelTableData=result.rows;
-			console.error("Geography: " + geographyTableData.geography + "; geolevels: " + result.rows.length);
+			var geolvelTableData;
+			
+			if (dbType == "PostGres") {
+				geolvelTableData=result.rows;
+			}		
+			else if (dbType == "MSSQLServer") {	
+				geolvelTableData=result;
+			}		  
+			if (geolvelTableData.length < 1) {
+				dbErrorHandler(new Error("tileIntersectsProcessingGeolevelLoop() geolevelsTable table: " + geolevelsTable + 
+					" fetch rows <1 (" + geolvelTableData.length + ") for geography: " + geographyTableData.geography), sql);	
+			}
+			console.error("Geography: " + geographyTableData.geography + "; geolevels: " + geolvelTableData.length);
 	
-		var i=0;
-		async.doWhilst(
-			function geolevelProcessing(callback) {		
-				tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolvelTableData[i].geolevel_name, geolvelTableData[i].geolevel_id, 
-					geographyTableData.geography, callback);
-			}, 
-			function geolevelTest() { // Mimic for loop
-				var res=false;
+			var i=0;
+			async.doWhilst(
+				function geolevelProcessing(callback) {		
+					tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolvelTableData[i].geolevel_name, geolvelTableData[i].geolevel_id, 
+						geographyTableData.geography, callback);
+				}, 
+				function geolevelTest() { // Mimic for loop
+					var res=false;
+					
+					i++;
+					if (i<numGeolevels) { res=true; }; 
+					return (res);
+				},
+				function geolevelProcessingEndCallback(err) { // Call main tileMaker complete callback
 				
-				i++;
-				if (i<numGeolevels) { res=true; }; 
-				return (res);
-			},
-			function geolevelProcessingEndCallback(err) { // Call main tileMaker complete callback
-			
-				if (createPngfile) {
-					convertSVG2Png(function convertSVG2PngCallback() {	// Convert all SVG to PNG
+					if (createPngfile) {
+						convertSVG2Png(function convertSVG2PngCallback() {	// Convert all SVG to PNG
+							endTransaction(err, dbTileMakerCallback, sql);			
+						});		
+					}
+					else {	
 						endTransaction(err, dbTileMakerCallback, sql);			
-					});		
+					}
 				}
-				else {	
-					endTransaction(err, dbTileMakerCallback, sql);			
-				}
-			});
-			
+			);		
 		});
 		 
 	} // End of tileIntersectsProcessingGeolevelLoop()
@@ -879,13 +923,25 @@ REFERENCE (from shapefile) {
 // 
 // Primary key: geolevel_id, zoomlevel, areaid, x, y
 //			
-		sql="SELECT z.geolevel_id::VARCHAR||'_'||'" + geolevelName + "'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
-			"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, z.x, z.y, a.*\n" +				
-			"  FROM " + tileIntersectsTable + " z, lookup_" + geolevelName + " a\n" +
-			" WHERE z.geolevel_id = $2\n" + 
-			"   AND z.zoomlevel   = $1\n" + 
-			"   AND z.areaid      = a." + geolevelName + "\n" + 
-			" ORDER BY 1";
+		if (dbType == "PostGres") {	
+			sql="SELECT z.geolevel_id::VARCHAR||'_'||'" + geolevelName + "'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
+				"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, z.x, z.y, a.*\n" +				
+				"  FROM " + tileIntersectsTable + " z, lookup_" + geolevelName + " a\n" +
+				" WHERE z.geolevel_id = $2\n" + 
+				"   AND z.zoomlevel   = $1\n" + 
+				"   AND z.areaid      = a." + geolevelName + "\n" + 
+				" ORDER BY 1";
+		}		
+		else if (dbType == "MSSQLServer") {		
+			sql="SELECT CAST(z.geolevel_id AS VARCHAR) + '_' + '" + geolevelName + 
+							"' + '_' + CAST(z.zoomlevel AS VARCHAR) + '_' + CAST(z.x AS VARCHAR) + '_' + CAST(z.y AS VARCHAR) AS tile_id,\n" +
+				"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, z.x, z.y, a.*\n" +				
+				"  FROM " + tileIntersectsTable + " z, lookup_" + geolevelName + " a\n" +
+				" WHERE z.geolevel_id = @geolevel_id\n" + 
+				"   AND z.zoomlevel   = @zoomlevel\n" + 
+				"   AND z.areaid      = a." + geolevelName + "\n" + 
+				" ORDER BY 1";
+		}
 	
 		var zoomlevel=0;
 		zstart = new Date().getTime(); // Set timer for zoomlevel
@@ -953,7 +1009,15 @@ REFERENCE (from shapefile) {
 	ORDER BY geolevel_id, zoomlevel, x, y;
 
 	*/
-			var query=client.query(sql, insertArray, function tilesInsert(err, result) {
+	
+			var request;
+			if (dbType == "PostGres") {
+				request=client;
+			}		
+			else if (dbType == "MSSQLServer") {	
+				request=new dbSql.Request();
+			}
+			var query=request.query(sql, insertArray, function tilesInsert(err, result) {
 				if (err) {
 					dbErrorHandler(err, sql);
 				}
@@ -961,8 +1025,11 @@ REFERENCE (from shapefile) {
 					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: result undefined != expected: " + expectedRows), sql);
 					
 				}
-				else if (expectedRows != result.rowCount) {
+				else if (dbType == "PostGres" && expectedRows != result.rowCount) {
 					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
+				}
+				else if (dbType == "MSSQLServer" && expectedRows != result.length) {
+					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.length + " != expected: " + expectedRows), sql);
 				}
 				else {
 					tileArray=[];  // Re-initialize tile array
@@ -970,15 +1037,33 @@ REFERENCE (from shapefile) {
 				}	
 			});	
 		} // End of tileInsert()
-			
-		var query = client.query(sql, [zoomlevel, geolevel_id]);
-		query.on('error', dbErrorHandler);
+	
+		var request;
+		var query;
+		var stream;		
+		var endEventName;
+		if (dbType == "PostGres") {
+			request=client;
+			query = request.query(sql, [zoomlevel, geolevel_id]);
+			stream=query;
+		}		
+		else if (dbType == "MSSQLServer") {	
+			console.error("SQL> " + sql);
+			request=new dbSql.Request();
+			request.stream=true;
+			stream=request;
+			request.input('zoomlevel', zoomlevel);
+			request.input('geolevel_id', geolevel_id);
+			query = request.query(sql);
+		}
+		stream.on('error', dbErrorHandler);
 
-		query.on('row', function tileIntersectsRow(row) {
-			totalTileSize+=tileIntersectsRowProcessing(row, geography);			
+		stream.on('row', function tileIntersectsRow(row) {
+			totalTileSize+=tileIntersectsRowProcessing(row, geography, dbType);		
 		});
 		
-		query.on('end', function(result) {
+		function tileIntersectsProcessingEnd(rowCount) {
+			
 			// Process last tile if it exists
 			var geojsonTile=tileArray[(tileArray.length-1)];
 			if (geojsonTile) {
@@ -989,7 +1074,7 @@ REFERENCE (from shapefile) {
 			var elapsedTime=(end - zstart)/1000; // in S
 			var tElapsedTime=(end - lstart)/1000; // in S
 			console.error('Geolevel: ' + geolevel_id + '; zooomlevel: ' + zoomlevel + '; ' + 
-				result.rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S; " +  
+				rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S; " +  
 				Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S" + 
 				"; total: " + tileNo + " tiles in " + tElapsedTime + " S; size: " + nodeGeoSpatialServicesCommon.fileSize(totalTileSize));
 			var expectedRows=tileArray.length;
@@ -1028,7 +1113,19 @@ REFERENCE (from shapefile) {
 			else {
 				tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
 			}
-		});	
+		} // End of tileIntersectsProcessingEnd()
+		
+		if (dbType == "PostGres") {
+			stream.on('end', function(result) {
+				tileIntersectsProcessingEnd(result.rowCount);
+			});
+		}		
+		else if (dbType == "MSSQLServer") {	
+			stream.on('done', function(returnValue, affected) {
+				tileIntersectsProcessingEnd(affected);
+			});
+		}
+		
 	} // End of tileIntersectsProcessing()
 			
 	var tileArray = [];	

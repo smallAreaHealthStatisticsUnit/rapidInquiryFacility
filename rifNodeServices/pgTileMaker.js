@@ -188,7 +188,10 @@ function main() {
 			process.exit(1);		
 		}
 		tileMakerConfig.setXmlConfig(data);
-			
+
+//		console.error("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName + "\n" +
+//			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
+										
 		// Create Postgres client;
 		pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], tileMakerConfig);	
 	});
@@ -291,7 +294,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 // Call pgTileMaker()...
 
 			console.log('Connected to Postgres using: ' + conString + "; debug: " + DEBUG);	
-			tileMaker.dbTileMaker(client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack);
+			tileMaker.dbTileMaker(p_pg, client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack);
 		} // End of else connected OK 
 	}); // End of connect		
 
