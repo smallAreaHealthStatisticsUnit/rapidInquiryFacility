@@ -313,11 +313,11 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 
 /*
  * Function: 	dbTileMaker()
- * Parameters:	Database client connectiom, create PNG files (true/false), tile make configuration, database type (PostGres or MSSQLServer), callback
+ * Parameters:	Database object (pg or mssql), Database client connectiom, create PNG files (true/false), tile make configuration, database type (PostGres or MSSQLServer), callback
  * Returns:		Nothing
  * Description:	Creates topoJSONtiles in the database, SVG and PNG tiles if required
  */
-var dbTileMaker = function dbTileMaker(client, createPngfile, tileMakerConfig, dbType, dbTileMakerCallback) {
+var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerConfig, dbType, dbTileMakerCallback) {
 
 	console.error("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName + "\n" +
 		JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
@@ -336,29 +336,29 @@ var dbTileMaker = function dbTileMaker(client, createPngfile, tileMakerConfig, d
 	}
 	
 	/*
-	 * Function: 	pgErrorHandler()
+	 * Function: 	dbErrorHandler()
 	 * Parameters:	Error object, SQL query
 	 * Returns:		Nothing
 	 * Description:	Creates new Error; raise using dbTileMakerCallback
 	 */
-	var pgErrorHandler = function pgErrorHandler(err, sqlInError) {
+	var dbErrorHandler = function dbErrorHandler(err, sqlInError) {
 		var nerr;
 		if (err) {	
 			nerr=new Error(err.message + "\nSQL> " + (sqlInError||sql));
 			nerr.stack=err.stack;
 		}
 		else {
-			nerr=new Error("pgErrorHandler() No error object passed")
+			nerr=new Error("dbErrorHandler() No error object passed")
 		}
 		try {
-//			console.error("pgErrorHandler() Error: " + nerr.message);
+//			console.error("dbErrorHandler() Error: " + nerr.message);
 			endTransaction(nerr, dbTileMakerCallback, (sqlInError||sql));
 		}
 		catch (e) {
-			console.error("pgErrorHandler() Caught error in end transaction: " + e.message);
+			console.error("dbErrorHandler() Caught error in end transaction: " + e.message);
 			dbTileMakerCallback(nerr);
 		}
-	} // End of pgErrorHandler()						
+	} // End of dbErrorHandler()						
 
 	/*
 	 * Function: 	TopojsonOptions()
@@ -613,27 +613,48 @@ REFERENCE (from shapefile) {
 	 * Description:	End transaction: COMMIT or rollback if error
 	 */	
 	function endTransaction(terr, endTransactionCallback, sqlInError) {
-		if (terr) {
-			sql='ROLLBACK TRANSACTION';	
-		}
-		else {
-			sql='COMMIT TRANSACTION';		
-		}	
-		var query=client.query(sql, function endTransactionQuery(err, result) {
-			if (err) {
-				if (err != terr) {
-					throw err; // New error - avoid recursion
-				}	
-			}
-			if ((terr || err) && sqlInError) {
-				console.error("endTransaction(): " + sql + "\nSQL in error> " + sqlInError);
-				sql=sqlInError;		// Restore SQL in error
+		
+		if (dbType == "PostGres") {
+			if (terr) {
+				sql='ROLLBACK TRANSACTION';	
 			}
 			else {
-				console.error("endTransaction(): " + sql);
+				sql='COMMIT TRANSACTION';		
+			}	
+			var query=client.query(sql, function endTransactionQuery(err, result) {
+				if (err) {
+					if (err != terr) {
+						throw err; // New error - avoid recursion
+					}	
+				}
+				if ((terr || err) && sqlInError) {
+					console.error("endTransaction(): " + sql + "\nSQL in error> " + sqlInError);
+					sql=sqlInError;		// Restore SQL in error
+				}
+				else {
+					console.error("endTransaction(): " + sql);
+				}
+				endTransactionCallback(terr || err);	
+			});		
+		}
+		else if (dbType == "MSSQLServer") {	
+			if (err) {
+				var query=transaction.rollback(function endTransaction(err) {
+					if (err) {
+						dbErrorHandler(err, sql);
+					}
+					endTransactionCallback();	
+				});				
 			}
-			endTransactionCallback(terr || err);	
-		});		
+			else {
+				var query=transaction.commit(function endTransaction(err) {
+					if (err) {
+						dbErrorHandler(err, sql);
+					}
+					endTransactionCallback();	
+				});			
+			}			
+		}
 	}
 	
 	/*
@@ -644,12 +665,24 @@ REFERENCE (from shapefile) {
 	 */	
 	function startTransaction(startTransactionCallback) {
 		sql='BEGIN TRANSACTION';	
-		var query=client.query(sql, function beginTransaction(err, result) {
-			if (err) {
-				pgErrorHandler(err, sql);
-			}
-			startTransactionCallback();	
-		});		
+		if (dbType == "PostGres") {
+			var query=client.query(sql, function beginTransaction(err, result) {
+				if (err) {
+					dbErrorHandler(err, sql);
+				}
+				startTransactionCallback();	
+			});		
+		}
+		else if (dbType == "MSSQLServer") {
+			
+			transaction = new dbSql.Transaction();
+			var query=transaction.begin(function beginTransaction(err) {
+				if (err) {
+					dbErrorHandler(err, sql);
+				}
+				startTransactionCallback();	
+			});		
+		}
 	}
 	
 	/*
@@ -662,20 +695,40 @@ REFERENCE (from shapefile) {
 	//
 	// Add $user to path
 	//	
-		sql="SELECT reset_val FROM pg_settings WHERE name='search_path'";
-		var query=client.query(sql, function getSearchPath(err, result) {
-			if (err) {
-				pgErrorHandler(err, sql);
-			}
-			sql='SET SEARCH_PATH TO "$user",' + result.rows[0].reset_val;
-		
-			var query=client.query(sql, function setSearchPath(err, result) {
+		if (dbType == "PostGres") {
+			sql="SELECT reset_val FROM pg_settings WHERE name='search_path'";
+			var query=client.query(sql, function getSearchPath(err, result) {
 				if (err) {
-					pgErrorHandler(err, sql);
+					dbErrorHandler(err, sql);
 				}
-				addUserToPathCallback();	
+				sql='SET SEARCH_PATH TO "$user",' + result.rows[0].reset_val;
+			
+				var query=client.query(sql, function setSearchPath(err, result) {
+					if (err) {
+						dbErrorHandler(err, sql);
+					}
+					addUserToPathCallback();	
+				});
+			});	
+		}
+		else if (dbType == "MSSQLServer") {	// Not supported in SQL server. Default schema must be User_name()
+			var sql="SELECT SCHEMA_NAME() AS default_schema, user_name() AS username";
+			var request = new dbSql.Request();
+			request.query(sql, function setSearchPath(err, recordset) {
+				if (err) {
+					dbErrorHandler(err, sql);
+				}
+
+				if (recordset[0].default_schema.toLowerCase() == recordset[0].username.toLowerCase()) {
+					console.error("SQL Server path OK");
+					addUserToPathCallback();
+				}
+				else {
+					dbErrorHandler(new Error("addUserToPath(): default schema (" +
+						recordset[0].default_schema + ") != username (" + recordset[0].username + ")"), sql);
+				}
 			});
-		});	
+		}
 	} // End of addUserToPath()
 
 	/*
@@ -688,10 +741,10 @@ REFERENCE (from shapefile) {
 		sql="SELECT * FROM " + geographyTable;
 		var query=client.query(sql, function setSearchPath(err, result) {
 			if (err) {
-				pgErrorHandler(err, sql);
+				dbErrorHandler(err, sql);
 			}
 			if (result.rows.length != 1) {
-				pgErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
+				dbErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
 			}
 			var geographyTableData=result.rows[0];
 			
@@ -699,7 +752,7 @@ REFERENCE (from shapefile) {
 			console.error(sql);
 			var query=client.query(sql, function t_tilesDelete(err, result) {
 				if (err) {
-					pgErrorHandler(err, sql);
+					dbErrorHandler(err, sql);
 				}
 				else {
 					sql="SELECT MAX(geolevel_id) AS max_geolevel_id,\n" +
@@ -708,7 +761,7 @@ REFERENCE (from shapefile) {
 							
 					var query=client.query(sql, function setSearchPath(err, result) {
 						if (err) {
-							pgErrorHandler(err, sql);
+							dbErrorHandler(err, sql);
 						}
 						numZoomlevels=result.rows[0].max_zoomlevel;
 						numGeolevels=result.rows[0].max_geolevel_id;
@@ -734,10 +787,10 @@ REFERENCE (from shapefile) {
 		sql="SELECT * FROM " + geolevelsTable + " WHERE geography = '" +geographyTableData.geography  + "' ORDER BY geolevel_id";
 		var query=client.query(sql, function setSearchPath(err, result) {
 			if (err) {
-				pgErrorHandler(err, sql);
+				dbErrorHandler(err, sql);
 			}		  
 			if (result.rows.length < 1) {
-				pgErrorHandler(new Error("tileIntersectsProcessingGeolevelLoop() geolevelsTable table: " + geolevelsTable + 
+				dbErrorHandler(new Error("tileIntersectsProcessingGeolevelLoop() geolevelsTable table: " + geolevelsTable + 
 					" fetch rows <1 (" + result.rows.length + ") for geography: " + geographyTableData.geography), sql);	
 			}
 			var geolvelTableData=result.rows;
@@ -811,7 +864,7 @@ REFERENCE (from shapefile) {
 			}
 			var err=new Error('convertSVG2Png() completed with ' + errors.length + ' error(s)');
 			errors.forEach(error => err.message+='\n' + (error.stack || error));
-			pgErrorHandler(err, undefined);
+			dbErrorHandler(err, undefined);
 		});	
 	} // End of convertSVG2Png()
 				
@@ -902,14 +955,14 @@ REFERENCE (from shapefile) {
 	*/
 			var query=client.query(sql, insertArray, function tilesInsert(err, result) {
 				if (err) {
-					pgErrorHandler(err, sql);
+					dbErrorHandler(err, sql);
 				}
 				else if (result == undefined) {
-					pgErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: result undefined != expected: " + expectedRows), sql);
+					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: result undefined != expected: " + expectedRows), sql);
 					
 				}
 				else if (expectedRows != result.rowCount) {
-					pgErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
+					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
 				}
 				else {
 					tileArray=[];  // Re-initialize tile array
@@ -919,7 +972,7 @@ REFERENCE (from shapefile) {
 		} // End of tileInsert()
 			
 		var query = client.query(sql, [zoomlevel, geolevel_id]);
-		query.on('error', pgErrorHandler);
+		query.on('error', dbErrorHandler);
 
 		query.on('row', function tileIntersectsRow(row) {
 			totalTileSize+=tileIntersectsRowProcessing(row, geography);			
@@ -959,7 +1012,7 @@ REFERENCE (from shapefile) {
 						function writeSVGTileEnd(err) { //  Callback
 			
 							if (err) {
-								pgErrorHandler(err);
+								dbErrorHandler(err);
 							}
 							else {
 								tileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()			
@@ -1002,6 +1055,7 @@ REFERENCE (from shapefile) {
 	var numGeolevels;
 	var numTiles=0;
 	var geographyTable="geography_cb_2014_us_500k";
+	var transaction=undefined; // MSSQL only
 	startTransaction(function startTransactionCallback2(err) {
 		addUserToPath(function addUserToPathCallback2(err) {
 			getNumGeolevelsZoomlevels(geographyTable, tileIntersectsProcessingGeolevelLoop);

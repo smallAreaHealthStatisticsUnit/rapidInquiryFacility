@@ -282,7 +282,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 					else {
 // Call pgTileMaker()...
 						console.log('Connected to Postgres [2nd attempt] using: ' + conString + "; debug: " + DEBUG);		
-						tileMaker.dbTileMaker(client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack);
+						tileMaker.dbTileMaker(p_pg, client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack);
 					} // End of else connected OK 
 				}); // End of connect						
 			}

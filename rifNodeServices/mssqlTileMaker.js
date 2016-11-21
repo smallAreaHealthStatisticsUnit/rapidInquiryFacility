@@ -275,7 +275,7 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 			console.log('Connected to SQL server using: ' + JSON.stringify(config, null, 4) + "; debug: " + DEBUG);
 
 // Call mssqlTileMaker()...
-			tileMaker.dbTileMaker(client1, p_pngfile, tileMakerConfig, "MSSQLServer", endCallBack);
+			tileMaker.dbTileMaker(p_mssql, client1, p_pngfile, tileMakerConfig, "MSSQLServer", endCallBack);
 		} // End of else connected OK 
 	}); // End of connect		
 
