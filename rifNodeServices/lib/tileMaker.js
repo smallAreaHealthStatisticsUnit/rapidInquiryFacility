@@ -968,7 +968,7 @@ REFERENCE (from shapefile) {
 				return (res);
 			},
 			function zoomlevelProcessingEndCallback(err) {
-				console.error('tileNo: ' + tileNo + '; numTiles: ' + numTiles);
+				console.error('XXXX tileNo: ' + tileNo + '; numTiles: ' + numTiles);
 				geolevelProcessingCallback(err);
 			});
 	} // End of tileIntersectsProcessingZoomlevelLoop()
@@ -983,12 +983,12 @@ REFERENCE (from shapefile) {
 	function tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, tileIntersectsProcessingCallback) {
 
 		/*
-		 * Function: 	tileInsert()
+		 * Function: 	pgTileInsert()
 		 * Parameters:	Exepcted rows, callback
 		 * Returns:		Nothing
 		 * Description:	Multi row insert in t_tile_<geography> table
 		 */	
-		function tileInsert(expectedRows, tileIntersectsProcessingCallback) {
+		function pgTileInsert(expectedRows, tileIntersectsProcessingCallback) {
 			sql="INSERT INTO t_tiles_" + geography +
 				 '	(geolevel_id, zoomlevel, x, y, optimised_topojson, tile_id)\nVALUES ';
 			var j=1;
@@ -1036,33 +1036,65 @@ REFERENCE (from shapefile) {
 					tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
 				}	
 			});	
-		} // End of tileInsert()
-	
-		var request;
-		var query;
-		var stream;		
-		var endEventName;
-		if (dbType == "PostGres") {
-			request=client;
-			query = request.query(sql, [zoomlevel, geolevel_id]);
-			stream=query;
-		}		
-		else if (dbType == "MSSQLServer") {	
-			console.error("SQL> " + sql);
-			request=new dbSql.Request();
-			request.stream=true;
-			stream=request;
-			request.input('zoomlevel', zoomlevel);
-			request.input('geolevel_id', geolevel_id);
-			query = request.query(sql);
-		}
-		stream.on('error', dbErrorHandler);
+		} // End of pgTileInsert()
 
-		stream.on('row', function tileIntersectsRow(row) {
-			totalTileSize+=tileIntersectsRowProcessing(row, geography, dbType);		
-		});
+		/*
+		 * Function: 	mssqlTileInsert()
+		 * Parameters:	Exepcted rows, callback
+		 * Returns:		Nothing
+		 * Description:	Multi row insert in t_tile_<geography> table
+		 */	
+		function mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback) {
+			sql="INSERT INTO t_tiles_" + geography +
+				 '	(geolevel_id, zoomlevel, x, y, optimised_topojson, tile_id)\nVALUES ';
+			var j=1;
+			var insertArray=[];
+			for (var i=0; i<tileArray.length; i++) {
+				if (i>0) {
+					sql+=",\n";
+				}
+				sql+='($' + j + ',$' + (j+1) + ',$' + (j+2) + ',$' + (j+3) + ',$' + (j+4) + ',$' + (j+5) + ') /* Row ' + i + ' */';
+				j+=6;
+				insertArray=insertArray.concat(tileArray[i].insertArray)
+			}
+//			console.error("INSERT SQL> " + sql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
+	/*
+	SELECT geolevel_id, zoomlevel, x, y, tile_id, LENGTH(optimised_topojson::Text) AS len
+	FROM t_tiles_cb_2014_us_500k
+	WHERE LENGTH(optimised_topojson::Text) < 1000
+	ORDER BY geolevel_id, zoomlevel, x, y;
+
+	*/
+	
+			var request;
+			if (dbType == "PostGres") {
+				request=client;
+			}		
+			else if (dbType == "MSSQLServer") {	
+				request=new dbSql.Request();
+			}
+			var query=request.query(sql, insertArray, function tilesInsert(err, result) {
+				if (err) {
+					dbErrorHandler(err, sql);
+				}
+				else if (result == undefined) {
+					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: result undefined != expected: " + expectedRows), sql);
+					
+				}
+				else if (dbType == "PostGres" && expectedRows != result.rowCount) {
+					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
+				}
+				else if (dbType == "MSSQLServer" && expectedRows != result.length) {
+					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.length + " != expected: " + expectedRows), sql);
+				}
+				else {
+					tileArray=[];  // Re-initialize tile array
+					tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
+				}	
+			});	
+		} // End of mssqlTileInsert()
 		
-		function tileIntersectsProcessingEnd(rowCount) {
+		function tileIntersectsProcessingEnd(rowCount, dbType) {
 			
 			// Process last tile if it exists
 			var geojsonTile=tileArray[(tileArray.length-1)];
@@ -1099,15 +1131,26 @@ REFERENCE (from shapefile) {
 							if (err) {
 								dbErrorHandler(err);
 							}
-							else {
-								tileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()			
+							else {							
+								if (dbType == "PostGres") {
+									pgTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+								}		
+								else if (dbType == "MSSQLServer") {
+									mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+								}			
 							}
 						}
 					); // End of async.forEachOfSeries(tileArray, ...)	
 				
 				}
 				else {
-					tileInsert(expectedRows, tileIntersectsProcessingCallback); // Calls tileIntersectsProcessingCallback()
+					console.error("XXXX writeSVGTileEnd 2")						
+					if (dbType == "PostGres") {
+						pgTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+					}		
+					else if (dbType == "MSSQLServer") {
+						mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+					}	
 				}
 			}					
 			else {
@@ -1115,14 +1158,40 @@ REFERENCE (from shapefile) {
 			}
 		} // End of tileIntersectsProcessingEnd()
 		
+		var request;
+		var query;
+		var stream;		
+		var endEventName;
+		var mssqlRows=0;
 		if (dbType == "PostGres") {
-			stream.on('end', function(result) {
-				tileIntersectsProcessingEnd(result.rowCount);
+			request=client;
+			query = request.query(sql, [zoomlevel, geolevel_id]);
+			stream=query;
+		}		
+		else if (dbType == "MSSQLServer") {	
+//			console.error("tileIntersectsProcessing() SQL> " + sql);
+			request=new dbSql.Request();
+			request.stream=true;
+			stream=request;
+			request.input('zoomlevel', zoomlevel);
+			request.input('geolevel_id', geolevel_id);
+			query = request.query(sql);
+		}
+		stream.on('error', dbErrorHandler);
+
+		stream.on('row', function tileIntersectsRow(row) {
+			mssqlRows++;
+			totalTileSize+=tileIntersectsRowProcessing(row, geography, dbType);		
+		});
+		
+		if (dbType == "PostGres") {
+			stream.on('end', function(result) {			
+				tileIntersectsProcessingEnd(result.rowCount, dbType);
 			});
 		}		
 		else if (dbType == "MSSQLServer") {	
 			stream.on('done', function(returnValue, affected) {
-				tileIntersectsProcessingEnd(affected);
+				tileIntersectsProcessingEnd(mssqlRows, dbType);
 			});
 		}
 		
