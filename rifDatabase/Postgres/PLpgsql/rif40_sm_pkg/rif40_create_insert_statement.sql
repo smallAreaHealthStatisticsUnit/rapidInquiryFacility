@@ -119,9 +119,9 @@ Description:	Create INSERT SQL statement
  		 ORDER BY inv_id, line_number;
 	c7insext CURSOR(l_study_id INTEGER) FOR
 		SELECT DISTINCT a.covariate_name AS covariate_name, b.covariate_table AS covariate_table_name
-		  FROM rif40_inv_covariates a, rif40_geolevels b
-		 WHERE a.study_id            = l_study_id
-		   AND a.study_geolevel_name = b.geolevel_name
+		  FROM rif40_inv_covariates a
+				LEFT OUTER JOIN rif40_geolevels b ON (a.study_geolevel_name = b.geolevel_name)
+		 WHERE a.study_id = l_study_id
  		 ORDER BY a.covariate_name;
 	c8insext CURSOR(l_study_id INTEGER) FOR
 		SELECT b.denom_tab,
@@ -399,10 +399,15 @@ BEGIN
 			quote_ident(LOWER(c8_rec.age_sex_group_field_name))||','||E'\n';
 	END IF;
 	FOR c7_rec IN c7insext(study_id) LOOP
-		IF covariate_table_name IS NULL THEN /* Only one coaviate table is supported */
+		IF c7_rec.covariate_table_name IS NULL THEN
+			PERFORM rif40_log_pkg.rif40_error(-56006, 'rif40_create_insert_statement', 
+				'Study ID % NULL covariate table: %',
+				study_id::VARCHAR					/* Study ID */,				
+				c7_rec.covariate_table_name::VARCHAR 	/* covariate_table_name 2 */);		
+		ELSIF covariate_table_name IS NULL THEN /* Only one coaviate table is supported */
 			covariate_table_name:=c7_rec.covariate_table_name;
 		ELSIF covariate_table_name != c7_rec.covariate_table_name THEN
-			PERFORM rif40_log_pkg.rif40_error(-56006, 'rif40_create_insert_statement', 
+			PERFORM rif40_log_pkg.rif40_error(-56007, 'rif40_create_insert_statement', 
 				'Study ID % multiple covariate tables: %, %',
 				study_id::VARCHAR					/* Study ID */,		
 				covariate_table_name::VARCHAR 		/* covariate_table_name 1 */,		
@@ -416,13 +421,15 @@ BEGIN
 	sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident(areas_table)||' s, '||
 			quote_ident(LOWER(c1_rec.denom_tab))||' d1 '||
 			E'\t'||'/* Study or comparison area to be extracted */'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||'LEFT OUTER JOIN '||quote_ident(LOWER(covariate_table_name))||' c ON ('||E'\t'||'/* Covariates */'||E'\n';
+	IF covariate_table_name IS NOT NULL THEN
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||'LEFT OUTER JOIN '||quote_ident(LOWER(covariate_table_name))||' c ON ('||E'\t'||'/* Covariates */'||E'\n';
 --
 -- This is joining at the study geolevel. For comparison areas this needs to be aggregated to the comparison area
 --
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'    d1.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||
-		' = c.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||E'\t'||E'\t'||'/* Join at study geolevel */'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'AND c.year = $2)'||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'    d1.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||
+			' = c.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||E'\t'||E'\t'||'/* Join at study geolevel */'||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'AND c.year = $2)'||E'\n';
+	END IF;
 	sql_stmt:=sql_stmt||E'\t'||' WHERE d1.year = $2'||E'\t'||E'\t'||'/* Denominator (INSERT) year filter */'||E'\n';
 	IF study_or_comparison = 'C' THEN
 		sql_stmt:=sql_stmt||E'\t'||'   AND s.area_id  = d1.'||quote_ident(LOWER(c1_rec.comparison_geolevel_name))||E'\t'||'/* Comparison geolevel join */'||E'\n';
