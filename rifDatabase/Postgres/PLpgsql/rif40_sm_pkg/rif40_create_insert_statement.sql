@@ -118,9 +118,10 @@ Description:	Create INSERT SQL statement
 		   AND a.inv_id = l_inv_id
  		 ORDER BY inv_id, line_number;
 	c7insext CURSOR(l_study_id INTEGER) FOR
-		SELECT DISTINCT a.covariate_name AS covariate_name, UPPER(a.geography||'_covariates_'||a.study_geolevel_name) AS covariate_table_name
-		  FROM rif40_inv_covariates a
-		 WHERE a.study_id = l_study_id
+		SELECT DISTINCT a.covariate_name AS covariate_name, b.covariate_table AS covariate_table_name
+		  FROM rif40_inv_covariates a, rif40_geolevels b
+		 WHERE a.study_id            = l_study_id
+		   AND a.study_geolevel_name = b.geolevel_name
  		 ORDER BY a.covariate_name;
 	c8insext CURSOR(l_study_id INTEGER) FOR
 		SELECT b.denom_tab,
@@ -143,6 +144,7 @@ Description:	Create INSERT SQL statement
 	c7_rec RECORD;
 	c8_rec RECORD;
 --
+	covariate_table_name	VARCHAR;
 	sql_stmt	VARCHAR;
 	i		INTEGER:=0;
 	j		INTEGER:=0;
@@ -397,6 +399,15 @@ BEGIN
 			quote_ident(LOWER(c8_rec.age_sex_group_field_name))||','||E'\n';
 	END IF;
 	FOR c7_rec IN c7insext(study_id) LOOP
+		IF covariate_table_name IS NULL THEN /* Only one coaviate table is supported */
+			covariate_table_name:=c7_rec.covariate_table_name;
+		ELSIF covariate_table_name != c7_rec.covariate_table_name THEN
+			PERFORM rif40_log_pkg.rif40_error(-56006, 'rif40_create_insert_statement', 
+				'Study ID % multiple covariate tables: %, %',
+				study_id::VARCHAR					/* Study ID */,		
+				covariate_table_name::VARCHAR 		/* covariate_table_name 1 */,		
+				c7_rec.covariate_table_name::VARCHAR 	/* covariate_table_name 2 */);		
+		END IF;
 		k:=k+1;
 		sql_stmt:=sql_stmt||E'\t'||'       c.'||quote_ident(LOWER(c7_rec.covariate_name))||','||E'\n';
 	END LOOP;
@@ -405,7 +416,7 @@ BEGIN
 	sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident(areas_table)||' s, '||
 			quote_ident(LOWER(c1_rec.denom_tab))||' d1 '||
 			E'\t'||'/* Study or comparison area to be extracted */'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||'LEFT OUTER JOIN '||quote_ident(LOWER(c7_rec.covariate_table_name))||' c ON ('||E'\t'||'/* Covariates */'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||E'\t'||'LEFT OUTER JOIN '||quote_ident(LOWER(covariate_table_name))||' c ON ('||E'\t'||'/* Covariates */'||E'\n';
 --
 -- This is joining at the study geolevel. For comparison areas this needs to be aggregated to the comparison area
 --
