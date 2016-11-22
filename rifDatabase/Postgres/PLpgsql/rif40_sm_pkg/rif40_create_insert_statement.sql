@@ -118,10 +118,10 @@ Description:	Create INSERT SQL statement
 		   AND a.inv_id = l_inv_id
  		 ORDER BY inv_id, line_number;
 	c7insext CURSOR(l_study_id INTEGER) FOR
-		SELECT DISTINCT covariate_name AS covariate_name
+		SELECT DISTINCT a.covariate_name AS covariate_name, UPPER(a.geography||'_covariates_'||a.study_geolevel_name) AS covariate_table_name
 		  FROM rif40_inv_covariates a
 		 WHERE a.study_id = l_study_id
- 		 ORDER BY covariate_name;
+ 		 ORDER BY a.covariate_name;
 	c8insext CURSOR(l_study_id INTEGER) FOR
 		SELECT b.denom_tab,
  		       t.description, t.total_field, t.year_start, t.year_stop,
@@ -405,7 +405,7 @@ BEGIN
 	sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident(areas_table)||' s, '||
 			quote_ident(LOWER(c1_rec.denom_tab))||' d1 '||
 			E'\t'||'/* Study or comparison area to be extracted */'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||E'\t'||'LEFT OUTER JOIN sahsuland_covariates_level4 c ON ('||E'\t'||'/* Covariates */'||E'\n';
+	sql_stmt:=sql_stmt||E'\t'||E'\t'||'LEFT OUTER JOIN '||quote_ident(LOWER(c7_rec.covariate_table_name))||' c ON ('||E'\t'||'/* Covariates */'||E'\n';
 --
 -- This is joining at the study geolevel. For comparison areas this needs to be aggregated to the comparison area
 --
