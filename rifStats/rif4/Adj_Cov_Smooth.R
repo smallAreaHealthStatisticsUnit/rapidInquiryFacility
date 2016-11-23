@@ -29,7 +29,7 @@ odbcDataSource <- "networkRif"
 numberOfInvestigations <- ""
 
 #The identifier of the study whose extract table fields need to be smoothed.
-studyID <- "170"
+studyID <- "1"
 
 #We expect model to have one of the three values: 'BYM', 'CAR' or 'HET'
 model <- "BYM"
@@ -54,7 +54,7 @@ temporarySmoothedResultsTableName <- ""
 #The name of the investigation. Is an input parameter, but default is set here fro debug purposes
 investigationName <- "inv1"
 #The id of the investigation - used when writing the results back to the database. Input paremeter
-investigationId <- "159"
+investigationId <- "1"
 
 ##====================================================================
 ## FUNCTION: processCommandLineArguments
@@ -188,7 +188,9 @@ performSmoothingActivity <- function() {
     inv_1 = 0;
     data = cbind(data, inv_1)
     # find the relevant column in the data
-    invcol =  which(names(data)==investigationName)
+    #first need to ignore the case of the investigation names
+    ColNames = toupper(names(data))
+    invcol =  which(ColNames==toupper(investigationName))
     if (length(invcol)==0){
       print(paste('The column defined by the investigation_name parameter: ', investigationName, 'not found in data table. Data assumed to be all zero!'))
     }
