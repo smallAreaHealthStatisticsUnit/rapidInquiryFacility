@@ -730,6 +730,12 @@ RangeError: Invalid string length
 * Map tile generator: connect to SQL server
 * XML configuration file support
 
+#### 21st to 25th November
+
+* RIF team meeting, project planning, SQL server tile maker porting
+* RIF project meeting, fix extract bug
+* SQL server tile maker bulk insert
+
 #### Current TODO list (November):
 
 * JSZip 3.0 upgrade required (forced to 2.6.0) for present

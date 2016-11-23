@@ -569,11 +569,24 @@ REFERENCE (from shapefile) {
 	function tileIntersectsRowProcessing(row, geography, dbType) {
 		
 		var wkt;
+		
+		if (row.optimised_wkt == undefined) {
+			throw new error("tileIntersectsRowProcessing() row.optimised_wkt is undefined; row: " + JSON.stringify(row).substring(0, 1000));
+		}
+//		else {
+//			console.error("tileIntersectsRowProcessing row.optimised_wkt: " + JSON.stringify(row.optimised_wkt, null, 2).substring(0, 1000));	
+//		}
+		
 		if (dbType == "PostGres") {
 			wkt=row.optimised_wkt;
 		}
 		else if (dbType == "MSSQLServer") {	
-			wkt=row.optimised_wkt.join("");
+			if (Array.isArray(row.optimised_wkt)) {			
+				wkt=row.optimised_wkt.join("");
+			}
+			else {			
+				wkt=row.optimised_wkt;
+			}
 		}
 		var tileArray=getTileArray();
 		var geojson={
@@ -586,7 +599,6 @@ REFERENCE (from shapefile) {
 			geometry: wellknown.parse(wkt)
 		};
 		var tileSize=0;
-//				console.error("wktjson: " + JSON.stringify(wktjson, null, 2).substring(0, 1000));	
 			
 		if (tileArray.length == 0) { // First row in zoomlevel/geolevel combination
 			var geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
@@ -968,7 +980,7 @@ REFERENCE (from shapefile) {
 				return (res);
 			},
 			function zoomlevelProcessingEndCallback(err) {
-				console.error('XXXX tileNo: ' + tileNo + '; numTiles: ' + numTiles);
+//				console.error('TileNo: ' + tileNo + '; numTiles: ' + numTiles);
 				geolevelProcessingCallback(err);
 			});
 	} // End of tileIntersectsProcessingZoomlevelLoop()
@@ -999,7 +1011,7 @@ REFERENCE (from shapefile) {
 				}
 				sql+='($' + j + ',$' + (j+1) + ',$' + (j+2) + ',$' + (j+3) + ',$' + (j+4) + ',$' + (j+5) + ') /* Row ' + i + ' */';
 				j+=6;
-				insertArray=insertArray.concat(tileArray[i].insertArray)
+				insertArray=insertArray.concat(tileArray[i].insertArray);
 			}
 //			console.error("INSERT SQL> " + sql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
 	/*
@@ -1010,26 +1022,17 @@ REFERENCE (from shapefile) {
 
 	*/
 	
-			var request;
-			if (dbType == "PostGres") {
-				request=client;
-			}		
-			else if (dbType == "MSSQLServer") {	
-				request=new dbSql.Request();
-			}
-			var query=request.query(sql, insertArray, function tilesInsert(err, result) {
+			var request=client;
+			var query=request.query(sql, insertArray, function pgTilesInsert(err, result) {
 				if (err) {
 					dbErrorHandler(err, sql);
 				}
 				else if (result == undefined) {
-					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: result undefined != expected: " + expectedRows), sql);
+					dbErrorHandler(new Error("pgTilesInsert() tile INSERT: result undefined != expected: " + expectedRows), sql);
 					
 				}
-				else if (dbType == "PostGres" && expectedRows != result.rowCount) {
-					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
-				}
-				else if (dbType == "MSSQLServer" && expectedRows != result.length) {
-					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.length + " != expected: " + expectedRows), sql);
+				else if (expectedRows != result.rowCount) {
+					dbErrorHandler(new Error("pgTilesInsert() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
 				}
 				else {
 					tileArray=[];  // Re-initialize tile array
@@ -1049,43 +1052,42 @@ REFERENCE (from shapefile) {
 				 '	(geolevel_id, zoomlevel, x, y, optimised_topojson, tile_id)\nVALUES ';
 			var j=1;
 			var insertArray=[];
+			var lengthsArray=[]
+				
+			var request=new dbSql.Request();
+			request.verbose = true;
 			for (var i=0; i<tileArray.length; i++) {
 				if (i>0) {
 					sql+=",\n";
 				}
-				sql+='($' + j + ',$' + (j+1) + ',$' + (j+2) + ',$' + (j+3) + ',$' + (j+4) + ',$' + (j+5) + ') /* Row ' + i + ' */';
+				sql+='(@a' + j + ',@a' + (j+1) + ',@a' + (j+2) + ',@a' + (j+3) + ',@a' + (j+4) + ',@a' + (j+5) + ') /* Row ' + i + ' */';
+				
+				var optimised_topojson=tileArray[i].insertArray[4].match(/.{1,65535}/g); // Replace n with the size of the substring
+				for (var k=0; k<optimised_topojson.length; k++) {
+					lengthsArray.push(optimised_topojson[k].length);		
+				}
+				
+				request.input('a'+j, dbSql.Int, tileArray[i].insertArray[0]);				// geolevel_id
+				request.input('a'+(j+1), dbSql.Int, tileArray[i].insertArray[1]);			// zoomlevel
+				request.input('a'+(j+2), dbSql.Int, tileArray[i].insertArray[2]);			// x
+				request.input('a'+(j+3), dbSql.Int, tileArray[i].insertArray[3]);			// y
+				request.input('a'+(j+4), dbSql.VarChar(65536), optimised_topojson);	// optimised_topojson
+				request.input('a'+(j+5), dbSql.VarChar(200), tileArray[i].insertArray[5]);	// tile_id
 				j+=6;
-				insertArray=insertArray.concat(tileArray[i].insertArray)
+				insertArray=insertArray.concat(tileArray[i].insertArray);
 			}
-//			console.error("INSERT SQL> " + sql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
-	/*
-	SELECT geolevel_id, zoomlevel, x, y, tile_id, LENGTH(optimised_topojson::Text) AS len
-	FROM t_tiles_cb_2014_us_500k
-	WHERE LENGTH(optimised_topojson::Text) < 1000
-	ORDER BY geolevel_id, zoomlevel, x, y;
+			console.error("INSERT SQL> " + sql + "\nValues (" + insertArray.length + "): " + JSON.stringify(lengthsArray));
 
-	*/
-	
-			var request;
-			if (dbType == "PostGres") {
-				request=client;
-			}		
-			else if (dbType == "MSSQLServer") {	
-				request=new dbSql.Request();
-			}
-			var query=request.query(sql, insertArray, function tilesInsert(err, result) {
+			var bulk=request.query(sql, function mssqlTilesInsert(err, recordset) {
+				var rowCount=request.rowsAffected;
 				if (err) {
 					dbErrorHandler(err, sql);
 				}
-				else if (result == undefined) {
-					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: result undefined != expected: " + expectedRows), sql);
-					
+				else if (rowCount == undefined) {
+					dbErrorHandler(new Error("mssqlTilesInsert() tile INSERT: rowCount undefined != expected: " + expectedRows), sql);	
 				}
-				else if (dbType == "PostGres" && expectedRows != result.rowCount) {
-					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
-				}
-				else if (dbType == "MSSQLServer" && expectedRows != result.length) {
-					dbErrorHandler(new Error("tileIntersectsProcessing() tile INSERT: " + result.length + " != expected: " + expectedRows), sql);
+				else if (expectedRows != rowCount) {
+					dbErrorHandler(new Error("mssqlTilesInsert() tile INSERT: " + rowCount + " != expected: " + expectedRows), sql);
 				}
 				else {
 					tileArray=[];  // Re-initialize tile array
@@ -1143,8 +1145,7 @@ REFERENCE (from shapefile) {
 					); // End of async.forEachOfSeries(tileArray, ...)	
 				
 				}
-				else {
-					console.error("XXXX writeSVGTileEnd 2")						
+				else {				
 					if (dbType == "PostGres") {
 						pgTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
 					}		
