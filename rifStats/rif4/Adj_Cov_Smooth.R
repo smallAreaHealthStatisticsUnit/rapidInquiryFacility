@@ -656,6 +656,8 @@ performSmoothingActivity <- function() {
   #IM2<-as.matrix(IM1) #coerce to a dense matrix
   #IM<-as(IM2, "dgCMatrix") # coerce to a sparse matrix - this is the wrong way to do it
   # code that sets up the INLA formula
+  # Field to hold the posterior probability
+  data$POSTERIOR_PROBABILITY=NA
   if (adj==FALSE){
     if (model=='BYM'){
       print("Bayes smoothing with BYM model type no adjustment")
@@ -784,6 +786,14 @@ performSmoothingActivity <- function() {
         data$CAR_RRU95_ADJ[whichrows]=exp(cte$mean+result$summary.random$area_order[1:narea,6])  
       }
     }
+    
+    #Calculate the posterior probability (refer to pages 184 & 185 in Blangiardo and Cameletti)
+    csi <- result$marginals.random$area_order[1:narea]
+    a<- 0
+    prob.csi<- lapply(csi, function(x) {1 - inla.pmarginal(a, x)})
+    data$POSTERIOR_PROBABILITY[whichrows]=unlist(prob.csi)
+    print("Posterior probability calculated")
+    
   }
 
   # call the function to convert data to the format the db is expecting
@@ -893,7 +903,7 @@ convertToDBFormat=function(dataIn){
     relative_risk = dataIn$RR_ADJ # assuming indirect. If direct, use null
     smoothed_relative_risk = dataIn$SMRR_ADJ # assuming indirect. If direct, use null
   }
-  posterior_probability = as.numeric(NA) # unclear what should go in here
+  posterior_probability = dataIn$POSTERIOR_PROBABILITY
   posterior_probability_upper95 = as.numeric(NA) # unclear what should go in here
   posterior_probability_lower95 = as.numeric(NA) # unclear what should go in here
   residual_relative_risk = as.numeric(NA) # unclear what should go in here
