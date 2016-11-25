@@ -1003,7 +1003,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					getSqlFromFile("create_tiles_table.sql", 
 						undefined /* Common */,	
 						"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 1: Tiles table name */,
-						"Text"															/* 2: JSON datatype (Postgres JSON, SQL server Text) */
+						"NVARCHAR(MAX)"													/* 2: JSON datatype (Postgres JSON, SQL server NVARCHAR(MAX)) */
 						), sqlArray); 
 			}
 			else if (dbType == "PostGres") { // No JSON in SQL Server

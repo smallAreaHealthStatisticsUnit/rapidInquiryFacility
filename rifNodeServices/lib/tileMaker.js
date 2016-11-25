@@ -1068,7 +1068,7 @@ REFERENCE (from shapefile) {
 		 * Description:	Multi row insert in t_tile_<geography> table
 		 */	
 		function mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback) {
-			sql="INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson3)\n' +
+			sql="INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\n' +
 				 'VALUES (@geolevel_id, @zoomlevel, @x, @y, @tile_id, @optimised_topojson)';
 			var j=0;
 			var HY104Sql = []; // Problem with NVarChar(MAX) and small (<4K) strings; redo as textual sql
@@ -1099,7 +1099,7 @@ REFERENCE (from shapefile) {
 							if (err && err.state == "HY104") { // Problem with NVarChar(MAX) and small (<4K) strings; redo as textual sql
 //										console.error("[" + data.tile_id + "] INSERT SQL> " + sql + "\noptimised_topojson(" + data.optimised_topojson.length + 
 //										"): " + data.optimised_topojson.substring(0, 2500));
-								HY104Sql.push("INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson3)\n' +
+								HY104Sql.push("INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\n' +
 										'VALUES (' + data.geolevel_id + ', ' + data.zoomlevel + ', ' + data.x + ', ' + data.y + 
 										", '" + data.tile_id + "', '" + data.optimised_topojson + "')");
 								console.error("[" + data.tile_id + "] Caught HY104 ERROR: " + JSON.stringify(err, null, 2) + 
