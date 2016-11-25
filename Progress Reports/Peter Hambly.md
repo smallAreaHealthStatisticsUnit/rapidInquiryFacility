@@ -736,7 +736,7 @@ RangeError: Invalid string length
 * RIF project meeting, fix extract bug
 * SQL server tile maker bulk insert
 
-#### Current TODO list (November):
+#### Current TODO list (December):
 
 * JSZip 3.0 upgrade required (forced to 2.6.0) for present
 * Map tile generator; RIF integration preparation
@@ -751,7 +751,7 @@ RangeError: Invalid string length
 	* Add gid to lookup_table;
 	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
   
-#### December TODO list:
+#### January 2017 TODO list:
 
 * Get methods: 
   * ZIP results;
