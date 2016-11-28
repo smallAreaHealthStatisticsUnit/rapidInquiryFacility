@@ -810,7 +810,17 @@ Note: no bounding box (bbox) in tiles.
 	iii. No shapefile with only 1 area if > 1 shapefile
 	iv. Total area mismatch between shapefiles
 	
-##	General RIF database Todo:
+##	General RIF database Todo (Early December/will park):
+
+### Early December
+
+1. Bugs
+2. New study state "S" - Smoothed
+3. Separate test/build
+4. Replace old geosptial build code with new data loader
+
+### Park
+
 
 1. Documentation [in progress];
 2. JSON injection protection [will be a regexp];
@@ -819,9 +829,17 @@ Note: no bounding box (bbox) in tiles.
    i.   Replace topojson_convert.js;
    ii.  New node program to replace existing functionality;
    iii. Awaiting data loader.
-	
-## 2016 Plans: 
+   
+## Bugs
 
+* AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
+  for duplicate county names within a state
+* Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
+  and grant back permissions
+* Add t_rif40_study_areas trigger check (once per INSERT/UPDATE) for correct use of band_id in rif40_study_shares. 
+  Alternatively check in rif40_run_study 
+  
+## 2016/7 Plans: 
 
 1. Build and integrate Node.js middleware server:
 
@@ -864,12 +882,3 @@ Note: no bounding box (bbox) in tiles.
   *	Auto registering of error and trace messages.
 
 7. Additional RIF development tasks as required by Dr. Anna Hansell; 
-
-## Bugs
-
-* AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
-  for duplicate county names within a state
-* Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
-  and grant back permissions
-* Add t_rif40_study_areas trigger check (once per INSERT/UPDATE) for correct use of band_id in rif40_study_shares. 
-  Alternatively check in rif40_run_study 
