@@ -57,7 +57,7 @@
 // -U, --username  Postgres database username             [default: "peter"]
 // -P, --port      Postgres database port                 [default: 5432]
 // -H, --hostname  hostname of Postgres database          [default: "localhost"]
-// -V, --verbose   Verbose mode                           [default: false]
+// -V, --verbose   Verbose mode                           [default: 0: false; 1 or 2]
 // -X, --xmlfile   XML Configuration file
 // -p, --pngfile   Make SVG/PNG files                     [default: false]
 // -h, --help      display this helpful message and exit  [default: false]
@@ -77,7 +77,14 @@
 //
 // See: Node Makefile for build instructions
 //
-
+  
+//
+// Load database module, tileMaker modules
+//
+const pg=require('pg'),
+	  tileMaker=require('./lib/tileMaker'),
+      TileMakerConfig = require('./lib/TileMakerConfig');
+	  
 /* 
  * Function: 	main()
  * Parameters: 	ARGV
@@ -91,8 +98,7 @@ function main() {
 	
 // Process Args using optimist
 	var argv = optimist
-    .usage("Usage: \033[1mpgTileMaker.\033[0m [options]\n\n"
-+ "Version: 0.1\n\n")
+    .usage("Usage: \033[1mpgTileMaker.\033[0m [options]\n\n" + "Version: 0.1\n\n")
 
     .options("D", {
       alias: "database",
@@ -121,8 +127,14 @@ function main() {
     .options("V", {
       alias: "verbose",
       describe: "Verbose mode",
-	  type: "boolean",
+	  type: "integer",
       default: pg_default("VERBOSE")
+    })
+    .options("z", {
+      alias: "zoomlevel",
+      describe: "Maximum zoomlevel",
+	  type: "integer",
+      default: 11
     })
     .options("X", {
       alias: "xmlfile",
@@ -148,43 +160,50 @@ function main() {
     .argv;
 
 	if (argv.help) return optimist.showHelp();
-	if (argv.verbose) {
+
+//
+// Load logger module
+//
+	const Winston=require('winston');
+	var winston = new (Winston.Logger)({
+		level: 'info',
+		transports: [
+			new (Winston.transports.Console)({
+				level: 'info',
+				timestamp: function() {
+					return Date.now();
+				},
+				formatter: function(options) {
+					// Return string will be passed to logger.
+					return /* options.timestamp() +' '+ options.level.toUpperCase() +' '+  */(options.message ? options.message : '') +
+					  (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
+				}
+			}),
+			new (Winston.transports.File)({ 
+				level: 'verbose',
+				filename: 'pgTileMaker.log' 
+			})
+		]
+	  });
+	if (argv.verbose == 1) {
 		process.env.VERBOSE=true;
+		winston.level='verbose';
+		Winston.transports.Console='verbose';
 	}
-	
-//
-// Load database module
-//
-	try {
-		pg=require('pg');
-	}
-	catch(err) {
-		console.error('1: Could not load Postgres database module.', err);				
-		process.exit(1);
+	else if (argv.verbose == 2) {
+		process.env.DEBUG=true;
+		winston.level='debug';
+		Winston.transports.Console='debug';
+		Winston.transports.File='debug';
 	}
 	
 //
 // TileMakerConfig
 //
-	try {
-		tileMaker=require('./lib/tileMaker');	
-	}
-	catch(err) {
-		console.error('1: Could not load Postgres database module.', err);				
-	}
-
-	try {
-		TileMakerConfig = require('./lib/TileMakerConfig');
-	}
-	catch(err) {
-		console.error('1: Could not load TileMakerConfig database module.', err);				
-		process.exit(1);
-	}
-	
 	var tileMakerConfig=new TileMakerConfig.TileMakerConfig(argv["xmlfile"]);	
 	tileMakerConfig.parseConfig(function (err, data) {
 		if (err) {
-			console.error(err.message);			
+			winston.log("error", err.message, err);			
 			process.exit(1);		
 		}
 		tileMakerConfig.setXmlConfig(data);
@@ -193,7 +212,8 @@ function main() {
 //			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
 										
 		// Create Postgres client;
-		pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], tileMakerConfig);	
+		pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], 
+			tileMakerConfig, winston);	
 	});
 } /* End of main */
 
@@ -225,11 +245,17 @@ function pg_default(p_var) {
 	else if (p_var == "PGPORT") {
 		p_def=5432;
 	}
-	else if (p_var == "VERBOSE") {	
-		p_def=false; // Disable verbose log messages
-	}
 	
-	if (process.env[p_var]) { 
+	if (p_var == "VERBOSE") {	
+		p_def=0; // Disable verbose log messages
+		if (process.env[p_var]) { 
+			p_def=1; // Enable verbose log messages
+		}
+		else if (process.env["DEBUG"]) { 
+			p_def=2; // Enable debug log messages
+		}
+	}
+	else if (process.env[p_var]) { 
 //		console.error(p_var + ": " + (process.env[p_var]||'Not defined'));
 		return process.env[p_var];
 	}
@@ -241,11 +267,11 @@ function pg_default(p_var) {
 /* 
  * Function: 	pg_db_connect()
  * Parameters: 	Postgres PG package connection handle,
- *				database host, name, username, port, generate PNG files, tileMakerConfig object
+ *				database host, name, username, port, generate PNG files, max zoomlevel, tileMakerConfig object, logging object
  * Returns:		Nothing
  * Description:	Connect to database, ...
  */
-function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, tileMakerConfig) {
+function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, maxZoomlevel, tileMakerConfig, winston) {
 	
 	var client1 = null; // Client 1: Master; hard to remove	
 
@@ -284,8 +310,8 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 					}
 					else {
 // Call pgTileMaker()...
-						console.log('Connected to Postgres [2nd attempt] using: ' + conString + "; debug: " + DEBUG);		
-						tileMaker.dbTileMaker(p_pg, client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack);
+						console.log('Connected to Postgres [2nd attempt] using: ' + conString + "; log level: " + winston.level);		
+						tileMaker.dbTileMaker(p_pg, client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, winston);
 					} // End of else connected OK 
 				}); // End of connect						
 			}
@@ -293,8 +319,8 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 		else {			
 // Call pgTileMaker()...
 
-			console.log('Connected to Postgres using: ' + conString + "; debug: " + DEBUG);	
-			tileMaker.dbTileMaker(p_pg, client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack);
+			console.log('Connected to Postgres using: ' + conString + "; log level: " + winston.level);	
+			tileMaker.dbTileMaker(p_pg, client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, winston);
 		} // End of else connected OK 
 	}); // End of connect		
 
@@ -303,10 +329,6 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 		  console.log('PG: %s', msg);
 	});
 }
-
-var pg = undefined;
-var TileMakerConfig = undefined;	
-var tileMaker=undefined;
 	
 main();
 

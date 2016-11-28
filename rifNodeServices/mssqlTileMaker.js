@@ -57,7 +57,7 @@
 // -U, --username    SQL server database username          [default: NONE (use trusted connection)]
 // --password, --pw  SQL server database password
 //  -H, --hostname  hostname of SQL server database        [default: "localhost"]
-//  -V, --verbose   Verbose mode                           [default: false]
+//  -V, --verbose   Verbose mode                           [default: 0: false; 1 or 2]
 //  -X, --xmlfile   XML Configuration file                 [default: "geoDataLoader.xml"]
 //  -p, --pngfile   Make SVG/PNG files                     [default: false]
 //  -h, --help      display this helpful message and exit  [default: false]
@@ -77,7 +77,14 @@
 //
 // See: Node Makefile for build instructions
 //
-
+	  
+//
+// Load database module, tileMaker modules
+//
+const mssql=require('mssql'),
+	  tileMaker=require('./lib/tileMaker'),
+      TileMakerConfig = require('./lib/TileMakerConfig');
+	  
 /* 
  * Function: 	main()
  * Parameters: 	ARGV
@@ -121,8 +128,14 @@ function main() {
     .options("V", {
       alias: "verbose",
       describe: "Verbose mode",
-	  type: "boolean",
+	  type: "integer",
       default: mssql_default("VERBOSE")
+    })
+    .options("z", {
+      alias: "zoomlevel",
+      describe: "Maximum zoomlevel",
+	  type: "integer",
+      default: 11
     })
     .options("X", {
       alias: "xmlfile",
@@ -148,50 +161,62 @@ function main() {
     .argv;
 
 	if (argv.help) return optimist.showHelp();
-	if (argv.verbose) {
+	  
+//
+// Load logger module
+//
+	const Winston=require('winston');
+	var winston = new (Winston.Logger)({
+		level: 'info',
+		transports: [
+			new (Winston.transports.Console)({
+				level: 'info',
+				timestamp: function() {
+					return Date.now();
+				},
+				formatter: function(options) {
+					// Return string will be passed to logger.
+					return /* options.timestamp() +' '+ options.level.toUpperCase() +' '+  */(options.message ? options.message : '') +
+					  (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
+				}
+			}),
+			new (Winston.transports.File)({ 
+				level: 'verbose',
+				filename: 'mmsqlTileMaker.log' 
+			})
+		]
+	  });
+	if (argv.verbose == 1) {
 		process.env.VERBOSE=true;
+		winston.level='verbose';
+		Winston.transports.Console='verbose';
 	}
-	
-//
-// Load database module
-//
-	try {
-		mssql=require('mssql');
-	}
-	catch(err) {
-		console.error('1: Could not load SQL server database module.', err);				
-		process.exit(1);
+	else if (argv.verbose == 2) {
+		process.env.DEBUG=true;
+		winston.level='debug';
+		Winston.transports.Console='debug';
+		Winston.transports.File='debug';
 	}
 
 //
 // TileMakerConfig
 //
-	try {
-		tileMaker=require('./lib/tileMaker');	
-	}
-	catch(err) {
-		console.error('1: Could not load Postgres database module.', err);				
-	}
-	
-	try {
-		TileMakerConfig = require('./lib/TileMakerConfig');
-	}
-	catch(err) {
-		console.error('1: Could not load TileMakerConfig database module.', err);				
-		process.exit(1);
-	}
 	var tileMakerConfig=new TileMakerConfig.TileMakerConfig(argv["xmlfile"]);	
 	tileMakerConfig.parseConfig(function (err, data) {
 		if (err) {
-			console.error(err.message);			
+			winston.log("error", err.message, err);			
 			process.exit(1);		
 		}
 		tileMakerConfig.setXmlConfig(data);
+
+//		console.error("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName + "\n" +
+//			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
+										
+		// Create Postgres client;
+		mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], 
+			tileMakerConfig, winston);	
+	});
 			
-		// Create SQL server client;
-		mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["password"], argv["pngfile"], tileMakerConfig);
-	});	
-	
 } /* End of main */
 
 /* 
@@ -215,11 +240,17 @@ function mssql_default(p_var) {
 			p_def="";
 		}
 	}
-	else if (p_var == "VERBOSE") {	
-		p_def=false; // Disable verbose log messages
-	}
 	
-	if (process.env[p_var]) { 
+	if (p_var == "VERBOSE") {	
+		p_def=0; // Disable verbose log messages
+		if (process.env[p_var]) { 
+			p_def=1; // Enable verbose log messages
+		}
+		else if (process.env["DEBUG"]) { 
+			p_def=2; // Enable debug log messages
+		}
+	}
+	else if (process.env[p_var]) { 
 //		console.error(p_var + ": " + (process.env[p_var]||'Not defined'));
 		return process.env[p_var];
 	}
@@ -231,15 +262,15 @@ function mssql_default(p_var) {
 /* 
  * Function: 	mssql_db_connect()
  * Parameters: 	SQL server package connection handle,
- *				database host, name, username, password, generate PNG files, tileMakerConfig object
+ *				database host, name, username, password, generate PNG files, max zoomlevel, tileMakerConfig object, logging object
  * Returns:		Nothing
  * Description:	Connect to database, ...
  */
-function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p_pngfile, tileMakerConfig) {
+function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p_pngfile, maxZoomlevel, tileMakerConfig, winston) {
 
 	var endCallBack = function endCallBack(err) {
 		if (err) {
-			console.error("Exit due to SQL server error: " + err.message);
+			winston.log("error", "Exit due to SQL server error: %", err.message, err);
 			process.exit(1);		
 		}
 		process.exit(0);	
@@ -263,20 +294,19 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 		config.options.trustedConnection=true;
 	}
 	
-
 // Connect to SQL server database
 	var client1=p_mssql.connect(config, function(err) {
 		if (err) {
-			console.error('Could not connect to SQL server client using: ' + JSON.stringify(config, null, 4) + "\nError: " + err);
+			winston.log("error", 'Could not connect to SQL server client using: %s\nError: %s', JSON.stringify(config, null, 4), err.message, err);
 			process.exit(1);	
 		}
 		else {				
 			var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
-			console.log('Connected to SQL server using: ' + JSON.stringify(config, null, 4) + "; debug: " + DEBUG);
+			winston.log("info", 'Connected to SQL server using: ' + JSON.stringify(config, null, 4) + "; log level: " + winston.level);
 
 // Call mssqlTileMaker()...
-			tileMaker.dbTileMaker(p_mssql, client1, p_pngfile, tileMakerConfig, "MSSQLServer", endCallBack);
-		} // End of else connected OK 
+			tileMaker.dbTileMaker(p_mssql, client1, p_pngfile, tileMakerConfig, "MSSQLServer", endCallBack, maxZoomlevel, winston);
+		} // End of else connected OK  hy
 	}); // End of connect		
 
 	// Notice message event processors
@@ -284,10 +314,7 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 //		  console.log('MSSQL: %s', msg);
 //	});
 }
-
-var mssql = undefined;
-var tileMaker=undefined;
-var TileMakerConfig = undefined;
+	  
 main();
 
 //
