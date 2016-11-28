@@ -658,7 +658,8 @@ REFERENCE (from shapefile) {
 					}	
 				}
 				if ((terr || err) && sqlInError) {
-					console.error("endTransaction(): " + sql + "\nSQL in error> " + sqlInError);
+					var nerr=(terr || err);
+					console.error("endTransaction() due to: " + nerr.message + "\nSQL> " + sql + "\nSQL in error> " + sqlInError);
 					sql=sqlInError;		// Restore SQL in error
 				}
 				else {
@@ -676,7 +677,8 @@ REFERENCE (from shapefile) {
 						}	
 					}
 					if ((terr || err) && sqlInError) {
-						console.error("endTransaction(): ROLLBACK\nSQL in error> " + sqlInError);
+						var nerr=(terr || err);
+						console.error("endTransaction() due to: " + nerr.message + "\nSQL> ROLLBACK\nSQL in error> " + sqlInError);
 						sql=sqlInError;		// Restore SQL in error
 					}
 					endTransactionCallback(terr || err);	
@@ -772,11 +774,11 @@ REFERENCE (from shapefile) {
 
 	/*
 	 * Function: 	getNumGeolevelsZoomlevels()
-	 * Parameters:	Geography table name, callback: tileIntersectsProcessingGeolevelLoop()
+	 * Parameters:	Geography table name, description, callback: tileIntersectsProcessingGeolevelLoop()
 	 * Returns:		Nothing
 	 * Description:	Convert geoJSON featureList to topojson, add to object, free up memory used for geoJSON
 	 */		
-	function getNumGeolevelsZoomlevels(geographyTable, getNumGeolevelsZoomlevelsCallback) {
+	function getNumGeolevelsZoomlevels(geographyTable, geographyTableDescription, getNumGeolevelsZoomlevelsCallback) {
 		sql="SELECT * FROM " + geographyTable;
 		
 		var request;
@@ -785,7 +787,9 @@ REFERENCE (from shapefile) {
 		}		
 		else if (dbType == "MSSQLServer") {	
 			request=new dbSql.Request();
-		}		
+		}	
+
+		console.error("Processing " + geographyTable + "\n" + geographyTableDescription)
 		var query=request.query(sql, function setSearchPath(err, result) {
 			if (err) {
 				dbErrorHandler(err, sql);
@@ -995,7 +999,7 @@ REFERENCE (from shapefile) {
 				 */
 				var maxZoomlevel=numZoomlevels;
 				// For testing
-				maxZoomlevel=5;
+				// maxZoomlevel=5;
 				if (zoomlevel<= maxZoomlevel) { res=true; }; 
 				return (res);
 			},
@@ -1034,13 +1038,6 @@ REFERENCE (from shapefile) {
 				insertArray=insertArray.concat(tileArray[i].insertArray);
 			}
 //			console.error("INSERT SQL> " + sql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
-	/*
-	SELECT geolevel_id, zoomlevel, x, y, tile_id, LENGTH(optimised_topojson::Text) AS len
-	FROM t_tiles_cb_2014_us_500k
-	WHERE LENGTH(optimised_topojson::Text) < 1000
-	ORDER BY geolevel_id, zoomlevel, x, y;
-
-	*/
 	
 			var request=client;
 			var query=request.query(sql, insertArray, function pgTilesInsert(err, result) {
@@ -1101,9 +1098,9 @@ REFERENCE (from shapefile) {
 //										"): " + data.optimised_topojson.substring(0, 2500));
 								HY104Sql.push("INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\n' +
 										'VALUES (' + data.geolevel_id + ', ' + data.zoomlevel + ', ' + data.x + ', ' + data.y + 
-										", '" + data.tile_id + "', '" + data.optimised_topojson + "')");
-								console.error("[" + data.tile_id + "] Caught HY104 ERROR: " + JSON.stringify(err, null, 2) + 
-									"\nDeferred SQL[" + (HY104Sql.length-1) + "]> " + HY104Sql[(HY104Sql.length-1)]);
+										", '" + data.tile_id + "', '" + data.optimised_topojson.replace("'", "") + "')");
+//								console.error("[" + data.tile_id + "] Caught HY104 ERROR: " + JSON.stringify(err, null, 2) + 
+//									"\nDeferred SQL[" + (HY104Sql.length-1) + "]> " + HY104Sql[(HY104Sql.length-1)]);
 								mssqlTileInsertCallback();					
 							}
 							else if (err && err.state != "HY104") {
@@ -1137,10 +1134,11 @@ REFERENCE (from shapefile) {
 							function mssqlTileInsert2Series(value, i, mssqlTileInsert2Callback) { // Processing code
 							
 								sql=value;
-//								console.error("HY104 Deferred SQL[" + i + "]> " + sql);
+//								console.error("HY104 Deferred SQL[" + i + "/" + HY104Sql.length + "]> " + sql);
 								var request = new dbSql.Request();
 								var query=request.query(sql, function mssqlTilesInsert2(err2, result, rowCount) {
 									if (err2) {
+										console.error("HY104 Deferred SQL[" + i + "/" + HY104Sql.length + "] error: " + err2.message);
 										dbErrorHandler(err2, sql, mssqlTileInsert2Callback);
 									}
 									else if (rowCount == undefined) {
@@ -1152,7 +1150,7 @@ REFERENCE (from shapefile) {
 											sql, mssqlTileInsert2Callback);
 									}
 									else {
-										console.error("mssqlTilesInsert2() [" + i + "] HY104 ERROR redo: Insert OK");
+										console.error("mssqlTilesInsert2() [" + i + "] HY104 ERROR redo: Insert " + i + "/" + HY104Sql.length + " OK");
 										mssqlTileInsert2Callback();
 									}										
 								});						
@@ -1311,11 +1309,15 @@ REFERENCE (from shapefile) {
 	var numZoomlevels; 
 	var numGeolevels;
 	var numTiles=0;
-	var geographyTable="geography_cb_2014_us_500k";
+	if (tileMakerConfig.xmlConfig == undefined || tileMakerConfig.xmlConfig.geographyName == undefined) {
+		dbErrorHandler(new Error("No geography name in XML config"));
+	}
+	var geographyTable="geography_" + tileMakerConfig.xmlConfig.geographyName;
+	var geographyTableDescription=tileMakerConfig.xmlConfig.geographyDescription;
 	var transaction=undefined; // MSSQL only
 	startTransaction(function startTransactionCallback2(err) {
 		addUserToPath(function addUserToPathCallback2(err) {
-			getNumGeolevelsZoomlevels(geographyTable, tileIntersectsProcessingGeolevelLoop);
+			getNumGeolevelsZoomlevels(geographyTable, geographyTableDescription, tileIntersectsProcessingGeolevelLoop);
 		});
 	});
 }

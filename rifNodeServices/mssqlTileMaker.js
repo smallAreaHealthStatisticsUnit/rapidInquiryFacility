@@ -239,10 +239,10 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 
 	var endCallBack = function endCallBack(err) {
 		if (err) {
-			console.error("SQL server error: " + err.message);
-			process.exit(0);		
+			console.error("Exit due to SQL server error: " + err.message);
+			process.exit(1);		
 		}
-		process.exit(1);	
+		process.exit(0);	
 	}
 
 	var config = {

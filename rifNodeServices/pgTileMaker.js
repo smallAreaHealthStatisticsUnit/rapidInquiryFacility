@@ -251,10 +251,10 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 
 	var endCallBack = function endCallBack(err) {
 		if (err) {
-			console.error("Postgres error: " + err.message);
-			process.exit(0);		
+			console.error("Exit due to SQL server error: " + err.message);
+			process.exit(1);		
 		}
-		process.exit(1);	
+		process.exit(0);		
 	}
 	
 	var conString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=pgTileMaker';
