@@ -113,19 +113,23 @@ function consoleError(msg) {
 
 /*
  * Function: 	addDbfDescFields()
- * Parameters:  file list object (processed files from shpConvertInput()
+ * Parameters:  file list object (processed files from shpConvertInput(), form data object
  * Returns: 	Nothing
  * Description:	Process file list object (processed files from shpConvertInput() to add descriptive fields to formdata
  */
-function addDbfDescFields(fileList, fields) {
+function addDbfDescFields(fileList, formData) {
 			
 	for (var key in fileList) { // Add extended attributes XML doc
 		for (var j=0; j < fileList[key].dbfHeader.fields.length ; j++) {
-			fields[key + "_" + fileList[key].dbfHeader.fields[j].name.toUpperCase()]=(fileList[key].dbfHeader.fields[j].description || "N/A");
+			var fieldKey=key + "_" + fileList[key].dbfHeader.fields[j].name.toUpperCase();
+			var value=(fileList[key].dbfHeader.fields[j].description || "N/A")
+
+			consoleLog("Set: " + fieldKey + '="' + value + '"');
+			formData.append(fieldKey, value);
 		}
 	}
 	
-	consoleLog("DBF file field descriptors: " + JSON.stringify(fields, null, 4));
+//	consoleLog("DBF file field descriptors: " + JSON.stringify(fields, null, 4));
 }
 						
 /*
@@ -205,7 +209,6 @@ function formSetup(formId, formName) {
 				else {
 					fileList=getFileList();
 					consoleLog("shpConvertInput() event files: " + JSON.stringify(fileList, null, 4));
-					addDbfDescFields(fileList, options.data);
 				}			
 			});
 		}		
@@ -223,7 +226,6 @@ function formSetup(formId, formName) {
 					else {
 						fileList=getFileList();
 						consoleLog("shpConvertInput() previously set files: " + JSON.stringify(fileList, null, 4));
-						addDbfDescFields(fileList, options.data);
 					}
 				});	
 				}, 500);
@@ -360,6 +362,8 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	}	
 	formData.append('uuidV1', generateUUID()); // Random reference
 
+	addDbfDescFields(fileList, formData);
+	
 	// Display the key/value pairs
 //	for (var pair of formData.entries()) { // Breaks in IE!
 //		consoleLog("Key: " + pair[0] + '='+ pair[1]); 

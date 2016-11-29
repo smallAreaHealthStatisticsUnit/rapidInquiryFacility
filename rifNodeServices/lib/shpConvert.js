@@ -1532,6 +1532,7 @@ This error in actually originating from the error handler function
 				geolevels[i] = {
 					i: i,
 					file_name: response.file_list[i].file_name,
+					geolevel_name: response.file_list[i].geolevel_name,
 					total_areas: response.file_list[i].total_areas,
 					points:  response.file_list[i].points,
 					geolevel_id: 0
@@ -1647,10 +1648,10 @@ This error in actually originating from the error handler function
 					areas: 							ngeolevels[i].total_areas,
 					points: 						ngeolevels[i].points,
 					dbfFieldList: {
-						dbfFields: response.file_list[ngeolevels[i].i].dbf_fields
 					},
 					geolevelId: 					ngeolevels[i].geolevel_id,
-					geolevelName: 					(response.file_list[ngeolevels[i].i].areaName || 
+					geolevelName: 					ngeolevels[i].geolevel_name,
+					areaName: 					(response.file_list[ngeolevels[i].i].areaName || 
 														"To be added by user from dbfFieldList"),
 					geolevelDescription: 			(response.file_list[ngeolevels[i].i].desc || 
 														"To be added by user/from extended attributes file"),
@@ -1674,8 +1675,26 @@ This error in actually originating from the error handler function
 					}
 				}
 				
+				for (var j=0; j<response.file_list[ngeolevels[i].i].dbf_fields.length; j++) { // Add extended attributes XML doc
+					var dbfField=response.file_list[ngeolevels[i].i].dbf_fields[j];
+					
+					xmlConfig.shapeFileList.shapeFiles[i].dbfFieldList[dbfField]={
+						description: undefined
+					};
+					if (xmlConfig.shapeFileList.shapeFiles[i].geolevelName) {
+						var field=xmlConfig.shapeFileList.shapeFiles[i].geolevelName + "_" + dbfField.toUpperCase();
+						xmlConfig.shapeFileList.shapeFiles[i].dbfFieldList[dbfField].description=
+							(response.fields[field] || "No description for: " + field)
+					}
+					else {
+						msg+="\nERROR: shapefile: " + i + "; geolevel " + ngeolevels[i] + "/" + ngeolevels.length + " key: " + key + " has no geolevelName";
+						response.file_errors++;
+					}
+ 				}
+				
 				if (response.file_list[ngeolevels[i].i].topojson) {
-					msg+="\nFile [" + ngeolevels[i].i + "] topojson zoomlevels: " + response.file_list[ngeolevels[i].i].topojson.length +
+					msg+="\nFile [" + ngeolevels[i].i + "] " + ngeolevels[i].geolevel_name +
+						"; topojson zoomlevels: " + response.file_list[ngeolevels[i].i].topojson.length +
 						"; from: " + response.file_list[ngeolevels[i].i].topojson[response.file_list[ngeolevels[i].i].topojson.length-1].zoomlevel +
 						" to: " + response.file_list[ngeolevels[i].i].topojson[0].zoomlevel;
 					for (var j=0; j<response.file_list[ngeolevels[i].i].topojson.length; j++) {	
@@ -1935,6 +1954,7 @@ This error in actually originating from the error handler function
 			
 			response.file_list[shapefile_no-1] = {
 				file_name: key + ".shp",
+				geolevel_name: key,
 	//			geojson: '',
 				file_size: '',
 				transfer_time: '',
