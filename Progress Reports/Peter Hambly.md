@@ -736,6 +736,12 @@ RangeError: Invalid string length
 * RIF project meeting, fix extract bug
 * SQL server tile maker bulk insert
 
+#### 28th November to 2nd December
+
+* Comiment geielvel data tables
+* Add support for description on DBF fields to XML config
+* Added logging to tile maker
+
 #### Current TODO list (December):
 
 * Bugs, general RIF database Todo
@@ -745,7 +751,6 @@ RangeError: Invalid string length
   * RIF production script:
     * DELETE/INSERT rif40_geographies/geolevels
 	* Add tile table to geolevels;
-	* Add gid to lookup_table;
 	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
   
 #### January 2017 TODO list:
