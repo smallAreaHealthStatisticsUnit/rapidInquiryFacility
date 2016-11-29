@@ -121,8 +121,44 @@ public class RIFStudyResultRetrievalWebServiceResource
 	// ==========================================
 
 	//KLG: 
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getCurrentStatusAllStudies")
+	public Response getCurrentStatusAllStudies(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID) {
 
+		String result = "";
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+			
 
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			RIFResultTable resultTable
+				= studyResultRetrievalService.getCurrentStatusAllStudies(user);
+			RIFResultTableJSONGenerator rifResultTableJSONGenerator
+				= new RIFResultTableJSONGenerator();
+			result = rifResultTableJSONGenerator.writeResultTable(resultTable);			
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);
+	}
+	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeographies")

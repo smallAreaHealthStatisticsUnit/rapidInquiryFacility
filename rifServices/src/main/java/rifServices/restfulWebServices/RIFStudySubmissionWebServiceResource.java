@@ -7,11 +7,10 @@ import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.businessConceptLayer.User;
 
 import com.sun.jersey.multipart.*;
-
 import javax.ws.rs.*;
+
 import javax.ws.rs.core.*;
 import javax.servlet.http.HttpServletRequest;
-
 import java.text.Collator;
 import java.util.ArrayList;
 import java.io.*;
@@ -173,20 +172,6 @@ public class RIFStudySubmissionWebServiceResource
 		return super.isInformationGovernancePolicyActive(
 			servletRequest,
 			userID);
-	}
-	
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getStudyStatusUpdates")
-	public Response getStudyStatusUpdates(
-		@Context HttpServletRequest servletRequest,
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID) {
-
-		return super.getStudyStatusUpdates(
-			servletRequest,
-			userID,
-			studyID);
 	}
 	
 	
@@ -696,13 +681,12 @@ public class RIFStudySubmissionWebServiceResource
 
 	
 	
-	@GET
+	@POST
 	@Produces({"application/json"})	
 	@Path("/test")
-	public Response getGeoLevelToMapAreas(
+	public Response test(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID) {
-		
 		
 		String result = "";
 				
@@ -712,7 +696,7 @@ public class RIFStudySubmissionWebServiceResource
 
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
-				= getRIFStudySubmissionService();	
+				= getRIFStudySubmissionService();			
 			studySubmissionService.test();
 		}
 		catch(Exception exception) {

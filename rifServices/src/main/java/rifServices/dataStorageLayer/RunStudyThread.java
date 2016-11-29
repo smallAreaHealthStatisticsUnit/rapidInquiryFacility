@@ -304,20 +304,10 @@ public class RunStudyThread
 			user, 
 			studySubmission);
 		
-		studySubmissionManager.createStudyStatusTable(
-			connection, 
-			user.getUserID(), 
-			studyID);		
-		
 		String statusMessage
 			= RIFServiceMessages.getMessage(
 				"studyState.studyCreated.description");
-		studyStateManager.addStatusMessage(
-			user, 
-			studyID, 
-			statusMessage);
-
-		studyStateMachine.next();
+		updateStudyStatusState(statusMessage);		
 		System.out.println("CREATE STUDY =====================================END =============================");
 		
 	}
@@ -332,31 +322,21 @@ public class RunStudyThread
 		String statusMessage
 			= RIFServiceMessages.getMessage(
 				"studyState.studyExtracted.description");
-		studyStateManager.addStatusMessage(user, studyID, statusMessage);
-
-		studyStateMachine.next();	
+		updateStudyStatusState(statusMessage);		
 	}
 	
 	private void smoothResults() 
 		throws RIFServiceException {
 
-		System.out.println("Smooth results 1");
 		smoothResultsSubmissionStep.performStep(
 			connection,
 			studySubmission, 
 			studyID);
-		System.out.println("Smooth results 2");
 
 		String statusMessage
 			= RIFServiceMessages.getMessage(
 				"studyState.studyResultsComputed.description");
-		studyStateManager.addStatusMessage(
-			user, 
-			studyID, 
-			statusMessage);
-
-		
-		studyStateMachine.next();
+		updateStudyStatusState(statusMessage);
 	}
 	
 	private void advertiseDataSet() 
@@ -368,19 +348,29 @@ public class RunStudyThread
 			user, 
 			studySubmission, 
 			studyID);
-		
+
 		String statusMessage
 			= RIFServiceMessages.getMessage(
 				"studyState.readyForUse");
-		studyStateManager.addStatusMessage(
-			user, 
-			studyID, 
-			statusMessage);
-		
-		studyStateMachine.next();
+		updateStudyStatusState(statusMessage);
+
 		System.out.println("RIF study should be FINISHED!!");
 	}
-	
+
+	private void updateStudyStatusState(final String statusMessage) 
+		throws RIFServiceException {
+
+		studyStateMachine.next();
+
+		StudyState currentStudyState = studyStateMachine.next();
+				
+		studyStateManager.updateStudyStatus(
+			connection,
+			user, 
+			studyID, 
+			currentStudyState,
+			statusMessage);
+	}
 	
 	// ==========================================
 	// Section Override

@@ -90,6 +90,8 @@ public final class PGSQLCreateTableQueryFormatter
 	
 	private boolean isTemporaryTable;
 
+	private boolean useIfExists;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -99,6 +101,7 @@ public final class PGSQLCreateTableQueryFormatter
 	 */
 	public PGSQLCreateTableQueryFormatter() {
 		fieldDeclarations = new ArrayList<String>();
+		useIfExists = false;
 	}
 
 	// ==========================================
@@ -120,6 +123,10 @@ public final class PGSQLCreateTableQueryFormatter
 	
 	public void setTableName(final String tableToCreate) {
 		this.tableToCreate = tableToCreate;		
+	}
+	
+	public void setUseIfExists(final boolean useIfExists) {
+		this.useIfExists = useIfExists;
 	}
 
 	public void addDateFieldDeclaration(
@@ -164,6 +171,15 @@ public final class PGSQLCreateTableQueryFormatter
 		
 	}
 	
+	public void addTimeStampFieldDeclaration(
+		final String fieldName,
+		final boolean isNullAllowed) {
+			
+		addFieldDeclaration(
+			fieldName, 
+			"TIMESTAMP", 
+			isNullAllowed);			
+	}
 	
 	public void addTextFieldDeclaration(
 		final String fieldName,
@@ -229,6 +245,18 @@ public final class PGSQLCreateTableQueryFormatter
 			isNullAllowed);
 	}	
 
+	public void addAutoIncrementFieldDeclaration(
+		final String fieldName) {
+				
+		StringBuilder textFieldType = new StringBuilder();
+		textFieldType.append("SERIAL");
+				
+		addFieldDeclaration(
+			fieldName,
+			textFieldType.toString(),
+			false);
+	}		
+	
 	public void addTextFieldDeclaration(
 		final String fieldName,
 		final int length,
@@ -310,10 +338,17 @@ public final class PGSQLCreateTableQueryFormatter
 		resetAccumulatedQueryExpression();
 		
 		addQueryPhrase(0, "CREATE");
+		
+
+		
 		if (isTemporaryTable == true) {
 			addQueryPhrase(" TEMPORARY");
 		}
 		addQueryPhrase(" TABLE ");
+		if (useIfExists) {
+			addQueryPhrase("IF NOT EXISTS ");
+		}
+		
 		addQueryPhrase(getSchemaTableName(tableToCreate));
 		addQueryPhrase(" (");
 		padAndFinishLine();

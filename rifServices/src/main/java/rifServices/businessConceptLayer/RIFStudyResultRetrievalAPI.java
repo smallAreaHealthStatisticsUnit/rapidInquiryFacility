@@ -452,5 +452,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		final ArrayList<MapArea> mapAreas)
 		throws RIFServiceException;
 	
+	public RIFResultTable getCurrentStatusAllStudies(final User user)
+		throws RIFServiceException;
 	
 }

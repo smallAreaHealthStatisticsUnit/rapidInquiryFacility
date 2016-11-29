@@ -164,6 +164,7 @@ final class SQLCreateStudySubmissionStep
 			result = getCurrentStudyID(connection);	
 			connection.commit();
 			
+			System.out.println("======SQLCREATESTUDYSUBMISSIONSTEP====studyID=="+result+"==");
 			return result;
 		}
 		catch(SQLException sqlException) {
@@ -427,13 +428,13 @@ final class SQLCreateStudySubmissionStep
 				Sex sex = investigation.getSex();
 				Integer genderCodeParameter = null;
 				if (sex == Sex.MALES) {
-					genderCodeParameter = 0;
-				}
-				else if (sex == Sex.FEMALES) {
 					genderCodeParameter = 1;
 				}
-				else {
+				else if (sex == Sex.FEMALES) {
 					genderCodeParameter = 2;
+				}
+				else {
+					genderCodeParameter = 3;
 				}
 				
 				NumeratorDenominatorPair ndPair = investigation.getNdPair();

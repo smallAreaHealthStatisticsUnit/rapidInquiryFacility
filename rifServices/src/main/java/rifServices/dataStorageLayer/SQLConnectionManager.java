@@ -683,8 +683,8 @@ public final class SQLConnectionManager
 			databaseProperties.setProperty("prepareThreshold", "3");
 
 			//KLG: @TODO this introduces a porting issue
-			int logLevel = org.postgresql.Driver.DEBUG;
-			databaseProperties.setProperty("loglevel", String.valueOf(logLevel));
+			//int logLevel = org.postgresql.Driver.DEBUG;
+			//databaseProperties.setProperty("loglevel", String.valueOf(logLevel));
 			
 			connection
 				= DriverManager.getConnection(databaseURL, databaseProperties);

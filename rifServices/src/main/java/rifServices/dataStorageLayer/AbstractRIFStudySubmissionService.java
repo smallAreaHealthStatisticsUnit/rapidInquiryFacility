@@ -196,7 +196,6 @@ abstract class AbstractRIFStudySubmissionService
 		Connection connection = null;
 		try {
 			
-			System.out.println("Starting TEST");
 			//Assign pooled connection
 			connection 
 				= sqlConnectionManager.assignPooledWriteConnection(user);
@@ -219,7 +218,6 @@ abstract class AbstractRIFStudySubmissionService
 			
 			Thread thread = new Thread(runStudyThread);
 			thread.start();
-		
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
