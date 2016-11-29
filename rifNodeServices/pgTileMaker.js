@@ -170,14 +170,19 @@ function main() {
 		transports: [
 			new (Winston.transports.Console)({
 				level: 'info',
+				json: true,
 				timestamp: function() {
 					return Date.now();
 				},
-				formatter: function(options) {
+				stringify: function(options) {
 					// Return string will be passed to logger.
 					return /* options.timestamp() +' '+ options.level.toUpperCase() +' '+  */(options.message ? options.message : '') +
 					  (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
 				}
+			}),
+			new (Winston.transports.Memory)({ 
+				level: 'verbose',
+				json: true
 			}),
 			new (Winston.transports.File)({ 
 				level: 'verbose',
@@ -194,6 +199,7 @@ function main() {
 		process.env.DEBUG=true;
 		winston.level='debug';
 		Winston.transports.Console='debug';
+		Winston.transports.Memory='debug';
 		Winston.transports.File='debug';
 	}
 	
@@ -277,10 +283,17 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 
 	var endCallBack = function endCallBack(err) {
 		if (err) {
-			console.error("Exit due to SQL server error: " + err.message);
+			winston.log("error", "Exit due to error: %", err.message, err);
 			process.exit(1);		
 		}
-		process.exit(0);		
+//		console.error(JSON.stringify(winston, null, 4));
+		
+		// Arrays with output and error lines
+		var messages = winston.transports.memory.writeOutput;
+		var errors = winston.transports.memory.errorOutput;
+		
+		console.log("Exit: OK; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
+		process.exit(0);
 	}
 	
 	var conString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=pgTileMaker';
