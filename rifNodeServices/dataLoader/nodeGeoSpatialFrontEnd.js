@@ -112,6 +112,23 @@ function consoleError(msg) {
 }
 
 /*
+ * Function: 	addDbfDescFields()
+ * Parameters:  file list object (processed files from shpConvertInput()
+ * Returns: 	Nothing
+ * Description:	Process file list object (processed files from shpConvertInput() to add descriptive fields to formdata
+ */
+function addDbfDescFields(fileList, fields) {
+			
+	for (var key in fileList) { // Add extended attributes XML doc
+		for (var j=0; j < fileList[key].dbfHeader.fields.length ; j++) {
+			fields[key + "_" + fileList[key].dbfHeader.fields[j].name.toUpperCase()]=(fileList[key].dbfHeader.fields[j].description || "N/A");
+		}
+	}
+	
+	consoleLog("DBF file field descriptors: " + JSON.stringify(fields, null, 4));
+}
+						
+/*
  * Function: 	formSetup()
  * Parameters:  formId, formName
  * Returns: 	Nothing
@@ -174,26 +191,42 @@ function formSetup(formId, formName) {
 									// Only. Has no effect other than no upload status
 //	}
 	
+	var fileList;
 	try {
 		files_elem=document.getElementById('files'); // Set up file checker
 		var files = files_elem.files;
 	
 		function shpConvertInputHandler() {
-			var fileList = this.files;
 			
-			consoleLog("shpConvertInput() event files: " + JSON.stringify(fileList, null, 4));
-			shpConvertInput(fileList);
+			shpConvertInput(this.files, function shpConvertInputCallback(err) {
+				if (err) {
+					consoleError(err.message);
+				}
+				else {
+					fileList=getFileList();
+					consoleLog("shpConvertInput() event files: " + JSON.stringify(fileList, null, 4));
+					addDbfDescFields(fileList, options.data);
+				}			
+			});
 		}		
 		files_elem.addEventListener("change", shpConvertInputHandler, false);
-	
-
 		
-		if  (files.length > 0) { // Already set
+		if (files.length > 0) { // Already set
 			consoleLog("shpConvertInput() already set");
-			setTimeout(function() {
-				document.getElementById("status").innerHTML = document.getElementById("status").innerHTML + "<br>" + "Please wait for " + files.length + " file(s) to load";
-				shpConvertInput(files);
-			}, 500);
+			setTimeout(function shpConvertInputAsync() {
+				document.getElementById("status").innerHTML = document.getElementById("status").innerHTML + "<br>" + 
+					"Please wait for " + files.length + " file(s) to load";
+				shpConvertInput(files, function shpConvertInputCallback2(err) {
+					if (err) {
+						consoleError(err.message);
+					}
+					else {
+						fileList=getFileList();
+						consoleLog("shpConvertInput() previously set files: " + JSON.stringify(fileList, null, 4));
+						addDbfDescFields(fileList, options.data);
+					}
+				});	
+				}, 500);
 		}
 		
 		if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1){

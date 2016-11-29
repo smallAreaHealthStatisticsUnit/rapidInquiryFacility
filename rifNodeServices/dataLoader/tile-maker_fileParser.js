@@ -53,7 +53,7 @@ var fileList = {};
  * Returns: 	Nothing
  * Description:	Lots
  */
-function shpConvertInput(files) {
+function shpConvertInput(files, shpConvertInputCallback) {
 
 	/*
 	 * Function: 	processFile()
@@ -108,6 +108,7 @@ function shpConvertInput(files) {
 			var FC_FeatureCatalogue=x2js.xml_str2json(data);
 			if (FC_FeatureCatalogue["FC_FeatureCatalogue"]) {
 				xmlDocList[baseName] = FC_FeatureCatalogue["FC_FeatureCatalogue"];
+				console.log("Parse extended attributes file: " +  fileName + "; shape file: " + fileList[baseName].fileName);
 			}	
 			else {
 				throw new Error("Extended attributes file: " +  fileName + "; shape file: " + fileList[baseName].fileName + " does not contain FC_FeatureCatalogue");	
@@ -134,7 +135,7 @@ function shpConvertInput(files) {
 			};
 			console.log("fileName: " + JSON.stringify(fileName, null, 4));
 			console.log("baseName: " + JSON.stringify(baseName, null, 4));
-			console.log("fileList: " + JSON.stringify(fileList, null, 4));
+//			console.log("fileList: " + JSON.stringify(fileList, null, 4));
 			console.log("shapefileList: " + JSON.stringify(shapefileList, null, 4));
 		}
 		else if (ext == 'prj') {
@@ -317,7 +318,7 @@ function shpConvertInput(files) {
 		function asyncSeriesEnd(err) {
 			
 			if (err) {
-				try {
+				try {	
 					if (document.getElementById("tabs") && tabs && document.getElementById("error")) { // JQuery-UI version
 						error=document.getElementById("error");
 						error.innerHTML="<h3>Unable to process list of files</h3><p>" + err.message + "</p>";
@@ -335,7 +336,7 @@ function shpConvertInput(files) {
 				catch (e) {
 					console.log("Error: " + e.message);
 				}
-				return;
+				shpConvertInputCallback(err);
 			}
 			
 			for (var key in fileList) { // Add extended attributes XML doc
@@ -370,16 +371,16 @@ function shpConvertInput(files) {
 							if (fileList[key].dbfHeader.fields && field && description) {
 								for (var j=0; j < fileList[key].dbfHeader.fields.length ; j++) {
 									if (fileList[key].dbfHeader.fields[j].name.toUpperCase() == field.toUpperCase()) {
-//										console.log("Feature: " + i + "; Set field: " + field + " description='" + description + "'");
+										console.log("[" + key + "] Feature: " + i + "; Set field: " + field + " description='" + description + "'");
 										fileList[key].dbfHeader.fields[j].description=description;
 									}
 //									else {
-//										console.log("Feature: " + i + "; NO MATCH Field: " + field + "='" + fileList[key].dbfHeader.fields[j].name + "'");
+//										console.log("[" + key + "] Feature: " + i + "; NO MATCH Field: " + field + "='" + fileList[key].dbfHeader.fields[j].name + "'");
 //									}
 								}
 							}
 							else if (field && description) {
-								console.log("Feature: " + i + " NO DBF header for field: " + field + " description='" + description + "'");
+								console.log("[" + key + "] Feature: " + i + " NO DBF header for field: " + field + " description='" + description + "'");
 							}
 						}
 					}
@@ -412,7 +413,7 @@ function shpConvertInput(files) {
 					fileList[key].fileSize=shapefileList[key].fileSize;
 				}
 				else {
-					throw new Error("Missing shape file: " + fileList[baseName].fileName);						
+					shpConvertInputCallback(new Error("Missing shape file: " + fileList[baseName].fileName));						
 				}
 			}
 			for (var key in fileList) { // Add projection
@@ -420,21 +421,35 @@ function shpConvertInput(files) {
 					fileList[key].projection=projectionList[key];
 				}
 				else {
-					throw new Error("Missing projection file: " + fileList[baseName].fileName);						
+					shpConvertInputCallback(new Error("Missing projection file: " + fileList[baseName].fileName));						
 				}
 			}	
-						
+			
+//			console.log("Completed fileList: " + JSON.stringify(fileList, null, 4));
+					
 			try {
 				createAccordion(fileList);
+				shpConvertInputCallback();
 			}
 			catch (err) {
 				setStatus("ERROR! Unable to create accordion from list of files", 
 					err, undefined, err.stack); 
+				shpConvertInputCallback(err);
 			}
 		} // End of asyncSeriesEnd
 	);		
 				
 } // End of shpConvertInput()
+
+/*
+ * Function: 	getFileList()
+ * Parameters: 	None
+ * Returns: 	file list object (processed files from shpConvertInput()
+ * Description:	Creates accordion
+ */
+function getFileList() {
+	return fileList;
+}
 
 /*
  * Function: 	createAccordion()
