@@ -266,45 +266,6 @@ abstract class AbstractRIFWebServiceResource {
 	}
 	
 	
-	protected Response getStudyStatusUpdates(
-		final HttpServletRequest servletRequest,
-		final String userID,
-		final String studyID) {
-	
-		String result = "";
-		
-		try {
-			//Convert URL parameters to RIF service API parameters
-			User user = createUser(servletRequest, userID);
-			
-			//Call service API
-			RIFStudySubmissionAPI studySubmissionService
-				= rifStudyServiceBundle.getRIFStudySubmissionService();
-					
-			String[] statusUpdates
-				= studySubmissionService.getStudyStatusUpdates(
-					user, 
-					studyID);
-
-			result 
-				= serialiseArrayResult(
-					servletRequest, 
-					statusUpdates);
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		return webServiceResponseGenerator.generateWebServiceResponse(
-				servletRequest,
-				result);
-	}
-
-	
 	protected Response getStudySummaries(
 		final HttpServletRequest servletRequest,
 		final String userID) {

@@ -1307,11 +1307,6 @@ public class Investigation
 					covariatesFieldName);
 			errorMessages.add(errorMessage);			
 		}
-		else if (covariates.isEmpty()) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("investigation.error.noCovariatesSpecified");
-			errorMessages.add(errorMessage);			
-		}
 		else {
 			for (AbstractCovariate covariate : covariates) {
 				if (covariate == null) {
@@ -1336,6 +1331,13 @@ public class Investigation
 			}			
 		}
 
+		//else if (covariates.isEmpty()) {
+		//	String errorMessage
+		//		= RIFServiceMessages.getMessage("investigation.error.noCovariatesSpecified");
+		//	errorMessages.add(errorMessage);			
+		//}
+		
+		
 		countErrors(RIFServiceError.INVALID_INVESTIGATION, errorMessages);
 	}
 	

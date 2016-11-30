@@ -1,9 +1,15 @@
-package rifServices.dataStorageLayer;
+package rifServices.test.services;
 
-import rifGenericLibrary.businessConceptLayer.User;
 import rifServices.businessConceptLayer.StudyState;
+import rifServices.dataStorageLayer.TestRIFStudyRetrievalService;
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+
+import org.junit.Test;
 
 /**
  *
@@ -65,8 +71,8 @@ import rifGenericLibrary.system.RIFServiceException;
  *
  */
 
-public final class TestRIFStudyRetrievalService 
-	extends AbstractRIFStudyRetrievalService {
+public final class GetStudyStatusUpdates 
+	extends AbstractRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -80,40 +86,108 @@ public final class TestRIFStudyRetrievalService
 	// Section Construction
 	// ==========================================
 
-	public TestRIFStudyRetrievalService() {
+	public GetStudyStatusUpdates() {
 
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+	@Test
+	public void addStudyStatusUpdates_COMMON1() {
+		try {
+			User validUser = cloneValidUser();
 
-	
-	public void clearStudyStatusUpdates(
-		final User user, 
-		final String studyID) 
-		throws RIFServiceException {
-		
-		super.clearStudyStatusUpdates(
-			user, 
-			studyID);
+			TestRIFStudyRetrievalService testService
+				= (TestRIFStudyRetrievalService) rifStudyRetrievalService;
+			testService.clearStudyStatusUpdates(validUser, "212");
+			
+			testService.updateStudyStatus(validUser, "212", StudyState.STUDY_RESULTS_COMPUTED, "testing111");
+			
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}		
 	}
 	
-	public void updateStudyStatus(
-		final User user, 
-		final String studyID, 
-		final StudyState studyState,
-		final String message)
-		throws RIFServiceException {
-	
-		super.updateStudyStatus(
-			user, 
-			studyID, 
-			studyState,
-			message);
-		
+
+	@Test
+	public void getAllStudyStatusUpdates_COMMON1() {
+		try {
+			User validUser = cloneValidUser();
+
+			TestRIFStudyRetrievalService testService
+				= (TestRIFStudyRetrievalService) rifStudyRetrievalService;
+			testService.clearStudyStatusUpdates(validUser, "211");
+			testService.clearStudyStatusUpdates(validUser, "212");
+			
+			testService.updateStudyStatus(validUser, "211", StudyState.STUDY_RESULTS_COMPUTED, "This happened.");
+			
+			for (int i = 0; i < 10000000; i++) {
+				
+			}
+			
+			testService.updateStudyStatus(
+				validUser, 
+				"211", 
+				StudyState.STUDY_RESULTS_COMPUTED, 
+				"It was really exciting.");
+
+			for (int i = 0; i < 10000000; i++) {
+				
+			}			
+			testService.updateStudyStatus(
+				validUser, 
+				"211", 
+				StudyState.STUDY_RESULTS_COMPUTED, 
+				"But eventually it got dull.");
+			testService.updateStudyStatus(
+				validUser, 
+				"212", 
+				StudyState.STUDY_RESULTS_COMPUTED, 
+				"Oh and then this happened.");
+
+			for (int i = 0; i < 10000000; i++) {
+				
+			}			
+
+			testService.updateStudyStatus(
+				validUser, 
+				"212", 
+				StudyState.STUDY_RESULTS_COMPUTED, 
+				"And then one more thing.");			
+
+			RIFResultTable resultTable
+				= testService.getCurrentStatusAllStudies(validUser);
+			resultTable.print();
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}		
 	}
+		
 	
+	@Test
+	public void getAllStudyStatusUpdates_COMMON2() {
+		try {
+			User validUser = cloneValidUser();
+
+			TestRIFStudyRetrievalService testService
+				= (TestRIFStudyRetrievalService) rifStudyRetrievalService;
+
+			RIFResultTable resultTable
+				= testService.getCurrentStatusAllStudies(validUser);
+			resultTable.print();
+		}
+		catch(RIFServiceException rifServiceException) {
+			fail();
+		}		
+	}
+		
 	
 	// ==========================================
 	// Section Errors and Validation

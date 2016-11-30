@@ -384,7 +384,12 @@ final class SQLCovariateManager
 		final GeoLevelToMap geoLevelToMap,
 		final ArrayList<AbstractCovariate> covariates)
 		throws RIFServiceException {
-				
+		
+		
+		if (covariates.size() == 0) {
+			return;
+		}
+		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;		
 		AbstractCovariate currentCovariate = null;

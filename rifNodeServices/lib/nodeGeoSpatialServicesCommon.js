@@ -1057,13 +1057,13 @@ shpConvertGetConfig = function shpConvertGetConfig(response, req, res, serverLog
 				 */
 				function shpConvertGetConfigFReadFile(err, xmlText) {
 					if (err) {
-						msg+="\nUnable to read XML file: " + fileName;
+						msg+="\nUnable to read geoDataLoader XML file: " + fileName;
 						httpErrorResponse.httpErrorResponse(__file, __line, "shpConvertGetConfigFReadFile", 
 							serverLog, 500, req, res, msg, err /* Error */, response);		
 						return;	
 					}
 					else {	
-						msg+="\nRead XML file: " + fileName + "; XML size: " + xmlText.length;
+						msg+="\nRead geoDataLoader XML file: " + fileName + "; XML size: " + xmlText.length;
 						if (xmlText && xmlText.length > 0) {
 							
 							if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed

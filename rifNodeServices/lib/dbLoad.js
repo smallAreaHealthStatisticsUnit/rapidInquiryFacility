@@ -626,7 +626,23 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			var sqlStmt=new Sql("Drop table " + csvFiles[i].tableName, 
 				getSqlFromFile("drop_table.sql", dbType, 
 					csvFiles[i].tableName /* Table name */), sqlArray); 
+
+			var areaID=response.fields[csvFiles[i].tableName + "_areaID"];
+			var areaID_desc=response.fields[csvFiles[i].tableName+ "_areaID_desc"];
+			var areaName=response.fields[csvFiles[i].tableName + "_areaName"];
+			var areaName_desc=response.fields[csvFiles[i].tableName+ "_areaName_desc"];
+			var fieldComments = {
+				gid: "Unique geographic index",
+				areaid: "Area ID (" + areaID + "): " + areaID_desc,
+				areaname: "Area name (" + areaName + "): " + areaName_desc,
+				area_km2: "Area in square km",
+				geographic_centroid_wkt: "Wellknown text for geographic centroid"
+			};
 			
+			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+				fieldComments["wkt_" + k]="Wellknown text for zoomlevel " + k;
+			}
+				
 			var columnList=Object.keys(csvFiles[i].rows[0]);
 			var sqlStmt=new Sql("Create table" + csvFiles[i].tableName, "CREATE TABLE " + csvFiles[i].tableName + " (");
 			for (var j=0; j<columnList.length; j++) {
@@ -665,7 +681,20 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				else {
 					sqlStmt.sql+="\t" + pad("                               ", columnList[j].toLowerCase(), false) + "\ttext";
 				}
-			}
+				
+				var fieldKey=csvFiles[i].tableName + "_" + columnList[j].toUpperCase();
+				var desc=response.fields[fieldKey];
+
+				if (desc) {
+					sqlStmt.sql+=" /* " + desc.replace(/'/g, "''") + " */";
+					fieldComments[columnList[j].toLowerCase()]=desc.replace(/'/g, "''");
+				}
+				else {
+					sqlStmt.sql+=" /* " + (fieldComments[columnList[j].toLowerCase()] || "No comment for: " + columnList[j].toLowerCase()) + " */";
+				}
+				
+			} // End of for columnList loop
+			
 			sqlStmt.sql+=")";
 			sqlArray.push(sqlStmt);
 
@@ -675,6 +704,16 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 					csvFiles[i].tableName,			/* Table name */
 					csvFiles[i].geolevelDescription	/* Comment */),
 				sqlArray);			
+			
+			for (var key in fieldComments) {
+				var sqlStmt=new Sql("Comment geospatial data column",
+					getSqlFromFile("comment_column.sql", 
+						dbType, 
+						csvFiles[i].tableName,			/* Table name */
+						key,							/* Column name */
+						fieldComments[key]				/* Comment */),
+					sqlArray);					
+			}
 			
 			// Needs to be SQL to psql command (i.e. COPY FROM stdin)
 			var sqlStmt=new Sql("Load table from CSV file");
@@ -1003,7 +1042,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					getSqlFromFile("create_tiles_table.sql", 
 						undefined /* Common */,	
 						"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 1: Tiles table name */,
-						"Text"															/* 2: JSON datatype (Postgres JSON, SQL server Text) */
+						"NVARCHAR(MAX)"													/* 2: JSON datatype (Postgres JSON, SQL server NVARCHAR(MAX)) */
 						), sqlArray); 
 			}
 			else if (dbType == "PostGres") { // No JSON in SQL Server

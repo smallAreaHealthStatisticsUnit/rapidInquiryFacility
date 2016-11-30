@@ -104,7 +104,7 @@ BEGIN
 			took3:=age(etp, stp2);
 --			
 			stp2:=clock_timestamp();
-			num_rows3:=tileMaker_aggregator_%1(i, j, l_debug);	
+--			num_rows3:=tileMaker_aggregator_cb_2014_us_500k(i, j, l_debug);	/* Replaced by pgTileMaker.js */
 			etp:=clock_timestamp();
 			took4:=age(etp, stp2);
 --			

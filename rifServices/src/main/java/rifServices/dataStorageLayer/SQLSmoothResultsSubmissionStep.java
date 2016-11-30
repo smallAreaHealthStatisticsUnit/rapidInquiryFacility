@@ -144,7 +144,7 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 
 			//KLG: For now it only works with the first study.  For some reason, newer extract
 			//tables cause the R program we use to generate an error.
-			addParameter("study_id", "1");
+			addParameter("study_id", studyID);
 		
 			//add a parameter for investigation name.  This will appear as a column in the extract
 			//table that the R program will need to know about.  Note that specifying a single
@@ -152,9 +152,10 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 			//rather than multiple investigations.
 			Investigation firstInvestigation
 				= studySubmission.getStudy().getInvestigations().get(0);
+						
 			addParameter(
 				"investigation_name", 
-				firstInvestigation.getTitle());
+				createDatabaseFriendlyInvestigationName(firstInvestigation.getTitle()));
 			addParameterToVerify("investigation_name");
 
 			Integer investigationID
@@ -202,6 +203,10 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 		}		
 	}
 	
+	private String createDatabaseFriendlyInvestigationName(final String investigationName) {
+		return investigationName.trim().toUpperCase().replaceAll(" ", "_");		
+	}
+	
 	
 	private String createRCommandLineInvocation(
 		final String commandLineExecutable,
@@ -229,12 +234,24 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 		throws SQLException,
 		RIFServiceException {
 	
+		
+		System.out.println("SQLSmoothedResultsSubmissionStep getInvestigationID studyID=="+studyID+"==investigation_name=="+investigation.getTitle()+"==inv_description=="+investigation.getDescription()+"==");
+		
 		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addFromTable("rif40_investigations");
 		queryFormatter.addSelectField("inv_id");
 		queryFormatter.addWhereParameter("study_id");
 		queryFormatter.addWhereParameter("inv_name");
+		
+		System.out.println("=======getInvestigationID========1===");
+		System.out.println("StudyID=="+studyID+"==");
+		System.out.println("Inv_name=="+investigation.getTitle().toUpperCase()+"==");
+		System.out.println(queryFormatter.generateQuery());
+		System.out.println("=======getInvestigationID========2===");
+
+		String databaseFriendlyInvestigationName
+			= createDatabaseFriendlyInvestigationName(investigation.getTitle());
 		
 		Integer investigationID = null;
 		PreparedStatement statement = null;		
@@ -243,9 +260,11 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 			statement 
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
-			statement.setString(2, investigation.getTitle());
+			statement.setString(2, databaseFriendlyInvestigationName);
 			resultSet = statement.executeQuery();
+			System.out.println("About to call next");
 			resultSet.next();
+			System.out.println("called next");
 			investigationID = resultSet.getInt(1);
 		}
 		finally {

@@ -223,7 +223,8 @@ MODULE_JSON=node_modules/request/package.json \
 	node_modules/wellknown/package.json \
 	node_modules/svg2png/package.json \
 	node_modules/svg2png-many/package.json \
-	node_modules/connect-busboy/package.json 
+	node_modules/connect-busboy/package.json \
+	node_modules/winston/package.json
 #
 MODULES=$(patsubst %/package.json,%,$(MODULE_JSON))
 MODULE_LIST=$(patsubst node_modules/%/package.json,%,$(MODULE_JSON))
@@ -252,9 +253,11 @@ forever:
 	
 #- modules: Build required Node.js modules using npm install --save to update dependencies in package.json
 modules: $(MODULES) $(MODULE_JSON) 
+	$(NPM) install JSZip@2.6.0
 
 # Module dependency control	
 $(MODULE_JSON):
+	$(NPM) install JSZip@2.6.0
 	$(NPM) update --save $(MODULE_LIST)
 	
 $(MODULES):

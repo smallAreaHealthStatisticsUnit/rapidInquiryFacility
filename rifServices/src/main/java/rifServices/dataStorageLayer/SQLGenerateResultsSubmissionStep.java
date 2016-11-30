@@ -134,8 +134,7 @@ final class SQLGenerateResultsSubmissionStep
 			logSQLQuery(
 				"runStudy", 
 				runStudyQueryFormatter,
-				studyID,
-				"0");
+				studyID);
 			
 			runStudyStatement
 				= createPreparedStatement(

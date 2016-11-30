@@ -736,23 +736,30 @@ RangeError: Invalid string length
 * RIF project meeting, fix extract bug
 * SQL server tile maker bulk insert
 
-#### Current TODO list (November):
+#### 28th November to 2nd December
 
-* JSZip 3.0 upgrade required (forced to 2.6.0) for present
+* Comiment geielvel data tables
+* Add support for description on DBF fields to XML config
+* Added logging to tile maker
+
+#### Current TODO list (December):
+
+* Bugs, general RIF database Todo
 * Map tile generator; RIF integration preparation
   * Add GID, shapefile fields to lookup tables;
   * Add areaid as well as <geolevel_name> in lookup tables;
-* SQL load script generator: still todo, all can wait:
-  * Add search path to user schema, check user schema exists, to Postgres version
-  * Confirm Postgres and SQL Server geolevel intersections are the same;
   * RIF production script:
     * DELETE/INSERT rif40_geographies/geolevels
 	* Add tile table to geolevels;
-	* Add gid to lookup_table;
 	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
   
-#### December TODO list:
+#### January 2017 TODO list:
 
+* SQL Server run study port
+* JSZip 3.0 upgrade required (forced to 2.6.0) for present
+* SQL load script generator: still todo, all can wait:
+  * Add search path to user schema, check user schema exists, to Postgres version
+  * Confirm Postgres and SQL Server geolevel intersections are the same;
 * Get methods: 
   * ZIP results;
   * Run front end and batch from XML config file.
@@ -809,19 +816,38 @@ Note: no bounding box (bbox) in tiles.
 	ii. Wrong shapefile (by bounds) in set
 	iii. No shapefile with only 1 area if > 1 shapefile
 	iv. Total area mismatch between shapefiles
-	
-##	General RIF database Todo:
+   
+## Database Bugs
+
+* AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
+  for duplicate county names within a state
+* Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
+  and grant back permissions [i.e. remove security issue with current code]
+* Add t_rif40_study_areas trigger check (once per INSERT/UPDATE) for correct use of band_id in rif40_study_shares. 
+  Alternatively check in rif40_run_study 
+  
+##	General RIF database Todo (Early December/will park):
+
+### Early December
+
+1. Bugs
+2. New study state "S" - Smoothed; new method: setStudyState(study_id, state) {…}
+2. New study status table: t_rif40_study_status(username, study_id, study_state, creation_date, ith_update, message); ith_update is auto increment
+   and updateable view rif40_study_status of the users own studies
+3. Separate test/build in makefile
+4. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
+  
+### Park
 
 1. Documentation [in progress];
 2. JSON injection protection [will be a regexp];
-3. Connection timeout (connect/post connect) limits - as previous;
+3. Web front end connection timeout (connect/post connect) limits - as previous;
 4. Integration to build, severeal options:
    i.   Replace topojson_convert.js;
-   ii.  New node program to replace existing functionality;
+   ii.  New node program to replace existing functionality [see 4 early December above];
    iii. Awaiting data loader.
-	
-## 2016 Plans: 
 
+## 2016/7 Plans: 
 
 1. Build and integrate Node.js middleware server:
 
@@ -864,12 +890,3 @@ Note: no bounding box (bbox) in tiles.
   *	Auto registering of error and trace messages.
 
 7. Additional RIF development tasks as required by Dr. Anna Hansell; 
-
-## Bugs
-
-* AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
-  for duplicate county names within a state
-* Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
-  and grant back permissions
-* Add t_rif40_study_areas trigger check (once per INSERT/UPDATE) for correct use of band_id in rif40_study_shares. 
-  Alternatively check in rif40_run_study 

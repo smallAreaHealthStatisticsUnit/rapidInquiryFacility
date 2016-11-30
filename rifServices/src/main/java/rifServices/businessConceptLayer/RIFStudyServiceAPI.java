@@ -74,11 +74,6 @@ public interface RIFStudyServiceAPI {
 	public boolean isInformationGovernancePolicyActive(
 		final User user) 
 		throws RIFServiceException;
-
-	public String[] getStudyStatusUpdates(
-		final User _user,
-		final String studyID) 
-		throws RIFServiceException;
 	
 	/**
 	 * gets summaries of studies created by each user
