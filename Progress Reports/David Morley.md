@@ -55,3 +55,11 @@ Principal Work Area: JavaScript User interface development
 - Improved dialogue for disease parameters
 - UI is end-to-end study run ready
 
+##November
+
+- New disease mapper with two 'Atlas' style maps
+- Update from leaflet 0.7 to 1.0
+- Export map to png feature
+- Export as CSV option in results viewer
+- Started looking at RIF Java classes
+
