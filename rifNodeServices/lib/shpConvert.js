@@ -1508,7 +1508,14 @@ This error in actually originating from the error handler function
 			simplificationFactor: 	response.fields["simplificationFactor"],
 			quantization: 			response.fields["quantization"]			
 		};
-		
+
+		var dataLoader = {
+			geographyName:	(response.fields["geographyName"] || "To be added by user"),
+			geographyDesc:	(response.fields["geographyDesc"] || "To be added by user"),
+			geoLevel: []
+		}
+		xmlConfig.dataLoader=dataLoader;  // Putative geolevel setup 
+				
 		if (response.file_errors > 0) {
 			var msg='Errors detected in shapefile read processing: ' + response.file_errors;
 			response.message = msg + "\n" + response.message;		
@@ -1535,7 +1542,8 @@ This error in actually originating from the error handler function
 					geolevel_name: response.file_list[i].geolevel_name,
 					total_areas: response.file_list[i].total_areas,
 					points:  response.file_list[i].points,
-					geolevel_id: 0
+					geolevel_id: 0,
+					covariate_table: undefined
 				};
 				
 				if (bbox[0] != response.file_list[i].boundingBox[0] &&
@@ -1576,8 +1584,13 @@ This error in actually originating from the error handler function
 			for (var i=0; i<ngeolevels.length; i++) { // Create sorted ngeolevels array for geolevel_id for re=order (if required)		
 				ngeolevels[i].geolevel_id=i+1;
 				if (i == 0 && ngeolevels.length > 1 && ngeolevels[i].total_areas != 1) { // Geolevel 1 - Check that minimum resolution shapefile has only 1 area
-					msg+="\nERROR: geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + " has >1 (" + ngeolevels[i].total_areas + ") area)";
+					msg+="\nERROR: geolevel 1/" + ngeolevels.length + " shapefile: " + ngeolevels[i].file_name + 
+						" has >1 (" + ngeolevels[i].total_areas + ") area)";
 					response.file_errors++;
+				}
+				if (ngeolevels[i].total_areas > 1 /* && ngeolevels[i].geoLevel_id >= (ngeolevels.length-1) */) {
+					ngeolevels[i].covariate_table=(response.fields["geographyName"] || "unk") +
+						"_covariates_" + ngeolevels[i].geolevel_name;
 				}
 			}
 			
@@ -1643,7 +1656,12 @@ This error in actually originating from the error handler function
 				}
 				response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
 				
-				xmlConfig.geolevels=ngeolevels; // Putative geolevel setup 
+				xmlConfig.dataLoader.geoLevel[i] = {
+					geolevelId: 					ngeolevels[i].geolevel_id,
+					geolevelName: 					ngeolevels[i].geolevel_name,
+					covariateTable:					ngeolevels[i].covariate_table,
+					geolevelDescription:			response.file_list[ngeolevels[i].i].desc
+				}
 				
 				xmlConfig.shapeFileList.shapeFiles[i] = {
 					primaryKey:						"id",
