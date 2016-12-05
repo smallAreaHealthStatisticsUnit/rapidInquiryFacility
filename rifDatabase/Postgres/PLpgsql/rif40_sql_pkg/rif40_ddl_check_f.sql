@@ -258,14 +258,15 @@ BEGIN
 		IF USER NOT IN ('rif40', 'rifupg34') AND c6_rec.table_or_view IN ( /* Ordinary users - ignore  */
 			'fdw_all_tab_columns', 'fdw_all_tables') THEN
 			NULL;
-		ELSIF USER IN ('peterh') THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_f', '[70301]: Extra table/view: %.% [IGNORED]', 
+		ELSIF USER IN ('rif40', 'rifupg34') THEN
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_f', '[70301]: Extra table/view: %.%', 
 				USER::VARCHAR,
 				c6_rec.table_or_view::VARCHAR);
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_f', '[70302]: Extra table/view: %', 
-				c6_rec.table_or_view::VARCHAR);
 			i:=i+1;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_f', '[70302]: Extra other user table/view: %.% [IGNORED]', 
+				USER::VARCHAR,
+				c6_rec.table_or_view::VARCHAR);
 		END IF;
 	END LOOP;
 --

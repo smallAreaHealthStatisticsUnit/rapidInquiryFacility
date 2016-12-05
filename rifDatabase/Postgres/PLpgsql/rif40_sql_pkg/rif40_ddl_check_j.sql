@@ -253,17 +253,21 @@ BEGIN
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_j', 
 					'[70501]: Extra partition related temporary table: %.% [IGNORED]', 
 					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR);				
-			ELSIF c10_rec.table_schema IN ('gis', 'peterh') THEN
+			ELSIF c10_rec.table_schema IN ('gis') THEN
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_j', 
 					'[70502]: Extra table/view column: %.%.% [IGNORED]', 
 					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR, c10_rec.column_name::VARCHAR);
+			ELSIF c10_rec.table_schema = current_user  THEN
+				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_j', 
+					'[70503]: Extra user table/view column: %.%.% [IGNORED]', 
+					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR, c10_rec.column_name::VARCHAR);
 			ELSIF c10_rec.column_name IN ('hash_partition_number') THEN
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_j', 
-					'[70503]: Extra partition related table/view column: %.%.% [IGNORED]', 
+					'[70504]: Extra partition related table/view column: %.%.% [IGNORED]', 
 					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR, c10_rec.column_name::VARCHAR);								
 			ELSE
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_j', 
-					'[70504]: Extra table/view column: %.%.%', 
+					'[70505]: Extra table/view column: %.%.%', 
 					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR, c10_rec.column_name::VARCHAR);
 				i:=i+1;
 			END IF;
