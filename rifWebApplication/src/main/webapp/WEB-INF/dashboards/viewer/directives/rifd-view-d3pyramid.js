@@ -1,7 +1,7 @@
 /* global d3 */
 
 angular.module("RIF")
-        .directive('pyramid', function (ViewerStateService) { //pyramid
+        .directive('pyramid', function () { //pyramid
             var directiveDefinitionObject = {
                 restrict: 'E',
                 replace: false,
@@ -13,14 +13,14 @@ angular.module("RIF")
                 link: function (scope, element, attrs) {
 
                     scope.$watch(function () {
-                        scope.renderBase();
+                        if (angular.isUndefined(scope.data) || scope.data.length === 0) {
+                            return;
+                        } else {
+                            scope.renderBase();
+                        }
                     });
 
                     scope.renderBase = function () {
-
-                        if (angular.isUndefined(scope.data)) {
-                            return;
-                        }
 
                         /* General dimensions of canvas */
                         var margins = {top: 60, right: 60, bottom: 80, left: 80};
@@ -107,13 +107,13 @@ angular.module("RIF")
                             return (d / 1e6 >= 1) ? (d / 1e6 + "M") :
                                     (d / 1e3 >= 1) ? (d / 1e3 + "K") : d;
                         };
-                        
+
                         var xAxis = d3.axisBottom()
                                 .scale(xScale)
                                 .tickFormat(function (d) {
                                     return myFormatter(+d);
                                 });
-                                
+
                         mainImageArea.append("g")
                                 .attr("transform", "translate(0," + chartHeight + ")")
                                 .call(xAxis);
@@ -121,7 +121,7 @@ angular.module("RIF")
                         // Add the Y Axis
                         var yAxis = d3.axisLeft()
                                 .scale(yScale);
-                        
+
                         mainImageArea.append("g")
                                 .call(yAxis);
 

@@ -5,6 +5,16 @@ angular.module("RIF")
         .factory('MappingStateService',
                 function () {
                     var s = {
+                        extentLock: true,
+                        selectionLock: false,
+                        center: {
+                            'diseasemap1': {'zoom': 1, 'lng': 0, 'lat': 0},
+                            'diseasemap2': {'zoom': 1, 'lng': 0, 'lat': 0}
+                        },
+                        area_id: {
+                            'diseasemap1': null,
+                            'diseasemap2': null
+                        },
                         selected: {
                             'diseasemap1': null,
                             'diseasemap2': null
@@ -17,13 +27,13 @@ angular.module("RIF")
                             'diseasemap1': null,
                             'diseasemap2': null
                         },
-                        rr1ContainerH: 0,
-                        rr1ContainerV: 0,
-                        rr2ContainerH: 0,
-                        rr2ContainerV: 0,
-                        vSplit1: 25,
-                        hSplit1: 75,
-                        hSplit2: 75
+                        transparency: {
+                            'diseasemap1': 0.7,
+                            'diseasemap2': 0.7
+                        },
+                        vSplit1: 50,
+                        hSplit1: 60,
+                        hSplit2: 60
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {

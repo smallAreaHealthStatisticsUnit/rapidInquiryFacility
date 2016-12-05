@@ -5,8 +5,8 @@
 /* global L */
 
 angular.module("RIF")
-        .controller('ModalComparisonAreaCtrl', ['$scope', '$uibModal', 'CompAreaStateService', 'SubmissionStateService',
-            function ($scope, $uibModal, CompAreaStateService, SubmissionStateService) {
+        .controller('ModalComparisonAreaCtrl', ['$scope', '$uibModal', 'CompAreaStateService', 'SubmissionStateService', 'StudyAreaStateService',
+            function ($scope, $uibModal, CompAreaStateService, SubmissionStateService, StudyAreaStateService) {
                 $scope.tree = SubmissionStateService.getState().comparisonTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
@@ -24,8 +24,21 @@ angular.module("RIF")
                             SubmissionStateService.getState().comparisonTree = false;
                             $scope.tree = false;
                         } else {
-                            SubmissionStateService.getState().comparisonTree = true;
-                            $scope.tree = true;
+                            //check resolutions are compatible
+                            if (StudyAreaStateService.getState().studyResolution !== "") {
+                                if (input.geoLevels.indexOf(input.studyResolution) >
+                                        input.geoLevels.indexOf(StudyAreaStateService.getState().studyResolution)) {
+                                    $scope.showError("Comparision area study resolution cannot be higher than for the study area");
+                                    SubmissionStateService.getState().comparisonTree = false;
+                                    $scope.tree = false;
+                                } else {
+                                    SubmissionStateService.getState().comparisonTree = true;
+                                    $scope.tree = true;
+                                }
+                            } else {
+                                SubmissionStateService.getState().comparisonTree = true;
+                                $scope.tree = true;
+                            }
                         }
                         //Store what has been selected
                         CompAreaStateService.getState().polygonIDs = input.selectedPolygon;
@@ -34,17 +47,20 @@ angular.module("RIF")
                         CompAreaStateService.getState().zoomLevel = input.zoomLevel;
                         CompAreaStateService.getState().view = input.view;
                         CompAreaStateService.getState().geography = input.geography;
+                        CompAreaStateService.getState().transparency = input.transparency;
                     });
                 };
             }])
         .controller('ModalComparisonAreaInstanceCtrl', function ($scope, $uibModalInstance, CompAreaStateService) {
             $scope.input = {};
+            $scope.input.name = "ComparisionAreaMap";
             $scope.input.selectedPolygon = CompAreaStateService.getState().polygonIDs;
             $scope.input.selectAt = CompAreaStateService.getState().selectAt;
             $scope.input.studyResolution = CompAreaStateService.getState().studyResolution;
             $scope.input.zoomLevel = CompAreaStateService.getState().zoomLevel;
             $scope.input.view = CompAreaStateService.getState().view;
             $scope.input.geography = CompAreaStateService.getState().geography;
+            $scope.input.transparency = CompAreaStateService.getState().transparency;
             $scope.input.bands = [1];
 
             $scope.close = function () {

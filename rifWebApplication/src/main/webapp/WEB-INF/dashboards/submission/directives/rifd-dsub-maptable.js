@@ -12,9 +12,9 @@
 /* global L, d3, key, topojson */
 angular.module("RIF")
         .directive('submissionMapTable', ['leafletData', 'ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService',
-            'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService',
+            'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 'LeafletExportService',
             function (leafletData, ModalAreaService, LeafletDrawService, $uibModal, JSONService,
-                    GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService) {
+                    GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService, LeafletExportService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
@@ -22,6 +22,7 @@ angular.module("RIF")
 
                         //Called on DOM render completion to ensure basemap is rendered
                         $timeout(function () {
+                            $scope.renderMap("area");
                             $scope.renderMap("area");
                         });
                         //map max bounds from topojson layer
@@ -47,7 +48,7 @@ angular.module("RIF")
                         $scope.currentBand = 1; //from dropdown
 
                         //d3 polygon rendering, changed by slider
-                        $scope.transparency = 0.7;
+                        $scope.transparency = $scope.input.transparency;
 
                         getMyMap = function () {
                             user.getTiles(user.currentUser, thisGeography, $scope.input.selectAt, "area").then(function (topo) {
@@ -71,6 +72,7 @@ angular.module("RIF")
 
                                 //draw the map
                                 leafletData.getMap("area").then(function (map) {
+
                                     latlngList = [];
                                     centroidMarkers = new L.layerGroup();
 
@@ -79,6 +81,7 @@ angular.module("RIF")
                                     }
 
                                     $scope.topoLayer = new L.TopoJSON(topo.data, {
+                                        renderer: L.canvas(), //THIS WORKS WITH LEAFLET-IMAGE, default is renderer: L.svg(),                                     
                                         style: style,
                                         onEachFeature: function (feature, layer) {
                                             //define polygon centroids
@@ -136,8 +139,8 @@ angular.module("RIF")
                                             });
                                         }
                                     });
-                                    $scope.topoLayer.addTo(map);
                                     maxbounds = $scope.topoLayer.getBounds();
+                                    $scope.topoLayer.addTo(map);
                                     $scope.totalPolygonCount = latlngList.length;
 
                                     //Store the current zoom and view on map changes
@@ -147,7 +150,7 @@ angular.module("RIF")
                                     map.on('moveend', function (e) {
                                         $scope.input.view = map.getCenter();
                                     });
-                                    if ($scope.input.zoomLevel === -1) {
+                                    if ($scope.input.view[0] === 0) {
                                         map.fitBounds(maxbounds);
                                     }
                                 });
@@ -172,6 +175,9 @@ angular.module("RIF")
                             for (var i = 0; i < res.data[0].names.length; i++) {
                                 $scope.geoLevels.push(res.data[0].names[i]);
                             }
+                            //To check that comparison study area not greater than study area
+                            //Assumes that geoLevels is ordered array
+                            $scope.input.geoLevels = $scope.geoLevels;
                             //Only get default if pristine
                             if ($scope.input.selectAt === "" & $scope.input.studyResolution === "") {
                                 user.getDefaultGeoLevelSelectValue(user.currentUser, thisGeography).then(handleDefaultGeoLevels, handleGeographyError);
@@ -223,7 +229,7 @@ angular.module("RIF")
                         $scope.renderMap = function (mapID) {
                             leafletData.getMap(mapID).then(function (map) {
                                 map.removeLayer($scope.thisLayer);
-                                if (!LeafletBaseMapService.getNoBaseMap("area")) {                                    
+                                if (!LeafletBaseMapService.getNoBaseMap("area")) {
                                     $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
                                     map.addLayer($scope.thisLayer);
                                 }
@@ -235,7 +241,6 @@ angular.module("RIF")
                                 }, 50);
                             });
                         };
-                        $scope.renderMap("area");
 
                         //Add Leaflet.Draw capabilities
                         var drawnItems;
@@ -280,6 +285,7 @@ angular.module("RIF")
                             map.on('draw:drawstart', function (e) {
                                 $scope.input.bDrawing = true;
                             });
+                            L.control.scale({position: 'topleft', imperial: false}).addTo(map);
                         });
 
                         //selection event fired from service
@@ -362,6 +368,7 @@ angular.module("RIF")
                             });
                         }
                         $scope.changeOpacity = function () {
+                            $scope.input.transparency = $scope.transparency;
                             $scope.topoLayer.eachLayer(handleLayer);
                         };
 
@@ -421,6 +428,19 @@ angular.module("RIF")
                                 }
                             }
                             multiStart = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
+                        };
+
+                        //quick export leaflet panel
+                        $scope.saveLeaflet = function () {
+                            var thisLegend; //no legend
+                            var thisScale = document.getElementsByClassName("leaflet-control-scale leaflet-control")[0]; //the scale bar
+                            html2canvas(thisScale, {
+                                onrendered: function (canvas) {
+                                    $scope.renderMap("area");
+                                    //the map
+                                    LeafletExportService.getLeafletExport("area", $scope.input.name, thisLegend, canvas);
+                                }
+                            });
                         };
 
                         //Clear all selection from map and table

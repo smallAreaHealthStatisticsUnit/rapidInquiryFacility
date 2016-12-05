@@ -299,6 +299,9 @@ body {
 #showCentroids {
     background: transparent url("../images/flag_flyaway_blue.png") no-repeat;
 }
+#exportMap {
+    background: transparent url("../images/layer_save.png") no-repeat;
+}
 #lockExtentFalse {
     background: transparent url("../images/map_torn.png") no-repeat;
     float:right;
@@ -330,7 +333,7 @@ input[type="range"] {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     -webkit-appearance: none;
-    width: 170px;
+    width: 100px;
     height: 15px;
     margin: 12px 50px;
     /*border: 1px solid #3D59AB ;*/
@@ -1332,6 +1335,57 @@ textarea.description {
 }
 .mapListButton:hover{
     text-decoration: underline;
+}
+
+
+
+/*SUMMARY TABLE IN RUN STUDY*/
+.modelViewer table {
+    background-color: #E3E3E3;
+}
+.modelViewer header {
+    font-size: 22px;
+    text-transform: uppercase;
+    padding: 30px 10px 10px 0px;
+    font-weight: bold;
+}
+header:first-child {
+    padding-top: 10px;
+}
+.modelViewer {
+    margin: 2% 2% 0% 2%;
+    width: 95%;
+    position: relative;
+    height: 94%;
+    border: 1px solid #CAE1FF;
+    background: white;
+    overflow: auto;
+    padding: 4px 9px;
+}
+.modelViewer section {
+    padding-left: 10px;
+    margin: 1px;
+    font-size: 14px;
+    color: #A1A1A1;
+    display: inline;
+    text-transform: uppercase;
+}
+.modelViewer attr {
+    font-size: 14px;
+    color: #000;
+}
+.modelViewer td {
+    padding-left: 50px;
+    padding-right: 50px;
+    font-size: 10px;
+    color: #000;
+    white-space: nowrap;
+}
+.modelViewer th {
+    text-align: center;
+    font-size: 10px;
+    color: #000;
+    background-color: #A1A1A1;
 }
 
 

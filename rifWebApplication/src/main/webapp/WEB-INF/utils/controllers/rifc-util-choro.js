@@ -42,7 +42,7 @@ angular.module("RIF")
             $scope.input.method = ChoroService.getMaps($scope.map).method;
 
             //list of attributes
-            $scope.input.features = ChoroService.getFeaturesToMap();
+            $scope.input.features = ChoroService.getMaps($scope.map).features;
             if ($scope.input.features.indexOf(ChoroService.getMaps($scope.map).feature) === -1) {
                 $scope.input.selectedFeature = $scope.input.features[0];
             } else {

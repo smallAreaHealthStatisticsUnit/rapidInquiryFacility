@@ -21,13 +21,14 @@ angular.module("RIF")
                     //listener for global key event
                     var keyListener;
                     element.on('$destroy', function () {
+                        //remove zombies
                         if (!angular.isUndefined(keyListener)) {
                             keyListener();
                         }
                     });
 
                     scope.$watch(function () {
-                        if (angular.isUndefined(scope.data)) {
+                        if (angular.isUndefined(scope.data) || scope.data.length === 0) {
                             return;
                         } else {
                             scope.renderBase();
@@ -46,6 +47,12 @@ angular.module("RIF")
                         var dataLength = scope.data.length;
                         var labelField = scope.opt.label_field;
                         var panel = scope.opt.panel;
+
+                        //Plot confidence interal areas on the charts?
+                        var bConfidence = true;
+                        if (labelField === "posterior_probability") {
+                            bConfidence = false;
+                        }
 
                         var x = d3.scaleLinear().range([0, xWidth]);
                         var x2 = d3.scaleLinear().range([0, xWidth]);
@@ -81,16 +88,7 @@ angular.module("RIF")
                                 .translateExtent([[0, 0], [xWidth, xHeight]])
                                 .extent([[0, 0], [xWidth, xHeight]]);
 
-                        var area = d3.area()
-                                .x(function (d) {
-                                    return x(d[ orderField ]);
-                                })
-                                .y0(function (d) {
-                                    return y(d[ lowField ]);
-                                })
-                                .y1(function (d) {
-                                    return y(d[ highField ]);
-                                });
+
                         var line = d3.line()
                                 .x(function (d) {
                                     return x(d[ orderField ]);
@@ -105,23 +103,37 @@ angular.module("RIF")
                                 .y(function (d) {
                                     return y2(d[ lineField ]);
                                 });
-                        var area2 = d3.area()
-                                .x(function (d) {
-                                    return x2(d[ orderField ]);
-                                })
-                                .y0(function (d) {
-                                    return y2(d[ lowField ]);
-                                })
-                                .y1(function (d) {
-                                    return y2(d[ highField ]);
-                                });
-                        var refLine = d3.line()
-                                .x(function (d) {
-                                    return x(d[ orderField ]);
-                                })
-                                .y(function (d) {
-                                    return y(1);
-                                });
+
+                        if (bConfidence) {
+                            //draw confidence intervals
+                            var area = d3.area()
+                                    .x(function (d) {
+                                        return x(d[ orderField ]);
+                                    })
+                                    .y0(function (d) {
+                                        return y(d[ lowField ]);
+                                    })
+                                    .y1(function (d) {
+                                        return y(d[ highField ]);
+                                    });
+                            var area2 = d3.area()
+                                    .x(function (d) {
+                                        return x2(d[ orderField ]);
+                                    })
+                                    .y0(function (d) {
+                                        return y2(d[ lowField ]);
+                                    })
+                                    .y1(function (d) {
+                                        return y2(d[ highField ]);
+                                    });
+                            var refLine = d3.line()
+                                    .x(function (d) {
+                                        return x(d[ orderField ]);
+                                    })
+                                    .y(function (d) {
+                                        return y(1);
+                                    });
+                        }
 
                         d3.select("#rrchart" + panel).remove();
 
@@ -130,6 +142,12 @@ angular.module("RIF")
                                 .attr("width", scope.width)
                                 .attr("height", scope.height)
                                 .attr("id", "rrchart" + panel);
+
+                        svg.append("rect")
+                                .attr("class", "focusBackground")
+                                .attr("width", xWidth)
+                                .attr("height", xHeight)
+                                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
                         var focus = svg.append("g")
                                 .attr("class", "focus")
@@ -175,10 +193,34 @@ angular.module("RIF")
                                 .attr("class", "y axis")
                                 .call(yAxis);
 
-                        context.append("path")
-                                .datum(scope.data)
-                                .attr("class", "area")
-                                .attr("d", area2);
+                        if (bConfidence) {
+                            context.append("path")
+                                    .datum(scope.data)
+                                    .attr("class", "area")
+                                    .attr("d", area2);
+                        } else {
+                            //draw probability classes
+                            focus.append("rect")
+                                    .attr("class", "prob1")
+                                    .attr("x", x(0))
+                                    .attr("y", y(0.19))
+                                    .attr("width", xWidth)
+                                    .attr("height", y(0.81));
+
+                            focus.append("rect")
+                                    .attr("class", "prob2")
+                                    .attr("x", x(0))
+                                    .attr("y", y(0.81))
+                                    .attr("width", xWidth)
+                                    .attr("height", y(0.38));
+
+                            focus.append("rect")
+                                    .attr("class", "prob3")
+                                    .attr("x", x(0))
+                                    .attr("y", y(1))
+                                    .attr("width", xWidth)
+                                    .attr("height", y(0.81));
+                        }
 
                         context.append("path")
                                 .datum(scope.data)
@@ -253,13 +295,13 @@ angular.module("RIF")
                                 .attr("class", "bivariateHiglighter")
                                 .attr("id", "bivariateHiglighter2" + panel);
 
-                        focus.append("text")
-                                .attr("transform", "translate(70,20)")
+                        svg.append("text")
+                                .attr("transform", "translate(" + margin.left + "," + (margin.top - 5) + ")")
                                 .attr("id", "labelLineBivariate")
-                                .text(labelField);
+                                .text(labelField.replace("_", " "));
 
-                        var currentFigures = focus.append("text")
-                                .attr("transform", "translate(70,40)")
+                        var currentFigures = svg.append("text")
+                                .attr("transform", "translate(" + (margin.left + 150) + "," + (margin.top - 5) + ")")
                                 .attr("class", "currentFiguresLineBivariate")
                                 .attr("id", "currentFiguresLineBivariate" + panel)
                                 .text("");
@@ -269,7 +311,12 @@ angular.module("RIF")
                         if (selected !== null) {
                             focus.select("#bivariateHiglighter1" + panel).attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
                             context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
-                            focus.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) + " (" + selected.cl.toFixed(2) + " - " + selected.ul.toFixed(2) + ")");
+                            if (bConfidence) {
+                                svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) + " (" + selected.cl.toFixed(3) +
+                                        " - " + selected.ul.toFixed(3) + ")");
+                            } else {
+                                svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3));
+                            }
                         }
 
                         function brushed() {
@@ -297,7 +344,7 @@ angular.module("RIF")
                                 scope.$parent[scope.opt.this].zoomEnd = si[1];
                                 MappingStateService.getState().brushStartLoc[panel] = si[0];
                                 MappingStateService.getState().brushEndLoc[panel] = si[1];
-                                broadcastAreaUpdate({xpos: scope.clickXPos, map: true});
+                                broadcastAreaUpdate({xpos: scope.clickXPos, map: false});
                             }
                         }
 
@@ -313,35 +360,45 @@ angular.module("RIF")
                                         break;
                                     }
                                 }
-                                context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
-                                focus.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) + " (" + selected.cl.toFixed(2) + " - " + selected.ul.toFixed(2) + ")");
-                                //is highlighter out of x range?
-                                if (selected.x_order >= x.domain()[0] && selected.x_order <= x.domain()[1]) {
-                                    focus.select("#bivariateHiglighter1" + panel).attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
-                                    highlighter.style("stroke", "#EEA9B8");
-                                } else {
-                                    highlighter.style("stroke", "transparent");
+                                if (selected !== null) {
+                                    context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
+                                    if (bConfidence) {
+                                        svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) +
+                                                " (" + selected.cl.toFixed(3) + " - " + selected.ul.toFixed(3) + ")");
+                                    } else {
+                                        svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3));
+                                    }
+                                    //is highlighter out of x range?
+                                    if (selected.x_order >= x.domain()[0] && selected.x_order <= x.domain()[1]) {
+                                        focus.select("#bivariateHiglighter1" + panel).attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
+                                        highlighter.style("stroke", "#EEA9B8");
+                                    } else {
+                                        highlighter.style("stroke", "transparent");
+                                    }
                                 }
                             }
                         });
 
-                        //handle left, right key events
-                        if (angular.isUndefined(scope.$$listeners.rrKeyEvent)) {
-                            keyListener = scope.$on('rrKeyEvent', function (event, up, keyCode, container) {
-                                if (panel === container) {
-                                    if (keyCode === 37) { //left minus
-                                        if (!up & scope.clickXPos - 1 > 0) {
-                                            scope.clickXPos--;
+                        //handle left, right key events   
+                        if (angular.isUndefined(keyListener)) {
+                            if (angular.isUndefined(scope.$$listeners.rrKeyEvent)) {
+                                keyListener = scope.$on('rrKeyEvent', function (event, up, keyCode, container) {
+                                    if (panel === container) {
+                                        if (keyCode === 37) { //left minus
+                                            if (!up & scope.clickXPos - 1 > 0) {
+                                                scope.clickXPos--;
+                                            }
+                                        } else if (!up & keyCode === 39) { //right plus
+                                            if (scope.clickXPos + 1 <= dataLength) {
+                                                scope.clickXPos++;
+                                            }
                                         }
-                                    } else if (!up & keyCode === 39) { //right plus
-                                        if (scope.clickXPos + 1 <= dataLength) {
-                                            scope.clickXPos++;
+                                        if (keyCode === 37 || keyCode === 39) {
+                                            broadcastAreaUpdate({xpos: scope.clickXPos, map: up});
                                         }
                                     }
-                                    //only update map on keyup, always update dropLine
-                                    broadcastAreaUpdate({xpos: scope.clickXPos, map: up});
-                                }
-                            });
+                                });
+                            }
                         }
                     };
                 }

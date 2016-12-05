@@ -167,8 +167,8 @@
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
-    width: 800px;
-    height: 400px;
+    width: 1000px;
+    height: 700px;
 }
 
 .msettingsStats {
@@ -448,8 +448,8 @@
 }
 
 .status-Modal .modal-dialog{
-    width:800px;
-    height: 600px;
+    width:1000px;
+    height: 700px;
     position: absolute;
     top:0; bottom: 0; left: 0; right: 0;
     margin: auto;

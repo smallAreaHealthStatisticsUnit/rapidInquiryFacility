@@ -37,8 +37,9 @@
 <html lang="en" ng-app="RIF">
 
     <head>
+
         <link rel="shortcut icon" href="favicon.ico">
-        <title>The Rapid Inquiry Facility, RIF 4.0</title>
+        <title>Rapid Inquiry Facility, RIF 4.0</title>
 
         <!--<meta charset="utf-8">-->
         <meta http-equiv="X-UA-Compatible" content="IE=edge" >
@@ -58,14 +59,20 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" />
 
         <!-- Leaflet -->
-        <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
-        <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />  
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>  
         <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.css' rel='stylesheet' />
         <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.js'></script>
         <script src="libs/ui-leaflet.min.js"></script>
         <script src="libs/l.control.geosearch.js"></script>
         <script src="libs/l.geosearch.provider.openstreetmap.js"></script>
         <link rel="stylesheet" href="libs/l.geosearch.css" />
+        <script src="libs/leaflet-image.js"></script>
+
+        <!-- fill 
+        <script src="libs/leaflet.pattern-src.js"></script>
+        -->
+        <script src="libs/html2canvas.js"></script>
 
         <!--Simple Statistics-->
         <script src="libs/sstatistics.js"></script>
@@ -126,13 +133,14 @@
         <script src="utils/services/rifs-util-colorbrewer.js"></script>
         <script src="utils/services/rifs-util-leafletdraw.js"></script>
         <script src="utils/services/rifs-util-gis.js"></script>
+        <script src="utils/services/rifs-util-leafletsave.js"></script>
         <script src="utils/services/rifs-util-choro.js"></script>
         <script src="utils/services/rifs-util-JSON.js"></script>
         <script src="backend/services/rifs-back-requests.js"></script>
         <script src="utils/controllers/rifc-util-tabctrl.js"></script>
         <script src="backend/services/rifs-back-interceptor.js"></script>
         <script src="dashboards/mapping/controllers/rifc-dmap-main.js"></script>
-        <script src="dashboards/mapping/services/rifs-dmap-mapping2state.js"></script>
+        <script src="dashboards/mapping/services/rifs-dmap-mappingstate.js"></script>
         <script src="dashboards/mapping/directives/rifd-dmap-d3rrzoom.js"></script>
 
         <!-- RIF 4.0 CSS -->

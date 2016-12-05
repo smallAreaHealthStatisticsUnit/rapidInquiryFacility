@@ -24,7 +24,7 @@ angular.module("RIF")
                         keyboard: false
                     });
                     modalInstance.result.then(function () {
-                        $scope.showWarning("a warning message");
+                        $scope.showSuccess("File saved");
                     });
                 };
             }])

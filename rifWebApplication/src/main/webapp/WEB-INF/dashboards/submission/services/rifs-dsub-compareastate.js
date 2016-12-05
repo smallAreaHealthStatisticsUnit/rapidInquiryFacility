@@ -11,6 +11,7 @@ angular.module("RIF")
                         studyResolution: "",
                         zoomLevel: -1,
                         view: [0, 0],
+                        transparency: 0.7,
                         geography: ""
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
