@@ -94,21 +94,6 @@
     color: #333333;
     opacity: 0.8;
 }
-.band7 .ui-grid-cell-contents {
-    background-color: #a65628;
-    color: white;
-    opacity: 0.8;
-}
-.band8 .ui-grid-cell-contents {
-    background-color: #f781bf;
-    color: white;
-    opacity: 0.8;
-}
-.band9 .ui-grid-cell-contents {
-    background-color: #999999;
-    color: white;
-    opacity: 0.8;
-}
 
 .ui-grid-row:nth-child(odd):hover .ui-grid-cell,
 .ui-grid-row:nth-child(even):hover .ui-grid-cell {
@@ -121,6 +106,42 @@
 }
 .viewerSelected .ui-grid-cell-contents {
     background-color: #4daf4a;
+    color: white;
+    opacity: 0.8;
+}
+
+.ui-grid-menu-button {
+  height: 57px;
+  width: 17px;
+}
+
+.ui-grid-column-menu-button{
+  display: none;
+}
+
+/*STATUS REPORT COLOURS*/
+.statusC .ui-grid-cell-contents {
+    background-color: green;
+    color: white;
+    opacity: 0.8;
+}
+.statusV .ui-grid-cell-contents {
+    background-color: green;
+    color: white;
+    opacity: 0.8;
+}
+.statusE .ui-grid-cell-contents {
+    background-color: green;
+    color: white;
+    opacity: 0.8;
+}
+.statusR .ui-grid-cell-contents {
+    background-color: green;
+    color: white;
+    opacity: 0.8;
+}
+.statusU .ui-grid-cell-contents {
+    background-color: green;
     color: white;
     opacity: 0.8;
 }

@@ -241,13 +241,16 @@ public final class MSSQLQueryUtility {
 		final AbstractSQLQueryFormatter queryFormatter) 
 		throws SQLException {
 		
+		//holdability set at connection level, not statement level
 			PreparedStatement statement
 				= connection.prepareStatement(
 					queryFormatter.generateQuery(),
 					ResultSet.TYPE_FORWARD_ONLY,
-					ResultSet.CONCUR_READ_ONLY,
-					ResultSet.CLOSE_CURSORS_AT_COMMIT);
-					
+					ResultSet.CONCUR_READ_ONLY);
+			if (connection.getHoldability() != ResultSet.CLOSE_CURSORS_AT_COMMIT) {
+					connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			}					
+	
 			return statement;	
 	}
 
@@ -256,13 +259,16 @@ public final class MSSQLQueryUtility {
 		final String query) 
 		throws SQLException {
 		
+		//holdability set at connection level, not statement level
 		PreparedStatement statement
 			= connection.prepareStatement(
 				query,
 				ResultSet.TYPE_FORWARD_ONLY,
-				ResultSet.CONCUR_READ_ONLY,
-				ResultSet.CLOSE_CURSORS_AT_COMMIT);
-					
+				ResultSet.CONCUR_READ_ONLY);
+		if (connection.getHoldability() != ResultSet.CLOSE_CURSORS_AT_COMMIT) {
+				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+		}					
+		
 		return statement;
 	
 	}

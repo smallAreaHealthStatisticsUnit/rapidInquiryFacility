@@ -1,12 +1,27 @@
 /* global L, key, topojson, d3, ss, values */
+/*
+ * PP 1 value
+ * SSMR with U95, L95
+ * Smooth RR is EB (no CI) - hide
+ * RRisk lower95, upper95
+ * SMR + CI
+ * Hide PP U95-L95
+ * Hide 3x residual columns
+ * 
+ */
 
 
 //TODO:
 // how do we know that the geography is SAHSU? from the study ID?
 
 angular.module("RIF")
-        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService',
-            function ($scope, user, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService) {
+        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService', 'LeafletExportService',
+            function ($scope, user, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService, LeafletExportService) {
+
+                //ui-grid data
+                $scope.tableData = {
+                    "viewermap": []
+                };
 
                 //data for top-left histogram panel
                 $scope.histoData = [];
@@ -50,11 +65,6 @@ angular.module("RIF")
                     if (beforeContainer.id === "hSplit2") {
                         ViewerStateService.getState().hSplit2 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                     }
-
-                    if (beforeContainer.id === "hSplit3") {
-                        //       $scope.pyramidCurrentHeight = beforeContainer.size;
-                    }
-
                     //Rescale leaflet container        
                     leafletData.getMap("viewermap").then(function (map) {
                         setTimeout(function () {
@@ -64,37 +74,42 @@ angular.module("RIF")
                 });
 
                 //Drop-downs
-                $scope.studyIDs = [1];
-                $scope.studyID = $scope.studyIDs[0];
-                $scope.years = [1990, 1991, 1992, 1993];
-                $scope.year = $scope.years[0];
+                $scope.studyIDs = [1, 214, 205];
+                $scope.studyID = 1;
+                $scope.years = [1990, 1991, 1992, 1993, 1994, 1995];
+                $scope.year = 1995;
                 $scope.sexes = ["Male", "Female", "Both"];
-                $scope.sex = $scope.sexes[0];
+                $scope.sexString = "Male";
+                var sex = $scope.sexes.indexOf($scope.sexString) + 1;
 
-                //Once drop-downs filled then render initial state
-
-                /*
-                 $scope.attributes = ["lower95", "upper95"];
-                 $scope.attribute;
-                 user.getSmoothedResultAttributes(user.currentUser, $scope.studyID).then(function (res) {
-                 $scope.attributes = res.data;
-                 $scope.attribute = $scope.attributes[0];
-                 }, handleAttributeError);
-                 function handleAttributeError(e) {
-                 console.log("attribute error");
-                 }
-                 */
-
-                //TODO: Will be called from options dropdowns
                 //draw relevant geography for this study
-                //  $scope.renderGeography = function () {
-                user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "viewer").then(handleTopoJSON, handleTopoJSON);
-                //   };
-                //  $scope.renderGeography();
+                $scope.renderGeography = function () {
+                    //user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "viewer").then(handleTopoJSON, handleTopoJSONError);
+                    user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "viewer").then(handleTopoJSON, handleTopoJSONError);
+                };
+
+                //Study ID drop-down chnaged
+                $scope.studyChanged = function () {
+                    //TODO: 
+                    //get possible years
+                    //get possible sexes   
+                    //get current geography
+                };
+
+                //Study year or sex changed
+                $scope.studyOptionsChanged = function () {
+                    //if geography changed then $scope.renderGeography();
+                    //else call getAttributeTable()
+                };
+
+
+                //initial state
+                $scope.renderGeography();
+
 
                 //leaflet render
-                $scope.transparency = 0.7;
-                $scope.selectedPolygon = [];
+                $scope.transparency = ViewerStateService.getState().transparency;
+                $scope.selectedPolygon = ViewerStateService.getState().selected;
                 var maxbounds;
                 var thisMap = [];
                 $scope.domain = [];
@@ -112,7 +127,7 @@ angular.module("RIF")
                             map.addLayer($scope.thisLayer);
                         }
                         //restore setView
-                        if (maxbounds && ViewerStateService.getState().zoomLevel === -1) {
+                        if (!angular.isUndefined(maxbounds) && ViewerStateService.getState().view[0] === 0) {
                             map.fitBounds(maxbounds);
                         } else {
                             map.setView(ViewerStateService.getState().view, ViewerStateService.getState().zoomLevel);
@@ -123,7 +138,7 @@ angular.module("RIF")
                         }, 50);
                     });
                 };
-                $scope.renderMap("viewermap");
+                //       $scope.renderMap("viewermap");
 
                 $timeout(function () {
                     leafletData.getMap("viewermap").then(function (map) {
@@ -136,8 +151,27 @@ angular.module("RIF")
                         new L.Control.GeoSearch({
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
+                        L.control.scale({position: 'topleft', imperial: false}).addTo(map);
                     });
                 });
+
+                //quick export leaflet panel
+                $scope.saveLeaflet = function () {
+                    var thisLegend = document.getElementsByClassName("info legend leaflet-control")[0]; //the legend
+                    var thisScale = document.getElementsByClassName("leaflet-control-scale leaflet-control")[0]; //the scale bar
+                    html2canvas(thisLegend, {
+                        onrendered: function (canvas) {
+                            var thisScaleCanvas;
+                            html2canvas(thisScale, {
+                                onrendered: function (canvas1) {
+                                    thisScaleCanvas = canvas1;
+                                    $scope.renderMap("viewermap");
+                                    LeafletExportService.getLeafletExport("viewermap", "resultsViewerMap", canvas, thisScaleCanvas);
+                                }
+                            });
+                        }
+                    });
+                };
 
                 //Clear all selection from map and table
                 $scope.clear = function () {
@@ -149,15 +183,14 @@ angular.module("RIF")
                     leafletData.getMap("viewermap").then(function (map) {
                         map.fitBounds(maxbounds);
                     });
-                };
-
-                //export results
-                $scope.exportTableToCSV = function () {
-                    console.log("export to csv");
+                    //TODO: zoom to results extent
                 };
 
                 //UI-Grid setup options
                 $scope.viewerTableOptions = {
+                    enableGridMenu: true,
+                    gridMenuShowHideColumns: false,
+                    exporterMenuPdf: false,
                     enableFiltering: true,
                     enableRowSelection: true,
                     enableColumnResizing: true,
@@ -178,18 +211,6 @@ angular.module("RIF")
                             '<div ng-click="grid.appScope.rowClick(row)">' +
                             '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>' +
                             '</div>';
-                }
-
-                //Render map functions
-                function style(feature) {
-                    return {
-                        fillColor: ChoroService.getRenderFeature(thisMap.scale, attr, false),
-                        weight: 1,
-                        opacity: 1,
-                        color: 'gray',
-                        dashArray: '3',
-                        fillOpacity: $scope.transparency
-                    };
                 }
 
                 function handleLayer(layer) {
@@ -214,6 +235,7 @@ angular.module("RIF")
                 }
 
                 $scope.changeOpacity = function () {
+                    ViewerStateService.getState().transparency = $scope.transparency;
                     $scope.topoLayer.eachLayer(handleLayer);
                 };
 
@@ -234,13 +256,18 @@ angular.module("RIF")
                                 break;
                             }
                         }
-                        if (ChoroService.getMaps(0).feature !== "") {
-                            this._div.innerHTML = '<h4>ID: ' + poly + '</br>' + ChoroService.getMaps(0).feature.toUpperCase() + ": " + Number(thisAttr).toFixed(3) + '</h4>';
+                        if (ChoroService.getMaps(0).feature !== "" && !angular.isUndefined(thisAttr)) {
+                            this._div.innerHTML = '<h4>ID: ' + poly + '</br>' + ChoroService.getMaps(0).feature.toUpperCase().replace("_", " ") + ": " + Number(thisAttr).toFixed(3) + '</h4>';
                         } else {
                             this._div.innerHTML = '<h4>ID: ' + poly + '</h4>';
                         }
+                    } else {
+                        this._div.innerHTML = '';
                     }
                 };
+                leafletData.getMap("viewermap").then(function (map) {
+                    infoBox.addTo(map);
+                });
 
                 //information from choropleth modal to colour map                             
                 $scope.refresh = function () {
@@ -283,7 +310,16 @@ angular.module("RIF")
                 function handleTopoJSON(res) {
                     leafletData.getMap("viewermap").then(function (map) {
                         $scope.topoLayer = new L.TopoJSON(res.data, {
-                            style: style,
+                            renderer: L.canvas(),
+                            style: function (feature) {
+                                return {
+                                    fillColor: ChoroService.getRenderFeature(thisMap.scale, attr, false),
+                                    weight: 1,
+                                    opacity: 1,
+                                    color: 'gray',
+                                    fillOpacity: $scope.transparency
+                                };
+                            },
                             onEachFeature: function (feature, layer) {
                                 layer.on('mouseover', function (e) {
                                     this.setStyle({
@@ -293,7 +329,6 @@ angular.module("RIF")
                                             return($scope.transparency - 0.3 > 0 ? $scope.transparency - 0.3 : 0.1);
                                         }()
                                     });
-                                    infoBox.addTo(map);
                                     infoBox.update(layer.feature.properties.area_id);
                                 });
                                 layer.on('click', function (e) {
@@ -312,7 +347,7 @@ angular.module("RIF")
                                 });
                                 layer.on('mouseout', function (e) {
                                     $scope.topoLayer.eachLayer(handleLayer);
-                                    map.removeControl(infoBox);
+                                    infoBox.update(false);
                                 });
                             }
                         });
@@ -326,52 +361,61 @@ angular.module("RIF")
                     });
                 }
 
-                $scope.tableData = {
-                    "viewermap": []
-                };
+                function handleTopoJSONError() {
+                    $scope.showError("Something went wrong when getting the geography");
+                }
 
                 $scope.getAttributeTable = function () {
+
                     //All results in table
-                    user.getSmoothedResults(user.currentUser, 1, 1, 1990)
+                    user.getSmoothedResults(user.currentUser, $scope.studyID, sex, $scope.year)
                             .then(handleSmoothedResults, attributeError);
 
                     //Population pyramid data
-                    user.getAllPopulationPyramidData(user.currentUser, 1, 1990)
+                    user.getAllPopulationPyramidData(user.currentUser, $scope.studyID, $scope.year)
                             .then(handlePopulation, attributeError);
+
+                    /*
+                     //All results in table
+                     user.getSmoothedResults(user.currentUser, 1, 1, 1990)
+                     .then(handleSmoothedResults, attributeError);
+                     
+                     //Population pyramid data
+                     user.getAllPopulationPyramidData(user.currentUser, 1, 1990)
+                     .then(handlePopulation, attributeError);
+                     */
 
                     function handleSmoothedResults(res) {
                         //fill results table
                         var colDef = [];
                         var attrs = [];
+
                         for (var i = 0; i < res.data.smoothed_results.length; i++) {
                             res.data.smoothed_results[i]._selected = 0;
                             $scope.tableData.viewermap.push(res.data.smoothed_results[i]);
                         }
+                        //supress some pre-selected columns (see the service)
                         for (var i in res.data.smoothed_results[0]) {
-                            var testCast = Number(res.data.smoothed_results[0][i]);
-                            if (angular.isNumber(testCast) & isFinite(testCast)) {
-                                if (i !== "_selected") {
-                                    attrs.push(i); //Numeric attributes possible to map 
+                            if (ViewerStateService.getValidColumn(i)) {
+                                if (i !== "area_id" && i !== "_selected") {
+                                    attrs.push(i);
                                 }
+                                colDef.push({
+                                    name: i,
+                                    width: 100
+                                });
                             }
-                            colDef.push({
-                                name: i,
-                                width: 100
-                            });
                         }
 
-                        if (ChoroService.getMaps(0).feature === "") {
-                            ChoroService.getMaps(0).feature = attrs[0];
-                            $scope.distHistoName = attrs[0];
-                        } else {
-                            $scope.distHistoName = ChoroService.getMaps(0).feature;
-                        }
-
-                        ChoroService.setFeaturesToMap(attrs);
+                        $scope.distHistoName = ChoroService.getMaps(0).feature;
+                        ChoroService.getMaps(0).features = attrs;
                         $scope.viewerTableOptions.columnDefs = colDef;
                         $scope.viewerTableOptions.data = $scope.tableData.viewermap;
 
+                        //refresh view
+                        $scope.refresh();
                         getHistoData();
+                        updateTable();
                     }
 
                     function handlePopulation(res) {
@@ -383,11 +427,23 @@ angular.module("RIF")
                     }
                 };
 
+                function updateTable() {
+                    $scope.gridApi.selection.clearSelectedRows();
+                    for (var i = 0; i < $scope.viewerTableOptions.data.length; i++) {
+                        $scope.viewerTableOptions.data[i]._selected = 0;
+                        for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+                            if ($scope.viewerTableOptions.data[i].area_id === $scope.selectedPolygon[j]) {
+                                $scope.viewerTableOptions.data[i]._selected = 1;
+                            }
+                        }
+                    }
+                }
+
                 //Multiple select with shift
-                //detect shift key (16) down
                 var bShift = false;
                 var multiStart = -1;
                 var multiStop = -1;
+                //detect shift key (16) down
                 $scope.keyDown = function ($event) {
                     if (!bShift && $event.keyCode === 16) {
                         bShift = true;
@@ -435,14 +491,15 @@ angular.module("RIF")
                         }
                     }
                     multiStart = matchRowNumber(myVisibleRows, row.entity.area_id);
-                };
-                function matchRowNumber(visible, id) {
-                    for (var i = 0; i < visible.length; i++) {
-                        if (visible[i].entity.area_id === id) {
-                            return(i);
+
+                    function matchRowNumber(visible, id) {
+                        for (var i = 0; i < visible.length; i++) {
+                            if (visible[i].entity.area_id === id) {
+                                return(i);
+                            }
                         }
                     }
-                }
+                };
 
                 //Watch selectedPolygon array for any changes
                 $scope.$watchCollection('selectedPolygon', function (newNames, oldNames) {
@@ -450,15 +507,8 @@ angular.module("RIF")
                         return;
                     }
                     //Update table selection
-                    $scope.gridApi.selection.clearSelectedRows();
-                    for (var i = 0; i < $scope.viewerTableOptions.data.length; i++) {
-                        $scope.viewerTableOptions.data[i]._selected = 0;
-                        for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                            if ($scope.viewerTableOptions.data[i].area_id === $scope.selectedPolygon[j]) {
-                                $scope.viewerTableOptions.data[i]._selected = 1;
-                            }
-                        }
-                    }
+                    updateTable();
+                    ViewerStateService.getState().selected = newNames;
                     //Update map selection
                     $scope.topoLayer.eachLayer(handleLayer);
                 });

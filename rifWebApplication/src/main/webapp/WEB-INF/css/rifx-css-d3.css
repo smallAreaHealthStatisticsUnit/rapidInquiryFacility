@@ -121,77 +121,13 @@ RIF D3
 }
 .currentFiguresLineBivariate {
     font-weight: 600;
-    font-size:16px;
+    font-size:11px;
     fill: #777777;
 }
 #labelLineBivariate {
     text-transform:uppercase;
     font-size: 11px;   
     fill: #777777;
-}
-
-/*MULTIPLE AREA CHARTS*/
-
-#labelbowTie {
-    text-transform:uppercase;
-    font-size: 11px;   
-    fill: #777777;
-}
-.areaValue {
-    font-size: 11px;
-    fill: rgb(145, 145, 145);
-}
-svg.areaCharts {
-    font-size: 10px;
-    text-transform:uppercase
-}
-svg.areaCharts path {
-    opacity:0.8;
-    /*stroke: #696969;*/
-}
-svg.areaCharts rect.overlayHover {
-    fill: none;
-    pointer-events: all;
-}
-svg.areaCharts .lineHover{
-    stroke:#7D9EC0;
-    pointer-events: none;
-}
-
-svg.areaCharts g.context {
-    display:none
-}
-
-svg.areaCharts .yClickWrapper{
-    fill:transparent;
-}
-
-div.mapInfoBottom a.brushButton{
-    float: right;
-    font-size: 14px;
-    margin-right: 20px;
-    text-transform:uppercase
-}
-
-div.mapInfoBottom a.brushButton:hover{
-    cursor:pointer
-}
-
-text.country-title {
-    font-size: 10px;
-    fill: rgb(145, 145, 145);
-    font-weight:600;
-}
-
-text.brushbutton{
-    fill: rgb(145, 145, 145);
-}
-
-text.instructions {
-    font-size: 16px;
-}
-svg.areaCharts .axis .tick {
-    fill: #919191;
 }
 
 g.context g.brush rect.background {
@@ -287,11 +223,29 @@ svg.areaCharts g.context rect.background{
 
 /*MAPPING 2*/
 .zoom {
-  cursor: crosshair;
-  fill: none;
-  pointer-events: all;
+    cursor: crosshair;
+    fill: none;
+    pointer-events: all;
+}
+
+.focusBackground {
+    fill: none;
+    opacity: 0.4;
 }
 
 .mask {
     z-index: 999999999999;
+}
+
+.prob1 {
+    fill: #91cf60;
+    opacity: 0.2;
+}
+.prob2 {
+    fill: none;
+    opacity: 0.2;
+}
+.prob3 {
+    fill: #fc8d59;
+    opacity: 0.2;
 }

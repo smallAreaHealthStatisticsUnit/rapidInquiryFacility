@@ -141,10 +141,10 @@ angular.module("RIF")
                     return $http.get(rifAPI1 + 'getAvailableCalculationMethods?userID=' + username, config);
                 };
                 //status
-                self.getStudySummaries = function (username) {
-                    //http://localhost:8080/rifServices/studySubmission/getStudySummaries?userID=kgarwood
-                    //[{"studyID":"4","studyName":"05: Attempting to change the state (<var>=><var>) of a ...
-                    return $http.get(rifAPI1 + 'getStudySummaries?userID=' + username, config);
+                self.getCurrentStatusAllStudies = function (username) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getCurrentStatusAllStudies?userID=kgarwood              
+                    //{"smoothed_results_header":["study_id","study_name","study_description","study_state","message","date"]
+                    return $http.get(rifAPI2 + 'getCurrentStatusAllStudies?userID=' + username, config);
                 };
                 //results for viewer
                 self.getSmoothedResults = function (username, studyID, sex, year) {

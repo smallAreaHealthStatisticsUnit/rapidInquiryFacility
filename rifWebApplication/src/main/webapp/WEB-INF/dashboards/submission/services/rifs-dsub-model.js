@@ -198,13 +198,14 @@ angular.module("RIF")
                     }
 
                     //Output
-                    project += '<header>Output Options</header>';
-                    var outputOptions = "";
-                    for (var i = 0; i < modelJSON.rif_job_submission.rif_output_options.rif_output_option.length; i++) {
-                        outputOptions += modelJSON.rif_job_submission.rif_output_options.rif_output_option[i] + "; ";
-                    }
-                    outputOptions = outputOptions.substring(0, outputOptions.length - 2);
-                    project += '<section>Options:</section>' + _getAttr(outputOptions);
+                    //DEPRECIATED?
+//                    project += '<header>Output Options</header>';
+//                    var outputOptions = "";
+//                    for (var i = 0; i < modelJSON.rif_job_submission.rif_output_options.rif_output_option.length; i++) {
+//                        outputOptions += modelJSON.rif_job_submission.rif_output_options.rif_output_option[i] + "; ";
+//                    }
+//                    outputOptions = outputOptions.substring(0, outputOptions.length - 2);
+//                    project += '<section>Options:</section>' + _getAttr(outputOptions);
                     return project;
                 }
             };

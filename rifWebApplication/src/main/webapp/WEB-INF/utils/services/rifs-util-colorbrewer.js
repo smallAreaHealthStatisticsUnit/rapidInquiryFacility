@@ -11,6 +11,7 @@ angular.module("RIF")
                             1: ["#9BCD9B"]
                         },
                         YlGn: {
+                            2: ["#f7fcb9", "#31a354"],
                             3: ["#f7fcb9", "#addd8e", "#31a354"],
                             4: ["#ffffcc", "#c2e699", "#78c679", "#238443"],
                             5: ["#ffffcc", "#c2e699", "#78c679", "#31a354", "#006837"],
@@ -20,6 +21,7 @@ angular.module("RIF")
                             9: ["#ffffe5", "#f7fcb9", "#d9f0a3", "#addd8e", "#78c679", "#41ab5d", "#238443", "#006837", "#004529"]
                         },
                         YlGnBu: {
+                            2: ["#edf8b1", "#2c7fb8"],
                             3: ["#edf8b1", "#7fcdbb", "#2c7fb8"],
                             4: ["#ffffcc", "#a1dab4", "#41b6c4", "#225ea8"],
                             5: ["#ffffcc", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494"],
@@ -29,6 +31,7 @@ angular.module("RIF")
                             9: ["#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"]
                         },
                         GnBu: {
+                            2: ["#e0f3db", "#43a2ca"],
                             3: ["#e0f3db", "#a8ddb5", "#43a2ca"],
                             4: ["#f0f9e8", "#bae4bc", "#7bccc4", "#2b8cbe"],
                             5: ["#f0f9e8", "#bae4bc", "#7bccc4", "#43a2ca", "#0868ac"],
@@ -38,6 +41,7 @@ angular.module("RIF")
                             9: ["#f7fcf0", "#e0f3db", "#ccebc5", "#a8ddb5", "#7bccc4", "#4eb3d3", "#2b8cbe", "#0868ac", "#084081"]
                         },
                         BuGn: {
+                            2: ["#e5f5f9", "#2ca25f"],
                             3: ["#e5f5f9", "#99d8c9", "#2ca25f"],
                             4: ["#edf8fb", "#b2e2e2", "#66c2a4", "#238b45"],
                             5: ["#edf8fb", "#b2e2e2", "#66c2a4", "#2ca25f", "#006d2c"],
@@ -47,6 +51,7 @@ angular.module("RIF")
                             9: ["#f7fcfd", "#e5f5f9", "#ccece6", "#99d8c9", "#66c2a4", "#41ae76", "#238b45", "#006d2c", "#00441b"]
                         },
                         PuBuGn: {
+                            2: ["#ece2f0", "#1c9099"],
                             3: ["#ece2f0", "#a6bddb", "#1c9099"],
                             4: ["#f6eff7", "#bdc9e1", "#67a9cf", "#02818a"],
                             5: ["#f6eff7", "#bdc9e1", "#67a9cf", "#1c9099", "#016c59"],
@@ -56,6 +61,7 @@ angular.module("RIF")
                             9: ["#fff7fb", "#ece2f0", "#d0d1e6", "#a6bddb", "#67a9cf", "#3690c0", "#02818a", "#016c59", "#014636"]
                         },
                         PuBu: {
+                            2: ["#ece7f2", "#2b8cbe"],
                             3: ["#ece7f2", "#a6bddb", "#2b8cbe"],
                             4: ["#f1eef6", "#bdc9e1", "#74a9cf", "#0570b0"],
                             5: ["#f1eef6", "#bdc9e1", "#74a9cf", "#2b8cbe", "#045a8d"],
@@ -65,6 +71,7 @@ angular.module("RIF")
                             9: ["#fff7fb", "#ece7f2", "#d0d1e6", "#a6bddb", "#74a9cf", "#3690c0", "#0570b0", "#045a8d", "#023858"]
                         },
                         BuPu: {
+                            2: ["#e0ecf4", "#8856a7"],
                             3: ["#e0ecf4", "#9ebcda", "#8856a7"],
                             4: ["#edf8fb", "#b3cde3", "#8c96c6", "#88419d"],
                             5: ["#edf8fb", "#b3cde3", "#8c96c6", "#8856a7", "#810f7c"],
@@ -74,6 +81,7 @@ angular.module("RIF")
                             9: ["#f7fcfd", "#e0ecf4", "#bfd3e6", "#9ebcda", "#8c96c6", "#8c6bb1", "#88419d", "#810f7c", "#4d004b"]
                         },
                         RdPu: {
+                            2: ["#fde0dd", "#c51b8a"],
                             3: ["#fde0dd", "#fa9fb5", "#c51b8a"],
                             4: ["#feebe2", "#fbb4b9", "#f768a1", "#ae017e"],
                             5: ["#feebe2", "#fbb4b9", "#f768a1", "#c51b8a", "#7a0177"],
@@ -83,6 +91,7 @@ angular.module("RIF")
                             9: ["#fff7f3", "#fde0dd", "#fcc5c0", "#fa9fb5", "#f768a1", "#dd3497", "#ae017e", "#7a0177", "#49006a"]
                         },
                         PuRd: {
+                            2: ["#e7e1ef", "#dd1c77"],
                             3: ["#e7e1ef", "#c994c7", "#dd1c77"],
                             4: ["#f1eef6", "#d7b5d8", "#df65b0", "#ce1256"],
                             5: ["#f1eef6", "#d7b5d8", "#df65b0", "#dd1c77", "#980043"],
@@ -92,6 +101,7 @@ angular.module("RIF")
                             9: ["#f7f4f9", "#e7e1ef", "#d4b9da", "#c994c7", "#df65b0", "#e7298a", "#ce1256", "#980043", "#67001f"]
                         },
                         OrRd: {
+                            2: ["#fee8c8", "#e34a33"],
                             3: ["#fee8c8", "#fdbb84", "#e34a33"],
                             4: ["#fef0d9", "#fdcc8a", "#fc8d59", "#d7301f"],
                             5: ["#fef0d9", "#fdcc8a", "#fc8d59", "#e34a33", "#b30000"],
@@ -101,6 +111,7 @@ angular.module("RIF")
                             9: ["#fff7ec", "#fee8c8", "#fdd49e", "#fdbb84", "#fc8d59", "#ef6548", "#d7301f", "#b30000", "#7f0000"]
                         },
                         YlOrRd: {
+                            2: ["#ffeda0", "#f03b20"],
                             3: ["#ffeda0", "#feb24c", "#f03b20"],
                             4: ["#ffffb2", "#fecc5c", "#fd8d3c", "#e31a1c"],
                             5: ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"],
@@ -110,6 +121,7 @@ angular.module("RIF")
                             9: ["#ffffcc", "#ffeda0", "#fed976", "#feb24c", "#fd8d3c", "#fc4e2a", "#e31a1c", "#bd0026", "#800026"]
                         },
                         YlOrBr: {
+                            2: ["#fff7bc", "#d95f0e"],
                             3: ["#fff7bc", "#fec44f", "#d95f0e"],
                             4: ["#ffffd4", "#fed98e", "#fe9929", "#cc4c02"],
                             5: ["#ffffd4", "#fed98e", "#fe9929", "#d95f0e", "#993404"],
@@ -119,6 +131,7 @@ angular.module("RIF")
                             9: ["#ffffe5", "#fff7bc", "#fee391", "#fec44f", "#fe9929", "#ec7014", "#cc4c02", "#993404", "#662506"]
                         },
                         Purples: {
+                            2: ["#efedf5", "#756bb1"],
                             3: ["#efedf5", "#bcbddc", "#756bb1"],
                             4: ["#f2f0f7", "#cbc9e2", "#9e9ac8", "#6a51a3"],
                             5: ["#f2f0f7", "#cbc9e2", "#9e9ac8", "#756bb1", "#54278f"],
@@ -128,6 +141,7 @@ angular.module("RIF")
                             9: ["#fcfbfd", "#efedf5", "#dadaeb", "#bcbddc", "#9e9ac8", "#807dba", "#6a51a3", "#54278f", "#3f007d"]
                         },
                         Blues: {
+                            2: ["#deebf7", "#3182bd"],
                             3: ["#deebf7", "#9ecae1", "#3182bd"],
                             4: ["#eff3ff", "#bdd7e7", "#6baed6", "#2171b5"],
                             5: ["#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c"],
@@ -137,6 +151,7 @@ angular.module("RIF")
                             9: ["#f7fbff", "#deebf7", "#c6dbef", "#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#08519c", "#08306b"]
                         },
                         Greens: {
+                            2: ["#e5f5e0", "#31a354"],
                             3: ["#e5f5e0", "#a1d99b", "#31a354"],
                             4: ["#edf8e9", "#bae4b3", "#74c476", "#238b45"],
                             5: ["#edf8e9", "#bae4b3", "#74c476", "#31a354", "#006d2c"],
@@ -146,6 +161,7 @@ angular.module("RIF")
                             9: ["#f7fcf5", "#e5f5e0", "#c7e9c0", "#a1d99b", "#74c476", "#41ab5d", "#238b45", "#006d2c", "#00441b"]
                         },
                         Oranges: {
+                            2: ["#fee6ce", "#e6550d"],
                             3: ["#fee6ce", "#fdae6b", "#e6550d"],
                             4: ["#feedde", "#fdbe85", "#fd8d3c", "#d94701"],
                             5: ["#feedde", "#fdbe85", "#fd8d3c", "#e6550d", "#a63603"],
@@ -155,6 +171,7 @@ angular.module("RIF")
                             9: ["#fff5eb", "#fee6ce", "#fdd0a2", "#fdae6b", "#fd8d3c", "#f16913", "#d94801", "#a63603", "#7f2704"]
                         },
                         Reds: {
+                            2: ["#fee0d2", "#fc9272", "#de2d26"],
                             3: ["#fee0d2", "#fc9272", "#de2d26"],
                             4: ["#fee5d9", "#fcae91", "#fb6a4a", "#cb181d"],
                             5: ["#fee5d9", "#fcae91", "#fb6a4a", "#de2d26", "#a50f15"],
@@ -164,6 +181,7 @@ angular.module("RIF")
                             9: ["#fff5f0", "#fee0d2", "#fcbba1", "#fc9272", "#fb6a4a", "#ef3b2c", "#cb181d", "#a50f15", "#67000d"]
                         },
                         Greys: {
+                            2: ["#f0f0f0", "#636363"],
                             3: ["#f0f0f0", "#bdbdbd", "#636363"],
                             4: ["#f7f7f7", "#cccccc", "#969696", "#525252"],
                             5: ["#f7f7f7", "#cccccc", "#969696", "#636363", "#252525"],
@@ -173,6 +191,7 @@ angular.module("RIF")
                             9: ["#ffffff", "#f0f0f0", "#d9d9d9", "#bdbdbd", "#969696", "#737373", "#525252", "#252525", "#000000"]
                         },
                         PuOr: {
+                            2: ["#f1a340", "#998ec3"],
                             3: ["#f1a340", "#f7f7f7", "#998ec3"],
                             4: ["#e66101", "#fdb863", "#b2abd2", "#5e3c99"],
                             5: ["#e66101", "#fdb863", "#f7f7f7", "#b2abd2", "#5e3c99"],
@@ -184,6 +203,7 @@ angular.module("RIF")
                             11: ["#7f3b08", "#b35806", "#e08214", "#fdb863", "#fee0b6", "#f7f7f7", "#d8daeb", "#b2abd2", "#8073ac", "#542788", "#2d004b"]
                         },
                         BrBG: {
+                            2: ["#d8b365", "#5ab4ac"],
                             3: ["#d8b365", "#f5f5f5", "#5ab4ac"],
                             4: ["#a6611a", "#dfc27d", "#80cdc1", "#018571"],
                             5: ["#a6611a", "#dfc27d", "#f5f5f5", "#80cdc1", "#018571"],
@@ -195,6 +215,7 @@ angular.module("RIF")
                             11: ["#543005", "#8c510a", "#bf812d", "#dfc27d", "#f6e8c3", "#f5f5f5", "#c7eae5", "#80cdc1", "#35978f", "#01665e", "#003c30"]
                         },
                         PRGn: {
+                            2: ["#af8dc3", "#7fbf7b"],
                             3: ["#af8dc3", "#f7f7f7", "#7fbf7b"],
                             4: ["#7b3294", "#c2a5cf", "#a6dba0", "#008837"],
                             5: ["#7b3294", "#c2a5cf", "#f7f7f7", "#a6dba0", "#008837"],
@@ -206,6 +227,7 @@ angular.module("RIF")
                             11: ["#40004b", "#762a83", "#9970ab", "#c2a5cf", "#e7d4e8", "#f7f7f7", "#d9f0d3", "#a6dba0", "#5aae61", "#1b7837", "#00441b"]
                         },
                         PiYG: {
+                            2: ["#e9a3c9", "#a1d76a"],
                             3: ["#e9a3c9", "#f7f7f7", "#a1d76a"],
                             4: ["#d01c8b", "#f1b6da", "#b8e186", "#4dac26"],
                             5: ["#d01c8b", "#f1b6da", "#f7f7f7", "#b8e186", "#4dac26"],
@@ -217,6 +239,7 @@ angular.module("RIF")
                             11: ["#8e0152", "#c51b7d", "#de77ae", "#f1b6da", "#fde0ef", "#f7f7f7", "#e6f5d0", "#b8e186", "#7fbc41", "#4d9221", "#276419"]
                         },
                         RdBu: {
+                            2: ["#ef8a62", "#67a9cf"],
                             3: ["#ef8a62", "#f7f7f7", "#67a9cf"],
                             4: ["#ca0020", "#f4a582", "#92c5de", "#0571b0"],
                             5: ["#ca0020", "#f4a582", "#f7f7f7", "#92c5de", "#0571b0"],
@@ -228,6 +251,7 @@ angular.module("RIF")
                             11: ["#67001f", "#b2182b", "#d6604d", "#f4a582", "#fddbc7", "#f7f7f7", "#d1e5f0", "#92c5de", "#4393c3", "#2166ac", "#053061"]
                         },
                         RdGy: {
+                            2: ["#ef8a62", "#999999"],
                             3: ["#ef8a62", "#ffffff", "#999999"],
                             4: ["#ca0020", "#f4a582", "#bababa", "#404040"],
                             5: ["#ca0020", "#f4a582", "#ffffff", "#bababa", "#404040"],
@@ -239,6 +263,7 @@ angular.module("RIF")
                             11: ["#67001f", "#b2182b", "#d6604d", "#f4a582", "#fddbc7", "#ffffff", "#e0e0e0", "#bababa", "#878787", "#4d4d4d", "#1a1a1a"]
                         },
                         RdYlBu: {
+                            2: ["#fc8d59", "#91bfdb"],
                             3: ["#fc8d59", "#ffffbf", "#91bfdb"],
                             4: ["#d7191c", "#fdae61", "#abd9e9", "#2c7bb6"],
                             5: ["#d7191c", "#fdae61", "#ffffbf", "#abd9e9", "#2c7bb6"],
@@ -250,6 +275,7 @@ angular.module("RIF")
                             11: ["#a50026", "#d73027", "#f46d43", "#fdae61", "#fee090", "#ffffbf", "#e0f3f8", "#abd9e9", "#74add1", "#4575b4", "#313695"]
                         },
                         Spectral: {
+                            2: ["#fc8d59", "#99d594"],
                             3: ["#fc8d59", "#ffffbf", "#99d594"],
                             4: ["#d7191c", "#fdae61", "#abdda4", "#2b83ba"],
                             5: ["#d7191c", "#fdae61", "#ffffbf", "#abdda4", "#2b83ba"],
@@ -261,6 +287,7 @@ angular.module("RIF")
                             11: ["#9e0142", "#d53e4f", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#e6f598", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2"]
                         },
                         RdYlGn: {
+                            2: ["#fc8d59", "#91cf60"],
                             3: ["#fc8d59", "#ffffbf", "#91cf60"],
                             4: ["#d7191c", "#fdae61", "#a6d96a", "#1a9641"],
                             5: ["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"],
@@ -272,6 +299,7 @@ angular.module("RIF")
                             11: ["#a50026", "#d73027", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#d9ef8b", "#a6d96a", "#66bd63", "#1a9850", "#006837"]
                         },
                         Accent: {
+                            2: ["#7fc97f", "#fdc086"],
                             3: ["#7fc97f", "#beaed4", "#fdc086"],
                             4: ["#7fc97f", "#beaed4", "#fdc086", "#ffff99"],
                             5: ["#7fc97f", "#beaed4", "#fdc086", "#ffff99", "#386cb0"],
@@ -280,6 +308,7 @@ angular.module("RIF")
                             8: ["#7fc97f", "#beaed4", "#fdc086", "#ffff99", "#386cb0", "#f0027f", "#bf5b17", "#666666"]
                         },
                         Dark2: {
+                            2: ["#1b9e77", "#7570b3"],
                             3: ["#1b9e77", "#d95f02", "#7570b3"],
                             4: ["#1b9e77", "#d95f02", "#7570b3", "#e7298a"],
                             5: ["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e"],
@@ -288,6 +317,7 @@ angular.module("RIF")
                             8: ["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#666666"]
                         },
                         Paired: {
+                            2: ["#a6cee3", "#b2df8a"],
                             3: ["#a6cee3", "#1f78b4", "#b2df8a"],
                             4: ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c"],
                             5: ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99"],
@@ -300,6 +330,7 @@ angular.module("RIF")
                             12: ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"]
                         },
                         Pastel1: {
+                            2: ["#fbb4ae", "#ccebc5"],
                             3: ["#fbb4ae", "#b3cde3", "#ccebc5"],
                             4: ["#fbb4ae", "#b3cde3", "#ccebc5", "#decbe4"],
                             5: ["#fbb4ae", "#b3cde3", "#ccebc5", "#decbe4", "#fed9a6"],
@@ -309,6 +340,7 @@ angular.module("RIF")
                             9: ["#fbb4ae", "#b3cde3", "#ccebc5", "#decbe4", "#fed9a6", "#ffffcc", "#e5d8bd", "#fddaec", "#f2f2f2"]
                         },
                         Pastel2: {
+                            2: ["#b3e2cd", "#cbd5e8"],
                             3: ["#b3e2cd", "#fdcdac", "#cbd5e8"],
                             4: ["#b3e2cd", "#fdcdac", "#cbd5e8", "#f4cae4"],
                             5: ["#b3e2cd", "#fdcdac", "#cbd5e8", "#f4cae4", "#e6f5c9"],
@@ -317,6 +349,7 @@ angular.module("RIF")
                             8: ["#b3e2cd", "#fdcdac", "#cbd5e8", "#f4cae4", "#e6f5c9", "#fff2ae", "#f1e2cc", "#cccccc"]
                         },
                         Set1: {
+                            2: ["#e41a1c", "#4daf4a"],
                             3: ["#e41a1c", "#377eb8", "#4daf4a"],
                             4: ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3"],
                             5: ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"],
@@ -326,6 +359,7 @@ angular.module("RIF")
                             9: ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999"]
                         },
                         Set2: {
+                            2: ["#66c2a5", "#8da0cb"],
                             3: ["#66c2a5", "#fc8d62", "#8da0cb"],
                             4: ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3"],
                             5: ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854"],
@@ -334,6 +368,7 @@ angular.module("RIF")
                             8: ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"]
                         },
                         Set3: {
+                            2: ["#8dd3c7", "#bebada"],
                             3: ["#8dd3c7", "#ffffb3", "#bebada"],
                             4: ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072"],
                             5: ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3"],

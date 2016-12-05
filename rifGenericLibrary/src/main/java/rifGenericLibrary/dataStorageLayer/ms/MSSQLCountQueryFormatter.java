@@ -377,7 +377,7 @@ public final class MSSQLCountQueryFormatter
 			}
 		}
 		
-		addQueryPhrase(";");
+		//addQueryPhrase(";");
 				
 		return super.generateQuery();
 	}

@@ -3,16 +3,15 @@
 angular.module("RIF")
         .factory('ChoroService', ['ColorBrewerService',
             function (ColorBrewerService) {
-                var features = [];
-
                 var maps = [
                     {
                         //Viewer map: index 0
                         map: "viewermap",
+                        features: [],
                         brewerName: "LightGreen",
                         brewer: ["#9BCD9B"],
                         intervals: 1,
-                        feature: "",
+                        feature: "relative_risk",
                         invert: false,
                         method: "quantile",
                         renderer: []
@@ -20,6 +19,7 @@ angular.module("RIF")
                     {
                         //Disease left map: index 1
                         map: "diseasemap1",
+                        features: [],
                         brewerName: "LightGreen",
                         brewer: ["#9BCD9B"],
                         intervals: 1,
@@ -31,6 +31,7 @@ angular.module("RIF")
                     {
                         //Disease right map: index 2
                         map: "diseasemap2",
+                        features: [],
                         brewerName: "LightGreen",
                         brewer: ["#9BCD9B"],
                         intervals: 1,
@@ -41,31 +42,36 @@ angular.module("RIF")
                     }
                 ];
 
-                //used in viewer
+                //used in map table
                 function renderFeature(scale, attr, selected) {
+                    //returns fill colour
                     //selected
-                    if (selected) {
+                    if (selected && !angular.isUndefined(attr)) {
                         return "green";
                     }
                     //choropleth
-                    if (scale && attr !== "") {
+                    if (scale && !angular.isUndefined(attr)) {
                         return scale(attr);
+                    } else if (angular.isUndefined(attr)) {
+                        return "transparent";
                     } else {
                         return "#9BCD9B";
                     }
                 }
 
+                //used in disease mapping
                 function renderFeature2(feature, value, scale, attr, selection) {
+                    //returns [fill colour, border colour, border width]
                     //selected (a single polygon)
                     if (selection === feature.properties.area_id) {
                         if (scale && attr !== "") {
                             return [scale(value), "green", 5];
                         } else {
-                            return ["#9BCD9B", "green", 5];
+                            return ["lightgreen", "green", 5];
                         }
                     }
                     //choropleth
-                    if (scale && attr !== "") {
+                    if (scale && !angular.isUndefined(attr)) {
                         return [scale(value), "gray", 1];
                     } else {
                         return ["#9BCD9B", "gray", 1];
@@ -128,17 +134,29 @@ angular.module("RIF")
                             var below_mean = mean - sd / 2;
                             var above_mean = mean + sd / 2;
                             var breaks = [];
-                            for (i = 0; below_mean > mn && i < 2; i++) {
+                            for (var i = 0; below_mean > mn && i < 2; i++) {
                                 breaks.push(below_mean);
                                 below_mean = below_mean - sd;
                             }
-                            for (i = 0; above_mean < mx && i < 2; i++) {
+                            for (var i = 0; above_mean < mx && i < 2; i++) {
                                 breaks.push(above_mean);
                                 above_mean = above_mean + sd;
                             }
                             breaks.sort(d3.ascending);
                             //dynamic scale range as number of classes unknown
                             range = ColorBrewerService.getColorbrewer(maps[map].brewerName, breaks.length + 1);
+                            scale = d3.scaleThreshold()
+                                    .domain(breaks)
+                                    .range(range);
+                            break;
+                        case "equalSize":
+                            //Equal number of points per group
+                            var n = Math.floor(domain.length / range.length);
+                            domain.sort(d3.ascending);
+                            var breaks = [];
+                            for (var i = 1; i <= range.length - 1; i++) {
+                                breaks.push(domain[i * n]);
+                            }
                             scale = d3.scaleThreshold()
                                     .domain(breaks)
                                     .range(range);
@@ -158,7 +176,7 @@ angular.module("RIF")
                 function makeLegend(thisMap, attr) {
                     return (function () {
                         var div = L.DomUtil.create('div', 'info legend');
-                        div.innerHTML += '<h4>' + attr.toUpperCase() + '</h4>';
+                        div.innerHTML += '<h4>' + attr.toUpperCase().replace("_", " ") + '</h4>';
                         if (!angular.isUndefined(thisMap.range)) {
                             for (var i = 0; i < thisMap.range.length; i++) {
                                 div.innerHTML += '<i style="background:' + thisMap.range[i] + '"></i>';
@@ -175,12 +193,6 @@ angular.module("RIF")
                     });
                 }
                 return {
-                    setFeaturesToMap: function (attrs) {
-                        features = attrs;
-                    },
-                    getFeaturesToMap: function () {
-                        return features;
-                    },
                     getMaps: function (i) {
                         return maps[i];
                     },

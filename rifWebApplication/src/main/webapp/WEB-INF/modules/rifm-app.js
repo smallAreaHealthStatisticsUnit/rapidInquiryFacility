@@ -52,6 +52,7 @@ angular.module("RIF",
             "ui.grid.edit",
             "ui.grid.autoResize",
             "ui.grid.moveColumns",
+            "ui.grid.exporter",
             "ngAnimate",
             "ngSanitize",
             "ngNotificationsBar",
@@ -60,7 +61,7 @@ angular.module("RIF",
         )
         .config(['$stateProvider', '$urlRouterProvider',
             function ($stateProvider, $urlRouterProvider) {
-
+                
                 //Extend Leaflet to handle topojson
                 L.TopoJSON = L.GeoJSON.extend({
                     addData: function (jsonData) {

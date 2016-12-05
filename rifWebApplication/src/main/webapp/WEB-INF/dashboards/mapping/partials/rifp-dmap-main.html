@@ -5,7 +5,7 @@
     </div>
     <div class='nav'>
         <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
-        <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
+        <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Results Viewer </a>
         <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
     </div>
 </div>
@@ -48,9 +48,9 @@
 </div>
 
 <div ui-layout="{flow : 'column'}">
-    <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="50%"> 
+    <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
         <div ui-layout="{flow : 'row'}">
-            <div ui-layout-container class="leaflet-box" id="hSplit1" max-size="100%" size="60%">
+            <div ui-layout-container class="leaflet-box" id="hSplit1" max-size="100%" size="{{hSplit1}}%">
                 <div class="submenuMapping" >
                     <ul class="mapBoxOpts">
                         <li><a ng-controller="ChoroplethModalCtrl" ng-click="open(1)" id="choroplethBtn" title="Choropleth map"></a></li>
@@ -58,7 +58,8 @@
                         <li><a id="clearSelection" title="Clear selection" ng-click="clear('diseasemap1')"></a></li>
                         <li><a id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent('diseasemap1')"></a></li>
                         <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected('diseasemap1')"></a></li>
-                        <li><a id="copySymbology" title="Copy symbology" ng-click="copySymbology()"></a></li>                       
+                        <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet('diseasemap1')"></a></li>    
+                        <li><a id="copySymbology" title="Copy symbology" ng-click="copySymbology()"></a></li>                          
                         <li>
                             <input type="range" ng-model ="transparency['diseasemap1']" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity('diseasemap1')"/>
                         </li>                         
@@ -86,14 +87,15 @@
     </div>
     <div ui-layout-container ui-layout-loaded> 
         <div ui-layout="{flow : 'row'}">
-            <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="60%">            
+            <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit2}}%">            
                 <div class="submenuMapping" >
                     <ul class="mapBoxOpts">
                         <li><a ng-controller="ChoroplethModalCtrl" ng-click="open(2)" id="choroplethBtn" title="Choropleth map"></a></li>
                         <li><a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap2')"  id="baseMapBtn" title="Base map"></a></li>	
-                        <li><a  id="clearSelection" title="Clear selection" ng-click="clear('diseasemap2')"></a></li>
-                        <li><a  id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent('diseasemap2')"></a></li>
-                        <li><a  id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected('diseasemap2')"></a></li> 
+                        <li><a id="clearSelection" title="Clear selection" ng-click="clear('diseasemap2')"></a></li>
+                        <li><a id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent('diseasemap2')"></a></li>
+                        <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected('diseasemap2')"></a></li> 
+                        <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet('diseasemap2')"></a></li>  
                         <li>
                             <input type="range" ng-model ="transparency['diseasemap2']" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity('diseasemap2')"/>
                         </li>
