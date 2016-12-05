@@ -1643,6 +1643,8 @@ This error in actually originating from the error handler function
 				}
 				response.file_list[ngeolevels[i].i].geolevel_id = ngeolevels[i].geolevel_id;
 				
+				xmlConfig.geolevels=ngeolevels; // Putative geolevel setup 
+				
 				xmlConfig.shapeFileList.shapeFiles[i] = {
 					primaryKey:						"id",
 					areas: 							ngeolevels[i].total_areas,
