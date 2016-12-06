@@ -1,30 +1,31 @@
-# CDC RIF 4.0 Progress Report October 2016
+# CDC RIF 4.0 Progress Report November 2016
 
 ## Highlight
 
-Results Viewer now operational; needs a lot of testing.
+* Results viewer improving through testing; R integration fully complete.
 
-Kevin was off sick for effectively three weeks in August. To balance the workload work on SQL Server study 
-creation and data extraction has now been moved to Peter towards the end of October. 
-
-## October Summary
+## November Summary
 
 | Week | Week Starting     | PH                                                                       | KG                                                                                                | DM                                                                                             | BP                                                                  | MD                                             | Milestone                                                 | Notes |
 |------|-------------------|--------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|------------------------------------------------|-----------------------------------------------------------|-------|
-| 40   | 03 October 2016   |                                                                          | Calling R; end to end; submission feature                                                         | Allocated to JG                                                                                |                                                                     |                                                |                                                           |       |
-| 41   | 10 October 2016   | Not allocated (for overrun - 9 days): now map tile generation            |                                                                                                   | 6.3 Middleware services - other (10 days) [Potentially Kevin as well]: data viewer get methods |                                                                     |                                                |                                                           |       |
-| 42   | 17 October 2016   |                                                                          |                                                                                                   |                                                                                                |                                                                     |                                                |                                                           |       |
-| 43   | 24 October 2016   |                                                                          |                                                                                                   |                                                                                                |                                                                     |                                                |                                                           |       |
-| 44   | 31 October 2016   |                                                                          | ALPSAC  
-
-## Planned work for November through February
-
-| Week | Week Starting     | PH                                                                       | KG                                                                                                | DM                                                                                             | BP                                                                  | MD                                             | Milestone                                                 | Notes |
-|------|-------------------|--------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|------------------------------------------------|-----------------------------------------------------------|-------|                                                                                      | Allocated to JG                                                                                |                                                                     |                                                |                                                           |       |
 | 45   | 07 November 2016  |                                                                          | Java handover, fix submission feature                                                             | Disease Mapping                                                                                |                                                                     |                                                |                                                           |       |
 | 46   | 14 November 2016  |                                                                          | Holiday                                                                                           |                                                                                                |                                                                     | Java handover                                  |                                                           |       |
 | 47   | 21 November 2016  |                                                                          | Java handover, fix submission failures                                                            |                                                                                                |                                                                     | SQL Server middleware                          | Results Viewer                                            |       |
 | 48   | 28 November 2016  | SQL Server tile integration                                              | 7. Data Loader (35 days) - start liable for 2/3 weeks delays caused by more work on GET methods   | Allocated to JG                                                                                |                                                                     |                                                |                                                           |       |
+
+## Planned work for December through February
+
+### December Plans
+
+Kevin:  Postgres data loader as per document with agreed restrictions (I would like a revised copy so I can safely remove all the junk). Assist Margaret and David as required. In the new year I will aim to be around for 3-4 days to help you get to SQL Server (i.e. don’t panic). I could do with copies of your database function code so I can think about and pre port them beforehand. I appreciate that how much you have to help Margaret and David impacts on the work you can do but they must complete both tasks;
+Brandon: Regression test posterior probability fix with David;
+Margaret: Achieve middleware database logon on SQL server using front end; understand cause of first non-logon related error. If possible get further, but I  have to be realistic here;
+David: Implement three remaining middleware methods (year periods, study geography – data from RIF40_STUDIES);
+Peter: database fixes (known bugs, sahsuland_empty), database preparation work for geospatial data loader. Integration scripts for SQL server (and possibly Postgres);
+
+
+| Week | Week Starting     | PH                                                                       | KG                                                                                                | DM                                                                                             | BP                                                                  | MD                                             | Milestone                                                 | Notes |
+|------|-------------------|--------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|------------------------------------------------|-----------------------------------------------------------|-------|
 | 49   | 05 December 2016  |                                                                          |                                                                                                   | Reamaining data display methods, Java                                                          |                                                                     |                                                |                                                           |       |
 | 50   | 12 December 2016  |                                                                          |                                                                                                   |                                                                                                |                                                                     |                                                |                                                           |       |
 | 51   | 19 December 2016  | Holiday                                                                  | Holiday                                                                                           | Holiday                                                                                        | Holiday                                                             | Holiday                                        |                                                           |       |
@@ -39,23 +40,15 @@ creation and data extraction has now been moved to Peter towards the end of Octo
  
 ## Data Loader - Kevin
 
-No work (as planned)
+*
 
 ## Front end (webPlatform)
 
 ### Disease Mapping, Data viewer - David
 
-- All d3 charts added and are linked/interactive
-- All data comes from database - no hardtyping
-- Improved dialogue for disease parameters
-- UI is end-to-end study run ready
-
 ## Middleware
 
 ### Web services (rifServices) - Kevin/David
-
-Kevin currently in the process of training up some of the other 
-developers so they may make more changes to the middleware code.
 
 ### Run study batch - Kevin
 
@@ -68,8 +61,7 @@ the process of running the study.
 
 #### R - Brandon
 
-- Change to the way the comparison area is used. Previously several comparison areas were identified based on the first part 
-  of the study area ids. Now only one comparison is area is used..
+- Added support for Posterior probbility
 
 ### Ontology support - Kevin
  
@@ -77,63 +69,12 @@ the process of running the study.
 
 ### Node geospatial services (tile-maker) - Peter
 
-* Prototyped tile manufacture using PostGIS:
-  * New efficient tile intersect algorithm saving up to 94% of tiles:
-  
-| zoomlevel | xmin | ymin | xmax | ymax | possible tiles | tiles | % saving |
-|-----------|------|------|------|------|----------------|-------|----------|
-|         0 |    0 |    0 |    0 |    0 |              1 |     1 |     0.00 |
-|         1 |    0 |    0 |    1 |    1 |              4 |     3 |    25.00 |
-|         2 |    0 |    0 |    3 |    2 |             12 |     5 |    58.33 |
-|         3 |    0 |    1 |    7 |    4 |             32 |    10 |    68.75 |
-|         4 |    0 |    3 |   15 |    8 |             96 |    22 |    77.08 |
-|         5 |    0 |    6 |   31 |   17 |            384 |    46 |    88.02 |
-|         6 |    0 |   13 |   63 |   29 |           1088 |   112 |    89.71 |
-|         7 |    0 |   27 |  127 |   59 |           4224 |   338 |    92.00 |
-|         8 |    0 |   54 |  255 |  118 |          16640 |  1139 |    93.16 |
-|         9 |    1 |  108 |  511 |  237 |          66430 |  4093 |    93.84 |
-|        10 |    2 |  217 | 1023 |  474 |         263676 | 15308 |    94.19 |
-|        11 |    4 |  435 | 2046 |  948 |        1050102 | 58968 |    94.38 |
-		
-  * Re-wrote functions to be simpler (for SQL Server porting) and provide running updates;
-  * Tile intersection (i.e. adding data, cropping to tile boundary) is time expensive but acceptable to US county level takes 80 minutes in PostGIS!
-  
-| Zoomlevel | PostGIS  | SQL Server |
-| ----------| ---------|------------|
-|         7 | 75 secs  | 393 secs   |
-|         8 | 166 secs | 27 mins    |
-|         9 | 8 mins   |            |
-|        10 | 24 mins  |            |  
-|        11 | 80 mins  |            |
-
-  * SQL Server is 10x slower at intersection and requires more tuning;
-  * Architecture will be as in the prototype: a SQL script and a Node.js tile creation script which will:
-    * Convert geoJSON/(Well known text for SQL Server) to topoJSON;
-    * PNG tile dump to files (Postgres only - no raster support in SQL Server);	
-  * Image of US county tiles at zoomlevel 11 in Florida: 
-    ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/Florida4.png "US county tiles at zoomlevel 11 in Florida")
-	This clearly exhibits all the alogorithmic optimisations:
-	* No tiles where the entire tile contains no part of the US landmass;
-	* No tiles where the area boundary is outside of the tile
-* Add max zoomlevel to UI to speed up demos and testing;  
-* SQL Server tile maker:
-  * Ported tiles table and view, geometry table, tile limits table:
-  * Partition geometry tables (Postgres only)
-* SQL Server tile maker: tile intersects complete. Still unhappy about the performance; also second part of insert 
-  (Insert tile area id intersections missing where not in the previous layer; 
-  this is usually due to it being simplified out of existance) is not working.
-
-#### November:
-
-* SQL Server tile intersection tuning
-* Map tile generator; RIF integration preparation
 
 ## Databases
 
 ### Postgres, integration - Peter
 
-* Added intersections and tiles to Postgres scripts, major tune. Will replace the pre-existing 
-  functionality in November after SQL Server.
+* 
 
 ### Microsoft SQL server - Margaret/Peter
 
