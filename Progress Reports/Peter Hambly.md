@@ -742,6 +742,11 @@ RangeError: Invalid string length
 * Add support for description on DBF fields to XML config
 * Added logging to tile maker
 
+#### 5th to 9th December
+
+* Project meetings
+* Empty database for dataloader (sahsuland_empty)
+
 #### Current TODO list (December):
 
 * Bugs, general RIF database Todo

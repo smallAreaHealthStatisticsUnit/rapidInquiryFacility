@@ -17,12 +17,19 @@
 
 ### December Plans
 
-Kevin:  Postgres data loader as per document with agreed restrictions (I would like a revised copy so I can safely remove all the junk). Assist Margaret and David as required. In the new year I will aim to be around for 3-4 days to help you get to SQL Server (i.e. don’t panic). I could do with copies of your database function code so I can think about and pre port them beforehand. I appreciate that how much you have to help Margaret and David impacts on the work you can do but they must complete both tasks;
-Brandon: Regression test posterior probability fix with David;
-Margaret: Achieve middleware database logon on SQL server using front end; understand cause of first non-logon related error. If possible get further, but I  have to be realistic here;
-David: Implement three remaining middleware methods (year periods, study geography – data from RIF40_STUDIES);
-Peter: database fixes (known bugs, sahsuland_empty), database preparation work for geospatial data loader. Integration scripts for SQL server (and possibly Postgres);
+Work plan until January 6th agreed 5/12/2016:
 
+a)	Kevin:  Postgres data loader as per document with agreed restrictions. Assist Margaret and David as required. In the new year I will aim to be around for 3-4 days to help you get to SQL Server (i.e. don’t panic). I could do with copies of your database function code so I can think about and pre port them beforehand. I appreciate that help for Margaret and David will impacts on the work you can do but both David and Margret  must complete both tasks so they are not running over into January;
+b)	Brandon: Regression test posterior probability fix with David;
+c)	Margaret: Achieve middleware database logon on SQL server using front end; understand cause of first non-logon related error. If possible get further, but I  have to be realistic here;
+d)	David: Implement three remaining middleware methods (year periods, study geography – data from RIF40_STUDIES);
+e)	Peter: database fixes (known bugs, sahsuland_empty), database preparation work for geospatial data loader. Geospatial integration scripts for SQL server (and possibly Postgres);
+
+Expected highlights this month:
+
+•	Implement three remaining middleware methods 
+•	Achieve middleware database logon on SQL server using front end
+•	Geospatial integration scripts for SQL server
 
 | Week | Week Starting     | PH                                                                       | KG                                                                                                | DM                                                                                             | BP                                                                  | MD                                             | Milestone                                                 | Notes |
 |------|-------------------|--------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|------------------------------------------------|-----------------------------------------------------------|-------|
@@ -46,6 +53,12 @@ Peter: database fixes (known bugs, sahsuland_empty), database preparation work f
 
 ### Disease Mapping, Data viewer - David
 
+- New disease mapper with two 'Atlas' style maps
+- Update from leaflet 0.7 to 1.0
+- Export map to png feature
+- Export as CSV option in results viewer
+- Started looking at RIF Java classes
+
 ## Middleware
 
 ### Web services (rifServices) - Kevin/David
@@ -61,7 +74,7 @@ the process of running the study.
 
 #### R - Brandon
 
-- Added support for Posterior probbility
+* Added support for Posterior probbility
 
 ### Ontology support - Kevin
  
@@ -69,16 +82,52 @@ the process of running the study.
 
 ### Node geospatial services (tile-maker) - Peter
 
+* Fix for SQL Server QGIS (add geometry_columns table) as fix #8525 does not work (half works!) - add geometry_columns (PostGIS control table)
+* SQL Server map tiles mssing a few at all levels. Tiles are in the database and are valid, appears to be a bug with QGIS which is complaining of broken polygons:
+```Exception: IllegalArgumentException: Invalid number of points in LinearRing found 3 - must be 0 or >= 4;```
+  * Technically these are triangles, and will be small offshore islands that have been oversimplified (and almost certainly invisible at this scale);
+  * Highlights the problems of standards for GIS, QGIS uses the same library as Postgres/PostGIS (GeOS); SQL Server is more relaxed;
+  * Should convert to topoJSON fine;
+* Tile intersection (i.e. adding data, cropping to tile boundary) is time expensive but acceptable to US county level takes 90 minutes in PostGIS!
+  
+| Zoomlevel | PostGIS  | SQL Server |
+| ----------| ---------|------------|
+|         7 | 75 secs  | 393 secs   |
+|         8 | 166 secs | 27 mins    |
+|         9 | 8 mins   |            |
+|        10 | 24 mins  |            |  
+|        11 | 80 mins  |            |
+
+  * SQL Server requires more tuning! After a good tune:
+  
+| Zoomlevel | PostGIS  | SQL Server |
+| ----------| ---------|------------|
+|         7 | 75 secs  | 51 secs    |
+|         8 | 166 secs | 143 secs   |
+|         9 | 8 mins   | 8 mins     |
+|        10 | 24 mins  |            |  
+|        11 | 80 mins  |            |
+
+  * Postgres also aggregates GeoJSON into collections and still has the older NOT EXISTS code to eliminate tiles with no parent
+* Added Wellknown text output to tile intersects table for topoJSON conversion program
+* Map tile generator prototype; topoJSON tiles and SVG tile creation
+* Map tile generator: connect to SQL server
+* XML configuration file support
+* RIF team meeting, project planning, SQL server tile maker porting
+* SQL server tile maker bulk insert
+* Comiment geielvel data tables
+* Add support for description on DBF fields to XML config
+* Added logging to tile maker
 
 ## Databases
 
 ### Postgres, integration - Peter
 
-* 
+* Fixed extract bug
 
 ### Microsoft SQL server - Margaret/Peter
 
-* Tested the tile maker generated database script to create geolevel geometry, intersection and tiles tables.
+* 
 
 
 
