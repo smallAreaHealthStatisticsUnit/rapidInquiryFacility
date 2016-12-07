@@ -744,11 +744,19 @@ RangeError: Invalid string length
 
 #### 5th to 9th December
 
-* Project meetings
-* Empty database for dataloader (sahsuland_empty)
+* Project meetings;
+* Empty database for dataloader (sahsuland_empty);
+* Data loading integration;
 
 #### Current TODO list (December):
 
+* Add remaining geography, geolevels fields
+* geoDataLoader.xml support in front end
+* Standard test configurations:
+  * SAHSULAND: relocated to Utah: reprojected to 1983 North American Projection (EPSG:4269)
+  * DOGGERLAND: relocated to 54°20'0"N 5°42'59"E on the Dogger Bank. This is the site of wreck of SMS Blucher. 
+    https://www.google.co.uk/maps/place/54%C2%B020'00.0%22N+5%C2%B042'59.0%22E/@54.3332107,0.9702213,5.92z/data=!4m5!3m4!1s0x0:0x0!8m2!3d54.3333333!4d5.7163889 
+  * USA: USA to county level
 * Bugs, general RIF database Todo
 * Map tile generator; RIF integration preparation
   * Add GID, shapefile fields to lookup tables;
