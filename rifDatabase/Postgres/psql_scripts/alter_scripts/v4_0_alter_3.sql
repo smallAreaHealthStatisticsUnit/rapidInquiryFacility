@@ -297,8 +297,8 @@ SELECT object_name, sub_object_name, object_type, sub_type, comment
   FROM range_partition_test_old
 ORDER BY 1, 2, 3;
 
-\dS+ sahsuland_cancer
-\dS+ p_sahsuland_cancer_1989
+--\dS+ sahsuland_cancer
+--\dS+ p_sahsuland_cancer_1989
 --
 -- Then compare parent with children (i.e. check all partitions are set up correctly)
 --

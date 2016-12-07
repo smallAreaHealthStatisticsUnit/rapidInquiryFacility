@@ -271,6 +271,7 @@ all: $(PLR_DIRS)
 patch:
 	$(MAKE) -C alter_scripts clean all
 	$(MAKE) -C test_scripts clean all
+	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland_empty
 	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland
 	$(MAKE) v4_0_vacuum_analyse_dev
@@ -279,6 +280,7 @@ patch:
 repatch:
 	$(MAKE) -C alter_scripts all
 	$(MAKE) -C test_scripts all
+	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland_empty
 	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts all PGDATABASE=sahsuland
 	$(MAKE) v4_0_vacuum_analyse_dev
@@ -295,16 +297,23 @@ noop: $(PLR_DIRS)
 #-	
 #- sahsuland_dev_no_alter: Rebuild sahsuland_dev, test [State of SAHSULAND at port to SQL server], finally VACUUM ANALYSE
 sahsuland_dev_no_alter: clean v4_0_create_sahsuland.rpt 
-	$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
+	-$(MAKE) -C test_scripts all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) v4_0_vacuum_analyse_dev
 	
 #- sahsuland_dev: Rebuild sahsuland_dev, test, then patch dev only, retest, finally VACUUM ANALYZE
 #- Does not run all alter scripts in development
+#- Test can fail
 sahsuland_dev: clean $(PLR_DIRS) v4_0_create_sahsuland.rpt 
-	$(MAKE) -C test_scripts no_alter DEBUG_LEVEL=1 ECHO=all
+	-$(MAKE) -C test_scripts no_alter DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C alter_scripts clean all DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
+	-$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) v4_0_vacuum_analyse_dev
+	
+#- sahsuland_empty: Rebuild sahsuland_empty, test, then patch dev only
+#- Does not run all alter scripts in development
+#- Test can fail
+sahsuland_empty: clean $(PLR_DIRS) v4_0_create_sahsuland_empty.rpt 
+	$(MAKE) -C alter_scripts clean all DEBUG_LEVEL=1 ECHO=all
 	
 #- topojson_convert: GeoJSON to topoJSON converter
 topojson_convert:
@@ -361,7 +370,7 @@ verbose_test:
 clean:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C test_scripts clean
-	$(DELETE) db_setup.rpt db_create.rpt v4_0_create_sahsuland.rpt v4_0_vacuum_analyse.rpt ../install/sahsuland_dev.dump ../install/sahsuland.dump ../install/sahsuland.sql
+	$(DELETE) db_setup.rpt db_create.rpt v4_0_create_sahsuland.rpt v4_0_create_sahsuland_empty.rpt v4_0_vacuum_analyse.rpt ../install/sahsuland_dev.dump ../install/sahsuland.dump ../install/sahsuland.sql
 #- devclean: Remove logs so alter scripts in development can be r-run 
 #-           Not normally needed as they abort.
 devclean:
@@ -385,6 +394,7 @@ endif
 	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) -C ../Node install	
+	$(MAKE) sahsuland_empty PGDATABASE=sahsuland_empty
 	$(MAKE) sahsuland_dev PGDATABASE=sahsuland_dev
 	$(MAKE) sahsuland_dev_dump PGDATABASE=sahsuland_dev
 ifeq ($(PG_VERSION),PostgreSQL 9.4.1)

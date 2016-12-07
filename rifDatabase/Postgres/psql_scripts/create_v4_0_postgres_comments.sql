@@ -11,7 +11,7 @@
 -- GIT Header
 --
 -- $Format:Git ID: (%h) %ci$
--- $Id: 410a94cd12c3b1f770198c5481b060919794d1b3 $
+-- $Id$
 -- Version hash: $Format:%H$
 --
 -- Description:
@@ -70,14 +70,16 @@ END;
 $$;
 
 --
--- Check database is sahsuland_dev
+-- Check database is sahsuland_dev or sahsuland_empty
 --
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF current_database() = 'sahsuland_dev' THEN
 		RAISE INFO 'Database check: %', current_database();	
+	ELSIF current_database() = 'sahsuland_empty' THEN
+		RAISE INFO 'Database check: %', current_database();	
 	ELSE
-		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev', current_database();	
+		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev or sahsuland_empty', current_database();	
 	END IF;
 END;
 $$;
@@ -96,24 +98,17 @@ COMMENT ON TABLE "rif40_icd_o_3" IS 'International Classification of Disease for
 COMMENT ON TABLE "rif40_opcs4" IS 'Office of Population Censuses and Surveys [OPCS] Classification of Interventions and Procedures';
 COMMENT ON TABLE "rif40_outcome_groups" IS 'Collection of Health outcomes into logical groups. E.g. Single variable ICD9 and 10';
 COMMENT ON TABLE "rif40_outcomes" IS 'Health Outcomes. This table give the locations of the various Health Outcomes lookup tables, e.g RIF40_ICD10. Outcomes typically supported are ICD 9, 10, OPCS4 operation codes, ICD-0 Histology';
-COMMENT ON TABLE pop.rif40_population_europe IS '1991 European standarised populations (to be updated)';
-COMMENT ON TABLE pop.rif40_population_us IS '2000 United States of America standarised populations (to be updated)';
-COMMENT ON TABLE pop.rif40_population_world IS '1991 World standarised populations (to be updated)';
 COMMENT ON TABLE "rif40_predefined_groups" IS 'Predefined Health Outcomes';
 COMMENT ON TABLE "rif40_reference_tables" IS 'List of references tables without constraints';
 COMMENT ON TABLE "rif40_study_shares" IS 'Users granted access by a RIF_MANAGER to study data';
 COMMENT ON TABLE "rif40_table_outcomes" IS 'Intersection of health outcomes in logical groups and Health tables. Mutliple groups supported per table';
 COMMENT ON TABLE "rif40_tables" IS 'RIF numerator and denominator tables';
 COMMENT ON TABLE "rif40_version" IS 'RIF version';
-COMMENT ON TABLE rif_data.sahsuland_cancer IS 'SAHSU land Population';
-COMMENT ON TABLE rif_data.sahsuland_covariates_level3 IS 'SAHSU land covariates - level3';
-COMMENT ON TABLE rif_data.sahsuland_covariates_level4 IS 'SAHSU land covariates - level4';
 COMMENT ON TABLE gis.sahsuland_geography IS 'SAHSU example database - geography';
 COMMENT ON TABLE gis.sahsuland_level1 IS 'level1';
 COMMENT ON TABLE gis.sahsuland_level2 IS 'level2';
 COMMENT ON TABLE gis.sahsuland_level3 IS 'level3';
 COMMENT ON TABLE gis.sahsuland_level4 IS 'level4';
-COMMENT ON TABLE pop.sahsuland_pop IS 'SAHSU land Population';
 COMMENT ON TABLE "t_rif40_comparison_areas" IS 'Links comparison areas and bands for a given study.';
 COMMENT ON TABLE "t_rif40_contextual_stats" IS 'Contextual stats for results map. Also includes values used in internal calculations.';
 COMMENT ON TABLE "t_rif40_fdw_tables" IS 'RIF numerator tables which are Foreign data wrappers in Postgres';
@@ -218,15 +213,6 @@ COMMENT ON COLUMN "rif40_outcomes"."previous_value_3char" IS 'Field name contain
 COMMENT ON COLUMN "rif40_outcomes"."previous_value_4char" IS 'Field name containing values for previous version 4 character code (may be NULL)';
 COMMENT ON COLUMN "rif40_outcomes"."previous_value_5char" IS 'Field name containing values for previous version 5 character code (may be NULL)';
 COMMENT ON COLUMN "rif40_outcomes"."previous_version" IS 'Previous version, e.g. 9';
-COMMENT ON COLUMN pop.rif40_population_europe.age_sex_group IS 'Age sex group (standard 21)';
-COMMENT ON COLUMN pop.rif40_population_europe.total IS 'Total (each sex sums to 100,000)';
-COMMENT ON COLUMN pop.rif40_population_europe.year IS 'Year';
-COMMENT ON COLUMN pop.rif40_population_us.age_sex_group IS 'Age sex group (standard 21)';
-COMMENT ON COLUMN pop.rif40_population_us.total IS 'Total (each sex sums to 100,000)';
-COMMENT ON COLUMN pop.rif40_population_us.year IS 'Year';
-COMMENT ON COLUMN pop.rif40_population_world.age_sex_group IS 'Age sex group (standard 21)';
-COMMENT ON COLUMN pop.rif40_population_world.total IS 'Total (each sex sums to 100,000)';
-COMMENT ON COLUMN pop.rif40_population_world.year IS 'Year';
 COMMENT ON COLUMN "rif40_predefined_groups"."condition" IS 'SQL WHERE clause, with the WHERE keyword omitted). Default to 1=1 (use all records matching year/age/sex criteria). Checked for SQL injection.';
 COMMENT ON COLUMN "rif40_predefined_groups"."outcome_type" IS 'Outcome type: ICD, ICD-0 or OPCS';
 COMMENT ON COLUMN "rif40_predefined_groups"."predefined_group_description" IS 'Predefined Group Description. E.g. &quot;Lung Cancer&quot;';
@@ -257,24 +243,6 @@ COMMENT ON COLUMN "rif40_version"."cvs_revision" IS 'CVS revison control informa
 COMMENT ON COLUMN "rif40_version"."schema_amended" IS 'Date schema amended';
 COMMENT ON COLUMN "rif40_version"."schema_created" IS 'Date schema created';
 COMMENT ON COLUMN "rif40_version"."version" IS 'Version. Used for change control to ensure front end matches database.';
-COMMENT ON COLUMN rif_data.sahsuland_cancer.age_sex_group IS 'Age sex group';
-COMMENT ON COLUMN rif_data.sahsuland_cancer.icd IS 'ICD';
-COMMENT ON COLUMN rif_data.sahsuland_cancer.level1 IS 'level1';
-COMMENT ON COLUMN rif_data.sahsuland_cancer.level2 IS 'level2';
-COMMENT ON COLUMN rif_data.sahsuland_cancer.level3 IS 'level3';
-COMMENT ON COLUMN rif_data.sahsuland_cancer.level4 IS 'level4';
-COMMENT ON COLUMN rif_data.sahsuland_cancer.total IS 'Total';
-COMMENT ON COLUMN rif_data.sahsuland_cancer.year IS 'Year';
-COMMENT ON COLUMN rif_data.sahsuland_covariates_level3.ethnicity IS 'Ethnicity % non white - 1: <5%, 2: 5 to 10%, 3: >= 10%';
-COMMENT ON COLUMN rif_data.sahsuland_covariates_level3.level3 IS 'Level3';
-COMMENT ON COLUMN rif_data.sahsuland_covariates_level3.ses IS 'Social Economic Status (quintiles)';
-COMMENT ON COLUMN rif_data.sahsuland_covariates_level3.year IS 'Year';
-COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.areatri1km IS 'Toxic Release Inventory within 1km of area (0=no/1=yes)';
-COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.level4 IS 'Level4';
-COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.near_dist IS 'Distance (m) from area centroid to nearest TRI site';
-COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.ses IS 'Social Economic Status (quintiles)';
-COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.tri_1km IS 'Toxic Release Inventory within 1km of areai centroid (0=no/1=yes)';
-COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.year IS 'Year';
 COMMENT ON COLUMN gis.sahsuland_geography.level1 IS 'level1';
 COMMENT ON COLUMN gis.sahsuland_geography.level2 IS 'level2';
 COMMENT ON COLUMN gis.sahsuland_geography.level3 IS 'level3';
@@ -289,13 +257,6 @@ COMMENT ON COLUMN gis.sahsuland_level4.level4 IS 'level4';
 COMMENT ON COLUMN gis.sahsuland_level4.name IS 'name';
 COMMENT ON COLUMN gis.sahsuland_level4.x_coordinate IS 'X Co-ordinate for centroid';
 COMMENT ON COLUMN gis.sahsuland_level4.y_coordinate IS 'Y Co-ordinate for centroid';
-COMMENT ON COLUMN pop.sahsuland_pop.age_sex_group IS 'Age sex group';
-COMMENT ON COLUMN pop.sahsuland_pop.level1 IS 'level1';
-COMMENT ON COLUMN pop.sahsuland_pop.level2 IS 'level2';
-COMMENT ON COLUMN pop.sahsuland_pop.level3 IS 'level3';
-COMMENT ON COLUMN pop.sahsuland_pop.level4 IS 'level4';
-COMMENT ON COLUMN pop.sahsuland_pop.total IS 'Total';
-COMMENT ON COLUMN pop.sahsuland_pop.year IS 'Year';
 COMMENT ON COLUMN "t_rif40_comparison_areas"."area_id" IS 'An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE';
 COMMENT ON COLUMN "t_rif40_comparison_areas"."study_id" IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
 COMMENT ON COLUMN "t_rif40_comparison_areas"."username" IS 'Username';

@@ -68,38 +68,21 @@ END;
 $$;
 
 --
--- Check database is sahsuland_dev
+-- Check database is sahsuland_dev or sahsuland_empty
 --
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF current_database() = 'sahsuland_dev' THEN
 		RAISE INFO 'Database check: %', current_database();	
+	ELSIF current_database() = 'sahsuland_empty' THEN
+		RAISE INFO 'Database check: %', current_database();	
 	ELSE
-		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev', current_database();	
+		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev or sahsuland_empty', current_database();	
 	END IF;
 END;
 $$;
 
 \set ON_ERROR_STOP ON
-
-CREATE TABLE pop.sahsuland_pop (
-	year smallint NOT NULL,
-	age_sex_group smallint NOT NULL,
-	level1 varchar(20) NOT NULL,
-	level2 varchar(20) NOT NULL,
-	level3 varchar(20) NOT NULL,
-	level4 varchar(20) NOT NULL,
-	total double precision NOT NULL
-);
-CREATE INDEX sahsuland_pop_level4 ON pop.sahsuland_pop (level4);
-CREATE INDEX sahsuland_pop_age_sex_group ON pop.sahsuland_pop (age_sex_group);
-CREATE INDEX sahsuland_pop_level1 ON pop.sahsuland_pop (level1);
-CREATE INDEX sahsuland_pop_age_group ON pop.sahsuland_pop (mod(age_sex_group,100));
-CREATE UNIQUE INDEX sahsuland_pop_pk ON pop.sahsuland_pop (year,level4,age_sex_group);
-CREATE INDEX sahsuland_pop_year ON pop.sahsuland_pop (year);
-CREATE INDEX sahsuland_pop_level2 ON pop.sahsuland_pop (level2);
-CREATE INDEX sahsuland_pop_sex ON pop.sahsuland_pop (trunc(age_sex_group/100));
-CREATE INDEX sahsuland_pop_level3 ON pop.sahsuland_pop (level3);
 
 CREATE TABLE rif40_outcome_groups (
 	outcome_type varchar(20) NOT NULL,
@@ -162,12 +145,6 @@ CREATE TABLE rif40_icd10 (
 ALTER TABLE rif40_icd10 ADD CONSTRAINT rif40_icd10_pk PRIMARY KEY (icd10_4char);
 CREATE INDEX rif40_icd10_3char_bm ON rif40_icd10 (icd10_3char);
 CREATE INDEX rif40_icd10_1char_bm ON rif40_icd10 (icd10_1char);
-CREATE TABLE pop.rif40_population_world (
-	year smallint DEFAULT 1991,
-	age_sex_group smallint NOT NULL,
-	total double precision NOT NULL
-);
-ALTER TABLE pop.rif40_population_world ADD CONSTRAINT rif40_population_world_pk PRIMARY KEY (age_sex_group);
 CREATE TABLE t_rif40_geolevels (
 	geography varchar(50) NOT NULL,
 	geolevel_name varchar(30) NOT NULL,
@@ -406,18 +383,13 @@ CREATE TABLE t_rif40_study_areas (
 ALTER TABLE t_rif40_study_areas ADD CONSTRAINT t_rif40_study_areas_pk PRIMARY KEY (study_id,area_id);
 CREATE INDEX t_rif40_study_areas_uname ON t_rif40_study_areas (username);
 CREATE INDEX t_rif40_study_areas_band_id ON t_rif40_study_areas (band_id);
-CREATE TABLE rif_data.sahsuland_covariates_level3 (
-	year smallint NOT NULL,
-	level3 varchar(20) NOT NULL,
-	ses smallint NOT NULL,
-	ethnicity smallint NOT NULL
-);
-CREATE UNIQUE INDEX sahsuland_covariates_level3_pk ON rif_data.sahsuland_covariates_level3 (year,level3);
+
 CREATE TABLE rif40_study_shares (
 	study_id integer NOT NULL,
 	grantor varchar(90) DEFAULT USER,
 	grantee_username varchar(90) NOT NULL
 );
+
 ALTER TABLE rif40_study_shares ADD CONSTRAINT rif40_study_shares_pk PRIMARY KEY (study_id,grantee_username);
 CREATE INDEX rif40_study_shares_grantor_bm ON rif40_study_shares (grantor);
 CREATE INDEX rif40_study_shares_grantee_bm ON rif40_study_shares (grantee_username);
@@ -441,15 +413,6 @@ CREATE TABLE rif40_health_study_themes (
 	description varchar(200) NOT NULL
 );
 ALTER TABLE rif40_health_study_themes ADD CONSTRAINT rif40_health_study_themes_pk PRIMARY KEY (theme);
-CREATE TABLE rif_data.sahsuland_covariates_level4 (
-	year smallint NOT NULL,
-	level4 varchar(20) NOT NULL,
-	ses smallint NOT NULL,
-	areatri1km smallint NOT NULL,
-	near_dist double precision NOT NULL,
-	tri_1km smallint NOT NULL
-);
-CREATE UNIQUE INDEX sahsuland_covariates_level4_pk ON rif_data.sahsuland_covariates_level4 (year,level4);
 CREATE TABLE rif40_icd_o_3 (
 	icd_o_3_1char varchar(20),
 	icd_o_3_4char varchar(4) NOT NULL,
@@ -518,6 +481,7 @@ CREATE TABLE t_rif40_contextual_stats (
 ALTER TABLE t_rif40_contextual_stats ADD CONSTRAINT t_rif40_contextual_stats_pk PRIMARY KEY (study_id,area_id,inv_id);
 CREATE INDEX t_rif40_constats_uname_bm ON t_rif40_contextual_stats (username);
 CREATE INDEX t_rif40_constats_inv_id_fk ON t_rif40_contextual_stats (inv_id);
+
 CREATE TABLE rif40_outcomes (
 	outcome_type varchar(20) NOT NULL,
 	outcome_description varchar(250) NOT NULL,
@@ -577,33 +541,7 @@ ALTER TABLE rif40_outcomes ADD CONSTRAINT previous_value_nchar_ck CHECK ((previo
 			(previous_value_4char IS NOT NULL AND previous_description_4char IS NOT NULL) OR
 			(previous_value_5char IS NOT NULL AND previous_description_5char IS NOT NULL))) OR (previous_lookup_table IS NULL AND previous_version IS NULL));
 */
-CREATE TABLE rif_data.sahsuland_cancer (
-	year smallint NOT NULL,
-	age_sex_group smallint NOT NULL,
-	level1 varchar(20) NOT NULL,
-	level2 varchar(20) NOT NULL,
-	level3 varchar(20) NOT NULL,
-	level4 varchar(20) NOT NULL,
-	icd varchar(4) NOT NULL,
-	total double precision NOT NULL
-);
-CREATE INDEX sahsuland_cancer_age_sex_group ON rif_data.sahsuland_cancer (age_sex_group);
-CREATE INDEX sahsuland_cancer_icd ON rif_data.sahsuland_cancer (icd);
-CREATE INDEX sahsuland_cancer_sex ON rif_data.sahsuland_cancer (trunc(age_sex_group/100));
-CREATE UNIQUE INDEX sahsuland_cancer_pk ON rif_data.sahsuland_cancer (year,level4,age_sex_group,icd);
-CREATE INDEX sahsuland_cancer_year ON rif_data.sahsuland_cancer (year);
-CREATE INDEX sahsuland_cancer_age_group ON rif_data.sahsuland_cancer (mod(age_sex_group,100));
-CREATE INDEX sahsuland_cancer_level4 ON rif_data.sahsuland_cancer (level4);
-CREATE INDEX sahsuland_cancer_level2 ON rif_data.sahsuland_cancer (level2);
-CREATE INDEX sahsuland_cancer_level3 ON rif_data.sahsuland_cancer (level3);
-CREATE INDEX sahsuland_cancer_level1 ON rif_data.sahsuland_cancer (level1);
 
-CREATE TABLE pop.rif40_population_europe (
-	year smallint DEFAULT 1991,
-	age_sex_group smallint NOT NULL,
-	total double precision NOT NULL
-);
-ALTER TABLE pop.rif40_population_europe ADD CONSTRAINT rif40_population_europe_pk PRIMARY KEY (age_sex_group);
 CREATE TABLE rif40_version (
 	version varchar(50) NOT NULL,
 	schema_created timestamp DEFAULT LOCALTIMESTAMP,
@@ -616,12 +554,6 @@ CREATE TABLE t_rif40_num_denom (
 	denominator_table varchar(30) NOT NULL
 );
 ALTER TABLE t_rif40_num_denom ADD CONSTRAINT t_rif40_num_denom_pk PRIMARY KEY (geography,numerator_table,denominator_table);
-CREATE TABLE pop.rif40_population_us (
-	year smallint DEFAULT 2000,
-	age_sex_group smallint NOT NULL,
-	total double precision NOT NULL
-);
-ALTER TABLE pop.rif40_population_us ADD CONSTRAINT rif40_population_us_pk PRIMARY KEY (age_sex_group);
 CREATE TABLE t_rif40_results (
 	username varchar(90) DEFAULT USER,
 	study_id integer NOT NULL,

@@ -159,6 +159,17 @@ DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_rpt)
 $(info Database is: $(PGDATABASE);  targets: $(TARGETS)) 	
 #	
 else
+ifeq ($(PGDATABASE),sahsuland_empty)
+#
+TARGETS=$(SOURCES:%.sql=%.sahsuland_empty_rpt)
+DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_empty_rpt)
+.SUFFIXES: .sql .sahsuland_empty_rpt
+.sql.sahsuland_empty_rpt:
+	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 	
+#
+$(info Database is: $(PGDATABASE);  targets: $(TARGETS)) 	
+#
+else
 ifeq ($(PGDATABASE),sahsuland_dev)
 #
 TARGETS=$(SOURCES:%.sql=%.sahsuland_dev_rpt)
@@ -178,6 +189,7 @@ $(error Unknown database: $(PGDATABASE))
 #.sql.rpt:
 #	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 		
 #	
+endif
 endif
 endif
 		

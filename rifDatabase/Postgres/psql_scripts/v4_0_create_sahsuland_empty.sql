@@ -14,7 +14,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Create SAHSULAND rif40 exmaple schema
+-- Rapid Enquiry Facility (RIF) - Create SAHSULAND rif40 empty schema
 --
 -- Copyright:
 --
@@ -54,7 +54,7 @@
 \set ON_ERROR_STOP ON
 \timing
 
-\echo Creating SAHSULAND rif40 example schema...
+\echo Creating SAHSULAND rif40 empty schema...
 
 --
 -- Check user is rif40
@@ -70,14 +70,14 @@ END;
 $$;
 
 --
--- Check database is sahsuland_dev
+-- Check database is sahsuland_empty
 --
 DO LANGUAGE plpgsql $$
 BEGIN
-	IF current_database() = 'sahsuland_dev' THEN
+	IF current_database() = 'sahsuland_empty' THEN
 		RAISE INFO 'Database check: %', current_database();	
 	ELSE
-		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev', current_database();	
+		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_empty', sahsuland_empty();	
 	END IF;
 END;
 $$;
@@ -118,15 +118,15 @@ BEGIN
                 OPEN c1(x);
                 FETCH c1 INTO c1_rec;
                 IF c1_rec.name IS NULL THEN
-                        RAISE WARNING 'v4_0_create_sahsuland.sql() RIF required extension: % is not installable', x;
+                        RAISE WARNING 'v4_0_create_sahsuland_empty.sql() RIF required extension: % is not installable', x;
                         i:=i+1;
                 ELSE
-                        RAISE INFO 'v4_0_create_sahsuland.sql() RIF required extension: % V% is installable', c1_rec.name, c1_rec.default_version;
+                        RAISE INFO 'v4_0_create_sahsuland_empty.sql() RIF required extension: % V% is installable', c1_rec.name, c1_rec.default_version;
                 END IF;
                 CLOSE c1;
         END LOOP;
         IF i > 0 THEN
-                RAISE WARNING 'v4_0_create_sahsuland.sql() C209xx: % RIF required extensions are not installable', i::VARCHAR USING HINT='See previous warnings';
+                RAISE WARNING 'v4_0_create_sahsuland_empty.sql() C209xx: % RIF required extensions are not installable', i::VARCHAR USING HINT='See previous warnings';
         END IF;
 END;
 $$;
@@ -152,9 +152,9 @@ BEGIN
 -- Test parameter
 --
 	IF c1_rec.testuser IN ('XXXX', 'XXXX:testuser') THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: No -v testuser=<test user account> parameter';	
+		RAISE EXCEPTION 'v4_0_create_sahsuland_empty.sql() C209xx: No -v testuser=<test user account> parameter';	
 	ELSE
-		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testuser;
+		RAISE INFO 'v4_0_create_sahsuland_empty.sql() test user account parameter="%"', c1_rec.testuser;
 	END IF;
 --
 -- Test account exists
@@ -163,13 +163,13 @@ BEGIN
 	FETCH c2 INTO c2_rec;
 	CLOSE c2;
 	IF c2_rec.usename IS NULL THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: User account does not exist: %', LOWER(SUBSTR(c1_rec.testuser, 5));	
+		RAISE EXCEPTION 'v4_0_create_sahsuland_empty.sql() C209xx: User account does not exist: %', LOWER(SUBSTR(c1_rec.testuser, 5));	
 	ELSIF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
-		RAISE INFO 'db_create.sql() user account="%" is a rif_user', c2_rec.usename;
+		RAISE INFO 'v4_0_create_sahsuland_empty.sql() user account="%" is a rif_user', c2_rec.usename;
 	ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
-		RAISE INFO 'db_create.sql() user account="%" is a rif manager', c2_rec.usename;
+		RAISE INFO 'v4_0_create_sahsuland_empty.sql() user account="%" is a rif manager', c2_rec.usename;
 	ELSE
-		RAISE EXCEPTION 'db_create.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
+		RAISE EXCEPTION 'v4_0_create_sahsuland_empty.sql() C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
 	END IF;
 --
 END;
@@ -300,6 +300,11 @@ VALUES(
 'Parallelisation', 		 '4', 							'Level of Parallelisation. Only supported on Oracle; under development in PoatGres/PostGIS.');
 
 --
+-- Load SAHSULAND data sufficent for an empty database
+-- 
+\i ../sahsuland/v4_0_postgres_sahsuland_empty_imports.sql
+
+--
 -- Load SAHSU geospatial data
 --
 \i ../shapefiles/sahsuland_shapefiles.sql
@@ -309,10 +314,7 @@ VALUES(
 --
 \i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
 
---
--- Load SAHSULAND data 
--- 
-\i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
+
 
 \set VERBOSITY terse
 --
@@ -339,11 +341,11 @@ $$;
 --
 -- EW01 geography test data for Kevin. It is NOT processed (i.e. no simplification, intersection etc)
 -- 
-\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
+--\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
 --
 -- UK91 geography test data for Kevin. It is NOT processed (i.e. no simplification, intersection etc)
 --
-\i ../psql_scripts/v4_0_geolevel_setup_uk91.sql
+--\i ../psql_scripts/v4_0_geolevel_setup_uk91.sql
 
 --
 -- Re-enable rif40_geog_defcomparea_fk
@@ -375,7 +377,7 @@ $$;
 --
 -- Cluster Population tables
 --
-CLUSTER sahsuland_pop USING sahsuland_pop_pk;
+-- CLUSTER sahsuland_pop USING sahsuland_pop_pk;
 
 --
 -- Analyze
@@ -640,7 +642,7 @@ ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
 --
 \i  ../psql_scripts/v4_0_vacuum_analyse.sql
 
-\echo Created SAHSULAND rif40 example schema.
+\echo Created SAHSULAND rif40 empty schema.
 --
 -- Eof
 \q

@@ -68,14 +68,16 @@ END;
 $$;
 
 --
--- Check database is sahsuland_dev
+-- Check database is sahsuland_dev or sahsuland_empty
 --
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF current_database() = 'sahsuland_dev' THEN
 		RAISE INFO 'Database check: %', current_database();	
+	ELSIF current_database() = 'sahsuland_empty' THEN
+		RAISE INFO 'Database check: %', current_database();	
 	ELSE
-		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev', current_database();	
+		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev or sahsuland_empty', current_database();	
 	END IF;
 END;
 $$;

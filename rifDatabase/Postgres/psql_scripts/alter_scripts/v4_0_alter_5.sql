@@ -612,7 +612,7 @@ BEGIN
 --
 -- Add denominator population table to geography geolevel geomtry data
 --
-		PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
+--		PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
 --
 -- Fix NULL geolevel names in geography geolevel geometry and lookup table data 
 --

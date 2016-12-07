@@ -83,13 +83,24 @@ BEGIN
 END;
 $$;
 
-\COPY t_rif40_num_denom FROM '../sahsuland/data/t_rif40_num_denom.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\COPY rif40_dual FROM '../sahsuland/data/rif40_dual.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+--
+-- Load standard RIF data
+--
 \COPY t_rif40_projects FROM '../sahsuland/data/t_rif40_projects.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_version FROM '../sahsuland/data/rif40_version.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_error_messages FROM '../sahsuland/data/rif40_error_messages.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\dS+ rif40_outcomes
 \COPY rif40_outcomes(outcome_type, outcome_description, current_version, current_sub_version, previous_version, previous_sub_version) FROM '../sahsuland/data/rif40_outcomes.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY rif40_age_group_names FROM '../sahsuland/data/rif40_age_group_names.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY rif40_outcome_groups FROM '../sahsuland/data/rif40_outcome_groups.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY rif40_predefined_groups FROM '../sahsuland/data/rif40_predefined_groups.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY rif40_age_groups FROM '../sahsuland/data/rif40_age_groups.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+
+\COPY rif40_reference_tables FROM '../sahsuland/data/rif40_reference_tables.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+
+/* Obsolete: to be removed.
+
+\COPY t_rif40_num_denom FROM '../sahsuland/data/t_rif40_num_denom.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY rif40_dual FROM '../sahsuland/data/rif40_dual.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_icd9 FROM '../sahsuland/data/rif40_icd9.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_icd10 FROM '../sahsuland/data/rif40_icd10.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_opcs4 FROM '../sahsuland/data/rif40_opcs4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
@@ -98,24 +109,203 @@ $$;
 \COPY rif40_population_world FROM '../sahsuland/data/rif40_population_world.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_population_europe FROM '../sahsuland/data/rif40_population_europe.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_population_us FROM '../sahsuland/data/rif40_population_us.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\COPY rif40_reference_tables FROM '../sahsuland/data/rif40_reference_tables.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY t_rif40_fdw_tables FROM '../sahsuland/data/t_rif40_fdw_tables.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+ */
+ 
+--
+-- Schema metadata
+--
+\COPY rif40_columns FROM '../sahsuland/data/rif40_columns_orig.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY rif40_tables_and_views FROM '../sahsuland/data/rif40_tables_and_views_orig.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY rif40_triggers FROM '../sahsuland/data/rif40_triggers.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+
+-- ' to keep notepad++ happy
+
+--
+-- Load sahusland example data
+--
+CREATE TABLE rif_data.sahsuland_cancer (
+	year smallint NOT NULL,
+	age_sex_group smallint NOT NULL,
+	level1 varchar(20) NOT NULL,
+	level2 varchar(20) NOT NULL,
+	level3 varchar(20) NOT NULL,
+	level4 varchar(20) NOT NULL,
+	icd varchar(4) NOT NULL,
+	total double precision NOT NULL
+);
+CREATE INDEX sahsuland_cancer_age_sex_group ON rif_data.sahsuland_cancer (age_sex_group);
+CREATE INDEX sahsuland_cancer_icd ON rif_data.sahsuland_cancer (icd);
+CREATE INDEX sahsuland_cancer_sex ON rif_data.sahsuland_cancer (trunc(age_sex_group/100));
+CREATE UNIQUE INDEX sahsuland_cancer_pk ON rif_data.sahsuland_cancer (year,level4,age_sex_group,icd);
+CREATE INDEX sahsuland_cancer_year ON rif_data.sahsuland_cancer (year);
+CREATE INDEX sahsuland_cancer_age_group ON rif_data.sahsuland_cancer (mod(age_sex_group,100));
+CREATE INDEX sahsuland_cancer_level4 ON rif_data.sahsuland_cancer (level4);
+CREATE INDEX sahsuland_cancer_level2 ON rif_data.sahsuland_cancer (level2);
+CREATE INDEX sahsuland_cancer_level3 ON rif_data.sahsuland_cancer (level3);
+CREATE INDEX sahsuland_cancer_level1 ON rif_data.sahsuland_cancer (level1);
+
+CREATE TABLE rif_data.sahsuland_covariates_level3 (
+	year smallint NOT NULL,
+	level3 varchar(20) NOT NULL,
+	ses smallint NOT NULL,
+	ethnicity smallint NOT NULL
+);
+CREATE UNIQUE INDEX sahsuland_covariates_level3_pk ON rif_data.sahsuland_covariates_level3 (year,level3);
+CREATE TABLE rif_data.sahsuland_covariates_level4 (
+	year smallint NOT NULL,
+	level4 varchar(20) NOT NULL,
+	ses smallint NOT NULL,
+	areatri1km smallint NOT NULL,
+	near_dist double precision NOT NULL,
+	tri_1km smallint NOT NULL
+);
+CREATE UNIQUE INDEX sahsuland_covariates_level4_pk ON rif_data.sahsuland_covariates_level4 (year,level4);
+
+CREATE TABLE pop.sahsuland_pop (
+	year smallint NOT NULL,
+	age_sex_group smallint NOT NULL,
+	level1 varchar(20) NOT NULL,
+	level2 varchar(20) NOT NULL,
+	level3 varchar(20) NOT NULL,
+	level4 varchar(20) NOT NULL,
+	total double precision NOT NULL
+);
+CREATE INDEX sahsuland_pop_level4 ON pop.sahsuland_pop (level4);
+CREATE INDEX sahsuland_pop_age_sex_group ON pop.sahsuland_pop (age_sex_group);
+CREATE INDEX sahsuland_pop_level1 ON pop.sahsuland_pop (level1);
+CREATE INDEX sahsuland_pop_age_group ON pop.sahsuland_pop (mod(age_sex_group,100));
+CREATE UNIQUE INDEX sahsuland_pop_pk ON pop.sahsuland_pop (year,level4,age_sex_group);
+CREATE INDEX sahsuland_pop_year ON pop.sahsuland_pop (year);
+CREATE INDEX sahsuland_pop_level2 ON pop.sahsuland_pop (level2);
+CREATE INDEX sahsuland_pop_sex ON pop.sahsuland_pop (trunc(age_sex_group/100));
+CREATE INDEX sahsuland_pop_level3 ON pop.sahsuland_pop (level3);
+
+CREATE TABLE pop.rif40_population_europe (
+	year smallint DEFAULT 1991,
+	age_sex_group smallint NOT NULL,
+	total double precision NOT NULL
+);
+ALTER TABLE pop.rif40_population_europe ADD CONSTRAINT rif40_population_europe_pk PRIMARY KEY (age_sex_group);
+
+CREATE TABLE pop.rif40_population_world (
+	year smallint DEFAULT 1991,
+	age_sex_group smallint NOT NULL,
+	total double precision NOT NULL
+);
+ALTER TABLE pop.rif40_population_world ADD CONSTRAINT rif40_population_world_pk PRIMARY KEY (age_sex_group);
+
+CREATE TABLE pop.rif40_population_us (
+	year smallint DEFAULT 2000,
+	age_sex_group smallint NOT NULL,
+	total double precision NOT NULL
+);
+ALTER TABLE pop.rif40_population_us ADD CONSTRAINT rif40_population_us_pk PRIMARY KEY (age_sex_group);
+
+COMMENT ON TABLE pop.rif40_population_europe IS '1991 European standarised populations (to be updated)';
+COMMENT ON TABLE pop.rif40_population_us IS '2000 United States of America standarised populations (to be updated)';
+COMMENT ON TABLE pop.rif40_population_world IS '1991 World standarised populations (to be updated)';
+COMMENT ON TABLE rif_data.sahsuland_cancer IS 'SAHSU land Population';
+COMMENT ON TABLE rif_data.sahsuland_covariates_level3 IS 'SAHSU land covariates - level3';
+COMMENT ON TABLE rif_data.sahsuland_covariates_level4 IS 'SAHSU land covariates - level4';
+COMMENT ON TABLE pop.sahsuland_pop IS 'SAHSU land Population';
+
+COMMENT ON COLUMN rif_data.sahsuland_cancer.age_sex_group IS 'Age sex group';
+COMMENT ON COLUMN rif_data.sahsuland_cancer.icd IS 'ICD';
+COMMENT ON COLUMN rif_data.sahsuland_cancer.level1 IS 'level1';
+COMMENT ON COLUMN rif_data.sahsuland_cancer.level2 IS 'level2';
+COMMENT ON COLUMN rif_data.sahsuland_cancer.level3 IS 'level3';
+COMMENT ON COLUMN rif_data.sahsuland_cancer.level4 IS 'level4';
+COMMENT ON COLUMN rif_data.sahsuland_cancer.total IS 'Total';
+COMMENT ON COLUMN rif_data.sahsuland_cancer.year IS 'Year';
+COMMENT ON COLUMN rif_data.sahsuland_covariates_level3.ethnicity IS 'Ethnicity % non white - 1: <5%, 2: 5 to 10%, 3: >= 10%';
+COMMENT ON COLUMN rif_data.sahsuland_covariates_level3.level3 IS 'Level3';
+COMMENT ON COLUMN rif_data.sahsuland_covariates_level3.ses IS 'Social Economic Status (quintiles)';
+COMMENT ON COLUMN rif_data.sahsuland_covariates_level3.year IS 'Year';
+COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.areatri1km IS 'Toxic Release Inventory within 1km of area (0=no/1=yes)';
+COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.level4 IS 'Level4';
+COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.near_dist IS 'Distance (m) from area centroid to nearest TRI site';
+COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.ses IS 'Social Economic Status (quintiles)';
+COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.tri_1km IS 'Toxic Release Inventory within 1km of areai centroid (0=no/1=yes)';
+COMMENT ON COLUMN rif_data.sahsuland_covariates_level4.year IS 'Year';
+COMMENT ON COLUMN pop.sahsuland_pop.age_sex_group IS 'Age sex group';
+COMMENT ON COLUMN pop.sahsuland_pop.level1 IS 'level1';
+COMMENT ON COLUMN pop.sahsuland_pop.level2 IS 'level2';
+COMMENT ON COLUMN pop.sahsuland_pop.level3 IS 'level3';
+COMMENT ON COLUMN pop.sahsuland_pop.level4 IS 'level4';
+COMMENT ON COLUMN pop.sahsuland_pop.total IS 'Total';
+COMMENT ON COLUMN pop.sahsuland_pop.year IS 'Year';
+COMMENT ON COLUMN pop.rif40_population_europe.age_sex_group IS 'Age sex group (standard 21)';
+COMMENT ON COLUMN pop.rif40_population_europe.total IS 'Total (each sex sums to 100,000)';
+COMMENT ON COLUMN pop.rif40_population_europe.year IS 'Year';
+COMMENT ON COLUMN pop.rif40_population_us.age_sex_group IS 'Age sex group (standard 21)';
+COMMENT ON COLUMN pop.rif40_population_us.total IS 'Total (each sex sums to 100,000)';
+COMMENT ON COLUMN pop.rif40_population_us.year IS 'Year';
+COMMENT ON COLUMN pop.rif40_population_world.age_sex_group IS 'Age sex group (standard 21)';
+COMMENT ON COLUMN pop.rif40_population_world.total IS 'Total (each sex sums to 100,000)';
+COMMENT ON COLUMN pop.rif40_population_world.year IS 'Year';
+
+GRANT SELECT ON rif_data.sahsuland_cancer TO rif_user, rif_manager; 
+GRANT SELECT ON pop.sahsuland_pop TO rif_user, rif_manager; 
+GRANT SELECT ON rif40_population_us TO PUBLIC;
+GRANT SELECT ON rif40_population_europe TO PUBLIC;
+GRANT SELECT ON rif40_population_world TO PUBLIC; 
+GRANT SELECT ON rif_data.sahsuland_covariates_level3 TO PUBLIC; 
+GRANT SELECT ON rif_data.sahsuland_covariates_level4 TO PUBLIC; 
+
+--
+-- Control meta data
+--
+
+--
+-- RIF40_HEALTH_STUDY_THEMES
+--
+DELETE FROM rif40_health_study_themes  WHERE theme = 'SAHSULAND';
+INSERT INTO rif40_health_study_themes(theme, description) VALUES('SAHSULAND', 'SAHSU land cancer incidence example data');
+
+--
+-- RIF40_TABLES, RIF40_TABLE_OUTCOMES
+--
+DELETE FROM rif40_tables  WHERE table_name IN ('SAHSULAND_CANCER', 'SAHSULAND_POP');
+INSERT INTO rif40_tables(table_name, description, theme, year_start, year_stop, total_field, isindirectdenominator, isdirectdenominator, isnumerator, automatic, age_group_id)
+VALUES (
+'SAHSULAND_CANCER','Cancer cases in SAHSU land', 'SAHSULAND', 1989,1996,'TOTAL',0,0,1,1,1);
+INSERT INTO rif40_tables(table_name, description, theme, year_start, year_stop, total_field, isindirectdenominator, isdirectdenominator, isnumerator, automatic, age_group_id)
+VALUES (
+'SAHSULAND_POP','SAHSU land population', 'SAHSULAND', 1989,1996,NULL,1,0,0,1,1);
+
+DELETE FROM rif40_table_outcomes  WHERE numer_tab = 'SAHSULAND_CANCER';
+-- This is wrong
+INSERT INTO rif40_table_outcomes(outcome_group_name, numer_tab, current_version_start_year)
+VALUES ('SINGLE_ICD', 'SAHSULAND_CANCER', 1993);
+--INSERT INTO rif40_table_outcomes(outcome_group_name, numer_tab, current_version_start_year)
+--VALUES ('SAHSULAND_ICD', 'SAHSULAND_CANCER', 1993);
+
+
 \COPY sahsuland_pop FROM '../sahsuland/data/sahsuland_pop.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY sahsuland_cancer FROM '../sahsuland/data/sahsuland_cancer.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY sahsuland_geography FROM '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY sahsuland_covariates_level3 FROM '../sahsuland/data/sahsuland_covariates_level3.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY sahsuland_covariates_level4 FROM '../sahsuland/data/sahsuland_covariates_level4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\COPY rif40_age_group_names FROM '../sahsuland/data/rif40_age_group_names.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\COPY rif40_outcome_groups FROM '../sahsuland/data/rif40_outcome_groups.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\COPY rif40_predefined_groups FROM '../sahsuland/data/rif40_predefined_groups.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\COPY rif40_age_groups FROM '../sahsuland/data/rif40_age_groups.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\COPY t_rif40_fdw_tables FROM '../sahsuland/data/t_rif40_fdw_tables.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 
-\dS+ rif40_columns
-\COPY rif40_columns FROM '../sahsuland/data/rif40_columns_orig.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\dS+ rif40_tables_and_views
-\COPY rif40_tables_and_views FROM '../sahsuland/data/rif40_tables_and_views_orig.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\dS+ rif40_triggers
-\COPY rif40_triggers FROM '../sahsuland/data/rif40_triggers.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+-- ' to keep notepad++ happy
+
+--
+-- RIF40_COVARIATES
+--
+DELETE FROM rif40_covariates  WHERE geography = 'SAHSU';
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'SAHSU', 'LEVEL3', 'SES', MIN(ses), MAX(ses), 1 FROM sahsuland_covariates_level3;
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'SAHSU', 'LEVEL3', 'ETHNICITY', MIN(ethnicity), MAX(ethnicity), 1 FROM sahsuland_covariates_level3;
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'SAHSU', 'LEVEL4', 'SES', MIN(ses), MAX(ses), 1 FROM sahsuland_covariates_level4;
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'SAHSU', 'LEVEL4', 'AREATRI1KM', MIN(areatri1km), MAX(areatri1km), 1 FROM sahsuland_covariates_level4;
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'SAHSU', 'LEVEL4', 'TRI_1KM', MIN(tri_1km), MAX(tri_1km), 1 FROM sahsuland_covariates_level4;
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'SAHSU', 'LEVEL4', 'NEAR_DIST', MIN(near_dist), MAX(near_dist), 2 FROM sahsuland_covariates_level4;
 
 --
 -- Eof

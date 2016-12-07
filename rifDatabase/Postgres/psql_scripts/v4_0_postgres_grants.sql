@@ -68,14 +68,16 @@ END;
 $$;
 
 --
--- Check database is sahsuland_dev
+-- Check database is sahsuland_dev or sahsuland_empty
 --
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF current_database() = 'sahsuland_dev' THEN
 		RAISE INFO 'Database check: %', current_database();	
+	ELSIF current_database() = 'sahsuland_empty' THEN
+		RAISE INFO 'Database check: %', current_database();	
 	ELSE
-		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev', current_database();	
+		RAISE EXCEPTION 'C20901: Database check failed: % is not sahsuland_dev or sahsuland_empty', current_database();	
 	END IF;
 END;
 $$;
@@ -135,9 +137,6 @@ GRANT SELECT ON rif40_outcomes TO PUBLIC;
 GRANT SELECT ON rif40_outcome_groups TO PUBLIC;
 GRANT SELECT ON rif40_table_outcomes TO PUBLIC;
 GRANT SELECT ON rif40_predefined_groups TO PUBLIC;
-GRANT SELECT ON rif40_population_us TO PUBLIC;
-GRANT SELECT ON rif40_population_europe TO PUBLIC;
-GRANT SELECT ON rif40_population_world TO PUBLIC;
 GRANT SELECT ON rif40_icd9 TO PUBLIC;
 GRANT SELECT ON rif40_icd10 TO PUBLIC;
 GRANT SELECT ON rif40_opcs4 TO PUBLIC;
@@ -159,9 +158,6 @@ GRANT SELECT ON rif40_tables_and_views TO rif_manager;
 GRANT SELECT ON rif40_triggers TO rif_manager; 
 GRANT SELECT ON rif40_columns TO rif_manager; 
 GRANT SELECT ON rif40_dual TO PUBLIC;
-
-GRANT SELECT ON rif_data.sahsuland_cancer TO rif_user, rif_manager; 
-GRANT SELECT ON pop.sahsuland_pop TO rif_user, rif_manager; 
 
 --
 -- Grant SELECT to all views
