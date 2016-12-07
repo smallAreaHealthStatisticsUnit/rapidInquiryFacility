@@ -177,9 +177,14 @@ the process of running the study.
 
 * Fixed extract bug
 
-### Microsoft SQL server - Margaret/Peter
+### Microsoft SQL server - Margaret
 
-* Work stsrts with the front/end and middleware in December.
+Finally back looking at the RIF code!  (Although still only part time) Focus is on the Java classes that are used to connect to MS SQL 
+Server so the Data Loader will be able to work on SQL Server.
+
+* We can connect from Java to a local MS SQL Server database using the rifGenericLibrary classes
+* Testing individual SQL query formatters in rifGenericLibrary and writing extra MS SQL Server functions as needed
+* Work starts with the front/end and middleware in December.
 
 
 
