@@ -832,6 +832,7 @@ Note: no bounding box (bbox) in tiles.
    
 ## Database Bugs
 
+* INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded.
 * AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
   for duplicate county names within a state
 * Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
