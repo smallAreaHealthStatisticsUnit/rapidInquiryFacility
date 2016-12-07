@@ -37,7 +37,7 @@ Expected highlights this month:
 | 50   | 12 December 2016  | SQL Server tile integration                                              | Data Loader                                                                                       | Remaining data display methods, Java                                                           |                                                                     |                                                |                                                           |       |
 | 51   | 19 December 2016  | Holiday                                                                  | Holiday                                                                                           | Holiday                                                                                        | Holiday                                                             | Holiday                                        |                                                           |       |
 | 52   | 26 December 2016  | Christmas                                                                | Christmas                                                                                         | Christmas                                                                                      | Christmas                                                           | Christmas                                      |                                                           |       |
-| 1    | 02 January 2017   | SQL Server study submission and data extraction; installer documentation | Data Loader (port to SQL Server)                                                                  | Documentation, manual                                                                          |                                                                     | SQL Server middleware                          | Full end to end on Postgres, SQL Server fromnt end logon  |       |
+| 1    | 02 January 2017   | SQL Server study submission and data extraction; installer documentation | Data Loader (port to SQL Server)                                                                  | Documentation, manual                                                                          |                                                                     | SQL Server middleware                          | Full end to end on Postgres, SQL Server front end logon   |       |
 | 2    | 09 January 2017   | SQL Server tile integration                                              | Data Loader                                                                                       |                                                                                                |                                                                     |                                                |                                                           |       |
 | 3    | 16 January 2017   | SQL Server data extract                                                  | Data Loader                                                                                       |                                                                                                |                                                                     |                                                |                                                           |       |
 | 4    | 23 January 2017   | SQL Server data extract                                                  | Data Loader                                                                                       |                                                                                                |                                                                     |                                                | Data Loader                                               |       |
@@ -149,7 +149,7 @@ the process of running the study.
 |        10 | 24 mins  |            |  
 |        11 | 80 mins  |            |
 
-  * SQL Server requires more tuning! After a good tune:
+  * SQL Server required more tuning! After a good tune:
   
 | Zoomlevel | PostGIS  | SQL Server |
 | ----------| ---------|------------|
@@ -159,14 +159,15 @@ the process of running the study.
 |        10 | 24 mins  |            |  
 |        11 | 80 mins  |            |
 
-  * Postgres also aggregates GeoJSON into collections and still has the older NOT EXISTS code to eliminate tiles with no parent
+  Postgres also aggregates GeoJSON into collections and still has the older NOT EXISTS code to eliminate tiles with no parent
+  
 * Added Wellknown text output to tile intersects table for topoJSON conversion program
 * Map tile generator prototype; topoJSON tiles and SVG tile creation
 * Map tile generator: connect to SQL server
 * XML configuration file support
 * RIF team meeting, project planning, SQL server tile maker porting
 * SQL server tile maker bulk insert
-* Comiment geielvel data tables
+* Comment geielvel data tables
 * Add support for description on DBF fields to XML config
 * Added logging to tile maker
 
