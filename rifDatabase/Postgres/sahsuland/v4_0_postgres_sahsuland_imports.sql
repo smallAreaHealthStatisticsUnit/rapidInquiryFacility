@@ -275,7 +275,7 @@ VALUES (
 'SAHSULAND_POP','SAHSU land population', 'SAHSULAND', 1989,1996,NULL,1,0,0,1,1);
 
 DELETE FROM rif40_table_outcomes  WHERE numer_tab = 'SAHSULAND_CANCER';
--- This is wrong
+-- This is NOT wrong
 INSERT INTO rif40_table_outcomes(outcome_group_name, numer_tab, current_version_start_year)
 VALUES ('SINGLE_ICD', 'SAHSULAND_CANCER', 1993);
 --INSERT INTO rif40_table_outcomes(outcome_group_name, numer_tab, current_version_start_year)
