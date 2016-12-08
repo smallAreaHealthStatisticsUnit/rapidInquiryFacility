@@ -942,6 +942,7 @@ exports.convert = function exportsConvert(req, res) {
 						httpErrorResponse: httpErrorResponse
 					});
 				
+//					response.fields=ofields; // Bring into scope early
 					if (req.url == '/geo2TopoJSON') {
 						
 						if (!geo2TopoJSON.geo2TopoJSONFiles(d_files, ofields, topojson_options, stderr, response, serverLog, req)) {

@@ -45,7 +45,13 @@
 // Peter Hambly, SAHSU
  
  // Functions exported to nodeGeoSptialServices.jhs
- 
+
+const serverLog = require('../lib/serverLog'),
+	  httpErrorResponse = require('../lib/httpErrorResponse'),
+	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
+	  async = require('async'),
+	  clone = require('clone'); 
+		  
 /*
  * Function:	shpConvertFieldProcessor()
  * Parameters:	fieldname, val, shapefile_options, ofields [field parameters array], response object, 
@@ -127,11 +133,6 @@ shpConvert = function shpConvert(ofields, d_files, response, req, res, shapefile
 	
 	var shpList = {};
 	var shpTotal=0;		
-
-	const serverLog = require('../lib/serverLog'),
-	      httpErrorResponse = require('../lib/httpErrorResponse'),
-	      nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
-		  async = require('async'); 
 
 	if (!req) {
 		throw new Error("No HTTP request object [out of scope]");
@@ -1509,13 +1510,62 @@ This error in actually originating from the error handler function
 			quantization: 			response.fields["quantization"]			
 		};
 
-		var dataLoader = {
-			geographyName:	(response.fields["geographyName"] || "To be added by user"),
-			geographyDesc:	(response.fields["geographyDesc"] || "To be added by user"),
+		/*
+		CREATE TABLE rif40_geographies
+		(
+		  geography character varying(50) NOT NULL, -- Geography name
+		  description character varying(250) NOT NULL, -- Description
+		  hierarchytable character varying(30) NOT NULL, -- Hierarchy table
+		  tiletable character varying(30) NOT NULL, -- Tile table
+		  geometrytable character varying(30) NOT NULL, -- Geometry table
+		  srid integer DEFAULT 0, -- Postgres projection SRID
+		  defaultcomparea character varying(30), -- Default comparison area
+		  defaultstudyarea character varying(30), -- Default study area
+		  postal_population_table character varying(30), -- Postal population table. Table of postal points (e.g. postcodes, ZIP codes); geolevels; X and YCOORDINATES (in projection SRID); male, female and total populations. Converted to SRID points by loader [not in 4326 Web Mercator lat/long]. Used in creating population wieght centroids and in converting postal points to geolevels. Expected columns &lt;postal_point_column&gt;, XCOORDINATE, YCOORDINATE, 1+ &lt;GEOLEVEL_NAME&gt;, MALES, FEMALES, TOTAL
+		  postal_point_column character varying(30), -- Column name for postal points (e.g. POSTCODE, ZIP_CODE)
+		  partition smallint DEFAULT 0, -- Enable partitioning. Extract tables will be partition if the number of years >= 2x the RIF40_PARAMETERS parameters Parallelisation [which has a default of 4, so extracts covering 8 years or more will be partitioned].
+		  max_geojson_digits smallint DEFAULT 8, -- Max digits in ST_AsGeoJson() [optimises file size by removing unecessary precision, the default value of 8 is normally fine.]
+		  CONSTRAINT rif40_geographies_pk PRIMARY KEY (geography),
+		  CONSTRAINT partition_ck CHECK (partition = ANY (ARRAY[0, 1])),
+		  CONSTRAINT postal_population_table_ck CHECK (postal_population_table IS NOT NULL AND postal_point_column IS NOT NULL OR postal_population_table IS NULL AND postal_point_column IS NULL)
+		)
+		 */
+		var dataLoader = { // rif40_geographies record
+			geographyName:			(response.fields["geographyName"] || "To be added by user"),
+			geographyDesc:			(response.fields["geographyDesc"] || "To be added by user"),
+		    srid: 					response.file_list[0].srid,                  
+		    defaultcomparea: 		undefined,     
+		    defaultstudyarea: 		undefined,  
+		    minZoomlevel: 			response.fields["min_zoomlevel"],
+		    maxZoomlevel: 			response.fields["max_zoomlevel"], 
+			postalPopulationTable: 	undefined,
+			postalPointColumn:		undefined,
+			maxGeojsonDigits:		Math.log10(response.fields["quantization"]),
+			partition:				true,
 			geoLevel: []
 		}
-		xmlConfig.dataLoader=dataLoader;  // Putative geolevel setup 
-				
+		if (response.fields["geographyName"]) { // Add tables
+			dataLoader.hierarchyTable='hierarchy_' +  response.fields["geographyName"];    
+		    dataLoader.geometryTable='geometry_' +  response.fields["geographyName"];        
+		    dataLoader.tileTable='tiles_' +  response.fields["geographyName"];               
+		}
+		xmlConfig.dataLoader=dataLoader;  // Data loader and RIF40_GEOGRAPHIES setup 
+		
+		xmlConfig.parameters=clone(response.fields);	// Clone web interface parameters
+		var deleteList = ['my_reference', 'batchMode', 'topojson_options', 'uuidV1', 
+			'diagnosticFileDir', 'diagnosticFileName', 'statusFileName', 'responseFileName']; // Itesm to remove
+		for (var i=0; i<deleteList.length; i++) {
+			var deleteKey=deleteList[i];
+			if (xmlConfig.parameters[deleteKey]) {
+				delete xmlConfig.parameters[deleteKey];
+			}	
+//			else {	
+//				console.error('Unable to delete: xmlConfig.parameters["' + deleteKey + '"]');
+//			}
+		}
+		delete xmlConfig.parameters.verbose;
+//		console.error("XML config parameters: " + JSON.stringify(xmlConfig.parameters, null, 4));
+
 		if (response.file_errors > 0) {
 			var msg='Errors detected in shapefile read processing: ' + response.file_errors;
 			response.message = msg + "\n" + response.message;		
@@ -1536,6 +1586,7 @@ This error in actually originating from the error handler function
 			var bbox_errors=0;
 			
 			for (var i=0; i<response.file_list.length; i++) {
+				
 				geolevels[i] = {
 					i: i,
 					file_name: response.file_list[i].file_name,
@@ -1601,7 +1652,15 @@ This error in actually originating from the error handler function
 					"; areas: " + ngeolevels[i].total_areas + 
 					"; points: " + ngeolevels[i].points + 
 					"; geolevel: " + ngeolevels[i].geolevel_id; 
-				
+					
+				// Set default study and comparison areas							
+				if (ngeolevels[i].geolevel_id == 1) {
+					dataLoader.defaultcomparea=response.fields[ngeolevels[i].geolevel_name + "_areaID"]; // E.g. cb_2014_us_nation_5m_areaID
+				}
+				else if (ngeolevels[i].geolevel_id == (ngeolevels.length-1)) {
+					dataLoader.defaultstudyarea=response.fields[ngeolevels[i].geolevel_name + "_areaID"]; // E.g. cb_2014_us_county_500k_areaID
+				}
+			
 				var lookupTableRow = [];
 				var topojsonGeometries;
 				if (response.file_list[ngeolevels[i].i].topojson[0].topojson &&
