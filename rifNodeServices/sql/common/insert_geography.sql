@@ -2,15 +2,15 @@
  * SQL statement name: 	insert_geography.sql
  * Type:				Common SQL statement
  * Parameters:
- *						1: table; e.g. geography_cb_2014_us_county_500k
- *						2: geography; e.g. cb_2014_us_500k
+ *						1: table; e.g. GEOGRAPHY_CB_2014_US_COUNTY_500K
+ *						2: geography; e.g. CB_2014_US_500K
  *						3: geography description; e.g. United states to county level
- *						4: hierarchytable; e.g. hierarchy_cb_2014_us_500k
- *						5: geometrytable; e.g. geometry_cb_2014_us_500k
- *						6: tiletable; e.g. tiles_cb_2014_us_500k
+ *						4: hierarchytable; e.g. HIERARCHY_CB_2014_US_500K
+ *						5: geometrytable; e.g. GEOMETRY_CB_2014_US_500K
+ *						6: tiletable; e.g. TILES_CB_2014_US_500K
  * 						7: SRID; e.g. 4269
- *						8: Default comparision area
- *						9: Default study area
+ *						8: Default comparision area, e.g. GEOID
+ *						9: Default study area, e.g. STATENS
  *						10: Min zoomlevel
  *						11: Max zoomlevel
  *           			12: Postal population table (quote enclosed or NULL)

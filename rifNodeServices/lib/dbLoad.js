@@ -464,7 +464,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			var sqlStmt=new Sql("Insert into hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
 				getSqlFromFile("insert_hierarchy.sql", 
 					dbType, 
-					xmlConfig.dataLoader.geographyName.toLowerCase()			/* 1: Geography */,
+					xmlConfig.dataLoader.geographyName.toUpperCase()		/* 1: Geography */,
 					xmlConfig.dataLoader.maxZoomlevel 						/* 2: Max zoomlevel */), 
 				sqlArray);
 			
@@ -472,7 +472,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 					xmlConfig.dataLoader.geographyName.toLowerCase(),
 				getSqlFromFile("check_intersections.sql", 
 					dbType, 
-					xmlConfig.dataLoader.geographyName.toLowerCase() 				/* Geography */), 
+					xmlConfig.dataLoader.geographyName.toUpperCase() 		/* 1: Geography */), 
 				sqlArray);
 			
 		} // End of createHierarchyTable()
@@ -501,7 +501,9 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			
 			var sqlStmt=new Sql("Create geolevels meta data table",
 				getSqlFromFile("create_geolevels_table.sql", undefined /* Common */, 
-					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray); 
+					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* 1: geolevels table name */,
+					"geography_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* 2: geography table name */
+					), sqlArray); 
 			
 			var sqlStmt=new Sql("Comment geolevels meta data table",
 				getSqlFromFile("comment_table.sql", 
@@ -511,7 +513,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			
 			var fieldArray = ['geography', 'geolevel_name', 'geolevel_id', 'description', 'lookup_table',
 							  'lookup_desc_column', 'shapefile', 'shapefile_table', 'shapefile_area_id_column', 'shapefile_desc_column',
-							  'resolution', 'comparea', 'listing', 'areaid_count'];
+							  'resolution', 'comparea', 'listing', 'areaid_count',
+							  'centroids_table', 'centroids_area_id_column', 'covariate_table'];
 			var fieldDescArray = [
 				'Geography (e.g EW2001)',
 				'Name of geolevel. This will be a column name in the numerator/denominator tables',
@@ -526,7 +529,10 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 				'Can use a map for selection at this resolution (0/1)',
 				'Able to be used as a comparison area (0/1)',
 				'Able to be used in a disease map listing (0/1)',
-				'Total number of area IDs within the geolevel'];
+				'Total number of area IDs within the geolevel',
+				'Centroids table',
+				'Centroids area id column',
+				'Covariate table'];
 			for (var l=0; l< fieldArray.length; l++) {			
 				var sqlStmt=new Sql("Comment geolevels meta data column",
 					getSqlFromFile("comment_column.sql", 
@@ -538,17 +544,27 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			}		
 			
 			for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
+				var covariateTable='NULL';
+				if (xmlConfig.dataLoader.geoLevel[i].covariateTable) {
+					covariateTable="'" + xmlConfig.dataLoader.geoLevel[i].covariateTable.toUpperCase() +  "'";
+				}
+				var shapeFileAreaIdColumn='NULL';
+				if (xmlConfig.dataLoader.geoLevel[i].shapeFileAreaIdColumn) {
+					shapeFileAreaIdColumn="'" + xmlConfig.dataLoader.geoLevel[i].shapeFileAreaIdColumn.toUpperCase() +  "'";
+				}
 				var sqlStmt=new Sql("Insert geolevels meta data for: " + csvFiles[i].tableName, 
 					getSqlFromFile("insert_geolevel.sql", 
 						undefined /* Common */, 
-						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: table; e.g. geolevels_cb_2014_us_county_500k */,
-						xmlConfig.dataLoader.geographyName 								/* 2: geography; e.g. cb_2014_us_500k */,
-						csvFiles[i].tableName 											/* 3: Geolevel name; e.g. cb_2014_us_county_500k */,
+						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* 1: table; e.g. geolevels_cb_2014_us_county_500k */,
+						xmlConfig.dataLoader.geographyName.toUpperCase() 				/* 2: geography; e.g. CB_2014_US_500K */,
+						csvFiles[i].tableName.toUpperCase() 							/* 3: Geolevel name; e.g. CB_2014_US_COUNTY_500K */,
 						csvFiles[i].geolevel 											/* 4: Geolevel id; e.g. 3 */,
 						csvFiles[i].geolevelDescription 								/* 5: Geolevel description; e.g. "The State-County at a scale of 1:500,000" */,
-						"lookup_" + csvFiles[i].tableName 								/* 6: lookup table; e.g. lookup_cb_2014_us_county_500k */,
-						csvFiles[i].file_name 											/* 7: shapefile; e.g. cb_2014_us_county_500k */,
-						csvFiles[i].tableName											/* 8: shapefile table; e.g. cb_2014_us_county_500k */), 
+						"LOOKUP_" + csvFiles[i].tableName.toUpperCase()					/* 6: lookup table; e.g. LOOKUP_CB_2014_US_COUNTY_500K */,
+						csvFiles[i].file_name											/* 7: shapefile; e.g. cb_2014_us_county_500k */,
+						csvFiles[i].tableName.toUpperCase().toUpperCase()				/* 8: shapefile table; e.g. CB_2014_US_COUNTY_500K */,
+						covariateTable													/* 9: covariate_table; e.g. CB_2014_US_500K_COVARIATES_CB_2014_US_COUNTY_500K */,
+						shapeFileAreaIdColumn											/* 10: shapefile_area_id_column; e.g. COUNTYNS */), 
 					sqlArray);
 			}				
 		} // End of createGeolevelsTable()
@@ -582,23 +598,23 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			var postalPopulationTable='NULL'; 	// Handle NULLs
 			var postalPointColumn='NULL';
 			if (xmlConfig.dataLoader.postalPopulationTable) {
-				postalPopulationTable="'" + xmlConfig.dataLoader.postalPopulationTable + "'";
+				postalPopulationTable="'" + xmlConfig.dataLoader.postalPopulationTable.toUpperCase() + "'";
 			}
 			if (xmlConfig.dataLoader.postalPointColumn) {
-				postalPointColumn="'" + xmlConfig.dataLoader.postalPointColumn + "'";
+				postalPointColumn="'" + xmlConfig.dataLoader.postalPointColumn.toUpperCase() + "'";
 			}
 			var sqlStmt=new Sql("Populate geography meta data table",
 				getSqlFromFile("insert_geography.sql", 
 					undefined /* Common */, 
-					"geography_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* table; e.g. geography_cb_2014_us_county_500k */,
-					xmlConfig.dataLoader.geographyName 								/* Geography; e.g. cb_2014_us_500k */,
+					"geography_" + xmlConfig.dataLoader.geographyName.toUpperCase()	/* table; e.g. geography_cb_2014_us_county_500k */,
+					xmlConfig.dataLoader.geographyName.toUpperCase() 				/* Geography; e.g. CB_2014_US_500K */,
 					xmlConfig.dataLoader.geographyDesc 								/* Geography description; e.g. "United states to county level" */,
-					"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* Hierarchy table; e.g. hierarchy_cb_2014_us_500k */,
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* Geometry table; e.g. geometry_cb_2014_us_500k */,
-					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase()	    /* Tile table; e.g. tiles_cb_2014_us_500k */,
+					"HIERARCHY_" + xmlConfig.dataLoader.geographyName.toUpperCase()	/* Hierarchy table; e.g. HIERARCHY_CB_2014_US_500K */,
+					"GEOMETRY_" + xmlConfig.dataLoader.geographyName.toUpperCase()	/* Geometry table; e.g. GEOMETRY_CB_2014_US_500K */,
+					"TILES_" + xmlConfig.dataLoader.geographyName.toUpperCase()	    /* Tile table; e.g. TILES_CB_2014_US_500K */,
 					xmlConfig.dataLoader.srid 										/* SRID; e.g. 4269 */,
-					defaultcomparea													/* Default comparision area */,
-					defaultstudyarea												/* Default study area */,
+					defaultcomparea.toUpperCase()									/* Default comparision area, e.g. GEOID */,
+					defaultstudyarea.toUpperCase()									/* Default study area, e.g. STATENS */,
 					xmlConfig.dataLoader.minZoomlevel 								/* Min zoomlevel */,
 					xmlConfig.dataLoader.maxZoomlevel 								/* Max zoomlevel */,
 					postalPopulationTable											/* Postal population table */,

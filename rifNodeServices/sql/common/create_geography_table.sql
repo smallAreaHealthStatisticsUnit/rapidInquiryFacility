@@ -2,7 +2,7 @@
  * SQL statement name: 	create_geography_table.sql
  * Type:				Common SQL statement
  * Parameters:
- *						1: table; e.g. geography_cb_2014_us_county_500k
+ *						1: geography table; e.g. geography_cb_2014_us_county_500k
  *
  * Description:			Create geography table compatible with RIF40_GEOGRAPHIES
  *
@@ -43,7 +43,7 @@ CREATE TABLE %1 (
        partition 			   INTEGER      NOT NULL DEFAULT 0, 
        max_geojson_digits 	   INTEGER      NOT NULL DEFAULT 8, 	   
        CONSTRAINT %1_pk PRIMARY KEY(geography),
-	   CONSTRAINT partition_ck CHECK (partition IN (0, 1)),
-	   CONSTRAINT postal_population_table_ck CHECK (
+	   CONSTRAINT %1_part_ck CHECK (partition IN (0, 1)),
+	   CONSTRAINT %1_ppt_ck CHECK (
 			postal_population_table IS NOT NULL AND postal_point_column IS NOT NULL OR postal_population_table IS NULL AND postal_point_column IS NULL)
 	)

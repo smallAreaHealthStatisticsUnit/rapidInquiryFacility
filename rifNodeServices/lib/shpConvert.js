@@ -1633,8 +1633,7 @@ This error in actually originating from the error handler function
 					response.file_errors++;
 				}
 				if (ngeolevels[i].total_areas > 1 /* && ngeolevels[i].geoLevel_id >= (ngeolevels.length-1) */) {
-					ngeolevels[i].covariate_table=(response.fields["geographyName"] || "unk") +
-						"_covariates_" + ngeolevels[i].geolevel_name;
+					ngeolevels[i].covariate_table="cov_" + ngeolevels[i].geolevel_name;
 				}
 			}
 			
@@ -1712,7 +1711,14 @@ This error in actually originating from the error handler function
 					geolevelId: 					ngeolevels[i].geolevel_id,
 					geolevelName: 					ngeolevels[i].geolevel_name,
 					covariateTable:					ngeolevels[i].covariate_table,
-					geolevelDescription:			response.file_list[ngeolevels[i].i].desc
+					geolevelDescription:			response.file_list[ngeolevels[i].i].desc,
+					lookupTable:					'lookup_' + ngeolevels[i].geolevel_name,
+					lookupDescColumn: 				'AREANAME',			
+					shapeFileName: 					ngeolevels[i].file_name,
+					shapeFileTable:					path.basename(ngeolevels[i].file_name.toUpperCase(), 
+														path.extname(ngeolevels[i].file_name.toUpperCase())),
+					shapeFileAreaIdColumn: 			(response.file_list[ngeolevels[i].i].areaID || 
+														"To be added by user from dbfFieldList")
 				}
 				
 				xmlConfig.shapeFileList.shapeFiles[i] = {
