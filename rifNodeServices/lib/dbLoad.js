@@ -106,19 +106,21 @@ var getSqlFromFile = function getSqlFromFile(fileName, dbType, parameters) {
 		
 /*
  * Function: 	CreateDbLoadScripts()
- * Parameters:	Internal response object, HTTP request object, HTTP response object, dir, csvFiles object, callback to call at end of processing
+ * Parameters:	Internal response object, xmlConfig, HTTP request object, HTTP response object, dir, csvFiles object, callback to call at end of processing
  * Description:	Convert geoJSON to CSV; save as CSV files; create load scripts for Postgres and MS SQL server
  */		
-var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir,  csvFiles, endCallback) {
+var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req, res, dir,  csvFiles, endCallback) {
 	
 	scopeChecker(__file, __line, {
 		response: response,
 		message: response.message,
+		xmlConfig: xmlConfig,
+		dataLoader: xmlConfig.dataLoader,
 		fields: response.fields,
-		geographyName: response.fields["geographyName"],
-		min_zoomlevel: response.fields["min_zoomlevel"],
-		max_zoomlevel: response.fields["max_zoomlevel"],
-		srid: response.fields["srid"],
+		geographyName: xmlConfig.dataLoader.geographyName,
+		min_zoomlevel: xmlConfig.dataLoader.minZoomlevel,
+		max_zoomlevel: xmlConfig.dataLoader.maxZoomlevel,
+		srid: xmlConfig.dataLoader.srid,
 		dir: dir,
 		serverLog: serverLog,
 		req: req,
@@ -333,13 +335,13 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				tableList.push(csvFiles[i].tableName);
 				tableList.push("lookup_" + csvFiles[i].tableName);
 			}
-			tableList.push("geolevels_" + response.fields["geographyName"].toLowerCase());
-			tableList.push("geography_" + response.fields["geographyName"].toLowerCase());
-			tableList.push("hierarchy_" + response.fields["geographyName"].toLowerCase());
-			tableList.push("geometry_" + response.fields["geographyName"].toLowerCase());
-			tableList.push("tile_intersects_" + response.fields["geographyName"].toLowerCase());
-			tableList.push("tile_limits_" + response.fields["geographyName"].toLowerCase());
-			tableList.push("t_tiles_" + response.fields["geographyName"].toLowerCase());
+			tableList.push("geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("geography_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase());
 			
 			for (var i=0; i<tableList.length; i++) {												
 				var sqlStmt=new Sql("Describe table " + tableList[i], 
@@ -395,12 +397,12 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 		function createHierarchyTable() {
 			sqlArray.push(new Sql("Hierarchy table"));	
 			
-			var sqlStmt=new Sql("Drop table hierarchy_" + response.fields["geographyName"].toLowerCase(), 
-				getSqlFromFile("drop_table.sql", dbType, "hierarchy_" + response.fields["geographyName"].toLowerCase() /* Table name */), 
+			var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+				getSqlFromFile("drop_table.sql", dbType, "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
 				sqlArray); 
 			
-			var sqlStmt=new Sql("Create table hierarchy_" + response.fields["geographyName"].toLowerCase());
-			sqlStmt.sql="CREATE TABLE hierarchy_" + response.fields["geographyName"].toLowerCase() + " (\n";
+			var sqlStmt=new Sql("Create table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			sqlStmt.sql="CREATE TABLE hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + " (\n";
 			var pkField=undefined;
 			for (var i=0; i<csvFiles.length; i++) {	
 				if (i == 0) {
@@ -412,65 +414,65 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			
 				if (csvFiles[i].geolevel == csvFiles.length && pkField == undefined) {
 					pkField=csvFiles[i].tableName;
-					response.message+="\nDetected hierarchy_" + response.fields["geographyName"].toLowerCase() +
+					response.message+="\nDetected hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() +
 						" primary key: " + pkField + "; file: " + i + "; geolevel: " + csvFiles[i].geolevel;
 				}
 			}
 			sqlStmt.sql+=")";
 			sqlArray.push(sqlStmt);
 			
-			var sqlStmt=new Sql("Add primary key hierarchy_" + response.fields["geographyName"].toLowerCase(), 
+			var sqlStmt=new Sql("Add primary key hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
-					"hierarchy_" + response.fields["geographyName"].toLowerCase() 	/* Table name */, 
+					"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* Table name */, 
 					pkField 														/* Primary key */), 
 				sqlArray); 	
 					
 			for (var i=0; i<csvFiles.length; i++) {	// Add non unique indexes
 				if (csvFiles[i].geolevel != csvFiles.length && csvFiles[i].geolevel != 1) {	
 					var sqlStmt=new Sql("Add index key hierarchy_" + 
-						response.fields["geographyName"].toLowerCase() + "_" + csvFiles[i].tableName, 
+						xmlConfig.dataLoader.geographyName.toLowerCase() + "_" + csvFiles[i].tableName, 
 						getSqlFromFile("create_index.sql", undefined /* Common */, 
-							"hierarchy_" + response.fields["geographyName"].toLowerCase() + "_" + csvFiles[i].tableName	/* Index name */,
-							"hierarchy_" + response.fields["geographyName"].toLowerCase() 								/* Table name */, 
+							"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_" + csvFiles[i].tableName	/* Index name */,
+							"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() 								/* Table name */, 
 							csvFiles[i].tableName 																		/* Index column(s) */
 						), 
 						sqlArray); 
 				}
 			}
 			
-			var sqlStmt=new Sql("Comment table: hierarchy_" + response.fields["geographyName"].toLowerCase(),
+			var sqlStmt=new Sql("Comment table: hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
-					"hierarchy_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+					"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
 					"Hierarchy lookup table for " + response.fields["geographyDesc"]	/* Comment */), 
 				sqlArray);
 			
 			var sqlStmt=new Sql("Create function check_hierarchy_" + 
-					response.fields["geographyName"].toLowerCase(),		
+					xmlConfig.dataLoader.geographyName.toLowerCase(),		
 				getSqlFromFile("check_hierarchy_function.sql", 
 					dbType, 
-					response.fields["geographyName"].toLowerCase() 			/* Geography */), 
+					xmlConfig.dataLoader.geographyName.toLowerCase() 			/* Geography */), 
 				sqlArray);	
 			
 			var sqlStmt=new Sql("Comment function check_hierarchy_" + 
-					response.fields["geographyName"].toLowerCase(),
+					xmlConfig.dataLoader.geographyName.toLowerCase(),
 				getSqlFromFile("check_hierarchy_function_comment.sql", 
 					dbType, 
-					"check_hierarchy_" + response.fields["geographyName"].toLowerCase() /* Function name */), 
+					"check_hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Function name */), 
 				sqlArray);			
 			
-			var sqlStmt=new Sql("Insert into hierarchy_" + response.fields["geographyName"].toLowerCase(),
+			var sqlStmt=new Sql("Insert into hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
 				getSqlFromFile("insert_hierarchy.sql", 
 					dbType, 
-					response.fields["geographyName"].toLowerCase()			/* 1: Geography */,
-					response.fields["max_zoomlevel"] 						/* 2: Max zoomlevel */), 
+					xmlConfig.dataLoader.geographyName.toLowerCase()			/* 1: Geography */,
+					xmlConfig.dataLoader.maxZoomlevel 						/* 2: Max zoomlevel */), 
 				sqlArray);
 			
 			var sqlStmt=new Sql("Check intersctions  for geograpy: " + 
-					response.fields["geographyName"].toLowerCase(),
+					xmlConfig.dataLoader.geographyName.toLowerCase(),
 				getSqlFromFile("check_intersections.sql", 
 					dbType, 
-					response.fields["geographyName"].toLowerCase() 				/* Geography */), 
+					xmlConfig.dataLoader.geographyName.toLowerCase() 				/* Geography */), 
 				sqlArray);
 			
 		} // End of createHierarchyTable()
@@ -489,22 +491,22 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				var sqlStmt=new Sql("Drop generate_series() function", 
 					getSqlFromFile("drop_generate_series.sql", dbType), sqlArray); 
 			}	
-			var sqlStmt=new Sql("Drop view " + "tiles_" + response.fields["geographyName"].toLowerCase(), 
+			var sqlStmt=new Sql("Drop view " + "tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("drop_view.sql", dbType, 
-					"tiles_" + response.fields["geographyName"].toLowerCase() /* View name */), sqlArray); 
+					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* View name */), sqlArray); 
 					
-			var sqlStmt=new Sql("Drop table geolevels_" + response.fields["geographyName"].toLowerCase(), 
-				getSqlFromFile("drop_table.sql", dbType, "geolevels_" + response.fields["geographyName"].toLowerCase() /* Table name */), 
+			var sqlStmt=new Sql("Drop table geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+				getSqlFromFile("drop_table.sql", dbType, "geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
 				sqlArray); 
 			
 			var sqlStmt=new Sql("Create geolevels meta data table",
 				getSqlFromFile("create_geolevels_table.sql", undefined /* Common */, 
-					"geolevels_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray); 
+					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray); 
 			
 			var sqlStmt=new Sql("Comment geolevels meta data table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
-					"geolevels_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
 					"Geolevels: hierarchy of level within a geography"					/* Comment */), sqlArray);
 			
 			var fieldArray = ['geography', 'geolevel_name', 'geolevel_id', 'description', 'lookup_table',
@@ -529,7 +531,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				var sqlStmt=new Sql("Comment geolevels meta data column",
 					getSqlFromFile("comment_column.sql", 
 						dbType, 
-						"geolevels_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
 						fieldArray[l]														/* Column name */,
 						fieldDescArray[l]													/* Comment */), 
 					sqlArray);
@@ -539,8 +541,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				var sqlStmt=new Sql("Insert geolevels meta data for: " + csvFiles[i].tableName, 
 					getSqlFromFile("insert_geolevel.sql", 
 						undefined /* Common */, 
-						"geolevels_" + response.fields["geographyName"].toLowerCase() 	/* 1: table; e.g. geolevels_cb_2014_us_county_500k */,
-						response.fields["geographyName"] 								/* 2: geography; e.g. cb_2014_us_500k */,
+						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: table; e.g. geolevels_cb_2014_us_county_500k */,
+						xmlConfig.dataLoader.geographyName 								/* 2: geography; e.g. cb_2014_us_500k */,
 						csvFiles[i].tableName 											/* 3: Geolevel name; e.g. cb_2014_us_county_500k */,
 						csvFiles[i].geolevel 											/* 4: Geolevel id; e.g. 3 */,
 						csvFiles[i].geolevelDescription 								/* 5: Geolevel description; e.g. "The State-County at a scale of 1:500,000" */,
@@ -560,39 +562,55 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 		function createGeographyTable() {
 			sqlArray.push(new Sql("Geography meta data"));	
 			
-			var sqlStmt=new Sql("Drop table geography_" + response.fields["geographyName"].toLowerCase(), 
+			var sqlStmt=new Sql("Drop table geography_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("drop_table.sql", dbType, 
-					"geography_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray); 
+					"geography_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray); 
 	
 			var sqlStmt=new Sql("Create geography meta data table",
 				getSqlFromFile("create_geography_table.sql", undefined /* Common */, 
-					"geography_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray);
+					"geography_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray);
 
 			var sqlStmt=new Sql("Comment geography meta data table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
-					"geography_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"geography_" + xmlConfig.dataLoader.geographyName.toLowerCase(),/* Table name */
 					"Hierarchial geographies. Usually based on Census geography"	/* Comment */), sqlArray);
-	
+			var partition=0;	
+			if (dbType == "PostGres") {			// Only Postgres is partitioned
+				partition=1;
+			}
+			var postalPopulationTable='NULL'; 	// Handle NULLs
+			var postalPointColumn='NULL';
+			if (xmlConfig.dataLoader.postalPopulationTable) {
+				postalPopulationTable="'" + xmlConfig.dataLoader.postalPopulationTable + "'";
+			}
+			if (xmlConfig.dataLoader.postalPointColumn) {
+				postalPointColumn="'" + xmlConfig.dataLoader.postalPointColumn + "'";
+			}
 			var sqlStmt=new Sql("Populate geography meta data table",
 				getSqlFromFile("insert_geography.sql", 
 					undefined /* Common */, 
-					"geography_" + response.fields["geographyName"].toLowerCase()	/* table; e.g. geography_cb_2014_us_county_500k */,
-					response.fields["geographyName"] 								/* Geography; e.g. cb_2014_us_500k */,
-					response.fields["geographyDesc"] 								/* Geography description; e.g. "United states to county level" */,
-					"hierarchy_" + response.fields["geographyName"].toLowerCase()	/* Hierarchy table; e.g. hierarchy_cb_2014_us_500k */,
-					"geometry_" + response.fields["geographyName"].toLowerCase()	/* Geometry table; e.g. geometry_cb_2014_us_500k */,
-					"tiles_" + response.fields["geographyName"].toLowerCase()	    /* Tile table; e.g. tiles_cb_2014_us_500k */,
-					response.fields["srid"] 										/* SRID; e.g. 4269 */,
+					"geography_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* table; e.g. geography_cb_2014_us_county_500k */,
+					xmlConfig.dataLoader.geographyName 								/* Geography; e.g. cb_2014_us_500k */,
+					xmlConfig.dataLoader.geographyDesc 								/* Geography description; e.g. "United states to county level" */,
+					"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* Hierarchy table; e.g. hierarchy_cb_2014_us_500k */,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* Geometry table; e.g. geometry_cb_2014_us_500k */,
+					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase()	    /* Tile table; e.g. tiles_cb_2014_us_500k */,
+					xmlConfig.dataLoader.srid 										/* SRID; e.g. 4269 */,
 					defaultcomparea													/* Default comparision area */,
 					defaultstudyarea												/* Default study area */,
-					response.fields["min_zoomlevel"] 								/* Min zoomlevel */,
-					response.fields["max_zoomlevel"] 								/* Max zoomlevel */
+					xmlConfig.dataLoader.minZoomlevel 								/* Min zoomlevel */,
+					xmlConfig.dataLoader.maxZoomlevel 								/* Max zoomlevel */,
+					postalPopulationTable											/* Postal population table */,
+					postalPointColumn												/* Postal point column */,
+					partition														/* partition (0/1) */,
+					xmlConfig.dataLoader.maxGeojsonDigits							/* Max geojson digits */
 					), 
 				sqlArray);
 			
 			var fieldArray = ['geography', 'description', 'hierarchytable', 'geometrytable', 'tiletable', 
-					'srid', 'defaultcomparea', 'defaultstudyarea', 'minzoomlevel', 'maxzoomlevel'];
+					'srid', 'defaultcomparea', 'defaultstudyarea', 'minzoomlevel', 'maxzoomlevel',
+					'postal_population_table', 'postal_point_column', 'partition', 'max_geojson_digits'];
 			var fieldDescArray = ['Geography name', 
 				'Description', 
 				'Hierarchy table', 
@@ -602,12 +620,16 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				'Default comparison area: lowest resolution geolevel', 
 				'Default study area: highest resolution geolevel',
 				'Min zoomlevel',
-				'Max zoomlevel'];
+				'Max zoomlevel',
+				'Postal_population_table', 
+				'Postal_point_column', 
+				'Partition geometry and tile tables (0/1)', 
+				'Maximum digits in geojson (topojson quantisation)'];
 			for (var l=0; l< fieldArray.length; l++) {		
 				var sqlStmt=new Sql("Comment geography meta data column",
 					getSqlFromFile("comment_column.sql", 
 						dbType, 
-						"geography_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+						"geography_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
 						fieldArray[l]														/* Column name */,
 						fieldDescArray[l]													/* Comment */), 
 					sqlArray);
@@ -639,7 +661,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				geographic_centroid_wkt: "Wellknown text for geographic centroid"
 			};
 			
-			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+			for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 				fieldComments["wkt_" + k]="Wellknown text for zoomlevel " + k;
 			}
 				
@@ -764,10 +786,10 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				getSqlFromFile("add_geometry_column.sql", dbType, 
 					csvFiles[i].tableName 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'geom_orig' 			/* 2: column name; e.g. geographic_centroid */,
-					response.fields["srid"]	/* 3: Column SRID; e.g. 4326 */,
+					xmlConfig.dataLoader.srid	/* 3: Column SRID; e.g. 4326 */,
 					'MULTIPOLYGON' 			/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray);
 	
-			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+			for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 				var sqlStmt=new Sql("Add geometry column for zoomlevel: " + k,
 					getSqlFromFile("add_geometry_column.sql", dbType, 
 						csvFiles[i].tableName 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
@@ -781,7 +803,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				var sqlStmt=new Sql("Update geographic centroid, geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID");
 				sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n" + 
 "   SET geographic_centroid = ST_GeomFromText(geographic_centroid_wkt, 4326),\n";
-				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+				for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 					sqlStmt.sql+="" +
 "       geom_" + k + " = \n" +
 "       \t\tCASE ST_IsCollection(ST_GeomFromText(wkt_" + k + ", 4326)) /* Convert to Multipolygon */\n" +
@@ -791,16 +813,16 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				}
 				sqlStmt.sql+="" +
 "       geom_orig = ST_Transform(\n" +
-"       \t\tCASE ST_IsCollection(ST_GeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326)) /* Convert to Multipolygon */\n" +
-"       \t\t\tWHEN true THEN 	ST_GeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326)\n" +
-"       \t\t\tELSE 			ST_Multi(ST_GeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326))\n" +
-"       \t\tEND, " + response.fields["srid"] + ")";
+"       \t\tCASE ST_IsCollection(ST_GeomFromText(wkt_" + xmlConfig.dataLoader.maxZoomlevel + ", 4326)) /* Convert to Multipolygon */\n" +
+"       \t\t\tWHEN true THEN 	ST_GeomFromText(wkt_" + xmlConfig.dataLoader.maxZoomlevel + ", 4326)\n" +
+"       \t\t\tELSE 			ST_Multi(ST_GeomFromText(wkt_" + xmlConfig.dataLoader.maxZoomlevel + ", 4326))\n" +
+"       \t\tEND, " + xmlConfig.dataLoader.srid + ")";
 				sqlArray.push(sqlStmt);
 				
 				var sqlStmt=new Sql("Make geometry columns valid");
 				sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n" +
 "   SET\n";
-				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+				for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 					sqlStmt.sql+="" +		
 "       geom_" + k + " = CASE ST_IsValid(geom_" + k + ")\n" + 
 "		\t\tWHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_" + k + "), 3 /* Remove non polygons */)\n" +
@@ -820,13 +842,13 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				var sqlStmt=new Sql("Update geographic centroid, geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID");
 				sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n" + 
 						    "   SET geographic_centroid = geography::STGeomFromText(geographic_centroid_wkt, 4326),\n";							
-				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+				for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 					sqlStmt.sql+="       geom_" + k + " = geography::STGeomFromText(wkt_" + k + ", 4326).MakeValid(),\n";
 				}	
 // Needs codeplex SQL Server Spatial Tools:  http://sqlspatialtools.codeplex.com/wikipage?title=Current%20Contents&referringTitle=Home				
 				sqlStmt.sql+="" +
-"       geom_orig = /* geography::STTransform(geography::STGeomFromText(wkt_" + response.fields["max_zoomlevel"] + ", 4326).MakeValid(), " + 
-					response.fields["srid"] + ") NOT POSSIBLE */ NULL"; 
+"       geom_orig = /* geography::STTransform(geography::STGeomFromText(wkt_" + xmlConfig.dataLoader.maxZoomlevel + ", 4326).MakeValid(), " + 
+					xmlConfig.dataLoader.srid + ") NOT POSSIBLE */ NULL"; 
 				sqlArray.push(sqlStmt);
 			}
 
@@ -834,7 +856,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			
 			var sqlStmt=new Sql("Check validity of geometry columns");
 			var selectFrag=undefined;
-			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+			for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 				var sqlFrag=undefined;
 				if (dbType == "PostGres") {		
 					sqlFrag="SELECT areaname,\n" +
@@ -918,7 +940,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 // as used to detect the problem
 //
 			sqlArray.push(new Sql("Make all polygons right handed"));
-			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+			for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 				var sqlStmt=new Sql("Make all polygons right handed for zoomlevel: " + k);
 				if (dbType == "MSSQLServer") {	
 					sqlStmt.sql=getSqlFromFile("force_rhr.sql", dbType, 
@@ -931,7 +953,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 				var sqlStmt=new Sql("Make all polygons right handed for original geometry", 
 "UPDATE " + csvFiles[i].tableName + "\n" +
 "   SET");
-				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+				for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 					sqlStmt.sql+="" +
 "       geom_" + k + " = ST_ForceRHR(geom_" + k + "),\n";
 				}
@@ -944,11 +966,11 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			
 			var sqlStmt=new Sql("Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server)",
 				getSqlFromFile("area_check.sql", dbType, 
-					"geom_" + response.fields["max_zoomlevel"] 	/* 1: geometry column; e.g. geom_11 */,
+					"geom_" + xmlConfig.dataLoader.maxZoomlevel 	/* 1: geometry column; e.g. geom_11 */,
 					csvFiles[i].tableName 						/* 2: table name; e.g. cb_2014_us_county_500k */), sqlArray);
 		
 			sqlArray.push(new Sql("Create spatial indexes"));
-			for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+			for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 				var sqlStmt=new Sql("Index geometry column for zoomlevel: " + k,
 					getSqlFromFile("create_spatial_index.sql", dbType, 
 						csvFiles[i].tableName + "_geom_" + k + "_gix"	/* Index name */,
@@ -965,19 +987,13 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, req, res, dir, 
 			
 			var sqlStmt=new Sql("Areas and centroids report",
 				getSqlFromFile("area_centroid_report.sql", dbType, 
-					"geom_" + response.fields["max_zoomlevel"]	/* 1: geometry column; e.g. geom_11 */,
+					"geom_" + xmlConfig.dataLoader.maxZoomlevel	/* 1: geometry column; e.g. geom_11 */,
 					csvFiles[i].tableName  						/* Table name */), sqlArray);
 			
-			// Set default study and comparison areas
-			if (csvFiles[i].geolevel == 1) {
-				defaultcomparea=response.fields[csvFiles[i].file_name_no_ext + "_areaID"]; // E.g. cb_2014_us_nation_5m_areaID
-			}
-			else if (csvFiles[i].geolevel == (csvFiles.length-1)) {
-				defaultstudyarea=response.fields[csvFiles[i].file_name_no_ext + "_areaID"]; // E.g. cb_2014_us_county_500k_areaID
-			}
-//			else {
-//				console.error("No match for geolevel: " + csvFiles[i].geolevel);
-//			}			
+			// Get default study and comparison areas
+			defaultcomparea=xmlConfig.dataLoader.defaultcomparea; // E.g. cb_2014_us_nation_5m_areaID
+			defaultstudyarea=xmlConfig.dataLoader.defaultstudyarea; // E.g. cb_2014_us_county_500k_areaID
+		
 		} // End of createShapeFileTable()
 
 		/*
@@ -1024,24 +1040,24 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
  */
 			var sqlStmt=new Sql("Tile check", 
 				getSqlFromFile("tile_check.sql", dbType,
-					"geolevels_" + response.fields["geographyName"].toLowerCase() 	/* 1: Lowest resolution geolevels table */,
-					response.fields["geographyName"] 								/* 2: Geography */,
-					response.fields["min_zoomlevel"]							 	/* 3: min_zoomlevel */,
-					response.fields["max_zoomlevel"] 								/* 4: max_zoomlevel */,
+					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Lowest resolution geolevels table */,
+					xmlConfig.dataLoader.geographyName 								/* 2: Geography */,
+					xmlConfig.dataLoader.minZoomlevel							 	/* 3: min_zoomlevel */,
+					xmlConfig.dataLoader.maxZoomlevel 								/* 4: max_zoomlevel */,
 					singleBoundaryGeolevelTable										/* 5: Geolevel id = 1 geometry table */
 				), sqlArray); 
 
 			sqlArray.push(new Sql("Create tiles tables"));
 			
-			var sqlStmt=new Sql("Drop table " + "t_tiles_" + response.fields["geographyName"].toLowerCase(), 
+			var sqlStmt=new Sql("Drop table " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("drop_table.sql", dbType, 
-					"t_tiles_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray); 
+					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray); 
 					
 			if (dbType == "MSSQLServer") { 
 				var sqlStmt=new Sql("Create tiles table", 
 					getSqlFromFile("create_tiles_table.sql", 
 						undefined /* Common */,	
-						"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 1: Tiles table name */,
+						"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Tiles table name */,
 						"NVARCHAR(MAX)"													/* 2: JSON datatype (Postgres JSON, SQL server NVARCHAR(MAX)) */
 						), sqlArray); 
 			}
@@ -1049,7 +1065,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Create tiles table", 
 					getSqlFromFile("create_tiles_table.sql", 
 						undefined /* Common */,	
-						"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 1: Tiles table name */,
+						"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Tiles table name */,
 						"JSON"														/* 2: JSON datatype (Postgres JSON, SQL server Text) */
 						), sqlArray); 
 			}			
@@ -1057,7 +1073,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			var sqlStmt=new Sql("Comment tiles table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
-					"t_tiles_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
 					"Maptiles for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11"	/* Comment */), sqlArray);
 					
 			var fieldArray = ['geolevel_id', 'zoomlevel', 'x', 'y', 'optimised_geojson', 'optimised_topojson', 'tile_id'];
@@ -1072,7 +1088,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Comment tiles table column",
 					getSqlFromFile("comment_column.sql", 
 						dbType, 
-						"t_tiles_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+						"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
 						fieldArray[l]														/* Column name */,
 						fieldDescArray[l]													/* Comment */), 
 					sqlArray);
@@ -1086,17 +1102,17 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			var sqlStmt=new Sql("Create tiles view", 
 				getSqlFromFile("create_tiles_view.sql", 
 					dbType,	
-					"tiles_" + response.fields["geographyName"].toLowerCase() 		/* 1: Tiles view name */,
-					"geolevels_" + response.fields["geographyName"].toLowerCase()   /* 2: geolevel table; e.g. geolevels_cb_2014_us_county_500k */,
+					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* 1: Tiles view name */,
+					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase()   /* 2: geolevel table; e.g. geolevels_cb_2014_us_county_500k */,
 					"NOT_USED"															/* 3: JSON datatype (Postgres JSON, SQL server VARCHAR) */,
-					"t_tiles_" + response.fields["geographyName"].toLowerCase() 	/* 4: tiles table; e.g. t_tiles_cb_2014_us_500k */,
-					response.fields["max_zoomlevel"]								/* 5: Max zoomlevel; e.g. 11 */
+					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 4: tiles table; e.g. t_tiles_cb_2014_us_500k */,
+					xmlConfig.dataLoader.maxZoomlevel								/* 5: Max zoomlevel; e.g. 11 */
 					), sqlArray); 		
 
 			var sqlStmt=new Sql("Comment tiles view",
 				getSqlFromFile("comment_view.sql", 
 					dbType, 
-					"tiles_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
 					"Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!"	/* Comment */), sqlArray);
 					
 			var fieldArray = ['geography', 'geolevel_id', 'zoomlevel', 'x', 'y', 'optimised_geojson', 'optimised_topojson', 'tile_id', 'geolevel_name', 'no_area_ids'];
@@ -1114,7 +1130,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Comment tiles view column",
 					getSqlFromFile("comment_view_column.sql", 
 						dbType, 
-						"tiles_" + response.fields["geographyName"].toLowerCase(),		/* Table name */
+						"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
 						fieldArray[l]														/* Column name */,
 						fieldDescArray[l]													/* Comment */), 
 					sqlArray);
@@ -1128,21 +1144,21 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					sqlArray); 
 			}
 				
-			var sqlStmt=new Sql("Drop table " + "tile_limits_" + response.fields["geographyName"].toLowerCase(), 
+			var sqlStmt=new Sql("Drop table " + "tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("drop_table.sql", dbType, 
-					"tile_limits_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray); 
+					"tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray); 
 		
-			var sqlStmt=new Sql("Create table " + "tile_limits_" + response.fields["geographyName"].toLowerCase(), 
+			var sqlStmt=new Sql("Create table " + "tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("create_tile_limits_table.sql", dbType, 
-					"tile_limits_" + response.fields["geographyName"].toLowerCase() /* 1: Tile limits table */,
-					"geometry_" + response.fields["geographyName"].toLowerCase() 	/* 2: Geometry table */,
-					response.fields["max_zoomlevel"] 								/* 3: max_zoomlevel */), 
+					"tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* 1: Tile limits table */,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */,
+					xmlConfig.dataLoader.maxZoomlevel 								/* 3: max_zoomlevel */), 
 				sqlArray); 
 
 			var sqlStmt=new Sql("Comment tile limits table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
-					"tile_limits_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
 					"Tile limits"	/* Comment */), sqlArray);
 					
 			var fieldArray = ['zoomlevel', 'x_min', 'x_max', 'y_min', 'y_max', 'y_mintile', 'y_maxtile',
@@ -1161,7 +1177,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Comment tile limits table column",
 					getSqlFromFile("comment_column.sql", 
 						dbType, 
-						"tile_limits_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+						"tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
 						fieldArray[l]														/* Column name */,
 						fieldDescArray[l]													/* Comment */), 
 					sqlArray);
@@ -1171,42 +1187,42 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Make primary key not null",
 					getSqlFromFile("not_null.sql", 
 						dbType, 
-						"tile_limits_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */,
 						"zoomlevel"															/* Primary key */), 
 					sqlArray);
 			}			
 			var sqlStmt=new Sql("Add primary key",
 				getSqlFromFile("add_primary_key.sql", 
 					undefined /* Common */, 
-					"tile_limits_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+					"tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */,
 					"zoomlevel"									/* Primary key */), 
 				sqlArray);	
 			var sqlStmt=new Sql("Analyze table",
 				getSqlFromFile("analyze_table.sql", 
 					dbType, 
-					"tile_limits_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+					"tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
 				sqlArray);	
 			var sqlStmt=new Sql("Analyze table",
 				"SELECT zoomlevel, x_min, x_max, y_min, y_max, y_mintile, y_maxtile, x_mintile, x_maxtile FROM tile_limits_" + 
-					response.fields["geographyName"].toLowerCase(), 
+					xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				sqlArray);	
 					
 			if (dbType == "MSSQLServer") { 
-				var sqlStmt=new Sql("Drop table " + "tile_intersects_" + response.fields["geographyName"].toLowerCase(), 
+				var sqlStmt=new Sql("Drop table " + "tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 					getSqlFromFile("drop_table.sql", dbType, 
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray);
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray);
 			}
 			else if (dbType == "PostGres") { 
-				var sqlStmt=new Sql("Drop table " + "tile_intersects_" + response.fields["geographyName"].toLowerCase(), 
+				var sqlStmt=new Sql("Drop table " + "tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 					getSqlFromFile("drop_table_cascade.sql", dbType, 
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase() /* Table name */), sqlArray);						
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray);						
 			}
 			
 			if (dbType == "MSSQLServer") { // No JSON in SQL Server
 				var sqlStmt=new Sql("Create tile intersects table",
 					getSqlFromFile("create_tile_intersects_table.sql", 
 						undefined /* Common */, 
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */,
 						"Text"									/* JSON datatype (Postgres: JSON, MS SQL Server: Text) */,
 						"bit"									/* STWithin() return datatype: bit (0/1) */), 
 					sqlArray);					
@@ -1215,7 +1231,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Create tile intersects table",
 					getSqlFromFile("create_tile_intersects_table.sql", 
 						undefined /* Common */, 
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */,
 						"JSON"									/* JSON datatype (Postgres: JSON, MS SQL Server: Text) */,
 						"BOOLEAN"								/* ST_Within() return datatype: bit (0/1) */), 
 					sqlArray);						
@@ -1223,14 +1239,14 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 
 			var sqlStmt=new Sql("Add geometry column: bbox",
 				getSqlFromFile("add_geometry_column2.sql", dbType, 
-					"tile_intersects_" + response.fields["geographyName"].toLowerCase()
+					"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()
 											/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'bbox' 					/* 2: column name; e.g. geographic_centroid */,
 					4326 					/* 3: Column SRID; e.g. 4326 */,
 					'POLYGON' 				/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray);
 			var sqlStmt=new Sql("Add geometry column: geom",
 				getSqlFromFile("add_geometry_column2.sql", dbType, 
-					"tile_intersects_" + response.fields["geographyName"].toLowerCase()
+					"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()
 											/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'geom' 					/* 2: column name; e.g. geographic_centroid */,
 					4326 					/* 3: Column SRID; e.g. 4326 */,
@@ -1239,7 +1255,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			var sqlStmt=new Sql("Comment tile intersects table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
-					"tile_intersects_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
 					"Tile area id intersects"	/* Comment */), sqlArray);
 					
 			var fieldArray = ['geolevel_id', 'zoomlevel', 'areaid', 'x', 'y', 'optimised_geojson',
@@ -1258,7 +1274,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Comment tile intersects table column",
 					getSqlFromFile("comment_column.sql", 
 						dbType, 
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase(),/* Table name */
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase(),/* Table name */
 						fieldArray[l]														/* Column name */,
 						fieldDescArray[l]													/* Comment */), 
 					sqlArray);
@@ -1268,25 +1284,25 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Create partitioned tables and insert function for tile intersects table; comment partitioned tables and columns",
 					getSqlFromFile("partition_tile_intersects_table.sql", 
 						dbType, 
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 1: Tile iontersects table name */,
-						response.fields["max_zoomlevel"]									/* 2: Max zoomlevel; e.g. 11 */,
-						"geolevels_" + response.fields["geographyName"].toLowerCase()		/* 3: Geolevels table; 
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 1: Tile iontersects table name */,
+						xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */,
+						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 3: Geolevels table; 
 																								e.g. geolevels_cb_2014_us_500k */), 
 					sqlArray);			
 
 				var sqlStmt=new Sql("Partition tile intersects table: insert trigger",
 					getSqlFromFile("partition_trigger.sql", 
 						dbType, 
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
 					sqlArray);						
 			}
 
 			var sqlStmt=new Sql("INSERT into tile intersects table",
 				getSqlFromFile("tile_intersects_insert.sql", 
 					dbType, 
-					"tile_intersects_" + response.fields["geographyName"].toLowerCase(),	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
-					"tile_limits_" + response.fields["geographyName"].toLowerCase(),		/* Tile limits table name; e.g. tile_limits_cb_2014_us_500k */
-					"geometry_" + response.fields["geographyName"].toLowerCase()			/* Geometry table name; e.g. geometry_cb_2014_us_500k */
+					"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					"tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Tile limits table name; e.g. tile_limits_cb_2014_us_500k */
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* Geometry table name; e.g. geometry_cb_2014_us_500k */
 					), sqlArray);
 
 					
@@ -1294,7 +1310,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Add primary key",
 					getSqlFromFile("add_primary_key.sql", 
 						undefined /* Common */, 
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Tile intersects table name */,
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Tile intersects table name */,
 						"geolevel_id, zoomlevel, areaid, x, y"									/* Primary key */), 
 					sqlArray);	
 			}
@@ -1302,7 +1318,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Add non clustered primary key",
 					getSqlFromFile("add_primary_key.sql", 
 						dbType, 
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Tile intersects table name */,
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Tile intersects table name */,
 						"geolevel_id, zoomlevel, areaid, x, y"									/* Primary key */), 
 					sqlArray);	
 			}	
@@ -1310,51 +1326,51 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			var sqlStmt=new Sql("Analyze table",
 				getSqlFromFile("analyze_table.sql", 
 					dbType, 
-					"tile_intersects_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+					"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
 				sqlArray);	
 				
 			var sqlStmt=new Sql("SELECT from tile intersects table",
 				getSqlFromFile("tile_intersects_select.sql", 
 					dbType, 
-					"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
 					), sqlArray);
 
 			if (dbType == "PostGres") { // Postgres tile manufacture
 				var sqlStmt=new Sql("Create tile intersects table INSERT function",
 					getSqlFromFile("tileMaker_intersector_function.sql", 
 						dbType, 
-						"tileMaker_intersector_" + response.fields["geographyName"].toLowerCase()	
+						"tileMaker_intersector_" + xmlConfig.dataLoader.geographyName.toLowerCase()	
 																							/* 1: function name; e.g. tileMaker_intersector_cb_2014_us_500k */,
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
-						"tile_limits_" + response.fields["geographyName"].toLowerCase()		/* 3: tile limits table; e.g. tile_limits_cb_2014_us_500k */,
-						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 4: geometry table; e.g. geometry_cb_2014_us_500k */), 
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
+						"tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 3: tile limits table; e.g. tile_limits_cb_2014_us_500k */,
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 4: geometry table; e.g. geometry_cb_2014_us_500k */), 
 					sqlArray);
 
 				var sqlStmt=new Sql("Create second tile intersects table INSERT function (simplification errors)",
 					getSqlFromFile("tileMaker_intersector_function2.sql", 
 						dbType, 
-						"tileMaker_intersector2_" + response.fields["geographyName"].toLowerCase()	
+						"tileMaker_intersector2_" + xmlConfig.dataLoader.geographyName.toLowerCase()	
 																							/* 1: function name; e.g. tileMaker_intersector2_cb_2014_us_500k */,
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
-						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 3: geometry table; e.g. geometry_cb_2014_us_500k */), 
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 3: geometry table; e.g. geometry_cb_2014_us_500k */), 
 					sqlArray);		
 
 				var sqlStmt=new Sql("Create tiles table INSERT function (tile aggregator)",
 					getSqlFromFile("tileMaker_aggregator_function.sql", 
 						dbType, 
-						"tileMaker_aggregator_" + response.fields["geographyName"].toLowerCase()	
+						"tileMaker_aggregator_" + xmlConfig.dataLoader.geographyName.toLowerCase()	
 																							/* 1: function name; e.g. tileMaker_aggregator_cb_2014_us_500k */,
-						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
-						"t_tiles_" + response.fields["geographyName"].toLowerCase()			/* 3: tiles table; e.g. t_tiles_cb_2014_us_500k */,
-						"geolevels_" + response.fields["geographyName"].toLowerCase()		/* 4: geolevels table; e.g. geolevels_cb_2014_us_500k */), 
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 2: tile intersects table; e.g. tile_intersects_cb_2014_us_500k */,
+						"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* 3: tiles table; e.g. t_tiles_cb_2014_us_500k */,
+						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 4: geolevels table; e.g. geolevels_cb_2014_us_500k */), 
 					sqlArray);		
 
 				var sqlStmt=new Sql("Create tiles table INSERT function (tile aggregator)",
 					getSqlFromFile("tileMaker_main_function.sql", 
 						dbType, 
-						response.fields["geographyName"].toLowerCase()						/* 1: geography; e.g. cb_2014_us_500k */,
- 						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 2: geometry table; e.g. geometry_cb_2014_us_500k */,
- 						"geolevels_" + response.fields["geographyName"].toLowerCase()		/* 3: geolevels table; e.g. geolevels_cb_2014_us_500k */), 
+						xmlConfig.dataLoader.geographyName.toLowerCase()						/* 1: geography; e.g. cb_2014_us_500k */,
+ 						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 2: geometry table; e.g. geometry_cb_2014_us_500k */,
+ 						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 3: geolevels table; e.g. geolevels_cb_2014_us_500k */), 
 					sqlArray);				
 					
 			}	
@@ -1362,22 +1378,22 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("INSERT into tile intersects table (MSSQLServer tile manufacture)",
 					getSqlFromFile("tile_intersects_insert2.sql", 
 						dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase()	/* 1: Geometry table name; e.g. geometry_cb_2014_us_500k */,
- 						"geolevels_" + response.fields["geographyName"].toLowerCase()	/* 2: Geolevels table name; e.g. geolevels_cb_2014_us_500k */,
- 						"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* 3: Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 1: Geometry table name; e.g. geometry_cb_2014_us_500k */,
+ 						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 2: Geolevels table name; e.g. geolevels_cb_2014_us_500k */,
+ 						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 3: Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
 						), sqlArray);
 			} 
 			
 			var sqlStmt=new Sql("Tile intersects table % savings",
 				getSqlFromFile("tile_intersects_select2.sql", 
 					dbType, 
-					"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
 					), sqlArray);			
 	
 			var sqlStmt=new Sql("Tile intersects table % WKT update",
 				getSqlFromFile("tile_intersects_wkt_update.sql", 
 					dbType, 
-					"tile_intersects_" + response.fields["geographyName"].toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+					"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
 					), sqlArray);		
 					
 		} // End of createTilesTables()
@@ -1394,27 +1410,27 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			sqlArray.push(new Sql("Create geometry tables"));		
 			
 			if (dbType == "PostGres") { // Partition Postgres
-				var sqlStmt=new Sql("Drop geometry table " + "geometry_" + response.fields["geographyName"].toLowerCase(), 
+				var sqlStmt=new Sql("Drop geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 					getSqlFromFile("drop_table_cascade.sql", dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase() 		/* Table name */
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* Table name */
 						), sqlArray); 
 			}
 			else if (dbType == "MSSQLServer") {// MS SQL Server
-				var sqlStmt=new Sql("Drop geometry table " + "geometry_" + response.fields["geographyName"].toLowerCase(), 
+				var sqlStmt=new Sql("Drop geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 					getSqlFromFile("drop_table.sql", dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase() 		/* Table name */
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* Table name */
 						), sqlArray); 
 			}
 			
-			var sqlStmt=new Sql("Create geometry table " + "geometry_" + response.fields["geographyName"].toLowerCase(), 
+			var sqlStmt=new Sql("Create geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("create_geometry_table.sql", 
 					undefined /* Common */, 
-					"geometry_" + response.fields["geographyName"].toLowerCase() /* Table name */), 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
 				sqlArray); 
 					
 			var sqlStmt=new Sql("Add geom geometry column",
 				getSqlFromFile("add_geometry_column2.sql", dbType, 
-					"geometry_" + response.fields["geographyName"].toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'geom' 															/* 2: column name; e.g. geographic_centroid */,
 					4326															/* 3: Column SRID; e.g. 4326 */,
 					'MULTIPOLYGON' 													/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
@@ -1422,7 +1438,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			if (dbType == "MSSQLServer") { // Add bounding box for implement PostGIS && operator
  				var sqlStmt=new Sql("Add bbox geometry column",
 				getSqlFromFile("add_geometry_column2.sql", dbType, 
-					"geometry_" + response.fields["geographyName"].toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'bbox' 															/* 2: column name; e.g. geographic_centroid */,
 					4326															/* 3: Column SRID; e.g. 4326 */,
 					'POLYGON' 														/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
@@ -1430,7 +1446,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Comment geometry table column",
 					getSqlFromFile("comment_column.sql", 
 						dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase(), /* Geometry table name */
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), /* Geometry table name */
 						'bbox'														/* Column name */,
 						'Bounding box'												/* Comment */), 
 					sqlArray);
@@ -1439,7 +1455,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			var sqlStmt=new Sql("Comment geometry table",
 				getSqlFromFile("comment_table.sql", 
 					dbType, 
-					"geometry_" + response.fields["geographyName"].toLowerCase(),	/* Table name */
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
 					"All geolevels geometry combined into a single table for a single geography"	/* Comment */), sqlArray);
 					
 			var fieldArray = ['geolevel_id', 'zoomlevel', 'areaid', 'geom'];
@@ -1451,7 +1467,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Comment geometry table column",
 					getSqlFromFile("comment_column.sql", 
 						dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase(),		/* Geometry table name */
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Geometry table name */
 						fieldArray[l]														/* Column name */,
 						fieldDescArray[l]													/* Comment */), 
 					sqlArray);
@@ -1461,20 +1477,20 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Create partitioned tables and insert function for geometry table; comment partitioned tables and columns",
 					getSqlFromFile("partition_geometry_table1.sql", 
 						dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 1: Geometry table name */,
-						response.fields["max_zoomlevel"]									/* 2: Max zoomlevel; e.g. 11 */), 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+						xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */), 
 					sqlArray);			
 
 				var sqlStmt=new Sql("Partition geometry table: insert trigger",
 					getSqlFromFile("partition_trigger.sql", 
 						dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
 					sqlArray);						
 			}
 			
 			var sqlFrag=undefined;
 			for (var i=0; i<csvFiles.length; i++) { // Main file process loop				
-				for (var k=response.fields["min_zoomlevel"]; k <= response.fields["max_zoomlevel"]; k++) {
+				for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 					sqlFrag="INSERT INTO geometry_cb_2014_us_500k(geolevel_id, areaid, zoomlevel, geom)\n";
 					if (dbType == "PostGres") {
 						sqlFrag+="SELECT " + csvFiles[i].geolevel + " geolevel_id,\n" +
@@ -1501,7 +1517,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Update bounding box for implement PostGIS && operator",
 					getSqlFromFile("geometry_bbox_update.sql", 
 						dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 1: Geometry table name */), 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */), 
 					sqlArray);
 			
 			}
@@ -1510,8 +1526,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Add primary key, index and cluster (convert to index organized table)",
 					getSqlFromFile("partition_geometry_table2.sql", 
 						dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase()		/* 1: Geometry table name */,
-						response.fields["max_zoomlevel"]									/* 2: Max zoomlevel; e.g. 11 */), 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+						xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */), 
 					sqlArray);	
 			}		
 			else if (dbType == "MSSQLServer") { 
@@ -1523,14 +1539,14 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Add primary key",
 					getSqlFromFile("add_primary_key.sql", 
 						undefined /* Common */, 
-						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */,
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */,
 						"geolevel_id, areaid, zoomlevel"									/* Primary key */), 
 					sqlArray);	
 				var sqlStmt=new Sql("Create spatial index on geom",
 					getSqlFromFile("create_spatial_geometry_index.sql", 
 						dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase() + "_gix"	/* Index name */, 
-						"geometry_" + response.fields["geographyName"].toLowerCase()			/* Table name */, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_gix"	/* Index name */, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* Table name */, 
 						"geom"																	/* Geometry field name */,
 						csvFiles[0].bbox[0]														/* 4: Xmin (4326); e.g. -179.13729006727 */,
 						csvFiles[0].bbox[1]														/* 5: Ymin (4326); e.g. -14.3737802873213 */, 
@@ -1541,8 +1557,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Create spatial index on bbox",
 					getSqlFromFile("create_spatial_geometry_index.sql", 
 						dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase() + "_gix2"	/* Index name */, 
-						"geometry_" + response.fields["geographyName"].toLowerCase()			/* Table name */, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_gix2"	/* Index name */, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* Table name */, 
 						"bbox"																	/* Geometry field name */,
 						csvFiles[0].bbox[0]														/* 4: Xmin (4326); e.g. -179.13729006727 */,
 						csvFiles[0].bbox[1]														/* 5: Ymin (4326); e.g. -14.3737802873213 */, 
@@ -1553,15 +1569,15 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("Analyze table",
 					getSqlFromFile("analyze_table.sql", 
 						dbType, 
-						"geometry_" + response.fields["geographyName"].toLowerCase()		/* Table name */), 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
 					sqlArray);	
 			}
 					
 			var sqlStmt=new Sql("Update areaid_count column in geolevels table using geometry table", 
 				getSqlFromFile("geolevels_areaid_update.sql", 
 					dbType, 
-					"geolevels_" + response.fields["geographyName"].toLowerCase() /* Geolevels table */,
-					"geometry_" + response.fields["geographyName"].toLowerCase() /* Geometry table */), 
+					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Geolevels table */,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Geometry table */), 
 				sqlArray);
 				
 		} // End of createGeometryTables()
@@ -1628,14 +1644,14 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		}
 	} // End of addSQLStatements()
 	
-	var pgScript="pg_" + response.fields["geographyName"] + ".sql"
-	var mssqlScript="mssql_" + response.fields["geographyName"] + ".sql"
+	var pgScript="pg_" + xmlConfig.dataLoader.geographyName + ".sql"
+	var mssqlScript="mssql_" + xmlConfig.dataLoader.geographyName + ".sql"
 	
 	var pgStream=createSQLScriptHeader(dir + "/" + pgScript, "PostGres");
 	var mssqlStream=createSQLScriptHeader(dir + "/" + mssqlScript, "MSSQLServer");
 	
-	addSQLStatements(pgStream, csvFiles, response.fields["srid"], "PostGres");
-	addSQLStatements(mssqlStream, csvFiles, response.fields["srid"], "MSSQLServer");
+	addSQLStatements(pgStream, csvFiles, xmlConfig.dataLoader.srid, "PostGres");
+	addSQLStatements(mssqlStream, csvFiles, xmlConfig.dataLoader.srid, "MSSQLServer");
 	createSqlServerFmtFiles(dir, csvFiles);
 	
 	var endStr="\n\n--\n-- EOF\n";

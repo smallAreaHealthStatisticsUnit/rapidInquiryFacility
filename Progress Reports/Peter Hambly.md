@@ -747,10 +747,11 @@ RangeError: Invalid string length
 * Project meetings;
 * Empty database for dataloader (sahsuland_empty);
 * Data loading integration;
-
+* Rationalize geoDataLoader.xml with parameter and data loader sections, remove duplicates
 #### Current TODO list (December):
 
 * Add remaining geography, geolevels fields
+* Export tiles and geometry tables
 * geoDataLoader.xml support in front end
 * Standard test configurations:
   * SAHSULAND: relocated to Utah: reprojected to 1983 North American Projection (EPSG:4269)

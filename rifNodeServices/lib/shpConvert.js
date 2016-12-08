@@ -1494,18 +1494,10 @@ This error in actually originating from the error handler function
 			xmlFileName: 			"geoDataLoader.xml",
 			xmlFileDir:				dir,
 			uuidV1: 				response.fields["uuidV1"],
-			geographyName: 			(response.fields["geographyName"] || "To be added by user"),
-			geographyDescription: 	(response.fields["geographyDesc"] || "To be added by user"),
 			shapeFileList: {
 				shapeFiles: []
 			},
 			projection: {},
-			defaultStudyArea: 		undefined,
-			defaultComparisonArea: 	undefined,
-			hierarchyTableName: 	undefined,
-			hierarchyTableData: 	{
-				hierarchyTableRow:	[]
-			},
 			simplificationFactor: 	response.fields["simplificationFactor"],
 			quantization: 			response.fields["quantization"]			
 		};
@@ -1552,8 +1544,7 @@ This error in actually originating from the error handler function
 		xmlConfig.dataLoader=dataLoader;  // Data loader and RIF40_GEOGRAPHIES setup 
 		
 		xmlConfig.parameters=clone(response.fields);	// Clone web interface parameters
-		var deleteList = ['my_reference', 'batchMode', 'topojson_options', 'uuidV1', 
-			'diagnosticFileDir', 'diagnosticFileName', 'statusFileName', 'responseFileName']; // Itesm to remove
+		var deleteList = ['batchMode', 'uuidV1', 'diagnosticFileDir', 'diagnosticFileName', 'statusFileName', 'responseFileName']; // Itesm to remove
 		for (var i=0; i<deleteList.length; i++) {
 			var deleteKey=deleteList[i];
 			if (xmlConfig.parameters[deleteKey]) {
@@ -1564,6 +1555,8 @@ This error in actually originating from the error handler function
 //			}
 		}
 		delete xmlConfig.parameters.verbose;
+		delete xmlConfig.parameters.my_reference;
+		delete xmlConfig.parameters.topojson_options;
 //		console.error("XML config parameters: " + JSON.stringify(xmlConfig.parameters, null, 4));
 
 		if (response.file_errors > 0) {
@@ -1738,11 +1731,6 @@ This error in actually originating from the error handler function
 														"To be added by user/from extended attributes file"),
 					shapeFileName: 					ngeolevels[i].file_name,
 					shapeFileDir: 					dir,
-					lookupTable:					undefined,
-					lookupTableDescriptionColumn:	undefined,
-					lookupTableData: {
-						lookupTableRow:				lookupTableRow,
-					},
 					shapeFileTable:					path.basename(ngeolevels[i].file_name.toUpperCase(), 
 														path.extname(ngeolevels[i].file_name.toUpperCase())),
 					shapeFileAreaIdColumn: 			(response.file_list[ngeolevels[i].i].areaID || 
@@ -1938,7 +1926,7 @@ This error in actually originating from the error handler function
 //												tileMaker.tileMaker(response, req, res, finalResponse); // Call tile maker
 //
 // Call geojsonToCSV() - Convert geoJSON to CSV; save as CSV files; create load scripts for Postgres and MS SQL server
-													geojsonToCSV.geojsonToCSV(response, req, res, finalResponse); // Convert geoJSON to CSV
+													geojsonToCSV.geojsonToCSV(response, xmlConfig, req, res, finalResponse); // Convert geoJSON to CSV
 											}
 											catch (e) {	
 												serverLog.serverError2(__file, __line, "shapeFileQueueDrain", 

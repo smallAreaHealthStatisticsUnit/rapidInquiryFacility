@@ -57,14 +57,15 @@ const os = require('os'),
 	
 /*
  * Function: 	geojsonToCSV()
- * Parameters:	Internal response object, HTTP request object, HTTP response object, callback to call at end of processing
+ * Parameters:	Internal response object, xmlConfig, HTTP request object, HTTP response object, callback to call at end of processing
  * Description:	Convert geoJSON to CSV; save as CSV files; create load scripts for Postgres and MS SQL server
  */		
-var geojsonToCSV = function geojsonToCSV(response, req, res, endCallback) {
+var geojsonToCSV = function geojsonToCSV(response, xmlConfig, req, res, endCallback) {
 	
 	scopeChecker(__file, __line, {
 		response: response,
 		message: response.message,
+		xmlConfig: xmlConfig,
 		serverLog: serverLog,
 		req: req,
 		res: res,
@@ -387,7 +388,7 @@ var geojsonToCSV = function geojsonToCSV(response, req, res, endCallback) {
 									endCallback(err); // Run end callback				
 								}
 								else {
-									dbLoad.CreateDbLoadScripts(response, req, res, dir, csvFiles, endCallback); // Create DB load scripts; 
+									dbLoad.CreateDbLoadScripts(response, xmlConfig, req, res, dir, csvFiles, endCallback); // Create DB load scripts; 
 													// Then run end callback
 								}
 							} // End of geoJSON2WKTFileCSVFilesEnd()

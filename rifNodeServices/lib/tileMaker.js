@@ -1315,11 +1315,20 @@ REFERENCE (from shapefile) {
 	var numZoomlevels; 
 	var numGeolevels;
 	var numTiles=0;
-	if (tileMakerConfig.xmlConfig == undefined || tileMakerConfig.xmlConfig.geographyName == undefined) {
+	if (tileMakerConfig.xmlConfig == undefined) {
+		dbErrorHandler(new Error("No XML config"));	
+	} 
+	else if (tileMakerConfig.xmlConfig.dataLoader == undefined) {
+		dbErrorHandler(new Error("No dataLoader in XML config"));
+	} 
+	else if (tileMakerConfig.xmlConfig.dataLoader[0] == undefined) {
+		dbErrorHandler(new Error("No dataLoader element 0 in XML config"));
+	} 
+	else if (tileMakerConfig.xmlConfig.dataLoader[0].geographyName == undefined) {
 		dbErrorHandler(new Error("No geography name in XML config"));
 	}
-	var geographyTable="geography_" + tileMakerConfig.xmlConfig.geographyName;
-	var geographyTableDescription=tileMakerConfig.xmlConfig.geographyDescription;
+	var geographyTable="geography_" + tileMakerConfig.xmlConfig.dataLoader[0].geographyName;
+	var geographyTableDescription=tileMakerConfig.xmlConfig.dataLoader[0].geographyDesc;
 	var transaction=undefined; // MSSQL only
 	startTransaction(function startTransactionCallback2(err) {
 		addUserToPath(function addUserToPathCallback2(err) {
