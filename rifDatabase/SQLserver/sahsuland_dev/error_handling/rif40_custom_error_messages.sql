@@ -453,5 +453,12 @@ EXEC sp_addmessage 51146, 16,
 EXEC sp_addmessage 51147, 16,
 	N'Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES';	
 
+EXEC sp_addmessage 51150, 16,
+	N'Function: [rif40].[rif40_startup], User must be non-privileged: %s';	
 
+EXEC sp_addmessage 51151, 16,
+	N'Function: [rif40].[rif40_addorupdate_comment], Missing object or schema name and cannot create comment: %s';	
+
+	
+	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';

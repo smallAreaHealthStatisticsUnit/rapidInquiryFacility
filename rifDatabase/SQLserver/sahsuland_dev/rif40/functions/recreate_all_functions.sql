@@ -62,6 +62,8 @@ GO
 :r ..\sahsuland_dev\rif40\functions\rif40_num_denom_validate.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_object_resolve.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_db_name_check.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_startup.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_addorupdate_comment.sql
 
 -- Created earlier by the sequences SQL script. Cannot be recreated once tables have been created
 -- :r ..\sahsuland_dev\rif40\functions\rif40_sequence_current_value.sql

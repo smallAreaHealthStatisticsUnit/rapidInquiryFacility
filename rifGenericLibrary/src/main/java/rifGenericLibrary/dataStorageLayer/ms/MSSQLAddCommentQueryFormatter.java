@@ -1,6 +1,8 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
  *
@@ -89,25 +91,37 @@ public class MSSQLAddCommentQueryFormatter extends AbstractSQLQueryFormatter {
 		this.comment = comment;
 	}
 	
-	public String generateQuery() {
+	//use a user-defined function to simplify adding/updating comments
+	public String generateQuery()  {
 		
-		addQueryPhrase(0, "COMMENT ON TABLE ");
 		
-		addQueryPhrase(getSchemaTableName(tableName));
-		
-		if (fieldName != null) {
-			addQueryPhrase(".");
-			addQueryPhrase(fieldName);
+		if (fieldName != null ) {
+			addQueryPhrase(0,"exec rif40.rif40_addorupdate_comment ?,?,?,?");
+		} else {
+			addQueryPhrase(0,"exec rif40.rif40_addorupdate_comment ?,?,null,?");
 		}
 		
-		addQueryPhrase(" IS ");
-		addQueryPhrase("'");
-		addQueryPhrase(comment);
-		addQueryPhrase("'");		
-				
 		return super.generateQuery();
+
 	}
 	
+	public void addCommentFields(PreparedStatement statement) throws SQLException {
+		String schemaName = getDatabaseSchemaName();
+		
+		
+		if (fieldName != null) {
+			statement.setString(1,schemaName);
+			statement.setString(2,tableName);
+			statement.setString(3,fieldName);
+			statement.setString(4,comment);
+		} else {
+			statement.setString(1,schemaName);
+			statement.setString(2,tableName);
+			statement.setString(3,comment);
+		}
+		
+		
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

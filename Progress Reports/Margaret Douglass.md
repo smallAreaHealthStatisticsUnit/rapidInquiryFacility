@@ -4,6 +4,11 @@ Principal Work Area: **Microsoft SQL server database port**
 
 ###2016
 
+###December
+Java related to the MS SQL Server port
+
+######8 December
+* Working on the comments query formatter.  Easiest to put all code into a user-defined MS SQL Server procedure and use Java to call the procedure.
 
 ###November
 Finally back looking at the RIF code!  (Although still only part time) Focus is on the Java classes that are used to connect to MS SQL Server so the Data Loader will be able to work on SQL Server.
