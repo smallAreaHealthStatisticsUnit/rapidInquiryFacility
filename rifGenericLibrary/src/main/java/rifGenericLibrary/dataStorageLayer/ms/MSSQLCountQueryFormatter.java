@@ -71,21 +71,14 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  *
  */
 
+// needs to remove all the order by nonsense -- this is a simple count with no group by!
+
 public final class MSSQLCountQueryFormatter 
 	extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	/**
-	 * The Enum SortOrder.
-	 */
-	public enum SortOrder {
-		
-	/** The ascending. */
-	ASCENDING, 
-	/** The descending. */
-	DESCENDING};
 
 	
 	// ==========================================
@@ -104,8 +97,6 @@ public final class MSSQLCountQueryFormatter
 	/** The where conditions. */
 	private ArrayList<String> whereConditions;
 	
-	/** The order by conditions. */
-	private ArrayList<String> orderByConditions;
 		
 	// ==========================================
 	// Section Construction
@@ -119,7 +110,6 @@ public final class MSSQLCountQueryFormatter
 		useDistinct = false;
 		fromTables = new ArrayList<String>();
 		whereConditions = new ArrayList<String>();
-		orderByConditions = new ArrayList<String>();
 	}
 
 	// ==========================================
@@ -260,70 +250,6 @@ public final class MSSQLCountQueryFormatter
 	 *
 	 * @param fieldName the field name
 	 */
-	public void addOrderByCondition(
-		final String fieldName) {
-			
-		addOrderByCondition(null, fieldName, SortOrder.ASCENDING);
-	}
-
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param fieldName the field name
-	 * @param sortOrder the sort order
-	 */
-	public void addOrderByCondition(
-		final String fieldName,
-		final SortOrder sortOrder) {
-		
-		addOrderByCondition(null, fieldName, sortOrder);
-	}
-	
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param tableName the table name
-	 * @param fieldName the field name
-	 */
-	public void addOrderByCondition(
-		final String tableName,
-		final String fieldName) {
-
-		addOrderByCondition(
-			tableName, 
-			fieldName, 
-			SortOrder.ASCENDING);		
-	}
-	
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param tableName the table name
-	 * @param fieldName the field name
-	 * @param sortOrder the sort order
-	 */
-	public void addOrderByCondition(
-		final String tableName,
-		final String fieldName,
-		final SortOrder sortOrder) {
-			
-		StringBuilder orderByCondition = new StringBuilder();
-			
-		if (tableName != null) {
-			orderByCondition.append(getSchemaTableName(tableName));
-			orderByCondition.append(".");
-		}
-		orderByCondition.append(fieldName);
-		orderByCondition.append(" ");
-		if (sortOrder == SortOrder.ASCENDING) {
-			orderByCondition.append("ASC");
-		}
-		else {
-			orderByCondition.append("DESC");			
-		}
-		
-		orderByConditions.add(orderByCondition.toString());
-	}
 	
 	@Override
 	public String generateQuery() {
@@ -364,18 +290,6 @@ public final class MSSQLCountQueryFormatter
 			}
 		}
 		
-		int numberOfOrderByConditions = orderByConditions.size();
-		if (numberOfOrderByConditions > 0) {
-			padAndFinishLine();
-			addQueryPhrase("ORDER BY ");
-			for (int i = 0; i < numberOfOrderByConditions; i++) {
-				if (i > 0) {
-					addQueryPhrase(",");
-					padAndFinishLine();
-				}
-				addQueryPhrase(convertCase(orderByConditions.get(i)));
-			}
-		}
 		
 		//addQueryPhrase(";");
 				

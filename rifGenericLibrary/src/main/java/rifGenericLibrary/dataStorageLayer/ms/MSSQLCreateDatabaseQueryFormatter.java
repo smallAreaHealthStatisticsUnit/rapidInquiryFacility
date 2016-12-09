@@ -103,6 +103,10 @@ public final class MSSQLCreateDatabaseQueryFormatter
 	@Override
 	public String generateQuery() {
 		
+		if (databaseName.length() > 128) {
+			databaseName = databaseName.substring(0,127);
+		}
+		
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "CREATE DATABASE ");
 		addQueryPhrase(databaseName);

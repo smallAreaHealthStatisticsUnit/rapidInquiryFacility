@@ -7,6 +7,17 @@ Principal Work Area: **Microsoft SQL server database port**
 ###December
 Java related to the MS SQL Server port
 
+######9 December
+* Testing comments query formatter code on networked version of SQL Server.  Problems getting permissions right for the test ID.  Must be able to execute stored procedures
+grant execute to 
+grant alter on schema::rif_data/rif40 to 
+* All table and function names need to explicitly state schemas.  AbstractSQLQueryFormatter.getSchemaTableName allows schema to be null/skipped, which is bad. 
+* MSSQLAggregateValueQueryFormatter.java  -- code OK except table names need explicit schemas.   
+* MSSQLCountQueryFormatter: Why would you ever order a count query with no group by aggregation? Kevin confirms we should remove the "order by" nonsense, I did so for MSSQL.  tables also need schemas.
+* MSSQLCountTableRowsQueryFormatter -- repeats functionality already in MSSQLCountQueryFormatter.  OK except for the schema.table issue.  
+* MSSQLCreateDatabaseQueryFormatter - Do we really need a generic class for this kind of very rare (I hope) command?  We are not going to be creating many databases in production version.  I added a check that the databaseName is a valid sql server identifier -- should that be a generic function?
+* MSSQLCreateIndexQueryFormatter: Should there be error messages if you index data types that are not indexable?
+
 ######8 December
 * Working on the comments query formatter.  Easiest to put all code into a user-defined MS SQL Server procedure and use Java to call the procedure.
 

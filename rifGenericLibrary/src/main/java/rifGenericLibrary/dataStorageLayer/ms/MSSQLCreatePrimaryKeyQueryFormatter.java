@@ -131,6 +131,9 @@ public final class MSSQLCreatePrimaryKeyQueryFormatter
 	@Override
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
+		
+		//also needs column to be not-null, not varchar(max) and other datatypes that cannot be indexed
+		
 		addQueryPhrase(0, "ALTER TABLE");
 		addQueryPhrase(" ");
 		addQueryPhrase(getSchemaTableName(tableName));

@@ -116,13 +116,21 @@ public final class MSSQLCreateIndexQueryFormatter
 	
 	@Override
 	public String generateQuery() {
+		String index_name = new String();
+		index_name = "ind_"+indexTable+"_"+indexTableField;
+
+		if (index_name.length() > 128) { //max length of an object name in SQL Server
+			index_name = index_name.substring(0,127);
+		}
+		
+		
+	    //columns with ntext, text, image, varchar(max), nvarchar(max),  varbinary(max), xml data types cannot be indexed  
+		//should there be errors?
+		
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "CREATE INDEX");
 		padAndFinishLine();
-		addQueryPhrase(1, "ind_");
-		addQueryPhrase(indexTable);
-		addQueryPhrase("_");
-		addQueryPhrase(indexTableField);
+		addQueryPhrase(1, index_name);
 		padAndFinishLine();
 		addPaddedQueryLine(0, "ON");
 		addQueryPhrase(1, getSchemaTableName(indexTable));
