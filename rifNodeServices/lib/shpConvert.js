@@ -1645,14 +1645,19 @@ This error in actually originating from the error handler function
 					"; points: " + ngeolevels[i].points + 
 					"; geolevel: " + ngeolevels[i].geolevel_id; 
 					
-				// Set default study and comparison areas							
-				if (ngeolevels[i].geolevel_id == 1) {
+				// Set default study and comparison areas	
+				ngeolevels[i].resolution=1; // Can use a map for selection at this resolution (0/1)
+				ngeolevels[i].comparea=1;	// Able to be used as a comparison area (0/1)
+				ngeolevels[i].listing=1;	// Able to be used in a disease map listing (0/1)					
+				if (ngeolevels[i].geolevel_id == 1) {		
+					ngeolevels[i].listing=0;	
 					dataLoader.defaultcomparea=response.fields[ngeolevels[i].geolevel_name + "_areaID"]; // E.g. cb_2014_us_nation_5m_areaID
 				}
 				else if (ngeolevels[i].geolevel_id == (ngeolevels.length-1)) {
 					dataLoader.defaultstudyarea=response.fields[ngeolevels[i].geolevel_name + "_areaID"]; // E.g. cb_2014_us_county_500k_areaID
+					ngeolevels[i].comparea=0;
 				}
-			
+				
 				var lookupTableRow = [];
 				var topojsonGeometries;
 				if (response.file_list[ngeolevels[i].i].topojson[0].topojson &&
@@ -1717,8 +1722,11 @@ This error in actually originating from the error handler function
 					shapeFileName: 					ngeolevels[i].file_name,
 					shapeFileTable:					path.basename(ngeolevels[i].file_name.toUpperCase(), 
 														path.extname(ngeolevels[i].file_name.toUpperCase())),
-					shapeFileAreaIdColumn: 			(response.file_list[ngeolevels[i].i].areaID || 
-														"To be added by user from dbfFieldList")
+					shapeFileAreaIdColumn: 			response.file_list[ngeolevels[i].i].areaID,
+					shapefileDescColumn: 			response.file_list[ngeolevels[i].i].areaName,			
+					resolution: 					ngeolevels[i].resolution, // Can use a map for selection at this resolution (0/1)
+					comparea:  						ngeolevels[i].comparea,	// Able to be used as a comparison area (0/1)
+					listing: 						ngeolevels[i].listing,	// Able to be used in a disease map listing (0/1)
 				}
 				
 				xmlConfig.shapeFileList.shapeFiles[i] = {

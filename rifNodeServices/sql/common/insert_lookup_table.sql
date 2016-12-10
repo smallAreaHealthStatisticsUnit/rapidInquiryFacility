@@ -1,4 +1,4 @@
-INSERT INTO lookup_%1(%1, areaname)
+INSERT INTO %1(%2, areaname)
 SELECT areaid, areaname
-  FROM %1
+  FROM %2
  ORDER BY 1
