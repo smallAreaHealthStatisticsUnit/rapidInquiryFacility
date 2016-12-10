@@ -425,6 +425,30 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 		 * Parameters:	Row object (from SQL query), geojson
 		 * Returns:		Nothing
 		 * Description:	Add geoJSON feature to object
+		 */	
+		toCSV: function() {
+			var str='{"type": "FeatureCollection","features":[]}'; // Null geojson
+			if (this.topojson) {
+				str=JSON.stringify(this.topojson);
+				str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 		
+			}
+			this.topojson=undefined; // Free up memory used for topojson	
+			
+			return (
+				this.geolevel_id + "," + 	// ID for ordering (1=lowest resolution). Up to 99 supported.
+				this.zoomlevel + "," +		// Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11
+				this.x + "," + 				// X tile number. From 0 to (2**<zoomlevel>)-1
+				this.y + "," + 				// Y tile number. From 0 to (2**<zoomlevel>)-1
+				"," + 						// Tile multipolygon in GeoJSON format, optimised for zoomlevel N.
+				'"' + str + ',"' +  		// Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.
+				this.tile_id		 		// Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>
+			);
+		},
+		/*
+		 * Function: 	addFeature()
+		 * Parameters:	Row object (from SQL query), geojson
+		 * Returns:		Nothing
+		 * Description:	Add geoJSON feature to object
 		 */			
 		addFeature: function(row, geojson) {
 			this.geojson.features.push(geojson);
@@ -486,7 +510,6 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 //					winston.log("error", "addTopoJson() called " + this.addTopoJsonCalls + ": " + this.tileId);
 //				}
 				this.geojson=undefined; // Free up memory used for geoJSON
-				this.topojson=undefined; // Free up memory used for topojson	
 			}	
 			else {
 				throw new Error("addTopoJson() called " + this.addTopoJsonCalls + ": no geoJSON for tile: " + this.tileId)
@@ -773,11 +796,11 @@ REFERENCE (from shapefile) {
 
 	/*
 	 * Function: 	getNumGeolevelsZoomlevels()
-	 * Parameters:	Geography table name, description, callback: tileIntersectsProcessingGeolevelLoop()
+	 * Parameters:	Geography table name, description, XML file directory, callback: tileIntersectsProcessingGeolevelLoop()
 	 * Returns:		Nothing
 	 * Description:	Convert geoJSON featureList to topojson, add to object, free up memory used for geoJSON
 	 */		
-	function getNumGeolevelsZoomlevels(geographyTable, geographyTableDescription, getNumGeolevelsZoomlevelsCallback) {
+	function getNumGeolevelsZoomlevels(geographyTable, geographyTableDescription, xmlFileDir, getNumGeolevelsZoomlevelsCallback) {
 		sql="SELECT * FROM " + geographyTable;
 		
 		var request;
@@ -840,7 +863,7 @@ REFERENCE (from shapefile) {
 						}
 						// For testing
 						// maxZoomlevel=5;
-						getNumGeolevelsZoomlevelsCallback(geographyTableData);	
+						getNumGeolevelsZoomlevelsCallback(geographyTableData, xmlFileDir);	
 					});		
 				}
 			});		
@@ -850,11 +873,11 @@ REFERENCE (from shapefile) {
 
 	/*
 	 * Function: 	tileIntersectsProcessingGeolevelLoop()
-	 * Parameters:	Geography table data
+	 * Parameters:	Geography table data, XML file directory
 	 * Returns:		Nothing
 	 * Description:	Asynchronous do while loop to process all geolevels; calls tileIntersectsProcessingZoomlevelLoop() for each geolevel
 	 */		
-	function tileIntersectsProcessingGeolevelLoop(geographyTableData) {
+	function tileIntersectsProcessingGeolevelLoop(geographyTableData, xmlFileDir) {
 	
 		var tileIntersectsTable='tile_intersects_' + geographyTableData.geography;
 		var geolevelsTable='geolevels_' + geographyTableData.geography;
@@ -889,7 +912,7 @@ REFERENCE (from shapefile) {
 			async.doWhilst(
 				function geolevelProcessing(callback) {		
 					tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolvelTableData[i].geolevel_name, geolvelTableData[i].geolevel_id, 
-						geographyTableData.geography, callback);
+						geographyTableData.geography, xmlFileDir, callback);
 				}, 
 				function geolevelTest() { // Mimic for loop
 					var res=false;
@@ -959,11 +982,12 @@ REFERENCE (from shapefile) {
 				
 	/*
 	 * Function: 	tileIntersectsProcessingZoomlevelLoop()
-	 * Parameters:	Tile intersects table name, geolevel name, geolevel id, geography, geolevel processing callback (callback from geolevelProcessing async)
+	 * Parameters:	Tile intersects table name, geolevel name, geolevel id, geography, XML file directory, 
+	 *				geolevel processing callback (callback from geolevelProcessing async)
 	 * Returns:		Nothing
 	 * Description:	Asynchronous do while loop to process all zoomlevels in a geolevel; calls tileIntersectsProcessing() for each zoomlevel
 	 */		
-	function tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolevelName, geolevel_id, geography, geolevelProcessingCallback) {
+	function tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolevelName, geolevel_id, geography, xmlFileDir, geolevelProcessingCallback) {
 		 
 // 
 // Primary key: geolevel_id, zoomlevel, areaid, x, y
@@ -990,9 +1014,26 @@ REFERENCE (from shapefile) {
 	
 		var zoomlevel=0;
 		zstart = new Date().getTime(); // Set timer for zoomlevel
+		
+		// Create CSV file for tiles
+		var fileNoext = "t_tiles_" + geolevelName.toLowerCase();	
+		var csvFileName=xmlFileDir + "/data/" + fileNoext + ".csv";		
+		try {
+			var csvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
+			winston.log("info", "Creating tile CSV file: " + csvFileName);	
+			csvStream.on('finish', function csvStreamClose() {
+				winston.log("verbose", "Tile csvStreamClose(): " + csvFileName);
+			});		
+			csvStream.on('error', function csvStreamError(e) {
+				winston.log("error", "Exception in CSV write to file: " + csvFileName, e.message);										
+			});
+		}
+		catch (e) {
+			dbErrorHandler(e, sql);
+		}	
 		async.doWhilst(
 			function zoomlevelProcessing(zoomlevelProcessingCallback) {		
-				tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, zoomlevelProcessingCallback);
+				tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, csvStream, zoomlevelProcessingCallback);
 			}, 
 			function zoomlevelTest() { // Mimic for loop
 				var res=false;
@@ -1010,6 +1051,8 @@ REFERENCE (from shapefile) {
 				return (res);
 			},
 			function zoomlevelProcessingEndCallback(err) {
+				
+				csvStream.end();
 //				winston.log("debug", 'zoomlevelProcessingEndCallback(): zoomlevel: ' + zoomlevel + ', geolevel_id: ' + geolevel_id + ', TileNo: ' + tileNo + '; numTiles: ' + numTiles);
 				geolevelProcessingCallback(err);
 			});
@@ -1017,12 +1060,13 @@ REFERENCE (from shapefile) {
 
 	/*
 	 * Function: 	tileIntersectsProcessing()
-	 * Parameters:	SQL statement, zoomlevel, geolevel id, geography, tile intersects processing callback (callback from zoomlevelProcessing async)
+	 * Parameters:	SQL statement, zoomlevel, geolevel id, geography, CSV file stream, 
+	 *				tile intersects processing callback (callback from zoomlevelProcessing async)
 	 * Returns:		Nothing
 	 * Description:	Asynchronous SQL fetch for all tile intersects in a geolevel/zoomlevel. Calls tileIntersectsRowProcessing() for each row. 
 	 *				Process last tile if required
 	 */			
-	function tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, tileIntersectsProcessingCallback) {
+	function tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, csvStream, tileIntersectsProcessingCallback) {
 
 		/*
 		 * Function: 	pgTileInsert()
@@ -1182,7 +1226,13 @@ REFERENCE (from shapefile) {
 
 		} // End of mssqlTileInsert()
 		
-		function tileIntersectsProcessingEnd(rowCount, dbType) {
+		/*
+		 * Function: 	 tileIntersectsProcessingEnd()
+		 * Parameters:	 rowCount, database type, CSV file stream
+		 * Returns:		 Nothing
+		 * Descrioption: Processing at end of zoomlevel
+		 */
+		function tileIntersectsProcessingEnd(rowCount, dbType, csvStream) {
 
 			var end = new Date().getTime();
 			var elapsedTime=(end - zstart)/1000; // in S
@@ -1211,46 +1261,73 @@ REFERENCE (from shapefile) {
 					"; total: " + tileNo + " tiles in " + tElapsedTime + " S; size: " + nodeGeoSpatialServicesCommon.fileSize(totalTileSize));
 				var expectedRows=tileArray.length;
 				numTiles+=tileArray.length;			
-				if (createPngfile) { // Create SVG tiles	
-					async.forEachOfSeries(tileArray, 
-					function writeSVGTileSeries(value, j, writeSVGTileCallback) { // Processing code	
-						// Write SVG tiles to disk
-
-							writeSVGTile(tileMakerConfig.xmlConfig.xmlFileDir + "/" + "/tiles", 
-								value.geolevel_id, value.zoomlevel, value.x, value.y, writeSVGTileCallback, value.svgTile);
-								var svgTileFileName=getSVGTileFileName(tileMakerConfig.xmlConfig.xmlFileDir + "/" + "/tiles", 
-									value.geolevel_id, value.zoomlevel, value.x, value.y)
-							svgFileList[svgTileFileName + '.svg']=svgTileFileName + '.png';
-							clipRectObj[svgTileFileName + '.svg']=value.svgTile.clipRect;
-		//  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\phantomjs-prebuilt\lib\phantom\bin\phantomjs.exe
-						},
-						function writeSVGTileEnd(err) { //  Callback
-			
-							if (err) {
-								dbErrorHandler(err);
-							}
-							else {							
-								if (dbType == "PostGres") {
-									pgTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
-								}		
-								else if (dbType == "MSSQLServer") {
-									mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
-								}			
-							}
-						}
-					); // End of async.forEachOfSeries(tileArray, ...)	
 				
-				}
-				else {				
-					if (dbType == "PostGres") {
-						pgTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
-					}		
-					else if (dbType == "MSSQLServer") {
-						mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
-					}	
-				}
-			}					
+				function csvFileCallback() {
+					if (createPngfile) { // Create SVG tiles	
+						async.forEachOfSeries(tileArray, 
+						function writeSVGTileSeries(value, j, writeSVGTileCallback) { // Processing code	
+							// Write SVG tiles to disk
 
+								writeSVGTile(tileMakerConfig.xmlConfig.xmlFileDir + "/" + "/tiles", 
+									value.geolevel_id, value.zoomlevel, value.x, value.y, writeSVGTileCallback, value.svgTile);
+									var svgTileFileName=getSVGTileFileName(tileMakerConfig.xmlConfig.xmlFileDir + "/" + "/tiles", 
+										value.geolevel_id, value.zoomlevel, value.x, value.y)
+								svgFileList[svgTileFileName + '.svg']=svgTileFileName + '.png';
+								clipRectObj[svgTileFileName + '.svg']=value.svgTile.clipRect;
+			//  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\phantomjs-prebuilt\lib\phantom\bin\phantomjs.exe
+							},
+							function writeSVGTileEnd(err) { //  Callback
+				
+								if (err) {
+									dbErrorHandler(err);
+								}
+								else {							
+									if (dbType == "PostGres") {
+										pgTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+									}		
+									else if (dbType == "MSSQLServer") {
+										mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+									}			
+								}
+							}
+						); // End of async.forEachOfSeries(tileArray, ...)	
+					
+					}
+					else {				
+						if (dbType == "PostGres") {
+							pgTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+						}		
+						else if (dbType == "MSSQLServer") {
+							mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+						}	
+					}					
+				} // End of csvFileCallback()			
+				
+				var l=0;
+				async.forEachOfSeries(tileArray, 
+					function tileArrayCSVSeries(value, j, csvCallback) { // Processing code	
+						l++;
+//						console.error("value[" + l + "/" + tileArray.length + "]: " + JSON.stringify(value).substring(0, 200));
+						buf=value.toCSV();
+						
+//						console.error("buf[" + l + "/" + tileArray.length + "]: " + JSON.stringify(buf).substring(0, 200));
+						buf+="\r\n";
+						if (l >= 1000) {
+							l=0;
+							var nextTickFunc = function nextTick() {
+								csvStream.write(buf, csvCallback);
+							}
+							process.nextTick(nextTickFunc);
+						}
+						else {
+							csvStream.write(buf, csvCallback);
+						} 		
+					}, // End of tileArrayCSVSeries
+					function tileArrayCSVSeriesEnd(err) { //  Callback
+						csvFileCallback(err);
+					} // End of tileArrayCSVSeriesEnd()		
+				); // End of async.forEachOfSeries()								
+			} // tileArray.length > 0					
 		} // End of tileIntersectsProcessingEnd()
 		
 		var request;
@@ -1281,12 +1358,12 @@ REFERENCE (from shapefile) {
 		
 		if (dbType == "PostGres") {
 			stream.on('end', function(result) {			
-				tileIntersectsProcessingEnd(result.rowCount, dbType);
+				tileIntersectsProcessingEnd(result.rowCount, dbType, csvStream);
 			});
 		}		
 		else if (dbType == "MSSQLServer") {	
 			stream.on('done', function(returnValue, affected) {
-				tileIntersectsProcessingEnd(mssqlRows, dbType);
+				tileIntersectsProcessingEnd(mssqlRows, dbType, csvStream);
 			});
 		}
 		
@@ -1327,12 +1404,16 @@ REFERENCE (from shapefile) {
 	else if (tileMakerConfig.xmlConfig.dataLoader[0].geographyName == undefined) {
 		dbErrorHandler(new Error("No geography name in XML config"));
 	}
+	else if (tileMakerConfig.xmlConfig.xmlFileDir == undefined) {
+		dbErrorHandler(new Error("No xmlFileDir in XML config"));
+	}
+	var xmlFileDir=tileMakerConfig.xmlConfig.xmlFileDir;
 	var geographyTable="geography_" + tileMakerConfig.xmlConfig.dataLoader[0].geographyName;
 	var geographyTableDescription=tileMakerConfig.xmlConfig.dataLoader[0].geographyDesc;
 	var transaction=undefined; // MSSQL only
 	startTransaction(function startTransactionCallback2(err) {
 		addUserToPath(function addUserToPathCallback2(err) {
-			getNumGeolevelsZoomlevels(geographyTable, geographyTableDescription, tileIntersectsProcessingGeolevelLoop);
+			getNumGeolevelsZoomlevels(geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop);
 		});
 	});
 }
