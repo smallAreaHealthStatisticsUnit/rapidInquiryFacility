@@ -748,9 +748,12 @@ RangeError: Invalid string length
 * Empty database for dataloader (sahsuland_empty);
 * Data loading integration;
 * Rationalize geoDataLoader.xml with parameter and data loader sections, remove duplicates
+* Add remaining geography, geolevels fields
+
+#### 12th to 16th December
+
 #### Current TODO list (December):
 
-* Add remaining geography, geolevels fields
 * Export tiles and geometry tables
 * geoDataLoader.xml support in front end
 * Standard test configurations:
