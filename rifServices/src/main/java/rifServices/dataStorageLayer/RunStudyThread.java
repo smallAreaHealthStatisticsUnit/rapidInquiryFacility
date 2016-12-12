@@ -166,8 +166,6 @@ public class RunStudyThread
 		this.studySubmission = studySubmission;
 		
 		
-		System.out.println("RunStudyThread initialise=="+rifServiceStartupOptions.useStrictValidationPolicy()+"==");
-		
 		RIFDatabaseProperties rifDatabaseProperties 
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
 		
@@ -218,15 +216,13 @@ public class RunStudyThread
 			establishCurrentStudyState();
 
 			while (studyStateMachine.isFinished() == false) {
-				System.out.println("RunStudyThread run current state 1==");
 
 				StudyState currentState
 					= studyStateMachine.getCurrentStudyState();
-				System.out.println("RunStudyThread run current state has name=="+currentState.getCode()+"=="+currentState.getDescription()+"==");
 
 				if (currentState == StudyState.STUDY_NOT_CREATED) {
-					//Study has been extracted but neither the extract nor map tables
-					//for that study have been produced.
+					//Study has not been created.  We need to add parts of it to the database.  At the end,
+					//we will have a description where we can generate extract tables
 					System.out.println("run create study BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 					createStudy();
 					System.out.println("run create study AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
@@ -248,10 +244,8 @@ public class RunStudyThread
 					System.out.println("run advertise results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 					break;
 				}
-				System.out.println("About to go to sleep");
 				
 				Thread.sleep(SLEEP_TIME);
-				System.out.println("About to wake up from a sleep");
 			}
 			
 			System.out.println("Finished!!");
@@ -298,7 +292,6 @@ public class RunStudyThread
 	private void createStudy() 
 		throws RIFServiceException {
 
-		System.out.println("CREATE STUDY =====================================START =============================");
 		studyID = createStudySubmissionStep.performStep(
 			connection, 
 			user, 
@@ -307,9 +300,7 @@ public class RunStudyThread
 		String statusMessage
 			= RIFServiceMessages.getMessage(
 				"studyState.studyCreated.description");
-		updateStudyStatusState(statusMessage);		
-		System.out.println("CREATE STUDY =====================================END =============================");
-		
+		updateStudyStatusState(statusMessage);			
 	}
 	
 	private void generateResults() 
@@ -359,8 +350,6 @@ public class RunStudyThread
 
 	private void updateStudyStatusState(final String statusMessage) 
 		throws RIFServiceException {
-
-		studyStateMachine.next();
 
 		StudyState currentStudyState = studyStateMachine.next();
 				
