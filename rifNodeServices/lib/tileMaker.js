@@ -1368,7 +1368,33 @@ REFERENCE (from shapefile) {
 		}
 		
 	} // End of tileIntersectsProcessing()
+	
+	/*
+	 * Function: 	geometryProcessing()
+	 * Parameters:	Geometry processing callback: tileProcessing(),
+	 *				Geograpy table, geography table description, XML file directory (original location of XML file), 
+	 *				callback function: tileIntersectsProcessingGeolevelLoop
+	 * Returns:		Nothing
+	 * Description:	Dump geometry tsbles to CSV, call Geometry processing callback: tileProcessing()
+	 */		
+	function geometryProcessing(geometryProcessingCallback,
+		geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop) {
 			
+		geometryProcessingCallback(geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop); // Call tileProcessing
+	}
+	/*
+	 * Function: 	tileProcessing()
+	 * Parameters:	Geograpy table, geography table description, XML file directory (original location of XML file), 
+	 *				callback function: tileIntersectsProcessingGeolevelLoop
+	 * Returns:		Nothing
+	 * Description:	Call getNumGeolevelsZoomlevels() then tile processing function: tileIntersectsProcessingGeolevelLoop() via callback
+	 */
+	function tileProcessing(geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop) {
+		addUserToPath(function addUserToPathCallback2(err) {
+			getNumGeolevelsZoomlevels(geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop);
+		});		
+	}
+	
 	var tileArray = [];	
 	var svgFileList = {};
 	var clipRectObj = {}
@@ -1412,9 +1438,7 @@ REFERENCE (from shapefile) {
 	var geographyTableDescription=tileMakerConfig.xmlConfig.dataLoader[0].geographyDesc;
 	var transaction=undefined; // MSSQL only
 	startTransaction(function startTransactionCallback2(err) {
-		addUserToPath(function addUserToPathCallback2(err) {
-			getNumGeolevelsZoomlevels(geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop);
-		});
+		geometryProcessing(tileProcessing, geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop);
 	});
 }
 
