@@ -764,13 +764,17 @@ REFERENCE (from shapefile) {
 				if (err) {
 					dbErrorHandler(err, sql);
 				}
-				sql='SET SEARCH_PATH TO "$user",' + result.rows[0].reset_val;
+				var currPath=result.rows[0].reset_val;
+				sql='SET SEARCH_PATH TO "$user",' + currPath;
 			
 				var query=client.query(sql, function setSearchPath(err, result) {
 					if (err) {
 						dbErrorHandler(err, sql);
 					}
-					addUserToPathCallback();	
+					else {
+						winston.log("info", 'Set Postgres search path to: "$user",' + currPath);
+						addUserToPathCallback();
+					}					
 				});
 			});	
 		}
@@ -781,14 +785,15 @@ REFERENCE (from shapefile) {
 				if (err) {
 					dbErrorHandler(err, sql);
 				}
-
-				if (recordset[0].default_schema.toLowerCase() == recordset[0].username.toLowerCase()) {
-					winston.log("verbose", "SQL Server path OK");
-					addUserToPathCallback();
-				}
 				else {
-					dbErrorHandler(new Error("addUserToPath(): default schema (" +
-						recordset[0].default_schema + ") != username (" + recordset[0].username + ")"), sql);
+					if (recordset[0].default_schema.toLowerCase() == recordset[0].username.toLowerCase()) {
+						winston.log("info", "SQL Server path OK");
+						addUserToPathCallback();
+					}
+					else {
+						dbErrorHandler(new Error("addUserToPath(): default schema (" +
+							recordset[0].default_schema + ") != username (" + recordset[0].username + ")"), sql);
+					}
 				}
 			});
 		}
@@ -816,57 +821,59 @@ REFERENCE (from shapefile) {
 			if (err) {
 				dbErrorHandler(err, sql);
 			}
-			var geographyTableData;
-			if (dbType == "PostGres") {
-				if (result.rows.length != 1) {
-					dbErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
+			else {
+				var geographyTableData;
+				if (dbType == "PostGres") {
+					if (result.rows.length != 1) {
+						dbErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
+					}
+					geographyTableData=result.rows[0];
+				}		
+				else if (dbType == "MSSQLServer") {	
+					if (result.length != 1) {
+						dbErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
+					}
+					geographyTableData=result[0];
 				}
-				geographyTableData=result.rows[0];
-			}		
-			else if (dbType == "MSSQLServer") {	
-				if (result.length != 1) {
-					dbErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
-				}
-				geographyTableData=result[0];
-			}
-			
-			sql="TRUNCATE TABLE t_tiles_" + geographyTableData.geography;
-			winston.log("debug", "SQL> %s;", sql);
-			var query=request.query(sql, function t_tilesDelete(err, result) {
-				if (err) {
-					dbErrorHandler(err, sql);
-				}
-				else {
-					sql="SELECT MAX(geolevel_id) AS max_geolevel_id,\n" +
-							"       MAX(zoomlevel) AS max_zoomlevel\n" +
-							"  FROM " + geographyTableData.geometrytable;
+				
+				sql="TRUNCATE TABLE t_tiles_" + geographyTableData.geography;
+				winston.log("debug", "SQL> %s;", sql);
+				var query=request.query(sql, function t_tilesDelete(err, result) {
+					if (err) {
+						dbErrorHandler(err, sql);
+					}
+					else {
+						sql="SELECT MAX(geolevel_id) AS max_geolevel_id,\n" +
+								"       MAX(zoomlevel) AS max_zoomlevel\n" +
+								"  FROM " + geographyTableData.geometrytable;
+								
+						var query=request.query(sql, function setSearchPath(err, result) {
+							if (err) {
+								dbErrorHandler(err, sql);
+							}
+							if (dbType == "PostGres") {
+								numZoomlevels=result.rows[0].max_zoomlevel;
+								numGeolevels=result.rows[0].max_geolevel_id;
+							}		
+							else if (dbType == "MSSQLServer") {	
+								numZoomlevels=result[0].max_zoomlevel;
+								numGeolevels=result[0].max_geolevel_id;
+							}
 							
-					var query=request.query(sql, function setSearchPath(err, result) {
-						if (err) {
-							dbErrorHandler(err, sql);
-						}
-						if (dbType == "PostGres") {
-							numZoomlevels=result.rows[0].max_zoomlevel;
-							numGeolevels=result.rows[0].max_geolevel_id;
-						}		
-						else if (dbType == "MSSQLServer") {	
-							numZoomlevels=result[0].max_zoomlevel;
-							numGeolevels=result[0].max_geolevel_id;
-						}
-						
-						if (numZoomlevels > maxZoomlevel) { // CLI overide
-							winston.log('info', 'Reduced zoomlevels from %d available to: %d', numZoomlevels, maxZoomlevel);
-						}
-						else {
-							winston.log('info', 'Zoomlevels to process per geolevel: %d', numZoomlevels);
-							maxZoomlevel=numZoomlevels;
-						}
-						// For testing
-						// maxZoomlevel=5;
-						getNumGeolevelsZoomlevelsCallback(geographyTableData, xmlFileDir);	
-					});		
-				}
-			});		
+							if (numZoomlevels > maxZoomlevel) { // CLI overide
+								winston.log('info', 'Reduced zoomlevels from %d available to: %d', numZoomlevels, maxZoomlevel);
+							}
+							else {
+								winston.log('info', 'Zoomlevels to process per geolevel: %d', numZoomlevels);
+								maxZoomlevel=numZoomlevels;
+							}
+							// For testing
+							// maxZoomlevel=5;
+							getNumGeolevelsZoomlevelsCallback(geographyTableData, xmlFileDir);	
+						});		
+					}
+				});					
+			}	
 		});	
 
 	} // End of getNumGeolevelsZoomlevels()
@@ -1368,31 +1375,143 @@ REFERENCE (from shapefile) {
 		}
 		
 	} // End of tileIntersectsProcessing()
+
+	/*
+	 * Function: 	getDataLoaderParameter()
+	 * Parameters:	Data loader object (dataLoader in XML), parameter name 
+	 * Returns:		Valuye
+	 * Description:	Get data loader parameter. Cope with single arrays instead of object itemdsds
+	 */		
+	function getDataLoaderParameter(dataLoader, parameter) {
+		if (dataLoader[parameter] == undefined) {
+			dbErrorHandler(new Error("Unable to find dataLoder parameter: " + parameter + "; dataLoder object: " + JSON.stringify(dataLoader, null, 2)), 
+				undefined /* SQL */);
+		}
+		var value=dataLoader[parameter];
+
+		console.error("PArameter: " + parameter + '="' + value + '"')
+		if (value == undefined) {
+			dbErrorHandler(new Error("Unable to get dataLoder parameter: " + parameter + "; dataLoder object: " + JSON.stringify(dataLoader, null, 2)), 
+				undefined /* SQL */);
+		}
+		return value;
+	}
 	
 	/*
 	 * Function: 	geometryProcessing()
 	 * Parameters:	Geometry processing callback: tileProcessing(),
-	 *				Geograpy table, geography table description, XML file directory (original location of XML file), 
-	 *				callback function: tileIntersectsProcessingGeolevelLoop
+	 *				Geography table object (dataLoader in XML), XML file directory (original location of XML file), 
+	 *				tile processing callback function: tileIntersectsProcessingGeolevelLoop
 	 * Returns:		Nothing
 	 * Description:	Dump geometry tsbles to CSV, call Geometry processing callback: tileProcessing()
 	 */		
-	function geometryProcessing(geometryProcessingCallback,
-		geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop) {
-			
-		geometryProcessingCallback(geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop); // Call tileProcessing
-	}
+	function geometryProcessing(geometryProcessingCallback, dataLoader, xmlFileDir, tileProcessingCallback) {
+
+		var geographyName=getDataLoaderParameter(dataLoader, "geographyName");
+		var geographyTable="geography_" + geographyName;
+		var geometryTable=getDataLoaderParameter(dataLoader, "geometryTable");
+		var hierarchyTable=getDataLoaderParameter(dataLoader, "hierarchyTable");
+		var geographyTableDescription=getDataLoaderParameter(dataLoader, "geographyDesc");
+	
+		var csvFileName;
+		
+		var l=0;
+		var request;
+		if (dbType == "PostGres") {
+			csvFileName=xmlFileDir + "/data/pg_" + geometryTable + ".csv";	
+			sql="SELECT geolevel_id, areaid, zoomlevel, ST_AsText(geom) AS wkt FROM " + geometryTable /* geometry table */;
+			request=client;
+		}		
+		else if (dbType == "MSSQLServer") {	
+			csvFileName=xmlFileDir + "/data/mssql_" + geometryTable + ".csv";	
+			sql="SELECT geolevel_id, areaid, zoomlevel, geom.STAsText() AS wkt FROM " + geometryTable /* geometry table */;
+			request=new dbSql.Request();
+		}
+		if (maxZoomlevel && maxZoomlevel != 11) { // Changed from CLI default
+			sql+=" WHERE zoomlevel <= " + maxZoomlevel;
+		}
+				
+		try { // Create CSV file for geometry
+			var csvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
+			winston.log("info", "Creating geometry CSV file: " + csvFileName + " for " + geographyName + ": " + geographyTableDescription);	
+			csvStream.on('finish', function csvStreamClose() {
+				winston.log("verbose", "geometry csvStreamClose(): " + csvFileName);
+			});		
+			csvStream.on('error', function csvStreamError(e) {
+				winston.log("error", "Exception in CSV write to file: " + csvFileName, e.message);										
+			});
+		}
+		catch (e) {
+			dbErrorHandler(e, sql);
+		}
+		
+		var query=request.query(sql, function(err, recordSet) {
+	
+			if (err) {		
+				dbErrorHandler(err, sql);
+			}
+			else {	
+//				console.error("SQL> " + sql);
+				var record;
+				if (dbType == "PostGres") {
+					record=recordSet.rows;
+				}
+				else if (dbType == "MSSQLServer") {	
+					record=recordSet;
+				}			
+				var rowsAffected=record.length;
+				async.forEachOfSeries(record, 
+					function mssqlTileGeometrySeries(value, i, mssqlTileGeometryCallback) { // Processing code		
+						var str;
+						if (Array.isArray(value.wkt)) {			
+							str=value.wkt.join("");
+						}
+						else {			
+							str=value.wkt;
+						}
+						if (str) {
+//								console.error("str: " + JSON.stringify(str).substring(0, 200));
+							str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 	
+						}
+						else {
+							str="";
+						}							
+						var buf=value.geolevel_id + "," + value.areaid + "," + value.zoomlevel + ',"' + str + '"';
+//							console.error("buf[" + (i+1) + "/" + rowsAffected + "]: " + JSON.stringify(buf).substring(0, 200));
+						buf+="\r\n";
+						if (l >= 1000) {
+							l=0;
+							var nextTickFunc = function nextTick() {
+								csvStream.write(buf, mssqlTileGeometryCallback);
+							}
+							process.nextTick(nextTickFunc);
+						}
+						else {
+							csvStream.write(buf, mssqlTileGeometryCallback);
+						} 	
+					}, // End of mssqlTileGeometrySeries
+					function tmssqlTileGeometryEnd(err) { //  Callback				
+						csvStream.end();
+						console.error("Geometry rows processed: " + rowsAffected)
+						geometryProcessingCallback(err, geographyTable, geographyTableDescription, xmlFileDir, tileProcessingCallback); // Call tileProcessing
+					} // End of tmssqlTileGeometryEnd()		
+				); // End of async.forEachOfSeries()	
+			}
+		});
+	} // End of geometryProcessing()
+	
 	/*
 	 * Function: 	tileProcessing()
-	 * Parameters:	Geograpy table, geography table description, XML file directory (original location of XML file), 
+	 * Parameters:	Error (from callback), Geograpy table, geography table description, XML file directory (original location of XML file), 
 	 *				callback function: tileIntersectsProcessingGeolevelLoop
 	 * Returns:		Nothing
-	 * Description:	Call getNumGeolevelsZoomlevels() then tile processing function: tileIntersectsProcessingGeolevelLoop() via callback
+	 * Description:	Call getNumGeolevelsZoomlevels() then tile processing callback function: tileIntersectsProcessingGeolevelLoop() via callback
 	 */
-	function tileProcessing(geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop) {
-		addUserToPath(function addUserToPathCallback2(err) {
-			getNumGeolevelsZoomlevels(geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop);
-		});		
+	function tileProcessing(err, geographyTable, geographyTableDescription, xmlFileDir, tileProcessingCallback2) {
+		if (err) {
+			dbErrorHandler(err, sql);
+		}
+		getNumGeolevelsZoomlevels(geographyTable, geographyTableDescription, xmlFileDir, tileProcessingCallback2);
 	}
 	
 	var tileArray = [];	
@@ -1434,12 +1553,15 @@ REFERENCE (from shapefile) {
 		dbErrorHandler(new Error("No xmlFileDir in XML config"));
 	}
 	var xmlFileDir=tileMakerConfig.xmlConfig.xmlFileDir;
-	var geographyTable="geography_" + tileMakerConfig.xmlConfig.dataLoader[0].geographyName;
-	var geographyTableDescription=tileMakerConfig.xmlConfig.dataLoader[0].geographyDesc;
+		
 	var transaction=undefined; // MSSQL only
 	startTransaction(function startTransactionCallback2(err) {
-		geometryProcessing(tileProcessing, geographyTable, geographyTableDescription, xmlFileDir, tileIntersectsProcessingGeolevelLoop);
-	});
+		
+		addUserToPath(function addUserToPathCallback2(err) {
+			geometryProcessing(tileProcessing, tileMakerConfig.xmlConfig.dataLoader[0], 
+				xmlFileDir, tileIntersectsProcessingGeolevelLoop);
+			});		
+		});
 }
 
 module.exports.dbTileMaker = dbTileMaker;
