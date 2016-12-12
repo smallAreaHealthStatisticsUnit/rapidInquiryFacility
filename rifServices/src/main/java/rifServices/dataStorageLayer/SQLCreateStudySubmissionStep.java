@@ -684,11 +684,7 @@ final class SQLCreateStudySubmissionStep
 					connection,
 					geography,
 					comparisonArea);
-			
-			for (MapArea mapArea : allMapAreas) {
-				logSQLQuery("adding to comparison area", queryFormatter, mapArea.getGeographicalIdentifier());		
-			}
-						
+		
 			for (MapArea currentMapArea : allMapAreas) {
 				statement.setString(1, currentMapArea.getLabel());
 				statement.executeUpdate();
