@@ -1479,20 +1479,28 @@ REFERENCE (from shapefile) {
 						var buf=value.geolevel_id + "," + value.areaid + "," + value.zoomlevel + ',"' + str + '"';
 //							console.error("buf[" + (i+1) + "/" + rowsAffected + "]: " + JSON.stringify(buf).substring(0, 200));
 						buf+="\r\n";
+						
+						function mssqlTileGeometryCallback2(err) {
+							buf=undefined;
+							value=undefined;
+							mssqlTileGeometryCallback(err);
+						}
+						
 						if (l >= 1000) {
 							l=0;
 							var nextTickFunc = function nextTick() {
-								csvStream.write(buf, mssqlTileGeometryCallback);
+								csvStream.write(buf, mssqlTileGeometryCallback2);
 							}
 							process.nextTick(nextTickFunc);
 						}
 						else {
-							csvStream.write(buf, mssqlTileGeometryCallback);
+							csvStream.write(buf, mssqlTileGeometryCallback2);
 						} 	
 					}, // End of mssqlTileGeometrySeries
 					function tmssqlTileGeometryEnd(err) { //  Callback				
 						csvStream.end();
-						console.error("Geometry rows processed: " + rowsAffected)
+						console.error("Geometry rows processed: " + rowsAffected);
+						record=undefined;
 						geometryProcessingCallback(err, geographyTable, geographyTableDescription, xmlFileDir, tileProcessingCallback); // Call tileProcessing
 					} // End of tmssqlTileGeometryEnd()		
 				); // End of async.forEachOfSeries()	
