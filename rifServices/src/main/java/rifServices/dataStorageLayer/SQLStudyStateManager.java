@@ -562,8 +562,8 @@ final class SQLStudyStateManager
 		columnNames[1] = "study_name";		
 		columnNames[2] = "study_description";
 		columnNames[3] = "study_state";
-		columnNames[4] = "message";
-		columnNames[5] = "date";
+		columnNames[4] = "date";
+		columnNames[5] = "message";
 		
 		RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[6];
 		columnDataTypes[0] = RIFResultTable.ColumnDataType.TEXT;
@@ -622,8 +622,6 @@ final class SQLStudyStateManager
 		ResultSet resultSet = null;
 		try {			
 
-			System.out.println("getCurrentStatusAllStudies 1");
-			
 			int expectedNumberOfStatusUpdates
 				= getExpectedNumberOfStatusUpdates(
 					connection,
@@ -658,10 +656,12 @@ final class SQLStudyStateManager
 				data[ithRecord][1] = resultSet.getString(2); //study name
 				data[ithRecord][2] = resultSet.getString(3); //description
 				data[ithRecord][3] = resultSet.getString(4); //study state
+
 				java.util.Date time 
 					= new java.util.Date(resultSet.getDate(5).getTime()); 
 				data[ithRecord][4] 
 					= RIFGenericLibraryMessages.getTimePhrase(time);
+			
 				data[ithRecord][5] = resultSet.getString(6); //message
 				ithRecord++;
 			}
