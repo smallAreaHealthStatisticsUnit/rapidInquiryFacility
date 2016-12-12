@@ -92,8 +92,6 @@ public class FilePathCleaner {
 			if (i != 0) {
 				cleanedPath.append(File.separator);
 			}
-
-			System.out.println("FilePathClener correctWindowsPath =="+i+"== is =="+pathComponents[i]+"==");
 			
 			if (pathComponents[i].contains(" ")) {
 				cleanedPath.append("\"");

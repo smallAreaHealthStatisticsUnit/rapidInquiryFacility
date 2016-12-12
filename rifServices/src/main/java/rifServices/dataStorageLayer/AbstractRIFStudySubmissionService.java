@@ -1864,18 +1864,6 @@ abstract class AbstractRIFStudySubmissionService
 			connection
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			//Delegate operation to a specialised manager class
-			/*			
-			SQLRIFSubmissionManager rifSubmissionManager
-				= rifServiceResources.getRIFSubmissionManager();
-			result
-				= rifSubmissionManager.submitStudy(
-					connection, 
-					user, 
-					rifStudySubmission,
-					getRIFServiceStartupOptions());	
-			*/
-			
 			//Delegate operation to a specialised manager class			
 			RIFServiceStartupOptions rifServiceStartupOptions
 				= getRIFServiceStartupOptions();			
