@@ -879,6 +879,80 @@ REFERENCE (from shapefile) {
 	} // End of getNumGeolevelsZoomlevels()
 
 	/*
+	 * Function: 	tileIntersectsProcessingZoomlevelLoopOuter()
+	 * Parameters:	Geography table data, XML file directory
+	 * Returns:		Nothing
+	 * Description:	Create tile bounds table to process geolevel/zoomlevel tile data in blocks of 100 to reduce memory usage;
+	 *				calls tileIntersectsProcessingZoomlevelLoop() for each geolevel
+	 */		
+	function tileIntersectsProcessingZoomlevelLoopOuter(tileIntersectsTable, 
+			geolevel_name, geolevel_id, 
+			geography, xmlFileDir, callback) {			
+				
+		var tileIntersectsTable='tile_intersects_' + geography.toLowerCase();
+		var tileBoundsTable='tile_bounds_' + geography.toLowerCase();
+		var request;
+		if (dbType == "PostGres") {
+			request=client;
+			sql="DROP TABLE IF EXISTS " + tileBoundsTable;
+		}		
+		else if (dbType == "MSSQLServer") {	
+			request=new dbSql.Request();
+			sql="IF OBJECT_ID('" + tileBoundsTable + 
+				"', 'U') IS NOT NULL DROP TABLE " + tileBoundsTable;
+		}
+		
+		var query=request.query(sql, function dropTileBounds(err, result) {
+			if (err) {
+				dbErrorHandler(err, sql);
+			}
+			else {		
+				var cte="WITH a AS (\n" + 
+						"	SELECT geolevel_id, zoomlevel, x, y, COUNT(areaid) AS total_areas\n" + 
+						"	  FROM tile_intersects_cb_2014_us_500k\n" + 
+						"	GROUP BY geolevel_id, zoomlevel, x, y\n" + 
+						"), b AS (\n" + 
+						"	SELECT geolevel_id, zoomlevel, x, y, total_areas,\n" + 
+						"	       ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/10) AS block\n" + 
+						"	  FROM a\n" + 
+						")\n";
+				if (dbType == "PostGres") {
+					sql="CREATE TABLE " + tileBoundsTable + "\n" + 
+						"AS\n" + cte +
+						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas\n" + 
+						"  FROM b\n" + 
+						" ORDER BY geolevel_id, zoomlevel, block, x, y";
+					}
+				else if (dbType == "MSSQLServer") {	
+					sql=cte +
+						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas\n" + 
+						"  INTO " + tileBoundsTable + "\n" + 
+						"  FROM b\n" + 
+						" ORDER BY geolevel_id, zoomlevel, block, x, y";		
+				}
+
+				var query=request.query(sql, function createTileBounds(err, result) {
+					if (err) {
+						dbErrorHandler(err, sql);
+					}		
+					else {
+						sql="ALTER TABLE " + tileBoundsTable + " ADD PRIMARY KEY (geolevel_id, zoomlevel, x, y)";
+						var query=request.query(sql, function pkTileBounds(err, result) {
+							if (err) {
+								dbErrorHandler(err, sql);
+							}		
+							else {
+								tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolevel_name, geolevel_id, 
+									geography, xmlFileDir, callback);
+							}
+						}); // End of pkTileBounds()
+					}
+				});	// End of createTileBounds()	
+			}
+		}); // End of dropTileBounds()
+	} // End of tileIntersectsProcessingZoomlevelLoopOuter()
+						
+	/*
 	 * Function: 	tileIntersectsProcessingGeolevelLoop()
 	 * Parameters:	Geography table data, XML file directory
 	 * Returns:		Nothing
@@ -896,7 +970,8 @@ REFERENCE (from shapefile) {
 			request=new dbSql.Request();
 		}
 		
-		sql="SELECT * FROM " + geolevelsTable + " WHERE geography = '" +geographyTableData.geography  + "' ORDER BY geolevel_id";
+		sql="SELECT geolevel_name, geolevel_id FROM " + geolevelsTable +
+		    " WHERE geography = '" +geographyTableData.geography  + "' ORDER BY geolevel_id";
 		var query=request.query(sql, function setSearchPath(err, result) {
 			if (err) {
 				dbErrorHandler(err, sql);
@@ -918,7 +993,7 @@ REFERENCE (from shapefile) {
 			var i=0;
 			async.doWhilst(
 				function geolevelProcessing(callback) {		
-					tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolvelTableData[i].geolevel_name, geolvelTableData[i].geolevel_id, 
+					tileIntersectsProcessingZoomlevelLoopOuter(tileIntersectsTable, geolvelTableData[i].geolevel_name, geolvelTableData[i].geolevel_id, 
 						geographyTableData.geography, xmlFileDir, callback);
 				}, 
 				function geolevelTest() { // Mimic for loop
