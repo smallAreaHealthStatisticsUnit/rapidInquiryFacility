@@ -3,7 +3,7 @@
  * Point in polygon, Point in circle
  * Used by LeafletDraw selection tools
  * Could be replaced in future by Turf.js
- * 
+ * http://stackoverflow.com/questions/31790344/determine-if-a-point-reside-inside-a-leaflet-polygon
  * */
 
 angular.module("RIF")

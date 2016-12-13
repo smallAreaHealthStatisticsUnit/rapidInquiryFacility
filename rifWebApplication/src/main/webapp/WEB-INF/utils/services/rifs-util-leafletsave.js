@@ -6,12 +6,6 @@ angular.module("RIF")
                 function (leafletData) {
                     function exportMap(mapID, stub, legend, scale) {
 
-                        //remove old file dialogue
-                        var elem = document.getElementById('lf');
-                        if (elem !== null) {
-                            elem.parentNode.removeChild(elem);
-                        }
-
                         leafletData.getMap(mapID).then(function (map) {
                             leafletImage(map, function (err, canvas) {
                                 //4 canvas elements here canvas=leaflet map, legend=legend, scale=scalebar                          

@@ -1,7 +1,7 @@
 /* global d3 */
 
 angular.module("RIF")
-        .directive('histImgBreaks', function ($parse) {
+        .directive('histImgBreaks', function () {
             var directiveDefinitionObject = {
                 restrict: 'E',
                 replace: false,
@@ -29,7 +29,7 @@ angular.module("RIF")
                         for (var i = 0; i < scope.data.length; i++) {
                             scope.data[i] = Number(scope.data[i]);
                         }
-                        
+
                         //Scales
                         var max = d3.max(d3.values(scope.data));
                         var min = d3.min(d3.values(scope.data));
@@ -90,19 +90,21 @@ angular.module("RIF")
                                 });
 
                         //vertical reference lines
-                        var breakRefs = svg.selectAll('.breakRefs')
-                                .data(scope.breaks)
-                                .enter().append("line")
-                                .attr("stroke", "#d472bc")
-                                .attr("stroke-width", 2)
-                                .attr('x1', function (d) {
-                                    return x(d);
-                                })
-                                .attr('x2', function (d) {
-                                    return x(d);
-                                })
-                                .attr('y1', 0)
-                                .attr('y2', height);
+                        if (!angular.isUndefined(scope.data)) {
+                            var breakRefs = svg.selectAll('.breakRefs')
+                                    .data(scope.breaks) 
+                                    .enter().append("line")
+                                    .attr("stroke", "#d472bc")
+                                    .attr("stroke-width", 2)
+                                    .attr('x1', function (d) {
+                                        return x(d);
+                                    })
+                                    .attr('x2', function (d) {
+                                        return x(d);
+                                    })
+                                    .attr('y1', 0)
+                                    .attr('y2', height);
+                        }
 
                         svg.append("g")
                                 .attr("class", "x axis")

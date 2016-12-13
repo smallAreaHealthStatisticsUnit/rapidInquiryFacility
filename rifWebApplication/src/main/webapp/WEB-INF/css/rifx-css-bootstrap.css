@@ -1,0 +1,53 @@
+/* Overrides to Bootstrap CSS */
+.btn-group {
+    position:absolute;
+    margin: 0px 0px 0px 190px;
+}
+.btn-group:hover {
+    border-color: transparent;
+    background-color: transparent;
+}
+.btn-primary {
+    background: transparent url("../images/chart_curve_go.png") no-repeat;
+    background-color: transparent;
+    border-color: transparent;
+    padding:0px;
+    height: 32px;
+    width: 32px;
+    margin-top: 5px;
+}
+.btn-primary:hover {
+    background-color: transparent;
+    border-color: transparent;
+    -moz-opacity: 0.7;
+    -khtml-opacity: 0.7;
+    opacity: 0.7;
+}
+
+.dropdown-menu>li>a {
+    cursor: pointer;
+}
+
+.btn-group>li {
+    display: list-item;
+    text-align: -webkit-match-parent;
+}
+
+.btn-primary.active, .btn-primary:active, .open>.dropdown-toggle.btn-primary {
+    background: transparent url("../images/chart_curve_go.png") no-repeat;
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.btn-primary.active.focus, .btn-primary.active:focus, .btn-primary.active:hover, .btn-primary:active.focus, 
+.btn-primary:active:focus, .btn-primary:active:hover, .open>.dropdown-toggle.btn-primary.focus, 
+.open>.dropdown-toggle.btn-primary:focus, .open>.dropdown-toggle.btn-primary:hover {
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.btn-primary.focus, .btn-primary:focus {
+    color: #fff;
+    background-color: transparent;
+    border-color: transparent;
+}

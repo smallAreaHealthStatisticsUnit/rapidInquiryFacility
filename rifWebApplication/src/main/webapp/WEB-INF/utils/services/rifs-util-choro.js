@@ -1,4 +1,8 @@
-/* global d3, ss, L */
+/*
+ * SERVICE to render choropleth maps using Colorbrewer
+ */
+
+/* global d3, ss, L, Infinity */
 
 angular.module("RIF")
         .factory('ChoroService', ['ColorBrewerService',
@@ -9,40 +13,60 @@ angular.module("RIF")
                         map: "viewermap",
                         features: [],
                         brewerName: "LightGreen",
-                        brewer: ["#9BCD9B"],
                         intervals: 1,
                         feature: "relative_risk",
                         invert: false,
                         method: "quantile",
-                        renderer: []
+                        renderer:
+                                {
+                                    scale: null,
+                                    breaks: null,
+                                    range: ["#9BCD9B"],
+                                    mn: null,
+                                    mx: null
+                                },
+                        init: false
                     },
                     {
                         //Disease left map: index 1
                         map: "diseasemap1",
                         features: [],
                         brewerName: "LightGreen",
-                        brewer: ["#9BCD9B"],
                         intervals: 1,
                         feature: "",
                         invert: false,
                         method: "quantile",
-                        renderer: []
+                        renderer:
+                                {
+                                    scale: null,
+                                    breaks: null,
+                                    range: ["#9BCD9B"],
+                                    mn: null,
+                                    mx: null
+                                },
+                        init: false
                     },
                     {
                         //Disease right map: index 2
                         map: "diseasemap2",
                         features: [],
                         brewerName: "LightGreen",
-                        brewer: ["#9BCD9B"],
                         intervals: 1,
-                        feature: "", //smoothed_smr
+                        feature: "",
                         invert: false,
                         method: "quantile",
-                        renderer: []
+                        renderer:
+                                {
+                                    scale: null,
+                                    breaks: null,
+                                    range: ["#9BCD9B"],
+                                    mn: null,
+                                    mx: null
+                                },
+                        init: false
                     }
                 ];
-
-                //used in map table
+                //used in map
                 function renderFeature(scale, attr, selected) {
                     //returns fill colour
                     //selected
@@ -122,7 +146,7 @@ angular.module("RIF")
                              * Implementation derived by ArcMap Stand. Deviation classification
                              * 5 intervals of which those around the mean are 1/2 the Standard Deviation
                              */
-                            if (maps[0].brewerName === "LightGreen") {
+                            if (maps[map].brewerName === "LightGreen") {
                                 scale = d3.scaleQuantile()
                                         .domain(domain)
                                         .range(range);
@@ -161,8 +185,52 @@ angular.module("RIF")
                                     .domain(breaks)
                                     .range(range);
                             break;
+                        case "AtlasRelativeRisk":
+                            //RR scale as used in Health Atlas
+                            var tmp;
+                            var invalidScales = ["LightGreen", "Dark2", "Accent", "Pastel2", "Set2"];
+                            if (invalidScales.indexOf(maps[map].brewerName) !== -1) {
+                                tmp = ColorBrewerService.getColorbrewer("PuOr", 9).reverse();
+                                maps[map].brewerName = "PuOr";
+                            } else {
+                                tmp = ColorBrewerService.getColorbrewer(maps[map].brewerName, 9);
+                            }
+                            if (!flip) {
+                                range = angular.copy(tmp);
+                            } else {
+                                range = angular.copy(tmp).reverse();
+                            }
+                            var breaks = [0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51];
+                            scale = d3.scaleThreshold()
+                                    .domain(breaks)
+                                    .range(range);
+                            mn = -Infinity;
+                            mx = Infinity;
+                            break;
+                        case "AtlasProbability":
+                            //Probability scale as used in Health Atlas
+                            var tmp;
+                            var invalidScales = ["LightGreen"];
+                            if (invalidScales.indexOf(maps[map].brewerName) !== -1) {
+                                tmp = angular.copy(ColorBrewerService.getColorbrewer("RdYlGn", 3)).reverse();
+                                maps[map].brewerName = "RdYlGn";
+                            } else {
+                                tmp = ColorBrewerService.getColorbrewer(maps[map].brewerName, 3);
+                            }
+                            if (!flip) {
+                                range = angular.copy(tmp);
+                            } else {
+                                range = angular.copy(tmp).reverse();
+                            }
+                            var breaks = [0.20, 0.81];
+                            scale = d3.scaleThreshold()
+                                    .domain(breaks)
+                                    .range(range);
+                            mn = 0;
+                            mx = 1;
+                            break;
                         case "logarithmic":
-                            //TODO: check, not implemented by Fred         
+                            //Check, not implemented by Fred         
                             break;
                     }
                     return {
@@ -173,17 +241,18 @@ angular.module("RIF")
                         mx: mx
                     };
                 }
+
                 function makeLegend(thisMap, attr) {
                     return (function () {
                         var div = L.DomUtil.create('div', 'info legend');
                         div.innerHTML += '<h4>' + attr.toUpperCase().replace("_", " ") + '</h4>';
                         if (!angular.isUndefined(thisMap.range)) {
-                            for (var i = 0; i < thisMap.range.length; i++) {
+                            for (var i = thisMap.range.length - 1; i >= 0; i--) {
                                 div.innerHTML += '<i style="background:' + thisMap.range[i] + '"></i>';
                                 if (i === 0) { //first break
-                                    div.innerHTML += '<span>' + thisMap.mn.toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
+                                    div.innerHTML += '<span>' + '<' + thisMap.breaks[i].toFixed(2) + '</span>';
                                 } else if (i === thisMap.range.length - 1) { //last break
-                                    div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - ' + '&le;' + thisMap.mx.toFixed(2) + '</span>';
+                                    div.innerHTML += '<span>' + '&ge;' + thisMap.breaks[i - 1].toFixed(2) + '</span><br>';
                                 } else {
                                     div.innerHTML += '<span>' + thisMap.breaks[i - 1].toFixed(2) + ' - <' + thisMap.breaks[i].toFixed(2) + '</span><br>';
                                 }
@@ -202,8 +271,8 @@ angular.module("RIF")
                     getRenderFeature2: function (feature, layer, scale, attr, selected) {
                         return renderFeature2(feature, layer, scale, attr, selected);
                     },
-                    getChoroScale: function (method, domain, rangeIn, flip) {
-                        return choroScale(method, domain, rangeIn, flip);
+                    getChoroScale: function (method, domain, rangeIn, flip, map) {
+                        return choroScale(method, domain, rangeIn, flip, map);
                     },
                     getMakeLegend: function (thisMap, attr) {
                         return makeLegend(thisMap, attr);

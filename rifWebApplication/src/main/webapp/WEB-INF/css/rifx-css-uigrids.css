@@ -121,27 +121,25 @@
 
 /*STATUS REPORT COLOURS*/
 .statusC .ui-grid-cell-contents {
-    background-color: green;
-    color: white;
-    opacity: 0.8;
+    background-color: pink;
+    color: black;
 }
 .statusV .ui-grid-cell-contents {
-    background-color: green;
+    background-color: #ffff94;
     color: white;
     opacity: 0.8;
 }
 .statusE .ui-grid-cell-contents {
-    background-color: green;
+    background-color: #ffff94;
     color: white;
     opacity: 0.8;
 }
 .statusR .ui-grid-cell-contents {
-    background-color: green;
-    color: white;
-    opacity: 0.8;
+    background-color: lightgreen;
+    color: black;
 }
 .statusU .ui-grid-cell-contents {
-    background-color: green;
+    background-color: lightgreen;
     color: white;
     opacity: 0.8;
 }

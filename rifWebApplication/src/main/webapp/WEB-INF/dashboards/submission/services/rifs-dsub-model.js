@@ -40,7 +40,7 @@ angular.module("RIF")
                                     }
                                 },
                                 "map_areas": {
-                                    "map_area": StudyAreaStateService.getState().polygonIDs //TODO: is gid needed when it is the same as id?
+                                    "map_area": StudyAreaStateService.getState().polygonIDs
                                 }
                             },
                             "comparison_area": {

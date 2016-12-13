@@ -37,7 +37,7 @@ CREATE VIEW [rif40].[rif40_numerator_outcome_columns] AS
     e.value AS column_comment
    FROM a
      LEFT JOIN sys.columns d
-            ON lower(d.name) = lower(a.field_name) and Object_ID = object_id(a.table_name)
+            ON lower(d.name) collate database_default = lower(a.field_name) collate database_default and Object_ID = object_id(a.table_name)
 	LEFT JOIN  sys.extended_properties e
 		ON e.name='MS_Description' and major_id=object_id(a.table_name)
 		and e.minor_id=0

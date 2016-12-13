@@ -167,6 +167,7 @@ angular.module("RIF")
 
                         $scope.geoLevelChange = function () {
                             $scope.selectedPolygon.length = 0;
+                            $scope.clearAOI();
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
 
@@ -286,6 +287,9 @@ angular.module("RIF")
                                 $scope.input.bDrawing = true;
                             });
                             L.control.scale({position: 'topleft', imperial: false}).addTo(map);
+
+                            //Attributions to open in new window
+                            map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                         });
 
                         //selection event fired from service
@@ -320,7 +324,7 @@ angular.module("RIF")
                                     }
                                 }
                             });
-                            if (!shape.circle) {
+                            if (!shape.circle && !shape.shapefile) {
                                 removeMapDrawItems();
                                 //auto increase band dropdown
                                 if ($scope.currentBand < Math.max.apply(null, $scope.possibleBands)) {
@@ -447,6 +451,7 @@ angular.module("RIF")
                         $scope.clear = function () {
                             $scope.selectedPolygon.length = 0;
                             $scope.input.selectedPolygon.length = 0;
+                            $scope.clearAOI();
                         };
 
                         //Select all in map and table
@@ -481,6 +486,99 @@ angular.module("RIF")
                                     map.removeLayer(centroidMarkers);
                                 } else {
                                     map.addLayer(centroidMarkers);
+                                }
+                            });
+                        };
+
+                        //Add a shapefile to select areas
+                        var shpfile = new L.layerGroup();
+                        $scope.addAOI = function () {
+                            $scope.modalHeader = "Upload Zipped AOI Shapefile";
+                            $scope.accept = ".zip";
+
+                            var modalInstance = $uibModal.open({
+                                animation: true,
+                                templateUrl: 'dashboards/submission/partials/rifp-dsub-fromfile.html',
+                                controller: 'ModalAOIShapefileInstanceCtrl',
+                                windowClass: 'stats-Modal',
+                                backdrop: 'static',
+                                scope: $scope,
+                                keyboard: false
+                            });
+                            //remove any existing AOI layer
+                            leafletData.getMap("area").then(function (map) {
+                                if (map.hasLayer(shpfile)) {
+                                    map.removeLayer(shpfile);
+                                    shpfile = new L.layerGroup();
+                                }
+                            });
+                        };
+
+                        $scope.uploadShapeFile = function () {
+                            //http://jsfiddle.net/ashalota/ov0p4ajh/10/
+                            //http://leaflet.calvinmetcalf.com/#3/31.88/10.63
+                            var files = document.getElementById('setUpFile').files;
+                            if (files.length === 0) {
+                                return;
+                            }
+
+                            try {
+                                var file = files[0];
+                                if (file.name.slice(-3) !== 'zip') {
+                                    //not a zip file
+                                    $scope.$parent.$$childHead.$parent.$parent.$$childHead.showError("All parts of the Shapefile expected in one zipped file");
+                                    return;
+                                } else {
+                                    var reader = new FileReader();
+                                    reader.onload = readerLoad;
+                                    reader.readAsArrayBuffer(file);
+
+                                    function readerLoad() {
+                                        var poly = new L.Shapefile(this.result, {
+                                            style: function (feature) {
+                                                return {
+                                                    fillColor: 'none',
+                                                    weight: 3,
+                                                    color: 'blue'
+                                                };
+                                            },
+                                            onEachFeature: function (feature, layer) {
+                                                var polygon = L.polygon(layer.feature.geometry.coordinates[0], {});
+                                                var shape = {data: angular.copy(polygon)};
+                                                shape.circle = false;
+                                                shape.shapefile = true;
+                                                shape.band = -1;
+                                                shape.data._latlngs.length = 0;
+                                                //Shp Library inverts lat, lngs for some reason (Bug?) - switch back
+                                                for (var i = 0; i < polygon._latlngs[0].length; i++) {
+                                                    var flip = new L.latLng(polygon._latlngs[0][i].lng, polygon._latlngs[0][i].lat);
+                                                    shape.data._latlngs.push(flip);
+                                                }
+                                                makeDrawSelection(shape);
+                                            }
+                                        });
+                                        //add AOI layer to map
+                                        shpfile.addLayer(poly);
+                                        leafletData.getMap("area").then(function (map) {
+                                            try {
+                                                shpfile.addTo(map);
+                                                map.fitBounds(poly.getBounds());
+                                            } catch (err) {
+                                                $scope.$parent.$$childHead.$parent.$parent.$$childHead.showError("Could not open Shapefile, no valid polygons");
+                                            }
+                                        });
+                                    }
+                                }
+                            } catch (err) {
+                                $scope.$parent.$$childHead.$parent.$parent.$$childHead.showError("Could not open Shapefile: " + err.message);
+                            }
+                        };
+
+                        //remove AOI layer
+                        $scope.clearAOI = function () {
+                            leafletData.getMap("area").then(function (map) {
+                                if (map.hasLayer(shpfile)) {
+                                    map.removeLayer(shpfile);
                                 }
                             });
                         };
@@ -569,6 +667,15 @@ angular.module("RIF")
                     }
                 };
             }])
+        .controller('ModalAOIShapefileInstanceCtrl', function ($scope, $uibModalInstance) {
+            $scope.close = function () {
+                $uibModalInstance.dismiss();
+            };
+            $scope.submit = function () {
+                $scope.uploadShapeFile();
+                $uibModalInstance.close();
+            };
+        })
         .controller('ModalFileListInstanceCtrl', function ($scope, $uibModalInstance) {
             $scope.close = function () {
                 $uibModalInstance.dismiss();

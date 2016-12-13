@@ -1,22 +1,10 @@
 /* global L, key, topojson, d3, ss, values */
-/*
- * PP 1 value
- * SSMR with U95, L95
- * Smooth RR is EB (no CI) - hide
- * RRisk lower95, upper95
- * SMR + CI
- * Hide PP U95-L95
- * Hide 3x residual columns
- * 
- */
-
-
-//TODO:
-// how do we know that the geography is SAHSU? from the study ID?
 
 angular.module("RIF")
-        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService', 'ChoroService', 'LeafletExportService',
-            function ($scope, user, leafletData, LeafletBaseMapService, $timeout, ViewerStateService, ChoroService, LeafletExportService) {
+        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService',
+            'ChoroService', 'LeafletExportService', 'D3ToPNGService',
+            function ($scope, user, leafletData, LeafletBaseMapService, $timeout, ViewerStateService,
+                    ChoroService, LeafletExportService, D3ToPNGService) {
 
                 //ui-grid data
                 $scope.tableData = {
@@ -74,7 +62,7 @@ angular.module("RIF")
                 });
 
                 //Drop-downs
-                $scope.studyIDs = [1, 214, 205];
+                $scope.studyIDs = [1, 214, 205, 239];
                 $scope.studyID = 1;
                 $scope.years = [1990, 1991, 1992, 1993, 1994, 1995];
                 $scope.year = 1995;
@@ -84,7 +72,7 @@ angular.module("RIF")
 
                 //draw relevant geography for this study
                 $scope.renderGeography = function () {
-                    //user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "viewer").then(handleTopoJSON, handleTopoJSONError);
+                   // user.getTiles(user.currentUser, "SAHSU", "LEVEL3", "viewer").then(handleTopoJSON, handleTopoJSONError);
                     user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "viewer").then(handleTopoJSON, handleTopoJSONError);
                 };
 
@@ -105,7 +93,6 @@ angular.module("RIF")
 
                 //initial state
                 $scope.renderGeography();
-
 
                 //leaflet render
                 $scope.transparency = ViewerStateService.getState().transparency;
@@ -138,7 +125,6 @@ angular.module("RIF")
                         }, 50);
                     });
                 };
-                //       $scope.renderMap("viewermap");
 
                 $timeout(function () {
                     leafletData.getMap("viewermap").then(function (map) {
@@ -152,6 +138,9 @@ angular.module("RIF")
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
                         L.control.scale({position: 'topleft', imperial: false}).addTo(map);
+
+                        //Attributions to open in new window
+                        map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                     });
                 });
 
@@ -176,6 +165,28 @@ angular.module("RIF")
                 //Clear all selection from map and table
                 $scope.clear = function () {
                     $scope.selectedPolygon.length = 0;
+                };
+
+                //Save D3 to PNG           
+                $scope.saveD3Chart = function (chart) {
+                    var pngHeight = $scope.distHistoCurrentHeight * 3;
+                    var pngWidth = $scope.distHistoCurrentWidth * 3;
+                    var fileName = "histogram.png";
+                    if (chart === "#poppyramid") {
+                        pngHeight = $scope.pyramidCurrentHeight * 3;
+                        pngWidth = $scope.pyramidCurrentWidth * 3;
+                        fileName = "populationPyramid.png";
+                    }
+
+                    var svgString = D3ToPNGService.getGetSVGString(d3.select(chart)
+                            .attr("version", 1.1)
+                            .attr("xmlns", "http://www.w3.org/2000/svg")
+                            .node());
+                    D3ToPNGService.getSvgString2Image(svgString, pngWidth, pngHeight, 'png', save);
+
+                    function save(dataBlob, filesize) {
+                        saveAs(dataBlob, fileName); // FileSaver.js function
+                    }
                 };
 
                 //Zoom to layer
@@ -272,9 +283,12 @@ angular.module("RIF")
                 //information from choropleth modal to colour map                             
                 $scope.refresh = function () {
                     //get selected colour ramp
-                    var rangeIn = ChoroService.getMaps(0).brewer;
+                    var rangeIn = ChoroService.getMaps(0).renderer.range;
                     $scope.distHistoName = ChoroService.getMaps(0).feature;
                     attr = ChoroService.getMaps(0).feature;
+
+                    //get choropleth map renderer
+                    thisMap = ChoroService.getMaps(0).renderer;
 
                     //not a choropleth, but single colour
                     if (rangeIn.length === 1) {
@@ -288,8 +302,6 @@ angular.module("RIF")
                         $scope.topoLayer.eachLayer(handleLayer);
                         return;
                     }
-
-                    thisMap = ChoroService.getMaps(0).renderer;
 
                     //remove old legend and add new
                     legend.onAdd = ChoroService.getMakeLegend(thisMap, attr);

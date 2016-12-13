@@ -173,7 +173,7 @@ angular.module("RIF")
                                 break;
                             }
                         }
-                        if (!bFound) {
+                        if (!bFound & tmpProjects.name !== "") {
                             return "Project '" + tmpProjects.name + "' not found in database";
                         } else {
                             return true;
@@ -404,7 +404,7 @@ angular.module("RIF")
                                 //All tests passed
                                 confirmStateChanges();
                                 $scope.showSuccess("RIF study opened from file");
-                                $scope.$parent.resetState(); //TODO: inactive?
+                                $scope.$parent.resetState();
                             }
                         });
                     };

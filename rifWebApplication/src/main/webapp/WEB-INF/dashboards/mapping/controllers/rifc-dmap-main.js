@@ -1,16 +1,10 @@
 /* global L, key, topojson, d3 */
 
 angular.module("RIF")
-        .controller('MappingCtrl', ['$scope', 'LeafletBaseMapService', 'leafletData', '$timeout', 'MappingStateService', 'ChoroService', 'user', 'LeafletExportService',
-            function ($scope, LeafletBaseMapService, leafletData, $timeout, MappingStateService, ChoroService, user, LeafletExportService) {
-
-                /*
-                 //Texture fill for probability
-                 var stripes = new L.StripePattern({color: 'blue', spaceColor: 'red', spaceOpacity: 1.0});
-                 stripes.options.spaceColor = ChoroService.getRenderFeature(thisMap[mapID].scale, attr[mapID], false);
-                 fillPattern: stripes
-                 stripes.addTo(map);
-                 */
+        .controller('MappingCtrl', ['$scope', 'LeafletBaseMapService', 'leafletData', '$timeout', 'MappingStateService',
+            'ChoroService', 'user', 'LeafletExportService', 'D3ToPNGService',
+            function ($scope, LeafletBaseMapService, leafletData, $timeout, MappingStateService,
+                    ChoroService, user, LeafletExportService, D3ToPNGService) {
 
                 //geoJSON on diseasemap1
                 var maxbounds;
@@ -113,8 +107,44 @@ angular.module("RIF")
                 });
 
                 //Drop-downs
-                $scope.studyIDs = [1];
-                $scope.studyID = $scope.studyIDs[0];
+                $scope.studyIDs = {
+                    "diseasemap1": [],
+                    "diseasemap2": []
+                };
+                //study to be mapped
+                $scope.studyID = {
+                    "diseasemap1": null,
+                    "diseasemap2": null
+                };
+
+                //Available study IDs where status = R for the user
+                user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
+                    var tmp = [];
+                    for (var i = 0; i < res.data.smoothed_results.length; i++) {
+                        if (res.data.smoothed_results[i].study_state === "R") {
+                            tmp.push(
+                                    {
+                                        "study_id": res.data.smoothed_results[i].study_id,
+                                        "name": res.data.smoothed_results[i].study_name
+                                    }
+                            );
+                        }
+                    }
+                    //sort array on ID
+                    tmp.sort(function (a, b) {
+                        return parseFloat(a.study_id) - parseFloat(b.study_id);
+                    });
+                    $scope.studyIDs['diseasemap1'] = angular.copy(tmp);
+                    $scope.studyIDs['diseasemap2'] = angular.copy(tmp);
+                    $scope.studyID["diseasemap1"] = $scope.studyIDs['diseasemap1'][0];
+                    $scope.studyID["diseasemap2"] = $scope.studyIDs['diseasemap2'][0];
+
+                }, handleStudyError);
+
+                function handleStudyError(e) {
+                    $scope.showError("Could not retrieve study status");
+                }
+
                 $scope.years = [1990, 1991, 1992, 1993];
                 $scope.year = $scope.years[0];
                 $scope.sexes = ["Male", "Female", "Both"];
@@ -180,6 +210,31 @@ angular.module("RIF")
                     leafletData.getMap(mapID).then(function (map) {
                         map.fitBounds(maxbounds);
                     });
+                };
+
+                //save D3 charts
+                $scope.saveD3Chart = function (mapID) {
+                    var container = "rrchart" + mapID;
+                    if (document.getElementById("rrchart" + mapID) === null) {
+                        return;
+                    }
+                    var pngHeight = $scope.currentHeight1 * 3;
+                    var pngWidth = $scope.currentWidth1 * 3;
+                    var fileName = "risk1.png";
+                    if (mapID === "diseasemap2") {
+                        pngHeight = $scope.currentHeight2 * 3;
+                        pngWidth = $scope.currentWidth2 * 3;
+                        fileName = "risk2.png";
+                    }
+                    var svgString = D3ToPNGService.getGetSVGString(d3.select("#" + container)
+                            .attr("version", 1.1)
+                            .attr("xmlns", "http://www.w3.org/2000/svg")
+                            .node());
+                    D3ToPNGService.getSvgString2Image(svgString, pngWidth, pngHeight, 'png', save);
+
+                    function save(dataBlob, filesize) {
+                        saveAs(dataBlob, fileName); // FileSaver.js function
+                    }
                 };
 
                 //quick export leaflet panel
@@ -337,11 +392,15 @@ angular.module("RIF")
                 $scope.refresh = function (mapID) {
                     var indx = myMaps.indexOf(mapID);
                     //get selected colour ramp
-                    var rangeIn = ChoroService.getMaps(indx + 1).brewer;
+                    var rangeIn = ChoroService.getMaps(indx + 1).renderer.range;
                     attr[mapID] = ChoroService.getMaps(indx + 1).feature;
+
+                    //get choropleth map renderer
+                    thisMap[mapID] = ChoroService.getMaps(indx + 1).renderer;
+
                     //not a choropleth, but single colour
                     if (rangeIn.length === 1) {
-                        attr[mapID] = "";
+                        // attr[mapID] = "";
                         leafletData.getMap(mapID).then(function (map) {
                             //remove existing legend
                             if (legend[mapID]._map) {
@@ -351,9 +410,6 @@ angular.module("RIF")
                         $scope.geoJSON[mapID].eachLayer(handleLayer);
                         return;
                     }
-
-                    //get choropleth map renderer
-                    thisMap[mapID] = ChoroService.getMaps(indx + 1).renderer;
 
                     //remove old legend and add new
                     legend[mapID].onAdd = ChoroService.getMakeLegend(thisMap[mapID], attr[mapID]);
@@ -450,11 +506,12 @@ angular.module("RIF")
                             $scope.tableData[mapID].push(res.data.smoothed_results[i]);
                         }
 
+                        //////////////////////////////////////////////////////////////////////////////////////////
                         //TODO: Adding fake PP data
                         for (var i = 0; i < $scope.tableData[mapID].length; i++) {
                             $scope.tableData[mapID][i]['posterior_probability'] = Math.random();
                         }
-                        ////
+                        //////////////////////////////////////////////////////////////////////////////////////////
 
                         $scope.refresh(mapID);
                     }
@@ -481,6 +538,9 @@ angular.module("RIF")
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
                         L.control.scale({position: 'topleft', imperial: false}).addTo(map);
+
+                        //Attributions to open in new window
+                        map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                     });
                     leafletData.getMap("diseasemap2").then(function (map) {
                         map.on('zoomend', function (e) {
@@ -497,6 +557,9 @@ angular.module("RIF")
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
                         L.control.scale({position: 'topleft', imperial: false}).addTo(map);
+
+                        //Attributions to open in new window
+                        map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                     });
 
                     //Set initial map extents
