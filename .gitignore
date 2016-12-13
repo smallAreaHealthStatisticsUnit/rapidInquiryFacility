@@ -6,10 +6,17 @@ afiedt.buf
 rifDatabase/Postgres/example_data/sahsuland_example_bands.csv
 rifDatabase/Postgres/example_data/sahsuland_example_extract.csv
 rifDatabase/Postgres/example_data/sahsuland_example_map.csv
+
+
+#Ignore java classes
+**/*.class
+
 #eclipse-specific git ignore settings
 .metadata
 .project
 .classpath
+.settings/
+
 rifDatabase/~$RIF database.pptx
 rifDatabase/Postgres/~$NSTALL.docx
 rifDatabase/Postgres/install/pg_restore.rpt
