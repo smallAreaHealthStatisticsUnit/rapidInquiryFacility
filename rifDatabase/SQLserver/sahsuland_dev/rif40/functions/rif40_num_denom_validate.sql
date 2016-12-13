@@ -47,7 +47,7 @@ Description:	Validate numerator or denominator geolevels
 	FROM rif40.t_rif40_geolevels l
 	LEFT OUTER JOIN [INFORMATION_SCHEMA].[COLUMNS] c 
 			ON (c.TABLE_SCHEMA = @l_owner AND 
-				c.table_name = @l_table_name   AND c.column_name = l.geolevel_name)
+				c.table_name = @l_table_name   AND c.column_name collate database_default= l.geolevel_name collate database_default)
 		 WHERE geography  = @l_geography
    		   AND resolution = 1;
 		   

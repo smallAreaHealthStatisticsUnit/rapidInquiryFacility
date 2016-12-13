@@ -7,6 +7,12 @@ Principal Work Area: **Microsoft SQL server database port**
 ###December
 Java related to the MS SQL Server port
 
+
+######12 December
+* Setting up the Windows RIF laptop with SQL Server, tidying up some installation scripts.
+* I discovered that the SQL Server database was created by default with a different collation (character set sorting method) from some of the system tables, consequentially comparing strings causes collation errors.  Easily fixed with "collate database_default" when comparing fields.  
+(is it worth making that change in all SQL Server functions/views/trigger code to allow SQL Server to use different collation settings between dbs, or do we assume more sensible defaults than what I have on this laptop?)
+
 ######9 December
 * Testing comments query formatter code on networked version of SQL Server.  Problems getting permissions right for the test ID.  Must be able to execute stored procedures
 grant execute to 

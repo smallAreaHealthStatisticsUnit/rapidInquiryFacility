@@ -21,7 +21,7 @@ IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_startup]')
                   AND type IN ( N'P', N'FN', N'IF', N'TF', N'FS', N'FT' ))
-  DROP FUNCTION [rif40].[rif40_startup]
+  DROP PROCEDURE [rif40].[rif40_startup]
 GO 
 
 CREATE PROCEDURE [rif40].[rif40_startup](@l_skip_checks int)
