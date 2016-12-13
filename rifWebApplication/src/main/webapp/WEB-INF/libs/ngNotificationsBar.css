@@ -96,7 +96,7 @@ body {
 }
 /* line 50, ../sass/ngNotificationsBar.scss */
 .notifications .close-click {
-  background: url('images/close.png') no-repeat center;
+  background: url('images/close.png') no-repeat center; 
   opacity: 0.3;
   font-size: inherit;
   cursor: pointer;

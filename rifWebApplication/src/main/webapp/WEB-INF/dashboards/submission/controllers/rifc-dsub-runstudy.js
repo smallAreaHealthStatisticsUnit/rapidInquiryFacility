@@ -66,8 +66,8 @@ angular.module("RIF")
 
                 //If tests passed, then submitStudy
                 //TODO: error if year params not set (if loaded from file)
-                
-                var thisStudy = ModelService.get_rif_job_submission_JSON();         
+
+                var thisStudy = ModelService.get_rif_job_submission_JSON();
                 user.submitStudy(user.currentUser, thisStudy).then(handleSubmit, handleSubmitError);
 
                 $uibModalInstance.close($scope.input);

@@ -79,6 +79,7 @@
     height: 100%;
 }
 .msettings-header {
+    height: 80px !important;
     padding: 30px 20px;
     color: #fff;
     text-transform: uppercase;
@@ -238,7 +239,7 @@
 .msettings .save-fld,
 .save-fld-settings,
 .save-basemap {
-    padding: 20px 20px;
+    padding: 13px 25px;
 }
 .save-fld input,
 .save-fld-settings input,
@@ -367,8 +368,8 @@
 }
 
 #swatchtable tr td {
-    height: 20px;
-    width: 20px;
+    height: 22px;
+    width: 22px;
 }
 
 .modal-content {

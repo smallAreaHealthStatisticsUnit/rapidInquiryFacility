@@ -17,7 +17,7 @@ angular.module("RIF")
                         scope: $scope
                     });
                     modalInstance.opened.then(function () {
-                        $scope.$$childHead.renderSwatch();
+                        $scope.$$childHead.renderSwatch(true, true);
                     });
                     modalInstance.result.then(function (modal) {
                         ChoroService.getMaps(map).brewerName = modal.selectedSchemeName;
@@ -40,7 +40,7 @@ angular.module("RIF")
             $scope.input.intervalRange = ColorBrewerService.getSchemeIntervals($scope.input.selectedSchemeName);
             $scope.input.selectedN = ChoroService.getMaps($scope.map).intervals;
             $scope.input.method = ChoroService.getMaps($scope.map).method;
-
+           
             //list of attributes
             $scope.input.features = ChoroService.getMaps($scope.map).features;
             if ($scope.input.features.indexOf(ChoroService.getMaps($scope.map).feature) === -1) {
@@ -51,15 +51,15 @@ angular.module("RIF")
 
             $scope.domain = [];
 
-            //ensure that the colour scheme allows the selected number of classes
-            $scope.renderSwatch = function () {
+            $scope.renderSwatch = function (bOnOpen, bCalc) {
+                //ensure that the colour scheme allows the selected number of classes
+                var n = angular.copy($scope.input.selectedN);
                 $scope.input.intervalRange = ColorBrewerService.getSchemeIntervals($scope.input.selectedSchemeName);
                 if ($scope.input.selectedN > Math.max.apply(Math, $scope.input.intervalRange)) {
                     $scope.input.selectedN = Math.max.apply(Math, $scope.input.intervalRange);
                 } else if ($scope.input.selectedN < Math.min.apply(Math, $scope.input.intervalRange)) {
                     $scope.input.selectedN = Math.min.apply(Math, $scope.input.intervalRange);
                 }
-
                 var thisLeaflet = ChoroService.getMaps($scope.map).map;
 
                 //get the domain 
@@ -69,8 +69,36 @@ angular.module("RIF")
                 }
 
                 ChoroService.getMaps($scope.map).brewerName = $scope.input.selectedSchemeName;
-                $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.selectedSchemeName,
-                        $scope.input.selectedN), $scope.input.checkboxInvert, $scope.map);
+
+                if (bOnOpen) {
+                    //if called on modal open
+                    if (!ChoroService.getMaps($scope.map).init) {
+                        //initialise basic renderer
+                        ChoroService.getMaps($scope.map).init = true;
+                        $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.selectedSchemeName,
+                                $scope.input.selectedN), $scope.input.checkboxInvert, $scope.map);
+                        ChoroService.getMaps($scope.map).renderer = $scope.input.thisMap;
+                    } else {
+                        //restore previous renderer
+                        $scope.input.thisMap = ChoroService.getMaps($scope.map).renderer;
+                    }
+                } else {
+                    //update current renderer
+                    if (!bCalc) {
+                        if (n !== $scope.input.selectedN) {
+                            //reset as class number requested not possible
+                            $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.selectedSchemeName,
+                                    $scope.input.selectedN), $scope.input.checkboxInvert, $scope.map);
+                        } else {
+                            var tempRenderer = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.selectedSchemeName,
+                                    $scope.input.selectedN), $scope.input.checkboxInvert, $scope.map);
+                            $scope.input.thisMap.range = tempRenderer.range;   
+                        }
+                    } else {
+                        $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.selectedSchemeName,
+                                $scope.input.selectedN), $scope.input.checkboxInvert, $scope.map);
+                    }      
+                }      
             };
 
             $scope.close = function () {
@@ -99,7 +127,12 @@ angular.module("RIF")
                         return;
                     }
                 }
+
+                //apply any user made changes to breaks
+                $scope.input.thisMap.scale = d3.scaleThreshold()
+                        .domain($scope.input.thisMap.breaks)
+                        .range($scope.input.thisMap.range);
+
                 $uibModalInstance.close($scope.input);
             };
         });
-

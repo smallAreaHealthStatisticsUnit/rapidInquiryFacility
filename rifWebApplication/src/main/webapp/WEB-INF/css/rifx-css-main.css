@@ -167,6 +167,8 @@ a:hover {
     text-decoration: none;
     color: #8DB6CD
 }
+
+
 /*
  * RIF 4.0 CSS
  */
@@ -211,10 +213,6 @@ body {
     text-transform: uppercase
 }
 
-.leaflet-container {
-    background-color: white !important;
-}
-
 #diseasemap1 {
     display: inline-block;
     float: left;
@@ -235,7 +233,6 @@ body {
     color: #FFDAB9;
     font-weight: bold;
 }
-
 
 .submenuMapping{
     height:40px;
@@ -264,7 +261,6 @@ body {
 }
 .mapBoxOpts input {
     float: left;
-    position: absolute;
 }
 .mapBoxOpts select {
     float: right;
@@ -273,7 +269,6 @@ body {
     float: right;
     margin: 11px 30px 0px 10px;
 }
-
 
 #baseMapBtn {
     background: transparent url("../images/layers_map.png") no-repeat;
@@ -286,6 +281,12 @@ body {
 }
 #selectAll {
     background: transparent url("../images/billboard_picture.png") no-repeat;
+}
+#addAOI {
+    background: transparent url("../images/lightbulb_add.png") no-repeat;
+}
+#removeAOI {
+    background: transparent url("../images/lightbulb_delete.png") no-repeat;
 }
 #zoomExtent {
     background: transparent url("../images/zoom_extend.png") no-repeat;
@@ -300,7 +301,10 @@ body {
     background: transparent url("../images/flag_flyaway_blue.png") no-repeat;
 }
 #exportMap {
-    background: transparent url("../images/layer_save.png") no-repeat;
+    background: transparent url("../images/map_go.png") no-repeat;
+}
+#exportD3 {
+    background: transparent url("../images/chart_curve_go.png") no-repeat;
 }
 #lockExtentFalse {
     background: transparent url("../images/map_torn.png") no-repeat;
@@ -335,7 +339,7 @@ input[type="range"] {
     -webkit-appearance: none;
     width: 100px;
     height: 15px;
-    margin: 12px 50px;
+    margin: 12px 20px;
     /*border: 1px solid #3D59AB ;*/
     padding: 1px 2px;
     border-radius: 14px;
@@ -405,49 +409,6 @@ select {
     display: block;
     padding: 3px;
     text-transform: uppercase;
-}
-
-#content #leftcol div#studyInfo {
-    padding-bottom: 8%;
-    margin-top: 3%;
-}
-div#studyInfo ul.resultFigures {
-    width: 100%;
-    overflow: hidden
-}
-li.riskFigures,
-li.investigationFigures {
-    width: 46%;
-}
-div#studyInfo ul.resultFigures li.riskFigures {
-    float: left;
-}
-div#studyInfo ul.resultFigures li.investigationFigures {
-    float: right;
-    color: #B5B5B5;
-}
-div#studyInfo ul.resultFigures li ul li {
-    border-bottom: 1px solid #E3E3E3;
-    line-height: 22px;
-}
-div#studyInfo ul.resultFigures span {
-    float: right;
-    font-weight: bold;
-}
-div#studyInfo ul li.listHeader {
-    text-transform: uppercase;
-    border: none;
-    margin-bottom: 3px;
-}
-
-#studyInfo {
-    margin-left: auto;
-    margin-right: auto;
-    width: 92%;
-}
-
-#studyInfo {
-    padding-top:20px;
 }
 
 .myButton {
@@ -718,6 +679,26 @@ div#studyInfo ul li.listHeader {
     text-transform:uppercase
 }
 
+#buttons #left{
+    float: left;
+    width: 50%;
+    height: 55px;
+}
+#buttons #right{
+    position: absolute;
+    margin-left: 50%;
+    float: right;
+    width: 50%;
+    height: 55px;
+}  
+
+#buttons #studySelect {
+    width: 250px;
+}
+#buttons #optionsSelect {
+    width: 75px;
+}
+
 .dropdownSelectSingle,
 .dropdownSelect {
     padding: 10px;
@@ -840,9 +821,7 @@ input[type="text"].dropdownInput:focus,
 .style-4 input[type="text"].focus {
     border-bottom: solid 20px #63B8FF;
 }
-.inputBorderSelection {
-    border-bottom: solid 2px #4daf4a !important;
-}
+
 .availablesWrapper {
     position: relative;
 }
@@ -1042,7 +1021,7 @@ div.headerBlock{
 textarea.description {
     background-repeat: repeat-x;
     border: 1px solid #d1c7ac;
-    width: 430px;
+    width: 440px;
     height: 130px;
     padding: 3px;
     margin: 10px 30px;
@@ -1068,34 +1047,6 @@ textarea.description {
 /* Ivestigation parameter modal dialog  */
 /****************************************/
 /****************************************/
-
-.healthCodes {
-    float: left;
-    width: 35%;
-    height: 100%;
-    border-right: 2px solid #dbdbdb;
-    position: relative;
-}
-.healthCodes > div {
-    margin: 4% 4% 0 4%;
-    width: 93%;
-    position: relative;
-}
-.healthCodes #availableTaxomonomies {
-    margin-top: 6%
-}
-
-.investigationBox {
-    overflow: hidden;
-    height: 100%;
-}
-.investigationBox > div {
-    width: 100%;
-}
-.investigationBox > div#parameters {
-    height: 50%;
-    position: relative;
-}
 
 .pbox {
     margin:1% 1% 0% 2%;
@@ -1168,8 +1119,10 @@ textarea.description {
     border: 1px solid #F2F2F2;
 }
 
-
 .done{
+    background-color: #1caff6;
+    font-size: 20px;
+    right: 0;
     position: absolute;
     top: 0;
     text-transform: uppercase;
@@ -1177,12 +1130,6 @@ textarea.description {
     border: 1px solid #F2F2F2;
     color: white! important;
     font-weight: bold;
-}
-
-.done{
-    background-color: #1caff6;
-    font-size: 20px;
-    right: 0;
     border-radius: 10px 0px 00px 10px;
     -moz-border-radius:10px 0px 00px 10px;
     -webkit-border-radius: 10px 0px 00px 10px;
@@ -1199,7 +1146,6 @@ textarea.description {
     text-decoration: underline;
     cursor: pointer;
 }
-
 
 .runDialog {
     position:relative
@@ -1337,8 +1283,6 @@ textarea.description {
     text-decoration: underline;
 }
 
-
-
 /*SUMMARY TABLE IN RUN STUDY*/
 .modelViewer table {
     background-color: #E3E3E3;
@@ -1388,11 +1332,9 @@ header:first-child {
     background-color: #A1A1A1;
 }
 
-
 /*
 * LOGIN SCREEN
 */
-
 .login-box {
     position: fixed;
     top: 50%;
@@ -1415,17 +1357,18 @@ div.world{
     width: 100%;
     height: 100%;
     background: transparent url("../images/industry-sunrise-clouds-fog-39553.jpeg"); 
-    /* background: transparent url("../images/squirrels.jpg"); */
     background-size: cover;
     position: absolute;
 }
 
 .password{
     margin: 10px 25px;
+    width: 240px !important;
 }
 
 .username{
-    margin: 10px 25px;
+    margin: 10px 25px; 
+    width: 240px !important;
 }
 
 .active{
@@ -1564,33 +1507,4 @@ input[type=number]+ label  {
 }
 .toggleJSON:hover {
     cursor: pointer;
-}
-
-/* LEAFLET LEGEND */
-.info {
-    padding: 6px 8px;
-    background: white;
-    background: rgba(255,255,255,1);
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    border-radius: 5px;
-}
-.info h4 {
-    color: #065581;
-    font-weight: bold;
-    font-size: 16px;
-}
-.legend {
-    line-height: 25px;
-    color: #555;
-}
-.legend i {
-    width: 10px;
-    height: 25px;
-    float: left;
-    margin-right: 8px;
-    opacity: 0.7;
-    position: absolute;
-}
-.legend span {
-    padding-left: 15px;
 }

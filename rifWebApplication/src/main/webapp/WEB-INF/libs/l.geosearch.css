@@ -24,7 +24,7 @@
 
 .leaflet-control-geosearch a.alert {
 	background-image: url(images/alert.png);
-	background-size: 64% 64%;
+	background-size: 50% 50%;
 }
 
 .leaflet-control-geosearch a:hover {
@@ -40,13 +40,13 @@
 			border-radius: 0px 4px 4px 0px;
 	z-index: -1;
 	background: #FFF;
-	height: 26px;
+	height: 30px;
 	padding: 0 6px 0 6px;
 }
 
 .leaflet-touch .leaflet-control-geosearch form {
 	padding: 2px 6px 2px 8px;
-	line-height: 28px;
+	line-height: 8px;
 }
 
 .leaflet-control-geosearch form input {

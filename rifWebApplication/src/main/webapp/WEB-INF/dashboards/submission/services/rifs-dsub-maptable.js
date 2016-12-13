@@ -33,10 +33,7 @@ angular.module("RIF")
                                 'band3: row.entity.band===3,' +
                                 'band4: row.entity.band===4,' +
                                 'band5: row.entity.band===5,' +
-                                'band6: row.entity.band===6,' +
-                                'band7: row.entity.band===7,' +
-                                'band8: row.entity.band===8,' +
-                                'band9: row.entity.band===9' +
+                                'band9: row.entity.band===6' +
                                 '}">' +
                                 '<div ng-click="grid.appScope.rowClick(row)">' +
                                 '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>' +

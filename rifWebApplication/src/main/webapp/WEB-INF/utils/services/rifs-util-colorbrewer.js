@@ -1,11 +1,10 @@
 /*
- * 
- * 
+ * colorbrewer (http://colorbrewer.org/).
+ * http://colorbrewer2.org/
  */
 angular.module("RIF")
         .factory('ColorBrewerService',
                 function () {
-                    //colorbrewer (http://colorbrewer.org/).
                     var colorbrewer = {
                         LightGreen: {
                             1: ["#9BCD9B"]
