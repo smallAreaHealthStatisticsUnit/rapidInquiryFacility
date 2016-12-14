@@ -312,8 +312,11 @@ sahsuland_dev: clean $(PLR_DIRS) v4_0_create_sahsuland.rpt
 #- sahsuland_empty: Rebuild sahsuland_empty, test, then patch dev only
 #- Does not run all alter scripts in development
 #- Test can fail
-sahsuland_empty: clean $(PLR_DIRS) v4_0_create_sahsuland_empty.rpt 
-	$(MAKE) -C alter_scripts clean all DEBUG_LEVEL=1 ECHO=all
+sahsuland_empty: $(PLR_DIRS) 
+	$(MAKE) clean PGDATABASE=sahsuland_empty
+	$(MAKE) recreate_sahsuland_empty_db.rpt PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
+	$(MAKE) v4_0_create_sahsuland_empty.rpt PGDATABASE=sahsuland_empty
+	$(MAKE) -C alter_scripts clean all DEBUG_LEVEL=1 ECHO=all PGDATABASE=sahsuland_empty
 	
 #- topojson_convert: GeoJSON to topoJSON converter
 topojson_convert:
@@ -370,7 +373,7 @@ verbose_test:
 clean:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C test_scripts clean
-	$(DELETE) db_setup.rpt db_create.rpt v4_0_create_sahsuland.rpt v4_0_create_sahsuland_empty.rpt v4_0_vacuum_analyse.rpt ../install/sahsuland_dev.dump ../install/sahsuland.dump ../install/sahsuland.sql
+	$(DELETE) db_setup.rpt db_create.rpt recreate_sahsuland_empty_db.rpt recreate_sahsuland_empty_db.rpt v4_0_create_sahsuland.rpt v4_0_create_sahsuland_empty.rpt v4_0_vacuum_analyse.rpt ../install/sahsuland_dev.dump ../install/sahsuland.dump ../install/sahsuland.sql
 #- devclean: Remove logs so alter scripts in development can be r-run 
 #-           Not normally needed as they abort.
 devclean:
