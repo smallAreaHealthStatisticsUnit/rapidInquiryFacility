@@ -73,8 +73,8 @@ BEGIN
 		AND not exists (
 		select 1
 		from INFORMATION_SCHEMA.COLUMNS a
-		where a.table_name=b.table_name
-		and a.column_name=b.total_field
+		where a.table_name collate database_default=b.table_name collate database_default
+		and a.column_name collate database_default=b.total_field collate database_default
 		)
 	 FOR XML PATH('') 
 	);
@@ -102,7 +102,7 @@ BEGIN
 		OR not exists (
 		select 1
 		FROM INFORMATION_SCHEMA.TABLES a
-		where a.table_name=b.table_name))		
+		where a.table_name collate database_default=b.table_name collate database_default))		
 		FOR XML PATH(''));
 	
 	IF @dsd_table_missing IS NOT NULL

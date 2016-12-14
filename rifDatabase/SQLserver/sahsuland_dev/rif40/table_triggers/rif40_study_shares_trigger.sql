@@ -141,7 +141,7 @@ BEGIN
 		SELECT a.study_id, a.grantee_username
 		FROM inserted a
 		WHERE NOT EXISTS (select 1
-		FROM [sys].[database_principals] b WHERE a.grantee_username=b.name)
+		FROM [sys].[database_principals] b WHERE a.grantee_username collate database_default=b.name collate database_default)
 		FOR XML PATH('')
 	);
 	IF @invalid_grantee IS NOT NULL

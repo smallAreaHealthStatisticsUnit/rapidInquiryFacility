@@ -4,40 +4,37 @@
             <h2> Choropleth map symbology </h2>
             <a class="modal_close" ng-click="close()"></a>
         </div>
-
         <div id="choroWrap">
             <div class="left">
                 <div class="txt-fld">
                     <label for="colourScale"> Colour scale:</label> 
-                    <select ng-style="{'text-transform': 'none'}" id='colourScale' ng-model="input.selectedSchemeName" ng-change="renderSwatch()">
+                    <select ng-style="{'text-transform': 'none'}" id='colourScale' ng-model="input.selectedSchemeName" ng-change="renderSwatch(false, false)">
                         <option ng-repeat='o in input.mySchemes' value='{{o}}'>{{o}}</option> 
                     </select>
                     <div class='invertWrapper'>
-                        <input type="checkbox" name="inverter" id="invertColors" ng-model="input.checkboxInvert" ng-change="renderSwatch()"> 
+                        <input type="checkbox" name="inverter" id="invertColors" ng-model="input.checkboxInvert" ng-change="renderSwatch(false, false)"> 
                         <label for = "invertColors" id="invertColorsLabel"> Invert </label>
                     </div>
                 </div>
                 <div class="txt-fld">
                     <label for="fieldToMap"> Field to Map:</label>
-                    <select ng-style="{'text-transform': 'none'}" id='fieldToMap' ng-options="s for s in input.features" ng-model="input.selectedFeature" ng-change="renderSwatch()"></select>
+                    <select ng-style="{'text-transform': 'none'}" id='fieldToMap' ng-options="s for s in input.features" ng-model="input.selectedFeature" ng-change="renderSwatch(false, true)"></select>
                 </div>
                 <div class="txt-fld">
                     <label for="intervals">Intervals:</label>
-                    <select id='intervals' ng-options="n for n in input.intervalRange" ng-model="input.selectedN" ng-init="input.selectedN" ng-change="renderSwatch()" ></select>
+                    <select id='intervals' ng-options="n for n in input.intervalRange" ng-model="input.selectedN" ng-init="input.selectedN" ng-change="renderSwatch(false, true)" ></select>
                 </div>
                 <div class="txt-fld">
                     <label for="classification">Classification:</label>
-                    <select id='classification' ng-model="input.method" ng-change="renderSwatch()">
+                    <select id='classification' ng-model="input.method" ng-change="renderSwatch(false, true)">
                         <option value='quantile'>Quantile</option>
                         <option value='quantize'>Equal Interval</option>
                         <option value='equalSize'>Equal Size</option>
                         <option value='jenks'>Jenks</option>
-                        <option value='standardDeviation'> Standard Deviation</option>                      
-                        <!--
-                        <option value='logarithmic'> Logarithmic</option>
+                        <option value='standardDeviation'> Standard Deviation</option> 
                         <option value='AtlasRelativeRisk'> Atlas Relative Risk</option>
-                        <option value='probability'> Probability</option>
-                        -->
+                        <option value='AtlasProbability'> Atlas Probability</option>
+                        <!--<option value='logarithmic'> Logarithmic</option>-->
                     </select>
                 </div>
             </div>
@@ -50,13 +47,12 @@
                 </table>
                 <table id="breakstable">
                     <tr><td><input class="break" ng-model="input.thisMap.mn" readonly> Minimum</td></tr>
-                    <tr ng-repeat="i in input.thisMap.breaks track by $index">
-                        <td><input class="break"  ng-model="input.thisMap.breaks[$index]"></td>
+                    <tr ng-repeat="i in input.thisMap.breaks">
+                        <td><input class="break" ng-model="input.thisMap.breaks[$index]"></td>
                     </tr>
                     <tr><td><input class="break" ng-model="input.thisMap.mx" readonly> Maximum</td></tr>
                 </table>
             </div>
-
         </div>
         <hist-img-breaks chart-data="domain" chart-breaks="input.thisMap.breaks"></hist-img-breaks> 
         <div class="save-fld">

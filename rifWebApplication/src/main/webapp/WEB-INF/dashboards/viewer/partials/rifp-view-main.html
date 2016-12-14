@@ -17,16 +17,16 @@ Viewer
     <div class='geoDropsMapping'>
         <div class="mappingPageLabel">VIEW RESULTS</div>
         <div >
-            <div>Study ID:</div>
-            <select ng-model="studyID" ng-options="s for s in studyIDs" ng-change="studyChanged()"></select>
+            <div>Study:</div>
+            <select id='studySelect' ng-model="studyID" ng-options="s for s in studyIDs" ng-change="studyChanged()"></select>
         </div>
         <div >
             <div>Year:</div>
-            <select ng-model="year" ng-options="s for s in years" ng-change="studyOptionsChanged()"></select>
+            <select id='optionsSelect' ng-model="year" ng-options="s for s in years" ng-change="studyOptionsChanged()"></select>
         </div>
         <div>
             <div>Sex:</div>
-            <select ng-model="sexString" ng-options="s for s in sexes" ng-change="studyOptionsChanged()"></select>
+            <select id='optionsSelect' ng-model="sexString" ng-options="s for s in sexes" ng-change="studyOptionsChanged()"></select>
         </div>
     </div>
 </div>
@@ -42,21 +42,29 @@ Viewer
             </div>
         </div>
     </div>
-
     <div ui-layout-container ui-layout-loaded> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit2}}%">            
                 <div class="submenuMapping" >
+                    <div class="btn-group" title="Quick export chart" uib-dropdown is-open="isopen">
+                        <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+                            <span class="caret"></span>
+                        </button>
+                        <div class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                            <li role="menuitem"><a ng-click="saveD3Chart('#distHisto')">Histogram</a></li>
+                            <li role="menuitem"><a ng-click="saveD3Chart('#poppyramid')">Pyramid</a></li>
+                        </div>
+                    </div>
                     <ul class="mapBoxOpts">
                         <li><a ng-controller="ChoroplethModalCtrl" ng-click="open(0)" id="choroplethBtn" title="Choropleth map"></a></li>
                         <li><a ng-controller="BaseMapModalCtrl" ng-click="open('viewermap')" id="baseMapBtn" title="Base map"></a></li>	
                         <li><a id="clearSelection" title="Clear selection" ng-click="clear()"></a></li>
                         <li><a id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent()"></a></li> 
-                        <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet()"></a></li>     
+                        <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet()"></a></li> 
                         <li>
                             <input type="range" ng-model ="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
                         </li>
-                    </ul>                 
+                    </ul> 
                 </div>    
                 <leaflet id="viewermap" tiles="tiles" width="100%" height="calc(100% - 40px)"></leaflet>  
             </div>

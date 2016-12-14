@@ -11,7 +11,7 @@
 }
 .modal-dialog .ui-layout-column {
     border-top: none;
-        overflow: hidden;
+    overflow: hidden;
 }
 
 .leaflet-box {
@@ -28,6 +28,7 @@
 }
 .glyphicon {
     font-family: none;
+    color: transparent;
 }
 .ui-layout-row > .ui-splitbar {
     overflow: hidden;

@@ -2,11 +2,6 @@
  * CONTROLLER for disease submission status modal
  */
 
-//              
-//              Study state - C: created, not verfied; V: verified, but no other work done;
-//              E - extracted imported or created, but no results or maps created; 
-//              R: results computed; U: upgraded record from V3.1 RIF (has an indeterminate state; probably R.
-
 angular.module("RIF")
         .controller('ModalStatusCtrl', ['$scope', '$uibModal', 'user', 'uiGridConstants',
             function ($scope, $uibModal, user, uiGridConstants) {
@@ -40,11 +35,11 @@ angular.module("RIF")
                 function rowTemplate() {
                     return  '<div id="testdiv" tabindex="0">' +
                             '<div style="height: 100%" ng-class="{ ' +
-                            //'statusC: study_state===C,' + //C: created, not verfied
-                            //'statusV: study_state===V,' + //V: verified, but no other work done;
-                            //'statusE: study_state===E,' + //E: extracted imported or created
-                            'statusR: study_state===R,' + //R: results computed
-                            //'statusU: study_state===U' + //U: upgraded record from V3.1 RIF (has an indeterminate state; probably R.
+                            "statusC: row.entity.study_state==='C'," + //C: created, not verfied
+                            "statusV: row.entity.study_state==='V'," + //V: verified, but no other work done;
+                            "statusE: row.entity.study_state==='E'," + //E: extracted imported or created
+                            "statusR: row.entity.study_state==='R'," + //R: results computed
+                            "statusU: study_state==='U'," + //U: upgraded record from V3.1 RIF (has an indeterminate state; probably R.
                             '}">' +
                             '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>' +
                             '</div>';

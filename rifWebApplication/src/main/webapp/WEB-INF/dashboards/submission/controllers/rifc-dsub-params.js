@@ -200,8 +200,7 @@ angular.module("RIF")
                             var tmp = [];
                             for (var i = 0; i < res.data[0].name.length; i++) {
                                 $scope.ages.push(res.data[0].name[i]);
-                                //TODO: KG says remove ID
-                                tmp.push({id: i, name: res.data[0].name[i], lower_limit: res.data[1].lowerAgeLimit[i], upper_limit: res.data[2].upperAgeLimit[i]});
+                                tmp.push({id: 0, name: res.data[0].name[i], lower_limit: res.data[1].lowerAgeLimit[i], upper_limit: res.data[2].upperAgeLimit[i]});
                             }
                             ParameterStateService.getState().possibleAges = tmp;
                             if ($scope.lowerAge === "") {

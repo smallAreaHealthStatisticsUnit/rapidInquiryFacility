@@ -83,8 +83,8 @@ DECLARE @col_not_found NVARCHAR(MAX) =
 	WHERE a.geolevel_name=b.geolevel_name 
 	and not exists 
 		(select 1 from [INFORMATION_SCHEMA].[COLUMNS] c 
-		where c.table_name=b.covariate_table
-		and c.column_name=a.covariate_name)
+		where c.table_name collate database_default =b.covariate_table collate database_default
+		and c.column_name collate database_default=a.covariate_name collate database_default)
 	FOR XML PATH ('')
 );
 IF @col_not_found IS NOT NULL

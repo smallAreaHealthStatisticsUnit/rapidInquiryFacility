@@ -1,0 +1,33 @@
+
+.leaflet-container {
+    background-color: white !important;
+}
+
+/* LEAFLET LEGEND */
+.info {
+    padding: 6px 8px;
+    background: white;
+    background: rgba(255,255,255,1);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+.info h4 {
+    color: #065581;
+    font-weight: bold;
+    font-size: 16px;
+}
+.legend {
+    line-height: 25px;
+    color: #555;
+}
+.legend i {
+    width: 10px;
+    height: 25px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+    position: absolute;
+}
+.legend span {
+    padding-left: 15px;
+}
