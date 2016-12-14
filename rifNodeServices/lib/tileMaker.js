@@ -343,7 +343,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 	var dbErrorHandler = function dbErrorHandler(err, sqlInError, callback) {
 		var nerr;
 		if (err) {	
-			nerr=new Error(err.message + "\nSQL> " + (sqlInError||sql));
+			nerr=new Error("dbErrorHandler(): " + err.message + "\nStack:\n" + err.stack + "\nSQL> " + (sqlInError||sql));
 			nerr.stack=err.stack;
 		}
 		else {
@@ -890,66 +890,66 @@ REFERENCE (from shapefile) {
 			geography, xmlFileDir, callback) {			
 				
 		var tileIntersectsTable='tile_intersects_' + geography.toLowerCase();
-		var tileBoundsTable='tile_bounds_' + geography.toLowerCase();
+		var tileBlocksTable='tile_blocks_' + geography.toLowerCase();
 		var request;
 		if (dbType == "PostGres") {
 			request=client;
-			sql="DROP TABLE IF EXISTS " + tileBoundsTable;
+			sql="DROP TABLE IF EXISTS " + tileBlocksTable;
 		}		
 		else if (dbType == "MSSQLServer") {	
 			request=new dbSql.Request();
-			sql="IF OBJECT_ID('" + tileBoundsTable + 
-				"', 'U') IS NOT NULL DROP TABLE " + tileBoundsTable;
+			sql="IF OBJECT_ID('" + tileBlocksTable + 
+				"', 'U') IS NOT NULL DROP TABLE " + tileBlocksTable;
 		}
 		
-		var query=request.query(sql, function dropTileBounds(err, result) {
+		var query=request.query(sql, function dropTileBlocks(err, result) {
 			if (err) {
 				dbErrorHandler(err, sql);
 			}
 			else {		
-				var cte="WITH a AS (\n" + 
+				var cte="WITH a AS (\n" +
 						"	SELECT geolevel_id, zoomlevel, x, y, COUNT(areaid) AS total_areas\n" + 
 						"	  FROM tile_intersects_cb_2014_us_500k\n" + 
 						"	GROUP BY geolevel_id, zoomlevel, x, y\n" + 
 						"), b AS (\n" + 
 						"	SELECT geolevel_id, zoomlevel, x, y, total_areas,\n" + 
-						"	       ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/10) AS block\n" + 
+						"	       ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/10)+1 AS block\n" + 
 						"	  FROM a\n" + 
 						")\n";
 				if (dbType == "PostGres") {
-					sql="CREATE TABLE " + tileBoundsTable + "\n" + 
+					sql="CREATE TABLE " + tileBlocksTable + "\n" + 
 						"AS\n" + cte +
 						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas\n" + 
 						"  FROM b\n" + 
 						" ORDER BY geolevel_id, zoomlevel, block, x, y";
-					}
+				}
 				else if (dbType == "MSSQLServer") {	
 					sql=cte +
 						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas\n" + 
-						"  INTO " + tileBoundsTable + "\n" + 
+						"  INTO " + tileBlocksTable + "\n" + 
 						"  FROM b\n" + 
 						" ORDER BY geolevel_id, zoomlevel, block, x, y";		
 				}
 
-				var query=request.query(sql, function createTileBounds(err, result) {
+				var query=request.query(sql, function createTileBlocks(err, result) {
 					if (err) {
 						dbErrorHandler(err, sql);
 					}		
 					else {
-						sql="ALTER TABLE " + tileBoundsTable + " ADD PRIMARY KEY (geolevel_id, zoomlevel, x, y)";
-						var query=request.query(sql, function pkTileBounds(err, result) {
+						sql="ALTER TABLE " + tileBlocksTable + " ADD PRIMARY KEY (geolevel_id, zoomlevel, x, y)";
+						var query=request.query(sql, function pkTileBlocks(err, result) {
 							if (err) {
 								dbErrorHandler(err, sql);
 							}		
 							else {
-								tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolevel_name, geolevel_id, 
+								tileIntersectsProcessingZoomlevelLoop(tileBlocksTable, tileIntersectsTable, geolevel_name, geolevel_id, 
 									geography, xmlFileDir, callback);
 							}
-						}); // End of pkTileBounds()
+						}); // End of pkTileBlocks()
 					}
-				});	// End of createTileBounds()	
+				});	// End of createTileBlocks()	
 			}
-		}); // End of dropTileBounds()
+		}); // End of dropTileBlocks()
 	} // End of tileIntersectsProcessingZoomlevelLoopOuter()
 						
 	/*
@@ -1064,12 +1064,13 @@ REFERENCE (from shapefile) {
 				
 	/*
 	 * Function: 	tileIntersectsProcessingZoomlevelLoop()
-	 * Parameters:	Tile intersects table name, geolevel name, geolevel id, geography, XML file directory, 
+	 * Parameters:	Tile bounds table name, tile intersects table name, geolevel name, geolevel id, geography, XML file directory, 
 	 *				geolevel processing callback (callback from geolevelProcessing async)
 	 * Returns:		Nothing
 	 * Description:	Asynchronous do while loop to process all zoomlevels in a geolevel; calls tileIntersectsProcessing() for each zoomlevel
 	 */		
-	function tileIntersectsProcessingZoomlevelLoop(tileIntersectsTable, geolevelName, geolevel_id, geography, xmlFileDir, geolevelProcessingCallback) {
+	function tileIntersectsProcessingZoomlevelLoop(tileBlocksTable, tileIntersectsTable, geolevelName, geolevel_id, 
+		geography, xmlFileDir, geolevelProcessingCallback) {
 		 
 // 
 // Primary key: geolevel_id, zoomlevel, areaid, x, y
@@ -1077,9 +1078,14 @@ REFERENCE (from shapefile) {
 		if (dbType == "PostGres") {	
 			sql="SELECT z.geolevel_id::VARCHAR||'_'||'" + geolevelName + "'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
 				"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, z.x, z.y, a.*\n" +				
-				"  FROM " + tileIntersectsTable + " z, lookup_" + geolevelName + " a\n" +
+				"  FROM " + tileIntersectsTable + " z, " + tileBlocksTable + " y, lookup_" + geolevelName + " a\n" +
 				" WHERE z.geolevel_id = $2\n" + 
 				"   AND z.zoomlevel   = $1\n" + 
+				"   AND y.block       = $3\n" +
+				"   AND y.geolevel_id = z.geolevel_id\n" +
+				"   AND y.zoomlevel   = z.zoomlevel\n" +
+				"   AND y.x           = z.x\n" +
+				"   AND y.y           = z.y\n" +
 				"   AND z.areaid      = a." + geolevelName + "\n" + 
 				" ORDER BY 1";
 		}		
@@ -1087,9 +1093,14 @@ REFERENCE (from shapefile) {
 			sql="SELECT CAST(z.geolevel_id AS VARCHAR) + '_' + '" + geolevelName + 
 							"' + '_' + CAST(z.zoomlevel AS VARCHAR) + '_' + CAST(z.x AS VARCHAR) + '_' + CAST(z.y AS VARCHAR) AS tile_id,\n" +
 				"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, z.x, z.y, a.*\n" +				
-				"  FROM " + tileIntersectsTable + " z, lookup_" + geolevelName + " a\n" +
+				"  FROM " + tileIntersectsTable + " z, " + tileBlocksTable + " y, lookup_" + geolevelName + " a\n" +
 				" WHERE z.geolevel_id = @geolevel_id\n" + 
 				"   AND z.zoomlevel   = @zoomlevel\n" + 
+				"   AND y.block       = @block\n" +
+				"   AND y.geolevel_id = z.geolevel_id\n" +
+				"   AND y.zoomlevel   = z.zoomlevel\n" +
+				"   AND y.x           = z.x\n" +
+				"   AND y.y           = z.y\n" +
 				"   AND z.areaid      = a." + geolevelName + "\n" + 
 				" ORDER BY 1";
 		}
@@ -1156,36 +1167,37 @@ REFERENCE (from shapefile) {
 		 * Returns:		Nothing
 		 * Description:	Multi row insert in t_tile_<geography> table
 		 */	
-		function pgTileInsert(expectedRows, tileIntersectsProcessingCallback) {
-			sql="INSERT INTO t_tiles_" + geography +
+		function pgTileInsert(expectedRows, pgTileInsertCallback) {
+			var pgInsertSql="INSERT INTO t_tiles_" + geography +
 				 '	(geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\nVALUES ';
 			var j=1;
 			var insertArray=[];
 			for (var i=0; i<tileArray.length; i++) {
 				if (i>0) {
-					sql+=",\n";
+					pgInsertSql+=",\n";
 				}
-				sql+='($' + j + ',$' + (j+1) + ',$' + (j+2) + ',$' + (j+3) + ',$' + (j+4) + ',$' + (j+5) + ') /* Row ' + i + ' */';
+				pgInsertSql+='($' + j + ',$' + (j+1) + ',$' + (j+2) + ',$' + (j+3) + ',$' + (j+4) + ',$' + (j+5) + ') /* Row ' + i + ' */';
 				j+=6;
 				insertArray=insertArray.concat(tileArray[i].insertArray);
 			}
-//			winston.log("debug", "INSERT SQL> " + sql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
+//			winston.log("debug", "INSERT SQL> " + pgInsertSql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
 	
 			var request=client;
-			var query=request.query(sql, insertArray, function pgTilesInsert(err, result) {
+			var query=request.query(pgInsertSql, insertArray, function pgTilesInsert(err, result) {
 				if (err) {
-					dbErrorHandler(err, sql);
+					dbErrorHandler(err, pgInsertSql);
 				}
 				else if (result == undefined) {
-					dbErrorHandler(new Error("pgTilesInsert() tile INSERT: result undefined != expected: " + expectedRows), sql);
+					dbErrorHandler(new Error("pgTilesInsert() tile INSERT: result undefined != expected: " + expectedRows), pgInsertSql);
 					
 				}
 				else if (expectedRows != result.rowCount) {
-					dbErrorHandler(new Error("pgTilesInsert() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), sql);
+					dbErrorHandler(new Error("pgTilesInsert() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), 
+						pgInsertSql);
 				}
 				else {
 					tileArray=[];  // Re-initialize tile array
-					tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
+					pgTileInsertCallback(); // callback from zoomlevelProcessing async
 				}	
 			});	
 		} // End of pgTileInsert()
@@ -1196,8 +1208,8 @@ REFERENCE (from shapefile) {
 		 * Returns:		Nothing
 		 * Description:	Multi row insert in t_tile_<geography> table
 		 */	
-		function mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback) {
-			sql="INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\n' +
+		function mssqlTileInsert(expectedRows, mssqlTileInsertCallback) {
+			var insertSql="INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\n' +
 				 'VALUES (@geolevel_id, @zoomlevel, @x, @y, @tile_id, @optimised_topojson)';
 			var j=0;
 			var HY104Sql = []; // Problem with NVarChar(MAX) and small (<4K) strings; redo as textual sql
@@ -1223,10 +1235,10 @@ REFERENCE (from shapefile) {
 						tile_id: 			tileArray[i].insertArray[4],
 						optimised_topojson: tileArray[i].insertArray[5]
 					};					
-					var query=request.query(sql, 
+					var query=request.query(insertSql, 
 						function mssqlTileInsertSeries(err, recordset, rowCount) {
 							if (err && err.state == "HY104") { // Problem with NVarChar(MAX) and small (<4K) strings; redo as textual sql
-//										winston.log("debug", "[" + data.tile_id + "] INSERT SQL> " + sql + "\noptimised_topojson(" + data.optimised_topojson.length + 
+//										winston.log("debug", "[" + data.tile_id + "] INSERT SQL> " + insertSql + "\noptimised_topojson(" + data.optimised_topojson.length + 
 //										"): " + data.optimised_topojson.substring(0, 2500));
 								HY104Sql.push("INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\n' +
 										'VALUES (' + data.geolevel_id + ', ' + data.zoomlevel + ', ' + data.x + ', ' + data.y + 
@@ -1236,15 +1248,15 @@ REFERENCE (from shapefile) {
 								mssqlTileInsertCallback();					
 							}
 							else if (err && err.state != "HY104") {
-								dbErrorHandler(err, sql, mssqlTileInsertCallback);
+								dbErrorHandler(err, insertSql, mssqlTileInsertCallback);
 							}
 							else if (rowCount == undefined) {
 								dbErrorHandler(new Error("mssqlTilesInsert() [" + data.tile_id + "] tile INSERT: rowCount undefined != expected: " + expectedRows), 
-									sql, mssqlTileInsertCallback);	
+									insertSql, mssqlTileInsertCallback);	
 							}
 							else if (1 != rowCount) {
 								dbErrorHandler(new Error("mssqlTilesInsert() [" + data.tile_id + "] tile INSERT: " + rowCount + " != expected: " + 1), 
-									sql, mssqlTileInsertCallback);
+									insertSql, mssqlTileInsertCallback);
 							}
 							else {
 								mssqlTileInsertCallback();		
@@ -1254,10 +1266,10 @@ REFERENCE (from shapefile) {
 				}, // End of mssqlTileInsertSeries()
 				function mssqlTileInsertEnd(err) { //  Callback	
 					if (err) {
-						dbErrorHandler(err, sql, tileIntersectsProcessingCallback);
+						dbErrorHandler(err, insertSql, mssqlTileInsertCallback);
 					}
 					else if (expectedRows != j) {
-						dbErrorHandler(new Error("mssqlTilesInsert() tile INSERT: " + j + " != expected: " + expectedRows), sql, tileIntersectsProcessingCallback);
+						dbErrorHandler(new Error("mssqlTilesInsert() tile INSERT: " + j + " != expected: " + expectedRows), insertSql, mssqlTileInsertCallback);
 					}
 					else if (HY104Sql.length > 0) {						
 						tileArray=[];  						// Re-initialize tile array
@@ -1265,21 +1277,21 @@ REFERENCE (from shapefile) {
 						async.forEachOfSeries(HY104Sql, 
 							function mssqlTileInsert2Series(value, i, mssqlTileInsert2Callback) { // Processing code
 							
-								sql=value;
-								winston.log("debug", "HY104 Deferred SQL[" + i + "/" + HY104Sql.length + "]> " + sql);
+								var insertSql2=value;
+								winston.log("debug", "HY104 Deferred SQL[" + i + "/" + HY104Sql.length + "]> " + insertSql2);
 								var request = new dbSql.Request();
-								var query=request.query(sql, function mssqlTilesInsert2(err2, result, rowCount) {
+								var query=request.query(insertSql2, function mssqlTilesInsert2(err2, result, rowCount) {
 									if (err2) {
 										winston.log("error", "HY104 Deferred SQL[" + i + "/" + HY104Sql.length + "] error: " + err2.message);
-										dbErrorHandler(err2, sql, mssqlTileInsert2Callback);
+										dbErrorHandler(err2, insertSql2, mssqlTileInsert2Callback);
 									}
 									else if (rowCount == undefined) {
 										dbErrorHandler(new Error("mssqlTilesInsert2() [" + i + "] HY104 redo INSERT: rowCount undefined != expected: " + expectedRows), 
-											sql, mssqlTileInsert2Callback);	
+											insertSql2, mssqlTileInsert2Callback);	
 									}
 									else if (1 != rowCount) {
 										dbErrorHandler(new Error("mssqlTilesInsert2() [" + i + "] HY104 redo INSERT: " + rowCount + " != expected: " + 1), 
-											sql, mssqlTileInsert2Callback);
+											insertSql2, mssqlTileInsert2Callback);
 									}
 									else {
 										winston.log("info", "mssqlTilesInsert2() [" + i + "] HY104 ERROR redo: Insert " + i + "/" + HY104Sql.length + " OK");
@@ -1289,11 +1301,11 @@ REFERENCE (from shapefile) {
 							}, // End of mssqlTileInsert2Series()
 							function mssqlTileInsert2End(err) { //  Callback	
 								if (err) {
-									dbErrorHandler(err, sql, tileIntersectsProcessingCallback);
+									dbErrorHandler(err, insertSql2, mssqlTileInsertCallback);
 								}	
 								else {
 									winston.log("debug", "mssqlTileInsert2End() [" + tileArray.length + "]: Inserts OK; " + HY104Sql.length + " HY104 redo inserts");
-									tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
+									mssqlTileInsertCallback(); // callback from zoomlevelProcessing async
 								}
 							} // End of mssqlTileInsert2End()
 						);
@@ -1301,7 +1313,7 @@ REFERENCE (from shapefile) {
 					else {
 						winston.log("debug", "mssqlTileInsertEnd() [" + tileArray.length + "]: Inserts OK");
 						tileArray=[];  						// Re-initialize tile array
-						tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
+						mssqlTileInsertCallback(); // callback from zoomlevelProcessing async
 					} // End of mssqlTileInsertUnprepare()			
 				} // End of mssqlTileInsertEnd()
 			); // End of async()						
@@ -1310,25 +1322,24 @@ REFERENCE (from shapefile) {
 		
 		/*
 		 * Function: 	 tileIntersectsProcessingEnd()
-		 * Parameters:	 rowCount, database type, CSV file stream
+		 * Parameters:	 rowCount, database type, CSV file stream, block, number of blocks, getBlockCallback
 		 * Returns:		 Nothing
 		 * Descrioption: Processing at end of zoomlevel
 		 */
-		function tileIntersectsProcessingEnd(rowCount, dbType, csvStream) {
+		function tileIntersectsProcessingEnd(rowCount, dbType, csvStream, block, numBlocks, getBlockCallback) {
 
 			var end = new Date().getTime();
 			var elapsedTime=(end - zstart)/1000; // in S
 			var tElapsedTime=(end - lstart)/1000; // in S
 				
-//			winston.log("debug", "tileIntersectsProcessingEnd() Geolevel: " + geolevel_id + '; zooomlevel: ' + zoomlevel + '; ' + 
-//				rowCount + ' tile intersects processed no tiles in ' + elapsedTime + " S; ");
 			if (tileArray.length == 0) {
 
-				winston.log("info", 'Geolevel: ' + geolevel_id + '; zooomlevel: ' + zoomlevel + '; ' + 
+				winston.log("info", 'Geolevel: ' + geolevel_id + '; zooomlevel: ' + zoomlevel + 
+					'; block: ' + block + '/' + numBlocks + '; ' + 
 					rowCount + ' tile intersects processed no tiles in ' + elapsedTime + " S; " +  
 					"total: " + tileNo + " tiles in " + tElapsedTime + " S; size: " + nodeGeoSpatialServicesCommon.fileSize(totalTileSize));
 					
-				tileIntersectsProcessingCallback(); // callback from zoomlevelProcessing async
+				getBlockCallback(); // callback from zoomlevelProcessing async
 			}	
 			else if (tileArray.length > 0) { 
 				// Process last tile if it exists
@@ -1338,6 +1349,7 @@ REFERENCE (from shapefile) {
 				}	
 
 				winston.log("info", 'Geolevel: ' + geolevel_id + '; zooomlevel: ' + zoomlevel + '; ' + 
+					'; block: ' + block + '/' + numBlocks + '; ' + 
 					rowCount + ' tile intersects processed; ' + tileArray.length + " tiles in " + elapsedTime + " S; " +  
 					Math.round((tileArray.length/elapsedTime)*100)/100 + " tiles/S" + 
 					"; total: " + tileNo + " tiles in " + tElapsedTime + " S; size: " + nodeGeoSpatialServicesCommon.fileSize(totalTileSize));
@@ -1365,10 +1377,10 @@ REFERENCE (from shapefile) {
 								}
 								else {							
 									if (dbType == "PostGres") {
-										pgTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+										pgTileInsert(expectedRows, getBlockCallback);	// Calls getBlockCallback()	
 									}		
 									else if (dbType == "MSSQLServer") {
-										mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+										mssqlTileInsert(expectedRows, getBlockCallback);	// Calls getBlockCallback()	
 									}			
 								}
 							}
@@ -1377,10 +1389,10 @@ REFERENCE (from shapefile) {
 					}
 					else {				
 						if (dbType == "PostGres") {
-							pgTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+							pgTileInsert(expectedRows, getBlockCallback);	// Calls getBlockCallback()	
 						}		
 						else if (dbType == "MSSQLServer") {
-							mssqlTileInsert(expectedRows, tileIntersectsProcessingCallback);	// Calls tileIntersectsProcessingCallback()	
+							mssqlTileInsert(expectedRows, getBlockCallback);	// Calls getBlockCallback()	
 						}	
 					}					
 				} // End of csvFileCallback()			
@@ -1411,43 +1423,109 @@ REFERENCE (from shapefile) {
 				); // End of async.forEachOfSeries()								
 			} // tileArray.length > 0					
 		} // End of tileIntersectsProcessingEnd()
+
+		/*
+		 * Function: 	 blockProcessing()
+		 * Parameters:	 SQL, zoomlevel, geolevel_id, block, number of blocks, getBlockCallback
+		 * Returns:		 Nothing
+		 * Descrioption: Process a block of geolevel/zoomlevel data
+		 */
+		function blockProcessing(sql, zoomlevel, geolevel_id, block, numBlocks, getBlockCallback) {
+//			winston.log("info", "blockProcessing(" + block + "/" + numBlocks + ") geolevel_id: " + 
+//				geolevel_id + "; zoomlevel: " + zoomlevel + 
+//				"\nSQL> " + sql);
+			if (dbType == "PostGres") {
+				request=client;
+				query = request.query(sql, [zoomlevel, geolevel_id, block]);
+				stream=query;
+			}		
+			else if (dbType == "MSSQLServer") {	
+				request=new dbSql.Request();
+				request.stream=true;
+				stream=request;
+				request.input('zoomlevel', zoomlevel);
+				request.input('geolevel_id', geolevel_id);
+				request.input('block', block);
+				query = request.query(sql);
+			}
+			stream.on('error', dbErrorHandler);
+
+			stream.on('row', function tileIntersectsRow(row) {
+				mssqlRows++;
+				totalTileSize+=tileIntersectsRowProcessing(row, geography, dbType);		
+			});
+			
+			if (dbType == "PostGres") {
+				stream.on('end', function(result) {		
+					sql=undefined;
+					tileIntersectsProcessingEnd(result.rowCount, dbType, csvStream, block, numBlocks, getBlockCallback);
+				});
+			}		
+			else if (dbType == "MSSQLServer") {	
+				stream.on('done', function(returnValue, affected) {	
+					sql=undefined;
+					tileIntersectsProcessingEnd(mssqlRows, dbType, csvStream, block, numBlocks, getBlockCallback);
+				});
+			}			
+		} // End of blockProcessing()
 		
 		var request;
 		var query;
 		var stream;		
 		var endEventName;
 		var mssqlRows=0;
+		
+		var request;
 		if (dbType == "PostGres") {
 			request=client;
-			query = request.query(sql, [zoomlevel, geolevel_id]);
-			stream=query;
 		}		
 		else if (dbType == "MSSQLServer") {	
-//			winston.log("debug", "tileIntersectsProcessing() SQL> " + sql);
 			request=new dbSql.Request();
-			request.stream=true;
-			stream=request;
-			request.input('zoomlevel', zoomlevel);
-			request.input('geolevel_id', geolevel_id);
-			query = request.query(sql);
 		}
-		stream.on('error', dbErrorHandler);
-
-		stream.on('row', function tileIntersectsRow(row) {
-			mssqlRows++;
-			totalTileSize+=tileIntersectsRowProcessing(row, geography, dbType);		
-		});
 		
-		if (dbType == "PostGres") {
-			stream.on('end', function(result) {			
-				tileIntersectsProcessingEnd(result.rowCount, dbType, csvStream);
-			});
-		}		
-		else if (dbType == "MSSQLServer") {	
-			stream.on('done', function(returnValue, affected) {
-				tileIntersectsProcessingEnd(mssqlRows, dbType, csvStream);
-			});
-		}
+		blockSql="SELECT block, COUNT(block) AS total FROM tile_blocks_" + geography.toLowerCase() + "\n" +
+		    " WHERE zoomlevel   = " + zoomlevel  + "\n" +
+		    "   AND geolevel_id = " + geolevel_id  + "\n" +
+			" GROUP BY block";
+		var query=request.query(blockSql, function getBlock(err, result) {
+			if (err) {
+				dbErrorHandler(err, blockSql);
+			}
+			else {
+				var boundData;
+				
+				if (dbType == "PostGres") {
+					boundData=result.rows;
+				}		
+				else if (dbType == "MSSQLServer") {	
+					boundData=result;
+				}		  
+				if (boundData.length < 1) {
+					if (geolevel_id == 1 && zoomlevel > 0) {
+						blockProcessing(sql, zoomlevel, geolevel_id, 0, 0, tileIntersectsProcessingCallback);	
+					}
+					else {
+						dbErrorHandler(new Error("getBlock() table: tile_blocks_" + geography + 
+							" fetch rows <1 (" + boundData.length + ") for geolevel_id: " + geolevel_id + "; zoomlevel: " + zoomlevel), blockSql);
+					}	
+				}		
+				else {				
+					async.forEachOfSeries(boundData, 
+						function boundDataProcessing(value, i, getBlockCallback) { // Processing code	
+							function myGetBlockCallback(err) {
+//								var nerr=new Error("test");
+//								console.error("getBlockCallback(): " + nerr.stack);
+								getBlockCallback(err);
+							}
+							blockProcessing(sql, zoomlevel, geolevel_id, boundData[i].block, boundData.length, myGetBlockCallback);
+						}, // End of boundDataProcessing
+						function boundDataEnd(err) { //  Callback
+							tileIntersectsProcessingCallback(err);
+						} // End of boundDataEnd()		
+					); // End of async.forEachOfSeries()	
+				}				
+			}
+		}); // End of getBlock()
 		
 	} // End of tileIntersectsProcessing()
 
