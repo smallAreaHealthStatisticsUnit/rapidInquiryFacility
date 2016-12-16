@@ -225,12 +225,11 @@ MODULES=node_modules/pg node_modules/pg-native node_modules/topojson
 
 all: node_check modules topojson_convert
 
-node_check: node_check.txt
+node_check:
 
 node_check.txt:
 	$(NODE) -v
 	@echo Building $(TOPOJSON)...
-	$(NPM) update pg pg-native topojson
 	$(TOPOJSON) --version
 	echo "Done"  > node_check.txt
 	
