@@ -275,16 +275,19 @@ shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal,
 	var extName = path.extname(d.file.file_name);
 	var fileNoext = path.basename(d.file.file_name, extName);
 	var extName2 = path.extname(fileNoext); /* undefined if .shp, dbf etc; */
-	if (extName == ".xml") {
+	if (extName == ".xml" && extName2) {  /* undefined if .shp, dbf, geoDataLoader.xml etc; */
 		while (extName2) { 		// deal with funny ESRI XML files: .shp.xml, .shp.iso.xml, .shp.ea.iso.xml 
 			extName=extName2 + extName;
 			fileNoext = path.basename(d.file.file_name, extName);
 			extName2 = path.extname(fileNoext); 
-		}
+		}		
 	}
 
 	if (extName == ".zip") { // Ignore zip files; process contents
 		response.message+="\nIgnore zip file; process contents (loaded as individual files when zip file unpacked): " + d.file.file_name;	
+	}
+	else if (extName == ".xml" && fileNoext == "geoDataLoader") {
+		response.message+="\nFound embedded dataloader XML configuration file: " + d.file.file_name;			
 	}
 	else {
 //	
@@ -322,9 +325,10 @@ shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal,
 //	
 // Create directory: $TEMP/shpConvert/<uuidV1>/<fileNoext> as required
 //
-	var dirArray=[os.tmpdir() + "/shpConvert", uuidV1, fileNoext];
-	dir=nodeGeoSpatialServicesCommon.createTemporaryDirectory(dirArray, response, req, serverLog);
-	
+	if (extName != ".xml" && fileNoext != "geoDataLoader") {
+		var dirArray=[os.tmpdir() + "/shpConvert", uuidV1, fileNoext];
+		dir=nodeGeoSpatialServicesCommon.createTemporaryDirectory(dirArray, response, req, serverLog);
+	}
 //	
 // Write file to directory
 //	
@@ -333,6 +337,10 @@ shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal,
 		serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
 			"ERROR: Cannot write file, already exists: " + file, req);
 //			shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
+	}
+	else if (extName == ".xml" && fileNoext == "geoDataLoader") {
+		response.message+="\nDid not save dataloader XML configuration file: " + d.file.file_name + " to " + dir;	
+		shapeFileComponentQueueCallback();
 	}
 	else {
 		// Also delete file data after the file is written to free memory
