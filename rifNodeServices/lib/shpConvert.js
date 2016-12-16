@@ -325,9 +325,10 @@ shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal,
 //	
 // Create directory: $TEMP/shpConvert/<uuidV1>/<fileNoext> as required
 //
-	var dirArray=[os.tmpdir() + "/shpConvert", uuidV1, fileNoext];
-	dir=nodeGeoSpatialServicesCommon.createTemporaryDirectory(dirArray, response, req, serverLog);
-	
+	if (extName != ".xml" && fileNoext != "geoDataLoader") {
+		var dirArray=[os.tmpdir() + "/shpConvert", uuidV1, fileNoext];
+		dir=nodeGeoSpatialServicesCommon.createTemporaryDirectory(dirArray, response, req, serverLog);
+	}
 //	
 // Write file to directory
 //	
@@ -336,6 +337,10 @@ shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal,
 		serverLog.serverError2(__file, __line, "shpConvertFileProcessor", 
 			"ERROR: Cannot write file, already exists: " + file, req);
 //			shapeFileComponentQueueCallback();		// Not needed - serverError2() raises exception 
+	}
+	else if (extName == ".xml" && fileNoext == "geoDataLoader") {
+		response.message+="\nDid not save dataloader XML configuration file: " + d.file.file_name + " to " + dir;	
+		shapeFileComponentQueueCallback();
 	}
 	else {
 		// Also delete file data after the file is written to free memory
