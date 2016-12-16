@@ -275,16 +275,19 @@ shpConvertFileProcessor = function shpConvertFileProcessor(d, shpList, shpTotal,
 	var extName = path.extname(d.file.file_name);
 	var fileNoext = path.basename(d.file.file_name, extName);
 	var extName2 = path.extname(fileNoext); /* undefined if .shp, dbf etc; */
-	if (extName == ".xml") {
+	if (extName == ".xml" && extName2) {  /* undefined if .shp, dbf, geoDataLoader.xml etc; */
 		while (extName2) { 		// deal with funny ESRI XML files: .shp.xml, .shp.iso.xml, .shp.ea.iso.xml 
 			extName=extName2 + extName;
 			fileNoext = path.basename(d.file.file_name, extName);
 			extName2 = path.extname(fileNoext); 
-		}
+		}		
 	}
 
 	if (extName == ".zip") { // Ignore zip files; process contents
 		response.message+="\nIgnore zip file; process contents (loaded as individual files when zip file unpacked): " + d.file.file_name;	
+	}
+	else if (extName == ".xml" && fileNoext == "geoDataLoader") {
+		response.message+="\nFound embedded dataloader XML configuration file: " + d.file.file_name;			
 	}
 	else {
 //	
