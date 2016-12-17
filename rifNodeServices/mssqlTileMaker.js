@@ -137,6 +137,12 @@ function main() {
 	  type: "integer",
       default: 11
     })
+    .options("b", {
+      alias: "blocks",
+      describe: "Blocks of tiles to process at once",
+	  type: "integer",
+      default: 10
+    })
     .options("X", {
       alias: "xmlfile",
       describe: "XML Configuration file",
@@ -219,7 +225,7 @@ function main() {
 //			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
 										
 		// Create Postgres client;
-		mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], 
+		mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], argv['blocks'],
 			tileMakerConfig, winston);	
 	});
 			
@@ -268,11 +274,11 @@ function mssql_default(p_var) {
 /* 
  * Function: 	mssql_db_connect()
  * Parameters: 	SQL server package connection handle,
- *				database host, name, username, password, generate PNG files, max zoomlevel, tileMakerConfig object, logging object
+ *				database host, name, username, password, generate PNG files, max zoomlevel, tile blocks per processing trip, tileMakerConfig object, logging object
  * Returns:		Nothing
  * Description:	Connect to database, ...
  */
-function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p_pngfile, maxZoomlevel, tileMakerConfig, winston) {
+function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p_pngfile, maxZoomlevel, blocks, tileMakerConfig, winston) {
 
 	var endCallBack = function endCallBack(err) {
 		if (err) {
@@ -319,7 +325,7 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 			winston.log("info", 'Connected to SQL server using: ' + JSON.stringify(config, null, 4) + "; log level: " + winston.level);
 
 // Call mssqlTileMaker()...
-			tileMaker.dbTileMaker(p_mssql, client1, p_pngfile, tileMakerConfig, "MSSQLServer", endCallBack, maxZoomlevel, winston);
+			tileMaker.dbTileMaker(p_mssql, client1, p_pngfile, tileMakerConfig, "MSSQLServer", endCallBack, maxZoomlevel, blocks, winston);
 		} // End of else connected OK  hy
 	}); // End of connect		
 

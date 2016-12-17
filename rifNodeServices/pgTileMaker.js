@@ -136,6 +136,12 @@ function main() {
 	  type: "integer",
       default: 11
     })
+    .options("b", {
+      alias: "blocks",
+      describe: "Blocks of tiles to process at once",
+	  type: "integer",
+      default: 10
+    })
     .options("X", {
       alias: "xmlfile",
       describe: "XML Configuration file",
@@ -218,7 +224,7 @@ function main() {
 //			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
 										
 		// Create Postgres client;
-		pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], 
+		pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], argv['blocks'],
 			tileMakerConfig, winston);	
 	});
 } /* End of main */
@@ -273,11 +279,11 @@ function pg_default(p_var) {
 /* 
  * Function: 	pg_db_connect()
  * Parameters: 	Postgres PG package connection handle,
- *				database host, name, username, port, generate PNG files, max zoomlevel, tileMakerConfig object, logging object
+ *				database host, name, username, port, generate PNG files, max zoomlevel, tile blocks per processing trip, tileMakerConfig object, logging object
  * Returns:		Nothing
  * Description:	Connect to database, ...
  */
-function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, maxZoomlevel, tileMakerConfig, winston) {
+function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, maxZoomlevel, blocks, tileMakerConfig, winston) {
 	
 	var client1 = null; // Client 1: Master; hard to remove	
 
@@ -324,7 +330,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 					else {
 // Call pgTileMaker()...
 						console.log('Connected to Postgres [2nd attempt] using: ' + conString + "; log level: " + winston.level);		
-						tileMaker.dbTileMaker(p_pg, client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, winston);
+						tileMaker.dbTileMaker(p_pg, client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, blocks, winston);
 					} // End of else connected OK 
 				}); // End of connect						
 			}
@@ -333,7 +339,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 // Call pgTileMaker()...
 
 			console.log('Connected to Postgres using: ' + conString + "; log level: " + winston.level);	
-			tileMaker.dbTileMaker(p_pg, client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, winston);
+			tileMaker.dbTileMaker(p_pg, client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, blocks, winston);
 		} // End of else connected OK 
 	}); // End of connect		
 

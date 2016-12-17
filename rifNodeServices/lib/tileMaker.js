@@ -314,11 +314,11 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 /*
  * Function: 	dbTileMaker()
  * Parameters:	Database object (pg or mssql), Database client connectiom, create PNG files (true/false), tile make configuration, 
- *				database type (PostGres or MSSQLServer), callback, max zoomlevel, logging object
+ *				database type (PostGres or MSSQLServer), callback, max zoomlevel, tile blocks per processing trip, logging object
  * Returns:		Nothing
  * Description:	Creates topoJSONtiles in the database, SVG and PNG tiles if required
  */
-var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerConfig, dbType, dbTileMakerCallback, maxZoomlevel, winston) {
+var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerConfig, dbType, dbTileMakerCallback, maxZoomlevel, blocks, winston) {
 
 	winston.verbose("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName, tileMakerConfig.xmlConfig);				
 	scopeChecker(__file, __line, { // Check callback
@@ -913,7 +913,7 @@ REFERENCE (from shapefile) {
 						"	GROUP BY geolevel_id, zoomlevel, x, y\n" + 
 						"), b AS (\n" + 
 						"	SELECT geolevel_id, zoomlevel, x, y, total_areas,\n" + 
-						"	       ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/10)+1 AS block\n" + 
+						"	       ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/" + blocks + ")+1 AS block\n" + 
 						"	  FROM a\n" + 
 						")\n";
 				if (dbType == "PostGres") {
@@ -1294,7 +1294,7 @@ REFERENCE (from shapefile) {
 											insertSql2, mssqlTileInsert2Callback);
 									}
 									else {
-										winston.log("info", "mssqlTilesInsert2() [" + i + "] HY104 ERROR redo: Insert " + i + "/" + HY104Sql.length + " OK");
+										winston.log("info", "mssqlTilesInsert2() [" + i + "] Recvoer from HY104 ERROR redo: Insert " + i + "/" + HY104Sql.length + " OK");
 										mssqlTileInsert2Callback();
 									}										
 								});						
