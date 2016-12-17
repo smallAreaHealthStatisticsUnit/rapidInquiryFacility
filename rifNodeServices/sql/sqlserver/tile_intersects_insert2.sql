@@ -5,6 +5,7 @@
  *						1: Geometry table name; e.g. geometry_cb_2014_us_500k
  *						2: Geolevels table name; e.g. geolevels_cb_2014_us_500k
  *						3: Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k
+ *						4: Tile limits table name; e.g. tile_limits_cb_2014_us_500k
  *
  * Description:			Insert into tile intersects table
  * Note:				%% becomes % after substitution
@@ -111,7 +112,7 @@ BEGIN
 --  
 			WITH a	AS (
 				SELECT b.zoomlevel AS zoomlevel, b.x_mintile, b.x_maxtile, b.y_mintile, b.y_maxtile	  
-				  FROM tile_limits_cb_2014_us_500k b
+				  FROM %4 b
 				 WHERE @zoomlevel = b.zoomlevel
 			), x AS (
 				SELECT zoomlevel, z.IntValue AS x_series

@@ -1447,9 +1447,10 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				var sqlStmt=new Sql("INSERT into tile intersects table (MSSQLServer tile manufacture)",
 					getSqlFromFile("tile_intersects_insert2.sql", 
 						dbType, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 1: Geometry table name; e.g. geometry_cb_2014_us_500k */,
- 						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 2: Geolevels table name; e.g. geolevels_cb_2014_us_500k */,
- 						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 3: Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* 1: Geometry table name; e.g. geometry_cb_2014_us_500k */,
+ 						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* 2: Geolevels table name; e.g. geolevels_cb_2014_us_500k */,
+ 						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 3: Tile intersects table name; e.g. tile_intersects_cb_2014_us_500k */,
+						"tile_limits_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* 4: Tile limits table name; e.g. tile_limits_cb_2014_us_500k */
 						), sqlArray);
 			} 
 			
