@@ -909,7 +909,7 @@ REFERENCE (from shapefile) {
 			else {		
 				var cte="WITH a AS (\n" +
 						"	SELECT geolevel_id, zoomlevel, x, y, COUNT(areaid) AS total_areas\n" + 
-						"	  FROM tile_intersects_cb_2014_us_500k\n" + 
+						"	  FROM  " + tileIntersectsTable + "\n" + 
 						"	GROUP BY geolevel_id, zoomlevel, x, y\n" + 
 						"), b AS (\n" + 
 						"	SELECT geolevel_id, zoomlevel, x, y, total_areas,\n" + 
