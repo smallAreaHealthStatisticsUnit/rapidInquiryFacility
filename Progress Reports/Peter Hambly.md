@@ -755,6 +755,8 @@ RangeError: Invalid string length
 * Export tiles and geometry tables
 * sahsuland_empty improvements, install for KG
 * geoDataLoader.xml support in front end
+* Removal of hard coded table names
+* tile maker - add parameter to vasry number of tiles processed at once (default: 10). This is used to control memory
 
 #### 19th to 23rd December
 

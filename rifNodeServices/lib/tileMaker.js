@@ -1486,7 +1486,8 @@ REFERENCE (from shapefile) {
 		blockSql="SELECT block, COUNT(block) AS total FROM tile_blocks_" + geography.toLowerCase() + "\n" +
 		    " WHERE zoomlevel   = " + zoomlevel  + "\n" +
 		    "   AND geolevel_id = " + geolevel_id  + "\n" +
-			" GROUP BY block";
+			" GROUP BY block"+
+			" ORDER BY block";
 		var query=request.query(blockSql, function getBlock(err, result) {
 			if (err) {
 				dbErrorHandler(err, blockSql);
