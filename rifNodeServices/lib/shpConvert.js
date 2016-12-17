@@ -1772,8 +1772,9 @@ This error in actually originating from the error handler function
 					};
 					if (xmlConfig.shapeFileList.shapeFiles[i].geolevelName) {
 						var field=xmlConfig.shapeFileList.shapeFiles[i].geolevelName + "_" + dbfField.toUpperCase();
+						var field2=xmlConfig.shapeFileList.shapeFiles[i].geolevelName + "_" + dbfField;
 						xmlConfig.shapeFileList.shapeFiles[i].dbfFieldList[dbfField].description=
-							(response.fields[field] || "No description for: " + field)
+							(response.fields[field] || response.fields[field2] || "")
 					}
 					else {
 						msg+="\nERROR: shapefile: " + i + "; geolevel " + ngeolevels[i] + "/" + ngeolevels.length + " key: " + key + " has no geolevelName";
