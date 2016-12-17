@@ -402,14 +402,16 @@ function shpConvertInput(files, shpConvertInputCallback) {
 							}
 							if (fileList[key].dbfHeader.fields && field && description) {
 								for (var j=0; j < fileList[key].dbfHeader.fields.length ; j++) {
-									if (geoDataLoaderParameters[key + "_" + field]) {
-										console.log("[" + key + "] Feature: " + i + "; geoDataLoader set field: " + field + 
-											" description='" + description + "'");
-										fileList[key].dbfHeader.fields[j].description=geoDataLoaderParameters[key + "_" + field];
-									}
-									else if (fileList[key].dbfHeader.fields[j].name.toUpperCase() == field.toUpperCase()) {
-										console.log("[" + key + "] Feature: " + i + "; ISO set field: " + field + " description='" + description + "'");
-										fileList[key].dbfHeader.fields[j].description=description;
+									if (fileList[key].dbfHeader.fields[j].name.toUpperCase() == field.toUpperCase()) {									
+										if (geoDataLoaderParameters[key + "_" + field]) {
+											console.log("[" + key + "] Feature: " + i + "; geoDataLoader set field[" + j + "]: " + field + 
+												" description='" + description + "'");
+											fileList[key].dbfHeader.fields[j].description=geoDataLoaderParameters[key + "_" + field];
+										}
+										else {
+											console.log("[" + key + "] Feature: " + i + "; ISO set field[" + j + "]: " + field + " description='" + description + "'");
+											fileList[key].dbfHeader.fields[j].description=description;
+										}
 									}
 //									else {
 //										console.log("[" + key + "] Feature: " + i + "; NO MATCH Field: " + field + "='" + fileList[key].dbfHeader.fields[j].name + "'");
@@ -674,14 +676,67 @@ geoDataLoader.xml parameter: geographyDesc="Description of: cb_2014_us_nation_5m
 //
 // Parse accordion HTML to check validity
 //	
-		var html=$.parseHTML(newDiv);
-		if (html) {
+		var html=$.parseHTML(newDiv);		
+		if (html) { // OK
 			if ($("#accordion").data("ui-accordion")) {
 				$("#accordion").accordion("destroy");   // Removes the accordion bits
 				$("#accordion").empty();                // Clears the contents
 			}
 //			console.log("newDiv >>>\n" + newDiv + "\n<<<");
 			$("#accordion").html(newDiv);			// Add new
+//
+// Restore shapopefile field parameters from geoDataLoader XML parameters 
+// 		
+/*
+geoDataLoader.xml parameter: cb_2014_us_nation_5m_desc="The nation at a scale of 1:5,000,000  nodeGeoSpatialFrontEnd.js:90:4
+geoDataLoader.xml parameter: cb_2014_us_nation_5m_areaID="GEOID  nodeGeoSpatialFrontEnd.js:90:4
+geoDataLoader.xml parameter: cb_2014_us_nation_5m_areaID_desc="Nation identifier  nodeGeoSpatialFrontEnd.js:90:4
+geoDataLoader.xml parameter: cb_2014_us_nation_5m_areaName="NAME  nodeGeoSpatialFrontEnd.js:90:4
+geoDataLoader.xml parameter: cb_2014_us_nation_5m_areaName_desc="Nation name  nodeGeoSpatialFrontEnd.js:90:4
+ */
+			var paramList=['desc', 'areaID_desc', 'areaName_desc'];
+			var paramList2=['areaID', 'areaName'];
+			for (var key in fileList) {		
+				for (var i=0; i<paramList.length; i++) {
+					var docParam = key + "_" + paramList[i];
+					var elem=document.getElementById(docParam);
+					if (elem &&geoDataLoaderParameters[docParam]) {	
+						elem.value=geoDataLoaderParameters[docParam];
+						consoleLog("geoDataLoader set: " + docParam + "=" + geoDataLoaderParameters[docParam]);	
+					}	
+					else {
+						if (elem) {
+							consoleLog("geoDataLoader unable to set: " + docParam + "=" + (geoDataLoaderParameters[docParam]||"N/A"));
+						}
+						else {
+							consoleLog("geoDataLoader unable to set (no element): " + docParam + "=" + (geoDataLoaderParameters[docParam]||"N/A"));
+						}
+					}
+				}	
+	
+// Now process areaID, areaName select lists
+				for (var i=0; i<paramList2.length; i++) {
+					var docParam = key + "_" + paramList2[i];
+					var elem=document.getElementById(docParam);
+					if (elem &&geoDataLoaderParameters[docParam]) {	
+						for (var j = 0; j < elem.length; j++) {
+							elem[j].selected = false;
+							if (elem[j].value == geoDataLoaderParameters[docParam]) {
+								elem[j].selected = true;
+								consoleLog("geoDataLoader select: " + docParam + "=" + geoDataLoaderParameters[docParam]);
+							} 
+						}
+					}	
+					else {
+						if (elem) {
+							consoleLog("geoDataLoader unable to select: " + docParam + "=" + (geoDataLoaderParameters[docParam]||"N/A"));
+						}
+						else {
+							consoleLog("geoDataLoader unable to select (no element): " + docParam + "=" + (geoDataLoaderParameters[docParam]||"N/A"));
+						}
+					}	
+				}
+			}			
 		}
 		else {
 			throw new Error("Invalid HTML; newDiv >>>\n" + newDiv + "\n<<<");
@@ -739,7 +794,12 @@ geoDataLoader.xml parameter: geographyDesc="Description of: cb_2014_us_nation_5m
 				});
 				
 				var myId = document.getElementById(id);
-				updateAreaIdNameDesc(myId.id, myId.parentNode.parentNode.id, $( "#" + id ).val()); // Set defaults
+				if (myId && geoDataLoaderParameters[id]) {	
+					consoleLog("updateAreaIdNameDesc() not needed, id: " + myId.id +" set to: " + geoDataLoaderParameters[id + "_desc"]);
+				}
+				else if (myId) {
+					updateAreaIdNameDesc(myId.id, myId.parentNode.parentNode.id, $( "#" + id ).val()); // Set defaults
+				}
 			}
 
 		}
@@ -783,66 +843,11 @@ geoDataLoader.xml parameter: geographyDesc="Description of: cb_2014_us_nation_5m
 				}							
 			}	
 	
+			console.log("Added accordion[" + key + "]: " + fileList[key].fileName);	
 		} // End of for loop
-				
-		console.log("Added accordion[" + key + "]: " + fileList[key].fileName);		
-
-//
-// Restore shapopefile field parameters from geoDataLoader XML parameters 
-// 		
-/*
-geoDataLoader.xml parameter: cb_2014_us_nation_5m_desc="The nation at a scale of 1:5,000,000  nodeGeoSpatialFrontEnd.js:90:4
-geoDataLoader.xml parameter: cb_2014_us_nation_5m_areaID="GEOID  nodeGeoSpatialFrontEnd.js:90:4
-geoDataLoader.xml parameter: cb_2014_us_nation_5m_areaID_desc="Nation identifier  nodeGeoSpatialFrontEnd.js:90:4
-geoDataLoader.xml parameter: cb_2014_us_nation_5m_areaName="NAME  nodeGeoSpatialFrontEnd.js:90:4
-geoDataLoader.xml parameter: cb_2014_us_nation_5m_areaName_desc="Nation name  nodeGeoSpatialFrontEnd.js:90:4
- */
-		var paramList=['desc', 'areaID_desc', 'areaName_desc'];
-		var paramList2=['areaID', 'areaName'];
-		for (var key in fileList) {		
-			for (var i=0; i<paramList.length; i++) {
-				var docParam = key + "_" + paramList[i];
-				var elem=document.getElementById(docParam);
-				if (elem &&geoDataLoaderParameters[docParam]) {	
-					elem.value=geoDataLoaderParameters[docParam];
-					consoleLog("geoDataLoader set: " + docParam + "=" + geoDataLoaderParameters[docParam]);	
-				}	
-				else {
-					if (elem) {
-						consoleLog("geoDataLoader unable to set: " + docParam + "=" + (geoDataLoaderParameters[docParam]||"N/A"));
-					}
-					else {
-						consoleLog("geoDataLoader unable to set (no element): " + docParam + "=" + (geoDataLoaderParameters[docParam]||"N/A"));
-					}
-				}
-			}	
-	
-// Now process areaID, areaName select lists
-			for (var i=0; i<paramList2.length; i++) {
-				var docParam = key + "_" + paramList2[i];
-				var elem=document.getElementById(docParam);
-				if (elem &&geoDataLoaderParameters[docParam]) {	
-					for (var j = 0; j < elem.length; j++) {
-						elem[j].selected = false;
-						if (elem[j].value == geoDataLoaderParameters[docParam]) {
-							elem[j].selected = true;
-							consoleLog("geoDataLoader select: " + docParam + "=" + geoDataLoaderParameters[docParam]);	
-							consoleLog("geoDataLoader select: " + JSON.stringify(elem[j].selected, null, 4));
-						} 
-					}
-				}	
-				else {
-					if (elem) {
-						consoleLog("geoDataLoader unable to select: " + docParam + "=" + (geoDataLoaderParameters[docParam]||"N/A"));
-					}
-					else {
-						consoleLog("geoDataLoader unable to select (no element): " + docParam + "=" + (geoDataLoaderParameters[docParam]||"N/A"));
-					}
-				}	
-			}
-		}
 		
 		tabs.tabs("refresh" );
+		
 	} // End of if JQuery-UI version
 }	
 
