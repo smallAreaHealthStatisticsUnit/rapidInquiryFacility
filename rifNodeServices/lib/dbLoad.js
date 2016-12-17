@@ -259,9 +259,10 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			
 			// Comment syntax is the same in SQL server (sqlcmd) and Postgres; as is transaction control
 			
-			var header=getSqlFromFile("header.sql", undefined /* Common */);
+			var header=getSqlFromFile("header.sql", undefined /* Common header */);
 			newStream.write(header);
-			header=getSqlFromFile("header.sql", dbType);
+			header=getSqlFromFile("header.sql", dbType, 
+				xmlConfig.dataLoader.geographyName.toLowerCase()	/* Geography */);
 			newStream.write(header);
 		}
 		catch (e) {
@@ -1559,7 +1560,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			var sqlFrag=undefined;
 			for (var i=0; i<csvFiles.length; i++) { // Main file process loop				
 				for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
-					sqlFrag="INSERT INTO geometry_cb_2014_us_500k(geolevel_id, areaid, zoomlevel, geom)\n";
+					sqlFrag="INSERT INTO geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
+						"(geolevel_id, areaid, zoomlevel, geom)\n";
 					if (dbType == "PostGres") {
 						sqlFrag+="SELECT " + csvFiles[i].geolevel + " geolevel_id,\n" +
 "       areaid,\n" + 
