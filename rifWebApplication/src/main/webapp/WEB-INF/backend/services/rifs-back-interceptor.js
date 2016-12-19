@@ -32,7 +32,7 @@ angular.module("RIF")
                         //called with the response object from the server
                         if (!angular.isUndefined(res.data[0])) {
                             if (!angular.isUndefined(res.data[0].errorMessages)) {
-                                console.log(res.data[0].errorMessages[0] + " " + res.config.url);
+                         //       console.log(res.data[0].errorMessages[0] + " " + res.config.url);
                                 var scope = $injector.get('$rootScope');
                                 scope.$root.$$childHead.showError(res.data[0].errorMessages[0]);                            
                                 return $q.reject();

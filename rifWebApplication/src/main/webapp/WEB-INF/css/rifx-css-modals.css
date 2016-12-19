@@ -237,16 +237,15 @@
 }
 
 .msettings .save-fld,
-.save-fld-settings,
 .save-basemap {
     padding: 13px 25px;
 }
 .save-fld input,
-.save-fld-settings input,
 .save-basemap input {
     padding: 2px 11px;
     color: #7D7D7D;
 }
+
 .msettings .invertWrapper {
     height: 20px;
 }

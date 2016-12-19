@@ -47,7 +47,7 @@
                 </table>
                 <table id="breakstable">
                     <tr><td><input class="break" ng-model="input.thisMap.mn" readonly> Minimum</td></tr>
-                    <tr ng-repeat="i in input.thisMap.breaks">
+                    <tr ng-repeat="i in input.thisMap.breaks track by $index">
                         <td><input class="break" ng-model="input.thisMap.breaks[$index]"></td>
                     </tr>
                     <tr><td><input class="break" ng-model="input.thisMap.mx" readonly> Maximum</td></tr>

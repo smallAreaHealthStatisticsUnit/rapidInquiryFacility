@@ -202,21 +202,21 @@ angular.module("RIF")
                             //draw probability classes
                             focus.append("rect")
                                     .attr("class", "prob1")
-                                    .attr("x", x(0))
+                                    .attr("x", 0)
                                     .attr("y", y(0.19))
                                     .attr("width", xWidth)
                                     .attr("height", y(0.81));
 
                             focus.append("rect")
                                     .attr("class", "prob2")
-                                    .attr("x", x(0))
+                                    .attr("x", 0)
                                     .attr("y", y(0.81))
                                     .attr("width", xWidth)
                                     .attr("height", y(0.38));
 
                             focus.append("rect")
                                     .attr("class", "prob3")
-                                    .attr("x", x(0))
+                                    .attr("x", 0)
                                     .attr("y", y(1))
                                     .attr("width", xWidth)
                                     .attr("height", y(0.81));
@@ -339,6 +339,10 @@ angular.module("RIF")
                                     MappingStateService.getState().brushEndLoc[panel] === si[1]) {
                                 return;
                             } else {
+                                //ensure highlighter reset on clear
+                                if (MappingStateService.getState().selected[panel] === null) {
+                                    scope.clickXPos = 0;
+                                }
                                 //remember brush locations
                                 scope.$parent[scope.opt.this].zoomStart = si[0];
                                 scope.$parent[scope.opt.this].zoomEnd = si[1];
@@ -352,6 +356,7 @@ angular.module("RIF")
                         scope.$on('rrDropLineRedraw', function (event, data, container) {
                             //get selected from area_id
                             if (panel === container) {
+                                selected = null;
                                 for (var i = 0; i < dataLength; i++) {
                                     if (scope.data[i].gid === data) {
                                         selected = scope.data[i];
@@ -360,6 +365,7 @@ angular.module("RIF")
                                         break;
                                     }
                                 }
+
                                 if (selected !== null) {
                                     context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
                                     if (bConfidence) {
@@ -375,6 +381,9 @@ angular.module("RIF")
                                     } else {
                                         highlighter.style("stroke", "transparent");
                                     }
+                                } else {
+                                    scope.clickXPos = 0;
+                                    MappingStateService.getState().selected[container] = null;
                                 }
                             }
                         });

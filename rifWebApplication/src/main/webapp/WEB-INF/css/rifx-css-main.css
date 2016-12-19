@@ -327,7 +327,12 @@ body {
     float:right;
     margin-right: 10px;
 }
-
+#refreshMap {
+    background: transparent url("../images/update16.png") no-repeat;
+    margin-top: 30px;
+    width: 16px;
+    height: 16px;
+}
 div.transparency {
     width: 50px !important
 }
@@ -1053,7 +1058,7 @@ textarea.description {
     float:left;
     background-color: #d9f1fd; 
     width:46%;
-    height:170px;
+    height:150px;
     border-radius: 10px 10px 10px 10px;
     -moz-border-radius: 10px 10px 10px 10px;
     -webkit-border-radius: 10px 10px 10px 10px;
@@ -1508,3 +1513,4 @@ input[type=number]+ label  {
 .toggleJSON:hover {
     cursor: pointer;
 }
+

@@ -8,7 +8,7 @@ Viewer
     </div>
     <div class='nav'>
         <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
-        <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Results Viewer </a>
+        <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
         <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
     </div>
 </div>
@@ -28,6 +28,9 @@ Viewer
             <div>Sex:</div>
             <select id='optionsSelect' ng-model="sexString" ng-options="s for s in sexes" ng-change="studyOptionsChanged()"></select>
         </div>
+        <ul class="mapBoxOpts">
+            <li><a ng-click="updateStudy()" id="refreshMap" title="Update display"></a></li> 
+        </ul>
     </div>
 </div>
 
@@ -59,7 +62,8 @@ Viewer
                         <li><a ng-controller="ChoroplethModalCtrl" ng-click="open(0)" id="choroplethBtn" title="Choropleth map"></a></li>
                         <li><a ng-controller="BaseMapModalCtrl" ng-click="open('viewermap')" id="baseMapBtn" title="Base map"></a></li>	
                         <li><a id="clearSelection" title="Clear selection" ng-click="clear()"></a></li>
-                        <li><a id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent()"></a></li> 
+                        <li><a id="zoomExtent" title="Zoom to extent" sglclick="zoomToStudy()" ng-dblclick="zoomToExtent()"></a></li>
+                        <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected()"></a></li> 
                         <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet()"></a></li> 
                         <li>
                             <input type="range" ng-model ="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>

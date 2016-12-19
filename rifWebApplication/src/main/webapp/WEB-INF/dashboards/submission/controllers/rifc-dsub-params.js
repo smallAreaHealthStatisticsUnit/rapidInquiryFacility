@@ -4,7 +4,7 @@
 angular.module("RIF")
         .controller('ModalParametersCtrl', ['$timeout', '$q', '$scope', '$uibModal', 'SubmissionStateService', 'ParameterStateService', 'user', 'StudyAreaStateService',
             function ($timeout, $q, $scope, $uibModal, SubmissionStateService, ParameterStateService, user, StudyAreaStateService) {
-                
+
                 $scope.tree = SubmissionStateService.getState().investigationTree;
                 $scope.animationsEnabled = true;
 
@@ -81,7 +81,6 @@ angular.module("RIF")
                     fillRecapTable($scope.thisICDselection);
                 }, 1000);
 
-
                 /*
                  * FILL PARAMETER DROP-DOWNS
                  */
@@ -101,7 +100,6 @@ angular.module("RIF")
 
                     //defaults
                     $scope.years = [];
-                    $scope.intervals = [];
                     $scope.sexes = [];
                     $scope.covariates = [];
                     $scope.selectedAges = [];
@@ -239,20 +237,26 @@ angular.module("RIF")
                     return true;
                 }
 
+                //$scope.intervals = [];
                 $scope.yearsChanged = function () {
-                    $scope.intervals.length = 0;
+
                     //ensure that start year is before end year
                     if ($scope.endYear < $scope.startYear) {
                         $scope.endYear = [$scope.startYear, $scope.startYear = $scope.endYear][0];
                     }
-                    //calculate possible intervals
-                    var diff = $scope.endYear - $scope.startYear + 1;
-                    for (var i = 1; i <= diff; i++) {
-                        if (diff % i === 0) {
-                            $scope.intervals.push(i);
-                        }
-                    }
-                    $scope.yearInterval = $scope.intervals[0];
+
+                    /* CURRENTLY NOT IMPLEMENTED
+                     //calculate possible intervals
+                     $scope.intervals.length = 0;
+                     var diff = $scope.endYear - $scope.startYear + 1;
+                     for (var i = 1; i <= diff; i++) {
+                     if (diff % i === 0) {
+                     $scope.intervals.push(i);
+                     }
+                     }
+                     $scope.yearInterval = $scope.intervals[0];
+                     */
+                    $scope.yearInterval = 1; //FIXED TO BE ONE YEAR INTERVALS
                 };
                 //make sure age bands are ascending
                 $scope.agesChanged = function () {

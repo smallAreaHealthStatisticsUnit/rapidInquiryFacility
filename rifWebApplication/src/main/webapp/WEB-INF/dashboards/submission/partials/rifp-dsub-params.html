@@ -24,7 +24,7 @@ Disease submission modal investigation parameters (tree #3)
                     </div>
                     <div ui-layout-container> 
                         <div ui-layout="{flow : 'row'}" >
-                            <div ui-layout-container class="param-back" id ="hSplit1" size="60%">
+                            <div ui-layout-container class="param-back" id ="hSplit1" size="55%">
                                 <div id="parameterHeader">
                                     <div class='done' ng-click="addInvestigation()"> <a>Done</a></div> 
                                     <div id='clearParameters' ng-click="clearInvestigations()"> Clear </div>
@@ -53,8 +53,10 @@ Disease submission modal investigation parameters (tree #3)
                                     <div class="pboxCaption">Start</div>
                                     <select type="text" class="pboxDrop"ng-model="endYear" ng-options="s for s in years" ng-change="yearsChanged()"></select>
                                     <div class="pboxCaption">End</div>
+                                <!-- Allows user to group year ranges CURRENTLY NOT IMPLEMENTED
                                     <select type="text" class="pboxDrop"ng-model="yearInterval" ng-options="s for s in intervals"></select>
                                     <div class="pboxCaption">Interval</div>
+                                -->
                                 </div>
                             </div>
                             <div ui-layout-container class=" recap-back" >                

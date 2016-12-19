@@ -3,20 +3,26 @@
  */
 
 angular.module("RIF")
-        .controller('LoginCtrl', ['$scope', 'user', '$injector', 
+        .controller('LoginCtrl', ['$scope', 'user', '$injector',
             'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService', 'StatsStateService',
-            function ($scope, user, $injector, 
+            function ($scope, user, $injector,
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService, ParameterStateService, StatsStateService) {
 
                 $scope.username = "kgarwood";
                 $scope.password = "kgarwood";
 
+                $scope.showSpinner = false;
+
                 $scope.login = function () {
-                    //check if already logged on
-                    //(TODO: bookmark)In development, bypass password
-                    //user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
-                    user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                    if (!$scope.showSpinner) {
+                        $scope.showSpinner = true;
+                        //check if already logged on
+                        //(TODO: In development, this bypasses password)
+                      //  user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
+                          user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                    }
                 };
+
                 function handleLoginCheck(res) {
                     //if logged in already then logout
                     if (res.data[0].result === "true") {
@@ -30,31 +36,35 @@ angular.module("RIF")
                     user.login($scope.username, $scope.password).then(handleLogin, handleLogin);
                 }
                 function handleLogin(res) {
-                    if (res.data[0].result === "User " + $scope.username + " logged in.") {
-                        $injector.get('$state').transitionTo('state1');
+                    try {
+                        if (res.data[0].result === "User " + $scope.username + " logged in.") {
+                            //login success
+                            $injector.get('$state').transitionTo('state1');
 
-                        //reset all services
-                        SubmissionStateService.resetState();
-                        StudyAreaStateService.resetState();
-                        CompAreaStateService.resetState();
-                        ParameterStateService.resetState();
-                        StatsStateService.resetState();
+                            //reset all services
+                            SubmissionStateService.resetState();
+                            StudyAreaStateService.resetState();
+                            CompAreaStateService.resetState();
+                            ParameterStateService.resetState();
+                            StatsStateService.resetState();
 
-                        //initialise the taxonomy service
-                        user.initialiseService().then(handleInitialise, handleInitialiseError);
-                        function handleInitialise(res) {
-                           // console.log("taxonomy initialised");
+                            //initialise the taxonomy service
+                            user.initialiseService().then(handleInitialise, handleInitialiseError);
+                            function handleInitialise(res) {
+                                // console.log("taxonomy initialised");
+                            }
+                            function handleInitialiseError(e) {
+                                $scope.showError('Could not initialise the taxonomy service');
+                            }
+                        } else {
+                            //login failed
+                            $scope.showSpinner = false;
                         }
-                        function handleInitialiseError(e) {
-                            $scope.showError('Could not initialise the taxonomy service');
-                        }                       
-                    } else {
-                        //login failed
-                        $scope.showError("Could not login. Please check username and password");
+                    } catch (error) {
+                        $scope.showSpinner = false;
                     }
                 }
                 function handleServerError(res) {
-                    $scope.showError("Could not login. Please check username and password");
-                    console.log("login error");
+                    $scope.showSpinner = false;
                 }
             }]);

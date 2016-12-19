@@ -56,12 +56,13 @@ angular.module("RIF",
             "ngAnimate",
             "ngSanitize",
             "ngNotificationsBar",
-            "ui.layout"
+            "ui.layout",
+            "ngMaterial"
         ]
         )
         .config(['$stateProvider', '$urlRouterProvider',
             function ($stateProvider, $urlRouterProvider) {
-                
+
                 //Extend Leaflet to handle topojson
                 L.TopoJSON = L.GeoJSON.extend({
                     addData: function (jsonData) {

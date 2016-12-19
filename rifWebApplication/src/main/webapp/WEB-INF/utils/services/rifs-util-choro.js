@@ -98,6 +98,7 @@ angular.module("RIF")
                     if (scale && !angular.isUndefined(attr)) {
                         return [scale(value), "gray", 1];
                     } else {
+                        //constant colour
                         return ["#9BCD9B", "gray", 1];
                     }
                 }

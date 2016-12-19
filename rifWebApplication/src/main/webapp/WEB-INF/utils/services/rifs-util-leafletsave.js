@@ -30,15 +30,10 @@ angular.module("RIF")
                                     }
                                 }
 
-                                var link = document.createElement('a');
-                                link.id = "lf";
-                                link.innerHTML = 'download image';
-                                link.addEventListener('click', function (event) {
-                                    link.href = can4.toDataURL();
-                                    link.download = stub + ".png";
-                                }, false);
-                                document.body.appendChild(link);
-                                link.click();
+                                //Download with Filesaver.js
+                                can4.toBlob(function (blob) {
+                                    saveAs(blob, stub + ".png");
+                                });
                             });
                         });
                     }
