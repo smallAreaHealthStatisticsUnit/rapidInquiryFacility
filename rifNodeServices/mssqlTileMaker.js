@@ -168,15 +168,28 @@ function main() {
 
 	if (argv.help) return optimist.showHelp();
 	  
+	var memoryFileDebug='verbose';
+	var debugLevel='info';
+	if (argv.verbose == 1) {
+		process.env.VERBOSE=true;
+		debugLevel='verbose';
+		memoryFileDebug='verbose';
+	}
+	else if (argv.verbose == 2) {
+		process.env.DEBUG=true;	
+		debugLevel='debug';
+		memoryFileDebug='debug';
+	}
+	
 //
 // Load logger module
 //
 	const Winston=require('winston');
 	var winston = new (Winston.Logger)({
-		level: 'info',
+		level: debugLevel,
 		transports: [
 			new (Winston.transports.Console)({
-				level: 'info',
+				level: debugLevel,
 				json: true,
 				timestamp: function() {
 					return Date.now();
@@ -188,28 +201,16 @@ function main() {
 				}
 			}),
 			new (Winston.transports.Memory)({ 
-				level: 'verbose',
+				level: memoryFileDebug,
 				json: true
 			}),
 			new (Winston.transports.File)({ 
-				level: 'verbose',
-				filename: 'mmsqlTileMaker.log' 
+				level: memoryFileDebug,
+				filename: 'mssqlTileMaker.log' 
 			})
 		]
 	  });
-	if (argv.verbose == 1) {
-		process.env.VERBOSE=true;
-		winston.level='verbose';
-		Winston.transports.Console='verbose';
-	}
-	else if (argv.verbose == 2) {
-		process.env.DEBUG=true;
-		winston.level='debug';
-		Winston.transports.Console='debug';
-		Winston.transports.Memory='debug';
-		Winston.transports.File='debug';
-	}
-
+		
 //
 // TileMakerConfig
 //
@@ -292,7 +293,7 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 		var messages = winston.transports.memory.writeOutput;
 		var errors = winston.transports.memory.errorOutput;
 		
-		console.log("Exit: OK; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
+		winston.log("info", "Exit: OK; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
 		process.exit(0);
 	}
 

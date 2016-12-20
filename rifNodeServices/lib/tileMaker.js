@@ -507,7 +507,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 					winston.log("debug", "TOPOJSON: " + JSON.stringify(this.topojson, null, 2).substring(0, 1000));
 				}	
 //				else {
-//					winston.log("error", "addTopoJson() called " + this.addTopoJsonCalls + ": " + this.tileId);
+//					winston.log("debug", "addTopoJson() called " + this.addTopoJsonCalls + ": " + this.tileId);
 //				}
 				this.geojson=undefined; // Free up memory used for geoJSON
 			}	
@@ -1401,10 +1401,10 @@ REFERENCE (from shapefile) {
 				async.forEachOfSeries(tileArray, 
 					function tileArrayCSVSeries(value, j, csvCallback) { // Processing code	
 						l++;
-//						console.error("value[" + l + "/" + tileArray.length + "]: " + JSON.stringify(value).substring(0, 200));
+//						winston.log("verbose", "value[" + l + "/" + tileArray.length + "]: " + JSON.stringify(value).substring(0, 200));
 						buf=value.toCSV();
 						
-//						console.error("buf[" + l + "/" + tileArray.length + "]: " + JSON.stringify(buf).substring(0, 200));
+//						winston.log("verbose", "buf[" + l + "/" + tileArray.length + "]: " + JSON.stringify(buf).substring(0, 200));
 						buf+="\r\n";
 						if (l >= 1000) {
 							l=0;
@@ -1515,7 +1515,7 @@ REFERENCE (from shapefile) {
 						function boundDataProcessing(value, i, getBlockCallback) { // Processing code	
 							function myGetBlockCallback(err) {
 //								var nerr=new Error("test");
-//								console.error("getBlockCallback(): " + nerr.stack);
+//								winston.log("verbose", "getBlockCallback(): " + nerr.stack);
 								getBlockCallback(err);
 							}
 							blockProcessing(sql, zoomlevel, geolevel_id, boundData[i].block, boundData.length, myGetBlockCallback);
@@ -1543,7 +1543,7 @@ REFERENCE (from shapefile) {
 		}
 		var value=dataLoader[parameter];
 
-		console.error("PArameter: " + parameter + '="' + value + '"')
+		winston.log("verbose", "PArameter: " + parameter + '="' + value + '"')
 		if (value == undefined) {
 			dbErrorHandler(new Error("Unable to get dataLoder parameter: " + parameter + "; dataLoder object: " + JSON.stringify(dataLoader, null, 2)), 
 				undefined /* SQL */);
@@ -1605,7 +1605,7 @@ REFERENCE (from shapefile) {
 				dbErrorHandler(err, sql);
 			}
 			else {	
-//				console.error("SQL> " + sql);
+//				winston.log("verbose", "SQL> " + sql);
 				var record;
 				if (dbType == "PostGres") {
 					record=recordSet.rows;
@@ -1624,14 +1624,14 @@ REFERENCE (from shapefile) {
 							str=value.wkt;
 						}
 						if (str) {
-//								console.error("str: " + JSON.stringify(str).substring(0, 200));
+//								winston.log("verbose", "str: " + JSON.stringify(str).substring(0, 200));
 							str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 	
 						}
 						else {
 							str="";
 						}							
 						var buf=value.geolevel_id + "," + value.areaid + "," + value.zoomlevel + ',"' + str + '"';
-//							console.error("buf[" + (i+1) + "/" + rowsAffected + "]: " + JSON.stringify(buf).substring(0, 200));
+//							winston.log("verbose", "buf[" + (i+1) + "/" + rowsAffected + "]: " + JSON.stringify(buf).substring(0, 200));
 						buf+="\r\n";
 						
 						function mssqlTileGeometryCallback2(err) {
@@ -1653,7 +1653,7 @@ REFERENCE (from shapefile) {
 					}, // End of mssqlTileGeometrySeries
 					function tmssqlTileGeometryEnd(err) { //  Callback				
 						csvStream.end();
-						console.error("Geometry rows processed: " + rowsAffected);
+						winston.log("verbose", "Geometry rows processed: " + rowsAffected);
 						record=undefined;
 						geometryProcessingCallback(err, geographyTable, geographyTableDescription, xmlFileDir, tileProcessingCallback); // Call tileProcessing
 					} // End of tmssqlTileGeometryEnd()		
