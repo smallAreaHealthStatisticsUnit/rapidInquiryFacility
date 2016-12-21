@@ -10,7 +10,6 @@ import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
 import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
-import rifDataLoaderTool.dataStorageLayer.pg.ProductionPGDataLoaderService;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifDataLoaderTool.businessConceptLayer.*;
@@ -120,10 +119,7 @@ class DataTypeEditorDialog
 		setMainPanel(createMainPanel());
 		setSize(800, 600);
 		buildUI();
-		
-		
-		
-		
+
 	}
 
 	private JPanel createMainPanel() {

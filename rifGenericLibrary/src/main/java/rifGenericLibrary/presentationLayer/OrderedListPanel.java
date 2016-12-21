@@ -2,8 +2,6 @@
 package rifGenericLibrary.presentationLayer;
 
 
-import java.awt.GridBagConstraints;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +11,8 @@ import java.util.Vector;
 import javax.swing.*;
 import javax.swing.event.*;
 
+import java.awt.GridBagConstraints;
+import java.awt.Color;
 
 /**
  *
@@ -90,6 +90,8 @@ public final class OrderedListPanel {
 // Section Properties
 // ==========================================
 	
+	private UserInterfaceFactory userInterfaceFactory;
+	
 	//Data	
 	/** The alphabetically sort items. */
 	private boolean alphabeticallySortItems;
@@ -106,7 +108,11 @@ public final class OrderedListPanel {
 	private JList<String> list;	
 	/** The list scroll pane. */
 	private JScrollPane listScrollPane;
-		
+	
+	private JLabel listTitleLabel;
+	
+	private boolean useDefaultSelectionPolicy;
+	
 // ==========================================
 // Section Construction
 // ==========================================
@@ -118,7 +124,32 @@ public final class OrderedListPanel {
      * @param userInterfaceFactory the user interface factory
      * @param allowMultipleItemSelection the allow multiple item selection
      */
+
+	
 	public OrderedListPanel(
+    	String listTitle,
+    	String listToolTipText,
+		UserInterfaceFactory userInterfaceFactory,
+		boolean allowMultipleItemSelection) {
+
+		init(
+			listTitle, 
+			listToolTipText, 
+			userInterfaceFactory, 
+			allowMultipleItemSelection);
+	}
+		
+	public OrderedListPanel(
+		UserInterfaceFactory userInterfaceFactory) {
+
+		init(
+			"", 
+			"", 
+			userInterfaceFactory, 
+			true);
+	}
+	
+	private void init(
     	String listTitle,
     	String listToolTipText,
 		UserInterfaceFactory userInterfaceFactory,
@@ -134,7 +165,7 @@ public final class OrderedListPanel {
 		GridBagConstraints panelGC = userInterfaceFactory.createGridBagConstraints();		
 		
 		if (listTitle != null) {
-			JLabel listTitleLabel
+			listTitleLabel
 				= userInterfaceFactory.createLabel(listTitle);
 			if (listToolTipText != null) {
 				listTitleLabel.setToolTipText(listToolTipText);
@@ -151,6 +182,7 @@ public final class OrderedListPanel {
 		//list.setDropMode(DropMode.USE_SELECTION);
 		//list.setTransferHandler(new DefaultDnDTransferHandler());
 		
+		this.userInterfaceFactory = userInterfaceFactory;
 		userInterfaceFactory.setPlainFont(list);
 		ListSelectionModel listSelectionModel
 			= list.getSelectionModel();
@@ -164,13 +196,40 @@ public final class OrderedListPanel {
 		listScrollPane
 			= userInterfaceFactory.createScrollPane(list);
 		panel.add(listScrollPane, panelGC);
-		
+		useDefaultSelectionPolicy = false;
     }
 
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
     
+	public void setUseDefaultSelectionPolicy(final boolean useDefaultSelectionPolicy) {
+		this.useDefaultSelectionPolicy = useDefaultSelectionPolicy;
+	}
+	
+	public void setListTitle(final String listTitle, final boolean isBold) {
+		listTitleLabel.setText(listTitle);
+		if (isBold) {
+			userInterfaceFactory.setBoldFont(listTitleLabel);
+		}
+		else {
+			userInterfaceFactory.setPlainFont(listTitleLabel);			
+		}
+								
+	}
+
+	
+	public void setListTitle(
+		final String listTitle,
+		final String toolTipText) {
+		listTitleLabel.setText(listTitle);
+		listTitleLabel.setToolTipText(toolTipText);
+	}
+	
+	public void setListLabelColour(final Color colour) {
+		listTitleLabel.setForeground(colour);		
+	}
+	
 	public boolean isEnabled() {
 		return isEnabled;
 	}
@@ -317,6 +376,18 @@ public final class OrderedListPanel {
 		if (alphabeticallySortItems == true) {
 			Collections.sort(listItems);	
 		}
+		
+		updateUI();
+
+		if (useDefaultSelectionPolicy) {
+			if (list.getSelectedIndex() == -1) {
+				//nothing is selected
+				if (listItems.isEmpty() == false) {
+					list.setSelectedValue(listItem.getDisplayName(), true);
+				}
+			}
+		}
+		
 	}
 	
 	/**
@@ -354,6 +425,17 @@ public final class OrderedListPanel {
 			//add the item back in exact same position in the list
 			listItems.add(originalIndex, revisedDisplayName);
 		}
+		
+		updateUI();
+		if (useDefaultSelectionPolicy) {
+			if (list.getSelectedIndex() == -1) {
+				//nothing is selected
+				if (listItems.isEmpty() == false) {
+					list.setSelectedValue(revisedDisplayName, true);
+				}
+			}
+		}		
+		
 	}
 	
 	public void replaceItem(
@@ -402,10 +484,13 @@ public final class OrderedListPanel {
 			listItems.remove(displayNameToDelete);
 		}
 		
-		if (listItems.isEmpty() == false) {
-			list.setSelectedIndex(0);
-		}
 		updateUI();
+
+		if (useDefaultSelectionPolicy) {
+			if (listItems.isEmpty() == false) {
+				list.setSelectedIndex(0);
+			}
+		}
 	}
 	
 	

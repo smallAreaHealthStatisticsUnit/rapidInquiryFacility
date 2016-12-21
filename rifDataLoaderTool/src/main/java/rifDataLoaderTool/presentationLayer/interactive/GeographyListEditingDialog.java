@@ -1,6 +1,6 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolGeography;
+import rifDataLoaderTool.businessConceptLayer.DLGeography;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
@@ -154,21 +154,21 @@ class GeographyListEditingDialog
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public ArrayList<DataLoaderToolGeography> getData() {
-		ArrayList<DataLoaderToolGeography> results
-			= new ArrayList<DataLoaderToolGeography>();
+	public ArrayList<DLGeography> getData() {
+		ArrayList<DLGeography> results
+			= new ArrayList<DLGeography>();
 		
 		ArrayList<DisplayableListItemInterface> listItems
 			= listPanel.getAllItems();
 		for (DisplayableListItemInterface listItem : listItems) {
-			results.add((DataLoaderToolGeography) listItem);
+			results.add((DLGeography) listItem);
 		}
 		
 		return results;
 	}
 	
-	public void setData(final ArrayList<DataLoaderToolGeography> dataLoaderGeographies) {
-		for (DataLoaderToolGeography dataLoaderGeography : dataLoaderGeographies) {
+	public void setData(final ArrayList<DLGeography> dataLoaderGeographies) {
+		for (DLGeography dataLoaderGeography : dataLoaderGeographies) {
 			listPanel.addListItem(dataLoaderGeography);
 		}
 		listPanel.updateUI();
@@ -178,8 +178,8 @@ class GeographyListEditingDialog
 	
 	
 	private void addGeography() {
-		DataLoaderToolGeography geography
-			= DataLoaderToolGeography.newInstance();
+		DLGeography geography
+			= DLGeography.newInstance();
 		GeographyEditorDialog geographyEditorDialog
 			= new GeographyEditorDialog(session);
 		geographyEditorDialog.setData(geography);
@@ -200,8 +200,8 @@ class GeographyListEditingDialog
 	}
 
 	private void editGeography() {
-		DataLoaderToolGeography selectedGeography
-			= (DataLoaderToolGeography) listPanel.getSelectedItem();
+		DLGeography selectedGeography
+			= (DLGeography) listPanel.getSelectedItem();
 		String oldDisplayName = selectedGeography.getDisplayName();
 		GeographyEditorDialog geographyEditorDialog
 			= new GeographyEditorDialog(session);

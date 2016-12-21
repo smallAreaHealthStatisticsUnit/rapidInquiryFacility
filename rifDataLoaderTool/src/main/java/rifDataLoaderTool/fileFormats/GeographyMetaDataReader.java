@@ -1,8 +1,7 @@
 
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
-
+import rifDataLoaderTool.businessConceptLayer.DLGeographyMetaData;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
@@ -78,7 +77,7 @@ import java.util.ArrayList;
  */
 
 
-public final class LinearWorkflowReader {
+public final class GeographyMetaDataReader {
 	
 // ==========================================
 // Section Constants
@@ -87,7 +86,8 @@ public final class LinearWorkflowReader {
 // ==========================================
 // Section Properties
 // ==========================================
-	private LinearWorkflowConfigurationHandler rifWorkflowConfigurationHandler;
+	private GeographyMetaDataConfigurationHandler geographyMetaDataConfigurationHandler;
+	private File geographyMetaDataConfigurationFile;
 	
 // ==========================================
 // Section Construction
@@ -95,9 +95,9 @@ public final class LinearWorkflowReader {
     /**
      * Instantiates a new RIF job submission xml reader.
      */
-	public LinearWorkflowReader() {
-		rifWorkflowConfigurationHandler
-			= new LinearWorkflowConfigurationHandler();
+	public GeographyMetaDataReader() {
+		geographyMetaDataConfigurationHandler
+			= new GeographyMetaDataConfigurationHandler();
     }
 
 // ==========================================
@@ -111,21 +111,22 @@ public final class LinearWorkflowReader {
  * @throws RIFServiceException the RIF service exception
  */
 	public void readFile(
-		final File rifWorkflowConfigurationFile) 
+		final File geographyMetaDataConfigurationFile) 
 		throws RIFServiceException {
 
+		this.geographyMetaDataConfigurationFile =geographyMetaDataConfigurationFile;
 		try {			
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(
-				rifWorkflowConfigurationFile, 
-				rifWorkflowConfigurationHandler);
+				geographyMetaDataConfigurationFile, 
+				geographyMetaDataConfigurationHandler);
 		}
 		catch(Exception exception) {
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileReadingProblemException(
-				rifWorkflowConfigurationFile.getName());			
+					geographyMetaDataConfigurationFile.getName());			
 		}
 	}
 
@@ -139,17 +140,22 @@ public final class LinearWorkflowReader {
 			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(
 				inputStream, 
-				rifWorkflowConfigurationHandler);			
+				geographyMetaDataConfigurationHandler);			
 		}
 		catch(Exception exception) {
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
-			throw exceptionFactory.createFileReadingProblemException("io.error.generalInputFileProblem");
+			throw exceptionFactory.createFileReadingProblemException(
+				"io.error.generalInputFileProblem");
 		}
 	}			
 	
-	public ArrayList<LinearWorkflow> getLinearWorkflows() {
-		return rifWorkflowConfigurationHandler.getLinearWorkflows();
+	public DLGeographyMetaData getGeographicalMetaData() {
+		DLGeographyMetaData geographyMetaData
+			= geographyMetaDataConfigurationHandler.getGeographyMetaData();
+		geographyMetaData.setFilePath(
+			geographyMetaDataConfigurationFile.getAbsolutePath());
+		return geographyMetaData;
 	}
 	
 // ==========================================

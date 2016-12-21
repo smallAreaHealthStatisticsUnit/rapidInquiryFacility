@@ -99,7 +99,7 @@ public class DataLoaderToolSettings {
 	// Section Properties
 	// ==========================================
 	private RIFDatabaseConnectionParameters databaseConnectionParameters;
-	private ArrayList<DataLoaderToolGeography> geographies;
+	private ArrayList<DLGeography> geographies;
 	private RIFDataTypeFactory rifDataTypeFactory;
 	private ArrayList<LinearWorkflow> workflows;
 	private ConfigurationHints configurationHints;
@@ -114,7 +114,7 @@ public class DataLoaderToolSettings {
 			= RIFDatabaseConnectionParameters.newInstance();
 		
 		geographies 
-			= new ArrayList<DataLoaderToolGeography>();
+			= new ArrayList<DLGeography>();
 		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
 		rifDataTypeFactory.populateFactoryWithBuiltInTypes();
 		workflows = new ArrayList<LinearWorkflow>();
@@ -132,9 +132,10 @@ public class DataLoaderToolSettings {
 	 * mark as being geographical resolution 
 	 * (see {@link rifDataLoaderTool.businessConceptLayer.FieldPurpose}).
 	 */
+	/*
 	public ArrayList<String> getGeographicalResolutionFields() {
 		ArrayList<String> results = new ArrayList<String>();
-		for (DataLoaderToolGeography geography : geographies) {
+		for (DLGeography geography : geographies) {
 			ArrayList<ShapeFile> shapeFiles
 				= geography.getShapeFiles();
 			for (ShapeFile shapeFile : shapeFiles) {
@@ -145,6 +146,7 @@ public class DataLoaderToolSettings {
 		}
 		return results;		
 	}
+	*/
 	
 	public RIFDatabaseConnectionParameters getDatabaseConnectionParameters() {		
 		return databaseConnectionParameters;
@@ -154,11 +156,11 @@ public class DataLoaderToolSettings {
 		this.databaseConnectionParameters = databaseConnectionParameters;
 	}
 	
-	public ArrayList<DataLoaderToolGeography> getGeographies() {
+	public ArrayList<DLGeography> getGeographies() {
 		return geographies;
 	}
 	
-	public void setGeographies(final ArrayList<DataLoaderToolGeography> geographies) {
+	public void setGeographies(final ArrayList<DLGeography> geographies) {
 		this.geographies = geographies;
 	}
 	

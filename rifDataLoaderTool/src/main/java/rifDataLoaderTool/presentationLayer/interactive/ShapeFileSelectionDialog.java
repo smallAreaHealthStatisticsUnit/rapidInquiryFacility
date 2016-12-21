@@ -160,11 +160,8 @@ class ShapeFileSelectionDialog
 		
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;		
-		String browseButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.browse.label");
-		browseButton
-			= userInterfaceFactory.createButton(browseButtonText);
+		panelGC.weightx = 0;
+		browseButton = userInterfaceFactory.createBrowseButton();
 		browseButton.addActionListener(this);
 		panel.add(browseButton, panelGC);
 		return panel;

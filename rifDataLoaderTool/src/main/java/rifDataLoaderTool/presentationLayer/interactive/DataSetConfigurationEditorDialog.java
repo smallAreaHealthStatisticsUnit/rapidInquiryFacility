@@ -1,7 +1,6 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.dataStorageLayer.*;
 import rifDataLoaderTool.system.*;
 import rifGenericLibrary.presentationLayer.*;
 import rifGenericLibrary.system.RIFServiceException;

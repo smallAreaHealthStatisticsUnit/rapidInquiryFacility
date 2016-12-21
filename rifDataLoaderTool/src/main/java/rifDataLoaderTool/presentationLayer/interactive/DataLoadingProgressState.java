@@ -1,7 +1,10 @@
-package rifDataLoaderTool.system;
+package rifDataLoaderTool.presentationLayer.interactive;
+
+import rifDataLoaderTool.businessConceptLayer.LoadingOrderState;
+import java.util.Observable;
 
 /**
- * Describes a source of error in the system.
+ *
  *
  * <hr>
  * Copyright 2016 Imperial College London, developed by the Small Area
@@ -50,59 +53,53 @@ package rifDataLoaderTool.system;
  *
  */
 
-public enum RIFDataLoaderToolError {
-	INVALID_DATA_SOURCE,
-	DUPLICATE_DATA_SOURCE,
-	CLEAR_ALL_DATA_SOURCES,
-	REGISTER_DATA_SOURCE,
-	DEREGISTER_DATA_SOURCE,
-	DATA_SOURCE_EXISTS,
-	LOAD_TABLE,
-	CLEAN_TABLE,
-	DROP_TABLE,
-	CLOSE_RESOURCE,
-	DELETE_DATA_SOURCE_REGISTRY,
-	LOAD_DB_DRIVER,
-	GET_CONNECTION,
-	DATABASE_QUERY_FAILED,
-	COMPARE_TABLE_SIZES,
-	INVALID_LOAD_SOURCE, 
-	INVALID_CLEANING_RULE,
-	EMPTY_API_METHOD_PARAMETER,
-	NO_COMMAND_LINE_ARGUMENTS_SPECIFIED,
-	ILLEGAL_CONFIGURATION_FILE_SPECIFIED,
-	INVALID_DATA_SET_CONFIGURATION,
-	INVALID_DATA_SET_FIELD_CONFIGURATION,
-	IMPROPERLY_SET_CONVERSION_FUNCTION,
-	UNKNOWN_COMMAND_LINE_OPTION,
-	NO_SCHEMA_AREA_SPECIFIED,
-	NO_CONFIGURATION_FILE_SPECIFIED,
-	NON_EXISTENT_CONFIGURATION_FILE,
-	UNABLE_TO_READ_CONFIGURATION_FILE,
-	UNABLE_TO_DELETE_DATA_SET_CONFIGURATION,
-	UNABLE_TO_CREATE_FAKE_RIF_DB,
-	INVALID_LOAD_STATE,
-	INVALID_CLEAN_STATE,
-	INVALID_CONVERT_STATE,
-	INVALID_SPLIT_STATE,
-	INVALID_COMBINE_STATE,
-	INVALID_OPTIMISE_STATE,
-	INVALID_CHECK_STATE,
-	INVALID_PUBLISH_STATE,
-	UNKNOWN_CONVERSION_ACTIVITY,
-	UNABLE_TO_WRITE_FILE,
-	INVALID_LINEAR_WORKFLOW,
-	UNABLE_TO_CREATE_TEMPORARY_DIRECTORIES,
-	UNABLE_TO_COPY_ORIGINAL_DATA,
-	UNABLE_TO_ZIP_RESULTS,
-	UNABLE_TO_INCLUDE_WORKFLOW_IN_RESULTS,
-	INVALID_SHAPE_FILE,
-	DUPLICATE_RIF_DATA_TYPE,
-	INVALID_RIF_DATA_TYPE,
-	INVALID_DATA_LOADER_GEOGRAPHY,
-	UNABLE_TO_CHECK_DB_EXISTS,
-	DATA_LOADER_DEPENDENCY_PROBLEM
+public class DataLoadingProgressState extends Observable {
+
+	// ==========================================
+	// Section Constants
+	// ==========================================
+
+	// ==========================================
+	// Section Properties
+	// ==========================================
+	private LoadingOrderState currentLoadingOrderState;
+	// ==========================================
+	// Section Construction
+	// ==========================================
+
+	public DataLoadingProgressState() {
+
+	}
+
+	// ==========================================
+	// Section Accessors and Mutators
+	// ==========================================
+	public void setLoadingOrderState(
+		final LoadingOrderState loadingOrderState) {
+
+		boolean isLoadingStateChanged 
+			= (currentLoadingOrderState != loadingOrderState);
+
+		currentLoadingOrderState = loadingOrderState;
+
+		if (isLoadingStateChanged) {
+			//notify listeners
+			notifyObservers(currentLoadingOrderState);
+		}
+	}
 	
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
+
+	// ==========================================
+	// Section Override
+	// ==========================================
+
 }
 
 

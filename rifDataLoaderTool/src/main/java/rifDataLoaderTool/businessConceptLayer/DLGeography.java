@@ -67,7 +67,7 @@ import java.util.Objects;
  *
  */
 
-public class DataLoaderToolGeography 
+public class DLGeography 
 	extends AbstractRIFDataLoaderToolConcept {
 
 	// ==========================================
@@ -78,28 +78,31 @@ public class DataLoaderToolGeography
 	// Section Properties
 	// ==========================================
 	private String name;
-	private ArrayList<ShapeFile> shapeFiles;
+	private String filePath;	
+	private ArrayList<DLGeographicalResolutionLevel> levels;
+			
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private DataLoaderToolGeography() {
+	private DLGeography() {
 		name = "";
-		shapeFiles = new ArrayList<ShapeFile>();
+		filePath = "";
+		levels = new ArrayList<DLGeographicalResolutionLevel>();
 	}
 
-	public static DataLoaderToolGeography newInstance() {
-		DataLoaderToolGeography geography
-			= new DataLoaderToolGeography();
+	public static DLGeography newInstance() {
+		DLGeography geography
+			= new DLGeography();
 		return geography;
 	}
 
-	public static final DataLoaderToolGeography createCopy(
-		final DataLoaderToolGeography originalGeography) {
+	public static final DLGeography createCopy(
+		final DLGeography originalGeography) {
 		
-		DataLoaderToolGeography cloneGeography
-			= DataLoaderToolGeography.newInstance();
+		DLGeography cloneGeography
+			= DLGeography.newInstance();
 		copyInto(
 			originalGeography, 
 			cloneGeography);
@@ -108,20 +111,13 @@ public class DataLoaderToolGeography
 	}
 	
 	public static final void copyInto(
-		final DataLoaderToolGeography source,
-		final DataLoaderToolGeography destination) {
+		final DLGeography source,
+		final DLGeography destination) {
 		
 		destination.setIdentifier(source.getIdentifier());
 		destination.setName(source.getName());
+		destination.setFilePath(source.getFilePath());
 		
-		ArrayList<ShapeFile> sourceShapeFiles
-			= source.getShapeFiles();
-		destination.clearShapeFiles();
-		for (ShapeFile sourceShapeFile : sourceShapeFiles) {
-			ShapeFile cloneShapeFile
-				= ShapeFile.createCopy(sourceShapeFile);
-			destination.addShapeFile(cloneShapeFile);
-		}
 	}
 	
 	// ==========================================
@@ -136,29 +132,31 @@ public class DataLoaderToolGeography
 		this.name = name;
 	}
 
-	public ArrayList<ShapeFile> getShapeFiles() {
-		return shapeFiles;
-	}
-
-	public void setShapeFiles(final ArrayList<ShapeFile> shapeFiles) {
-		this.shapeFiles = shapeFiles;
-	}
-
-	public void addAllShapeFiles(final ArrayList<ShapeFile> shapeFilesToAdd) {
-		shapeFiles.addAll(shapeFilesToAdd);
+	public void setFilePath(final String filePath) {
+		this.filePath = filePath;
 	}
 	
-	public void addShapeFile(final ShapeFile shapeFile) {
-		shapeFiles.add(shapeFile);
+	public String getFilePath() {
+		return filePath;
 	}
 	
-	public void clearShapeFiles() {
-		shapeFiles.clear();
+	public ArrayList<DLGeographicalResolutionLevel> getLevels() {
+		return levels;
+	}
+	
+	public void addLevel(
+		final DLGeographicalResolutionLevel level) {
+		
+		levels.add(level);
+	}
+	
+	public void clearLevels() {
+		levels.clear();
 	}
 	
 	public static final boolean hasIdenticalContents(
-		final DataLoaderToolGeography geographyA,
-		final DataLoaderToolGeography geographyB) {
+		final DLGeography geographyA,
+		final DLGeography geographyB) {
 		
 		if (geographyA == geographyB) {
 			return true;
@@ -171,27 +169,21 @@ public class DataLoaderToolGeography
 
 		
 		if (Objects.deepEquals(
-			geographyA.getIdentifier(), 
-			geographyB.getIdentifier()) == false) {
-
-			return false;
-		}
-		
-		if (Objects.deepEquals(
 			geographyA.getName(), 
 			geographyB.getName()) == false) {
 
 			return false;
 		}
+		
+		
+		if (Objects.deepEquals(
+			geographyA.getFilePath(), 
+			geographyB.getFilePath()) == false) {
 
-		ArrayList<ShapeFile> shapeFilesA
-			= geographyA.getShapeFiles();
-		ArrayList<ShapeFile> shapeFilesB
-			= geographyB.getShapeFiles();
-		return ShapeFile.hasIdenticalContents(
-			shapeFilesA, 
-			shapeFilesB);
+			return false;
+		}
 
+		return true;
 	}
 	
 	// ==========================================
@@ -204,13 +196,13 @@ public class DataLoaderToolGeography
 		
 		String recordName
 			= RIFDataLoaderToolMessages.getMessage(
-				"dataLoaderToolGeography.singular.label");
+				"dlGeography.singular.label");
 		
 				
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		String nameFieldName
-			= RIFDataLoaderToolMessages.getMessage("dataLoaderToolGeography.name.label");
+			= RIFDataLoaderToolMessages.getMessage("dlGeography.name.label");
 		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
 				= RIFGenericLibraryMessages.getMessage(
@@ -220,17 +212,6 @@ public class DataLoaderToolGeography
 			errorMessages.add(errorMessage);
 		}
 		
-		String shapeFilesFieldName
-			= RIFDataLoaderToolMessages.getMessage("shapeFile.name.plural.label");		
-		if (shapeFiles.isEmpty()) {
-			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
-					"general.validation.emptyRequiredRecordField", 
-					recordName,
-					shapeFilesFieldName);
-			errorMessages.add(errorMessage);
-		}
-
 		countErrors(
 			RIFDataLoaderToolError.INVALID_DATA_LOADER_GEOGRAPHY, 
 			errorMessages);

@@ -11,13 +11,7 @@ import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifDataLoaderTool.fileFormats.RIFDataLoaderSettingsReader;
 import rifGenericLibrary.system.RIFServiceException;
 
-
-
-
-
-
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -78,20 +72,21 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 
 	public static final void main(final String[] arguments) {
 		
-		//try {
+		try {
 			DataLoaderToolSession session 
 				= new DataLoaderToolSession();
 			ProductionPGDataLoaderService dataLoaderService
 				= new ProductionPGDataLoaderService();
 			session.setDataLoaderService(dataLoaderService);
+			session.initialiseService();
 		
 			RIFDataLoaderToolApplication rifDataLoaderToolApplication
 				= new RIFDataLoaderToolApplication(session);
 			rifDataLoaderToolApplication.show();
-		//}
-		//catch(RIFServiceException rifServiceException) {
-		//	rifServiceException.printErrors();
-		//}
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifServiceException.printErrors();
+		}
 	}
 	
 	
@@ -110,11 +105,10 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	
 	//GUI Components
 	private RIFDataLoaderToolShutdownManager shutdownManager;
-	private JFrame frame;		
+	private JFrame frame;
 	private JMenuItem loadDataLoaderSettingsMenuButton;
 	private JMenuItem saveDataLoaderSettingsMenuButton;	
 	private JMenuItem quitMenuItem;
-	private JButton initialiseDemoDatabaseButton;
 	private JButton editGeographiesButton;
 	private JButton editDatabaseDataTypesButton;
 	private JButton loadPopulationHealthDataButton;
@@ -215,15 +209,6 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		panelGC.weightx = 1;
 		panelGC.anchor = GridBagConstraints.NORTHWEST;
 		
-		String initialiseDemoDatabaseText
-			= RIFDataLoaderToolMessages.getMessage(
-				"rifDataLoaderApplication.buttons.initialiseDemoDatabase.label");		
-		initialiseDemoDatabaseButton
-			= userInterfaceFactory.createButton(initialiseDemoDatabaseText);
-		initialiseDemoDatabaseButton.addActionListener(this);
-		panel.add(initialiseDemoDatabaseButton, panelGC);
-				
-		panelGC.gridy++;
 		String editGeographiesButtonText
 			= RIFDataLoaderToolMessages.getMessage(
 				"rifDataLoaderApplication.buttons.editGeographies.label");
@@ -348,27 +333,17 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	}
 	
 	private void updateButtonStates(final DataLoaderToolSettings dataLoaderToolSettings) {
-
-		if (dataLoaderToolSettings.areDatabaseConnectionSettingsValid() == false) {
-			initialiseDemoDatabaseButton.setEnabled(true);
-			editGeographiesButton.setEnabled(false);
-			editDatabaseDataTypesButton.setEnabled(false);
-			loadPopulationHealthDataButton.setEnabled(false);
-		}
-		else if (dataLoaderToolSettings.areGeographiesValid() == false) {
-			initialiseDemoDatabaseButton.setEnabled(true);
+		if (dataLoaderToolSettings.areGeographiesValid() == false) {
 			editGeographiesButton.setEnabled(true);
 			editDatabaseDataTypesButton.setEnabled(false);
 			loadPopulationHealthDataButton.setEnabled(false);			
 		}
 		else if (dataLoaderToolSettings.areDataTypesValid() == false) {
-			initialiseDemoDatabaseButton.setEnabled(true);
 			editGeographiesButton.setEnabled(true);
 			editDatabaseDataTypesButton.setEnabled(true);
 			loadPopulationHealthDataButton.setEnabled(false);						
 		}
 		else {
-			initialiseDemoDatabaseButton.setEnabled(true);
 			editGeographiesButton.setEnabled(true);
 			editDatabaseDataTypesButton.setEnabled(true);
 			loadPopulationHealthDataButton.setEnabled(true);						
@@ -396,13 +371,13 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 		
 		GeographyListEditingDialog geographyListEditingDialog
 			= new GeographyListEditingDialog(session);
-		ArrayList<DataLoaderToolGeography> currentGeographies
+		ArrayList<DLGeography> currentGeographies
 			= dataLoaderToolSettings.getGeographies();
 		geographyListEditingDialog.setData(currentGeographies);
 		geographyListEditingDialog.show();
 
 		if (geographyListEditingDialog.isCancelled() == false) {
-			ArrayList<DataLoaderToolGeography> updatedGeographies
+			ArrayList<DLGeography> updatedGeographies
 				= geographyListEditingDialog.getData();	
 			dataLoaderToolSettings.setGeographies(updatedGeographies);
 			updateButtonStates(dataLoaderToolSettings);
@@ -488,10 +463,7 @@ public class RIFDataLoaderToolApplication implements ActionListener {
 	public void actionPerformed(final ActionEvent event) {
 		Object button = event.getSource();
 
-		if (button == initialiseDemoDatabaseButton) {
-			initialiseDatabase();
-		}
-		else if (button == editGeographiesButton) {
+		if (button == editGeographiesButton) {
 			editGeographies();
 		}
 		else if (button == editDatabaseDataTypesButton) {

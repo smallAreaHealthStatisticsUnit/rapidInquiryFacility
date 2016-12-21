@@ -309,7 +309,7 @@ final class RIFDataLoaderConfigurationHandler
 					dataLoaderToolSettings.setDatabaseConnectionParameters(databaseConnectionParameters);
 				}				
 				else if (currentDelegatedHandler == geographyConfigurationHandler) {
-					ArrayList<DataLoaderToolGeography> geographies
+					ArrayList<DLGeography> geographies
 						= geographyConfigurationHandler.getGeographies();
 					dataLoaderToolSettings.setGeographies(geographies);
 				}

@@ -231,7 +231,18 @@ public class RIFServiceExceptionFactory {
 				errorMessage);
 		return rifServiceException;
 	}			
-	
+
+	public RIFServiceException createProblemCreatingHTML() {
+			
+		String errorMessage
+			= RIFGenericLibraryMessages.getMessage(
+				"io.error.problemGeneratingHTML");
+		RIFServiceException rifServiceException
+			= new RIFServiceException(
+				RIFGenericLibraryError.FILE_PARSING_PROBLEM,
+				errorMessage);
+		return rifServiceException;
+	}	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

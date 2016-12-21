@@ -200,6 +200,8 @@ public abstract class OKCloseButtonDialog
 	}
 	
 	public void okAction() throws RIFServiceException {
+		
+		
 	}
 
 	public void okRecoverAction() {

@@ -2,12 +2,18 @@ package rifDataLoaderTool.dataStorageLayer.pg;
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateDatabaseQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLDropDatabaseQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
+
+import rifGenericLibrary.system.ClassFileLocator;
+
 
 import java.io.*;
 import java.sql.*;
@@ -79,22 +85,21 @@ public class PGSQLDatabaseSetupUtility {
 
 	public static void main(String[] arguments) {
 		PGSQLDatabaseSetupUtility initialiser = new PGSQLDatabaseSetupUtility();
-		File file = new File("C://rif_scratch//SampleDBCreationScript.txt");
 		DataLoaderToolSettings settings = new DataLoaderToolSettings();
 		RIFDatabaseConnectionParameters dbParameters
 			= settings.getDatabaseConnectionParameters();
 		
 		try {
-			dbParameters.setDatabaseName("tmp_sahsu_db");
-			initialiser.initialiseDB(
+			dbParameters.setDatabaseName("tmp_sahsu_db2");
+			initialiser.setupDatabase(
 				settings,
-				file,
 				"postgres", 
-				"sahsuland2014");
+				"sellafield2014");	
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
 		}
+
 	}
 	// ==========================================
 	// Section Constants
@@ -104,6 +109,7 @@ public class PGSQLDatabaseSetupUtility {
 	// Section Properties
 	// ==========================================
 	private RIFDatabaseConnectionParameters dbParameters;
+	private File databaseFunctionsFile;
 	
 	// ==========================================
 	// Section Construction
@@ -111,34 +117,114 @@ public class PGSQLDatabaseSetupUtility {
 
 	public PGSQLDatabaseSetupUtility() {
 
+		StringBuilder sampleDBFunctionsFilePath = new StringBuilder();
+		ClassFileLocator classFileLocator = new ClassFileLocator();
+		sampleDBFunctionsFilePath.append(classFileLocator.getClassRootLocation("rifDataLoaderTool"));
+		sampleDBFunctionsFilePath.append(File.separator);
+		sampleDBFunctionsFilePath.append("SampleRIFConversionDBFunctions.txt");
+		System.out.println("File=="+sampleDBFunctionsFilePath.toString()+"==");
+		databaseFunctionsFile = new File(sampleDBFunctionsFilePath.toString());
+		
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void initialiseDB(
+
+	public void setDatabaseFunctionsFile(final File databaseFunctionsFile) {
+		this.databaseFunctionsFile = databaseFunctionsFile;
+	}
+	
+	/*
+	 * Determines if the temporary database used by the Data Loader Tool exists
+	 * It is used to help the GUI know if it should sensitise or desensitise 
+	 * features used to create the database.
+	 */
+	public boolean doesDatabaseExist(
 		final DataLoaderToolSettings dataLoaderToolSettings,
-		final File initialisationScriptFile,
 		final String userID,
-		final String password) {
+		final String password)
+		throws RIFServiceException {
 		
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryLine(0, "SELECT 1 ");
+		queryFormatter.addQueryLine(0, "FROM pg_database ");
+		queryFormatter.addQueryLine(0, "WHERE lower(datname)=lower(?)");
+
+		dbParameters 
+			= dataLoaderToolSettings.getDatabaseConnectionParameters();
+		
+		PreparedStatement doesDatabaseExistStatement = null;
+		ResultSet resultSet = null;
+		Connection connection = null;		
 		try {
-			
+			connection 
+				= createConnection(
+					dbParameters.getDatabaseServerURL(),
+					userID, 
+					password);
+			doesDatabaseExistStatement 
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			doesDatabaseExistStatement.setString(1, dbParameters.getDatabaseName());
+			resultSet = doesDatabaseExistStatement.executeQuery();
+			return resultSet.next();
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"sqlDatabaseSetupUtility.error.unableToCheckDBExists");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.UNABLE_TO_CHECK_DB_EXISTS, 
+					errorMessage);
+			throw rifServiceException;			
+		}
+		finally {
+			PGSQLQueryUtility.close(doesDatabaseExistStatement);
+			PGSQLQueryUtility.close(resultSet);
+		}		
+	}
+	
+	public void setupDatabase(
+		final DataLoaderToolSettings dataLoaderToolSettings,
+		final String userID,
+		final String password) 
+		throws RIFServiceException {
+
+		Connection connection = null;
+		try {
+			//Create the database "rif_dl" and assume it does not exist
 			dbParameters 
 				= dataLoaderToolSettings.getDatabaseConnectionParameters();
 			createDatabase(userID, password);				
 			
-			addFunctionsToDatabase(userID, password);
+			/*
+			 * Now that we have created the database, create a database connection
+			 * to that db.
+			 */
+			connection 
+				= createConnection(
+					dbParameters.getDatabaseURL(),
+					userID, 
+					password);
 			
+			//Create systems tables that the RIF DL tool will need when it
+			//processes files.
+			createDataLoaderSystemTables(connection);
 			
-			//Contains all the functions needed to make the database
-			//feaures work
-			String[] sqlQueries
-				= readDBInitialisationScript(initialisationScriptFile);
-		
+			//Add default cleaning and validatingfunctions to the database.
+			//These are added to the back-end because when they are applied to
+			//tables, they will 
+			addFunctionsToDatabase(connection);
+			
+
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
+		}
+		finally {
+			PGSQLQueryUtility.close(connection);
 		}
 	}
 	
@@ -156,15 +242,7 @@ public class PGSQLDatabaseSetupUtility {
 					dbParameters.getDatabaseServerURL(),
 					userID, 
 					password);
-			
-			if (dataLoaderToolDatabaseExists(connection) == true) {
-				System.out.println("Database already exists");
-				return;
-			}
-			else {
-				System.out.println("Database does not exist yet");
-			}
-			
+						
 			PGSQLDropDatabaseQueryFormatter dropDatabaseQueryFormatter
 				= new PGSQLDropDatabaseQueryFormatter();
 			dropDatabaseQueryFormatter.setDatabaseName(dbParameters.getDatabaseName());
@@ -181,7 +259,7 @@ public class PGSQLDatabaseSetupUtility {
 			createDatabaseStatement
 				= connection.prepareStatement(
 					createDatabaseQueryFormatter.generateQuery());
-			createDatabaseStatement.executeUpdate();	
+			createDatabaseStatement.executeUpdate();
 		}
 		finally {
 			PGSQLQueryUtility.close(createDatabaseStatement);
@@ -189,38 +267,7 @@ public class PGSQLDatabaseSetupUtility {
 			PGSQLQueryUtility.close(connection);
 		}
 	}
-	
 
-	
-	private void addFunctionsToDatabase(
-		final String userID, 
-		final String password) 
-		throws RIFServiceException {
-	
-		Connection connection = null;
-		try {
-			connection 
-				= createConnection(
-					dbParameters.getDatabaseURL(),
-					userID, 
-					password);
-			
-			createDataLoaderSystemTables(connection);
-			addBasicCleaningProcedures(connection);
-		}
-		catch(Exception exception) {
-			RIFServiceExceptionFactory rifServiceExceptionFactory
-				= new RIFServiceExceptionFactory();
-			throw 
-				rifServiceExceptionFactory.createFileReadingProblemException(
-					dbParameters.getDatabaseName());
-		}
-		finally {
-			
-		}
-		
-	}
-	
 	
 	private void createDataLoaderSystemTables(
 		final Connection connection) 
@@ -275,6 +322,35 @@ public class PGSQLDatabaseSetupUtility {
 		}		
 	}
 	
+	private void addFunctionsToDatabase(
+		final Connection connection) 
+		throws RIFServiceException {
+
+		//Contains all the functions needed to make the database features work
+		String[] sqlQueries = readDBInitialisationScript();
+		PreparedStatement statement = null;
+		try {
+			for (String sqlQuery : sqlQueries) {
+				System.out.println("addFunctionsToDatabase executing SQL Query=="+sqlQuery+"==");
+				statement = connection.prepareStatement(sqlQuery);
+				statement.executeUpdate();
+				statement.close();
+			}
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+			RIFServiceExceptionFactory rifServiceExceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw 
+				rifServiceExceptionFactory.createFileReadingProblemException(
+					dbParameters.getDatabaseName());
+		}
+		finally {
+			
+		}	
+	}
+
+/*
 	private void addBasicCleaningProcedures(
 		final Connection connection) 
 		throws SQLException, RIFServiceException {
@@ -336,7 +412,9 @@ public class PGSQLDatabaseSetupUtility {
 			PGSQLQueryUtility.close(statement);			
 		}				
 	}
-	
+*/
+
+/*
 	private boolean dataLoaderToolDatabaseExists(final Connection connection) 
 		throws Exception {
 		
@@ -374,15 +452,14 @@ public class PGSQLDatabaseSetupUtility {
 			PGSQLQueryUtility.close(statement);
 		}
 	}
+*/	
 	
-	
-	private String[] readDBInitialisationScript(
-		final File dbInitialisationScriptFile) 
+	private String[] readDBInitialisationScript() 
 		throws RIFServiceException {
 		
 		Scanner scanner = null;
 		try {
-			scanner = new Scanner(dbInitialisationScriptFile).useDelimiter(";");
+			scanner = new Scanner(databaseFunctionsFile).useDelimiter(";");
 			ArrayList<String> queries = new ArrayList<String>();
 			while (scanner.hasNext()) {
 				String currentQuery = scanner.next() + ";";
@@ -397,7 +474,7 @@ public class PGSQLDatabaseSetupUtility {
 			RIFServiceExceptionFactory rifExceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw rifExceptionFactory.createFileReadingProblemException(
-				dbInitialisationScriptFile.getName());
+				databaseFunctionsFile.getName());
 		}
 	}
 	
@@ -436,17 +513,7 @@ public class PGSQLDatabaseSetupUtility {
 		finally {
 			createDatabaseStatement.close();
 		}
-				
-		/*
-		String databaseName = dbParameters.getDatabaseName();
-		StringBuilder dropDatabaseQueryText = new StringBuilder();
-		dropDatabaseQueryText.append("DROP DATABASE IF EXISTS ");
-		dropDatabaseQueryText.append(dbParameters.getDatabaseName());
-		dropDatabaseQueryText.append(";");
-		
-		StringBuilder createDatabaseQueryText = new StringBuilder();
-		*/
-		
+
 	}
 	
 	
@@ -454,7 +521,8 @@ public class PGSQLDatabaseSetupUtility {
 		final String connectionURL,
 		final String userID,
 		final String password)
-		throws Exception {
+		throws SQLException, 
+		ClassNotFoundException {
 		
 		Properties databaseProperties = new Properties();
 			
