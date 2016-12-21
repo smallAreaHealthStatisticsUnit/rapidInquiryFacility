@@ -83,7 +83,11 @@
 //
 const mssql=require('mssql'),
 	  tileMaker=require('./lib/tileMaker'),
-      TileMakerConfig = require('./lib/TileMakerConfig');
+	  Logger=require('./lib/Logger'),
+      TileMakerConfig = require('./lib/TileMakerConfig'),
+	  optimist = require('optimist');	
+
+var winston;
 	  
 /* 
  * Function: 	main()
@@ -93,8 +97,6 @@ const mssql=require('mssql'),
  *				Then _rif40_sql_test_log_setup() ...
  */	
 function main() {
-	
-	const optimist  = require('optimist');
 	
 // Process Args using optimist
 	var argv = optimist
@@ -125,7 +127,7 @@ function main() {
 	  type: "string",
       default: mssql_default("SQLCMDSERVER")
     })
-    .options("V", {
+    .options("v", {
       alias: "verbose",
       describe: "Verbose mode",
 	  type: "integer",
@@ -168,48 +170,29 @@ function main() {
 
 	if (argv.help) return optimist.showHelp();
 	  
-	var memoryFileDebug='verbose';
-	var debugLevel='info';
+	var LoggerParams = {
+		progName:			'mssqlTileMaker',
+		debugLevel: 		'info',
+		memoryFileDebug:	'verbose'
+	};
 	if (argv.verbose == 1) {
 		process.env.VERBOSE=true;
-		debugLevel='verbose';
-		memoryFileDebug='verbose';
+		LoggerParams.debugLevel='verbose';
+		LoggerParams.memoryFileDebug='verbose';
 	}
 	else if (argv.verbose == 2) {
 		process.env.DEBUG=true;	
-		debugLevel='debug';
-		memoryFileDebug='debug';
+		LoggerParams.debugLevel='debug';
+		LoggerParams.memoryFileDebug='debug';
 	}
+//	else {
+//		console.error("argv.verbose: " + argv.verbose);
+//	}
 	
 //
 // Load logger module
 //
-	const Winston=require('winston');
-	var winston = new (Winston.Logger)({
-		level: debugLevel,
-		transports: [
-			new (Winston.transports.Console)({
-				level: debugLevel,
-				json: true,
-				timestamp: function() {
-					return Date.now();
-				},
-				stringify: function(options) {
-					// Return string will be passed to logger.
-					return /* options.timestamp() +' '+ options.level.toUpperCase() +' '+  */(options.message ? options.message : '') +
-					  (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
-				}
-			}),
-			new (Winston.transports.Memory)({ 
-				level: memoryFileDebug,
-				json: true
-			}),
-			new (Winston.transports.File)({ 
-				level: memoryFileDebug,
-				filename: 'mssqlTileMaker.log' 
-			})
-		]
-	  });
+	winston=new Logger.Logger(LoggerParams);
 		
 //
 // TileMakerConfig
@@ -290,8 +273,8 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 //		console.error(JSON.stringify(winston, null, 4));
 		
 		// Arrays with output and error lines
-		var messages = winston.transports.memory.writeOutput;
-		var errors = winston.transports.memory.errorOutput;
+		var messages = winston.winston.transports.memory.writeOutput;
+		var errors = winston.winston.transports.memory.errorOutput;
 		
 		winston.log("info", "Exit: OK; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
 		process.exit(0);
@@ -323,7 +306,7 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 		}
 		else {				
 			var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
-			winston.log("info", 'Connected to SQL server using: ' + JSON.stringify(config, null, 4) + "; log level: " + winston.level);
+			winston.log("info", 'Connected to SQL server using: ' + JSON.stringify(config, null, 4) + "; log level: " + winston.winston.level);
 
 // Call mssqlTileMaker()...
 			tileMaker.dbTileMaker(p_mssql, client1, p_pngfile, tileMakerConfig, "MSSQLServer", endCallBack, maxZoomlevel, blocks, winston);
