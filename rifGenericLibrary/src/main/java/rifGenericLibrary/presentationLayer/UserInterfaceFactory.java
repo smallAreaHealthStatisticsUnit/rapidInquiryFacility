@@ -1037,7 +1037,29 @@ public final class UserInterfaceFactory {
 		ButtonGroup buttonGroup = new ButtonGroup();
 		return buttonGroup;
 	}
-		
+	
+	public JLabel createNameLabel() {
+		String nameLabelText
+			= RIFGenericLibraryMessages.getMessage("labels.name");
+		JLabel label = createLabel(nameLabelText);
+		return label;
+	}
+	
+	public JLabel createDescriptionLabel() {
+		String descriptionLabelText
+			= RIFGenericLibraryMessages.getMessage("labels.description");		
+		JLabel label = createLabel(descriptionLabelText);
+		return label;
+	}
+	
+	public JButton createBrowseButton() {
+		String browseButtonText
+			= RIFGenericLibraryMessages.getMessage("buttons.browse.label");		
+		JButton button = createButton(browseButtonText);
+		return button;
+	}
+	
+	
 // ==========================================
 // Section Errors and Validation
 // ==========================================

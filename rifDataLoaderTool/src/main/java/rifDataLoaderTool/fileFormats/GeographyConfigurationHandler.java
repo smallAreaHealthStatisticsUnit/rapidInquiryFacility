@@ -91,8 +91,8 @@ final class GeographyConfigurationHandler
 // ==========================================
 // Section Properties
 // ==========================================
-	private ArrayList<DataLoaderToolGeography> geographies;
-	private DataLoaderToolGeography currentGeography;
+	private ArrayList<DLGeography> geographies;
+	private DLGeography currentGeography;
 	private ShapeFileConfigurationHandler shapeFileConfigurationHandler;
 // ==========================================
 // Section Construction
@@ -105,7 +105,7 @@ final class GeographyConfigurationHandler
 		setSingularRecordName("data_loader_tool_geography");
 		shapeFileConfigurationHandler
 			= new ShapeFileConfigurationHandler();
-		geographies = new ArrayList<DataLoaderToolGeography>();
+		geographies = new ArrayList<DLGeography>();
 	}
 
 
@@ -141,26 +141,26 @@ final class GeographyConfigurationHandler
 	 *
 	 * @return the disease mapping study
 	 */
-	public ArrayList<DataLoaderToolGeography> getGeographies() {
+	public ArrayList<DLGeography> getGeographies() {
 		return geographies;
 	}
 
 	public void writeXML(
-		final ArrayList<DataLoaderToolGeography> geographies)
+		final ArrayList<DLGeography> geographies)
 		throws IOException {
 			
 		XMLUtility xmlUtility = getXMLUtility();
 		
 		xmlUtility.writeRecordStartTag(getPluralRecordName());		
-		for (DataLoaderToolGeography geography : geographies) {
+		for (DLGeography geography : geographies) {
 			writeXML(geography);
 		}
 		xmlUtility.writeRecordEndTag(getPluralRecordName());
 	}	
 	
-	private void writeXML(final DataLoaderToolGeography geography) 
+	private void writeXML(final DLGeography geography) 
 		throws IOException {
-		
+
 		XMLUtility xmlUtility = getXMLUtility();
 		
 		String recordType = getSingularRecordName();
@@ -174,8 +174,8 @@ final class GeographyConfigurationHandler
 			recordType, 
 			"name", 
 			geography.getName());	
-		shapeFileConfigurationHandler.writeXML(
-			geography.getShapeFiles());		
+//		shapeFileConfigurationHandler.writeXML(
+//			geography.getShapeFiles());		
 		xmlUtility.writeRecordEndTag(recordType);		
 	}
 	
@@ -204,7 +204,7 @@ final class GeographyConfigurationHandler
 			activate();
 		}
 		else if (isSingularRecordName(qualifiedName)) {
-			currentGeography = DataLoaderToolGeography.newInstance();
+			currentGeography = DLGeography.newInstance();
 		}
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
@@ -262,6 +262,7 @@ final class GeographyConfigurationHandler
 				qualifiedName);
 						
 			if (currentDelegatedHandler.isActive() == false) {
+				/*
 				if (currentDelegatedHandler == shapeFileConfigurationHandler) {
 					ArrayList<ShapeFile> shapeFiles
 						= shapeFileConfigurationHandler.getShapeFiles();
@@ -270,7 +271,7 @@ final class GeographyConfigurationHandler
 				else {
 					assert false;
 				}				
-				
+				*/
 				//handler just finished				
 				unassignDelegatedHandler();				
 			}

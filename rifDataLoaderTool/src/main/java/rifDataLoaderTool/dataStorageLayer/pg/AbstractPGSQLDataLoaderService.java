@@ -1872,7 +1872,7 @@ abstract class AbstractPGSQLDataLoaderService
 					rifManager);
 	
 			result
-				= databaseSchemaInformationManager.getValidationFunctionNames(connection);
+				= databaseSchemaInformationManager.getCleaningFunctionNames(connection);
 			
 			sqlConnectionManager.reclaimPooledWriteConnection(
 				rifManager, 
@@ -2092,7 +2092,6 @@ abstract class AbstractPGSQLDataLoaderService
 	private void checkEmptyUser(
 		final User user)
 		throws RIFServiceException {
-		
 		
 	}
 	

@@ -168,6 +168,10 @@ final public class PGSQLCleanWorkflowManager
 				searchReplaceQuery);
 			searchReplaceStatement
 				= connection.prepareStatement(searchReplaceQuery);
+			System.out.println("Search and replace query START ====");
+			System.out.println(searchReplaceQuery);
+			
+			System.out.println("Search and replace query END ====");
 			searchReplaceStatement.executeUpdate();
 			exportTable(
 				connection, 
@@ -202,6 +206,10 @@ final public class PGSQLCleanWorkflowManager
 				validationQuery);
 			validationStatement
 				= connection.prepareStatement(validationQuery);
+			System.out.println("VALIDATE TABLE START============");
+			System.out.println(validationQuery);
+			System.out.println("VALIDATE TABLE END============");
+			
 			validationStatement.executeUpdate();
 
 			exportTable(

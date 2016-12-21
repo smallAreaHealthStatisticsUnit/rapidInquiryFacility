@@ -4,7 +4,7 @@ import rifDataLoaderTool.businessConceptLayer.ShapeFile;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolGeography;
+import rifDataLoaderTool.businessConceptLayer.DLGeography;
 import rifDataLoaderTool.fileFormats.ShapeFileMetaDataExtractor;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
@@ -87,7 +87,7 @@ class GeographyEditorDialog
 
 	//Data
 	private DataLoaderToolSession session;
-	private DataLoaderToolGeography originalGeography;
+	private DLGeography originalGeography;
 	private ShapeFile currentShapeFile;
 	
 	//GUI Components
@@ -162,11 +162,8 @@ class GeographyEditorDialog
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
 		
-		String nameFieldLabelText
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataLoaderToolGeography.name.label");
 		JLabel nameFieldLabel
-			= userInterfaceFactory.createLabel(nameFieldLabelText);
+			= userInterfaceFactory.createNameLabel();
 		panel.add(nameFieldLabel, panelGC);
 
 		panelGC.gridx++;
@@ -223,20 +220,22 @@ class GeographyEditorDialog
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public void setData(final DataLoaderToolGeography originalGeography) {
+	public void setData(final DLGeography originalGeography) {
 		this.originalGeography = originalGeography;
 		
+		/*
 		ArrayList<ShapeFile> shapeFiles
 			= originalGeography.getShapeFiles();
 		for (ShapeFile shapeFile : shapeFiles) {
 			shapeFile.print();
 		}			
+		*/
 		
 		populateForm(originalGeography);	
 	}
 	
-	private void populateForm(final DataLoaderToolGeography geography) {
-		
+	private void populateForm(final DLGeography geography) {
+/*		
 		nameTextField.setText(geography.getName());
 		
 		shapeFileListPanel.removeListSelectionListener(this);
@@ -255,15 +254,18 @@ class GeographyEditorDialog
 		if (shapeFileListPanel.isEmpty() == false) {
 			shapeFileListPanel.selectFirstItem();
 		}
+*/		
 	}
 	
-	public DataLoaderToolGeography getGeographyFromForm() {
-		DataLoaderToolGeography geographyFromForm
-			= DataLoaderToolGeography.newInstance();
+	public DLGeography getGeographyFromForm() {
+		DLGeography geographyFromForm
+			= DLGeography.newInstance();
+	
 		geographyFromForm.setIdentifier(originalGeography.getIdentifier());		
 		geographyFromForm.setName(nameTextField.getText().trim());
 		
 
+		/*
 		ArrayList<DisplayableListItemInterface> listItems
 			= shapeFileListPanel.getAllItems();
 		for (DisplayableListItemInterface listItem : listItems) {
@@ -271,6 +273,7 @@ class GeographyEditorDialog
 				= (ShapeFile) listItem;
 			geographyFromForm.addShapeFile(currentShapeFile);
 		}
+		*/
 		
 		return geographyFromForm;
 	}
@@ -353,7 +356,7 @@ class GeographyEditorDialog
 
 
 	public boolean saveChanges() {
-		DataLoaderToolGeography geographyFromForm
+		DLGeography geographyFromForm
 			= getGeographyFromForm();
 
 		boolean changesMade = shapeFileEditorPanel.saveChanges();
@@ -362,11 +365,11 @@ class GeographyEditorDialog
 		//changes were made
 		if (changesMade == false) {
 			changesMade
-				= !DataLoaderToolGeography.hasIdenticalContents(
+				= !DLGeography.hasIdenticalContents(
 					originalGeography, 
 					geographyFromForm);
 		}
-		DataLoaderToolGeography.copyInto(
+		DLGeography.copyInto(
 			geographyFromForm, 
 			originalGeography);
 		
@@ -485,7 +488,7 @@ class GeographyEditorDialog
 				throw rifServiceException;
 			}
 			
-			DataLoaderToolGeography geographyFromForm
+			DLGeography geographyFromForm
 				= getGeographyFromForm();
 			geographyFromForm.checkErrors();			
 	}

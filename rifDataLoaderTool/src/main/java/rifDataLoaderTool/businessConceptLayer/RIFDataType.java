@@ -524,26 +524,32 @@ public final class RIFDataType
 			= otherRIFDataType.getDescription();
 		
 		if (Objects.deepEquals(identifier, otherIdentifier) == false) {
+			System.out.println("RIFDataType hasIdenticalContents 1");
 			return false;
 		}
 		if (Objects.deepEquals(name, otherName) == false) {
+			System.out.println("RIFDataType hasIdenticalContents 2");
 			return false;
 		}
 		if (Objects.deepEquals(description, otherDescription) == false) {
+			System.out.println("RIFDataType hasIdenticalContents 3");
 			return false;
 		}		
 	 		
 		RIFFieldActionPolicy otherFieldCleaningPolicy
 			= otherRIFDataType.getFieldCleaningPolicy();
-		if (fieldCleaningPolicy != otherFieldCleaningPolicy) {			
+		if (fieldCleaningPolicy != otherFieldCleaningPolicy) {		
+			System.out.println("RIFDataType hasIdenticalContents 4");			
 			return false;
 		}
 		
 		ArrayList<CleaningRule> otherCleaningRules
 			= otherRIFDataType.getCleaningRules();
-		if (CleaningRule.cleaningRulesAreEqual(
+		if (CleaningRule.cleaningRulesAreEqual(				
 			cleaningRules, 
-			otherCleaningRules) == false) {			
+			otherCleaningRules) == false) {		
+			System.out.println("RIFDataType hasIdenticalContents 5");
+
 			return false;
 		}
 		
@@ -554,12 +560,16 @@ public final class RIFDataType
 		if (Objects.deepEquals(
 			cleaningFunctionName, 
 			otherCleaningFunctionName) == false) {
+			System.out.println("RIFDataType hasIdenticalContents 6 thisClean=="+ cleaningFunctionName + "==otherClean=="+otherCleaningFunctionName+"==");
+			
 			return false;
 		}		
 		
 		RIFFieldActionPolicy otherFieldValidationPolicy
 			= otherRIFDataType.getFieldValidationPolicy();
 		if (fieldValidationPolicy != otherFieldValidationPolicy) {
+			System.out.println("RIFDataType hasIdenticalContents 7");
+			
 			return false;
 		}
 			
@@ -569,7 +579,8 @@ public final class RIFDataType
 		if (ValidationRule.validationRulesAreEqual(
 			validationRules, 
 			otherValidationRules) == false) {
-		
+			System.out.println("RIFDataType hasIdenticalContents 8");
+
 			return false;
 		}
 		
@@ -578,6 +589,7 @@ public final class RIFDataType
 		if (Objects.deepEquals(
 				validationFunctionName, 
 				otherValidationFunctionName) == false) {
+			System.out.println("RIFDataType hasIdenticalContents 9");
 
 			return false;
 		}		

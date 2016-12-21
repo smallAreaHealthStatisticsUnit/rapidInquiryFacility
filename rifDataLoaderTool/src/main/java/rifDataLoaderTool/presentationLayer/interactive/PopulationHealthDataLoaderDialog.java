@@ -341,10 +341,8 @@ class PopulationHealthDataLoaderDialog
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;		
-		String browseButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.browse.label");
 		browseExportDirectoryButton
-			= userInterfaceFactory.createButton(browseButtonText);
+			= userInterfaceFactory.createBrowseButton();
 		browseExportDirectoryButton.addActionListener(this);
 		panel.add(browseExportDirectoryButton, panelGC);
 

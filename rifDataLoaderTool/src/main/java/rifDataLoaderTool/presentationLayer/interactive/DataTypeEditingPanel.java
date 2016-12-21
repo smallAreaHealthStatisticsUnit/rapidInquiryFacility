@@ -275,6 +275,9 @@ class DataTypeEditingPanel
 			return false;
 		}
 		else {
+			System.out.println("Data type has saved changes");
+			
+			
 			//changes have been made.  Ask users if they want to save changes
 			String message
 				= RIFDataLoaderToolMessages.getMessage(

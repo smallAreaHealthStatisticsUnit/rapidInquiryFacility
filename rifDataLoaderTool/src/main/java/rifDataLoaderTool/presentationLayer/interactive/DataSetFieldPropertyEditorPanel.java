@@ -833,8 +833,14 @@ class DataSetFieldPropertyEditorPanel
 
 			DataLoaderToolSettings dataLoaderToolSettings
 				= session.getDataLoaderToolSettings();
+			
+			ArrayList<String> dummyList = new ArrayList<String>();
+			dummyList.add("LEVEL_ONE");
+			dummyList.add("LEVEL_TWO");
+			dummyList.add("LEVEL_THREE");
+			
 			ArrayList<String> geographicalResolutionFieldNames
-				= dataLoaderToolSettings.getGeographicalResolutionFields();
+				= dummyList;
 							
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();		

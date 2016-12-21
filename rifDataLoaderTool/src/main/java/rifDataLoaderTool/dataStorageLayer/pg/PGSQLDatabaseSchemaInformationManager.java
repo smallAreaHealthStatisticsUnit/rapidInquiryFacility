@@ -1,9 +1,14 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
-import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+
+
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 /**
  * Performs a number of utility operations that involve getting various 
@@ -178,49 +183,37 @@ public class PGSQLDatabaseSchemaInformationManager {
 		final Connection connection)
 		throws RIFServiceException {
 	
+		/*
 		String[] validationFunctionNames = new String[4];
 		validationFunctionNames[0] = "clean_age";
 		validationFunctionNames[1] = "clean_date";
 		validationFunctionNames[2] = "clean_uk_postal_code";
 		validationFunctionNames[3] = "clean_year";
 		return validationFunctionNames;
-		
-		//return getDatabaseFunctionNames(_rifManager, "^clean.*");
+		*/
+		return getDatabaseFunctionNames(connection, "^clean_.*");
 	}	
 
 	public String[] getValidationFunctionNames(
 		final Connection connection) 
 		throws RIFServiceException {
 
-		//return getDatabaseFunctionNames(_rifManager, "^is_valid.*");
+		return getDatabaseFunctionNames(connection, "^is_valid.*");
 
 		//@TODO: make this come from the database
-		String[] validationFunctionNames = new String[4];
-		validationFunctionNames[0] = "is_valid_uk_postal_code";
+		//String[] validationFunctionNames = new String[4];
+		//validationFunctionNames[0] = "is_valid_uk_postal_code";
 		//validationFunctionNames[1] = "is_valid_icd_code";
 		//validationFunctionNames[2] = "is_valid_sex";
 		//validationFunctionNames[3] = "is_valid_age";
-		return validationFunctionNames;
+		//return validationFunctionNames;
 	}	
 	
-	/*	
-	public String[] getDatabaseFunctionNames(
-		final User _rifManager,
+
+	private String[] getDatabaseFunctionNames(
+		final Connection connection,
 		final String functionNamePattern) 
 		throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked rifManagers
-		User rifManager = User.createCopy(_rifManager);
-
-		if (sqlConnectionManager == null) {
-			System.out.println("getDBFunctionNames 1");
-		}
-		else if (rifManager == null) {
-			System.out.println("getDBFunctionNames 2");
-		}
-		if (sqlConnectionManager.isUserBlocked(rifManager) == true) {
-			return new String[0];
-		}
 		
 		ArrayList<String> results = new ArrayList<String>();
 		ResultSet resultSet = null;
@@ -234,21 +227,13 @@ public class PGSQLDatabaseSchemaInformationManager {
 			queryFormatter.addQueryLine(1, "pg_proc");
 			queryFormatter.addQueryLine(0, "INNER JOIN pg_namespace ON ");
 			queryFormatter.addQueryLine(1, "pg_proc.pronamespace = pg_namespace.oid");
-			queryFormatter.addQueryLine(0, "WHERE");
-			queryFormatter.addQueryPhrase(1, "pg_namespace = 'public' AND ");
-			queryFormatter.addQueryPhrase("pg_proc.proname ~ ? ");
-			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryLine(0, "WHERE ");
+			queryFormatter.addQueryLine(1, "pg_proc.proname ~ ? ");
 			queryFormatter.addQueryLine(0, "ORDER BY");
 			queryFormatter.addQueryLine(1, "pg_proc.proname");
 			
-			Connection connection 
-				= sqlConnectionManager.assignPooledWriteConnection(
-					rifManager);
-			System.out.println("ADLS queryFormatter=="+queryFormatter.generateQuery()+"==");
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			String functionFilterExpression = "^clean.*";
-			statement.setString(1, functionFilterExpression);
-			
+			statement.setString(1, functionNamePattern);
 			
 			resultSet = statement.executeQuery();
 			while (resultSet.next()) {
@@ -258,12 +243,13 @@ public class PGSQLDatabaseSchemaInformationManager {
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);
-			SQLQueryUtility.close(resultSet);
-			SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(statement);
 		}
 		
 		return results.toArray(new String[0]);
 		
+		/*
 		//@TODO: make this come from the database
 		String[] cleaningFunctionNames = new String[5];
 		cleaningFunctionNames[0] = "clean_uk_postal_code";
@@ -273,9 +259,9 @@ public class PGSQLDatabaseSchemaInformationManager {
 		cleaningFunctionNames[4] = "clean_year";
 		
 		return cleaningFunctionNames;
+		*/
 		
 	}
-*/
 	
 	
 	

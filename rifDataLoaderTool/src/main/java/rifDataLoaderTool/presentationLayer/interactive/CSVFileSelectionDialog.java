@@ -184,10 +184,8 @@ class CSVFileSelectionDialog
 		
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.NONE;
-		panelGC.weightx = 0;		
-		String browseCSVFileText
-			= RIFGenericLibraryMessages.getMessage("buttons.browse.label");	
-		browseCSVFileButton = userInterfaceFactory.createButton(browseCSVFileText);
+		panelGC.weightx = 0;
+		browseCSVFileButton = userInterfaceFactory.createBrowseButton();
 		browseCSVFileButton.addActionListener(this);
 		panel.add(browseCSVFileButton, panelGC);
 		
