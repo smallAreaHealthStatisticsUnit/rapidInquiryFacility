@@ -44,7 +44,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -E -b -m-1 -e -r1 -i mssql_usa_2014.sql -v pwd="%cd%"
+-- Usage: sqlcmd -E -b -m-1 -e -r1 -i mssql_USA_2014.sql -v pwd="%cd%"
 -- Connect flags if required: -U <username>/-E -S<myServerinstanceName>
 --
 -- You must set the current schema if you cannot write to the default schema!

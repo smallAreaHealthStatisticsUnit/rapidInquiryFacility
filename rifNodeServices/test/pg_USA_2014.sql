@@ -44,7 +44,7 @@
 --
 -- Postgres specific parameters
 --
--- Usage: psql -w -e -f pg_usa_2014.sql
+-- Usage: psql -w -e -f pg_USA_2014.sql
 -- Connect flags if required: -U <username> -d <Postgres database name> -h <host> -p <port>
 --
 \pset pager off
