@@ -111,35 +111,37 @@
 }
 
 .ui-grid-menu-button {
-  height: 57px;
-  width: 17px;
+    height: 57px;
+    width: 17px;
 }
 
 .ui-grid-column-menu-button{
-  display: none;
+    display: none;
 }
 
 /*STATUS REPORT COLOURS*/
 .statusC .ui-grid-cell-contents {
     background-color: pink;
     color: black;
+    opacity: 0.8;
 }
 .statusV .ui-grid-cell-contents {
-    background-color: #ffff94;
-    color: white;
+    background-color: pink;
+    color: black;
     opacity: 0.8;
 }
 .statusE .ui-grid-cell-contents {
-    background-color: #ffff94;
-    color: white;
+    background-color: pink;
+    color: black;
     opacity: 0.8;
 }
 .statusR .ui-grid-cell-contents {
-    background-color: lightgreen;
+  /*  background-color: lightgreen;
     color: black;
+    opacity: 0.8;*/
 }
 .statusU .ui-grid-cell-contents {
-    background-color: lightgreen;
-    color: white;
+    background-color: pink;
+    color: black;
     opacity: 0.8;
 }

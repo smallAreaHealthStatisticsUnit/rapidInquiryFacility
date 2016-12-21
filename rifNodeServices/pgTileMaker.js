@@ -83,8 +83,11 @@
 //
 const pg=require('pg'),
 	  tileMaker=require('./lib/tileMaker'),
-      TileMakerConfig = require('./lib/TileMakerConfig');
-	  
+	  Logger=require('./lib/Logger'),
+      TileMakerConfig = require('./lib/TileMakerConfig'),
+	  optimist = require('optimist');	
+
+var winston;	  
 /* 
  * Function: 	main()
  * Parameters: 	ARGV
@@ -93,8 +96,6 @@ const pg=require('pg'),
  *				Then _rif40_sql_test_log_setup() ...
  */	
 function main() {
-	
-	const optimist  = require('optimist');
 	
 // Process Args using optimist
 	var argv = optimist
@@ -124,7 +125,7 @@ function main() {
 	  type: "string",
       default: pg_default("PGHOST")
     })
-    .options("V", {
+    .options("v", {
       alias: "verbose",
       describe: "Verbose mode",
 	  type: "integer",
@@ -135,6 +136,12 @@ function main() {
       describe: "Maximum zoomlevel",
 	  type: "integer",
       default: 11
+    })
+    .options("b", {
+      alias: "blocks",
+      describe: "Blocks of tiles to process at once",
+	  type: "integer",
+      default: 10
     })
     .options("X", {
       alias: "xmlfile",
@@ -161,47 +168,30 @@ function main() {
 
 	if (argv.help) return optimist.showHelp();
 
+	
+	var LoggerParams = {
+		progName:			'mssqlTileMaker',
+		debugLevel: 		'info',
+		memoryFileDebug:	'verbose'
+	};
+	if (argv.verbose == 1) {
+		process.env.VERBOSE=true;
+		LoggerParams.debugLevel='verbose';
+		LoggerParams.memoryFileDebug='verbose';
+	}
+	else if (argv.verbose >= 2) {
+		process.env.DEBUG=true;	
+		LoggerParams.debugLevel='debug';
+		LoggerParams.memoryFileDebug='debug';
+	}
+//	else {
+//		console.error("argv.verbose: " + argv.verbose);
+//	}
+	
 //
 // Load logger module
 //
-	const Winston=require('winston');
-	var winston = new (Winston.Logger)({
-		level: 'info',
-		transports: [
-			new (Winston.transports.Console)({
-				level: 'info',
-				json: true,
-				timestamp: function() {
-					return Date.now();
-				},
-				stringify: function(options) {
-					// Return string will be passed to logger.
-					return /* options.timestamp() +' '+ options.level.toUpperCase() +' '+  */(options.message ? options.message : '') +
-					  (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
-				}
-			}),
-			new (Winston.transports.Memory)({ 
-				level: 'verbose',
-				json: true
-			}),
-			new (Winston.transports.File)({ 
-				level: 'verbose',
-				filename: 'pgTileMaker.log' 
-			})
-		]
-	  });
-	if (argv.verbose == 1) {
-		process.env.VERBOSE=true;
-		winston.level='verbose';
-		Winston.transports.Console='verbose';
-	}
-	else if (argv.verbose == 2) {
-		process.env.DEBUG=true;
-		winston.level='debug';
-		Winston.transports.Console='debug';
-		Winston.transports.Memory='debug';
-		Winston.transports.File='debug';
-	}
+	winston=new Logger.Logger(LoggerParams);
 	
 //
 // TileMakerConfig
@@ -218,7 +208,7 @@ function main() {
 //			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
 										
 		// Create Postgres client;
-		pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], 
+		pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], argv['blocks'],
 			tileMakerConfig, winston);	
 	});
 } /* End of main */
@@ -273,11 +263,11 @@ function pg_default(p_var) {
 /* 
  * Function: 	pg_db_connect()
  * Parameters: 	Postgres PG package connection handle,
- *				database host, name, username, port, generate PNG files, max zoomlevel, tileMakerConfig object, logging object
+ *				database host, name, username, port, generate PNG files, max zoomlevel, tile blocks per processing trip, tileMakerConfig object, logging object
  * Returns:		Nothing
  * Description:	Connect to database, ...
  */
-function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, maxZoomlevel, tileMakerConfig, winston) {
+function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, maxZoomlevel, blocks, tileMakerConfig, winston) {
 	
 	var client1 = null; // Client 1: Master; hard to remove	
 
@@ -289,10 +279,10 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 //		console.error(JSON.stringify(winston, null, 4));
 		
 		// Arrays with output and error lines
-		var messages = winston.transports.memory.writeOutput;
-		var errors = winston.transports.memory.errorOutput;
+		var messages = winston.winston.transports.memory.writeOutput;
+		var errors = winston.winston.transports.memory.errorOutput;
 		
-		console.log("Exit: OK; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
+		winston.log("info", "Exit: OK; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
 		process.exit(0);
 	}
 	
@@ -305,26 +295,26 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 // Connect to Postgres database
 	client1.connect(function(err) {
 		if (err) {
-			console.error('Could not connect to postgres client ' + p_num + ' using: ' + conString, err);
+			winston.log("error", 'Could not connect to postgres client using: ' + conString, err);
 			if (p_hostname === 'localhost') {
 				
 // If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
 // when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
 // You do need entries for ::1 in pgpass			
 
-				console.log('Attempt 2 (::1 instead of localhost) to connect to Postgres using: ' + conString);
-				conString = 'postgres://' + p_user + '@' + '[::1]' + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
+				winston.log("info", 'Attempt 2 (127.0.0.1 instead of localhost) to connect to Postgres using: ' + conString);
+				conString = 'postgres://' + p_user + '@' + '[127.0.0.1]' + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
 				client1 = new p_pg.Client(conString);
 // Connect to Postgres database
 				client1.connect(function(err) {
 					if (err) {
-						console.error('Could not connect [2nd attempt] to postgres client ' + p_num + ' using: ' + conString, err);
+						winston.log("error", 'Could not connect [2nd attempt] to postgres client using: ' + conString, err);
 						process.exit(1);	
 					}
 					else {
 // Call pgTileMaker()...
-						console.log('Connected to Postgres [2nd attempt] using: ' + conString + "; log level: " + winston.level);		
-						tileMaker.dbTileMaker(p_pg, client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, winston);
+						winston.log("error", 'Connected to Postgres [2nd attempt] using: ' + conString + "; log level: " + winston.winston.level);		
+						tileMaker.dbTileMaker(p_pg, client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, blocks, winston);
 					} // End of else connected OK 
 				}); // End of connect						
 			}
@@ -332,14 +322,14 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 		else {			
 // Call pgTileMaker()...
 
-			console.log('Connected to Postgres using: ' + conString + "; log level: " + winston.level);	
-			tileMaker.dbTileMaker(p_pg, client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, winston);
+			winston.log("info", 'Connected to Postgres using: ' + conString + "; log level: " + winston.winston.level);	
+			tileMaker.dbTileMaker(p_pg, client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, blocks, winston);
 		} // End of else connected OK 
 	}); // End of connect		
 
 	// Notice message event processors
 	client1.on('notice', function(msg) {
-		  console.log('PG: %s', msg);
+		  winston.log("info", 'PG: %s', msg);
 	});
 }
 	

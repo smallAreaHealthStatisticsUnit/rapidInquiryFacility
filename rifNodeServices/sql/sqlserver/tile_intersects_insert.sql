@@ -50,7 +50,7 @@ WITH a AS (
 		   c.bbox.STWithin(c.geom) AS within /* Used to exclude any tile boundary completely within the area, i.e. there are no bounaries in the tile */
 	  FROM c
 )
-INSERT INTO tile_intersects_cb_2014_us_500k (
+INSERT INTO %1 (
 	geolevel_id,
 	zoomlevel, 
 	areaid,

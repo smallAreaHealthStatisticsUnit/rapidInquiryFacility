@@ -73,10 +73,7 @@ RIF D3
     text-transform: uppercase;
 }
 
-
-
 /*RR CHART*/
-
 #rrchart g.y text{
     text-transform:uppercase;
     font-size: 12px;
@@ -101,8 +98,8 @@ RIF D3
 
 #refLine {
     fill: none;
-    stroke: #ADD8E6;
-    stroke-width: 1.5px;
+    stroke: #2c778f;
+    stroke-width: 2px;
 }
 
 .brush .extent {

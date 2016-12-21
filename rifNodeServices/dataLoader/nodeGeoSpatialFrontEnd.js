@@ -124,7 +124,7 @@ function addDbfDescFields(fileList, formData) {
 			var fieldKey=key + "_" + fileList[key].dbfHeader.fields[j].name.toUpperCase();
 			var value=(fileList[key].dbfHeader.fields[j].description || "N/A")
 
-			consoleLog("Set: " + fieldKey + '="' + value + '"');
+			consoleLog("addDbfDescFields() key: " + key + "; field: " + j + "; set: " + fieldKey + '="' + value + '"');
 			formData.append(fieldKey, value);
 		}
 	}

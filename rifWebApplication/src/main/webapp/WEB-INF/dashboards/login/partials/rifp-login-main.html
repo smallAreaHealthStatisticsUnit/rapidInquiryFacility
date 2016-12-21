@@ -15,7 +15,10 @@ Login menu
                     <input ng-model="password" type="password" placeholder="Password" id="password"  class='dropdownInput password' />
                 </div>
                 <div class="save-fld-settings">
-                    <input type="button" value="LOG IN" class='login' id='logInBtn' ng-click="login()">
+                    <md-button class="md-raised circular-progress-button md-warn" ng-click="login()" keep-width>
+                        <span ng-show="!showSpinner">LOG IN</span>
+                        <md-progress-circular md-mode="indeterminate" md-diameter="20" ng-show="showSpinner"></md-progress-circular>
+                    </md-button>
                 </div>
             </form>
         </div>

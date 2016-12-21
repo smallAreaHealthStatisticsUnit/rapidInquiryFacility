@@ -40,6 +40,6 @@ SELECT geolevel_id, zoomlevel,
        COUNT(DISTINCT(CAST(x AS VARCHAR) + CAST(y AS VARCHAR))) AS tiles,
 	   CAST(ROUND((CAST( (((MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1)) /* possible_tiles */ - COUNT(DISTINCT(CAST(x AS VARCHAR) + CAST(y AS VARCHAR)))) AS NUMERIC)/
 			((MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1)))*100, 2) AS DECIMAL(4,1)) AS pct_saving
-  FROM tile_intersects_cb_2014_us_500k
+  FROM %1
  GROUP BY geolevel_id, zoomlevel
  ORDER BY 1, 2

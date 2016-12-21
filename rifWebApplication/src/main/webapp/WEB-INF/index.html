@@ -48,12 +48,18 @@
         <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-animate.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-sanitize.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-aria.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-messages.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.18/angular-ui-router.js"></script>
         <script src="libs/angular-simple-logger.js"></script>
 
+        <!-- Angular Material Library -->
+        <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+        <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+
         <!-- Bootstrap -->
         <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.3.0.js"></script>
-        <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"> 
 
         <!-- Leaflet -->
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
@@ -93,6 +99,7 @@
         <!-- topojson -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.20/topojson.min.js"></script>
 
+        <!-- shapefile in leaflet -->
         <script src="libs/leaflet.shpfile.js"></script>   
         <script src="libs/shp.min.js"></script>   
 
@@ -118,13 +125,13 @@
         <script src="dashboards/submission/controllers/rifc-dsub-status.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-maptable.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-model.js"></script>       
-        <script src="dashboards/submission/directives/rifd-dsub-mydownload.js"></script>       
         <script src="dashboards/submission/directives/rifd-dsub-onreadfile.js"></script>    
         <script src="dashboards/viewer/controllers/rifc-view-viewer.js"></script>
         <script src="dashboards/viewer/services/rifs-view-viewerstate.js"></script>
         <script src="dashboards/viewer/directives/rifd-view-d3distHisto.js"></script>
         <script src="dashboards/viewer/directives/rifd-view-d3pyramid.js"></script>
-        <script src="utils/directives/rifd-view-d3histBreaks.js"></script>
+        <script src="utils/directives/rifd-util-d3histBreaks.js"></script>
+        <script src="utils/directives/rifd-util-sglclick.js"></script>
         <script src="utils/controllers/rifc-util-basemap.js"></script>
         <script src="utils/controllers/rifc-util-choro.js"></script>
         <script src="utils/controllers/rifc-util-alert.js"></script>
@@ -143,7 +150,7 @@
         <script src="dashboards/mapping/services/rifs-dmap-mappingstate.js"></script>
         <script src="dashboards/mapping/directives/rifd-dmap-d3rrzoom.js"></script>
 
-        <!-- RIF 4.0 CSS -->
+        <!-- RIF 4.0 CSS -->   
         <link href="css/rifx-css-main.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-uigrids.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-uilayout.css" rel="stylesheet" media="screen" />
@@ -151,6 +158,7 @@
         <link href="css/rifx-css-d3.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-leaflet.css" rel="stylesheet" media="screen" />
         <link href="css/rifx-css-bootstrap.css" rel="stylesheet" media="screen" />
+        <link href="css/rifx-css-material.css" rel="stylesheet" media="screen" />
 
     </head>
 

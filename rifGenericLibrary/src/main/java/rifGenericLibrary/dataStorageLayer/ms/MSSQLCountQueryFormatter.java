@@ -174,23 +174,6 @@ public final class MSSQLCountQueryFormatter
 		whereConditions.add(whereCondition.toString());
 	}
 	
-	/**
-	 * Adds the where join condition.
-	 *
-	 * @param tableFieldA the table field a
-	 * @param tableFieldB the table field b
-	 */
-	public void addWhereJoinCondition(
-		final String tableFieldA,
-		final String tableFieldB) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableFieldA);
-		whereCondition.append("=");
-		whereCondition.append(tableFieldB);
-		
-		whereConditions.add(whereCondition.toString());		
-	}
 	
 	/**
 	 * Adds the where parameter.

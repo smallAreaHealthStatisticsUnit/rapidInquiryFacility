@@ -47,9 +47,10 @@
 const fs = require('fs'),
       xml2js = require('xml2js');
 	  
-function TileMakerConfig(xmlConfigFileName) {
+function TileMakerConfig(xmlConfigFileName, winston) {
 	this.xmlConfig={xmlFileName: xmlConfigFileName};
 	this.xmlConfigFileName=xmlConfigFileName;
+	this.winston=winston;
 	
 	return this;
 } // End of TileMakerConfig() object constructor
@@ -67,7 +68,12 @@ TileMakerConfig.prototype = { // Add methods
 	}, // End of writeConfig()
 	setXmlConfig: function(config) {
 		this.xmlConfig=config;
-		console.error("Parsed XML config file: " + this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName);
+		if (this.winston) {
+			winston.info("Parsed XML config file: " + this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName);
+		}
+		else {
+			console.error("Parsed XML config file: " + this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName);
+		}
 	},
 	parseConfig: function(callback) {
 		var parser = new xml2js.Parser({async: false});

@@ -72,13 +72,12 @@ angular.module("RIF")
 
                 //draw relevant geography for this study
                 $scope.renderGeography = function () {
-                   // user.getTiles(user.currentUser, "SAHSU", "LEVEL3", "viewer").then(handleTopoJSON, handleTopoJSONError);
+                    // user.getTiles(user.currentUser, "SAHSU", "LEVEL3", "viewer").then(handleTopoJSON, handleTopoJSONError);
                     user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "viewer").then(handleTopoJSON, handleTopoJSONError);
                 };
 
                 //Study ID drop-down chnaged
                 $scope.studyChanged = function () {
-                    //TODO: 
                     //get possible years
                     //get possible sexes   
                     //get current geography
@@ -89,7 +88,6 @@ angular.module("RIF")
                     //if geography changed then $scope.renderGeography();
                     //else call getAttributeTable()
                 };
-
 
                 //initial state
                 $scope.renderGeography();
@@ -177,11 +175,12 @@ angular.module("RIF")
                         pngWidth = $scope.pyramidCurrentWidth * 3;
                         fileName = "populationPyramid.png";
                     }
-
+                    
                     var svgString = D3ToPNGService.getGetSVGString(d3.select(chart)
                             .attr("version", 1.1)
                             .attr("xmlns", "http://www.w3.org/2000/svg")
                             .node());
+                    
                     D3ToPNGService.getSvgString2Image(svgString, pngWidth, pngHeight, 'png', save);
 
                     function save(dataBlob, filesize) {
@@ -189,12 +188,49 @@ angular.module("RIF")
                     }
                 };
 
-                //Zoom to layer
+                //Zoom to layer DOUBLE click
                 $scope.zoomToExtent = function () {
                     leafletData.getMap("viewermap").then(function (map) {
                         map.fitBounds(maxbounds);
                     });
-                    //TODO: zoom to results extent
+                };
+
+                //Zoom to study extent SINGLE click
+                $scope.zoomToStudy = function () {
+                    var studyBounds = new L.LatLngBounds();
+                    $scope.topoLayer.eachLayer(function (layer) {
+                        //if area ID is in the attribute table
+                        for (var i = 0; i < $scope.tableData['viewermap'].length; i++) {
+                            if ($scope.tableData['viewermap'][i]['area_id'].indexOf(layer.feature.properties.area_id) !== -1) {
+                                studyBounds.extend(layer.getBounds());
+                            }
+                        }
+                    });
+                    leafletData.getMap('viewermap').then(function (map) {
+                        if (studyBounds.isValid()) {
+                            map.fitBounds(studyBounds);
+                        }
+                    });
+                };
+
+                //Zoom to results extent
+                $scope.zoomToSelected = function () {
+                    var studyBounds = new L.LatLngBounds();
+                    $scope.topoLayer.eachLayer(function (layer) {
+                        //if area ID is in the attribute table
+                        for (var i = 0; i < $scope.tableData['viewermap'].length; i++) {
+                            if ($scope.tableData['viewermap'][i]['area_id'] === layer.feature.properties.area_id) {
+                                if ($scope.tableData['viewermap'][i]['_selected'] === 1) {
+                                    studyBounds.extend(layer.getBounds());
+                                }
+                            }
+                        }
+                    });
+                    leafletData.getMap('viewermap').then(function (map) {
+                        if (studyBounds.isValid()) {
+                            map.fitBounds(studyBounds);
+                        }
+                    });
                 };
 
                 //UI-Grid setup options

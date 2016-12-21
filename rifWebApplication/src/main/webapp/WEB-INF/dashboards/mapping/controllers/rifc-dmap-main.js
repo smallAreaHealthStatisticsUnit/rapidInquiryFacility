@@ -1,3 +1,7 @@
+/* 
+ * CONTROLLER for disease mapping 
+ */
+
 /* global L, key, topojson, d3 */
 
 angular.module("RIF")
@@ -9,10 +13,10 @@ angular.module("RIF")
                 //geoJSON on diseasemap1
                 var maxbounds;
 
-                //1 is left panel, 2 is right panel
+                //1 is left panel, 2 is right panel             
                 var myMaps = ["diseasemap1", "diseasemap2"];
 
-                //renderers defined by choropleth map service
+                //renderers defined by choropleth map service             
                 var thisMap = {
                     "diseasemap1": [],
                     "diseasemap2": []
@@ -23,17 +27,19 @@ angular.module("RIF")
                     "diseasemap1": "",
                     "diseasemap2": ""
                 };
+
                 //set by slider
                 $scope.transparency = {
                     "diseasemap1": MappingStateService.getState().transparency["diseasemap1"],
                     "diseasemap2": MappingStateService.getState().transparency["diseasemap2"]
                 };
 
-                //get the default basemap
+                //get the default basemap              
                 $scope.thisLayer = {
                     diseasemap1: LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("diseasemap1")),
                     diseasemap2: LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("diseasemap2"))
                 };
+
                 //target for getTiles topoJSON
                 $scope.geoJSON = {};
 
@@ -61,6 +67,7 @@ angular.module("RIF")
                     zoomStart: MappingStateService.getState().brushStartLoc['diseasemap1'],
                     zoomEnd: MappingStateService.getState().brushEndLoc['diseasemap1']
                 };
+
                 $scope.optionsRR2 = {
                     this: "optionsRR2",
                     panel: "diseasemap2",
@@ -105,7 +112,6 @@ angular.module("RIF")
                     }
                     rescaleLeafletContainer();
                 });
-
                 //Drop-downs
                 $scope.studyIDs = {
                     "diseasemap1": [],
@@ -138,7 +144,6 @@ angular.module("RIF")
                     $scope.studyIDs['diseasemap2'] = angular.copy(tmp);
                     $scope.studyID["diseasemap1"] = $scope.studyIDs['diseasemap1'][0];
                     $scope.studyID["diseasemap2"] = $scope.studyIDs['diseasemap2'][0];
-
                 }, handleStudyError);
 
                 function handleStudyError(e) {
@@ -149,7 +154,6 @@ angular.module("RIF")
                 $scope.year = $scope.years[0];
                 $scope.sexes = ["Male", "Female", "Both"];
                 $scope.sex = $scope.sexes[0];
-
                 //Rescale leaflet container       
                 function rescaleLeafletContainer() {
                     for (var i in myMaps) {
@@ -205,10 +209,28 @@ angular.module("RIF")
                     $scope.geoJSON[mapID].eachLayer(handleLayer);
                 };
 
-                //Zoom to layer
+                //Zoom to layer DOUBLE click
                 $scope.zoomToExtent = function (mapID) {
                     leafletData.getMap(mapID).then(function (map) {
                         map.fitBounds(maxbounds);
+                    });
+                };
+
+                //Zoom to study extent SINGLE click
+                $scope.zoomToStudy = function (mapID) {
+                    var studyBounds = new L.LatLngBounds();
+                    $scope.geoJSON[mapID].eachLayer(function (layer) {
+                        //if area ID is in the attribute table
+                        for (var i = 0; i < $scope.tableData[mapID].length; i++) {
+                            if ($scope.tableData[mapID][i]['area_id'].indexOf(layer.feature.properties.area_id) !== -1) {
+                                studyBounds.extend(layer.getBounds());
+                            }
+                        }
+                    });
+                    leafletData.getMap(mapID).then(function (map) {
+                        if (studyBounds.isValid()) {
+                            map.fitBounds(studyBounds);
+                        }
                     });
                 };
 
@@ -231,7 +253,6 @@ angular.module("RIF")
                             .attr("xmlns", "http://www.w3.org/2000/svg")
                             .node());
                     D3ToPNGService.getSvgString2Image(svgString, pngWidth, pngHeight, 'png', save);
-
                     function save(dataBlob, filesize) {
                         saveAs(dataBlob, fileName); // FileSaver.js function
                     }
@@ -286,14 +307,21 @@ angular.module("RIF")
                     }
                 };
 
-                $scope.studyDropsChanged1 = function () {
-                    user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "diseasemap1").then(handleTopoJSON, handleTopoJSONError);
-                };
-                $scope.studyDropsChanged2 = function () {
-                    user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "diseasemap2").then(handleTopoJSON, handleTopoJSONError);
+                $scope.updateStudy = function (mapID) {
+                    console.log("UPDATE " + mapID);
                 };
 
-                //TODO: hard-typed, will be on drop changes
+                $scope.studyDropsChanged1 = function () {
+                    //  user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "diseasemap1").then(handleTopoJSON, handleTopoJSONError);
+                    user.getTiles(user.currentUser, "SAHSU", "LEVEL3", "diseasemap1").then(handleTopoJSON, handleTopoJSONError);
+                };
+
+                $scope.studyDropsChanged2 = function () {
+                    //user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "diseasemap2").then(handleTopoJSON, handleTopoJSONError);
+                    user.getTiles(user.currentUser, "SAHSU", "LEVEL3", "diseasemap2").then(handleTopoJSON, handleTopoJSONError);
+                };
+
+                //TODO: hard-typed, will be on drop changes and update button
                 $scope.studyDropsChanged1();
                 $scope.studyDropsChanged2();
 
@@ -379,7 +407,6 @@ angular.module("RIF")
                         }
                         var polyStyle = ChoroService.getRenderFeature2(layer.feature, thisAttr,
                                 thisMap[mapID].scale, attr[mapID], $scope.thisPoly[mapID]);
-
                         layer.setStyle({
                             weight: polyStyle[2],
                             color: polyStyle[1],
@@ -394,10 +421,8 @@ angular.module("RIF")
                     //get selected colour ramp
                     var rangeIn = ChoroService.getMaps(indx + 1).renderer.range;
                     attr[mapID] = ChoroService.getMaps(indx + 1).feature;
-
                     //get choropleth map renderer
                     thisMap[mapID] = ChoroService.getMaps(indx + 1).renderer;
-
                     //not a choropleth, but single colour
                     if (rangeIn.length === 1) {
                         // attr[mapID] = "";
@@ -419,12 +444,10 @@ angular.module("RIF")
                         }
                         legend[mapID].addTo(map);
                     });
-
                     //force a redraw
                     $scope.geoJSON[mapID].eachLayer(handleLayer);
                     getRRchart(mapID, attr[mapID]);
                 };
-
                 //change the basemaps - called from modal
                 $scope.renderMap = function (mapID) {
                     leafletData.getMap(mapID).then(function (map) {
@@ -437,7 +460,6 @@ angular.module("RIF")
                         }
                     });
                 };
-
                 //draw rr chart from d3 directive 'rrZoom'
                 function getRRchart(mapID, attribute) {
                     //make array for d3 areas
@@ -484,7 +506,6 @@ angular.module("RIF")
                     if (mapID === "diseasemap1") {
                         $scope.optionsRR1.label_field = attribute;
                         $scope.rrChartData1 = angular.copy(rs);
-
                     } else {
                         $scope.optionsRR2.label_field = attribute;
                         $scope.rrChartData2 = angular.copy(rs);
@@ -493,13 +514,12 @@ angular.module("RIF")
 
                 $scope.getAttributeTable = function (mapID) {
 
-                    user.getSmoothedResults(user.currentUser, 1, 1, 1990).then(handleSmoothedResults, attributeError); //TODO: hardtyped
+                    user.getSmoothedResults(user.currentUser, 240, 1, 1990).then(handleSmoothedResults, attributeError); //TODO: hardtyped
 
                     function handleSmoothedResults(res) {
                         //variables possible to map
                         var attrs = ["smoothed_smr", "relative_risk", "posterior_probability"];
                         ChoroService.getMaps(myMaps.indexOf(mapID) + 1).features = attrs;
-
                         //make array for choropleth
                         $scope.tableData[mapID].length = 0;
                         for (var i = 0; i < res.data.smoothed_results.length; i++) {
@@ -508,9 +528,9 @@ angular.module("RIF")
 
                         //////////////////////////////////////////////////////////////////////////////////////////
                         //TODO: Adding fake PP data
-                        for (var i = 0; i < $scope.tableData[mapID].length; i++) {
-                            $scope.tableData[mapID][i]['posterior_probability'] = Math.random();
-                        }
+                        //    for (var i = 0; i < $scope.tableData[mapID].length; i++) {
+                        //        $scope.tableData[mapID][i]['posterior_probability'] = Math.random();
+                        //    }
                         //////////////////////////////////////////////////////////////////////////////////////////
 
                         $scope.refresh(mapID);
@@ -520,7 +540,6 @@ angular.module("RIF")
                         $scope.showError("Something went wrong when getting the attribute data");
                     }
                 };
-
                 //add events to ui-leaflet
                 $timeout(function () {
                     leafletData.getMap("diseasemap1").then(function (map) {
@@ -538,7 +557,6 @@ angular.module("RIF")
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
                         L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-
                         //Attributions to open in new window
                         map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                     });
@@ -557,11 +575,9 @@ angular.module("RIF")
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
                         L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-
                         //Attributions to open in new window
                         map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                     });
-
                     //Set initial map extents
                     if ($scope.bLockCenters) {
                         $scope.center1 = MappingStateService.getState().center["diseasemap1"];
@@ -571,7 +587,6 @@ angular.module("RIF")
                         $scope.center2 = MappingStateService.getState().center["diseasemap2"];
                     }
                 });
-
                 //key events
                 $scope.mapInFocus = "";
                 angular.element(document).bind('keydown', function (e) {
@@ -588,7 +603,6 @@ angular.module("RIF")
                         }
                     }
                 });
-
                 //Legends and Infoboxes
                 var legend = {
                     'diseasemap1': L.control({position: 'topright'}),
@@ -602,6 +616,22 @@ angular.module("RIF")
                     'diseasemap1': L.control({position: 'bottomleft'}),
                     'diseasemap2': L.control({position: 'bottomleft'})
                 };
+                function hoverUpdateAttr(map, poly, feature) {
+                    var tmp;
+                    var inner;
+                    for (var i = 0; i < $scope.tableData[map].length; i++) {
+                        if ($scope.tableData[map][i].area_id === poly) {
+                            tmp = $scope.tableData[map][i][attr[map]];
+                            break;
+                        }
+                    }
+                    if (feature !== "" && angular.isNumber(tmp)) {
+                        inner = '<h4>ID: ' + poly + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h4>';
+                    } else {
+                        inner = '<h4>ID: ' + poly + '</h4>';
+                    }
+                    return inner;
+                }
 
                 infoBox[myMaps[0]].onAdd = function () {
                     this._div = L.DomUtil.create('div', 'info');
@@ -610,18 +640,7 @@ angular.module("RIF")
                 };
                 infoBox[myMaps[0]].update = function (poly) {
                     if (poly) {
-                        var thisAttr;
-                        for (var i = 0; i < $scope.tableData[myMaps[0]].length; i++) {
-                            if ($scope.tableData[myMaps[0]][i].area_id === poly) {
-                                thisAttr = $scope.tableData[myMaps[0]][i][attr[myMaps[0]]];
-                                break;
-                            }
-                        }
-                        if (ChoroService.getMaps(1).feature !== "") {
-                            this._div.innerHTML = '<h4>ID: ' + poly + '</br>' + ChoroService.getMaps(1).feature.toUpperCase().replace("_", " ") + ": " + Number(thisAttr).toFixed(3) + '</h4>';
-                        } else {
-                            this._div.innerHTML = '<h4>ID: ' + poly + '</h4>';
-                        }
+                        this._div.innerHTML = hoverUpdateAttr(myMaps[0], poly, ChoroService.getMaps(1).feature);
                     } else {
                         this._div.innerHTML = '';
                     }
@@ -633,18 +652,7 @@ angular.module("RIF")
                 };
                 infoBox[myMaps[1]].update = function (poly) {
                     if (poly) {
-                        var thisAttr;
-                        for (var i = 0; i < $scope.tableData[myMaps[1]].length; i++) {
-                            if ($scope.tableData[myMaps[1]][i].area_id === poly) {
-                                thisAttr = $scope.tableData[myMaps[1]][i][[attr[myMaps[1]]]];
-                                break;
-                            }
-                        }
-                        if (ChoroService.getMaps(2).feature !== "") {
-                            this._div.innerHTML = '<h4>ID: ' + poly + '</br>' + ChoroService.getMaps(2).feature.toUpperCase().replace("_", " ") + ": " + Number(thisAttr).toFixed(3) + '</h4>';
-                        } else {
-                            this._div.innerHTML = '<h4>ID: ' + poly + '</h4>';
-                        }
+                        this._div.innerHTML = hoverUpdateAttr(myMaps[1], poly, ChoroService.getMaps(2).feature);
                     } else {
                         this._div.innerHTML = '';
                     }
@@ -670,6 +678,8 @@ angular.module("RIF")
                                     'Population: ' + results.population + '</br>' +
                                     'Observed: ' + results.observed + '</br>' +
                                     'Expected: ' + Number(results.expected).toFixed(2) + '</br>' + '</h4>';
+                        } else {
+                            this._div.innerHTML = "";
                         }
                     }
                 };
@@ -694,6 +704,8 @@ angular.module("RIF")
                                     'Population: ' + results.population + '</br>' +
                                     'Observed: ' + results.observed + '</br>' +
                                     'Expected: ' + Number(results.expected).toFixed(2) + '</br>' + '</h4>';
+                        } else {
+                            this._div.innerHTML = "";
                         }
                     }
                 };
@@ -705,7 +717,6 @@ angular.module("RIF")
                     infoBox2[myMaps[1]].addTo(map);
                     infoBox[myMaps[1]].addTo(map);
                 });
-
                 //Synchronisation
                 function updateMapSelection(data, mapID) {
                     dropLine(mapID, data, true);
@@ -714,7 +725,6 @@ angular.module("RIF")
                     if (data.selected !== null && !angular.isUndefined(data.selected)) {
                         dropLine(data.mapID, data.selected.gid, data.map);
                         MappingStateService.getState().area_id[data.mapID] = data.selected.gid;
-
                         //update the other map if selections locked
                         if ($scope.bLockSelect) {
                             var otherMap = getOtherMap(data.mapID);
@@ -724,7 +734,6 @@ angular.module("RIF")
                         }
                     }
                 });
-
                 //draw the drop line in d3 and poly on map
                 function dropLine(mapID, gid, map) {
                     //update map

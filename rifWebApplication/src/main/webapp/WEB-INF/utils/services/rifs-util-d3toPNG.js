@@ -23,7 +23,7 @@ angular.module("RIF")
 
                             // Add Parent element Id and Classes to the list
                             selectorTextArr.push('#' + parentElement.id);
-                            for (var c = 0; c < parentElement.classList.length; c++)
+                            for (var c = 0; c < parentElement.classList.length; c++) //TODO: ClassList on IE? http://stackoverflow.com/questions/8098406/code-with-classlist-does-not-work-in-ie
                                 if (!contains('.' + parentElement.classList[c], selectorTextArr))
                                     selectorTextArr.push('.' + parentElement.classList[c]);
 
@@ -42,6 +42,7 @@ angular.module("RIF")
 
                             // Extract CSS Rules
                             var extractedCSSText = "";
+
                             for (var i = 0; i < document.styleSheets.length; i++) {
                                 var s = document.styleSheets[i];
 

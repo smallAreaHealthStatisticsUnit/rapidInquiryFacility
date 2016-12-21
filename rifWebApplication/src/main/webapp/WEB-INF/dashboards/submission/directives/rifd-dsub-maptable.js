@@ -339,6 +339,9 @@ angular.module("RIF")
 
                         function removeMapDrawItems() {
                             drawnItems.clearLayers();
+                            leafletData.getMap("area").then(function (map) {
+                                map.addLayer(drawnItems);
+                            })
                             $scope.input.bDrawing = false; //re-enable layer events
                         }
 
@@ -437,7 +440,7 @@ angular.module("RIF")
                         //quick export leaflet panel
                         $scope.saveLeaflet = function () {
                             var thisLegend; //no legend
-                            var thisScale = document.getElementsByClassName("leaflet-control-scale leaflet-control")[0]; //the scale bar
+                            var thisScale = document.getElementsByClassName("leaflet-control-scale leaflet-control")[0]; //the scale bar                                      
                             html2canvas(thisScale, {
                                 onrendered: function (canvas) {
                                     $scope.renderMap("area");

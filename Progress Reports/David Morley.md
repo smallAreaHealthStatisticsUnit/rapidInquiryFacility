@@ -63,3 +63,12 @@ Principal Work Area: JavaScript User interface development
 - Export as CSV option in results viewer
 - Started looking at RIF Java classes
 
+##December
+
+- Marquee style progress button for long login process
+- Added initial methods to import a AOI shapefile for disease mapping
+- Posterior Probability graph in disease mapper
+- Export D3 graphs to png buttons (not yet for IE11)
+- Atlas colour scheme options for choropleth mapping
+- Study status modal linked to database
+

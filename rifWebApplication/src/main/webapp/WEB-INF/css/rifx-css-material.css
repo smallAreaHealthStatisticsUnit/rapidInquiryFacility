@@ -1,0 +1,42 @@
+/*
+* Overrides to angular material
+*/
+
+.circular-progress-button {
+    height: 36px;
+    background-color:  #1caff6 !important;
+    margin-top: 10px;
+    margin-left: 25px;
+}
+
+.circular-progress-button>md-progress-circular {
+    margin: auto;
+    margin-top: 0px; /* If circular does not appear at the center, change this value. */
+}
+
+.circular-progress-button>md-progress-circular .md-half-circle {
+    border-top-color: white !important;
+}
+
+.circular-progress-button>md-progress-circular .md-left>.md-half-circle {
+    border-left-color: white;
+}
+
+.circular-progress-button>md-progress-circular .md-right>.md-half-circle {
+    border-right-color: white;
+}
+
+/*HACK TO REMOVE FOCUS BORDER FROM DIVS*/
+div:focus:not(#retrieve):not(#run):not(#status) { 
+    outline: none !important; 
+    border: 0 !important;
+}
+/*EXCEPTIONS*/
+div #retrieve:focus, div #run:focus {
+    outline: none !important; 
+    border-bottom: 5px solid #FFDAB9;
+}
+div #status:focus {
+    outline: none !important; 
+    border-bottom: 5px solid #FFDAB9;
+}

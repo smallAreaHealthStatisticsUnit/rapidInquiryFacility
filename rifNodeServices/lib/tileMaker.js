@@ -314,11 +314,11 @@ var tileMaker = function tileMaker(response, req, res, endCallback) {
 /*
  * Function: 	dbTileMaker()
  * Parameters:	Database object (pg or mssql), Database client connectiom, create PNG files (true/false), tile make configuration, 
- *				database type (PostGres or MSSQLServer), callback, max zoomlevel, logging object
+ *				database type (PostGres or MSSQLServer), callback, max zoomlevel, tile blocks per processing trip, logging object
  * Returns:		Nothing
  * Description:	Creates topoJSONtiles in the database, SVG and PNG tiles if required
  */
-var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerConfig, dbType, dbTileMakerCallback, maxZoomlevel, winston) {
+var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerConfig, dbType, dbTileMakerCallback, maxZoomlevel, blocks, winston) {
 
 	winston.verbose("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName, tileMakerConfig.xmlConfig);				
 	scopeChecker(__file, __line, { // Check callback
@@ -507,7 +507,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 					winston.log("debug", "TOPOJSON: " + JSON.stringify(this.topojson, null, 2).substring(0, 1000));
 				}	
 //				else {
-//					winston.log("error", "addTopoJson() called " + this.addTopoJsonCalls + ": " + this.tileId);
+//					winston.log("debug", "addTopoJson() called " + this.addTopoJsonCalls + ": " + this.tileId);
 //				}
 				this.geojson=undefined; // Free up memory used for geoJSON
 			}	
@@ -909,11 +909,11 @@ REFERENCE (from shapefile) {
 			else {		
 				var cte="WITH a AS (\n" +
 						"	SELECT geolevel_id, zoomlevel, x, y, COUNT(areaid) AS total_areas\n" + 
-						"	  FROM tile_intersects_cb_2014_us_500k\n" + 
+						"	  FROM  " + tileIntersectsTable + "\n" + 
 						"	GROUP BY geolevel_id, zoomlevel, x, y\n" + 
 						"), b AS (\n" + 
 						"	SELECT geolevel_id, zoomlevel, x, y, total_areas,\n" + 
-						"	       ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/10)+1 AS block\n" + 
+						"	       ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/" + blocks + ")+1 AS block\n" + 
 						"	  FROM a\n" + 
 						")\n";
 				if (dbType == "PostGres") {
@@ -1294,7 +1294,7 @@ REFERENCE (from shapefile) {
 											insertSql2, mssqlTileInsert2Callback);
 									}
 									else {
-										winston.log("info", "mssqlTilesInsert2() [" + i + "] HY104 ERROR redo: Insert " + i + "/" + HY104Sql.length + " OK");
+										winston.log("info", "mssqlTilesInsert2() [" + i + "] Recvoer from HY104 ERROR redo: Insert " + i + "/" + HY104Sql.length + " OK");
 										mssqlTileInsert2Callback();
 									}										
 								});						
@@ -1401,10 +1401,10 @@ REFERENCE (from shapefile) {
 				async.forEachOfSeries(tileArray, 
 					function tileArrayCSVSeries(value, j, csvCallback) { // Processing code	
 						l++;
-//						console.error("value[" + l + "/" + tileArray.length + "]: " + JSON.stringify(value).substring(0, 200));
+//						winston.log("verbose", "value[" + l + "/" + tileArray.length + "]: " + JSON.stringify(value).substring(0, 200));
 						buf=value.toCSV();
 						
-//						console.error("buf[" + l + "/" + tileArray.length + "]: " + JSON.stringify(buf).substring(0, 200));
+//						winston.log("verbose", "buf[" + l + "/" + tileArray.length + "]: " + JSON.stringify(buf).substring(0, 200));
 						buf+="\r\n";
 						if (l >= 1000) {
 							l=0;
@@ -1486,7 +1486,8 @@ REFERENCE (from shapefile) {
 		blockSql="SELECT block, COUNT(block) AS total FROM tile_blocks_" + geography.toLowerCase() + "\n" +
 		    " WHERE zoomlevel   = " + zoomlevel  + "\n" +
 		    "   AND geolevel_id = " + geolevel_id  + "\n" +
-			" GROUP BY block";
+			" GROUP BY block"+
+			" ORDER BY block";
 		var query=request.query(blockSql, function getBlock(err, result) {
 			if (err) {
 				dbErrorHandler(err, blockSql);
@@ -1514,7 +1515,7 @@ REFERENCE (from shapefile) {
 						function boundDataProcessing(value, i, getBlockCallback) { // Processing code	
 							function myGetBlockCallback(err) {
 //								var nerr=new Error("test");
-//								console.error("getBlockCallback(): " + nerr.stack);
+//								winston.log("verbose", "getBlockCallback(): " + nerr.stack);
 								getBlockCallback(err);
 							}
 							blockProcessing(sql, zoomlevel, geolevel_id, boundData[i].block, boundData.length, myGetBlockCallback);
@@ -1542,7 +1543,7 @@ REFERENCE (from shapefile) {
 		}
 		var value=dataLoader[parameter];
 
-		console.error("PArameter: " + parameter + '="' + value + '"')
+		winston.log("verbose", "Parameter: " + parameter + '="' + value + '"')
 		if (value == undefined) {
 			dbErrorHandler(new Error("Unable to get dataLoder parameter: " + parameter + "; dataLoder object: " + JSON.stringify(dataLoader, null, 2)), 
 				undefined /* SQL */);
@@ -1604,7 +1605,7 @@ REFERENCE (from shapefile) {
 				dbErrorHandler(err, sql);
 			}
 			else {	
-//				console.error("SQL> " + sql);
+//				winston.log("verbose", "SQL> " + sql);
 				var record;
 				if (dbType == "PostGres") {
 					record=recordSet.rows;
@@ -1623,14 +1624,14 @@ REFERENCE (from shapefile) {
 							str=value.wkt;
 						}
 						if (str) {
-//								console.error("str: " + JSON.stringify(str).substring(0, 200));
+//								winston.log("verbose", "str: " + JSON.stringify(str).substring(0, 200));
 							str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 	
 						}
 						else {
 							str="";
 						}							
 						var buf=value.geolevel_id + "," + value.areaid + "," + value.zoomlevel + ',"' + str + '"';
-//							console.error("buf[" + (i+1) + "/" + rowsAffected + "]: " + JSON.stringify(buf).substring(0, 200));
+//							winston.log("verbose", "buf[" + (i+1) + "/" + rowsAffected + "]: " + JSON.stringify(buf).substring(0, 200));
 						buf+="\r\n";
 						
 						function mssqlTileGeometryCallback2(err) {
@@ -1652,7 +1653,7 @@ REFERENCE (from shapefile) {
 					}, // End of mssqlTileGeometrySeries
 					function tmssqlTileGeometryEnd(err) { //  Callback				
 						csvStream.end();
-						console.error("Geometry rows processed: " + rowsAffected);
+						winston.log("verbose", "Geometry rows processed: " + rowsAffected);
 						record=undefined;
 						geometryProcessingCallback(err, geographyTable, geographyTableDescription, xmlFileDir, tileProcessingCallback); // Call tileProcessing
 					} // End of tmssqlTileGeometryEnd()		

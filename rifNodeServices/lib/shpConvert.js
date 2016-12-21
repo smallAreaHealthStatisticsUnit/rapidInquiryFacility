@@ -1764,6 +1764,13 @@ This error in actually originating from the error handler function
 					}
 				}
 				
+				var extraDesc = {
+					GID: 		"Unique geographic identifier",
+					AREAID: 					response.file_list[ngeolevels[i].i].areaID_desc,
+					AREANAME: 					response.file_list[ngeolevels[i].i].areaName_desc,
+					AREA_KM2:					"Area in square kilometers",
+					GEOGRAPHIC_CENTROID_WKT:	"Geographic centroid"
+				}
 				for (var j=0; j<response.file_list[ngeolevels[i].i].dbf_fields.length; j++) { // Add extended attributes XML doc
 					var dbfField=response.file_list[ngeolevels[i].i].dbf_fields[j];
 					
@@ -1773,7 +1780,7 @@ This error in actually originating from the error handler function
 					if (xmlConfig.shapeFileList.shapeFiles[i].geolevelName) {
 						var field=xmlConfig.shapeFileList.shapeFiles[i].geolevelName + "_" + dbfField.toUpperCase();
 						xmlConfig.shapeFileList.shapeFiles[i].dbfFieldList[dbfField].description=
-							(response.fields[field] || "No description for: " + field)
+							(response.fields[field] || extraDesc[dbfField.toUpperCase()] || "");
 					}
 					else {
 						msg+="\nERROR: shapefile: " + i + "; geolevel " + ngeolevels[i] + "/" + ngeolevels.length + " key: " + key + " has no geolevelName";

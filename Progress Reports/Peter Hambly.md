@@ -748,14 +748,22 @@ RangeError: Invalid string length
 * Empty database for dataloader (sahsuland_empty);
 * Data loading integration;
 * Rationalize geoDataLoader.xml with parameter and data loader sections, remove duplicates
-* Add remaining geography, geolevels fields
-* Export tiles and geometry tables
 
 #### 12th to 16th December
 
+* Add remaining geography, geolevels fields
+* Export tiles and geometry tables
+* sahsuland_empty improvements, install for KG
+* geoDataLoader.xml support in front end
+* Removal of hard coded table names
+* tile maker - add parameter to vasry number of tiles processed at once (default: 10). This is used to control memory
+
+#### 19th to 23rd December
+
+* Created logger object, got winston to work properly
+
 #### Current TODO list (December):
 
-* geoDataLoader.xml support in front end
 * Standard test configurations:
   * SAHSULAND: relocated to Utah: reprojected to 1983 North American Projection (EPSG:4269)
   * DOGGERLAND: relocated to 54°20'0"N 5°42'59"E on the Dogger Bank. This is the site of wreck of SMS Blucher. 
@@ -852,7 +860,7 @@ Note: no bounding box (bbox) in tiles.
 2. New study state "S" - Smoothed; new method: setStudyState(study_id, state) {…}
 2. New study status table: t_rif40_study_status(username, study_id, study_state, creation_date, ith_update, message); ith_update is auto increment
    and updateable view rif40_study_status of the users own studies
-3. Separate test/build in makefile
+3. Separate test/build in makefile; remove Node dependency
 4. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
   
 ### Park
