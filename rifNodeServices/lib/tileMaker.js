@@ -1543,7 +1543,7 @@ REFERENCE (from shapefile) {
 		}
 		var value=dataLoader[parameter];
 
-		winston.log("verbose", "PArameter: " + parameter + '="' + value + '"')
+		winston.log("verbose", "Parameter: " + parameter + '="' + value + '"')
 		if (value == undefined) {
 			dbErrorHandler(new Error("Unable to get dataLoder parameter: " + parameter + "; dataLoder object: " + JSON.stringify(dataLoader, null, 2)), 
 				undefined /* SQL */);

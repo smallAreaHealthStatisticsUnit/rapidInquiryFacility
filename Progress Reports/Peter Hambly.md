@@ -760,6 +760,8 @@ RangeError: Invalid string length
 
 #### 19th to 23rd December
 
+* Created logger object, got winston to work properly
+
 #### Current TODO list (December):
 
 * Standard test configurations:

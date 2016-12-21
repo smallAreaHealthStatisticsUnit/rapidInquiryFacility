@@ -43,14 +43,21 @@
 // Author:
 //
 // Peter Hambly, SAHSU
+
+require('magic-globals'); // For file and line information. Does not work from Event queues
 	
-const Winston=require('winston');
+const Winston=require('winston'),
+	  path=require('path');
 	
 /*
  * Function: 	Logger()
  * Parameters:	loggerParams object, e.g. see default below 
  * Returns:		Nothing
  * Description:	Setup winston logging. Memory and file logs are verbose by default, and write to progName.log
+ *				Beware that winston is NOT inherited for performance reasons, i.e the internal winston object is prefixed by winston
+ *				e.g. the memory messages array is:
+ *
+ *				var messages = winston.winston.transports.memory.writeOutput
  */		
 function Logger(loggerParams) {
 	if (loggerParams == undefined) {
@@ -98,15 +105,27 @@ Logger.prototype = { // Add methods
 		 * Description:	Calls winston.log
 		 */	
 		log: function() {
+			var calling_function = arguments.callee.caller.name || '(anonymous)';
+			// Get file information from magic-globals: __stack
+			var file=path.basename(__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0]);
+			var line=__stack[2].getLineNumber();
+	
 			if (arguments.length > 1) {
 				var args = Array.prototype.slice.call(arguments);
 				var logType=args.shift();
-				var format=args.shift();
-				if (args.length == 0) {
-					this.winston.log(logType, format);
+				var trace;
+				if (logType == 'info' && this.winston.level == 'info') {
+					trace=""
 				}
 				else {
-					this.winston.log(logType, format, ...args); // ES2015 way
+					trace="[" + file + ":" + line+ ":" + calling_function + "()]";
+				}
+				var format=args.shift();
+				if (args.length == 0) {
+					this.winston.log(logType, trace + format);
+				}
+				else {
+					this.winston.log(logType, trace + format, ...args); // ES2015 way
 				}
 			}
 			else {
@@ -120,24 +139,53 @@ Logger.prototype = { // Add methods
 		 * Description:	Calls log then winston.log
 		 */	
 		verbose: function() {
+			var calling_function = arguments.callee.caller.name || '(anonymous)';
+			// Get file information from magic-globals: __stack
+			var file=path.basename(__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0]);
+			var line=__stack[2].getLineNumber();
+			var trace="[" + file + ":" + line+ ":" + calling_function + "()]";
+	
 			var args = Array.prototype.slice.call(arguments);
 			var format=args.shift();
 			this.log('verbose', format, args);
 		},
 		info: function() {
+			var calling_function = arguments.callee.caller.name || '(anonymous)';
+			// Get file information from magic-globals: __stack
+			var file=path.basename(__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0]);
+			var line=__stack[2].getLineNumber();
+			var trace;
+			if (this.winston.level == 'info') {
+				trace=""
+			}
+			else {
+				trace="[" + file + ":" + line+ ":" + calling_function + "()]";
+			}	
 			var args = Array.prototype.slice.call(arguments);
 			var format=args.shift();
-			this.log('info', format, args);
+			this.log('info', trace + format, args);
 		},
 		error: function() {
+			var calling_function = arguments.callee.caller.name || '(anonymous)';
+			// Get file information from magic-globals: __stack
+			var file=path.basename(__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0]);
+			var line=__stack[2].getLineNumber();
+			var trace="[" + file + ":" + line+ ":" + calling_function + "()]";
+	
 			var args = Array.prototype.slice.call(arguments);
 			var format=args.shift();
-			this.log('error', format, args);
+			this.log('error', trace + format, args);
 		},
 		debug: function() {
+			var trace="[" + file + ":" + line+ ":" + calling_function + "()]";
+			var calling_function = arguments.callee.caller.name || '(anonymous)';
+			// Get file information from magic-globals: __stack
+			var file=path.basename(__stack[2].getFileName().split('/').slice(-1)[0].split('.').slice(0)[0]);
+			var line=__stack[2].getLineNumber();
+	
 			var args = Array.prototype.slice.call(arguments);
 			var format=args.shift();
-			this.log('debug', format, args);
+			this.log('debug', trace + format, args);
 		}
 }
 module.exports.Logger = Logger;

@@ -168,6 +168,7 @@ function main() {
 
 	if (argv.help) return optimist.showHelp();
 
+	
 	var LoggerParams = {
 		progName:			'mssqlTileMaker',
 		debugLevel: 		'info',
@@ -178,7 +179,7 @@ function main() {
 		LoggerParams.debugLevel='verbose';
 		LoggerParams.memoryFileDebug='verbose';
 	}
-	else if (argv.verbose == 2) {
+	else if (argv.verbose >= 2) {
 		process.env.DEBUG=true;	
 		LoggerParams.debugLevel='debug';
 		LoggerParams.memoryFileDebug='debug';
@@ -321,7 +322,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 		else {			
 // Call pgTileMaker()...
 
-			winston.log("info", 'Connected to Postgres using: ' + conString + "; log level: " + winston.level);	
+			winston.log("info", 'Connected to Postgres using: ' + conString + "; log level: " + winston.winston.level);	
 			tileMaker.dbTileMaker(p_pg, client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, blocks, winston);
 		} // End of else connected OK 
 	}); // End of connect		

@@ -180,7 +180,7 @@ function main() {
 		LoggerParams.debugLevel='verbose';
 		LoggerParams.memoryFileDebug='verbose';
 	}
-	else if (argv.verbose == 2) {
+	else if (argv.verbose >= 2) {
 		process.env.DEBUG=true;	
 		LoggerParams.debugLevel='debug';
 		LoggerParams.memoryFileDebug='debug';
