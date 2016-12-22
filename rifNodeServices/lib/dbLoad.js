@@ -1714,7 +1714,10 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		commitTransaction(sqlArray, dbType);
 		
 		analyzeTables();
-		
+
+//
+// Write SQL statements to file
+//		
 		for (var i=0; i<sqlArray.length; i++) {
 			if (sqlArray[i].sql == undefined && sqlArray[i].nonsql == undefined) { // Comment			
 				dbStream.write("\n--\n-- " + sqlArray[i].comment + "\n--\n");
@@ -1733,8 +1736,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			}
 		}
 	} // End of addSQLStatements()
-
-
+	
 	/*
 	 * Function: 	addSQLLoadStatements()
 	 * Parameters:	Database stream, format file stream, CSV files object, srid (spatial reference identifier), 
@@ -1742,7 +1744,9 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	 * Description:	Add SQL statements for RIF database load
 	 */		
 	var addSQLLoadStatements=function addSQLLoadStatements(dbStream, csvFiles, srid, dbType) {
-
+		
+		var sqlArray=[]; // Re-initialise
+	
 		beginTransaction(sqlArray, dbType);
 
 //		createHierarchyTable();
@@ -1750,6 +1754,27 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 //		createTilesTables();
 		
 		commitTransaction(sqlArray, dbType);
+		
+//
+// Write SQL statements to file
+//		
+		for (var i=0; i<sqlArray.length; i++) {
+			if (sqlArray[i].sql == undefined && sqlArray[i].nonsql == undefined) { // Comment			
+				dbStream.write("\n--\n-- " + sqlArray[i].comment + "\n--\n");
+			}
+			else if (sqlArray[i].sql != undefined && dbType == "PostGres") {				
+				dbStream.write("\n-- SQL statement " + i + ": " + sqlArray[i].comment + " >>>\n" + sqlArray[i].sql + ";\n");
+			}
+			else if (sqlArray[i].sql != undefined && dbType == "MSSQLServer") {				
+				dbStream.write("\n-- SQL statement " + i + ": " + sqlArray[i].comment + " >>>\n" + sqlArray[i].sql + ";\nGO\n");
+			}
+			else if (sqlArray[i].nonsql != undefined && dbType == "PostGres") {				
+				dbStream.write("\n-- PSQL statement " + i + ": " + sqlArray[i].comment + " >>>\n" + sqlArray[i].nonsql + "\n");
+			}
+			else if (sqlArray[i].nonsql != undefined && dbType == "MSSQLServer") {				
+				dbStream.write("\n-- SQLCMD statement " + i + ": " + sqlArray[i].comment + " >>>\n" + sqlArray[i].nonsql + "\n");
+			}
+		}		
 	} // End of addSQLLoadStatements()
 	
 	var pgScript="pg_" + xmlConfig.dataLoader.geographyName + ".sql"
@@ -1781,7 +1806,6 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	var pgLoadStream=createSQLScriptHeader(dir + "/" + pgLoadScript, "PostGres");
 	var mssqlLoadStream=createSQLScriptHeader(dir + "/" + mssqlLoadScript, "MSSQLServer");
 	
-	sqlArray=[]; // Re-initialise
 	addSQLLoadStatements(pgLoadStream, csvFiles, xmlConfig.dataLoader.srid, "PostGres");
 	addSQLLoadStatements(mssqlLoadStream, csvFiles, xmlConfig.dataLoader.srid, "MSSQLServer");
 //	createLoadSqlServerFmtFiles(dir, csvFiles);
