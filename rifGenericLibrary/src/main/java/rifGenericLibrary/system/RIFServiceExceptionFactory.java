@@ -127,6 +127,19 @@ public class RIFServiceExceptionFactory {
 				errorMessage);
 		return rifServiceException;
 	}	
+	
+	
+	public RIFServiceException createFileReadingProblemException() {
+		
+		String errorMessage
+			= RIFGenericLibraryMessages.getMessage(
+				"io.error.generalProblemReadingFile");
+		RIFServiceException rifServiceException
+			= new RIFServiceException(
+				RIFGenericLibraryError.FILE_PARSING_PROBLEM,
+				errorMessage);
+		return rifServiceException;
+	}	
 		
 	public RIFServiceException createFileWritingProblemException(
 		final String fileName) {
