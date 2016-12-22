@@ -1,4 +1,4 @@
-package rifDataLoaderTool.fileFormats;
+package rifDataLoaderTool.fileFormats.revised;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
@@ -72,7 +72,13 @@ import java.io.*;
  *
  */
 
-public final class RIFDataLoaderSettingsWriter {
+public final class DataLoaderToolConfigurationWriter {
+
+	public static void main(String[] args) {
+
+		
+		
+	}
 	
 	// ==========================================
 	// Section Constants
@@ -88,7 +94,7 @@ public final class RIFDataLoaderSettingsWriter {
 	/**
 	 * Instantiates a new RIF job submission xml writer.
 	 */
-	public RIFDataLoaderSettingsWriter() {
+	public DataLoaderToolConfigurationWriter() {
 
 	}
 
@@ -97,22 +103,22 @@ public final class RIFDataLoaderSettingsWriter {
 	// ==========================================
 	public String writeFile(
 		final File file,
-		final DataLoaderToolSettings dataLoaderToolSettings)
+		final DataLoaderToolConfiguration dataLoaderToolConfiguration)
 		throws RIFServiceException {
 			
 		try {
 			FileOutputStream fileOutputStream
 				= new FileOutputStream(file);
 			
-			RIFDataLoaderConfigurationHandler rifDataLoaderConfigurationHandler
-				= new RIFDataLoaderConfigurationHandler();
+			DataLoaderToolConfigurationHandler rifDataLoaderConfigurationHandler
+				= new DataLoaderToolConfigurationHandler();
 			ByteArrayOutputStream outputStream
 				= new ByteArrayOutputStream();
 			XMLCommentInjector commentInjector = new XMLCommentInjector();			
 			rifDataLoaderConfigurationHandler.initialise(
 				fileOutputStream, 
 				commentInjector);
-			rifDataLoaderConfigurationHandler.writeXML(dataLoaderToolSettings);
+			rifDataLoaderConfigurationHandler.writeXML(dataLoaderToolConfiguration);
 			outputStream.flush();
 	    	String result 
 				= new String(outputStream.toByteArray(), "UTF-8");	

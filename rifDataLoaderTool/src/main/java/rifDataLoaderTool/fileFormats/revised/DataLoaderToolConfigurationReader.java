@@ -1,12 +1,18 @@
-package rifDataLoaderTool.fileFormats;
+
+package rifDataLoaderTool.fileFormats.revised;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifGenericLibrary.fileFormats.XMLCommentInjector;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
-import java.io.*;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
+import org.xml.sax.InputSource;
+
+import java.io.*;
+import java.util.ArrayList;
 
 /**
  *
@@ -72,62 +78,111 @@ import java.io.*;
  *
  */
 
-public final class RIFDataLoaderSettingsWriter {
+
+public final class DataLoaderToolConfigurationReader {
 	
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	/**
-	 * Instantiates a new RIF job submission xml writer.
-	 */
-	public RIFDataLoaderSettingsWriter() {
-
-	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	public String writeFile(
-		final File file,
-		final DataLoaderToolSettings dataLoaderToolSettings)
-		throws RIFServiceException {
-			
+	public static void main(String[] args) {
+		
+		DataLoaderToolConfigurationReader reader
+			= new DataLoaderToolConfigurationReader();
+		File file = new File("C://rif_scratch//test_data_loader_tool.xml");
 		try {
-			FileOutputStream fileOutputStream
-				= new FileOutputStream(file);
+			reader.readFile(file);			
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+		}
+	}
+// ==========================================
+// Section Constants
+// ==========================================
+
+// ==========================================
+// Section Properties
+// ==========================================
+	private DataLoaderToolConfigurationHandler dataLoaderToolConfigurationHandler;
+	
+// ==========================================
+// Section Construction
+// ==========================================
+    /**
+     * Instantiates a new RIF job submission xml reader.
+     */
+	public DataLoaderToolConfigurationReader() {
+		dataLoaderToolConfigurationHandler
+			= new DataLoaderToolConfigurationHandler();
+    }
+
+// ==========================================
+// Section Accessors and Mutators
+// ==========================================
+    
+	public DataLoaderToolConfiguration getDataLoaderToolConfiguration() {
+		return dataLoaderToolConfigurationHandler.getDataLoaderToolConfiguration();
+	}
+	
+	/**
+	 * Read file.
+	 *
+	 * @param rifSubmissionFile the rif submission file
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public void readFile(
+		final File rifSubmissionFile) 
+		throws RIFServiceException {
+
+		try {			
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(rifSubmissionFile, dataLoaderToolConfigurationHandler);
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException(rifSubmissionFile.getName());
+		}
+	}
+	
+	public void readFileFromString (
+		final String rifStudySubmissionAsXML) 
+		throws RIFServiceException {
+
+		try {
+			StringReader stringReader = new StringReader(rifStudySubmissionAsXML);
+			InputSource inputSource = new InputSource(stringReader);
 			
-			RIFDataLoaderConfigurationHandler rifDataLoaderConfigurationHandler
-				= new RIFDataLoaderConfigurationHandler();
-			ByteArrayOutputStream outputStream
-				= new ByteArrayOutputStream();
-			XMLCommentInjector commentInjector = new XMLCommentInjector();			
-			rifDataLoaderConfigurationHandler.initialise(
-				fileOutputStream, 
-				commentInjector);
-			rifDataLoaderConfigurationHandler.writeXML(dataLoaderToolSettings);
-			outputStream.flush();
-	    	String result 
-				= new String(outputStream.toByteArray(), "UTF-8");	
-	    	outputStream.close();			
-	    	return result;
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(inputSource, dataLoaderToolConfigurationHandler);
+		}
+		catch(Exception exception) {
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException("");
+		}
+	}			
+
+	public void readFile(
+		final InputStream inputStream) 
+		throws RIFServiceException {
+
+		try {
+
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(
+				inputStream, 
+				dataLoaderToolConfigurationHandler);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
-			throw exceptionFactory.createFileWritingProblemException(
-				file.getAbsolutePath());
+			throw exceptionFactory.createFileReadingProblemException();
 		}
-	}	
-	
+	}			
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -140,4 +195,5 @@ public final class RIFDataLoaderSettingsWriter {
 	// ==========================================
 	// Section Override
 	// ==========================================
+
 }
