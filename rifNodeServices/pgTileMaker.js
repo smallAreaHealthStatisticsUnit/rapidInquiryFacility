@@ -270,7 +270,8 @@ function pg_default(p_var) {
 function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, maxZoomlevel, blocks, tileMakerConfig, winston) {
 	
 	var client1 = null; // Client 1: Master; hard to remove	
-
+	var start = new Date().getTime();
+	
 	var endCallBack = function endCallBack(err) {
 		if (err) {
 			winston.log("error", "Exit due to error: %", err.message, err);
@@ -281,8 +282,10 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 		// Arrays with output and error lines
 		var messages = winston.winston.transports.memory.writeOutput;
 		var errors = winston.winston.transports.memory.errorOutput;
-		
-		winston.log("info", "Exit: OK; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
+
+		var end = new Date().getTime();
+		var elapsedTime=(end - start)/1000; // in S		
+		winston.log("info", "Exit: OK; took: " + elapsedTime + "s; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
 		process.exit(0);
 	}
 	

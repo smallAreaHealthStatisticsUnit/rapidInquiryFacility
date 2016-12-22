@@ -383,7 +383,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 
 	/*
 	 * Function: 	Tile()
-	 * Parameters:	Row object (from SQL query), geojson, topojson module options object, tile array
+	 * Parameters:	Row object (from SQL query of tile intersects), geojson, topojson module options object, tile array
 	 * Returns:		Object
 	 * Description:	Create internal tile object
 	 */	
@@ -1243,8 +1243,8 @@ REFERENCE (from shapefile) {
 								HY104Sql.push("INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\n' +
 										'VALUES (' + data.geolevel_id + ', ' + data.zoomlevel + ', ' + data.x + ', ' + data.y + 
 										", '" + data.tile_id + "', '" + data.optimised_topojson.replace("'", "") + "')");
-//								winston.log("debug", "[" + data.tile_id + "] Caught HY104 ERROR: " + JSON.stringify(err, null, 2) + 
-//									"\nDeferred SQL[" + (HY104Sql.length-1) + "]> " + HY104Sql[(HY104Sql.length-1)]);
+								winston.log("debug", "[" + data.tile_id + "] Caught HY104 ERROR: " + JSON.stringify(err, null, 2) + 
+									"\nDeferred SQL[" + (HY104Sql.length-1) + "]> " + HY104Sql[(HY104Sql.length-1)]);
 								mssqlTileInsertCallback();					
 							}
 							else if (err && err.state != "HY104") {
@@ -1431,9 +1431,9 @@ REFERENCE (from shapefile) {
 		 * Descrioption: Process a block of geolevel/zoomlevel data
 		 */
 		function blockProcessing(sql, zoomlevel, geolevel_id, block, numBlocks, getBlockCallback) {
-//			winston.log("info", "blockProcessing(" + block + "/" + numBlocks + ") geolevel_id: " + 
-//				geolevel_id + "; zoomlevel: " + zoomlevel + 
-//				"\nSQL> " + sql);
+			winston.log("debug", "blockProcessing(" + block + "/" + numBlocks + ") geolevel_id: " + 
+				geolevel_id + "; zoomlevel: " + zoomlevel + 
+				"\nSQL> " + sql);
 			if (dbType == "PostGres") {
 				request=client;
 				query = request.query(sql, [zoomlevel, geolevel_id, block]);
