@@ -173,6 +173,9 @@ public class DataSetConfiguration
 	public WorkflowState currentWorkflowState;
 	private boolean fileHasFieldNamesDefined;
 	private boolean isHint;
+
+	private DataSetConfiguration dependencyDataSetConfiguration;
+	
 	
 	// ==========================================
 	// Section Construction
@@ -186,6 +189,8 @@ public class DataSetConfiguration
 		filePath = "";
 		fileHasFieldNamesDefined = false;
 		isHint = false;
+		
+		dependencyDataSetConfiguration = null;
 	}
 	
 	
@@ -307,12 +312,48 @@ public class DataSetConfiguration
 		
 		destinationDataSetConfiguration.setFieldConfigurations(cloneFieldConfigurations);
 
+		//We don't clone the dependency, we share the same reference across
+		//all the copies.
+		DataSetConfiguration dependencyDataSetConfiguration
+			= sourceDataSetConfiguration.getDependencyDataSetConfiguration();
+		destinationDataSetConfiguration.setDependencyDataSetConfiguration(dependencyDataSetConfiguration);
 	}
+	
+	public static ArrayList<DataSetConfiguration> getDataSetConfigurations(
+		final ArrayList<DataSetConfiguration> dataSetConfigurations, 
+		final RIFSchemaArea filteringRIFSchemaArea) {
 		
+		ArrayList<DataSetConfiguration> results
+			= new ArrayList<DataSetConfiguration>();
+		
+		if (filteringRIFSchemaArea == null) {
+			return results;
+		}
+		
+		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
+			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+			if (rifSchemaArea == filteringRIFSchemaArea) {
+				results.add(dataSetConfiguration);
+			}
+		}
+		
+		return results;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void setDependencyDataSetConfiguration(
+		final DataSetConfiguration dependencyDataSetConfiguration) {
+		
+		this.dependencyDataSetConfiguration = dependencyDataSetConfiguration;
+	}
+		
+	public DataSetConfiguration getDependencyDataSetConfiguration() {
+		return dependencyDataSetConfiguration;
+	}	
+	
 	public boolean isNewRecord() {
 		return isNewRecord;
 	}
