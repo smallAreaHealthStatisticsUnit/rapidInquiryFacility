@@ -11,6 +11,7 @@ import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -86,6 +87,8 @@ final class DataSetConfigurationHandler
 	
 	private boolean isSerialisingHints;
 	
+	private HashMap<String, DataSetConfiguration> dataSetFromDependencyName;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -120,6 +123,8 @@ final class DataSetConfigurationHandler
 			"data_set_configuration",
 			"file_path",
 			filePathComment);
+		
+		dataSetFromDependencyName = new HashMap<String, DataSetConfiguration>();
 	}
 	
 	@Override
@@ -138,11 +143,45 @@ final class DataSetConfigurationHandler
 	public void setIsSerialisingHints(final boolean isSerialisingHints) {
 		this.isSerialisingHints = isSerialisingHints;
 	}
+
+
 	
 	public ArrayList<DataSetConfiguration> getDataSetConfigurations() {
 		return dataSetConfigurations;
 	}
+
 	
+	public ArrayList<DataSetConfiguration> getDataSetConfigurations(
+		final RIFSchemaArea targetRIFSchemaArea) {
+	
+		ArrayList<DataSetConfiguration> results = new ArrayList<DataSetConfiguration>();
+		if (targetRIFSchemaArea == null) {
+			return results;
+		}
+		
+		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
+			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+			if (rifSchemaArea == targetRIFSchemaArea) {
+				results.add(dataSetConfiguration);
+			}
+		}
+		
+		return results;
+	}
+	
+	
+	private void resolveDependencies() {
+		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
+			String displayName = dataSetConfiguration.getDisplayName();
+			DataSetConfiguration dependentDataSetConfiguration
+				= dataSetFromDependencyName.get(displayName);
+			if (dependentDataSetConfiguration != null) {
+				//This data set dependends on the current data set
+				dependentDataSetConfiguration.setDependencyDataSetConfiguration(dataSetConfiguration);
+			}
+		}
+	}
+
 	public void writeXML(
 		final ArrayList<DataSetConfiguration> dataSetConfigurations) 
 		throws IOException {
@@ -196,7 +235,17 @@ final class DataSetConfigurationHandler
 				= dataSetConfiguration.getFieldConfigurations();
 			dataSetFieldConfigurationHandler.writeXML(fieldConfigurations);
 			
-			xmlUtility.writeRecordEndTag(getSingularRecordName());			
+			xmlUtility.writeRecordEndTag(getSingularRecordName());
+			
+			DataSetConfiguration dependencyDataSetConfiguration
+				= dataSetConfiguration.getDependencyDataSetConfiguration();
+			
+			if (dependencyDataSetConfiguration != null) {
+				xmlUtility.writeField(
+					getSingularRecordName(), 
+					"dependency", 
+					dependencyDataSetConfiguration.getDisplayName());
+			}
 		}
 		
 		xmlUtility.writeRecordEndTag(getPluralRecordName());
@@ -257,6 +306,7 @@ final class DataSetConfigurationHandler
 		throws SAXException {
 
 		if (isPluralRecordName(qualifiedName)) {
+			resolveDependencies();		
 			deactivate();
 		}
 		else if (isSingularRecordName(qualifiedName) == true) {
@@ -308,7 +358,10 @@ final class DataSetConfigurationHandler
 		else if (equalsFieldName("current_workflow_state", qualifiedName)) {
 			WorkflowState workflowState = WorkflowState.getWorkflowStateFromCode(getCurrentFieldValue());
 			currentDataSetConfiguration.setCurrentWorkflowState(workflowState);
-		}
+		}		
+		else if (equalsFieldName("dependency", qualifiedName)) {
+			dataSetFromDependencyName.put(getCurrentFieldValue(), currentDataSetConfiguration);
+		}		
 		else {
 			assert false;
 		}		
