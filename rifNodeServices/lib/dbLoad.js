@@ -403,6 +403,98 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		}
 		
 	} // End of createHierarchyTable()
+
+	/*
+	 * Function: 	createGeometryTable(sqlArray, dbType)
+	 * Parameters:	None
+	 * Description:	Create geometry tables 
+	 *				SQL statements
+	 */			
+	function createGeometryTable(sqlArray, dbType) {
+		var sqlStmt;	
+		
+		sqlArray.push(new Sql("Create geometry table"));		
+		
+		if (dbType == "PostGres") { // Partition Postgres
+			var sqlStmt=new Sql("Drop geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+				getSqlFromFile("drop_table_cascade.sql", dbType, 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* Table name */
+					), sqlArray, dbType); 
+		}
+		else if (dbType == "MSSQLServer") {// MS SQL Server
+			var sqlStmt=new Sql("Drop geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+				getSqlFromFile("drop_table.sql", dbType, 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* Table name */
+					), sqlArray, dbType); 
+		}
+		
+		var sqlStmt=new Sql("Create geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+			getSqlFromFile("create_geometry_table.sql", 
+				undefined /* Common */, 
+				"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
+			sqlArray, dbType); 
+				
+		var sqlStmt=new Sql("Add geom geometry column",
+			getSqlFromFile("add_geometry_column2.sql", dbType, 
+				"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
+				'geom' 															/* 2: column name; e.g. geographic_centroid */,
+				4326															/* 3: Column SRID; e.g. 4326 */,
+				'MULTIPOLYGON' 													/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
+				sqlArray, dbType);
+		if (dbType == "MSSQLServer") { // Add bounding box for implement PostGIS && operator
+			var sqlStmt=new Sql("Add bbox geometry column",
+			getSqlFromFile("add_geometry_column2.sql", dbType, 
+				"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
+				'bbox' 															/* 2: column name; e.g. geographic_centroid */,
+				4326															/* 3: Column SRID; e.g. 4326 */,
+				'POLYGON' 														/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
+				sqlArray, dbType);
+			var sqlStmt=new Sql("Comment geometry table column",
+				getSqlFromFile("comment_column.sql", 
+					dbType, 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), /* Geometry table name */
+					'bbox'														/* Column name */,
+					'Bounding box'												/* Comment */), 
+				sqlArray, dbType);
+		}
+		
+		var sqlStmt=new Sql("Comment geometry table",
+			getSqlFromFile("comment_table.sql", 
+				dbType, 
+				"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
+				"All geolevels geometry combined into a single table for a single geography"	/* Comment */), sqlArray, dbType);
+				
+		var fieldArray = ['geolevel_id', 'zoomlevel', 'areaid', 'geom'];
+		var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.',
+			'Zoom level: 0 to maxoomlevel (11). Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
+			'Area ID.',
+			'Geometry data in SRID 4326 (WGS84).'];
+		for (var l=0; l< fieldArray.length; l++) {		
+			var sqlStmt=new Sql("Comment geometry table column",
+				getSqlFromFile("comment_column.sql", 
+					dbType, 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Geometry table name */
+					fieldArray[l]														/* Column name */,
+					fieldDescArray[l]													/* Comment */), 
+				sqlArray, dbType);
+		}	
+
+		if (dbType == "PostGres") { // Partition Postgres
+			var sqlStmt=new Sql("Create partitioned tables and insert function for geometry table; comment partitioned tables and columns",
+				getSqlFromFile("partition_geometry_table1.sql", 
+					dbType, 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+					xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */), 
+				sqlArray, dbType);			
+
+			var sqlStmt=new Sql("Partition geometry table: insert trigger",
+				getSqlFromFile("partition_trigger.sql", 
+					dbType, 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
+				sqlArray, dbType);						
+		}
+		
+	} // End of createGeometryTable()
 		
 	/*
 	 * Function: 	addSQLStatements()
@@ -1515,97 +1607,16 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					), sqlArray, dbType);		
 					
 		} // End of createTilesTables()
-		
+
 		/*
-		 * Function: 	createGeometryTables()
+		 * Function: 	insertGeometryTable()
 		 * Parameters:	None
-		 * Description:	Create geometry tables 
+		 * Description:	Insert geometry table 
 		 *				SQL statements
 		 */			
-		function createGeometryTables() {
-			var sqlStmt;	
-			
-			sqlArray.push(new Sql("Create geometry tables"));		
-			
-			if (dbType == "PostGres") { // Partition Postgres
-				var sqlStmt=new Sql("Drop geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
-					getSqlFromFile("drop_table_cascade.sql", dbType, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* Table name */
-						), sqlArray, dbType); 
-			}
-			else if (dbType == "MSSQLServer") {// MS SQL Server
-				var sqlStmt=new Sql("Drop geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
-					getSqlFromFile("drop_table.sql", dbType, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* Table name */
-						), sqlArray, dbType); 
-			}
-			
-			var sqlStmt=new Sql("Create geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
-				getSqlFromFile("create_geometry_table.sql", 
-					undefined /* Common */, 
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
-				sqlArray, dbType); 
-					
-			var sqlStmt=new Sql("Add geom geometry column",
-				getSqlFromFile("add_geometry_column2.sql", dbType, 
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
-					'geom' 															/* 2: column name; e.g. geographic_centroid */,
-					4326															/* 3: Column SRID; e.g. 4326 */,
-					'MULTIPOLYGON' 													/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
-					sqlArray, dbType);
-			if (dbType == "MSSQLServer") { // Add bounding box for implement PostGIS && operator
- 				var sqlStmt=new Sql("Add bbox geometry column",
-				getSqlFromFile("add_geometry_column2.sql", dbType, 
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
-					'bbox' 															/* 2: column name; e.g. geographic_centroid */,
-					4326															/* 3: Column SRID; e.g. 4326 */,
-					'POLYGON' 														/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
-					sqlArray, dbType);
-				var sqlStmt=new Sql("Comment geometry table column",
-					getSqlFromFile("comment_column.sql", 
-						dbType, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), /* Geometry table name */
-						'bbox'														/* Column name */,
-						'Bounding box'												/* Comment */), 
-					sqlArray, dbType);
-			}
-			
-			var sqlStmt=new Sql("Comment geometry table",
-				getSqlFromFile("comment_table.sql", 
-					dbType, 
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
-					"All geolevels geometry combined into a single table for a single geography"	/* Comment */), sqlArray, dbType);
-					
-			var fieldArray = ['geolevel_id', 'zoomlevel', 'areaid', 'geom'];
-			var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.',
-				'Zoom level: 0 to maxoomlevel (11). Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
-				'Area ID.',
-				'Geometry data in SRID 4326 (WGS84).'];
-			for (var l=0; l< fieldArray.length; l++) {		
-				var sqlStmt=new Sql("Comment geometry table column",
-					getSqlFromFile("comment_column.sql", 
-						dbType, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Geometry table name */
-						fieldArray[l]														/* Column name */,
-						fieldDescArray[l]													/* Comment */), 
-					sqlArray, dbType);
-			}	
-
-			if (dbType == "PostGres") { // Partition Postgres
-				var sqlStmt=new Sql("Create partitioned tables and insert function for geometry table; comment partitioned tables and columns",
-					getSqlFromFile("partition_geometry_table1.sql", 
-						dbType, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
-						xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */), 
-					sqlArray, dbType);			
-
-				var sqlStmt=new Sql("Partition geometry table: insert trigger",
-					getSqlFromFile("partition_trigger.sql", 
-						dbType, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
-					sqlArray, dbType);						
-			}
-			
+		function insertGeometryTable() {		
+		
+			sqlArray.push(new Sql("Insert geometry table"));
 			var sqlFrag=undefined;
 			for (var i=0; i<csvFiles.length; i++) { // Main file process loop				
 				for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
@@ -1699,7 +1710,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Geometry table */), 
 				sqlArray, dbType);
 				
-		} // End of createGeometryTables()
+		} // End of insertGeometryTable()
 /*
 psql -d sahsuland_dev -U peter -w -e -f pg_cb_2014_us_500k.sql
 sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
@@ -1727,9 +1738,10 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		createGeolevelsTable();
 		createGeolevelsLookupTables();
 		createHierarchyTable(sqlArray, dbType);
-		insertHierarchyTable()
-		createGeometryTables();
-		createTilesTables();
+		insertHierarchyTable();
+		createGeometryTable(sqlArray, dbType);
+		insertGeometryTable();
+		createTilesTables(sqlArray, dbType);
 		
 		commitTransaction(sqlArray, dbType);
 		
@@ -1765,6 +1777,75 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	 */		
 	var addSQLLoadStatements=function addSQLLoadStatements(dbStream, csvFiles, srid, dbType) {
 		
+		/*
+		 * Function: 	loadHierarchyTable()
+		 * Parameters:	None
+		 * Description:	Load hierarchy table SQL statements
+		 */	
+		var loadHierarchyTable=function loadHierarchyTable() {
+			sqlArray.push(new Sql("Load hierarchy table"));
+		} // End of loadHierarchyTable()
+		
+		/*
+		 * Function: 	loadGeometryTable()
+		 * Parameters:	None
+		 * Description:	Load geometry table SQL statements
+		 */			
+		var loadGeometryTable=function loadGeometryTable() {
+			sqlArray.push(new Sql("Load geometry table"));
+			
+			if (dbType == "PostGres") { // Partition Postgres
+				var sqlStmt=new Sql("Add primary key, index and cluster (convert to index organized table)",
+					getSqlFromFile("partition_geometry_table2.sql", 
+						dbType, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+						xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */), 
+					sqlArray, dbType);	
+			}		
+			else if (dbType == "MSSQLServer") { 
+			
+				sqlArray.push(new Sql("No partitioning on SQL Server as it requires an Enterprise license; which"));
+				sqlArray.push(new Sql("means you have to do it yourself using the generated scripts as a start.")); // Comment
+					
+				// Add primary key, index and cluster (convert to index organized table)
+				var sqlStmt=new Sql("Add primary key",
+					getSqlFromFile("add_primary_key.sql", 
+						undefined /* Common */, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */,
+						"geolevel_id, areaid, zoomlevel"									/* Primary key */), 
+					sqlArray, dbType);	
+				var sqlStmt=new Sql("Create spatial index on geom",
+					getSqlFromFile("create_spatial_geometry_index.sql", 
+						dbType, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_gix"	/* Index name */, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* Table name */, 
+						"geom"																	/* Geometry field name */,
+						csvFiles[0].bbox[0]														/* 4: Xmin (4326); e.g. -179.13729006727 */,
+						csvFiles[0].bbox[1]														/* 5: Ymin (4326); e.g. -14.3737802873213 */, 
+						csvFiles[0].bbox[2]														/* 6: Xmax (4326); e.g.  179.773803959804 */,
+						csvFiles[0].bbox[3]														/* 7: Ymax (4326); e.g. 71.352561 */), 
+					sqlArray, dbType);	
+					
+				var sqlStmt=new Sql("Create spatial index on bbox",
+					getSqlFromFile("create_spatial_geometry_index.sql", 
+						dbType, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_gix2"	/* Index name */, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* Table name */, 
+						"bbox"																	/* Geometry field name */,
+						csvFiles[0].bbox[0]														/* 4: Xmin (4326); e.g. -179.13729006727 */,
+						csvFiles[0].bbox[1]														/* 5: Ymin (4326); e.g. -14.3737802873213 */, 
+						csvFiles[0].bbox[2]														/* 6: Xmax (4326); e.g.  179.773803959804 */,
+						csvFiles[0].bbox[3]														/* 7: Ymax (4326); e.g. 71.352561 */), 
+					sqlArray, dbType);	
+					
+				var sqlStmt=new Sql("Analyze table",
+					getSqlFromFile("analyze_table.sql", 
+						dbType, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
+					sqlArray, dbType);	
+			}			
+		} // End of loadGeometryTable()
+		
 		var sqlArray=[]; // Re-initialise
 	
 		var sqlStmt=new Sql("RIF initialisation", 
@@ -1774,10 +1855,11 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		beginTransaction(sqlArray, dbType);
 
 		createHierarchyTable(sqlArray, dbType);
-//		loadHierarchyTable();
+		loadHierarchyTable();
 //		createGeolevelsLookupTables();
-//		createGeometryTables();
-//		createTilesTables();
+		createGeometryTable(sqlArray, dbType);
+		loadGeometryTable();
+//		createTilesTables(sqlArray, dbType);
 		
 		commitTransaction(sqlArray, dbType);
 		
