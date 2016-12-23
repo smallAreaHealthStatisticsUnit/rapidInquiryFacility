@@ -1794,6 +1794,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		var loadGeometryTable=function loadGeometryTable() {
 			sqlArray.push(new Sql("Load geometry table"));
 			
+			// Table: pg_geometry_USA_2014.csv
+			
 			if (dbType == "PostGres") { // Partition Postgres
 				var sqlStmt=new Sql("Add primary key, index and cluster (convert to index organized table)",
 					getSqlFromFile("partition_geometry_table2.sql", 
@@ -1845,6 +1847,16 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					sqlArray, dbType);	
 			}			
 		} // End of loadGeometryTable()
+
+		/*
+		 * Function: 	loadTilesTables()
+		 * Parameters:	None
+		 * Description:	Load tiles table SQL statements
+		 */			
+		var loadTilesTables=function loadTilesTables() {
+			sqlArray.push(new Sql("Load tiles table"));
+		// Tables: t_tiles_<geometry>.csv
+		} // End of loadTilesTables()
 		
 		var sqlArray=[]; // Re-initialise
 	
@@ -1860,6 +1872,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		createGeometryTable(sqlArray, dbType);
 		loadGeometryTable();
 //		createTilesTables(sqlArray, dbType);
+//		loadTilesTables();
 		
 		commitTransaction(sqlArray, dbType);
 		

@@ -760,7 +760,8 @@ RangeError: Invalid string length
 
 #### 19th to 23rd December
 
-* Created logger object, got winston to work properly
+* Created logger object, got winston to work properly; added file/line/function, overall timing
+* Refactor dbLoad.js for production load script
 
 #### Current TODO list (December):
 
