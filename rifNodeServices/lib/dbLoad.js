@@ -332,6 +332,77 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		sqlStmt.dbType=dbType;
 		sqlArray.push(sqlStmt);
 	} // End of commitTransaction()		
+			
+	/*
+	 * Function: 	createHierarchyTable(sqlArray, dbType)
+	 * Parameters:	None
+	 * Description:	Create hierarchy table: SQL statements
+	 */	 
+	function createHierarchyTable(sqlArray, dbType) {
+		sqlArray.push(new Sql("Hierarchy table"));	
+		
+		var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+			getSqlFromFile("drop_table.sql", dbType, "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
+			sqlArray, dbType); 
+		
+		var sqlStmt=new Sql("Create table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+		sqlStmt.sql="CREATE TABLE hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + " (\n";
+		var pkField=undefined;
+		for (var i=0; i<csvFiles.length; i++) {	
+			if (i == 0) {
+				sqlStmt.sql+="	" + csvFiles[i].tableName + "	VARCHAR(100)  NOT NULL";
+			}
+			else {
+				sqlStmt.sql+=",\n	" + csvFiles[i].tableName + "	VARCHAR(100)  NOT NULL";
+			}
+		
+			if (csvFiles[i].geolevel == csvFiles.length && pkField == undefined) {
+				pkField=csvFiles[i].tableName;
+				response.message+="\nDetected hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() +
+					" primary key: " + pkField + "; file: " + i + "; geolevel: " + csvFiles[i].geolevel;
+			}
+		}
+		sqlStmt.sql+=")";
+		sqlArray.push(sqlStmt);
+		
+		var sqlStmt=new Sql("Add primary key hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+			getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
+				"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* Table name */, 
+				pkField 														/* Primary key */), 
+			sqlArray, dbType); 	
+				
+		for (var i=0; i<csvFiles.length; i++) {	// Add non unique indexes
+			if (csvFiles[i].geolevel != csvFiles.length && csvFiles[i].geolevel != 1) {	
+				var sqlStmt=new Sql("Add index key hierarchy_" + 
+					xmlConfig.dataLoader.geographyName.toLowerCase() + "_" + csvFiles[i].tableName, 
+					getSqlFromFile("create_index.sql", undefined /* Common */, 
+						"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_" + csvFiles[i].tableName	/* Index name */,
+						"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() 								/* Table name */, 
+						csvFiles[i].tableName 																		/* Index column(s) */
+					), 
+					sqlArray, dbType); 
+			}
+		}
+		
+		var sqlStmt=new Sql("Comment table: hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
+			getSqlFromFile("comment_table.sql", 
+				dbType, 
+				"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
+				"Hierarchy lookup table for " + response.fields["geographyDesc"]		/* Comment */), 
+			sqlArray, dbType);	
+		
+		for (var i=0; i<csvFiles.length; i++) {	
+			var sqlStmt=new Sql("Comment column: hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
+				"." + csvFiles[i].tableName,
+				getSqlFromFile("comment_column.sql", 
+					dbType, 
+					"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
+					csvFiles[i].tableName,												/* Column name */
+					"Hierarchy lookup for " + csvFiles[i].geolevelDescription			/* Comment */), 
+				sqlArray, dbType);	
+		}
+		
+	} // End of createHierarchyTable()
 		
 	/*
 	 * Function: 	addSQLStatements()
@@ -429,65 +500,13 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 					sqlArray, dbType);						
 			}				
 		} // End of createGeolevelsLookupTables()
-		
+
 		/*
-		 * Function: 	analyzeTables()
+		 * Function: 	insertHierarchyTable()
 		 * Parameters:	None
-		 * Description:	Create hierarchy table: SQL statements
+		 * Description:	Insert hierarchy table: SQL statements
 		 */	 
-		function createHierarchyTable() {
-			sqlArray.push(new Sql("Hierarchy table"));	
-			
-			var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
-				getSqlFromFile("drop_table.sql", dbType, "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
-				sqlArray, dbType); 
-			
-			var sqlStmt=new Sql("Create table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase());
-			sqlStmt.sql="CREATE TABLE hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + " (\n";
-			var pkField=undefined;
-			for (var i=0; i<csvFiles.length; i++) {	
-				if (i == 0) {
-					sqlStmt.sql+="	" + csvFiles[i].tableName + "	VARCHAR(100)  NOT NULL";
-				}
-				else {
-					sqlStmt.sql+=",\n	" + csvFiles[i].tableName + "	VARCHAR(100)  NOT NULL";
-				}
-			
-				if (csvFiles[i].geolevel == csvFiles.length && pkField == undefined) {
-					pkField=csvFiles[i].tableName;
-					response.message+="\nDetected hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() +
-						" primary key: " + pkField + "; file: " + i + "; geolevel: " + csvFiles[i].geolevel;
-				}
-			}
-			sqlStmt.sql+=")";
-			sqlArray.push(sqlStmt);
-			
-			var sqlStmt=new Sql("Add primary key hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
-				getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
-					"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* Table name */, 
-					pkField 														/* Primary key */), 
-				sqlArray, dbType); 	
-					
-			for (var i=0; i<csvFiles.length; i++) {	// Add non unique indexes
-				if (csvFiles[i].geolevel != csvFiles.length && csvFiles[i].geolevel != 1) {	
-					var sqlStmt=new Sql("Add index key hierarchy_" + 
-						xmlConfig.dataLoader.geographyName.toLowerCase() + "_" + csvFiles[i].tableName, 
-						getSqlFromFile("create_index.sql", undefined /* Common */, 
-							"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_" + csvFiles[i].tableName	/* Index name */,
-							"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() 								/* Table name */, 
-							csvFiles[i].tableName 																		/* Index column(s) */
-						), 
-						sqlArray, dbType); 
-				}
-			}
-			
-			var sqlStmt=new Sql("Comment table: hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
-				getSqlFromFile("comment_table.sql", 
-					dbType, 
-					"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
-					"Hierarchy lookup table for " + response.fields["geographyDesc"]	/* Comment */), 
-				sqlArray, dbType);
-			
+		function insertHierarchyTable() {	
 			var sqlStmt=new Sql("Create function check_hierarchy_" + 
 					xmlConfig.dataLoader.geographyName.toLowerCase(),		
 				getSqlFromFile("check_hierarchy_function.sql", 
@@ -500,8 +519,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 				getSqlFromFile("check_hierarchy_function_comment.sql", 
 					dbType, 
 					"check_hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Function name */), 
-				sqlArray, dbType);			
-			
+				sqlArray, dbType);		
+				
 			var sqlStmt=new Sql("Insert into hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
 				getSqlFromFile("insert_hierarchy.sql", 
 					dbType, 
@@ -516,7 +535,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 					xmlConfig.dataLoader.geographyName.toUpperCase() 		/* 1: Geography */), 
 				sqlArray, dbType);
 			
-		} // End of createHierarchyTable()
+		} // End of insertHierarchyTable()
 		
 		/*
 		 * Function: 	createGeolevelsTable()
@@ -1707,7 +1726,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		createGeographyTable();
 		createGeolevelsTable();
 		createGeolevelsLookupTables();
-		createHierarchyTable();
+		createHierarchyTable(sqlArray, dbType);
+		insertHierarchyTable()
 		createGeometryTables();
 		createTilesTables();
 		
@@ -1747,9 +1767,15 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		
 		var sqlArray=[]; // Re-initialise
 	
+		var sqlStmt=new Sql("RIF initialisation", 
+			getSqlFromFile("rif_startup.sql", dbType), 
+			sqlArray, dbType); 
+			
 		beginTransaction(sqlArray, dbType);
 
-//		createHierarchyTable();
+		createHierarchyTable(sqlArray, dbType);
+//		loadHierarchyTable();
+//		createGeolevelsLookupTables();
 //		createGeometryTables();
 //		createTilesTables();
 		
