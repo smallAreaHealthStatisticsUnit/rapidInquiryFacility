@@ -863,9 +863,8 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 
 //		console.error(msg);
 		var statusText = JSON.stringify(response.status);// Convert response.status to JSON 
-
-		fs.writeFile(response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"] + ".new", 
-			statusText, 
+		var newFileName=response.fields["diagnosticFileDir"] + "/" + response.fields["statusFileName"] + ".new";
+		fs.writeFile(newFileName, statusText, 
 			/*
 			 * Function:	addStatusWriteDiagnosticFile()
 			 * Parameters:	Error object
@@ -874,6 +873,10 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 			 */
 			function addStatusWriteDiagnosticFile(err) {
 				
+				if (err) {
+					console.error("addStatusWriteDiagnosticFile(): WARNING: Unable to write status: " + statusText + 
+						" to file: " + newFileName + "; error: " + err.message);
+				}
 				scopeChecker(__file, __line, {
 					serverLog: serverLog,
 					response: response,
@@ -896,6 +899,10 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 						 * Description: rename callback
 						 */
 						function addStatusWriteDiagnosticFileRename() {
+							if (err) {
+								console.error("addStatusWriteDiagnosticFile(): WARNING: Unable to rename status: " + statusText + 
+									" to file: " + newFileName + "; error: " + err.message);
+							}	
 							
 							scopeChecker(__file, __line, {
 								serverLog: serverLog,
