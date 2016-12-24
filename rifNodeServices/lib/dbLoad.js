@@ -242,10 +242,11 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 	
 	/*
 	 * Function: 	createSQLScriptHeader()
-	 * Parameters:	Script file name (full path), dbbase type as a string ("PostGres" or "MSSQLServer")
+	 * Parameters:	Script file name (full path), dbbase type as a string ("PostGres" or "MSSQLServer"), 
+	 *				header script name (dbType specific)
 	 * Description:	Create header for SQL script
 	 */		
-	var createSQLScriptHeader=function createSQLScriptHeader(scriptName, dbType) {
+	var createSQLScriptHeader=function createSQLScriptHeader(scriptName, dbType, headerScriptName) {
 		var newStream;
 		try {
 			newStream = fs.createWriteStream(scriptName, { flags : 'w' });	
@@ -262,7 +263,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			baseScriptName=path.basename(scriptName);
 			var header=getSqlFromFile("header.sql", undefined /* Common header */);
 			newStream.write(header);
-			header=getSqlFromFile("header.sql", dbType, 
+			header=getSqlFromFile(headerScriptName, dbType, 
 				baseScriptName	/* file name */);
 			newStream.write(header);
 		}
@@ -896,16 +897,16 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 		function createGeographyTable() {
 			sqlArray.push(new Sql("Geography meta data"));	
 		
-			sqlArray.push(new Sql("Drop depedent objects: tiles view and generate_series() [MS SQL Server only]"));			
+			sqlArray.push(new Sql("Drop dependent objects: tiles view and generate_series() [MS SQL Server only]"));			
 			if (dbType == "MSSQLServer") { 
 				var sqlStmt=new Sql("Drop generate_series() function", 
 					getSqlFromFile("drop_generate_series.sql", dbType), sqlArray, dbType); 
 			}	
-			var sqlStmt=new Sql("Drop depedent object - view " + "tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+			var sqlStmt=new Sql("Drop dependent object - view " + "tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("drop_view.sql", dbType, 
 					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* View name */), sqlArray, dbType); 
 					
-			var sqlStmt=new Sql("Drop depedent object - FK table geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase(), // Drop first - FK
+			var sqlStmt=new Sql("Drop dependent object - FK table geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase(), // Drop first - FK
 				getSqlFromFile("drop_table.sql", dbType, "geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
 				sqlArray, dbType); 
 				
@@ -913,6 +914,11 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				getSqlFromFile("drop_table.sql", dbType, 
 					"geography_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray, dbType); 
 	
+			if (dbType == "MSSQLServer") { 			
+				var sqlStmt=new Sql("Create generate_series() function", 
+					getSqlFromFile("generate_series.sql", dbType), sqlArray, dbType); 
+			}	
+			
 			var sqlStmt=new Sql("Create geography meta data table",
 				getSqlFromFile("create_geography_table.sql", undefined /* Common */, 
 					"geography_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray, dbType);
@@ -1369,11 +1375,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				getSqlFromFile("tile2longitude.sql", dbType), sqlArray, dbType); 
 			var sqlStmt=new Sql("Create function: tile2latitude.sql", 
 				getSqlFromFile("tile2latitude.sql", dbType), sqlArray, dbType); 
-
-			if (dbType == "MSSQLServer") { 			
-				var sqlStmt=new Sql("Create generate_series() function", 
-					getSqlFromFile("generate_series.sql", dbType), sqlArray, dbType); 
-			}				
+			
 			sqlArray.push(new Sql("Create tile limits table"));
 		
 			if (dbType == "MSSQLServer") { 	
@@ -1947,8 +1949,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	var pgScript="pg_" + xmlConfig.dataLoader.geographyName + ".sql"
 	var mssqlScript="mssql_" + xmlConfig.dataLoader.geographyName + ".sql"
 	
-	var pgStream=createSQLScriptHeader(dir + "/" + pgScript, "PostGres");
-	var mssqlStream=createSQLScriptHeader(dir + "/" + mssqlScript, "MSSQLServer");
+	var pgStream=createSQLScriptHeader(dir + "/" + pgScript, "PostGres", "header.sql");
+	var mssqlStream=createSQLScriptHeader(dir + "/" + mssqlScript, "MSSQLServer", "header.sql");
 	
 	addSQLStatements(pgStream, csvFiles, xmlConfig.dataLoader.srid, "PostGres");
 	addSQLStatements(mssqlStream, csvFiles, xmlConfig.dataLoader.srid, "MSSQLServer");
@@ -1970,8 +1972,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	var pgLoadScript="rif_pg_" + xmlConfig.dataLoader.geographyName + ".sql"
 	var mssqlLoadScript="rif_mssql_" + xmlConfig.dataLoader.geographyName + ".sql"
 	
-	var pgLoadStream=createSQLScriptHeader(dir + "/" + pgLoadScript, "PostGres");
-	var mssqlLoadStream=createSQLScriptHeader(dir + "/" + mssqlLoadScript, "MSSQLServer");
+	var pgLoadStream=createSQLScriptHeader(dir + "/" + pgLoadScript, "PostGres", "rif40_header.sql");
+	var mssqlLoadStream=createSQLScriptHeader(dir + "/" + mssqlLoadScript, "MSSQLServer", "rif40_header.sql");
 	
 	addSQLLoadStatements(pgLoadStream, csvFiles, xmlConfig.dataLoader.srid, "PostGres");
 	addSQLLoadStatements(mssqlLoadStream, csvFiles, xmlConfig.dataLoader.srid, "MSSQLServer");
