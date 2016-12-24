@@ -2,8 +2,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Tile maker - Create processed CSV tables created 
--- from shapefiles simplification
+-- Rapid Enquiry Facility (RIF) - Tile maker
 --
 -- Copyright:
 --

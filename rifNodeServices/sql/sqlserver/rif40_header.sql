@@ -1,0 +1,13 @@
+--
+-- MS SQL Server specific parameters
+--
+-- Usage: sqlcmd -U <username> -E -b -m-1 -e -r1 -i %1 -v pwd="%cd%"
+-- Connect flags if required: -E -S<myServerinstanceName>
+--
+-- You must set the current schema if you cannot write to the default schema!
+-- You need create privilege for the various object and the bulkadmin role
+--
+-- USE <my database>;
+--
+SET QUOTED_IDENTIFIER ON;
+-- SET STATISTICS TIME ON;
