@@ -628,6 +628,57 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 
 	} // End of createTilesTables()	
 
+
+	/*
+	 * Function: 	createGeolevelsLookupTables()
+	 * Parameters:	sqlArray, dbType
+	 * Description:	Create geoelvels lookup tables: SQL statements
+	 */	 
+	function createGeolevelsLookupTables(sqlArray, dbType) {
+		sqlArray.push(new Sql("Create Geolevels lookup tables"));
+		for (var i=0; i<csvFiles.length; i++) {									
+			var sqlStmt=new Sql("Drop table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
+				getSqlFromFile("drop_table.sql", dbType, 
+					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() /* Table name */), 
+				sqlArray, dbType); 
+			
+			var sqlStmt=new Sql("Create table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
+				getSqlFromFile("create_lookup_table.sql", undefined /* Common */, (
+					xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase().toLowerCase() /* Table name */,
+					xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()		/* shapefile table name */ ), 
+				sqlArray, dbType); 			 	
+			
+			var sqlStmt=new Sql("Add primary key " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
+				getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
+					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() 	/* Table name */,
+					xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()		/* shapefile table name - Primary key */), 
+				sqlArray, dbType); 
+
+			var sqlStmt=new Sql("Comment table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),
+				getSqlFromFile("comment_table.sql", 
+					dbType, 
+					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
+					"Lookup table for " + csvFiles[i].geolevelDescription 			/* Comment */), 
+				sqlArray, dbType);		
+	
+			var sqlStmt=new Sql("Comment " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() + " columns",
+				getSqlFromFile("comment_column.sql", 
+					dbType, 
+					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
+					xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()	/* Column name */,
+					"Area ID field"													/* Comment */), 
+				sqlArray, dbType);	
+				
+			var sqlStmt=new Sql("Comment " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() + " columns",
+				getSqlFromFile("comment_column.sql", 
+					dbType, 
+					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
+					"areaname"														/* Column name */,
+					"Area Name field"												/* Comment */), 
+				sqlArray, dbType);		
+		}				
+	} // End of createGeolevelsLookupTables()
+		
 //
 // End of common SQL
 //
@@ -642,7 +693,6 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 	 */		
 	var addSQLStatements=function addSQLStatements(dbStream, csvFiles, srid, dbType) {
 		
-
 		/*
 		 * Function: 	analyzeTables()
 		 * Parameters:	None
@@ -676,60 +726,20 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 		} // End of analyzeTables()		 
 
 		/*
-		 * Function: 	createGeolevelsLookupTables()
+		 * Function: 	insertGeolevelsLookupTables()
 		 * Parameters:	None
-		 * Description:	Create geoelvels lookup tables: SQL statements
+		 * Description:	Insert geoelvels lookup tables: SQL statements
 		 */	 
-		function createGeolevelsLookupTables() {
-			sqlArray.push(new Sql("Geolevels lookup tables"));
-			for (var i=0; i<csvFiles.length; i++) {									
-				var sqlStmt=new Sql("Drop table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
-					getSqlFromFile("drop_table.sql", dbType, 
-						(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() /* Table name */), 
-					sqlArray, dbType); 
-				
-				var sqlStmt=new Sql("Create table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
-					getSqlFromFile("create_lookup_table.sql", undefined /* Common */, (
-						xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase().toLowerCase() /* Table name */,
-						xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()		/* shapefile table name */ ), 
-					sqlArray, dbType); 			
-				
+		function insertGeolevelsLookupTables() {
+			sqlArray.push(new Sql("Insert Geolevels lookup tables"));
+			for (var i=0; i<csvFiles.length; i++) {			
 				var sqlStmt=new Sql("Insert table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
 					getSqlFromFile("insert_lookup_table.sql", undefined /* Common */, 
 						(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() /* Table name */,
 						xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()		/* shapefile table name */ ), 
-					sqlArray, dbType); 	
-				
-				var sqlStmt=new Sql("Add primary key " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
-					getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
-						(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() 	/* Table name */,
-						xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()		/* shapefile table name - Primary key */), 
-					sqlArray, dbType); 
-
-				var sqlStmt=new Sql("Comment table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),
-					getSqlFromFile("comment_table.sql", 
-						dbType, 
-						(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
-						"Lookup table for " + csvFiles[i].geolevelDescription 			/* Comment */), 
-					sqlArray, dbType);		
-		
-				var sqlStmt=new Sql("Comment " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() + " columns",
-					getSqlFromFile("comment_column.sql", 
-						dbType, 
-						(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
-						xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()	/* Column name */,
-						"Area ID field"													/* Comment */), 
-					sqlArray, dbType);	
-					
-				var sqlStmt=new Sql("Comment " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() + " columns",
-					getSqlFromFile("comment_column.sql", 
-						dbType, 
-						(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
-						"areaname"														/* Column name */,
-						"Area Name field"												/* Comment */), 
-					sqlArray, dbType);						
+					sqlArray, dbType);					
 			}				
-		} // End of createGeolevelsLookupTables()
+		} // End of insertGeolevelsLookupTables()
 
 		/*
 		 * Function: 	insertHierarchyTable()
@@ -1755,7 +1765,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		
 		createGeographyTable();
 		createGeolevelsTable();
-		createGeolevelsLookupTables();
+		createGeolevelsLookupTables(sqlArray, dbType);
+		insertGeolevelsLookupTables();
 		createHierarchyTable(sqlArray, dbType);
 		insertHierarchyTable();
 		createGeometryTable(sqlArray, dbType);
@@ -1800,6 +1811,16 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	 * Description:	Add SQL statements for RIF database load
 	 */		
 	var addSQLLoadStatements=function addSQLLoadStatements(dbStream, csvFiles, srid, dbType) {
+
+		/*
+		 * Function: 	loadGeolevelsLookupTables()
+		 * Parameters:	None
+		 * Description:	Load geolevel lookup tables SQL statements
+		 */			
+		var loadGeolevelsLookupTables=function loadGeolevelsLookupTables() {
+			sqlArray.push(new Sql("Load geolevel lookup tables"));
+		// Tables: lookup_<geometry>.csv
+		} // End of loadGeolevelsLookupTables()
 		
 		/*
 		 * Function: 	loadHierarchyTable()
@@ -1871,7 +1892,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					sqlArray, dbType);	
 			}			
 		} // End of loadGeometryTable()
-
+		
 		/*
 		 * Function: 	loadTilesTables()
 		 * Parameters:	None
@@ -1890,9 +1911,10 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			
 		beginTransaction(sqlArray, dbType);
 
+		createGeolevelsLookupTables(sqlArray, dbType);
+		loadGeolevelsLookupTables();
 		createHierarchyTable(sqlArray, dbType);
 		loadHierarchyTable();
-//		createGeolevelsLookupTables();
 		createGeometryTable(sqlArray, dbType);
 		loadGeometryTable();
 		createTilesTables(sqlArray, dbType);
