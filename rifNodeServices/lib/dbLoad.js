@@ -306,7 +306,11 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			sqlArray.push(this);	
 		}			
 	}
-		
+
+//
+// Start of common SQL
+//
+	
 	/*
 	 * Function: 	beginTransaction()
 	 * Parameters:	sqlArray, dbType (PostGres or MSSQLServer)
@@ -335,7 +339,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			
 	/*
 	 * Function: 	createHierarchyTable(sqlArray, dbType)
-	 * Parameters:	None
+	 * Parameters:	sqlArray, dbType
 	 * Description:	Create hierarchy table: SQL statements
 	 */	 
 	function createHierarchyTable(sqlArray, dbType) {
@@ -406,7 +410,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 
 	/*
 	 * Function: 	createGeometryTable(sqlArray, dbType)
-	 * Parameters:	None
+	 * Parameters:	sqlArray, dbType
 	 * Description:	Create geometry tables 
 	 *				SQL statements
 	 */			
@@ -495,6 +499,140 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		}
 		
 	} // End of createGeometryTable()
+
+	/*
+	 * Function: 	createTilesTables()
+	 * Parameters:	sqlArray, dbType
+	 * Description:	Create tiles tables 
+	 *				SQL statements
+	 */			
+	function createTilesTables(sqlArray, dbType) {
+		var sqlStmt;			
+		
+		var singleBoundaryGeolevelTable;
+		for (var i=0; i<csvFiles.length; i++) {	
+			if (csvFiles[i].geolevel == 1) {
+				singleBoundaryGeolevelTable=csvFiles[i].tableName;
+			}
+		}
+/*
+SAME:
+
+Postgres:
+
+geography    | min_geolevel_id | max_geolevel_id | zoomlevel | area_xmin  | area_xmax | area_ymin  | area_ymax | y_mintile | y_maxtile | x_mintile | x_maxtile
+-----------------+-----------------+-----------------+-----------+------------+-----------+------------+-----------+-----------+-----------+-----------+-----------
+cb_2014_us_500k |               1 |               3 |        11 | -179.14734 | 179.77847 | -14.552549 | 71.352561 |      1107 |       435 |         4 |      2046
+
+SQL Server
+
+geography          min_geolevel_id max_geolevel_id zoomlevel   Xmin       Xmax       Ymin       Ymax       Y_mintile   Y_maxtile   X_mintile   X_maxtile
+tile
+------------------ --------------- --------------- ----------- ---------- ---------- ---------- ---------- ----------- ----------- ----------- ---------
+cb_2014_us_500k                  1               3          11 -179.14734  179.77847  -14.55255   71.35256        1107         435           4      2046
+*/
+		var sqlStmt=new Sql("Tile check", 
+			getSqlFromFile("tile_check.sql", dbType,
+				"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Lowest resolution geolevels table */,
+				xmlConfig.dataLoader.geographyName 								/* 2: Geography */,
+				xmlConfig.dataLoader.minZoomlevel							 	/* 3: min_zoomlevel */,
+				xmlConfig.dataLoader.maxZoomlevel 								/* 4: max_zoomlevel */,
+				singleBoundaryGeolevelTable										/* 5: Geolevel id = 1 geometry table */
+			), sqlArray, dbType); 
+
+		sqlArray.push(new Sql("Create tiles tables"));
+		
+		var sqlStmt=new Sql("Drop table " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+			getSqlFromFile("drop_table.sql", dbType, 
+				"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray, dbType); 
+				
+		if (dbType == "MSSQLServer") { 
+			var sqlStmt=new Sql("Create tiles table", 
+				getSqlFromFile("create_tiles_table.sql", 
+					undefined /* Common */,	
+					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Tiles table name */,
+					"NVARCHAR(MAX)"													/* 2: JSON datatype (Postgres JSON, SQL server NVARCHAR(MAX)) */
+					), sqlArray, dbType); 
+		}
+		else if (dbType == "PostGres") { // No JSON in SQL Server
+			var sqlStmt=new Sql("Create tiles table", 
+				getSqlFromFile("create_tiles_table.sql", 
+					undefined /* Common */,	
+					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Tiles table name */,
+					"JSON"														/* 2: JSON datatype (Postgres JSON, SQL server Text) */
+					), sqlArray, dbType); 
+		}			
+		
+		var sqlStmt=new Sql("Comment tiles table",
+			getSqlFromFile("comment_table.sql", 
+				dbType, 
+				"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
+				"Maptiles for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11"	/* Comment */), 
+			sqlArray, dbType);
+				
+		var fieldArray = ['geolevel_id', 'zoomlevel', 'x', 'y', 'optimised_geojson', 'optimised_topojson', 'tile_id'];
+		var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.',
+			'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
+			'X tile number. From 0 to (2**<zoomlevel>)-1',
+			'Y tile number. From 0 to (2**<zoomlevel>)-1',
+			'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.',
+			'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.',
+			'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>'];
+		for (var l=0; l< fieldArray.length; l++) {		
+			var sqlStmt=new Sql("Comment tiles table column",
+				getSqlFromFile("comment_column.sql", 
+					dbType, 
+					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
+					fieldArray[l]														/* Column name */,
+					fieldDescArray[l]													/* Comment */), 
+				sqlArray, dbType);
+		}				
+
+		var sqlStmt=new Sql("Create tiles view", 
+			getSqlFromFile("create_tiles_view.sql", 
+				dbType,	
+				"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* 1: Tiles view name */,
+				"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase()   /* 2: geolevel table; e.g. geolevels_cb_2014_us_county_500k */,
+				"NOT_USED"															/* 3: JSON datatype (Postgres JSON, SQL server VARCHAR) */,
+				"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 4: tiles table; e.g. t_tiles_cb_2014_us_500k */,
+				xmlConfig.dataLoader.maxZoomlevel								/* 5: Max zoomlevel; e.g. 11 */
+				), sqlArray, dbType); 		
+
+		var sqlStmt=new Sql("Comment tiles view",
+			getSqlFromFile("comment_view.sql", 
+				dbType, 
+				"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
+				"Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!"	/* Comment */), 
+			sqlArray, dbType);
+				
+		var fieldArray = ['geography', 'geolevel_id', 'zoomlevel', 'x', 'y', 'optimised_geojson', 'optimised_topojson', 'tile_id', 'geolevel_name', 'no_area_ids'];
+		var fieldDescArray = ['Geography',
+			'ID for ordering (1=lowest resolution). Up to 99 supported.',
+			'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
+			'X tile number. From 0 to (2**<zoomlevel>)-1',
+			'Y tile number. From 0 to (2**<zoomlevel>)-1',
+			'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.',
+			'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.',
+			'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>',
+			'Name of geolevel. This will be a column name in the numerator/denominator tables',
+			'Tile contains no area_ids flag: 0/1'];
+		for (var l=0; l< fieldArray.length; l++) {		
+			var sqlStmt=new Sql("Comment tiles view column",
+				getSqlFromFile("comment_view_column.sql", 
+					dbType, 
+					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
+					fieldArray[l]														/* Column name */,
+					fieldDescArray[l]													/* Comment */), 
+				sqlArray, dbType);
+		}				
+
+	} // End of createTilesTables()	
+
+//
+// End of common SQL
+//
+// Load specific SQL
+//
 		
 	/*
 	 * Function: 	addSQLStatements()
@@ -1204,14 +1342,13 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		} // End of createShapeFileTable()
 
 		/*
-		 * Function: 	createTilesTables()
+		 * Function: 	insertTilesTables()
 		 * Parameters:	None
 		 * Description:	Create tiles tables 
 		 *				SQL statements
 		 */			
-		function createTilesTables() {
-			var sqlStmt;	
-			
+		function insertTilesTables() {
+			var sqlStmt;			
 			sqlArray.push(new Sql("Create tiles functions"));
 
 			var sqlStmt=new Sql("Create function: longitude2tile.sql", 
@@ -1221,130 +1358,12 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			var sqlStmt=new Sql("Create function: tile2longitude.sql", 
 				getSqlFromFile("tile2longitude.sql", dbType), sqlArray, dbType); 
 			var sqlStmt=new Sql("Create function: tile2latitude.sql", 
-				getSqlFromFile("tile2latitude.sql", dbType), sqlArray, dbType); 			
-			
-			var singleBoundaryGeolevelTable;
-			for (var i=0; i<csvFiles.length; i++) {	
-				if (csvFiles[i].geolevel == 1) {
-					singleBoundaryGeolevelTable=csvFiles[i].tableName;
-				}
-			}
-/*
-SAME:
-
-Postgres:
-
-    geography    | min_geolevel_id | max_geolevel_id | zoomlevel | area_xmin  | area_xmax | area_ymin  | area_ymax | y_mintile | y_maxtile | x_mintile | x_maxtile
------------------+-----------------+-----------------+-----------+------------+-----------+------------+-----------+-----------+-----------+-----------+-----------
- cb_2014_us_500k |               1 |               3 |        11 | -179.14734 | 179.77847 | -14.552549 | 71.352561 |      1107 |       435 |         4 |      2046
-
-SQL Server
- 
-geography          min_geolevel_id max_geolevel_id zoomlevel   Xmin       Xmax       Ymin       Ymax       Y_mintile   Y_maxtile   X_mintile   X_maxtile
-tile
------------------- --------------- --------------- ----------- ---------- ---------- ---------- ---------- ----------- ----------- ----------- ---------
-cb_2014_us_500k                  1               3          11 -179.14734  179.77847  -14.55255   71.35256        1107         435           4      2046
- */
-			var sqlStmt=new Sql("Tile check", 
-				getSqlFromFile("tile_check.sql", dbType,
-					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Lowest resolution geolevels table */,
-					xmlConfig.dataLoader.geographyName 								/* 2: Geography */,
-					xmlConfig.dataLoader.minZoomlevel							 	/* 3: min_zoomlevel */,
-					xmlConfig.dataLoader.maxZoomlevel 								/* 4: max_zoomlevel */,
-					singleBoundaryGeolevelTable										/* 5: Geolevel id = 1 geometry table */
-				), sqlArray, dbType); 
-
-			sqlArray.push(new Sql("Create tiles tables"));
-			
-			var sqlStmt=new Sql("Drop table " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
-				getSqlFromFile("drop_table.sql", dbType, 
-					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray, dbType); 
-					
-			if (dbType == "MSSQLServer") { 
-				var sqlStmt=new Sql("Create tiles table", 
-					getSqlFromFile("create_tiles_table.sql", 
-						undefined /* Common */,	
-						"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Tiles table name */,
-						"NVARCHAR(MAX)"													/* 2: JSON datatype (Postgres JSON, SQL server NVARCHAR(MAX)) */
-						), sqlArray, dbType); 
-			}
-			else if (dbType == "PostGres") { // No JSON in SQL Server
-				var sqlStmt=new Sql("Create tiles table", 
-					getSqlFromFile("create_tiles_table.sql", 
-						undefined /* Common */,	
-						"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Tiles table name */,
-						"JSON"														/* 2: JSON datatype (Postgres JSON, SQL server Text) */
-						), sqlArray, dbType); 
-			}			
-			
-			var sqlStmt=new Sql("Comment tiles table",
-				getSqlFromFile("comment_table.sql", 
-					dbType, 
-					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
-					"Maptiles for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11"	/* Comment */), 
-				sqlArray, dbType);
-					
-			var fieldArray = ['geolevel_id', 'zoomlevel', 'x', 'y', 'optimised_geojson', 'optimised_topojson', 'tile_id'];
-			var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.',
-				'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
-				'X tile number. From 0 to (2**<zoomlevel>)-1',
-				'Y tile number. From 0 to (2**<zoomlevel>)-1',
-				'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.',
-				'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.',
-				'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>'];
-			for (var l=0; l< fieldArray.length; l++) {		
-				var sqlStmt=new Sql("Comment tiles table column",
-					getSqlFromFile("comment_column.sql", 
-						dbType, 
-						"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
-						fieldArray[l]														/* Column name */,
-						fieldDescArray[l]													/* Comment */), 
-					sqlArray, dbType);
-			}				
+				getSqlFromFile("tile2latitude.sql", dbType), sqlArray, dbType); 
 
 			if (dbType == "MSSQLServer") { 			
 				var sqlStmt=new Sql("Create generate_series() function", 
 					getSqlFromFile("generate_series.sql", dbType), sqlArray, dbType); 
-			}
-
-			var sqlStmt=new Sql("Create tiles view", 
-				getSqlFromFile("create_tiles_view.sql", 
-					dbType,	
-					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* 1: Tiles view name */,
-					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase()   /* 2: geolevel table; e.g. geolevels_cb_2014_us_county_500k */,
-					"NOT_USED"															/* 3: JSON datatype (Postgres JSON, SQL server VARCHAR) */,
-					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 4: tiles table; e.g. t_tiles_cb_2014_us_500k */,
-					xmlConfig.dataLoader.maxZoomlevel								/* 5: Max zoomlevel; e.g. 11 */
-					), sqlArray, dbType); 		
-
-			var sqlStmt=new Sql("Comment tiles view",
-				getSqlFromFile("comment_view.sql", 
-					dbType, 
-					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
-					"Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!"	/* Comment */), 
-				sqlArray, dbType);
-					
-			var fieldArray = ['geography', 'geolevel_id', 'zoomlevel', 'x', 'y', 'optimised_geojson', 'optimised_topojson', 'tile_id', 'geolevel_name', 'no_area_ids'];
-			var fieldDescArray = ['Geography',
-				'ID for ordering (1=lowest resolution). Up to 99 supported.',
-				'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
-				'X tile number. From 0 to (2**<zoomlevel>)-1',
-				'Y tile number. From 0 to (2**<zoomlevel>)-1',
-				'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.',
-				'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.',
-				'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>',
-				'Name of geolevel. This will be a column name in the numerator/denominator tables',
-				'Tile contains no area_ids flag: 0/1'];
-			for (var l=0; l< fieldArray.length; l++) {		
-				var sqlStmt=new Sql("Comment tiles view column",
-					getSqlFromFile("comment_view_column.sql", 
-						dbType, 
-						"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
-						fieldArray[l]														/* Column name */,
-						fieldDescArray[l]													/* Comment */), 
-					sqlArray, dbType);
 			}				
-
 			sqlArray.push(new Sql("Create tile limits table"));
 		
 			if (dbType == "MSSQLServer") { 	
@@ -1742,6 +1761,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		createGeometryTable(sqlArray, dbType);
 		insertGeometryTable();
 		createTilesTables(sqlArray, dbType);
+		insertTilesTables();
 		
 		commitTransaction(sqlArray, dbType);
 		
@@ -1769,6 +1789,10 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		}
 	} // End of addSQLStatements()
 	
+//
+// End of load specific SQL
+// Production specific SQL
+//	
 	/*
 	 * Function: 	addSQLLoadStatements()
 	 * Parameters:	Database stream, format file stream, CSV files object, srid (spatial reference identifier), 
@@ -1871,8 +1895,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 //		createGeolevelsLookupTables();
 		createGeometryTable(sqlArray, dbType);
 		loadGeometryTable();
-//		createTilesTables(sqlArray, dbType);
-//		loadTilesTables();
+		createTilesTables(sqlArray, dbType);
+		loadTilesTables();
 		
 		commitTransaction(sqlArray, dbType);
 		
