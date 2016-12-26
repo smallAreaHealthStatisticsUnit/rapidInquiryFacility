@@ -60,18 +60,20 @@ BEGIN
 	FOR i IN 1 .. max_geolevel_id LOOP
 --			
 		stp2:=clock_timestamp();
-		num_rows3:=tileMaker_aggregator_%1(i, 0, l_debug);	
+--		num_rows3:=tileMaker_aggregator_%1(i, 0, l_debug);	
 		etp:=clock_timestamp();
 		took4:=age(etp, stp2);
 --			
-		took:=age(etp, stp);
-		tiles_per_s:=ROUND(num_rows3::NUMERIC/EXTRACT(EPOCH FROM took4)::NUMERIC, 1);
-		RAISE INFO 'Processed % tile for geolevel id %/% zoomlevel: %/% in %s, %s total;% tiles/s', 
-			num_rows3, 
-			i, max_geolevel_id, 0, max_zoomlevel,  
-			ROUND(EXTRACT(EPOCH FROM took4)::NUMERIC, 1), 
-			ROUND(EXTRACT(EPOCH FROM took)::NUMERIC, 1),
-			tiles_per_s;	
+		IF num_rows3 > 0 THEN
+			took:=age(etp, stp);
+			tiles_per_s:=ROUND(num_rows3::NUMERIC/EXTRACT(EPOCH FROM took4)::NUMERIC, 1);
+			RAISE INFO 'Processed % tile for geolevel id %/% zoomlevel: %/% in %s, %s total;% tiles/s', 
+				num_rows3, 
+				i, max_geolevel_id, 0, max_zoomlevel,  
+				ROUND(EXTRACT(EPOCH FROM took4)::NUMERIC, 1), 
+				ROUND(EXTRACT(EPOCH FROM took)::NUMERIC, 1),
+				tiles_per_s;	
+		END IF;
 	END LOOP;
 		
 --

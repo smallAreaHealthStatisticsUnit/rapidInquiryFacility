@@ -45,14 +45,16 @@ BEGIN
 		y,
 		optimised_geojson,
 		optimised_topojson,
-		tile_id)
+		tile_id,
+		areaid_count)
 	SELECT a.geolevel_id,
 		   zoomlevel,
 		   x, 
 		   y,
 		   json_agg(optimised_geojson) AS optimised_geojson,
 		   NULL::JSON AS optimised_topojson,
-		   a.geolevel_id::Text||'_'||b.geolevel_name||'_'||a.zoomlevel||'_'||a.x::Text||'_'||a.y::Text AS tile_id
+		   a.geolevel_id::Text||'_'||b.geolevel_name||'_'||a.zoomlevel||'_'||a.x::Text||'_'||a.y::Text AS tile_id,
+		   COUNT(a.geolevel_id) AS areaid_count
 	  FROM %2 a, %4 b
 	 WHERE a.geolevel_id = b.geolevel_id 
 	   AND a.zoomlevel   = l_zoomlevel

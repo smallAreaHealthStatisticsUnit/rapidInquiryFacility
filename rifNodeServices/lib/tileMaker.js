@@ -497,7 +497,8 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 					collection: this.geojson
 					}, this.topojson_options);
 					
-				this.insertArray=[this.geolevel_id, this.zoomlevel, this.x, this.y, this.tileId, JSON.stringify(this.topojson)];
+				this.insertArray=[this.geolevel_id, this.zoomlevel, this.x, this.y, this.tileId, JSON.stringify(this.topojson), 
+					numFeatures];
 				tileSize=sizeof(this.insertArray);
 				winston.log("verbose", 'Make tile ' + this.id + ': "' + this.tileId + 
 					'", ' +  numFeatures + ' feature(s)' + 
@@ -1169,15 +1170,15 @@ REFERENCE (from shapefile) {
 		 */	
 		function pgTileInsert(expectedRows, pgTileInsertCallback) {
 			var pgInsertSql="INSERT INTO t_tiles_" + geography +
-				 '	(geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\nVALUES ';
+				 '	(geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson, areaid_count)\nVALUES ';
 			var j=1;
 			var insertArray=[];
 			for (var i=0; i<tileArray.length; i++) {
 				if (i>0) {
 					pgInsertSql+=",\n";
 				}
-				pgInsertSql+='($' + j + ',$' + (j+1) + ',$' + (j+2) + ',$' + (j+3) + ',$' + (j+4) + ',$' + (j+5) + ') /* Row ' + i + ' */';
-				j+=6;
+				pgInsertSql+='($' + j + ',$' + (j+1) + ',$' + (j+2) + ',$' + (j+3) + ',$' + (j+4) + ',$' + (j+5) + ',$' + (j+6) + ') /* Row ' + i + ' */';
+				j+=7;
 				insertArray=insertArray.concat(tileArray[i].insertArray);
 			}
 //			winston.log("debug", "INSERT SQL> " + pgInsertSql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
@@ -1209,8 +1210,8 @@ REFERENCE (from shapefile) {
 		 * Description:	Multi row insert in t_tile_<geography> table
 		 */	
 		function mssqlTileInsert(expectedRows, mssqlTileInsertCallback) {
-			var insertSql="INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\n' +
-				 'VALUES (@geolevel_id, @zoomlevel, @x, @y, @tile_id, @optimised_topojson)';
+			var insertSql="INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson, areaid_count)\n' +
+				 'VALUES (@geolevel_id, @zoomlevel, @x, @y, @tile_id, @optimised_topojson, @areaid_count)';
 			var j=0;
 			var HY104Sql = []; // Problem with NVarChar(MAX) and small (<4K) strings; redo as textual sql
 			var request = new dbSql.Request();			
@@ -1227,22 +1228,25 @@ REFERENCE (from shapefile) {
 					request.input('y', dbSql.Int, tileArray[i].insertArray[3]);
 					request.input('tile_id', dbSql.VarChar(200), tileArray[i].insertArray[4]);
 					request.input('optimised_topojson', dbSql.NVarChar(dbSql.MAX), tileArray[i].insertArray[5]);
+					request.input('areaid_count', dbSql.Int, tileArray[i].insertArray[6]);
 					var data={
 						geolevel_id: 		tileArray[i].insertArray[0],
 						zoomlevel: 			tileArray[i].insertArray[1],
 						x: 					tileArray[i].insertArray[2],
 						y: 					tileArray[i].insertArray[3],
 						tile_id: 			tileArray[i].insertArray[4],
-						optimised_topojson: tileArray[i].insertArray[5]
+						optimised_topojson: tileArray[i].insertArray[5],
+						areaid_count: 		tileArray[i].insertArray[6]
 					};					
 					var query=request.query(insertSql, 
 						function mssqlTileInsertSeries(err, recordset, rowCount) {
 							if (err && err.state == "HY104") { // Problem with NVarChar(MAX) and small (<4K) strings; redo as textual sql
 //										winston.log("debug", "[" + data.tile_id + "] INSERT SQL> " + insertSql + "\noptimised_topojson(" + data.optimised_topojson.length + 
 //										"): " + data.optimised_topojson.substring(0, 2500));
-								HY104Sql.push("INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson)\n' +
+								HY104Sql.push("INSERT INTO t_tiles_" + geography + ' (geolevel_id, zoomlevel, x, y, tile_id, optimised_topojson, areaid_count)\n' +
 										'VALUES (' + data.geolevel_id + ', ' + data.zoomlevel + ', ' + data.x + ', ' + data.y + 
-										", '" + data.tile_id + "', '" + data.optimised_topojson.replace("'", "") + "')");
+										", '" + data.tile_id + "', '" + data.optimised_topojson.replace("'", "") +
+										"', " + data.areaid_count + ")");
 								winston.log("debug", "[" + data.tile_id + "] Caught HY104 ERROR: " + JSON.stringify(err, null, 2) + 
 									"\nDeferred SQL[" + (HY104Sql.length-1) + "]> " + HY104Sql[(HY104Sql.length-1)]);
 								mssqlTileInsertCallback();					
@@ -1301,7 +1305,7 @@ REFERENCE (from shapefile) {
 							}, // End of mssqlTileInsert2Series()
 							function mssqlTileInsert2End(err) { //  Callback	
 								if (err) {
-									dbErrorHandler(err, insertSql2, mssqlTileInsertCallback);
+									dbErrorHandler(err, undefined, mssqlTileInsertCallback);
 								}	
 								else {
 									winston.log("debug", "mssqlTileInsert2End() [" + tileArray.length + "]: Inserts OK; " + HY104Sql.length + " HY104 redo inserts");

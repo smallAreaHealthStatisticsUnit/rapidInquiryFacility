@@ -15,5 +15,5 @@ CREATE TABLE %1 (
 	y					INTEGER			NOT NULL,
 	optimised_geojson	%2,
 	optimised_topojson	%2,
-	tile_id				VARCHAR(200)	NOT NULL
-)
+	tile_id				VARCHAR(200)	NOT NULL,
+	areaid_count		INTEGER			NOT NULL)
