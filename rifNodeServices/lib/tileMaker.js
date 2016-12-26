@@ -1110,8 +1110,8 @@ REFERENCE (from shapefile) {
 		
 		// Create CSV file for tiles
 		var fileNoext = "t_tiles_" + geolevelName.toLowerCase();	
-		var csvFileName=xmlFileDir + "/data/" + fileNoext + ".csv";		
-		try {
+		var csvFileName=(xmlFileDir + "/data/" + fileNoext + ".csv");		
+		try { // Create tiles CSV files for each geolevel
 			var csvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
 			winston.log("info", "Creating tile CSV file: " + csvFileName);	
 			csvStream.on('finish', function csvStreamClose() {
@@ -1549,7 +1549,82 @@ REFERENCE (from shapefile) {
 				undefined /* SQL */);
 		}
 		return value;
-	}
+	} // End of getDataLoaderParameter()
+	
+	/*
+	 * Function: 	hierarchyProcessing()
+	 * Parameters:	hierarchy processing callback: geometryProcessing(),
+	 *				Geography table object (dataLoader in XML), XML file directory (original location of XML file)
+	 * Returns:		Nothing
+	 * Description:	Dump hierarchy tsbles to CSV, call hierarchy processing callback: geometryProcessing()
+	 */	
+	 function hierarchyProcessing(hierarchyProcessingCallback, dataLoader, xmlFileDir) {
+		 
+		var geographyName=getDataLoaderParameter(dataLoader, "geographyName");
+		var hierarchyTable=getDataLoaderParameter(dataLoader, "hierarchyTable")||"hierarchy_" + geographyName;
+		hierarchyTable=hierarchyTable.toString().toLowerCase();
+		var csvFileName=xmlFileDir + "/data/" + hierarchyTable + ".csv";
+		var geographyTableDescription=getDataLoaderParameter(dataLoader, "geographyDesc");
+		
+		var request;
+		if (dbType == "PostGres") {
+			request=client;
+		}		
+		else if (dbType == "MSSQLServer") {	
+			request=new dbSql.Request();
+		}
+		var sql="SELECT * FROM " + hierarchyTable;
+		try { // Create CSV file for hierarchy table
+			var hierarchyCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
+			winston.log("info", "Creating hierarchy CSV file: " + csvFileName + 
+				" for " + geographyName + ": " + geographyTableDescription);	
+			hierarchyCsvStream.on('finish', function csvStreamClose() {
+				winston.log("verbose", "hierarchy csvStreamClose(): " + csvFileName);
+			});		
+			hierarchyCsvStream.on('error', function csvStreamError(e) {
+				winston.log("error", "Exception in hierarchy CSV write to file: " + csvFileName, e.message);										
+			});
+		}
+		catch (e) {
+			dbErrorHandler(e, sql);
+		}
+
+		var query=request.query(sql, function(err, recordSet) {
+	
+			if (err) {		
+				dbErrorHandler(err, sql);
+			}
+			else {	
+//				winston.log("verbose", "SQL> " + sql);
+				var record;
+				if (dbType == "PostGres") {
+					record=recordSet.rows;
+				}
+				else if (dbType == "MSSQLServer") {	
+					record=recordSet;
+				}			
+				var rowsAffected=record.length;
+				if (rowsAffected == undefined || rowsAffected == 0) {
+					dbErrorHandler(new Error("No rows returned in hierarchy SELECT"), sql);
+				}
+				var buf=Object.keys(record[0]).join(',').toUpperCase(); // Header
+				buf+="\r\n";
+				for (var i=0; i<record.length; i++) {
+					var keys=Object.keys(record[i]);
+					var values=[];
+					for (var j=0; j<keys.length; j++) {
+						values.push(record[i][keys[j]]);
+					}
+					buf+=values.join(',');
+					buf+="\r\n";
+				}
+				hierarchyCsvStream.write(buf, function hierarchyProcessingWrite(err) {
+					hierarchyCsvStream.end();
+					hierarchyProcessingCallback(err);
+				});
+			}
+		});			
+	} // End of hierarchyProcessing()
 	
 	/*
 	 * Function: 	geometryProcessing()
@@ -1564,6 +1639,7 @@ REFERENCE (from shapefile) {
 		var geographyName=getDataLoaderParameter(dataLoader, "geographyName");
 		var geographyTable="geography_" + geographyName;
 		var geometryTable=getDataLoaderParameter(dataLoader, "geometryTable");
+		geometryTable=geometryTable.toString().toLowerCase();
 		var hierarchyTable=getDataLoaderParameter(dataLoader, "hierarchyTable");
 		var geographyTableDescription=getDataLoaderParameter(dataLoader, "geographyDesc");
 	
@@ -1571,6 +1647,7 @@ REFERENCE (from shapefile) {
 		
 		var l=0;
 		var request;
+		var sql;
 		if (dbType == "PostGres") {
 			csvFileName=xmlFileDir + "/data/pg_" + geometryTable + ".csv";	
 			sql="SELECT geolevel_id, areaid, zoomlevel, ST_AsText(geom) AS wkt FROM " + geometryTable /* geometry table */;
@@ -1581,18 +1658,18 @@ REFERENCE (from shapefile) {
 			sql="SELECT geolevel_id, areaid, zoomlevel, geom.STAsText() AS wkt FROM " + geometryTable /* geometry table */;
 			request=new dbSql.Request();
 		}
-		if (maxZoomlevel && maxZoomlevel != 11) { // Changed from CLI default
+		if (maxZoomlevel && maxZoomlevel > 6 && maxZoomlevel != 11) { // Changed from CLI default
 			sql+=" WHERE zoomlevel <= " + maxZoomlevel;
 		}
 				
-		try { // Create CSV file for geometry
-			var csvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
+		try { // Create CSV file for geometry table
+			var geometryCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
 			winston.log("info", "Creating geometry CSV file: " + csvFileName + " for " + geographyName + ": " + geographyTableDescription);	
-			csvStream.on('finish', function csvStreamClose() {
+			geometryCsvStream.on('finish', function csvStreamClose() {
 				winston.log("verbose", "geometry csvStreamClose(): " + csvFileName);
 			});		
-			csvStream.on('error', function csvStreamError(e) {
-				winston.log("error", "Exception in CSV write to file: " + csvFileName, e.message);										
+			geometryCsvStream.on('error', function csvStreamError(e) {
+				winston.log("error", "Exception in geometry CSV write to file: " + csvFileName, e.message);										
 			});
 		}
 		catch (e) {
@@ -1614,50 +1691,66 @@ REFERENCE (from shapefile) {
 					record=recordSet;
 				}			
 				var rowsAffected=record.length;
-				async.forEachOfSeries(record, 
-					function mssqlTileGeometrySeries(value, i, mssqlTileGeometryCallback) { // Processing code		
-						var str;
-						if (Array.isArray(value.wkt)) {			
-							str=value.wkt.join("");
-						}
-						else {			
-							str=value.wkt;
-						}
-						if (str) {
-//								winston.log("verbose", "str: " + JSON.stringify(str).substring(0, 200));
-							str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 	
+				if (rowsAffected == undefined || rowsAffected == 0) {
+					dbErrorHandler(new Error("No rows returned in Geometry SELECT"), sql);
+				}
+				else {
+					var buf=Object.keys(record[0]).join(',').toUpperCase(); // Header
+					buf+="\r\n";
+					geometryCsvStream.write(buf, function geometryCsvHeaderCallback(err) {
+						if (err) {
+							geometryProcessingCallback(err);
 						}
 						else {
-							str="";
-						}							
-						var buf=value.geolevel_id + "," + value.areaid + "," + value.zoomlevel + ',"' + str + '"';
-//							winston.log("verbose", "buf[" + (i+1) + "/" + rowsAffected + "]: " + JSON.stringify(buf).substring(0, 200));
-						buf+="\r\n";
-						
-						function mssqlTileGeometryCallback2(err) {
-							buf=undefined;
-							value=undefined;
-							mssqlTileGeometryCallback(err);
-						}
-						
-						if (l >= 1000) {
-							l=0;
-							var nextTickFunc = function nextTick() {
-								csvStream.write(buf, mssqlTileGeometryCallback2);
-							}
-							process.nextTick(nextTickFunc);
-						}
-						else {
-							csvStream.write(buf, mssqlTileGeometryCallback2);
-						} 	
-					}, // End of mssqlTileGeometrySeries
-					function tmssqlTileGeometryEnd(err) { //  Callback				
-						csvStream.end();
-						winston.log("verbose", "Geometry rows processed: " + rowsAffected);
-						record=undefined;
-						geometryProcessingCallback(err, geographyTable, geographyTableDescription, xmlFileDir, tileProcessingCallback); // Call tileProcessing
-					} // End of tmssqlTileGeometryEnd()		
-				); // End of async.forEachOfSeries()	
+							async.forEachOfSeries(record, 
+								function mssqlTileGeometrySeries(value, i, mssqlTileGeometryCallback) { // Processing code		
+									var str;
+									if (Array.isArray(value.wkt)) {			
+										str=value.wkt.join("");
+									}
+									else {			
+										str=value.wkt;
+									}
+									if (str) {
+			//								winston.log("verbose", "str: " + JSON.stringify(str).substring(0, 200));
+										str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 	
+									}
+									else {
+										str="";
+									}							
+									var buf=value.geolevel_id + "," + value.areaid + "," + value.zoomlevel + ',"' + str + '"';
+			//							winston.log("verbose", "buf[" + (i+1) + "/" + rowsAffected + "]: " + JSON.stringify(buf).substring(0, 200));
+									buf+="\r\n";
+									
+									function mssqlTileGeometryCallback2(err) {
+										buf=undefined;
+										value=undefined;
+										mssqlTileGeometryCallback(err);
+									}
+									
+									if (l >= 1000) {
+										l=0;
+										var nextTickFunc = function nextTick() {
+											geometryCsvStream.write(buf, mssqlTileGeometryCallback2);
+										}
+										process.nextTick(nextTickFunc);
+									}
+									else {
+										geometryCsvStream.write(buf, mssqlTileGeometryCallback2);
+									} 	
+								}, // End of mssqlTileGeometrySeries
+								function tmssqlTileGeometryEnd(err) { //  Callback				
+									geometryCsvStream.end();
+									winston.log("verbose", "Geometry rows processed: " + rowsAffected);
+									record=undefined;
+									geometryProcessingCallback(err, 
+										geographyTable, geographyTableDescription, 
+										xmlFileDir, tileProcessingCallback); // Call tileProcessing
+								} // End of tmssqlTileGeometryEnd()		
+							); // End of async.forEachOfSeries()
+						}			
+					});	
+				}
 			}
 		});
 	} // End of geometryProcessing()
@@ -1720,10 +1813,20 @@ REFERENCE (from shapefile) {
 	startTransaction(function startTransactionCallback2(err) {
 		
 		addUserToPath(function addUserToPathCallback2(err) {
-			geometryProcessing(tileProcessing, tileMakerConfig.xmlConfig.dataLoader[0], 
-				xmlFileDir, tileIntersectsProcessingGeolevelLoop);
-			});		
-		});
+			var hierarchyProcessingCallback=function hierarchyProcessingCallback(err) {
+				if (err) {
+					dbErrorHandler(err);
+				}
+				else {
+					geometryProcessing(tileProcessing, tileMakerConfig.xmlConfig.dataLoader[0], 
+						xmlFileDir, tileIntersectsProcessingGeolevelLoop);
+				}
+			}
+
+			hierarchyProcessing(hierarchyProcessingCallback, tileMakerConfig.xmlConfig.dataLoader[0], 
+				xmlFileDir);			
+		});			
+	});
 }
 
 module.exports.dbTileMaker = dbTileMaker;

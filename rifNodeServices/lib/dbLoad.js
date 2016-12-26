@@ -1842,6 +1842,25 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			sqlArray.push(new Sql("Load geometry table"));
 			
 			// Table: pg_geometry_USA_2014.csv
+			// Needs to be SQL to psql command (i.e. COPY FROM stdin)
+			
+			var sqlStmt=new Sql("Load geometry table from CSV file");
+			if (dbType == "PostGres") {	
+				sqlStmt.sql="\\copy " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() +
+					" FROM '" + "pg_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
+					".csv' DELIMITER ',' CSV HEADER";
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="BULK INSERT " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
+"FROM '$(pwd)/" + "mssql_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
+"WITH\n" + 
+"(\n" + 
+"	FORMATFILE = '$(pwd)/mssql_" + "_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',		-- Use a format file\n" +
+"	TABLOCK					-- Table lock\n" + 
+")";
+			}
+			sqlStmt.dbType=dbType;
+			sqlArray.push(sqlStmt);
 			
 			if (dbType == "PostGres") { // Partition Postgres
 				var sqlStmt=new Sql("Add primary key, index and cluster (convert to index organized table)",
