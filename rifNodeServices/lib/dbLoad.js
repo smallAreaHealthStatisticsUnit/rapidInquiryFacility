@@ -1844,9 +1844,29 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			// Table: pg_geometry_USA_2014.csv
 			// Needs to be SQL to psql command (i.e. COPY FROM stdin)
 			
+			if (dbType == "PostGres") {	
+				var sqlStmt=new Sql("Add WKT column",
+					getSqlFromFile("add_column.sql", 
+						undefined /* Common */, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+						"WKT"																/* 2: WKT */,
+						"Text"																/* 3: Data type */), 
+					sqlArray, dbType);	
+			}
+			else if (dbType == "MSSQLServer") {		
+				var sqlStmt=new Sql("Add WKT column",
+					getSqlFromFile("add_column.sql", 
+						undefined /* Common */, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+						"WKT"																/* 2: WKT */,
+						"VARCHAR(MAX)"														/* 3: Data type */), 
+					sqlArray, dbType);	
+			}	
+			
 			var sqlStmt=new Sql("Load geometry table from CSV file");
 			if (dbType == "PostGres") {	
-				sqlStmt.sql="\\copy " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() +
+				sqlStmt.sql="\\copy " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
+					"(geolevel_id, areaid, zoomlevel, wkt)" +
 					" FROM '" + "pg_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
 					".csv' DELIMITER ',' CSV HEADER";
 			}
@@ -1861,6 +1881,23 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			}
 			sqlStmt.dbType=dbType;
 			sqlArray.push(sqlStmt);
+
+			if (dbType == "PostGres") {	
+				var sqlStmt=new Sql("Add WKT column",
+					getSqlFromFile("update_geometry.sql", 
+						dbType, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+						4326																/* 2: SRID */), 
+					sqlArray, dbType);	
+			}
+			else if (dbType == "MSSQLServer") {		
+				var sqlStmt=new Sql("Add WKT column",
+					getSqlFromFile("update_geometry.sql", 
+						dbType, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+						4326																/* 2: SRID */), 
+					sqlArray, dbType);	
+			}
 			
 			if (dbType == "PostGres") { // Partition Postgres
 				var sqlStmt=new Sql("Add primary key, index and cluster (convert to index organized table)",
