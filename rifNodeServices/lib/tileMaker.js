@@ -1567,13 +1567,106 @@ REFERENCE (from shapefile) {
 		}
 		return value;
 	} // End of getDataLoaderParameter()
-	
+		
 	/*
-	 * Function: 	hierarchyProcessing()
-	 * Parameters:	hierarchy processing callback: geometryProcessing(),
+	 * Function: 	lookupProcessing()
+	 * Parameters:	lookup processing callback: geometryProcessing(),
 	 *				Geography table object (dataLoader in XML), XML file directory (original location of XML file)
 	 * Returns:		Nothing
-	 * Description:	Dump hierarchy tsbles to CSV, call hierarchy processing callback: geometryProcessing()
+	 * Description:	Dump lookup tsbles to CSV, call lookup processing callback: geometryProcessing()
+	 */	
+	 
+	 function lookupProcessing(lookupProcessingCallback, dataLoader, xmlFileDir) {
+		var geographyName=getDataLoaderParameter(dataLoader, "geographyName");
+		var geoLevel=getDataLoaderParameter(dataLoader, "geoLevel");
+		var geographyTableDescription=getDataLoaderParameter(dataLoader, "geographyDesc");
+		
+		if (geoLevel) {
+			async.forEachOfSeries(geoLevel, 
+				function geoLevelProcessing(value, i, geoLevelCallback) {
+					
+					var lookupTable=getDataLoaderParameter(value, "lookupTable")||"lookup_" + geographyName;
+					lookupTable=lookupTable.toString().toLowerCase();
+					var csvFileName=xmlFileDir + "/data/" + lookupTable + ".csv";
+					
+					var request;
+					if (dbType == "PostGres") {
+						request=client;
+					}		
+					else if (dbType == "MSSQLServer") {	
+						request=new dbSql.Request();
+					}
+					var sql="SELECT * FROM " + lookupTable;
+					try { // Create CSV file for lookup table
+						var lookupCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
+						winston.log("info", "Creating lookup CSV file: " + csvFileName + 
+							" for " + geographyName + ": " + geographyTableDescription);	
+						lookupCsvStream.on('finish', function csvStreamClose() {
+							winston.log("verbose", "lookup csvStreamClose(): " + csvFileName);
+						});		
+						lookupCsvStream.on('error', function csvStreamError(e) {
+							winston.log("error", "Exception in lookup CSV write to file: " + csvFileName, e.message);										
+						});
+					}
+					catch (e) {
+						dbErrorHandler(e, sql);
+					}
+
+					var query=request.query(sql, function(err, recordSet) {
+				
+						if (err) {		
+							dbErrorHandler(err, sql);
+						}
+						else {	
+			//				winston.log("verbose", "SQL> " + sql);
+							var record;
+							if (dbType == "PostGres") {
+								record=recordSet.rows;
+							}
+							else if (dbType == "MSSQLServer") {	
+								record=recordSet;
+							}			
+							var rowsAffected=record.length;
+							if (rowsAffected == undefined || rowsAffected == 0) {
+								dbErrorHandler(new Error("No rows returned in lookup SELECT"), sql);
+							}
+							var buf=Object.keys(record[0]).join(',').toUpperCase(); // Header
+							buf+="\r\n";
+							for (var i=0; i<record.length; i++) {
+								var keys=Object.keys(record[i]);
+								var values=[];
+								for (var j=0; j<keys.length; j++) {
+									values.push(record[i][keys[j]]);
+								}
+								buf+=values.join(',');
+								buf+="\r\n";
+							}
+							lookupCsvStream.write(buf, function lookupProcessingWrite(err) {
+								lookupCsvStream.end();
+								geoLevelCallback(err);
+							});
+						}
+					});						
+				},
+				function geoLevelError(err) {
+					lookupProcessingCallback(err);
+				}
+			); // End of async.forEachOfSeries()	
+			
+		}
+		else {		
+			dbErrorHandler(new Error(""), undefined /*sql */);
+		}
+					
+				 
+	 } // End of lookupProcessing()
+	 
+	/*
+	 * Function: 	hierarchyProcessing()
+	 * Parameters:	hierarchy processing callback: lookupProcessing(),
+	 *				Geography table object (dataLoader in XML), XML file directory (original location of XML file)
+	 * Returns:		Nothing
+	 * Description:	Dump hierarchy tsbles to CSV, call hierarchy processing callback: lookupProcessing()
 	 */	
 	 function hierarchyProcessing(hierarchyProcessingCallback, dataLoader, xmlFileDir) {
 		 
@@ -1835,8 +1928,18 @@ REFERENCE (from shapefile) {
 					dbErrorHandler(err);
 				}
 				else {
-					geometryProcessing(tileProcessing, tileMakerConfig.xmlConfig.dataLoader[0], 
-						xmlFileDir, tileIntersectsProcessingGeolevelLoop);
+					var lookupProcessingCallback=function lookupProcessingCallback(err) {
+						if (err) {
+							dbErrorHandler(err);
+						}
+						else {
+							geometryProcessing(tileProcessing, tileMakerConfig.xmlConfig.dataLoader[0], 
+								xmlFileDir, tileIntersectsProcessingGeolevelLoop);
+						}
+					}	
+
+					lookupProcessing(lookupProcessingCallback, tileMakerConfig.xmlConfig.dataLoader[0], 
+						xmlFileDir);						
 				}
 			}
 

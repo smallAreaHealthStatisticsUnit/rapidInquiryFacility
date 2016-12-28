@@ -1821,7 +1821,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		/*
 		 * Function: 	setupGeography()
 		 * Parameters:	None
-		 * Description:	Setup rif40_
+		 * Description:	Setup t_rif40_geolevels and rif40_geographies
 		 */	
 		function setupGeography() {
 			var newColumnList=['geometrytable', 'tiletable', 'minzoomlevel', 'maxzoomlevel'];
@@ -2020,6 +2020,28 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		var loadGeolevelsLookupTables=function loadGeolevelsLookupTables() {
 			sqlArray.push(new Sql("Load geolevel lookup tables"));
 		// Tables: lookup_<geometry>.csv
+		
+			for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
+				var lookupTable=(xmlConfig.dataLoader.geoLevel[i].lookupTable ||
+						 "LOOKUP_" +  xmlConfig.dataLoader.geographyName).toLowerCase();
+				var sqlStmt=new Sql("Load geolevel lookup table: " + lookupTable);
+				if (dbType == "PostGres") {	
+					sqlStmt.sql="\\copy " + lookupTable +  
+						" FROM '" + lookupTable +
+						".csv' DELIMITER ',' CSV HEADER";
+				}
+				else if (dbType == "MSSQLServer") {	
+					sqlStmt.sql="BULK INSERT " + lookupTable + "\n" + 
+"FROM '$(pwd)/" + lookupTable + '.csv	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
+"WITH\n" + 
+"(\n" + 
+"	FORMATFILE = '$(pwd)/mssql_" + lookupTable + ".fmt',		-- Use a format file\n" +
+"	TABLOCK					-- Table lock\n" + 
+")";
+				}
+				sqlStmt.dbType=dbType;
+				sqlArray.push(sqlStmt);		
+			} // End of for loop		
 		} // End of loadGeolevelsLookupTables()
 		
 		/*
