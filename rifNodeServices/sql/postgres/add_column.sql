@@ -9,7 +9,7 @@
  * Description:			Add column to table if it does not exist
  * Note:				%% becomes % after substitution
  */
- DO $$ 
+DO $$ 
     BEGIN
         BEGIN
             ALTER TABLE %1 ADD %2 %3;

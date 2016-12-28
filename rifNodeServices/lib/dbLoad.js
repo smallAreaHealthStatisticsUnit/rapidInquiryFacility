@@ -1921,10 +1921,42 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
  *     <comparea>1</comparea>
  *     <listing>0</listing>
  */
+				if (xmlConfig.dataLoader.geoLevel[i].covariateTable) {
+					var sqlStmt=new Sql("Create (if required) geolevels covariate table for: " + 
+							xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase(), 
+						getSqlFromFile("create_covariate_table.sql", 
+							dbType, 
+							xmlConfig.dataLoader.geoLevel[i].covariateTable					/* 1: covariate_table; e.g. COV_CB_2014_US_STATE_500K */,
+							xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase()		/* 2: Geolevel name: CB_2014_US_STATE_500K */),
+						sqlArray, dbType);
+		
+					var sqlStmt=new Sql("Comment covariate table",
+						getSqlFromFile("comment_table.sql", 
+							dbType,
+							xmlConfig.dataLoader.geoLevel[i].covariateTable					/* 1: covariate table name */,
+							"Example covariate table for: "	+
+								xmlConfig.dataLoader.geoLevel[i].geolevelDescription		/* 2: Comment */), 
+						sqlArray, dbType);		
+					var sqlStmt=new Sql("Comment covariate year column",
+						getSqlFromFile("comment_column.sql", 
+							dbType,
+							xmlConfig.dataLoader.geoLevel[i].covariateTable					/* 1: covariate table name */,
+							"year"															/* 2: Column */, 
+							"Year"															/* 3: Comment */), 
+						sqlArray, dbType);	
+					var sqlStmt=new Sql("Comment covariate year column",
+						getSqlFromFile("comment_column.sql", 
+							dbType,
+							xmlConfig.dataLoader.geoLevel[i].covariateTable					/* 1: covariate table name */,
+							xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase()		/* 2: Column */, 
+							"Geolevel name"													/* 3: Comment */), 
+						sqlArray, dbType);	
+				}
+				
 				var sqlStmt=new Sql("Insert geolevels meta data for: " + xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase(), 
 					getSqlFromFile("insert_geolevel.sql", 
 						undefined /* Common */, 
-						"t_rif40_geolevels" 												/* 1: table; e.g. rif40_geolevels */,
+						"t_rif40_geolevels" 											/* 1: covariate table; e.g. rif40_geolevels */,
 						xmlConfig.dataLoader.geographyName.toUpperCase() 				/* 2: geography; e.g. CB_2014_US_500K */,
 						xmlConfig.dataLoader.geoLevel[i].geolevelName.toUpperCase()     /* 3: Geolevel name; e.g. CB_2014_US_COUNTY_500K */,
 						xmlConfig.dataLoader.geoLevel[i].geolevelId 					/* 4: Geolevel id; e.g. 3 */,
@@ -2010,7 +2042,14 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 						"VARCHAR(MAX)"														/* 3: Data type */), 
 					sqlArray, dbType);	
 			}	
-			
+			var sqlStmt=new Sql("Comment geometry WKT column",
+				getSqlFromFile("comment_column.sql", 
+					dbType,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+					"wkt"																/* 2: Column */, 
+					"Well known text"													/* 3: Comment */), 
+				sqlArray, dbType);	
+					
 			var sqlStmt=new Sql("Load geometry table from CSV file");
 			if (dbType == "PostGres") {	
 				sqlStmt.sql="\\copy " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
@@ -2116,7 +2155,6 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			sqlArray, dbType); 
 			
 		beginTransaction(sqlArray, dbType);
-		setupGeography();
 				
 		createGeolevelsLookupTables(sqlArray, dbType);
 		loadGeolevelsLookupTables();
@@ -2125,6 +2163,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		createGeometryTable(sqlArray, dbType);
 		loadGeometryTable();
 		var geoLevelsTable="rif40_geolevels";
+		setupGeography();
 		createTilesTables(sqlArray, dbType, geoLevelsTable);
 		loadTilesTables();
 		
