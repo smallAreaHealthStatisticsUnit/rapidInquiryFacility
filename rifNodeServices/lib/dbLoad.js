@@ -1819,6 +1819,33 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	var addSQLLoadStatements=function addSQLLoadStatements(dbStream, csvFiles, srid, dbType) {
 
 		/*
+		 * Function: 	analyzeTables()
+		 * Parameters:	None
+		 * Description:	Analze and describe all tables: SQL statements
+		 *				Needs to be in a separate transaction (do NOT start one!)
+		 */	 	
+		function analyzeTables() {
+			sqlArray.push(new Sql("Analyze tables"));
+			var tableList=[];
+			for (var i=0; i<csvFiles.length; i++) {
+				tableList.push((xmlConfig.dataLoader.geoLevel[i].lookupTable.toUpperCase() || "lookup_" + csvFiles[i].tableName));
+			}
+			tableList.push("hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			
+			for (var i=0; i<tableList.length; i++) {												
+				var sqlStmt=new Sql("Describe table " + tableList[i], 
+					getSqlFromFile("describe_table.sql", dbType, tableList[i] /* Table name */), 
+					sqlArray, dbType); 
+				
+				var sqlStmt=new Sql("Analyze table " + tableList[i], 
+					getSqlFromFile("vacuum_analyze_table.sql", dbType, tableList[i] /* Table name */), 
+					sqlArray, dbType); 
+			} // End of for csvFiles loop			
+		} // End of analyzeTables()		 
+		
+		/*
 		 * Function: 	setupGeography()
 		 * Parameters:	None
 		 * Description:	Setup t_rif40_geolevels and rif40_geographies
@@ -2249,6 +2276,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		
 		commitTransaction(sqlArray, dbType);
 		
+		analyzeTables();
 //
 // Write SQL statements to file
 //		
