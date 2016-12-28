@@ -124,7 +124,7 @@ Check - min < max, max/min precison is appropriate to type
 	schema 		VARCHAR;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
-		RETURN NULL;
+		RETURN OLD;
 	END IF;
 --
 -- Check <T_RIF40_GEOLEVELS.COVARIATE_TABLE>.<COVARIATE_NAME> column exists
@@ -259,7 +259,7 @@ Check - table_name exists.
 	schema	VARCHAR;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
-		RETURN NULL;
+		RETURN OLD;
 	END IF;
 --
 	schema:=rif40_sql_pkg.rif40_object_resolve(NEW.table_name::VARCHAR);
@@ -343,7 +343,7 @@ Check postal_population_table if set and expected columns
 	schema		VARCHAR;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
-		RETURN NULL;
+		RETURN OLD;
 	END IF;
 --
 -- Check HIERARCHYTABLE
@@ -520,7 +520,7 @@ Check condition for SQL injection
 --
 BEGIN
 	IF TG_OP = 'DELETE' THEN
-		RETURN NULL;
+		RETURN OLD;
 	END IF;
 --
 -- Check condition for SQL injection
@@ -687,12 +687,8 @@ BEGIN
 	IF (NEW.age_sex_group_field_name IS NOT NULL AND NEW.age_sex_group_field_name::text <> '') THEN
 		PERFORM rif40_trg_pkg.rif40_db_name_check('AGE_SEX_GROUP_FIELD_NAME', NEW.age_sex_group_field_name);
 	END IF;
---
-	IF TG_OP = 'DELETE' THEN
-		RETURN OLD;
-	ELSE  	
-		RETURN NEW;
-	END IF;
+--  	
+	RETURN NEW;
 END; 
 $BODY$
 LANGUAGE 'plpgsql';
