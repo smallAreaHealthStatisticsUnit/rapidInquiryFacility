@@ -766,8 +766,16 @@ RangeError: Invalid string length
 #### 28th to 30th December
 
 * dbLoad.js production load script: Postgres
+    * DELETE/INSERT rif40_geographies/geolevels
+	* Add tile table to geolevels;
 
 #### Current TODO list (December):
+
+* Map tile generator; RIF integration preparation
+  * RIF production script:
+	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
+  
+#### January 2017 TODO list:
 
 * Standard test configurations:
   * SAHSULAND: relocated to Utah: reprojected to 1983 North American Projection (EPSG:4269)
@@ -775,16 +783,6 @@ RangeError: Invalid string length
     https://www.google.co.uk/maps/place/54%C2%B020'00.0%22N+5%C2%B042'59.0%22E/@54.3332107,0.9702213,5.92z/data=!4m5!3m4!1s0x0:0x0!8m2!3d54.3333333!4d5.7163889 
   * USA: USA to county level
 * Bugs, general RIF database Todo
-* Map tile generator; RIF integration preparation
-  * Add GID, shapefile fields to lookup tables;
-  * Add areaid as well as <geolevel_name> in lookup tables;
-  * RIF production script:
-    * DELETE/INSERT rif40_geographies/geolevels
-	* Add tile table to geolevels;
-	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
-  
-#### January 2017 TODO list:
-
 * SQL Server run study port
 * JSZip 3.0 upgrade required (forced to 2.6.0) for present
 * SQL load script generator: still todo, all can wait:
@@ -846,7 +844,9 @@ Note: no bounding box (bbox) in tiles.
 	ii. Wrong shapefile (by bounds) in set
 	iii. No shapefile with only 1 area if > 1 shapefile
 	iv. Total area mismatch between shapefiles
-   
+* Add GID, shapefile fields to lookup tables;
+* Add areaid as well as <geolevel_name> in lookup tables;
+  
 ## Database Bugs
 
 * INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
