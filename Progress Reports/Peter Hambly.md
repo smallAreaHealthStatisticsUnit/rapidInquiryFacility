@@ -763,6 +763,10 @@ RangeError: Invalid string length
 * Created logger object, got winston to work properly; added file/line/function, overall timing
 * Refactor dbLoad.js for production load script
 
+#### 28th to 30th December
+
+* dbLoad.js production load script: Postgres
+
 #### Current TODO list (December):
 
 * Standard test configurations:
