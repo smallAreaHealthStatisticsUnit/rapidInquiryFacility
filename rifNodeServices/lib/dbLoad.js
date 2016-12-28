@@ -2002,8 +2002,15 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					dbType, 
 					"t_rif40_geolevels" 											/* 1: Geolevels table */,
 					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */), 
-				sqlArray, dbType);					
-		}
+				sqlArray, dbType);		
+
+//
+// Drop dependent view to allow tiles table to be re-createc
+//	
+			var sqlStmt=new Sql("Drop dependent object - view " + "tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+				getSqlFromFile("drop_view.sql", dbType, 
+					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* View name */), sqlArray, dbType); 				
+		} // End of setupGeography()
 		
 		/*
 		 * Function: 	loadGeolevelsLookupTables()
