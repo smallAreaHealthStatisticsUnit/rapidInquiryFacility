@@ -2157,7 +2157,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				var sqlStmt=new Sql("Create spatial index on bbox",
 					getSqlFromFile("create_spatial_geometry_index.sql", 
 						dbType, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_gix2"	/* Index name */, 
+						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_gix2" /* Index name */, 
 						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* Table name */, 
 						"bbox"																	/* Geometry field name */,
 						csvFiles[0].bbox[0]														/* 4: Xmin (4326); e.g. -179.13729006727 */,
@@ -2182,6 +2182,28 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		var loadTilesTables=function loadTilesTables() {
 			sqlArray.push(new Sql("Load tiles table"));
 		// Tables: t_tiles_<geometry>.csv
+		
+			for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
+				var sqlStmt=new Sql("Load tiles table from geolevel CSV files");
+				if (dbType == "PostGres") {	
+					sqlStmt.sql="\\copy " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
+						"(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_geojson,optimised_topojson)" + 
+						" FROM '" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + 
+						".csv' DELIMITER ',' CSV HEADER";
+				}
+				else if (dbType == "MSSQLServer") {	
+					sqlStmt.sql="BULK INSERT " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
+	"FROM '$(pwd)/" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
+	"WITH\n" + 
+	"(\n" + 
+	"	FORMATFILE = '$(pwd)/mssql_" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".fmt',		-- Use a format file\n" +
+	"	TABLOCK					-- Table lock\n" + 
+	")";
+				}
+				sqlStmt.dbType=dbType;
+				sqlArray.push(sqlStmt);		
+			} // End of for loop
+			
 		} // End of loadTilesTables()
 		
 		var sqlArray=[]; // Re-initialise
