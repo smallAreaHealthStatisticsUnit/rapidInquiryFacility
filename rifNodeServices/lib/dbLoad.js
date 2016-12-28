@@ -532,7 +532,7 @@ tile
 ------------------ --------------- --------------- ----------- ---------- ---------- ---------- ---------- ----------- ----------- ----------- ---------
 cb_2014_us_500k                  1               3          11 -179.14734  179.77847  -14.55255   71.35256        1107         435           4      2046
 */
-		if (geoLevelsTable != "rif40_geolevels") {
+		if (geoLevelsTable != "t_rif40_geolevels") {
 			var sqlStmt=new Sql("Tile check", 
 				getSqlFromFile("tile_check.sql", dbType,
 					geoLevelsTable													/* 1: Lowest resolution geolevels table */,
@@ -1739,8 +1739,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			var sqlStmt=new Sql("Update areaid_count column in geolevels table using geometry table", 
 				getSqlFromFile("geolevels_areaid_update.sql", 
 					dbType, 
-					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Geolevels table */,
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Geometry table */), 
+					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* 1: Geolevels table */,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */), 
 				sqlArray, dbType);
 				
 		} // End of insertGeometryTable()
@@ -1853,7 +1853,28 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 						newColumnComment[i]			/* 3: Comment */), 
 					sqlArray, dbType);	
 			}
-				
+
+
+			var newColumnList=['areaid_count'];
+			var newColumnDataType=['INTEGER'];
+			var newColumnComment=['Area ID count'];
+			for (var i=0; i<newColumnList.length; i++) {
+				var sqlStmt=new Sql("Setup geolevels meta data table column: " + newColumnList[i],
+					getSqlFromFile("add_column.sql", 
+						dbType,
+						"t_rif40_geolevels"			/* 1: Table */, 
+						newColumnList[i]			/* 2: Column */, 
+						newColumnDataType[i]		/* 3: Datatype */), 
+					sqlArray, dbType);	
+				var sqlStmt=new Sql("Comment geolevels meta data table column" + newColumnList[i],
+					getSqlFromFile("comment_column.sql", 
+						dbType,
+						"t_rif40_geolevels"			/* 1: Table */, 
+						newColumnList[i]			/* 2: Column */, 
+						newColumnComment[i]			/* 3: Comment */), 
+					sqlArray, dbType);	
+			}
+			
 			var partition=0;	
 			if (dbType == "PostGres") {			// Only Postgres is partitioned
 				partition=1;
@@ -1973,7 +1994,15 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 						xmlConfig.dataLoader.geoLevel[i].comparea 						/* 14: comparea: Able to be used as a comparison area (0/1) */,
  						xmlConfig.dataLoader.geoLevel[i].listing						/* 15: listing: Able to be used in a disease map listing (0/1) */), 
 					sqlArray, dbType);
-			}								
+
+			} // End of for loop
+			
+			var sqlStmt=new Sql("Update areaid_count column in geolevels table using geometry table", 
+				getSqlFromFile("geolevels_areaid_update.sql", 
+					dbType, 
+					"t_rif40_geolevels" 											/* 1: Geolevels table */,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */), 
+				sqlArray, dbType);					
 		}
 		
 		/*
@@ -2162,7 +2191,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		loadHierarchyTable();
 		createGeometryTable(sqlArray, dbType);
 		loadGeometryTable();
-		var geoLevelsTable="rif40_geolevels";
+		var geoLevelsTable="t_rif40_geolevels";
 		setupGeography();
 		createTilesTables(sqlArray, dbType, geoLevelsTable);
 		loadTilesTables();
