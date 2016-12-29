@@ -765,25 +765,26 @@ RangeError: Invalid string length
 
 #### 28th to 30th December
 
+* Map tile generator; RIF integration preparation
 * dbLoad.js production load script: Postgres
     * DELETE/INSERT rif40_geographies/geolevels
 	* Add tile table to geolevels;
-
-#### Current TODO list (December):
-
-* Map tile generator; RIF integration preparation
-  * RIF production script:
-	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
-  
-#### January 2017 TODO list:
+* dbLoad.js production load script: SQL Server - set schema in production script to cope with no ability 
+  to change the schema on a per session basis
+ 
+#### Current TODO list (January 2017):
 
 * Standard test configurations:
   * SAHSULAND: relocated to Utah: reprojected to 1983 North American Projection (EPSG:4269)
+	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
   * DOGGERLAND: relocated to 54°20'0"N 5°42'59"E on the Dogger Bank. This is the site of wreck of SMS Blucher. 
     https://www.google.co.uk/maps/place/54%C2%B020'00.0%22N+5%C2%B042'59.0%22E/@54.3332107,0.9702213,5.92z/data=!4m5!3m4!1s0x0:0x0!8m2!3d54.3333333!4d5.7163889 
   * USA: USA to county level
 * Bugs, general RIF database Todo
 * SQL Server run study port
+
+####  TODO list:
+
 * JSZip 3.0 upgrade required (forced to 2.6.0) for present
 * SQL load script generator: still todo, all can wait:
   * Add search path to user schema, check user schema exists, to Postgres version
