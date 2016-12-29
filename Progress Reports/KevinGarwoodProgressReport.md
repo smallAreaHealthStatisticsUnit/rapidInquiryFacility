@@ -213,4 +213,31 @@ Prescribing explicit support for dependencies also helps answer an important des
 
 Supporting dependency management will require enhancements to multiple parts of the Data Loader Tool, and add to feature enhancements that are not related to the more pressing task of porting the SQL fragments that are created by the middleware.
 
+##December 2016
+The data loader tool has undergone a major rework to enforce a more controlled order of specifying configuration aspects that 
+supports one aspect depending on another.  Initially, the DL tool required that you processed your shape files before defining
+any of the population health data sets.  This was because the naming of table columns in the numerator, denominator and covariate
+data sets depended on geographical resolution levels whose definitions were buried inside of shape files. Now we need to support
+additional dependencies.  A numerator data set now must specify a corresponding denominator data set, which therefore requires
+that the denominators have already been defined.  Numerators also depend on a health theme, which must also be defined before hand.
+All denominator, numerator and covariate data sets must also refer to a Geography.  All of these dependencies are required to be
+maintained in order to properly register data sets in the RIF production database.  
 
+Supporting these dependencies has made some aspects of processing less generic and more complicated. For example, we now have to 
+consider what happens if we define a denominator, then a numerator, then delete the denominator on which it depends.  The integrity
+of links must now be checked and the tool needs to be able to serialise and deserialise the links in XML files.
+
+Supporting new dependencies has shown how the architecture responds to change.  First, important business classes such as
+the DataSetConfiguration class need to have new fields added to express dependencies.  This causes a knock-on in their methods for cloning objects, and the hasIdenticalContents(...) feature which can tell if two objects have the same contents.  We clone 
+objects to promote safe data entry where changes are made on a copy of a record before they are committed back to the original.  Comparing original and modified versions also supports aspects of change management in the system.
+
+When the data model classes change (eg: DataSetConfiguration), there is a ripple effect on classes that read and write the data
+to XML files.  Finally the changes have to be supported through more guided data entry features that prevent links being 
+compromised.
+
+The parts of the application that reflect these changes still need a few more minor features added and testing.  Significant work 
+remains on creating scripts that can fully load denominators, numerators and covariates into the RIF.  We also need to think about 
+how the Data loading process become aware of data sets that have already been loaded, and those that have been updated enough to 
+warrant reloading.  For now we are assuming everything is loaded once, in a single configuration file.  Modifications to areas
+of configuration are now updated with a time stamp in order to facilitate a solution that can compare differences between the
+state of the data loader tool configuration file and the state of the production database.
