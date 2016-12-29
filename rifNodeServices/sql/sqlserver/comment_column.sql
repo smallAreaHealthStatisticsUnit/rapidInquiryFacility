@@ -7,12 +7,14 @@ DECLARE @CurrentUser sysname /*
  *						3: comment. Usual rules for comment text in SQK - single 
  *									quotes (') need to be double ('')
  *
+ * 						SchemaName is set to either @CurrentUser (build) or 'rif_data' for rif40
  * Description:			Comment table
  * Note:				%%%% becomes %% after substitution
  */
 SELECT @CurrentUser = user_name(); 
-EXECUTE sp_addextendedproperty 'MS_Description',   
-   '%3',
-   'user', @CurrentUser,   
-   'table', '%1',
-   'column', '%2'
+EXECUTE sp_addextendedproperty
+@name = N'MS_Description',   
+@value = N'%3', 
+@level0type = N'Schema', @level0name = $(SchemaName),  
+@level1type = N'Table', @level1name = '%1',
+@level2type = N'Column', @level2name = '%2'

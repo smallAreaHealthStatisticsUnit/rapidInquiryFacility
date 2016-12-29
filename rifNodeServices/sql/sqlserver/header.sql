@@ -38,3 +38,9 @@
 --
 SET QUOTED_IDENTIFIER ON;
 -- SET STATISTICS TIME ON;
+
+--
+-- Set schema variable used by scripts etc to CurrentUser (defined in each relevnt GO block)
+--
+:SETVAR SchemaName @CurrentUser
+--

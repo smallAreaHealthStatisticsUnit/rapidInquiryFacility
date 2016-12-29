@@ -20,8 +20,8 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -U <username> -E -b -m-1 -e -r1 -i %1 -v pwd="%cd%"
--- Connect flags if required: -E -S<myServerinstanceName>
+-- Usage: sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i %1 -v pwd="%cd%"
+-- Connect flags if required: -P <password> -S<myServerinstanceName>
 --
 -- You must set the current schema if you cannot write to the default schema!
 -- You need create privilege for the various object and the bulkadmin role
@@ -30,3 +30,9 @@
 --
 SET QUOTED_IDENTIFIER ON;
 -- SET STATISTICS TIME ON;
+
+--
+-- Set schema variable used by scripts etc to RIF_DATA
+--
+:SETVAR SchemaName "rif_data"
+--

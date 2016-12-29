@@ -336,8 +336,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		
 		var sqlStmt=new Sql("Add primary key hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 			getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
-				"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* Table name */, 
-				pkField 														/* Primary key */), 
+				"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name */, 
+				pkField 															/* 2: Primary key */), 
 			sqlArray, dbType); 	
 				
 		for (var i=0; i<csvFiles.length; i++) {	// Add non unique indexes
@@ -620,12 +620,6 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					(schema||"")													/* 3: Schema; e.g.rif_data. or "" */
 				), 
 				sqlArray, dbType); 			 	
-			
-			var sqlStmt=new Sql("Add primary key " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
-				getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
-					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() 	/* Table name */,
-					xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()		/* shapefile table name - Primary key */), 
-				sqlArray, dbType); 
 
 			var sqlStmt=new Sql("Comment table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),
 				getSqlFromFile("comment_table.sql", 
