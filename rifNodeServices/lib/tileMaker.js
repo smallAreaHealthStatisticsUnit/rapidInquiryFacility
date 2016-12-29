@@ -45,6 +45,7 @@
 // Peter Hambly, SAHSU
 	
 const serverLog = require('../lib/serverLog'),
+	  dbLoad = require('../lib/dbLoad'),
 	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
 	  httpErrorResponse = require('../lib/httpErrorResponse'),
 	  scopeChecker = require('../lib/scopeChecker'),
@@ -1137,7 +1138,7 @@ REFERENCE (from shapefile) {
 				else {
 					async.doWhilst(
 						function zoomlevelProcessing(zoomlevelProcessingCallback) {		
-							tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, tilesCsvStream, zoomlevelProcessingCallback);
+							tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, tilesCsvStream, geolevelName, zoomlevelProcessingCallback);
 						}, 
 						function zoomlevelTest() { // Mimic for loop
 							var res=false;
@@ -1155,10 +1156,15 @@ REFERENCE (from shapefile) {
 							return (res);
 						},
 						function zoomlevelProcessingEndCallback(err) {
-							
-							tilesCsvStream.end();
-			//				winston.log("debug", 'zoomlevelProcessingEndCallback(): zoomlevel: ' + zoomlevel + ', geolevel_id: ' + geolevel_id + ', TileNo: ' + tileNo + '; numTiles: ' + numTiles);
-							geolevelProcessingCallback(err);
+							if (err) {
+								geolevelProcessingCallback(err);
+							}
+							else {
+								tilesCsvStream.end();
+				//				winston.log("debug", 'zoomlevelProcessingEndCallback(): zoomlevel: ' + zoomlevel + ', geolevel_id: ' + geolevel_id + ', TileNo: ' + tileNo + '; numTiles: ' + numTiles);
+
+								geolevelProcessingCallback();
+							}
 						});	
 				}
 			}
@@ -1167,13 +1173,13 @@ REFERENCE (from shapefile) {
 
 	/*
 	 * Function: 	tileIntersectsProcessing()
-	 * Parameters:	SQL statement, zoomlevel, geolevel id, geography, tiles CSV file stream, 
+	 * Parameters:	SQL statement, zoomlevel, geolevel id, geography, tiles CSV file stream, geolevelName, 
 	 *				tile intersects processing callback (callback from zoomlevelProcessing async)
 	 * Returns:		Nothing
 	 * Description:	Asynchronous SQL fetch for all tile intersects in a geolevel/zoomlevel. Calls tileIntersectsRowProcessing() for each row. 
 	 *				Process last tile if required
 	 */			
-	function tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, tilesCsvStream, tileIntersectsProcessingCallback) {
+	function tileIntersectsProcessing(sql, zoomlevel, geolevel_id, geography, tilesCsvStream, geolevelName, tileIntersectsProcessingCallback) {
 
 		/*
 		 * Function: 	pgTileInsert()
@@ -1443,14 +1449,15 @@ REFERENCE (from shapefile) {
 
 		/*
 		 * Function: 	 blockProcessing()
-		 * Parameters:	 SQL, zoomlevel, geolevel_id, block, number of blocks, getBlockCallback
+		 * Parameters:	 SQL, zoomlevel, geolevel_id, block, number of blocks, geolevelName, getBlockCallback
 		 * Returns:		 Nothing
 		 * Descrioption: Process a block of geolevel/zoomlevel data
 		 */
-		function blockProcessing(sql, zoomlevel, geolevel_id, block, numBlocks, getBlockCallback) {
+		function blockProcessing(sql, zoomlevel, geolevel_id, block, numBlocks, geolevelName, getBlockCallback) {
 			winston.log("debug", "blockProcessing(" + block + "/" + numBlocks + ") geolevel_id: " + 
 				geolevel_id + "; zoomlevel: " + zoomlevel + 
 				"\nSQL> " + sql);
+			
 			if (dbType == "PostGres") {
 				request=client;
 				query = request.query(sql, [zoomlevel, geolevel_id, block]);
@@ -1469,6 +1476,21 @@ REFERENCE (from shapefile) {
 
 			stream.on('row', function tileIntersectsRow(row) {
 				mssqlRows++;
+				function dummyCallback() {
+					// Do nothing!
+				}
+				if (mssqlRows == 1) {
+					var xmlFileDir=tileMakerConfig.xmlConfig.xmlFileDir;
+//					var geolevelName=row.geolevel_name;
+//					delete row.geolevel_name;
+					var rows=[];
+					rows.push(row);
+					dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", "t_tiles_" + geolevelName.toLowerCase(), rows, dummyCallback);		
+				}
+				else {
+					delete row.geolevel_name;
+				}
+
 				totalTileSize+=tileIntersectsRowProcessing(row, geography, dbType);		
 			});
 			
@@ -1520,7 +1542,7 @@ REFERENCE (from shapefile) {
 				}		  
 				if (boundData.length < 1) {
 					if (geolevel_id == 1 && zoomlevel > 0) {
-						blockProcessing(sql, zoomlevel, geolevel_id, 0, 0, tileIntersectsProcessingCallback);	
+						blockProcessing(sql, zoomlevel, geolevel_id, 0, 0, geolevelName, tileIntersectsProcessingCallback);	
 					}
 					else {
 						dbErrorHandler(new Error("getBlock() table: tile_blocks_" + geography + 
@@ -1535,7 +1557,7 @@ REFERENCE (from shapefile) {
 //								winston.log("verbose", "getBlockCallback(): " + nerr.stack);
 								getBlockCallback(err);
 							}
-							blockProcessing(sql, zoomlevel, geolevel_id, boundData[i].block, boundData.length, myGetBlockCallback);
+							blockProcessing(sql, zoomlevel, geolevel_id, boundData[i].block, boundData.length, geolevelName, myGetBlockCallback);
 						}, // End of boundDataProcessing
 						function boundDataEnd(err) { //  Callback
 							tileIntersectsProcessingCallback(err);
@@ -1543,7 +1565,7 @@ REFERENCE (from shapefile) {
 					); // End of async.forEachOfSeries()	
 				}				
 			}
-		}); // End of getBlock()
+		}); // End of request.query()
 		
 	} // End of tileIntersectsProcessing()
 
@@ -1642,8 +1664,14 @@ REFERENCE (from shapefile) {
 								buf+="\r\n";
 							}
 							lookupCsvStream.write(buf, function lookupProcessingWrite(err) {
-								lookupCsvStream.end();
-								geoLevelCallback(err);
+								if (err) {
+									geoLevelCallback(err);
+								}
+								else {
+									lookupCsvStream.end();
+									dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", lookupTable, record,	geoLevelCallback);	
+								}
+								
 							});
 						}
 					});						
@@ -1729,8 +1757,13 @@ REFERENCE (from shapefile) {
 					buf+="\r\n";
 				}
 				hierarchyCsvStream.write(buf, function hierarchyProcessingWrite(err) {
-					hierarchyCsvStream.end();
-					hierarchyProcessingCallback(err);
+					if (err) {
+						hierarchyProcessingCallback(err);
+					}
+					else {
+						hierarchyCsvStream.end();
+						dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", hierarchyTable, record,	hierarchyProcessingCallback);			
+					}
 				});
 			}
 		});			
@@ -1852,10 +1885,14 @@ REFERENCE (from shapefile) {
 								function tmssqlTileGeometryEnd(err) { //  Callback				
 									geometryCsvStream.end();
 									winston.log("verbose", "Geometry rows processed: " + rowsAffected);
-									record=undefined;
-									geometryProcessingCallback(err, 
-										geographyTable, geographyTableDescription, 
-										xmlFileDir, tileProcessingCallback); // Call tileProcessing
+									
+									function geographyTableProcessingCallback(err) {
+										record=undefined;
+										geometryProcessingCallback(err, 
+											geographyTable, geographyTableDescription, 
+											xmlFileDir, tileProcessingCallback); // Call tileProcessing
+									}
+									dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", geographyTable.toLowerCase(), record,	geographyTableProcessingCallback);	
 								} // End of tmssqlTileGeometryEnd()		
 							); // End of async.forEachOfSeries()
 						}			

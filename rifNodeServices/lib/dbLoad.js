@@ -50,6 +50,7 @@ const serverLog = require('../lib/serverLog'),
 
 const os = require('os'),
 	  fs = require('fs'),
+	  async = require('async'),
 	  path = require('path');
 	  
 /*
@@ -132,7 +133,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 
 	/*
 	 * Function: 	createSqlServerFmtFiles()
-	 * Parameters:	Directory to create in, CSV files object
+	 * Parameters:	Directory to create in, CSV files object, callback
 	 * Description:	Create MS SQL Server bulk load format files
 	 *				The insistence on quotes excludes the header row
 	 *
@@ -191,53 +192,15 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 </BCPFORMAT>	 
 	 
 	 */	 
-	var createSqlServerFmtFiles=function createSqlServerFmtFiles(dir, csvFiles) {	
-		for (var i=0; i<csvFiles.length; i++) {
-			var fmtScriptName="mssql_" + csvFiles[i].tableName + ".fmt";
-			var fmtStream = fs.createWriteStream(dir + "/" + fmtScriptName, { flags : 'w' });	
-			fmtStream.on('finish', function fmtStreamClose() {
-				response.message+="\nstreamClose() MS SQL Server bulk load format file";
-			});		
-			fmtStream.on('error', function fmtStreamError(e) {
-				serverLog.serverLog2(__file, __line, dbType + "StreamError", 
-					"WARNING: Exception in MS SQL Server bulk load format file write: " + fmtScriptName, req, e, response);										
-			});
-			
-			var fmtBuf='<?xml version="1.0"?>\n' +
-			'<!-- MS SQL Server bulk load format files\n' +
-'	 The insistence on quotes excludes the header row -->\n' +
-'<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"\n' +
-'  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n' +
-' <RECORD>\n' + 
-'   <FIELD ID="0" xsi:type="CharTerm" TERMINATOR=' + "'" + '"' + "' />\n";
-			var columnList=Object.keys(csvFiles[i].rows[0]);
-			
-			for (var j=1; j<=columnList.length; j++) {
-				if (j<columnList.length) {
-					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '","' + "' />\n";
+	var createSqlServerFmtFiles=function createSqlServerFmtFiles(dir, csvFiles, createSqlServerFmtFilesCallback) {	
+			async.forEachOfSeries(csvFiles, 
+				function csvFilesFmtProcessing(value, i, fmtCallback) {
+					createSqlServerFmtFile(dir, csvFiles[i].tableName, csvFiles[i].rows, fmtCallback);
+				},
+				function csvFilesFmtError(err) {
+					createSqlServerFmtFilesCallback(err);
 				}
-				else {
-					fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '"\\r\\n' + "' />\n";
-				}
-			}
-			fmtBuf+=' </RECORD>\n'; 
-			fmtBuf+=' <ROW>\n'; 
-			for (var j=1; j<=columnList.length; j++) {
-				var bcpDtype="SQLVARYCHAR";
-				var column=columnList[(j-1)].toLowerCase();
-				if (column == "gid") {
-					bcpDtype="SQLINT"; // Integer
-				}
-				else if (column == "area_km2") {
-					bcpDtype="SQLNUMERIC"; // Numeric
-				}
-				fmtBuf+='   <COLUMN SOURCE="' + j + '" NAME="' + column + '" xsi:type="' + bcpDtype + '" />\n';
-			}			
-			fmtBuf+=' </ROW>\n'; 
-			fmtBuf+='</BCPFORMAT>\n'; 
-			fmtStream.write(fmtBuf);
-			fmtStream.end();
-		} // End of for csvFiles
+			); // End of async.forEachOfSeries csvFiles
 	} // End of createSqlServerFmtFiles()
 	
 	/*
@@ -2307,7 +2270,6 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	
 	addSQLStatements(pgStream, csvFiles, xmlConfig.dataLoader.srid, "PostGres");
 	addSQLStatements(mssqlStream, csvFiles, xmlConfig.dataLoader.srid, "MSSQLServer");
-	createSqlServerFmtFiles(dir, csvFiles);
 	
 	var endStr="\n\n--\n-- EOF\n";
 	pgStream.write(endStr);
@@ -2330,7 +2292,6 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	
 	addSQLLoadStatements(pgLoadStream, csvFiles, xmlConfig.dataLoader.srid, "PostGres");
 	addSQLLoadStatements(mssqlLoadStream, csvFiles, xmlConfig.dataLoader.srid, "MSSQLServer");
-//	createLoadSqlServerFmtFiles(dir, csvFiles);
 	
 	var endStr="\n\n--\n-- EOF\n";
 	pgLoadStream.write(endStr);
@@ -2338,26 +2299,96 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	
 	pgLoadStream.end();
 	mssqlLoadStream.end();	
+
+//
+// Create all format files for SQL Server
+//
+	createSqlServerFmtFiles(dir, csvFiles, 
+		function createSqlServerFmtFilesEnd(err) {
+			//	createLoadSqlServerFmtFiles(dir, csvFiles);
+		
+			var msg="Created database load scripts: " + pgScript + " and " + mssqlScript;
+			response.message+="\n" + msg;	
+			addStatus(__file, __line, response, msg,   // Add created WKT zoomlevel topojson status	
+				200 /* HTTP OK */, serverLog, undefined /* req */,
+				/*
+				 * Function: 	createGeoJSONFromTopoJSON()
+				 * Parameters:	error object
+				 * Description:	Add status callback
+				 */												
+				function CreateDbLoadScriptsAddStatus(err) {
+					if (err) {
+						serverLog.serverLog2(__file, __line, "CreateDbLoadScriptsAddStatus", 
+							"WARNING: Unable to add dbLoad file processing status", req, err);
+					}
+					endCallback(err);
+				});
+		} // End of createSqlServerFmtFilesEnd()
+	)
 	
-	var msg="Created database load scripts: " + pgScript + " and " + mssqlScript;
-	response.message+="\n" + msg;	
-	addStatus(__file, __line, response, msg,   // Add created WKT zoomlevel topojson status	
-		200 /* HTTP OK */, serverLog, undefined /* req */,
-		/*
-		 * Function: 	createGeoJSONFromTopoJSON()
-		 * Parameters:	error object
-		 * Description:	Add status callback
-		 */												
-		function CreateDbLoadScriptsAddStatus(err) {
-			if (err) {
-				serverLog.serverLog2(__file, __line, "CreateDbLoadScriptsAddStatus", 
-					"WARNING: Unable to add dbLoad file processing status", req, err);
-			}
-			endCallback(err);
-		});
 } // End of CreateDbLoadScripts()
 
+/*
+ * Function: 	createSqlServerFmtFile()
+ * Parameters:	Directory, table name, rows cobject (first row is a header row), callback
+ * Description:	Create SQL Server format file
+ */	
+function createSqlServerFmtFile(dir, tableName, rows, createSqlServerFmtFileCallback) {
+	scopeChecker(__file, __line, {
+		dir: dir, 
+		tableName: tableName, 
+		rows: rows, 
+		rowZero: rows[0], 
+		callback: createSqlServerFmtFileCallback
+	});
+
+	var fmtScriptName="mssql_" + tableName + ".fmt";
+	var fmtStream = fs.createWriteStream(dir + "/" + fmtScriptName, { flags : 'w' });	
+	fmtStream.on('finish', function fmtStreamClose() {
+		createSqlServerFmtFileCallback();
+	});		
+	fmtStream.on('error', function fmtStreamError(e) {
+		createSqlServerFmtFileCallback(e);									
+	});
+	
+	var fmtBuf='<?xml version="1.0"?>\n' +
+	'<!-- MS SQL Server bulk load format files\n' +
+'	 The insistence on quotes excludes the header row -->\n' +
+'<BCPFORMAT xmlns="http://schemas.microsoft.com/sqlserver/2004/bulkload/format"\n' +
+'  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n' +
+' <RECORD>\n' + 
+'   <FIELD ID="0" xsi:type="CharTerm" TERMINATOR=' + "'" + '"' + "' />\n";
+	var columnList=Object.keys(rows[0]);
+	
+	for (var j=1; j<=columnList.length; j++) {
+		if (j<columnList.length) {
+			fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '","' + "' />\n";
+		}
+		else {
+			fmtBuf+='   <FIELD ID="' + j + '" xsi:type="CharTerm" TERMINATOR=' + "'" + '"\\r\\n' + "' />\n";
+		}
+	}
+	fmtBuf+=' </RECORD>\n'; 
+	fmtBuf+=' <ROW>\n'; 
+	for (var j=1; j<=columnList.length; j++) {
+		var bcpDtype="SQLVARYCHAR";
+		var column=columnList[(j-1)].toLowerCase();
+		if (column == "gid") {
+			bcpDtype="SQLINT"; // Integer
+		}
+		else if (column == "area_km2") {
+			bcpDtype="SQLNUMERIC"; // Numeric
+		}
+		fmtBuf+='   <COLUMN SOURCE="' + j + '" NAME="' + column + '" xsi:type="' + bcpDtype + '" />\n';
+	}			
+	fmtBuf+=' </ROW>\n'; 
+	fmtBuf+='</BCPFORMAT>\n'; 
+	fmtStream.write(fmtBuf);
+	fmtStream.end(); // Runs createSqlServerFmtFileCallback()
+} // End of createSqlServerFmtFile()
+		
 module.exports.CreateDbLoadScripts = CreateDbLoadScripts;
 module.exports.getSqlFromFile = getSqlFromFile;
+module.exports.createSqlServerFmtFile = createSqlServerFmtFile;
 
 // Eof
