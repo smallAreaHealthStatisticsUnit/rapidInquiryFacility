@@ -1481,8 +1481,6 @@ REFERENCE (from shapefile) {
 				}
 				if (mssqlRows == 1) {
 					var xmlFileDir=tileMakerConfig.xmlConfig.xmlFileDir;
-//					var geolevelName=row.geolevel_name;
-//					delete row.geolevel_name;
 					var rows=[];
 					rows.push(row);
 					dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", "t_tiles_" + geolevelName.toLowerCase(), rows, dummyCallback);		
