@@ -4,11 +4,12 @@
  * Parameters:
  *						1: table; e.g. t_tiles_cb_2014_us_county_500k
  *						2: JSON datatype (Postgres JSON, SQL server Text)
+ *						3: Schema; e.g. rif_data. or ""
  *
  * Description:			Create tiles table
  * Note:				%%%% becomes %% after substitution
  */
-CREATE TABLE %1 (
+CREATE TABLE %3%1 (
 	geolevel_id			INTEGER			NOT NULL,
 	zoomlevel			INTEGER			NOT NULL,
 	x					INTEGER			NOT NULL, 

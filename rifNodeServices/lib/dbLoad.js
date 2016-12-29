@@ -302,11 +302,11 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 	} // End of commitTransaction()		
 			
 	/*
-	 * Function: 	createHierarchyTable(sqlArray, dbType)
+	 * Function: 	createHierarchyTable(sqlArray, dbType, schema)
 	 * Parameters:	sqlArray, dbType
 	 * Description:	Create hierarchy table: SQL statements
 	 */	 
-	function createHierarchyTable(sqlArray, dbType) {
+	function createHierarchyTable(sqlArray, dbType, schema) {
 		sqlArray.push(new Sql("Hierarchy table"));	
 		
 		var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
@@ -314,7 +314,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 			sqlArray, dbType); 
 		
 		var sqlStmt=new Sql("Create table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase());
-		sqlStmt.sql="CREATE TABLE hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + " (\n";
+		sqlStmt.sql="CREATE TABLE " + (schema||"") + // Schema; e.g.rif_data. or "" 
+			"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + " (\n";
 		var pkField=undefined;
 		for (var i=0; i<csvFiles.length; i++) {	
 			if (i == 0) {
@@ -373,12 +374,12 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 	} // End of createHierarchyTable()
 
 	/*
-	 * Function: 	createGeometryTable(sqlArray, dbType)
+	 * Function: 	createGeometryTable(sqlArray, dbType, schema)
 	 * Parameters:	sqlArray, dbType
 	 * Description:	Create geometry tables 
 	 *				SQL statements
 	 */			
-	function createGeometryTable(sqlArray, dbType) {
+	function createGeometryTable(sqlArray, dbType, schema) {
 		var sqlStmt;	
 		
 		sqlArray.push(new Sql("Create geometry table"));		
@@ -399,7 +400,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		var sqlStmt=new Sql("Create geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 			getSqlFromFile("create_geometry_table.sql", 
 				undefined /* Common */, 
-				"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
+				"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name */,
+				(schema||"")													/* 2: Schema; e.g.rif_data. or "" */), 
 			sqlArray, dbType); 
 				
 		var sqlStmt=new Sql("Add geom geometry column",
@@ -466,11 +468,11 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 
 	/*
 	 * Function: 	createTilesTables()
-	 * Parameters:	sqlArray, dbType, geoLevelsTable
+	 * Parameters:	sqlArray, dbType, geoLevelsTable, schema
 	 * Description:	Create tiles tables 
 	 *				SQL statements
 	 */			
-	function createTilesTables(sqlArray, dbType, geoLevelsTable) {
+	function createTilesTables(sqlArray, dbType, geoLevelsTable, schema) {
 		var sqlStmt;			
 		
 		var singleBoundaryGeolevelTable;
@@ -517,7 +519,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				getSqlFromFile("create_tiles_table.sql", 
 					undefined /* Common */,	
 					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Tiles table name */,
-					"NVARCHAR(MAX)"													/* 2: JSON datatype (Postgres JSON, SQL server NVARCHAR(MAX)) */
+					"NVARCHAR(MAX)"													/* 2: JSON datatype (Postgres JSON, SQL server NVARCHAR(MAX)) */,
+					(schema||"")													/* 3: Schema; e.g.rif_data. or "" */
 					), sqlArray, dbType); 
 		}
 		else if (dbType == "PostGres") { // No JSON in SQL Server
@@ -525,7 +528,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				getSqlFromFile("create_tiles_table.sql", 
 					undefined /* Common */,	
 					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Tiles table name */,
-					"JSON"														/* 2: JSON datatype (Postgres JSON, SQL server Text) */
+					"JSON"															/* 2: JSON datatype (Postgres JSON, SQL server Text) */,
+					(schema||"")													/* 3: Schema; e.g.rif_data. or "" */
 					), sqlArray, dbType); 
 		}			
 		
@@ -562,7 +566,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				geoLevelsTable												   	/* 2: geolevel table; e.g. geolevels_cb_2014_us_county_500k */,
 				"NOT_USED"														/* 3: JSON datatype (Postgres JSON, SQL server VARCHAR) */,
 				"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 4: tiles table; e.g. t_tiles_cb_2014_us_500k */,
-				xmlConfig.dataLoader.maxZoomlevel								/* 5: Max zoomlevel; e.g. 11 */
+				xmlConfig.dataLoader.maxZoomlevel								/* 5: Max zoomlevel; e.g. 11 */,
+				(schema||"")													/* 6: Schema; e.g.rif_data. or "" */
 				), sqlArray, dbType); 		
 
 		var sqlStmt=new Sql("Comment tiles view",
@@ -600,7 +605,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 	 * Parameters:	sqlArray, dbType
 	 * Description:	Create geoelvels lookup tables: SQL statements
 	 */	 
-	function createGeolevelsLookupTables(sqlArray, dbType) {
+	function createGeolevelsLookupTables(sqlArray, dbType, schema) {
 		sqlArray.push(new Sql("Create Geolevels lookup tables"));
 		for (var i=0; i<csvFiles.length; i++) {									
 			var sqlStmt=new Sql("Drop table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
@@ -610,8 +615,10 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			
 			var sqlStmt=new Sql("Create table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
 				getSqlFromFile("create_lookup_table.sql", undefined /* Common */, (
-					xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase().toLowerCase() /* Table name */,
-					xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()		/* shapefile table name */ ), 
+					xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase().toLowerCase() /* 1: Table name */,
+					xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()	/* 2: shapefile table name */,
+					(schema||"")													/* 3: Schema; e.g.rif_data. or "" */
+				), 
 				sqlArray, dbType); 			 	
 			
 			var sqlStmt=new Sql("Add primary key " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
@@ -1732,15 +1739,15 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		
 		createGeographyTable();
 		createGeolevelsTable();
-		createGeolevelsLookupTables(sqlArray, dbType);
+		createGeolevelsLookupTables(sqlArray, dbType, undefined /* No schema - use default */);
 		insertGeolevelsLookupTables();
-		createHierarchyTable(sqlArray, dbType);
+		createHierarchyTable(sqlArray, dbType, undefined /* No schema - use default */);
 		insertHierarchyTable();
-		createGeometryTable(sqlArray, dbType);
+		createGeometryTable(sqlArray, dbType, undefined /* No schema - use default */);
 		insertGeometryTable();
 		
 		var geoLevelsTable="geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase();
-		createTilesTables(sqlArray, dbType, geoLevelsTable);
+		createTilesTables(sqlArray, dbType, geoLevelsTable, undefined /* No schema - use default */);
 		insertTilesTables();
 		
 		commitTransaction(sqlArray, dbType);
@@ -1813,7 +1820,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		 * Parameters:	None
 		 * Description:	Setup t_rif40_geolevels and rif40_geographies
 		 */	
-		function setupGeography() {
+		function setupGeography(schema) {
 			var newColumnList=['geometrytable', 'tiletable', 'minzoomlevel', 'maxzoomlevel'];
 			var newColumnDataType=['VARCHAR(30)', 'VARCHAR(30)', 'INTEGER', 'INTEGER'];
 			var newColumnComment=['Geometry table name', 'Tile table name', 'Minimum zoomlevel', 'Maximum zoomlevel'];
@@ -1938,7 +1945,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 						getSqlFromFile("create_covariate_table.sql", 
 							dbType, 
 							xmlConfig.dataLoader.geoLevel[i].covariateTable					/* 1: covariate_table; e.g. COV_CB_2014_US_STATE_500K */,
-							xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase()		/* 2: Geolevel name: CB_2014_US_STATE_500K */),
+							xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase()		/* 2: Geolevel name: CB_2014_US_STATE_500K */,
+							(schema||"")													/* 3: Schema; e.g. rif_data. or "" */),
 						sqlArray, dbType);
 		
 					var sqlStmt=new Sql("Comment covariate table",
@@ -2226,15 +2234,15 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			
 		beginTransaction(sqlArray, dbType);
 				
-		createGeolevelsLookupTables(sqlArray, dbType);
+		createGeolevelsLookupTables(sqlArray, dbType, 'rif_data.');
 		loadGeolevelsLookupTables();
-		createHierarchyTable(sqlArray, dbType);
+		createHierarchyTable(sqlArray, dbType, 'rif_data.');
 		loadHierarchyTable();
-		createGeometryTable(sqlArray, dbType);
+		createGeometryTable(sqlArray, dbType, 'rif_data.');
 		loadGeometryTable();
 		var geoLevelsTable="t_rif40_geolevels";
-		setupGeography();
-		createTilesTables(sqlArray, dbType, geoLevelsTable);
+		setupGeography('rif_data.');
+		createTilesTables(sqlArray, dbType, geoLevelsTable, 'rif_data.');
 		loadTilesTables();
 		
 		commitTransaction(sqlArray, dbType);

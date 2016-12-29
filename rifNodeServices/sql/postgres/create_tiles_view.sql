@@ -7,11 +7,12 @@
  *						3: JSON datatype (Postgres JSON, SQL server VARCHAR) [No longer used]
  *						4: tiles table; e.g. t_tiles_cb_2014_us_500k
  *  					5: Max zoomlevel; e.g. 11
+ *						6: Schema; e.g. rif_data. or ""
  *
  * Description:			Create tiles view
  * Note:				%%%% becomes %% after substitution
  */
-CREATE VIEW %1 AS 
+CREATE VIEW %6%1 AS 
 WITH a AS (
         SELECT geography,
                MAX(geolevel_id) AS max_geolevel_id
