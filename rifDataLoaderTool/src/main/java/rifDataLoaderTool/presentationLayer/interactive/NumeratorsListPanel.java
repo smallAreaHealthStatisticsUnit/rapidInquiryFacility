@@ -1,12 +1,9 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
-import rifDataLoaderTool.businessConceptLayer.DLGeography;
+import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.DataLoaderToolSession;
-
-import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
-import rifDataLoaderTool.businessConceptLayer.LoadingOrderState;
 
 import javax.swing.*;
 
@@ -81,12 +78,14 @@ public class NumeratorsListPanel
 	public NumeratorsListPanel(
 		final JFrame frame,
 		final DataLoaderToolSession session,
-		final DLDependencyManager dependencyManager) {
+		final DLDependencyManager dependencyManager,
+		final DataLoaderToolChangeManager changeManager) {
 		
 		super(
 			frame, 
 			session, 
-			dependencyManager);
+			dependencyManager,
+			changeManager);
 		
 		String listTitle
 			= RIFDataLoaderToolMessages.getMessage(
@@ -96,40 +95,140 @@ public class NumeratorsListPanel
 		buildUI();
 	}
 
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 	
+	public void refresh() {
+		clearListItems();
 
+		DataLoaderToolSession session = getSession();
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= session.getDataLoaderToolConfiguration();
+		ArrayList<DataSetConfiguration> numerators
+			= dataLoaderToolConfiguration.getNumeratorDataSetConfigurations();
+		ArrayList<DisplayableListItemInterface> listItemsToAdd
+			= new ArrayList<DisplayableListItemInterface>();
+		for (DataSetConfiguration numerator : numerators) {
+			listItemsToAdd.add(numerator);
+		}
+		setListItems(listItemsToAdd);
+	}
+	
 	@Override
 	protected void addListItem() {
 
-		System.out.println("Adding numerator");
+		/**
+		 * Create a data set based on the properties derived from
+		 * examining an imported CSV file.  Then set the RIF Schema
+		 * Area in a way that is appropriate to the concept supported
+		 * by this list panel class.
+		 */
+		DataLoaderToolSession session = getSession();
+		CSVFileSelectionDialog csvFileSelectionDialog
+			= new CSVFileSelectionDialog(session);
+		csvFileSelectionDialog.show();
+	
+		if (csvFileSelectionDialog.isCancelled()) {
+			//User pressed cancel, there is no new item to add
+			return;
+		}
+	
+		DataSetConfiguration originalNumerator
+			= csvFileSelectionDialog.getDataSetConfiguration();
+		originalNumerator.setRIFSchemaArea(RIFSchemaArea.HEALTH_NUMERATOR_DATA);
+
+		/**
+		 * Use the kind of RIF Schema Area supported by this list panel
+		 * class to parameterise an editor that will let users set 
+		 * properties of the newly created data set configuration.
+		 */
+		DataSetConfigurationEditorDialog dialog
+			= new DataSetConfigurationEditorDialog(
+				session, 
+				RIFSchemaArea.HEALTH_NUMERATOR_DATA);
+		dialog.setData(originalNumerator);
+		dialog.show();
+		if (dialog.isCancelled() == true) {
+			return;
+		}
+
+		/**
+		 * Register new items both in the underlying model being 
+		 * managed by the change manager and by the GUI list that will
+		 * accommodate new additions.
+		 */
+		DataSetConfiguration revisedNumerator
+			= dialog.getDataSetConfigurationFromForm();
+		DataLoaderToolChangeManager changeManager
+			= getChangeManager();
+		changeManager.addNumerator(revisedNumerator);
+		addListItem(revisedNumerator);
 	}
 	
 	@Override
 	protected void editSelectedListItem() {
-		DLGeography geography 
-			= (DLGeography) getSelectedListItem();
-
-		System.out.println("Editing numerator");
+		DataSetConfiguration originalNumerator 
+			= (DataSetConfiguration) getSelectedListItem();		
 		
+		DataLoaderToolSession session = getSession();
+		DataSetConfigurationEditorDialog dialog
+			= new DataSetConfigurationEditorDialog(
+				session, 
+				RIFSchemaArea.HEALTH_NUMERATOR_DATA);
+		dialog.setData(originalNumerator);
+		dialog.show();
+		if (dialog.isCancelled() == true) {
+			return;
+		}
+		
+		/**
+		 * Update the underlying data loader tool configuration model
+		 * object managed by the change manager and update the GUI 
+		 * list as well.  The change manager will compare original
+		 * and revised copies and if they are different, it will 
+		 * set a saveChanges field.
+		 */
+		DataSetConfiguration revisedNumerator
+			= dialog.getDataSetConfigurationFromForm();
+		DataLoaderToolChangeManager changeManager
+			= getChangeManager();
+		updateListItem(originalNumerator, revisedNumerator);
+		changeManager.updateNumerator(
+			originalNumerator, 
+			revisedNumerator);		
 	}
 	
-	@Override
-	protected void checkDependenciesForItemsToDelete()
-		throws RIFServiceException {
+	protected void deleteSelectedListItems() {
 		
 		DLDependencyManager dependencyManager
 			= getDependencyManager();
 		ArrayList<DisplayableListItemInterface> itemsToDelete
 			= getSelectedListItems();
+			
+		//Remove any dependencies that either a Geography or a Health Theme may 
+		//have on one of the numerators
 		for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
-			DLGeography geographyToDelete
-				= (DLGeography) itemToDelete;
-			dependencyManager.checkGeographyDependencies(geographyToDelete);
-		}		
+			DataSetConfiguration dataSetConfigurationToDelete
+				= (DataSetConfiguration) itemToDelete;
+			dependencyManager.deregisterDependenciesOfDataSet(dataSetConfigurationToDelete);
+		}
+			
+		//We're now ready to delete the items.  Delete them from both the 
+		//data loader tool configuration model object that is being managed
+		//by the change manager and the GUI list
+		DataLoaderToolChangeManager changeManager
+			= getChangeManager();
+		ArrayList<DataSetConfiguration> numeratorsToDelete
+			= new ArrayList<DataSetConfiguration>();
+		for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
+			DataSetConfiguration dataSetConfigurationToDelete
+				= (DataSetConfiguration) itemToDelete;
+			numeratorsToDelete.add(dataSetConfigurationToDelete);
+		}
+		
+		changeManager.deleteNumerators(numeratorsToDelete);
+		deleteListItems();	
 	}
 	
 	// ==========================================
@@ -145,19 +244,22 @@ public class NumeratorsListPanel
 	// ==========================================
 
 	//Overriding method for Observer
+
 	public void update(
 		final Observable observable,
 		final Object object) {
 		
-		LoadingOrderState currentState
-			= (LoadingOrderState) object;
-		if (currentState.getOrder() >= LoadingOrderState.DEFINE_DENOMINATORS.getOrder()) {
+		System.out.println("Numerator List Panel update");
+		DataLoadingOrder currentState
+			= (DataLoadingOrder) object;
+		if (currentState.getStepNumber() >= DataLoadingOrder.DENOMINATORS_SPECIFIED.getStepNumber()) {
 			setEnable(true);			
 		}
 		else {
 			setEnable(false);
 		}
-	}
+	}	
+	
 }
 
 

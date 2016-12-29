@@ -93,6 +93,10 @@ final class CleaningRuleConfigurationHandler
 // ==========================================
 	private ArrayList<CleaningRule> rules;
 	private CleaningRule currentRule;
+	private String currentTag;
+	private StringBuilder searchValueAccumulator;
+	private StringBuilder replaceValueAccumulator;
+	
 	
 // ==========================================
 // Section Construction
@@ -185,6 +189,10 @@ final class CleaningRuleConfigurationHandler
 				"replace_value", 
 				rule.getReplaceValue());
 			xmlUtility.writeRecordEndTag(recordType);
+			xmlUtility.writeField(
+				recordType, 
+				"last_modified", 
+				getLastModifiedTimeStampPhrase(rule.getLastModifiedTime()));			
 		}
 		xmlUtility.writeRecordEndTag(getPluralRecordName());
 	}	
@@ -210,6 +218,7 @@ final class CleaningRuleConfigurationHandler
 		final Attributes attributes) 
 		throws SAXException {
 		
+		currentTag = qualifiedName;
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
 			rules.clear();
@@ -217,7 +226,36 @@ final class CleaningRuleConfigurationHandler
 		else if (isSingularRecordName(qualifiedName)) {
 			currentRule = CleaningRule.newInstance();			
 		}
+		else if (equalsFieldName("search_value", qualifiedName)) {
+			searchValueAccumulator = new StringBuilder();
+		}
+		else if (equalsFieldName("replace_value", qualifiedName)) {
+			replaceValueAccumulator = new StringBuilder();
+		}		
 	}
+
+
+	@Override
+	public void characters(
+		final char[] characters, 
+		final int start, 
+		final int length)
+		throws SAXException {
+		
+		String str = new String(characters, start, length);
+		if (currentTag == "search_value") {
+			searchValueAccumulator.append(str);
+		}
+		if (currentTag == "replace_value") {			
+			replaceValueAccumulator.append(str);
+		}
+		else {
+			setCurrentFieldValue(str);			
+		}
+			
+	}
+	
+	
 	
 	@Override
 	public void endElement(
@@ -242,11 +280,17 @@ final class CleaningRuleConfigurationHandler
 			currentRule.setDescription(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("search_value", qualifiedName)) {
-			currentRule.setSearchValue(getCurrentFieldValue());
+			currentRule.setSearchValue(searchValueAccumulator.toString());
+			//currentRule.setSearchValue(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("replace_value", qualifiedName)) {
-			currentRule.setReplaceValue(getCurrentFieldValue());
+			currentRule.setReplaceValue(replaceValueAccumulator.toString());
+			//currentRule.setReplaceValue(getCurrentFieldValue());
 		}
+		else if (equalsFieldName("last_modified", qualifiedName)) {
+			String timeStampPhrase = getCurrentFieldValue();
+			currentRule.setLastModifiedTime(getLastModifiedTimeStamp(timeStampPhrase));
+		}		
 		else {
 			assert false;
 		}

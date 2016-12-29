@@ -67,13 +67,13 @@ public class DataLoaderToolConfiguration {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDatabaseConnectionParameters databaseConnectionsConfiguration;
+	private DatabaseConnectionsConfiguration databaseConnections;
 	private DLGeographyMetaData geographyMetaData;
 	private ArrayList<DLHealthTheme> healthThemes;
 	private RIFDataTypeFactory rifDataTypeFactory;
-	private ArrayList<DataSetConfiguration> denominatorDataSetConfigurations;
-	private ArrayList<DataSetConfiguration> numeratorDataSetConfigurations;
-	private ArrayList<DataSetConfiguration> covariateDataSetConfigurations;
+	private ArrayList<DataSetConfiguration> denominators;
+	private ArrayList<DataSetConfiguration> numerators;
+	private ArrayList<DataSetConfiguration> covariates;
 	private ConfigurationHints configurationHints;
 	
 	// ==========================================
@@ -81,13 +81,15 @@ public class DataLoaderToolConfiguration {
 	// ==========================================
 
 	private DataLoaderToolConfiguration() {	
-		databaseConnectionsConfiguration
-			= RIFDatabaseConnectionParameters.newInstance();
+		databaseConnections
+			= DatabaseConnectionsConfiguration.newInstance();
 		geographyMetaData = DLGeographyMetaData.newInstance();
 
-		denominatorDataSetConfigurations = new ArrayList<DataSetConfiguration>();
-		numeratorDataSetConfigurations = new ArrayList<DataSetConfiguration>();
-		covariateDataSetConfigurations = new ArrayList<DataSetConfiguration>();
+		healthThemes = new ArrayList<DLHealthTheme>();
+		
+		denominators = new ArrayList<DataSetConfiguration>();
+		numerators = new ArrayList<DataSetConfiguration>();
+		covariates = new ArrayList<DataSetConfiguration>();
 		
 		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
 		rifDataTypeFactory.populateFactoryWithBuiltInTypes();
@@ -102,18 +104,100 @@ public class DataLoaderToolConfiguration {
 		return dataLoaderToolConfiguration;
 	}
 	
+	public boolean hasIdenticalContents(
+		final DataLoaderToolConfiguration otherDataLoaderToolConfiguration) {
+		
+		if (otherDataLoaderToolConfiguration == null) {
+			return false;
+		}
+		
+		DatabaseConnectionsConfiguration otherDatabaseConnectionsConfiguration
+			= otherDataLoaderToolConfiguration.getDatabaseConnectionConfiguration();
+		if (databaseConnections.hasIdenticalContents(
+			otherDatabaseConnectionsConfiguration) == false) {
+			System.out.println("Other DB connections is DIFFERENT");
+			return false;
+		}
+		
+		DLGeographyMetaData otherGeographyMetaData
+			= otherDataLoaderToolConfiguration.getGeographyMetaData();		
+		if (geographyMetaData.hasIdenticalContents(otherGeographyMetaData) == false) {
+			System.out.println("Other geography meta data is DIFFERENT");
+			return false;
+		}
+
+		ArrayList<DLHealthTheme> otherHealthThemes
+			= otherDataLoaderToolConfiguration.getHealthThemes();		
+		if (DLHealthTheme.hasIdenticalContents(healthThemes, otherHealthThemes) == false) {
+			System.out.println("Other health themes is DIFFERENT");
+			return false;
+		}
+
+		ArrayList<RIFDataType> rifDataTypes
+			= rifDataTypeFactory.getRegisteredDataTypes();
+		ArrayList<RIFDataType> otherRIFDataTypes
+			= otherDataLoaderToolConfiguration.getRIFDataTypeFactory().getRegisteredDataTypes();
+		
+		if (RIFDataType.hasIdenticalContents(rifDataTypes, otherRIFDataTypes) == false) {
+			System.out.println("Other rif data types collection is different");
+			return false;
+		}
+		
+		ArrayList<DataSetConfiguration> otherDenominatorDataSets
+			= otherDataLoaderToolConfiguration.getDenominatorDataSetConfigurations();
+		if (DataSetConfiguration.hasIdenticalContents(
+			denominators, 
+			otherDenominatorDataSets) == false) {
+			
+			System.out.println("Other denominators changed");
+			return false;
+		}
+
+		ArrayList<DataSetConfiguration> otherNumeratorDataSets
+			= otherDataLoaderToolConfiguration.getNumeratorDataSetConfigurations();
+		if (DataSetConfiguration.hasIdenticalContents(
+			numerators, 
+			otherNumeratorDataSets) == false) {
+				
+			System.out.println("Other numerators changed");
+			return false;
+		}
+		
+
+		ArrayList<DataSetConfiguration> otherCovariateDataSets
+			= otherDataLoaderToolConfiguration.getCovariateDataSetConfigurations();
+		if (DataSetConfiguration.hasIdenticalContents(
+			covariates, 
+			otherCovariateDataSets) == false) {
+				
+			System.out.println("Other covariates changed");
+			return false;
+		}
+		
+		ConfigurationHints otherConfigurationHints
+			= otherDataLoaderToolConfiguration.getConfigurationHints();
+		if (configurationHints.hasIdenticalContents(otherConfigurationHints) == false) {
+			return false;
+		}
+		
+		
+		
+		return true;
+	}
+	
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
 	public void setDatabaseConnectionConfiguration(
-		final RIFDatabaseConnectionParameters databaseConnectionsConfiguration) {
+		final DatabaseConnectionsConfiguration databaseConnections) {
 		
-		this.databaseConnectionsConfiguration = databaseConnectionsConfiguration;		
+		this.databaseConnections = databaseConnections;		
 	}
 	
-	public RIFDatabaseConnectionParameters getDatabaseConnectionConfiguration() {
-		return databaseConnectionsConfiguration;
+	public DatabaseConnectionsConfiguration getDatabaseConnectionConfiguration() {
+		return databaseConnections;
 	}
 	
 	public void setGeographyMetaData(final DLGeographyMetaData geographyMetaData) {
@@ -122,6 +206,52 @@ public class DataLoaderToolConfiguration {
 	
 	public DLGeographyMetaData getGeographyMetaData() {
 		return geographyMetaData;
+	}
+	
+	public ArrayList<DLHealthTheme> getHealthThemes() {
+		return healthThemes;
+	}
+	
+	public String[] getHealthThemeNames() {
+		ArrayList<String> healthThemeNames = new ArrayList<String>();
+		for (DLHealthTheme healthTheme : healthThemes) {
+			healthThemeNames.add(healthTheme.getDisplayName());
+		}		
+		return healthThemeNames.toArray(new String[0]);
+	}
+	
+	public DLHealthTheme getHealthTheme(final String targetHealthThemeName) {
+		for (DLHealthTheme healthTheme : healthThemes) {
+			String currentHealthThemeName
+				= healthTheme.getDisplayName();
+			if (currentHealthThemeName.equals(targetHealthThemeName)) {
+				return healthTheme;
+			}
+		}		
+		return null;
+	}
+	
+	public void setHealthThemes(final ArrayList<DLHealthTheme> healthThemes) {
+		this.healthThemes = healthThemes;
+	}
+	
+	public void addHealthTheme(final DLHealthTheme healthTheme) {
+		healthThemes.add(healthTheme);
+	}
+	
+	public void updateHealthTheme(
+		final DLHealthTheme originalHealthTheme,
+		final DLHealthTheme revisedHealthTheme) {
+		
+		DLHealthTheme.copyInto(revisedHealthTheme, originalHealthTheme);
+	}
+	
+	public void deleteHealthTheme(final DLHealthTheme healthTheme) {
+		healthThemes.remove(healthTheme);
+	}
+	
+	public int getNumberOfHealthThemes() {
+		return healthThemes.size();
 	}
 	
 	public void setRIFDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
@@ -140,54 +270,137 @@ public class DataLoaderToolConfiguration {
 		this.configurationHints = configurationHints;
 	}
 	
+	public ArrayList<DataSetConfiguration> getAllDataSetConfigurations() {
+		
+		ArrayList<DataSetConfiguration> allDataSetConfigurations
+			= new ArrayList<DataSetConfiguration>();
+		allDataSetConfigurations.addAll(denominators);
+		allDataSetConfigurations.addAll(numerators);
+		allDataSetConfigurations.addAll(covariates);
+		
+		return allDataSetConfigurations;
+	}
 	
 	public void setDenominatorDataSetConfigurations(
-		final ArrayList<DataSetConfiguration> denominatorDataSetConfigurations) {
+		final ArrayList<DataSetConfiguration> denominators) {
 		
-		this.denominatorDataSetConfigurations = denominatorDataSetConfigurations;	
+		this.denominators = denominators;	
 	}
 	
 	public void addDenominatorDataSetConfiguration(
-		final DataSetConfiguration denominatorDataSetConfiguration) {
+		final DataSetConfiguration denominator) {
 		
-		denominatorDataSetConfigurations.add(denominatorDataSetConfiguration);
+		denominators.add(denominator);
 	}
 	
+	public void updateDenominator(
+		final DataSetConfiguration originalDenominator,
+		final DataSetConfiguration revisedDenominator) {
+		
+		DataSetConfiguration.copyInto(revisedDenominator, originalDenominator);
+	}
+	
+	
+	public void deleteDenominatorDataSetConfiguration(
+		final DataSetConfiguration denominatorToDelete) {
+	
+		denominators.remove(denominatorToDelete);
+	}		
+
 	public ArrayList<DataSetConfiguration> getDenominatorDataSetConfigurations() {
-		return denominatorDataSetConfigurations;
+		return denominators;
+	}
+	
+	public String[] getDenominatorNames() {
+		ArrayList<String> denominatorNames = new ArrayList<String>();
+		for (DataSetConfiguration denominator : denominators) {
+			denominatorNames.add(denominator.getDisplayName());
+		}
+
+		return denominatorNames.toArray(new String[0]);
+	}
+	
+	public DataSetConfiguration getDenominator(final String denominatorName) {
+		for (DataSetConfiguration denominator : denominators) {
+			String currentDenominatorName
+				= denominator.getDisplayName();
+			if (currentDenominatorName.equals(denominatorName)) {
+				return denominator;
+			}
+		}
+		return null;		
 	}
 
+	public int getNumberOfDenominators() {
+		return denominators.size();
+	}
 	
 	public void setNumeratorDataSetConfigurations(
-		final ArrayList<DataSetConfiguration> numeratorDataSetConfigurations) {
+		final ArrayList<DataSetConfiguration> numerators) {
 		
-		this.numeratorDataSetConfigurations = numeratorDataSetConfigurations;	
+		this.numerators = numerators;	
 	}
 	
 	public void addNumeratorDataSetConfiguration(
-		final DataSetConfiguration numeratorDataSetConfiguration) {
+		final DataSetConfiguration numerator) {
 		
-		numeratorDataSetConfigurations.add(numeratorDataSetConfiguration);
+		numerators.add(numerator);
+	}
+
+	public void updateNumerator(
+		final DataSetConfiguration originalNumerator,
+		final DataSetConfiguration revisedNumerator) {
+		
+		DataSetConfiguration.copyInto(revisedNumerator, originalNumerator);
 	}
 	
+	public void deleteNumeratorDataSetConfiguration(
+		final DataSetConfiguration numeratorToDelete) {
+		
+		numerators.remove(numeratorToDelete);
+	}		
+	
 	public ArrayList<DataSetConfiguration> getNumeratorDataSetConfigurations() {
-		return numeratorDataSetConfigurations;
+		return numerators;
+	}
+	
+	public int getNumberOfNumerators() {
+		return numerators.size();
 	}
 	
 	public void setCovariateDataSetConfigurations(
-		final ArrayList<DataSetConfiguration> covariateDataSetConfigurations) {
+		final ArrayList<DataSetConfiguration> covariates) {
 		
-		this.covariateDataSetConfigurations = covariateDataSetConfigurations;	
+		this.covariates = covariates;	
 	}
 	
 	public void addCovariateDataSetConfiguration(
-		final DataSetConfiguration covariateDataSetConfiguration) {
+		final DataSetConfiguration covariate) {
 		
-		covariateDataSetConfigurations.add(covariateDataSetConfiguration);
+		covariates.add(covariate);
+	}
+
+	public void updateCovariate(
+		final DataSetConfiguration originalCovariate,
+		final DataSetConfiguration revisedCovariate) {
+		
+		DataSetConfiguration.copyInto(revisedCovariate, originalCovariate);
 	}
 	
+	
+	public void deleteCovariateDataSetConfiguration(
+		final DataSetConfiguration covariateToDelete) {
+		
+		covariates.remove(covariateToDelete);
+	}		
+
+	
 	public ArrayList<DataSetConfiguration> getCovariateDataSetConfigurations() {
-		return covariateDataSetConfigurations;
+		return covariates;
+	}
+
+	public int getNumberOfCovariates() {
+		return covariates.size();
 	}
 	
 	// ==========================================
@@ -231,21 +444,21 @@ public class DataLoaderToolConfiguration {
 				RIFDataLoaderToolError.DUPLICATE_DATA_SET_CONFIGURATION_NAME, 
 				errorMessage);
 
-		for (DataSetConfiguration denominatorDataSetConfiguration : denominatorDataSetConfigurations) {
+		for (DataSetConfiguration denominatorDataSetConfiguration : denominators) {
 			String currentDisplayName = denominatorDataSetConfiguration.getDisplayName();
 			if (currentDisplayName.equals(candidateDisplayName)) {
 				throw rifServiceException;
 			}			
 		}
 
-		for (DataSetConfiguration numeratorDataSetConfiguration : numeratorDataSetConfigurations) {
+		for (DataSetConfiguration numeratorDataSetConfiguration : numerators) {
 			String currentDisplayName = numeratorDataSetConfiguration.getDisplayName();
 			if (currentDisplayName.equals(candidateDisplayName)) {
 				throw rifServiceException;
 			}			
 		}
 		
-		for (DataSetConfiguration covariateDataSetConfiguration : covariateDataSetConfigurations) {
+		for (DataSetConfiguration covariateDataSetConfiguration : covariates) {
 			String currentDisplayName = covariateDataSetConfiguration.getDisplayName();
 			if (currentDisplayName.equals(candidateDisplayName)) {
 				throw rifServiceException;

@@ -1,4 +1,4 @@
-package rifDataLoaderTool.fileFormats.revised;
+package rifDataLoaderTool.fileFormats;
 
 
 import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
@@ -105,6 +105,17 @@ final class HealthThemesConfigurationHandler
 	// Section Accessors and Mutators
 	// ==========================================
 	
+	public DLHealthTheme getHealthTheme(final String targetHealthThemeName) {
+		for (DLHealthTheme healthTheme : healthThemes) {
+			String currentHealthThemeName = healthTheme.getName();
+			if (currentHealthThemeName.equals(targetHealthThemeName)) {
+				return healthTheme;
+			}			
+		}
+		
+		return null;
+	}
+	
 	public void setIsSerialisingHints(final boolean isSerialisingHints) {
 		this.isSerialisingHints = isSerialisingHints;
 	}
@@ -120,7 +131,7 @@ final class HealthThemesConfigurationHandler
 	}
 	
 	public void writeXML(
-		final ArrayList<DLHealthTheme> fieldConfigurations)
+		final ArrayList<DLHealthTheme> healthThemes)
 		throws IOException {
 		
 		XMLUtility xmlUtility = getXMLUtility();
@@ -140,6 +151,11 @@ final class HealthThemesConfigurationHandler
 				"description", 
 				healthTheme.getDescription());			
 			
+			xmlUtility.writeField(
+				getSingularRecordName(), 
+				"last_modified", 
+				getLastModifiedTimeStampPhrase(healthTheme.getLastModifiedTime()));	
+			
 			xmlUtility.writeRecordEndTag(getSingularRecordName());			
 		}
 				
@@ -156,9 +172,12 @@ final class HealthThemesConfigurationHandler
 		
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
+			System.out.println("ACTIVATING HEALTH THEMES HANDLER");
 			healthThemes.clear();
 		}
 		else if (isSingularRecordName(qualifiedName) == true) {
+			System.out.println("ACTIVATING HEALTH THEMES NEW INSTANCE");
+			
 			currentHealthTheme
 				= DLHealthTheme.newInstance();
 		}		
@@ -179,6 +198,7 @@ final class HealthThemesConfigurationHandler
 			deactivate();
 		}
 		else if (isSingularRecordName(qualifiedName)) {
+			System.out.println("ACTIVATING HEALTH THEMES NEW INSTANCE");
 			healthThemes.add(currentHealthTheme);
 		}		
 		else if (equalsFieldName("name", qualifiedName)) {
@@ -188,7 +208,13 @@ final class HealthThemesConfigurationHandler
 		else if (equalsFieldName("description", qualifiedName)) {
 			currentHealthTheme.setDescription(
 				getCurrentFieldValue());
+		}		
+		else if (equalsFieldName("last_modified", qualifiedName)) {
+			String timeStampPhrase = getCurrentFieldValue();
+			currentHealthTheme.setLastModifiedTime(
+				getLastModifiedTimeStamp(timeStampPhrase));
 		}
+		
 		else {
 			assert false;
 		}		

@@ -1,16 +1,9 @@
 
 package rifDataLoaderTool.fileFormats;
 
-
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
-
-
-
-
-
-
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -98,7 +91,8 @@ final class ValidationRuleConfigurationHandler
 // ==========================================
 	private ArrayList<ValidationRule> rules;
 	private ValidationRule currentRule;
-	
+	private String currentTag;
+	private StringBuilder validValueAccumulator;
 // ==========================================
 // Section Construction
 // ==========================================
@@ -169,6 +163,11 @@ final class ValidationRuleConfigurationHandler
 				recordType, 
 				"valid_value", 
 				rule.getValidValue());
+			xmlUtility.writeField(
+				recordType, 
+				"last_modified", 
+				getLastModifiedTimeStampPhrase(rule.getLastModifiedTime()));
+			
 			xmlUtility.writeRecordEndTag(recordType);
 		}
 		xmlUtility.writeRecordEndTag(getPluralRecordName());
@@ -195,12 +194,32 @@ final class ValidationRuleConfigurationHandler
 		final Attributes attributes) 
 		throws SAXException {
 		
+		currentTag = qualifiedName;
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
 			rules.clear();
 		}
 		else if (isSingularRecordName(qualifiedName)) {
 			currentRule = ValidationRule.newInstance();			
+		}
+		else if (equalsFieldName("valid_value", qualifiedName)) {
+			validValueAccumulator = new StringBuilder();
+		}
+	}
+
+	@Override
+	public void characters(
+		final char[] characters, 
+		final int start, 
+		final int length)
+		throws SAXException {
+		
+		String str = new String(characters, start, length);
+		if (currentTag == "valid_value") {
+			validValueAccumulator.append(str);
+		}
+		else {
+			setCurrentFieldValue(str); 			
 		}
 	}
 	
@@ -227,8 +246,12 @@ final class ValidationRuleConfigurationHandler
 			currentRule.setDescription(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("valid_value", qualifiedName)) {
-			currentRule.setValidValue(getCurrentFieldValue());
+			currentRule.setValidValue(validValueAccumulator.toString());
 		}
+		else if (equalsFieldName("last_modified", qualifiedName)) {
+			String timeStampPhrase = getCurrentFieldValue();
+			currentRule.setLastModifiedTime(getLastModifiedTimeStamp(timeStampPhrase));
+		}		
 		else {
 			assert false;
 		}

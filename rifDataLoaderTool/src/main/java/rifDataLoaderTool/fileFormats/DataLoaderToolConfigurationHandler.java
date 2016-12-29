@@ -1,8 +1,7 @@
 
-package rifDataLoaderTool.fileFormats.revised;
+package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
@@ -112,6 +111,8 @@ final class DataLoaderToolConfigurationHandler
 				
 		setSingularRecordName("rif_data_loader_settings");
 
+		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
+		
 		databaseConnectionConfigurationHandler
 			= new DatabaseConnectionConfigurationHandler();
 		geographyMetaDataConfigurationHandler
@@ -120,14 +121,17 @@ final class DataLoaderToolConfigurationHandler
 			= new HealthThemesConfigurationHandler();
 		rifDataTypeConfigurationHandler 
 			= new DataTypeConfigurationHandler();
+		rifDataTypeConfigurationHandler.setDataTypeFactory(rifDataTypeFactory);
 		
 		configurationHints = new ConfigurationHints();
+		configurationHintsHandler = new HintsConfigurationHandler();
 		configurationHintsHandler.setConfigurationHints(configurationHints);
 		configurationHintsHandler = new HintsConfigurationHandler();
 		configurationHintsHandler.setDataTypeFactory(rifDataTypeFactory);		
 
 		dataSetConfigurationHandler
-			= new DataSetConfigurationHandler();		
+			= new DataSetConfigurationHandler();
+		dataSetConfigurationHandler.setDataTypeFactory(rifDataTypeFactory);
 
 	}
 
@@ -147,7 +151,7 @@ final class DataLoaderToolConfigurationHandler
 			commentInjector);
 		geographyMetaDataConfigurationHandler.initialise(
 			outputStream, 
-			commentInjector);
+			commentInjector);		
 		healthThemesConfigurationHandler.initialise(
 			outputStream, 
 			commentInjector);		
@@ -201,15 +205,45 @@ final class DataLoaderToolConfigurationHandler
 			dataLoaderToolConfiguration.getDatabaseConnectionConfiguration());
 		geographyMetaDataConfigurationHandler.writeXML(
 			dataLoaderToolConfiguration.getGeographyMetaData());
+		
+		ArrayList<DLHealthTheme> healthThemes
+			= dataLoaderToolConfiguration.getHealthThemes();
+		healthThemesConfigurationHandler.writeXML(healthThemes);		
 		rifDataTypeConfigurationHandler.writeXML(
 			dataLoaderToolConfiguration.getRIFDataTypeFactory());
 		configurationHintsHandler.writeXML(
 			dataLoaderToolConfiguration.getConfigurationHints());
-		
+		dataSetConfigurationHandler.writeXML(
+			dataLoaderToolConfiguration.getAllDataSetConfigurations());
 		xmlUtility.writeRecordEndTag(recordType);	
 		
 	}	
+	
+	private void resolveDependencies() {
+		//We need to go through all the data set configurations and
+		//figure out which geography and health theme to associate
+		//with each of them.
 		
+		ArrayList<DataSetConfiguration> dataSetConfigurations
+			= dataSetConfigurationHandler.getDataSetConfigurations();
+		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
+			
+			String geographyName
+				= dataSetConfigurationHandler.getGeographyName(dataSetConfiguration);
+			DLGeography geography
+				= geographyMetaDataConfigurationHandler.getGeography(geographyName);
+			dataSetConfiguration.setGeography(geography);
+			
+			String healthThemeName
+				= dataSetConfigurationHandler.getHealthThemeName(dataSetConfiguration);
+			DLHealthTheme healthTheme
+				= healthThemesConfigurationHandler.getHealthTheme(healthThemeName);
+			dataSetConfiguration.setHealthTheme(healthTheme);
+		}
+		
+		
+		
+	}
 // ==========================================
 // Section Errors and Validation
 // ==========================================
@@ -249,18 +283,24 @@ final class DataLoaderToolConfigurationHandler
 			if (databaseConnectionConfigurationHandler.isSingularRecordName(qualifiedName)) {
 				assignDelegatedHandler(databaseConnectionConfigurationHandler);				
 			}
-			else if (geographyMetaDataConfigurationHandler.isPluralRecordName(qualifiedName)) {
+			else if (geographyMetaDataConfigurationHandler.isSingularRecordName(qualifiedName)) {
 				assignDelegatedHandler(geographyMetaDataConfigurationHandler);				
+			}
+			else if (healthThemesConfigurationHandler.isPluralRecordName(qualifiedName)) {
+				assignDelegatedHandler(healthThemesConfigurationHandler);				
 			}
 			else if (rifDataTypeConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
 				assignDelegatedHandler(rifDataTypeConfigurationHandler);
 			}
 			else if (configurationHintsHandler.isSingularRecordTypeApplicable(qualifiedName)) {
 				configurationHintsHandler.setDataTypeFactory(
-					rifDataTypeConfigurationHandler.getRIFDataTypeFactory());
+					rifDataTypeConfigurationHandler.getDataTypeFactory());
 				assignDelegatedHandler(configurationHintsHandler);
 			}
-											
+			else if (dataSetConfigurationHandler.isPluralRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(dataSetConfigurationHandler);
+			}
+			
 			//delegate to a handler.  If not, then scan for fields relating to this handler
 			if (isDelegatedHandlerAssigned()) {
 
@@ -287,6 +327,7 @@ final class DataLoaderToolConfigurationHandler
 		
 		if (isSingularRecordName(qualifiedName)) {
 			deactivate();
+			resolveDependencies();
 		}
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
@@ -298,7 +339,7 @@ final class DataLoaderToolConfigurationHandler
 						
 			if (currentDelegatedHandler.isActive() == false) {
 				if (currentDelegatedHandler == databaseConnectionConfigurationHandler) {
-					RIFDatabaseConnectionParameters databaseConnectionsConfiguration
+					DatabaseConnectionsConfiguration databaseConnectionsConfiguration
 						= databaseConnectionConfigurationHandler.getDatabaseConnectionParameters();
 					dataLoaderToolConfiguration.setDatabaseConnectionConfiguration(databaseConnectionsConfiguration);
 				}
@@ -307,12 +348,33 @@ final class DataLoaderToolConfigurationHandler
 						= geographyMetaDataConfigurationHandler.getGeographyMetaData();
 					dataLoaderToolConfiguration.setGeographyMetaData(geographyMetaData);
 				}
+				
+				else if (currentDelegatedHandler == healthThemesConfigurationHandler) {
+					ArrayList<DLHealthTheme> healthThemes
+						= healthThemesConfigurationHandler.getHealthThemes();
+					dataLoaderToolConfiguration.setHealthThemes(healthThemes);
+				}			
 				else if (currentDelegatedHandler == rifDataTypeConfigurationHandler) {
 					dataLoaderToolConfiguration.setRIFDataTypeFactory(
-						rifDataTypeConfigurationHandler.getRIFDataTypeFactory());
+						rifDataTypeConfigurationHandler.getDataTypeFactory());
 				}
 				else if (currentDelegatedHandler == configurationHintsHandler) {
 					dataLoaderToolConfiguration.setConfigurationHints(configurationHints);
+				}
+				else if (currentDelegatedHandler == dataSetConfigurationHandler) {
+					ArrayList<DataSetConfiguration> denominatorDataSets
+						= dataSetConfigurationHandler.getDataSetConfigurations(
+							RIFSchemaArea.POPULATION_DENOMINATOR_DATA);
+					dataLoaderToolConfiguration.setDenominatorDataSetConfigurations(denominatorDataSets);
+					ArrayList<DataSetConfiguration> numeratorDataSets
+						= dataSetConfigurationHandler.getDataSetConfigurations(
+							RIFSchemaArea.HEALTH_NUMERATOR_DATA);
+					dataLoaderToolConfiguration.setNumeratorDataSetConfigurations(numeratorDataSets);
+					
+					ArrayList<DataSetConfiguration> covariateDataSets
+						= dataSetConfigurationHandler.getDataSetConfigurations(
+						RIFSchemaArea.COVARIATE_DATA);
+					dataLoaderToolConfiguration.setCovariateDataSetConfigurations(covariateDataSets);
 				}
 				else {
 					assert false;

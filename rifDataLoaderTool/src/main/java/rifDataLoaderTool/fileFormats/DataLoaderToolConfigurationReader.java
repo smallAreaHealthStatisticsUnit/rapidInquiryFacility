@@ -1,16 +1,17 @@
 
-package rifDataLoaderTool.fileFormats.revised;
+package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.DLGeographyMetaData;
+import rifDataLoaderTool.businessConceptLayer.*;
+
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import java.io.*;
-import java.util.ArrayList;
+import org.xml.sax.InputSource;
 
+import java.io.*;
 
 /**
  *
@@ -77,8 +78,20 @@ import java.util.ArrayList;
  */
 
 
-public final class GeographyMetaDataReader {
+public final class DataLoaderToolConfigurationReader {
 	
+	public static void main(String[] args) {
+		
+		DataLoaderToolConfigurationReader reader
+			= new DataLoaderToolConfigurationReader();
+		File file = new File("C://rif_scratch//test_data_loader_tool.xml");
+		try {
+			reader.readFile(file);			
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+		}
+	}
 // ==========================================
 // Section Constants
 // ==========================================
@@ -86,8 +99,7 @@ public final class GeographyMetaDataReader {
 // ==========================================
 // Section Properties
 // ==========================================
-	private GeographyMetaDataConfigurationHandler geographyMetaDataConfigurationHandler;
-	private File geographyMetaDataConfigurationFile;
+	private DataLoaderToolConfigurationHandler dataLoaderToolConfigurationHandler;
 	
 // ==========================================
 // Section Construction
@@ -95,40 +107,66 @@ public final class GeographyMetaDataReader {
     /**
      * Instantiates a new RIF job submission xml reader.
      */
-	public GeographyMetaDataReader() {
-		geographyMetaDataConfigurationHandler
-			= new GeographyMetaDataConfigurationHandler();
+	public DataLoaderToolConfigurationReader() {
+		dataLoaderToolConfigurationHandler
+			= new DataLoaderToolConfigurationHandler();
     }
 
 // ==========================================
 // Section Accessors and Mutators
 // ==========================================
     
+	public DataLoaderToolConfiguration getDataLoaderToolConfiguration() {
+		return dataLoaderToolConfigurationHandler.getDataLoaderToolConfiguration();
+	}
+	
 	/**
- * Read file.
- *
- * @param rifSubmissionFile the rif submission file
- * @throws RIFServiceException the RIF service exception
- */
+	 * Read file.
+	 *
+	 * @param rifSubmissionFile the rif submission file
+	 * @throws RIFServiceException the RIF service exception
+	 */
 	public void readFile(
-		final File geographyMetaDataConfigurationFile) 
+		final File rifSubmissionFile) 
 		throws RIFServiceException {
 
-		this.geographyMetaDataConfigurationFile =geographyMetaDataConfigurationFile;
-		try {			
+		try {	
+			System.out.println("Data Loader reader reading UTF-8 file");
+			FileInputStream inputStream = new FileInputStream(rifSubmissionFile);
+			InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
+			InputSource inputSource = new InputSource(inputStreamReader);
+			inputSource.setEncoding("UTF-8");			
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
-			saxParser.parse(
-				geographyMetaDataConfigurationFile, 
-				geographyMetaDataConfigurationHandler);
+			saxParser.parse(inputSource, dataLoaderToolConfigurationHandler);
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createFileReadingProblemException(rifSubmissionFile.getName());
+		}
+	}
+	
+	public void readFileFromString (
+		final String rifStudySubmissionAsXML) 
+		throws RIFServiceException {
+
+		try {
+			StringReader stringReader = new StringReader(rifStudySubmissionAsXML);
+			InputSource inputSource = new InputSource(stringReader);
+			
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(inputSource, dataLoaderToolConfigurationHandler);
 		}
 		catch(Exception exception) {
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
-			throw exceptionFactory.createFileReadingProblemException(
-					geographyMetaDataConfigurationFile.getName());			
+			throw exceptionFactory.createFileReadingProblemException("");
 		}
-	}
+	}			
 
 	public void readFile(
 		final InputStream inputStream) 
@@ -140,34 +178,26 @@ public final class GeographyMetaDataReader {
 			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(
 				inputStream, 
-				geographyMetaDataConfigurationHandler);			
+				dataLoaderToolConfigurationHandler);
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
-			throw exceptionFactory.createFileReadingProblemException(
-				"io.error.generalInputFileProblem");
+			throw exceptionFactory.createFileReadingProblemException();
 		}
 	}			
 	
-	public DLGeographyMetaData getGeographicalMetaData() {
-		DLGeographyMetaData geographyMetaData
-			= geographyMetaDataConfigurationHandler.getGeographyMetaData();
-		geographyMetaData.setFilePath(
-			geographyMetaDataConfigurationFile.getAbsolutePath());
-		return geographyMetaData;
-	}
-	
-// ==========================================
-// Section Errors and Validation
-// ==========================================
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
 
-// ==========================================
-// Section Interfaces
-// ==========================================
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
 
-// ==========================================
-// Section Override
-// ==========================================
+	// ==========================================
+	// Section Override
+	// ==========================================
 
 }

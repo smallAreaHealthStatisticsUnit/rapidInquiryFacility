@@ -347,6 +347,18 @@ public class ConfigurationHints {
 		}
 	}
 	
+	public boolean hasIdenticalContents(final ConfigurationHints otherConfigurationHints) {
+		
+		//KLG: Stubbed - this is a lot of work we'll do later on.  Configuration hints
+		//only influence activities within the tool and if they change they won't have any
+		//effect on how data sets are loaded into the RIF production database.
+		return true;
+	}
+	
+	public int getTotalHints() {
+		return dataSetCoreNamePatterns.size() + dataSetFieldCoreNamePatterns.size();
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

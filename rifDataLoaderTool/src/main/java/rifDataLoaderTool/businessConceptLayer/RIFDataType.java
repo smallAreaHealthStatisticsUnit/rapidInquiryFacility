@@ -9,6 +9,7 @@ import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Date;
 
 
 /**
@@ -163,6 +164,8 @@ public final class RIFDataType
 	private ArrayList<CleaningRule> cleaningRules;
 
 	private boolean isReservedDataType;
+	private Date lastModifiedTime;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -218,6 +221,8 @@ public final class RIFDataType
 		fieldCleaningPolicy = RIFFieldActionPolicy.DO_NOTHING;
 		cleaningRules = new ArrayList<CleaningRule>();	
 		cleaningFunctionName = "";
+		
+		updateLastModifiedTime();
 	}
 	
 	public static RIFDataType newInstance() {
@@ -299,7 +304,6 @@ public final class RIFDataType
 		if (rifDataTypeListA == rifDataTypeListB) {
 			return true;
 		}
-		
 		if ((rifDataTypeListA == null) && (rifDataTypeListB != null) ||
 			(rifDataTypeListA != null) && (rifDataTypeListB == null)) {
 			
@@ -313,18 +317,22 @@ public final class RIFDataType
 		HashMap<String, RIFDataType> dataTypeFromNameA 
 			= new HashMap<String, RIFDataType>();
 		for (RIFDataType rifDataTypeA : rifDataTypeListA) {
+			System.out.println("Adding key to list A:=="+rifDataTypeA.getDisplayName()+"==");
 			dataTypeFromNameA.put(rifDataTypeA.getDisplayName(), rifDataTypeA);
 		}		
 		
 		HashMap<String, RIFDataType> dataTypeFromNameB
 			= new HashMap<String, RIFDataType>();
 		for (RIFDataType rifDataTypeB : rifDataTypeListB) {
-			dataTypeFromNameA.put(rifDataTypeB.getDisplayName(), rifDataTypeB);
+			dataTypeFromNameB.put(rifDataTypeB.getDisplayName(), rifDataTypeB);
 		}
+
+		System.out.println("!!!!!!!!!!!!!!!!!!!RIFDataType hasIdentical 5");
 		
 		ArrayList<String> keysListA = new ArrayList<String>();
 		keysListA.addAll(dataTypeFromNameA.keySet());		
 		for (String keyA : keysListA) {
+			
 			RIFDataType rifDataTypeB
 				= dataTypeFromNameB.get(keyA);
 			if (rifDataTypeB == null) {
@@ -333,10 +341,14 @@ public final class RIFDataType
 			
 			RIFDataType rifDataTypeA
 				= dataTypeFromNameA.get(keyA);
+			System.out.println("RDT stat hasIdentical 202 BEGIN type A=="+rifDataTypeA.getName()+"==B==" + rifDataTypeB.getName()+"==");
 			if (rifDataTypeA.hasIdenticalContents(rifDataTypeB) == false) {
+				System.out.println("RDT stat hasIdentical 202 END type A=="+rifDataTypeA.getName()+"==B==" + rifDataTypeB.getName()+"==");
 				return false;
 			}
 		}
+
+		System.out.println("!!!!!!!!!!!!!!!!!!!RIFDataType hasIdentical 6");
 		
 		ArrayList<String> keysListB = new ArrayList<String>();
 		keysListB.addAll(dataTypeFromNameB.keySet());
@@ -353,6 +365,8 @@ public final class RIFDataType
 				return false;
 			}
 		}
+
+		System.out.println("RIFDataType hasIdentical 7");
 		
 		return true;
 		
@@ -512,6 +526,10 @@ public final class RIFDataType
 		}		
 	}
 	
+	public void update(final RIFDataType revisedRIFDataType) {
+		RIFDataType.copyInto(revisedRIFDataType, this);
+		updateLastModifiedTime();
+	}
 
 	public boolean hasIdenticalContents(
 		final RIFDataType otherRIFDataType) {
@@ -522,24 +540,20 @@ public final class RIFDataType
 			= otherRIFDataType.getName();
 		String otherDescription 
 			= otherRIFDataType.getDescription();
-		
+
 		if (Objects.deepEquals(identifier, otherIdentifier) == false) {
-			System.out.println("RIFDataType hasIdenticalContents 1");
 			return false;
 		}
 		if (Objects.deepEquals(name, otherName) == false) {
-			System.out.println("RIFDataType hasIdenticalContents 2");
 			return false;
 		}
 		if (Objects.deepEquals(description, otherDescription) == false) {
-			System.out.println("RIFDataType hasIdenticalContents 3");
 			return false;
 		}		
 	 		
 		RIFFieldActionPolicy otherFieldCleaningPolicy
 			= otherRIFDataType.getFieldCleaningPolicy();
 		if (fieldCleaningPolicy != otherFieldCleaningPolicy) {		
-			System.out.println("RIFDataType hasIdenticalContents 4");			
 			return false;
 		}
 		
@@ -548,52 +562,45 @@ public final class RIFDataType
 		if (CleaningRule.cleaningRulesAreEqual(				
 			cleaningRules, 
 			otherCleaningRules) == false) {		
-			System.out.println("RIFDataType hasIdenticalContents 5");
-
 			return false;
 		}
-		
-
 		
 		String otherCleaningFunctionName
 			= otherRIFDataType.getCleaningFunctionName();
 		if (Objects.deepEquals(
 			cleaningFunctionName, 
-			otherCleaningFunctionName) == false) {
-			System.out.println("RIFDataType hasIdenticalContents 6 thisClean=="+ cleaningFunctionName + "==otherClean=="+otherCleaningFunctionName+"==");
-			
+			otherCleaningFunctionName) == false) {			
 			return false;
 		}		
 		
 		RIFFieldActionPolicy otherFieldValidationPolicy
 			= otherRIFDataType.getFieldValidationPolicy();
 		if (fieldValidationPolicy != otherFieldValidationPolicy) {
-			System.out.println("RIFDataType hasIdenticalContents 7");
 			
 			return false;
 		}
+
 			
 		ArrayList<ValidationRule> otherValidationRules
 			= otherRIFDataType.getValidationRules();
-		
+
+		//System.out.println("RDT checking validation rules are equal BEGIN 1111");
 		if (ValidationRule.validationRulesAreEqual(
 			validationRules, 
 			otherValidationRules) == false) {
-			System.out.println("RIFDataType hasIdenticalContents 8");
 
 			return false;
 		}
+		//System.out.println("RDT checking validation rules are equal END 1111");
 		
 		String otherValidationFunctionName
 			= otherRIFDataType.getValidationFunctionName();
 		if (Objects.deepEquals(
 				validationFunctionName, 
 				otherValidationFunctionName) == false) {
-			System.out.println("RIFDataType hasIdenticalContents 9");
-
 			return false;
 		}		
-				
+
 		return true;		
 	}
 	
@@ -634,6 +641,19 @@ public final class RIFDataType
 		}
 
 		return Objects.deepEquals(identifier, otherRIFDataType.getIdentifier());
+	}
+	
+	private void updateLastModifiedTime() {
+		Date currentTime = new Date(System.currentTimeMillis());
+		lastModifiedTime = currentTime;
+	}
+	
+	public Date getLastModifiedTime() {
+		return lastModifiedTime;
+	}
+	
+	public void setLastModifiedTime(final Date lastModifiedTime) {
+		this.lastModifiedTime = lastModifiedTime;
 	}
 	
 	// ==========================================
@@ -681,6 +701,7 @@ public final class RIFDataType
 		}
 
 	}
+	
 	
 	// ==========================================
 	// Section Interfaces

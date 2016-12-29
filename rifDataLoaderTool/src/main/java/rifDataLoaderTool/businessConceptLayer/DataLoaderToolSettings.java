@@ -98,7 +98,7 @@ public class DataLoaderToolSettings {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDatabaseConnectionParameters databaseConnectionParameters;
+	private DatabaseConnectionsConfiguration databaseConnectionParameters;
 	private ArrayList<DLGeography> geographies;
 	private RIFDataTypeFactory rifDataTypeFactory;
 	private ArrayList<LinearWorkflow> workflows;
@@ -111,7 +111,7 @@ public class DataLoaderToolSettings {
 	public DataLoaderToolSettings() {
 		
 		databaseConnectionParameters
-			= RIFDatabaseConnectionParameters.newInstance();
+			= DatabaseConnectionsConfiguration.newInstance();
 		
 		geographies 
 			= new ArrayList<DLGeography>();
@@ -148,11 +148,11 @@ public class DataLoaderToolSettings {
 	}
 	*/
 	
-	public RIFDatabaseConnectionParameters getDatabaseConnectionParameters() {		
+	public DatabaseConnectionsConfiguration getDatabaseConnectionParameters() {		
 		return databaseConnectionParameters;
 	}
 	
-	public void setDatabaseConnectionParameters(final RIFDatabaseConnectionParameters databaseConnectionParameters) {
+	public void setDatabaseConnectionParameters(final DatabaseConnectionsConfiguration databaseConnectionParameters) {
 		this.databaseConnectionParameters = databaseConnectionParameters;
 	}
 	

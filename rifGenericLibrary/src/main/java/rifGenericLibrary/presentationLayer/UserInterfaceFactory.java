@@ -1059,6 +1059,27 @@ public final class UserInterfaceFactory {
 		return button;
 	}
 	
+	public JButton createRunButton() {
+		String runButtonText
+			= RIFGenericLibraryMessages.getMessage("buttons.run.label");		
+		JButton button = createButton(runButtonText);
+		return button;
+	}
+	
+	public JButton createViewButton() {
+		String viewButtonText
+			= RIFGenericLibraryMessages.getMessage("buttons.view.label");		
+		JButton button = createButton(viewButtonText);
+		return button;
+	}	
+	
+	public JButton createEditButton() {
+		String viewButtonText
+			= RIFGenericLibraryMessages.getMessage("buttons.edit.label");		
+		JButton button = createButton(viewButtonText);
+		return button;
+	}	
+
 	
 // ==========================================
 // Section Errors and Validation

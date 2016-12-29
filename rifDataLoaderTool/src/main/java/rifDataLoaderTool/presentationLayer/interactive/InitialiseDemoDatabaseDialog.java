@@ -1,7 +1,7 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
+import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
 
 import rifGenericLibrary.presentationLayer.*;
 import rifGenericLibrary.system.RIFServiceException;
@@ -74,7 +74,7 @@ class InitialiseDemoDatabaseDialog
 	// ==========================================
 	
 	//Data
-	private RIFDatabaseConnectionParameters databaseConnectionParameters;
+	private DatabaseConnectionsConfiguration databaseConnectionParameters;
 	
 	//GUI Components
 	private JTextField databaseNameTextField;
@@ -258,12 +258,12 @@ class InitialiseDemoDatabaseDialog
 		return passwordTextField.getText();
 	}
 
-	public RIFDatabaseConnectionParameters getData() {	
+	public DatabaseConnectionsConfiguration getData() {	
 		return databaseConnectionParameters;		
 	}
 	
 	public void setData(
-		final RIFDatabaseConnectionParameters databaseConnectionParameters) {
+		final DatabaseConnectionsConfiguration databaseConnectionParameters) {
 		
 		this.databaseConnectionParameters = databaseConnectionParameters;
 		populateForm();

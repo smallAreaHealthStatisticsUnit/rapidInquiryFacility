@@ -1,15 +1,14 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.DataLoaderToolSession;
-
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
-import rifDataLoaderTool.businessConceptLayer.LoadingOrderState;
 
 import javax.swing.*;
+
 import java.util.ArrayList;
 import java.util.Observable;
 
@@ -82,12 +81,14 @@ public class HealthThemesListPanel
 	public HealthThemesListPanel(
 		final JFrame frame,
 		final DataLoaderToolSession session,
-		final DLDependencyManager dependencyManager) {
+		final DLDependencyManager dependencyManager,
+		final DataLoaderToolChangeManager changeManager) {
 		
 		super(
 			frame, 
 			session, 
-			dependencyManager);
+			dependencyManager,
+			changeManager);
 		
 		String listTitle
 			= RIFDataLoaderToolMessages.getMessage(
@@ -101,6 +102,22 @@ public class HealthThemesListPanel
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+	public void refresh() {
+		clearListItems();
+
+		DataLoaderToolSession session = getSession();
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= session.getDataLoaderToolConfiguration();
+		ArrayList<DLHealthTheme> healthThemes
+			= dataLoaderToolConfiguration.getHealthThemes();
+		ArrayList<DisplayableListItemInterface> listItemsToAdd
+			= new ArrayList<DisplayableListItemInterface>();
+		for (DLHealthTheme healthTheme : healthThemes) {
+			listItemsToAdd.add(healthTheme);
+		}
+		setListItems(listItemsToAdd);
+	}
 	
 
 	@Override
@@ -110,10 +127,15 @@ public class HealthThemesListPanel
 		UserInterfaceFactory userInterfaceFactory
 			= getUserInterfaceFactory();
 		HealthThemeEditorDialog dialog
-			 = new HealthThemeEditorDialog(userInterfaceFactory);
+			 = new HealthThemeEditorDialog(
+				userInterfaceFactory,
+				getExistingDisplayNames());
 		dialog.setData(healthTheme);
 		dialog.show();
 		if (dialog.isCancelled() == false) {
+			DataLoaderToolChangeManager changeManager
+				= getChangeManager();
+			changeManager.addHealthTheme(healthTheme);
 			addListItem(healthTheme);			
 		}
 	}
@@ -129,11 +151,20 @@ public class HealthThemesListPanel
 		UserInterfaceFactory userInterfaceFactory
 			= getUserInterfaceFactory();
 		HealthThemeEditorDialog dialog
-		 	= new HealthThemeEditorDialog(userInterfaceFactory);
+		 	= new HealthThemeEditorDialog(
+		 		userInterfaceFactory, 
+		 		getExistingDisplayNames());
 		dialog.setData(cloneHealthTheme);
 		dialog.show();
 		
 		if (dialog.isCancelled() == false) {
+			DataLoaderToolChangeManager changeManager
+				= getChangeManager();
+			//update item in the underlying model object
+			changeManager.updateHealthTheme(
+				selectedHealthTheme, 
+				cloneHealthTheme);
+			//update item in the UI
 			updateListItem(
 				selectedHealthTheme, 
 				cloneHealthTheme);
@@ -141,17 +172,17 @@ public class HealthThemesListPanel
 	}
 	
 	@Override
-	protected void checkDependenciesForItemsToDelete()
-		throws RIFServiceException {
+	protected void deleteSelectedListItems() {
 		
 		DLDependencyManager dependencyManager
 			= getDependencyManager();
+		
 		ArrayList<DisplayableListItemInterface> itemsToDelete
 			= getSelectedListItems();
 		for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
 			DLHealthTheme healthThemeToDelete
 				= (DLHealthTheme) itemToDelete;
-			dependencyManager.checkHealthThemeDependencies(healthThemeToDelete);
+			//dependencyManager.checkHealthThemeDependencies(healthThemeToDelete);
 		}		
 	}
 	
@@ -172,9 +203,9 @@ public class HealthThemesListPanel
 		final Observable observable,
 		final Object object) {
 		
-		LoadingOrderState currentState
-			= (LoadingOrderState) object;
-		if (currentState.getOrder() >= LoadingOrderState.DEFINE_HEALTH_THEMES.getOrder()) {
+		DataLoadingOrder currentState
+			= (DataLoadingOrder) object;
+		if (currentState.getStepNumber() >= DataLoadingOrder.GEOGRAPHY_META_DATA_SPECIFIED.getStepNumber()) {
 			setEnable(true);			
 		}
 		else {

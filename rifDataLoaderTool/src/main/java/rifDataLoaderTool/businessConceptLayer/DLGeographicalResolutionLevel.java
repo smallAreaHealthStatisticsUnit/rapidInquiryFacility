@@ -1,5 +1,14 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.text.Collator;
+import java.util.ArrayList;
+
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifServices.businessConceptLayer.Investigation;
+
 /**
  *
  *
@@ -50,7 +59,8 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public class DLGeographicalResolutionLevel {
+public class DLGeographicalResolutionLevel 
+	extends AbstractRIFDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants
@@ -127,6 +137,105 @@ public class DLGeographicalResolutionLevel {
 		destination.setDatabaseFieldName(source.getDatabaseFieldName());		
 	}
 	
+	public static final boolean hasIdenticalContents(
+		final ArrayList<DLGeographicalResolutionLevel> levelsA, 
+		final ArrayList<DLGeographicalResolutionLevel> levelsB) {
+		
+		if (FieldValidationUtility.hasDifferentNullity(
+			levelsA, 
+			levelsB)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}
+				
+		if (levelsA.size() != levelsB.size() ) {
+			//reject if lists do not have the same size
+			return false;
+		}		
+		
+		ArrayList<DLGeographicalResolutionLevel> sortedALevels
+			= sortLevels(levelsA);
+		ArrayList<DLGeographicalResolutionLevel> sortedBLevels
+			= sortLevels(levelsB);
+	
+		int numberOfHealthCodes = sortedALevels.size();
+		for (int i = 0; i < numberOfHealthCodes; i++) {
+			DLGeographicalResolutionLevel levelA
+				= sortedALevels.get(i);				
+			DLGeographicalResolutionLevel levelB
+				= sortedBLevels.get(i);
+			if (levelA.hasIdenticalContents(levelB) == false) {					
+				return false;
+			}			
+		}
+				
+		return true;
+	}
+	
+	public static ArrayList<DLGeographicalResolutionLevel> sortLevels(
+		final ArrayList<DLGeographicalResolutionLevel> levels) {
+		
+		DisplayableItemSorter sorter = new DisplayableItemSorter();
+		
+		for (DLGeographicalResolutionLevel level : levels) {
+			sorter.addDisplayableListItem(level);
+		}
+		
+		ArrayList<DLGeographicalResolutionLevel> results 
+			= new ArrayList<DLGeographicalResolutionLevel>();
+		ArrayList<String> identifiers = sorter.sortIdentifiersList();
+		for (String identifier : identifiers) {
+			DLGeographicalResolutionLevel sortedLevel 
+				= (DLGeographicalResolutionLevel) sorter.getItemFromIdentifier(identifier);
+			results.add(sortedLevel);
+		}
+			
+		return results;	
+	}
+	
+	public boolean hasIdenticalContents(
+		final DLGeographicalResolutionLevel otherLevel) {
+		
+		if (otherLevel == null) {
+			return false;
+		}
+		
+		if (order != otherLevel.getOrder()) {
+			return false;
+		}
+
+		Collator collator = Collator.getInstance();
+		String otherDisplayName = otherLevel.getDisplayName();
+		if (FieldValidationUtility.hasDifferentNullity(
+			displayName, 
+			otherDisplayName)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}
+		if (displayName != null) {
+			//they must both be non-null
+			if (collator.equals(displayName, otherDisplayName) == false) {
+				return false;
+			}	
+		}		
+			
+		String otherDatabaseFieldName = otherLevel.getDatabaseFieldName();
+		if (FieldValidationUtility.hasDifferentNullity(
+			databaseFieldName, 
+			otherDatabaseFieldName)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}
+		if (databaseFieldName != null) {
+			//they must both be non-null
+			if (collator.equals(databaseFieldName, otherDatabaseFieldName) == false) {
+				return false;
+			}	
+		}		
+
+		return true;
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -157,7 +266,19 @@ public class DLGeographicalResolutionLevel {
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-
+	public void checkErrors() 
+		throws RIFServiceException {
+		
+		
+	}
+	
+	public void checkSecurityViolations() 
+		throws RIFServiceSecurityException {
+		
+		
+	}
+	
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

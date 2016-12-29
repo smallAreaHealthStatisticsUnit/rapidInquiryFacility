@@ -1,14 +1,9 @@
-package rifDataLoaderTool.fileFormats.revised;
+package rifGenericLibrary.presentationLayer;
 
-
-import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
-import rifGenericLibrary.fileFormats.XMLUtility;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.util.ArrayList;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  *
@@ -60,8 +55,9 @@ import java.util.ArrayList;
  *
  */
 
-final class CheckOptionConfigurationHandler 
-	extends AbstractDataLoaderConfigurationHandler {
+public class HTMLViewerDialog 
+	extends OKCloseButtonDialog 
+	implements ActionListener {
 
 	// ==========================================
 	// Section Constants
@@ -70,78 +66,41 @@ final class CheckOptionConfigurationHandler
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ArrayList<RIFCheckOption> checkOptions;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public CheckOptionConfigurationHandler() {
-		checkOptions = new ArrayList<RIFCheckOption>();
+	public HTMLViewerDialog(
+		final UserInterfaceFactory userInterfaceFactory,
+		final String dialogTitle,
+		final String htmlText) {
 		
-		setPluralRecordName("check_options");
-		setSingularRecordName("check_option");
-
+		super(userInterfaceFactory);
+		setDialogTitle(dialogTitle);
+		
+		JPanel panel = userInterfaceFactory.createPanel();
+		GridBagConstraints panelGC = userInterfaceFactory.createGridBagConstraints();
+		panelGC.fill = GridBagConstraints.BOTH;
+		panelGC.weightx = 1;
+		panelGC.weighty = 1;
+		
+		JEditorPane htmlPane
+			= userInterfaceFactory.createHTMLEditorPane();
+		htmlPane.setText(htmlText);
+		JScrollPane scrollPane
+			= userInterfaceFactory.createScrollPane(htmlPane);
+		panel.add(scrollPane, panelGC);
+		scrollPane.getVerticalScrollBar().setValue(0);
+		
+		setMainPanel(panel);
+		setSize(500, 300);
+		buildUI();
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	public ArrayList<RIFCheckOption> getCheckOptions() {
-		return checkOptions;
-	}
-
-	public void writeXML(
-		final ArrayList<RIFCheckOption> checkOptions)
-		throws IOException {
-		
-		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeRecordStartTag(getPluralRecordName());
-
-		for (RIFCheckOption checkOption : checkOptions) {
-			xmlUtility.writeRecordStartTag(getSingularRecordName());
-			xmlUtility.writeValue(checkOption.getCode());
-			xmlUtility.writeRecordEndTag(getSingularRecordName());
-		}
-		xmlUtility.writeRecordEndTag(getPluralRecordName());
-
-	}
-	
-	
-	@Override
-	public void startElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName,
-		final Attributes attributes) 
-		throws SAXException {
-		
-		if (isPluralRecordName(qualifiedName)) {
-			activate();
-			checkOptions = new ArrayList<RIFCheckOption>();
-		}
-
-	}
-	
-	public void endElement(
-		final String nameSpaceURI,
-		final String localName,
-		final String qualifiedName) 
-		throws SAXException {
-
-		if (isPluralRecordName(qualifiedName)) {
-			deactivate();
-		}
-		else if (isSingularRecordName(qualifiedName)) {
-			String checkOptionName
-				= getCurrentFieldValue();
-			RIFCheckOption rifCheckOption
-				= RIFCheckOption.getOptionFromCode(checkOptionName);
-			checkOptions.add(rifCheckOption);
-		}
-	}
-	
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -150,11 +109,11 @@ final class CheckOptionConfigurationHandler
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
-
+	//Interface: Action Listener
+	public void actionPerformed(final ActionEvent event) {
+		performOKCloseActions(event);
+	}
 	// ==========================================
 	// Section Override
 	// ==========================================
-
 }
-
-

@@ -1,7 +1,6 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.RIFFieldActionPolicy;
-
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 

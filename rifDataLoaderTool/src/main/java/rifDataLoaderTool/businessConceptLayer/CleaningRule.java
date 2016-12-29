@@ -2,7 +2,6 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceSecurityException;
@@ -305,6 +304,7 @@ public final class CleaningRule
 		String otherSearchValue = otherCleaningRule.getSearchValue();
 		String otherReplaceValue = otherCleaningRule.getReplaceValue();
 				
+		System.out.println("cln rule hasIdent 1");
 		if (Objects.deepEquals(name, otherName) == false) {
 			return false;
 		}
@@ -312,11 +312,19 @@ public final class CleaningRule
 			return false;
 		}
 		if (Objects.deepEquals(searchValue, otherSearchValue) == false) {
+			System.out.println("cln rule hasIdent searchValue=="+searchValue+"==other=="+otherSearchValue+"==");
 			return false;
 		}
 		if (Objects.deepEquals(replaceValue, otherReplaceValue) == false) {
+			System.out.println("cln rule hasIdent replaceValue=="+searchValue+"==other=="+otherSearchValue+"==");
 			return false;
 		}		
+		
+		if (lastModifiedDatesIdentical(otherCleaningRule) == false) {
+			System.out.println("cln rule hasIdent replaceValue 4==");
+			return false;
+		}
+				
 		
 		return true;		
 	}

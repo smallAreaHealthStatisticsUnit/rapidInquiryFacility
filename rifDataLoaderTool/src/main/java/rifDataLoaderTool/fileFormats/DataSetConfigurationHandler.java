@@ -1,17 +1,15 @@
 package rifDataLoaderTool.fileFormats;
 
 
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Date;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -89,12 +87,19 @@ final class DataSetConfigurationHandler
 	
 	private HashMap<String, DataSetConfiguration> dataSetFromDependencyName;
 	
+	private HashMap<DataSetConfiguration, String> geographyNameFromDataSet;
+	private HashMap<DataSetConfiguration, String> healthThemeNameFromDataSet;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public DataSetConfigurationHandler() {
 		isSerialisingHints = false;
+
+		dataSetFromDependencyName = new HashMap<String, DataSetConfiguration>();
+		geographyNameFromDataSet = new HashMap<DataSetConfiguration, String>();
+		healthThemeNameFromDataSet = new HashMap<DataSetConfiguration, String>();
 		
 		dataSetFieldConfigurationHandler
 			= new DataSetFieldConfigurationHandler();
@@ -124,7 +129,7 @@ final class DataSetConfigurationHandler
 			"file_path",
 			filePathComment);
 		
-		dataSetFromDependencyName = new HashMap<String, DataSetConfiguration>();
+		
 	}
 	
 	@Override
@@ -150,6 +155,13 @@ final class DataSetConfigurationHandler
 		return dataSetConfigurations;
 	}
 
+	public String getGeographyName(final DataSetConfiguration dataSetConfiguration) {
+		return geographyNameFromDataSet.get(dataSetConfiguration);
+	}
+
+	public String getHealthThemeName(final DataSetConfiguration dataSetConfiguration) {
+		return healthThemeNameFromDataSet.get(dataSetConfiguration);
+	}
 	
 	public ArrayList<DataSetConfiguration> getDataSetConfigurations(
 		final RIFSchemaArea targetRIFSchemaArea) {
@@ -211,6 +223,33 @@ final class DataSetConfigurationHandler
 				getSingularRecordName(), 
 				"description", 
 				dataSetConfiguration.getDescription());
+
+			DLHealthTheme healthTheme
+				= dataSetConfiguration.getHealthTheme();
+			if (healthTheme != null) {
+				xmlUtility.writeField(
+					getSingularRecordName(), 
+					"health_theme", 
+					healthTheme.getName());
+			}
+			
+			DLGeography geography
+				= dataSetConfiguration.getGeography();
+			if (geography != null) {
+				xmlUtility.writeField(
+					getSingularRecordName(), 
+					"geography", 
+					geography.getName());				
+			}
+
+			Date lastModifiedTimeStamp
+				= dataSetConfiguration.getLastModifiedTime();
+			if (lastModifiedTimeStamp != null) {
+				xmlUtility.writeField(
+					getSingularRecordName(), 
+					"last_modified", 
+					this.getLastModifiedTimeStampPhrase(lastModifiedTimeStamp));				
+			}
 			
 			xmlUtility.writeField(
 				getSingularRecordName(), 
@@ -251,6 +290,9 @@ final class DataSetConfigurationHandler
 		xmlUtility.writeRecordEndTag(getPluralRecordName());
 	}
 
+	
+	
+	
 	@Override
 	public void startElement(
 		final String nameSpaceURI,
@@ -260,9 +302,11 @@ final class DataSetConfigurationHandler
 		throws SAXException {
 
 		if (isPluralRecordName(qualifiedName) == true) {
+			System.out.println("DataSetConfiguration Handler READING DATA SETS 111");
 			activate();
 		}
 		else if (isSingularRecordName(qualifiedName) == true) {
+			System.out.println("DataSetConfiguration Handler READING DATA SETS 112");
 			currentDataSetConfiguration
 				= DataSetConfiguration.newInstance();
 			currentDataSetConfiguration.setNewRecord(false);
@@ -361,14 +405,25 @@ final class DataSetConfigurationHandler
 		}		
 		else if (equalsFieldName("dependency", qualifiedName)) {
 			dataSetFromDependencyName.put(getCurrentFieldValue(), currentDataSetConfiguration);
+		}
+		else if (equalsFieldName("geography", qualifiedName)) {
+			geographyNameFromDataSet.put(currentDataSetConfiguration, getCurrentFieldValue());
+		}		
+		else if (equalsFieldName("health_theme", qualifiedName)) {
+			healthThemeNameFromDataSet.put(currentDataSetConfiguration, getCurrentFieldValue());
+		}		
+		else if (equalsFieldName("last_modified_time", qualifiedName)) {
+			String timeStampPhrase = getCurrentFieldValue();
+			currentDataSetConfiguration.setLastModifiedTime(
+				getLastModifiedTimeStamp(timeStampPhrase));	
 		}		
 		else {
 			assert false;
 		}		
 	}
 	
-	public void setRIFDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
-		dataSetFieldConfigurationHandler.setRIFDataTypeFactory(rifDataTypeFactory);		
+	public void setDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
+		dataSetFieldConfigurationHandler.setDataTypeFactory(rifDataTypeFactory);		
 	}	
 	
 	// ==========================================

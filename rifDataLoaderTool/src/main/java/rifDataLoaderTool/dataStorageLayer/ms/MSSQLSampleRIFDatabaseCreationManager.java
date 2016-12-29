@@ -4,7 +4,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
+import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
@@ -114,7 +114,7 @@ public class MSSQLSampleRIFDatabaseCreationManager {
 			String userID = (String) userLoginResourceBundle.getObject("userID");
 			String password = (String) userLoginResourceBundle.getObject("password");
 			
-			RIFDatabaseConnectionParameters dbParameters
+			DatabaseConnectionsConfiguration dbParameters
 				= dataLoaderToolSettings.getDatabaseConnectionParameters();
 			StringBuilder urlText = new StringBuilder();
 			urlText.append(dbParameters.getDatabaseDriverPrefix());
@@ -177,7 +177,7 @@ public class MSSQLSampleRIFDatabaseCreationManager {
 		Connection connection = null;		
 		try {
 			StringBuilder urlText = new StringBuilder();
-			RIFDatabaseConnectionParameters dbParameters
+			DatabaseConnectionsConfiguration dbParameters
 				= dataLoaderToolSettings.getDatabaseConnectionParameters();
 			urlText.append(dbParameters.getDatabaseDriverPrefix());
 			urlText.append(":");

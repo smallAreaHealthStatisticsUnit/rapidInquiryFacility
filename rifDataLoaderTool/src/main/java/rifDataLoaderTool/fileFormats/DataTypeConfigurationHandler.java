@@ -3,9 +3,21 @@ package rifDataLoaderTool.fileFormats;
 
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
+import rifGenericLibrary.system.RIFServiceException;
+
+
+
+
+
+
+
+
+
+
+
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -81,7 +93,7 @@ import java.util.ArrayList;
  */
 
 
-final class GeographyConfigurationHandler 
+final public class DataTypeConfigurationHandler 
 	extends AbstractDataLoaderConfigurationHandler {
 
 // ==========================================
@@ -91,21 +103,34 @@ final class GeographyConfigurationHandler
 // ==========================================
 // Section Properties
 // ==========================================
-	private ArrayList<DLGeography> geographies;
-	private DLGeography currentGeography;
-	private ShapeFileConfigurationHandler shapeFileConfigurationHandler;
+	
+	private ArrayList<String> errorMessages;
+	private RIFDataTypeFactory rifDataTypeFactory;
+	private RIFDataType currentRIFDataType;
+	private FieldCleaningPolicyConfigurationHandler cleaningPolicyConfigurationHandler;
+	private FieldValidatingPolicyConfigurationHandler validatingPolicyConfigurationHandler;
+	
 // ==========================================
 // Section Construction
 // ==========================================
     /**
      * Instantiates a new disease mapping study content handler.
      */
-	public GeographyConfigurationHandler() {
-		setPluralRecordName("data_loader_tool_geographies");
-		setSingularRecordName("data_loader_tool_geography");
-		shapeFileConfigurationHandler
-			= new ShapeFileConfigurationHandler();
-		geographies = new ArrayList<DLGeography>();
+	public DataTypeConfigurationHandler() {
+		errorMessages = new ArrayList<String>();
+		setPluralRecordName("rif_data_types");
+		setSingularRecordName("rif_data_type");
+		rifDataTypeFactory = RIFDataTypeFactory.newInstance();	
+		cleaningPolicyConfigurationHandler
+			= new FieldCleaningPolicyConfigurationHandler();
+		validatingPolicyConfigurationHandler
+			= new FieldValidatingPolicyConfigurationHandler();
+
+		String rifDataTypeComment
+			= RIFDataLoaderToolMessages.getMessage("abstractRIFDataType.toolTipText");
+		setComment(
+			"rif_data_type", 
+			rifDataTypeComment);
 	}
 
 
@@ -116,9 +141,12 @@ final class GeographyConfigurationHandler
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream, commentInjector);
-		shapeFileConfigurationHandler.initialise(
+		cleaningPolicyConfigurationHandler.initialise(
 			outputStream, 
-			commentInjector);		
+			commentInjector);
+		validatingPolicyConfigurationHandler.initialise(
+			outputStream, 
+			commentInjector);
 		
 	}
 
@@ -127,8 +155,12 @@ final class GeographyConfigurationHandler
 		throws UnsupportedEncodingException {
 
 		super.initialise(outputStream);
-		shapeFileConfigurationHandler.initialise(
-			outputStream);			
+		
+		cleaningPolicyConfigurationHandler.initialise(
+			outputStream);
+		validatingPolicyConfigurationHandler.initialise(
+			outputStream);
+		
 	}
 	
 	
@@ -141,42 +173,66 @@ final class GeographyConfigurationHandler
 	 *
 	 * @return the disease mapping study
 	 */
-	public ArrayList<DLGeography> getGeographies() {
-		return geographies;
+	public RIFDataTypeFactory getDataTypeFactory() {
+		return rifDataTypeFactory;
 	}
-
+	
+	public void setDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
+		this.rifDataTypeFactory = rifDataTypeFactory;
+	}
+	
+	public ArrayList<String> getErrorMessages() {
+		return errorMessages;
+	}
+	
 	public void writeXML(
-		final ArrayList<DLGeography> geographies)
+		final RIFDataTypeFactory rifDataTypeFactory)
 		throws IOException {
 			
 		XMLUtility xmlUtility = getXMLUtility();
-		
-		xmlUtility.writeRecordStartTag(getPluralRecordName());		
-		for (DLGeography geography : geographies) {
-			writeXML(geography);
+		xmlUtility.writeRecordStartTag(getPluralRecordName());
+		ArrayList<RIFDataType> rifDataTypes
+			= rifDataTypeFactory.getRegisteredDataTypes();
+		for (RIFDataType rifDataType : rifDataTypes) {
+			writeRIFDataType(rifDataType);
 		}
-		xmlUtility.writeRecordEndTag(getPluralRecordName());
+		xmlUtility.writeRecordEndTag(getPluralRecordName());		
 	}	
-	
-	private void writeXML(final DLGeography geography) 
-		throws IOException {
 
+	private void writeRIFDataType(final RIFDataType rifDataType) 
+		throws IOException {
+		
+		String recordTag = getSingularRecordName();
 		XMLUtility xmlUtility = getXMLUtility();
-		
-		String recordType = getSingularRecordName();
-		
-		xmlUtility.writeRecordStartTag(recordType);	
+		xmlUtility.writeRecordStartTag(recordTag);
 		xmlUtility.writeField(
-			recordType, 
+			recordTag, 
 			"identifier", 
-			geography.getIdentifier());	
+			rifDataType.getIdentifier());
+
 		xmlUtility.writeField(
-			recordType, 
+			recordTag, 
 			"name", 
-			geography.getName());	
-//		shapeFileConfigurationHandler.writeXML(
-//			geography.getShapeFiles());		
-		xmlUtility.writeRecordEndTag(recordType);		
+			rifDataType.getName());
+		
+		xmlUtility.writeField(
+			recordTag, 
+			"description", 
+			rifDataType.getDescription());
+
+		xmlUtility.writeField(
+			recordTag, 
+			"last_modified", 
+			getLastModifiedTimeStampPhrase(rifDataType.getLastModifiedTime()));		
+		
+		cleaningPolicyConfigurationHandler.writeXML(rifDataType);			
+		validatingPolicyConfigurationHandler.writeXML(rifDataType);
+		xmlUtility.writeRecordEndTag(recordTag);		
+		
+	}
+	
+	public void setRIFDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
+		this.rifDataTypeFactory = rifDataTypeFactory;
 	}
 	
 // ==========================================
@@ -204,7 +260,7 @@ final class GeographyConfigurationHandler
 			activate();
 		}
 		else if (isSingularRecordName(qualifiedName)) {
-			currentGeography = DLGeography.newInstance();
+			currentRIFDataType = RIFDataType.newInstance();
 		}
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
@@ -216,15 +272,16 @@ final class GeographyConfigurationHandler
 				attributes);
 		}
 		else {
-			
-			//check to see if handlers could be assigned to delegate parsing
-			if (shapeFileConfigurationHandler.isPluralRecordName(qualifiedName)) {
-				assignDelegatedHandler(shapeFileConfigurationHandler);				
+			//check to see if handlers could be assigned to delegate parsing			
+			if (cleaningPolicyConfigurationHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(cleaningPolicyConfigurationHandler);
 			}
-									
+			else if (validatingPolicyConfigurationHandler.isSingularRecordTypeApplicable(qualifiedName)) {
+				assignDelegatedHandler(validatingPolicyConfigurationHandler);
+			}
+				
 			//delegate to a handler.  If not, then scan for fields relating to this handler
 			if (isDelegatedHandlerAssigned()) {
-
 				AbstractDataLoaderConfigurationHandler currentDelegatedHandler
 					= getCurrentDelegatedHandler();
 				currentDelegatedHandler.startElement(
@@ -251,7 +308,12 @@ final class GeographyConfigurationHandler
 			deactivate();
 		}
 		else if (isSingularRecordName(qualifiedName)) {
-			geographies.add(currentGeography);
+			try {
+				rifDataTypeFactory.registerCustomDataType(currentRIFDataType, false);	
+			}
+			catch(RIFServiceException rifServiceException) {
+				errorMessages.addAll(rifServiceException.getErrorMessages());
+			}
 		}
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
@@ -262,29 +324,51 @@ final class GeographyConfigurationHandler
 				qualifiedName);
 						
 			if (currentDelegatedHandler.isActive() == false) {
-				/*
-				if (currentDelegatedHandler == shapeFileConfigurationHandler) {
-					ArrayList<ShapeFile> shapeFiles
-						= shapeFileConfigurationHandler.getShapeFiles();
-					currentGeography.setShapeFiles(shapeFiles);
-				}				
+				if (currentDelegatedHandler == cleaningPolicyConfigurationHandler) {
+					RIFFieldActionPolicy fieldCleaningPolicy
+						= cleaningPolicyConfigurationHandler.getFieldCleaningPolicy();
+					currentRIFDataType.setFieldCleaningPolicy(fieldCleaningPolicy);
+					ArrayList<CleaningRule> cleaningRules
+						= cleaningPolicyConfigurationHandler.getCleaningRules();
+					currentRIFDataType.setCleaningRules(cleaningRules);
+					String cleaningFunctionName
+						= cleaningPolicyConfigurationHandler.getCleaningFunctionName();
+					currentRIFDataType.setCleaningFunctionName(cleaningFunctionName);			
+					cleaningPolicyConfigurationHandler.resetPolicyAttributes();
+				}
+				else if (currentDelegatedHandler == validatingPolicyConfigurationHandler) {
+					RIFFieldActionPolicy fieldValidationPolicy
+						= validatingPolicyConfigurationHandler.getFieldValidationPolicy();
+					currentRIFDataType.setFieldValidationPolicy(fieldValidationPolicy);
+					ArrayList<ValidationRule> validationRules
+						= validatingPolicyConfigurationHandler.getValidationRules();
+					currentRIFDataType.setValidationRules(validationRules);
+					String validationFunctionName
+						= validatingPolicyConfigurationHandler.getValidationFunctionName();
+					currentRIFDataType.setValidationFunctionName(validationFunctionName);
+					validatingPolicyConfigurationHandler.resetPolicyAttributes();
+				}			
 				else {
 					assert false;
 				}				
-				*/
+				
 				//handler just finished				
 				unassignDelegatedHandler();				
 			}
-			else {
-				assert false;				
-			}
 		}
 		else if (equalsFieldName("identifier", qualifiedName)) {
-			currentGeography.setIdentifier(getCurrentFieldValue());
+			currentRIFDataType.setIdentifier(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("name", qualifiedName)) {
-			currentGeography.setName(getCurrentFieldValue());
-		}	
+			currentRIFDataType.setName(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("description", qualifiedName)) {
+			currentRIFDataType.setDescription(getCurrentFieldValue());
+		}
+		else if (equalsFieldName("last_modified", qualifiedName)) {
+			String timeStampPhrase = getCurrentFieldValue();
+			currentRIFDataType.setLastModifiedTime(getLastModifiedTimeStamp(timeStampPhrase));
+		}		
 		else {
 			assert false;
 		}

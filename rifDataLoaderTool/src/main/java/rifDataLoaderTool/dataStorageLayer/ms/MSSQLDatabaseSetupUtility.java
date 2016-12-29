@@ -1,7 +1,7 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
+import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateDatabaseQueryFormatter;
@@ -81,7 +81,7 @@ public class MSSQLDatabaseSetupUtility {
 		MSSQLDatabaseSetupUtility initialiser = new MSSQLDatabaseSetupUtility();
 		File file = new File("C://rif_scratch//SampleDBCreationScript.txt");
 		DataLoaderToolSettings settings = new DataLoaderToolSettings();
-		RIFDatabaseConnectionParameters dbParameters
+		DatabaseConnectionsConfiguration dbParameters
 			= settings.getDatabaseConnectionParameters();
 		
 		try {
@@ -103,7 +103,7 @@ public class MSSQLDatabaseSetupUtility {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDatabaseConnectionParameters dbParameters;
+	private DatabaseConnectionsConfiguration dbParameters;
 	
 	// ==========================================
 	// Section Construction
@@ -404,7 +404,7 @@ public class MSSQLDatabaseSetupUtility {
 	
 	public void createDatabase(
 		final Connection connection,
-		final RIFDatabaseConnectionParameters dbParameters) 
+		final DatabaseConnectionsConfiguration dbParameters) 
 		throws SQLException {
 
 		/*

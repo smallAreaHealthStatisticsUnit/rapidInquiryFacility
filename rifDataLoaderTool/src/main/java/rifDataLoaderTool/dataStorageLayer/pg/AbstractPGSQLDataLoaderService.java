@@ -111,7 +111,7 @@ abstract class AbstractPGSQLDataLoaderService
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DataLoaderToolSettings dataLoaderToolSettings;
+	private DataLoaderToolConfiguration dataLoaderToolConfiguration;
 	
 	private PGSQLConnectionManager sqlConnectionManager;
 		
@@ -178,12 +178,12 @@ abstract class AbstractPGSQLDataLoaderService
 			= new PGSQLReportManager();
 	}
 	
-	public void initialiseService(final DataLoaderToolSettings dataLoaderToolSettings) 
+	public void initialiseService(final DataLoaderToolConfiguration dataLoaderToolConfiguration) 
 		throws RIFServiceException {
 
-		this.dataLoaderToolSettings = dataLoaderToolSettings;
-		RIFDatabaseConnectionParameters dbParameters
-			= dataLoaderToolSettings.getDatabaseConnectionParameters();
+		this.dataLoaderToolConfiguration = dataLoaderToolConfiguration;
+		DatabaseConnectionsConfiguration dbParameters
+			= dataLoaderToolConfiguration.getDatabaseConnectionConfiguration();
 		
 		sqlConnectionManager
 			= new PGSQLConnectionManager(

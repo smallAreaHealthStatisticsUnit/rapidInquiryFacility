@@ -82,6 +82,9 @@ class DataSetFieldPropertyEditorPanel
 	private DataSetConfiguration originalDataSetConfiguration;
 	private DataSetFieldConfiguration originalDataSetFieldConfiguration;
 	private DataSetFieldConfiguration workingCopyDataSetFieldConfiguration;
+	private DLGeography currentGeography;
+	private RIFSchemaArea currentRIFSchemaArea;
+	
 	private boolean isRenderingForConfigurationHintsFeature;	
 	
 	private Color EXTRACT_COLOUR = new Color(220, 220, 220);
@@ -122,9 +125,9 @@ class DataSetFieldPropertyEditorPanel
 	// ==========================================
 
 	public DataSetFieldPropertyEditorPanel(
-		final JDialog parentDialog,
-		final DataLoaderToolSession session,
-		final boolean isRenderingForConfigurationHintsFeature) {
+			final JDialog parentDialog,
+			final DataLoaderToolSession session,
+			final boolean isRenderingForConfigurationHintsFeature) {
 
 		this.session = session;
 		this.isRenderingForConfigurationHintsFeature 
@@ -355,9 +358,7 @@ class DataSetFieldPropertyEditorPanel
 			= userInterfaceFactory.createTextField();
 		loadTextField.addCaretListener(this);
 		panel.add(loadTextField, panelGC);
-
-		
-		
+	
 		panelGC.gridy++;
 		panelGC.gridx = 0;		
 		panelGC.fill = GridBagConstraints.NONE;
@@ -672,20 +673,13 @@ class DataSetFieldPropertyEditorPanel
 		return originalDataSetFieldConfiguration;
 	}
 	
-	/*
-	public void setDataSetConfiguration(
-		final DataSetConfiguration originalDataSetConfiguration) {
-		
-		this.originalDataSetConfiguration = originalDataSetConfiguration;
-	}
-	*/
-	
-	
 	public void setData(
 		final DataSetConfiguration originalDataSetConfiguration,
+		final DLGeography currentGeography,
 		final DataSetFieldConfiguration originalDataSetFieldConfiguration) {
 
 		this.originalDataSetConfiguration = originalDataSetConfiguration;
+		this.currentGeography = currentGeography;
 		this.originalDataSetFieldConfiguration = originalDataSetFieldConfiguration;
 
 		workingCopyDataSetFieldConfiguration
@@ -820,7 +814,6 @@ class DataSetFieldPropertyEditorPanel
 		
 	}
 	
-	
 	private void updateCleanFieldName(final FieldPurpose fieldPurpose) {
 		//Setting the clean field values
 		String cleanField
@@ -831,16 +824,11 @@ class DataSetFieldPropertyEditorPanel
 			//fields
 			cleanComboBox.setEditable(false);
 
-			DataLoaderToolSettings dataLoaderToolSettings
-				= session.getDataLoaderToolSettings();
-			
-			ArrayList<String> dummyList = new ArrayList<String>();
-			dummyList.add("LEVEL_ONE");
-			dummyList.add("LEVEL_TWO");
-			dummyList.add("LEVEL_THREE");
+			DataLoaderToolConfiguration dataLoaderToolConfiguration
+				= session.getDataLoaderToolConfiguration();
 			
 			ArrayList<String> geographicalResolutionFieldNames
-				= dummyList;
+				= currentGeography.getLevelNames();
 							
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();		
@@ -867,6 +855,29 @@ class DataSetFieldPropertyEditorPanel
 				= new DefaultComboBoxModel<String>(new String[0]);
 			cleanComboBox.setModel(defaultComboBoxModel);
 			cleanComboBox.setSelectedItem(cleanField);
+		}
+	}
+
+	public void setCurrentRIFSchemaArea(final RIFSchemaArea currentRIFSchemaArea) {
+		this.currentRIFSchemaArea = currentRIFSchemaArea;
+		updateUI();
+	}
+		
+	public void setCurrentGeography(final DLGeography currentGeography) {
+		this.currentGeography = currentGeography;
+		
+		FieldPurpose fieldPurpose
+			= workingCopyDataSetFieldConfiguration.getFieldPurpose();
+		System.out.println("Updating current geography field purpose=="+ fieldPurpose.getName()+"==");
+		if (fieldPurpose == FieldPurpose.GEOGRAPHICAL_RESOLUTION) {
+			ArrayList<String> geographicalResolutionFieldNames
+				= currentGeography.getLevelNames();
+			geographicalResolutionFieldNames.add(0, pleaseChooseMessage);				
+			DefaultComboBoxModel<String> defaultComboBoxModel
+				= new DefaultComboBoxModel<String>(geographicalResolutionFieldNames.toArray(new String[0]));
+			cleanComboBox.setModel(defaultComboBoxModel);
+			cleanComboBox.setSelectedItem(pleaseChooseMessage);
+			cleanComboBox.updateUI();
 		}
 	}
 	

@@ -136,7 +136,8 @@ public final class RIFGenericLibraryMessages {
  	   	String result = simpleTimeFormat.format(date);
  	   	return result;
     }   
-    
+        
+  
     /**
      * Gets the date.
      *
@@ -157,6 +158,10 @@ public final class RIFGenericLibraryMessages {
     		//exception or ignore it   		
     	}
 		return result;    	
+    }
+
+    public static Date getCurrentTime() {
+    	return new Date(System.currentTimeMillis());
     }
     
     /**

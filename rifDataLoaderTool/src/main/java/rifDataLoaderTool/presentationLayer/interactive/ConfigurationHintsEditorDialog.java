@@ -3,17 +3,15 @@ package rifDataLoaderTool.presentationLayer.interactive;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.dataStorageLayer.pg.ProductionPGDataLoaderService;
+
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
 
 import java.awt.*;
-
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.border.LineBorder;
-
 import java.awt.event.*;
 import java.util.ArrayList;
 
@@ -119,8 +117,8 @@ public class ConfigurationHintsEditorDialog
 		dataSetHintTablePanel.addListSelectionListener(this);
 		dataSetPropertyEditorPanel
 			= new DataSetPropertyEditorPanel(
-				session.getUserInterfaceFactory(),
-				true);
+				session,
+				null);
 		
 		dataSetFieldHintTablePanel
 			= new ConfigurationHintTablePanel(
@@ -340,8 +338,12 @@ public class ConfigurationHintsEditorDialog
 				= (DataSetFieldConfiguration) dataSetFieldHintTablePanel.getSelectedHintItem();
  			DataSetConfiguration dataSetConfiguration
  				= DataSetConfiguration.newInstance();
+ 			
+ 			DLGeography currentlySelectedGeography
+ 				= dataSetPropertyEditorPanel.getSelectedGeography();
 			dataSetFieldPropertyEditorPanel.setData(
 				dataSetConfiguration,
+				currentlySelectedGeography,
 				dataSetFieldConfigurationItem);
 		}
 	}

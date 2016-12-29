@@ -207,7 +207,7 @@ final class LinearWorkflowConfigurationHandler
 // Section Override
 // ==========================================
 	public void setRIFDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
-		dataSetConfigurationHandler.setRIFDataTypeFactory(rifDataTypeFactory);		
+		dataSetConfigurationHandler.setDataTypeFactory(rifDataTypeFactory);		
 	}
 
 	@Override

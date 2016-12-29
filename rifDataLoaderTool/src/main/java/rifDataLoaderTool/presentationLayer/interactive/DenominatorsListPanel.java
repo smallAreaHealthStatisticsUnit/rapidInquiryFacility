@@ -1,16 +1,14 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
-import rifDataLoaderTool.businessConceptLayer.DLGeography;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.*;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.DataLoaderToolSession;
-import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
-import rifDataLoaderTool.businessConceptLayer.LoadingOrderState;
 
 import javax.swing.*;
-
 import java.util.ArrayList;
 import java.util.Observable;
 
@@ -82,12 +80,14 @@ public class DenominatorsListPanel
 	public DenominatorsListPanel(
 		final JFrame frame,
 		final DataLoaderToolSession session,
-		final DLDependencyManager dependencyManager) {
+		final DLDependencyManager dependencyManager,
+		final DataLoaderToolChangeManager changeManager) {
 		
 		super(
 			frame, 
 			session, 
-			dependencyManager);
+			dependencyManager,
+			changeManager);
 		
 		String listTitle
 			= RIFDataLoaderToolMessages.getMessage(
@@ -101,65 +101,150 @@ public class DenominatorsListPanel
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
 	
+	public void refresh() {
+		clearListItems();
+
+		DataLoaderToolSession session = getSession();
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= session.getDataLoaderToolConfiguration();
+		ArrayList<DataSetConfiguration> denominators
+			= dataLoaderToolConfiguration.getDenominatorDataSetConfigurations();
+		ArrayList<DisplayableListItemInterface> listItemsToAdd
+			= new ArrayList<DisplayableListItemInterface>();
+		for (DataSetConfiguration denominator : denominators) {
+			listItemsToAdd.add(denominator);
+		}
+		setListItems(listItemsToAdd);
+	}
+		
 	@Override
 	protected void addListItem() {
-		UserInterfaceFactory userInterfaceFactory
-			= getUserInterfaceFactory();
 
+		/**
+		 * Create a data set based on the properties derived from
+		 * examining an imported CSV file.  Then set the RIF Schema
+		 * Area in a way that is appropriate to the concept supported
+		 * by this list panel class.
+		 */
 		DataLoaderToolSession session = getSession();
 		CSVFileSelectionDialog csvFileSelectionDialog
 			= new CSVFileSelectionDialog(session);
 		csvFileSelectionDialog.show();
 	
 		if (csvFileSelectionDialog.isCancelled()) {
+			//User pressed cancel, there is no new item to add
 			return;
 		}
 	
-		DataSetConfiguration originalDataSetConfiguration
+		DataSetConfiguration originalDenominator
 			= csvFileSelectionDialog.getDataSetConfiguration();
+		originalDenominator.setRIFSchemaArea(RIFSchemaArea.POPULATION_DENOMINATOR_DATA);
 
+		/**
+		 * Use the kind of RIF Schema Area supported by this list panel
+		 * class to parameterise an editor that will let users set 
+		 * properties of the newly created data set configuration.
+		 */
 		DataSetConfigurationEditorDialog dialog
-			= new DataSetConfigurationEditorDialog(session);
-		dialog.setData(
-		originalDataSetConfiguration);
+			= new DataSetConfigurationEditorDialog(
+				session, 
+				RIFSchemaArea.POPULATION_DENOMINATOR_DATA);
+		dialog.setData(originalDenominator);
 		dialog.show();
 		if (dialog.isCancelled() == true) {
 			return;
 		}
 
-		session.setSaveChanges(true);
-		DataSetConfiguration revisedDataSetConfiguration
-			= dialog.getDataSetConfiguration();
-		DataSetConfiguration.copyInto(
-			revisedDataSetConfiguration, 
-			originalDataSetConfiguration);
-		
-		addListItem(revisedDataSetConfiguration);
+		/**
+		 * Register new items both in the underlying model being 
+		 * managed by the change manager and by the GUI list that will
+		 * accommodate new additions.
+		 */
+		DataSetConfiguration revisedDenominator
+			= dialog.getDataSetConfigurationFromForm();
+		DataLoaderToolChangeManager changeManager
+			= getChangeManager();
+		changeManager.addDenominator(revisedDenominator);
+		addListItem(revisedDenominator);
 	}
 	
 	@Override
 	protected void editSelectedListItem() {
-		DataSetConfiguration dataSetConfiguration 
-			= (DataSetConfiguration) getSelectedListItem();
-
-		System.out.println("Editing denominator");
+		DataSetConfiguration originalDenominator 
+			= (DataSetConfiguration) getSelectedListItem();		
 		
+		DataLoaderToolSession session = getSession();
+		DataSetConfigurationEditorDialog dialog
+			= new DataSetConfigurationEditorDialog(
+				session, 
+				RIFSchemaArea.POPULATION_DENOMINATOR_DATA);
+		dialog.setData(originalDenominator);
+		dialog.show();
+		if (dialog.isCancelled() == true) {
+			return;
+		}
+		
+		/**
+		 * Update the underlying data loader tool configuration model
+		 * object managed by the change manager and update the GUI 
+		 * list as well.  The change manager will compare original
+		 * and revised copies and if they are different, it will 
+		 * set a saveChanges field.
+		 */
+		DataSetConfiguration revisedDenominator
+			= dialog.getDataSetConfigurationFromForm();
+		DataLoaderToolChangeManager changeManager
+			= getChangeManager();
+		updateListItem(originalDenominator, revisedDenominator);
+		changeManager.updateDenominator(
+			originalDenominator, 
+			revisedDenominator);		
 	}
 	
-	@Override
-	protected void checkDependenciesForItemsToDelete()
-		throws RIFServiceException {
+	protected void deleteSelectedListItems() {
 		
-		DLDependencyManager dependencyManager
-			= getDependencyManager();
-		ArrayList<DisplayableListItemInterface> itemsToDelete
-			= getSelectedListItems();
-		for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
-			DataSetConfiguration dataSetConfigurationToDelete
-				= (DataSetConfiguration) itemToDelete;
-			dependencyManager.checkDenominatorDependencies(dataSetConfigurationToDelete);
-		}		
+		try {
+			DLDependencyManager dependencyManager
+				= getDependencyManager();
+			ArrayList<DisplayableListItemInterface> itemsToDelete
+				= getSelectedListItems();
+			for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
+				DataSetConfiguration dataSetConfigurationToDelete
+					= (DataSetConfiguration) itemToDelete;
+				dependencyManager.checkDenominatorDependencies(dataSetConfigurationToDelete);
+			}
+			
+			//There are no numerators that depend on any of the denominators
+			//that are meant to be deleted.  Next, remove any dependencies that either
+			//a Geography or a Health Theme may have on one of the denominators
+			for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
+				DataSetConfiguration dataSetConfigurationToDelete
+					= (DataSetConfiguration) itemToDelete;
+				dependencyManager.deregisterDependenciesOfDataSet(dataSetConfigurationToDelete);
+			}
+			
+			//We're now ready to delete the items.  Delete them from both the 
+			//data loader tool configuration model object that is being managed
+			//by the change manager and the GUI list
+			DataLoaderToolChangeManager changeManager
+				= getChangeManager();
+			ArrayList<DataSetConfiguration> denominatorsToDelete
+				= new ArrayList<DataSetConfiguration>();
+			for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
+				DataSetConfiguration dataSetConfigurationToDelete
+					= (DataSetConfiguration) itemToDelete;
+				denominatorsToDelete.add(dataSetConfigurationToDelete);
+			}
+			
+			changeManager.deleteDenominators(denominatorsToDelete);
+			deleteListItems();	
+		}
+		catch(RIFServiceException rifServiceException) {
+			ErrorDialog.showError(getFrame(), rifServiceException.getErrorMessages());
+		}
+
 	}
 	
 	// ==========================================
@@ -175,19 +260,21 @@ public class DenominatorsListPanel
 	// ==========================================
 
 	//Overriding method for Observer
+
 	public void update(
 		final Observable observable,
 		final Object object) {
 		
-		LoadingOrderState currentState
-			= (LoadingOrderState) object;
-		if (currentState.getOrder() >= LoadingOrderState.DEFINE_DENOMINATORS.getOrder()) {
+		DataLoadingOrder currentState
+			= (DataLoadingOrder) object;
+		if (currentState.getStepNumber() >= DataLoadingOrder.HEALTH_THEMES_SPECIFIED.getStepNumber()) {
 			setEnable(true);			
 		}
 		else {
 			setEnable(false);
 		}
-	}
+	}	
+	
 }
 
 

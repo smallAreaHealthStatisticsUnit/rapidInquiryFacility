@@ -70,7 +70,7 @@ import java.util.ArrayList;
  */
 
 public interface DataLoaderServiceAPI {
-	public void initialiseService(final DataLoaderToolSettings dataLoaderToolSettings)
+	public void initialiseService(final DataLoaderToolConfiguration dataLoaderToolConfiguration)
 		throws RIFServiceException;
 	
 	public void login(

@@ -447,13 +447,11 @@ public final class ListEditingButtonPanel {
 	}
 
 	public JPanel getPanel() {
-		System.out.println("Get panel 1");
 		panel.removeAll();
 		GridBagConstraints panelGC 
 			= userInterfaceFactory.createGridBagConstraints();
 		panelGC.gridx = 0;
 		for (JButton buttonToInclude : buttonsToInclude) {
-			System.out.println("Get panel 2");
 			setActionListenersForButton(buttonToInclude);
 			panel.add(buttonToInclude, panelGC);
 			panelGC.gridx++;

@@ -372,11 +372,11 @@ class PopulationHealthDataLoaderDialog
 	}
 
 	private void defineConfigurationHints() {
-		//xxx
-		DataLoaderToolSettings settings
-			= session.getDataLoaderToolSettings();
+
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= session.getDataLoaderToolConfiguration();
 		ConfigurationHints configurationHints
-			= settings.getConfigurationHints();
+			= dataLoaderToolConfiguration.getConfigurationHints();
 		
 		ConfigurationHintsEditorDialog configurationHintsEditorDialog
 			= new ConfigurationHintsEditorDialog(session);
@@ -480,10 +480,10 @@ class PopulationHealthDataLoaderDialog
 				= session.getDataLoaderService();
 			dataLoaderService = new ProductionPGDataLoaderService();	
 			
-			DataLoaderToolSettings dataLoaderToolSettings
-				= session.getDataLoaderToolSettings();
+			DataLoaderToolConfiguration dataLoaderToolConfiguration
+				= session.getDataLoaderToolConfiguration();
 			
-			dataLoaderService.initialiseService(dataLoaderToolSettings);	
+			dataLoaderService.initialiseService(dataLoaderToolConfiguration);	
 
 			LinearWorkflowEnactor linearWorkflowEnactor
 				= new LinearWorkflowEnactor(
@@ -529,7 +529,9 @@ class PopulationHealthDataLoaderDialog
 			= csvFileSelectionDialog.getDataSetConfiguration();
 
 		DataSetConfigurationEditorDialog dialog
-			= new DataSetConfigurationEditorDialog(session);
+			= new DataSetConfigurationEditorDialog(
+				session, 
+				RIFSchemaArea.POPULATION_DENOMINATOR_DATA);
 		dialog.setData(
 			originalDataSetConfiguration);
 		dialog.show();
@@ -600,7 +602,9 @@ class PopulationHealthDataLoaderDialog
 			= (DataSetConfiguration) dataSetConfigurationListPanel.getSelectedItem();
 		
 		DataSetConfigurationEditorDialog dialog
-			= new DataSetConfigurationEditorDialog(session);
+			= new DataSetConfigurationEditorDialog(
+				session,
+				RIFSchemaArea.POPULATION_DENOMINATOR_DATA);
 		dialog.setData(
 			originalDataSetConfiguration);
 		dialog.show();

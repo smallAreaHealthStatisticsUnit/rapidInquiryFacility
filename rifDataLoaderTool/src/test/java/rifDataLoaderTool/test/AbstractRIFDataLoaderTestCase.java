@@ -1,7 +1,7 @@
 package rifDataLoaderTool.test;
 
 import rifDataLoaderTool.dataStorageLayer.pg.TestPGDataLoaderService;
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -120,9 +120,9 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	public void setUp() {
 		dataLoaderService = new TestPGDataLoaderService();
 		try {
-			DataLoaderToolSettings dataLoaderToolSettings
-				= new DataLoaderToolSettings();
-			dataLoaderService.initialiseService(dataLoaderToolSettings);	
+			DataLoaderToolConfiguration dataLoaderToolConfiguration
+				= DataLoaderToolConfiguration.newInstance();
+			dataLoaderService.initialiseService(dataLoaderToolConfiguration);	
 			dataLoaderService.clearAllDataSets(rifManager, null);
 		}
 		catch(RIFServiceException rifServiceException) {

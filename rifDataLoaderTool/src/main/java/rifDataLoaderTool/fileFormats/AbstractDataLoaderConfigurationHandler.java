@@ -5,11 +5,14 @@ import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.nio.charset.Charset;
+import java.util.Date;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
@@ -128,6 +131,8 @@ abstract class AbstractDataLoaderConfigurationHandler
 	
 	private boolean isCommentingActive;
 	
+	private Charset utf8Charset;
+
 // ==========================================
 // Section Construction
 // ==========================================
@@ -147,7 +152,7 @@ abstract class AbstractDataLoaderConfigurationHandler
 		isCommentingActive = true;
 		
 		commentInjector = new XMLCommentInjector();
-
+		utf8Charset = Charset.forName("UTF-8");
     }
 
 	/**
@@ -403,7 +408,6 @@ abstract class AbstractDataLoaderConfigurationHandler
 	 * @return the current field value
 	 */
 	protected String getCurrentFieldValue() {
-		
 		return currentFieldValue.trim();
 	}
 	
@@ -561,6 +565,14 @@ abstract class AbstractDataLoaderConfigurationHandler
 		return isCommentingActive;
 	}
 	
+	protected String getLastModifiedTimeStampPhrase(final Date lastModifiedDate) {
+		return RIFGenericLibraryMessages.getTimePhrase(lastModifiedDate);
+	}
+	
+	protected Date getLastModifiedTimeStamp(final String lastModifiedTimeStampPhrase) {
+		return RIFGenericLibraryMessages.getTime(lastModifiedTimeStampPhrase);
+	}
+	
 // ==========================================
 // Section Errors and Validation
 // ==========================================
@@ -580,7 +592,9 @@ abstract class AbstractDataLoaderConfigurationHandler
 		final int length)
 		throws SAXException {
 		
+		//String blah = new String(characters).getByte
 		if (currentDelegatedHandler == null) {
+			String str = new String(characters, start, length);				
 			setCurrentFieldValue(new String(characters, start, length)); 
 		}
 		else {

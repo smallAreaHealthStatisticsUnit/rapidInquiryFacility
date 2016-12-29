@@ -2,7 +2,6 @@
 package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
@@ -15,7 +14,7 @@ import java.io.UnsupportedEncodingException;
 
 
 /**
- * Serialises and deserialises {@link rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters}
+ * Serialises and deserialises {@link rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration}
  * using XML.
  *
  * <hr>
@@ -89,7 +88,7 @@ final class DatabaseConnectionConfigurationHandler
 // ==========================================
 // Section Properties
 // ==========================================
-	private RIFDatabaseConnectionParameters databaseConnectionParameters;
+	private DatabaseConnectionsConfiguration databaseConnectionParameters;
 
 // ==========================================
 // Section Construction
@@ -101,7 +100,7 @@ final class DatabaseConnectionConfigurationHandler
 		setSingularRecordName("database_connection_parameters");
 
 		databaseConnectionParameters 
-			= RIFDatabaseConnectionParameters.newInstance();		
+			= DatabaseConnectionsConfiguration.newInstance();		
 	}
 
 
@@ -131,12 +130,12 @@ final class DatabaseConnectionConfigurationHandler
 	 *
 	 * @return the disease mapping study
 	 */
-	public RIFDatabaseConnectionParameters getDatabaseConnectionParameters() {
+	public DatabaseConnectionsConfiguration getDatabaseConnectionParameters() {
 		return databaseConnectionParameters;
 	}
 
 	public void writeXML(
-		final RIFDatabaseConnectionParameters databaseConnectionParameters)
+		final DatabaseConnectionsConfiguration databaseConnectionParameters)
 		throws IOException {
 			
 		XMLUtility xmlUtility = getXMLUtility();

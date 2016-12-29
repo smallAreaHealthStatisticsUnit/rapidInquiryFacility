@@ -2,20 +2,17 @@ package rifDataLoaderTool.presentationLayer.interactive;
 
 
 import rifDataLoaderTool.system.DataLoaderToolSession;
-import rifGenericLibrary.presentationLayer.ErrorDialog;
+
 import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
-import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-
 import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
-
 
 /**
  *
@@ -85,6 +82,7 @@ public abstract class AbstractDataLoadingThemePanel
 	private DataLoaderToolSession session;
 	private UserInterfaceFactory userInterfaceFactory;
 	private DLDependencyManager dependencyManager;	
+	private DataLoaderToolChangeManager changeManager;
 	private OrderedListPanel listPanel;
 	private ListEditingButtonPanel listEditingButtonPanel;	
 	private JPanel mainPanel;
@@ -96,13 +94,15 @@ public abstract class AbstractDataLoadingThemePanel
 	public AbstractDataLoadingThemePanel(
 		final JFrame frame,
 		final DataLoaderToolSession session,
-		final DLDependencyManager dependencyManager) {
+		final DLDependencyManager dependencyManager,
+		final DataLoaderToolChangeManager changeManager) {
 
 		this.frame = frame;
 		this.session = session;
 		this.userInterfaceFactory = session.getUserInterfaceFactory();
 		this.dependencyManager = dependencyManager;
-
+		this.changeManager = changeManager;
+		
 		listPanel 
 			= new OrderedListPanel(userInterfaceFactory);
 		listPanel.setUseDefaultSelectionPolicy(true);
@@ -140,6 +140,11 @@ public abstract class AbstractDataLoadingThemePanel
 
 	public void setEnable(final boolean isEnabled) {
 
+		if (isEnabled == listPanel.isEnabled()) {
+			//no change in state
+			return;
+		}
+		
 		listPanel.setEnabled(isEnabled);
 		if (isEnabled) {
 			updateListButtonStates();
@@ -183,8 +188,23 @@ public abstract class AbstractDataLoadingThemePanel
 		return userInterfaceFactory;
 	}
 	
+	public ArrayList<String> getExistingDisplayNames() {
+		return listPanel.getDisplayNames();
+	}
+	
+	protected void clearListItems() {
+		listPanel.clearList();
+	}
+	
+	protected void setListItems(
+		final ArrayList<DisplayableListItemInterface> listItems) {		
+		listPanel.addListItems(listItems);
+		listPanel.updateUI();
+	}
+	
 	protected void addListItem(final DisplayableListItemInterface listItem) {
 		listPanel.addListItem(listItem);
+		listEditingButtonPanel.indicateFullEditingState();
 	}
 	
 	protected void updateListItem(
@@ -194,13 +214,32 @@ public abstract class AbstractDataLoadingThemePanel
 		listPanel.replaceItem(originalItem, revisedItem);
 	}
 	
+	protected void deleteListItems() {
+		listPanel.deleteSelectedListItems();
+	}
+	
+	/*
+	protected void deleteListItems() 
+		throws RIFServiceException {
+		
+		listPanel.deleteSelectedListItems();
+		if (listPanel.isEmpty() == false) {
+			listEditingButtonPanel.indicateEmptyState();
+		}
+	}
+	*/
+	
+	protected abstract void refresh();
 	protected abstract void addListItem();	
 	protected abstract void editSelectedListItem();
-	protected abstract void checkDependenciesForItemsToDelete()
-		throws RIFServiceException;
+	protected abstract void deleteSelectedListItems();
 	
 	protected DLDependencyManager getDependencyManager() {
 		return dependencyManager;
+	}
+	
+	protected DataLoaderToolChangeManager getChangeManager() {
+		return changeManager;
 	}
 	
 	public ArrayList<DisplayableListItemInterface> getSelectedListItems() {
@@ -223,25 +262,15 @@ public abstract class AbstractDataLoadingThemePanel
 	public void actionPerformed(final ActionEvent event) {
 		Object button = event.getSource();
 		
-		try {			
-			if (listEditingButtonPanel.isAddButton(button)) {
-				addListItem();
-			}
-			else if (listEditingButtonPanel.isEditButton(button)) {
-				editSelectedListItem();
-			}
-			else if (listEditingButtonPanel.isDeleteButton(button)) {
-				checkDependenciesForItemsToDelete();
-				listPanel.deleteSelectedListItems();
-			}	
-			
+		if (listEditingButtonPanel.isAddButton(button)) {
+			addListItem();
 		}
-		catch(RIFServiceException rifServiceException) {
-			ErrorDialog.showError(
-				frame, 
-				rifServiceException.getMessage());
+		else if (listEditingButtonPanel.isEditButton(button)) {
+			editSelectedListItem();
 		}
-
+		else if (listEditingButtonPanel.isDeleteButton(button)) {
+			deleteSelectedListItems();				
+		}
 	}
 	
 	//Interface: Observer

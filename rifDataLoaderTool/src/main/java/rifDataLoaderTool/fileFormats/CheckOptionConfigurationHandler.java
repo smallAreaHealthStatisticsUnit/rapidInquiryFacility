@@ -1,6 +1,14 @@
-package rifDataLoaderTool.businessConceptLayer;
+package rifDataLoaderTool.fileFormats;
 
-import rifGenericLibrary.dataStorageLayer.DatabaseType;
+
+import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
+import rifGenericLibrary.fileFormats.XMLUtility;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  *
@@ -52,7 +60,8 @@ import rifGenericLibrary.dataStorageLayer.DatabaseType;
  *
  */
 
-public class RIFDatabaseConnectionParameters {
+final class CheckOptionConfigurationHandler 
+	extends AbstractDataLoaderConfigurationHandler {
 
 	// ==========================================
 	// Section Constants
@@ -61,113 +70,78 @@ public class RIFDatabaseConnectionParameters {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String databaseDriverClassName;
-	private DatabaseType databaseType;
-	private String databaseDriverPrefix;
-	private String databaseName;
-	private String hostName;
-	private String portName;
-	
+	private ArrayList<RIFCheckOption> checkOptions;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private RIFDatabaseConnectionParameters() {
-		databaseType = DatabaseType.POSTGRESQL;
+	public CheckOptionConfigurationHandler() {
+		checkOptions = new ArrayList<RIFCheckOption>();
 		
-		databaseDriverClassName = "org.postgresql.Driver";
-		databaseDriverPrefix = "jdbc:postgresql";
-		databaseName = "tmp_sahsu_db";
-		portName = "5432";
-		hostName = "localhost";
+		setPluralRecordName("check_options");
+		setSingularRecordName("check_option");
+
 	}
 
-	public static RIFDatabaseConnectionParameters newInstance() {
-		RIFDatabaseConnectionParameters rifDatabaseConnectionParameters
-			= new RIFDatabaseConnectionParameters();
-		return rifDatabaseConnectionParameters;
-	}
-	
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
-	public String getDatabaseDriverClassName() {
-		return databaseDriverClassName;
+
+	public ArrayList<RIFCheckOption> getCheckOptions() {
+		return checkOptions;
 	}
 
-	public void setDatabaseDriverClassName(String databaseDriverClassName) {
-		this.databaseDriverClassName = databaseDriverClassName;
-	}
+	public void writeXML(
+		final ArrayList<RIFCheckOption> checkOptions)
+		throws IOException {
 		
-	public DatabaseType getDatabaseType() {
-		return databaseType;
-	}
+		XMLUtility xmlUtility = getXMLUtility();
+		xmlUtility.writeRecordStartTag(getPluralRecordName());
 
-	public void setDatabaseType(DatabaseType databaseType) {
-		this.databaseType = databaseType;
-	}
+		for (RIFCheckOption checkOption : checkOptions) {
+			xmlUtility.writeRecordStartTag(getSingularRecordName());
+			xmlUtility.writeValue(checkOption.getCode());
+			xmlUtility.writeRecordEndTag(getSingularRecordName());
+		}
+		xmlUtility.writeRecordEndTag(getPluralRecordName());
 
-	public String getDatabaseDriverPrefix() {
-		return databaseDriverPrefix;
-	}
-	
-	public void setDatabaseDriverPrefix(String databseDriverPrefix) {
-		this.databaseDriverPrefix = databseDriverPrefix;
-	}
-
-	public String getDatabaseName() {
-		return databaseName;
-	}
-
-	public void setDatabaseName(String databaseName) {
-		this.databaseName = databaseName;
-	}
-
-	public String getHostName() {
-		return hostName;
-	}
-
-	public void setHostName(String hostName) {
-		this.hostName = hostName;
-	}
-
-	public String getPortName() {
-		return portName;
-	}
-
-	public void setPortName(String portName) {
-		this.portName = portName;
-	}
-
-	
-	public String getDatabaseServerURL() {
-		StringBuilder urlText = new StringBuilder();
-		urlText.append(databaseDriverPrefix);
-		urlText.append(":");
-		urlText.append("//");
-		urlText.append(hostName);
-		urlText.append(":");
-		urlText.append(portName);
-		urlText.append("/");
-		return urlText.toString();
 	}
 	
 	
-	public String getDatabaseURL() {
-		StringBuilder urlText = new StringBuilder();
-		urlText.append(databaseDriverPrefix);
-		urlText.append(":");
-		urlText.append("//");
-		urlText.append(hostName);
-		urlText.append(":");
-		urlText.append(portName);
-		urlText.append("/");
-		urlText.append(databaseName);	
-		return urlText.toString();
+	@Override
+	public void startElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName,
+		final Attributes attributes) 
+		throws SAXException {
+		
+		if (isPluralRecordName(qualifiedName)) {
+			activate();
+			checkOptions = new ArrayList<RIFCheckOption>();
+		}
+
 	}
+	
+	public void endElement(
+		final String nameSpaceURI,
+		final String localName,
+		final String qualifiedName) 
+		throws SAXException {
+
+		if (isPluralRecordName(qualifiedName)) {
+			deactivate();
+		}
+		else if (isSingularRecordName(qualifiedName)) {
+			String checkOptionName
+				= getCurrentFieldValue();
+			RIFCheckOption rifCheckOption
+				= RIFCheckOption.getOptionFromCode(checkOptionName);
+			checkOptions.add(rifCheckOption);
+		}
+	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation

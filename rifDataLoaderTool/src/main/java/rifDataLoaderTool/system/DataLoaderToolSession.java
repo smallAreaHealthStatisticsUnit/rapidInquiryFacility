@@ -2,7 +2,7 @@ package rifDataLoaderTool.system;
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
 
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 
 import rifGenericLibrary.businessConceptLayer.User;
@@ -71,7 +71,8 @@ public class DataLoaderToolSession {
 	
 	//Data
 	private DataLoaderServiceAPI dataLoaderService;
-	private DataLoaderToolSettings dataLoaderToolSettings;	
+	//private DataLoaderToolSettings dataLoaderToolSettings;	
+	private DataLoaderToolConfiguration dataLoaderToolConfiguration;
 	private User rifManager;
 	private boolean saveChanges;
 	
@@ -87,7 +88,7 @@ public class DataLoaderToolSession {
 		userInterfaceFactory = new UserInterfaceFactory();		
 		this.dataLoaderService = dataLoaderService;
 		
-		dataLoaderToolSettings = new DataLoaderToolSettings();
+		dataLoaderToolConfiguration = DataLoaderToolConfiguration.newInstance();
 		rifManager = User.newInstance("kgarwood", "xxx");
 	}
 
@@ -106,24 +107,24 @@ public class DataLoaderToolSession {
 	public void initialiseService() 
 		throws RIFServiceException {
 
-		dataLoaderService.initialiseService(dataLoaderToolSettings);		
+		dataLoaderService.initialiseService(dataLoaderToolConfiguration);		
 	}
 	
 	public UserInterfaceFactory getUserInterfaceFactory() {
 		return userInterfaceFactory;
 	}
 	
-	public DataLoaderToolSettings getDataLoaderToolSettings() {
-		return dataLoaderToolSettings;
+	public DataLoaderToolConfiguration getDataLoaderToolConfiguration() {
+		return dataLoaderToolConfiguration;
 	}
 	
-	public void setDataLoaderToolSettings(final DataLoaderToolSettings dataLoaderToolSettings) {
-		this.dataLoaderToolSettings = dataLoaderToolSettings;
+	public void setDataLoaderToolConfiguration(final DataLoaderToolConfiguration dataLoaderToolConfiguration) {
+		this.dataLoaderToolConfiguration = dataLoaderToolConfiguration;
 	}
 	
 	
 	public RIFDataTypeFactory getRIFDataTypeFactory() {
-		return dataLoaderToolSettings.getRIFDataTypeFactory();
+		return dataLoaderToolConfiguration.getRIFDataTypeFactory();
 	}
 	
 	public void setSaveChanges(final boolean saveChanges) {

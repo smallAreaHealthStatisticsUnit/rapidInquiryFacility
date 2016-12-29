@@ -245,7 +245,7 @@ public abstract class OKCloseButtonDialog
 		}
 		else if (okCloseButtonPanel.isCloseButton(button)) {
 			close();
-		}		
+		}
 	}
 	
 	// ==========================================

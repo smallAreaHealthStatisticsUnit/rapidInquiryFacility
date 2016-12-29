@@ -83,7 +83,7 @@ final class DataSetFieldConfigurationHandler
 	// Section Properties
 	// ==========================================
 	private boolean isSerialisingHints;
-	private RIFCheckOptionConfigurationHandler rifCheckOptionConfigurationHandler;
+	private CheckOptionConfigurationHandler rifCheckOptionConfigurationHandler;
 	
 	private RIFDataTypeFactory rifDataTypeFactory;
 	private RIFConversionFunctionFactory rifConversionFunctionFactory;
@@ -98,7 +98,7 @@ final class DataSetFieldConfigurationHandler
 		isSerialisingHints = false;
 		rifConversionFunctionFactory = RIFConversionFunctionFactory.newInstance();
 		rifCheckOptionConfigurationHandler
-			= new RIFCheckOptionConfigurationHandler();
+			= new CheckOptionConfigurationHandler();
 		
 		dataSetFieldConfigurations 
 			= new ArrayList<DataSetFieldConfiguration>();
@@ -336,7 +336,8 @@ final class DataSetFieldConfigurationHandler
 		}
 		else if (equalsFieldName("rif_data_type", qualifiedName)) {
 			String dataTypeName = getCurrentFieldValue();
-			String fieldName = currentDataSetFieldConfiguration.getCoreFieldName();
+			//String fieldName = currentDataSetFieldConfiguration.getCoreFieldName();
+
 			RIFDataType rifDataType 
 				= rifDataTypeFactory.getDataTypeFromCode(dataTypeName);
 			currentDataSetFieldConfiguration.setRIFDataType(rifDataType);
@@ -390,8 +391,15 @@ final class DataSetFieldConfigurationHandler
 		}		
 	}
 
-	public void setRIFDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
+	public void setDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
 		this.rifDataTypeFactory = rifDataTypeFactory;
+
+		if (this.rifDataTypeFactory == null) {
+			System.out.println("DataSetFieldConfigHandler setting data type factory 111 !!");			
+		}
+		else {
+			System.out.println("DataSetFieldConfigHandler setting data type factory 222!!");						
+		}
 	}
 	
 	// ==========================================

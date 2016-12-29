@@ -188,12 +188,21 @@ public final class ValidationRule
 		String otherDescription = otherValidationRule.getDescription();
 		String otherValidValue = otherValidationRule.getValidValue();
 		if (Objects.deepEquals(name, otherName) == false) {
+			System.out.println("ValidationRule hic 1");
 			return false;
 		}
 		if (Objects.deepEquals(description, otherDescription) == false) {
+			System.out.println("ValidationRule hic 2 desc=="+description+"==otherDesc=="+otherDescription+"==");
 			return false;
 		}
+
 		if (Objects.deepEquals(validValue, otherValidValue) == false) {
+			System.out.println("ValidationRule hic 3 validValue=="+validValue+"==otherValidValue=="+otherValidValue+"==");
+			return false;
+		}
+
+		if (lastModifiedDatesIdentical(otherValidationRule) == false) {
+			System.out.println("ValidationRule hic 4 validValue==");
 			return false;
 		}
 		
@@ -264,7 +273,7 @@ public final class ValidationRule
 				listBValidationRule.getIdentifier(), 
 				listBValidationRule);
 		}
-		
+
 		ArrayList<String> listAKeys = new ArrayList<String>();
 		listAKeys.addAll(ruleFromIdentifierA.keySet());
 		for (String listAKey : listAKeys) {
@@ -298,7 +307,7 @@ public final class ValidationRule
 				}
 			}
 		}
-		
+
 		return true;		
 	}
 	

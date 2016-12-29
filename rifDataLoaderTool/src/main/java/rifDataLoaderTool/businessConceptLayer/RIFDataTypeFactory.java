@@ -242,7 +242,9 @@ public class RIFDataTypeFactory {
 				true);
 				
 		String validationRegularExpression
-			= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
+			= "?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
+		//= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
+		
 		ValidationRule validationRule
 			= ValidationRule.newInstance(
 				"", 

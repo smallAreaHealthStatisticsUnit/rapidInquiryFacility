@@ -2,11 +2,15 @@ package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
-
 import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.system.RIFServiceException;
+
+import java.util.ArrayList;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
@@ -61,15 +65,6 @@ import java.awt.event.ActionEvent;
  */
 
 public class HealthThemeEditorDialog extends OKCloseButtonDialog {
-
-	public static void main(String[] args) {
-		
-		UserInterfaceFactory userInterfaceFactory
-			= new UserInterfaceFactory();
-		HealthThemeEditorDialog dialog 
-			= new HealthThemeEditorDialog(userInterfaceFactory);
-		dialog.show();
-	}
 	
 	// ==========================================
 	// Section Constants
@@ -79,16 +74,22 @@ public class HealthThemeEditorDialog extends OKCloseButtonDialog {
 	// Section Properties
 	// ==========================================
 	private DLHealthTheme healthTheme;
+	private String originalDisplayName;
 	private JTextField healthThemeNameField;
 	private JTextArea healthThemeDescriptionTextArea;
+	private ArrayList<String> currentDisplayNames;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public HealthThemeEditorDialog(
-		final UserInterfaceFactory userInterfaceFactory) {
+		final UserInterfaceFactory userInterfaceFactory,
+		final ArrayList<String> currentDisplayNames) {
+
 		super(userInterfaceFactory);
+		
+		this.currentDisplayNames = currentDisplayNames;
 		String dialogTitle
 			= RIFDataLoaderToolMessages.getMessage("healthThemeEditorDialog.title");
 		setDialogTitle(dialogTitle);
@@ -142,6 +143,8 @@ public class HealthThemeEditorDialog extends OKCloseButtonDialog {
 	// ==========================================
 	public void setData(final DLHealthTheme healthTheme) {
 		this.healthTheme = healthTheme;
+		originalDisplayName = healthTheme.getDisplayName();
+		currentDisplayNames.remove(originalDisplayName);
 		populateForm();
 	}
 	
@@ -163,9 +166,21 @@ public class HealthThemeEditorDialog extends OKCloseButtonDialog {
 	}
 	
 	@Override
-	public void okAction() {
-		System.out.println("HealthTheme - okAction 1");
+	public void okAction() 
+		throws RIFServiceException {
+		
 		DLHealthTheme formHealthTheme = getDataFromForm();
+		String revisedDisplayName = formHealthTheme.getDisplayName();
+		
+		if (originalDisplayName != revisedDisplayName) {
+
+			FieldValidationUtility.checkListDuplicate(
+				revisedDisplayName, 
+				currentDisplayNames);
+
+			//Error: Attempting to update item to appear to be something already in the list
+
+		}
 		DLHealthTheme.copyInto(formHealthTheme, healthTheme);
 	}
 

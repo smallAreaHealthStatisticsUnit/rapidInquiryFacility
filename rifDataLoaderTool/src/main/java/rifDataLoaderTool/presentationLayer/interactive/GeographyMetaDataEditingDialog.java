@@ -2,10 +2,8 @@ package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DLGeographyMetaData;
-
 import rifDataLoaderTool.fileFormats.GeographyMetaDataReader;
 import rifDataLoaderTool.fileFormats.GeographyMetaDataConfigurationHandler;
-
 
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
@@ -17,6 +15,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.File;
+
 
 
 /**
@@ -69,14 +68,7 @@ import java.io.File;
  *
  */
 
-public class GeographyEditingDialog extends OKCloseButtonDialog {
-
-	public static void main(String[] args) {
-		
-		UserInterfaceFactory userInterfaceFactory = new UserInterfaceFactory();
-		GeographyEditingDialog dialog = new GeographyEditingDialog(userInterfaceFactory);
-		dialog.show();
-	}
+public class GeographyMetaDataEditingDialog extends OKCloseButtonDialog {
 	
 	// ==========================================
 	// Section Constants
@@ -93,13 +85,14 @@ public class GeographyEditingDialog extends OKCloseButtonDialog {
 	private JButton browseButton;
 	
 	private DLGeographyMetaData geographyMetaData;
+	private JScrollPane scrollPane;
 	private JEditorPane htmlPane;
 		
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public GeographyEditingDialog(
+	public GeographyMetaDataEditingDialog(
 		final UserInterfaceFactory userInterfaceFactory) {
 
 		super(userInterfaceFactory);
@@ -141,9 +134,9 @@ public class GeographyEditingDialog extends OKCloseButtonDialog {
 		panelGC.weightx = 1;
 		panelGC.weighty = 1;		
 		htmlPane = userInterfaceFactory.createHTMLEditorPane();
-		JScrollPane htmlScrollPane
+		scrollPane
 			= userInterfaceFactory.createScrollPane(htmlPane);
-		panel.add(htmlScrollPane, panelGC);
+		panel.add(scrollPane, panelGC);
 			
 		return panel;
 	}
@@ -184,6 +177,18 @@ public class GeographyEditingDialog extends OKCloseButtonDialog {
 	// ==========================================
 	public void setData(final DLGeographyMetaData geographyMetaData) {
 		this.geographyMetaData = geographyMetaData;
+		
+		try {
+			if (geographyMetaData != null) {
+				if (geographyMetaData.getGeographies().size() > 0) {					
+					geographyFileNameTextField.setText(geographyMetaData.getFilePath());
+					showGeographyMetaDataProperties(geographyMetaData);
+				}
+			}
+		}
+		catch(RIFServiceException rifServiceException) {
+			//KLG: @TODO
+		}
 	}
 
 	public DLGeographyMetaData getData() {
@@ -210,13 +215,8 @@ public class GeographyEditingDialog extends OKCloseButtonDialog {
 			DLGeographyMetaData.copyInto(
 				fileGeographyMetaData, 
 				geographyMetaData);
-			
-			System.out.println("GeogMetaData==="+ geographyMetaData.getFilePath()+"==");
-			
-			GeographyMetaDataConfigurationHandler metaDataHandler
-				= new GeographyMetaDataConfigurationHandler();
-			String htmlReport = metaDataHandler.getHTML(geographyMetaData);
-			htmlPane.setText(htmlReport);
+
+			showGeographyMetaDataProperties(geographyMetaData);
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(
@@ -227,6 +227,18 @@ public class GeographyEditingDialog extends OKCloseButtonDialog {
 		
 		selectedFile = fileChooser.getSelectedFile();
 		geographyFileNameTextField.setText(selectedFile.getAbsolutePath());
+	}
+	
+	private void showGeographyMetaDataProperties(
+		final DLGeographyMetaData geographyMetaData) 
+		throws RIFServiceException {
+		
+		GeographyMetaDataConfigurationHandler metaDataHandler
+			= new GeographyMetaDataConfigurationHandler();
+		String htmlReport = metaDataHandler.getHTML(geographyMetaData);
+		htmlPane.setText(htmlReport);
+		htmlPane.setCaretPosition(0);
+		htmlPane.updateUI();
 	}
 	
 	// ==========================================

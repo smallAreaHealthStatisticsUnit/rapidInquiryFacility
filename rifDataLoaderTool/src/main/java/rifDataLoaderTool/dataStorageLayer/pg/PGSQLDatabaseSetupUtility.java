@@ -1,7 +1,7 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-import rifDataLoaderTool.businessConceptLayer.RIFDatabaseConnectionParameters;
+import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
@@ -86,7 +86,7 @@ public class PGSQLDatabaseSetupUtility {
 	public static void main(String[] arguments) {
 		PGSQLDatabaseSetupUtility initialiser = new PGSQLDatabaseSetupUtility();
 		DataLoaderToolSettings settings = new DataLoaderToolSettings();
-		RIFDatabaseConnectionParameters dbParameters
+		DatabaseConnectionsConfiguration dbParameters
 			= settings.getDatabaseConnectionParameters();
 		
 		try {
@@ -108,7 +108,7 @@ public class PGSQLDatabaseSetupUtility {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDatabaseConnectionParameters dbParameters;
+	private DatabaseConnectionsConfiguration dbParameters;
 	private File databaseFunctionsFile;
 	
 	// ==========================================
@@ -481,7 +481,7 @@ public class PGSQLDatabaseSetupUtility {
 	
 	public void createDatabase(
 		final Connection connection,
-		final RIFDatabaseConnectionParameters dbParameters) 
+		final DatabaseConnectionsConfiguration dbParameters) 
 		throws SQLException {
 
 		/*

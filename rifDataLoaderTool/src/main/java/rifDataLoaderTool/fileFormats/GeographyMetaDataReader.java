@@ -9,7 +9,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import java.io.*;
-import java.util.ArrayList;
 
 
 /**
@@ -114,8 +113,13 @@ public final class GeographyMetaDataReader {
 		final File geographyMetaDataConfigurationFile) 
 		throws RIFServiceException {
 
-		this.geographyMetaDataConfigurationFile =geographyMetaDataConfigurationFile;
-		try {			
+		this.geographyMetaDataConfigurationFile = geographyMetaDataConfigurationFile;
+		try {
+			
+			if (geographyMetaDataConfigurationHandler == null) {
+				System.out.println("GeographyMetaDataReader readFile 1");
+			}
+			
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(
@@ -123,6 +127,7 @@ public final class GeographyMetaDataReader {
 				geographyMetaDataConfigurationHandler);
 		}
 		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileReadingProblemException(

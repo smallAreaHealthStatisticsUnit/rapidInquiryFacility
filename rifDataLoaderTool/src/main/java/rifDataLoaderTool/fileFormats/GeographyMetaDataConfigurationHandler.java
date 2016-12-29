@@ -5,14 +5,15 @@ import rifDataLoaderTool.businessConceptLayer.DLGeography;
 import rifDataLoaderTool.businessConceptLayer.DLGeographicalResolutionLevel;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
-
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
 import java.util.*;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
 import java.io.*;
 
 
@@ -80,7 +81,7 @@ public class GeographyMetaDataConfigurationHandler
 	private DLGeography currentGeography;
 	private DLGeographicalResolutionLevel currentGeographicalResolution;
 	
-	private String geographicalResolutionTag;
+	private String geographicalResolutionLevelTag;
 	
 	// ==========================================
 	// Section Construction
@@ -89,10 +90,9 @@ public class GeographyMetaDataConfigurationHandler
 	public GeographyMetaDataConfigurationHandler() {
 		geographyMetaData = new DLGeographyMetaData();
 		
-		setSingularRecordName("rifGeographyMetaDataTag");
+		setSingularRecordName("geography_meta_data");
 		
-		this.geographicalResolutionTag = "geographical_resolution_level";
-		
+		geographicalResolutionLevelTag = "geographical_resolution_level";
 	}
 
 	// ==========================================
@@ -101,6 +101,10 @@ public class GeographyMetaDataConfigurationHandler
 	
 	public DLGeographyMetaData getGeographyMetaData() {
 		return geographyMetaData;
+	}
+	
+	public DLGeography getGeography(final String geographyName) {
+		return geographyMetaData.getGeography(geographyName);
 	}
 	
 	public String getHTML( 
@@ -154,7 +158,6 @@ public class GeographyMetaDataConfigurationHandler
 				htmlUtility.writeBoldColumnValue(levelDatabaseNameHeaderText);
 				htmlUtility.endRow();
 				
-				System.out.println("Geography Levels");
 				for (DLGeographicalResolutionLevel level : levels) {
 					htmlUtility.beginRow();
 					htmlUtility.writeColumnValue(String.valueOf(level.getOrder()));
@@ -162,8 +165,8 @@ public class GeographyMetaDataConfigurationHandler
 					htmlUtility.writeColumnValue(level.getDatabaseFieldName());
 					htmlUtility.endRow();
 				}					
+				htmlUtility.endTable();					
 			}
-			htmlUtility.endTable();					
 		
 			htmlUtility.endBody();
 			htmlUtility.endDocument();
@@ -184,11 +187,9 @@ public class GeographyMetaDataConfigurationHandler
 	public void writeXML(final DLGeographyMetaData geographyMetaData) 
 		throws IOException {
 		
-		XMLUtility xmlUtility = new XMLUtility();
-		
-		xmlUtility.writeStartXML();
-		
-		String rifGeographyMetaDataTag = "rif_geography_meta_data";		
+		XMLUtility xmlUtility = getXMLUtility();
+				
+		String rifGeographyMetaDataTag = getSingularRecordName();		
 		xmlUtility.writeRecordStartTag(rifGeographyMetaDataTag);
 		xmlUtility.writeField(
 				rifGeographyMetaDataTag, 
@@ -199,38 +200,37 @@ public class GeographyMetaDataConfigurationHandler
 		ArrayList<DLGeography> geographies = geographyMetaData.getGeographies();
 		for (DLGeography geography : geographies) {
 			xmlUtility.writeRecordStartTag("geography");
-			
-			
+					
 			xmlUtility.writeField("geography", "name", geography.getName());
 			
 			ArrayList<DLGeographicalResolutionLevel> levels
 				= geography.getLevels();
 			for (DLGeographicalResolutionLevel level : levels) {
-				xmlUtility.writeRecordStartTag(geographicalResolutionTag);
+				xmlUtility.writeRecordStartTag(geographicalResolutionLevelTag);
 
 				xmlUtility.writeField(
-					geographicalResolutionTag, 
+					geographicalResolutionLevelTag, 
 					"order", 
 					String.valueOf(level.getOrder()));
 
 				xmlUtility.writeField(
-					geographicalResolutionTag, 
+					geographicalResolutionLevelTag, 
 					"display_name", 
 					level.getDisplayName());
 
 				xmlUtility.writeField(
-					geographicalResolutionTag, 
+					geographicalResolutionLevelTag, 
 					"database_field_name", 
 					level.getDatabaseFieldName());
 				
-				xmlUtility.writeRecordEndTag("geographical_resolution_level");
+				xmlUtility.writeRecordEndTag(geographicalResolutionLevelTag);
 			}
 			xmlUtility.writeRecordEndTag("geography");			
 		}
 		
 		xmlUtility.writeRecordEndTag("geographies");
 		
-		xmlUtility.writeRecordEndTag("rif_geography_meta_data");		
+		xmlUtility.writeRecordEndTag(rifGeographyMetaDataTag);		
 	}
 	
 	@Override
@@ -241,14 +241,16 @@ public class GeographyMetaDataConfigurationHandler
 		final Attributes attributes) 
 		throws SAXException {
 
-		System.out.println("GeoMetaData startElement tag==" + qualifiedName + "==");
+		if (equalsFieldName(getSingularRecordName(), qualifiedName) == true) {
+			activate();
+		}
+		if (equalsFieldName("geographies", qualifiedName) == true) {
+			geographyMetaData.clearGeographies();
+		}
 		if (equalsFieldName("geography", qualifiedName) == true) {
 			currentGeography = DLGeography.newInstance();
 		}
-		else if (equalsFieldName("geographical_resolutions", qualifiedName) == true) {
-			currentGeography.clearLevels();
-		}
-		else if (equalsFieldName("geographical_resolution", qualifiedName) == true) {
+		else if (equalsFieldName("geographical_resolution_level", qualifiedName) == true) {
 			currentGeographicalResolution = DLGeographicalResolutionLevel.newInstance();
 		}
 	}
@@ -260,16 +262,25 @@ public class GeographyMetaDataConfigurationHandler
 		final String qualifiedName) 
 		throws SAXException {
 
+		if (equalsFieldName(getSingularRecordName(), qualifiedName) == true) {
+			deactivate();
+		}
 		if (equalsFieldName("geography", qualifiedName) == true) {
 			geographyMetaData.addGeography(currentGeography);
+		}		
+		if (equalsFieldName("file_path", qualifiedName) == true) {
+			geographyMetaData.setFilePath(getCurrentFieldValue());
 		}		
 		else if (equalsFieldName("name", qualifiedName) == true) {
 			currentGeography.setName(getCurrentFieldValue());
 		}	
-		else if (equalsFieldName("geographical_resolution", qualifiedName) == true) {
+		else if (equalsFieldName(geographicalResolutionLevelTag, qualifiedName) == true) {
 			currentGeography.addLevel(currentGeographicalResolution);
 		}		
 		else if (equalsFieldName("order", qualifiedName) == true) {
+			if (currentGeographicalResolution == null) {				
+				System.out.println("GMDCH endElement order 2 resolution null currentValue=="+getCurrentFieldValue()+"==");
+			}
 			currentGeographicalResolution.setOrder(Integer.valueOf(getCurrentFieldValue()));
 		}
 		else if (equalsFieldName("display_name", qualifiedName) == true) {

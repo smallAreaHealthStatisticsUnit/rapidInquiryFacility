@@ -2,16 +2,21 @@ package rifDataLoaderTool.presentationLayer.interactive;
 
 
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+
+import rifDataLoaderTool.businessConceptLayer.*;
+
+import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
 import java.awt.GridBagConstraints;
+
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import java.util.ArrayList;
 import java.awt.event.ActionListener;
 
 /**
@@ -74,30 +79,53 @@ public class DataSetPropertyEditorPanel {
 	// Section Properties
 	// ==========================================
 	private boolean isRenderingForConfigurationHintsFeature;
+	private DataLoaderToolConfiguration dataLoaderToolConfiguration;
 	private DataSetConfiguration dataSetConfiguration;
+	private DLGeographyMetaData geographyMetaData;
 	
 	private UserInterfaceFactory userInterfaceFactory;
 	private JPanel panel;
 	private JTextField nameTextField;
 	private JTextField versionTextField;
 	private JTextArea descriptionTextArea;
-	private JTextField filePathTextField;		
-	private JComboBox<String> rifSchemaAreasComboBox;
+	private JTextField filePathTextField;
 	
+	private JComboBox<String> geographyComboBox;
+	private JComboBox<String> healthThemesComboBox;
+	private JComboBox<String> denominatorComboBox;
+	
+	private JComboBox<String> rifSchemaAreasComboBox;
+	private RIFSchemaArea preSetSchemaArea;
+	
+	private ArrayList<ActionListener> actionListeners;
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
+	
 	public DataSetPropertyEditorPanel(
-		final UserInterfaceFactory userInterfaceFactory,
-		final boolean isRenderingForConfigurationHintsFeature) {
+		final DataLoaderToolSession session,
+		final RIFSchemaArea preSetSchemaArea) {
 		
-		this.userInterfaceFactory = userInterfaceFactory;
-		this.isRenderingForConfigurationHintsFeature = isRenderingForConfigurationHintsFeature;
+		userInterfaceFactory = session.getUserInterfaceFactory();
+		dataLoaderToolConfiguration
+			= session.getDataLoaderToolConfiguration();
+		//assume data loader configuration is not ever going to be null
+		geographyMetaData 
+			= session.getDataLoaderToolConfiguration().getGeographyMetaData();
+		
+		this.preSetSchemaArea = preSetSchemaArea;
+		if (preSetSchemaArea == null) {
+			isRenderingForConfigurationHintsFeature = true;			
+		}
+		else {
+			isRenderingForConfigurationHintsFeature = false;						
+		}
+		
+		actionListeners = new ArrayList<ActionListener>();
 		buildUI();
 	}
 
-	private void buildUI() {
+	public void buildUI() {
 
 		GridBagConstraints panelGC
 			= userInterfaceFactory.createGridBagConstraints();
@@ -176,28 +204,94 @@ public class DataSetPropertyEditorPanel {
 		panel.add(
 			descriptionTextArea, 
 			panelGC);
-		
+
+		//Adding in Geography combo box
 		panelGC.gridy++;
 		panelGC.gridx = 0;		
 		panelGC.fill = GridBagConstraints.NONE;
 		panelGC.weightx = 0;
-		String rifSchemaAreasLabelText
+		String geographyLabelText
 			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.rifSchemaArea.label");
-		JLabel rifSchemaAreasLabel
-			= userInterfaceFactory.createLabel(rifSchemaAreasLabelText);
-		String rifSchemaAreasToolTip
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfiguration.rifSchemaArea.toolTip");		
-		rifSchemaAreasLabel.setToolTipText(rifSchemaAreasToolTip);
-		panel.add(rifSchemaAreasLabel, panelGC);	
+				"dlGeography.singular.label");
+		JLabel geographyLabel
+			= userInterfaceFactory.createLabel(geographyLabelText);
+		panel.add(geographyLabel, panelGC);	
 		panelGC.gridx++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
-		panelGC.weightx = 1;		
-		rifSchemaAreasComboBox
-			= userInterfaceFactory.createComboBox(RIFSchemaArea.getAllSchemaNames());
-		panel.add(rifSchemaAreasComboBox, panelGC);
+		panelGC.weightx = 1;
 		
+		geographyComboBox
+			= userInterfaceFactory.createComboBox(geographyMetaData.getAllGeographyNames());
+		panel.add(geographyComboBox, panelGC);
+		
+		if (preSetSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {	
+			//Adding in HealthTheme combo box
+			panelGC.gridy++;
+			panelGC.gridx = 0;		
+			panelGC.fill = GridBagConstraints.NONE;
+			panelGC.weightx = 0;
+			String healthThemesLabelText
+				= RIFDataLoaderToolMessages.getMessage(
+					"dlHealthTheme.singular.label");
+			JLabel healthThemesLabel
+				= userInterfaceFactory.createLabel(healthThemesLabelText);
+			panel.add(healthThemesLabel, panelGC);	
+			panelGC.gridx++;
+			panelGC.fill = GridBagConstraints.HORIZONTAL;
+			panelGC.weightx = 1;
+		
+			healthThemesComboBox
+				= userInterfaceFactory.createComboBox(
+					dataLoaderToolConfiguration.getHealthThemeNames());
+			panel.add(healthThemesComboBox, panelGC);
+		
+			//Adding in Denominator combo box
+			panelGC.gridy++;
+			panelGC.gridx = 0;		
+			panelGC.fill = GridBagConstraints.NONE;
+			panelGC.weightx = 0;
+			String denominatorsLabelText
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetPropertyEditorPanel.denominator.label");
+			JLabel denominatorsLabel
+				= userInterfaceFactory.createLabel(denominatorsLabelText);
+			panel.add(denominatorsLabel, panelGC);	
+			panelGC.gridx++;
+			panelGC.fill = GridBagConstraints.HORIZONTAL;
+			panelGC.weightx = 1;
+			denominatorComboBox
+				= userInterfaceFactory.createComboBox(
+					dataLoaderToolConfiguration.getDenominatorNames());
+			panel.add(denominatorComboBox, panelGC);
+		}
+		
+		if (isRenderingForConfigurationHintsFeature == true) {
+			//If we are rendering configuration hints, we want to select
+			//a RIF Schema Area.  If we're adjusting properties as we
+			//actually edit a Denominator, Numerator or Covariate
+			//data set then the RIFSchemaArea is already chosen for us
+			
+			panelGC.gridy++;
+			panelGC.gridx = 0;		
+			panelGC.fill = GridBagConstraints.NONE;
+			panelGC.weightx = 0;
+			String rifSchemaAreasLabelText
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfiguration.rifSchemaArea.label");
+			JLabel rifSchemaAreasLabel
+				= userInterfaceFactory.createLabel(rifSchemaAreasLabelText);
+			String rifSchemaAreasToolTip
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfiguration.rifSchemaArea.toolTip");		
+			rifSchemaAreasLabel.setToolTipText(rifSchemaAreasToolTip);
+			panel.add(rifSchemaAreasLabel, panelGC);	
+			panelGC.gridx++;
+			panelGC.fill = GridBagConstraints.HORIZONTAL;
+			panelGC.weightx = 1;		
+			panel.add(rifSchemaAreasComboBox, panelGC);
+			
+		}
+
 		filePathTextField
 			= userInterfaceFactory.createNonEditableTextField();
 		if (isRenderingForConfigurationHintsFeature == false) {
@@ -215,7 +309,6 @@ public class DataSetPropertyEditorPanel {
 
 			panel.add(filePathTextField, panelGC);		
 		}
-
 	}
 	
 	// ==========================================
@@ -226,9 +319,22 @@ public class DataSetPropertyEditorPanel {
 		return dataSetConfiguration;
 	}
 	
-	public void setData(final DataSetConfiguration dataSetConfiguration) {
+	public void setData(
+		final DataSetConfiguration dataSetConfiguration) {
 		this.dataSetConfiguration = dataSetConfiguration;
 		populateForm(dataSetConfiguration);
+	}
+	
+	public RIFSchemaArea getSelectedRIFSchemaArea() {
+		String rifSchemaAreaName
+			= (String)rifSchemaAreasComboBox.getSelectedItem();
+		return RIFSchemaArea.getSchemaAreaFromName(rifSchemaAreaName);
+	}
+	
+	public DLGeography getSelectedGeography() {
+		String selectedGeographyName
+			= (String) geographyComboBox.getSelectedItem();
+		return geographyMetaData.getGeography(selectedGeographyName);
 	}
 	
 	public JPanel getPanel() {
@@ -249,11 +355,33 @@ public class DataSetPropertyEditorPanel {
 		dataSetConfiguration.setName(nameTextField.getText().trim());
 		dataSetConfiguration.setVersion(versionTextField.getText().trim());
 		dataSetConfiguration.setDescription(descriptionTextArea.getText().trim());
+
+		if (isRenderingForConfigurationHintsFeature == true) {			
+			String rifSchemaPhrase
+				= (String) rifSchemaAreasComboBox.getSelectedItem();
+			RIFSchemaArea rifSchemaArea = RIFSchemaArea.getSchemaAreaFromName(rifSchemaPhrase);
+			dataSetConfiguration.setRIFSchemaArea(rifSchemaArea);
+		}	
 		
-		String rifSchemaPhrase
-			= (String) rifSchemaAreasComboBox.getSelectedItem();
-		RIFSchemaArea rifSchemaArea = RIFSchemaArea.getSchemaAreaFromName(rifSchemaPhrase);
-		dataSetConfiguration.setRIFSchemaArea(rifSchemaArea);
+		String currentlySelectedGeographyName
+			= (String) geographyComboBox.getSelectedItem();
+		DLGeography currentGeography
+			= geographyMetaData.getGeography(currentlySelectedGeographyName);
+		dataSetConfiguration.setGeography(currentGeography);
+		
+		if (preSetSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+			String healthThemeName
+				= (String) healthThemesComboBox.getSelectedItem();
+			DLHealthTheme healthTheme	
+				= dataLoaderToolConfiguration.getHealthTheme(healthThemeName);
+			dataSetConfiguration.setHealthTheme(healthTheme);
+			
+			String selectedDenominatorName
+				= (String) denominatorComboBox.getSelectedItem();
+			DataSetConfiguration denominator
+				= dataLoaderToolConfiguration.getDenominator(selectedDenominatorName);
+			dataSetConfiguration.setDependencyDataSetConfiguration(denominator);
+		}
 	}
 	
 	public void setIsEnabled(final boolean isEnabled) {
@@ -264,7 +392,16 @@ public class DataSetPropertyEditorPanel {
 		userInterfaceFactory.setEditableAppearance(nameTextField, isEnabled);
 		userInterfaceFactory.setEditableAppearance(versionTextField, isEnabled);
 		userInterfaceFactory.setEditableAppearance(descriptionTextArea, isEnabled);
-		rifSchemaAreasComboBox.setEnabled(isEnabled);					
+		
+		if (isRenderingForConfigurationHintsFeature == true) {
+			rifSchemaAreasComboBox.setEnabled(isEnabled);			
+		}
+		
+		geographyComboBox.setEnabled(isEnabled);
+		if (preSetSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+			healthThemesComboBox.setEnabled(isEnabled);
+			denominatorComboBox.setEnabled(isEnabled);
+		}
 	}
 	
 	public void populateForm(final DataSetConfiguration dataSetConfiguration) {
@@ -279,27 +416,77 @@ public class DataSetPropertyEditorPanel {
 			descriptionTextArea.setText(dataSetConfiguration.getDescription());			
 			filePathTextField.setText(dataSetConfiguration.getFilePath());
 		
-			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
-			//rifSchemaAreasComboBox.removeActionListener(this);
-			
-			if (rifSchemaArea != null) {
-				rifSchemaAreasComboBox.setSelectedItem(rifSchemaArea.getName());				
+			removeAllActionListeners();
+			if (isRenderingForConfigurationHintsFeature == true) {				
+				RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();			
+				if (rifSchemaArea != null) {
+					rifSchemaAreasComboBox.setSelectedItem(rifSchemaArea.getName());				
+				}
 			}
-			//rifSchemaAreasComboBox.addActionListener(this);
+			
+			DLGeography geography = dataSetConfiguration.getGeography();
+			if (geography != null) {
+				geographyComboBox.setSelectedItem(geography.getDisplayName());		
+			}
+			restoreAllActionListeners();
+		
+			if (preSetSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {				
+				DLHealthTheme healthTheme
+					= dataSetConfiguration.getHealthTheme();
+				if (healthTheme != null) {
+					healthThemesComboBox.setSelectedItem(healthTheme.getDisplayName());
+				}
+
+				DataSetConfiguration denominator
+					= dataSetConfiguration.getDependencyDataSetConfiguration();
+				if (denominator != null) {
+					denominatorComboBox.setSelectedItem(denominator.getDisplayName());					
+				}
+			}
 		}
 	}
 	
 	public void removeActionListener(final ActionListener actionListener) {
-		rifSchemaAreasComboBox.removeActionListener(actionListener);
-		
+		actionListeners.remove(actionListener);
+		if (rifSchemaAreasComboBox != null) {
+			rifSchemaAreasComboBox.removeActionListener(actionListener);			
+		}
+		geographyComboBox.removeActionListener(actionListener);	
+	}
+	
+	private void removeAllActionListeners() {
+		for (ActionListener actionListener : actionListeners) {
+			if (rifSchemaAreasComboBox != null) {
+				rifSchemaAreasComboBox.removeActionListener(actionListener);			
+			}
+			geographyComboBox.removeActionListener(actionListener);			
+		}
+	}
+	
+	private void restoreAllActionListeners() {
+		for (ActionListener actionListener : actionListeners) {
+			if (rifSchemaAreasComboBox != null) {
+				rifSchemaAreasComboBox.addActionListener(actionListener);			
+			}
+			geographyComboBox.addActionListener(actionListener);			
+		}
 	}
 	
 	public void addActionListener(final ActionListener actionListener) {
-		rifSchemaAreasComboBox.addActionListener(actionListener);
+		actionListeners.add(actionListener);
+		
+		if (rifSchemaAreasComboBox != null) {
+			rifSchemaAreasComboBox.addActionListener(actionListener);			
+		}
+		geographyComboBox.addActionListener(actionListener);
 	}
 	
 	public boolean isSchemaAreaComboBox(final Object eventObject) {
 		return(eventObject == rifSchemaAreasComboBox);
+	}
+	
+	public boolean isGeographyComboBox(final Object eventObject) {
+		return(eventObject == geographyComboBox);
 	}
 	
 	// ==========================================

@@ -1,13 +1,14 @@
 
 package rifGenericLibrary.presentationLayer;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
-
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import java.util.ArrayList;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 
 
@@ -90,6 +91,8 @@ public final class OKCloseButtonPanel {
 	private UserInterfaceFactory userInterfaceFactory;
 	private boolean includeOKButton;
 	
+	private ArrayList<JButton> otherButtons;
+	
 	//GUI Components
 	/** The ok button. */
 	private JButton okButton;
@@ -111,6 +114,8 @@ public final class OKCloseButtonPanel {
 
 		this.userInterfaceFactory = userInterfaceFactory;
 		includeOKButton = true;
+		otherButtons = new ArrayList<JButton>();
+		panel = userInterfaceFactory.createPanel();
 		buildUI();
     }
 
@@ -120,14 +125,26 @@ public final class OKCloseButtonPanel {
 
 		this.userInterfaceFactory = userInterfaceFactory;
 		this.includeOKButton = includeOKButton;
+		otherButtons = new ArrayList<JButton>();		
 		buildUI();
 	}
 	
-	private void buildUI() {
-		panel = userInterfaceFactory.createPanel();
+	public void buildUI() {
+		panel.removeAll();
 		GridBagConstraints panelGC 
 			= userInterfaceFactory.createGridBagConstraints();
 		panelGC.anchor = GridBagConstraints.SOUTHWEST;
+		
+		int numberOfOtherButtons = otherButtons.size();
+		for (int i = 0; i < numberOfOtherButtons; i++) {
+			System.out.println("Other button");
+			if (i != 0) {
+				panelGC.gridx++;
+			}
+			panel.add(otherButtons.get(i), panelGC);				
+		}
+		
+		panelGC.gridx++;			
 		
 		String okText
 			= RIFGenericLibraryMessages.getMessage("buttons.ok.label");
@@ -165,6 +182,11 @@ public final class OKCloseButtonPanel {
 	public JPanel getPanel() {
 		return panel;
 	}
+	
+	public void addButton(final JButton otherButton) {
+		otherButtons.add(otherButton);
+	}
+	
 	
 	/**
 	 * Checks if is OK button.

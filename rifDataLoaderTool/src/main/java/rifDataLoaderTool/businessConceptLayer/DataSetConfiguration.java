@@ -1,16 +1,18 @@
 package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.businessConceptLayer.DLGeography;
+import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
 
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
 
+import java.util.*;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * This is one of the major business classes that describes properties
@@ -169,13 +171,14 @@ public class DataSetConfiguration
 	private String description;
 	private String filePath;
 	private RIFSchemaArea rifSchemaArea;
+	private DLGeography geography;
+	private DLHealthTheme healthTheme;
 	private ArrayList<DataSetFieldConfiguration> fieldConfigurations;
 	public WorkflowState currentWorkflowState;
 	private boolean fileHasFieldNamesDefined;
 	private boolean isHint;
 
 	private DataSetConfiguration dependencyDataSetConfiguration;
-	
 	
 	// ==========================================
 	// Section Construction
@@ -253,7 +256,6 @@ public class DataSetConfiguration
 		}
 		
 		dataSetConfiguration.setFieldConfigurations(fieldConfigurations);
-		
 		return dataSetConfiguration;		
 	}
 
@@ -303,6 +305,13 @@ public class DataSetConfiguration
 			sourceDataSetConfiguration.getCurrentWorkflowState());
 		destinationDataSetConfiguration.setRIFSchemaArea(
 			sourceDataSetConfiguration.getRIFSchemaArea());
+		destinationDataSetConfiguration.setGeography(
+			sourceDataSetConfiguration.getGeography());
+		destinationDataSetConfiguration.setHealthTheme(
+			sourceDataSetConfiguration.getHealthTheme());
+		destinationDataSetConfiguration.setLastModifiedTime(
+			sourceDataSetConfiguration.getLastModifiedTime());
+		
 		destinationDataSetConfiguration.setIsHint(
 			sourceDataSetConfiguration.isHint());
 		ArrayList<DataSetFieldConfiguration> originalFieldConfigurations
@@ -317,6 +326,7 @@ public class DataSetConfiguration
 		DataSetConfiguration dependencyDataSetConfiguration
 			= sourceDataSetConfiguration.getDependencyDataSetConfiguration();
 		destinationDataSetConfiguration.setDependencyDataSetConfiguration(dependencyDataSetConfiguration);
+		destinationDataSetConfiguration.setGeography(sourceDataSetConfiguration.getGeography());
 	}
 	
 	public static ArrayList<DataSetConfiguration> getDataSetConfigurations(
@@ -343,7 +353,7 @@ public class DataSetConfiguration
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
+	
 	public void setDependencyDataSetConfiguration(
 		final DataSetConfiguration dependencyDataSetConfiguration) {
 		
@@ -437,6 +447,22 @@ public class DataSetConfiguration
 		this.rifSchemaArea = rifSchemaArea;
 	}
 
+	public DLGeography getGeography() {
+		return geography;
+	}
+	
+	public void setGeography(final DLGeography geography) {
+		this.geography = geography;
+	}
+	
+	public DLHealthTheme getHealthTheme() {
+		return healthTheme;
+	}
+	
+	public void setHealthTheme(final DLHealthTheme healthTheme) {
+		this.healthTheme = healthTheme;
+	}
+	
 	public int getIndexForField(
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 		
@@ -511,7 +537,7 @@ public class DataSetConfiguration
 	public static boolean hasIdenticalContents(
 		final ArrayList<DataSetConfiguration> dataSetConfigurationsA,
 		final ArrayList<DataSetConfiguration> dataSetConfigurationsB) {
-		
+
 		if (dataSetConfigurationsA == dataSetConfigurationsB) {
 			return true;
 		}
@@ -525,15 +551,6 @@ public class DataSetConfiguration
 			return false;
 		}
 
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		return true;
 	}
 	
@@ -611,7 +628,9 @@ public class DataSetConfiguration
 			return false;
 		}
 		
-		
+		if (lastModifiedDatesIdentical(otherDataSetConfiguration) == false) {
+			return false;
+		}
 		
 		return true;
 	}
@@ -622,6 +641,14 @@ public class DataSetConfiguration
 	
 	public void setIsHint(final boolean isHint) {
 		this.isHint = isHint;
+	}
+	
+	public void update(final DataSetConfiguration revisedDataSetConfiguration) {
+		if (hasIdenticalContents(revisedDataSetConfiguration)) {
+			return;
+		}
+		DataSetConfiguration.copyInto(revisedDataSetConfiguration, this);		
+		updateLastModifiedTime();
 	}
 	
 	// ==========================================

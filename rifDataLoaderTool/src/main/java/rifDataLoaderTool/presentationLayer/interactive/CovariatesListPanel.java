@@ -1,14 +1,13 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
-import rifDataLoaderTool.businessConceptLayer.DLGeography;
+import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.DataLoaderToolSession;
-import rifDataLoaderTool.businessConceptLayer.LoadingOrderState;
-
-
-import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 import javax.swing.*;
+
+import java.util.ArrayList;
 import java.util.Observable;
 
 /**
@@ -79,12 +78,14 @@ public class CovariatesListPanel
 	public CovariatesListPanel(
 		final JFrame frame,
 		final DataLoaderToolSession session,
-		final DLDependencyManager dependencyManager) {
+		final DLDependencyManager dependencyManager,
+		final DataLoaderToolChangeManager changeManager) {
 		
 		super(
 			frame, 
 			session, 
-			dependencyManager);
+			dependencyManager,
+			changeManager);
 		
 		String listTitle
 			= RIFDataLoaderToolMessages.getMessage(
@@ -98,27 +99,138 @@ public class CovariatesListPanel
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
 
+	
+	public void refresh() {
+		clearListItems();
+
+		DataLoaderToolSession session = getSession();
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= session.getDataLoaderToolConfiguration();
+		ArrayList<DataSetConfiguration> covariates
+			= dataLoaderToolConfiguration.getCovariateDataSetConfigurations();
+		ArrayList<DisplayableListItemInterface> listItemsToAdd
+			= new ArrayList<DisplayableListItemInterface>();
+		for (DataSetConfiguration covariate : covariates) {
+			listItemsToAdd.add(covariate);
+		}
+		setListItems(listItemsToAdd);
+	}
+		
 	@Override
 	protected void addListItem() {
 
-		System.out.println("Adding covariates");
+		/**
+		 * Create a data set based on the properties derived from
+		 * examining an imported CSV file.  Then set the RIF Schema
+		 * Area in a way that is appropriate to the concept supported
+		 * by this list panel class.
+		 */
+		DataLoaderToolSession session = getSession();
+		CSVFileSelectionDialog csvFileSelectionDialog
+			= new CSVFileSelectionDialog(session);
+		csvFileSelectionDialog.show();
+	
+		if (csvFileSelectionDialog.isCancelled()) {
+			//User pressed cancel, there is no new item to add
+			return;
+		}
+	
+		DataSetConfiguration originalCovariate
+			= csvFileSelectionDialog.getDataSetConfiguration();
+		originalCovariate.setRIFSchemaArea(RIFSchemaArea.COVARIATE_DATA);
+
+		/**
+		 * Use the kind of RIF Schema Area supported by this list panel
+		 * class to parameterise an editor that will let users set 
+		 * properties of the newly created data set configuration.
+		 */
+		DataSetConfigurationEditorDialog dialog
+			= new DataSetConfigurationEditorDialog(
+				session, 
+				RIFSchemaArea.COVARIATE_DATA);
+		dialog.setData(originalCovariate);
+		dialog.show();
+		if (dialog.isCancelled() == true) {
+			return;
+		}
+
+		/**
+		 * Register new items both in the underlying model being 
+		 * managed by the change manager and by the GUI list that will
+		 * accommodate new additions.
+		 */
+		DataSetConfiguration revisedCovariate
+			= dialog.getDataSetConfigurationFromForm();
+		DataLoaderToolChangeManager changeManager
+			= getChangeManager();
+		changeManager.addCovariate(revisedCovariate);
+		addListItem(revisedCovariate);
 	}
 	
 	@Override
 	protected void editSelectedListItem() {
-		DLGeography geography 
-			= (DLGeography) getSelectedListItem();
-
-		System.out.println("Editing covariates");
+		DataSetConfiguration originalCovariate 
+			= (DataSetConfiguration) getSelectedListItem();		
 		
+		DataLoaderToolSession session = getSession();
+		DataSetConfigurationEditorDialog dialog
+			= new DataSetConfigurationEditorDialog(
+				session, 
+				RIFSchemaArea.COVARIATE_DATA);
+		dialog.setData(originalCovariate);
+		dialog.show();
+		if (dialog.isCancelled() == true) {
+			return;
+		}
+		
+		/**
+		 * Update the underlying data loader tool configuration model
+		 * object managed by the change manager and update the GUI 
+		 * list as well.  The change manager will compare original
+		 * and revised copies and if they are different, it will 
+		 * set a saveChanges field.
+		 */
+		DataSetConfiguration revisedCovariate
+			= dialog.getDataSetConfigurationFromForm();
+		DataLoaderToolChangeManager changeManager
+			= getChangeManager();
+		updateListItem(originalCovariate, revisedCovariate);
+		changeManager.updateCovariate(
+			originalCovariate, 
+			revisedCovariate);		
 	}
 	
-	@Override
-	protected void checkDependenciesForItemsToDelete()
-		throws RIFServiceException {
+	protected void deleteSelectedListItems() {
+		
+		DLDependencyManager dependencyManager
+			= getDependencyManager();
+		ArrayList<DisplayableListItemInterface> itemsToDelete
+			= getSelectedListItems();
 			
+		//Remove any dependencies that either a Geography or a 
+		//Health Theme may have on one of the covariates
+		for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
+			DataSetConfiguration dataSetConfigurationToDelete
+				= (DataSetConfiguration) itemToDelete;
+			dependencyManager.deregisterDependenciesOfDataSet(dataSetConfigurationToDelete);
+		}
+			
+		//We're now ready to delete the items.  Delete them from both the 
+		//data loader tool configuration model object that is being managed
+		//by the change manager and the GUI list
+		DataLoaderToolChangeManager changeManager
+			= getChangeManager();
+		ArrayList<DataSetConfiguration> covariatesToDelete
+			= new ArrayList<DataSetConfiguration>();
+		for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
+			DataSetConfiguration dataSetConfigurationToDelete
+				= (DataSetConfiguration) itemToDelete;
+			covariatesToDelete.add(dataSetConfigurationToDelete);
+		}
+			
+		changeManager.deleteCovariates(covariatesToDelete);	
+		deleteListItems();		
 	}
 	
 	// ==========================================
@@ -134,19 +246,21 @@ public class CovariatesListPanel
 	// ==========================================
 
 	//Overriding method for Observer
+
 	public void update(
 		final Observable observable,
 		final Object object) {
 		
-		LoadingOrderState currentState
-			= (LoadingOrderState) object;
-		if (currentState.getOrder() >= LoadingOrderState.DEFINE_DENOMINATORS.getOrder()) {
+		DataLoadingOrder currentState
+			= (DataLoadingOrder) object;
+		if (currentState.getStepNumber() >= DataLoadingOrder.NUMERATORS_SPECIFIED.getStepNumber()) {
 			setEnable(true);			
 		}
 		else {
 			setEnable(false);
 		}
-	}
+	}	
+	
 }
 
 

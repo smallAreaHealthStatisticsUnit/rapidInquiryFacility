@@ -2,6 +2,7 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
@@ -78,7 +79,6 @@ public class DLGeography
 	// Section Properties
 	// ==========================================
 	private String name;
-	private String filePath;	
 	private ArrayList<DLGeographicalResolutionLevel> levels;
 			
 	
@@ -88,7 +88,6 @@ public class DLGeography
 
 	private DLGeography() {
 		name = "";
-		filePath = "";
 		levels = new ArrayList<DLGeographicalResolutionLevel>();
 	}
 
@@ -116,9 +115,81 @@ public class DLGeography
 		
 		destination.setIdentifier(source.getIdentifier());
 		destination.setName(source.getName());
-		destination.setFilePath(source.getFilePath());
+		
+		destination.clearLevels();
+		
+		ArrayList<DLGeographicalResolutionLevel> sourceLevels
+			= source.getLevels();
+		for (DLGeographicalResolutionLevel sourceLevel : sourceLevels) {
+			DLGeographicalResolutionLevel cloneLevel
+				= DLGeographicalResolutionLevel.createCopy(sourceLevel);
+			destination.addLevel(cloneLevel);
+		}
 		
 	}
+	
+	public static boolean hasIdenticalContents(
+		final ArrayList<DLGeography> geographyListA,
+		final ArrayList<DLGeography> geographyListB) {
+		
+		if (FieldValidationUtility.hasDifferentNullity(
+			geographyListA, 
+			geographyListB)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}		
+		
+		if (geographyListA.size() != geographyListB.size() ) {
+			//reject if lists do not have the same size
+			return false;
+		}
+		
+		//create temporary sorted lists to enable item by item comparisons
+		//in corresponding lists
+		ArrayList<DLGeography> geographiesA = sortGeographies(geographyListA);
+		ArrayList<DLGeography> geographiesB = sortGeographies(geographyListB);
+
+		int numberOfHealthCodes = geographiesA.size();
+		for (int i = 0; i < numberOfHealthCodes; i++) {
+			DLGeography geographyA
+				= geographiesA.get(i);				
+			DLGeography geographyB
+				= geographiesB.get(i);
+			if (geographyA.hasIdenticalContents(geographyB) == false) {					
+				return false;
+			}			
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Sort investigations.
+	 *
+	 * @param investigations the investigations
+	 * @return the array list
+	 */
+
+	private static ArrayList<DLGeography> sortGeographies(
+		final ArrayList<DLGeography> geographies) {
+
+		DisplayableItemSorter sorter = new DisplayableItemSorter();
+		
+		for (DLGeography geography : geographies) {
+			sorter.addDisplayableListItem(geography);
+		}
+		
+		ArrayList<DLGeography> results = new ArrayList<DLGeography>();
+		ArrayList<String> identifiers = sorter.sortIdentifiersList();
+		for (String identifier : identifiers) {
+			DLGeography sortedGeography 
+				= (DLGeography) sorter.getItemFromIdentifier(identifier);
+			results.add(sortedGeography);
+		}
+			
+		return results;
+	}
+	
 	
 	// ==========================================
 	// Section Accessors and Mutators
@@ -131,17 +202,34 @@ public class DLGeography
 	public void setName(final String name) {
 		this.name = name;
 	}
-
-	public void setFilePath(final String filePath) {
-		this.filePath = filePath;
-	}
-	
-	public String getFilePath() {
-		return filePath;
-	}
 	
 	public ArrayList<DLGeographicalResolutionLevel> getLevels() {
 		return levels;
+	}
+	
+	public ArrayList<String> getLevelNames() {
+		ArrayList<String> levelNames = new ArrayList<String>();
+		
+		for (DLGeographicalResolutionLevel level : levels) {
+			String currentLevelName
+				= level.getDisplayName();
+			levelNames.add(currentLevelName);
+		}
+				
+		return levelNames;
+	}
+	
+	public DLGeographicalResolutionLevel getLevel(final String targetLevelName) {
+
+		for (DLGeographicalResolutionLevel level : levels) {
+			String currentLevelName
+				= level.getDisplayName();
+			if (currentLevelName.equals(targetLevelName)) {
+				return level;
+			}
+		}
+		
+		return null;
 	}
 	
 	public void addLevel(
@@ -150,40 +238,46 @@ public class DLGeography
 		levels.add(level);
 	}
 	
+	public void addLevel(
+		final int order, 
+		final String displayName, 
+		final String databaseFieldName) {
+		
+		DLGeographicalResolutionLevel level 
+			= DLGeographicalResolutionLevel.newInstance(
+				order, 
+				displayName, 
+				databaseFieldName);
+		
+		levels.add(level);
+	}
+	
 	public void clearLevels() {
 		levels.clear();
 	}
 	
-	public static final boolean hasIdenticalContents(
-		final DLGeography geographyA,
-		final DLGeography geographyB) {
+	public boolean hasIdenticalContents(
+		final DLGeography otherGeography) {
 		
-		if (geographyA == geographyB) {
+		if (otherGeography == null) {
+			return false;			
+		}
+		
+		if (this == otherGeography) {
 			return true;
 		}
 		
-		if ((geographyA == null) && (geographyB != null) ||
-			(geographyA != null) && (geographyB == null)) {
-			return false;
-		}
-
-		
 		if (Objects.deepEquals(
-			geographyA.getName(), 
-			geographyB.getName()) == false) {
+			name, 
+			otherGeography.getName()) == false) {
 
 			return false;
 		}
 		
-		
-		if (Objects.deepEquals(
-			geographyA.getFilePath(), 
-			geographyB.getFilePath()) == false) {
-
-			return false;
-		}
-
-		return true;
+		//go through the levels
+		return DLGeographicalResolutionLevel.hasIdenticalContents(
+			levels, 
+			otherGeography.getLevels());
 	}
 	
 	// ==========================================

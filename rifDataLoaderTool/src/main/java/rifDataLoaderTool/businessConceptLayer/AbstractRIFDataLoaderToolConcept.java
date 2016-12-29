@@ -2,12 +2,14 @@ package rifDataLoaderTool.businessConceptLayer;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
+
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.util.ArrayList;
-
+import java.util.Date;
 
 /**
  * A convenience class that is meant to hold code common to all of the business class
@@ -81,6 +83,7 @@ abstract class AbstractRIFDataLoaderToolConcept
 	// ==========================================
 	private String identifier;
 	private boolean isChanged;
+	private Date lastModifiedTime;
 	
 	// ==========================================
 	// Section Construction
@@ -88,6 +91,8 @@ abstract class AbstractRIFDataLoaderToolConcept
 
 	public AbstractRIFDataLoaderToolConcept() {
 		isChanged = false;
+		lastModifiedTime = new Date(System.currentTimeMillis());
+		updateLastModifiedTime();
 	}
 
 	// ==========================================
@@ -101,6 +106,21 @@ abstract class AbstractRIFDataLoaderToolConcept
 	public void setChanged(final boolean isChanged) {
 		this.isChanged = isChanged;
 	}
+	
+	public void setLastModifiedTime(final Date lastModifiedTime) {
+		this.lastModifiedTime = lastModifiedTime;
+	}
+	
+	public Date getLastModifiedTime() {
+		return lastModifiedTime;
+	}
+
+	protected void updateLastModifiedTime() {
+		Date currentTimeStamp = new Date(System.currentTimeMillis());
+		lastModifiedTime = currentTimeStamp;		
+	}
+	
+	
 	
 	
 	abstract public String getDisplayName();
@@ -119,6 +139,22 @@ abstract class AbstractRIFDataLoaderToolConcept
 		this.identifier = identifier;
 	}
 
+	protected boolean lastModifiedDatesIdentical(final AbstractRIFDataLoaderToolConcept otherConcept) {
+		
+		Date otherLastModifiedTime = otherConcept.getLastModifiedTime();
+		if (FieldValidationUtility.hasDifferentNullity(
+			lastModifiedTime, 
+			otherLastModifiedTime)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}
+		else if (lastModifiedTime.compareTo(otherLastModifiedTime) == 0) {
+			return true;
+		}
+		return false;
+	}			
+	
+	
 	protected void countErrors(
 		final RIFDataLoaderToolError rifDataLoaderToolError,
 		final ArrayList<String> errorMessages) 

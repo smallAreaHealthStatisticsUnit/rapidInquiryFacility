@@ -1,10 +1,9 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
-
-
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.DataLoaderToolSession;
+
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
@@ -13,7 +12,6 @@ import rifGenericLibrary.util.FieldValidationUtility;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.regex.Pattern;

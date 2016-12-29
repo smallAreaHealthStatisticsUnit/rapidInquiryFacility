@@ -6,7 +6,6 @@ import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.ConfigurationHints;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
@@ -234,8 +233,8 @@ final class HintsConfigurationHandler
 	
 	public void setDataTypeFactory(final RIFDataTypeFactory dataTypeFactory) {
 		this.dataTypeFactory = dataTypeFactory;
-		dataSetConfigurationHintHandler.setRIFDataTypeFactory(dataTypeFactory);
-		dataSetFieldConfigurationHintHandler.setRIFDataTypeFactory(dataTypeFactory);
+		dataSetConfigurationHintHandler.setDataTypeFactory(dataTypeFactory);
+		dataSetFieldConfigurationHintHandler.setDataTypeFactory(dataTypeFactory);
 	}
 	
 	public void setConfigurationHints(final ConfigurationHints configurationHints) {

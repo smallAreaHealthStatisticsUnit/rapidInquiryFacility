@@ -1,6 +1,12 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.util.FieldValidationUtility;
+
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  *
@@ -63,6 +69,7 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 	// ==========================================
 	private String name;
 	private String description;
+	private Date lastModifiedTime;
 	
 	// ==========================================
 	// Section Construction
@@ -71,6 +78,7 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 	private DLHealthTheme() {
 		this.name = "";
 		this.description = "";
+		updateLastModifiedTime();
 	}
 
 	private DLHealthTheme(
@@ -79,6 +87,7 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 		
 		this.name = name;
 		this.description = description;
+		updateLastModifiedTime();
 	}
 	
 	public static DLHealthTheme newInstance(
@@ -113,13 +122,135 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 		
 		destination.setName(source.getName());
 		destination.setDescription(source.getDescription());
+		destination.setLastModifiedTime(source.getLastModifiedTime());
 	}
 	
+	public static boolean hasIdenticalContents(
+		final ArrayList<DLHealthTheme> healthThemesListA,
+		final ArrayList<DLHealthTheme> healthThemesListB) {
+			
+		if (FieldValidationUtility.hasDifferentNullity(
+			healthThemesListA, 
+			healthThemesListB)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}		
+			
+		if (healthThemesListA.size() != healthThemesListB.size() ) {
+			//reject if lists do not have the same size
+			return false;
+		}
+			
+		//create temporary sorted lists to enable item by item comparisons
+		//in corresponding lists
+		ArrayList<DLHealthTheme> healthThemesA = sortHealthThemes(healthThemesListA);
+		ArrayList<DLHealthTheme> healthThemesB = sortHealthThemes(healthThemesListB);
+
+		int numberOfHealthCodes = healthThemesA.size();
+		for (int i = 0; i < numberOfHealthCodes; i++) {
+			DLHealthTheme healthThemeA
+				= healthThemesA.get(i);				
+			DLHealthTheme healthThemeB
+				= healthThemesB.get(i);
+			if (healthThemeA.hasIdenticalContents(healthThemeB) == false) {
+				System.out.println("hasIdent 4");
+				return false;
+			}			
+		}
+			
+		return true;
+	}
+
+
+	private static ArrayList<DLHealthTheme> sortHealthThemes(
+		final ArrayList<DLHealthTheme> healthThemes) {
+
+		DisplayableItemSorter sorter = new DisplayableItemSorter();
+		
+		for (DLHealthTheme healthTheme : healthThemes) {
+			sorter.addDisplayableListItem(healthTheme);
+		}
+		
+		ArrayList<DLHealthTheme> results = new ArrayList<DLHealthTheme>();
+		ArrayList<String> identifiers = sorter.sortIdentifiersList();
+		for (String identifier : identifiers) {
+			DLHealthTheme sortedHealthTheme
+				= (DLHealthTheme) sorter.getItemFromIdentifier(identifier);
+			results.add(sortedHealthTheme);
+		}
+		
+		return results;
+	}
+	
+	public boolean hasIdenticalContents(final DLHealthTheme otherHealthTheme) {
+		if (otherHealthTheme == null) {
+			return false;			
+		}
+		
+		if (this == otherHealthTheme) {
+			return true;
+		}
+		
+		Collator collator = Collator.getInstance();
+
+		String otherName = otherHealthTheme.getName();
+		if (FieldValidationUtility.hasDifferentNullity(name, otherName)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}
+		else if (name != null) {
+			//they must both be non-null
+			if (collator.equals(name, otherName) == false) {
+				return false;
+			}			
+		}		
+		
+		String otherDescription = otherHealthTheme.getDescription();
+		if (FieldValidationUtility.hasDifferentNullity(
+			description, 
+			otherDescription)) {
+
+			//reject if one is null and the other is non-null
+			return false;
+		}
+		else if (description != null) {
+			//they must both be non-null
+			if (collator.equals(
+				description, 
+				otherDescription) == false) {
+
+				return false;
+			}			
+		}
+		
+		Date otherLastModifiedTime = otherHealthTheme.getLastModifiedTime();
+		if (FieldValidationUtility.hasDifferentNullity(
+			lastModifiedTime, 
+			otherLastModifiedTime)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}
+		else if (lastModifiedTime.compareTo(otherLastModifiedTime) != 0) {
+			//they must both be non-null
+			if (collator.equals(name, otherName) == false) {
+				return false;
+			}			
+		}			
+		
+		
+		return true;
+		
+	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void update(final DLHealthTheme revisedHealthTheme) {
+		DLHealthTheme.copyInto(revisedHealthTheme, this);
+		updateLastModifiedTime();
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -134,6 +265,17 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 
 	public void setDescription(final String description) {
 		this.description = description;
+	}
+	
+	public Date getLastModifiedTime() {
+		return lastModifiedTime;		
+	}
+	
+	public void setLastModifiedTime(final Date lastModifiedTime) {
+		this.lastModifiedTime = lastModifiedTime;
+	}
+	private void updateLastModifiedTime() {
+		lastModifiedTime = new Date(System.currentTimeMillis());
 	}
 	
 	// ==========================================

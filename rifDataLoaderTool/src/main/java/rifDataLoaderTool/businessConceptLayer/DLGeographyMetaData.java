@@ -1,7 +1,10 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
 
+import java.text.Collator;
 import java.util.ArrayList;
 
 /**
@@ -55,7 +58,7 @@ import java.util.ArrayList;
  */
 
 public class DLGeographyMetaData 
-	implements DisplayableListItemInterface {
+	extends AbstractRIFDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants
@@ -64,7 +67,6 @@ public class DLGeographyMetaData
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private String name;
 	private String filePath;
 	private ArrayList<DLGeography> geographies;
 	
@@ -94,7 +96,6 @@ public class DLGeographyMetaData
 		final DLGeographyMetaData source, 
 		final DLGeographyMetaData destination) {
 		
-		destination.setName(source.getName());
 		destination.setFilePath(source.getFilePath());
 		
 		ArrayList<DLGeography> originalGeographies
@@ -106,18 +107,9 @@ public class DLGeographyMetaData
 		}		
 	}
 	
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 	
 	public String getFilePath() {
 		return filePath;
@@ -128,12 +120,38 @@ public class DLGeographyMetaData
 		this.filePath = filePath;
 	}
 	
+	public String[] getAllGeographyNames() {
+		ArrayList<String> geographyNames = new ArrayList<String>();
+
+		for (DLGeography geography : geographies) {
+			geographyNames.add(geography.getName());
+		}
+				
+		return geographyNames.toArray(new String[0]);
+	}
+	
+	public DLGeography getGeography(final String targetGeographName) {
+		for (DLGeography geography : geographies) {
+			String currentGeographyName
+				= geography.getName();
+			if (currentGeographyName.equals(targetGeographName)) {
+				return geography;
+			}
+		}
+		
+		return null;
+	}
+	
 	public ArrayList<DLGeography> getGeographies() {
 		return geographies;
 	}
 	
 	public void addGeography(final DLGeography geography) {
 		geographies.add(geography);
+	}
+
+	public void clearGeographies() {
+		geographies.clear();
 	}
 	
 	/**
@@ -143,25 +161,56 @@ public class DLGeographyMetaData
 	 * @param geographyMetaData
 	 * @return
 	 */
-	public boolean hasIdenticalContents(final DLGeographyMetaData geographyMetaData) {
+	public boolean hasIdenticalContents(
+		final DLGeographyMetaData otherGeographyMetaData) {
 		
-		return true;
+		if (otherGeographyMetaData == null) {
+			return false;
+		}
+		
+		Collator collator = Collator.getInstance();
+		
+		String otherFilePath = otherGeographyMetaData.getFilePath();
+		
+		if (FieldValidationUtility.hasDifferentNullity(filePath, otherFilePath)) {
+			//reject if one is null and the other is non-null
+			return false;
+		}
+		else if (filePath != null) {
+			//they must both be non-null
+			if (collator.equals(filePath, otherFilePath) == false) {
+				return false;
+			}			
+		}
+
+		return DLGeography.hasIdenticalContents(
+			geographies, 
+			otherGeographyMetaData.getGeographies());
 	}
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-
+	public void checkErrors() 
+		throws RIFServiceException {
+		
+	}
+	
+	public void checkSecurityViolations() 
+		throws RIFServiceSecurityException {
+		
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================
 
 	public String getIdentifier() {
-		return name;
+		return filePath;
 	}
 	
 	public String getDisplayName() {
-		return name;
+		return filePath;
 	}
 	
 	// ==========================================

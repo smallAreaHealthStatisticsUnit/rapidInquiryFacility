@@ -4,9 +4,9 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DLGeography;
 import rifDataLoaderTool.businessConceptLayer.DLGeographyMetaData;
 import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
@@ -113,6 +113,60 @@ public class DLDependencyManager {
 		
 		dependentNumerators.add(numeratorDataSetConfiguration);
 	}
+	
+	public void deregisterDependenciesOfDataSet(
+		final DataSetConfiguration dataSet) {
+
+		if (dataSet.getRIFSchemaArea() == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+			//remove the dependency of the numerator on the denominator		
+			DataSetConfiguration denominator
+				= dataSet.getDependencyDataSetConfiguration();
+			ArrayList<DataSetConfiguration> dependentNumerators		
+				= dependenciesOnDenominator.get(denominator);
+
+			dependentNumerators.remove(dataSet);
+			if (dependentNumerators.size() == 0) {
+				dependenciesOnDenominator.remove(denominator);
+			}
+		}
+		
+		deregisterGeographyDependencyOfDataSet(dataSet);
+		deregisterHealthThemeDependencyOfDataSet(dataSet);	
+	}
+	
+	private void deregisterGeographyDependencyOfDataSet(
+		final DataSetConfiguration dataSetConfiguration) {
+		
+		DLGeography geography = dataSetConfiguration.getGeography();
+		
+		ArrayList<DataSetConfiguration> dataSetConfigurations
+			= dependenciesOnGeography.get(geography);
+		if (dataSetConfigurations != null) {
+			dataSetConfigurations.remove(dataSetConfiguration);
+			if (dataSetConfigurations.size() == 0) {
+				//removed all the dependencies
+				dependenciesOnGeography.remove(geography);
+			}
+		}		
+	}
+
+	private void deregisterHealthThemeDependencyOfDataSet(
+		final DataSetConfiguration dataSetConfiguration) {
+			
+		DLHealthTheme healthTheme 
+			= dataSetConfiguration.getHealthTheme();		
+		ArrayList<DataSetConfiguration> dataSetConfigurations
+			= dependenciesOnHealthTheme.get(healthTheme);
+		if (dataSetConfigurations != null) {
+			dataSetConfigurations.remove(dataSetConfiguration);
+			if (dataSetConfigurations.size() == 0) {
+				//removed all the dependencies
+				dependenciesOnHealthTheme.remove(dataSetConfiguration);
+			}
+		}		
+	}
+			
+	
 	
 	public void registerDependencyOnGeography(
 		final DataSetConfiguration dataSetConfiguration,

@@ -80,6 +80,7 @@ class DataSetConfigurationEditorDialog
 	
 	//Data
 	private DataLoaderToolSession session;
+	private RIFSchemaArea rifSchemaArea;
 	private DataSetConfiguration originalDataSetConfiguration;
 	private DataSetConfiguration workingCopyDataSetConfiguration;
 		
@@ -98,32 +99,67 @@ class DataSetConfigurationEditorDialog
 	// Section Construction
 	// ==========================================
 
+	
 	public DataSetConfigurationEditorDialog(
 		final DataLoaderToolSession session) {
-
+		
 		super(session.getUserInterfaceFactory());
+		init(session, null);
+	}
+	
+	
+	public DataSetConfigurationEditorDialog(
+		final DataLoaderToolSession session,
+		final RIFSchemaArea rifSchemaArea) {
+		
+		super(session.getUserInterfaceFactory());
+		init(session, rifSchemaArea);
+	}
+	
+	private void init(
+		final DataLoaderToolSession session,
+		final RIFSchemaArea rifSchemaArea) {
+		
 		this.session = session;
 		previouslySelectedIndex = -1;
 		isRollbackSelectionHappening = false;		
 		originalDataSetConfiguration
 			= DataSetConfiguration.newInstance();
-
-		String dialogTitle
-			= RIFDataLoaderToolMessages.getMessage(
-				"dataSetConfigurationEditorDialog.title");
+		this.rifSchemaArea = rifSchemaArea;
+		String dialogTitle = "";
+		if (rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA) {
+			dialogTitle
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfigurationEditorDialog.denominatorTitle");			
+		}
+		else if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+			dialogTitle
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfigurationEditorDialog.numeratorTitle");			
+		}
+		else if (rifSchemaArea == RIFSchemaArea.COVARIATE_DATA) {
+			dialogTitle
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfigurationEditorDialog.covariateTitle");			
+		}
+		else {
+			dialogTitle
+				= RIFDataLoaderToolMessages.getMessage(
+					"dataSetConfigurationEditorDialog.otherTitle");			
+		}
 		setDialogTitle(dialogTitle);
-	
+			
 		String instructionsText
 			= RIFDataLoaderToolMessages.getMessage(
 				"dataSetConfigurationEditorDialog.instructions");
 		setInstructionText(instructionsText);
-		setMainPanel(createMainPanel());
+		setMainPanel(createMainPanel(rifSchemaArea));
 		setSize(1200, 700);
 		
 		buildUI();
 	}
 
-	private JPanel createMainPanel() {		
+	private JPanel createMainPanel(final RIFSchemaArea rifSchemaArea) {		
 		UserInterfaceFactory userInterfaceFactory
 			= session.getUserInterfaceFactory();
 		String dataSetFieldListTitleText
@@ -145,8 +181,9 @@ class DataSetConfigurationEditorDialog
 		
 		dataSetPropertyEditorPanel
 			= new DataSetPropertyEditorPanel(
-				userInterfaceFactory,
-				false);
+				session,
+				rifSchemaArea);
+		dataSetPropertyEditorPanel.addActionListener(this);
 		
 		dataSetFieldPropertyEditorPanel
 			= new DataSetFieldPropertyEditorPanel(
@@ -265,8 +302,8 @@ class DataSetConfigurationEditorDialog
 		
 		workingCopyDataSetConfiguration
 			= DataSetConfiguration.createCopy(originalDataSetConfiguration);
-		
-		
+		buildUI();
+		System.out.println("About to populate with working copy");
 		populateFormFromWorkingCopy(workingCopyDataSetConfiguration);
 	}
 	
@@ -289,12 +326,14 @@ class DataSetConfigurationEditorDialog
 			DataSetFieldConfiguration selectedDataSetFieldConfiguration
 				= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
 			
+			DLGeography currentlySelectedGeography
+				= dataSetPropertyEditorPanel.getSelectedGeography();
 			dataSetFieldPropertyEditorPanel.setData(
 				dataSetConfiguration,
+				currentlySelectedGeography,
 				selectedDataSetFieldConfiguration);
 		}
 
-		
 		dataSetFieldListPanel.addListSelectionListener(this);
 	}
 	
@@ -427,8 +466,15 @@ class DataSetConfigurationEditorDialog
 		Object source = event.getSource();
 		
 		if (dataSetPropertyEditorPanel.isSchemaAreaComboBox(source)) {
-			dataSetFieldPropertyEditorPanel.updateUI();
+			RIFSchemaArea rifSchemaArea
+				= dataSetPropertyEditorPanel.getSelectedRIFSchemaArea();
+			dataSetFieldPropertyEditorPanel.setCurrentRIFSchemaArea(rifSchemaArea);
 		}
+		else if (dataSetPropertyEditorPanel.isGeographyComboBox(source)) {
+			DLGeography selectedGeography
+				= dataSetPropertyEditorPanel.getSelectedGeography();
+			dataSetFieldPropertyEditorPanel.setCurrentGeography(selectedGeography);
+		}		
 		else if (dataSetFieldListButtonPanel.isAddButton(source)) {
 			addDataSetFieldConfiguration();
 		}
@@ -463,8 +509,11 @@ class DataSetConfigurationEditorDialog
 			DataSetFieldConfiguration selectedFieldConfiguration
 				= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
 
+			DLGeography selectedGeography
+				= dataSetPropertyEditorPanel.getSelectedGeography();
 			dataSetFieldPropertyEditorPanel.setData(
 				workingCopyDataSetConfiguration,
+				selectedGeography,
 				selectedFieldConfiguration);	
 			previouslySelectedIndex = event.getLastIndex();
 						

@@ -11,7 +11,6 @@ import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -19,7 +18,6 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.ArrayList;
 
 /**
  *
@@ -269,26 +267,13 @@ class CSVFileSelectionDialog
 				coreDataSetName, 
 				csvFieldNames);		
 		originalDataSetConfiguration.setFilePath(selectedCSVFile.getAbsolutePath());
-		DataLoaderToolSettings settings
-			= session.getDataLoaderToolSettings();
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= session.getDataLoaderToolConfiguration();
 		ConfigurationHints configurationHints
-			= settings.getConfigurationHints();
+			= dataLoaderToolConfiguration.getConfigurationHints();
 		configurationHints.applyHintsToDataSetConfiguration(
 			originalDataSetConfiguration);
-			
-		/*
-		DataSetConfigurationHints dataSetConfigurationHints
-			= new DataSetConfigurationHints();
-		DataLoaderToolSettings dataLoaderToolSettings
-			= session.getDataLoaderToolSettings();
-		RIFDataTypeFactory rifDataTypeFactory
-			= dataLoaderToolSettings.getRIFDataTypeFactory();
-		dataSetConfigurationHints.configureDataSetConfiguration(
-			rifDataTypeFactory,
-			originalDataSetConfiguration, 
-			csvFieldNames, 
-			csvPreviewData);
-		*/
+
 		return originalDataSetConfiguration;
 	}
 	
