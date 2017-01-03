@@ -137,7 +137,6 @@ public final class OKCloseButtonPanel {
 		
 		int numberOfOtherButtons = otherButtons.size();
 		for (int i = 0; i < numberOfOtherButtons; i++) {
-			System.out.println("Other button");
 			if (i != 0) {
 				panelGC.gridx++;
 			}
