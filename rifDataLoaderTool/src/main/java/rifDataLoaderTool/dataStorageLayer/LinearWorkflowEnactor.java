@@ -122,6 +122,8 @@ public class LinearWorkflowEnactor {
 		final LinearWorkflow linearWorkflow) 
 		throws RIFServiceException {
 
+	
+		
 		runWorkflow(
 			null, 
 			exportDirectory,
@@ -178,7 +180,8 @@ public class LinearWorkflowEnactor {
 		}
 		catch(IOException ioException) {
 			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage("");
+				= RIFDataLoaderToolMessages.getMessage(
+					"linearWorkflow.error.unableToWriteToLogFiles");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFGenericLibraryError.DATABASE_QUERY_FAILED,
