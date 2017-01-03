@@ -7,6 +7,7 @@ DECLARE @CurrentUser sysname /*
  *									quotes (') need to be double ('')
  *
  * 						SchemaName is set to either @CurrentUser (build) or 'rif_data' for rif40
+ *
  * Description:			Comment table
  * Note:				%%%% becomes %% after substitution
  */

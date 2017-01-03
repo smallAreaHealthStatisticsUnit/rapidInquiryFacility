@@ -771,8 +771,23 @@ RangeError: Invalid string length
 	* Add tile table to geolevels;
 * dbLoad.js production load script: SQL Server - set schema in production script to cope with no ability 
   to change the schema on a per session basis
+
+#### 3rd to 6th January
  
 #### Current TODO list (January 2017):
+
+## Alter 9
+
+1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
+2. Make RIF40_TABLES.THEME nullable for denominators
+
+### Database Bugs
+
+* INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
+* Fix:
+  * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
+  * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
+* Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
 
 * Standard test configurations:
   * SAHSULAND: relocated to Utah: reprojected to 1983 North American Projection (EPSG:4269)
@@ -848,9 +863,10 @@ Note: no bounding box (bbox) in tiles.
 * Add GID, shapefile fields to lookup tables;
 * Add areaid as well as <geolevel_name> in lookup tables;
   
-## Database Bugs
+##	General RIF database Todo (parked):
+  
+### Database Bugs
 
-* INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
 * AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
   for duplicate county names within a state
 * Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
@@ -858,16 +874,12 @@ Note: no bounding box (bbox) in tiles.
 * Add t_rif40_study_areas trigger check (once per INSERT/UPDATE) for correct use of band_id in rif40_study_shares. 
   Alternatively check in rif40_run_study 
   
-##	General RIF database Todo (Early December/will park):
-
 ### Early December
 
-1. Bugs
 2. New study state "S" - Smoothed; new method: setStudyState(study_id, state) {…}
 2. New study status table: t_rif40_study_status(username, study_id, study_state, creation_date, ith_update, message); ith_update is auto increment
    and updateable view rif40_study_status of the users own studies
 3. Separate test/build in makefile; remove Node dependency
-4. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
   
 ### Park
 
