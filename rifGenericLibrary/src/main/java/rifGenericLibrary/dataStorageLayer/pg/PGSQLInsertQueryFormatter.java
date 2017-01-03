@@ -123,6 +123,7 @@ public final class PGSQLInsertQueryFormatter
 	}
 	
 	@Override
+	
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "INSERT INTO ");
@@ -152,6 +153,43 @@ public final class PGSQLInsertQueryFormatter
 		
 		return super.generateQuery();		
 	}
+
+	
+	public String generateQueryWithLiterals(
+		final String... literalValues) {
+		
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "INSERT INTO ");
+		addQueryPhrase(getSchemaTableName(intoTable));
+		addQueryPhrase("(");
+
+		int numberOfInsertFields = insertFields.size();
+		for (int i = 0; i < numberOfInsertFields; i++) {
+			if (i != 0) {
+				addQueryPhrase(",");
+				finishLine();
+			}
+			addQueryPhrase(1, insertFields.get(i).trim());			
+		}
+		addQueryPhrase(")");
+		padAndFinishLine();
+		addQueryPhrase(0, "VALUES (");
+		for (int i = 0; i < numberOfInsertFields; i++) {
+			if (i != 0) {
+				addQueryPhrase(",");
+			}
+			addQueryPhrase("'");
+			addQueryPhrase(literalValues[i].trim());
+			addQueryPhrase("'");
+		}
+
+		addQueryPhrase(")");
+		finishLine();
+		
+		return super.generateQuery();		
+	}
+	
+	
 	
 	// ==========================================
 	// Section Errors and Validation
