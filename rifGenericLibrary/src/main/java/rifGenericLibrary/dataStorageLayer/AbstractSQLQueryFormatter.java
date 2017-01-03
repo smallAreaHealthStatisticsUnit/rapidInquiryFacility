@@ -278,8 +278,9 @@ public abstract class AbstractSQLQueryFormatter {
 		result.append(query.toString());
 		
 		if (endWithSemiColon) {
-			result.append(";\n\n");
+			result.append(";");
 		}
+		result.append("\n\n");
 		return result.toString();
 	}
 	
