@@ -101,7 +101,6 @@ public class DataLoaderToolChangeManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DLDependencyManager dependencyManager;
 	private DataLoaderToolConfiguration dataLoaderToolConfiguration;
 	private boolean saveChanges;
 	
@@ -110,7 +109,7 @@ public class DataLoaderToolChangeManager
 	// ==========================================
 
 	public DataLoaderToolChangeManager() {
-		dependencyManager = new DLDependencyManager();
+
 	}
 
 	// ==========================================
@@ -196,9 +195,6 @@ public class DataLoaderToolChangeManager
 	public void deleteHealthTheme(final DLHealthTheme healthTheme) 
 		throws RIFServiceException {
 		
-		//Check there are no dependencies
-		dependencyManager.checkHealthThemeDependencies(healthTheme);
-
 		int originalNumberHealthThemes
 			= dataLoaderToolConfiguration.getNumberOfHealthThemes();		
 		dataLoaderToolConfiguration.deleteHealthTheme(healthTheme);
@@ -366,9 +362,7 @@ public class DataLoaderToolChangeManager
 				
 				notifyDataLoadingObservers(DataLoadingOrder.DENOMINATORS_SPECIFIED);				
 			}		
-		}
-		
-		dependencyManager.deregisterDependenciesOfDataSet(numerator);	
+		}		
 	}
 	
 	public void addCovariate(final DataSetConfiguration covariate) {
@@ -445,6 +439,10 @@ public class DataLoaderToolChangeManager
 	public void notifyDataLoadingObservers(final DataLoadingOrder dataLoadingOrder) {
 		setChanged();
 		notifyObservers(dataLoadingOrder);
+	}
+	
+	public boolean saveChanges() {
+		return saveChanges;
 	}
 	
 	public void indicateSaveChanges() {
