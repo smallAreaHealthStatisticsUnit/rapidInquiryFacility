@@ -1,9 +1,10 @@
 package rifGenericLibrary.dataStorageLayer.pg;
 
-import java.util.ArrayList;
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
@@ -84,6 +85,8 @@ public final class PGSQLInsertQueryFormatter
 	
 	/** The insert fields. */
 	private ArrayList<String> insertFields;
+	
+	private ArrayList<Boolean> useQuotesForLiteral;
 
 	// ==========================================
 	// Section Construction
@@ -94,6 +97,7 @@ public final class PGSQLInsertQueryFormatter
 	 */
 	public PGSQLInsertQueryFormatter() {
 		insertFields = new ArrayList<String>();
+		useQuotesForLiteral = new ArrayList<Boolean>();
 	}
 
 	// ==========================================
@@ -121,6 +125,15 @@ public final class PGSQLInsertQueryFormatter
 		
 		insertFields.add(insertField);
 	}
+
+	public void addInsertField(
+		final String insertField,
+		final Boolean useQuotes) {
+			
+		insertFields.add(insertField);
+		useQuotesForLiteral.add(useQuotes);
+	}
+			
 	
 	@Override
 	
@@ -178,13 +191,24 @@ public final class PGSQLInsertQueryFormatter
 			if (i != 0) {
 				addQueryPhrase(",");
 			}
-			addQueryPhrase("'");
-			addQueryPhrase(literalValues[i].trim());
-			addQueryPhrase("'");
+			
+			if (literalValues[i] == null) {
+				addQueryPhrase("null");				
+			}
+			else {
+				if (useQuotesForLiteral.get(i) == true) {
+					addQueryPhrase("'");
+					addQueryPhrase(literalValues[i]);
+					addQueryPhrase("'");					
+				}
+				else {
+					addQueryPhrase(literalValues[i]);
+				}
+			}
 		}
 
 		addQueryPhrase(")");
-		finishLine();
+		//finishLine();
 		
 		return super.generateQuery();		
 	}
