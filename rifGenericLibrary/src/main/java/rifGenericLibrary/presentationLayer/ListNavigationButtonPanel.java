@@ -12,7 +12,7 @@ import javax.swing.JPanel;
  * can't skip steps, here, you can go to "Last" without having to go through "Next".
  *
  * <hr>
- * Copyright 2016 Imperial College London, developed by the Small Area
+ * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 

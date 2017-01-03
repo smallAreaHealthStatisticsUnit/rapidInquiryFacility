@@ -26,7 +26,7 @@ import java.util.HashMap;
  * and year ranges, for any given geographical area.
  *
  * <p>
- * Copyright 2016 Imperial College London, developed by the Small Area
+ * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 

@@ -32,7 +32,7 @@ import java.awt.event.ActionListener;
  * call getPanel(), which will assemble the buttons and return a panel with them 
  * </li>
  * <hr>
- * Copyright 2016 Imperial College London, developed by the Small Area
+ * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 

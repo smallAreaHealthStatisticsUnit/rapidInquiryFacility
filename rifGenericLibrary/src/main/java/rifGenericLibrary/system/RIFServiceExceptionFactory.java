@@ -8,7 +8,7 @@ import rifGenericLibrary.system.RIFServiceException;
  * Convenience factory to help manufacture common types of RIFServiceException.
  *
  * <hr>
- * Copyright 2016 Imperial College London, developed by the Small Area
+ * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 

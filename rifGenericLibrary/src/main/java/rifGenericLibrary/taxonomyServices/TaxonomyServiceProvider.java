@@ -20,7 +20,7 @@ package rifGenericLibrary.taxonomyServices;
  * will be used for the <code>taxonomyServiceID</code> parameter for methods called in 
  * {@link rifGenericLibrary.taxonomyServices.FederatedTaxonomyService}.
  * <hr>
- * Copyright 2016 Imperial College London, developed by the Small Area
+ * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 

@@ -4,7 +4,7 @@ package rifDataLoaderTool.presentationLayer.interactive;
  *
  *
  * <hr>
- * Copyright 2016 Imperial College London, developed by the Small Area
+ * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 

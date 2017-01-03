@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * been fully instantiated before any of them are actually used.
  *
  * <hr>
- * Copyright 2016 Imperial College London, developed by the Small Area
+ * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
  * <pre> 
