@@ -287,7 +287,10 @@ public class DataSetPropertyEditorPanel {
 			panel.add(rifSchemaAreasLabel, panelGC);	
 			panelGC.gridx++;
 			panelGC.fill = GridBagConstraints.HORIZONTAL;
-			panelGC.weightx = 1;		
+			panelGC.weightx = 1;
+			rifSchemaAreasComboBox
+				= userInterfaceFactory.createComboBox(
+					RIFSchemaArea.getAllSchemaNames());			
 			panel.add(rifSchemaAreasComboBox, panelGC);
 			
 		}
