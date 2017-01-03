@@ -123,10 +123,8 @@ public class DLDependencyManager {
 				= dataSet.getDependencyDataSetConfiguration();
 			ArrayList<DataSetConfiguration> dependentNumerators		
 				= dependenciesOnDenominator.get(denominator);
-
-			dependentNumerators.remove(dataSet);
-			if (dependentNumerators.size() == 0) {
-				dependenciesOnDenominator.remove(denominator);
+			if (dependentNumerators != null) {				
+				dependentNumerators.remove(dataSet);
 			}
 		}
 		
@@ -197,6 +195,7 @@ public class DLDependencyManager {
 		final DataSetConfiguration denominatorDataSetConfiguration) 
 		throws RIFServiceException {
 
+		System.out.println("Checking denominator dependencies");
 		ArrayList<DataSetConfiguration> dependentNumerators
 			= dependenciesOnDenominator.get(
 				denominatorDataSetConfiguration);
