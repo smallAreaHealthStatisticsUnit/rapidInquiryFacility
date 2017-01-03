@@ -108,7 +108,10 @@ public enum RIFSchemaArea {
 	public String getPublishedTableName(final String coreDataSetName) {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(tablePrefix);
-		buffer.append(coreDataSetName);
+		
+		String modifiedCoreDataSetName
+			= coreDataSetName.toLowerCase().replaceAll(" ", "_");
+		buffer.append(modifiedCoreDataSetName);
 		return buffer.toString();
 	}
 	
