@@ -2,7 +2,6 @@ package rifDataLoaderTool.presentationLayer.interactive;
 
 
 import rifDataLoaderTool.system.DataLoaderToolSession;
-
 import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
 import rifGenericLibrary.presentationLayer.OrderedListPanel;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
@@ -10,6 +9,7 @@ import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+
 import java.awt.event.*;
 import java.awt.*;
 import java.util.*;
@@ -71,7 +71,7 @@ public abstract class AbstractDataLoadingThemePanel
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final Color populatedColour = Color.GREEN;
+	private static final Color populatedColour = new Color(0, 128, 0);
 	private static final Color unpopulatedColour = Color.BLACK;
 	private static final Color disabledColour = Color.BLACK;
 	
@@ -138,6 +138,21 @@ public abstract class AbstractDataLoadingThemePanel
 		mainPanel.setBorder(LineBorder.createGrayLineBorder());
 	}	
 
+	private void updateLabelPopulatedStateColour() {
+		if (listPanel.isEnabled() == false) {
+			System.out.println("Indicate disabled");
+			listPanel.setListLabelColour(disabledColour);			
+		}
+		else if (listPanel.isEmpty() == true) {
+			System.out.println("Indicate populated");
+			listPanel.setListLabelColour(populatedColour);				
+		}
+		else {
+			System.out.println("Indicate unpopulated");
+			listPanel.setListLabelColour(unpopulatedColour);				
+		}		
+	}
+	
 	public void setEnable(final boolean isEnabled) {
 
 		if (isEnabled == listPanel.isEnabled()) {
@@ -150,9 +165,10 @@ public abstract class AbstractDataLoadingThemePanel
 			updateListButtonStates();
 		}
 		else {
-			listPanel.setListLabelColour(disabledColour);
 			listEditingButtonPanel.disableAllButtons();
 		}
+		updateLabelPopulatedStateColour();
+		
 	}
 	
 	private void updateListButtonStates() {
@@ -197,14 +213,19 @@ public abstract class AbstractDataLoadingThemePanel
 	}
 	
 	protected void setListItems(
-		final ArrayList<DisplayableListItemInterface> listItems) {		
+		final ArrayList<DisplayableListItemInterface> listItems) {	
+		listPanel.clearList();
 		listPanel.addListItems(listItems);
+		System.out.println("setListItems numItems=="+listItems.size()+"==");
 		listPanel.updateUI();
+		listPanel.setUseDefaultSelectionPolicy(true);
+		//updateLabelPopulatedStateColour();		
 	}
 	
 	protected void addListItem(final DisplayableListItemInterface listItem) {
 		listPanel.addListItem(listItem);
 		listEditingButtonPanel.indicateFullEditingState();
+		updateLabelPopulatedStateColour();		
 	}
 	
 	protected void updateListItem(
@@ -216,18 +237,8 @@ public abstract class AbstractDataLoadingThemePanel
 	
 	protected void deleteListItems() {
 		listPanel.deleteSelectedListItems();
+		updateLabelPopulatedStateColour();		
 	}
-	
-	/*
-	protected void deleteListItems() 
-		throws RIFServiceException {
-		
-		listPanel.deleteSelectedListItems();
-		if (listPanel.isEmpty() == false) {
-			listEditingButtonPanel.indicateEmptyState();
-		}
-	}
-	*/
 	
 	protected abstract void refresh();
 	protected abstract void addListItem();	
