@@ -253,7 +253,8 @@ public class CovariatesListPanel
 		
 		DataLoadingOrder currentState
 			= (DataLoadingOrder) object;
-		if (currentState.getStepNumber() >= DataLoadingOrder.NUMERATORS_SPECIFIED.getStepNumber()) {
+
+		if (currentState.getStepNumber() >= DataLoadingOrder.DENOMINATORS_SPECIFIED.getStepNumber()) {
 			setEnable(true);			
 		}
 		else {
