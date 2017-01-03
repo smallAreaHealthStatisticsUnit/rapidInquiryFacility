@@ -98,6 +98,9 @@ public class PGDataLoadingScriptGenerator {
 	public PGDataLoadingScriptGenerator() {
 		healthThemeScriptGenerator = new PGHealthThemeScriptGenerator();
 		denominatorScriptGenerator = new PGDenominatorScriptGenerator();
+		
+		File scriptDirectory = new File("C:\\rifDataLoaderTool");		
+		denominatorScriptGenerator.setScriptDirectory(scriptDirectory);
 	}
 
 	// ==========================================
@@ -116,8 +119,11 @@ public class PGDataLoadingScriptGenerator {
 		
 			//Part II: Load health themes
 			bufferedWriter.write("-- ===============================================");
+			bufferedWriter.newLine();
 			bufferedWriter.write("-- Adding Health Themes");
+			bufferedWriter.newLine();
 			bufferedWriter.write("-- ===============================================");
+			bufferedWriter.newLine();
 			ArrayList<DLHealthTheme> healthThemes
 				= dataLoaderToolConfiguration.getHealthThemes();
 			for (DLHealthTheme healthTheme : healthThemes) {
@@ -129,17 +135,28 @@ public class PGDataLoadingScriptGenerator {
 			}
 
 			bufferedWriter.write("-- ===============================================");
+			bufferedWriter.newLine();
 			bufferedWriter.write("-- Adding Denominators");
+			bufferedWriter.newLine();
 			bufferedWriter.write("-- ===============================================");
+			bufferedWriter.newLine();
+			bufferedWriter.newLine();
 			
-
-	
-
+			DLGeographyMetaData geographyMetaData
+				= dataLoaderToolConfiguration.getGeographyMetaData();
 			ArrayList<DataSetConfiguration> denominators
 				= dataLoaderToolConfiguration.getDenominatorDataSetConfigurations();
 			for (DataSetConfiguration denominator : denominators) {
+				DLHealthTheme healthTheme
+					= denominator.getHealthTheme();
+				bufferedWriter.write("-- Adding " + denominator.getDisplayName());
+				bufferedWriter.newLine();
+				bufferedWriter.newLine();
+				
 				String denominatorEntry
-					= denominatorScriptGenerator.generateScript(denominator);
+					= denominatorScriptGenerator.generateScript(
+							geographyMetaData,
+							denominator);
 				bufferedWriter.write(denominatorEntry);
 				bufferedWriter.newLine();
 				bufferedWriter.flush();

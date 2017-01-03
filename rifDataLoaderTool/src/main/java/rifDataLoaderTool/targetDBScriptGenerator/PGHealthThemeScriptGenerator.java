@@ -80,8 +80,8 @@ public class PGHealthThemeScriptGenerator {
 		
 		PGSQLInsertQueryFormatter queryFormatter
 			= new PGSQLInsertQueryFormatter();
-		queryFormatter.addInsertField("theme");
-		queryFormatter.addInsertField("description");
+		queryFormatter.addInsertField("theme", true);
+		queryFormatter.addInsertField("description", true);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setIntoTable("rif40_health_study_themes");
 		
