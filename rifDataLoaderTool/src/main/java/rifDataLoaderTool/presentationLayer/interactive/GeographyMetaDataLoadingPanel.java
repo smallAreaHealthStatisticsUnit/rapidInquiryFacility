@@ -4,7 +4,6 @@ import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.GeographyMetaDataConfigurationHandler;
-
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.HTMLViewerDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
@@ -73,7 +72,8 @@ public class GeographyMetaDataLoadingPanel
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final Color populatedColour = new Color(0, 128, 0);
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -121,6 +121,7 @@ public class GeographyMetaDataLoadingPanel
 			= RIFDataLoaderToolMessages.getMessage("rifDataLoaderToolApplication2.geographies.label");		
 		panelTitleLabel
 			= userInterfaceFactory.createLabel(geographyMetaDataFileLabelText);
+		panelTitleLabel.setForeground(populatedColour);
 		userInterfaceFactory.setBoldFont(panelTitleLabel);
 		panel.add(panelTitleLabel, panelGC);
 		

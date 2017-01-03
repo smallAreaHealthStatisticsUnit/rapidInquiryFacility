@@ -3,6 +3,8 @@ package rifDataLoaderTool.presentationLayer.interactive;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.ConfigurationHints;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 
@@ -12,7 +14,8 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Observable;
-
+import java.util.Observer;
+import java.util.ArrayList;
 
 /**
  *
@@ -65,12 +68,15 @@ import java.util.Observable;
  */
 
 public class ConfigurationHintsLoadingPanel 
-	implements ActionListener {
+	implements ActionListener, 
+	Observer {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final Color populatedColour = new Color(0, 128, 0);
+	private static final Color disabledColour = Color.BLACK;
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -186,6 +192,12 @@ public class ConfigurationHintsLoadingPanel
 		int originalTotalHints = configurationHints.getTotalHints();
 		dialog.setData(configurationHints);
 		dialog.show();
+		ArrayList<DataSetConfiguration> dataSetConfigurationHints
+			= dialog.getDataSetConfigurationHints();
+		configurationHints.setDataSetConfigurationHints(dataSetConfigurationHints);
+		ArrayList<DataSetFieldConfiguration> dataSetFieldConfigurationHints
+			= dialog.getDataSetFieldConfigurationHints();
+		configurationHints.setDataSetFieldConfigurationHints(dataSetFieldConfigurationHints);
 		int revisedTotalHints = configurationHints.getTotalHints();
 		updateConfigurationHintsSummary();
 		
@@ -193,6 +205,21 @@ public class ConfigurationHintsLoadingPanel
 			changeManager.indicateSaveChanges();
 		}
 	}
+	
+	private void setEnable(final boolean isEnabled) {
+		
+		if (isEnabled == true) {
+			panelTitleLabel.setForeground(populatedColour);				
+		}
+		else {
+			panelTitleLabel.setForeground(disabledColour);				
+		}
+		
+		editButton.setEnabled(isEnabled);
+		
+	}
+	
+	
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -220,10 +247,10 @@ public class ConfigurationHintsLoadingPanel
 		DataLoadingOrder currentState
 			= (DataLoadingOrder) object;
 		if (currentState.getStepNumber() >= DataLoadingOrder.HEALTH_THEMES_SPECIFIED.getStepNumber()) {
-			editButton.setEnabled(true);
+			setEnable(true);
 		}
 		else {
-			editButton.setEnabled(false);
+			setEnable(false);
 		}
 	}		
 	// ==========================================

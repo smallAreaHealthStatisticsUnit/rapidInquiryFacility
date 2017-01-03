@@ -4,9 +4,15 @@ import rifDataLoaderTool.dataStorageLayer.pg.ProductionPGDataLoaderService;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.*;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.system.RIFServiceException;
+import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
+import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
+
+
 
 import javax.swing.*;
 
@@ -15,6 +21,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.ArrayList;
+import java.io.File;
 
 /**
  *
@@ -115,7 +123,13 @@ public class RIFDataLoaderToolApplication
 	private NumeratorsListPanel numeratorsListPanel;
 	private CovariatesListPanel covariatesListPanel;
 	
+	private JFileChooser outputDirectoryFileChooser;
+	private JTextField outputDirectoryTextField;
+	private JButton browseOutputDirectoryButton;	
 	private JButton runButton;
+	private File outputDirectory;
+	
+	
 	private OKCloseButtonPanel okCloseButtonPanel;
 	// ==========================================
 	// Section Construction
@@ -151,6 +165,7 @@ public class RIFDataLoaderToolApplication
 			= new ConfigurationHintsLoadingPanel(
 				session,
 				changeManager);
+		changeManager.addObserver(configurationHintsPanel);
 		
 		denominatorsListPanel 
 			= new DenominatorsListPanel(
@@ -176,13 +191,8 @@ public class RIFDataLoaderToolApplication
 				changeManager);
 		changeManager.addObserver(covariatesListPanel);
 		
-		runButton = userInterfaceFactory.createRunButton();
-		runButton.setEnabled(false);
-		runButton.addActionListener(this);
-		
 		okCloseButtonPanel 
 			= new OKCloseButtonPanel(userInterfaceFactory);
-		okCloseButtonPanel.addButton(runButton);
 		okCloseButtonPanel.buildUI();
 	
 		String title
@@ -252,10 +262,19 @@ public class RIFDataLoaderToolApplication
 		panel.add(
 			covariatesListPanel.getPanel(), 
 			panelGC);		
+		
+		panelGC.gridy++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weighty = 0;
+		panel.add(
+				createRunWorkflowPanel(), 
+				panelGC);		
 
 		panelGC.gridy++;
+
 		panelGC.anchor = GridBagConstraints.SOUTHEAST;
 		panelGC.fill = GridBagConstraints.NONE;
+		
 		panelGC.weightx = 0;
 		panelGC.weighty = 0;
 		panel.add(
@@ -284,6 +303,43 @@ public class RIFDataLoaderToolApplication
 
 		return panel;
 	}
+	
+	private JPanel createRunWorkflowPanel() {
+		JPanel panel = userInterfaceFactory.createPanel();
+		GridBagConstraints panelGC = userInterfaceFactory.createGridBagConstraints();
+
+		String outputDirectoryText
+			= RIFDataLoaderToolMessages.getMessage(
+				"rifDataLoaderToolApplication.outputDirectory.label");
+		JLabel outputDirectoryLabel
+			= userInterfaceFactory.createLabel(outputDirectoryText);
+		panel.add(outputDirectoryLabel, panelGC);
+		
+		panelGC.gridx++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weightx = 1;
+		outputDirectoryTextField 
+			= userInterfaceFactory.createNonEditableTextField();
+		panel.add(outputDirectoryTextField, panelGC);
+		
+		panelGC.gridx++;
+		panelGC.fill = GridBagConstraints.NONE;
+		panelGC.weightx = 0;
+		browseOutputDirectoryButton
+			= userInterfaceFactory.createBrowseButton();
+		browseOutputDirectoryButton.addActionListener(this);
+		panel.add(browseOutputDirectoryButton, panelGC);
+		
+		panelGC.gridx++;
+		runButton
+			= userInterfaceFactory.createRunButton();
+		runButton.addActionListener(this);
+		panel.add(runButton, panelGC);
+
+		outputDirectoryFileChooser = userInterfaceFactory.createFileChooser();
+		outputDirectoryFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		return panel;
+	}
 		
 	// ==========================================
 	// Section Accessors and Mutators
@@ -292,7 +348,9 @@ public class RIFDataLoaderToolApplication
 		final DataLoaderToolConfiguration dataLoaderToolConfiguration,
 		final DataLoadingOrder completionState) {
 		
+		geographyMetaDataPanel.refresh();
 		healthThemeListPanel.refresh();
+		configurationHintsPanel.refresh();
 		denominatorsListPanel.refresh();
 		numeratorsListPanel.refresh();
 		covariatesListPanel.refresh();
@@ -300,14 +358,51 @@ public class RIFDataLoaderToolApplication
 		changeManager.notifyDataLoadingObservers(completionState);
 	}
 	
+	private void browseOutputDirectory() {
+		int result = outputDirectoryFileChooser.showOpenDialog(frame);
+		if (result != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
+		
+		outputDirectory 
+			= outputDirectoryFileChooser.getSelectedFile();
+		outputDirectoryTextField.setText(outputDirectory.getAbsolutePath());		
+	}
+	
+	
 	private void runWorkflow() {
-		System.out.println("Run workflow stub ...");
+		
+		try {
+
+			DataLoaderToolConfiguration dataLoaderToolConfiguration
+				= session.getDataLoaderToolConfiguration();
+			LinearWorkflow workflow = LinearWorkflow.newInstance();
+		
+			ArrayList<DataSetConfiguration> dataSetConfigurations
+				= dataLoaderToolConfiguration.getAllDataSetConfigurations();
+			workflow.setDataSetConfigurations(dataSetConfigurations);
+			workflow.setStartWorkflowState(WorkflowState.START);
+			workflow.setStopWorkflowState(WorkflowState.STOP);
+			DataLoaderServiceAPI dataLoaderService
+				= session.getDataLoaderService();
+			LinearWorkflowEnactor linearWorkflowEnactor
+				= new LinearWorkflowEnactor(
+					session.getRIFManager(), 
+					dataLoaderService);
+			linearWorkflowEnactor.runWorkflow(
+				outputDirectory, 
+				workflow);
+		}
+		catch(RIFServiceException rifServiceException) {
+			ErrorDialog.showError(
+				frame, 
+				rifServiceException.getErrorMessages());
+		}
 	}
 	
 	public void show() {
 		frame.setVisible(true);
 	}
-	
 	
 	// ==========================================
 	// Section Errors and Validation
@@ -322,7 +417,9 @@ public class RIFDataLoaderToolApplication
 		
 		Object button = actionEvent.getSource();
 
-
+		if (button == browseOutputDirectoryButton) {
+			browseOutputDirectory();
+		}
 		if (button == runButton) {
 			runWorkflow();
 		}
@@ -340,7 +437,7 @@ public class RIFDataLoaderToolApplication
 		
 		DataLoadingOrder currentState
 			= (DataLoadingOrder) object;
-		if (currentState.getStepNumber() >= DataLoadingOrder.SUFFICIENT_CONFIGURATION_DATA_SPECIFIED.getStepNumber()) {
+		if (currentState.getStepNumber() >= DataLoadingOrder.HEALTH_THEMES_SPECIFIED.getStepNumber()) {
 			runButton.setEnabled(true);
 		}
 		else {

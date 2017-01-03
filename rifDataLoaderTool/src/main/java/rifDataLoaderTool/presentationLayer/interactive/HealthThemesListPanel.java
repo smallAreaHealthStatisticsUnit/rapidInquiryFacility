@@ -4,8 +4,11 @@ import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.DataLoaderToolSession;
+
+import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.system.RIFServiceException;
 
 import javax.swing.*;
 
@@ -174,16 +177,25 @@ public class HealthThemesListPanel
 	@Override
 	protected void deleteSelectedListItems() {
 		
-		DLDependencyManager dependencyManager
-			= getDependencyManager();
+		try {
+			
+			DLDependencyManager dependencyManager
+				= getDependencyManager();
 		
-		ArrayList<DisplayableListItemInterface> itemsToDelete
-			= getSelectedListItems();
-		for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
-			DLHealthTheme healthThemeToDelete
-				= (DLHealthTheme) itemToDelete;
-			//dependencyManager.checkHealthThemeDependencies(healthThemeToDelete);
-		}		
+			ArrayList<DisplayableListItemInterface> itemsToDelete
+				= getSelectedListItems();
+			for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
+				DLHealthTheme healthThemeToDelete
+					= (DLHealthTheme) itemToDelete;
+				dependencyManager.checkHealthThemeDependencies(healthThemeToDelete);
+			}		
+		}
+		catch(RIFServiceException rifServiceException) {
+			ErrorDialog.showError(
+				getFrame(), 
+				rifServiceException.getErrorMessages());
+		}
+
 	}
 	
 	// ==========================================
