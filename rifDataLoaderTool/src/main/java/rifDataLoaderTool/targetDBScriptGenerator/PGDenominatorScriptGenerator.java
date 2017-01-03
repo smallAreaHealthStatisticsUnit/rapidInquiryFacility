@@ -86,9 +86,10 @@ public class PGDenominatorScriptGenerator
 		StringBuilder denominatorEntry = new StringBuilder();
 		
 		createTableStructureAndImportCSV(
-			geographyMetaData, 
 			denominatorEntry, 
+			geographyMetaData, 
 			denominator);
+		denominatorEntry.append("\n\n");
 		addEntryToRIF40Tables(
 			denominatorEntry, 
 			denominator);
@@ -97,8 +98,8 @@ public class PGDenominatorScriptGenerator
 	}
 	
 	private void createTableStructureAndImportCSV(
-		final DLGeographyMetaData geographyMetaData,
 		final StringBuilder denominatorEntry,
+		final DLGeographyMetaData geographyMetaData,
 		final DataSetConfiguration denominator) {
 		
 		
@@ -113,8 +114,6 @@ public class PGDenominatorScriptGenerator
 		//create and copy into statements
 		ArrayList<DataSetFieldConfiguration> dataSetFieldConfigurations
 			= denominator.getFieldConfigurations();
-
-		
 		createTableQueryFormatter.setDatabaseSchemaName("pop");
 		createTableQueryFormatter.setTableName(publishedDenominatorTableName);
 		createTableQueryFormatter.addIntegerFieldDeclaration("year", false);
@@ -129,55 +128,34 @@ public class PGDenominatorScriptGenerator
 		}
 		createTableQueryFormatter.addIntegerFieldDeclaration("total", false);
 
+		denominatorEntry.append(createTableQueryFormatter.generateQuery());
+		denominatorEntry.append("\n\n");
+		
 		//How do we handle extra fields?
 		
-		
-		/*
-		for (DataSetFieldConfiguration dataSetFieldConfiguration : dataSetFieldConfigurations) {
-			FieldRequirementLevel fieldRequirementLevel
-				= dataSetFieldConfiguration.getFieldRequirementLevel();
-			if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD) {
-				String cleanName
-					= dataSetFieldConfiguration.getCleanFieldName();
-				//@TODO. Do we assume that the published table will have
-				//the first field being year, the second one being age_sex_group,
-				//then all the geographical levels, then one called total?
-				//What do we do about extra columns?
-				
-				
-				createTableQueryFormatter.add
-				
-			}
-			
-			
-		}
-		*/
-		
-		/*
-		
-		PGSQLImportTableFromCSVQueryFormatter importTableQueryFormatter
-			= new PGSQLImportTableFromCSVQueryFormatter();
-		importTableQueryFormatter.setTableToImport(publishedDenominatorTableName);
-		importTableQueryFormatter.a
-		
-		SQLGeneralQueryFormatter queryFormatter
+		SQLGeneralQueryFormatter importFromCSVQueryFormatter
 			= new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryLine(0, "EXECUTE format ('");
-		queryFormatter.addQueryPhrase(0, "COPY ");
-		queryFormatter.addQueryPhrase(publishedDenominatorTableName);		
-		queryFormatter.addQueryPhrase(" (");
-		for (DataSetFieldConfiguration dataSetFieldConfiguration : dataSetFieldConfigurations) {
-			FieldRequirementLevel fieldRequirementLevel
-				= dataSetFieldConfiguration.getFieldRequirementLevel();
-			if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD) {
-				
-				
-			}
+		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
+		importFromCSVQueryFormatter.addQueryPhrase(0, "COPY ");
+		importFromCSVQueryFormatter.addQueryPhrase(publishedDenominatorTableName);		
+		importFromCSVQueryFormatter.addQueryPhrase(" (");
+		importFromCSVQueryFormatter.padAndFinishLine();
+		importFromCSVQueryFormatter.addQueryLine(1, "year,");
+		importFromCSVQueryFormatter.addQueryLine(1, "age_sex_group,");
+		for (String levelName : levelNames) {
+			importFromCSVQueryFormatter.addQueryLine(1, levelName.toLowerCase() + ",");
 		}
-	*/	
+		importFromCSVQueryFormatter.addQueryLine(1, "total)");
+		importFromCSVQueryFormatter.addQueryLine(0, "FROM ");
+		importFromCSVQueryFormatter.addQueryLine(1, "%L");
+		importFromCSVQueryFormatter.addQueryPhrase(0, "(FORMAT CSV, HEADER)', '");
 		
-		
+		String filePath
+			= super.getPublishedFilePath(denominator);
+		importFromCSVQueryFormatter.addQueryPhrase(filePath);
+		importFromCSVQueryFormatter.addQueryPhrase("'");
 
+		denominatorEntry.append(importFromCSVQueryFormatter.generateQuery());
 	}
 	
 	private void addEntryToRIF40Tables(
@@ -189,7 +167,8 @@ public class PGDenominatorScriptGenerator
 		//Obtain the 'theme' field value
 		DLHealthTheme healthTheme
 			= denominator.getHealthTheme();
-		literalParameterValues[0] = healthTheme.getName();
+		//@TODO: Why does a denominator have a health theme?
+		literalParameterValues[0] = "denominator health theme";
 		
 		//Obtain the 'table_name' field value
 		literalParameterValues[1]
@@ -228,20 +207,46 @@ public class PGDenominatorScriptGenerator
 		
 		//Obtain the value for automatic.  Not sure what this means but it
 		//appears to always be 1
-		literalParameterValues[8] = "0";
+		literalParameterValues[9] = "0";
+
+		//Obtain the value for sex_field_name.  It seems this does not 
+		//have to be set.  @TODO Won't it always be age_sex_group?
+		literalParameterValues[10] = null;		
 		
+		//Obtain the value for age_group_field_name.  It seems this does not 
+		//have to be set.  @TODO Won't it always be age_sex_group?
+		literalParameterValues[11] = null;			
+
+		//Obtain the value for age_sex_group_field_name.  It seems this does not 
+		//have to be set.  @TODO Won't it always be age_sex_group?
+		literalParameterValues[12] = "age_sex_group";			
 		
+		//Obtain the value for age_group_id.  It seems this does not 
+		//have to be set.
+		literalParameterValues[13] = "1";
 		
+		PGSQLInsertQueryFormatter insertQueryFormatter
+			= new PGSQLInsertQueryFormatter();
+		insertQueryFormatter.setDatabaseSchemaName("rif40");
+		insertQueryFormatter.setIntoTable("rif40_tables");
 		
-		
-		String yearStart = "1989";
-		String yearStop = "1996";
-		
-		
-		
-		
-		
-		
+		insertQueryFormatter.addInsertField("theme", true);
+		insertQueryFormatter.addInsertField("table_name", true);
+		insertQueryFormatter.addInsertField("description", true);
+		insertQueryFormatter.addInsertField("year_start", false);
+		insertQueryFormatter.addInsertField("year_stop", false);
+		insertQueryFormatter.addInsertField("total_field", true);
+		insertQueryFormatter.addInsertField("isindirectdenominator", false);
+		insertQueryFormatter.addInsertField("isdirectdenominator", false);
+		insertQueryFormatter.addInsertField("isnumerator", false);
+		insertQueryFormatter.addInsertField("automatic", false);
+		insertQueryFormatter.addInsertField("sex_field_name", true);
+		insertQueryFormatter.addInsertField("age_group_field_name", true);
+		insertQueryFormatter.addInsertField("age_sex_group_field_name", true);
+		insertQueryFormatter.addInsertField("age_group_id", false);
+		String query
+			= insertQueryFormatter.generateQueryWithLiterals(literalParameterValues);
+		denominatorEntry.append(query);	
 	}
 	
 	// ==========================================
