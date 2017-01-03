@@ -1190,7 +1190,10 @@ public class DataSetConfiguration
 			= RIFDataLoaderToolMessages.getMessage("dataSetConfiguration.recordType");
 		return recordType;		
 	}
-		
+	
+	public String getPublishedTableName() {
+		return rifSchemaArea.getPublishedTableName(name);
+	}
 	
 	// ==========================================
 	// Section Interfaces
