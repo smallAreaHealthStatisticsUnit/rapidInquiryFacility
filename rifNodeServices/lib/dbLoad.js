@@ -523,7 +523,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 		
 		var sqlStmt=new Sql("Drop table " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 			getSqlFromFile("drop_table.sql", dbType, 
-				"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray, dbType); 
+				(schema||"") + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), sqlArray, dbType); 
 				
 		if (dbType == "MSSQLServer") { 
 			var sqlStmt=new Sql("Create tiles table", 
@@ -1723,7 +1723,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				getSqlFromFile("geolevels_areaid_update.sql", 
 					dbType, 
 					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* 1: Geolevels table */,
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */), 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */,
+					""																/* 3: Schema; e.g. rif_data. or "" */), 
 				sqlArray, dbType);
 				
 		} // End of insertGeometryTable()
@@ -1834,10 +1835,15 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		 * Description:	Setup t_rif40_geolevels and rif40_geographies
 		 */	
 		function setupGeography(schema) {
+			
+			var sqlStmt=new Sql("Set comment schema path to rif_data")
+			sqlStmt.nonsql=':SETVAR SchemaName @CurrentUser';
+			sqlStmt.dbType=dbType;
+			sqlArray.push(sqlStmt);
+			
 			var newColumnList=['geometrytable', 'tiletable', 'minzoomlevel', 'maxzoomlevel'];
 			var newColumnDataType=['VARCHAR(30)', 'VARCHAR(30)', 'INTEGER', 'INTEGER'];
-			var newColumnComment=['Geometry table name', 'Tile table name', 'Minimum zoomlevel', 'Maximum zoomlevel'];
-	
+			var newColumnComment=['Geometry table name', 'Tile table name', 'Minimum zoomlevel', 'Maximum zoomlevel'];			
 			new Sql("Remove old geolevels meta data table",
 					"DELETE FROM t_rif40_geolevels WHERE geography = '" + 
 						xmlConfig.dataLoader.geographyName.toUpperCase() + "'", 
@@ -1884,6 +1890,11 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 						newColumnComment[i]			/* 3: Comment */), 
 					sqlArray, dbType);	
 			}
+			
+			var sqlStmt=new Sql("Set comment schema path to rif_data")
+			sqlStmt.nonsql=':SETVAR SchemaName "rif_data"';
+			sqlStmt.dbType=dbType;
+			sqlArray.push(sqlStmt);
 			
 			var partition=0;	
 			if (dbType == "PostGres") {			// Only Postgres is partitioned
@@ -2012,7 +2023,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				getSqlFromFile("geolevels_areaid_update.sql", 
 					dbType, 
 					"t_rif40_geolevels" 											/* 1: Geolevels table */,
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */), 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */,
+					schema															/* 3: Schema; e.g. rif_data. or "" */), 
 				sqlArray, dbType);		
 
 //
@@ -2020,7 +2032,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 //	
 			var sqlStmt=new Sql("Drop dependent object - view " + "tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("drop_view.sql", dbType, 
-					"tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* View name */), sqlArray, dbType); 				
+					(schema||"") + "tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* View name */), sqlArray, dbType); 				
 		} // End of setupGeography()
 		
 		/*
@@ -2241,7 +2253,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	"FROM '$(pwd)/" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 	"WITH\n" + 
 	"(\n" + 
-	"	FORMATFILE = '$(pwd)/mssql_" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".fmt',		-- Use a format file\n" +
+	"	FORMATFILE = '$(pwd)/mssql_t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".fmt',		-- Use a format file\n" +
 	"	TABLOCK					-- Table lock\n" + 
 	")";
 				}
