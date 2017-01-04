@@ -1656,10 +1656,12 @@ REFERENCE (from shapefile) {
 								var keys=Object.keys(record[i]);
 								var values=[];
 								for (var j=0; j<keys.length; j++) {
-									values.push(record[i][keys[j]]);
+									var str=record[i][keys[j]];
+									str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 	
+									values.push(str);
 								}
-								buf+=values.join(',');
-								buf+="\r\n";
+								
+								buf+='"' + values.join('","') + '"\r\n'; // Quote enclose data
 							}
 							lookupCsvStream.write(buf, function lookupProcessingWrite(err) {
 								if (err) {
@@ -1749,10 +1751,12 @@ REFERENCE (from shapefile) {
 					var keys=Object.keys(record[i]);
 					var values=[];
 					for (var j=0; j<keys.length; j++) {
-						values.push(record[i][keys[j]]);
+						var str=record[i][keys[j]];
+						str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 	
+						values.push(str);
 					}
-					buf+=values.join(',');
-					buf+="\r\n";
+					
+					buf+='"' + values.join('","') + '"\r\n'; // Quote enclose data					
 				}
 				hierarchyCsvStream.write(buf, function hierarchyProcessingWrite(err) {
 					if (err) {

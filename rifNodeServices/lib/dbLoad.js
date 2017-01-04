@@ -308,10 +308,17 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 	 */	 
 	function createHierarchyTable(sqlArray, dbType, schema) {
 		sqlArray.push(new Sql("Hierarchy table"));	
-		
-		var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
-			getSqlFromFile("drop_table.sql", dbType, "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
-			sqlArray, dbType); 
+
+		if (schema && dbType == "MSSQLServer") {		
+			var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+				getSqlFromFile("drop_table.sql", dbType, schema + "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
+				sqlArray, dbType); 
+		}
+		else {		
+			var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+				getSqlFromFile("drop_table.sql", dbType, "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
+				sqlArray, dbType); 
+		}
 		
 		var sqlStmt=new Sql("Create table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase());
 		sqlStmt.sql="CREATE TABLE " + (schema||"") + // Schema; e.g.rif_data. or "" 
@@ -336,6 +343,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		
 		var sqlStmt=new Sql("Add primary key hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 			getSqlFromFile("add_primary_key.sql", undefined /* Common */, 
+				(schema||"") + // Schema; e.g.rif_data. or "" 
 				"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name */, 
 				pkField 															/* 2: Primary key */), 
 			sqlArray, dbType); 	
@@ -346,8 +354,9 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 					xmlConfig.dataLoader.geographyName.toLowerCase() + "_" + csvFiles[i].tableName, 
 					getSqlFromFile("create_index.sql", undefined /* Common */, 
 						"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_" + csvFiles[i].tableName	/* Index name */,
+						(schema||"") + // Schema; e.g.rif_data. or "" 
 						"hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() 								/* Table name */, 
-						csvFiles[i].tableName 																		/* Index column(s) */
+						csvFiles[i].tableName 																			/* Index column(s) */
 					), 
 					sqlArray, dbType); 
 			}
@@ -393,7 +402,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		else if (dbType == "MSSQLServer") {// MS SQL Server
 			var sqlStmt=new Sql("Drop geometry table " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("drop_table.sql", dbType, 
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* Table name */
+					(schema||"") + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 		/* Table name */
 					), sqlArray, dbType); 
 		}
 		
@@ -406,7 +415,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 				
 		var sqlStmt=new Sql("Add geom geometry column",
 			getSqlFromFile("add_geometry_column2.sql", dbType, 
-				"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
+				(schema||"") + 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 				'geom' 															/* 2: column name; e.g. geographic_centroid */,
 				4326															/* 3: Column SRID; e.g. 4326 */,
 				'MULTIPOLYGON' 													/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
@@ -414,7 +424,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		if (dbType == "MSSQLServer") { // Add bounding box for implement PostGIS && operator
 			var sqlStmt=new Sql("Add bbox geometry column",
 			getSqlFromFile("add_geometry_column2.sql", dbType, 
-				"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
+				(schema||"") +
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 				'bbox' 															/* 2: column name; e.g. geographic_centroid */,
 				4326															/* 3: Column SRID; e.g. 4326 */,
 				'POLYGON' 														/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
@@ -607,11 +618,19 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 	 */	 
 	function createGeolevelsLookupTables(sqlArray, dbType, schema) {
 		sqlArray.push(new Sql("Create Geolevels lookup tables"));
-		for (var i=0; i<csvFiles.length; i++) {									
-			var sqlStmt=new Sql("Drop table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
-				getSqlFromFile("drop_table.sql", dbType, 
-					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() /* Table name */), 
-				sqlArray, dbType); 
+		for (var i=0; i<csvFiles.length; i++) {		
+			if (schema && dbType == "MSSQLServer") {
+				var sqlStmt=new Sql("Drop table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
+					getSqlFromFile("drop_table.sql", dbType, 
+						schema + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() /* Table name */), 
+					sqlArray, dbType); 
+			}
+			else {
+				var sqlStmt=new Sql("Drop table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
+					getSqlFromFile("drop_table.sql", dbType, 
+						(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() /* Table name */), 
+					sqlArray, dbType); 
+			}
 			
 			var sqlStmt=new Sql("Create table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
 				getSqlFromFile("create_lookup_table.sql", undefined /* Common */, (
@@ -1811,7 +1830,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		
 		/*
 		 * Function: 	setupGeography()
-		 * Parameters:	None
+		 * Parameters:	Schema (rif_data.)
 		 * Description:	Setup t_rif40_geolevels and rif40_geographies
 		 */	
 		function setupGeography(schema) {
@@ -2006,10 +2025,10 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		
 		/*
 		 * Function: 	loadGeolevelsLookupTables()
-		 * Parameters:	None
+		 * Parameters:	Schema (rif_data.)
 		 * Description:	Load geolevel lookup tables SQL statements
 		 */			
-		var loadGeolevelsLookupTables=function loadGeolevelsLookupTables() {
+		var loadGeolevelsLookupTables=function loadGeolevelsLookupTables(schema) {
 			sqlArray.push(new Sql("Load geolevel lookup tables"));
 		// Tables: lookup_<geometry>.csv
 		
@@ -2023,8 +2042,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 						".csv' DELIMITER ',' CSV HEADER";
 				}
 				else if (dbType == "MSSQLServer") {	
-					sqlStmt.sql="BULK INSERT " + lookupTable + "\n" + 
-"FROM '$(pwd)/" + lookupTable + '.csv	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
+					sqlStmt.sql="BULK INSERT " + (schema||"") + lookupTable + "\n" + 
+"FROM '$(pwd)/" + lookupTable + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 "WITH\n" + 
 "(\n" + 
 "	FORMATFILE = '$(pwd)/mssql_" + lookupTable + ".fmt',		-- Use a format file\n" +
@@ -2038,10 +2057,10 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		
 		/*
 		 * Function: 	loadHierarchyTable()
-		 * Parameters:	None
+		 * Parameters:	Schema (rif_data.)
 		 * Description:	Load hierarchy table SQL statements
 		 */	
-		var loadHierarchyTable=function loadHierarchyTable() {
+		var loadHierarchyTable=function loadHierarchyTable(schema) {
 			sqlArray.push(new Sql("Load hierarchy table"));
 			var sqlStmt=new Sql("Load hierarchy table from CSV file");
 			if (dbType == "PostGres") {	
@@ -2050,11 +2069,11 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					".csv' DELIMITER ',' CSV HEADER";
 			}
 			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="BULK INSERT " + "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
+				sqlStmt.sql="BULK INSERT " + (schema||"") + "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
 "FROM '$(pwd)/" + "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 "WITH\n" + 
 "(\n" + 
-"	FORMATFILE = '$(pwd)/mssql_" + "_hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',		-- Use a format file\n" +
+"	FORMATFILE = '$(pwd)/mssql_hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',		-- Use a format file\n" +
 "	TABLOCK					-- Table lock\n" + 
 ")";
 			}
@@ -2065,10 +2084,10 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		
 		/*
 		 * Function: 	loadGeometryTable()
-		 * Parameters:	None
+		 * Parameters:	Schema (rif_data.)
 		 * Description:	Load geometry table SQL statements
 		 */			
-		var loadGeometryTable=function loadGeometryTable() {
+		var loadGeometryTable=function loadGeometryTable(schema) {
 			sqlArray.push(new Sql("Load geometry table"));
 			
 			// Table: pg_geometry_USA_2014.csv
@@ -2087,7 +2106,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				var sqlStmt=new Sql("Add WKT column",
 					getSqlFromFile("add_column.sql", 
 						undefined /* Common */, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+						(schema||"") + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
 						"WKT"																/* 2: WKT */,
 						"VARCHAR(MAX)"														/* 3: Data type */), 
 					sqlArray, dbType);	
@@ -2108,11 +2127,11 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					".csv' DELIMITER ',' CSV HEADER";
 			}
 			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="BULK INSERT " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
+				sqlStmt.sql="BULK INSERT " + (schema||"") + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
 "FROM '$(pwd)/" + "mssql_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 "WITH\n" + 
 "(\n" + 
-"	FORMATFILE = '$(pwd)/mssql_" + "_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',		-- Use a format file\n" +
+"	FORMATFILE = '$(pwd)/mssql_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',		-- Use a format file\n" +
 "	TABLOCK					-- Table lock\n" + 
 ")";
 			}
@@ -2131,7 +2150,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				var sqlStmt=new Sql("Add WKT column",
 					getSqlFromFile("update_geometry.sql", 
 						dbType, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
+						(schema||"") + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
 						4326																/* 2: SRID */), 
 					sqlArray, dbType);	
 			}
@@ -2153,14 +2172,15 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				var sqlStmt=new Sql("Add primary key",
 					getSqlFromFile("add_primary_key.sql", 
 						undefined /* Common */, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */,
+						(schema||"") + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */,
 						"geolevel_id, areaid, zoomlevel"									/* Primary key */), 
 					sqlArray, dbType);	
 				var sqlStmt=new Sql("Create spatial index on geom",
 					getSqlFromFile("create_spatial_geometry_index.sql", 
 						dbType, 
 						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_gix"	/* Index name */, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* Table name */, 
+						(schema||"") + 
+							"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */, 
 						"geom"																	/* Geometry field name */,
 						csvFiles[0].bbox[0]														/* 4: Xmin (4326); e.g. -179.13729006727 */,
 						csvFiles[0].bbox[1]														/* 5: Ymin (4326); e.g. -14.3737802873213 */, 
@@ -2172,7 +2192,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					getSqlFromFile("create_spatial_geometry_index.sql", 
 						dbType, 
 						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_gix2" /* Index name */, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()			/* Table name */, 
+						(schema||"") + 
+							"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */, 
 						"bbox"																	/* Geometry field name */,
 						csvFiles[0].bbox[0]														/* 4: Xmin (4326); e.g. -179.13729006727 */,
 						csvFiles[0].bbox[1]														/* 5: Ymin (4326); e.g. -14.3737802873213 */, 
@@ -2183,17 +2204,17 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				var sqlStmt=new Sql("Analyze table",
 					getSqlFromFile("analyze_table.sql", 
 						dbType, 
-						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
+						(schema||"") + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
 					sqlArray, dbType);	
 			}			
 		} // End of loadGeometryTable()
 		
 		/*
 		 * Function: 	loadTilesTables()
-		 * Parameters:	None
+		 * Parameters:	Schema (rif_data.)
 		 * Description:	Load tiles table SQL statements
 		 */			
-		var loadTilesTables=function loadTilesTables() {
+		var loadTilesTables=function loadTilesTables(schema) {
 			sqlArray.push(new Sql("Load tiles table"));
 		// Tables: t_tiles_<geometry>.csv
 		
@@ -2206,7 +2227,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 						".csv' DELIMITER ',' CSV HEADER";
 				}
 				else if (dbType == "MSSQLServer") {	
-					sqlStmt.sql="BULK INSERT " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
+					sqlStmt.sql="BULK INSERT " + (schema||"") + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
 	"FROM '$(pwd)/" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 	"WITH\n" + 
 	"(\n" + 
@@ -2228,16 +2249,16 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			
 		beginTransaction(sqlArray, dbType);
 				
-		createGeolevelsLookupTables(sqlArray, dbType, 'rif_data.');
-		loadGeolevelsLookupTables();
-		createHierarchyTable(sqlArray, dbType, 'rif_data.');
-		loadHierarchyTable();
-		createGeometryTable(sqlArray, dbType, 'rif_data.');
-		loadGeometryTable();
+		createGeolevelsLookupTables(sqlArray, dbType, 'rif_data.' /* Schema */);
+		loadGeolevelsLookupTables('rif_data.' /* Schema */);
+		createHierarchyTable(sqlArray, dbType, 'rif_data.' /* Schema */);
+		loadHierarchyTable('rif_data.' /* Schema */);
+		createGeometryTable(sqlArray, dbType, 'rif_data.' /* Schema */);
+		loadGeometryTable('rif_data.' /* Schema */);
 		var geoLevelsTable="t_rif40_geolevels";
-		setupGeography('rif_data.');
-		createTilesTables(sqlArray, dbType, geoLevelsTable, 'rif_data.');
-		loadTilesTables();
+		setupGeography('rif_data.' /* Schema */);
+		createTilesTables(sqlArray, dbType, geoLevelsTable, 'rif_data.' /* Schema */);
+		loadTilesTables('rif_data.' /* Schema */);
 		
 		commitTransaction(sqlArray, dbType);
 		
