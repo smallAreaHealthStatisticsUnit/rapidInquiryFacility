@@ -1863,7 +1863,7 @@ REFERENCE (from shapefile) {
 									else {
 										str="";
 									}							
-									var buf=value.geolevel_id + "," + value.areaid + "," + value.zoomlevel + ',"' + str + '"';
+									var buf='"'+ value.geolevel_id + '","' + value.areaid + '","' + value.zoomlevel + '","' + str + '"';
 			//							winston.log("verbose", "buf[" + (i+1) + "/" + rowsAffected + "]: " + JSON.stringify(buf).substring(0, 200));
 									buf+="\r\n";
 									
@@ -1894,7 +1894,8 @@ REFERENCE (from shapefile) {
 											geographyTable, geographyTableDescription, 
 											xmlFileDir, tileProcessingCallback); // Call tileProcessing
 									}
-									dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", geographyTable.toLowerCase(), record,	geographyTableProcessingCallback);	
+									dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", geometryTable, record,
+										geographyTableProcessingCallback);	
 								} // End of tmssqlTileGeometryEnd()		
 							); // End of async.forEachOfSeries()
 						}			

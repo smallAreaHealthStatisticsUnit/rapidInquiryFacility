@@ -2119,24 +2119,34 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					"Well known text"													/* 3: Comment */), 
 				sqlArray, dbType);	
 					
-			var sqlStmt=new Sql("Load geometry table from CSV file");
-			if (dbType == "PostGres") {	
-				sqlStmt.sql="\\copy " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
+			if (dbType == "PostGres") {		
+				var sqlStmt=new Sql("Load geometry table from CSV file", 
+					"\\copy " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
 					"(geolevel_id, areaid, zoomlevel, wkt)" +
 					" FROM '" + "pg_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
-					".csv' DELIMITER ',' CSV HEADER";
+					".csv' DELIMITER ',' CSV HEADER", 
+					sqlArray, dbType);
 			}
-			else if (dbType == "MSSQLServer") {	
-				sqlStmt.sql="BULK INSERT " + (schema||"") + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
+			else if (dbType == "MSSQLServer") {	// Resgtrict columns using a view	
+				var sqlStmt=new Sql("Create load geometry view", 
+					"CREATE VIEW " + (schema||"") + "v_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" +
+					"AS\n" + 
+					"SELECT geolevel_id,areaid,zoomlevel,wkt\n" +
+					"  FROM " + (schema||"") + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+					sqlArray, dbType);			
+				var sqlStmt=new Sql("Load geometry table from CSV file", 
+					"BULK INSERT " + (schema||"") + "v_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
 "FROM '$(pwd)/" + "mssql_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 "WITH\n" + 
 "(\n" + 
-"	FORMATFILE = '$(pwd)/mssql_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',		-- Use a format file\n" +
+"	FORMATFILE = '$(pwd)/mssql_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',	-- Use a format file\n" +
 "	TABLOCK					-- Table lock\n" + 
-")";
+")", 
+					sqlArray, dbType);
+				var sqlStmt=new Sql("Drop load geometry view", 
+					"DROP VIEW " + (schema||"") + "v_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+					sqlArray, dbType);
 			}
-			sqlStmt.dbType=dbType;
-			sqlArray.push(sqlStmt);
 
 			if (dbType == "PostGres") {	
 				var sqlStmt=new Sql("Add WKT column",
