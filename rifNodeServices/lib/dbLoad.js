@@ -2028,11 +2028,20 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				sqlArray, dbType);		
 
 //
-// Drop dependent view to allow tiles table to be re-createc
+// Drop dependent view to allow tiles table to be re-created
 //	
 			var sqlStmt=new Sql("Drop dependent object - view " + "tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("drop_view.sql", dbType, 
-					(schema||"") + "tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* View name */), sqlArray, dbType); 				
+					(schema||"") + "tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* View name */), sqlArray, dbType); 
+
+			if (dbType == "MSSQLServer") { 
+				sqlArray.push(new Sql("Drop and recreate dependent objects required by tiles view: generate_series() [MS SQL Server only]"));			
+
+				var sqlStmt=new Sql("Drop generate_series() function", 
+					getSqlFromFile("drop_generate_series.sql", dbType), sqlArray, dbType); 
+				var sqlStmt=new Sql("Create generate_series() function", 
+					getSqlFromFile("generate_series.sql", dbType), sqlArray, dbType); 
+			}						
 		} // End of setupGeography()
 		
 		/*
