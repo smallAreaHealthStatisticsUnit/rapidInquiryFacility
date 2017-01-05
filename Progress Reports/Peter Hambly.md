@@ -780,12 +780,14 @@ RangeError: Invalid string length
 
 | Test dataset        | Web Front End | Zoomlevel | Postgres DB Build | MS SQL Server DB Build |
 |---------------------|---------------|-----------|-------------------|------------------------|
-| USA to County level | 94s           |           |                   |                        |
+| USA to County level | 113.8s        |           |                   |                        |
 | SAHSULand           |               |           |                   |                        |
  
 #### Current TODO list (January 2017):
 
-## Alter 9
+* Fix zoomlevel miss-set from config file (defaults are wrong)
+
+### Alter 9
 
 1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
 2. Make RIF40_TABLES.THEME nullable for denominators
