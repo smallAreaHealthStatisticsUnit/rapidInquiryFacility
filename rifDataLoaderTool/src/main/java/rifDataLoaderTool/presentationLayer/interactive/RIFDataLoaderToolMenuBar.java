@@ -125,6 +125,7 @@ public class RIFDataLoaderToolMenuBar
 		exitMenuButton
 			= userInterfaceFactory.createExitMenuItem();
 		exitMenuButton.addActionListener(this);
+		fileMenu.add(exitMenuButton);
 		
 		menuBar.add(fileMenu);
 	}
