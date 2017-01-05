@@ -778,11 +778,10 @@ RangeError: Invalid string length
 * Regression tests.
 * Build times (desktop):
 
-| Test dataset        | Web       | Zoomlevel | Postgres | MS SQL Server |
-|                     | Front End |           | DB Build | DB Build      |
-|---------------------|-----------|-----------|----------|---------------|
-| USA to County level | 94s       |           |          |               |
-| SAHSULand           |           |           |          |               |
+| Test dataset        | Web Front End | Zoomlevel | Postgres DB Build | MS SQL Server DB Build |
+|---------------------|---------------|-----------|-------------------|------------------------|
+| USA to County level | 94s           |           |                   |                        |
+| SAHSULand           |               |           |                   |                        |
  
 #### Current TODO list (January 2017):
 
