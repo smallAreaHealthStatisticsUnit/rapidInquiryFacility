@@ -570,6 +570,15 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				sqlArray, dbType);
 		}				
 
+		var dataSchema=schema;
+		var appSchema;
+		
+		if (dbType == "MSSQLServer") { 
+			appSchema='$(USERNAME)';
+			if (schema) {
+				appSchema='rif40.';
+			}
+		}
 		var sqlStmt=new Sql("Create tiles view", 
 			getSqlFromFile("create_tiles_view.sql", 
 				dbType,	
@@ -578,7 +587,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				"NOT_USED"														/* 3: JSON datatype (Postgres JSON, SQL server VARCHAR) */,
 				"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 4: tiles table; e.g. t_tiles_cb_2014_us_500k */,
 				xmlConfig.dataLoader.maxZoomlevel								/* 5: Max zoomlevel; e.g. 11 */,
-				(schema||"")													/* 6: Schema; e.g.rif_data. or "" */
+				(schema||"")													/* 6: Schema; e.g.rif_data. or "" */,
+				(appSchema||"")													/* 7: RIF or user schema; e.g. $(USERNAME) or rif40 */
 				), sqlArray, dbType); 		
 
 		var sqlStmt=new Sql("Comment tiles view",
@@ -2148,7 +2158,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					".csv' DELIMITER ',' CSV HEADER", 
 					sqlArray, dbType);
 			}
-			else if (dbType == "MSSQLServer") {	// Resgtrict columns using a view	
+			else if (dbType == "MSSQLServer") {	// Restrict columns using a view	
 				var sqlStmt=new Sql("Create load geometry view", 
 					"CREATE VIEW " + (schema||"") + "v_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" +
 					"AS\n" + 
@@ -2255,19 +2265,30 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					sqlStmt.sql="\\copy " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
 						"(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_geojson,optimised_topojson)" + 
 						" FROM '" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + 
-						".csv' DELIMITER ',' CSV HEADER";
+						".csv' DELIMITER ',' CSV HEADER";				
+					sqlStmt.dbType=dbType;
+					sqlArray.push(sqlStmt);	
 				}
-				else if (dbType == "MSSQLServer") {	
-					sqlStmt.sql="BULK INSERT " + (schema||"") + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
+				else if (dbType == "MSSQLServer") {	// Restrict columns using a view	
+					var sqlStmt2=new Sql("Create load tiles view", 
+						"CREATE VIEW " + (schema||"") + "v_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" +
+						"AS\n" + 
+						"SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_geojson, optimised_topojson\n" +
+						"  FROM " + (schema||"") + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+						sqlArray, dbType);					
+					sqlStmt.sql="BULK INSERT " + (schema||"") + "v_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
 	"FROM '$(pwd)/" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 	"WITH\n" + 
 	"(\n" + 
 	"	FORMATFILE = '$(pwd)/mssql_t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".fmt',		-- Use a format file\n" +
 	"	TABLOCK					-- Table lock\n" + 
 	")";
-				}
-				sqlStmt.dbType=dbType;
-				sqlArray.push(sqlStmt);		
+					sqlStmt.dbType=dbType;
+					sqlArray.push(sqlStmt);	
+					var sqlStmt2=new Sql("Create load tiles view", 
+						"DROP VIEW " + (schema||"") + "v_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
+						sqlArray, dbType);					
+				}	
 			} // End of for loop
 			
 		} // End of loadTilesTables()

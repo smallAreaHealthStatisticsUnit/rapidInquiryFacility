@@ -7,7 +7,8 @@
  *						3: JSON datatype (Postgres JSON, SQL server VARCHAR) [No longer used]
  *						4: tiles table; e.g. t_tiles_cb_2014_us_500k
  *  					5: Max zoomlevel; e.g. 11
- *						6: Schema; e.g. rif_data. or ""
+ *						6: Data schema; e.g. rif_data. or ""
+ *						7: RIF or user schema; e.g. $(USERNAME) or rif40
  *
  * Description:			Create tiles view
  * Note:				%%%% becomes %% after substitution
@@ -16,24 +17,24 @@ CREATE VIEW %6%1 AS
 WITH a AS (
         SELECT geography,
                MAX(geolevel_id) AS max_geolevel_id
-          FROM %2
+          FROM %7%2
          GROUP BY geography
 ), b AS (
 		SELECT a.geography, z.IntValue AS geolevel_id 
-		  FROM a CROSS APPLY $(USERNAME).generate_series(0, CAST(a.max_geolevel_id AS INTEGER), 1) z
+		  FROM a CROSS APPLY %7generate_series(0, CAST(a.max_geolevel_id AS INTEGER), 1) z
 ), c AS (
         SELECT b2.geolevel_name,
                b.geolevel_id,
                b.geography,
 			   b2.areaid_count
-          FROM b, %2 b2
+          FROM b, %7%2 b2
 		 WHERE b.geolevel_id = b2.geolevel_id
 ), d AS (
         SELECT z.IntValue AS zoomlevel
-		  FROM $(USERNAME).generate_series(0, %5, 1) z
+		  FROM %7generate_series(0, %5, 1) z /* RIF or user schema; e.g. $(USERNAME) or rif40 */
 ), ex AS (
         SELECT d.zoomlevel, z.IntValue AS xy_series
-          FROM d CROSS APPLY $(USERNAME).generate_series(0, CAST(POWER(2, d.zoomlevel) AS INTEGER) - 1, 1) z
+          FROM d CROSS APPLY %7generate_series(0, CAST(POWER(2, d.zoomlevel) AS INTEGER) - 1, 1) z
 ), ey AS (
         SELECT c.geolevel_name,
 			   c.areaid_count,
@@ -80,13 +81,13 @@ SELECT z.geography,
 				h2.optimised_topojson, 
 				'{"type": "FeatureCollection","features":[]}') AS optimised_topojson
   FROM z 
-		 LEFT JOIN %4 h1 ON ( /* Multiple area ids in the geolevel */
+		 LEFT JOIN %6%4 h1 ON ( /* Multiple area ids in the geolevel */
 				z.areaid_count > 1 AND
 				z.zoomlevel    = h1.zoomlevel AND 
 				z.x            = h1.x AND 
 				z.y            = h1.y AND 
 				z.geolevel_id  = h1.geolevel_id)
-		 LEFT JOIN %4 h2 ON ( /* Single area ids in the geolevel */
+		 LEFT JOIN %6%4 h2 ON ( /* Single area ids in the geolevel */
 				z.areaid_count = 1 AND
 				h2.zoomlevel   = 0 AND 
 				h2.x           = 0 AND 

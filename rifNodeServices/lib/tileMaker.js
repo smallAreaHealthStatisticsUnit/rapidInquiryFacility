@@ -437,14 +437,15 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			this.topojson=undefined; // Free up memory used for topojson	
 			// geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_geojson, optimised_topojson
 			return (
-				this.geolevel_id + "," + 	// ID for ordering (1=lowest resolution). Up to 99 supported.
-				this.zoomlevel + "," +		// Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11
-				this.x + "," + 				// X tile number. From 0 to (2**<zoomlevel>)-1
-				this.y + "," + 				// Y tile number. From 0 to (2**<zoomlevel>)-1
-				this.tileId + ',' + 		// Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>
-				this.areaid_count + ',' + 	// Area ID count
-				"," + 						// Tile multipolygon in GeoJSON format, optimised for zoomlevel N.
-				'"' + str + '"'	  		// Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.
+				'"' +						// Quote enclose all fields
+				this.geolevel_id + '","' + 	// ID for ordering (1=lowest resolution). Up to 99 supported.
+				this.zoomlevel + '","' +	// Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11
+				this.x + '","' + 			// X tile number. From 0 to (2**<zoomlevel>)-1
+				this.y + '","' + 			// Y tile number. From 0 to (2**<zoomlevel>)-1
+				this.tileId + '","' + 		// Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>
+				this.areaid_count + '","' + // Area ID count
+				'",' + 						// Tile multipolygon in GeoJSON format, optimised for zoomlevel N.
+				'"' + str + '"'	  			// Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.
 			);
 		},
 		/*
@@ -1476,20 +1477,33 @@ REFERENCE (from shapefile) {
 
 			stream.on('row', function tileIntersectsRow(row) {
 				mssqlRows++;
-				function dummyCallback() {
-					// Do nothing!
+				function tileIntersectsRowCallback(err) {
+					if (err) {
+						dbErrorHandler(err, undefined);
+					}
+					else {
+						delete row.geolevel_name;
+						totalTileSize+=tileIntersectsRowProcessing(row, geography, dbType);	
+					}
 				}
 				if (mssqlRows == 1) {
 					var xmlFileDir=tileMakerConfig.xmlConfig.xmlFileDir;
 					var rows=[];
-					rows.push(row);
-					dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", "t_tiles_" + geolevelName.toLowerCase(), rows, dummyCallback);		
-				}
+					rows.push({ // Fake first row for column headings
+						geolevel_id: row.geolevel_id,
+						zoomlevel: row.zoomlevel,
+						x: row.x,
+						y: row.y,
+						tile_id: row.tile_id,
+						areaid_count: 1,
+						optimised_geojson: '{"type": "FeatureCollection","features":[]}',
+						optimised_topojson: '{"type": "FeatureCollection","features":[]}'});
+					dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", "t_tiles_" + geolevelName.toLowerCase(), rows, 
+						tileIntersectsRowCallback);		
+				}	
 				else {
-					delete row.geolevel_name;
+					tileIntersectsRowCallback();
 				}
-
-				totalTileSize+=tileIntersectsRowProcessing(row, geography, dbType);		
 			});
 			
 			if (dbType == "PostGres") {
