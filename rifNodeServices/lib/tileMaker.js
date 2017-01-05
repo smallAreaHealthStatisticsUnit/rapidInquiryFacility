@@ -641,23 +641,34 @@ REFERENCE (from shapefile) {
 
 		if (tileArray.length == 0) { // First row in zoomlevel/geolevel combination
 			var geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
-//			winston.log("debug", 'Tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + "; properties: " + 
-//				JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));
+			winston.log("debug", 'First tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + ": " + 
+				geojsonTile.geojson.features[0].properties["areaName"]);
 		}
 		else {
 			var geojsonTile=tileArray[(tileArray.length-1)]; // Get last tile from array
 			if (geojsonTile.tileId == row.tile_id) { 	// Same tile
 				geojsonTile.addFeature(row, geojson);	// Add geoJSON feature to collection
-//						winston.log("debug", 'Add areaID: ' + row.areaid + "; properties: " + 
-//							JSON.stringify(geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties, null, 2));
+				winston.log("debug", 'Tile ' + geojsonTile.id + '; add areaID: ' + row.areaid + ": " + 
+					geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
 			}
-			else {										// New tile
-				tileSize=geojsonTile.addTopoJson();		// Complete last tile
-				geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
-														// Create new tile
-//				winston.log("debug", 'Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + "; features[0] properties: " + 
-//					JSON.stringify(geojsonTile.geojson.features[0].properties, null, 2));	
-		
+			else {										// New tile or already processed
+				var foundTile=false;
+				for (i=0; i<tileArray.length; i++) {	// Tiles should be in order, but in case the DB gets it wrong (Postgres did!)
+					if (tileArray[i].tileId == row.tile_id) { 	// Same tile
+						geojsonTile=tileArray[i];
+						geojsonTile.addFeature(row, geojson);	// Add geoJSON feature to collection
+						foundTile=true;
+						winston.log("debug", 'Old Tile ' + geojsonTile.id + '; add areaID: ' + row.areaid + ": " + 
+							geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
+					}
+				}
+				if (foundTile) {
+					tileSize=geojsonTile.addTopoJson();		// Complete last tile
+					geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
+															// Create new tile
+					winston.log("debug", 'Next tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + ": " + 
+						geojsonTile.geojson.features[0].properties["areaName"]);	
+				}
 			}	
 		}	
 //		winston.log("debug", geography + '; Tile ' + geojsonTile.id)
@@ -916,6 +927,7 @@ REFERENCE (from shapefile) {
 				var cte="WITH a AS (\n" +
 						"	SELECT geolevel_id, zoomlevel, x, y, COUNT(areaid) AS total_areas\n" + 
 						"	  FROM  " + tileIntersectsTable + "\n" + 
+						"    WHERE geolevel_id = " + geolevel_id + "\n" + 
 						"	GROUP BY geolevel_id, zoomlevel, x, y\n" + 
 						"), b AS (\n" + 
 						"	SELECT geolevel_id, zoomlevel, x, y, total_areas,\n" + 
@@ -925,13 +937,15 @@ REFERENCE (from shapefile) {
 				if (dbType == "PostGres") {
 					sql="CREATE TABLE " + tileBlocksTable + "\n" + 
 						"AS\n" + cte +
-						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas\n" + 
+						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas,\n" +
+						"       geolevel_id::Text||'_'||zoomlevel::Text||'_'||x::Text||'_'||y::Text AS tile\n" + 
 						"  FROM b\n" + 
 						" ORDER BY geolevel_id, zoomlevel, block, x, y";
 				}
 				else if (dbType == "MSSQLServer") {	
 					sql=cte +
-						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas\n" + 
+						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas,\n" +
+						"       CAST(geolevel_id AS VARCHAR) + '_' + CAST(zoomlevel AS VARCHAR) + '_' + CAST(x AS VARCHAR) + '_' + CAST(y AS VARCHAR) AS tile\n" +  
 						"  INTO " + tileBlocksTable + "\n" + 
 						"  FROM b\n" + 
 						" ORDER BY geolevel_id, zoomlevel, block, x, y";		
@@ -947,9 +961,43 @@ REFERENCE (from shapefile) {
 							if (err) {
 								dbErrorHandler(err, sql);
 							}		
-							else {
-								tileIntersectsProcessingZoomlevelLoop(tileBlocksTable, tileIntersectsTable, geolevel_name, geolevel_id, 
-									geography, xmlFileDir, callback);
+							else { // Check PK: geolevel_id, zoomlevel, x, y
+								sql="SELECT tile,\n" + 
+								    "       COUNT(DISTINCT(block)) AS total_block_pks,\n" +
+									"       SUM(total_areas) AS total_areas\n" + 
+								    "  FROM " + tileBlocksTable + "\n" + 
+									" GROUP BY tile\n" + 
+									" HAVING COUNT(block) > 1\n" +
+									" ORDER BY tile";								
+								var query=request.query(sql, function pkTileBlocks(err, result) {
+									if (err) {
+										dbErrorHandler(err, sql);
+									}		
+									else {
+										var duplicateTileData;
+										
+										if (dbType == "PostGres") {
+											duplicateTileData=result.rows;
+										}		
+										else if (dbType == "MSSQLServer") {	
+											duplicateTileData=result;
+										}	
+										
+										for (var i=0; i<duplicateTileData.length; i++) {
+											winston.log("warn", "Duplicate block: " + 
+												duplicateTileData[i].tile + "; duplicate PKs: " + duplicateTileData[i].total_block_pks + 
+												", areas: " + duplicateTileData[i].total_areas);
+										}
+										if (duplicateTileData.length > 0) {
+											callback(new Error(duplicateTileData.length + " duplicate blocks detected in tileBlocksTable: " + tileBlocksTable));
+										}
+										else {
+											winston.log("verbose", "No duplicate blocks detected in tileBlocksTable: " + tileBlocksTable);
+											tileIntersectsProcessingZoomlevelLoop(tileBlocksTable, tileIntersectsTable, geolevel_name, geolevel_id, 
+												geography, xmlFileDir, callback);
+										}
+									}
+								});
 							}
 						}); // End of pkTileBlocks()
 					}
@@ -999,7 +1047,8 @@ REFERENCE (from shapefile) {
 			var i=0;
 			async.doWhilst(
 				function geolevelProcessing(callback) {		
-					tileIntersectsProcessingZoomlevelLoopOuter(tileIntersectsTable, geolvelTableData[i].geolevel_name, geolvelTableData[i].geolevel_id, 
+					tileIntersectsProcessingZoomlevelLoopOuter(tileIntersectsTable, 
+						geolvelTableData[i].geolevel_name, geolvelTableData[i].geolevel_id, 
 						geographyTableData.geography, xmlFileDir, callback);
 				}, 
 				function geolevelTest() { // Mimic for loop
@@ -1082,18 +1131,22 @@ REFERENCE (from shapefile) {
 // Primary key: geolevel_id, zoomlevel, areaid, x, y
 //			
 		if (dbType == "PostGres") {	
-			sql="SELECT z.geolevel_id::VARCHAR||'_'||'" + (geolevelName||'Unknown geolevel name') + "'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
-				"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, z.x, z.y, a.*\n" +				
-				"  FROM " + tileIntersectsTable + " z, " + tileBlocksTable + " y, lookup_" + geolevelName + " a\n" +
-				" WHERE z.geolevel_id = $2\n" + 
-				"   AND z.zoomlevel   = $1\n" + 
-				"   AND y.block       = $3\n" +
-				"   AND y.geolevel_id = z.geolevel_id\n" +
-				"   AND y.zoomlevel   = z.zoomlevel\n" +
-				"   AND y.x           = z.x\n" +
-				"   AND y.y           = z.y\n" +
-				"   AND z.areaid      = a." + geolevelName + "\n" + 
-				" ORDER BY 1";
+			sql="WITH a AS (\n" +
+				"	SELECT z.geolevel_id::VARCHAR||'_'||'" + (geolevelName||'Unknown geolevel name') + 
+								"'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
+				"	       z.areaid, z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.x, z.y, a.*\n" +				
+				"	  FROM " + tileIntersectsTable + " z, " + tileBlocksTable + " y, lookup_" + geolevelName + " a\n" +
+				"	 WHERE z.geolevel_id = $2\n" + 
+				"	   AND z.zoomlevel   = $1\n" + 
+				"	   AND y.block       = $3\n" +
+				"	   AND y.geolevel_id = z.geolevel_id\n" +
+				"	   AND y.zoomlevel   = z.zoomlevel\n" +
+				"	   AND y.x           = z.x\n" +
+				"	   AND y.y           = z.y\n" +
+				"	   AND z.areaid      = a." + geolevelName + "\n" + 
+				")\n" +
+				"SELECT * FROM a\n" + 
+				" ORDER BY tile_id, areaid";
 		}		
 		else if (dbType == "MSSQLServer") {		
 			sql="SELECT CAST(z.geolevel_id AS VARCHAR) + '_' + '" + (geolevelName||'Unknown geolevel name') + 
@@ -1201,11 +1254,12 @@ REFERENCE (from shapefile) {
 				j+=7;
 				insertArray=insertArray.concat(tileArray[i].insertArray);
 			}
-//			winston.log("debug", "INSERT SQL> " + pgInsertSql + "\nValues (" + insertArray.length + "): " + JSON.stringify(insertArray).substring(0, 1000));
 	
 			var request=client;
 			var query=request.query(pgInsertSql, insertArray, function pgTilesInsert(err, result) {
 				if (err) {
+					winston.log("warn", "INSERT SQL> " + pgInsertSql + "\nValues (" + insertArray.length + "): " + 
+						JSON.stringify(insertArray, null, 2).substring(0, 1000));
 					dbErrorHandler(err, pgInsertSql);
 				}
 				else if (result == undefined) {
