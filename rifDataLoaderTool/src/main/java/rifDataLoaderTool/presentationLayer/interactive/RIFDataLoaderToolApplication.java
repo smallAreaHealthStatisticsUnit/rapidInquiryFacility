@@ -4,15 +4,12 @@ import rifDataLoaderTool.dataStorageLayer.pg.ProductionPGDataLoaderService;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.presentationLayer.ErrorDialog;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.presentationLayer.OKCloseButtonPanel;
 import rifGenericLibrary.system.RIFServiceException;
 import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
-
-
 
 import javax.swing.*;
 
@@ -143,9 +140,7 @@ public class RIFDataLoaderToolApplication
 
 		geographyMetaData = DLGeographyMetaData.newInstance();
 		dependencyManager = new DLDependencyManager();
-		changeManager = new DataLoaderToolChangeManager();
-		changeManager.setDataLoaderToolConfiguration(
-			session.getDataLoaderToolConfiguration());
+		changeManager = new DataLoaderToolChangeManager(session);
 
 		geographyMetaDataPanel
 			= new GeographyMetaDataLoadingPanel(
@@ -347,6 +342,7 @@ public class RIFDataLoaderToolApplication
 	public void setDataLoaderToolConfiguration(
 		final DataLoaderToolConfiguration dataLoaderToolConfiguration,
 		final DataLoadingOrder completionState) {
+		
 		
 		geographyMetaDataPanel.refresh();
 		healthThemeListPanel.refresh();

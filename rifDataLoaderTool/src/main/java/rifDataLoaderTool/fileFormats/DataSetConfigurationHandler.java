@@ -5,7 +5,6 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,7 +84,9 @@ final class DataSetConfigurationHandler
 	
 	private boolean isSerialisingHints;
 	
-	private HashMap<String, DataSetConfiguration> dataSetFromDependencyName;
+	private HashMap<String, DataSetConfiguration> dataSetFromName;
+	
+	private HashMap<DataSetConfiguration, String> dependencyNameFromDataSet;
 	
 	private HashMap<DataSetConfiguration, String> geographyNameFromDataSet;
 	private HashMap<DataSetConfiguration, String> healthThemeNameFromDataSet;
@@ -97,7 +98,8 @@ final class DataSetConfigurationHandler
 	public DataSetConfigurationHandler() {
 		isSerialisingHints = false;
 
-		dataSetFromDependencyName = new HashMap<String, DataSetConfiguration>();
+		dependencyNameFromDataSet = new HashMap<DataSetConfiguration, String>();
+		dataSetFromName = new HashMap<String, DataSetConfiguration>();
 		geographyNameFromDataSet = new HashMap<DataSetConfiguration, String>();
 		healthThemeNameFromDataSet = new HashMap<DataSetConfiguration, String>();
 		
@@ -184,13 +186,13 @@ final class DataSetConfigurationHandler
 	
 	private void resolveDependencies() {
 		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
-			String displayName = dataSetConfiguration.getDisplayName();
-			DataSetConfiguration dependentDataSetConfiguration
-				= dataSetFromDependencyName.get(displayName);
-			if (dependentDataSetConfiguration != null) {
-				//This data set dependends on the current data set
-				dependentDataSetConfiguration.setDependencyDataSetConfiguration(dataSetConfiguration);
-			}
+			if (dataSetConfiguration.getRIFSchemaArea() == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+				String dependencyName
+					= dependencyNameFromDataSet.get(dataSetConfiguration);
+				DataSetConfiguration dependency
+					= dataSetFromName.get(dependencyName);
+				dataSetConfiguration.setDependencyDataSetConfiguration(dependency);
+			}			
 		}
 	}
 
@@ -202,6 +204,8 @@ final class DataSetConfigurationHandler
 		xmlUtility.writeRecordStartTag(getPluralRecordName());
 		
 		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
+
+			
 			xmlUtility.writeRecordStartTag(getSingularRecordName());
 			
 			xmlUtility.writeField(
@@ -219,6 +223,7 @@ final class DataSetConfigurationHandler
 				"file_path", 
 				dataSetConfiguration.getFilePath());
 			
+			System.out.println("Writing: data set=="+dataSetConfiguration.getDisplayName() +"==has description=="+ dataSetConfiguration.getDescription()+"==");
 			xmlUtility.writeField(
 				getSingularRecordName(), 
 				"description", 
@@ -274,8 +279,6 @@ final class DataSetConfigurationHandler
 				= dataSetConfiguration.getFieldConfigurations();
 			dataSetFieldConfigurationHandler.writeXML(fieldConfigurations);
 			
-			xmlUtility.writeRecordEndTag(getSingularRecordName());
-			
 			DataSetConfiguration dependencyDataSetConfiguration
 				= dataSetConfiguration.getDependencyDataSetConfiguration();
 			
@@ -285,14 +288,12 @@ final class DataSetConfigurationHandler
 					"dependency", 
 					dependencyDataSetConfiguration.getDisplayName());
 			}
+			xmlUtility.writeRecordEndTag(getSingularRecordName());					
 		}
 		
 		xmlUtility.writeRecordEndTag(getPluralRecordName());
 	}
 
-	
-	
-	
 	@Override
 	public void startElement(
 		final String nameSpaceURI,
@@ -302,11 +303,9 @@ final class DataSetConfigurationHandler
 		throws SAXException {
 
 		if (isPluralRecordName(qualifiedName) == true) {
-			System.out.println("DataSetConfiguration Handler READING DATA SETS 111");
 			activate();
 		}
 		else if (isSingularRecordName(qualifiedName) == true) {
-			System.out.println("DataSetConfiguration Handler READING DATA SETS 112");
 			currentDataSetConfiguration
 				= DataSetConfiguration.newInstance();
 			currentDataSetConfiguration.setNewRecord(false);
@@ -354,8 +353,18 @@ final class DataSetConfigurationHandler
 			deactivate();
 		}
 		else if (isSingularRecordName(qualifiedName) == true) {
+			ArrayList<DataSetFieldConfiguration> fields
+				= currentDataSetConfiguration.getFieldConfigurations();
+			for (DataSetFieldConfiguration field : fields) {
+				RIFDataType rifDataType = field.getRIFDataType();
+				FieldRequirementLevel requirementLevel = field.getFieldRequirementLevel();
+			}
+			
 			currentDataSetConfiguration.setIsHint(isSerialisingHints);
 			dataSetConfigurations.add(currentDataSetConfiguration);
+			dataSetFromName.put(
+				currentDataSetConfiguration.getDisplayName(), 
+				currentDataSetConfiguration);
 		}		
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler
@@ -404,7 +413,7 @@ final class DataSetConfigurationHandler
 			currentDataSetConfiguration.setCurrentWorkflowState(workflowState);
 		}		
 		else if (equalsFieldName("dependency", qualifiedName)) {
-			dataSetFromDependencyName.put(getCurrentFieldValue(), currentDataSetConfiguration);
+			dependencyNameFromDataSet.put(currentDataSetConfiguration, getCurrentFieldValue());
 		}
 		else if (equalsFieldName("geography", qualifiedName)) {
 			geographyNameFromDataSet.put(currentDataSetConfiguration, getCurrentFieldValue());

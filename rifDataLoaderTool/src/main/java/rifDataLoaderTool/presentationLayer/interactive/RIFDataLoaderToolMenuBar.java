@@ -201,7 +201,7 @@ public class RIFDataLoaderToolMenuBar
 	
 	private void saveConfiguration() {
 		
-		int result = fileChooser.showOpenDialog(frame);
+		int result = fileChooser.showSaveDialog(frame);
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
 		}
@@ -209,7 +209,8 @@ public class RIFDataLoaderToolMenuBar
 		try {
 			File selectedFile
 				= XMLFileFilter.ensureFileEndsWithXML(fileChooser.getSelectedFile());
-	
+			selectedFile
+				= XMLFileFilter.ensureFileEndsWithXML(selectedFile);
 			DataLoaderToolConfigurationWriter writer
 				= new DataLoaderToolConfigurationWriter();
 			writer.writeFile(

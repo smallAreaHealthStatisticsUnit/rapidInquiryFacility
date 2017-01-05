@@ -95,6 +95,7 @@ public final class OrderedListPanel {
 	//Data	
 	/** The alphabetically sort items. */
 	private boolean alphabeticallySortItems;
+
 	/** The list items. */
 	private Vector<String> listItems;
 	
@@ -358,8 +359,53 @@ public final class OrderedListPanel {
 		if (alphabeticallySortItems == true) {
 			Collections.sort(listItems);	
 		}
+		
+		updateUI();
+
+		if (useDefaultSelectionPolicy) {
+			if (list.getSelectedIndex() == -1) {
+				//nothing is selected
+				if (listItems.isEmpty() == false) {
+					list.setSelectedValue(listItems.get(0), true);
+					int num = list.getSelectedIndex();
+				}
+			}
+		}
+		/*
+		if (useDefaultSelectionPolicy) {
+			if (listItems.isEmpty() == false) {
+				System.out.println("Adding stuff");
+				DefaultListSelectionModel selectionModel
+					= (DefaultListSelectionModel) list.getSelectionModel();
+				System.out.println("Selected index =="+ selectionModel.getLeadSelectionIndex()+"==");
+				selectionModel.clearSelection();
+				selectionModel.setSelectionInterval(0, 0);
+				//selectionModel.moveLeadSelectionIndex(0);
+			}
+		}
+		
+		*/
+/*		
+		if (useDefaultSelectionPolicy) {
+			if (list.getSelectedIndex() == -1) {
+				System.out.println("OLP - Add 111 List items no item currently selected==");
+				//nothing is selected
+				if (listItems.isEmpty() == false) {
+					System.out.println("OLP - Add list items list not empty==");
+					//String selectItem = listItems.get(0);
+					//list.setSelectionInterval(0, 0);
+					System.out.println("==OLP select==" + listItems.get(0)+"==");
+					list.setSelectedIndex(0);					
+					list.repaint();
+				}
+			}
+			else {
+				System.out.println("OLP - List item=="+ list.getSelectedValue()+"==is selected");
+			}
+		}
+*/	
+		
 	}
-	
 	
 	
 	/**
@@ -389,7 +435,7 @@ public final class OrderedListPanel {
 		}
 		
 	}
-	
+		
 	/**
 	 * Replace item.
 	 *
@@ -708,3 +754,6 @@ public final class OrderedListPanel {
 	// ==========================================
 
 }
+
+
+

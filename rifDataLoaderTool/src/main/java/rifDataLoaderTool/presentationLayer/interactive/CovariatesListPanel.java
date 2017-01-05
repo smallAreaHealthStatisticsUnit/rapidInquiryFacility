@@ -230,7 +230,7 @@ public class CovariatesListPanel
 		}
 			
 		changeManager.deleteCovariates(covariatesToDelete);	
-		deleteListItems();		
+		super.deleteSelectedListItems();		
 	}
 	
 	// ==========================================

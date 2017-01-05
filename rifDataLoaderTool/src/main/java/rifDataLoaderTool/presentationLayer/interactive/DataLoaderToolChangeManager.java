@@ -1,7 +1,7 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
+import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifGenericLibrary.system.RIFServiceException;
 import java.util.Observable;
 import java.util.ArrayList;
@@ -101,28 +101,22 @@ public class DataLoaderToolChangeManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DataLoaderToolConfiguration dataLoaderToolConfiguration;
+	private DataLoaderToolSession session;
 	private boolean saveChanges;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DataLoaderToolChangeManager() {
-
+	public DataLoaderToolChangeManager(final DataLoaderToolSession session) {
+		this.session = session;
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setDataLoaderToolConfiguration(
-		final DataLoaderToolConfiguration dataLoaderToolConfiguration) {
-		
-		this.dataLoaderToolConfiguration = dataLoaderToolConfiguration;
-	}
 
 	public void resetDataLoadingSteps() {
-		System.out.println("No config data specified");
 		setChanged();
 		notifyObservers(DataLoadingOrder.NO_CONFIGURATION_DATA_SPECIFIED);
 		
@@ -135,6 +129,8 @@ public class DataLoaderToolChangeManager
 		//if (originalGeographyMetaData.hasIdenticalContents(revisedGeographyMetaData)) {
 		//	return;			
 		//}
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();
 		dataLoaderToolConfiguration.setGeographyMetaData(geographyMetaData);
 				
 		if (dataLoaderToolConfiguration.getNumberOfDenominators() > 0) {
@@ -156,6 +152,8 @@ public class DataLoaderToolChangeManager
 	}
 	
 	public void addHealthTheme(final DLHealthTheme healthTheme) {
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();
 
 		int originalNumberHealthThemes
 			= dataLoaderToolConfiguration.getNumberOfHealthThemes();
@@ -187,6 +185,8 @@ public class DataLoaderToolChangeManager
 		}
 		
 		indicateSaveChanges();
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();
 		dataLoaderToolConfiguration.updateHealthTheme(
 			originalHealthTheme, 
 			revisedHealthTheme);
@@ -195,6 +195,8 @@ public class DataLoaderToolChangeManager
 	public void deleteHealthTheme(final DLHealthTheme healthTheme) 
 		throws RIFServiceException {
 		
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();
 		int originalNumberHealthThemes
 			= dataLoaderToolConfiguration.getNumberOfHealthThemes();		
 		dataLoaderToolConfiguration.deleteHealthTheme(healthTheme);
@@ -214,7 +216,9 @@ public class DataLoaderToolChangeManager
 	}
 	
 	public void addDenominator(final DataSetConfiguration denominator) {
-		//Check duplicates
+
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();
 		
 		//Assess whether list is empty before we add the new item
 		int originalNumberDenominators
@@ -245,6 +249,9 @@ public class DataLoaderToolChangeManager
 		}
 		
 		indicateSaveChanges();		
+
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();
 		dataLoaderToolConfiguration.updateDenominator(
 			originalDenominator, 
 			revisedDenominator);		
@@ -254,6 +261,9 @@ public class DataLoaderToolChangeManager
 	public void deleteDenominators(
 		final ArrayList<DataSetConfiguration> denominatorsToDelete) {
 				
+
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();
 		int originalDenominatorCount
 			= dataLoaderToolConfiguration.getNumberOfDenominators();
 		//Remove any dependencies
@@ -271,6 +281,9 @@ public class DataLoaderToolChangeManager
 	
 	public void deleteDenominator(final DataSetConfiguration denominator) {
 				
+
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();
 		int originalDenominatorCount
 			= dataLoaderToolConfiguration.getNumberOfDenominators();
 		//Remove any dependencies
@@ -290,7 +303,8 @@ public class DataLoaderToolChangeManager
 	
 	
 	public void addNumerator(final DataSetConfiguration numerator) {
-		//Check duplicates
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();
 		
 		//Assess whether list is empty before we add the new item
 		int originalNumberNumerators
@@ -319,6 +333,8 @@ public class DataLoaderToolChangeManager
 		}
 
 		indicateSaveChanges();		
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();	
 		dataLoaderToolConfiguration.updateDenominator(
 			originalNumerator, 
 			revisedNumerator);
@@ -327,6 +343,8 @@ public class DataLoaderToolChangeManager
 	public void deleteNumerators(
 		final ArrayList<DataSetConfiguration> numeratorsToDelete) {
 				
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();	
 		int originalNumeratorCount
 			= dataLoaderToolConfiguration.getNumberOfNumerators();
 		//Remove any dependencies
@@ -347,6 +365,9 @@ public class DataLoaderToolChangeManager
 	public void deleteNumerator(final DataSetConfiguration numerator) 
 		throws RIFServiceException {
 
+		
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();	
 		int originalNumberNumerators
 			= dataLoaderToolConfiguration.getNumberOfNumerators();
 		dataLoaderToolConfiguration.deleteNumeratorDataSetConfiguration(numerator);
@@ -366,7 +387,9 @@ public class DataLoaderToolChangeManager
 	}
 	
 	public void addCovariate(final DataSetConfiguration covariate) {
-		//Check duplicates
+
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();	
 		
 		//Assess whether list is empty before we add the new item
 		int originalCovariateCount	
@@ -396,6 +419,9 @@ public class DataLoaderToolChangeManager
 		}
 	
 		indicateSaveChanges();		
+
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();	
 		dataLoaderToolConfiguration.updateCovariate(
 			originalCovariate, 
 			revisedCovariate);
@@ -404,7 +430,9 @@ public class DataLoaderToolChangeManager
 
 	public void deleteCovariates(
 		final ArrayList<DataSetConfiguration> covariatesToDelete) {
-				
+
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();	
 		int originalCovariateCount
 			= dataLoaderToolConfiguration.getNumberOfCovariates();
 		//Remove any dependencies
@@ -424,6 +452,8 @@ public class DataLoaderToolChangeManager
 	public void deleteCovariate(final DataSetConfiguration covariate) 
 		throws RIFServiceException {
 					
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getCurrentDataLoaderToolConfiguration();	
 		int originalCovariateCount
 			= dataLoaderToolConfiguration.getNumberOfCovariates();
 		dataLoaderToolConfiguration.deleteCovariateDataSetConfiguration(covariate);
@@ -449,6 +479,9 @@ public class DataLoaderToolChangeManager
 		saveChanges = true;
 	}
 	
+	private DataLoaderToolConfiguration getCurrentDataLoaderToolConfiguration() {
+		return session.getDataLoaderToolConfiguration();
+	}
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

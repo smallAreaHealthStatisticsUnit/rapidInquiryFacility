@@ -172,12 +172,9 @@ final class HealthThemesConfigurationHandler
 		
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
-			System.out.println("ACTIVATING HEALTH THEMES HANDLER");
 			healthThemes.clear();
 		}
-		else if (isSingularRecordName(qualifiedName) == true) {
-			System.out.println("ACTIVATING HEALTH THEMES NEW INSTANCE");
-			
+		else if (isSingularRecordName(qualifiedName) == true) {			
 			currentHealthTheme
 				= DLHealthTheme.newInstance();
 		}		
@@ -198,7 +195,6 @@ final class HealthThemesConfigurationHandler
 			deactivate();
 		}
 		else if (isSingularRecordName(qualifiedName)) {
-			System.out.println("ACTIVATING HEALTH THEMES NEW INSTANCE");
 			healthThemes.add(currentHealthTheme);
 		}		
 		else if (equalsFieldName("name", qualifiedName)) {

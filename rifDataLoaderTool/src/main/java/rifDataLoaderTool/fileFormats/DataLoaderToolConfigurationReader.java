@@ -131,7 +131,6 @@ public final class DataLoaderToolConfigurationReader {
 		throws RIFServiceException {
 
 		try {	
-			System.out.println("Data Loader reader reading UTF-8 file");
 			FileInputStream inputStream = new FileInputStream(rifSubmissionFile);
 			InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
 			InputSource inputSource = new InputSource(inputStreamReader);

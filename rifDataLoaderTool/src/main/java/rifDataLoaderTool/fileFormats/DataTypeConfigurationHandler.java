@@ -110,6 +110,11 @@ final public class DataTypeConfigurationHandler
 	private FieldCleaningPolicyConfigurationHandler cleaningPolicyConfigurationHandler;
 	private FieldValidatingPolicyConfigurationHandler validatingPolicyConfigurationHandler;
 	
+	private String currentIdentifier;
+	private String currentName;
+	private String currentDescription;
+	private String currentTimeStampPhrase;
+	
 // ==========================================
 // Section Construction
 // ==========================================
@@ -121,6 +126,7 @@ final public class DataTypeConfigurationHandler
 		setPluralRecordName("rif_data_types");
 		setSingularRecordName("rif_data_type");
 		rifDataTypeFactory = RIFDataTypeFactory.newInstance();	
+		rifDataTypeFactory.populateFactoryWithBuiltInTypes();
 		cleaningPolicyConfigurationHandler
 			= new FieldCleaningPolicyConfigurationHandler();
 		validatingPolicyConfigurationHandler
@@ -309,7 +315,20 @@ final public class DataTypeConfigurationHandler
 		}
 		else if (isSingularRecordName(qualifiedName)) {
 			try {
-				rifDataTypeFactory.registerCustomDataType(currentRIFDataType, false);	
+				RIFDataType existingRIFDataType
+					= rifDataTypeFactory.getDataTypeFromName(currentName);
+				if (existingRIFDataType == null) {
+					//This must be new
+					RIFDataType rifDataType
+						= RIFDataType.newInstance();
+					rifDataType.setIdentifier(currentIdentifier);
+					rifDataType.setName(currentName);
+					rifDataType.setDescription(currentDescription);
+					rifDataType.setLastModifiedTime(getLastModifiedTimeStamp(currentTimeStampPhrase));
+					rifDataTypeFactory.registerCustomDataType(
+						currentRIFDataType, 
+						false);					
+				}
 			}
 			catch(RIFServiceException rifServiceException) {
 				errorMessages.addAll(rifServiceException.getErrorMessages());
@@ -357,20 +376,23 @@ final public class DataTypeConfigurationHandler
 			}
 		}
 		else if (equalsFieldName("identifier", qualifiedName)) {
-			currentRIFDataType.setIdentifier(getCurrentFieldValue());
+			currentIdentifier = getCurrentFieldValue();
+			//currentRIFDataType.setIdentifier(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("name", qualifiedName)) {
-			currentRIFDataType.setName(getCurrentFieldValue());
+			currentName = getCurrentFieldValue();
+			//currentRIFDataType.setName(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("description", qualifiedName)) {
-			currentRIFDataType.setDescription(getCurrentFieldValue());
+			currentDescription = getCurrentFieldValue();
+			//currentRIFDataType.setDescription(getCurrentFieldValue());
 		}
 		else if (equalsFieldName("last_modified", qualifiedName)) {
-			String timeStampPhrase = getCurrentFieldValue();
-			currentRIFDataType.setLastModifiedTime(getLastModifiedTimeStamp(timeStampPhrase));
+			currentTimeStampPhrase = getCurrentFieldValue();
+			//currentRIFDataType.setLastModifiedTime(getLastModifiedTimeStamp(timeStampPhrase));
 		}		
 		else {
 			assert false;
-		}
+		}		
 	}
 }

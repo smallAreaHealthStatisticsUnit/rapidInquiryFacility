@@ -56,7 +56,7 @@ import java.io.File;
  */
 
 public class XMLFileFilter extends FileFilter {
-
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -124,23 +124,14 @@ public class XMLFileFilter extends FileFilter {
 		final File file) {
 
 		String fileNamePath = file.getAbsolutePath();
-		int lastIndexOfDot
-			= fileNamePath.lastIndexOf(".");
-		StringBuilder buffer = new StringBuilder();
-		
-		if (lastIndexOfDot == -1) {
-			//no dot found, therefore append one
-			buffer.append(fileNamePath);
-			buffer.append(".");
-			buffer.append(XML_EXTENSION.toLowerCase());
-		}
-		else {
-			buffer.append(fileNamePath.substring(0, lastIndexOfDot));
-			buffer.append(XML_EXTENSION.toLowerCase());
+		String dotExtension = "." + XML_EXTENSION;
+		if (fileNamePath.toUpperCase().endsWith(dotExtension.toUpperCase())) {
+			//File already ends in XML
+			return file;
 		}
 		
-		File resultFile = new File(buffer.toString());
-		return resultFile;		
+		File revisedFile = new File(file.getAbsolutePath() + dotExtension.toLowerCase());
+		return revisedFile;
 	}
 		
 	public String getDescription() {

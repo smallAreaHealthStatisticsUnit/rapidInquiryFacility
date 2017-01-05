@@ -62,7 +62,7 @@ public class PGDataLoadingScriptGenerator {
 	public static void main(String[] args) {
 		try {
 			File sampleConfigFile
-				= new File("C:\\rifDataLoaderTool\\MyDLConfigFile.xml");
+				= new File("C:\\rifDataLoaderTool\\Test_13.xml");
 			DataLoaderToolConfigurationReader reader	
 				 = new DataLoaderToolConfigurationReader();
 			reader.readFile(sampleConfigFile);
@@ -88,8 +88,8 @@ public class PGDataLoadingScriptGenerator {
 	// ==========================================
 	private PGHealthThemeScriptGenerator healthThemeScriptGenerator;
 	private PGDenominatorScriptGenerator denominatorScriptGenerator;
-	//private PGNumeratorScriptGenerator numeratorScriptGenerator;
-	//private PGCovariateScriptGenerator covariateScriptGenerator;
+	private PGNumeratorScriptGenerator numeratorScriptGenerator;
+	private PGCovariateScriptGenerator covariateScriptGenerator;
 	
 	// ==========================================
 	// Section Construction
@@ -98,9 +98,13 @@ public class PGDataLoadingScriptGenerator {
 	public PGDataLoadingScriptGenerator() {
 		healthThemeScriptGenerator = new PGHealthThemeScriptGenerator();
 		denominatorScriptGenerator = new PGDenominatorScriptGenerator();
+		numeratorScriptGenerator = new PGNumeratorScriptGenerator();
+		covariateScriptGenerator = new PGCovariateScriptGenerator();
 		
 		File scriptDirectory = new File("C:\\rifDataLoaderTool");		
 		denominatorScriptGenerator.setScriptDirectory(scriptDirectory);
+		numeratorScriptGenerator.setScriptDirectory(scriptDirectory);
+		covariateScriptGenerator.setScriptDirectory(scriptDirectory);
 	}
 
 	// ==========================================
@@ -142,6 +146,7 @@ public class PGDataLoadingScriptGenerator {
 			bufferedWriter.newLine();
 			bufferedWriter.newLine();
 			
+			//Processing Denominators
 			DLGeographyMetaData geographyMetaData
 				= dataLoaderToolConfiguration.getGeographyMetaData();
 			ArrayList<DataSetConfiguration> denominators
@@ -161,9 +166,55 @@ public class PGDataLoadingScriptGenerator {
 				bufferedWriter.newLine();
 				bufferedWriter.flush();
 			}
-			/*
-			 * 
-			 */
+
+			//Processing Numerators
+			bufferedWriter.write("-- ===============================================");
+			bufferedWriter.newLine();
+			bufferedWriter.write("-- Adding Numerators");
+			bufferedWriter.newLine();
+			bufferedWriter.write("-- ===============================================");
+			bufferedWriter.newLine();
+			bufferedWriter.newLine();
+			ArrayList<DataSetConfiguration> numerators
+				= dataLoaderToolConfiguration.getNumeratorDataSetConfigurations();
+			for (DataSetConfiguration numerator : numerators) {
+				bufferedWriter.write("-- Adding " + numerator.getDisplayName());
+				bufferedWriter.newLine();
+				bufferedWriter.newLine();
+				
+				String numeratorEntry
+					= numeratorScriptGenerator.generateScript(
+							geographyMetaData,
+							numerator);
+				bufferedWriter.write(numeratorEntry);
+				bufferedWriter.newLine();
+				bufferedWriter.flush();
+			}
+		
+			//Processing Covariates
+			bufferedWriter.write("-- ===============================================");
+			bufferedWriter.newLine();
+			bufferedWriter.write("-- Adding Covariates");
+			bufferedWriter.newLine();
+			bufferedWriter.write("-- ===============================================");
+			bufferedWriter.newLine();
+			bufferedWriter.newLine();
+			ArrayList<DataSetConfiguration> covariateConfigurations
+				= dataLoaderToolConfiguration.getCovariateDataSetConfigurations();
+			for (DataSetConfiguration covariateConfiguration : covariateConfigurations) {
+				bufferedWriter.write("-- Adding " + covariateConfiguration.getDisplayName());
+				bufferedWriter.newLine();
+				bufferedWriter.newLine();
+				
+				String covariaterEntry
+					= covariateScriptGenerator.generateScript(
+						covariateConfiguration);
+				bufferedWriter.write(covariaterEntry);
+				bufferedWriter.newLine();
+				bufferedWriter.flush();
+			}
+			
+			
 		}
 		catch(IOException ioException) {
 			

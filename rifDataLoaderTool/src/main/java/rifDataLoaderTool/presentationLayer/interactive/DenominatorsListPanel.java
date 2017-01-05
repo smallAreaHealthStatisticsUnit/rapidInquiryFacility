@@ -239,7 +239,7 @@ public class DenominatorsListPanel
 			}
 			
 			changeManager.deleteDenominators(denominatorsToDelete);
-			deleteListItems();	
+			super.deleteSelectedListItems();	
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(getFrame(), rifServiceException.getErrorMessages());

@@ -303,7 +303,6 @@ class DataSetConfigurationEditorDialog
 		workingCopyDataSetConfiguration
 			= DataSetConfiguration.createCopy(originalDataSetConfiguration);
 		buildUI();
-		System.out.println("About to populate with working copy");
 		populateFormFromWorkingCopy(workingCopyDataSetConfiguration);
 	}
 	
@@ -345,7 +344,7 @@ class DataSetConfigurationEditorDialog
 		dataSetPropertyEditorPanel.populateDataSetConfigurationFromForm(dataSetConfigurationFromForm);
 		
 		//the fields are already accounted for 
-		dataSetConfigurationFromForm.clearFieldConfigurations();		
+		dataSetConfigurationFromForm.clearFieldConfigurations();
 		ArrayList<DisplayableListItemInterface> currentFields
 			= dataSetFieldListPanel.getListItems();
 		for (DisplayableListItemInterface currentField : currentFields) {
@@ -554,6 +553,7 @@ class DataSetConfigurationEditorDialog
 		throws RIFServiceException {
 		
 		dataSetFieldPropertyEditorPanel.validateForm();
+		dataSetFieldPropertyEditorPanel.saveChanges();
 		DataSetConfiguration dataSetConfigurationFromForm
 			= getDataSetConfigurationFromForm();
 		dataSetConfigurationFromForm.checkErrors();	

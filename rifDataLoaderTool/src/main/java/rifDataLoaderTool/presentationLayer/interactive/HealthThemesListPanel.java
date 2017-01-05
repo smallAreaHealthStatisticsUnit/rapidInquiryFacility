@@ -188,7 +188,9 @@ public class HealthThemesListPanel
 				DLHealthTheme healthThemeToDelete
 					= (DLHealthTheme) itemToDelete;
 				dependencyManager.checkHealthThemeDependencies(healthThemeToDelete);
-			}		
+			}
+			
+			super.deleteSelectedListItems();
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(

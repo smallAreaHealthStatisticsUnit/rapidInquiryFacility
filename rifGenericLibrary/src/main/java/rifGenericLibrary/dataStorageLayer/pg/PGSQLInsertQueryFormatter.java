@@ -4,7 +4,6 @@ package rifGenericLibrary.dataStorageLayer.pg;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  *
@@ -142,6 +141,7 @@ public final class PGSQLInsertQueryFormatter
 		addQueryPhrase(0, "INSERT INTO ");
 		addQueryPhrase(getSchemaTableName(intoTable));
 		addQueryPhrase("(");
+		padAndFinishLine();
 
 		int numberOfInsertFields = insertFields.size();
 		for (int i = 0; i < numberOfInsertFields; i++) {
@@ -175,6 +175,7 @@ public final class PGSQLInsertQueryFormatter
 		addQueryPhrase(0, "INSERT INTO ");
 		addQueryPhrase(getSchemaTableName(intoTable));
 		addQueryPhrase("(");
+		padAndFinishLine();
 
 		int numberOfInsertFields = insertFields.size();
 		for (int i = 0; i < numberOfInsertFields; i++) {

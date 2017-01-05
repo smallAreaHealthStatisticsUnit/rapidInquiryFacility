@@ -1,9 +1,9 @@
 package rifDataLoaderTool.targetDBScriptGenerator;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.dataStorageLayer.pg.*;
+
 import java.util.ArrayList;
 
 /**
@@ -83,18 +83,22 @@ public class PGNumeratorScriptGenerator
 		final DLGeographyMetaData geographyMetaData,
 		final DataSetConfiguration numerator) {
 
-		StringBuilder denominatorEntry = new StringBuilder();
+		StringBuilder numeratorEntry = new StringBuilder();
 		
 		createTableStructureAndImportCSV(
-			denominatorEntry, 
+				numeratorEntry, 
 			geographyMetaData, 
-			denominator);
-		denominatorEntry.append("\n\n");
+			numerator);
+		numeratorEntry.append("\n");
 		addEntryToRIF40Tables(
-			denominatorEntry, 
-			denominator);
+				numeratorEntry, 
+			numerator);	
+		numeratorEntry.append("\n");
+		addEntryToNumDenomTable(
+			numeratorEntry,
+			numerator);
 
-		return denominatorEntry.toString();
+		return numeratorEntry.toString();
 	}
 	
 	private void createTableStructureAndImportCSV(
@@ -113,7 +117,7 @@ public class PGNumeratorScriptGenerator
 		//create and copy into statements
 		ArrayList<DataSetFieldConfiguration> dataSetFieldConfigurations
 			= denominator.getFieldConfigurations();
-		createTableQueryFormatter.setDatabaseSchemaName("pop");
+		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		createTableQueryFormatter.setTableName(publishedDenominatorTableName);
 		createTableQueryFormatter.addIntegerFieldDeclaration("year", false);
 		createTableQueryFormatter.addIntegerFieldDeclaration("age_sex_group", false);
@@ -125,10 +129,11 @@ public class PGNumeratorScriptGenerator
 		for (String levelName : levelNames) {
 			createTableQueryFormatter.addTextFieldDeclaration(levelName, false);
 		}
+		createTableQueryFormatter.addTextFieldDeclaration("icd", false);
 		createTableQueryFormatter.addIntegerFieldDeclaration("total", false);
 
 		denominatorEntry.append(createTableQueryFormatter.generateQuery());
-		denominatorEntry.append("\n\n");
+		denominatorEntry.append("\n");
 		
 		//How do we handle extra fields?
 		
@@ -136,6 +141,7 @@ public class PGNumeratorScriptGenerator
 			= new SQLGeneralQueryFormatter();
 		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
 		importFromCSVQueryFormatter.addQueryPhrase(0, "COPY ");
+		importFromCSVQueryFormatter.addQueryPhrase("rif_data.");		
 		importFromCSVQueryFormatter.addQueryPhrase(publishedDenominatorTableName);		
 		importFromCSVQueryFormatter.addQueryPhrase(" (");
 		importFromCSVQueryFormatter.padAndFinishLine();
@@ -152,6 +158,7 @@ public class PGNumeratorScriptGenerator
 		String filePath
 			= super.getPublishedFilePath(denominator);
 		importFromCSVQueryFormatter.addQueryPhrase(filePath);
+		importFromCSVQueryFormatter.addQueryPhrase(".csv");
 		importFromCSVQueryFormatter.addQueryPhrase("'");
 
 		denominatorEntry.append(importFromCSVQueryFormatter.generateQuery());
@@ -159,22 +166,22 @@ public class PGNumeratorScriptGenerator
 	
 	private void addEntryToRIF40Tables(
 		final StringBuilder denominatorEntry,
-		final DataSetConfiguration denominator) {
+		final DataSetConfiguration numerator) {
 
 		String[] literalParameterValues = new String[14];
 
 		//Obtain the 'theme' field value
 		DLHealthTheme healthTheme
-			= denominator.getHealthTheme();
+			= numerator.getHealthTheme();
 		//@TODO: Why does a denominator have a health theme?
-		literalParameterValues[0] = "denominator health theme";
+		literalParameterValues[0] = healthTheme.getName();
 		
 		//Obtain the 'table_name' field value
 		literalParameterValues[1]
-			= denominator.getPublishedTableName();
+			= numerator.getPublishedTableName();
 		//Obtain the 'description' field value
 		literalParameterValues[2]
-			= denominator.getDescription();
+			= numerator.getDescription();
 
 		/*
 		 * @TODO.  We must assume that by the time this query is called the
@@ -192,17 +199,17 @@ public class PGNumeratorScriptGenerator
 		//Obtain the total_field.  As far as I know this will always be null
 		literalParameterValues[5] = null;
 		
-		//Obtain the value for isindirectdenominator which should be the only
-		//kind the RIF supports now
-		literalParameterValues[6] = "1";
+		//Obtain the value for isindirectdenominator which should always be
+		//zero for numerator data sets
+		literalParameterValues[6] = "0";
 		
-		//Obtain the value for isdirectdenominator.  This is unsupported right
-		//now and should always be zero.
+		//Obtain the value for isdirectdenominator.  This should always be 
+		//zero for numerator data sets
 		literalParameterValues[7] = "0";
 
-		//Obtain the value for isnumerator.  This will always be zero for
-		//denominator table entries.
-		literalParameterValues[8] = "0";
+		//Obtain the value for isnumerator.  This will always be one for
+		//numerator table entries.
+		literalParameterValues[8] = "1";
 		
 		//Obtain the value for automatic.  Not sure what this means but it
 		//appears to always be 1
@@ -223,7 +230,8 @@ public class PGNumeratorScriptGenerator
 		//Obtain the value for age_group_id.  It seems this does not 
 		//have to be set.
 		literalParameterValues[13] = "1";
-		
+
+		/*
 		PGSQLInsertQueryFormatter insertQueryFormatter
 			= new PGSQLInsertQueryFormatter();
 		insertQueryFormatter.setDatabaseSchemaName("rif40");
@@ -246,8 +254,90 @@ public class PGNumeratorScriptGenerator
 		String query
 			= insertQueryFormatter.generateQueryWithLiterals(literalParameterValues);
 		denominatorEntry.append(query);	
+		*/
+		
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_tables (");
+		queryFormatter.addQueryLine(1, "theme,");
+		queryFormatter.addQueryLine(1, "table_name,");
+		queryFormatter.addQueryLine(1, "description,");
+		queryFormatter.addQueryLine(1, "year_start,");
+		queryFormatter.addQueryLine(1, "year_stop,");
+		queryFormatter.addQueryLine(1, "total_field,");
+		queryFormatter.addQueryLine(1, "isindirectdenominator,");		
+		queryFormatter.addQueryLine(1, "isdirectdenominator,");
+		queryFormatter.addQueryLine(1, "isnumerator,");
+		queryFormatter.addQueryLine(1, "automatic,");
+		queryFormatter.addQueryLine(1, "sex_field_name,");
+		queryFormatter.addQueryLine(1, "age_group_field_name,");
+		queryFormatter.addQueryLine(1, "age_sex_group_field_name,");
+		queryFormatter.addQueryLine(1, "age_group_id) ");
+		queryFormatter.addQueryLine(0, "SELECT ");
+		queryFormatter.addQueryLine(1, "'denominator health theme',");
+		queryFormatter.addQueryLine(1, "'" + numerator.getPublishedTableName().toUpperCase() + "',");
+		queryFormatter.addQueryLine(1, "'" + numerator.getDescription() + "',");
+		queryFormatter.addQueryLine(1, "MIN(year),");
+		queryFormatter.addQueryLine(1, "MAX(year),");
+		queryFormatter.addQueryLine(1, "null,");
+		queryFormatter.addQueryLine(1, "0,");
+		queryFormatter.addQueryLine(1, "0,");
+		queryFormatter.addQueryLine(1, "1,");
+		queryFormatter.addQueryLine(1, "0,");
+		queryFormatter.addQueryLine(1, "null,");
+		queryFormatter.addQueryLine(1, "null,");
+		queryFormatter.addQueryLine(1, "'AGE_SEX_GROUP',");
+		queryFormatter.addQueryLine(1, "1");
+		queryFormatter.addQueryLine(0, "FROM");
+		queryFormatter.addQueryPhrase(1, numerator.getPublishedTableName());
+		String query
+			= queryFormatter.generateQuery();
+		denominatorEntry.append(query);	
 	}
-	
+
+	private void addEntryToNumDenomTable(
+		final StringBuilder numeratorEntry,
+		final DataSetConfiguration numerator) {
+
+		String[] literalParameterValues = new String[7];
+		
+		//Obtain value for 'geography' field
+		DLGeography geography
+			= numerator.getGeography();
+		literalParameterValues[0] = geography.getName();
+		
+		//Obtain value for the 'numerator_table' field
+		literalParameterValues[1] = numerator.getPublishedTableName().toUpperCase();
+		//Obtain value for the 'numerator_description' field
+		literalParameterValues[2] = numerator.getDescription();
+		//Obtain value for the 'theme_description'
+		DLHealthTheme healthTheme = numerator.getHealthTheme();
+		//Obtain value for health theme description
+		literalParameterValues[3] = healthTheme.getDescription();
+		
+		//Obtain value for 'denominator_table' field
+		DataSetConfiguration denominator
+			= numerator.getDependencyDataSetConfiguration();
+		literalParameterValues[4] 
+			= denominator.getPublishedTableName().toUpperCase();
+		
+		//Obtain value for 'denominator_description' field
+		literalParameterValues[5] = denominator.getDescription();
+		
+		PGSQLInsertQueryFormatter insertQueryFormatter
+			= new PGSQLInsertQueryFormatter();
+		insertQueryFormatter.setDatabaseSchemaName("rif40");
+		insertQueryFormatter.setIntoTable("rif_num_denom");
+		insertQueryFormatter.addInsertField("geography", true);
+		insertQueryFormatter.addInsertField("numerator_table", true);
+		insertQueryFormatter.addInsertField("numerator_description", true);
+		insertQueryFormatter.addInsertField("theme_description", true);		
+		insertQueryFormatter.addInsertField("denominator_table", true);
+		insertQueryFormatter.addInsertField("denominator_description", true);	
+		
+		String query
+			= insertQueryFormatter.generateQueryWithLiterals(literalParameterValues);
+		numeratorEntry.append(query);		
+	}
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

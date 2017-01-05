@@ -228,7 +228,7 @@ public class NumeratorsListPanel
 		}
 		
 		changeManager.deleteNumerators(numeratorsToDelete);
-		deleteListItems();	
+		super.deleteSelectedListItems();	
 	}
 	
 	// ==========================================
@@ -249,7 +249,6 @@ public class NumeratorsListPanel
 		final Observable observable,
 		final Object object) {
 		
-		System.out.println("Numerator List Panel update");
 		DataLoadingOrder currentState
 			= (DataLoadingOrder) object;
 		if (currentState.getStepNumber() >= DataLoadingOrder.DENOMINATORS_SPECIFIED.getStepNumber()) {

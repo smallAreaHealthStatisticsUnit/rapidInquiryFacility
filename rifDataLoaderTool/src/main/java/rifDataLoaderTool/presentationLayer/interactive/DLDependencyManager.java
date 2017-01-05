@@ -195,7 +195,6 @@ public class DLDependencyManager {
 		final DataSetConfiguration denominatorDataSetConfiguration) 
 		throws RIFServiceException {
 
-		System.out.println("Checking denominator dependencies");
 		ArrayList<DataSetConfiguration> dependentNumerators
 			= dependenciesOnDenominator.get(
 				denominatorDataSetConfiguration);

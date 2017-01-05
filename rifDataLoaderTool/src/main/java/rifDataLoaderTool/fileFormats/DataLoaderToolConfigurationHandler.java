@@ -112,6 +112,7 @@ final class DataLoaderToolConfigurationHandler
 		setSingularRecordName("rif_data_loader_settings");
 
 		rifDataTypeFactory = RIFDataTypeFactory.newInstance();
+		rifDataTypeFactory.populateFactoryWithBuiltInTypes();
 		
 		databaseConnectionConfigurationHandler
 			= new DatabaseConnectionConfigurationHandler();
@@ -240,9 +241,6 @@ final class DataLoaderToolConfigurationHandler
 				= healthThemesConfigurationHandler.getHealthTheme(healthThemeName);
 			dataSetConfiguration.setHealthTheme(healthTheme);
 		}
-		
-		
-		
 	}
 // ==========================================
 // Section Errors and Validation
@@ -328,6 +326,7 @@ final class DataLoaderToolConfigurationHandler
 		if (isSingularRecordName(qualifiedName)) {
 			deactivate();
 			resolveDependencies();
+			
 		}
 		else if (isDelegatedHandlerAssigned()) {
 			AbstractDataLoaderConfigurationHandler currentDelegatedHandler

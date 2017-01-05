@@ -1,6 +1,5 @@
 package rifGenericLibrary.dataStorageLayer.pg;
 
-import java.util.ArrayList;
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 
@@ -127,10 +126,7 @@ public final class PGSQLSchemaCommentQueryFormatter
 		addQueryPhrase(" IS ");
 		addQueryPhrase("'");
 		addQueryPhrase(comment);
-		addQueryPhrase("'");
-
-		addQueryPhrase(";");
-				
+		addQueryPhrase("'");				
 		return super.generateQuery();
 	}
 		

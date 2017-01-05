@@ -247,6 +247,7 @@ final class DataSetFieldConfigurationHandler
 		throws SAXException {
 		
 		if (isPluralRecordName(qualifiedName)) {
+			dataSetFieldConfigurations = new ArrayList<DataSetFieldConfiguration>();
 			activate();
 		}
 		else if (isSingularRecordName(qualifiedName) == true) {
@@ -393,13 +394,6 @@ final class DataSetFieldConfigurationHandler
 
 	public void setDataTypeFactory(final RIFDataTypeFactory rifDataTypeFactory) {
 		this.rifDataTypeFactory = rifDataTypeFactory;
-
-		if (this.rifDataTypeFactory == null) {
-			System.out.println("DataSetFieldConfigHandler setting data type factory 111 !!");			
-		}
-		else {
-			System.out.println("DataSetFieldConfigHandler setting data type factory 222!!");						
-		}
 	}
 	
 	// ==========================================

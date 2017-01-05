@@ -140,16 +140,13 @@ public abstract class AbstractDataLoadingThemePanel
 
 	private void updateLabelPopulatedStateColour() {
 		if (listPanel.isEnabled() == false) {
-			System.out.println("Indicate disabled");
 			listPanel.setListLabelColour(disabledColour);			
 		}
 		else if (listPanel.isEmpty() == true) {
-			System.out.println("Indicate populated");
-			listPanel.setListLabelColour(populatedColour);				
+			listPanel.setListLabelColour(unpopulatedColour);				
 		}
 		else {
-			System.out.println("Indicate unpopulated");
-			listPanel.setListLabelColour(unpopulatedColour);				
+			listPanel.setListLabelColour(populatedColour);				
 		}		
 	}
 	
@@ -216,10 +213,8 @@ public abstract class AbstractDataLoadingThemePanel
 		final ArrayList<DisplayableListItemInterface> listItems) {	
 		listPanel.clearList();
 		listPanel.addListItems(listItems);
-		System.out.println("setListItems numItems=="+listItems.size()+"==");
 		listPanel.updateUI();
-		listPanel.setUseDefaultSelectionPolicy(true);
-		//updateLabelPopulatedStateColour();		
+		updateLabelPopulatedStateColour();
 	}
 	
 	protected void addListItem(final DisplayableListItemInterface listItem) {
@@ -235,15 +230,17 @@ public abstract class AbstractDataLoadingThemePanel
 		listPanel.replaceItem(originalItem, revisedItem);
 	}
 	
-	protected void deleteListItems() {
+	protected void deleteSelectedListItems() {
 		listPanel.deleteSelectedListItems();
-		updateLabelPopulatedStateColour();		
+		if (listPanel.isEmpty()) {
+			listEditingButtonPanel.indicateEmptyState();
+		}
+		updateLabelPopulatedStateColour();
 	}
 	
 	protected abstract void refresh();
 	protected abstract void addListItem();	
 	protected abstract void editSelectedListItem();
-	protected abstract void deleteSelectedListItems();
 	
 	protected DLDependencyManager getDependencyManager() {
 		return dependencyManager;

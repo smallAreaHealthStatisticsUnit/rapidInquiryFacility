@@ -137,6 +137,11 @@ public final class DataLoaderToolConfigurationWriter {
 			FileOutputStream fileOutputStream
 				= new FileOutputStream(file);
 			
+			System.out.println("The number of denominator data sets is=="+dataLoaderToolConfiguration.getNumberOfDenominators()+"==");
+			System.out.println("The number of denominator data sets is=="+dataLoaderToolConfiguration.getNumberOfNumerators()+"==");
+			System.out.println("The number of covariate data sets is=="+dataLoaderToolConfiguration.getNumberOfCovariates()+"==");
+			
+			
 			DataLoaderToolConfigurationHandler rifDataLoaderConfigurationHandler
 				= new DataLoaderToolConfigurationHandler();
 			ByteArrayOutputStream outputStream
