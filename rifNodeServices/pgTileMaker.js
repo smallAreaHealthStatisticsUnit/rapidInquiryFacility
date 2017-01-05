@@ -170,7 +170,7 @@ function main() {
 
 	
 	var LoggerParams = {
-		progName:			'mssqlTileMaker',
+		progName:			'pgTileMaker',
 		debugLevel: 		'info',
 		memoryFileDebug:	'verbose'
 	};
