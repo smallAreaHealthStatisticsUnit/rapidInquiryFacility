@@ -574,7 +574,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 		var appSchema;
 		
 		if (dbType == "MSSQLServer") { 
-			appSchema='$(USERNAME)';
+			appSchema='$(USERNAME).';
 			if (schema) {
 				appSchema='rif40.';
 			}
