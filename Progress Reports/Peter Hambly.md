@@ -773,6 +773,15 @@ RangeError: Invalid string length
   to change the schema on a per session basis
 
 #### 3rd to 6th January
+
+* Complete dbLoad.js production load script: SQL Server;
+* Regression tests.
+* Build times (desktop):
+
+| USA to County level | Time | Postgres | MS SQL Server |
+|---------------------|------|----------|---------------|
+| Web front end       | 94s  |||
+
  
 #### Current TODO list (January 2017):
 

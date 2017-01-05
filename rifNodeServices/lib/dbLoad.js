@@ -485,7 +485,18 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 	 */			
 	function createTilesTables(sqlArray, dbType, geoLevelsTable, schema) {
 		var sqlStmt;			
-		
+
+		sqlArray.push(new Sql("Create tiles functions"));
+
+		var sqlStmt=new Sql("Create function: longitude2tile.sql", 
+			getSqlFromFile("longitude2tile.sql", dbType), sqlArray, dbType); 
+		var sqlStmt=new Sql("Create function: latitude2tile.sql", 
+			getSqlFromFile("latitude2tile.sql", dbType), sqlArray, dbType); 
+		var sqlStmt=new Sql("Create function: tile2longitude.sql", 
+			getSqlFromFile("tile2longitude.sql", dbType), sqlArray, dbType); 
+		var sqlStmt=new Sql("Create function: tile2latitude.sql", 
+			getSqlFromFile("tile2latitude.sql", dbType), sqlArray, dbType); 
+				
 		var singleBoundaryGeolevelTable;
 		for (var i=0; i<csvFiles.length; i++) {	
 			if (csvFiles[i].geolevel == 1) {
@@ -1359,17 +1370,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 		 *				SQL statements
 		 */			
 		function insertTilesTables() {
-			var sqlStmt;			
-			sqlArray.push(new Sql("Create tiles functions"));
-
-			var sqlStmt=new Sql("Create function: longitude2tile.sql", 
-				getSqlFromFile("longitude2tile.sql", dbType), sqlArray, dbType); 
-			var sqlStmt=new Sql("Create function: latitude2tile.sql", 
-				getSqlFromFile("latitude2tile.sql", dbType), sqlArray, dbType); 
-			var sqlStmt=new Sql("Create function: tile2longitude.sql", 
-				getSqlFromFile("tile2longitude.sql", dbType), sqlArray, dbType); 
-			var sqlStmt=new Sql("Create function: tile2latitude.sql", 
-				getSqlFromFile("tile2latitude.sql", dbType), sqlArray, dbType); 
+			var sqlStmt;		
 			
 			sqlArray.push(new Sql("Create tile limits table"));
 		
