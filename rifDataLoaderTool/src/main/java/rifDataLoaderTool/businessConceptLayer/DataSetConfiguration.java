@@ -895,6 +895,50 @@ public class DataSetConfiguration
 		}
 	}
 	
+	public ArrayList<DataSetFieldConfiguration> getDataSetFieldConfigurations(
+		final RIFDataType rifDataType,
+		final FieldRequirementLevel fieldRequirementLevel) {
+		
+		ArrayList<DataSetFieldConfiguration> results
+			= new ArrayList<DataSetFieldConfiguration>();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			RIFDataType currentDataType
+				= fieldConfiguration.getRIFDataType();
+			FieldRequirementLevel currentFieldRequirementLevel
+				= fieldConfiguration.getFieldRequirementLevel();
+			
+			if (currentDataType.hasIdenticalContents(rifDataType)) {
+				if ((fieldRequirementLevel == null) ||
+					(fieldRequirementLevel == currentFieldRequirementLevel)) {
+					results.add(fieldConfiguration);
+				}
+			}
+		}
+
+		return results;		
+	}
+	
+	public ArrayList<DataSetFieldConfiguration> getDataSetFieldConfigurations(
+		final FieldPurpose targetFieldPurpose,
+		final FieldRequirementLevel targetFieldRequirementLevel) {
+			
+		ArrayList<DataSetFieldConfiguration> results
+			= new ArrayList<DataSetFieldConfiguration>();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			FieldPurpose currentFieldPurpose
+				= fieldConfiguration.getFieldPurpose();
+			FieldRequirementLevel currentFieldRequirementLevel
+				= fieldConfiguration.getFieldRequirementLevel();
+			
+			if ((currentFieldPurpose == targetFieldPurpose) &&
+				(currentFieldRequirementLevel == targetFieldRequirementLevel)) {
+				results.add(fieldConfiguration);
+			}		
+		}			
+		return results;		
+	}
+		
+	
 	
 	public int getNumberOfCovariateFields() {
 		
