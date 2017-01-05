@@ -1,7 +1,9 @@
 package rifDataLoaderTool.targetDBScriptGenerator;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSchemaCommentQueryFormatter;
 
 import java.io.File;
 
@@ -117,6 +119,37 @@ public abstract class AbstractDataLoadingScriptGenerator {
 		filePath.append(publishTableName);
 		return filePath.toString();
 	}	
+	
+	protected String createTableCommentQuery(
+		final String tableName,
+		final String comment) {
+		
+		PGSQLSchemaCommentQueryFormatter queryFormatter 
+			= new PGSQLSchemaCommentQueryFormatter();
+		
+		queryFormatter.setTableComment(
+			tableName, 
+			comment);
+		
+		return queryFormatter.generateQuery();		
+	}
+
+	protected String createTableFieldCommentQuery(
+		final String tableName,		
+		final String columnName,
+		final String comment) {
+			
+		PGSQLSchemaCommentQueryFormatter queryFormatter 
+			= new PGSQLSchemaCommentQueryFormatter();
+		queryFormatter.setTableColumnComment(
+			tableName, 
+			columnName, 
+			comment);
+		
+		return queryFormatter.generateQuery();
+	}
+	
+	
 	
 	// ==========================================
 	// Section Errors and Validation
