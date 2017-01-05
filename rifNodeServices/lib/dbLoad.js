@@ -700,7 +700,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			var tableList=[];
 			for (var i=0; i<csvFiles.length; i++) {
 				tableList.push(csvFiles[i].tableName);
-				tableList.push((xmlConfig.dataLoader.geoLevel[i].lookupTable.toUpperCase() || "lookup_" + csvFiles[i].tableName));
+				tableList.push((xmlConfig.dataLoader.geoLevel[i].lookupTable.toLowerCase() || "lookup_" + csvFiles[i].tableName));
 			}
 			tableList.push("geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase());
 			tableList.push("geography_" + xmlConfig.dataLoader.geographyName.toLowerCase());
@@ -1814,15 +1814,15 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 
 		/*
 		 * Function: 	analyzeTables()
-		 * Parameters:	None
+		 * Parameters:	Schema (rif_data.)
 		 * Description:	Analze and describe all tables: SQL statements
 		 *				Needs to be in a separate transaction (do NOT start one!)
 		 */	 	
-		function analyzeTables() {
+		function analyzeTables(schema) {
 			sqlArray.push(new Sql("Analyze tables"));
 			var tableList=[];
 			for (var i=0; i<csvFiles.length; i++) {
-				tableList.push((xmlConfig.dataLoader.geoLevel[i].lookupTable.toUpperCase() || "lookup_" + csvFiles[i].tableName));
+				tableList.push((xmlConfig.dataLoader.geoLevel[i].lookupTable.toLowerCase() || "lookup_" + csvFiles[i].tableName));
 			}
 			tableList.push("hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase());
 			tableList.push("geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase());
@@ -1830,11 +1830,11 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			
 			for (var i=0; i<tableList.length; i++) {												
 				var sqlStmt=new Sql("Describe table " + tableList[i], 
-					getSqlFromFile("describe_table.sql", dbType, tableList[i] /* Table name */), 
+					getSqlFromFile("describe_table.sql", dbType, (schema||"") + tableList[i] /* Table name */), 
 					sqlArray, dbType); 
 				
 				var sqlStmt=new Sql("Analyze table " + tableList[i], 
-					getSqlFromFile("vacuum_analyze_table.sql", dbType, tableList[i] /* Table name */), 
+					getSqlFromFile("vacuum_analyze_table.sql", dbType, (schema||"") + tableList[i] /* Table name */), 
 					sqlArray, dbType); 
 			} // End of for csvFiles loop			
 		} // End of analyzeTables()		 
@@ -2314,7 +2314,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		
 		commitTransaction(sqlArray, dbType);
 		
-		analyzeTables();
+		analyzeTables('rif_data.' /* Schema */);
 //
 // Write SQL statements to file
 //		
