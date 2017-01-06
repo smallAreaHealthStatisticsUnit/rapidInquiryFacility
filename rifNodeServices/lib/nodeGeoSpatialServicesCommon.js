@@ -829,7 +829,7 @@ addStatus = function addStatus(sfile, sline, response, status, httpStatus, serve
 			calling_function: calling_function,
 			stime: new Date().getTime(),
 			etime: 0,
-			stack: stack,
+			stack: stack.split("\n"),
 			additionalInfo: nadditionalInfo,
 			errorName: nerrorName
 		}

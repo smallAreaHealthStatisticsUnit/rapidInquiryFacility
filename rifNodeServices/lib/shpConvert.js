@@ -689,6 +689,22 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 					}
 				}	
 				else {
+					
+					if (record.properties.GID == undefined) {
+						record.properties.GID=recNo;
+					}
+					if (record.properties.AREAID == undefined) {
+						record.properties.AREAID=record.properties[areaID];
+					}
+					if (record.properties.AREANAME == undefined) {
+						record.properties.AREANAME=record.properties[areaName];
+					}
+
+					console.error("defaulted areaID (" + areaID + "): " + record.properties[areaID] + 
+						"; current recNo: " + recNo + " areaID: " + areaID + 
+						"; record.properties: " + JSON.stringify(record.properties, null, 4) +
+						"; shapefileData areaIDs: " + JSON.stringify(shapefileData["areaIDs"][record.properties[areaID]], null, 4));
+						
 					shapefileData["featureList"].push(record); 		// Add feature to collection (record number: recNo)
 				}
 				return true;
@@ -1659,10 +1675,12 @@ This error in actually originating from the error handler function
 				ngeolevels[i].listing=1;	// Able to be used in a disease map listing (0/1)					
 				if (ngeolevels[i].geolevel_id == 1) {		
 					ngeolevels[i].listing=0;	
-					dataLoader.defaultcomparea=response.fields[ngeolevels[i].geolevel_name + "_areaID"]; // E.g. cb_2014_us_nation_5m_areaID
+					dataLoader.defaultcomparea=response.fields[ngeolevels[i].geolevel_name.toLowerCase() + "_areaID"]; // E.g. cb_2014_us_nation_5m_areaID
+					msg+=" [Default comparison area]";
 				}
 				else if (ngeolevels[i].geolevel_id == (ngeolevels.length-1)) {
-					dataLoader.defaultstudyarea=response.fields[ngeolevels[i].geolevel_name + "_areaID"]; // E.g. cb_2014_us_county_500k_areaID
+					dataLoader.defaultstudyarea=response.fields[ngeolevels[i].geolevel_name.toLowerCase() + "_areaID"]; // E.g. cb_2014_us_county_500k_areaID
+					msg+=" [Default study area]";
 					ngeolevels[i].comparea=0;
 				}
 				
@@ -1940,13 +1958,17 @@ This error in actually originating from the error handler function
 											function finalResponse(err) {	
 												if (err) {
 													serverLog.serverLog2(__file, __line, "finalResponse", 
-														"finalResponse() callback received error", req, err, response);
-														
-												}											
+														"finalResponse() callback received error; response.message: " + 
+														response.message, req, err, response);
+													serverLog.serverError2(__file, __line, "finalResponse", 
+														"finalResponse() callback received error", req, err, response, 
+														"Stack >>>\n" + err.stack /* Additional info */);											
+												}		
+												else {
 						//						console.error("Edited final response");											
-												nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, 
-													httpErrorResponse, response.fields, undefined /* optional callback */);													
-											}
+													nodeGeoSpatialServicesCommon.responseProcessing(req, res, response, serverLog, 
+														httpErrorResponse, response.fields, undefined /* optional callback */);	}																								
+												}
 											
 //											const tileMaker = require('../lib/tileMaker');
 											const geojsonToCSV = require('../lib/geojsonToCSV');
@@ -2074,7 +2096,7 @@ This error in actually originating from the error handler function
 			var areaFieldsList = ['desc', 'areaID', 'areaName', 'areaID_desc', 'areaName_desc'];
 			for (var i=0; i< areaFieldsList.length; i++) {
 				var areaKey=areaFieldsList[i];
-				var areaField=key + "_" + areaKey;
+				var areaField=key.toLowerCase() + "_" + areaKey;
 				if (ofields[areaField]) {
 					if (areaKey == "areaID" || areaKey == "areaName") {
 						ofields[areaField]=ofields[areaField].toUpperCase();
