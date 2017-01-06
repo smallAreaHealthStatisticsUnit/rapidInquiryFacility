@@ -455,6 +455,14 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 		 * Description:	Add geoJSON feature to object
 		 */			
 		addFeature: function(row, geojson) {
+			if (this.geojson == undefined) {
+				throw new Error("addFeature(): Unable to add feature, no pre-existing geojson for: " + this.id);
+			}
+			else 
+			if (geojson == undefined) {
+				throw new Error("addFeature(): Unable to add feature, no additional geojson supplied for: " + this.id);
+			}
+			
 			this.geojson.features.push(geojson);
 			this.areaid_count++;
 			this.geojson.features[(this.geojson.features.length-1)].properties.id=this.id;
@@ -647,11 +655,17 @@ REFERENCE (from shapefile) {
 		else {
 			var geojsonTile=tileArray[(tileArray.length-1)]; // Get last tile from array
 			if (geojsonTile.tileId == row.tile_id) { 	// Same tile
-				geojsonTile.addFeature(row, geojson);	// Add geoJSON feature to collection
-				winston.log("debug", 'Tile ' + geojsonTile.id + '; add areaID: ' + row.areaid + ": " + 
-					geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
+				if (geojson) {
+					geojsonTile.addFeature(row, geojson);	// Add geoJSON feature to collection
+					winston.log("debug", 'Tile ' + geojsonTile.id + '; add areaID: ' + row.areaid + ": " + 
+						geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
+				}
+				else {
+					winston.log("warn", 'Tile ' + geojsonTile.id + '; no geojson; unable to add areaID: ' + row.areaid + ": " + 
+						geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
+				}
 			}
-			else {										// New tile or already processed
+			else if (geojson) {										// New tile or already processed
 				var foundTile=false;
 				for (i=0; i<tileArray.length; i++) {	// Tiles should be in order, but in case the DB gets it wrong (Postgres did!)
 					if (tileArray[i].tileId == row.tile_id) { 	// Same tile
@@ -670,6 +684,10 @@ REFERENCE (from shapefile) {
 						geojsonTile.geojson.features[0].properties["areaName"]);	
 				}
 			}	
+			else {
+				winston.log("warn", 'Tile ' + geojsonTile.id + '; no geojson; unable to add(2) areaID: ' + row.areaid + ": " + 
+					geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
+			}
 		}	
 //		winston.log("debug", geography + '; Tile ' + geojsonTile.id)
 		return tileSize;
