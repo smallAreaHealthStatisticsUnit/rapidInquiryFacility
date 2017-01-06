@@ -188,7 +188,7 @@ serverError = function(msg, req, err, response, additionalInfo) {
 serverError2 = function(file, line, calling_function, msg, req, err, response, additionalInfo) {
 //	console.error("ZZ: " + msg);
 	serverErrorAddStatus(file, line, calling_function, msg, req, err, response, _serverError2, 
-		(err.stack || stack), additionalInfo);
+		(err && err.stack || "(No error)"), additionalInfo);
 //	console.error("ZZ2: " + msg);
 }
 
@@ -228,7 +228,7 @@ serverErrorAddStatus = function(file, line, calling_function, msg, req, err, res
 	}
 	catch (e) {
 		serverLog2(file, line, calling_function, "WARNING! Caught error! trying to serverError2AddStatus; stack: " + 
-			(err.stack || "(No error)"), req, e);		
+			(err && err.stack || "(No error)"), req, e);		
 	}	
 //	console.error("AA5: " + msg);
 }
