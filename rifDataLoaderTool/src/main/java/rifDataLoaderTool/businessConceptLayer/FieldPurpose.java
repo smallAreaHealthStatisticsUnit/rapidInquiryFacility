@@ -80,6 +80,9 @@ public enum FieldPurpose {
 	HEALTH_CODE(
 		"health_code",
 		"fieldPurpose.healthCode.label"),
+	TOTAL_COUNT(
+		"total_count",
+		"fieldPurpose.totalCount.label"),
 	OTHER(
 		"other",
 		"fieldPurpose.other.label");
@@ -118,6 +121,9 @@ public enum FieldPurpose {
 		else if (collator.equals(code, HEALTH_CODE.getCode())) {
 			return HEALTH_CODE;
 		}
+		else if (collator.equals(code, TOTAL_COUNT.getCode())) {
+			return TOTAL_COUNT;
+		}
 		else if (collator.equals(code, OTHER.getCode())) {
 			return OTHER;
 		}
@@ -128,11 +134,12 @@ public enum FieldPurpose {
 	}
 	
 	public static String[] getNames() {
-		String[] results = new String[4];
+		String[] results = new String[5];
 		results[0] = COVARIATE.getName();
 		results[1] = GEOGRAPHICAL_RESOLUTION.getName();
 		results[2] = HEALTH_CODE.getName();
-		results[3] = OTHER.getName();
+		results[3] = TOTAL_COUNT.getName();
+		results[4] = OTHER.getName();
 		
 		return results;
 	}
@@ -151,6 +158,9 @@ public enum FieldPurpose {
 		}
 		else if (collator.equals(HEALTH_CODE.getName(), name)) {
 			return HEALTH_CODE;
+		}
+		else if (collator.equals(TOTAL_COUNT.getName(), name)) {
+			return TOTAL_COUNT;
 		}
 		else if (collator.equals(OTHER.getName(), name)) {
 			return OTHER;

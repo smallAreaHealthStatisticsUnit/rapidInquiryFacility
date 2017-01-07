@@ -1,6 +1,7 @@
 package rifDataLoaderTool.targetDBScriptGenerator;
 
 import rifDataLoaderTool.businessConceptLayer.*;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.dataStorageLayer.pg.*;
 
@@ -86,9 +87,16 @@ public class PGNumeratorScriptGenerator
 		StringBuilder numeratorEntry = new StringBuilder();
 		
 		createTableStructureAndImportCSV(
-				numeratorEntry, 
+			numeratorEntry, 
 			geographyMetaData, 
 			numerator);
+		addSchemaComments(
+			numeratorEntry, 
+			numerator);
+		createIndices(
+			numeratorEntry, 
+			numerator);
+		
 		numeratorEntry.append("\n");
 		addEntryToRIF40Tables(
 				numeratorEntry, 
@@ -168,94 +176,6 @@ public class PGNumeratorScriptGenerator
 		final StringBuilder denominatorEntry,
 		final DataSetConfiguration numerator) {
 
-		String[] literalParameterValues = new String[14];
-
-		//Obtain the 'theme' field value
-		DLHealthTheme healthTheme
-			= numerator.getHealthTheme();
-		//@TODO: Why does a denominator have a health theme?
-		literalParameterValues[0] = healthTheme.getName();
-		
-		//Obtain the 'table_name' field value
-		literalParameterValues[1]
-			= numerator.getPublishedTableName();
-		//Obtain the 'description' field value
-		literalParameterValues[2]
-			= numerator.getDescription();
-
-		/*
-		 * @TODO.  We must assume that by the time this query is called the
-		 * contents of the denominator CSV file will have already been loaded
-		 * into a table in the 'pop' schema.  We need to develop a query that
-		 * can extract the min and max years of the denominator table in order
-		 * to fill in the fields year_start and year_stop in this table.
-		 */
-		//Obtain the 'year_start' field value
-		literalParameterValues[3] = "1989";
-
-		//Obtain the 'year_stop' field value
-		literalParameterValues[4] = "1996";
-		
-		//Obtain the total_field.  As far as I know this will always be null
-		literalParameterValues[5] = null;
-		
-		//Obtain the value for isindirectdenominator which should always be
-		//zero for numerator data sets
-		literalParameterValues[6] = "0";
-		
-		//Obtain the value for isdirectdenominator.  This should always be 
-		//zero for numerator data sets
-		literalParameterValues[7] = "0";
-
-		//Obtain the value for isnumerator.  This will always be one for
-		//numerator table entries.
-		literalParameterValues[8] = "1";
-		
-		//Obtain the value for automatic.  Not sure what this means but it
-		//appears to always be 1
-		literalParameterValues[9] = "0";
-
-		//Obtain the value for sex_field_name.  It seems this does not 
-		//have to be set.  @TODO Won't it always be age_sex_group?
-		literalParameterValues[10] = null;		
-		
-		//Obtain the value for age_group_field_name.  It seems this does not 
-		//have to be set.  @TODO Won't it always be age_sex_group?
-		literalParameterValues[11] = null;			
-
-		//Obtain the value for age_sex_group_field_name.  It seems this does not 
-		//have to be set.  @TODO Won't it always be age_sex_group?
-		literalParameterValues[12] = "age_sex_group";			
-		
-		//Obtain the value for age_group_id.  It seems this does not 
-		//have to be set.
-		literalParameterValues[13] = "1";
-
-		/*
-		PGSQLInsertQueryFormatter insertQueryFormatter
-			= new PGSQLInsertQueryFormatter();
-		insertQueryFormatter.setDatabaseSchemaName("rif40");
-		insertQueryFormatter.setIntoTable("rif40_tables");
-		
-		insertQueryFormatter.addInsertField("theme", true);
-		insertQueryFormatter.addInsertField("table_name", true);
-		insertQueryFormatter.addInsertField("description", true);
-		insertQueryFormatter.addInsertField("year_start", false);
-		insertQueryFormatter.addInsertField("year_stop", false);
-		insertQueryFormatter.addInsertField("total_field", true);
-		insertQueryFormatter.addInsertField("isindirectdenominator", false);
-		insertQueryFormatter.addInsertField("isdirectdenominator", false);
-		insertQueryFormatter.addInsertField("isnumerator", false);
-		insertQueryFormatter.addInsertField("automatic", false);
-		insertQueryFormatter.addInsertField("sex_field_name", true);
-		insertQueryFormatter.addInsertField("age_group_field_name", true);
-		insertQueryFormatter.addInsertField("age_sex_group_field_name", true);
-		insertQueryFormatter.addInsertField("age_group_id", false);
-		String query
-			= insertQueryFormatter.generateQueryWithLiterals(literalParameterValues);
-		denominatorEntry.append(query);	
-		*/
-		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_tables (");
 		queryFormatter.addQueryLine(1, "theme,");
@@ -338,6 +258,131 @@ public class PGNumeratorScriptGenerator
 			= insertQueryFormatter.generateQueryWithLiterals(literalParameterValues);
 		numeratorEntry.append(query);		
 	}
+	
+
+	private void addSchemaComments(
+		final StringBuilder numeratorEntry,
+		final DataSetConfiguration numerator) {
+
+		String publishedCovariateTableName
+			= numerator.getPublishedTableName().toUpperCase();		
+
+		DataSetFieldConfiguration yearFieldConfiguration
+			= getRequiredYearField(numerator);
+					
+		//Add comments to table
+		numeratorEntry.append(
+			createTableCommentQuery(
+				publishedCovariateTableName, 
+				numerator.getDescription()));
+
+		numeratorEntry.append(
+			createTableFieldCommentQuery(
+				publishedCovariateTableName, 
+				yearFieldConfiguration.getConvertFieldName(), 
+				yearFieldConfiguration.getDescription()));	
+		
+		//age sex group field
+		String ageSexGroupComment
+			= RIFDataLoaderToolMessages.getMessage("defaultSchemaComments.ageSexGroup");
+		numeratorEntry.append(
+				createTableFieldCommentQuery(
+					publishedCovariateTableName, 
+					"age_sex_group", 
+					ageSexGroupComment));		
+		
+		ArrayList<DataSetFieldConfiguration> resolutionFields
+			= this.getAllGeographicalResolutionFields(numerator);
+		for (DataSetFieldConfiguration resolutionField : resolutionFields) {			
+			numeratorEntry.append(
+				createTableFieldCommentQuery(
+					publishedCovariateTableName, 
+					resolutionField.getConvertFieldName(), 
+					resolutionField.getDescription()));			
+		}
+		
+		DataSetFieldConfiguration healthFieldConfiguration
+			= getHealthCodeField(numerator);
+		numeratorEntry.append(
+			createTableFieldCommentQuery(
+				publishedCovariateTableName, 
+				healthFieldConfiguration.getConvertFieldName(), 
+				healthFieldConfiguration.getDescription()));		
+
+		DataSetFieldConfiguration totalField
+			= numerator.getFieldHavingConvertFieldName("total");
+		numeratorEntry.append(
+			createTableFieldCommentQuery(
+				publishedCovariateTableName, 
+				totalField.getConvertFieldName(), 
+				totalField.getDescription()));
+	}
+	
+	private void createIndices(
+		final StringBuilder numeratorEntry, 
+		final DataSetConfiguration numerator) {
+		
+		String tableName
+			= numerator.getPublishedTableName().toUpperCase();
+		
+		DataSetFieldConfiguration yearFieldConfiguration
+			= getRequiredYearField(numerator);
+		createIndex(
+			numeratorEntry,
+			tableName,
+			yearFieldConfiguration.getConvertFieldName());
+		createIndex(
+			numeratorEntry, 
+			tableName, 
+			"age_sex_group");
+		
+		ArrayList<DataSetFieldConfiguration> resolutionFields
+			= getAllGeographicalResolutionFields(numerator);
+		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
+			String fieldName
+				= resolutionField.getConvertFieldName();
+			createIndex(
+				numeratorEntry, 
+				tableName, 
+				fieldName);
+		}
+		
+		DataSetFieldConfiguration healthCodeFieldConfiguration
+			= getHealthCodeField(numerator);
+	
+		createIndex(
+			numeratorEntry,
+			tableName,
+			healthCodeFieldConfiguration.getConvertFieldName());	
+		
+		createIndex(
+			numeratorEntry,
+			tableName,
+			"total");		
+	}
+	
+	private DataSetFieldConfiguration getHealthCodeField(
+		final DataSetConfiguration numerator) {
+		
+		ArrayList<DataSetFieldConfiguration> fields
+			= numerator.getFieldConfigurations();
+		for (DataSetFieldConfiguration field : fields) {
+			FieldRequirementLevel currentRequirementLevel
+				= field.getFieldRequirementLevel();
+			FieldPurpose fieldPurpose
+				= field.getFieldPurpose();
+			if (fieldPurpose == FieldPurpose.HEALTH_CODE &&
+				currentRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF){
+				
+				return field;
+			}
+		}
+		
+		return null;
+	}
+	
+	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

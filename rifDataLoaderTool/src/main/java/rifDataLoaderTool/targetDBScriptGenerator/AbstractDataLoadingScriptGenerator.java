@@ -2,10 +2,15 @@ package rifDataLoaderTool.targetDBScriptGenerator;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
+import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSchemaCommentQueryFormatter;
 
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  *
@@ -128,7 +133,7 @@ public abstract class AbstractDataLoadingScriptGenerator {
 			= new PGSQLSchemaCommentQueryFormatter();
 		
 		queryFormatter.setTableComment(
-			tableName, 
+			tableName.toUpperCase(), 
 			comment);
 		
 		return queryFormatter.generateQuery();		
@@ -142,14 +147,104 @@ public abstract class AbstractDataLoadingScriptGenerator {
 		PGSQLSchemaCommentQueryFormatter queryFormatter 
 			= new PGSQLSchemaCommentQueryFormatter();
 		queryFormatter.setTableColumnComment(
-			tableName, 
-			columnName, 
+			tableName.toUpperCase(), 
+			columnName.toUpperCase(), 
 			comment);
 		
 		return queryFormatter.generateQuery();
 	}
 	
+	protected DataSetFieldConfiguration getRequiredYearField(
+		final DataSetConfiguration dataSetConfiguration) {
+		
+		//We know that for covariates, there should exactly one required year field
+		ArrayList<DataSetFieldConfiguration> results
+			= dataSetConfiguration.getDataSetFieldConfigurations(
+				RIFDataTypeFactory.RIF_YEAR_DATA_TYPE, 
+				FieldRequirementLevel.REQUIRED_BY_RIF);
+		return results.get(0);		
+	}
+
+
+	protected DataSetFieldConfiguration getRequiredGeographicalResolutionField(
+		final DataSetConfiguration dataSetConfiguration) {
+		
+		//We know that for covariates, there should exactly one required geographical 
+		//resolution field
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			FieldPurpose currentFieldPurpose
+				= fieldConfiguration.getFieldPurpose();
+			FieldRequirementLevel currentFieldRequirementLevel
+				= fieldConfiguration.getFieldRequirementLevel();
+			if ((currentFieldPurpose == FieldPurpose.GEOGRAPHICAL_RESOLUTION) &&
+				((currentFieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) ||
+				 (currentFieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD))) {
+				
+				//there should only be one
+				return fieldConfiguration;
+			}
+		}
+		return null;
+	}
+
+	protected ArrayList<DataSetFieldConfiguration> getAllGeographicalResolutionFields(
+		final DataSetConfiguration dataSetConfiguration) {
+		
+		//We know that for covariates, there should exactly one required geographical 
+		//resolution field
+		ArrayList<DataSetFieldConfiguration> results
+			= new ArrayList<DataSetFieldConfiguration>();
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= dataSetConfiguration.getFieldConfigurations();
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			FieldPurpose currentFieldPurpose
+				= fieldConfiguration.getFieldPurpose();
+			FieldRequirementLevel currentFieldRequirementLevel
+				= fieldConfiguration.getFieldRequirementLevel();
+			if ((currentFieldPurpose == FieldPurpose.GEOGRAPHICAL_RESOLUTION) &&
+				((currentFieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) ||
+				 (currentFieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD))) {
+				
+				results.add(fieldConfiguration);
+			}
+		}
+		return results;
+	}
 	
+	protected void createIndex(
+		final StringBuilder dataSetEntry,
+		final String tableName, 
+		final String fieldName) {
+			
+		String indexName = tableName.toUpperCase() + "_" + fieldName.toUpperCase();
+			
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryPhrase(0, "CREATE INDEX ");
+		queryFormatter.addQueryPhrase(indexName);
+		queryFormatter.addQueryPhrase(" ON ");
+		queryFormatter.addQueryPhrase(tableName.toUpperCase());		
+		queryFormatter.addQueryPhrase("(");
+		queryFormatter.addQueryPhrase(fieldName.toUpperCase());
+		queryFormatter.addQueryPhrase(")");
+		
+		dataSetEntry.append(queryFormatter.generateQuery());
+	}
+		
+	
+	protected String createPermissions(
+		final DataSetConfiguration dataSetConfiguration) {
+		
+		String publishedTableName
+			= dataSetConfiguration.getPublishedTableName().toUpperCase();
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryPhrase(0, "GRANT SELECT ON ");
+		queryFormatter.addQueryPhrase(publishedTableName);
+		queryFormatter.addQueryPhrase(" TO PUBLIC");
+		
+		return queryFormatter.generateQuery();
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

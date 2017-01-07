@@ -1265,6 +1265,36 @@ public class DataSetFieldConfiguration
 		checkOptions.clear();
 	}
 	
+	public void print() {
+		FieldPurpose fieldPurpose = getFieldPurpose();
+		FieldRequirementLevel fieldRequirementLevel = getFieldRequirementLevel();
+		RIFDataType rifDataType = getRIFDataType();
+		
+		String fieldPurposePhrase = "null";
+		if (fieldPurpose != null) {
+			fieldPurposePhrase = fieldPurpose.getName();
+		}
+		String requirementLevelPhrase = "null";
+		if (fieldRequirementLevel != null) {
+			requirementLevelPhrase = fieldRequirementLevel.getName();
+		}
+		String rifDataTypePhrase = "null";
+		if (rifDataType != null) {
+			rifDataTypePhrase = rifDataType.getName();
+		}
+		
+		System.out.println(
+			"=" + 
+			getConvertFieldName() + 
+			"=Purpose=" + 
+			fieldPurposePhrase +
+			"=Priority=" + 
+			requirementLevelPhrase + 
+			"=Type=" +
+			rifDataTypePhrase +
+			"==");
+	}
+	
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

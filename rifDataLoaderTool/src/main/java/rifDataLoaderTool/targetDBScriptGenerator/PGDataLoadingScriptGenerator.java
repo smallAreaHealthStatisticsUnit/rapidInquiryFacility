@@ -62,7 +62,7 @@ public class PGDataLoadingScriptGenerator {
 	public static void main(String[] args) {
 		try {
 			File sampleConfigFile
-				= new File("C:\\rifDataLoaderTool\\Test_13.xml");
+				= new File("C:\\rifDataLoaderTool\\SAHSULAND_ConfigurationFile.xml");
 			DataLoaderToolConfigurationReader reader	
 				 = new DataLoaderToolConfigurationReader();
 			reader.readFile(sampleConfigFile);
@@ -160,8 +160,7 @@ public class PGDataLoadingScriptGenerator {
 				
 				String denominatorEntry
 					= denominatorScriptGenerator.generateScript(
-							geographyMetaData,
-							denominator);
+						denominator);
 				bufferedWriter.write(denominatorEntry);
 				bufferedWriter.newLine();
 				bufferedWriter.flush();

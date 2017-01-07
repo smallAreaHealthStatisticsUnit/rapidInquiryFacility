@@ -205,7 +205,6 @@ final class DataSetConfigurationHandler
 		
 		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
 
-			
 			xmlUtility.writeRecordStartTag(getSingularRecordName());
 			
 			xmlUtility.writeField(
@@ -223,7 +222,6 @@ final class DataSetConfigurationHandler
 				"file_path", 
 				dataSetConfiguration.getFilePath());
 			
-			System.out.println("Writing: data set=="+dataSetConfiguration.getDisplayName() +"==has description=="+ dataSetConfiguration.getDescription()+"==");
 			xmlUtility.writeField(
 				getSingularRecordName(), 
 				"description", 

@@ -81,16 +81,20 @@ public class PGDenominatorScriptGenerator
 	// ==========================================
 
 	public String generateScript(
-		final DLGeographyMetaData geographyMetaData,
 		final DataSetConfiguration denominator) {
 
 		StringBuilder denominatorEntry = new StringBuilder();
 		
 		createTableStructureAndImportCSV(
 			denominatorEntry, 
-			geographyMetaData, 
 			denominator);
-		denominatorEntry.append("\n\n");
+		addSchemaComments(
+			denominatorEntry,
+			denominator);
+		createIndices(
+			denominatorEntry,
+			denominator);
+		
 		addEntryToRIF40Tables(
 			denominatorEntry, 
 			denominator);
@@ -100,16 +104,13 @@ public class PGDenominatorScriptGenerator
 	
 	private void createTableStructureAndImportCSV(
 		final StringBuilder denominatorEntry,
-		final DLGeographyMetaData geographyMetaData,
 		final DataSetConfiguration denominator) {
 
 		
 		DataSetFieldConfiguration yearFieldConfiguration
 			= denominator.getFieldHavingConvertFieldName("year");		
 		ArrayList<DataSetFieldConfiguration> resolutionFields
-			= denominator.getDataSetFieldConfigurations(
-				FieldPurpose.GEOGRAPHICAL_RESOLUTION, 
-				null);
+			= getAllGeographicalResolutionFields(denominator);
 		DataSetFieldConfiguration totalFieldConfiguration
 			= denominator.getFieldHavingConvertFieldName("total");
 		
@@ -122,8 +123,7 @@ public class PGDenominatorScriptGenerator
 			= denominator.getPublishedTableName().toUpperCase();		
 		//Field properties that will help us construct the 
 		//create and copy into statements
-		ArrayList<DataSetFieldConfiguration> dataSetFieldConfigurations
-			= denominator.getFieldConfigurations();
+
 		createTableQueryFormatter.setDatabaseSchemaName("pop");
 		createTableQueryFormatter.setTableName(publishedDenominatorTableName);
 		
@@ -139,10 +139,10 @@ public class PGDenominatorScriptGenerator
 
 		//Do we assume these field names will be in increasing order of 
 		//geographical resolution?
-		DLGeography geography = denominator.getGeography();
-		ArrayList<String> levelNames = geography.getLevelNames();
-		for (String levelName : levelNames) {
-			createTableQueryFormatter.addTextFieldDeclaration(levelName, false);
+		
+		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
+			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
+			createTableQueryFormatter.addTextFieldDeclaration(fieldName, false);			
 		}
 		
 		createTableQueryFormatter.addIntegerFieldDeclaration(
@@ -151,35 +151,7 @@ public class PGDenominatorScriptGenerator
 
 		denominatorEntry.append(createTableQueryFormatter.generateQuery());
 		denominatorEntry.append("\n\n");
-		
-		//How do we handle extra fields?
-		
-		//Add schema Comments
-		denominatorEntry.append(createTableCommentQuery(
-			publishedDenominatorTableName, 
-			denominator.getDescription()));
-		denominatorEntry.append(createTableFieldCommentQuery(
-			publishedDenominatorTableName, 
-			yearFieldConfiguration.getConvertFieldName().toUpperCase(),
-			yearFieldConfiguration.getDescription()));				
-		String ageSexGroupComment
-			= RIFDataLoaderToolMessages.getMessage("defaultSchemaComments.ageSexGroup");
-
-		denominatorEntry.append(createTableFieldCommentQuery(
-			publishedDenominatorTableName, 
-			"AGE_SEX_GROUP",
-			ageSexGroupComment));
-		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
-			denominatorEntry.append(createTableFieldCommentQuery(
-				publishedDenominatorTableName, 
-				resolutionField.getCleanFieldName().toUpperCase(),
-				resolutionField.getDescription()));
-		}
-		denominatorEntry.append(createTableFieldCommentQuery(
-			publishedDenominatorTableName, 
-			totalFieldConfiguration.getCleanFieldName().toUpperCase(),
-			totalFieldConfiguration.getDescription()));
-				
+						
 		SQLGeneralQueryFormatter importFromCSVQueryFormatter
 			= new SQLGeneralQueryFormatter();
 		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
@@ -190,8 +162,9 @@ public class PGDenominatorScriptGenerator
 		importFromCSVQueryFormatter.padAndFinishLine();
 		importFromCSVQueryFormatter.addQueryLine(1, "year,");
 		importFromCSVQueryFormatter.addQueryLine(1, "age_sex_group,");
-		for (String levelName : levelNames) {
-			importFromCSVQueryFormatter.addQueryLine(1, levelName.toLowerCase() + ",");
+		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
+			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
+			importFromCSVQueryFormatter.addQueryLine(1, fieldName + ",");			
 		}
 		importFromCSVQueryFormatter.addQueryLine(1, "total)");
 		importFromCSVQueryFormatter.addQueryLine(0, "FROM ");
@@ -210,94 +183,6 @@ public class PGDenominatorScriptGenerator
 	private void addEntryToRIF40Tables(
 		final StringBuilder denominatorEntry,
 		final DataSetConfiguration denominator) {
-
-		String[] literalParameterValues = new String[14];
-
-		//Obtain the 'theme' field value
-		DLHealthTheme healthTheme
-			= denominator.getHealthTheme();
-		//@TODO: Why does a denominator have a health theme?
-		literalParameterValues[0] = "denominator health theme";
-		
-		//Obtain the 'table_name' field value
-		literalParameterValues[1]
-			= denominator.getPublishedTableName();
-		//Obtain the 'description' field value
-		literalParameterValues[2]
-			= denominator.getDescription();
-
-		/*
-		 * @TODO.  We must assume that by the time this query is called the
-		 * contents of the denominator CSV file will have already been loaded
-		 * into a table in the 'pop' schema.  We need to develop a query that
-		 * can extract the min and max years of the denominator table in order
-		 * to fill in the fields year_start and year_stop in this table.
-		 */
-		//Obtain the 'year_start' field value
-		literalParameterValues[3] = "1989";
-
-		//Obtain the 'year_stop' field value
-		literalParameterValues[4] = "1996";
-		
-		//Obtain the total_field.  As far as I know this will always be null
-		literalParameterValues[5] = null;
-		
-		//Obtain the value for isindirectdenominator which should be the only
-		//kind the RIF supports now
-		literalParameterValues[6] = "1";
-		
-		//Obtain the value for isdirectdenominator.  This is unsupported right
-		//now and should always be zero.
-		literalParameterValues[7] = "0";
-
-		//Obtain the value for isnumerator.  This will always be zero for
-		//denominator table entries.
-		literalParameterValues[8] = "0";
-		
-		//Obtain the value for automatic.  Not sure what this means but it
-		//appears to always be 1
-		literalParameterValues[9] = "0";
-
-		//Obtain the value for sex_field_name.  It seems this does not 
-		//have to be set.  @TODO Won't it always be age_sex_group?
-		literalParameterValues[10] = null;		
-		
-		//Obtain the value for age_group_field_name.  It seems this does not 
-		//have to be set.  @TODO Won't it always be age_sex_group?
-		literalParameterValues[11] = null;			
-
-		//Obtain the value for age_sex_group_field_name.  It seems this does not 
-		//have to be set.  @TODO Won't it always be age_sex_group?
-		literalParameterValues[12] = "age_sex_group";			
-		
-		//Obtain the value for age_group_id.  It seems this does not 
-		//have to be set.
-		literalParameterValues[13] = "1";
-		
-		/*
-		PGSQLInsertQueryFormatter insertQueryFormatter
-			= new PGSQLInsertQueryFormatter();
-		insertQueryFormatter.setDatabaseSchemaName("rif40");
-		insertQueryFormatter.setIntoTable("rif40_tables");
-		
-		insertQueryFormatter.addInsertField("theme", true);
-		insertQueryFormatter.addInsertField("table_name", true);
-		insertQueryFormatter.addInsertField("description", true);
-		insertQueryFormatter.addInsertField("year_start", false);
-		insertQueryFormatter.addInsertField("year_stop", false);
-		insertQueryFormatter.addInsertField("total_field", true);
-		insertQueryFormatter.addInsertField("isindirectdenominator", false);
-		insertQueryFormatter.addInsertField("isdirectdenominator", false);
-		insertQueryFormatter.addInsertField("isnumerator", false);
-		insertQueryFormatter.addInsertField("automatic", false);
-		insertQueryFormatter.addInsertField("sex_field_name", true);
-		insertQueryFormatter.addInsertField("age_group_field_name", true);
-		insertQueryFormatter.addInsertField("age_sex_group_field_name", true);
-		insertQueryFormatter.addInsertField("age_group_id", false);
-		String query
-			= insertQueryFormatter.generateQueryWithLiterals(literalParameterValues);
-		denominatorEntry.append(query);	
-		*/
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_tables (");
@@ -336,6 +221,94 @@ public class PGDenominatorScriptGenerator
 			= queryFormatter.generateQuery();
 		denominatorEntry.append(query);
 	}
+
+
+	private void addSchemaComments(
+		final StringBuilder denominatorEntry,
+		final DataSetConfiguration denominator) {
+
+		String publishedCovariateTableName
+			= denominator.getPublishedTableName().toUpperCase();		
+
+		DataSetFieldConfiguration yearFieldConfiguration
+			= getRequiredYearField(denominator);
+					
+		//Add comments to table
+		denominatorEntry.append(
+			createTableCommentQuery(
+				publishedCovariateTableName, 
+				denominator.getDescription()));
+
+		denominatorEntry.append(
+			createTableFieldCommentQuery(
+				publishedCovariateTableName, 
+				yearFieldConfiguration.getConvertFieldName(), 
+				yearFieldConfiguration.getDescription()));	
+		
+		//age sex group field
+		String ageSexGroupComment
+			= RIFDataLoaderToolMessages.getMessage("defaultSchemaComments.ageSexGroup");
+		denominatorEntry.append(
+				createTableFieldCommentQuery(
+					publishedCovariateTableName, 
+					"age_sex_group", 
+					ageSexGroupComment));		
+		
+		ArrayList<DataSetFieldConfiguration> resolutionFields
+			= this.getAllGeographicalResolutionFields(denominator);
+		for (DataSetFieldConfiguration resolutionField : resolutionFields) {			
+			denominatorEntry.append(
+				createTableFieldCommentQuery(
+					publishedCovariateTableName, 
+					resolutionField.getConvertFieldName(), 
+					resolutionField.getDescription()));			
+		}
+		
+		DataSetFieldConfiguration totalField
+			= denominator.getFieldHavingConvertFieldName("total");
+		denominatorEntry.append(
+			createTableFieldCommentQuery(
+				publishedCovariateTableName, 
+				totalField.getConvertFieldName(), 
+				totalField.getDescription()));
+	}
+	
+	private void createIndices(
+		final StringBuilder denominatorEntry, 
+		final DataSetConfiguration denominator) {
+		
+		String tableName
+			= denominator.getPublishedTableName().toUpperCase();
+		
+		DataSetFieldConfiguration yearFieldConfiguration
+			= getRequiredYearField(denominator);
+		createIndex(
+			denominatorEntry,
+			tableName,
+			yearFieldConfiguration.getConvertFieldName());
+		createIndex(
+			denominatorEntry, 
+			tableName, 
+			"age_sex_group");
+		
+		ArrayList<DataSetFieldConfiguration> resolutionFields
+			= getAllGeographicalResolutionFields(denominator);
+		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
+			String fieldName
+				= resolutionField.getConvertFieldName();
+			createIndex(
+				denominatorEntry, 
+				tableName, 
+				fieldName);
+		}
+		
+		createIndex(
+			denominatorEntry,
+			tableName,
+			"total");		
+	}
+	
+
 	
 	// ==========================================
 	// Section Errors and Validation

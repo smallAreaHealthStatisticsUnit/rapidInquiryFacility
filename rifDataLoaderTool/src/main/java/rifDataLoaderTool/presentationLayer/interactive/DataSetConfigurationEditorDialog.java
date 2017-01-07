@@ -555,8 +555,21 @@ class DataSetConfigurationEditorDialog
 		dataSetFieldPropertyEditorPanel.validateForm();
 		dataSetFieldPropertyEditorPanel.saveChanges();
 		DataSetConfiguration dataSetConfigurationFromForm
-			= getDataSetConfigurationFromForm();
-		dataSetConfigurationFromForm.checkErrors();	
+			= getDataSetConfigurationFromForm();		
+		//dataSetConfigurationFromForm.checkErrors();
+		
+		DataSetValidator dataSetValidator = new DataSetValidator();
+		RIFSchemaArea rifSchemaArea 
+			= dataSetConfigurationFromForm.getRIFSchemaArea();
+		if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+			dataSetValidator.validateNumerator(dataSetConfigurationFromForm);
+		}
+		else if (rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA) {
+			dataSetValidator.validateDenominator(dataSetConfigurationFromForm);
+		}
+		else if (rifSchemaArea == RIFSchemaArea.COVARIATE_DATA) {
+			dataSetValidator.validateCovariate(dataSetConfigurationFromForm);
+		}		
 	}
 	
 }

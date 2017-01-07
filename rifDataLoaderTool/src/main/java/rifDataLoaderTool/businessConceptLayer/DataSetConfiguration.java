@@ -895,26 +895,40 @@ public class DataSetConfiguration
 		}
 	}
 	
+	/**
+	 * filters data set field configurations based on data type and
+	 * requirement level.  If requirement level is null it will retrieve
+	 * all fields that are marked required or extra.  Note that it will not
+	 * include fields marked "ignore"
+	 * 
+	 * @param rifDataType
+	 * @param fieldRequirementLevel
+	 * @return
+	 */
 	public ArrayList<DataSetFieldConfiguration> getDataSetFieldConfigurations(
-		final RIFDataType rifDataType,
-		final FieldRequirementLevel fieldRequirementLevel) {
+		final RIFDataType targetRIFDataType,
+		final FieldRequirementLevel targetFieldRequirementLevel) {
 		
 		ArrayList<DataSetFieldConfiguration> results
 			= new ArrayList<DataSetFieldConfiguration>();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+
 			RIFDataType currentDataType
 				= fieldConfiguration.getRIFDataType();
-			FieldRequirementLevel currentFieldRequirementLevel
-				= fieldConfiguration.getFieldRequirementLevel();
-			
-			if (currentDataType.hasIdenticalContents(rifDataType)) {
-				if ((fieldRequirementLevel == null) ||
-					(fieldRequirementLevel == currentFieldRequirementLevel)) {
+			if (currentDataType.hasIdenticalContents(targetRIFDataType)) {
+				FieldRequirementLevel currentFieldRequirementLevel
+					= fieldConfiguration.getFieldRequirementLevel();
+				if (targetFieldRequirementLevel == null) {
+					if ((currentFieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) ||
+						(currentFieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD)) {						
+						results.add(fieldConfiguration);						
+					}
+				}
+				else if (targetFieldRequirementLevel == currentFieldRequirementLevel) {
 					results.add(fieldConfiguration);
 				}
 			}
 		}
-
 		return results;		
 	}
 	
@@ -927,19 +941,25 @@ public class DataSetConfiguration
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			FieldPurpose currentFieldPurpose
 				= fieldConfiguration.getFieldPurpose();
-			FieldRequirementLevel currentFieldRequirementLevel
-				= fieldConfiguration.getFieldRequirementLevel();
-			
-			if ((currentFieldPurpose == targetFieldPurpose) &&
-				(currentFieldRequirementLevel == targetFieldRequirementLevel)) {
-				results.add(fieldConfiguration);
-			}		
+			if (currentFieldPurpose == targetFieldPurpose) {
+				FieldRequirementLevel currentFieldRequirementLevel
+					= fieldConfiguration.getFieldRequirementLevel();
+				if (targetFieldRequirementLevel == null) {
+					if ((currentFieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) ||
+						(currentFieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD)) {						
+						results.add(fieldConfiguration);						
+					}
+				}
+				else {	
+					if (targetFieldRequirementLevel == currentFieldRequirementLevel) {
+						results.add(fieldConfiguration);
+					}
+				}
+			}
 		}			
 		return results;		
 	}
-		
-	
-	
+
 	public int getNumberOfCovariateFields() {
 		
 		int numberOfCovariateFields = 0;
@@ -964,7 +984,7 @@ public class DataSetConfiguration
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			FieldRequirementLevel fieldRequirementLevel
 				= fieldConfiguration.getFieldRequirementLevel();
-			if (fieldRequirementLevel != fieldRequirementLevel.IGNORE_FIELD) {
+			if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD) {
 				FieldChangeAuditLevel currentFieldChangeAuditLevel
 					= fieldConfiguration.getFieldChangeAuditLevel();
 			
@@ -1237,6 +1257,24 @@ public class DataSetConfiguration
 	
 	public String getPublishedTableName() {
 		return rifSchemaArea.getPublishedTableName(name);
+	}
+	
+	/*
+	 * Diagnostic method useful in testting
+	 */
+	public void print() {
+		System.out.println("===================== BEGINNING DATA SET =========================");
+		System.out.println("Data Set Name:==" + getDisplayName()+"==");
+		System.out.println("Total Fields:" + fieldConfigurations.size());
+		System.out.println("Field Details:");
+
+		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
+			fieldConfiguration.print();
+				
+			
+		}
+		
+		System.out.println("===================== ENDING DATA SET ============================");		
 	}
 	
 	// ==========================================
