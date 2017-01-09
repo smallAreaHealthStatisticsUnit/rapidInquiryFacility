@@ -413,9 +413,9 @@ function shpConvertInput(files, shpConvertInputCallback) {
 											fileList[key].dbfHeader.fields[j].description=description;
 										}
 									}
-//									else {
-//										console.log("[" + key + "] Feature: " + i + "; NO MATCH Field: " + field + "='" + fileList[key].dbfHeader.fields[j].name + "'");
-//									}
+									else {
+										console.log("[" + key + "] Feature: " + i + "; NO MATCH Field: " + field + "='" + fileList[key].dbfHeader.fields[j].name + "'");
+									}
 								}
 							}
 							else if (field && description) {
