@@ -1437,7 +1437,7 @@ This error in actually originating from the error handler function
 			shapefileData["mySrs"]=srs.parse(shapefileData["prj"]);
 			if (!shapefileData["mySrs"].srid) { // Add exceptions not spotted by srs.parse
 				var sridList=[];
-				console.error('shapefileData["mySrs"].proj4: ' + shapefileData["mySrs"].proj4);
+//				console.error(shapefileData["shapeFileName"] + '; shapefileData["mySrs"].proj4: ' + shapefileData["mySrs"].proj4);
 				for (var epsg in shapefileData["crss"]) { // Search for multiple SRIDs
 /* shapefileData["crss"]= {	
 		...				
@@ -1448,7 +1448,7 @@ This error in actually originating from the error handler function
 					if (shapefileData["crss"][epsg] &&
 						addMissingCrssProjections.compareProj4(shapefileData["crss"][epsg], shapefileData["mySrs"].proj4, srid)) {
 
-						console.error("compareProj4 match srid: " + srid);
+//						console.error(shapefileData["shapeFileName"] + "; compareProj4 match srid: " + srid);
 						sridList.push(srid);
 					}
 				}
@@ -1457,6 +1457,7 @@ This error in actually originating from the error handler function
 				}
 				else if (sridList.length == 1) { // Match (srs.parse() would have found this...)
 					shapefileData["mySrs"].srid=sridList[0];
+//					console.error(shapefileData["shapeFileName"] + "; compareProj4() match, sridList: " + JSON.stringify(sridList, null, 2));
 				}
 				else if (sridList.length > 1) { // Error
 					serverLog.serverError2(__file, __line, "readShapeFile", 

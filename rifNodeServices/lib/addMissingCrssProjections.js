@@ -133,7 +133,13 @@ var compareProj4 = function compareProj4(a, b, srid) {
 	}
 	noMatches+=(proj4bKeys-proj4aKeys);
 	
-	if (noMatches == 0) {
+//	if (srid == 26753) {
+//		console.error("a: " + JSON.stringify(proj4a));
+//		console.error("b: " + JSON.stringify(proj4b));
+//		console.error("srid: " + srid + "; matches: " + matches + "; noMatches: " + noMatches + "; " + 
+//			JSON.stringify(noMatchArray, null, 4));
+//	}
+ 	if (noMatches == 0) {
 //		console.error("a: " + JSON.stringify(proj4a));
 //		console.error("b: " + JSON.stringify(proj4b));
 //		console.error("srid: " + srid + "; matches: " + matches + "; noMatches: " + noMatches + "; " + 
@@ -142,7 +148,7 @@ var compareProj4 = function compareProj4(a, b, srid) {
 	}
 	
 	return false
-}
+} // End of compareProj4()
 
 /*
  * Function:	addMissingCrssProjections()

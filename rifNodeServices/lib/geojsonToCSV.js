@@ -89,7 +89,7 @@ var geojsonToCSV = function geojsonToCSV(response, xmlConfig, req, res, endCallb
 			max_zoomlevel: response.fields["max_zoomlevel"],
 			uuidV1: response.fields["uuidV1"]
 		});
-		console.error("geoJSON2WKTSeries() csvFiles[" + i + "].rows.length: " + csvFiles[i].rows.length);
+//		console.error("geoJSON2WKTSeries() csvFiles[" + i + "].rows.length: " + csvFiles[i].rows.length);
 
 //
 // Check has features and the GID property
@@ -151,7 +151,7 @@ var geojsonToCSV = function geojsonToCSV(response, xmlConfig, req, res, endCallb
 							}
 							row[zoomlevelFieldName]=topojson.wkt[k];
 							csvFiles[i].rows.push(row);							
-
+/*
 							if (k<=9) {
 								console.error("geoJSON2WKTSeries() add row m: " + m + 
 									"; i: " + i + 
@@ -165,7 +165,7 @@ var geojsonToCSV = function geojsonToCSV(response, xmlConfig, req, res, endCallb
 									"; fileName: " + fileName +
 									";\nrow: " + JSON.stringify(row, null, 2).substring(0, 400) + "...");
 							}	
-							
+ */							
 							if (m != (csvFiles[i].rows.length-1)) {
 								throw new Error("geoJSON2WKTSeries() add CSV row m: " + m +
 									"; k: " + k + 
