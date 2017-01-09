@@ -797,6 +797,9 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			shapefileData["elapsedReadTime"]=elapsedReadTime;
 		}
 			
+		if (shapefileData["mySrs"].srid == undefined) {
+			shapefileData["mySrs"].srid=(ofields["srid"]|| "UNKNOWN SRID");
+		}
 		if (shapefileData["mySrs"].srid != "4326") { // Re-project to 4326
 			try {
 				msg="\nshapefile read [" + recNo	+ "] call reproject.toWgs84() for: " + shapefileData["fileNoExt"];
@@ -1433,17 +1436,44 @@ This error in actually originating from the error handler function
 		if (shapefileData["prj"]) {
 			shapefileData["mySrs"]=srs.parse(shapefileData["prj"]);
 			if (!shapefileData["mySrs"].srid) { // Add exceptions not spotted by srs.parse
+				var sridList=[];
+				console.error('shapefileData["mySrs"].proj4: ' + shapefileData["mySrs"].proj4);
+				for (var epsg in shapefileData["crss"]) { // Search for multiple SRIDs
+/* shapefileData["crss"]= {	
+		...				
+		"EPSG:26753": "+proj=lcc +lat_1=39.71666666666667 +lat_2=40.78333333333333 +lat_0=39.33333333333334 +lon_0=-105.5 +x_0=609601.2192024384 +y_0=0 +datum=NAD27 +units=us-ft +no_defs",
+		...				
+*/
+					var srid=epsg.split(":")[1];
+					if (shapefileData["crss"][epsg] &&
+						addMissingCrssProjections.compareProj4(shapefileData["crss"][epsg], shapefileData["mySrs"].proj4, srid)) {
+
+						console.error("compareProj4 match srid: " + srid);
+						sridList.push(srid);
+					}
+				}
 				if (shapefileData["mySrs"].name.match(/British_National_Grid/)) {
 					shapefileData["mySrs"].srid="27700";
+				}
+				else if (sridList.length == 1) { // Match (srs.parse() would have found this...)
+					shapefileData["mySrs"].srid=sridList[0];
+				}
+				else if (sridList.length > 1) { // Error
+					serverLog.serverError2(__file, __line, "readShapeFile", 
+						"ERROR! multiple SRIDs (" + sridList.join(",") + ") for projection: " + shapefileData["mySrs"].name || "(no name)" + "; data: " + shapefileData["prj"] + " in shapefile: " +
+						shapefileData["shapeFileName"] + "; projection: " + JSON.stringify(shapefileData["prj"], null, 4), 
+						shapefileData["req"], undefined /* err */, response);	
 				}
 				else { // Error
 					serverLog.serverError2(__file, __line, "readShapeFile", 
 						"ERROR! no SRID for projection: " + shapefileData["mySrs"].name || "(no name)" + "; data: " + shapefileData["prj"] + " in shapefile: " +
-						shapefileData["shapeFileName"], shapefileData["req"], undefined /* err */, response);	
+						shapefileData["shapeFileName"] + "; projection: " + JSON.stringify(shapefileData["prj"], null, 4), 
+						shapefileData["req"], undefined /* err */, response);	
 //						callback();	// Not needed - serverError2() raises exception 
 				}
 			}
-			if (!shapefileData["crss"]["EPSG:" + shapefileData["mySrs"].srid]) { // Add missing projections to table
+			if (shapefileData["mySrs"].srid &&
+				!shapefileData["crss"]["EPSG:" + shapefileData["mySrs"].srid]) { // Add missing projections to table
 				serverLog.serverLog2(__file, __line, "readShapeFile", 
 					"WARNING! Added SRID: " + shapefileData["mySrs"].srid + " for projection: " + (shapefileData["mySrs"].name || "(no name)") + 
 					";\ndata: " + shapefileData["prj"] + " in shapefile: " +
@@ -1830,7 +1860,9 @@ This error in actually originating from the error handler function
 				srid: 				response.file_list[0].srid,
 				boundingBox: 		response.file_list[0].boundingBox
 			}
-			ofields["srid"]=response.file_list[0].srid;
+			if (ofields["srid"] == undefined) {
+				ofields["srid"]=response.file_list[0].srid;
+			}
 			
 			createXmlFile(xmlConfig); // Create XML configuration file
 			

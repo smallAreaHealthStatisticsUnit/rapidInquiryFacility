@@ -45,6 +45,106 @@
 // Peter Hambly, SAHSU
 
 /*
+ * Function:	compareProj4()
+ * Parameters:	Proj4 string a, proj4 string b, SRID
+ * Returns:		true/fase
+ * Description: Parse and compare 2 proj 4 strings. Allow for rounding in last digit
+ */
+var compareProj4 = function compareProj4(a, b, srid) {
+	var proj4a={};
+	var proj4b={};
+	
+	if (a && b && a == b) {
+		return true;
+	}
+	if (a && a.split("proj=")) {
+		var proj4aArray=a.split("proj=")[1].split(" ");
+		if (proj4aArray) {
+			for (i=0; i<proj4aArray.length; i++) {
+				var item=proj4aArray[i].split("=");
+				if (item && item.length == 2) {
+					proj4a[item[0]]=item[1];
+				}
+				else {
+					proj4a[proj4aArray[i]]="";
+				}
+			}	
+		}	
+		else {
+			throw new Error("compareProj4(): srid: " + srid + "; unable to parse proj4aArray: " + JSON.stringify(proj4aArray, null, 4));
+		}
+	}
+	else {
+		throw new Error("compareProj4(): srid: " + srid + "; unable to parse a: " + a);
+	}
+	
+	if (b && b.split("proj=")) {
+		var proj4bArray=b.split("proj=")[1].split(" ");
+		if (proj4bArray) {
+			for (i=0; i<proj4bArray.length; i++) {
+				var item=proj4bArray[i].split("=");
+				if (item && item.length == 2) {
+					proj4b[item[0]]=item[1];
+				}
+				else {
+					proj4b[proj4bArray[i]]="";
+				}
+			}	
+		}	
+		else {
+			throw new Error("compareProj4(): srid: " + srid + "; unable to parse proj4bArray: " + JSON.stringify(proj4bArray, null, 4));
+		}
+	}
+	else {
+		throw new Error("compareProj4(): srid: " + srid + "; unable to parse b: " + b);
+	}
+	var matches=0;
+	var noMatches=0;
+	var noMatchArray=[];
+	var proj4aKeys=Object.keys(proj4a).length;
+	var proj4bKeys=Object.keys(proj4b).length;
+	for (var key in proj4a) {
+		if (proj4b[key] && proj4a[key] == proj4b[key]) {
+			matches++;
+		}
+		else if (proj4a[key] == "" && (proj4b[key]||"") == "") {
+			matches++;
+		}
+		else if (proj4b[key] && proj4a[key] && 
+			!isNaN(parseFloat(proj4a[key])) && !isNaN(parseFloat(proj4b[key])) && 
+			parseFloat(proj4a[key]).toPrecision(8) == parseFloat(proj4b[key]).toPrecision(8)) { // Round FP to 8 dp
+			matches++;
+//			console.error("srid: " + srid + 
+//				"; match rounded to 8dp: proj4a[" + key + "]: " + parseFloat(proj4a[key]).toPrecision(8) + 
+//				"; proj4b[" + key + "]: " + parseFloat(proj4b[key]).toPrecision(8));
+		}
+		else {
+			noMatches++;
+			noMatchArray.push({
+				key: key,
+				proj4a: (proj4a[key] || ""),
+				proj4b: (proj4b[key] || "")
+			})
+	//		if (proj4b[key] && proj4a[key] && parseFloat(proj4a[key]) != NaN && parseFloat(proj4b[key]) != NaN) {
+	//			console.error("Round to 8dp: proj4a[key]: " + parseFloat(proj4a[" + key + "]).toPrecision(8) + 
+	//				"; proj4b[" + key + "]: " + parseFloat(proj4b[key]).toPrecision(8));
+	//		}
+		}
+	}
+	noMatches+=(proj4bKeys-proj4aKeys);
+	
+	if (noMatches == 0) {
+//		console.error("a: " + JSON.stringify(proj4a));
+//		console.error("b: " + JSON.stringify(proj4b));
+//		console.error("srid: " + srid + "; matches: " + matches + "; noMatches: " + noMatches + "; " + 
+//			JSON.stringify(noMatchArray, null, 4));
+		return true;
+	}
+	
+	return false
+}
+
+/*
  * Function:	addMissingCrssProjections()
  * Parameters:	shapefileData object
  * Returns:		Nothing
@@ -3975,3 +4075,4 @@ var addMissingCrssProjections = function addMissingCrssProjections(shapefileData
 } // End of addMissingCrssProjections()
 
 module.exports.addMissingCrssProjections = addMissingCrssProjections;
+module.exports.compareProj4 = compareProj4;
