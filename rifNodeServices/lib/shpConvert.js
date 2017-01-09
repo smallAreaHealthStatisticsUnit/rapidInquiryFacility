@@ -458,10 +458,10 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						firstPoint=coordinates[i][(coordinates[i].length-1)].slice(0,1);
 						lastPoint=coordinates[i][(coordinates[i].length-1)].slice((coordinates[i][(coordinates[i].length-1)].length-1),coordinates[i][(coordinates[i].length-1)].length);
 						if (firstPoint[0][0] != lastPoint[0][0] || firstPoint[0][1] != lastPoint[0][1]) {
-							console.error("closePolygonLoop(): points: " + points + "; row: " + (recNo-1) + 
-								"; dimensions: " + dimensions +
-								"; add add first point [" + i + "]; firstPoint: " + JSON.stringify(firstPoint) + 
-								"; lastPoint: " + JSON.stringify(lastPoint));
+//							console.error("closePolygonLoop(): points: " + points + "; row: " + (recNo-1) + 
+//								"; dimensions: " + dimensions +
+//								"; add add first point [" + i + "]; firstPoint: " + JSON.stringify(firstPoint) + 
+//								"; lastPoint: " + JSON.stringify(lastPoint));
 							coordinates[i][(coordinates[i].length-1)].push(firstPoint[0]);
 						}
 					}
@@ -470,10 +470,10 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						firstPoint=coordinates[i].slice(0,1);
 						lastPoint=coordinates[i].slice((coordinates[i].length-1),coordinates[i].length);
 						if (firstPoint[0][0] != lastPoint[0][0] || firstPoint[0][1] != lastPoint[0][1]) {
-							console.error("closePolygonLoop(): points: " + points + "; row: " + (recNo-1) + 
-								"; dimensions: " + dimensions +
-								"; add first point [" + i + "]; firstPoint: " + JSON.stringify(firstPoint) + 
-								"; lastPoint: " + JSON.stringify(lastPoint));
+//							console.error("closePolygonLoop(): points: " + points + "; row: " + (recNo-1) + 
+//								"; dimensions: " + dimensions +
+//								"; add first point [" + i + "]; firstPoint: " + JSON.stringify(firstPoint) + 
+//								"; lastPoint: " + JSON.stringify(lastPoint));
 							coordinates[i].push(firstPoint[0]);
 						}
 					}

@@ -871,9 +871,9 @@ exports.convert = function exportsConvert(req, res) {
 												callback(err);
 											}
 											else {
-												console.error("B: response.no_files: " + response.no_files +
-														"; last new file[" + (response.no_files-1) + "]: " + d_files.d_list[response.no_files-1].file.file_name + 
-														"\nData >>>\n" + d_files.d_list[response.no_files-1].file.file_data.toString().substring(0, 200) + "\n<<<\n");
+//												console.error("B: response.no_files: " + response.no_files +
+//														"; last new file[" + (response.no_files-1) + "]: " + d_files.d_list[response.no_files-1].file.file_name + 
+//														"\nData >>>\n" + d_files.d_list[response.no_files-1].file.file_data.toString().substring(0, 200) + "\n<<<\n");
 												
 												nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, "Processed zip file " + (index+1) + ": " + d.file.file_name + 
 													"; size: " + nodeGeoSpatialServicesCommon.fileSize(d.file.file_data.length) + 
