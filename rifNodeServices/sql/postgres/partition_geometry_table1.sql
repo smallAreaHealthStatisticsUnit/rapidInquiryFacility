@@ -6,6 +6,7 @@ DECLARE
  * Parameters:
  *						1: geometry table; e.g. geometry_cb_2014_us_500k
  *						2: Max zoomlevel; e.g. 11
+ * 						3: Number of geolevels (e.g. 3)
  *
  * Description:			Create partitioned tables and insert function for geometry table; comment partitioned tables and columns
  * Note:				%%%% becomes %% after substitution
@@ -14,7 +15,7 @@ DECLARE
 	sql_stmt	VARCHAR[];
 	trigger_sql	VARCHAR;
 BEGIN
-	FOR i IN 1 .. 3 LOOP
+	FOR i IN 1 .. %3 LOOP
 		FOR j IN 6 .. %2 LOOP
 			sql_stmt[COALESCE(array_length(sql_stmt, 1), 0)]:='CREATE TABLE '||l_table||
 							'_geolevel_id_'||i::Text||'_zoomlevel_'||j::Text||' ('||E'\n'||
