@@ -121,10 +121,26 @@ function addDbfDescFields(fileList, formData) {
 			
 	for (var key in fileList) { // Add extended attributes XML doc
 		for (var j=0; j < fileList[key].dbfHeader.fields.length ; j++) {
-			var fieldKey=key + "_" + fileList[key].dbfHeader.fields[j].name.toUpperCase();
-			var value=(fileList[key].dbfHeader.fields[j].description || "N/A")
-
-			consoleLog("addDbfDescFields() key: " + key + "; field: " + j + "; set: " + fieldKey + '="' + value + '"');
+			var field=fileList[key].dbfHeader.fields[j].name.toUpperCase();
+			var fieldKey=key + "_" + field;
+			var fieldKey2=key + "_" + field.toUpperCase();
+			var value=fileList[key].dbfHeader.fields[j].description;
+			var afield="XML: " + field;
+			if (value == undefined || value == "") {
+				if (geoDataLoaderParameters[fieldKey]) {
+					value=geoDataLoaderParameters[fieldKey];
+					afield="Params: " + fieldKey;
+				}
+				else if (geoDataLoaderParameters[fieldKey2]) {
+					value=geoDataLoaderParameters[fieldKey2];
+					afield="Params2: " + fieldKey2;
+				}
+				else {
+					value="Default: " + field.toLowerCase();
+					afield="Default";
+				}
+			}
+			consoleLog("addDbfDescFields() key: " + key + "; field: " + j + "[" + afield + "] set: " + fieldKey + '="' + value + '"');
 			formData.append(fieldKey, value);
 		}
 	}
@@ -365,9 +381,9 @@ function submitFormXMLHttpRequest(output_type, formName) {
 	addDbfDescFields(fileList, formData);
 	
 	// Display the key/value pairs
-//	for (var pair of formData.entries()) { // Breaks in IE!
-//		consoleLog("Key: " + pair[0] + '='+ pair[1]); 
-//	}
+	for (var pair of formData.entries()) { // Breaks in IE!
+		consoleLog("Key: " + pair[0] + '="'+ pair[1] + '"'); 
+	}
 
 	try {
 		request.open('POST', output_type);
