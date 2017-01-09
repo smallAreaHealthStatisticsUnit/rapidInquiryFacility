@@ -224,7 +224,7 @@ serverErrorAddStatus = function(file, line, calling_function, msg, req, err, res
 				}
 			}				
 		}, // End of serverErrorAddStatusCallback()
-		(err.stack || stack), additionalInfo);	
+		(err && err.stack || stack), additionalInfo);	
 	}
 	catch (e) {
 		serverLog2(file, line, calling_function, "WARNING! Caught error! trying to serverError2AddStatus; stack: " + 
