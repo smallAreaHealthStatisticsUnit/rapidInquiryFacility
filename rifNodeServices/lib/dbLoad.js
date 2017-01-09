@@ -384,7 +384,7 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 
 	/*
 	 * Function: 	createGeometryTable(sqlArray, dbType, schema)
-	 * Parameters:	sqlArray, dbType
+	 * Parameters:	sqlArray, dbType, schema
 	 * Description:	Create geometry tables 
 	 *				SQL statements
 	 */			
@@ -465,7 +465,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 				getSqlFromFile("partition_geometry_table1.sql", 
 					dbType, 
 					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
-					xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */), 
+					xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */,
+					csvFiles.length														/* 3: Number of geolevels (e.g. 3) */), 
 				sqlArray, dbType);			
 
 			var sqlStmt=new Sql("Partition geometry table: insert trigger",
@@ -1684,7 +1685,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					getSqlFromFile("partition_geometry_table2.sql", 
 						dbType, 
 						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
-						xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */), 
+						xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */,
+						csvFiles.length														/* 3: Number of geolevels (e.g. 3) */), 
 					sqlArray, dbType);	
 			}		
 			else if (dbType == "MSSQLServer") { 
@@ -2202,7 +2204,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					getSqlFromFile("partition_geometry_table2.sql", 
 						dbType, 
 						"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 1: Geometry table name */,
-						xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */), 
+						xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */,
+						csvFiles.length														/* 3: Number of geolevels (e.g. 3) */), 
 					sqlArray, dbType);	
 			}		
 			else if (dbType == "MSSQLServer") { 
