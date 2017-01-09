@@ -1524,7 +1524,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 1: Tile iontersects table name */,
 						xmlConfig.dataLoader.maxZoomlevel									/* 2: Max zoomlevel; e.g. 11 */,
 						"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* 3: Geolevels table; 
-																								e.g. geolevels_cb_2014_us_500k */), 
+																								e.g. geolevels_cb_2014_us_500k */,
+						csvFiles.length 													/* 4: Number of geolevels (e.g. 3) */), 
 					sqlArray, dbType);			
 
 				var sqlStmt=new Sql("Partition tile intersects table: insert trigger",

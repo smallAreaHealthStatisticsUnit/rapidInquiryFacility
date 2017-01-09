@@ -7,6 +7,7 @@ DECLARE
  *						1: tile intersects table; e.g. tile_intersects_cb_2014_us_500k
  *						2: Max zoomlevel; e.g. 11
  *						3: Geolevels table; e.g. geolevels_cb_2014_us_500k
+ * 						4: Number of geolevels (e.g. 3)
  *
  * Description:			Create partitioned tables and insert function for tile intersects table; comment partitioned tables and columns
  * Note:				%%%% becomes %% after substitution
@@ -27,7 +28,7 @@ BEGIN
 	FETCH c2_areaid_count INTO l_areaid_count;
 	CLOSE c2_areaid_count;	
 --
-	FOR i IN 1 .. 3 LOOP
+	FOR i IN 1 .. %4 LOOP
 		IF i = 1 AND l_areaid_count = 1 THEN
 			end_zoomlevel=0;	
 		ELSE
