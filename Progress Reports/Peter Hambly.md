@@ -778,11 +778,18 @@ RangeError: Invalid string length
 * Regression tests.
 * Build times (desktop):
 
-| Test dataset        | Web Front End | Zoomlevel | Postgres DB Build | MS SQL Server DB Build | Postgres Tile Build | SQL Server tile build |
-|---------------------|---------------|-----------|-------------------|------------------------|---------------------|-----------------------|
-| USA to County level | 113.8s        | 11        | Tiles: 1:27, 4:07 |                        | 5290 tiles in 2:48  |                       |
-| SAHSULand           |               |           |                   |                        |                     |                       |
+| Test dataset        | Web Front End | Zoomlevel | Postgres DB Build  | MS SQL Server DB Build | Postgres Tile Build | SQL Server tile build |
+|---------------------|---------------|-----------|--------------------|------------------------|---------------------|-----------------------|
+| USA to County level | 113.8s        | 11        | Tiles: 1h:27, 4:07 |                        | 5290 tiles in 2h:48 |                       |
+| SAHSULand           |               | 11        |                    |                        |                     |                       |
  
+* Build times (laptop):
+
+| Test dataset        | Web Front End | Zoomlevel | Postgres DB Build  | MS SQL Server DB Build | Postgres Tile Build | SQL Server tile build |
+|---------------------|---------------|-----------|--------------------|------------------------|---------------------|-----------------------|
+| USA to County level | 113.8s        | 11        | Tiles: 1h:27, 4:07 |                        | 5290 tiles in 2h:48 |                       |
+| SAHSULand           | 18.4s         | 11        |                    |                        |                     |                       |
+  
 #### Current TODO list (January 2017):
 
 * Fix zoomlevel miss-set from config file (defaults are wrong)
