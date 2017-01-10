@@ -106,7 +106,7 @@ public final class MSSQLDropDatabaseQueryFormatter
 	public String generateQuery() {
 		
 		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "DROP DATABASE IF EXISTS ");
+		addQueryPhrase(0, "DROP DATABASE ");
 		addQueryPhrase(databaseName);
 				
 		return super.generateQuery();

@@ -110,49 +110,7 @@ public final class MSSQLDeleteRowsQueryFormatter
 		this.fromTable = fromTable;
 	}
 	
-	/**
-	 * Adds the where join condition.
-	 *
-	 * @param tableA the table a
-	 * @param fieldNameA the field name a
-	 * @param tableB the table b
-	 * @param fieldNameB the field name b
-	 */
-	public void addWhereJoinCondition(
-		final String tableA,
-		final String fieldNameA,
-		final String tableB,
-		final String fieldNameB) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableA);
-		whereCondition.append(".");
-		whereCondition.append(fieldNameA);
-		whereCondition.append("=");
-		whereCondition.append(tableB);
-		whereCondition.append(".");
-		whereCondition.append(fieldNameB);
-		
-		whereConditions.add(whereCondition.toString());
-	}
 	
-	/**
-	 * Adds the where join condition.
-	 *
-	 * @param tableFieldA the table field a
-	 * @param tableFieldB the table field b
-	 */
-	public void addWhereJoinCondition(
-		final String tableFieldA,
-		final String tableFieldB) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableFieldA);
-		whereCondition.append("=");
-		whereCondition.append(tableFieldB);
-		
-		whereConditions.add(whereCondition.toString());		
-	}
 	
 	/**
 	 * Adds the where parameter.
@@ -184,25 +142,6 @@ public final class MSSQLDeleteRowsQueryFormatter
 		whereCondition.append(operator);
 		whereCondition.append("?");
 		
-		whereConditions.add(whereCondition.toString());
-	}
-
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param tableName the table name
-	 * @param fieldName the field name
-	 */
-	public void addWhereParameter(
-		final String tableName, 
-		final String fieldName) {
-		
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableName);
-		whereCondition.append(".");		
-		whereCondition.append(fieldName);
-		whereCondition.append("=?");
-
 		whereConditions.add(whereCondition.toString());
 	}
 	

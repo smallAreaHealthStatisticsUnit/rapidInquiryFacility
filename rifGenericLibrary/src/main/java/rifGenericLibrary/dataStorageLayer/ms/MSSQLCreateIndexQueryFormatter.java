@@ -116,6 +116,7 @@ public final class MSSQLCreateIndexQueryFormatter
 	
 	@Override
 	public String generateQuery() {
+		
 		String index_name = new String();
 		index_name = "ind_"+indexTable+"_"+indexTableField;
 
@@ -123,9 +124,6 @@ public final class MSSQLCreateIndexQueryFormatter
 			index_name = index_name.substring(0,127);
 		}
 		
-		
-	    //columns with ntext, text, image, varchar(max), nvarchar(max),  varbinary(max), xml data types cannot be indexed  
-		//should there be errors?
 		
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "CREATE INDEX");
@@ -141,6 +139,7 @@ public final class MSSQLCreateIndexQueryFormatter
 
 		return super.generateQuery();		
 	}
+	
 	
 	// ==========================================
 	// Section Errors and Validation
