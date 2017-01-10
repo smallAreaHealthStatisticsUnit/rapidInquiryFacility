@@ -84,6 +84,7 @@ public class TestClean extends AbstractRIFDataLoaderTestCase {
 	@Test
 	public void test2() {
 		
+		/*
 		User rifManager = getRIFManager();
 		TestPGDataLoaderService dataLoaderService
 			= getDataLoaderService();
@@ -99,17 +100,17 @@ public class TestClean extends AbstractRIFDataLoaderTestCase {
 				= new LinearWorkflowEnactor(
 					rifManager, 
 					dataLoaderService);
+			/*
 			workflowEnactor.runWorkflow(
-				getExportDirectory(),					
-				testLogFile,
-				null,
-				null,
-				linearWorkflow);			
+				getExportDirectory(),
+				linearWorkflow);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
 			fail();
 		}		
+		*/	
+
 	}
 
 	

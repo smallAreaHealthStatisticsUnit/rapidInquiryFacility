@@ -141,9 +141,10 @@ public class DataSetValidator {
 		final DataSetConfiguration dataSet) {
 		
 		ArrayList<DataSetFieldConfiguration> yearFields
-			= dataSet.getDataSetFieldConfigurations(
-				RIFDataTypeFactory.RIF_YEAR_DATA_TYPE,
-				FieldRequirementLevel.REQUIRED_BY_RIF); 
+			= DataSetConfigurationUtility.getDataSetFieldConfigurations(
+				dataSet, 
+				RIFDataTypeFactory.RIF_YEAR_DATA_TYPE, 
+				FieldRequirementLevel.REQUIRED_BY_RIF);
 		if (yearFields.size() != 1) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
@@ -157,9 +158,10 @@ public class DataSetValidator {
 		final DataSetConfiguration dataSet) {
 		
 		ArrayList<DataSetFieldConfiguration> sexFields
-			= dataSet.getDataSetFieldConfigurations(
-				RIFDataTypeFactory.RIF_SEX_DATA_TYPE,
-				FieldRequirementLevel.REQUIRED_BY_RIF); 
+			= DataSetConfigurationUtility.getDataSetFieldConfigurations(
+				dataSet, 
+				RIFDataTypeFactory.RIF_SEX_DATA_TYPE, 
+				FieldRequirementLevel.REQUIRED_BY_RIF);
 		if (sexFields.size() != 1) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
@@ -172,11 +174,12 @@ public class DataSetValidator {
 	private void checkSingleRequiredAgeFieldExists(
 		final ArrayList<String> errorMessages,
 		final DataSetConfiguration dataSet) {
-		
+	
 		ArrayList<DataSetFieldConfiguration> ageFields
-			= dataSet.getDataSetFieldConfigurations(
-				RIFDataTypeFactory.RIF_AGE_DATA_TYPE,
-				FieldRequirementLevel.REQUIRED_BY_RIF); 
+			= DataSetConfigurationUtility.getDataSetFieldConfigurations(
+				dataSet, 
+				RIFDataTypeFactory.RIF_AGE_DATA_TYPE, 
+				FieldRequirementLevel.REQUIRED_BY_RIF);
 		if (ageFields.size() != 1) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
@@ -189,9 +192,11 @@ public class DataSetValidator {
 	private void checkMultipleResolutionFieldsExist(
 		final ArrayList<String> errorMessages,
 		final DataSetConfiguration dataSet) {
+	
 		
 		ArrayList<DataSetFieldConfiguration> resolutionFields
-			= dataSet.getDataSetFieldConfigurations(
+			= DataSetConfigurationUtility.getDataSetFieldConfigurations(
+				dataSet, 
 				FieldPurpose.GEOGRAPHICAL_RESOLUTION, 
 				null);
 		if (resolutionFields.size() < 2) {
@@ -222,11 +227,13 @@ public class DataSetValidator {
 	private void checkSingleRequiredTotalFieldExists(
 		final ArrayList<String> errorMessages,
 		final DataSetConfiguration dataSet) {
-			
+		
 		ArrayList<DataSetFieldConfiguration> totalFields
-			= dataSet.getDataSetFieldConfigurations(
+			= DataSetConfigurationUtility.getDataSetFieldConfigurations(
+				dataSet, 
 				FieldPurpose.TOTAL_COUNT, 
 				FieldRequirementLevel.REQUIRED_BY_RIF);
+		
 		if (totalFields.size() != 1) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
@@ -246,9 +253,10 @@ public class DataSetValidator {
 	private void checkSingleRequiredResolutionFieldExists(
 		final ArrayList<String> errorMessages,
 		final DataSetConfiguration dataSet) {
-		
+
 		ArrayList<DataSetFieldConfiguration> resolutionFields
-			= dataSet.getDataSetFieldConfigurations(
+			= DataSetConfigurationUtility.getDataSetFieldConfigurations(
+				dataSet, 
 				FieldPurpose.GEOGRAPHICAL_RESOLUTION, 
 				FieldRequirementLevel.REQUIRED_BY_RIF);
 		if (resolutionFields.size() != 1) {
@@ -271,8 +279,10 @@ public class DataSetValidator {
 		final ArrayList<String> errorMessages,
 		final DataSetConfiguration dataSet) {
 		
+
 		ArrayList<DataSetFieldConfiguration> healthCodeFields
-			= dataSet.getDataSetFieldConfigurations(
+			= DataSetConfigurationUtility.getDataSetFieldConfigurations(
+				dataSet, 
 				FieldPurpose.HEALTH_CODE, 
 				FieldRequirementLevel.REQUIRED_BY_RIF);
 		if (healthCodeFields.size() != 1) {
@@ -287,8 +297,10 @@ public class DataSetValidator {
 		final ArrayList<String> errorMessages,
 		final DataSetConfiguration dataSet) {
 			
+
 		ArrayList<DataSetFieldConfiguration> resolutionFields
-			= dataSet.getDataSetFieldConfigurations(
+			= DataSetConfigurationUtility.getDataSetFieldConfigurations(
+				dataSet, 
 				FieldPurpose.COVARIATE, 
 				null);
 		if (resolutionFields.size() == 0) {

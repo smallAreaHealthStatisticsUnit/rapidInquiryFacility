@@ -1,21 +1,20 @@
 package rifDataLoaderTool.dataStorageLayer;
 
-import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
-import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
+import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+
+import rifDataLoaderTool.targetDBScriptGenerator.*;
+
+
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.io.*;
-
+import java.nio.file.*;
 
 /**
  *
@@ -78,11 +77,10 @@ public class LinearWorkflowEnactor {
 	// ==========================================
 	private File exportDirectory;
 	
+	private File runDirectory;
 	private File logFile;
-	private File reportFile;
 	private File linearWorkflowFile;
 	private BufferedWriter logWriter;
-	private BufferedWriter reportWriter;
 	private RIFSchemaAreaPropertyManager schemaAreaPropertyManager;
 	private WorkflowValidator workflowValidator;
 	
@@ -119,30 +117,13 @@ public class LinearWorkflowEnactor {
 	
 	public void runWorkflow(
 		final File exportDirectory,
+		final DataLoaderToolConfiguration dataLoaderToolConfiguration,
 		final LinearWorkflow linearWorkflow) 
 		throws RIFServiceException {
 
-	
-		
-		runWorkflow(
-			null, 
-			exportDirectory,
-			null, 
-			null,
-			linearWorkflow);
-	}
-	
-	public void runWorkflow(
-		final File exportDirectory,
-		final File logOutputFile,
-		final File reportFile,
-		final File linearWorkflowFile,
-		final LinearWorkflow linearWorkflow) 
-		throws RIFServiceException {
-
-		setLogFiles(logOutputFile, reportFile);
-		this.linearWorkflowFile = linearWorkflowFile;
-		
+		//Create a temporary directory where all the outputs will be created.
+		initialiseJobRunEnvironment(exportDirectory);
+				
 		ArrayList<DataSetConfiguration> dataSetConfigurations
 			= linearWorkflow.getDataSetConfigurations();		
 
@@ -161,35 +142,64 @@ public class LinearWorkflowEnactor {
 					dataSetConfiguration.getDisplayName());
 			logMessage(finishedProcessingDataSetMessage);
 		}
+		System.out.println("Finished workflow!");
+		
+		//Now generate a single script
+		PGDataLoadingScriptGenerator scriptGenerator
+			= new PGDataLoadingScriptGenerator();
+		
+		scriptGenerator.writeScript(
+			runDirectory, 
+			dataLoaderToolConfiguration);
 	}
-	
-	public void setLogFiles(
-		final File logFile,
-		final File reportFile)
+
+	private void initialiseJobRunEnvironment(final File exportDirectory) 
 		throws RIFServiceException {
 		
 		try {
-			if (logFile != null) {
-				this.logFile = logFile;
-				logWriter = new BufferedWriter(new FileWriter(logFile));
+			
+			StringBuilder runDirectoryPath = new StringBuilder();
+			runDirectoryPath.append(exportDirectory.getAbsolutePath());
+			runDirectoryPath.append(File.separator);
+			runDirectoryPath.append("run_");
+			String timeStamp 
+				= RIFGenericLibraryMessages.getTimeStampForFileName(new Date());
+			runDirectoryPath.append(timeStamp);
+			runDirectory = new File(runDirectoryPath.toString());
+
+			Path path = Paths.get(runDirectoryPath.toString());
+			if (!Files.exists(path)) {
+				try {
+					Files.createDirectories(path);
+				} catch (IOException ioException) {
+					//fail to create directory
+					ioException.printStackTrace();
+				}
 			}
-			if (reportFile != null) {
-				this.reportFile = reportFile;
-				reportWriter = new BufferedWriter(new FileWriter(reportFile));
-			}
+		
+			//initialise the log file, which will appear within the run directory
+			StringBuilder logFilePath = new StringBuilder();
+			logFilePath.append(runDirectoryPath.toString());
+			logFilePath.append(File.separator);
+			logFilePath.append("QueryLog_");
+			logFilePath.append(timeStamp);
+			logFilePath.append(".txt");
+			logFile = new File(logFilePath.toString());     
+			logWriter = new BufferedWriter(new FileWriter(logFile));
 		}
 		catch(IOException ioException) {
+			ioException.printStackTrace(System.out);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
-					"linearWorkflow.error.unableToWriteToLogFiles");
+					"linearWorkflow.error.unableToInitialiseRunEnvironment");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFGenericLibraryError.DATABASE_QUERY_FAILED,
+					RIFDataLoaderToolError.CANNOT_INITIALISE_RUN_ENVIRONMENT,
 					errorMessage);
 			throw rifServiceException;
-		}		
+		}
 	}
-	
+		
 	private void processDataSetConfiguration(
 		final DataSetConfiguration dataSetConfiguration,
 		final LinearWorkflow linearWorkflow) 
@@ -215,15 +225,14 @@ public class LinearWorkflowEnactor {
 		if (currentWorkflowState == WorkflowState.EXTRACT) {
 			
 			dataLoaderService.setupConfiguration(
-				rifManager, 
-				logWriter, 
-				exportDirectory,
+				rifManager,
+				runDirectory,
 				dataSetConfiguration);
 			
 			dataLoaderService.addFileToDataSetResults(
 				rifManager,
 				logWriter,
-				exportDirectory,
+				runDirectory,
 				linearWorkflowFile,
 				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				dataSetConfiguration);
@@ -231,7 +240,7 @@ public class LinearWorkflowEnactor {
 			dataLoaderService.extractConfiguration(
 				rifManager, 
 				logWriter,
-				exportDirectory,
+				runDirectory,
 				dataSetConfiguration);
 			
 		}
@@ -239,35 +248,35 @@ public class LinearWorkflowEnactor {
 			dataLoaderService.cleanConfiguration(
 				rifManager, 
 				logWriter,
-				exportDirectory,
+				runDirectory,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.CONVERT) { 
 			dataLoaderService.convertConfiguration(
 				rifManager, 
 				logWriter,
-				exportDirectory,
+				runDirectory,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.OPTIMISE) { 
 			dataLoaderService.optimiseConfiguration(
 				rifManager,
 				logWriter,
-				exportDirectory,
+				runDirectory,
 				dataSetConfiguration);			
 		}
 		else if (currentWorkflowState == WorkflowState.CHECK) { 
 			dataLoaderService.checkConfiguration(
 				rifManager,
 				logWriter,
-				exportDirectory,
+				runDirectory,
 				dataSetConfiguration);			
 		}
-		else if (currentWorkflowState == WorkflowState.PUBLISH) { 
+		else if (currentWorkflowState == WorkflowState.PUBLISH) { 			
 			dataLoaderService.publishConfiguration(
 				rifManager,
 				logWriter,
-				exportDirectory,
+				runDirectory,
 				dataSetConfiguration);			
 		}
 
@@ -288,6 +297,7 @@ public class LinearWorkflowEnactor {
 			logWriter.flush();
 		}
 		catch(IOException ioException) {
+			ioException.printStackTrace(System.out);
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"general.io.unableToWriteToFile",

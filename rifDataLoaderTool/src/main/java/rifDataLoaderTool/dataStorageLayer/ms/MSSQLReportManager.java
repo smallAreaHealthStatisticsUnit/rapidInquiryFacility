@@ -207,13 +207,17 @@ class MSSQLReportManager
 		final DataSetConfiguration dataSetConfiguration) {
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getChangeAuditFields(FieldChangeAuditLevel.INCLUDE_FIELD_NAME_ONLY);
+			= DataSetConfigurationUtility.getChangeAuditFields(
+				dataSetConfiguration, 
+				FieldChangeAuditLevel.INCLUDE_FIELD_NAME_ONLY);
 		if (fieldConfigurations.size() > 0) {
 			return true;
 		}
 
 		fieldConfigurations
-			= dataSetConfiguration.getChangeAuditFields(FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION);
+			= DataSetConfigurationUtility.getChangeAuditFields(
+				dataSetConfiguration, 
+				FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION);
 		if (fieldConfigurations.size() > 0) {
 			return true;
 		}

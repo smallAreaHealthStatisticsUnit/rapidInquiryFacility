@@ -490,15 +490,12 @@ class PopulationHealthDataLoaderDialog
 					rifManager, 
 					dataLoaderService);
 			linearWorkflowEnactor.setExportDirectory(exportDirectory);
-						
-			File dummyFile = new File("C://rif_scripts//test_data//blah.log");
+			
+			/*
 			linearWorkflowEnactor.runWorkflow(
 				exportDirectory,
-				dummyFile, 
-				null, 
-				currentlySelectedFile,
 				workingCopyLinearWorkflow);
-
+			*/
 			String workflowCompletedMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"populationHealthDataLoaderDialog.info.workflowFinishedRunning");

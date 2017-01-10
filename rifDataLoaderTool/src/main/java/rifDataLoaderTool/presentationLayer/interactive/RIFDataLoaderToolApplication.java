@@ -344,6 +344,7 @@ public class RIFDataLoaderToolApplication
 		final DataLoadingOrder completionState) {
 		
 		
+		dependencyManager.resetDependencies(dataLoaderToolConfiguration);
 		geographyMetaDataPanel.refresh();
 		healthThemeListPanel.refresh();
 		configurationHintsPanel.refresh();
@@ -387,6 +388,7 @@ public class RIFDataLoaderToolApplication
 					dataLoaderService);
 			linearWorkflowEnactor.runWorkflow(
 				outputDirectory, 
+				session.getDataLoaderToolConfiguration(),
 				workflow);
 		}
 		catch(RIFServiceException rifServiceException) {

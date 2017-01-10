@@ -222,7 +222,7 @@ public final class PGSQLCastingUtility {
 		queryFormatter.addQueryLine(1, "row_number,");
 	
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
+			= DataSetConfigurationUtility.getRequiredAndExtraFieldConfigurations(dataSetConfiguration);
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 		for (int i = 0; i < numberOfFieldConfigurations; i++) {
 			if (i != 0) {

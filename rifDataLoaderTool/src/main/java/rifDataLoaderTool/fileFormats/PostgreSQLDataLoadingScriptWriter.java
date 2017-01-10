@@ -218,7 +218,7 @@ public class PostgreSQLDataLoadingScriptWriter {
 		
 		//Process the fields which did not require conversion
 		ArrayList<DataSetFieldConfiguration> fieldsWithoutConversion
-			= dataSetConfiguration.getFieldsWithoutConversionFunctions();
+			= DataSetConfigurationUtility.getFieldsWithoutConversionFunctions(dataSetConfiguration);
 		for (DataSetFieldConfiguration fieldWithoutConversion : fieldsWithoutConversion) {
 			boolean isRequired
 				= !fieldWithoutConversion.isEmptyValueAllowed();

@@ -339,8 +339,7 @@ abstract class AbstractPGSQLDataLoaderService
 		
 	public void setupConfiguration(
 		final User _rifManager,
-		final Writer logFileWriter,
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 
@@ -352,7 +351,7 @@ abstract class AbstractPGSQLDataLoaderService
 		//Step 1: Create all the directories
 		ensureTemporaryDirectoriesExist(
 			rifManager, 
-			exportDirectory,
+			outputDirectory,
 			dataSetConfiguration); 		
 		//Step 2: Copy original data file
 		
@@ -360,10 +359,9 @@ abstract class AbstractPGSQLDataLoaderService
 	
 			String dataSetExportDirectoryPath
 				= generateDataSetExportDirectoryPath(
-					exportDirectory,
+					outputDirectory,
 					dataSetConfiguration);
 
-			
 			File sourceFile = new File(dataSetConfiguration.getFilePath());		
 			String fileName = sourceFile.getName();
 			Path sourcePath = sourceFile.toPath();
@@ -408,7 +406,7 @@ abstract class AbstractPGSQLDataLoaderService
 	public void addFileToDataSetResults(
 		final User _rifManager,
 		final Writer logWriter,
-		final File exportDirectory,
+		final File outputDirectory,
 		final File originalFile,
 		final RIFDataLoadingResultTheme rifDataLoadingResultTheme,
 		final DataSetConfiguration dataSetConfiguration)
@@ -430,7 +428,7 @@ abstract class AbstractPGSQLDataLoaderService
 		
 		String dataSetExportDirectoryPath
 			= generateDataSetExportDirectoryPath(
-				exportDirectory,
+				outputDirectory,
 				dataSetConfiguration);		
 		
 		try {
@@ -462,7 +460,7 @@ abstract class AbstractPGSQLDataLoaderService
 	public void extractConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,	
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -511,7 +509,7 @@ abstract class AbstractPGSQLDataLoaderService
 			
 			String dataSetExportDirectoryPath
 				= generateDataSetExportDirectoryPath(
-					exportDirectory,
+					outputDirectory,
 					dataSetConfiguration);		
 						
 			extractWorkflowManager.extractConfiguration(
@@ -688,7 +686,7 @@ abstract class AbstractPGSQLDataLoaderService
 	public void cleanConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -728,7 +726,7 @@ abstract class AbstractPGSQLDataLoaderService
 			
 			String dataSetExportDirectoryPath
 				= generateDataSetExportDirectoryPath(
-					exportDirectory,
+					outputDirectory,
 					dataSetConfiguration);		
 			
 			cleanWorkflowManager.cleanConfiguration(
@@ -823,7 +821,7 @@ abstract class AbstractPGSQLDataLoaderService
 	public void combineConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,		
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -861,7 +859,7 @@ abstract class AbstractPGSQLDataLoaderService
 			
 			String dataSetExportDirectoryPath
 				= generateDataSetExportDirectoryPath(
-					exportDirectory,
+					outputDirectory,
 					dataSetConfiguration);		
 			
 			combineWorkflowManager.combineConfiguration(
@@ -887,7 +885,7 @@ abstract class AbstractPGSQLDataLoaderService
 	public void splitConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException,
 		RIFServiceException {
@@ -925,7 +923,7 @@ abstract class AbstractPGSQLDataLoaderService
 			
 			String dataSetExportDirectoryPath
 				= generateDataSetExportDirectoryPath(
-					exportDirectory,
+					outputDirectory,
 					dataSetConfiguration);		
 			
 			splitWorkflowManager.splitConfiguration(
@@ -951,7 +949,7 @@ abstract class AbstractPGSQLDataLoaderService
 	public void convertConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration _dataSetConfiguration)
 		throws RIFServiceException,
 		RIFServiceException {
@@ -989,7 +987,7 @@ abstract class AbstractPGSQLDataLoaderService
 			
 			String dataSetExportDirectoryPath
 				= generateDataSetExportDirectoryPath(
-					exportDirectory,
+					outputDirectory,
 					dataSetConfiguration);
 			convertWorkflowManager.convertConfiguration(
 				connection, 
@@ -1014,7 +1012,7 @@ abstract class AbstractPGSQLDataLoaderService
 	public void optimiseConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -1052,7 +1050,7 @@ abstract class AbstractPGSQLDataLoaderService
 			
 			String dataSetExportDirectoryPath
 				= generateDataSetExportDirectoryPath(
-					exportDirectory,
+					outputDirectory,
 					dataSetConfiguration);		
 
 			optimiseWorkflowManager.optimiseConfiguration(
@@ -1079,7 +1077,7 @@ abstract class AbstractPGSQLDataLoaderService
 	public void checkConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -1115,7 +1113,7 @@ abstract class AbstractPGSQLDataLoaderService
 		
 			String dataSetExportDirectoryPath
 				= generateDataSetExportDirectoryPath(
-					exportDirectory,
+					outputDirectory,
 					dataSetConfiguration);			
 			checkWorkflowManager.checkConfiguration(
 				connection, 
@@ -1141,7 +1139,7 @@ abstract class AbstractPGSQLDataLoaderService
 	public void publishConfiguration(
 		final User _rifManager,
 		final Writer logFileWriter,
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -1178,7 +1176,7 @@ abstract class AbstractPGSQLDataLoaderService
 			
 			String dataSetExportDirectoryPath
 				= generateDataSetExportDirectoryPath(
-					exportDirectory,
+					outputDirectory,
 					dataSetConfiguration);			
 			
 			publishWorkflowManager.publishConfiguration(
@@ -1202,7 +1200,7 @@ abstract class AbstractPGSQLDataLoaderService
 		
 		publishWorkflowManager.createZipArchiveFileAndCleanupTemporaryFiles(
 			logFileWriter,
-			exportDirectory.getAbsoluteFile(),
+			outputDirectory.getAbsoluteFile(),
 			dataSetConfiguration);		
 		
 	}
@@ -1210,7 +1208,7 @@ abstract class AbstractPGSQLDataLoaderService
 	public void generateResultReports(
 		final User _rifManager,
 		final Writer logFileWriter,		
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration _dataSetConfiguration) 
 		throws RIFServiceException {
 		
@@ -1247,7 +1245,7 @@ abstract class AbstractPGSQLDataLoaderService
 			reportManager.writeResults(
 				connection, 
 				logFileWriter, 
-				exportDirectory, 
+				outputDirectory, 
 				dataSetConfiguration);
 					
 			sqlConnectionManager.reclaimPooledWriteConnection(
@@ -1754,7 +1752,7 @@ abstract class AbstractPGSQLDataLoaderService
 	
 	protected void ensureTemporaryDirectoriesExist(
 		final User _rifManager,
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 				
@@ -1769,7 +1767,7 @@ abstract class AbstractPGSQLDataLoaderService
 		try {			
 			String mainScratchDirectoryPath
 				= generateDataSetExportDirectoryPath(
-					exportDirectory,
+					outputDirectory,
 					dataSetConfiguration);
 			
 			File temporaryDirectory = new File(mainScratchDirectoryPath.toString());
@@ -1777,8 +1775,7 @@ abstract class AbstractPGSQLDataLoaderService
 				FileUtils.deleteDirectory(temporaryDirectory);
 				Files.createDirectory(temporaryDirectory.toPath());
 			}
-			
-		
+					
 			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_ORIGINAL_DATA);
 			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL);
 			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_RESULTS);
@@ -1821,12 +1818,12 @@ abstract class AbstractPGSQLDataLoaderService
 	}
 	
 	private String generateDataSetExportDirectoryPath(
-		final File exportDirectory,
+		final File outputDirectory,
 		final DataSetConfiguration dataSetConfiguration) {
 		
 		String coreDataSetName = dataSetConfiguration.getName();
 		StringBuilder dataSetExportDirectoryPath = new StringBuilder();
-		dataSetExportDirectoryPath.append(exportDirectory.getAbsolutePath());
+		dataSetExportDirectoryPath.append(outputDirectory.getAbsolutePath());
 		dataSetExportDirectoryPath.append(File.separator);
 		dataSetExportDirectoryPath.append(coreDataSetName);
 		

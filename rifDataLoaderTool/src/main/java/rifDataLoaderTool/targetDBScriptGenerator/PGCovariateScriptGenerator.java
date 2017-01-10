@@ -111,11 +111,11 @@ public class PGCovariateScriptGenerator
 
 		//Identify the fields of interest
 		DataSetFieldConfiguration yearFieldConfiguration
-			= getRequiredYearField(covariate);
+			= DataSetConfigurationUtility.getRequiredYearField(covariate);
 		DataSetFieldConfiguration resolutionFieldConfiguration
-			= getRequiredGeographicalResolutionField(covariate);
+			= DataSetConfigurationUtility.getRequiredGeographicalResolutionField(covariate);
 		ArrayList<DataSetFieldConfiguration> covariateFields
-			= getCovariateFields(covariate);
+			= DataSetConfigurationUtility.getCovariateFields(covariate);
 		
 		//Create an empty table that will be the target of the import
 		PGSQLCreateTableQueryFormatter createTableQueryFormatter
@@ -178,7 +178,7 @@ public class PGCovariateScriptGenerator
 			= super.getPublishedFilePath(covariate);
 		importFromCSVQueryFormatter.addQueryPhrase(filePath);
 		importFromCSVQueryFormatter.addQueryPhrase(".csv");
-		importFromCSVQueryFormatter.addQueryPhrase("'");
+		importFromCSVQueryFormatter.addQueryPhrase("')");
 		covariateEntry.append(importFromCSVQueryFormatter.generateQuery());
 	}
 
@@ -190,10 +190,10 @@ public class PGCovariateScriptGenerator
 			= covariate.getPublishedTableName().toUpperCase();		
 
 		DataSetFieldConfiguration yearFieldConfiguration
-			= getRequiredYearField(covariate);
+			= DataSetConfigurationUtility.getRequiredYearField(covariate);
 		//define the geographical resolution field
 		DataSetFieldConfiguration resolutionFieldConfiguration
-			= getRequiredGeographicalResolutionField(covariate);		
+			= DataSetConfigurationUtility.getRequiredGeographicalResolutionField(covariate);		
 				
 		//Add comments to table
 		covariateEntry.append(
@@ -212,7 +212,7 @@ public class PGCovariateScriptGenerator
 				resolutionFieldConfiguration.getDescription()));
 		
 		ArrayList<DataSetFieldConfiguration> covariateFields
-			= this.getCovariateFields(covariate);
+			= DataSetConfigurationUtility.getCovariateFields(covariate);
 		for (DataSetFieldConfiguration covariateField : covariateFields) {
 			covariateEntry.append(
 					createTableFieldCommentQuery(
@@ -224,24 +224,7 @@ public class PGCovariateScriptGenerator
 		
 		
 	}
-	
-	private ArrayList<DataSetFieldConfiguration> getCovariateFields(
-		final DataSetConfiguration dataSetConfiguration) {
-		
-		// We know that for covariates, there should exactly one required year 
-		// field
-		ArrayList<DataSetFieldConfiguration> results = new ArrayList<DataSetFieldConfiguration>();
-		ArrayList<DataSetFieldConfiguration> fields
-			= dataSetConfiguration.getFieldConfigurations();
-		for (DataSetFieldConfiguration field : fields) {
-			if (field.getFieldPurpose() == FieldPurpose.COVARIATE) {
-				results.add(field);				
-			}		
-		}
 
-		return results;
-	}
-	
 	private void addEntryToRIF40CovariatesTable(
 		final StringBuilder covariateEntry,
 		final DataSetConfiguration covariateConfiguration) {
@@ -253,12 +236,13 @@ public class PGCovariateScriptGenerator
 		String geographyName = geography.getName().toUpperCase();
 		
 		DataSetFieldConfiguration requiredGeographicalResolutionField
-			= getRequiredGeographicalResolutionField(covariateConfiguration);
+			= DataSetConfigurationUtility.getRequiredGeographicalResolutionField(
+				covariateConfiguration);
 		String geographicalResolutionName
 			= requiredGeographicalResolutionField.getCleanFieldName().toUpperCase();
 		
 		ArrayList<DataSetFieldConfiguration> covariateFieldConfigurations
-			= getCovariateFields(covariateConfiguration);
+			= DataSetConfigurationUtility.getCovariateFields(covariateConfiguration);
 		for (DataSetFieldConfiguration covariateFieldConfiguration : covariateFieldConfigurations) {
 			addCovariateField(
 				covariateEntry,
@@ -298,11 +282,11 @@ public class PGCovariateScriptGenerator
 			= covariateFieldConfiguration.getRIFDataType();
 		if (rifDataType == RIFDataTypeFactory.RIF_DOUBLE_DATA_TYPE) {
 			//Assume it's a continuous variable, type '2'
-			queryFormatter.addQueryLine(1, "2)");			
+			queryFormatter.addQueryLine(1, "2");			
 		}
 		else {
 			//otherwise let's assume it's a type '1'
-			queryFormatter.addQueryLine(1, "1)");
+			queryFormatter.addQueryLine(1, "1");
 		}
 		queryFormatter.addQueryLine(0, "FROM ");
 		queryFormatter.addQueryPhrase(1, covariateTableName);
@@ -317,12 +301,12 @@ public class PGCovariateScriptGenerator
 		String publishedTableName
 			= covariate.getPublishedTableName().toUpperCase();
 		DataSetFieldConfiguration yearFieldConfiguration
-			= getRequiredYearField(covariate);
+			= DataSetConfigurationUtility.getRequiredYearField(covariate);
 		String yearFieldName
 			= yearFieldConfiguration.getConvertFieldName().toUpperCase();
 		//define the geographical resolution field
 		DataSetFieldConfiguration resolutionFieldConfiguration
-			= getRequiredGeographicalResolutionField(covariate);
+			= DataSetConfigurationUtility.getRequiredGeographicalResolutionField(covariate);
 		String resolutionFieldName
 			= resolutionFieldConfiguration.getConvertFieldName().toUpperCase();
 		

@@ -182,13 +182,57 @@ CREATE OR REPLACE FUNCTION is_numeric(text)
 	SELECT $1 ~ ''^[0-9]+$''
 ' LANGUAGE 'sql';
 
+
+CREATE OR REPLACE FUNCTION is_valid_age(
+	candidate_age TEXT)
+	RETURNS BOOLEAN AS 
+$$
+DECLARE
+	age_value INT;
+
+BEGIN
+	
+	age_value := candidate_age :: INT;
+	IF (age_value < 0) OR (age_value > 120) THEN
+		RETURN FALSE;
+	ELSE
+		RETURN TRUE;
+	END IF;	
+
+EXCEPTION WHEN others THEN
+	RETURN FALSE;
+	
+END;
+$$   LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION is_valid_age(
+	candidate_age TEXT)
+	RETURNS BOOLEAN AS 
+$$
+DECLARE
+	age_value INT;
+
+BEGIN
+	
+	age_value := candidate_age :: INT;
+	IF (age_value < 0) OR (age_value > 120) THEN
+		RETURN FALSE;
+	ELSE
+		RETURN TRUE;
+	END IF;	
+
+EXCEPTION WHEN others THEN
+	RETURN FALSE;
+	
+END;
+$$   LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION is_valid_uk_postal_code(
 	candidate_postal_code TEXT)
 	RETURNS BOOLEAN AS 
 $$
 DECLARE
 	cleaned_postal_code TEXT;
-	age_sex_code INT;
 BEGIN
 
 	cleaned_postal_code := UPPER(REPLACE(candidate_postal_code, ' ', ''));
@@ -201,6 +245,38 @@ BEGIN
 
 END;
 $$   LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION is_valid_double(
+	candidate_double VARCHAR(20))
+	RETURNS BOOLEAN AS 
+$$
+DECLARE
+	double_value DOUBLE PRECISION;
+BEGIN
+
+	SELECT cast(candidate_double as double precision)
+	INTO double_value;
+		
+	RETURN TRUE;
+EXCEPTION WHEN others THEN
+	RETURN FALSE;
+
+END;
+$$   LANGUAGE plpgsql;
+
+CREATE FUNCTION is_valid_integer(candidate_integer TEXT) 
+RETURNS BOOLEAN AS '
+SELECT candidate_integer ~ ''^[0-9]+$''
+' LANGUAGE 'sql';
+
+
+
+
+
+
+
 
 -- =====================================================================
 -- Data Transformation Functions

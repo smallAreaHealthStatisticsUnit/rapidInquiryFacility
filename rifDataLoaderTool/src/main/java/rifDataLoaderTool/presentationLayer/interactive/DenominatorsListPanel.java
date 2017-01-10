@@ -206,6 +206,7 @@ public class DenominatorsListPanel
 	protected void deleteSelectedListItems() {
 		
 		try {
+			System.out.println("Delete selected list items 1");
 			DLDependencyManager dependencyManager
 				= getDependencyManager();
 			ArrayList<DisplayableListItemInterface> itemsToDelete
@@ -216,15 +217,18 @@ public class DenominatorsListPanel
 				dependencyManager.checkDenominatorDependencies(dataSetConfigurationToDelete);
 			}
 			
+			System.out.println("Delete selected list items 2");
 			//There are no numerators that depend on any of the denominators
 			//that are meant to be deleted.  Next, remove any dependencies that either
 			//a Geography or a Health Theme may have on one of the denominators
 			for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
+				System.out.println("Delete selected list items 2-1");
 				DataSetConfiguration dataSetConfigurationToDelete
 					= (DataSetConfiguration) itemToDelete;
 				dependencyManager.deregisterDependenciesOfDataSet(dataSetConfigurationToDelete);
 			}
 			
+			System.out.println("Delete selected list items 3");
 			//We're now ready to delete the items.  Delete them from both the 
 			//data loader tool configuration model object that is being managed
 			//by the change manager and the GUI list

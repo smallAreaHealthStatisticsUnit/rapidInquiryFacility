@@ -222,7 +222,8 @@ final public class MSSQLConvertWorkflowManager
 		final DataSetConfiguration dataSetConfiguration) {
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getFieldsWithoutConversionFunctions();
+			= DataSetConfigurationUtility.getFieldsWithoutConversionFunctions(
+				dataSetConfiguration);
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			queryFormatter.addQueryPhrase(",");
 			queryFormatter.finishLine();			
@@ -256,7 +257,7 @@ final public class MSSQLConvertWorkflowManager
 		throws RIFServiceException {
 			
 		ArrayList<DataSetFieldConfiguration> fieldsWithConversions
-			= dataSetConfiguration.getFieldsWithConversionFunctions();
+			= DataSetConfigurationUtility.getFieldsWithConversionFunctions(dataSetConfiguration);
 		for (DataSetFieldConfiguration fieldWithConversion : fieldsWithConversions) {
 			RIFConversionFunction rifConversionFunction
 				= fieldWithConversion.getConvertFunction();

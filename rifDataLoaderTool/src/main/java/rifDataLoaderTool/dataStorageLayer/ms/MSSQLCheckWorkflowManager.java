@@ -4,6 +4,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
@@ -365,7 +366,8 @@ final public class MSSQLCheckWorkflowManager
 		
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
+			= DataSetConfigurationUtility.getRequiredAndExtraFieldConfigurations(
+				dataSetConfiguration);
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			if (excludeFieldFromChecks(fieldConfiguration) == false) {
 				String convertFieldName 
