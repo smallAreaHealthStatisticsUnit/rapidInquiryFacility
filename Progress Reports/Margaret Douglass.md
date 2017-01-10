@@ -2,11 +2,43 @@
 
 Principal Work Area: **Microsoft SQL server database port** 
 
+###2017
+
+###January
+Java related to the MS SQL Server port (+ handover)
+
+######9 January
+* Taking advantage of being stranded by the tube strike to focus on this code again.
+MSSQLCreateIndexQueryFormatter: still uncertain whether there should be checks about whether columns can be indexed, whether they have full text enabled, checked with Kevin what kind of checks he normally does in the Java utliity classes
+MSSQLCreatePrimaryKeyQueryFormatter: same problem about which checks to perform, including whether chosen column has any null values
+MSSQLCreateTableQueryFormatter: temporary table syntax will be an issue -- names must begin with "#" (or else put them into tempDB tablespace)
+MSSQLDeleteIndexQueryFormatter: fixed syntax, but I have not written the database code necessary to check whether index already exists -- easiest done in a user-defined database function instead of line-by-line Java
+MSSQLDeleteRowsQueryFormatter: removed all incorrect (inappropriate) join code
+MSSQLExportTableToCSVQueryFormatter: takes advantage of a postgres-only functionality, will be difficult to duplicate using SQL Server...
+* Talking to Kevin about regexp options in SQL Server that do not require CLR/.NET
+
 ###2016
 
 ###December
-Java related to the MS SQL Server port
+I continued to work (part-time) on the Java utility classes that will be used to connect to Microsoft SQL Server.
 
+######19 December
+* Discussed with Kevin, we agreed to delete unused and incorrect functionality in SQL query classes instead of fixing the code.
+* Made JUnit tests for MSSQLAggregateValueQueryFormatter (more to prove that I could do JUnit test cases than to really test whether the code for min/max was right)
+* MSSQLCountTableRowsQueryFormatter clearly duplicates functions of MSSQLCountQueryFormatter, but included due to backwards compatiblity 
+
+######15 December
+* Returning to testing the SQL Query Java classes, now using the Windows laptop
+* Now making formal JUnit test cases to be more thorough in my tests.  Using rif_data.sahsuland_cancer and related tables for the tests and answers
+* MSSQLCountQueryFormatter: functions for joining 2 tables are very wrong.  Asked Kevin whether he thinks I should delete the functions (not currently called anywhere) or fix them so they can be used correctly in the future.
+  - do we really only use 'AND' for multiple where clauses and never 'OR'?  
+
+######14 December
+* Finishing setting up sahsuland_dev in SQL Server on the Windows laptop, minor changes to the setup scripts to deal with the mismatched default collation problem.
+(minor changes with collation clause not uploaded to Github because I don't know whether that is a common setup problem)
+
+######13 December
+* Continuing to set up Windows RIF laptop, many problems with Eclipse environment (as usual)
 
 ######12 December
 * Setting up the Windows RIF laptop with SQL Server, tidying up some installation scripts.

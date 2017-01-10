@@ -215,7 +215,8 @@ public class MSSQLDataTypeSearchReplaceUtility {
 		}
 		else {
 			fieldConfigurations
-				= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
+				= DataSetConfigurationUtility.getRequiredAndExtraFieldConfigurations(
+					dataSetConfiguration);
 		}
 		
 		int numberOfFieldConfigurations = fieldConfigurations.size();

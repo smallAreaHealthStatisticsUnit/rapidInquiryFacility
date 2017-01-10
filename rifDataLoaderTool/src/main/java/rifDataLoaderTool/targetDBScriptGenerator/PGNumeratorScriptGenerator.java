@@ -167,7 +167,7 @@ public class PGNumeratorScriptGenerator
 			= super.getPublishedFilePath(denominator);
 		importFromCSVQueryFormatter.addQueryPhrase(filePath);
 		importFromCSVQueryFormatter.addQueryPhrase(".csv");
-		importFromCSVQueryFormatter.addQueryPhrase("'");
+		importFromCSVQueryFormatter.addQueryPhrase("')");
 
 		denominatorEntry.append(importFromCSVQueryFormatter.generateQuery());
 	}
@@ -268,7 +268,7 @@ public class PGNumeratorScriptGenerator
 			= numerator.getPublishedTableName().toUpperCase();		
 
 		DataSetFieldConfiguration yearFieldConfiguration
-			= getRequiredYearField(numerator);
+			= DataSetConfigurationUtility.getRequiredYearField(numerator);
 					
 		//Add comments to table
 		numeratorEntry.append(
@@ -292,7 +292,7 @@ public class PGNumeratorScriptGenerator
 					ageSexGroupComment));		
 		
 		ArrayList<DataSetFieldConfiguration> resolutionFields
-			= this.getAllGeographicalResolutionFields(numerator);
+			= DataSetConfigurationUtility.getAllGeographicalResolutionFields(numerator);
 		for (DataSetFieldConfiguration resolutionField : resolutionFields) {			
 			numeratorEntry.append(
 				createTableFieldCommentQuery(
@@ -302,7 +302,7 @@ public class PGNumeratorScriptGenerator
 		}
 		
 		DataSetFieldConfiguration healthFieldConfiguration
-			= getHealthCodeField(numerator);
+			= DataSetConfigurationUtility.getHealthCodeField(numerator);
 		numeratorEntry.append(
 			createTableFieldCommentQuery(
 				publishedCovariateTableName, 
@@ -326,7 +326,7 @@ public class PGNumeratorScriptGenerator
 			= numerator.getPublishedTableName().toUpperCase();
 		
 		DataSetFieldConfiguration yearFieldConfiguration
-			= getRequiredYearField(numerator);
+			= DataSetConfigurationUtility.getRequiredYearField(numerator);
 		createIndex(
 			numeratorEntry,
 			tableName,
@@ -337,7 +337,7 @@ public class PGNumeratorScriptGenerator
 			"age_sex_group");
 		
 		ArrayList<DataSetFieldConfiguration> resolutionFields
-			= getAllGeographicalResolutionFields(numerator);
+			= DataSetConfigurationUtility.getAllGeographicalResolutionFields(numerator);
 		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
 			String fieldName
 				= resolutionField.getConvertFieldName();
@@ -348,7 +348,7 @@ public class PGNumeratorScriptGenerator
 		}
 		
 		DataSetFieldConfiguration healthCodeFieldConfiguration
-			= getHealthCodeField(numerator);
+			= DataSetConfigurationUtility.getHealthCodeField(numerator);
 	
 		createIndex(
 			numeratorEntry,
@@ -360,27 +360,6 @@ public class PGNumeratorScriptGenerator
 			tableName,
 			"total");		
 	}
-	
-	private DataSetFieldConfiguration getHealthCodeField(
-		final DataSetConfiguration numerator) {
-		
-		ArrayList<DataSetFieldConfiguration> fields
-			= numerator.getFieldConfigurations();
-		for (DataSetFieldConfiguration field : fields) {
-			FieldRequirementLevel currentRequirementLevel
-				= field.getFieldRequirementLevel();
-			FieldPurpose fieldPurpose
-				= field.getFieldPurpose();
-			if (fieldPurpose == FieldPurpose.HEALTH_CODE &&
-				currentRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF){
-				
-				return field;
-			}
-		}
-		
-		return null;
-	}
-	
 	
 	
 	// ==========================================

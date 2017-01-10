@@ -87,7 +87,6 @@ public interface DataLoaderServiceAPI {
 
 	public void setupConfiguration(
 		final User rifManager,
-		final Writer logWriter,
 		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;

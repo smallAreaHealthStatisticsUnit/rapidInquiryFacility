@@ -203,6 +203,8 @@ public class CovariatesListPanel
 	
 	protected void deleteSelectedListItems() {
 		
+		System.out.println("CovariatesListPanel deleteSelectedListItems 1");
+		
 		DLDependencyManager dependencyManager
 			= getDependencyManager();
 		ArrayList<DisplayableListItemInterface> itemsToDelete

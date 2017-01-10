@@ -110,7 +110,7 @@ public class PGDenominatorScriptGenerator
 		DataSetFieldConfiguration yearFieldConfiguration
 			= denominator.getFieldHavingConvertFieldName("year");		
 		ArrayList<DataSetFieldConfiguration> resolutionFields
-			= getAllGeographicalResolutionFields(denominator);
+			= DataSetConfigurationUtility.getAllGeographicalResolutionFields(denominator);
 		DataSetFieldConfiguration totalFieldConfiguration
 			= denominator.getFieldHavingConvertFieldName("total");
 		
@@ -156,7 +156,7 @@ public class PGDenominatorScriptGenerator
 			= new SQLGeneralQueryFormatter();
 		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
 		importFromCSVQueryFormatter.addQueryPhrase(0, "COPY ");
-		importFromCSVQueryFormatter.addQueryPhrase("rif_data.");		
+		importFromCSVQueryFormatter.addQueryPhrase("pop.");		
 		importFromCSVQueryFormatter.addQueryPhrase(publishedDenominatorTableName);		
 		importFromCSVQueryFormatter.addQueryPhrase(" (");
 		importFromCSVQueryFormatter.padAndFinishLine();
@@ -231,7 +231,7 @@ public class PGDenominatorScriptGenerator
 			= denominator.getPublishedTableName().toUpperCase();		
 
 		DataSetFieldConfiguration yearFieldConfiguration
-			= getRequiredYearField(denominator);
+			= DataSetConfigurationUtility.getRequiredYearField(denominator);
 					
 		//Add comments to table
 		denominatorEntry.append(
@@ -255,7 +255,7 @@ public class PGDenominatorScriptGenerator
 					ageSexGroupComment));		
 		
 		ArrayList<DataSetFieldConfiguration> resolutionFields
-			= this.getAllGeographicalResolutionFields(denominator);
+			= DataSetConfigurationUtility.getAllGeographicalResolutionFields(denominator);
 		for (DataSetFieldConfiguration resolutionField : resolutionFields) {			
 			denominatorEntry.append(
 				createTableFieldCommentQuery(
@@ -281,7 +281,7 @@ public class PGDenominatorScriptGenerator
 			= denominator.getPublishedTableName().toUpperCase();
 		
 		DataSetFieldConfiguration yearFieldConfiguration
-			= getRequiredYearField(denominator);
+			= DataSetConfigurationUtility.getRequiredYearField(denominator);
 		createIndex(
 			denominatorEntry,
 			tableName,
@@ -292,7 +292,7 @@ public class PGDenominatorScriptGenerator
 			"age_sex_group");
 		
 		ArrayList<DataSetFieldConfiguration> resolutionFields
-			= getAllGeographicalResolutionFields(denominator);
+			= DataSetConfigurationUtility.getAllGeographicalResolutionFields(denominator);
 		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
 			String fieldName
 				= resolutionField.getConvertFieldName();

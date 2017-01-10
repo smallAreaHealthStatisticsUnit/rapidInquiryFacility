@@ -212,7 +212,7 @@ final public class PGSQLCleanWorkflowManager
 			
 			validationStatement.executeUpdate();
 
-			exportTable(
+			exportTable( 
 					connection, 
 					logFileWriter, 
 					exportDirectoryPath, 

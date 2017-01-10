@@ -178,6 +178,9 @@ final class PGSQLExtractWorkflowManager
 				"create_extract_table", 
 				createExtractTableQueryFormatter);
 			
+			System.out.println("EXTRACT start 1");
+			System.out.println("==" + createExtractTableQueryFormatter.generateQuery() + "==");
+			System.out.println("EXTRACT start 2");
 			createExtractTableStatement
 				= connection.prepareStatement(createExtractTableQueryFormatter.generateQuery());
 			createExtractTableStatement.executeUpdate();

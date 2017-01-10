@@ -5,6 +5,7 @@ import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
@@ -16,6 +17,7 @@ import java.sql.*;
 import java.io.*;
 import java.util.zip.*;
 import java.util.Date;
+import java.util.ArrayList;
 
 /**
  *
@@ -101,38 +103,151 @@ final class PGSQLPublishWorkflowManager
 	
 		//validate parameters
 		dataSetConfiguration.checkErrors();
-			
-		String coreDataSetName
-			= dataSetConfiguration.getName();
-		String checkTableName
-			= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
+		
+		PreparedStatement statement = null;
+		try {			
+			String coreDataSetName
+				= dataSetConfiguration.getName();
+			String checkTableName
+				= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
 
-		//Determine the prefix of the final destination table
-		RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
-		String publishTableName
-			= rifSchemaArea.getPublishedTableName(coreDataSetName);
-		deleteTable(
-			connection, 
-			logFileWriter, 
-			publishTableName);
+			//Determine the prefix of the final destination table
+			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+			String publishTableName
+				= rifSchemaArea.getPublishedTableName(coreDataSetName);
+			deleteTable(
+				connection, 
+				logFileWriter, 
+				publishTableName);
+		
+			//Create the first part of the query used to create a converted table
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+			queryFormatter.addQueryPhrase(publishTableName);
+			queryFormatter.addQueryPhrase(" AS");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryLine(1, "SELECT");
+/*			
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryLine(2, "data_set_id,");
+			queryFormatter.addQueryPhrase(2, "row_number");
+*/		
+			if ((rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA) || 
+				(rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA)) {
+						
+				//queryFormatter.addQueryPhrase(",");
+				//queryFormatter.finishLine();
+			
+				queryFormatter.addQueryLine(2, "year,");
+				queryFormatter.addQueryLine(2, "age_sex_group,");
+			
+				ArrayList<DataSetFieldConfiguration> resolutionFields
+					= DataSetConfigurationUtility.getAllGeographicalResolutionFields(dataSetConfiguration);
+				for (DataSetFieldConfiguration resolutionField : resolutionFields) {
+					queryFormatter.addQueryLine(2, resolutionField.getConvertFieldName() + ",");				
+				}
+					
+				if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+					DataSetFieldConfiguration healthCodeField
+						= DataSetConfigurationUtility.getHealthCodeField(dataSetConfiguration);
+					queryFormatter.addQueryLine(2, healthCodeField.getConvertFieldName()+ ",");
+				}
+				queryFormatter.addQueryLine(2, "total");			
+			}
+			else if (rifSchemaArea == RIFSchemaArea.COVARIATE_DATA) {
+				
+				//queryFormatter.addQueryPhrase(",");
+				//queryFormatter.finishLine();
+				queryFormatter.addQueryLine(2, "year,");
+				DataSetFieldConfiguration resolutionFieldConfiguration
+					= DataSetConfigurationUtility.getRequiredGeographicalResolutionField(dataSetConfiguration);
+				queryFormatter.addQueryPhrase(2, resolutionFieldConfiguration.getConvertFieldName());
+			
+				ArrayList<DataSetFieldConfiguration> covariateFields
+					= DataSetConfigurationUtility.getCovariateFields(dataSetConfiguration);
+				for (DataSetFieldConfiguration covariateField : covariateFields) {
+					queryFormatter.addQueryPhrase(",");
+					queryFormatter.finishLine();
+					queryFormatter.addQueryPhrase(2, covariateField.getConvertFieldName());				
+				}
+				queryFormatter.finishLine();
+			}
+			else {
+				ArrayList<DataSetFieldConfiguration> fields 
+					= dataSetConfiguration.getFieldConfigurations();
+				for (int i = 0; i < fields.size(); i++) {
+					DataSetFieldConfiguration currentField
+						= fields.get(i);
+					if (i != 0) {
+						queryFormatter.addQueryPhrase(",");						
+					}
+					queryFormatter.finishLine();
+					queryFormatter.addQueryPhrase(
+						2, 
+						currentField.getConvertFieldName());				
+				}
+			}
+			queryFormatter.finishLine();
+			queryFormatter.addQueryLine(1, "FROM ");		
+			queryFormatter.addQueryLine(2, checkTableName);	
+
+			logSQLQuery(
+				logFileWriter,
+				"createPublishedTable", 
+				queryFormatter);
+				
+
+			System.out.println("-----publish1=====");
+			System.out.println(queryFormatter.generateQuery());
+			System.out.println("-----publish2=====");
+			statement
+				= createPreparedStatement(connection, queryFormatter);
+			statement.executeUpdate();
+
+			/*
+			addPrimaryKey(
+				connection,
+				logFileWriter,
+				publishTableName,
+				"data_set_id");
+			*/
+			
+			exportTable(
+				connection, 
+				logFileWriter, 
+				exportDirectoryPath, 
+				RIFDataLoadingResultTheme.ARCHIVE_RESULTS,
+				publishTableName);			
+						
+			updateLastCompletedWorkState(
+				connection,
+				logFileWriter,
+				dataSetConfiguration,
+				WorkflowState.PUBLISH);
+		}
+		catch(SQLException exception) {
+			exception.printStackTrace(System.out);
+			String errorMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"publishWorkflowManager.unableToPublishConfiguration",
+					dataSetConfiguration.getDisplayName());
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFDataLoaderToolError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}	
+		finally {
+			PGSQLQueryUtility.close(statement);			
+		}
+	}
+/*		
 		renameTable(
 			connection, 
 			logFileWriter, 
 			checkTableName, 
 			publishTableName);
-		
-		
-		
-		/*
-		 * Exporting Part I: Generate the archive data file 
-		 */
-		exportTable(
-			connection, 
-			logFileWriter, 
-			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.ARCHIVE_RESULTS,
-			publishTableName);
-		
+
 		//Generate the script that is supposed to be specific to SQL Server or PostgreSQL
 		PostgreSQLDataLoadingScriptWriter scriptWriter
 			= new PostgreSQLDataLoadingScriptWriter();
@@ -144,15 +259,10 @@ final class PGSQLPublishWorkflowManager
 		scriptWriter.writeFile(
 			dataLoadingScriptFile, 
 			dataSetConfiguration);		
+	
 		
-		updateLastCompletedWorkState(
-			connection,
-			logFileWriter,
-			dataSetConfiguration,
-			WorkflowState.CHECK);
 	}
-	
-	
+
 	private File createDataLoadingScriptFileName(
 		final String exportDirectoryPath,
 		final RIFDataLoadingResultTheme dataLoadingResultTheme,
@@ -176,7 +286,7 @@ final class PGSQLPublishWorkflowManager
 		
 		return new File(buffer.toString());
 	}
-	
+*/	
 	
 	public void establishTableAccessPrivileges(
 		final Connection connection,

@@ -339,7 +339,6 @@ abstract class AbstractMSSQLDataLoaderService
 		
 	public void setupConfiguration(
 		final User _rifManager,
-		final Writer logFileWriter,
 		final File exportDirectory,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
@@ -362,8 +361,7 @@ abstract class AbstractMSSQLDataLoaderService
 				= generateDataSetExportDirectoryPath(
 					exportDirectory,
 					dataSetConfiguration);
-
-			
+	
 			File sourceFile = new File(dataSetConfiguration.getFilePath());		
 			String fileName = sourceFile.getName();
 			Path sourcePath = sourceFile.toPath();

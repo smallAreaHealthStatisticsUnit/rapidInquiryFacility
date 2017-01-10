@@ -210,7 +210,8 @@ public class RIFSchemaAreaPropertyManager {
 			}
 		}
 
-		String[] results = missingRequiredFieldNames.toArray(new String[0]);
+		String[] results = new String[0];
+		//String[] results = missingRequiredFieldNames.toArray(new String[0]);
 		return results;
 	}
 	
@@ -232,23 +233,7 @@ public class RIFSchemaAreaPropertyManager {
 		final RIFSchemaArea rifSchemaArea) {
 		
 		String[] requiredConvertFieldNames = new String[0];
-		if (rifSchemaArea == RIFSchemaArea.HEALTH_CODE_DATA) {
-			requiredConvertFieldNames = new String[4];
-			requiredConvertFieldNames[0] = "code";
-			requiredConvertFieldNames[1] = "label";
-			requiredConvertFieldNames[2] = "description";
-			requiredConvertFieldNames[3] = "name_space";
-		}
-		else if (rifSchemaArea == RIFSchemaArea.COVARIATE_DATA) {
-			requiredConvertFieldNames = new String[6];
-			requiredConvertFieldNames[0] = "geography";
-			requiredConvertFieldNames[1] = "geolevel_name";
-			requiredConvertFieldNames[2] = "covariate_name";
-			requiredConvertFieldNames[3] = "min";
-			requiredConvertFieldNames[4] = "max";
-			requiredConvertFieldNames[5] = "type";
-		}
-		else if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+		if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
 			requiredConvertFieldNames = new String[2];
 			requiredConvertFieldNames[0] = "year";
 			requiredConvertFieldNames[1] = "age_sex_group";			

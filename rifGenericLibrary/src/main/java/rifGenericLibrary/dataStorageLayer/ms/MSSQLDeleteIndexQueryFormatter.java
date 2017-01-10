@@ -117,7 +117,10 @@ public final class MSSQLDeleteIndexQueryFormatter
 	@Override
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "DROP INDEX IF EXISTS");
+		
+		//check if index exists first?
+		
+		addQueryPhrase(0, "DROP INDEX ");
 		padAndFinishLine();
 		addQueryPhrase(1, "ind_");
 		addQueryPhrase(getSchemaTableName(indexTable));

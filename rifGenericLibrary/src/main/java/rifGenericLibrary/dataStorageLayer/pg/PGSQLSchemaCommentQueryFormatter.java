@@ -110,7 +110,7 @@ public final class PGSQLSchemaCommentQueryFormatter
 	
 	@Override
 	public String generateQuery() {
-
+		resetAccumulatedQueryExpression();
 		if (columnName == null) {
 			//it is a table comment
 			addQueryPhrase(0, "COMMENT ON TABLE ");

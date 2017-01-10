@@ -111,7 +111,10 @@ public final class MSSQLDeleteTableQueryFormatter
 	public String generateQuery() {
 
 		resetAccumulatedQueryExpression();
-		addQueryPhrase(0, "DROP TABLE IF EXISTS ");
+		
+		//test whether table already exists?
+		
+		addQueryPhrase(0, "DROP TABLE ");
 		addQueryPhrase(getSchemaTableName(tableToDelete));
 
 		return super.generateQuery();		

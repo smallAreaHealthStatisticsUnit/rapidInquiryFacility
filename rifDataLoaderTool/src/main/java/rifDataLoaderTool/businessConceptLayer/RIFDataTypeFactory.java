@@ -203,9 +203,9 @@ public class RIFDataTypeFactory {
 				description,
 				true);		
 		
+		/*
 		String regularExpression
-			= "^[0-9]{1,2}$|1[0-1][0-9]$";
-	
+			= "^[0-9]{1,2}$|1[0-1][0-9]$";	
 		String validationRuleName1
 			= RIFDataLoaderToolMessages.getMessage(
 				"rifDataType.age.vaidationRule1.name");
@@ -222,6 +222,11 @@ public class RIFDataTypeFactory {
 	
 		ageRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_RULES);
 		ageRIFDataType.addValidationRule(validationRule);
+		*/
+		
+		ageRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_FUNCTION);
+		ageRIFDataType.setValidationFunctionName("is_valid_age");
+
 		ageRIFDataType.setFieldCleaningPolicy(RIFFieldActionPolicy.USE_FUNCTION);
 		ageRIFDataType.setCleaningFunctionName("clean_age");
 		
@@ -240,7 +245,8 @@ public class RIFDataTypeFactory {
 				name, 
 				description,
 				true);
-				
+
+		/*
 		String validationRegularExpression
 			= "?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
 		//= "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
@@ -251,9 +257,12 @@ public class RIFDataTypeFactory {
 				"", 
 				validationRegularExpression, 
 				true);
-
 		doubleRIFDataType.addValidationRule(validationRule);
 		doubleRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_RULES);		
+		*/
+		
+		doubleRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_FUNCTION);
+		doubleRIFDataType.setValidationFunctionName("is_valid_double");
 		
 		return doubleRIFDataType;
 	}
@@ -338,7 +347,7 @@ public class RIFDataTypeFactory {
 				cleaningName1, 
 				description1, 
 				"^female|FEMALE$", 
-				"1", 
+				"2", 
 				true);
 		sexRIFDataType.addCleaningRule(cleaningRule1);
 			
@@ -351,7 +360,7 @@ public class RIFDataTypeFactory {
 				cleaningName2, 
 				cleaningDescription2, 
 				"^male|MALE$", 
-				"0", 
+				"1", 
 				true);
 		sexRIFDataType.addCleaningRule(cleaningRule2);
 
@@ -364,7 +373,7 @@ public class RIFDataTypeFactory {
 				cleaningName3, 
 				cleaningDescription3, 
 				"^hermaphrodite|HERMAPHRODITE$", 
-				"2", 
+				"5", 
 				true);
 		sexRIFDataType.addCleaningRule(cleaningRule3);
 
@@ -377,7 +386,7 @@ public class RIFDataTypeFactory {
 				cleaningName4, 
 				cleaningDescription4, 
 				"^unknown|UNKNOWN$", 
-				"3", 
+				"6", 
 				true);
 		sexRIFDataType.addCleaningRule(cleaningRule4);
 				
@@ -390,7 +399,7 @@ public class RIFDataTypeFactory {
 				cleaningName5, 
 				cleaningDescription5, 
 				"^[fF]$", 
-				"1", 
+				"2", 
 				true);
 		sexRIFDataType.addCleaningRule(cleaningRule5);
 				
@@ -403,7 +412,7 @@ public class RIFDataTypeFactory {
 				cleaningName6, 
 				cleaningDescription6, 
 				"^[mM]$", 
-				"0", 
+				"1", 
 				true);
 		sexRIFDataType.addCleaningRule(cleaningRule6);
 		
@@ -416,7 +425,7 @@ public class RIFDataTypeFactory {
 				cleaningName7, 
 				cleaningDescription7, 
 				"^[hH]$", 
-				"2", 
+				"5", 
 				true);
 		sexRIFDataType.addCleaningRule(cleaningRule7);
 
@@ -429,7 +438,7 @@ public class RIFDataTypeFactory {
 				cleaningName8, 
 				cleaningDescription8, 
 				"^[uU]$", 
-				"3", 
+				"6", 
 				true);
 		sexRIFDataType.addCleaningRule(cleaningRule8);
 		
@@ -447,7 +456,7 @@ public class RIFDataTypeFactory {
 			= RIFDataLoaderToolMessages.getMessage("rifDataType.sex.validating.description1");	
 		validationRule.setName(validatingName1);
 		validationRule.setDescription(validatingDescription8);
-		validationRule.setValidValue("[0|1|2|3]");
+		validationRule.setValidValue("[1|2|3|5|6]");
 		sexRIFDataType.addValidationRule(validationRule);
 	
 		return sexRIFDataType;
@@ -466,12 +475,17 @@ public class RIFDataTypeFactory {
 				description,
 				true);		
 	
+		/*
 		ValidationRule validationRule
 			= ValidationRule.newInstance();
 		validationRule.setValidValue("^(\\d+)");
 		integerRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_RULES);
 		integerRIFDataType.setFieldCleaningPolicy(RIFFieldActionPolicy.DO_NOTHING);			
 		integerRIFDataType.addValidationRule(validationRule);
+		*/
+		
+		integerRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_FUNCTION);
+		integerRIFDataType.setValidationFunctionName("is_valid_integer");
 		
 		
 		return integerRIFDataType;

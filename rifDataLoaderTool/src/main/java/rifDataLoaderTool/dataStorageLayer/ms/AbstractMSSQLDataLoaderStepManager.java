@@ -5,6 +5,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
@@ -334,7 +335,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			
 			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
 			ArrayList<DataSetFieldConfiguration> fieldConfigurations
-				= dataSetConfiguration.getRequiredAndExtraFieldConfigurations();
+				= DataSetConfigurationUtility.getRequiredAndExtraFieldConfigurations(
+					dataSetConfiguration);
 			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 				
 				if (excludeFieldFromConsideration(

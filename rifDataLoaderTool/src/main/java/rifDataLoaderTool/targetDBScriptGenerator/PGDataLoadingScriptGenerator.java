@@ -2,8 +2,10 @@ package rifDataLoaderTool.targetDBScriptGenerator;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.DataLoaderToolConfigurationReader;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.io.*;
 
 /**
@@ -100,27 +102,31 @@ public class PGDataLoadingScriptGenerator {
 		denominatorScriptGenerator = new PGDenominatorScriptGenerator();
 		numeratorScriptGenerator = new PGNumeratorScriptGenerator();
 		covariateScriptGenerator = new PGCovariateScriptGenerator();
-		
-		File scriptDirectory = new File("C:\\rifDataLoaderTool");		
-		denominatorScriptGenerator.setScriptDirectory(scriptDirectory);
-		numeratorScriptGenerator.setScriptDirectory(scriptDirectory);
-		covariateScriptGenerator.setScriptDirectory(scriptDirectory);
+
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 	public void writeScript(
-		final File scriptFile,
+		final File outputDirectory,
 		final DataLoaderToolConfiguration dataLoaderToolConfiguration) {
+
 		
+		setOutputDirectory(outputDirectory);
+		
+		BufferedWriter bufferedWriter = null;
 		try {
-			
-			FileWriter fileWriter = new FileWriter(scriptFile);
-			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+			File scriptfile = createDataLoadingScriptFile(outputDirectory);						
+			FileWriter fileWriter = new FileWriter(scriptfile);
+			bufferedWriter = new BufferedWriter(fileWriter);
 		
 			//Part I: Pre-pend script for loading geospatial data
 		
+			//Start function header - temporary measure
+			bufferedWriter.write("CREATE OR REPLACE FUNCTION tmp_dl_function() ");
+			bufferedWriter.write("RETURNS void AS $$ DECLARE BEGIN ");
+			
 			//Part II: Load health themes
 			bufferedWriter.write("-- ===============================================");
 			bufferedWriter.newLine();
@@ -213,17 +219,40 @@ public class PGDataLoadingScriptGenerator {
 				bufferedWriter.flush();
 			}
 			
+			bufferedWriter.write("END; $$ LANGUAGE plpgsql;");
+			bufferedWriter.newLine();
+			bufferedWriter.write("SELECT \"tmp_dl_function\"()");
+	
+			bufferedWriter.flush();
+			bufferedWriter.close();
 			
 		}
 		catch(IOException ioException) {
-			
-			
-		}
-		
-		
-		
+			ioException.printStackTrace(System.out);
+		}	
+	}
+
+	private void setOutputDirectory(final File outputDirectory) {
+		denominatorScriptGenerator.setScriptDirectory(outputDirectory);
+		numeratorScriptGenerator.setScriptDirectory(outputDirectory);
+		covariateScriptGenerator.setScriptDirectory(outputDirectory);
 	}
 	
+	private File createDataLoadingScriptFile(final File outputDirectory) {
+		StringBuilder filePath = new StringBuilder();
+		filePath.append(outputDirectory.getAbsolutePath());
+		filePath.append(File.separator);
+		filePath.append("run_data_loader_");
+		String timeStamp
+			= RIFGenericLibraryMessages.getTimeStampForFileName(new Date());
+		filePath.append(timeStamp);
+		filePath.append(".sql");
+		
+		File file = new File(filePath.toString());
+		return file;
+	}
+		
+
 	
 	// ==========================================
 	// Section Errors and Validation

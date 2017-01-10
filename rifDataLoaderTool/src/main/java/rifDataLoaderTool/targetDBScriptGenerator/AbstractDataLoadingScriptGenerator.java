@@ -1,6 +1,7 @@
 package rifDataLoaderTool.targetDBScriptGenerator;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
 import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
@@ -152,65 +153,6 @@ public abstract class AbstractDataLoadingScriptGenerator {
 			comment);
 		
 		return queryFormatter.generateQuery();
-	}
-	
-	protected DataSetFieldConfiguration getRequiredYearField(
-		final DataSetConfiguration dataSetConfiguration) {
-		
-		//We know that for covariates, there should exactly one required year field
-		ArrayList<DataSetFieldConfiguration> results
-			= dataSetConfiguration.getDataSetFieldConfigurations(
-				RIFDataTypeFactory.RIF_YEAR_DATA_TYPE, 
-				FieldRequirementLevel.REQUIRED_BY_RIF);
-		return results.get(0);		
-	}
-
-
-	protected DataSetFieldConfiguration getRequiredGeographicalResolutionField(
-		final DataSetConfiguration dataSetConfiguration) {
-		
-		//We know that for covariates, there should exactly one required geographical 
-		//resolution field
-		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getFieldConfigurations();
-		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			FieldPurpose currentFieldPurpose
-				= fieldConfiguration.getFieldPurpose();
-			FieldRequirementLevel currentFieldRequirementLevel
-				= fieldConfiguration.getFieldRequirementLevel();
-			if ((currentFieldPurpose == FieldPurpose.GEOGRAPHICAL_RESOLUTION) &&
-				((currentFieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) ||
-				 (currentFieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD))) {
-				
-				//there should only be one
-				return fieldConfiguration;
-			}
-		}
-		return null;
-	}
-
-	protected ArrayList<DataSetFieldConfiguration> getAllGeographicalResolutionFields(
-		final DataSetConfiguration dataSetConfiguration) {
-		
-		//We know that for covariates, there should exactly one required geographical 
-		//resolution field
-		ArrayList<DataSetFieldConfiguration> results
-			= new ArrayList<DataSetFieldConfiguration>();
-		ArrayList<DataSetFieldConfiguration> fieldConfigurations
-			= dataSetConfiguration.getFieldConfigurations();
-		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			FieldPurpose currentFieldPurpose
-				= fieldConfiguration.getFieldPurpose();
-			FieldRequirementLevel currentFieldRequirementLevel
-				= fieldConfiguration.getFieldRequirementLevel();
-			if ((currentFieldPurpose == FieldPurpose.GEOGRAPHICAL_RESOLUTION) &&
-				((currentFieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) ||
-				 (currentFieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD))) {
-				
-				results.add(fieldConfiguration);
-			}
-		}
-		return results;
 	}
 	
 	protected void createIndex(

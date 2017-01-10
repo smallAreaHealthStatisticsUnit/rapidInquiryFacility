@@ -276,7 +276,7 @@ public class DataLoaderToolChangeManager
 			(revisedDenominatorCount == 0)) {
 			indicateSaveChanges();
 			notifyDataLoadingObservers(DataLoadingOrder.HEALTH_THEMES_SPECIFIED);			
-		}		
+		}
 	}
 	
 	public void deleteDenominator(final DataSetConfiguration denominator) {

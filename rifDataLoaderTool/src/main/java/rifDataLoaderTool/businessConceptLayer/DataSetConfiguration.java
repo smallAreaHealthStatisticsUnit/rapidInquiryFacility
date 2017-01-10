@@ -328,28 +328,6 @@ public class DataSetConfiguration
 		destinationDataSetConfiguration.setDependencyDataSetConfiguration(dependencyDataSetConfiguration);
 		destinationDataSetConfiguration.setGeography(sourceDataSetConfiguration.getGeography());
 	}
-	
-	public static ArrayList<DataSetConfiguration> getDataSetConfigurations(
-		final ArrayList<DataSetConfiguration> dataSetConfigurations, 
-		final RIFSchemaArea filteringRIFSchemaArea) {
-		
-		ArrayList<DataSetConfiguration> results
-			= new ArrayList<DataSetConfiguration>();
-		
-		if (filteringRIFSchemaArea == null) {
-			return results;
-		}
-		
-		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
-			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
-			if (rifSchemaArea == filteringRIFSchemaArea) {
-				results.add(dataSetConfiguration);
-			}
-		}
-		
-		return results;
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -894,72 +872,6 @@ public class DataSetConfiguration
 			errorMessages.add(errorMessage);			
 		}
 	}
-	
-	/**
-	 * filters data set field configurations based on data type and
-	 * requirement level.  If requirement level is null it will retrieve
-	 * all fields that are marked required or extra.  Note that it will not
-	 * include fields marked "ignore"
-	 * 
-	 * @param rifDataType
-	 * @param fieldRequirementLevel
-	 * @return
-	 */
-	public ArrayList<DataSetFieldConfiguration> getDataSetFieldConfigurations(
-		final RIFDataType targetRIFDataType,
-		final FieldRequirementLevel targetFieldRequirementLevel) {
-		
-		ArrayList<DataSetFieldConfiguration> results
-			= new ArrayList<DataSetFieldConfiguration>();
-		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-
-			RIFDataType currentDataType
-				= fieldConfiguration.getRIFDataType();
-			if (currentDataType.hasIdenticalContents(targetRIFDataType)) {
-				FieldRequirementLevel currentFieldRequirementLevel
-					= fieldConfiguration.getFieldRequirementLevel();
-				if (targetFieldRequirementLevel == null) {
-					if ((currentFieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) ||
-						(currentFieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD)) {						
-						results.add(fieldConfiguration);						
-					}
-				}
-				else if (targetFieldRequirementLevel == currentFieldRequirementLevel) {
-					results.add(fieldConfiguration);
-				}
-			}
-		}
-		return results;		
-	}
-	
-	public ArrayList<DataSetFieldConfiguration> getDataSetFieldConfigurations(
-		final FieldPurpose targetFieldPurpose,
-		final FieldRequirementLevel targetFieldRequirementLevel) {
-			
-		ArrayList<DataSetFieldConfiguration> results
-			= new ArrayList<DataSetFieldConfiguration>();
-		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			FieldPurpose currentFieldPurpose
-				= fieldConfiguration.getFieldPurpose();
-			if (currentFieldPurpose == targetFieldPurpose) {
-				FieldRequirementLevel currentFieldRequirementLevel
-					= fieldConfiguration.getFieldRequirementLevel();
-				if (targetFieldRequirementLevel == null) {
-					if ((currentFieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) ||
-						(currentFieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD)) {						
-						results.add(fieldConfiguration);						
-					}
-				}
-				else {	
-					if (targetFieldRequirementLevel == currentFieldRequirementLevel) {
-						results.add(fieldConfiguration);
-					}
-				}
-			}
-		}			
-		return results;		
-	}
-
 	public int getNumberOfCovariateFields() {
 		
 		int numberOfCovariateFields = 0;
@@ -971,32 +883,6 @@ public class DataSetConfiguration
 		}
 
 		return numberOfCovariateFields;
-	}
-	
-	
-	public ArrayList<DataSetFieldConfiguration> getChangeAuditFields(
-		final FieldChangeAuditLevel fieldChangeAuditLevel) {
-		
-		
-		ArrayList<DataSetFieldConfiguration> changeAuditFields
-			= new ArrayList<DataSetFieldConfiguration>();
-		
-		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			FieldRequirementLevel fieldRequirementLevel
-				= fieldConfiguration.getFieldRequirementLevel();
-			if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD) {
-				FieldChangeAuditLevel currentFieldChangeAuditLevel
-					= fieldConfiguration.getFieldChangeAuditLevel();
-			
-				if (currentFieldChangeAuditLevel == fieldChangeAuditLevel) {
-					changeAuditFields.add(fieldConfiguration);				
-				}
-			}
-
-		}
-		
-		return changeAuditFields;
-		
 	}
 	
 	public DataSetFieldConfiguration getFieldHavingConvertFieldName(
@@ -1016,8 +902,7 @@ public class DataSetConfiguration
 		return null;
 		
 	}
-	
-	
+
 	public ArrayList<DataSetFieldConfiguration> getFieldsWithValidationChecks() {
 		
 		ArrayList<DataSetFieldConfiguration> fieldsWithValidationChecks
@@ -1036,44 +921,7 @@ public class DataSetConfiguration
 		
 		return fieldsWithValidationChecks;
 	}
-	
-	public ArrayList<DataSetFieldConfiguration> getFieldsWithConversionFunctions() {
-		
-		ArrayList<DataSetFieldConfiguration> fieldsWithConversionFunctions
-			= new ArrayList<DataSetFieldConfiguration>();
-		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			if (fieldConfiguration.getConvertFunction() != null) {
-				
-				FieldRequirementLevel fieldRequirementLevel
-					= fieldConfiguration.getFieldRequirementLevel();
-					
-				if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD) {
-					fieldsWithConversionFunctions.add(fieldConfiguration);					
-				}
-			}
-		}
-		
-		return fieldsWithConversionFunctions;		
-	}
 
-	public ArrayList<DataSetFieldConfiguration> getFieldsWithoutConversionFunctions() {
-		
-		ArrayList<DataSetFieldConfiguration> fieldsWithoutConversionFunctions
-			= new ArrayList<DataSetFieldConfiguration>();
-		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			if (fieldConfiguration.getConvertFunction() == null) {
-
-				FieldRequirementLevel fieldRequirementLevel
-					= fieldConfiguration.getFieldRequirementLevel();
-				if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD) {
-					fieldsWithoutConversionFunctions.add(fieldConfiguration);					
-				}				
-			}
-		}
-		
-		return fieldsWithoutConversionFunctions;		
-	}	
-	
 	public ArrayList<DataSetFieldConfiguration> getFieldsWithEmptyFieldCheck() {
 		ArrayList<DataSetFieldConfiguration> fieldsWithEmptyFieldCheck
 			= new ArrayList<DataSetFieldConfiguration>();
@@ -1088,23 +936,7 @@ public class DataSetConfiguration
 	
 		return fieldsWithEmptyFieldCheck;	
 	}
-		
-	public ArrayList<DataSetFieldConfiguration> getRequiredAndExtraFieldConfigurations() {
-		ArrayList<DataSetFieldConfiguration> requiredAndExtraFieldConfigurations
-			= new ArrayList<DataSetFieldConfiguration>();
-		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
-			FieldRequirementLevel fieldRequirementLevel
-				= fieldConfiguration.getFieldRequirementLevel();
-			if (fieldRequirementLevel == FieldRequirementLevel.EXTRA_FIELD ||
-				fieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) {
 
-				requiredAndExtraFieldConfigurations.add(fieldConfiguration);
-			}
-		}
-	
-		return requiredAndExtraFieldConfigurations;	
-	}
-	
 	public ArrayList<DataSetFieldConfiguration> getFieldsWithEmptyPerYearFieldCheck() {
 		ArrayList<DataSetFieldConfiguration> fieldsWithEmptyPerYearFieldCheck
 			= new ArrayList<DataSetFieldConfiguration>();

@@ -5,6 +5,10 @@ import rifDataLoaderTool.businessConceptLayer.DLGeography;
 import rifDataLoaderTool.businessConceptLayer.DLGeographyMetaData;
 import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
+
+
+
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.system.RIFServiceException;
@@ -94,6 +98,32 @@ public class DLDependencyManager {
 	// Section Accessors and Mutators
 	// ==========================================
 	
+	public void resetDependencies(
+		final DataLoaderToolConfiguration dataLoaderToolConfiguration) {
+	
+		geographyMetaData = dataLoaderToolConfiguration.getGeographyMetaData();
+		dependenciesOnDenominator.clear();
+		dependenciesOnGeography.clear();
+		dependenciesOnHealthTheme.clear();
+		
+		ArrayList<DataSetConfiguration> dataSetConfigurations
+			= dataLoaderToolConfiguration.getAllDataSetConfigurations();
+		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
+			DLGeography geography
+				= dataSetConfiguration.getGeography();
+			registerDependencyOnGeography(dataSetConfiguration, geography);
+			DLHealthTheme healthTheme
+				= dataSetConfiguration.getHealthTheme();
+			registerDependencyOnHealthTheme(dataSetConfiguration, healthTheme);
+			
+			if (dataSetConfiguration.getRIFSchemaArea() == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+				DataSetConfiguration denominator
+					= dataSetConfiguration.getDependencyDataSetConfiguration();
+				registerDependencyOnDenominator(dataSetConfiguration, denominator);
+			}	
+		}
+	}
+	
 	public void registerGeographyMetaData(final DLGeographyMetaData geographyMetaData) {
 		this.geographyMetaData = geographyMetaData;
 	}
@@ -106,12 +136,29 @@ public class DLDependencyManager {
 			= dependenciesOnDenominator.get(denominatorDataSetConfiguration);
 		if (dependentNumerators == null) {
 			dependentNumerators = new ArrayList<DataSetConfiguration>();
-			dependenciesOnDenominator.put(
-				denominatorDataSetConfiguration, 
-				dependentNumerators);			
+			
 		}
+		dependenciesOnDenominator.put(
+				denominatorDataSetConfiguration, 
+				dependentNumerators);
 		
 		dependentNumerators.add(numeratorDataSetConfiguration);
+	}
+	
+	public void registerDependencyOnHealthTheme(
+		final DataSetConfiguration dataSetConfiguration,
+		final DLHealthTheme healthTheme) {
+		
+		ArrayList<DataSetConfiguration> dataSetConfigurations
+			= dependenciesOnHealthTheme.get(healthTheme);
+		if (dataSetConfigurations == null) {
+			dataSetConfigurations = new ArrayList<DataSetConfiguration>();
+		}
+		dataSetConfigurations.add(dataSetConfiguration);
+		
+		dependenciesOnHealthTheme.put(
+			healthTheme, 
+			dataSetConfigurations);		
 	}
 	
 	public void deregisterDependenciesOfDataSet(
@@ -175,10 +222,10 @@ public class DLDependencyManager {
 			= dependenciesOnGeography.get(geography);
 		if (dependentDataSetConfigurations == null) {
 			dependentDataSetConfigurations = new ArrayList<DataSetConfiguration>();
-			dependenciesOnGeography.put(
-				geography, 
-				dependentDataSetConfigurations);			
 		}
+		dependenciesOnGeography.put(
+			geography, 
+			dependentDataSetConfigurations);			
 		
 		dependentDataSetConfigurations.add(dataSetConfiguration);
 	
@@ -198,7 +245,8 @@ public class DLDependencyManager {
 		ArrayList<DataSetConfiguration> dependentNumerators
 			= dependenciesOnDenominator.get(
 				denominatorDataSetConfiguration);
-		if (dependentNumerators == null) {
+		if ((dependentNumerators == null) ||
+			(dependentNumerators.size() == 0)) {
 			//no dependencies
 			return;
 		}
@@ -235,14 +283,12 @@ public class DLDependencyManager {
 	public void checkGeographyDependencies(
 		final DLGeography geography) 
 		throws RIFServiceException {
-
-		ArrayList<DataSetConfiguration> results
-			= new ArrayList<DataSetConfiguration>();
 		
 		ArrayList<DataSetConfiguration> dependentDataSets
 			= dependenciesOnDenominator.get(
 				geography);
-		if (dependentDataSets == null) {
+		if ((dependentDataSets == null) ||
+			(dependentDataSets.size() == 0)) {
 			//no dependencies
 			return;
 		}
@@ -279,14 +325,12 @@ public class DLDependencyManager {
 	public void checkHealthThemeDependencies(
 		final DLHealthTheme healthTheme) 
 		throws RIFServiceException {
-
-		ArrayList<DataSetConfiguration> results
-			= new ArrayList<DataSetConfiguration>();
 		
 		ArrayList<DataSetConfiguration> dependentDataSets
 			= dependenciesOnHealthTheme.get(
 					healthTheme);
-		if (dependentDataSets == null) {
+		if ((dependentDataSets == null) ||
+			(dependentDataSets.size() == 0)) {
 			//no dependencies
 			return;
 		}

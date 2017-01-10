@@ -84,7 +84,8 @@ public class TestCheck extends AbstractRIFDataLoaderTestCase {
 
 	@Test
 	public void test2() {
-		SampleDataGenerator sampleDataGenerator
+		/*
+			SampleDataGenerator sampleDataGenerator
 			= new SampleDataGenerator();
 
 		LinearWorkflow linearWorkflow		
@@ -98,6 +99,7 @@ public class TestCheck extends AbstractRIFDataLoaderTestCase {
 
 			LinearWorkflowEnactor linearWorkflowEnactor
 				= new LinearWorkflowEnactor(rifManager, dataLoaderService);
+
 			linearWorkflowEnactor.runWorkflow(
 				getExportDirectory(),
 				linearWorkflow);
@@ -106,6 +108,7 @@ public class TestCheck extends AbstractRIFDataLoaderTestCase {
 			rifServiceException.printErrors();			
 			fail();
 		}
+			*/
 
 	}
 	

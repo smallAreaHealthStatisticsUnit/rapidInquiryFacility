@@ -399,7 +399,8 @@ final public class MSSQLChangeAuditManager
 		throws RIFServiceException {
 		
 		ArrayList<DataSetFieldConfiguration> auditableChangeFields
-			= dataSetConfiguration.getChangeAuditFields(
+			= DataSetConfigurationUtility.getChangeAuditFields(
+				dataSetConfiguration, 
 				FieldChangeAuditLevel.INCLUDE_FIELD_NAME_ONLY);
 		int numberOfAuditableChangeFields 
 			= auditableChangeFields.size();
@@ -477,7 +478,8 @@ final public class MSSQLChangeAuditManager
 		throws RIFServiceException {
 		
 		ArrayList<DataSetFieldConfiguration> auditableChangeFields
-			= dataSetConfiguration.getChangeAuditFields(
+			= DataSetConfigurationUtility.getChangeAuditFields(
+				dataSetConfiguration, 
 				FieldChangeAuditLevel.INCLUDE_FIELD_CHANGE_DESCRIPTION);
 		int numberOfAuditableChangeFields 
 			= auditableChangeFields.size();

@@ -109,11 +109,14 @@ public final class MSSQLCreateTableQueryFormatter
 	 * @TODO: although both SQL Server and PostgreSQL can support the concept of
 	 * temporary tables, this looks like an area where there may need to be 
 	 * different implementations
+	 * 
+	 * Adds a # to table name for temporary tables in the create table, but the table name with # would have to be used in subsequent SQL calls to the temperary table
 	 */
 	public void useTemporaryTable() {
 		isTemporaryTable = true;
 	}
 	
+	//how is this meant to be used?  Default string length?
 	public void setTextFieldLength(final int textFieldLength) {
 		this.textFieldLength = textFieldLength;
 	}
@@ -170,12 +173,13 @@ public final class MSSQLCreateTableQueryFormatter
 		final boolean isNullAllowed) {
 		
 		StringBuilder textFieldType = new StringBuilder();
-		//
-		textFieldType.append("VARCHAR");
-		//textFieldType.append("TEXT");
-		//textFieldType.append("VARCHAR(");
-		//textFieldType.append(String.valueOf(textFieldLength));
-		//textFieldType.append(")");
+		
+		textFieldType.append("NVARCHAR(MAX)");
+		if (textFieldLength > 0 ) {
+			textFieldType.append("("+textFieldLength+")");
+		} else {
+			textFieldType.append("(MAX)");		
+		}
 		
 		addFieldDeclaration(
 			fieldName,
@@ -188,9 +192,9 @@ public final class MSSQLCreateTableQueryFormatter
 		final String sequenceName) {
 				
 		StringBuilder defaultPhrase = new StringBuilder();
-		defaultPhrase.append("DEFAULT nextval('");
-		defaultPhrase.append(sequenceName);
-		defaultPhrase.append("')");
+		defaultPhrase.append("DEFAULT (NEXT VALUE FOR ");
+		defaultPhrase.append(sequenceName); //assume sequenceName contains schema
+		defaultPhrase.append(")");
 		
 		addFieldDeclaration(
 			fieldName,
@@ -203,12 +207,12 @@ public final class MSSQLCreateTableQueryFormatter
 		final String fieldName) {
 		
 		StringBuilder timeStampFieldType = new StringBuilder();
-		timeStampFieldType.append("DATE");
+		timeStampFieldType.append("DATETIME2 (0)");
 
 		addFieldDeclaration(
 			fieldName,
 			timeStampFieldType.toString(),
-			"DEFAULT CURRENT_DATE",
+			"DEFAULT (sysdatetime())",
 			false);
 		
 	}
@@ -219,7 +223,7 @@ public final class MSSQLCreateTableQueryFormatter
 		final boolean isNullAllowed) {
 			
 		StringBuilder textFieldType = new StringBuilder();
-		textFieldType.append("VARCHAR(");
+		textFieldType.append("NVARCHAR(");
 		textFieldType.append(String.valueOf(length));
 		textFieldType.append(")");
 			
@@ -236,7 +240,7 @@ public final class MSSQLCreateTableQueryFormatter
 		final boolean isNullAllowed) {
 				
 		StringBuilder textFieldType = new StringBuilder();
-		textFieldType.append("VARCHAR(");
+		textFieldType.append("NVARCHAR(");
 		textFieldType.append(String.valueOf(length));
 		textFieldType.append(")");
 			
@@ -309,12 +313,12 @@ public final class MSSQLCreateTableQueryFormatter
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
 		
-		addQueryPhrase(0, "CREATE");
-		if (isTemporaryTable == true) {
-			addQueryPhrase(" TEMPORARY");
+		addQueryPhrase(0, "CREATE TABLE ");
+		if ((isTemporaryTable == true) && !(tableToCreate.substring(0,1).equals("#"))) {
+			tableToCreate = "#"+tableToCreate; //local temporary tables begin with #, global with ## 
 		}
-		addQueryPhrase(" TABLE ");
 		addQueryPhrase(getSchemaTableName(tableToCreate));
+
 		addQueryPhrase(" (");
 		padAndFinishLine();
 		
