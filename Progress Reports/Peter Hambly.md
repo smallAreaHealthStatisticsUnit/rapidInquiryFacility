@@ -756,7 +756,7 @@ RangeError: Invalid string length
 * sahsuland_empty improvements, install for KG
 * geoDataLoader.xml support in front end
 * Removal of hard coded table names
-* tile maker - add parameter to vasry number of tiles processed at once (default: 10). This is used to control memory
+* tile maker - add parameter to vary number of tiles processed at once (default: 10). This is used to control memory
 
 #### 19th to 23rd December
 
@@ -790,6 +790,10 @@ RangeError: Invalid string length
 | USA to County level | 113.8s        | 11        | Tiles: 1h:27, 4:07 |                        | 5290 tiles in 2h:48 |                       |
 | SAHSULand           | 18.4s         | 11        |                    |                        |                     |                       |
   
+#### 9th to 13th January
+
+* SAHSULAND tests; fixes for numgeolevels, precision fuuzy match in proj4 data
+
 #### Current TODO list (January 2017):
 
 * Fix zoomlevel miss-set from config file (defaults are wrong)
@@ -815,6 +819,7 @@ RangeError: Invalid string length
   * USA: USA to county level
 * Bugs, general RIF database Todo
 * SQL Server run study port
+* SQL server fault in rfi40_geographies/geometry insert triggers
 
 ####  TODO list:
 
@@ -842,7 +847,7 @@ able to run the scripts so that the fixed and validated geometry data becomes av
 
 Note: no bounding box (bbox) in tiles.
 
-#### Parked TODO list (as required):
+#### Parked TODO (todon't) list (as required):
 
 * Read DBF header so shapefile reader knows number of expected records; add to status update
 * Timeout recovery (switches to batch mode).
@@ -890,7 +895,8 @@ Note: no bounding box (bbox) in tiles.
 * Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
   and grant back permissions [i.e. remove security issue with current code]
 * Add t_rif40_study_areas trigger check (once per INSERT/UPDATE) for correct use of band_id in rif40_study_shares. 
-  Alternatively check in rif40_run_study 
+  Alternatively check in rif40_run_study
+* Rename offset in age_sex_groups (reserved keyword)
   
 ### Early December
 
