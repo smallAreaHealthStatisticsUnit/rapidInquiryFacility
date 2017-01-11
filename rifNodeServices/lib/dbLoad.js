@@ -600,7 +600,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 4: tiles table; e.g. t_tiles_cb_2014_us_500k */,
 				xmlConfig.dataLoader.maxZoomlevel								/* 5: Max zoomlevel; e.g. 11 */,
 				(schema||"")													/* 6: Schema; e.g.rif_data. or "" */,
-				(appSchema||"")													/* 7: RIF or user schema; e.g. $(USERNAME) or rif40 */
+				(appSchema||"")													/* 7: RIF or user schema; e.g. $(USERNAME) or rif40 */,
+				xmlConfig.dataLoader.geographyName.toUpperCase()				/* 8: Geography; e.g. USA_2014 */
 				), sqlArray, dbType); 		
 
 		var sqlStmt=new Sql("Comment tiles view",

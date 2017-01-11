@@ -8,6 +8,8 @@
  *						4: tiles table; e.g. t_tiles_cb_2014_us_500k
  *  					5: Max zoomlevel; e.g. 11
  *						6: Schema; e.g. rif_data. or ""
+ *						7: RIF or user schema; e.g. $(USERNAME) or rif40
+ *						8: Geography; e.g. USA_2014
  *
  * Description:			Create tiles view
  * Note:				%%%% becomes %% after substitution
@@ -17,6 +19,7 @@ WITH a AS (
         SELECT geography,
                MAX(geolevel_id) AS max_geolevel_id
           FROM %2
+		 WHERE geography = '%8'
          GROUP BY geography
 ), b AS (
          SELECT a.geography,
@@ -29,6 +32,7 @@ WITH a AS (
 			   b2.areaid_count
           FROM b, %2 b2
 		 WHERE b.geolevel_id = b2.geolevel_id
+		   AND b.geography   = b2.geography
 ), d AS (
         SELECT generate_series(0, %5, 1) AS zoomlevel
 ), ex AS (
