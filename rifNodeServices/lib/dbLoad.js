@@ -1819,6 +1819,34 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 	var addSQLLoadStatements=function addSQLLoadStatements(dbStream, csvFiles, srid, dbType) {
 
 		/*
+		 * Function: 	grantTables()
+		 * Parameters:	Schema (rif_data.)
+		 * Description:	Grant SELECT to rif_user on all tables: SQL statements
+		 *				Needs to be in a separate transaction (do NOT start one!)
+		 */	
+		function grantTables(schema) {
+			sqlArray.push(new Sql("Analyze tables"));
+			var tableList=[];
+			for (var i=0; i<csvFiles.length; i++) {
+				tableList.push((xmlConfig.dataLoader.geoLevel[i].lookupTable.toLowerCase() || "lookup_" + csvFiles[i].tableName));
+			}
+			tableList.push("hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+						
+			for (var i=0; i<tableList.length; i++) {												
+				var sqlStmt=new Sql("Grant table/view " + tableList[i], 
+					getSqlFromFile("grant_table.sql", undefined /* Common */, 
+						(schema||"") + tableList[i] /* 1. Table name */,
+						'SELECT'					/* 2: Privileges */,
+						'rif_user, rif_manager'		/* 3: Roles */), 
+					sqlArray, dbType); 
+			}
+			
+		} // End of grantTables
+		
+		/*
 		 * Function: 	analyzeTables()
 		 * Parameters:	Schema (rif_data.)
 		 * Description:	Analze and describe all tables: SQL statements
@@ -2322,10 +2350,12 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		setupGeography('rif_data.' /* Schema */);
 		createTilesTables(sqlArray, dbType, geoLevelsTable, 'rif_data.' /* Schema */);
 		loadTilesTables('rif_data.' /* Schema */);
+		grantTables('rif_data.' /* Schema */);
 		
 		commitTransaction(sqlArray, dbType);
 		
 		analyzeTables('rif_data.' /* Schema */);
+		
 //
 // Write SQL statements to file
 //		
