@@ -1853,10 +1853,12 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		 */	
 		function setupGeography(schema) {
 			
-			var sqlStmt=new Sql("Set comment schema path to rif_data")
-			sqlStmt.nonsql=':SETVAR SchemaName @CurrentUser';
-			sqlStmt.dbType=dbType;
-			sqlArray.push(sqlStmt);
+			if (dbType == "MSSQLServer") { 			
+				var sqlStmt=new Sql("Set comment schema path to rif_data")
+				sqlStmt.nonsql=':SETVAR SchemaName @CurrentUser';
+				sqlStmt.dbType=dbType;
+				sqlArray.push(sqlStmt);
+			}
 			
 			var newColumnList=['geometrytable', 'tiletable', 'minzoomlevel', 'maxzoomlevel'];
 			var newColumnDataType=['VARCHAR(30)', 'VARCHAR(30)', 'INTEGER', 'INTEGER'];
@@ -1908,10 +1910,12 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					sqlArray, dbType);	
 			}
 			
-			var sqlStmt=new Sql("Set comment schema path to rif_data")
-			sqlStmt.nonsql=':SETVAR SchemaName "rif_data"';
-			sqlStmt.dbType=dbType;
-			sqlArray.push(sqlStmt);
+			if (dbType == "MSSQLServer") { 
+				var sqlStmt=new Sql("Set comment schema path to rif_data")
+				sqlStmt.nonsql=':SETVAR SchemaName "rif_data"';
+				sqlStmt.dbType=dbType;
+				sqlArray.push(sqlStmt);
+			}
 			
 			var partition=0;	
 			if (dbType == "PostGres") {			// Only Postgres is partitioned
