@@ -1459,16 +1459,27 @@ REFERENCE (from shapefile) {
 		
 		/*
 		 * Function: 	 tileIntersectsProcessingEnd()
-		 * Parameters:	 rowCount, database type, tiles CSV file stream, block, number of blocks, getBlockCallback
+		 * Parameters:	 rowCount, rowsProcessed, resultRows array,
+		 *				database type, tiles CSV file stream, block, number of blocks, getBlockCallback
 		 * Returns:		 Nothing
 		 * Descrioption: Processing at end of zoomlevel
 		 */
-		function tileIntersectsProcessingEnd(rowCount, dbType, tilesCsvStream, block, numBlocks, getBlockCallback) {
-
+		function tileIntersectsProcessingEnd(rowCount, rowsProcessed, resultRows, 
+			dbType, tilesCsvStream, block, numBlocks, getBlockCallback) {
+			
 			var end = new Date().getTime();
 			var elapsedTime=(end - zstart)/1000; // in S
 			var tElapsedTime=(end - lstart)/1000; // in S
-				
+			
+			if (rowsProcessed != rowCount) {
+				throw new Error("tileIntersectsProcessingEnd(): rowsProcessed (" + rowsProcessed + 
+					") != rowCount (" + rowCount + ")");
+			}
+			
+			for (var i=0; i<resultRows.length; i++) { // Process rows
+				totalTileSize+=tileIntersectsRowProcessing(resultRows[i], geography, dbType);	
+			}
+			
 			if (tileArray.length == 0) {
 
 				winston.log("info", 'Geolevel: ' + geolevel_id + '; zooomlevel: ' + zoomlevel + 
@@ -1574,6 +1585,7 @@ REFERENCE (from shapefile) {
 			winston.log("debug", "blockProcessing(" + block + "/" + numBlocks + ") geolevel_id: " + 
 				geolevel_id + "; zoomlevel: " + zoomlevel + 
 				"\nSQL> " + sql);
+			var rowsProcessed=0;
 			
 			if (dbType == "PostGres") {
 				request=client;
@@ -1591,22 +1603,24 @@ REFERENCE (from shapefile) {
 			}
 			stream.on('error', dbErrorHandler);
 
+			var resultRows=[];
 			stream.on('row', function tileIntersectsRow(row) {
 				mssqlRows++;
+				rowsProcessed++;
 				
 				function tileIntersectsRowCallback(err) {
 					if (err) {
 						dbErrorHandler(err, undefined);
 					}
 					else {
-						winston.log("debug", "tileIntersectsRowCallback(): " +
+						winston.log("debug", "tileIntersectsRowCallback(): [" + rowsProcessed + "] " +
 							"block: " + row.block +
 							"; next: " + row.next_block +
 							"; x: " + row.x +
 							"; y: " + row.y +
 							"; areaid: " + row.areaid);
 						delete row.geolevel_name;
-						totalTileSize+=tileIntersectsRowProcessing(row, geography, dbType);	
+						resultRows.push(row);
 					}
 				}
 				if (mssqlRows == 1) {
@@ -1632,13 +1646,13 @@ REFERENCE (from shapefile) {
 			if (dbType == "PostGres") {
 				stream.on('end', function(result) {		
 					sql=undefined;
-					tileIntersectsProcessingEnd(result.rowCount, dbType, tilesCsvStream, block, numBlocks, getBlockCallback);
+					tileIntersectsProcessingEnd(result.rowCount, rowsProcessed, resultRows, dbType, tilesCsvStream, block, numBlocks, getBlockCallback);
 				});
 			}		
 			else if (dbType == "MSSQLServer") {	
 				stream.on('done', function(returnValue, affected) {	
 					sql=undefined;
-					tileIntersectsProcessingEnd(mssqlRows, dbType, tilesCsvStream, block, numBlocks, getBlockCallback);
+					tileIntersectsProcessingEnd(mssqlRows, rowsProcessed, resultRows, dbType, tilesCsvStream, block, numBlocks, getBlockCallback);
 				});
 			}			
 		} // End of blockProcessing()
