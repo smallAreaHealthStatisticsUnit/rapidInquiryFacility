@@ -457,8 +457,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 				this.y + '","' + 			// Y tile number. From 0 to (2**<zoomlevel>)-1
 				this.tileId + '","' + 		// Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>
 				this.areaid_count + '","' + // Area ID count
-				'",' + 						// Tile multipolygon in GeoJSON format, optimised for zoomlevel N.
-				'"' + str + '"'	  			// Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.
+				str + '"'	  				// Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.
 			);
 		},
 		/*
@@ -1243,7 +1242,7 @@ REFERENCE (from shapefile) {
 			dbErrorHandler(e, sql);
 		}	
 		
-		tilesCsvStream.write("GEOLEVEL_ID,ZOOMLEVEL,X,Y,TILE_ID,AREAID_COUNT,OPTIMISED_GEOJSON,OPTIMISED_TOPOJSON\r\n", // Write header
+		tilesCsvStream.write("GEOLEVEL_ID,ZOOMLEVEL,X,Y,TILE_ID,AREAID_COUNT,OPTIMISED_TOPOJSON\r\n", // Write header
 			function tilesCsvStreamHeaderCallback(err) {
 				if (err) {
 					geolevelProcessingCallback(err);

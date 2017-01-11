@@ -14,7 +14,6 @@ CREATE TABLE %3%1 (
 	zoomlevel			INTEGER			NOT NULL,
 	x					INTEGER			NOT NULL, 
 	y					INTEGER			NOT NULL,
-	optimised_geojson	%2,
 	optimised_topojson	%2,
 	tile_id				VARCHAR(200)	NOT NULL,
 	areaid_count		INTEGER			NOT NULL,

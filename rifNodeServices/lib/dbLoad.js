@@ -564,12 +564,11 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				"Maptiles for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11"	/* Comment */), 
 			sqlArray, dbType);
 				
-		var fieldArray = ['geolevel_id', 'zoomlevel', 'x', 'y', 'optimised_geojson', 'optimised_topojson', 'tile_id', 'areaid_count'];
+		var fieldArray = ['geolevel_id', 'zoomlevel', 'x', 'y', 'optimised_topojson', 'tile_id', 'areaid_count'];
 		var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.',
 			'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11',
 			'X tile number. From 0 to (2**<zoomlevel>)-1',
 			'Y tile number. From 0 to (2**<zoomlevel>)-1',
-			'Tile multipolygon in GeoJSON format, optimised for zoomlevel N.',
 			'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.',
 			'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>',
 			'Total number of areaIDs (geoJSON features)'];
@@ -2275,7 +2274,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				var sqlStmt=new Sql("Load tiles table from geolevel CSV files");
 				if (dbType == "PostGres") {	
 					sqlStmt.sql="\\copy " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
-						"(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_geojson,optimised_topojson)" + 
+						"(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson)" + 
 						" FROM '" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + 
 						".csv' DELIMITER ',' CSV HEADER";				
 					sqlStmt.dbType=dbType;
@@ -2285,7 +2284,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					var sqlStmt2=new Sql("Create load tiles view", 
 						"CREATE VIEW " + (schema||"") + "v_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" +
 						"AS\n" + 
-						"SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_geojson, optimised_topojson\n" +
+						"SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson\n" +
 						"  FROM " + (schema||"") + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 						sqlArray, dbType);					
 					sqlStmt.sql="BULK INSERT " + (schema||"") + "v_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
