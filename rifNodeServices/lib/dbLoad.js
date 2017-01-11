@@ -415,11 +415,11 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 				
 		var sqlStmt=new Sql("Add geom geometry column",
 			getSqlFromFile("add_geometry_column2.sql", dbType, 
-				(schema||"") + 
 					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 				'geom' 															/* 2: column name; e.g. geographic_centroid */,
 				4326															/* 3: Column SRID; e.g. 4326 */,
-				'MULTIPOLYGON' 													/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
+				'MULTIPOLYGON' 													/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */,
+				(schema||"")													/* 5: Schema (rif_data. or "") [NEVER USED IN POSTGRES] */), 
 				sqlArray, dbType);
 		if (dbType == "MSSQLServer") { // Add bounding box for implement PostGIS && operator
 			var sqlStmt=new Sql("Add bbox geometry column",
@@ -428,7 +428,8 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 				'bbox' 															/* 2: column name; e.g. geographic_centroid */,
 				4326															/* 3: Column SRID; e.g. 4326 */,
-				'POLYGON' 														/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), 
+				'POLYGON' 														/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */,
+				(schema||"")													/* 5: Schema (rif_data. or "") [NEVER USED IN POSTGRES] */), 
 				sqlArray, dbType);
 			var sqlStmt=new Sql("Comment geometry table column",
 				getSqlFromFile("comment_column.sql", 
@@ -1480,14 +1481,16 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 											/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'bbox' 					/* 2: column name; e.g. geographic_centroid */,
 					4326 					/* 3: Column SRID; e.g. 4326 */,
-					'POLYGON' 				/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray, dbType);
+					'POLYGON' 				/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */,
+					""						/* 5: Schema (rif_data. or "") [NEVER USED IN POSTGRES] */), sqlArray, dbType);
 			var sqlStmt=new Sql("Add geometry column: geom",
 				getSqlFromFile("add_geometry_column2.sql", dbType, 
 					"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()
 											/* 1: Table name; e.g. cb_2014_us_county_500k */,
 					'geom' 					/* 2: column name; e.g. geographic_centroid */,
 					4326 					/* 3: Column SRID; e.g. 4326 */,
-					'MULTIPOLYGON' 			/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray, dbType);
+					'MULTIPOLYGON' 			/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */,
+					""						/* 5: Schema (rif_data. or "") [NEVER USED IN POSTGRES] */), sqlArray, dbType);
 					
 			var sqlStmt=new Sql("Comment tile intersects table",
 				getSqlFromFile("comment_table.sql", 
