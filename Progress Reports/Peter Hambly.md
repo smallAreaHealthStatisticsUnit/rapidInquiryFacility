@@ -792,11 +792,19 @@ RangeError: Invalid string length
   
 #### 9th to 13th January
 
-* SAHSULAND tests; fixes for numgeolevels, precision fuuzy match in proj4 data
+* SAHSULAND tests; fixes for numgeolevels, precision fuuzy match in proj4 data; event race, PG schema issues; 
+  removed optimized_geojson from tiles table
+* Installed new sahsuland geometry, tiles etc.
+* Grants
+* RIF and non RIF path fixes for Postgres
 
 #### Current TODO list (January 2017):
 
+* Check tiles all generated and not null, no extra, none missing 
+* Drop scripts
+* Fix SQL server load script etc
 * Fix zoomlevel miss-set from config file (defaults are wrong)
+* Check (warn/error) if geometry not within projection (sahsuland is using Nevada north 1927 at present)
 
 ### Alter 9
 
