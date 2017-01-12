@@ -118,7 +118,7 @@ Logger.prototype = { // Add methods
 					trace=""
 				}
 				else {
-					trace="[" + file + ":" + line+ ":" + calling_function + "()]";
+					trace="[" + file + ":" + line+ ":" + calling_function + "()] ";
 				}
 				var format=args.shift();
 				if (args.length == 0) {
