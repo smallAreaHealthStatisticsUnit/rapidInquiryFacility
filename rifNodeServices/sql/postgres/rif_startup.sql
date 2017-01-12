@@ -32,7 +32,7 @@ BEGIN
 -- Set a default path and schema for user
 --
 	IF current_user = 'rif40' THEN
-		sql_stmt:='SET search_path TO rif_data /* default schema */, rif40, public, topology, gis, pop, data_load, rif40_sql_pkg, rif_studies, rif40_partitions';
+		sql_stmt:='SET SESSION search_path TO rif_data /* default schema */, rif40, public, topology, gis, pop, data_load, rif40_sql_pkg, rif_studies, rif40_partitions';
 	ELSE
 		RAISE EXCEPTION 'RIF startup(geoDataLoader): RIF user: % is not rif40', current_user;
 	END IF;

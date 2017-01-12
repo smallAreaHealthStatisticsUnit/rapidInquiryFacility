@@ -1752,7 +1752,11 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		var sqlArray=[];
 		
 		beginTransaction(sqlArray, dbType);
-		
+
+		var sqlStmt=new Sql("NON RIF initialisation", 
+			getSqlFromFile("startup.sql", dbType), 
+			sqlArray, dbType);
+			
 		var defaultcomparea;
 		var defaultstudyarea;
 	
@@ -1766,8 +1770,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		}
 		if (defaultstudyarea == undefined) {
 			throw new Error("Unable to determine default study area");
-		}
-		
+		} 
+			
 		createGeographyTable();
 		createGeolevelsTable();
 		createGeolevelsLookupTables(sqlArray, dbType, undefined /* No schema - use default */);
@@ -2334,12 +2338,12 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		} // End of loadTilesTables()
 		
 		var sqlArray=[]; // Re-initialise
-	
+		
+		beginTransaction(sqlArray, dbType); 
+		
 		var sqlStmt=new Sql("RIF initialisation", 
 			getSqlFromFile("rif_startup.sql", dbType), 
 			sqlArray, dbType); 
-			
-		beginTransaction(sqlArray, dbType);
 				
 		createGeolevelsLookupTables(sqlArray, dbType, 'rif_data.' /* Schema */);
 		loadGeolevelsLookupTables('rif_data.' /* Schema */);
