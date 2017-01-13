@@ -115,10 +115,13 @@ Logger.prototype = { // Add methods
 				var logType=args.shift();
 				var trace;
 				if (logType == 'info' && this.winston.level == 'info') {
-					trace=""
+					trace="";
+				}
+				else if (logType == 'verbose' || logType == 'info') {
+					trace="[" + file + ":" + line+ ":" + calling_function + "()] ";
 				}
 				else {
-					trace="[" + file + ":" + line+ ":" + calling_function + "()] ";
+					trace=logType + " [" + file + ":" + line+ ":" + calling_function + "()] ";
 				}
 				var format=args.shift();
 				if (args.length == 0) {

@@ -274,7 +274,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 	
 	var endCallBack = function endCallBack(err) {
 		if (err) {
-			winston.log("error", "Exit due to error: %", err.message, err);
+			winston.log("error", "Exit due to error: " + err.message, err);
 			process.exit(1);		
 		}
 //		console.error(JSON.stringify(winston, null, 4));
@@ -332,7 +332,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 
 	// Notice message event processors
 	client1.on('notice', function(msg) {
-		  winston.log("info", 'PG: %s', msg);
+		  winston.log("info", 'PG: ' + msg);
 	});
 }
 	
