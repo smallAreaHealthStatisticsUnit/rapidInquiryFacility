@@ -17,13 +17,22 @@
  * charts a patient's journey through the healthcare system.
  *
  * This script is released as part of a wider body of work called the Rapid 
- * Inquiry Facility, and we hope its users may benefit from this tool to build 
+ * Inquiry Facility(RIF), and we hope its users may benefit from this tool to build 
  * taxonomy services that relate terms based on the frequency with which they 
  * appear in practice rather than how their concepts are related with respect 
- * to one another.  Like the rest of the RIF, it is released under the GPL 3.0 
- * license. But here I hope we can go beyond that, and I want to show you how 
- * you can adapt this simple script to help with practical work in both 
- * research and hospital care environments.
+ * to one another.  
+ *
+ * The RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF.  If not, see http://www.gnu.org/licenses.
  */
 
 /*
