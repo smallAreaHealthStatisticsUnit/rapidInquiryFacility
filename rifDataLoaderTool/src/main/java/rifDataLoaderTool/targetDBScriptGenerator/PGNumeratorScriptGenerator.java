@@ -102,7 +102,10 @@ public class PGNumeratorScriptGenerator
 				numeratorEntry, 
 			numerator);	
 		numeratorEntry.append("\n");
-		addEntryToNumDenomTable(
+		//addEntryToNumDenomTable(
+		//	numeratorEntry,
+		//	numerator);
+		addRIF40TableOutcomesEntry(
 			numeratorEntry,
 			numerator);
 
@@ -123,8 +126,6 @@ public class PGNumeratorScriptGenerator
 			= denominator.getPublishedTableName();		
 		//Field properties that will help us construct the 
 		//create and copy into statements
-		ArrayList<DataSetFieldConfiguration> dataSetFieldConfigurations
-			= denominator.getFieldConfigurations();
 		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		createTableQueryFormatter.setTableName(publishedDenominatorTableName);
 		createTableQueryFormatter.addIntegerFieldDeclaration("year", false);
@@ -144,7 +145,27 @@ public class PGNumeratorScriptGenerator
 		denominatorEntry.append("\n");
 		
 		//How do we handle extra fields?
+		ArrayList<String> fieldNames = new ArrayList<String>();
+		fieldNames.add("year");
+		fieldNames.add("age_sex_group");
+		for (String levelName : levelNames) {
+			fieldNames.add(levelName);
+		}
+		fieldNames.add("icd");
+		fieldNames.add("total");
+			
+		String filePath
+			= super.getPublishedFilePath(denominator) + ".csv";
 		
+		String bulkInsertStatement
+			= createBulkCopyStatement(
+				publishedDenominatorTableName,
+				fieldNames,
+				filePath);
+
+		denominatorEntry.append(bulkInsertStatement);
+		
+		/*
 		SQLGeneralQueryFormatter importFromCSVQueryFormatter
 			= new SQLGeneralQueryFormatter();
 		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
@@ -170,11 +191,12 @@ public class PGNumeratorScriptGenerator
 		importFromCSVQueryFormatter.addQueryPhrase("')");
 
 		denominatorEntry.append(importFromCSVQueryFormatter.generateQuery());
+		*/
 	}
 	
 	private void addEntryToRIF40Tables(
 		final StringBuilder denominatorEntry,
-		final DataSetConfiguration numerator) {
+		final DataSetConfiguration dataSet) {
 
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_tables (");
@@ -193,22 +215,30 @@ public class PGNumeratorScriptGenerator
 		queryFormatter.addQueryLine(1, "age_sex_group_field_name,");
 		queryFormatter.addQueryLine(1, "age_group_id) ");
 		queryFormatter.addQueryLine(0, "SELECT ");
-		queryFormatter.addQueryLine(1, "'denominator health theme',");
-		queryFormatter.addQueryLine(1, "'" + numerator.getPublishedTableName().toUpperCase() + "',");
-		queryFormatter.addQueryLine(1, "'" + numerator.getDescription() + "',");
+		
+		DLHealthTheme healthTheme = dataSet.getHealthTheme();
+		if (healthTheme == null) {
+			queryFormatter.addQueryLine(1, "'SAHSULAND',");			
+		}
+		else {
+			queryFormatter.addQueryLine(1, "'" + healthTheme.getName().toUpperCase() + "',");			
+		}
+		
+		queryFormatter.addQueryLine(1, "'" + dataSet.getPublishedTableName().toUpperCase() + "',");
+		queryFormatter.addQueryLine(1, "'" + dataSet.getDescription() + "',");
 		queryFormatter.addQueryLine(1, "MIN(year),");
 		queryFormatter.addQueryLine(1, "MAX(year),");
 		queryFormatter.addQueryLine(1, "null,");
 		queryFormatter.addQueryLine(1, "0,");
 		queryFormatter.addQueryLine(1, "0,");
 		queryFormatter.addQueryLine(1, "1,");
-		queryFormatter.addQueryLine(1, "0,");
+		queryFormatter.addQueryLine(1, "1,");
 		queryFormatter.addQueryLine(1, "null,");
 		queryFormatter.addQueryLine(1, "null,");
 		queryFormatter.addQueryLine(1, "'AGE_SEX_GROUP',");
 		queryFormatter.addQueryLine(1, "1");
 		queryFormatter.addQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, numerator.getPublishedTableName());
+		queryFormatter.addQueryPhrase(1, dataSet.getPublishedTableName());
 		String query
 			= queryFormatter.generateQuery();
 		denominatorEntry.append(query);	
@@ -259,6 +289,26 @@ public class PGNumeratorScriptGenerator
 		numeratorEntry.append(query);		
 	}
 	
+	private void addRIF40TableOutcomesEntry(
+		final StringBuilder numeratorEntry,
+		final DataSetConfiguration numerator) {
+		
+		String publishedNumeratorTableName
+			= numerator.getPublishedTableName();
+		
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_table_outcomes (");
+		queryFormatter.addQueryLine(1, "outcome_group_name,");
+		queryFormatter.addQueryLine(1, "numer_tab,");
+		queryFormatter.addQueryLine(1, "current_version_start_year) ");
+		queryFormatter.addQueryLine(0, "SELECT ");
+		queryFormatter.addQueryLine(1, "'SAHSULAND_ICD',");
+		queryFormatter.addQueryLine(1, "'" + publishedNumeratorTableName.toUpperCase() + "',");
+		queryFormatter.addQueryLine(1, "MIN(year) ");
+		queryFormatter.addQueryLine(0, "FROM ");
+		queryFormatter.addQueryPhrase(1, publishedNumeratorTableName.toUpperCase());
+		numeratorEntry.append(queryFormatter.generateQuery());		
+	}
 
 	private void addSchemaComments(
 		final StringBuilder numeratorEntry,

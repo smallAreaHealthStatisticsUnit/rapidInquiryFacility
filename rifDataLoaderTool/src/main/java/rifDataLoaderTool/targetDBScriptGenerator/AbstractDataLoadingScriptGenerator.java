@@ -1,11 +1,6 @@
 package rifDataLoaderTool.targetDBScriptGenerator;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
-import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
-import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSchemaCommentQueryFormatter;
@@ -90,6 +85,48 @@ public abstract class AbstractDataLoadingScriptGenerator {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	
+	protected String createBulkCopyStatement(
+		final String tableName,
+		final ArrayList<String> fieldNames,
+		final String importFilePath) {
+		
+		SQLGeneralQueryFormatter queryFormatter
+			= new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryPhrase(0, "\\copy ");
+		queryFormatter.addQueryPhrase(tableName);
+		queryFormatter.addQueryPhrase("(");
+		//queryFormatter.finishLine();
+		int numberOfFields = fieldNames.size();
+		for (int i = 0; i < numberOfFields; i++) {
+			if (i != 0) {
+				queryFormatter.addQueryPhrase(",");
+				//queryFormatter.finishLine();
+			}
+			queryFormatter.addQueryPhrase(1, fieldNames.get(i));
+		}
+		queryFormatter.addQueryPhrase(") FROM '");
+		queryFormatter.addQueryPhrase(importFilePath);
+		queryFormatter.addQueryPhrase("' ");		
+		queryFormatter.addQueryPhrase("DELIMITER ',' CSV HEADER");	
+		
+		System.out.println("AbstractDLQuery copy 1===");
+		System.out.println("=" + queryFormatter.generateQuery()+"==");
+		System.out.println("AbstractDLQuery copy 2===");
+		
+		return queryFormatter.generateQuery();
+		
+		//queryFormatter.finishLine();	
+/*		
+		queryFormatter.addQueryLine(0, "FROM");
+		queryFormatter.addQueryPhrase(1, "'");
+		queryFormatter.addQueryPhrase(importFilePath);
+		queryFormatter.addQueryPhrase("' ");		
+		queryFormatter.addQueryPhrase(0, "WITH (FORMAT csv, QUOTE '\"', ESCAPE '\\'");		
+		return queryFormatter.generateQuery();
+*/
+	}
+	
 	protected String getPublishedFilePath(
 		final DataSetConfiguration dataSetConfiguration) {
 		

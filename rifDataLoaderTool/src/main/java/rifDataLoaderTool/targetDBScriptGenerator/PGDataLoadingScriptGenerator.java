@@ -121,19 +121,15 @@ public class PGDataLoadingScriptGenerator {
 			FileWriter fileWriter = new FileWriter(scriptfile);
 			bufferedWriter = new BufferedWriter(fileWriter);
 		
+			addBeginTransactionSection(bufferedWriter);
+
+			
 			//Part I: Pre-pend script for loading geospatial data
 		
-			//Start function header - temporary measure
-			bufferedWriter.write("CREATE OR REPLACE FUNCTION tmp_dl_function() ");
-			bufferedWriter.write("RETURNS void AS $$ DECLARE BEGIN ");
-			
+
+
 			//Part II: Load health themes
-			bufferedWriter.write("-- ===============================================");
-			bufferedWriter.newLine();
-			bufferedWriter.write("-- Adding Health Themes");
-			bufferedWriter.newLine();
-			bufferedWriter.write("-- ===============================================");
-			bufferedWriter.newLine();
+			addSectionHeading(bufferedWriter, "Health Themes");
 			ArrayList<DLHealthTheme> healthThemes
 				= dataLoaderToolConfiguration.getHealthThemes();
 			for (DLHealthTheme healthTheme : healthThemes) {
@@ -144,13 +140,7 @@ public class PGDataLoadingScriptGenerator {
 				bufferedWriter.flush();
 			}
 
-			bufferedWriter.write("-- ===============================================");
-			bufferedWriter.newLine();
-			bufferedWriter.write("-- Adding Denominators");
-			bufferedWriter.newLine();
-			bufferedWriter.write("-- ===============================================");
-			bufferedWriter.newLine();
-			bufferedWriter.newLine();
+			addSectionHeading(bufferedWriter, "Denominators");
 			
 			//Processing Denominators
 			DLGeographyMetaData geographyMetaData
@@ -160,9 +150,7 @@ public class PGDataLoadingScriptGenerator {
 			for (DataSetConfiguration denominator : denominators) {
 				DLHealthTheme healthTheme
 					= denominator.getHealthTheme();
-				bufferedWriter.write("-- Adding " + denominator.getDisplayName());
-				bufferedWriter.newLine();
-				bufferedWriter.newLine();
+				addDataSetHeading(bufferedWriter, denominator.getDisplayName());
 				
 				String denominatorEntry
 					= denominatorScriptGenerator.generateScript(
@@ -173,17 +161,11 @@ public class PGDataLoadingScriptGenerator {
 			}
 
 			//Processing Numerators
-			bufferedWriter.write("-- ===============================================");
-			bufferedWriter.newLine();
-			bufferedWriter.write("-- Adding Numerators");
-			bufferedWriter.newLine();
-			bufferedWriter.write("-- ===============================================");
-			bufferedWriter.newLine();
-			bufferedWriter.newLine();
+			addSectionHeading(bufferedWriter, "Numerators");
 			ArrayList<DataSetConfiguration> numerators
 				= dataLoaderToolConfiguration.getNumeratorDataSetConfigurations();
 			for (DataSetConfiguration numerator : numerators) {
-				bufferedWriter.write("-- Adding " + numerator.getDisplayName());
+				addDataSetHeading(bufferedWriter, numerator.getDisplayName());
 				bufferedWriter.newLine();
 				bufferedWriter.newLine();
 				
@@ -197,17 +179,11 @@ public class PGDataLoadingScriptGenerator {
 			}
 		
 			//Processing Covariates
-			bufferedWriter.write("-- ===============================================");
-			bufferedWriter.newLine();
-			bufferedWriter.write("-- Adding Covariates");
-			bufferedWriter.newLine();
-			bufferedWriter.write("-- ===============================================");
-			bufferedWriter.newLine();
-			bufferedWriter.newLine();
+			addSectionHeading(bufferedWriter, "Covariates");
 			ArrayList<DataSetConfiguration> covariateConfigurations
 				= dataLoaderToolConfiguration.getCovariateDataSetConfigurations();
 			for (DataSetConfiguration covariateConfiguration : covariateConfigurations) {
-				bufferedWriter.write("-- Adding " + covariateConfiguration.getDisplayName());
+				addDataSetHeading(bufferedWriter, covariateConfiguration.getDisplayName());
 				bufferedWriter.newLine();
 				bufferedWriter.newLine();
 				
@@ -219,9 +195,7 @@ public class PGDataLoadingScriptGenerator {
 				bufferedWriter.flush();
 			}
 			
-			bufferedWriter.write("END; $$ LANGUAGE plpgsql;");
-			bufferedWriter.newLine();
-			bufferedWriter.write("SELECT \"tmp_dl_function\"()");
+			addEndTransactionSection(bufferedWriter);
 	
 			bufferedWriter.flush();
 			bufferedWriter.close();
@@ -232,6 +206,54 @@ public class PGDataLoadingScriptGenerator {
 		}	
 	}
 
+	
+	private void addBeginTransactionSection(
+		final BufferedWriter bufferedWriter)
+		throws IOException {
+		
+		bufferedWriter.write("\\set ECHO all");
+		bufferedWriter.newLine();
+		bufferedWriter.write("\\set ON_ERROR_STOP ON");
+		bufferedWriter.newLine();
+		bufferedWriter.write("\\timing");
+		bufferedWriter.newLine();
+		bufferedWriter.write("BEGIN TRANSACTION;");
+		bufferedWriter.newLine();
+	}
+	
+	private void addEndTransactionSection(
+		final BufferedWriter bufferedWriter)
+		throws IOException {
+		
+		bufferedWriter.newLine();
+		bufferedWriter.write("COMMIT TRANSACTION;");
+	}
+	
+	private void addSectionHeading(
+		final BufferedWriter bufferedWriter,
+		final String headingName) 
+		throws IOException {
+	
+		bufferedWriter.write("-- ===============================================");
+		bufferedWriter.newLine();
+		bufferedWriter.write("-- Adding ");
+		bufferedWriter.write(headingName);
+		bufferedWriter.newLine();
+		bufferedWriter.write("-- ===============================================");
+		bufferedWriter.newLine();
+		bufferedWriter.newLine();
+	}
+
+	private void addDataSetHeading(
+		final BufferedWriter bufferedWriter,
+		final String dataSetName)
+		throws IOException {
+		
+		bufferedWriter.write("-- Adding ");
+		bufferedWriter.write(dataSetName);
+		bufferedWriter.newLine();
+	}
+	
 	private void setOutputDirectory(final File outputDirectory) {
 		denominatorScriptGenerator.setScriptDirectory(outputDirectory);
 		numeratorScriptGenerator.setScriptDirectory(outputDirectory);

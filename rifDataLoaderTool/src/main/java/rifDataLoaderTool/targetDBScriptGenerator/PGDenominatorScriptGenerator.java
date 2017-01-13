@@ -106,7 +106,6 @@ public class PGDenominatorScriptGenerator
 		final StringBuilder denominatorEntry,
 		final DataSetConfiguration denominator) {
 
-		
 		DataSetFieldConfiguration yearFieldConfiguration
 			= denominator.getFieldHavingConvertFieldName("year");		
 		ArrayList<DataSetFieldConfiguration> resolutionFields
@@ -151,7 +150,28 @@ public class PGDenominatorScriptGenerator
 
 		denominatorEntry.append(createTableQueryFormatter.generateQuery());
 		denominatorEntry.append("\n\n");
-						
+		
+		//How do we handle extra fields?
+		ArrayList<String> fieldNames = new ArrayList<String>();
+		fieldNames.add("year");
+		fieldNames.add("age_sex_group");
+		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
+			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
+			fieldNames.add(fieldName);
+		}		
+		fieldNames.add("total");
+			
+		String filePath
+			= super.getPublishedFilePath(denominator) + ".csv";		
+		String bulkInsertStatement
+			= createBulkCopyStatement(
+				publishedDenominatorTableName,
+				fieldNames,
+				filePath);
+
+		denominatorEntry.append(bulkInsertStatement);
+		
+		/*
 		SQLGeneralQueryFormatter importFromCSVQueryFormatter
 			= new SQLGeneralQueryFormatter();
 		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
@@ -178,6 +198,7 @@ public class PGDenominatorScriptGenerator
 		importFromCSVQueryFormatter.addQueryPhrase("')");
 
 		denominatorEntry.append(importFromCSVQueryFormatter.generateQuery());
+		*/
 	}
 	
 	private void addEntryToRIF40Tables(
@@ -201,7 +222,9 @@ public class PGDenominatorScriptGenerator
 		queryFormatter.addQueryLine(1, "age_sex_group_field_name,");
 		queryFormatter.addQueryLine(1, "age_group_id) ");
 		queryFormatter.addQueryLine(0, "SELECT ");
-		queryFormatter.addQueryLine(1, "'denominator health theme',");
+		queryFormatter.addQueryLine(1, "'SAHSULAND',");
+		
+		
 		queryFormatter.addQueryLine(1, "'" + denominator.getPublishedTableName().toUpperCase() + "',");
 		queryFormatter.addQueryLine(1, "'" + denominator.getDescription() + "',");
 		queryFormatter.addQueryLine(1, "MIN(year),");
@@ -210,7 +233,7 @@ public class PGDenominatorScriptGenerator
 		queryFormatter.addQueryLine(1, "1,");
 		queryFormatter.addQueryLine(1, "0,");
 		queryFormatter.addQueryLine(1, "0,");
-		queryFormatter.addQueryLine(1, "0,");
+		queryFormatter.addQueryLine(1, "1,");
 		queryFormatter.addQueryLine(1, "null,");
 		queryFormatter.addQueryLine(1, "null,");
 		queryFormatter.addQueryLine(1, "'AGE_SEX_GROUP',");

@@ -93,6 +93,12 @@ public class PGCovariateScriptGenerator
 			covariate);
 		createPermissions(covariate);
 		
+		//Ensure covariate geolevel is known in t_rif50_geolevels
+		updateRIF40GeoLevels(
+			covariateEntry,
+			covariate);
+		covariateEntry.append("\n\n");
+		
 		//Register covariates in admin tables
 		addEntryToRIF40CovariatesTable(
 			covariateEntry, 
@@ -123,21 +129,23 @@ public class PGCovariateScriptGenerator
 		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		createTableQueryFormatter.setTableName(publishedCovariateTableName);
 		createTableQueryFormatter.addIntegerFieldDeclaration(
-			yearFieldConfiguration.getCleanFieldName(), 
+			yearFieldConfiguration.getConvertFieldName(), 
 			false);
 		createTableQueryFormatter.addTextFieldDeclaration(
-			resolutionFieldConfiguration.getCleanFieldName(), 
+			resolutionFieldConfiguration.getConvertFieldName(), 
 			false);
 		for (DataSetFieldConfiguration covariateField : covariateFields) {
+			covariateField.print();
+			
 			RIFDataType rifDataType = covariateField.getRIFDataType();			
 			if (rifDataType == RIFDataTypeFactory.RIF_INTEGER_DATA_TYPE) {
 				createTableQueryFormatter.addIntegerFieldDeclaration(
-					covariateField.getCleanFieldName(), 
+					covariateField.getConvertFieldName(), 
 					true);
 			}
 			else if (rifDataType == RIFDataTypeFactory.RIF_DOUBLE_DATA_TYPE) {
 				createTableQueryFormatter.addDoubleFieldDeclaration(
-					covariateField.getCleanFieldName(), 
+					covariateField.getConvertFieldName(), 
 					true);				
 			}
 			else {
@@ -146,7 +154,25 @@ public class PGCovariateScriptGenerator
 		}		
 		covariateEntry.append(createTableQueryFormatter.generateQuery());
 		covariateEntry.append("\n");
-				
+
+		ArrayList<String> fieldNames = new ArrayList<String>();
+		fieldNames.add(yearFieldConfiguration.getConvertFieldName());
+		fieldNames.add(resolutionFieldConfiguration.getConvertFieldName());
+		for (DataSetFieldConfiguration covariateField : covariateFields) {
+			fieldNames.add(covariateField.getConvertFieldName());
+		}					
+		String filePath
+			= super.getPublishedFilePath(covariate) + ".csv";
+		
+		String bulkInsertStatement
+			= createBulkCopyStatement(
+				publishedCovariateTableName,
+				fieldNames,
+				filePath);
+
+		covariateEntry.append(bulkInsertStatement);
+		
+		/*
 		SQLGeneralQueryFormatter importFromCSVQueryFormatter
 			= new SQLGeneralQueryFormatter();
 		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
@@ -180,6 +206,7 @@ public class PGCovariateScriptGenerator
 		importFromCSVQueryFormatter.addQueryPhrase(".csv");
 		importFromCSVQueryFormatter.addQueryPhrase("')");
 		covariateEntry.append(importFromCSVQueryFormatter.generateQuery());
+		*/
 	}
 
 	private void addSchemaComments(
@@ -225,6 +252,32 @@ public class PGCovariateScriptGenerator
 		
 	}
 
+	
+	private void updateRIF40GeoLevels(
+		final StringBuilder covariateEntry,
+		final DataSetConfiguration covariate) {
+		
+		//UPDATE t_rif40_geolevels
+		//SET covariate_table=[published covariate table name]
+		//WHERE geography=[geography] AND geolevel_name=[resolutionField.getName()
+		
+		DLGeography geography = covariate.getGeography();
+		DataSetFieldConfiguration resolutionFieldLevel
+			= DataSetConfigurationUtility.getRequiredGeographicalResolutionField(covariate);
+		String publishedTableName
+			= covariate.getPublishedTableName();
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryLine(0, "UPDATE t_rif40_geolevels ");
+		queryFormatter.addQueryPhrase("SET covariate_table = '");
+		queryFormatter.addQueryPhrase(publishedTableName.toUpperCase());
+		queryFormatter.addQueryPhrase("' WHERE geography='");
+		queryFormatter.addQueryPhrase(geography.getName().toUpperCase());
+		queryFormatter.addQueryPhrase("' AND geolevel_name='");
+		queryFormatter.addQueryPhrase(resolutionFieldLevel.getConvertFieldName().toUpperCase());
+		queryFormatter.addQueryPhrase("'");		
+		covariateEntry.append(queryFormatter.generateQuery());
+	}
+	
 	private void addEntryToRIF40CovariatesTable(
 		final StringBuilder covariateEntry,
 		final DataSetConfiguration covariateConfiguration) {
