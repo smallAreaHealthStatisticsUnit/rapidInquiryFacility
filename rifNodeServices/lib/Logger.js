@@ -83,17 +83,22 @@ function Logger(loggerParams) {
 				}
 			}),
 			new (Winston.transports.Memory) ({ 
-				level: (loggerParams.memoryFileDebug || 'verbose'),
+				level: (loggerParams.debugLevel || loggerParams.memoryFileDebug || 'verbose'),
 				json: true
 			}),
 			new (Winston.transports.File) ({ 
-				level: (loggerParams.memoryFileDebug || 'verbose'),
+				level: (loggerParams.debugLevel || loggerParams.memoryFileDebug || 'verbose'),
 				filename: (loggerParams.progName || 'unknown') + '.log' 
 			})
 		]
 	  };
 			
 	this.winston = new (Winston.Logger)(this.winstonParams);	
+	
+	// Add exception handler
+	this.winston.handleExceptions=this.winston.transports,
+	this.winston.humanReadableUnhandledException=true,
+	this.winston.exitOnError=false,
 	
 	this.info("Created " + this.winston.level + " log file: " + this.winston.transports.file.filename);
 } // End of Logger constructor
@@ -116,6 +121,9 @@ Logger.prototype = { // Add methods
 				var trace;
 				if (logType == 'info' && this.winston.level == 'info') {
 					trace="";
+				}
+				else if (logType == 'warn' ) {
+					trace="WARNING: [" + file + ":" + line+ ":" + calling_function + "()] ";
 				}
 				else if (logType == 'verbose' || logType == 'info') {
 					trace="[" + file + ":" + line+ ":" + calling_function + "()] ";

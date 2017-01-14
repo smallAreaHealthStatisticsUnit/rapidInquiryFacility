@@ -363,7 +363,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			nerr=new Error("dbErrorHandler(" + (callback.name || "anonymous") + ") No error object passed")
 		}
 		try {
-//			winston.log("error", "dbErrorHandler() Error: " + nerr.message);
+			winston.log("error", "dbErrorHandler() Error: " + nerr.message);
 			endTransaction(nerr, callback || dbTileMakerCallback, (sqlInError||sql||"no sql"));
 		}
 		catch (e) {
@@ -440,7 +440,8 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 				}
 			}
 			
-			winston.log("debug", "Create tile: " + this.id + "; areaId: " + row['areaid']);
+			winston.log("debug", "Create tile: " + this.id + "; tile_id: " + this.tileId +
+				"; features: " + JSON.stringify(this.geojson.features[0].properties));
 		}
 		else {
 			throw new Error("No tileArray defined");
@@ -492,10 +493,12 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			});
 		
 			if (this.geojson == undefined) {
-				throw new Error("addFeature(): Unable to add feature, no pre-existing geojson for: " + this.id);
+				throw new Error("addFeature(): Unable to add feature, no pre-existing geojson for tile: " + 
+					this.id + "; tile_id: " + this.tileId);
 			}
 			else if (geojson == undefined) {
-				throw new Error("addFeature(): Unable to add feature, no additional geojson supplied for: " + this.id);
+				throw new Error("addFeature(): Unable to add feature, no additional geojson supplied for tile: " + 
+					this.id + "; tile_id: " + this.tileId);
 			}
 			
 			this.geojson.features.push(geojson);
@@ -658,12 +661,7 @@ REFERENCE (from shapefile) {
 //		else {
 //			winston.log("debug", "tileIntersectsRowProcessing() row.optimised_wkt: " + JSON.stringify(row.optimised_wkt, null, 2).substring(0, 1000));	
 //		}
-		winston.log("debug", "tileIntersectsRowProcessing(): " +
-			"block: " + row.block +
-			"; next: " + row.next_block +
-			"; x: " + row.x +
-			"; y: " + row.y +
-			"; areaid: " + row.areaid);
+
 		if (dbType == "PostGres") {
 			wkt=row.optimised_wkt;
 		}
@@ -685,11 +683,23 @@ REFERENCE (from shapefile) {
 			}, 
 			geometry: wellknown.parse(wkt)
 		};
+
+		var geojsonOK=false;
+		if (geojson.geometry) {
+			geojsonOK=true
+		}
+		winston.log("debug", "block: " + row.block +
+			"; tile_id: " + row.tile_id +
+			"; areaid: " + row.areaid +
+			"; wkt len: " + wkt.length +
+			"; geojsonOK: " + geojsonOK);
+			
 		var tileSize=0;
 
 		if (tileArray.length == 0) { // First row in zoomlevel/geolevel combination
 			var geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
 			winston.log("debug", 'First tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + ": " + 
+				geojsonTile.geojson.features[0].properties["areaId"] + "; " +
 				geojsonTile.geojson.features[0].properties["areaName"]);
 		}
 		else {
@@ -697,11 +707,13 @@ REFERENCE (from shapefile) {
 			if (geojsonTile.tileId == row.tile_id) { 	// Same tile
 				if (geojson) {
 					geojsonTile.addFeature(row, geojson);	// Add geoJSON feature to collection
-					winston.log("debug", 'Tile ' + geojsonTile.id + '; add areaID: ' + row.areaid + ": " + 
+					winston.log("debug", 'Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + 
+						'; add areaID: ' + row.areaid + ": " + 
 						geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
 				}
 				else {
-					winston.log("warn", 'Tile ' + geojsonTile.id + '; no geojson; unable to add areaID: ' + row.areaid + ": " + 
+					winston.log("warn", 'Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + 
+						'; no geojson; unable to add areaID: ' + row.areaid + ": " + 
 						geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
 				}
 			}
@@ -709,11 +721,17 @@ REFERENCE (from shapefile) {
 				var foundTile=false;
 				for (i=0; i<tileArray.length; i++) {	// Tiles should be in order, but in case the DB gets it wrong (Postgres did!)
 					if (tileArray[i].tileId == row.tile_id) { 	// Same tile
-						geojsonTile=tileArray[i];
-						geojsonTile.addFeature(row, geojson);	// Add geoJSON feature to collection
-						foundTile=true;
-						winston.log("debug", 'Old Tile ' + geojsonTile.id + '; add areaID: ' + row.areaid + ": " + 
-							geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
+						if (tileArray[i].id == geojsonTile.id) {
+							geojsonTile=tileArray[i];
+							winston.log("debug", 'Old Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + 
+								'; add areaID: ' + row.areaid + ": " + row.areaname);
+							geojsonTile.addFeature(row, geojson);	// Add geoJSON feature to collection
+							foundTile=true;
+						}
+						else { // This will almost certainly throw as tiles blocks rows are out of sequence
+							throw new Error('Old Tile ' + tileArray[i].id + ': "' + tileArray[i].tileId + 
+								" row ID mismatch (" + geojsonTile.id + "); unable to add areaID: " + row.areaid + ": " + row.areaname);
+						}
 					}
 				}
 				if (foundTile) {
@@ -723,13 +741,23 @@ REFERENCE (from shapefile) {
 					winston.log("debug", 'Next tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + ": " + 
 						geojsonTile.geojson.features[0].properties["areaName"]);	
 				}
+				else {
+					var geojsonTile=tileArray[(tileArray.length-1)]; // Get last tile from array
+					if (geojsonTile) {		
+						tileSize=geojsonTile.addTopoJson();		// Complete last tile
+					}
+					geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
+															// Create new tile
+					winston.log("debug", 'New tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + ": " + 
+						geojsonTile.geojson.features[0].properties["areaID"] + "; " +
+						geojsonTile.geojson.features[0].properties["areaName"]);	
+				}
 			}	
 			else {
 				winston.log("warn", 'Tile ' + geojsonTile.id + '; no geojson; unable to add(2) areaID: ' + row.areaid + ": " + 
 					geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
 			}
 		}	
-//		winston.log("debug", geography + '; Tile ' + geojsonTile.id)
 		return tileSize;
 	} // End of tileIntersectsRowProcessing()	
 
@@ -1542,7 +1570,7 @@ REFERENCE (from shapefile) {
 				// Process last tile if it exists
 				var geojsonTile=tileArray[(tileArray.length-1)];
 				if (geojsonTile) {
-					winston.log("debug", "Process final tile");
+					winston.log("debug", "Process final tile: " + geojsonTile.tileId);
 					totalTileSize+=geojsonTile.addTopoJson();				// Complete final tile	
 				}	
 
@@ -1780,7 +1808,12 @@ REFERENCE (from shapefile) {
 		}
 		var value=dataLoader[parameter];
 
-		winston.log("verbose", "Parameter: " + parameter + '="' + value + '"')
+		if (typeof value == "object") {
+			winston.log("verbose", "Parameter: " + parameter + '="' + JSON.stringify(dataLoader, value, 2) + '"');
+		}
+		else {
+			winston.log("verbose", "Parameter: " + parameter + '="' + value + '"');
+		}
 		if (value == undefined) {
 			dbErrorHandler(new Error("Unable to get dataLoder parameter: " + parameter + "; dataLoder object: " + JSON.stringify(dataLoader, null, 2)), 
 				undefined /* SQL */);
