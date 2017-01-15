@@ -98,11 +98,21 @@ function Logger(loggerParams) {
 	// Add exception handler
 	this.winston.handleExceptions=this.winston.transports,
 	this.winston.humanReadableUnhandledException=true,
-	this.winston.exitOnError=false,
+	this.winston.exitOnError=this.exceptionHandler,
 	
 	this.info("Created " + this.winston.level + " log file: " + this.winston.transports.file.filename);
 } // End of Logger constructor
 Logger.prototype = { // Add methods
+		/*
+		 * Function: 	exceptionHandler()
+		 * Parameters:	Error object
+		 * Returns:		Nothing
+		 * Description:	Calls winston.log, exits
+		 */
+		exceptionHandler: function(err) {
+			console.error("Exit due to unhandled exception: " + err.message + "\nStack> " + err.stack);
+			process.exit(1);		
+		},
 		/*
 		 * Function: 	log()
 		 * Parameters:	Variable argument list
