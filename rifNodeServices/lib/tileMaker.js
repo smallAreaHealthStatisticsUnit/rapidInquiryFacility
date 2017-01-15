@@ -1029,8 +1029,7 @@ REFERENCE (from shapefile) {
 
 					sql="CREATE TABLE " + tileBlocksTable + "\n" + 
 						"AS\n" + cte +
-						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas, tile,\n" +
-						"       LEAD(block) OVER (ORDER BY block, tile) AS next_block\n" +
+						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas, tile\n" +
 						"  FROM c\n" +
 						" ORDER BY geolevel_id, zoomlevel, block, tile";
 				}
@@ -1042,8 +1041,7 @@ REFERENCE (from shapefile) {
 						")\n";
 
 					sql=cte +
-						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas, tile,\n" +
-						"       LEAD(block) OVER (ORDER BY block, tile) AS next_block\n" +
+						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas, tile\n" +
 						"  INTO " + tileBlocksTable + "\n" + 
 						"  FROM c\n" +						
 						" ORDER BY geolevel_id, zoomlevel, block, tile";		
@@ -1262,7 +1260,7 @@ REFERENCE (from shapefile) {
 			sql="WITH a AS (\n" +
 				"	SELECT z.geolevel_id::VARCHAR||'_'||'" + (geolevelName||'Unknown geolevel name') + 
 								"'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
-				"	       z.areaid, z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.x, z.y, y.next_block, y.block, a.*\n" +				
+				"	       z.areaid, z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.x, z.y, y.block, a.*\n" +				
 				"	  FROM " + tileIntersectsTable + " z, " + tileBlocksTable + " y, lookup_" + geolevelName + " a\n" +
 				"	 WHERE z.geolevel_id = $2\n" + 
 				"	   AND z.zoomlevel   = $1\n" + 
@@ -1279,7 +1277,7 @@ REFERENCE (from shapefile) {
 		else if (dbType == "MSSQLServer") {		
 			sql="SELECT CAST(z.geolevel_id AS VARCHAR) + '_' + '" + (geolevelName||'Unknown geolevel name') + 
 							"' + '_' + CAST(z.zoomlevel AS VARCHAR) + '_' + CAST(z.x AS VARCHAR) + '_' + CAST(z.y AS VARCHAR) AS tile_id,\n" +
-				"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, z.x, z.y, y.next_block, y.block, a.*\n" +				
+				"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, z.x, z.y, y.block, a.*\n" +				
 				"  FROM " + tileIntersectsTable + " z, " + tileBlocksTable + " y, lookup_" + geolevelName + " a\n" +
 				" WHERE z.geolevel_id = @geolevel_id\n" + 
 				"   AND z.zoomlevel   = @zoomlevel\n" + 
@@ -1697,7 +1695,6 @@ REFERENCE (from shapefile) {
 						
 						winston.log("debug", "SELECT[" + rowsProcessed + "] " +
 							"Block: " + row.block +
-							"; next: " + row.next_block +
 							"; tile_id[" + (resultRows[row.tile_id].length-1) + "]: " + 
 								row.tile_id +
 							"; x: " + row.x +
