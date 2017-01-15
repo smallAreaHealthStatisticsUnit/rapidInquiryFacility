@@ -688,7 +688,7 @@ REFERENCE (from shapefile) {
 		if (geojson.geometry) {
 			geojsonOK=true
 		}
-		winston.log("debug", "block: " + row.block +
+		winston.log("debug", "Block: " + row.block +
 			"; tile_id: " + row.tile_id +
 			"; areaid: " + row.areaid +
 			"; wkt len: " + wkt.length +
@@ -1017,7 +1017,7 @@ REFERENCE (from shapefile) {
 						"	GROUP BY geolevel_id, zoomlevel, x, y\n" + 
 						"), b AS (\n" + 
 						"	SELECT geolevel_id, zoomlevel, x, y, total_areas,\n" + 
-						"	       ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/" + blocks + ")+1 AS block\n" + 
+						"	       (geolevel_id*1000000)+(zoomlevel*1000)+(ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/" + blocks + ")+1) AS block\n" + 
 						"	  FROM a\n" + 
 						")";
 				if (dbType == "PostGres") {
@@ -1032,7 +1032,7 @@ REFERENCE (from shapefile) {
 						"SELECT geolevel_id, zoomlevel, block, x, y, total_areas, tile,\n" +
 						"       LEAD(block) OVER (ORDER BY block, tile) AS next_block\n" +
 						"  FROM c\n" +
-						" ORDER BY geolevel_id, zoomlevel, block, x, y";
+						" ORDER BY geolevel_id, zoomlevel, block, tile";
 				}
 				else if (dbType == "MSSQLServer") {	
 					cte+=", c AS (\n" +
@@ -1046,7 +1046,7 @@ REFERENCE (from shapefile) {
 						"       LEAD(block) OVER (ORDER BY block, tile) AS next_block\n" +
 						"  INTO " + tileBlocksTable + "\n" + 
 						"  FROM c\n" +						
-						" ORDER BY geolevel_id, zoomlevel, block, x, y";		
+						" ORDER BY geolevel_id, zoomlevel, block, tile";		
 				}
 				winston.log("debug", "SQL> " + sql);
 		
@@ -1658,7 +1658,7 @@ REFERENCE (from shapefile) {
 		 * Descrioption: Process a block of geolevel/zoomlevel data
 		 */
 		function blockProcessing(sql, zoomlevel, geolevel_id, block, numBlocks, geolevelName, getBlockCallback) {
-			winston.log("debug", "blockProcessing(" + block + "/" + numBlocks + ") geolevel_id: " + 
+			winston.log("debug", "(" + block + "/" + numBlocks + ") geolevel_id: " + 
 				geolevel_id + "; zoomlevel: " + zoomlevel + 
 				"\nSQL> " + sql);
 			var rowsProcessed=0;
@@ -1679,7 +1679,7 @@ REFERENCE (from shapefile) {
 			}
 			stream.on('error', dbErrorHandler);
 
-			var resultRows=[];
+			var resultRows={};
 			stream.on('row', function tileIntersectsRow(row) {
 				mssqlRows++;
 				rowsProcessed++;
@@ -1689,16 +1689,23 @@ REFERENCE (from shapefile) {
 						dbErrorHandler(err, undefined /* sql */);
 					}
 					else {
-						winston.log("debug", "tileIntersectsRowCallback(): [" + rowsProcessed + "] " +
-							"block: " + row.block +
+						delete row.geolevel_name;
+						if (resultRows[row.tile_id] == undefined) {
+							resultRows[row.tile_id]=[];
+						}
+						resultRows[row.tile_id].push(row);
+						
+						winston.log("debug", "SELECT[" + rowsProcessed + "] " +
+							"Block: " + row.block +
 							"; next: " + row.next_block +
+							"; tile_id[" + (resultRows[row.tile_id].length-1) + "]: " + 
+								row.tile_id +
 							"; x: " + row.x +
 							"; y: " + row.y +
 							"; areaid: " + row.areaid);
-						delete row.geolevel_name;
-						resultRows.push(row);
 					}
-				}
+				} // End of tileIntersectsRowCallback()
+				
 				if (mssqlRows == 1) {
 					var xmlFileDir=tileMakerConfig.xmlConfig.xmlFileDir;
 					var rows=[];
@@ -1721,8 +1728,12 @@ REFERENCE (from shapefile) {
 			
 			if (dbType == "PostGres") {
 				stream.on('end', function(result) {		
+					var nresultRows=[];
+					for (tile in resultRows) {
+						nresultRows=nresultRows.concat(resultRows[tile]); // Reorder array by tile ids
+					}
 					sql=undefined;
-					tileIntersectsProcessingEnd(result.rowCount, rowsProcessed, resultRows, dbType, tilesCsvStream, block, numBlocks, getBlockCallback);
+					tileIntersectsProcessingEnd(result.rowCount, rowsProcessed, nresultRows, dbType, tilesCsvStream, block, numBlocks, getBlockCallback);
 				});
 			}		
 			else if (dbType == "MSSQLServer") {	
