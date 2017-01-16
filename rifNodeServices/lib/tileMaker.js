@@ -2152,10 +2152,10 @@ REFERENCE (from shapefile) {
 		tests.push({
 			description: "Missing tiles in tile blocks",
 			sql: "SELECT geolevel_id, zoomlevel, x, y\n" +
-				"  FROM peter.tile_blocks_" + geographyTable.toLowerCase() + "\n" +
+				"  FROM tile_blocks_" + geographyTable.toLowerCase() + "\n" +
 				"EXCEPT\n" +
 				"SELECT geolevel_id, zoomlevel, x, y\n" +
-				"  FROM peter.t_tiles_" + geographyTable.toLowerCase() + "\n" +
+				"  FROM t_tiles_" + geographyTable.toLowerCase() + "\n" +
 				" ORDER BY 1, 2, 3, 4",
 			results: undefined,
 			passed: undefined
@@ -2163,10 +2163,10 @@ REFERENCE (from shapefile) {
 		tests.push({
 			description: "Missing tiles in tile interescts",
 			sql: "SELECT geolevel_id, zoomlevel, x, y\n" +
-				"  FROM peter.tile_intersects_" + geographyTable.toLowerCase() + "\n" +
+				"  FROM tile_intersects_" + geographyTable.toLowerCase() + "\n" +
 				"EXCEPT\n" +
 				"SELECT geolevel_id, zoomlevel, x, y\n" +
-				"  FROM peter.t_tiles_" + geographyTable.toLowerCase() + "\n" +
+				"  FROM t_tiles_" + geographyTable.toLowerCase() + "\n" +
 				" ORDER BY 1, 2, 3, 4",
 			results: undefined,
 			passed: undefined
@@ -2174,10 +2174,10 @@ REFERENCE (from shapefile) {
 		tests.push({
 			description: "Missing tile blocks in tile interescts",
 			sql: "SELECT geolevel_id, zoomlevel, x, y\n" +
-					"  FROM peter.tile_intersects_" + geographyTable.toLowerCase() + "\n" +
+					"  FROM tile_intersects_" + geographyTable.toLowerCase() + "\n" +
 					"EXCEPT\n" +
 					"SELECT geolevel_id, zoomlevel, x, y\n" +
-					"  FROM peter.tile_blocks_" + geographyTable.toLowerCase() + "\n" +
+					"  FROM tile_blocks_" + geographyTable.toLowerCase() + "\n" +
 					" ORDER BY 1, 2, 3, 4",
 			results: undefined,
 			passed: undefined
@@ -2185,10 +2185,10 @@ REFERENCE (from shapefile) {
 		tests.push({
 			description: "Extra tiles not in blocks",
 			sql: "SELECT geolevel_id, zoomlevel, x, y\n" +
-				"  FROM peter.t_tiles_" + geographyTable.toLowerCase() + "\n" +
+				"  FROM t_tiles_" + geographyTable.toLowerCase() + "\n" +
 				"EXCEPT\n" +
 				"SELECT geolevel_id, zoomlevel, x, y\n" +
-				"  FROM peter.tile_blocks_" + geographyTable.toLowerCase() + "\n" +
+				"  FROM tile_blocks_" + geographyTable.toLowerCase() + "\n" +
 				" ORDER BY 1, 2, 3, 4",
 			results: undefined,
 			passed: undefined
@@ -2196,10 +2196,10 @@ REFERENCE (from shapefile) {
 		tests.push({
 			description: "Extra tiles not in tile intersects",
 			sql: "SELECT geolevel_id, zoomlevel, x, y\n" +
-				"  FROM peter.t_tiles_" + geographyTable.toLowerCase() + "\n" +
+				"  FROM t_tiles_" + geographyTable.toLowerCase() + "\n" +
 				"EXCEPT\n" +
 				"SELECT geolevel_id, zoomlevel, x, y\n" +
-				"  FROM peter.tile_intersects_" + geographyTable.toLowerCase() + "\n" +
+				"  FROM tile_intersects_" + geographyTable.toLowerCase() + "\n" +
 				" ORDER BY 1, 2, 3, 4",
 			results: undefined,
 			passed: undefined
@@ -2207,10 +2207,10 @@ REFERENCE (from shapefile) {
 		tests.push({
 			description: "Extra tile blocks not in tile intersects",
 			sql: "SELECT geolevel_id, zoomlevel, x, y\n" +
-				"  FROM peter.tile_blocks_" + geographyTable.toLowerCase() + "\n" +
+				"  FROM tile_blocks_" + geographyTable.toLowerCase() + "\n" +
 				"EXCEPT\n" +
 				"SELECT geolevel_id, zoomlevel, x, y\n" +
-				"  FROM peter.tile_intersects_" + geographyTable.toLowerCase() + "\n" +
+				"  FROM tile_intersects_" + geographyTable.toLowerCase() + "\n" +
 				" ORDER BY 1, 2, 3, 4",
 			results: undefined,
 			passed: undefined
@@ -2294,7 +2294,7 @@ REFERENCE (from shapefile) {
 				WHEN optimised_topojson::Text = '{"type": "FeatureCollection","features":[]}' THEN 1 
 				ELSE 0 END)::Text||'/'||
 		   COUNT(tile_id)::Text AS tiles
-	  FROM rif_data.t_tiles_sahsuland
+	  FROM t_tiles_sahsuland
 	 GROUP BY geolevel_id, zoomlevel
 )
 SELECT a2.zoomlevel, 
@@ -2310,12 +2310,22 @@ SELECT a2.zoomlevel,
  ORDER BY 1;
   */
 					var sql="WITH a AS (\n" +
-"	SELECT geolevel_id, zoomlevel,\n" +
-"		   SUM(CASE\n" +
-"				WHEN optimised_topojson::Text = '{" + '"type": "FeatureCollection","features"' + ":[]}' THEN 1\n" +
-"				ELSE 0 END)::Text||'/'||\n" +
-"		   COUNT(tile_id)::Text AS tiles\n" +
-"	  FROM t_tiles_sahsuland\n" +
+"	SELECT geolevel_id, zoomlevel,\n";
+					if (dbType == "PostGres") {
+sql+="		   SUM(CASE\n" +
+					"				WHEN optimised_topojson::Text = '{" + 
+					'"type": "FeatureCollection","features"' + ":[]}' THEN 1\n" +
+					"				ELSE 0 END)::Text||'/'||\n" +
+					"		   COUNT(tile_id)::Text AS tiles\n";
+					}		
+					else if (dbType == "MSSQLServer") {	
+sql+="		   CAST(SUM(CASE\n" +
+					"				WHEN optimised_topojson = '{" + 
+					'"type": "FeatureCollection","features"' + ":[]}' THEN 1\n" + 
+					"				ELSE 0 END) AS VARCHAR) + '/' +\n" + 
+					"		   CAST(COUNT(tile_id) AS VARCHAR) AS tiles\n";
+					}
+sql+="	  FROM t_tiles_" + geographyTable.toLowerCase() + "\n" +
 "	 GROUP BY geolevel_id, zoomlevel\n" +
 ")\n" +
 "SELECT a2.zoomlevel,\n";
