@@ -1227,15 +1227,6 @@ UPDATE sahsu_grd_level1
 					xmlConfig.dataLoader.srid + ") NOT POSSIBLE */ NULL"; 
 				sqlStmt.dbType=dbType;
 				sqlArray.push(sqlStmt);
-/*
-UPDATE sahsu_grd_level1
-   SET geom_6 = geom_6.STUnion(geom_6.STStartPoint()),
-       geom_7 = geom_7.STUnion(geom_7.STStartPoint()),
-       geom_8 = geom_8.STUnion(geom_8.STStartPoint()),
-       geom_9 = geom_9.STUnion(geom_9.STStartPoint()),
-       geom_10 = geom_10.STUnion(geom_10.STStartPoint()),
-       geom_11 = geom_11.STUnion(geom_11.STStartPoint());
- */
 			}
 
 			sqlArray.push(new Sql("Test geometry and make valid if required"));

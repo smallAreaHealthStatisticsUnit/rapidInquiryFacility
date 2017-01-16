@@ -880,7 +880,7 @@ Note: no bounding box (bbox) in tiles.
 * Hover support for area name, area_km2 and shapefile supplied data at highest resolution
 
 * SQL server RHR force to support mixed LH and RH in multipolygons
-  [c.%1.STUnion(%1.STStartPoint()) is also possible instead of c.%1.ReorientObject()] where %1 is the geometry column [Needs Turf support]
+  [c.%1.ReorientObject() is used as c.%1.STUnion(%1.STStartPoint()) does NOT work] where %1 is the geometry column [Needs Turf support]
 	
 * Display of zoomlevel contextual information: total topojson size, suppressed or not. 
 * Status in write JSON file Re-test COA2011: json memory and timeout issues are solved
