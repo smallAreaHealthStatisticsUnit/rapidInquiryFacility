@@ -29,7 +29,9 @@ WITH a AS (
 SELECT SUBSTRING(a.areaname, 1, 30) AS areaname,
        a.area_km2,
 	   a.area_km2_calc,
-	   CAST(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2) AS NUMERIC(15,2)) AS pct_km2_diff,
+	   CASE WHEN area_km2 = 0 THEN NULL 
+			ELSE CAST(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2) AS NUMERIC(15,2)) 
+			END AS pct_km2_diff,
 	   a.geographic_centroid,
        a.geographic_centroid_calc,
 	   a.centroid_diff_km
