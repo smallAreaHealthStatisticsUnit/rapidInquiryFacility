@@ -756,7 +756,7 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 		getPopulationPyramidData.addQueryLine(0, "WITH males AS");
 		getPopulationPyramidData.addQueryLine(1, "(SELECT");
 		getPopulationPyramidData.addQueryLine(2, "age_group,");
-		getPopulationPyramidData.addQueryLine(2, "SUM(rif_studies.s1_extract.total_pop) AS total_population");
+		getPopulationPyramidData.addQueryLine(2, "SUM(total_pop) AS total_population");
 		getPopulationPyramidData.addQueryLine(1, "FROM");			
 		getPopulationPyramidData.addQueryLine(2, extractTableName);
 		getPopulationPyramidData.addQueryLine(1, "WHERE");
@@ -768,7 +768,7 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 		getPopulationPyramidData.addQueryLine(0, "females AS");
 		getPopulationPyramidData.addQueryLine(1, "(SELECT");
 		getPopulationPyramidData.addQueryLine(2, "age_group,");
-		getPopulationPyramidData.addQueryLine(2, "SUM(rif_studies.s1_extract.total_pop) AS total_population");
+		getPopulationPyramidData.addQueryLine(2, "SUM(total_pop) AS total_population");
 		getPopulationPyramidData.addQueryLine(1, "FROM");			
 		getPopulationPyramidData.addQueryLine(2, extractTableName);
 		getPopulationPyramidData.addQueryLine(1, "WHERE");
