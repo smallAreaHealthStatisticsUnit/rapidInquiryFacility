@@ -165,7 +165,7 @@ SELECT a2.areaid AS cb_2014_us_state_500k,
 	   a2.geom_11.STIntersection(a3.geom_11).ST_Area() AS a23_area
   INTO dbo.#x23
   FROM cb_2014_us_state_500k a2  CROSS JOIN cb_2014_us_county_500k a3
- WHERE a2.geom_11.ST_Intersects(a3.geom_11) = 1;
+ WHERE a2.geom_11.STntersects(a3.geom_11) = 1;
 
 */
 			BEGIN
@@ -183,7 +183,7 @@ SELECT a2.areaid AS cb_2014_us_state_500k,
 				    '  INTO ##x' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_' + CAST(@@spid AS VARCHAR) + @crlf + 
 					'  FROM ' + @shapefile_table + ' a' + CAST(@i AS VARCHAR) + 
 					' CROSS JOIN ' + @n_shapefile_table + ' a' + CAST(@i+1 AS VARCHAR) + '' + @crlf + 
-					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_%2.ST_Intersects(a' + CAST(@i+1 AS VARCHAR) + 
+					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
 						'.geom_%2) = 1';
 				PRINT 'SQL> ' + @sql_stmt;
 				EXECUTE @rowcount = sp_executesql @sql_stmt;
