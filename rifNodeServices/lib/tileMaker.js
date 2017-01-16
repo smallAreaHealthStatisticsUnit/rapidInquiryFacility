@@ -2264,7 +2264,7 @@ REFERENCE (from shapefile) {
 										hdr+=(padStr + keys[j]).slice(-20) + " ";
 										hdr2+=(padStr2).slice(-20) +" ";
 									}
-									str+=(padStr + value.results[k][keys[j]]).slice(-20) + " ";
+									str+=(padStr + (results[k][keys[j]]||"")).slice(-20) + " ";
 								}
 								str+="\n";
 							}
@@ -2285,8 +2285,107 @@ REFERENCE (from shapefile) {
 				}
 				else  {
 					winston.log("info", "All " + passed + " tests passed, none failed");
+			/* 
+			 * Generate PIVOT the old way:
+			 
+			WITH a AS (
+	SELECT geolevel_id, zoomlevel,   
+		   SUM(CASE 
+				WHEN optimised_topojson::Text = '{"type": "FeatureCollection","features":[]}' THEN 1 
+				ELSE 0 END)::Text||'/'||
+		   COUNT(tile_id)::Text AS tiles
+	  FROM rif_data.t_tiles_sahsuland
+	 GROUP BY geolevel_id, zoomlevel
+)
+SELECT a2.zoomlevel, 
+       a1.tiles AS geolevel_1,
+       a2.tiles AS geolevel_2,
+       a3.tiles AS geolevel_3,
+       a4.tiles AS geolevel_4
+  FROM a a2
+	LEFT OUTER JOIN a a1 ON (a1.zoomlevel = a2.zoomlevel AND a1.geolevel_id = 1)
+	LEFT OUTER JOIN a a3 ON (a3.zoomlevel = a2.zoomlevel AND a3.geolevel_id = 3)
+	LEFT OUTER JOIN a a4 ON (a4.zoomlevel = a2.zoomlevel AND a4.geolevel_id = 4)
+ WHERE a2.geolevel_id = 2
+ ORDER BY 1;
+  */
+					var sql="WITH a AS (\n" +
+"	SELECT geolevel_id, zoomlevel,\n" +
+"		   SUM(CASE\n" +
+"				WHEN optimised_topojson::Text = '{" + '"type": "FeatureCollection","features"' + ":[]}' THEN 1\n" +
+"				ELSE 0 END)::Text||'/'||\n" +
+"		   COUNT(tile_id)::Text AS tiles\n" +
+"	  FROM t_tiles_sahsuland\n" +
+"	 GROUP BY geolevel_id, zoomlevel\n" +
+")\n" +
+"SELECT a2.zoomlevel,\n";
+					for (var i=1; i<=numGeolevels; i++) {
+						if (i< numGeolevels) {
+							sql+="       a" + i + ".tiles AS geolevel_" + i + ",\n";
+						}
+						else {
+							sql+="       a" + i + ".tiles AS geolevel_" + i + "\n";
+						}
+					}
+					sql+="  FROM a a2\n";
+					for (var i=1; i<=numGeolevels; i++) {
+						if (i != 2) { // Drive on geolevel 2
+							sql+="	LEFT OUTER JOIN a a" + i + 
+								" ON (a" + i + ".zoomlevel = a2.zoomlevel AND a" + i + ".geolevel_id = " + i + ")\n";
+						}	
+					}					
+					sql+=" WHERE a2.geolevel_id = 2\n" +
+						" ORDER BY 1";
+					winston.log("debug", "SQL> " + sql);
+					var request;
+					if (dbType == "PostGres") {
+						request=client;
+					}		
+					else if (dbType == "MSSQLServer") {	
+						request=new dbSql.Request();
+					}
 					
-					tileTestsEndCallback();
+					var query=request.query(sql, function(err, recordSet) {
+			
+						var results;
+						if (err) {		
+							dbErrorHandler(err, sql, tileTestsEndCallback);
+						}
+						else {			
+							if (dbType == "PostGres") {
+								results=recordSet.rows;
+							}
+							else if (dbType == "MSSQLServer") {	
+								results=recordSet;
+							}			
+							var rowsAffected=(results || results.length);
+							var str="";
+							var hdr="";
+							var hdr2="";
+							var padStr="                    ";
+							var padStr2="--------------------";
+							for (var k=0; k<results.length; k++) {
+								keys=Object.keys(results[k]);
+								for (var j=0; j<keys.length; j++) {
+									if (k == 0) {
+										hdr+=(padStr + keys[j]).slice(-20) + " ";
+										hdr2+=(padStr2).slice(-20) +" ";
+									}
+									if (results[k][keys[j]] == 0 && keys[j] == "zoomlevel") {
+										str+=(padStr + "0").slice(-20) + " ";
+									}
+									else {
+										str+=(padStr + (results[k][keys[j]]||"")).slice(-20) + " ";
+									}
+								}
+								str+="\n";
+							}
+							winston.log("info", "Zoomlevel and geolevel report (null tiles/total tiles)\n" +
+								(hdr||"") + "\n" + (hdr2||"") + "\n" + str);
+								
+							tileTestsEndCallback();
+						}
+					});
 				}
 			} // End of tileTestsSeries()
 		); // End of async.forEachOfSeries()

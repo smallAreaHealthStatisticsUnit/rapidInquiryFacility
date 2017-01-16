@@ -802,6 +802,7 @@ RangeError: Invalid string length
 
 * Race fixes in block code
 * Check tiles all generated and not null, no extra, none missing 
+* Zoomlevel and geolevel report (null tiles/total tiles)
 
 #### Current TODO list (January 2017):
 
