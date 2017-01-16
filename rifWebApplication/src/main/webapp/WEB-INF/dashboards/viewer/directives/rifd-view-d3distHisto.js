@@ -16,7 +16,12 @@ angular.module("RIF")
                 link: function (scope, element, attrs) {
 
                     scope.$watch(function () {
-                        scope.renderBase();
+                        if (angular.isUndefined(scope.data) || scope.data.length === 0) {
+                            d3.select("#distHisto").remove();
+                            return;
+                        } else {
+                            scope.renderBase();
+                        }
                     });
 
                     scope.renderBase = function () {

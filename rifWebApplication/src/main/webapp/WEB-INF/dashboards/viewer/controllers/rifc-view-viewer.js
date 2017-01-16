@@ -1,24 +1,47 @@
-/* global L, key, topojson, d3, ss, values */
+/* 
+ * CONTROLLER for data viewer
+ */
+
+/* global L, key, topojson, d3 */
 
 angular.module("RIF")
-        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', 'LeafletBaseMapService', '$timeout', 'ViewerStateService',
-            'ChoroService', 'LeafletExportService', 'D3ToPNGService',
-            function ($scope, user, leafletData, LeafletBaseMapService, $timeout, ViewerStateService,
-                    ChoroService, LeafletExportService, D3ToPNGService) {
+        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', '$timeout', 'ViewerStateService',
+            'ChoroService', 'LeafletExportService', 'D3ToPNGService', 'MappingService',
+            function ($scope, user, leafletData, $timeout, ViewerStateService,
+                    ChoroService, LeafletExportService, D3ToPNGService, MappingService) {
 
-                //ui-grid data
-                $scope.tableData = {
-                    "viewermap": []
-                };
+                //Reference the child scope
+                $scope.child = {};
 
-                //data for top-left histogram panel
-                $scope.histoData = [];
-                function getHistoData() {
-                    $scope.histoData.length = 0;
-                    for (var i = 0; i < $scope.viewerTableOptions.data.length; i++) {
-                        $scope.histoData.push($scope.viewerTableOptions.data[i][ChoroService.getMaps(0).feature]);
-                    }
-                }
+                //A flag to keep renderers if changing tabs
+                $scope.$on("$destroy", function () {
+                    ViewerStateService.getState().initial = true;
+                });
+
+                //Set initial map panels and events
+                $timeout(function () {
+                    leafletData.getMap("viewermap").then(function (map) {
+                        map.on('zoomend', function (e) {
+                            ViewerStateService.getState().center.zoom = map.getZoom();
+                        });
+                        map.on('moveend', function (e) {
+                            ViewerStateService.getState().center.lng = map.getCenter().lng;
+                            ViewerStateService.getState().center.lat = map.getCenter().lat;
+                        });
+                        new L.Control.GeoSearch({
+                            provider: new L.GeoSearch.Provider.OpenStreetMap()
+                        }).addTo(map);
+                        L.control.scale({position: 'topleft', imperial: false}).addTo(map);
+
+                        //Attributions to open in new window
+                        map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                    });
+                    //Set initial map extents
+                    $scope.center = ViewerStateService.getState().center;
+
+                    //Fill study drop-downs
+                    $scope.child.getStudies();
+                });
 
                 //ui-container sizes
                 $scope.distHistoCurrentHeight = 200;
@@ -29,16 +52,14 @@ angular.module("RIF")
                 $scope.hSplit1 = ViewerStateService.getState().hSplit1;
                 $scope.hSplit2 = ViewerStateService.getState().hSplit2;
 
-                //TODO: if browser window resized - see mapping controller
-
-                $scope.$on('ui.layout.loaded', function () {
+                $scope.getD3Frames = function () {
                     $scope.distHistoCurrentHeight = d3.select("#hSplit1").node().getBoundingClientRect().height;
                     $scope.distHistoCurrentWidth = d3.select("#hSplit1").node().getBoundingClientRect().width;
                     $scope.pyramidCurrentHeight = d3.select("#hSplit2").node().getBoundingClientRect().height;
                     $scope.pyramidCurrentWidth = d3.select("#hSplit1").node().getBoundingClientRect().width;
-                });
+                };
 
-                $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
+                $scope.getD3FramesOnResize = function (beforeContainer, afterContainer) {
                     //Monitor split sizes                  
                     if (beforeContainer.id === "vSplit1") {
                         ViewerStateService.getState().vSplit1 = (beforeContainer.size / beforeContainer.maxSize) * 100;
@@ -53,95 +74,109 @@ angular.module("RIF")
                     if (beforeContainer.id === "hSplit2") {
                         ViewerStateService.getState().hSplit2 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                     }
-                    //Rescale leaflet container        
+                    $scope.child.rescaleLeafletContainer();
+                };
+
+                /*
+                 * Local map variables
+                 */
+                $scope.myMaps = ["viewermap"];
+
+                //define non-null centre for leaflet directive
+                $scope.center = {};
+                //transparency as set by slider
+                $scope.transparency = {
+                    "viewermap": ViewerStateService.getState().transparency["viewermap"]
+                };
+                //target for getTiles topoJSON
+                $scope.geoJSON = {};
+
+                //selected polygons
+                $scope.thisPoly = ViewerStateService.getState().selected["viewermap"];
+
+                //study to be mapped
+                $scope.studyID = {
+                    "viewermap": ViewerStateService.getState().study['viewermap']
+                };
+                $scope.sex = {
+                    "viewermap": ViewerStateService.getState().sex['viewermap']
+                };
+
+                //attributes for d3
+                $scope.histoData = {
+                    "viewermap": []
+                };
+                $scope.populationData = {
+                    "viewermap": []
+                };
+                $scope.domain = {
+                    "viewermap": []
+                };
+
+
+                /*
+                 * Leaflet Toolstrip
+                 */
+
+                //map layer opacity with slider
+                $scope.changeOpacity = function (mapID) {
+                    ViewerStateService.getState().transparency = $scope.transparency;
+                    $scope.geoJSON[mapID].eachLayer($scope.child.handleLayer);
+                };
+
+                //Clear all selection from map and table
+                $scope.clear = function () {
+                    $scope.thisPoly.length = 0;
+                };
+
+                //Zoom to layer DOUBLE click
+                $scope.zoomToExtent = function () {
                     leafletData.getMap("viewermap").then(function (map) {
-                        setTimeout(function () {
-                            map.invalidateSize();
-                        }, 50);
+                        map.fitBounds($scope.child.maxbounds);
                     });
-                });
-
-                //Drop-downs
-                $scope.studyIDs = [1, 214, 205, 239];
-                $scope.studyID = 1;
-                $scope.years = [1990, 1991, 1992, 1993, 1994, 1995];
-                $scope.year = 1995;
-                $scope.sexes = ["Male", "Female", "Both"];
-                $scope.sexString = "Male";
-                var sex = $scope.sexes.indexOf($scope.sexString) + 1;
-
-                //draw relevant geography for this study
-                $scope.renderGeography = function () {
-                    // user.getTiles(user.currentUser, "SAHSU", "LEVEL3", "viewer").then(handleTopoJSON, handleTopoJSONError);
-                    user.getTiles(user.currentUser, "SAHSU", "LEVEL4", "viewer").then(handleTopoJSON, handleTopoJSONError);
                 };
 
-                //Study ID drop-down chnaged
-                $scope.studyChanged = function () {
-                    //get possible years
-                    //get possible sexes   
-                    //get current geography
-                };
-
-                //Study year or sex changed
-                $scope.studyOptionsChanged = function () {
-                    //if geography changed then $scope.renderGeography();
-                    //else call getAttributeTable()
-                };
-
-                //initial state
-                $scope.renderGeography();
-
-                //leaflet render
-                $scope.transparency = ViewerStateService.getState().transparency;
-                $scope.selectedPolygon = ViewerStateService.getState().selected;
-                var maxbounds;
-                var thisMap = [];
-                $scope.domain = [];
-                var attr;
-                $scope.populationData = [];
-
-                //get the user defined basemap
-                $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("viewermap"));
-                //called on bootstrap and on modal submit
-                $scope.renderMap = function (mapID) {
-                    leafletData.getMap(mapID).then(function (map) {
-                        map.removeLayer($scope.thisLayer);
-                        if (!LeafletBaseMapService.getNoBaseMap("viewermap")) {
-                            $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("viewermap"));
-                            map.addLayer($scope.thisLayer);
+                //Zoom to study extent SINGLE click
+                $scope.zoomToStudy = function (mapID) {
+                    var studyBounds = new L.LatLngBounds();
+                    $scope.geoJSON[mapID].eachLayer(function (layer) {
+                        //if area ID is in the attribute table
+                        for (var i = 0; i < $scope.child.tableData['viewermap'].length; i++) {
+                            if ($scope.child.tableData['viewermap'][i]['area_id'].indexOf(layer.feature.properties.area_id) !== -1) {
+                                studyBounds.extend(layer.getBounds());
+                            }
                         }
-                        //restore setView
-                        if (!angular.isUndefined(maxbounds) && ViewerStateService.getState().view[0] === 0) {
-                            map.fitBounds(maxbounds);
-                        } else {
-                            map.setView(ViewerStateService.getState().view, ViewerStateService.getState().zoomLevel);
+                    });
+                    leafletData.getMap('viewermap').then(function (map) {
+                        if (studyBounds.isValid()) {
+                            map.fitBounds(studyBounds);
                         }
-                        //hack to refresh map
-                        setTimeout(function () {
-                            map.invalidateSize();
-                        }, 50);
                     });
                 };
 
-                $timeout(function () {
-                    leafletData.getMap("viewermap").then(function (map) {
-                        map.on('zoomend', function (e) {
-                            ViewerStateService.getState().zoomLevel = map.getZoom();
-                        });
-                        map.on('moveend', function (e) {
-                            ViewerStateService.getState().view = map.getCenter();
-                        });
-                        new L.Control.GeoSearch({
-                            provider: new L.GeoSearch.Provider.OpenStreetMap()
-                        }).addTo(map);
-                        L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-
-                        //Attributions to open in new window
-                        map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                //Zoom to results extent
+                $scope.zoomToSelected = function (mapID) {
+                    var studyBounds = new L.LatLngBounds();
+                    $scope.geoJSON[mapID].eachLayer(function (layer) {
+                        //if area ID is in the attribute table
+                        for (var i = 0; i < $scope.child.tableData['viewermap'].length; i++) {
+                            if ($scope.child.tableData['viewermap'][i]['area_id'] === layer.feature.properties.area_id) {
+                                if ($scope.child.tableData['viewermap'][i]['_selected'] === 1) {
+                                    studyBounds.extend(layer.getBounds());
+                                }
+                            }
+                        }
                     });
-                });
+                    leafletData.getMap('viewermap').then(function (map) {
+                        if (studyBounds.isValid()) {
+                            map.fitBounds(studyBounds);
+                        }
+                    });
+                };
 
+                /*
+                 * Save Graphs and map to PNG
+                 */
                 //quick export leaflet panel
                 $scope.saveLeaflet = function () {
                     var thisLegend = document.getElementsByClassName("info legend leaflet-control")[0]; //the legend
@@ -160,11 +195,6 @@ angular.module("RIF")
                     });
                 };
 
-                //Clear all selection from map and table
-                $scope.clear = function () {
-                    $scope.selectedPolygon.length = 0;
-                };
-
                 //Save D3 to PNG           
                 $scope.saveD3Chart = function (chart) {
                     var pngHeight = $scope.distHistoCurrentHeight * 3;
@@ -175,12 +205,12 @@ angular.module("RIF")
                         pngWidth = $scope.pyramidCurrentWidth * 3;
                         fileName = "populationPyramid.png";
                     }
-                    
+
                     var svgString = D3ToPNGService.getGetSVGString(d3.select(chart)
                             .attr("version", 1.1)
                             .attr("xmlns", "http://www.w3.org/2000/svg")
                             .node());
-                    
+
                     D3ToPNGService.getSvgString2Image(svgString, pngWidth, pngHeight, 'png', save);
 
                     function save(dataBlob, filesize) {
@@ -188,50 +218,50 @@ angular.module("RIF")
                     }
                 };
 
-                //Zoom to layer DOUBLE click
-                $scope.zoomToExtent = function () {
-                    leafletData.getMap("viewermap").then(function (map) {
-                        map.fitBounds(maxbounds);
+                /*
+                 * D3
+                 */
+
+                //Draw the attribute histogram
+                $scope.getD3chart = function (mapID, attribute) {
+                    $scope.histoData["viewermap"].length = 0;
+                    for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
+                        $scope.histoData[mapID].push($scope.child.tableData[mapID][i][ChoroService.getMaps(mapID).feature]);
+                    }
+                };
+
+                //population pyramaid year selection
+                $scope.yearsPop = [];
+                $scope.fillPyramidData = function () {
+                    user.getYearsForStudy(user.currentUser, 1, "viewermap").then(function (res) {
+                        if (!angular.isUndefined(res.data['years{'])) { //Note erroneous trailing '{' in middle ware method
+                            $scope.yearsPop.length = 0;
+                            for (var i = 0; i < res.data['years{'].length; i++) {
+                                $scope.yearsPop.push(res.data['years{'][i]);
+                            }
+                        }
+                    }, function () {
+                        console.log("year error");
+                    }).then(function () {
+                        $scope.child.yearPop = $scope.yearsPop[0];
+                        $scope.updatePyramidForYear();
                     });
                 };
 
-                //Zoom to study extent SINGLE click
-                $scope.zoomToStudy = function () {
-                    var studyBounds = new L.LatLngBounds();
-                    $scope.topoLayer.eachLayer(function (layer) {
-                        //if area ID is in the attribute table
-                        for (var i = 0; i < $scope.tableData['viewermap'].length; i++) {
-                            if ($scope.tableData['viewermap'][i]['area_id'].indexOf(layer.feature.properties.area_id) !== -1) {
-                                studyBounds.extend(layer.getBounds());
-                            }
-                        }
-                    });
-                    leafletData.getMap('viewermap').then(function (map) {
-                        if (studyBounds.isValid()) {
-                            map.fitBounds(studyBounds);
-                        }
-                    });
+                $scope.updatePyramidForYear = function () {
+                    if ($scope.child.yearPop !== null) {
+                        user.getAllPopulationPyramidData(user.currentUser, $scope.studyID["viewermap"].study_id, $scope.child.yearPop)
+                                .then(function (res) {
+                                    $scope.populationData["viewermap"] = res.data.smoothed_results;
+                                }, function () {
+                                    console.log("pyramid data error");
+                                });
+                    }
                 };
 
-                //Zoom to results extent
-                $scope.zoomToSelected = function () {
-                    var studyBounds = new L.LatLngBounds();
-                    $scope.topoLayer.eachLayer(function (layer) {
-                        //if area ID is in the attribute table
-                        for (var i = 0; i < $scope.tableData['viewermap'].length; i++) {
-                            if ($scope.tableData['viewermap'][i]['area_id'] === layer.feature.properties.area_id) {
-                                if ($scope.tableData['viewermap'][i]['_selected'] === 1) {
-                                    studyBounds.extend(layer.getBounds());
-                                }
-                            }
-                        }
-                    });
-                    leafletData.getMap('viewermap').then(function (map) {
-                        if (studyBounds.isValid()) {
-                            map.fitBounds(studyBounds);
-                        }
-                    });
-                };
+                /*
+                 * Specific to Attribute table
+                 */
 
                 //UI-Grid setup options
                 $scope.viewerTableOptions = {
@@ -260,232 +290,17 @@ angular.module("RIF")
                             '</div>';
                 }
 
-                function handleLayer(layer) {
-                    //Join geography and results table
-                    var thisAttr;
-                    for (var i = 0; i < $scope.viewerTableOptions.data.length; i++) {
-                        if ($scope.viewerTableOptions.data[i].area_id === layer.feature.properties.area_id) {
-                            thisAttr = $scope.viewerTableOptions.data[i][ChoroService.getMaps(0).feature];
-                            break;
-                        }
-                    }
-                    //is selected?
-                    var selected = false;
-                    if ($scope.selectedPolygon.indexOf(layer.feature.properties.area_id) !== -1) {
-                        selected = true;
-                    }
-                    var polyStyle = ChoroService.getRenderFeature(thisMap.scale, thisAttr, selected);
-                    layer.setStyle({
-                        fillColor: polyStyle,
-                        fillOpacity: $scope.transparency
-                    });
-                }
-
-                $scope.changeOpacity = function () {
-                    ViewerStateService.getState().transparency = $scope.transparency;
-                    $scope.topoLayer.eachLayer(handleLayer);
-                };
-
-                //Hover box and Legend
-                var infoBox = L.control({position: 'bottomleft'});
-                var legend = L.control({position: 'topright'});
-                infoBox.onAdd = function () {
-                    this._div = L.DomUtil.create('div', 'info');
-                    this.update();
-                    return this._div;
-                };
-                infoBox.update = function (poly) {
-                    if (poly) {
-                        var thisAttr;
-                        for (var i = 0; i < $scope.viewerTableOptions.data.length; i++) {
-                            if ($scope.viewerTableOptions.data[i].area_id === poly) {
-                                thisAttr = $scope.viewerTableOptions.data[i][ChoroService.getMaps(0).feature];
-                                break;
-                            }
-                        }
-                        if (ChoroService.getMaps(0).feature !== "" && !angular.isUndefined(thisAttr)) {
-                            this._div.innerHTML = '<h4>ID: ' + poly + '</br>' + ChoroService.getMaps(0).feature.toUpperCase().replace("_", " ") + ": " + Number(thisAttr).toFixed(3) + '</h4>';
-                        } else {
-                            this._div.innerHTML = '<h4>ID: ' + poly + '</h4>';
-                        }
-                    } else {
-                        this._div.innerHTML = '';
-                    }
-                };
-                leafletData.getMap("viewermap").then(function (map) {
-                    infoBox.addTo(map);
-                });
-
-                //information from choropleth modal to colour map                             
-                $scope.refresh = function () {
-                    //get selected colour ramp
-                    var rangeIn = ChoroService.getMaps(0).renderer.range;
-                    $scope.distHistoName = ChoroService.getMaps(0).feature;
-                    attr = ChoroService.getMaps(0).feature;
-
-                    //get choropleth map renderer
-                    thisMap = ChoroService.getMaps(0).renderer;
-
-                    //not a choropleth, but single colour
-                    if (rangeIn.length === 1) {
-                        attr = "";
-                        leafletData.getMap("viewermap").then(function (map) {
-                            //remove existing legend
-                            if (legend._map) {
-                                map.removeControl(legend);
-                            }
-                        });
-                        $scope.topoLayer.eachLayer(handleLayer);
-                        return;
-                    }
-
-                    //remove old legend and add new
-                    legend.onAdd = ChoroService.getMakeLegend(thisMap, attr);
-                    leafletData.getMap("viewermap").then(function (map) {
-                        if (legend._map) { //This may break in future leaflet versions
-                            map.removeControl(legend);
-                        }
-                        legend.addTo(map);
-                    });
-
-                    //force a redraw
-                    $scope.topoLayer.eachLayer(handleLayer);
-
-                    //Histogram
-                    getHistoData();
-                };
-
-                function handleTopoJSON(res) {
-                    leafletData.getMap("viewermap").then(function (map) {
-                        $scope.topoLayer = new L.TopoJSON(res.data, {
-                            renderer: L.canvas(),
-                            style: function (feature) {
-                                return {
-                                    fillColor: ChoroService.getRenderFeature(thisMap.scale, attr, false),
-                                    weight: 1,
-                                    opacity: 1,
-                                    color: 'gray',
-                                    fillOpacity: $scope.transparency
-                                };
-                            },
-                            onEachFeature: function (feature, layer) {
-                                layer.on('mouseover', function (e) {
-                                    this.setStyle({
-                                        color: 'gray',
-                                        weight: 1.5,
-                                        fillOpacity: function () {
-                                            return($scope.transparency - 0.3 > 0 ? $scope.transparency - 0.3 : 0.1);
-                                        }()
-                                    });
-                                    infoBox.update(layer.feature.properties.area_id);
-                                });
-                                layer.on('click', function (e) {
-                                    var thisPoly = e.target.feature.properties.area_id;
-                                    var bFound = false;
-                                    for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                        if ($scope.selectedPolygon[i] === thisPoly) {
-                                            bFound = true;
-                                            $scope.selectedPolygon.splice(i, 1);
-                                            break;
-                                        }
-                                    }
-                                    if (!bFound) {
-                                        $scope.selectedPolygon.push(thisPoly);
-                                    }
-                                });
-                                layer.on('mouseout', function (e) {
-                                    $scope.topoLayer.eachLayer(handleLayer);
-                                    infoBox.update(false);
-                                });
-                            }
-                        });
-                        $scope.topoLayer.addTo(map);
-                        maxbounds = $scope.topoLayer.getBounds();
-                    }).then(function () {
-                        $scope.getAttributeTable();
-                    }).then(function () {
-                        $scope.renderMap("viewermap");
-                        $scope.refresh();
-                    });
-                }
-
-                function handleTopoJSONError() {
-                    $scope.showError("Something went wrong when getting the geography");
-                }
-
-                $scope.getAttributeTable = function () {
-
-                    //All results in table
-                    user.getSmoothedResults(user.currentUser, $scope.studyID, sex, $scope.year)
-                            .then(handleSmoothedResults, attributeError);
-
-                    //Population pyramid data
-                    user.getAllPopulationPyramidData(user.currentUser, $scope.studyID, $scope.year)
-                            .then(handlePopulation, attributeError);
-
-                    /*
-                     //All results in table
-                     user.getSmoothedResults(user.currentUser, 1, 1, 1990)
-                     .then(handleSmoothedResults, attributeError);
-                     
-                     //Population pyramid data
-                     user.getAllPopulationPyramidData(user.currentUser, 1, 1990)
-                     .then(handlePopulation, attributeError);
-                     */
-
-                    function handleSmoothedResults(res) {
-                        //fill results table
-                        var colDef = [];
-                        var attrs = [];
-
-                        for (var i = 0; i < res.data.smoothed_results.length; i++) {
-                            res.data.smoothed_results[i]._selected = 0;
-                            $scope.tableData.viewermap.push(res.data.smoothed_results[i]);
-                        }
-                        //supress some pre-selected columns (see the service)
-                        for (var i in res.data.smoothed_results[0]) {
-                            if (ViewerStateService.getValidColumn(i)) {
-                                if (i !== "area_id" && i !== "_selected") {
-                                    attrs.push(i);
-                                }
-                                colDef.push({
-                                    name: i,
-                                    width: 100
-                                });
-                            }
-                        }
-
-                        $scope.distHistoName = ChoroService.getMaps(0).feature;
-                        ChoroService.getMaps(0).features = attrs;
-                        $scope.viewerTableOptions.columnDefs = colDef;
-                        $scope.viewerTableOptions.data = $scope.tableData.viewermap;
-
-                        //refresh view
-                        $scope.refresh();
-                        getHistoData();
-                        updateTable();
-                    }
-
-                    function handlePopulation(res) {
-                        $scope.populationData = res.data.smoothed_results;
-                    }
-
-                    function attributeError(e) {
-                        console.log(e);
-                    }
-                };
-
-                function updateTable() {
+                $scope.updateTable = function () {
                     $scope.gridApi.selection.clearSelectedRows();
                     for (var i = 0; i < $scope.viewerTableOptions.data.length; i++) {
                         $scope.viewerTableOptions.data[i]._selected = 0;
-                        for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                            if ($scope.viewerTableOptions.data[i].area_id === $scope.selectedPolygon[j]) {
+                        for (var j = 0; j < $scope.thisPoly.length; j++) {
+                            if ($scope.viewerTableOptions.data[i].area_id === $scope.thisPoly[j]) {
                                 $scope.viewerTableOptions.data[i]._selected = 1;
                             }
                         }
                     }
-                }
+                };
 
                 //Multiple select with shift
                 var bShift = false;
@@ -510,15 +325,15 @@ angular.module("RIF")
                         //We are doing a single click select on the table
                         var thisPoly = row.entity.area_id;
                         var bFound = false;
-                        for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                            if ($scope.selectedPolygon[i] === thisPoly) {
+                        for (var i = 0; i < $scope.thisPoly.length; i++) {
+                            if ($scope.thisPoly[i] === thisPoly) {
                                 bFound = true;
-                                $scope.selectedPolygon.splice(i, 1);
+                                $scope.thisPoly.splice(i, 1);
                                 break;
                             }
                         }
                         if (!bFound) {
-                            $scope.selectedPolygon.push(thisPoly);
+                            $scope.thisPoly.push(thisPoly);
                         }
                     } else {
                         //We are doing a multiple select on the table, shift key is down
@@ -527,14 +342,14 @@ angular.module("RIF")
                                 i <= Math.min(multiStop, multiStart) + (Math.abs(multiStop - multiStart)); i++) {
                             var thisPoly = myVisibleRows[i].entity.area_id;
                             var bFound = false;
-                            for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                                if ($scope.selectedPolygon[j] === thisPoly) {
+                            for (var j = 0; j < $scope.thisPoly.length; j++) {
+                                if ($scope.thisPoly[j] === thisPoly) {
                                     bFound = true;
                                     break;
                                 }
                             }
                             if (!bFound) {
-                                $scope.selectedPolygon.push(thisPoly);
+                                $scope.thisPoly.push(thisPoly);
                             }
                         }
                     }
@@ -549,15 +364,19 @@ angular.module("RIF")
                     }
                 };
 
+                /*
+                 * Watch for Changes
+                 */
+
                 //Watch selectedPolygon array for any changes
-                $scope.$watchCollection('selectedPolygon', function (newNames, oldNames) {
+                $scope.$watchCollection('thisPoly', function (newNames, oldNames) {
                     if (newNames === oldNames) {
                         return;
                     }
                     //Update table selection
-                    updateTable();
-                    ViewerStateService.getState().selected = newNames;
+                    $scope.updateTable();
+                    ViewerStateService.getState().selected["viewermap"] = newNames;
                     //Update map selection
-                    $scope.topoLayer.eachLayer(handleLayer);
+                    $scope.geoJSON["viewermap"].eachLayer($scope.child.handleLayer);
                 });
             }]);

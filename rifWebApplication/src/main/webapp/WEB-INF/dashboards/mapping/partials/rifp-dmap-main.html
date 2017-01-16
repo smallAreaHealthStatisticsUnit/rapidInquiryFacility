@@ -6,7 +6,7 @@
     <div class='nav'>
         <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
         <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
-        <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
+        <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
     </div>
 </div>
 
@@ -16,56 +16,40 @@
             <div class="mappingPageLabel">LEFT DISPLAY</div>
             <div>
                 <div>Study:</div>
-                <select id='studySelect' ng-model="studyID[diseasemap1]" ng-options='s.id  as (s.study_id +                     ": " +                     s.name) for s in studyIDs["diseasemap1"]'> 
-                </select>
-            </div>
-            <div >
-                <div>Year:</div>
-                <select id='optionsSelect' ng-model="year" ng-options="s for s in years">
-                </select>
+                <select ng-change='child.updateSex("diseasemap1")' id='studySelect' ng-model='studyID["diseasemap1"]' ng-options='(s.study_id +  ": " +  s.name) for s in child.studyIDs'> 
+                </select>             
             </div>
             <div>
                 <div>Sex:</div>      
-                <select id='optionsSelect' ng-model="sex" ng-options="s for s in sexes">
+                <select ng-change='child.updateStudy("diseasemap1")' id='optionsSelect' ng-model="sex['diseasemap1']" ng-options="s for s in child.sexes['diseasemap1']">
                 </select>
             </div>
-            <ul class="mapBoxOpts">
-                <li><a ng-click="updateStudy('diseasemap1')" id="refreshMap" title="Update left display"></a></li> 
-            </ul>
         </div>
     </div>
     <div id='right'>
         <div class='geoDropsMapping'>
             <div class="mappingPageLabel">RIGHT DISPLAY</div>
-            <div >
+            <div>
                 <div>Study:</div>
-                <select id='studySelect' ng-model="studyID[diseasemap2]" ng-options='s.id  as (s.study_id +                    ": " +                    s.name) for s in studyIDs["diseasemap2"]'>               
-                </select>
-            </div>
-            <div >
-                <div>Year:</div>
-                <select id='optionsSelect' ng-model="year" ng-options="s for s in years">
-                </select>
+                <select ng-change='child.updateSex("diseasemap2")' id='studySelect' ng-model='studyID["diseasemap2"]' ng-options='(s.study_id +  ": " +  s.name) for s in child.studyIDs'> 
+                </select>             
             </div>
             <div>
-                <div>Sex:</div>
-                <select id='optionsSelect' ng-model="sex" ng-options="s for s in sexes">
+                <div>Sex:</div>      
+                <select ng-change='child.updateStudy("diseasemap2")' id='optionsSelect' ng-model="sex['diseasemap2']" ng-options="s for s in child.sexes['diseasemap2']">
                 </select>
             </div>
-            <ul class="mapBoxOpts">
-                <li><a ng-click="updateStudy('diseasemap2')" id="refreshMap" title="Update right display"></a></li> 
-            </ul>
         </div>
     </div>        
 </div>
 
-<div ui-layout="{flow : 'column'}">
+<div ng-controller="leafletLayersCtrl" ui-layout="{flow : 'column'}">
     <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container class="leaflet-box" id="hSplit1" max-size="100%" size="{{hSplit1}}%">
                 <div class="submenuMapping" >
                     <ul class="mapBoxOpts">
-                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open(1)" id="choroplethBtn" title="Choropleth map"></a></li>
+                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open('diseasemap1')" id="choroplethBtn" title="Choropleth map"></a></li>
                         <li><a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap1')" id="baseMapBtn" title="Base map"></a></li>
                         <li><a id="clearSelection" title="Clear selection" ng-click="clear('diseasemap1')"></a></li>
                         <li><a id="zoomExtent" title="Zoom to extent" sglclick="zoomToStudy('diseasemap1')" ng-dblclick="zoomToExtent('diseasemap1')"></a></li>
@@ -89,12 +73,12 @@
                             </div>
                         </li>
                     </ul>                 
-                </div>
+                </div>                     
                 <leaflet id="diseasemap1" tiles="thisLayer[diseasemap1]" width="100%" height="calc(100% - 40px)" lf-center="center1"></leaflet>  
             </div>
             <div ui-layout-container class="rr-back" id="rr1" max-size="100%">            
                 <!--d3 RR chart1 and table data -->
-                <rr-zoom id="rrMap1" chart-data="rrChartData1" options="optionsRR1" width="currentWidth1" height="currentHeight1"></rr-zoom>           
+                <rr-zoom id="rrMap1" chart-data="rrChartData['diseasemap1']" options="optionsRR['diseasemap1']" width="currentWidth1" height="currentHeight1"></rr-zoom>           
             </div>
         </div>
     </div>
@@ -103,7 +87,7 @@
             <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit2}}%">            
                 <div class="submenuMapping" >
                     <ul class="mapBoxOpts">
-                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open(2)" id="choroplethBtn" title="Choropleth map"></a></li>
+                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open('diseasemap2')" id="choroplethBtn" title="Choropleth map"></a></li>
                         <li><a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap2')"  id="baseMapBtn" title="Base map"></a></li>	
                         <li><a id="clearSelection" title="Clear selection" ng-click="clear('diseasemap2')"></a></li>
                         <li><a id="zoomExtent" title="Zoom to extent" sglclick="zoomToStudy('diseasemap2')" ng-dblclick="zoomToExtent('diseasemap2')"></a></li>
@@ -119,7 +103,7 @@
             </div>
             <div ui-layout-container class="rr-back" id="rr2" max-size="100%">            
                 <!--d3 RR chart2 and table data -->
-                <rr-zoom id="rrMap2" chart-data="rrChartData2" options="optionsRR2" width="currentWidth2" height="currentHeight2"></rr-zoom>    
+                <rr-zoom id="rrMap2" chart-data="rrChartData['diseasemap2']" options="optionsRR['diseasemap2']" width="currentWidth2" height="currentHeight2"></rr-zoom>    
             </div>
         </div>
     </div>

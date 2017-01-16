@@ -7,9 +7,8 @@
 angular.module("RIF")
         .factory('ChoroService', ['ColorBrewerService',
             function (ColorBrewerService) {
-                var maps = [
-                    {
-                        //Viewer map: index 0
+                var maps = {
+                    "viewermap": {
                         map: "viewermap",
                         features: [],
                         brewerName: "LightGreen",
@@ -27,13 +26,12 @@ angular.module("RIF")
                                 },
                         init: false
                     },
-                    {
-                        //Disease left map: index 1
+                    "diseasemap1": {
                         map: "diseasemap1",
                         features: [],
                         brewerName: "LightGreen",
                         intervals: 1,
-                        feature: "",
+                        feature: "smoothed_smr",
                         invert: false,
                         method: "quantile",
                         renderer:
@@ -46,13 +44,12 @@ angular.module("RIF")
                                 },
                         init: false
                     },
-                    {
-                        //Disease right map: index 2
+                    "diseasemap2": {
                         map: "diseasemap2",
                         features: [],
                         brewerName: "LightGreen",
                         intervals: 1,
-                        feature: "",
+                        feature: "smoothed_smr",
                         invert: false,
                         method: "quantile",
                         renderer:
@@ -65,8 +62,9 @@ angular.module("RIF")
                                 },
                         init: false
                     }
-                ];
-                //used in map
+                };
+                var defaults = angular.copy(JSON.parse(JSON.stringify(maps)));
+                //used in viewer map
                 function renderFeature(scale, attr, selected) {
                     //returns fill colour
                     //selected
@@ -77,7 +75,7 @@ angular.module("RIF")
                     if (scale && !angular.isUndefined(attr)) {
                         return scale(attr);
                     } else if (angular.isUndefined(attr)) {
-                        return "transparent";
+                        return "gray";
                     } else {
                         return "#9BCD9B";
                     }
@@ -277,6 +275,9 @@ angular.module("RIF")
                     },
                     getMakeLegend: function (thisMap, attr) {
                         return makeLegend(thisMap, attr);
+                    },
+                    resetState: function (map) {
+                        maps[map] = angular.copy(defaults[map]);
                     }
                 };
             }]);

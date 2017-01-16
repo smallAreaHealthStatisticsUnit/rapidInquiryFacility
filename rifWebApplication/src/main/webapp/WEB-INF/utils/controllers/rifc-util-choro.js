@@ -27,7 +27,7 @@ angular.module("RIF")
                         ChoroService.getMaps(map).feature = modal.selectedFeature;
                         ChoroService.getMaps(map).method = modal.method;
                         ChoroService.getMaps(map).renderer = modal.thisMap;
-                        $scope.refresh(ChoroService.getMaps(map).map);
+                        $scope.refresh(map);
                     });
                 };
             }])
@@ -40,7 +40,7 @@ angular.module("RIF")
             $scope.input.intervalRange = ColorBrewerService.getSchemeIntervals($scope.input.selectedSchemeName);
             $scope.input.selectedN = ChoroService.getMaps($scope.map).intervals;
             $scope.input.method = ChoroService.getMaps($scope.map).method;
-           
+
             //list of attributes
             $scope.input.features = ChoroService.getMaps($scope.map).features;
             if ($scope.input.features.indexOf(ChoroService.getMaps($scope.map).feature) === -1) {
@@ -60,12 +60,11 @@ angular.module("RIF")
                 } else if ($scope.input.selectedN < Math.min.apply(Math, $scope.input.intervalRange)) {
                     $scope.input.selectedN = Math.min.apply(Math, $scope.input.intervalRange);
                 }
-                var thisLeaflet = ChoroService.getMaps($scope.map).map;
 
                 //get the domain 
                 $scope.domain.length = 0;
-                for (var i = 0; i < $scope.tableData[thisLeaflet].length; i++) {
-                    $scope.domain.push(Number($scope.tableData[thisLeaflet][i][$scope.input.selectedFeature]));
+                for (var i = 0; i < $scope.tableData[$scope.map].length; i++) {
+                    $scope.domain.push(Number($scope.tableData[$scope.map][i][$scope.input.selectedFeature]));
                 }
 
                 ChoroService.getMaps($scope.map).brewerName = $scope.input.selectedSchemeName;
@@ -92,13 +91,13 @@ angular.module("RIF")
                         } else {
                             var tempRenderer = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.selectedSchemeName,
                                     $scope.input.selectedN), $scope.input.checkboxInvert, $scope.map);
-                            $scope.input.thisMap.range = tempRenderer.range;   
+                            $scope.input.thisMap.range = tempRenderer.range;
                         }
                     } else {
                         $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.selectedSchemeName,
                                 $scope.input.selectedN), $scope.input.checkboxInvert, $scope.map);
-                    }      
-                }      
+                    }
+                }
             };
 
             $scope.close = function () {

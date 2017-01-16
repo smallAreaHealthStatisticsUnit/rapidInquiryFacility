@@ -9,7 +9,7 @@ Viewer
     <div class='nav'>
         <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
         <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
-        <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Disease Submission</a>
+        <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
     </div>
 </div>
 
@@ -18,30 +18,24 @@ Viewer
         <div class="mappingPageLabel">VIEW RESULTS</div>
         <div >
             <div>Study:</div>
-            <select id='studySelect' ng-model="studyID" ng-options="s for s in studyIDs" ng-change="studyChanged()"></select>
-        </div>
-        <div >
-            <div>Year:</div>
-            <select id='optionsSelect' ng-model="year" ng-options="s for s in years" ng-change="studyOptionsChanged()"></select>
+            <select ng-change='child.updateSex("viewermap") 'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +  ": " +  s.name) for s in child.studyIDs'></select>
         </div>
         <div>
             <div>Sex:</div>
-            <select id='optionsSelect' ng-model="sexString" ng-options="s for s in sexes" ng-change="studyOptionsChanged()"></select>
+            <select ng-change='child.updateStudy("viewermap")' id='optionsSelect' ng-model="sex['viewermap']" ng-options="s for s in  child.sexes['viewermap']"></select>
         </div>
-        <ul class="mapBoxOpts">
-            <li><a ng-click="updateStudy()" id="refreshMap" title="Update display"></a></li> 
-        </ul>
     </div>
 </div>
 
-<div ui-layout="{flow : 'column'}">
+<div ng-controller="leafletLayersCtrl" ui-layout="{flow : 'column'}">
     <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container id="hSplit1" max-size="100%" class="js-back" size="{{hSplit1}}%">
-                <dist-histo chart-data="histoData" name="distHistoName" width="distHistoCurrentWidth" height="distHistoCurrentHeight"></dist-histo>
+                <dist-histo chart-data="histoData['viewermap']" name="distHistoName" width="distHistoCurrentWidth" height="distHistoCurrentHeight"></dist-histo>
             </div>
             <div ui-layout-container id="hSplit2" max-size="100%" class="js-back">
-                <pyramid chart-data="populationData" width="pyramidCurrentWidth" height="pyramidCurrentHeight"></pyramid>
+                <pyramid chart-data="populationData['viewermap']" width="pyramidCurrentWidth" height="pyramidCurrentHeight"></pyramid> 
+                <select id="yearPyramidSelect" ng-model="yearPop" ng-options="s for s in yearsPop" ng-change="updatePyramidForYear()"></select>
             </div>
         </div>
     </div>
@@ -59,18 +53,18 @@ Viewer
                         </div>
                     </div>
                     <ul class="mapBoxOpts">
-                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open(0)" id="choroplethBtn" title="Choropleth map"></a></li>
+                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open('viewermap')" id="choroplethBtn" title="Choropleth map"></a></li>
                         <li><a ng-controller="BaseMapModalCtrl" ng-click="open('viewermap')" id="baseMapBtn" title="Base map"></a></li>	
-                        <li><a id="clearSelection" title="Clear selection" ng-click="clear()"></a></li>
-                        <li><a id="zoomExtent" title="Zoom to extent" sglclick="zoomToStudy()" ng-dblclick="zoomToExtent()"></a></li>
-                        <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected()"></a></li> 
-                        <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet()"></a></li> 
+                        <li><a id="clearSelection" title="Clear selection" ng-click="clear('viewermap')"></a></li>
+                        <li><a id="zoomExtent" title="Zoom to extent" sglclick="zoomToStudy('viewermap')" ng-dblclick="zoomToExtent('viewermap')"></a></li>
+                        <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected('viewermap')"></a></li> 
+                        <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet('viewermap')"></a></li> 
                         <li>
-                            <input type="range" ng-model ="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
+                            <input type="range" ng-model ="transparency['viewermap']" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity('viewermap')"/>
                         </li>
                     </ul> 
                 </div>    
-                <leaflet id="viewermap" tiles="tiles" width="100%" height="calc(100% - 40px)"></leaflet>  
+                <leaflet id="viewermap" tiles="thisLayer[viewermap]" width="100%" height="calc(100% - 40px)" lf-center="center"></leaflet>  
             </div>
             <div ui-layout-container class="js-back">
                 <div ui-grid="viewerTableOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns ui-grid-move-columns ui-grid-exporter class="grid-viewer" ng-grid="viewerTableOptions"></div>

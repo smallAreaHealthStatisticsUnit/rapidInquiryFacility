@@ -218,6 +218,19 @@ svg.areaCharts g.context rect.background{
     stroke-width : 0;
 }
 
+#yearPyramidSelect {
+    width: 80px;
+    position: relative;
+    display: inline;
+    float: right;
+    z-index: 2;
+}
+
+pyramid {
+    position: absolute;
+    z-index: 1;
+}
+
 /*MAPPING 2*/
 .zoom {
     cursor: crosshair;

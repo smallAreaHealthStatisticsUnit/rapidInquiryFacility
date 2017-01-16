@@ -48,10 +48,7 @@ angular.module("RIF",
             "ui.grid",
             "ui.grid.selection",
             "ui.grid.resizeColumns",
-            "ui.grid.treeView",
-            "ui.grid.edit",
             "ui.grid.autoResize",
-            "ui.grid.moveColumns",
             "ui.grid.exporter",
             "ngAnimate",
             "ngSanitize",
@@ -99,7 +96,7 @@ angular.module("RIF",
                             templateUrl: "dashboards/mapping/partials/rifp-dmap-main.html",
                             controller: 'MappingCtrl'
                         });
-                $urlRouterProvider.otherwise("/login");  //login submission
+                $urlRouterProvider.otherwise("/login"); 
             }])
         .run(function ($rootScope, $state) {
             $rootScope.$state = $state;

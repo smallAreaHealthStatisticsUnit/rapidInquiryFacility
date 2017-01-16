@@ -327,12 +327,6 @@ body {
     float:right;
     margin-right: 10px;
 }
-#refreshMap {
-    background: transparent url("../images/update16.png") no-repeat;
-    margin-top: 30px;
-    width: 16px;
-    height: 16px;
-}
 div.transparency {
     width: 50px !important
 }

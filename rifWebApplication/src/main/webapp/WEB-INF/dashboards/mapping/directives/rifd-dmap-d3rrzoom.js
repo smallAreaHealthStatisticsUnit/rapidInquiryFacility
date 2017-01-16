@@ -29,6 +29,7 @@ angular.module("RIF")
 
                     scope.$watch(function () {
                         if (angular.isUndefined(scope.data) || scope.data.length === 0) {
+                            d3.select("#rrchart" + scope.opt.panel).remove();
                             return;
                         } else {
                             scope.renderBase();
@@ -75,6 +76,19 @@ angular.module("RIF")
 
                         y2.domain(y.domain());
 
+                        //If domain is constant, do not plot
+                        var domainCheck = [d3.min(scope.data, function (d) {
+                                return d[ lineField ];
+                            }), d3.max(scope.data, function (d) {
+                                return d[ lineField ];
+                            })];
+                        if (!angular.isUndefined(domainCheck[0])) {
+                            if (domainCheck[0].toFixed(5) === domainCheck[1].toFixed(5)) {
+                                d3.select("#rrchart" + panel).remove();
+                                return;
+                            }
+                        }
+
                         var xAxis = d3.axisBottom().scale(x).ticks(0);
                         var xAxis2 = d3.axisBottom().scale(x2);
                         var yAxis = d3.axisLeft().scale(y);
@@ -87,7 +101,6 @@ angular.module("RIF")
                                 .scaleExtent([1, Infinity])
                                 .translateExtent([[0, 0], [xWidth, xHeight]])
                                 .extent([[0, 0], [xWidth, xHeight]]);
-
 
                         var line = d3.line()
                                 .x(function (d) {
@@ -344,8 +357,8 @@ angular.module("RIF")
                                     scope.clickXPos = 0;
                                 }
                                 //remember brush locations
-                                scope.$parent[scope.opt.this].zoomStart = si[0];
-                                scope.$parent[scope.opt.this].zoomEnd = si[1];
+                                scope.$parent.optionsRR[panel].zoomStart = si[0];
+                                scope.$parent.optionsRR[panel].zoomEnd = si[1];
                                 MappingStateService.getState().brushStartLoc[panel] = si[0];
                                 MappingStateService.getState().brushEndLoc[panel] = si[1];
                                 broadcastAreaUpdate({xpos: scope.clickXPos, map: false});
@@ -358,11 +371,13 @@ angular.module("RIF")
                             if (panel === container) {
                                 selected = null;
                                 for (var i = 0; i < dataLength; i++) {
-                                    if (scope.data[i].gid === data) {
-                                        selected = scope.data[i];
-                                        scope.clickXPos = scope.data[i].x_order;
-                                        MappingStateService.getState().selected[container] = scope.data[i];
-                                        break;
+                                    if (!angular.isUndefined(scope.data[i])) {
+                                        if (scope.data[i].gid === data) {
+                                            selected = scope.data[i];
+                                            scope.clickXPos = scope.data[i].x_order;
+                                            MappingStateService.getState().selected[container] = scope.data[i];
+                                            break;
+                                        }
                                     }
                                 }
 

@@ -5,6 +5,7 @@ angular.module("RIF")
         .factory('MappingStateService',
                 function () {
                     var s = {
+                        initial: true,
                         extentLock: true,
                         selectionLock: false,
                         center: {
@@ -12,6 +13,14 @@ angular.module("RIF")
                             'diseasemap2': {'zoom': 1, 'lng': 0, 'lat': 0}
                         },
                         area_id: {
+                            'diseasemap1': null,
+                            'diseasemap2': null
+                        },
+                        study: {
+                            'diseasemap1': {'study_id': null, 'name': null},
+                            'diseasemap2': {'study_id': null, 'name': null}
+                        },
+                        sex: {
                             'diseasemap1': null,
                             'diseasemap2': null
                         },

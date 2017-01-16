@@ -14,6 +14,7 @@ angular.module("RIF")
 
                     scope.$watch(function () {
                         if (angular.isUndefined(scope.data) || scope.data.length === 0) {
+                            d3.select("#poppyramid").remove();
                             return;
                         } else {
                             scope.renderBase();
@@ -49,9 +50,11 @@ angular.module("RIF")
                         });
 
                         xScale.domain([0, maximumPopulation + 10]);
-                        yScale.domain(scope.data.map(function (d) {
-                            return d.population_label;
-                        }));
+                        if (angular.isArray(scope.data)) {
+                            yScale.domain(scope.data.map(function (d) {
+                                return d.population_label;
+                            }));
+                        }
 
                         var xTickPositions = xScale.ticks(numberOfXAxisTicks);
 

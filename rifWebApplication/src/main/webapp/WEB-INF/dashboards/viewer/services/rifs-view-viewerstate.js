@@ -6,15 +6,35 @@ angular.module("RIF")
                 function () {
                     //These are the relevant columns to display from the results table
                     var validColumns = ["area_id", "band_id", "observed", "expected", "population", "adjusted", "inv_id",
-                                "posterior_probability",
-                                "lower95", "upper95", "relative_risk",
-                                "smoothed_smr", "smoothed_smr_lower95", "smoothed_smr_upper95",
-                                "_selected"];
+                        "posterior_probability",
+                        "lower95", "upper95", "relative_risk",
+                        "smoothed_smr", "smoothed_smr_lower95", "smoothed_smr_upper95",
+                        "_selected"];
                     var s = {
-                        selected: [],
-                        zoomLevel: -1,
-                        view: [0, 0],
-                        transparency: 0.7,
+                        initial: true,
+//                        study: {'study_id': null, 'name': null},
+//                        sex: null,
+//                        selected: [],
+//                        center: {'zoom': 1, 'lng': 0, 'lat': 0},
+//                        transparency: 0.7,
+                        center: {
+                            'viewermap': {'zoom': 1, 'lng': 0, 'lat': 0}
+                        },
+                        area_id: {
+                            'viewermap': null
+                        },
+                        study: {
+                            'viewermap': {'study_id': null, 'name': null}
+                        },
+                        sex: {
+                            'viewermap': null
+                        },
+                        selected: {
+                            'viewermap': []
+                        },
+                        transparency: {
+                            'viewermap': 0.7
+                        },
                         vSplit1: 33,
                         hSplit1: 40,
                         hSplit2: 60
