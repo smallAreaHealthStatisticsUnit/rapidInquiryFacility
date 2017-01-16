@@ -798,9 +798,13 @@ RangeError: Invalid string length
 * Grants
 * RIF and non RIF path fixes for Postgres
 
+#### 16th to 20th January
+
+* Race fixes in block code
+* Check tiles all generated and not null, no extra, none missing 
+
 #### Current TODO list (January 2017):
 
-* Check tiles all generated and not null, no extra, none missing 
 * Drop scripts
 * Fix SQL server load script etc
 * Fix zoomlevel miss-set from config file (defaults are wrong)
