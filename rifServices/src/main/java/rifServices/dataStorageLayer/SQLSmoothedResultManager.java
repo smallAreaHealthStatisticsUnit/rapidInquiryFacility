@@ -356,6 +356,47 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 		return results;
 	}
 	
+	
+	//TODO:(DM) new geography method
+	public String[] getGeographyAndLevelForStudy(
+		final Connection connection,
+		final String studyID) 
+		throws RIFServiceException {
+		
+		PGSQLSelectQueryFormatter queryFormatter
+		= new PGSQLSelectQueryFormatter();
+		queryFormatter.setDatabaseSchemaName("rif40");
+		queryFormatter.addSelectField("geography");
+		queryFormatter.addSelectField("study_geolevel_name");
+		queryFormatter.addFromTable("rif40_studies");
+		queryFormatter.addWhereParameter("study_id");
+			
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		String[] results = new String[2];
+		try {
+			connection.setAutoCommit(false);
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setInt(1, Integer.valueOf(studyID));
+			resultSet = statement.executeQuery();
+			resultSet.next();			
+			results[0] = resultSet.getString(1);
+			results[1] = resultSet.getString(2);				
+		}
+		catch(SQLException exception) {
+			exception.printStackTrace(System.out);
+			
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
+		}
+//		String[] results = new String[2];
+//		results[0] = "SAHSU";
+	//	results[1] = "Level3";
+		return results;			
+	}	
+	
 	public RIFResultTable getSmoothedResults(
 		final Connection connection,
 		final String studyID,

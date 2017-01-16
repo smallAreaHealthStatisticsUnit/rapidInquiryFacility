@@ -1819,6 +1819,45 @@ public class RIFStudyResultRetrievalWebServiceResource
 		return result;
 		
 	}	
+	
+	
+	@GET	
+	@Produces({"application/json"})	
+	@Path("/getGeographyAndLevelForStudy")
+	public String getGeographyAndLevelForStudy(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) {
+
+		String result = "";
+		
+		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			String[] results
+				= studyResultRetrievalService.getGeographyAndLevelForStudy(user, studyID);
+
+			//Convert results to support JSON
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					results);
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		return result;
+		
+	}	
 		
 	// ==========================================
 	// Section Interfaces

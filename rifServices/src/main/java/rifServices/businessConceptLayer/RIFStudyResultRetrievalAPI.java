@@ -355,6 +355,11 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		final User user,
 		final String studyID)
 		throws RIFServiceException;
+	
+	public String[] getGeographyAndLevelForStudy(
+			final User user,
+			final String studyID)
+			throws RIFServiceException;
 
 	/**
 	 * returns field with the following headers:

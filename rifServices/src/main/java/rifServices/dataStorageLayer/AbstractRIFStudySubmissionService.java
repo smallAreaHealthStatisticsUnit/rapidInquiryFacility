@@ -1659,10 +1659,11 @@ abstract class AbstractRIFStudySubmissionService
 			//Delegate operation to a specialised manager class
 			SQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager
 				= rifServiceResources.getSqlDiseaseMappingStudyManager();
+			
 			results
 				= sqlDiseaseMappingStudyManager.getProjects(
 					connection,
-					user);		
+					user);	
 				
 		}
 		catch(RIFServiceException rifServiceException) {

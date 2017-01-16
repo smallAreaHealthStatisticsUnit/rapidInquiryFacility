@@ -135,8 +135,7 @@ public final class GetGeographies
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
-				1);
+				RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER, 1);
 		}
 	}
 		
