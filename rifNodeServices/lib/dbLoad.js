@@ -1203,7 +1203,18 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						
 			}
 			else if (dbType == "MSSQLServer") {					
+/*
+UPDATE sahsu_grd_level1
+   SET geographic_centroid = geography::STGeomFromText(geographic_centroid_wkt, 4326),
+       geom_6 = geography::STGeomFromText(wkt_6, 4326).MakeValid(),
+       geom_7 = geography::STGeomFromText(wkt_7, 4326).MakeValid(),
+       geom_8 = geography::STGeomFromText(wkt_8, 4326).MakeValid(),
+       geom_9 = geography::STGeomFromText(wkt_9, 4326).MakeValid(),
+       geom_10 = geography::STGeomFromText(wkt_10, 4326).MakeValid(),
+       geom_11 = geography::STGeomFromText(wkt_11, 4326).MakeValid(),
+       geom_orig = NULL;
 
+ */
 				var sqlStmt=new Sql("Update geographic centroid, geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID");
 				sqlStmt.sql="UPDATE " + csvFiles[i].tableName + "\n" + 
 						    "   SET geographic_centroid = geography::STGeomFromText(geographic_centroid_wkt, 4326),\n";							
@@ -1216,6 +1227,15 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					xmlConfig.dataLoader.srid + ") NOT POSSIBLE */ NULL"; 
 				sqlStmt.dbType=dbType;
 				sqlArray.push(sqlStmt);
+/*
+UPDATE sahsu_grd_level1
+   SET geom_6 = geom_6.STUnion(geom_6.STStartPoint()),
+       geom_7 = geom_7.STUnion(geom_7.STStartPoint()),
+       geom_8 = geom_8.STUnion(geom_8.STStartPoint()),
+       geom_9 = geom_9.STUnion(geom_9.STStartPoint()),
+       geom_10 = geom_10.STUnion(geom_10.STStartPoint()),
+       geom_11 = geom_11.STUnion(geom_11.STStartPoint());
+ */
 			}
 
 			sqlArray.push(new Sql("Test geometry and make valid if required"));
