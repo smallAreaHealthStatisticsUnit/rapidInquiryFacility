@@ -400,24 +400,21 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 	public RIFResultTable getSmoothedResults(
 		final Connection connection,
 		final String studyID,
-		final Sex sex,
-		final int year) 
+		final Sex sex) 
 		throws RIFServiceException {
 
 		return getSmoothedResultsForAttributes(
 			connection, 
 			allAttributeColumnNames, 
 			studyID,
-			sex,
-			year);
+			sex);
 	}
 	
 	public RIFResultTable getSmoothedResultsForAttributes(
 		final Connection connection,
 		final ArrayList<String> smoothedAttributesToInclude,
 		final String studyID,
-		final Sex sex,		
-		final int year) 
+		final Sex sex) 
 		throws RIFServiceException {
 		
 
@@ -464,15 +461,13 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 		queryFormatter.addQueryLine(2, "SUM(total_pop) AS population");
 		queryFormatter.addQueryLine(1, "FROM");		
 		queryFormatter.addQueryLine(2, extractTableName);
-		queryFormatter.addQueryLine(1, "WHERE");
 		if (sex == Sex.MALES) {
-			queryFormatter.addQueryLine(2, "sex = 1 AND ");			
+			queryFormatter.addQueryLine(2, "WHERE sex = 1 ");			
 		}
 		else if (sex == Sex.FEMALES) {
-			queryFormatter.addQueryLine(2, "sex = 2 AND ");			
+			queryFormatter.addQueryLine(2, "WHERE sex = 2 ");			
 		}		
 		//otherwise, if it's both, don't filter by any sex value
-		queryFormatter.addQueryLine(2, "year = ?");
 		queryFormatter.addQueryLine(1, "GROUP BY");
 		queryFormatter.addQueryLine(2, "area_id)");
 		
@@ -579,15 +574,15 @@ public class SQLSmoothedResultManager extends AbstractSQLManager {
 			
 			retrieveDataStatement
 				= connection.prepareStatement(queryFormatter.generateQuery());	
-			retrieveDataStatement.setInt(1, year);
+
 			if (sex == Sex.MALES) {
-				retrieveDataStatement.setInt(2, 1);				
+				retrieveDataStatement.setInt(1, 1);				
 			}
 			else if (sex == Sex.FEMALES) {
-				retrieveDataStatement.setInt(2, 2);				
+				retrieveDataStatement.setInt(1, 2);				
 			}
 			else {
-				retrieveDataStatement.setInt(2, 3);				
+				retrieveDataStatement.setInt(1, 3);				
 			}
 						
 			smoothedResultSet = retrieveDataStatement.executeQuery();

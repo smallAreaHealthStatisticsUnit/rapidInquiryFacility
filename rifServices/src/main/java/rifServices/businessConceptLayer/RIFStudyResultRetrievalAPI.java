@@ -432,16 +432,14 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	public RIFResultTable getSmoothedResults(
 		final User user,
 		final String studyID,
-		final String sex,
-		final String year) 
+		final String sex) 
 		throws RIFServiceException;
 
 	public RIFResultTable getSmoothedResultsForAttributes(
 		final User user,
 		final ArrayList<String> smoothedAttributesToInclude,
 		final String studyID,
-		final String sex,
-		final String year) 
+		final String sex) 
 		throws RIFServiceException;
 	
 	public RIFResultTable getPopulationPyramidData(

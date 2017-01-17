@@ -2345,8 +2345,7 @@ abstract class AbstractRIFStudyRetrievalService
 	public RIFResultTable getSmoothedResults(
 		final User _user,
 		final String studyID,
-		final String sex,
-		final String year) 
+		final String sex) 
 		throws RIFServiceException {
 		
 
@@ -2376,10 +2375,6 @@ abstract class AbstractRIFStudyRetrievalService
 				"getSmoothedResults",
 				"sex",
 				sex);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getSmoothedResults",
-				"year",
-				year);
 				
 			//Check for security violations
 			validateUser(user);
@@ -2397,11 +2392,6 @@ abstract class AbstractRIFStudyRetrievalService
 				"sex", 
 				sex);
 			
-			fieldValidationUtility.checkValidIntegerMethodParameterValue(
-				"getSmoothedResults", 
-				"year", 
-				year);
-						
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
@@ -2425,8 +2415,7 @@ abstract class AbstractRIFStudyRetrievalService
 				= sqlSmoothedResultQueryManager.getSmoothedResults(
 					connection, 
 					studyID,
-					Sex.getSexFromCode(Integer.valueOf(sex)),
-					Integer.valueOf(year));
+					Sex.getSexFromCode(Integer.valueOf(sex)));
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -2451,8 +2440,7 @@ abstract class AbstractRIFStudyRetrievalService
 		final User _user,
 		final ArrayList<String> smoothedAttributesToInclude,
 		final String studyID,
-		final String sex,
-		final String year) 
+		final String sex) 
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
@@ -2477,10 +2465,6 @@ abstract class AbstractRIFStudyRetrievalService
 				"getSmoothedResults",
 				"studyID",
 				studyID);
-			fieldValidationUtility.checkNullMethodParameter(
-				"getSmoothedResults",
-				"year",
-				year);
 				
 			//Check for security violations
 			validateUser(user);
@@ -2489,23 +2473,12 @@ abstract class AbstractRIFStudyRetrievalService
 				"getSmoothedResults", 
 				"studyID", 
 				studyID);
-			fieldValidationUtility.checkMaliciousMethodParameter(
-				"getSmoothedResults", 
-				"year", 
-				year);
-			
 			
 			fieldValidationUtility.checkValidIntegerMethodParameterValue(
 				"getSmoothedResults", 
 				"sex", 
 				sex);
-			
-			fieldValidationUtility.checkValidIntegerMethodParameterValue(
-				"getSmoothedResults", 
-				"year", 
-				year);
-										
-			
+					
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
@@ -2530,8 +2503,7 @@ abstract class AbstractRIFStudyRetrievalService
 					connection, 
 					smoothedAttributesToInclude,
 					studyID,
-					Sex.getSexFromCode(Integer.valueOf(sex)),
-					Integer.valueOf(year));			
+					Sex.getSexFromCode(Integer.valueOf(sex)));			
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation

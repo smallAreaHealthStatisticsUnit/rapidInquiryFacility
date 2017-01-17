@@ -514,8 +514,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("studyID") String studyID,
-		@QueryParam("sex") String sex,		
-		@QueryParam("year") String year) {
+		@QueryParam("sex") String sex) {
 					
 		String result = "";
 		try {
@@ -529,8 +528,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 				= studyResultRetrievalService.getSmoothedResults(
 					user, 
 					studyID,
-					sex,
-					year);
+					sex);
 			
 			RIFResultTableJSONGenerator rifResultTableJSONGenerator
 				= new RIFResultTableJSONGenerator();
@@ -565,8 +563,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 		@Context HttpServletRequest servletRequest,	
 		@QueryParam("userID") String userID,
 		@QueryParam("studyID") String studyID,
-		@QueryParam("sex") String sex,
-		@QueryParam("year") String year,		
+		@QueryParam("sex") String sex,		
 		@QueryParam("smoothedAttribute") List<String> smoothedAttributeList) {
 	
 		String result = "";
@@ -588,8 +585,7 @@ public class RIFStudyResultRetrievalWebServiceResource
 					user, 
 					smoothedAttributesToInclude,
 					studyID,
-					sex,
-					year);
+					sex);
 
 			RIFResultTableJSONGenerator rifResultTableJSONGenerator
 				= new RIFResultTableJSONGenerator();
