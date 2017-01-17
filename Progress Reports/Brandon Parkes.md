@@ -29,3 +29,6 @@ June 2016 progress report
 
 ##November
 - Enhancement to populate the posterior probability field after performing the smoothing. Writing to the database
+
+##December
+Started work on documentation
