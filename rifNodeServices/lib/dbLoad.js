@@ -424,7 +424,6 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		if (dbType == "MSSQLServer") { // Add bounding box for implement PostGIS && operator
 			var sqlStmt=new Sql("Add bbox geometry column",
 			getSqlFromFile("add_geometry_column2.sql", dbType, 
-				(schema||"") +
 					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
 				'bbox' 															/* 2: column name; e.g. geographic_centroid */,
 				4326															/* 3: Column SRID; e.g. 4326 */,

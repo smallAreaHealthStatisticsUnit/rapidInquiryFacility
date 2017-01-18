@@ -461,7 +461,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 				str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 		
 			}
 			this.topojson=undefined; // Free up memory used for topojson	
-			// geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_geojson, optimised_topojson
+			// geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson
 			return (
 				'"' +						// Quote enclose all fields
 				this.geolevel_id + '","' + 	// ID for ordering (1=lowest resolution). Up to 99 supported.
@@ -1712,7 +1712,6 @@ REFERENCE (from shapefile) {
 							y: nresultRows[0].y,
 							tile_id: nresultRows[0].tile_id,
 							areaid_count: 1,
-							optimised_geojson: '{"type": "FeatureCollection","features":[]}',
 							optimised_topojson: '{"type": "FeatureCollection","features":[]}'});
 						dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", "t_tiles_" + geolevelName.toLowerCase(), rows, 
 							function tileIntersectsProcessingEndCallback(err) {							
