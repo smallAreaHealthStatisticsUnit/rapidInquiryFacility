@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<geoDataLoader>
+  <xmlFileName>geoDataLoader.xml</xmlFileName>
+  <xmlFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/6fc74947-4ef0-488d-a38c-dff96dabb3d3</xmlFileDir>
+  <uuidV1>6fc74947-4ef0-488d-a38c-dff96dabb3d3</uuidV1>
+  <shapeFileList>
+    <shapeFiles>
+      <primaryKey>id</primaryKey>
+      <areas>1</areas>
+      <points>12346</points>
+      <dbfFieldList>
+        <ID>
+          <description/>
+        </ID>
+        <LEVEL1>
+          <description/>
+        </LEVEL1>
+        <AREA>
+          <description/>
+        </AREA>
+        <GID>
+          <description>Unique geographic identifier</description>
+        </GID>
+        <AREAID>
+          <description>Level 1 name</description>
+        </AREAID>
+        <AREANAME>
+          <description>Level 1 description</description>
+        </AREANAME>
+        <AREA_KM2>
+          <description>Area in square kilometers</description>
+        </AREA_KM2>
+        <GEOGRAPHIC_CENTROID_WKT>
+          <description>Geographic centroid</description>
+        </GEOGRAPHIC_CENTROID_WKT>
+      </dbfFieldList>
+      <geolevelId>1</geolevelId>
+      <geolevelName>SAHSU_GRD_Level1</geolevelName>
+      <areaName>LEVEL1</areaName>
+      <geolevelDescription>Level 1 (top level)</geolevelDescription>
+      <shapeFileAreaNameDescription>Level 1 description</shapeFileAreaNameDescription>
+      <shapeFileName>SAHSU_GRD_Level1.shp</shapeFileName>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/6fc74947-4ef0-488d-a38c-dff96dabb3d3</shapeFileDir>
+      <shapeFileTable>SAHSU_GRD_LEVEL1</shapeFileTable>
+      <shapeFileAreaIdColumn>LEVEL1</shapeFileAreaIdColumn>
+      <shapeFileAreaIdDescription>Level 1 name</shapeFileAreaIdDescription>
+      <simplicationList>
+        <simplification>
+          <zoomLevel>11</zoomLevel>
+          <points>12344</points>
+          <arcs>2</arcs>
+          <length>348354</length>
+          <runtime>0.031</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>10</zoomLevel>
+          <points>9259</points>
+          <arcs>2</arcs>
+          <length>257488</length>
+          <runtime>0.214</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>9</zoomLevel>
+          <points>6945</points>
+          <arcs>2</arcs>
+          <length>192720</length>
+          <runtime>0.125</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>8</zoomLevel>
+          <points>5209</points>
+          <arcs>2</arcs>
+          <length>144148</length>
+          <runtime>0.141</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>7</zoomLevel>
+          <points>3907</points>
+          <arcs>2</arcs>
+          <length>107716</length>
+          <runtime>0.078</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>6</zoomLevel>
+          <points>2931</points>
+          <arcs>2</arcs>
+          <length>80396</length>
+          <runtime>0.047</runtime>
+        </simplification>
+      </simplicationList>
+    </shapeFiles>
+    <shapeFiles>
+      <primaryKey>id</primaryKey>
+      <areas>17</areas>
+      <points>118998</points>
+      <dbfFieldList>
+        <LEVEL2>
+          <description/>
+        </LEVEL2>
+        <AREA>
+          <description/>
+        </AREA>
+        <LEVEL1>
+          <description/>
+        </LEVEL1>
+        <NAME>
+          <description/>
+        </NAME>
+        <GID>
+          <description>Unique geographic identifier</description>
+        </GID>
+        <AREAID>
+          <description>Level 2</description>
+        </AREAID>
+        <AREANAME>
+          <description>Level 2 name</description>
+        </AREANAME>
+        <AREA_KM2>
+          <description>Area in square kilometers</description>
+        </AREA_KM2>
+        <GEOGRAPHIC_CENTROID_WKT>
+          <description>Geographic centroid</description>
+        </GEOGRAPHIC_CENTROID_WKT>
+      </dbfFieldList>
+      <geolevelId>2</geolevelId>
+      <geolevelName>SAHSU_GRD_Level2</geolevelName>
+      <areaName>NAME</areaName>
+      <geolevelDescription>Level 2</geolevelDescription>
+      <shapeFileAreaNameDescription>Level 2 name</shapeFileAreaNameDescription>
+      <shapeFileName>SAHSU_GRD_Level2.shp</shapeFileName>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/6fc74947-4ef0-488d-a38c-dff96dabb3d3</shapeFileDir>
+      <shapeFileTable>SAHSU_GRD_LEVEL2</shapeFileTable>
+      <shapeFileAreaIdColumn>LEVEL2</shapeFileAreaIdColumn>
+      <shapeFileAreaIdDescription>Level 2</shapeFileAreaIdDescription>
+      <simplicationList>
+        <simplification>
+          <zoomLevel>11</zoomLevel>
+          <points>27004</points>
+          <arcs>55</arcs>
+          <length>706110</length>
+          <runtime>0.078</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>10</zoomLevel>
+          <points>20254</points>
+          <arcs>55</arcs>
+          <length>526702</length>
+          <runtime>0.328</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>9</zoomLevel>
+          <points>15191</points>
+          <arcs>55</arcs>
+          <length>392892</length>
+          <runtime>0.265</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>8</zoomLevel>
+          <points>11394</points>
+          <arcs>55</arcs>
+          <length>294422</length>
+          <runtime>0.172</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>7</zoomLevel>
+          <points>8546</points>
+          <arcs>55</arcs>
+          <length>220734</length>
+          <runtime>0.14</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>6</zoomLevel>
+          <points>6410</points>
+          <arcs>55</arcs>
+          <length>165686</length>
+          <runtime>0.092</runtime>
+        </simplification>
+      </simplicationList>
+    </shapeFiles>
+    <shapeFiles>
+      <primaryKey>id</primaryKey>
+      <areas>200</areas>
+      <points>253631</points>
+      <dbfFieldList>
+        <LEVEL2>
+          <description/>
+        </LEVEL2>
+        <LEVEL1>
+          <description/>
+        </LEVEL1>
+        <LEVEL3>
+          <description/>
+        </LEVEL3>
+        <GID>
+          <description>Unique geographic identifier</description>
+        </GID>
+        <AREAID>
+          <description>Level 3</description>
+        </AREAID>
+        <AREANAME>
+          <description>Level 3 name</description>
+        </AREANAME>
+        <AREA_KM2>
+          <description>Area in square kilometers</description>
+        </AREA_KM2>
+        <GEOGRAPHIC_CENTROID_WKT>
+          <description>Geographic centroid</description>
+        </GEOGRAPHIC_CENTROID_WKT>
+      </dbfFieldList>
+      <geolevelId>3</geolevelId>
+      <geolevelName>SAHSU_GRD_Level3</geolevelName>
+      <areaName>LEVEL3</areaName>
+      <geolevelDescription>Level 3</geolevelDescription>
+      <shapeFileAreaNameDescription>Level 3 name</shapeFileAreaNameDescription>
+      <shapeFileName>SAHSU_GRD_Level3.shp</shapeFileName>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/6fc74947-4ef0-488d-a38c-dff96dabb3d3</shapeFileDir>
+      <shapeFileTable>SAHSU_GRD_LEVEL3</shapeFileTable>
+      <shapeFileAreaIdColumn>LEVEL3</shapeFileAreaIdColumn>
+      <shapeFileAreaIdDescription>Level 3</shapeFileAreaIdDescription>
+      <simplicationList>
+        <simplification>
+          <zoomLevel>11</zoomLevel>
+          <points>49298</points>
+          <arcs>600</arcs>
+          <length>1318202</length>
+          <runtime>0.11</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>10</zoomLevel>
+          <points>36974</points>
+          <arcs>600</arcs>
+          <length>1007404</length>
+          <runtime>0.583</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>9</zoomLevel>
+          <points>27731</points>
+          <arcs>600</arcs>
+          <length>771064</length>
+          <runtime>0.532</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>8</zoomLevel>
+          <points>20799</points>
+          <arcs>600</arcs>
+          <length>595990</length>
+          <runtime>0.343</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>7</zoomLevel>
+          <points>15600</points>
+          <arcs>600</arcs>
+          <length>466318</length>
+          <runtime>0.255</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>6</zoomLevel>
+          <points>11701</points>
+          <arcs>600</arcs>
+          <length>370012</length>
+          <runtime>0.172</runtime>
+        </simplification>
+      </simplicationList>
+    </shapeFiles>
+    <shapeFiles>
+      <primaryKey>id</primaryKey>
+      <areas>1230</areas>
+      <points>407439</points>
+      <dbfFieldList>
+        <PERIMETER>
+          <description/>
+        </PERIMETER>
+        <LEVEL4>
+          <description/>
+        </LEVEL4>
+        <LEVEL2>
+          <description/>
+        </LEVEL2>
+        <LEVEL1>
+          <description/>
+        </LEVEL1>
+        <LEVEL3>
+          <description/>
+        </LEVEL3>
+        <GID>
+          <description>Unique geographic identifier</description>
+        </GID>
+        <AREAID>
+          <description>Level 4</description>
+        </AREAID>
+        <AREANAME>
+          <description>Level 4 name</description>
+        </AREANAME>
+        <AREA_KM2>
+          <description>Area in square kilometers</description>
+        </AREA_KM2>
+        <GEOGRAPHIC_CENTROID_WKT>
+          <description>Geographic centroid</description>
+        </GEOGRAPHIC_CENTROID_WKT>
+      </dbfFieldList>
+      <geolevelId>4</geolevelId>
+      <geolevelName>SAHSU_GRD_Level4</geolevelName>
+      <areaName>LEVEL4</areaName>
+      <geolevelDescription>Level 4</geolevelDescription>
+      <shapeFileAreaNameDescription>Level 4 name</shapeFileAreaNameDescription>
+      <shapeFileName>SAHSU_GRD_Level4.shp</shapeFileName>
+      <shapeFileDir>C:/Users/Peter/AppData/Local/Temp/shpConvert/6fc74947-4ef0-488d-a38c-dff96dabb3d3</shapeFileDir>
+      <shapeFileTable>SAHSU_GRD_LEVEL4</shapeFileTable>
+      <shapeFileAreaIdColumn>LEVEL4</shapeFileAreaIdColumn>
+      <shapeFileAreaIdDescription>Level 4</shapeFileAreaIdDescription>
+      <simplicationList>
+        <simplification>
+          <zoomLevel>11</zoomLevel>
+          <points>76737</points>
+          <arcs>3277</arcs>
+          <length>2501252</length>
+          <runtime>0.19</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>10</zoomLevel>
+          <points>57553</points>
+          <arcs>3277</arcs>
+          <length>2037992</length>
+          <runtime>0.97</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>9</zoomLevel>
+          <points>43165</points>
+          <arcs>3277</arcs>
+          <length>1680716</length>
+          <runtime>0.704</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>8</zoomLevel>
+          <points>32374</points>
+          <arcs>3277</arcs>
+          <length>1417822</length>
+          <runtime>0.549</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>7</zoomLevel>
+          <points>24281</points>
+          <arcs>3277</arcs>
+          <length>1222822</length>
+          <runtime>0.411</runtime>
+        </simplification>
+        <simplification>
+          <zoomLevel>6</zoomLevel>
+          <points>18211</points>
+          <arcs>3277</arcs>
+          <length>1077262</length>
+          <runtime>0.324</runtime>
+        </simplification>
+      </simplicationList>
+    </shapeFiles>
+  </shapeFileList>
+  <projection>
+    <projectionName>OSGB_1936_British_National_Grid</projectionName>
+    <proj4>+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +datum=OSGB36 +units=m +no_defs</proj4>
+    <srid>27700</srid>
+    <boundingBox>
+      <xmin>-7.546294616103237</xmin>
+      <ymin>52.66328216508047</ymin>
+      <xmax>-5.036247072101617</xmax>
+      <ymax>55.56628680089157</ymax>
+    </boundingBox>
+  </projection>
+  <simplificationFactor>0.75</simplificationFactor>
+  <quantization>1000000</quantization>
+  <dataLoader>
+    <geographyName>SAHSULAND</geographyName>
+    <geographyDesc>SAHSU Example geography</geographyDesc>
+    <srid>27700</srid>
+    <defaultcomparea>LEVEL1</defaultcomparea>
+    <defaultstudyarea>LEVEL3</defaultstudyarea>
+    <minZoomlevel>6</minZoomlevel>
+    <maxZoomlevel>11</maxZoomlevel>
+    <postalPopulationTable/>
+    <postalPointColumn/>
+    <maxGeojsonDigits>6</maxGeojsonDigits>
+    <partition>true</partition>
+    <geoLevel>
+      <geolevelId>1</geolevelId>
+      <geolevelName>SAHSU_GRD_Level1</geolevelName>
+      <covariateTable/>
+      <geolevelDescription>Level 1 (top level)</geolevelDescription>
+      <lookupTable>lookup_SAHSU_GRD_Level1</lookupTable>
+      <lookupDescColumn>AREANAME</lookupDescColumn>
+      <shapeFileName>SAHSU_GRD_Level1.shp</shapeFileName>
+      <shapeFileTable>SAHSU_GRD_LEVEL1</shapeFileTable>
+      <shapeFileAreaIdColumn>LEVEL1</shapeFileAreaIdColumn>
+      <shapefileDescColumn>LEVEL1</shapefileDescColumn>
+      <resolution>1</resolution>
+      <comparea>1</comparea>
+      <listing>0</listing>
+    </geoLevel>
+    <geoLevel>
+      <geolevelId>2</geolevelId>
+      <geolevelName>SAHSU_GRD_Level2</geolevelName>
+      <covariateTable>cov_SAHSU_GRD_Level2</covariateTable>
+      <geolevelDescription>Level 2</geolevelDescription>
+      <lookupTable>lookup_SAHSU_GRD_Level2</lookupTable>
+      <lookupDescColumn>AREANAME</lookupDescColumn>
+      <shapeFileName>SAHSU_GRD_Level2.shp</shapeFileName>
+      <shapeFileTable>SAHSU_GRD_LEVEL2</shapeFileTable>
+      <shapeFileAreaIdColumn>LEVEL2</shapeFileAreaIdColumn>
+      <shapefileDescColumn>NAME</shapefileDescColumn>
+      <resolution>1</resolution>
+      <comparea>1</comparea>
+      <listing>1</listing>
+    </geoLevel>
+    <geoLevel>
+      <geolevelId>3</geolevelId>
+      <geolevelName>SAHSU_GRD_Level3</geolevelName>
+      <covariateTable>cov_SAHSU_GRD_Level3</covariateTable>
+      <geolevelDescription>Level 3</geolevelDescription>
+      <lookupTable>lookup_SAHSU_GRD_Level3</lookupTable>
+      <lookupDescColumn>AREANAME</lookupDescColumn>
+      <shapeFileName>SAHSU_GRD_Level3.shp</shapeFileName>
+      <shapeFileTable>SAHSU_GRD_LEVEL3</shapeFileTable>
+      <shapeFileAreaIdColumn>LEVEL3</shapeFileAreaIdColumn>
+      <shapefileDescColumn>LEVEL3</shapefileDescColumn>
+      <resolution>1</resolution>
+      <comparea>0</comparea>
+      <listing>1</listing>
+    </geoLevel>
+    <geoLevel>
+      <geolevelId>4</geolevelId>
+      <geolevelName>SAHSU_GRD_Level4</geolevelName>
+      <covariateTable>cov_SAHSU_GRD_Level4</covariateTable>
+      <geolevelDescription>Level 4</geolevelDescription>
+      <lookupTable>lookup_SAHSU_GRD_Level4</lookupTable>
+      <lookupDescColumn>AREANAME</lookupDescColumn>
+      <shapeFileName>SAHSU_GRD_Level4.shp</shapeFileName>
+      <shapeFileTable>SAHSU_GRD_LEVEL4</shapeFileTable>
+      <shapeFileAreaIdColumn>LEVEL4</shapeFileAreaIdColumn>
+      <shapefileDescColumn>LEVEL4</shapefileDescColumn>
+      <resolution>1</resolution>
+      <comparea>1</comparea>
+      <listing>1</listing>
+    </geoLevel>
+    <hierarchyTable>hierarchy_SAHSULAND</hierarchyTable>
+    <geometryTable>geometry_SAHSULAND</geometryTable>
+    <tileTable>tiles_SAHSULAND</tileTable>
+  </dataLoader>
+  <parameters>
+    <quantization>1000000</quantization>
+    <simplificationFactor>0.75</simplificationFactor>
+    <max_zoomlevel>11</max_zoomlevel>
+    <geographyName>SAHSULAND</geographyName>
+    <geographyDesc>SAHSU Example geography</geographyDesc>
+    <sahsu_grd_level1_desc>Level 1 (top level)</sahsu_grd_level1_desc>
+    <sahsu_grd_level1_areaID>LEVEL1</sahsu_grd_level1_areaID>
+    <sahsu_grd_level1_areaID_desc>Level 1 name</sahsu_grd_level1_areaID_desc>
+    <sahsu_grd_level1_areaName>LEVEL1</sahsu_grd_level1_areaName>
+    <sahsu_grd_level1_areaName_desc>Level 1 description</sahsu_grd_level1_areaName_desc>
+    <sahsu_grd_level2_desc>Level 2</sahsu_grd_level2_desc>
+    <sahsu_grd_level2_areaID>LEVEL2</sahsu_grd_level2_areaID>
+    <sahsu_grd_level2_areaID_desc>Level 2</sahsu_grd_level2_areaID_desc>
+    <sahsu_grd_level2_areaName>NAME</sahsu_grd_level2_areaName>
+    <sahsu_grd_level2_areaName_desc>Level 2 name</sahsu_grd_level2_areaName_desc>
+    <sahsu_grd_level3_desc>Level 3</sahsu_grd_level3_desc>
+    <sahsu_grd_level3_areaID>LEVEL3</sahsu_grd_level3_areaID>
+    <sahsu_grd_level3_areaID_desc>Level 3</sahsu_grd_level3_areaID_desc>
+    <sahsu_grd_level3_areaName>LEVEL3</sahsu_grd_level3_areaName>
+    <sahsu_grd_level3_areaName_desc>Level 3 name</sahsu_grd_level3_areaName_desc>
+    <sahsu_grd_level4_desc>Level 4</sahsu_grd_level4_desc>
+    <sahsu_grd_level4_areaID>LEVEL4</sahsu_grd_level4_areaID>
+    <sahsu_grd_level4_areaID_desc>Level 4</sahsu_grd_level4_areaID_desc>
+    <sahsu_grd_level4_areaName>LEVEL4</sahsu_grd_level4_areaName>
+    <sahsu_grd_level4_areaName_desc>Level 4 name</sahsu_grd_level4_areaName_desc>
+    <sahsu_grd_level1_ID>ID</sahsu_grd_level1_ID>
+    <sahsu_grd_level1_LEVEL1>Level 1</sahsu_grd_level1_LEVEL1>
+    <sahsu_grd_level1_AREA>Area</sahsu_grd_level1_AREA>
+    <sahsu_grd_level2_LEVEL2>Level 2</sahsu_grd_level2_LEVEL2>
+    <sahsu_grd_level2_AREA>Area</sahsu_grd_level2_AREA>
+    <sahsu_grd_level2_LEVEL1>Level 1</sahsu_grd_level2_LEVEL1>
+    <sahsu_grd_level2_NAME>Level 2 name</sahsu_grd_level2_NAME>
+    <sahsu_grd_level3_LEVEL2>Level 2</sahsu_grd_level3_LEVEL2>
+    <sahsu_grd_level3_LEVEL1>Level 1</sahsu_grd_level3_LEVEL1>
+    <sahsu_grd_level3_LEVEL3>Level 3</sahsu_grd_level3_LEVEL3>
+    <sahsu_grd_level4_PERIMETER>Perimeter</sahsu_grd_level4_PERIMETER>
+    <sahsu_grd_level4_LEVEL4>Level 4</sahsu_grd_level4_LEVEL4>
+    <sahsu_grd_level4_LEVEL2>Level 2</sahsu_grd_level4_LEVEL2>
+    <sahsu_grd_level4_LEVEL1>Level 1</sahsu_grd_level4_LEVEL1>
+    <sahsu_grd_level4_LEVEL3>Level 3</sahsu_grd_level4_LEVEL3>
+    <min_zoomlevel>6</min_zoomlevel>
+  </parameters>
+</geoDataLoader>

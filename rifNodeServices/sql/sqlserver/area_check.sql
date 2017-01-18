@@ -8,7 +8,7 @@ DECLARE c1 CURSOR FOR
  *
  * Description:			Check Turf araa (area_km2) compared to SQL Server calculated area (area_km2_calc)
  *						Allow for 5% error
- *						Ignore small areas <= 10 km2
+ *						Ignore small areas <= 15 km2
  * Note:				%%%% becomes %% after substitution
  */
 	WITH a AS (
@@ -29,7 +29,7 @@ DECLARE c1 CURSOR FOR
 	SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff
 	  FROM b
 	 WHERE b.pct_km2_diff > 5 /* Allow for 5% error */
-	   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */;
+	   AND b.area_km2_calc > 15 /* Ignore small areas <= 15 km2 */;
 DECLARE @areaname AS VARCHAR(30);
 DECLARE @area_km2 AS NUMERIC(15,2);
 DECLARE @area_km2_calc AS NUMERIC(15,2);
