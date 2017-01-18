@@ -1,4 +1,4 @@
-package rifDataLoaderTool.targetDBScriptGenerator;
+package rifDataLoaderTool.targetDBScriptGenerator.ms;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.dataStorageLayer.*;
@@ -56,8 +56,8 @@ import java.util.ArrayList;
  *
  */
 
-public class PGCovariateScriptGenerator 
-	extends AbstractDataLoadingScriptGenerator {
+public class MSCovariateScriptGenerator 
+	extends MSAbstractDataLoadingScriptGenerator {
 
 	// ==========================================
 	// Section Constants
@@ -71,7 +71,7 @@ public class PGCovariateScriptGenerator
 	// Section Construction
 	// ==========================================
 
-	public PGCovariateScriptGenerator() {
+	public MSCovariateScriptGenerator() {
 
 	}
 
@@ -88,9 +88,9 @@ public class PGCovariateScriptGenerator
 			covariateEntry, 
 			covariate);
 		covariateEntry.append(createIndices(covariate));	
-		addSchemaComments(
-			covariateEntry,
-			covariate);
+		//addSchemaComments(
+		//	covariateEntry,
+		//	covariate);
 		createPermissions(covariate);
 		
 		//Ensure covariate geolevel is known in t_rif50_geolevels

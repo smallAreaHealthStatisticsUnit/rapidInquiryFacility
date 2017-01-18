@@ -1,4 +1,4 @@
-package rifDataLoaderTool.targetDBScriptGenerator;
+package rifDataLoaderTool.targetDBScriptGenerator.ms;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
@@ -58,7 +58,7 @@ import java.util.ArrayList;
  *
  */
 
-public abstract class AbstractDataLoadingScriptGenerator {
+public abstract class MSAbstractDataLoadingScriptGenerator {
 
 	// ==========================================
 	// Section Constants
@@ -73,7 +73,7 @@ public abstract class AbstractDataLoadingScriptGenerator {
 	// Section Construction
 	// ==========================================
 
-	public AbstractDataLoadingScriptGenerator() {
+	public MSAbstractDataLoadingScriptGenerator() {
 
 	}
 

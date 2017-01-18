@@ -1,4 +1,4 @@
-package rifDataLoaderTool.targetDBScriptGenerator;
+package rifDataLoaderTool.targetDBScriptGenerator.pg;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.fileFormats.DataLoaderToolConfigurationReader;
@@ -264,7 +264,7 @@ public class PGDataLoadingScriptGenerator {
 		StringBuilder filePath = new StringBuilder();
 		filePath.append(outputDirectory.getAbsolutePath());
 		filePath.append(File.separator);
-		filePath.append("run_data_loader_");
+		filePath.append("pg_run_data_loader_");
 		String timeStamp
 			= RIFGenericLibraryMessages.getTimeStampForFileName(new Date());
 		filePath.append(timeStamp);
