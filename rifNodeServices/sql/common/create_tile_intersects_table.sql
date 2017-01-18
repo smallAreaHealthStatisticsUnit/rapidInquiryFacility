@@ -16,6 +16,5 @@ CREATE TABLE %1 (
 	x						INTEGER			NOT NULL, 
 	y						INTEGER			NOT NULL, 
     optimised_geojson		%2,
-	within					%3				NOT NULL,
-	optimised_wkt			Text
+	within					%3				NOT NULL
 )

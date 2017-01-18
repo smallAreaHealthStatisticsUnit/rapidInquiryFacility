@@ -112,8 +112,8 @@ BEGIN
 --			
 			took:=age(etp, stp);
 			tiles_per_s:=ROUND((num_rows+num_rows2+num_rows3)::NUMERIC/EXTRACT(EPOCH FROM took2)::NUMERIC, 1);
-			RAISE INFO 'Processed %+% total areaid intersects, % tiles for geolevel id %/% zoomlevel: %/% in %+%s+%s, %s total; % intesects/s', 
-				num_rows, num_rows2, num_rows3, 
+			RAISE INFO 'Processed %+% total areaid intersects for geolevel id %/% zoomlevel: %/% in %+%s+%s, %s total; % intesects/s', 
+				num_rows, num_rows2,  
 				i, max_geolevel_id, j, max_zoomlevel, 
 				ROUND(EXTRACT(EPOCH FROM took2)::NUMERIC, 1), 
 				ROUND(EXTRACT(EPOCH FROM took3)::NUMERIC, 1), 
