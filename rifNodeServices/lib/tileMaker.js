@@ -1254,41 +1254,58 @@ REFERENCE (from shapefile) {
 	function tileIntersectsProcessingZoomlevelLoop(tileBlocksTable, tileIntersectsTable, geolevelName, geolevel_id, 
 		geography, xmlFileDir, geolevelProcessingCallback) {
 		 
+		scopeChecker(__file, __line, {
+			tileBlocksTable: tileBlocksTable,
+			tileIntersectsTable: tileIntersectsTable,
+			geolevelName: geolevelName,
+			geolevel_id: geolevel_id,
+			geography: geography,
+			xmlFileDir: xmlFileDir,
+			callback: geolevelProcessingCallback
+		});
+	
 // 
 // Primary key: geolevel_id, zoomlevel, areaid, x, y
 //			
 		if (dbType == "PostGres") {	
 			sql="WITH a AS (\n" +
-				"	SELECT z.geolevel_id::VARCHAR||'_'||'" + (geolevelName||'Unknown geolevel name') + 
+				"	SELECT z.geolevel_id::VARCHAR||'_'||'" + geolevelName + 
 								"'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
-				"	       z.areaid, z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.x, z.y, y.block, a.*\n" +				
+				"	       z.areaid, z.geolevel_id, z.zoomlevel, z.geom, z.x, z.y, y.block, a.*\n" +				
 				"	  FROM " + tileIntersectsTable + " z, " + tileBlocksTable + " y, lookup_" + geolevelName + " a\n" +
 				"	 WHERE z.geolevel_id = $2\n" + 
 				"	   AND z.zoomlevel   = $1\n" + 
 				"	   AND y.block       = $3\n" +
+				"	   AND z.areaid      = a." + geolevelName + "\n" + 
+				"	   AND y.geolevel_id = z.geolevel_id\n" +
+				"	   AND y.zoomlevel   = z.zoomlevel\n" +
+				"	   AND y.x           = z.x\n" +
+				"	   AND y.y           = z.y\n" +
+				")\n" +
+				"SELECT tile_id, areaid, geolevel_id, zoomlevel, x, y, block,\n" + 
+				"       areaname, " + geolevelName + ", ST_AsText(geom) AS optimised_wkt\n" + 
+				"       FROM a\n" + 
+				" ORDER BY tile_id, areaid";
+		}		
+		else if (dbType == "MSSQLServer") {		
+			sql="WITH a AS (\n" +
+				"	SELECT CAST(z.geolevel_id AS VARCHAR) + '_' + '" + geolevelName + 
+							"' + '_' + CAST(z.zoomlevel AS VARCHAR) + '_' + CAST(z.x AS VARCHAR) + '_' + CAST(z.y AS VARCHAR) AS tile_id,\n" +
+				"  	     z.geolevel_id, z.zoomlevel, z.geom, z.areaid, z.x, z.y, y.block, a.*\n" +				
+				" 	 FROM " + tileBlocksTable + " y, " + tileIntersectsTable + " z, lookup_" + geolevelName + " a\n" +
+				"	 WHERE y.geolevel_id = @geolevel_id\n" + 
+				"	   AND y.zoomlevel   = @zoomlevel\n" + 
+				"	   AND y.block       = @block\n" +
 				"	   AND y.geolevel_id = z.geolevel_id\n" +
 				"	   AND y.zoomlevel   = z.zoomlevel\n" +
 				"	   AND y.x           = z.x\n" +
 				"	   AND y.y           = z.y\n" +
 				"	   AND z.areaid      = a." + geolevelName + "\n" + 
 				")\n" +
-				"SELECT * FROM a\n" + 
-				" ORDER BY tile_id, areaid";
-		}		
-		else if (dbType == "MSSQLServer") {		
-			sql="SELECT CAST(z.geolevel_id AS VARCHAR) + '_' + '" + (geolevelName||'Unknown geolevel name') + 
-							"' + '_' + CAST(z.zoomlevel AS VARCHAR) + '_' + CAST(z.x AS VARCHAR) + '_' + CAST(z.y AS VARCHAR) AS tile_id,\n" +
-				"       z.geolevel_id, z.zoomlevel, z.optimised_wkt, z.areaid, z.x, z.y, y.block, a.*\n" +				
-				"  FROM " + tileIntersectsTable + " z, " + tileBlocksTable + " y, lookup_" + geolevelName + " a\n" +
-				" WHERE z.geolevel_id = @geolevel_id\n" + 
-				"   AND z.zoomlevel   = @zoomlevel\n" + 
-				"   AND y.block       = @block\n" +
-				"   AND y.geolevel_id = z.geolevel_id\n" +
-				"   AND y.zoomlevel   = z.zoomlevel\n" +
-				"   AND y.x           = z.x\n" +
-				"   AND y.y           = z.y\n" +
-				"   AND z.areaid      = a." + geolevelName + "\n" + 
-				" ORDER BY 1";
+				"SELECT tile_id, areaid, geolevel_id, zoomlevel, x, y, block,\n" + 
+				"       areaname, " + geolevelName + ", geom.STAsText() AS optimised_wkt\n" + 
+				"       FROM a\n" + 
+				" ORDER BY tile_id, areaid"
 		}
 	
 		var zoomlevel=0;
@@ -1323,8 +1340,6 @@ REFERENCE (from shapefile) {
 						}, 
 						function zoomlevelTest() { // Mimic for loop
 							var res=false;
-							
-							zstart = new Date().getTime(); // Set timer for zoomlevel
 							
 							zoomlevel++;
 							/*
@@ -1659,6 +1674,8 @@ REFERENCE (from shapefile) {
 			winston.log("debug", "Block: " + block + "/" + numBlocks + "; geolevel_id: " + 
 				geolevel_id + "; zoomlevel: " + zoomlevel + 
 				"\nSQL> " + sql);
+			
+			zstart = new Date().getTime(); // Set timer for zoomlevel/geolevel	
 			var rowsProcessed=0;
 			
 			if (dbType == "PostGres") {
