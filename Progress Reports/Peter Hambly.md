@@ -803,11 +803,13 @@ RangeError: Invalid string length
 * Race fixes in block code
 * Check tiles all generated and not null, no extra, none missing 
 * Zoomlevel and geolevel report (null tiles/total tiles)
+* USA tests to zoomlevel 8 OK. Improved SQL Server tile making efficency and reduced table size to get under 10K limit
+* Fix SQL server load script etc
 
 #### Current TODO list (January 2017):
 
+* MS Sahsuland projection problem; must be contained within the projection or will fail
 * Drop scripts
-* Fix SQL server load script etc
 * Fix zoomlevel miss-set from config file (defaults are wrong)
 * Check (warn/error) if geometry not within projection (sahsuland is using Nevada north 1927 at present)
 
@@ -880,7 +882,8 @@ Note: no bounding box (bbox) in tiles.
 * Hover support for area name, area_km2 and shapefile supplied data at highest resolution
 
 * SQL server RHR force to support mixed LH and RH in multipolygons
-  [c.%1.ReorientObject() is used as c.%1.STUnion(%1.STStartPoint()) does NOT work] where %1 is the geometry column [Needs Turf support]
+  [c.%1.ReorientObject() is used as c.%1.STUnion(%1.STStartPoint()) does NOT work] where %1 is the geometry column 
+  [Needs Turf support]
 	
 * Display of zoomlevel contextual information: total topojson size, suppressed or not. 
 * Status in write JSON file Re-test COA2011: json memory and timeout issues are solved
