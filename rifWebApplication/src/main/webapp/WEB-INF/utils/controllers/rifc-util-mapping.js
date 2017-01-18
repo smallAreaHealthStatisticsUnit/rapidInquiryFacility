@@ -4,21 +4,21 @@
 
 /* global L */
 
-//TODO: service for map buttons
-//TODO: service for save png
 //TODO: remove year from getSmoothedResults
 
 angular.module("RIF")
-        .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'leafletData', 'ChoroService', 'MappingStateService', 'ViewerStateService',
-            function ($scope, user, LeafletBaseMapService, leafletData, ChoroService, MappingStateService, ViewerStateService) {
+        .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'leafletData', 'ChoroService',
+            'MappingStateService', 'ViewerStateService', 'MappingService',
+            function ($scope, user, LeafletBaseMapService, leafletData, ChoroService,
+                    MappingStateService, ViewerStateService, MappingService) {
 
                 //Reference the parent scope
                 var parentScope = $scope.$parent;
                 parentScope.child = $scope;
                 //Reference the state service
-                var myService = MappingStateService;
+                $scope.myService = MappingStateService;
                 if ($scope.myMaps[0] === "viewermap") {
-                    myService = ViewerStateService;
+                    $scope.myService = ViewerStateService;
                 }
 
                 //Legends and Infoboxes
@@ -141,7 +141,7 @@ angular.module("RIF")
                         });
                         //Remember defaults
                         for (var j = 0; j < $scope.myMaps.length; j++) {
-                            var s = myService.getState().study[$scope.myMaps[j]].study_id;
+                            var s = $scope.myService.getState().study[$scope.myMaps[j]].study_id;
                             if (s !== null) {
                                 for (var i = 0; i < $scope.studyIDs.length; i++) {
                                     if ($scope.studyIDs[i].study_id === s) {
@@ -162,7 +162,7 @@ angular.module("RIF")
                 };
                 $scope.updateSex = function (mapID) {
                     //Store this study selection
-                    myService.getState().study[mapID] = $scope.studyID[mapID];
+                    $scope.myService.getState().study[mapID] = $scope.studyID[mapID];
                     //Get the sexes for this study
                     user.getSexesForStudy(user.currentUser, $scope.studyID[mapID].study_id, mapID)
                             .then(handleSexes, clearTheMapOnError(mapID));
@@ -184,20 +184,20 @@ angular.module("RIF")
                             $scope.child.fillPyramidData();
                         } else {
                             //check selection link is possible
-                            if (myService.getState().selectionLock) {
+                            if ($scope.myService.getState().selectionLock) {
                                 var g1 = $scope.tileInfo["diseasemap1"];
                                 var g2 = $scope.tileInfo["diseasemap2"];
                                 if (g1.geography !== null && g2.geography !== null) {
                                     if (g1.geography !== g2.geography) {
                                         //different geographies     
                                         $scope.showWarning("Cannot link selections for different geographies: " + g1.geography + " & " + g2.geography);
-                                        myService.getState().selectionLock = false;
+                                        $scope.myService.getState().selectionLock = false;
                                         $scope.$parent.bLockSelect = false;
                                     } else {
                                         if (g1.level !== g2.level) {
                                             //different levels
                                             $scope.showWarning("Cannot link selections for different geolevels: " + g1.level + " & " + g2.level);
-                                        } 
+                                        }
                                     }
                                 }
                             }
@@ -205,7 +205,7 @@ angular.module("RIF")
                         $scope.updateStudy(res.config.leaflet);
                     }
                 };
-                
+
                 //change the basemaps 
                 $scope.renderMap = function (mapID) {
                     leafletData.getMap(mapID).then(function (map) {
@@ -300,11 +300,11 @@ angular.module("RIF")
                         clearTheMapOnError(mapID);
                     } else {
                         //Reset all renderers, but only if not called from state change
-                        if (!myService.getState().initial) {
+                        if (!$scope.myService.getState().initial) {
                             ChoroService.resetState(mapID);
                             thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
                         }
-                        myService.getState().initial = false;
+                        $scope.myService.getState().initial = false;
                         //Remove RR chart
                         if (mapID !== "viewermap" && !angular.isUndefined($scope.rrChartData[mapID])) {
                             $scope.rrChartData[mapID].length = 0;
@@ -317,8 +317,8 @@ angular.module("RIF")
                             }
                         });
                         //save study, sex selection
-                        myService.getState().sex[mapID] = $scope.sex[mapID];
-                        myService.getState().study[mapID] = $scope.$parent.studyID[mapID];
+                        $scope.myService.getState().sex[mapID] = $scope.sex[mapID];
+                        $scope.myService.getState().study[mapID] = $scope.$parent.studyID[mapID];
                         //add the requested geography
                         user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
                                 function (res) {
@@ -375,13 +375,13 @@ angular.module("RIF")
                                         } else {
                                             //Single selections
                                             $scope.thisPoly[mapID] = e.target.feature.properties.area_id;
-                                            myService.getState().area_id[mapID] = e.target.feature.properties.area_id;
+                                            $scope.myService.getState().area_id[mapID] = e.target.feature.properties.area_id;
                                             $scope.infoBox2[mapID].update($scope.thisPoly[mapID]);
                                             $scope.updateMapSelection($scope.thisPoly[mapID], mapID);
                                             if ($scope.bLockSelect) {
-                                                var otherMap = getOtherMap(mapID);
+                                                var otherMap = MappingService.getOtherMap(mapID);
                                                 $scope.thisPoly[otherMap] = e.target.feature.properties.area_id;
-                                                myService.getState().area_id[otherMap] = e.target.feature.properties.area_id;
+                                                $scope.myService.getState().area_id[otherMap] = e.target.feature.properties.area_id;
                                                 dropLine(otherMap, e.target.feature.properties.area_id, true);
                                             }
                                         }
@@ -396,7 +396,7 @@ angular.module("RIF")
                             //do not get maxbounds for diseasemap2
                             if (mapID !== "diseasemap2") {
                                 $scope.maxbounds = $scope.geoJSON[mapID].getBounds();
-                                if (myService.getState().center[mapID].lng === 0) {
+                                if ($scope.myService.getState().center[mapID].lng === 0) {
                                     leafletData.getMap(mapID).then(function (map) {
                                         map.fitBounds($scope.maxbounds);
                                     });
@@ -414,60 +414,52 @@ angular.module("RIF")
                         $scope.showError("Something went wrong when getting the geography");
                     }
 
-                    function getSexCode(s) {
-                        return ["Males", "Females", "Both"].indexOf(s) + 1;
-                    }
-
                     function getAttributeTable(mapID) {
-                        user.getSmoothedResults(user.currentUser, $scope.studyID[mapID].study_id, getSexCode($scope.sex[mapID]),
-                                1990).then(handleSmoothedResults, attributeError); //TODO: Year will be removed
-
-                        function handleSmoothedResults(res) {
-                            //variables possible to map
-                            var attrs = ["smoothed_smr", "relative_risk", "posterior_probability"];
-                            ChoroService.getMaps(mapID).features = attrs;
-                            //make array for choropleth
-                            $scope.tableData[mapID].length = 0;
-                            for (var i = 0; i < res.data.smoothed_results.length; i++) {
-                                $scope.tableData[mapID].push(res.data.smoothed_results[i]);
-                            }
-
-                            //supress some pre-selected columns (see the service)   
-                            if (mapID === "viewermap") {
-                                //fill results table for data viewer only
-                                var colDef = [];
-                                var attrs = [];
-                                //Add column for selected
-                                for (var i = 0; i < res.data.smoothed_results.length; i++) {
-                                    res.data.smoothed_results[i]._selected = 0;
-                                }
-
-                                for (var i in res.data.smoothed_results[0]) {
-                                    if (ViewerStateService.getValidColumn(i)) {
-                                        if (i !== "area_id" && i !== "_selected") {
-                                            attrs.push(i);
-                                        }
-                                        colDef.push({
-                                            name: i,
-                                            width: 100
-                                        });
+                        user.getSmoothedResults(user.currentUser, $scope.studyID[mapID].study_id, MappingService.getSexCode($scope.sex[mapID]))
+                                .then(function (res) {
+                                    //variables possible to map
+                                    var attrs = ["smoothed_smr", "relative_risk", "posterior_probability"];
+                                    ChoroService.getMaps(mapID).features = attrs;
+                                    //make array for choropleth
+                                    $scope.tableData[mapID].length = 0;
+                                    for (var i = 0; i < res.data.smoothed_results.length; i++) {
+                                        $scope.tableData[mapID].push(res.data.smoothed_results[i]);
                                     }
-                                }
-                                //draw and refresh histogram and table
-                                $scope.distHistoName = ChoroService.getMaps("viewermap").feature;
-                                ChoroService.getMaps("viewermap").features = attrs;
-                                $scope.viewerTableOptions.columnDefs = colDef;
-                                $scope.viewerTableOptions.data = $scope.tableData.viewermap;
-                                $scope.getD3chart("viewermap", $scope.attr["viewermap"]);
-                                $scope.updateTable();
-                            }
-                            $scope.refresh(mapID);
-                        }
 
-                        function attributeError(e) {
-                            console.log("Something went wrong when getting the attribute data");
-                            clearTheMapOnError(mapID);
-                        }
+                                    //supress some pre-selected columns (see the service)   
+                                    if (mapID === "viewermap") {
+                                        //fill results table for data viewer only
+                                        var colDef = [];
+                                        var attrs = [];
+                                        //Add column for selected
+                                        for (var i = 0; i < res.data.smoothed_results.length; i++) {
+                                            res.data.smoothed_results[i]._selected = 0;
+                                        }
+
+                                        for (var i in res.data.smoothed_results[0]) {
+                                            if (ViewerStateService.getValidColumn(i)) {
+                                                if (i !== "area_id" && i !== "_selected") {
+                                                    attrs.push(i);
+                                                }
+                                                colDef.push({
+                                                    name: i,
+                                                    width: 100
+                                                });
+                                            }
+                                        }
+                                        //draw and refresh histogram and table
+                                        $scope.distHistoName = ChoroService.getMaps("viewermap").feature;
+                                        ChoroService.getMaps("viewermap").features = attrs;
+                                        $scope.viewerTableOptions.columnDefs = colDef;
+                                        $scope.viewerTableOptions.data = $scope.tableData.viewermap;
+                                        $scope.getD3chart("viewermap", $scope.attr["viewermap"]);
+                                        $scope.updateTable();
+                                    }
+                                    $scope.refresh(mapID);
+                                }, function (e) {
+                                    console.log("Something went wrong when getting the attribute data");
+                                    clearTheMapOnError(mapID);
+                                });
                     }
 
                     /*

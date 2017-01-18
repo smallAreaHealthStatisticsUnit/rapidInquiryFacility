@@ -1,11 +1,21 @@
-/* 
- * SERVICE to convert D3 SVG to PNG for export
+/*
+ * DIRECTIVE to save D3 charts to a PNG
  * See https://bl.ocks.org/Rokotyan/raw/0556f8facbaf344507cdc45dc3622177/
  */
+/* global d3 */
 
 angular.module("RIF")
-        .factory('D3ToPNGService',
-                function () {
+        .directive('saved3Chart', function () {
+            return {
+                restrict: 'A',
+                link: function (scope, element, attr) {
+                    //export options set in scope
+                    var opts;
+
+                    function save(dataBlob, filesize) {
+                        saveAs(dataBlob, opts.filename); // FileSaver.js function
+                    }
+
                     function getSVGString(svgNode) {
                         svgNode.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
                         var cssStyleText = getCSSStyles(svgNode);
@@ -101,14 +111,32 @@ angular.module("RIF")
 
                         image.src = imgsrc;
                     }
-                    return {
-                        getGetSVGString: function (svgNode) {
-                            return getSVGString(svgNode);
-                        },
-                        getSvgString2Image: function (svgString, width, height, format, callback) {
-                            return svgString2Image(svgString, width, height, format, callback);
+
+
+                    element.on('click', function (event) {
+                        opts = scope.$parent.optionsd3[attr.mapid];
+
+                        var container;
+                        if (opts.container === "rrchart") {
+                            container = opts.container + attr.mapid;
+                        } else {
+                            container = attr.mapid;
                         }
-                    };
-                });
 
+                        if (document.getElementById(container) === null) {
+                            return;
+                        } else {
+                            var svgString = getSVGString(d3.select("#" + container)
+                                    .attr("version", 1.1)
+                                    .attr("xmlns", "http://www.w3.org/2000/svg")
+                                    .node());
 
+                            var pngWidth = d3.select(opts.element).node().getBoundingClientRect().width * 3;
+                            var pngHeight = d3.select(opts.element).node().getBoundingClientRect().height * 3;
+
+                            svgString2Image(svgString, pngWidth, pngHeight, 'png', save);
+                        }
+                    });
+                }
+            };
+        });

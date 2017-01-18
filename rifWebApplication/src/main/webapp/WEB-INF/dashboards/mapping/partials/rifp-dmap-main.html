@@ -16,7 +16,7 @@
             <div class="mappingPageLabel">LEFT DISPLAY</div>
             <div>
                 <div>Study:</div>
-                <select ng-change='child.updateSex("diseasemap1")' id='studySelect' ng-model='studyID["diseasemap1"]' ng-options='(s.study_id +  ": " +  s.name) for s in child.studyIDs'> 
+                <select ng-change='child.updateSex("diseasemap1")' id='studySelect' ng-model='studyID["diseasemap1"]' ng-options='(s.study_id +   ": " +   s.name) for s in child.studyIDs'> 
                 </select>             
             </div>
             <div>
@@ -31,7 +31,7 @@
             <div class="mappingPageLabel">RIGHT DISPLAY</div>
             <div>
                 <div>Study:</div>
-                <select ng-change='child.updateSex("diseasemap2")' id='studySelect' ng-model='studyID["diseasemap2"]' ng-options='(s.study_id +  ": " +  s.name) for s in child.studyIDs'> 
+                <select ng-change='child.updateSex("diseasemap2")' id='studySelect' ng-model='studyID["diseasemap2"]' ng-options='(s.study_id +   ": " +   s.name) for s in child.studyIDs'> 
                 </select>             
             </div>
             <div>
@@ -51,13 +51,14 @@
                     <ul class="mapBoxOpts">
                         <li><a ng-controller="ChoroplethModalCtrl" ng-click="open('diseasemap1')" id="choroplethBtn" title="Choropleth map"></a></li>
                         <li><a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap1')" id="baseMapBtn" title="Base map"></a></li>
-                        <li><a id="clearSelection" title="Clear selection" ng-click="clear('diseasemap1')"></a></li>
-                        <li><a id="zoomExtent" title="Zoom to extent" sglclick="zoomToStudy('diseasemap1')" ng-dblclick="zoomToExtent('diseasemap1')"></a></li>
-                        <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected('diseasemap1')"></a></li>
-                        <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet('diseasemap1')"></a></li>
-                        <li><a id="exportD3" title="Quick export chart" ng-click="saveD3Chart('diseasemap1')"></a></li>
+                        <li><a id="clearSelection" title="Clear selection" clear-array-selection mapid="diseasemap1"></a></li>
+                        <li><a id="zoomExtent" title="Zoom to full extent" zoom-extent mapid="diseasemap1"></a></li>
+                        <li><a id="zoomStudy" title="Zoom to study extent" zoom-study mapid="diseasemap1"></a></li>
+                        <li><a id="zoomSelection" title="Zoom to selected" zoom-selection-single mapid="diseasemap1"></a></li>
+                        <li><a id="exportMap" title="Quick export map" leaflet-to-png mapid="diseasemap1"></a></li>
+                        <li><a id="exportD3" title="Quick export chart" saved3-chart mapid="diseasemap1"></a></li>
                         <li>
-                            <input type="range" ng-model ="transparency['diseasemap1']" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity('diseasemap1')"/>
+                            <input type="range" ng-model ="transparency['diseasemap1']" min="0" max="1" step="0.01" value ="0.7" change-opacity mapid="diseasemap1"/>
                         </li>  
                         <li><a id="copySymbology" title="Copy symbology" ng-click="copySymbology()"></a></li>                                                 
                         <li>
@@ -89,13 +90,14 @@
                     <ul class="mapBoxOpts">
                         <li><a ng-controller="ChoroplethModalCtrl" ng-click="open('diseasemap2')" id="choroplethBtn" title="Choropleth map"></a></li>
                         <li><a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap2')"  id="baseMapBtn" title="Base map"></a></li>	
-                        <li><a id="clearSelection" title="Clear selection" ng-click="clear('diseasemap2')"></a></li>
-                        <li><a id="zoomExtent" title="Zoom to extent" sglclick="zoomToStudy('diseasemap2')" ng-dblclick="zoomToExtent('diseasemap2')"></a></li>
-                        <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected('diseasemap2')"></a></li> 
-                        <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet('diseasemap2')"></a></li>  
-                        <li><a id="exportD3" title="Quick export chart" ng-click="saveD3Chart('diseasemap2')"></a></li> 
+                        <li><a id="clearSelection" title="Clear selection" clear-array-selection mapid="diseasemap2"></a></li>                       
+                        <li><a id="zoomExtent" title="Zoom to full extent" zoom-extent mapid="diseasemap2"></a></li>
+                        <li><a id="zoomStudy" title="Zoom to study extent" zoom-study mapid="diseasemap2"></a></li>
+                        <li><a id="zoomSelection" title="Zoom to selected" zoom-selection-single mapid="diseasemap2"></a></li> 
+                        <li><a id="exportMap" title="Quick export map" leaflet-to-png mapid="diseasemap2"></a></li>
+                        <li><a id="exportD3" title="Quick export chart" saved3-chart mapid="diseasemap2"></a></li>
                         <li>
-                            <input type="range" ng-model ="transparency['diseasemap2']" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity('diseasemap2')"/>
+                            <input type="range" ng-model ="transparency['diseasemap2']" min="0" max="1" step="0.01" value ="0.7" change-opacity mapid="diseasemap2"/>
                         </li>
                     </ul>                 
                 </div>

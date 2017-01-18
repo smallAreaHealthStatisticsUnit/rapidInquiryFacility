@@ -6,9 +6,9 @@
 
 angular.module("RIF")
         .controller('MappingCtrl', ['$scope', 'leafletData', '$timeout', 'MappingStateService',
-            'ChoroService', 'LeafletExportService', 'D3ToPNGService', 'MappingService',
+            'ChoroService', 'MappingService',
             function ($scope, leafletData, $timeout, MappingStateService,
-                    ChoroService, LeafletExportService, D3ToPNGService, MappingService) {
+                    ChoroService, MappingService) {
 
                 //Reference the child scope
                 $scope.child = {};
@@ -158,129 +158,22 @@ angular.module("RIF")
                         zoomEnd: MappingStateService.getState().brushEndLoc['diseasemap2']
                     }
                 };
-
-                /*
-                 * Leaflet Toolstrip TODO: REFACTOR to SERVICE or DIRECTIVE
-                 */
-
-                //map layer opacity with slider
-                $scope.changeOpacity = function (mapID) {
-                    MappingStateService.getState().transparency[mapID] = $scope.transparency[mapID];
-                    leafletData.getMap(mapID).then(function (map) {
-                        if (map.hasLayer($scope.geoJSON[mapID])) {
-                            $scope.geoJSON[mapID].eachLayer($scope.child.handleLayer);
-                        }
-                    });
-                };
-
-                //Zoom to layer DOUBLE click
-                $scope.zoomToExtent = function (mapID) {
-                    leafletData.getMap(mapID).then(function (map) {
-                        map.fitBounds($scope.child.maxbounds);
-                    });
-                };
-
-                //Zoom to study extent SINGLE click
-                $scope.zoomToStudy = function (mapID) {
-                    var studyBounds = new L.LatLngBounds();
-                    $scope.geoJSON[mapID].eachLayer(function (layer) {
-                        //if area ID is in the attribute table
-                        for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
-                            if ($scope.child.tableData[mapID][i]['area_id'].indexOf(layer.feature.properties.area_id) !== -1) {
-                                studyBounds.extend(layer.getBounds());
-                            }
-                        }
-                    });
-                    leafletData.getMap(mapID).then(function (map) {
-                        if (studyBounds.isValid()) {
-                            map.fitBounds(studyBounds);
-                        }
-                    });
-                };
-
-                //Zoom to single selected polygon
-                $scope.zoomToSelected = function (mapID) {
-                    var selbounds = null;
-                    $scope.geoJSON[mapID].eachLayer(function (layer) {
-                        if (layer.feature.properties.area_id === $scope.thisPoly[mapID]) {
-                            selbounds = layer.getBounds();
-                        }
-                    });
-                    if (selbounds !== null) {
-                        leafletData.getMap(mapID).then(function (map) {
-                            map.fitBounds(selbounds);
-                        });
+                $scope.optionsd3 = {
+                    "diseasemap1": {
+                        container: "rrchart",
+                        element: "#rr1",
+                        filename: "risk1.png"
+                    },
+                    "diseasemap2": {
+                        container: "rrchart",
+                        element: "#rr1",
+                        filename: "risk2.png"
                     }
-                };
-
-                //clear selected polygon
-                $scope.clear = function (mapID) {
-                    var toClear = [mapID];
-                    if ($scope.bLockSelect) {
-                        toClear.push(getOtherMap(mapID));
-                    }
-                    for (var i in toClear) {
-                        $scope.thisPoly[toClear[i]] = null;
-                        MappingStateService.getState().selected[toClear[i]] = null;
-                        $scope.child.infoBox2[mapID].update($scope.thisPoly[toClear[i]]);
-                        $scope.updateMapSelection(null, toClear[i]);
-                    }
-                };
-
-
-                /*
-                 * Save Graphs and map to PNG
-                 */
-
-                //TODO:REFACTOR
-                //save D3 charts
-                $scope.saveD3Chart = function (mapID) {
-                    var container = "rrchart" + mapID;
-                    if (document.getElementById("rrchart" + mapID) === null) {
-                        return;
-                    }
-                    var pngHeight = $scope.currentHeight1 * 3;
-                    var pngWidth = $scope.currentWidth1 * 3;
-                    var fileName = "risk1.png";
-                    if (mapID === "diseasemap2") {
-                        pngHeight = $scope.currentHeight2 * 3;
-                        pngWidth = $scope.currentWidth2 * 3;
-                        fileName = "risk2.png";
-                    }
-                    var svgString = D3ToPNGService.getGetSVGString(d3.select("#" + container)
-                            .attr("version", 1.1)
-                            .attr("xmlns", "http://www.w3.org/2000/svg")
-                            .node());
-                    D3ToPNGService.getSvgString2Image(svgString, pngWidth, pngHeight, 'png', save);
-                    function save(dataBlob, filesize) {
-                        saveAs(dataBlob, fileName); // FileSaver.js function
-                    }
-                };
-
-                //quick export leaflet panel
-                $scope.saveLeaflet = function (mapID) {
-                    var hostMap = document.getElementById(mapID);
-                    var thisLegend = hostMap.getElementsByClassName("info legend leaflet-control")[0]; //the legend
-                    var thisScale = hostMap.getElementsByClassName("leaflet-control-scale leaflet-control")[0]; //the scale bar
-                    html2canvas(thisLegend, {
-                        onrendered: function (canvas) {
-                            var thisScaleCanvas;
-                            html2canvas(thisScale, {
-                                onrendered: function (canvas1) {
-                                    thisScaleCanvas = canvas1;
-                                    $scope.renderMap(mapID);
-                                    //the map
-                                    LeafletExportService.getLeafletExport(mapID, "DiseaseMap" + ($scope.myMaps.indexOf(mapID) + 1), canvas, thisScaleCanvas);
-                                }
-                            });
-                        }
-                    });
                 };
 
                 /*
                  * D3
                  */
-
                 //draw rr chart from d3 directive 'rrZoom'
                 $scope.getD3chart = function (mapID, attribute) {
                     //reset brush handles        
@@ -413,7 +306,7 @@ angular.module("RIF")
                         MappingStateService.getState().area_id[data.mapID] = data.selected.gid;
                         //update the other map if selections locked
                         if ($scope.bLockSelect) {
-                            var otherMap = getOtherMap(data.mapID);
+                            var otherMap = MappingService.getOtherMap(data.mapID);
                             $scope.thisPoly[otherMap] = data.selected.gid;
                             MappingStateService.getState().area_id[otherMap] = data.selected.gid;
                             dropLine(otherMap, data.selected.gid, false);
@@ -430,7 +323,7 @@ angular.module("RIF")
                         $scope.geoJSON[mapID].eachLayer($scope.child.handleLayer);
                         $scope.child.infoBox2[mapID].update($scope.thisPoly[mapID]);
                         if ($scope.bLockSelect) {
-                            var otherMap = getOtherMap(mapID);
+                            var otherMap = MappingService.getOtherMap(mapID);
                             $scope.thisPoly[otherMap] = gid;
                             if (!angular.isUndefined($scope.geoJSON[otherMap])) {
                                 $scope.geoJSON[otherMap].eachLayer($scope.child.handleLayer);
@@ -439,14 +332,5 @@ angular.module("RIF")
                     }
                     //update chart
                     $scope.$broadcast('rrDropLineRedraw', gid, mapID);
-                }
-
-                //switch to work on the other map        
-                function getOtherMap(id) {
-                    var otherMapID = "diseasemap2";
-                    if ($scope.myMaps.indexOf(id) === 1) {
-                        otherMapID = "diseasemap1";
-                    }
-                    return otherMapID;
                 }
             }]);         

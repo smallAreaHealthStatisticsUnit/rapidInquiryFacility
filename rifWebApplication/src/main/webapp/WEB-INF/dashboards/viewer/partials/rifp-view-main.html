@@ -18,7 +18,7 @@ Viewer
         <div class="mappingPageLabel">VIEW RESULTS</div>
         <div >
             <div>Study:</div>
-            <select ng-change='child.updateSex("viewermap") 'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +  ": " +  s.name) for s in child.studyIDs'></select>
+            <select ng-change='child.updateSex("viewermap")'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +   ": " +   s.name) for s in child.studyIDs'></select>
         </div>
         <div>
             <div>Sex:</div>
@@ -48,19 +48,20 @@ Viewer
                             <span class="caret"></span>
                         </button>
                         <div class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                            <li role="menuitem"><a ng-click="saveD3Chart('#distHisto')">Histogram</a></li>
-                            <li role="menuitem"><a ng-click="saveD3Chart('#poppyramid')">Pyramid</a></li>
+                            <li role="menuitem"><a saved3-chart mapid="distHisto">Histogram</a></li>
+                            <li role="menuitem"><a saved3-chart mapid="poppyramid">Pyramid</a></li>
                         </div>
                     </div>
                     <ul class="mapBoxOpts">
                         <li><a ng-controller="ChoroplethModalCtrl" ng-click="open('viewermap')" id="choroplethBtn" title="Choropleth map"></a></li>
                         <li><a ng-controller="BaseMapModalCtrl" ng-click="open('viewermap')" id="baseMapBtn" title="Base map"></a></li>	
-                        <li><a id="clearSelection" title="Clear selection" ng-click="clear('viewermap')"></a></li>
-                        <li><a id="zoomExtent" title="Zoom to extent" sglclick="zoomToStudy('viewermap')" ng-dblclick="zoomToExtent('viewermap')"></a></li>
-                        <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelected('viewermap')"></a></li> 
-                        <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet('viewermap')"></a></li> 
+                        <li><a id="clearSelection" title="Clear selection" clear-array-selection mapid="viewermap"></a></li>        
+                        <li><a id="zoomExtent" title="Zoom to full extent" zoom-extent mapid="viewermap"></a></li>
+                        <li><a id="zoomStudy" title="Zoom to study extent" zoom-study mapid="viewermap"></a></li>
+                        <li><a id="zoomSelection" title="Zoom to selected" zoom-selection-multiple mapid="viewermap"></a></li> 
+                        <li><a id="exportMap" title="Quick export map" leaflet-to-png mapid="viewermap"></a></li>
                         <li>
-                            <input type="range" ng-model ="transparency['viewermap']" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity('viewermap')"/>
+                            <input type="range" ng-model ="transparency['viewermap']" min="0" max="1" step="0.01" value ="0.7" change-opacity mapid="viewermap"/>
                         </li>
                     </ul> 
                 </div>    

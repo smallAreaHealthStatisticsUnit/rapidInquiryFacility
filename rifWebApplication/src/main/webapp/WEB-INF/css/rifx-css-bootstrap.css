@@ -1,7 +1,7 @@
 /* Overrides to Bootstrap CSS */
 .btn-group {
     position:absolute;
-    margin: 0px 0px 0px 226px;
+    margin: 0px 0px 0px 262px;
 }
 .btn-group:hover {
     border-color: transparent;

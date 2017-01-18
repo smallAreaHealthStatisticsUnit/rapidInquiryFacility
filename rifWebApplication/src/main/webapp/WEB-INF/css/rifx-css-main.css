@@ -289,10 +289,13 @@ body {
     background: transparent url("../images/lightbulb_delete.png") no-repeat;
 }
 #zoomExtent {
-    background: transparent url("../images/zoom_extend.png") no-repeat;
+    background: transparent url("../images/world.png") no-repeat;
+}
+#zoomStudy {
+    background: transparent url("../images/zoom_selection.png") no-repeat;
 }
 #zoomSelection {
-    background: transparent url("../images/zoom_selection.png") no-repeat;
+    background: transparent url("../images/zoom_fit.png") no-repeat;
 }
 #choroplethBtn {
     background: transparent url("../images/things_digital.png") no-repeat;

@@ -12,9 +12,9 @@
 /* global L, d3, key, topojson */
 angular.module("RIF")
         .directive('submissionMapTable', ['leafletData', 'ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService',
-            'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 'LeafletExportService',
+            'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService',
             function (leafletData, ModalAreaService, LeafletDrawService, $uibModal, JSONService,
-                    GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService, LeafletExportService) {
+                    GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
@@ -25,9 +25,12 @@ angular.module("RIF")
                             $scope.renderMap("area");
                             $scope.renderMap("area");
                         });
+                        
+                        /*
+                         * LOCAL VARIABLES
+                         */
                         //map max bounds from topojson layer
                         var maxbounds;
-
                         //If geog changed then clear selected
                         var thisGeography = SubmissionStateService.getState().geography;
                         if (thisGeography !== $scope.input.geography) {
@@ -39,49 +42,107 @@ angular.module("RIF")
 
                         //selectedPolygon array synchronises the map <-> table selections  
                         $scope.selectedPolygon = $scope.input.selectedPolygon;
-
                         //total for display
                         $scope.selectedPolygonCount = $scope.selectedPolygon.length;
-
                         //band colour look-up for selected districts
                         $scope.possibleBands = $scope.input.bands;
                         $scope.currentBand = 1; //from dropdown
-
                         //d3 polygon rendering, changed by slider
                         $scope.transparency = $scope.input.transparency;
 
+
+                        /*
+                         * TOOL STRIP
+                         */
+                        //Clear all selection from map and table
+                        $scope.clear = function () {
+                            $scope.selectedPolygon.length = 0;
+                            $scope.input.selectedPolygon.length = 0;
+                            $scope.clearAOI();
+                        };
+
+                        //remove AOI layer
+                        $scope.clearAOI = function () {
+                            leafletData.getMap("area").then(function (map) {
+                                if (map.hasLayer(shpfile)) {
+                                    map.removeLayer(shpfile);
+                                }
+                            });
+                        };
+
+                        //Select all in map and table
+                        $scope.selectAll = function () {
+                            $scope.selectedPolygon.length = 0;
+                            for (var i = 0; i < $scope.gridOptions.data.length; i++) {
+                                $scope.selectedPolygon.push({id: $scope.gridOptions.data[i].id, gid: $scope.gridOptions.data[i].id, label: $scope.gridOptions.data[i].label, band: $scope.currentBand});
+                            }
+                        };
+
+                        $scope.changeOpacity = function () {
+                            $scope.input.transparency = $scope.transparency;
+                            $scope.topoLayer.eachLayer(handleLayer);
+                        };
+
+                        //Reset only the selected band back to 0
+                        $scope.clearBand = function () {
+                            var i = $scope.selectedPolygon.length;
+                            while (i--) {
+                                if ($scope.selectedPolygon[i].band === $scope.currentBand) {
+                                    $scope.selectedPolygon.splice(i, 1);
+                                }
+                            }
+                        };
+
+                        //Zoom to layer
+                        $scope.zoomToExtent = function () {
+                            leafletData.getMap("area").then(function (map) {
+                                map.fitBounds(maxbounds);
+                            });
+                        };
+
+                        //Show-hide centroids
+                        $scope.showCentroids = function () {
+                            leafletData.getMap("area").then(function (map) {
+                                if (map.hasLayer(centroidMarkers)) {
+                                    map.removeLayer(centroidMarkers);
+                                } else {
+                                    map.addLayer(centroidMarkers);
+                                }
+                            });
+                        };
+
+                        /*
+                         * RENDER THE MAP AND THE TABLE
+                         */
                         getMyMap = function () {
-                            user.getTiles(user.currentUser, thisGeography, $scope.input.selectAt, "area").then(function (topo) {
+                            user.getTiles(user.currentUser, thisGeography, $scope.input.selectAt, "area").then(function (res) {
 
                                 //populate the table
-                                for (var i = 0; i < topo.data.objects['2_1_1'].geometries.length; i++) {
-                                    var thisPoly = topo.data.objects['2_1_1'].geometries[i].properties.area_id;
+                                for (var i = 0; i < res.data.objects['2_1_1'].geometries.length; i++) {
+                                    var thisPoly = res.data.objects['2_1_1'].geometries[i].properties.area_id;
                                     var bFound = false;
                                     for (var j = 0; j < $scope.selectedPolygon.length; j++) {
                                         if ($scope.selectedPolygon[j].id === thisPoly) {
-                                            topo.data.objects['2_1_1'].geometries[i].properties.band = $scope.selectedPolygon[j].band;
+                                            res.data.objects['2_1_1'].geometries[i].properties.band = $scope.selectedPolygon[j].band;
                                             bFound = true;
                                             break;
                                         }
                                     }
                                     if (!bFound) {
-                                        topo.data.objects['2_1_1'].geometries[i].properties.band = 0;
+                                        res.data.objects['2_1_1'].geometries[i].properties.band = 0;
                                     }
                                 }
-                                $scope.gridOptions.data = ModalAreaService.fillTable(topo.data);
+                                $scope.gridOptions.data = ModalAreaService.fillTable(res.data);
 
                                 //draw the map
                                 leafletData.getMap("area").then(function (map) {
-
                                     latlngList = [];
                                     centroidMarkers = new L.layerGroup();
-
                                     if (map.hasLayer($scope.topoLayer)) {
                                         map.removeLayer($scope.topoLayer);
                                     }
-
-                                    $scope.topoLayer = new L.TopoJSON(topo.data, {
-                                        renderer: L.canvas(), //THIS WORKS WITH LEAFLET-IMAGE, default is renderer: L.svg(),                                     
+                                    $scope.topoLayer = new L.TopoJSON(res.data, {
+                                        renderer: L.canvas(),                                 
                                         style: style,
                                         onEachFeature: function (feature, layer) {
                                             //define polygon centroids
@@ -206,7 +267,6 @@ angular.module("RIF")
                         }
 
                         function handleGeographyError() {
-                            //close the modal                           
                             $scope.close();
                         }
 
@@ -243,6 +303,103 @@ angular.module("RIF")
                             });
                         };
 
+                        function renderFeature(feature) {
+                            for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+                                if ($scope.selectedPolygon[i].id === feature) {
+                                    bFound = true;
+                                    //max possible is six bands according to specs
+                                    var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
+                                    return cb[$scope.selectedPolygon[i].band - 1];
+                                }
+                            }
+                            return '#F5F5F5'; //whitesmoke
+                        }
+
+                        //Functions to style topoJson on selection changes
+                        function style(feature) {
+                            return {
+                                fillColor: renderFeature(feature.properties.area_id),
+                                weight: 1,
+                                opacity: 1,
+                                color: 'gray',
+                                dashArray: '3',
+                                fillOpacity: $scope.transparency
+                            };
+                        }
+                        function handleLayer(layer) {
+                            layer.setStyle({
+                                fillColor: renderFeature(layer.feature.properties.area_id),
+                                fillOpacity: $scope.transparency
+                            });
+                        }
+
+                        /*
+                         * TABLE CONTROLS
+                         */
+                        //Multiple select with shift
+                        //detect shift key (16) down
+                        var bShift = false;
+                        var multiStart = -1;
+                        var multiStop = -1;
+                        $scope.keyDown = function ($event) {
+                            if (!bShift && $event.keyCode === 16) {
+                                bShift = true;
+                            }
+                        };
+                        //detect shift key (16) up
+                        $scope.keyUp = function ($event) {
+                            if (bShift && $event.keyCode === 16) {
+                                bShift = false;
+                                multiStop = -1;
+                            }
+                        };
+
+                        //Table click event to update selectedPolygon 
+                        $scope.rowClick = function (row) {
+                            var myVisibleRows = $scope.gridApi.core.getVisibleRows();
+                            if (!bShift) {
+                                //We are doing a single click select on the table
+                                var thisPoly = row.entity.label;
+                                var thisPolyID = row.entity.id;
+                                var bFound = false;
+                                for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+                                    if ($scope.selectedPolygon[i].id === thisPolyID) {
+                                        bFound = true;
+                                        $scope.selectedPolygon.splice(i, 1);
+                                        break;
+                                    }
+                                }
+                                if (!bFound) {
+                                    $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
+                                }
+                            } else {
+                                //We are doing a multiple select on the table, shift key is down
+                                multiStop = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
+                                for (var i = Math.min(multiStop, multiStart);
+                                        i <= Math.min(multiStop, multiStart) + (Math.abs(multiStop - multiStart)); i++) {
+                                    var thisPoly = myVisibleRows[i].entity.label;
+                                    var thisPolyID = myVisibleRows[i].entity.id;
+                                    var bFound = false;
+                                    for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+                                        if ($scope.selectedPolygon[j].id === thisPolyID) {
+                                            bFound = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!bFound) {
+                                        $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
+                                    }
+                                }
+                            }
+                            multiStart = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
+                        };
+                        
+                        //*********************************************************************************************************************
+                        //SELECTION METHODS
+
+                        /*
+                         * SELECT AREAS USING LEAFLETDRAW
+                         */
                         //Add Leaflet.Draw capabilities
                         var drawnItems;
                         LeafletDrawService.get_CircleCapability(Math.max.apply(null, $scope.possibleBands));
@@ -341,159 +498,13 @@ angular.module("RIF")
                             drawnItems.clearLayers();
                             leafletData.getMap("area").then(function (map) {
                                 map.addLayer(drawnItems);
-                            })
+                            });
                             $scope.input.bDrawing = false; //re-enable layer events
                         }
 
-                        function renderFeature(feature) {
-                            for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                if ($scope.selectedPolygon[i].id === feature) {
-                                    bFound = true;
-                                    //max possible is six bands according to specs
-                                    var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
-                                    return cb[$scope.selectedPolygon[i].band - 1];
-                                }
-                            }
-                            return '#F5F5F5'; //whitesmoke
-                        }
-
-                        //Functions to style topoJson on selection changes
-                        function style(feature) {
-                            return {
-                                fillColor: renderFeature(feature.properties.area_id),
-                                weight: 1,
-                                opacity: 1,
-                                color: 'gray',
-                                dashArray: '3',
-                                fillOpacity: $scope.transparency
-                            };
-                        }
-                        function handleLayer(layer) {
-                            layer.setStyle({
-                                fillColor: renderFeature(layer.feature.properties.area_id),
-                                fillOpacity: $scope.transparency
-                            });
-                        }
-                        $scope.changeOpacity = function () {
-                            $scope.input.transparency = $scope.transparency;
-                            $scope.topoLayer.eachLayer(handleLayer);
-                        };
-
-                        //Multiple select with shift
-                        //detect shift key (16) down
-                        var bShift = false;
-                        var multiStart = -1;
-                        var multiStop = -1;
-                        $scope.keyDown = function ($event) {
-                            if (!bShift && $event.keyCode === 16) {
-                                bShift = true;
-                            }
-                        };
-                        //detect shift key (16) up
-                        $scope.keyUp = function ($event) {
-                            if (bShift && $event.keyCode === 16) {
-                                bShift = false;
-                                multiStop = -1;
-                            }
-                        };
-
-                        //Table click event to update selectedPolygon 
-                        $scope.rowClick = function (row) {
-                            var myVisibleRows = $scope.gridApi.core.getVisibleRows();
-                            if (!bShift) {
-                                //We are doing a single click select on the table
-                                var thisPoly = row.entity.label;
-                                var thisPolyID = row.entity.id;
-                                var bFound = false;
-                                for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                    if ($scope.selectedPolygon[i].id === thisPolyID) {
-                                        bFound = true;
-                                        $scope.selectedPolygon.splice(i, 1);
-                                        break;
-                                    }
-                                }
-                                if (!bFound) {
-                                    $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
-                                }
-                            } else {
-                                //We are doing a multiple select on the table, shift key is down
-                                multiStop = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
-                                for (var i = Math.min(multiStop, multiStart);
-                                        i <= Math.min(multiStop, multiStart) + (Math.abs(multiStop - multiStart)); i++) {
-                                    var thisPoly = myVisibleRows[i].entity.label;
-                                    var thisPolyID = myVisibleRows[i].entity.id;
-                                    var bFound = false;
-                                    for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                                        if ($scope.selectedPolygon[j].id === thisPolyID) {
-                                            bFound = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!bFound) {
-                                        $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
-                                    }
-                                }
-                            }
-                            multiStart = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
-                        };
-
-                        //quick export leaflet panel
-                        $scope.saveLeaflet = function () {
-                            var thisLegend; //no legend
-                            var thisScale = document.getElementsByClassName("leaflet-control-scale leaflet-control")[0]; //the scale bar                                      
-                            html2canvas(thisScale, {
-                                onrendered: function (canvas) {
-                                    $scope.renderMap("area");
-                                    //the map
-                                    LeafletExportService.getLeafletExport("area", $scope.input.name, thisLegend, canvas);
-                                }
-                            });
-                        };
-
-                        //Clear all selection from map and table
-                        $scope.clear = function () {
-                            $scope.selectedPolygon.length = 0;
-                            $scope.input.selectedPolygon.length = 0;
-                            $scope.clearAOI();
-                        };
-
-                        //Select all in map and table
-                        $scope.selectAll = function () {
-                            $scope.selectedPolygon.length = 0;
-                            for (var i = 0; i < $scope.gridOptions.data.length; i++) {
-                                $scope.selectedPolygon.push({id: $scope.gridOptions.data[i].id, gid: $scope.gridOptions.data[i].id, label: $scope.gridOptions.data[i].label, band: $scope.currentBand});
-                            }
-                        };
-
-                        //Reset only the selected band back to 0
-                        $scope.clearBand = function () {
-                            var i = $scope.selectedPolygon.length;
-                            while (i--) {
-                                if ($scope.selectedPolygon[i].band === $scope.currentBand) {
-                                    $scope.selectedPolygon.splice(i, 1);
-                                }
-                            }
-                        };
-
-                        //Zoom to layer
-                        $scope.zoomToExtent = function () {
-                            leafletData.getMap("area").then(function (map) {
-                                map.fitBounds(maxbounds);
-                            });
-                        };
-
-                        //Show-hide centroids
-                        $scope.showCentroids = function () {
-                            leafletData.getMap("area").then(function (map) {
-                                if (map.hasLayer(centroidMarkers)) {
-                                    map.removeLayer(centroidMarkers);
-                                } else {
-                                    map.addLayer(centroidMarkers);
-                                }
-                            });
-                        };
-
-                        //Add a shapefile to select areas
+                        /*
+                         * SELECT AREAS WITH A SHAPEFILE (AOI)
+                         */
                         var shpfile = new L.layerGroup();
                         $scope.addAOI = function () {
                             $scope.modalHeader = "Upload Zipped AOI Shapefile";
@@ -577,16 +588,9 @@ angular.module("RIF")
                             }
                         };
 
-                        //remove AOI layer
-                        $scope.clearAOI = function () {
-                            leafletData.getMap("area").then(function (map) {
-                                if (map.hasLayer(shpfile)) {
-                                    map.removeLayer(shpfile);
-                                }
-                            });
-                        };
-
-                        //Update selectedPolygon from a user csv list
+                        /*
+                         * SELECT AREAS FROM A LIST, CSV
+                         */
                         $scope.openFromList = function () {
                             $scope.modalHeader = "Upload ID file";
                             $scope.accept = ".csv";
@@ -630,7 +634,6 @@ angular.module("RIF")
                                     $scope.$parent.$$childHead.$parent.$parent.$$childHead.showError("Could not read or process the file: Please check formatting");
                                 }
                             };
-
                             var modalInstance = $uibModal.open({
                                 animation: true,
                                 templateUrl: 'dashboards/submission/partials/rifp-dsub-fromfile.html',
@@ -640,7 +643,9 @@ angular.module("RIF")
                                 scope: $scope,
                                 keyboard: false
                             });
-                        };
+                        };                     
+                        //********************************************************************************************************
+
 
                         //This function fires all the rendering from UI events
                         //Watch selectedPolygon array for any changes

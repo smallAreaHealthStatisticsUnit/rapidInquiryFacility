@@ -30,9 +30,9 @@ Used by rifd-dsub-maptable.js
                 <li><a id="showCentroids" title="Show/hide centroids" ng-click="showCentroids()"></a></li>               
                 <li><a id="addAOI" title="Select by AOI layer" ng-click="addAOI()"></a></li>      
                 <li><a id="removeAOI" title="Clear AOI layer" ng-click="clearAOI()"></a></li>    
-                <li><a id="exportMap" title="Quick export map" ng-click="saveLeaflet()"></a></li>        
+                <li><a id="exportMap" title="Quick export map" leaflet-to-png mapid="area"></a></li>
                 <li>
-                    <input type="range" ng-model ="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
+                    <input type="range" ng-model="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
                 </li>
                 <li>
                     <label>Band number</label>

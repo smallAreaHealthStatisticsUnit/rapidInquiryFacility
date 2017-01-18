@@ -12,11 +12,6 @@ angular.module("RIF")
                         "_selected"];
                     var s = {
                         initial: true,
-//                        study: {'study_id': null, 'name': null},
-//                        sex: null,
-//                        selected: [],
-//                        center: {'zoom': 1, 'lng': 0, 'lat': 0},
-//                        transparency: 0.7,
                         center: {
                             'viewermap': {'zoom': 1, 'lng': 0, 'lat': 0}
                         },

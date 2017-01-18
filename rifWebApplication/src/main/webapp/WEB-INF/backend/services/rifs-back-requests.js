@@ -147,10 +147,10 @@ angular.module("RIF")
                     return $http.get(studyResultRetrievalURL + 'getCurrentStatusAllStudies?userID=' + username, config);
                 };
                 //results for viewer
-                self.getSmoothedResults = function (username, studyID, sex, year) {
-                    //http://localhost:8080/rifServices/studyResultRetrieval/getSmoothedResults?userID=kgarwood&studyID=1&sex=1&year=1990
-                    return $http.get(studyResultRetrievalURL + 'getSmoothedResults?userID=' + username + '&studyID=' + studyID +
-                            '&sex=' + sex + '&year=' + year, config);
+                self.getSmoothedResults = function (username, studyID, sex) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/getSmoothedResults?userID=kgarwood&studyID=1&sex=1
+                    //{"smoothed_results_header":["area_id","band_id","genders","observed","...
+                    return $http.get(studyResultRetrievalURL + 'getSmoothedResults?userID=' + username + '&studyID=' + studyID + '&sex=' + sex, config);
                 };
                 self.getAllPopulationPyramidData = function (username, studyID, year) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/getAllPopulationPyramidData?userID=kgarwood&studyID=1&year=1990

@@ -5,10 +5,10 @@
 /* global L, key, topojson, d3 */
 
 angular.module("RIF")
-        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', '$timeout', 'ViewerStateService',
-            'ChoroService', 'LeafletExportService', 'D3ToPNGService', 'MappingService',
-            function ($scope, user, leafletData, $timeout, ViewerStateService,
-                    ChoroService, LeafletExportService, D3ToPNGService, MappingService) {
+        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', '$timeout',
+            'ViewerStateService', 'ChoroService',
+            function ($scope, user, leafletData, $timeout,
+                    ViewerStateService, ChoroService) {
 
                 //Reference the child scope
                 $scope.child = {};
@@ -37,7 +37,7 @@ angular.module("RIF")
                         map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                     });
                     //Set initial map extents
-                    $scope.center = ViewerStateService.getState().center;
+                    $scope.center = ViewerStateService.getState().center['viewermap'];
 
                     //Fill study drop-downs
                     $scope.child.getStudies();
@@ -112,116 +112,22 @@ angular.module("RIF")
                 $scope.domain = {
                     "viewermap": []
                 };
-
-
-                /*
-                 * Leaflet Toolstrip
-                 */
-
-                //map layer opacity with slider
-                $scope.changeOpacity = function (mapID) {
-                    ViewerStateService.getState().transparency = $scope.transparency;
-                    $scope.geoJSON[mapID].eachLayer($scope.child.handleLayer);
-                };
-
-                //Clear all selection from map and table
-                $scope.clear = function () {
-                    $scope.thisPoly.length = 0;
-                };
-
-                //Zoom to layer DOUBLE click
-                $scope.zoomToExtent = function () {
-                    leafletData.getMap("viewermap").then(function (map) {
-                        map.fitBounds($scope.child.maxbounds);
-                    });
-                };
-
-                //Zoom to study extent SINGLE click
-                $scope.zoomToStudy = function (mapID) {
-                    var studyBounds = new L.LatLngBounds();
-                    $scope.geoJSON[mapID].eachLayer(function (layer) {
-                        //if area ID is in the attribute table
-                        for (var i = 0; i < $scope.child.tableData['viewermap'].length; i++) {
-                            if ($scope.child.tableData['viewermap'][i]['area_id'].indexOf(layer.feature.properties.area_id) !== -1) {
-                                studyBounds.extend(layer.getBounds());
-                            }
-                        }
-                    });
-                    leafletData.getMap('viewermap').then(function (map) {
-                        if (studyBounds.isValid()) {
-                            map.fitBounds(studyBounds);
-                        }
-                    });
-                };
-
-                //Zoom to results extent
-                $scope.zoomToSelected = function (mapID) {
-                    var studyBounds = new L.LatLngBounds();
-                    $scope.geoJSON[mapID].eachLayer(function (layer) {
-                        //if area ID is in the attribute table
-                        for (var i = 0; i < $scope.child.tableData['viewermap'].length; i++) {
-                            if ($scope.child.tableData['viewermap'][i]['area_id'] === layer.feature.properties.area_id) {
-                                if ($scope.child.tableData['viewermap'][i]['_selected'] === 1) {
-                                    studyBounds.extend(layer.getBounds());
-                                }
-                            }
-                        }
-                    });
-                    leafletData.getMap('viewermap').then(function (map) {
-                        if (studyBounds.isValid()) {
-                            map.fitBounds(studyBounds);
-                        }
-                    });
-                };
-
-                /*
-                 * Save Graphs and map to PNG
-                 */
-                //quick export leaflet panel
-                $scope.saveLeaflet = function () {
-                    var thisLegend = document.getElementsByClassName("info legend leaflet-control")[0]; //the legend
-                    var thisScale = document.getElementsByClassName("leaflet-control-scale leaflet-control")[0]; //the scale bar
-                    html2canvas(thisLegend, {
-                        onrendered: function (canvas) {
-                            var thisScaleCanvas;
-                            html2canvas(thisScale, {
-                                onrendered: function (canvas1) {
-                                    thisScaleCanvas = canvas1;
-                                    $scope.renderMap("viewermap");
-                                    LeafletExportService.getLeafletExport("viewermap", "resultsViewerMap", canvas, thisScaleCanvas);
-                                }
-                            });
-                        }
-                    });
-                };
-
-                //Save D3 to PNG           
-                $scope.saveD3Chart = function (chart) {
-                    var pngHeight = $scope.distHistoCurrentHeight * 3;
-                    var pngWidth = $scope.distHistoCurrentWidth * 3;
-                    var fileName = "histogram.png";
-                    if (chart === "#poppyramid") {
-                        pngHeight = $scope.pyramidCurrentHeight * 3;
-                        pngWidth = $scope.pyramidCurrentWidth * 3;
-                        fileName = "populationPyramid.png";
-                    }
-
-                    var svgString = D3ToPNGService.getGetSVGString(d3.select(chart)
-                            .attr("version", 1.1)
-                            .attr("xmlns", "http://www.w3.org/2000/svg")
-                            .node());
-
-                    D3ToPNGService.getSvgString2Image(svgString, pngWidth, pngHeight, 'png', save);
-
-                    function save(dataBlob, filesize) {
-                        saveAs(dataBlob, fileName); // FileSaver.js function
+                $scope.optionsd3 = {
+                    "poppyramid": {
+                        container: "poppyramid",
+                        element: "#hSplit2",
+                        filename: "populationPyramid.png"
+                    },
+                    "distHisto": {
+                        container: "distHisto",
+                        element: "#hSplit1",
+                        filename: "histogram.png"
                     }
                 };
 
                 /*
                  * D3
                  */
-
                 //Draw the attribute histogram
                 $scope.getD3chart = function (mapID, attribute) {
                     $scope.histoData["viewermap"].length = 0;
@@ -262,7 +168,6 @@ angular.module("RIF")
                 /*
                  * Specific to Attribute table
                  */
-
                 //UI-Grid setup options
                 $scope.viewerTableOptions = {
                     enableGridMenu: true,
@@ -367,7 +272,6 @@ angular.module("RIF")
                 /*
                  * Watch for Changes
                  */
-
                 //Watch selectedPolygon array for any changes
                 $scope.$watchCollection('thisPoly', function (newNames, oldNames) {
                     if (newNames === oldNames) {
