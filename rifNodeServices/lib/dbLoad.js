@@ -579,8 +579,26 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					fieldArray[l]														/* Column name */,
 					fieldDescArray[l]													/* Comment */), 
 				sqlArray, dbType);
-		}				
+		}			
 
+		// Add indexes to tiles table
+		var tilesIndexes = {
+			x_tile: "geolevel_id, zoomlevel, x",
+			y_tile: "geolevel_id, zoomlevel, x",
+			xy_tile: "geolevel_id, zoomlevel, x, y",
+			areaid_count: "areaid_count"
+		}
+		for (var key in tilesIndexes) {
+			var sqlStmt=new Sql("Add tiles index: t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_" + key, 
+				getSqlFromFile("create_index.sql", undefined /* Common */, 
+					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "_" + key		/* 1: Index name */,
+					(schema||"") + // Schema; e.g.rif_data. or "" 
+					"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 			/* 2: Table name */, 
+					tilesIndexes[key] 														/* 3: Index column(s) */
+				), 
+				sqlArray, dbType); 
+		}
+					
 		var dataSchema=schema;
 		var appSchema;
 		
