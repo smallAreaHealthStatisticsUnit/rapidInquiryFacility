@@ -5590,7 +5590,19 @@ COMMENT /*
  */
 	ON COLUMN t_tiles_sahsuland.areaid_count IS 'Total number of areaIDs (geoJSON features)';
 
--- SQL statement 339: Create tiles view >>>
+-- SQL statement 339: Add tiles index: t_tiles_sahsuland_x_tile >>>
+CREATE INDEX t_tiles_sahsuland_x_tile ON t_tiles_sahsuland (geolevel_id, zoomlevel, x);
+
+-- SQL statement 340: Add tiles index: t_tiles_sahsuland_y_tile >>>
+CREATE INDEX t_tiles_sahsuland_y_tile ON t_tiles_sahsuland (geolevel_id, zoomlevel, x);
+
+-- SQL statement 341: Add tiles index: t_tiles_sahsuland_xy_tile >>>
+CREATE INDEX t_tiles_sahsuland_xy_tile ON t_tiles_sahsuland (geolevel_id, zoomlevel, x, y);
+
+-- SQL statement 342: Add tiles index: t_tiles_sahsuland_areaid_count >>>
+CREATE INDEX t_tiles_sahsuland_areaid_count ON t_tiles_sahsuland (areaid_count);
+
+-- SQL statement 343: Create tiles view >>>
 /*
  * SQL statement name: 	create_tiles_view.sql
  * Type:				Postgres/PostGIS SQL statement
@@ -5660,14 +5672,13 @@ SELECT z.geography,
             ELSE 0
        END AS no_area_ids, 
        COALESCE(h1.tile_id, 
-				h2.tile_id, 
 				z.geolevel_id::VARCHAR||'_'||z.geolevel_name||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR) AS tile_id,
        z.x,
        z.y,
        z.zoomlevel,
        COALESCE(h1.optimised_topojson, 
 				h2.optimised_topojson, 
-				'{"type": "FeatureCollection","features":[]}'::JSON) AS optimised_topojson
+				'{"type": "FeatureCollection","features":[]}'::JSON /* NULL geojson */) AS optimised_topojson
   FROM z 
 		 LEFT JOIN t_tiles_sahsuland h1 ON ( /* Multiple area ids in the geolevel */
 				z.areaid_count > 1 AND
@@ -5682,7 +5693,7 @@ SELECT z.geography,
 				h2.y           = 0 AND 
 				h2.geolevel_id = 1);
 
--- SQL statement 340: Comment tiles view >>>
+-- SQL statement 344: Comment tiles view >>>
 COMMENT /*
  * SQL statement name: 	comment_view.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -5695,66 +5706,6 @@ COMMENT /*
  * Note:				%% becomes % after substitution
  */
 	ON VIEW tiles_sahsuland IS 'Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!';
-
--- SQL statement 341: Comment tiles view column >>>
-COMMENT /*
- * SQL statement name: 	comment_view_column.sql
- * Type:				Postgres/PostGIS psql
- * Parameters:
- *						1: view; e.g. tiles_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tiles_sahsuland.geography IS 'Geography';
-
--- SQL statement 342: Comment tiles view column >>>
-COMMENT /*
- * SQL statement name: 	comment_view_column.sql
- * Type:				Postgres/PostGIS psql
- * Parameters:
- *						1: view; e.g. tiles_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tiles_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
-
--- SQL statement 343: Comment tiles view column >>>
-COMMENT /*
- * SQL statement name: 	comment_view_column.sql
- * Type:				Postgres/PostGIS psql
- * Parameters:
- *						1: view; e.g. tiles_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tiles_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
-
--- SQL statement 344: Comment tiles view column >>>
-COMMENT /*
- * SQL statement name: 	comment_view_column.sql
- * Type:				Postgres/PostGIS psql
- * Parameters:
- *						1: view; e.g. tiles_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tiles_sahsuland.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
 
 -- SQL statement 345: Comment tiles view column >>>
 COMMENT /*
@@ -5769,7 +5720,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tiles_sahsuland.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
+	ON COLUMN tiles_sahsuland.geography IS 'Geography';
 
 -- SQL statement 346: Comment tiles view column >>>
 COMMENT /*
@@ -5784,7 +5735,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tiles_sahsuland.optimised_topojson IS 'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.';
+	ON COLUMN tiles_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
 
 -- SQL statement 347: Comment tiles view column >>>
 COMMENT /*
@@ -5799,7 +5750,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tiles_sahsuland.tile_id IS 'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>';
+	ON COLUMN tiles_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
 
 -- SQL statement 348: Comment tiles view column >>>
 COMMENT /*
@@ -5814,9 +5765,69 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tiles_sahsuland.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
+	ON COLUMN tiles_sahsuland.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
 
 -- SQL statement 349: Comment tiles view column >>>
+COMMENT /*
+ * SQL statement name: 	comment_view_column.sql
+ * Type:				Postgres/PostGIS psql
+ * Parameters:
+ *						1: view; e.g. tiles_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tiles_sahsuland.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
+
+-- SQL statement 350: Comment tiles view column >>>
+COMMENT /*
+ * SQL statement name: 	comment_view_column.sql
+ * Type:				Postgres/PostGIS psql
+ * Parameters:
+ *						1: view; e.g. tiles_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tiles_sahsuland.optimised_topojson IS 'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.';
+
+-- SQL statement 351: Comment tiles view column >>>
+COMMENT /*
+ * SQL statement name: 	comment_view_column.sql
+ * Type:				Postgres/PostGIS psql
+ * Parameters:
+ *						1: view; e.g. tiles_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tiles_sahsuland.tile_id IS 'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>';
+
+-- SQL statement 352: Comment tiles view column >>>
+COMMENT /*
+ * SQL statement name: 	comment_view_column.sql
+ * Type:				Postgres/PostGIS psql
+ * Parameters:
+ *						1: view; e.g. tiles_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tiles_sahsuland.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
+
+-- SQL statement 353: Comment tiles view column >>>
 COMMENT /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Postgres/PostGIS psql
@@ -5835,10 +5846,10 @@ COMMENT /*
 -- Create tile limits table
 --
 
--- SQL statement 351: Drop table tile_limits_sahsuland >>>
+-- SQL statement 355: Drop table tile_limits_sahsuland >>>
 DROP TABLE IF EXISTS tile_limits_sahsuland;
 
--- SQL statement 352: Create table tile_limits_sahsuland >>>
+-- SQL statement 356: Create table tile_limits_sahsuland >>>
 /*
  * SQL statement name: 	create_tile_limits_table.sql
  * Type:				Postgres/PostGIS psql
@@ -5887,7 +5898,7 @@ SELECT d.*,
        ST_MakeEnvelope(d.x_min, d.y_min, d.x_max, d.y_max, 4326) AS bbox
   FROM d;
 
--- SQL statement 353: Comment tile limits table >>>
+-- SQL statement 357: Comment tile limits table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -5900,66 +5911,6 @@ COMMENT /*
  * Note:				%% becomes % after substitution
  */
 	ON TABLE tile_limits_sahsuland IS 'Tile limits';
-
--- SQL statement 354: Comment tile limits table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_limits_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at max zooomlevel (11)';
-
--- SQL statement 355: Comment tile limits table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_limits_sahsuland.x_min IS 'Min X (longitude)';
-
--- SQL statement 356: Comment tile limits table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_limits_sahsuland.x_max IS 'Max X (longitude)';
-
--- SQL statement 357: Comment tile limits table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_limits_sahsuland.y_min IS 'Min Y (latitude)';
 
 -- SQL statement 358: Comment tile limits table column >>>
 COMMENT /*
@@ -5974,7 +5925,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_limits_sahsuland.y_max IS 'Max Y (latitude)';
+	ON COLUMN tile_limits_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at max zooomlevel (11)';
 
 -- SQL statement 359: Comment tile limits table column >>>
 COMMENT /*
@@ -5989,7 +5940,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_limits_sahsuland.y_mintile IS 'Min Y tile number (latitude)';
+	ON COLUMN tile_limits_sahsuland.x_min IS 'Min X (longitude)';
 
 -- SQL statement 360: Comment tile limits table column >>>
 COMMENT /*
@@ -6004,7 +5955,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_limits_sahsuland.y_maxtile IS 'Max Y tile number (latitude)';
+	ON COLUMN tile_limits_sahsuland.x_max IS 'Max X (longitude)';
 
 -- SQL statement 361: Comment tile limits table column >>>
 COMMENT /*
@@ -6019,7 +5970,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_limits_sahsuland.x_mintile IS 'Min X tile number (longitude)';
+	ON COLUMN tile_limits_sahsuland.y_min IS 'Min Y (latitude)';
 
 -- SQL statement 362: Comment tile limits table column >>>
 COMMENT /*
@@ -6034,7 +5985,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_limits_sahsuland.x_maxtile IS 'Max X tile number (longitude)';
+	ON COLUMN tile_limits_sahsuland.y_max IS 'Max Y (latitude)';
 
 -- SQL statement 363: Comment tile limits table column >>>
 COMMENT /*
@@ -6049,21 +6000,81 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
+	ON COLUMN tile_limits_sahsuland.y_mintile IS 'Min Y tile number (latitude)';
+
+-- SQL statement 364: Comment tile limits table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_limits_sahsuland.y_maxtile IS 'Max Y tile number (latitude)';
+
+-- SQL statement 365: Comment tile limits table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_limits_sahsuland.x_mintile IS 'Min X tile number (longitude)';
+
+-- SQL statement 366: Comment tile limits table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_limits_sahsuland.x_maxtile IS 'Max X tile number (longitude)';
+
+-- SQL statement 367: Comment tile limits table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
 	ON COLUMN tile_limits_sahsuland.bbox IS 'Bounding box polygon for geolevel_id 1 area';
 
--- SQL statement 364: Add primary key >>>
+-- SQL statement 368: Add primary key >>>
 ALTER TABLE tile_limits_sahsuland ADD PRIMARY KEY (zoomlevel);
 
--- SQL statement 365: Analyze table >>>
+-- SQL statement 369: Analyze table >>>
 ANALYZE tile_limits_sahsuland;
 
--- SQL statement 366: Analyze table >>>
+-- SQL statement 370: Analyze table >>>
 SELECT zoomlevel, x_min, x_max, y_min, y_max, y_mintile, y_maxtile, x_mintile, x_maxtile FROM tile_limits_sahsuland;
 
--- SQL statement 367: Drop table tile_intersects_sahsuland >>>
+-- SQL statement 371: Drop table tile_intersects_sahsuland >>>
 DROP TABLE IF EXISTS tile_intersects_sahsuland CASCADE;
 
--- SQL statement 368: Create tile intersects table >>>
+-- SQL statement 372: Create tile intersects table >>>
 /*
  * SQL statement name: 	create_tile_intersects_table.sql
  * Type:				Common SQL statement
@@ -6085,7 +6096,7 @@ CREATE TABLE tile_intersects_sahsuland (
 	within					BOOLEAN				NOT NULL
 );
 
--- SQL statement 369: Add geometry column: bbox >>>
+-- SQL statement 373: Add geometry column: bbox >>>
 /*
  * SQL statement name: 	add_geometry_column2.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -6103,7 +6114,7 @@ SELECT AddGeometryColumn('tile_intersects_sahsuland','bbox', 4326, 'POLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 370: Add geometry column: geom >>>
+-- SQL statement 374: Add geometry column: geom >>>
 /*
  * SQL statement name: 	add_geometry_column2.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -6121,7 +6132,7 @@ SELECT AddGeometryColumn('tile_intersects_sahsuland','geom', 4326, 'MULTIPOLYGON
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 371: Comment tile intersects table >>>
+-- SQL statement 375: Comment tile intersects table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -6134,66 +6145,6 @@ COMMENT /*
  * Note:				%% becomes % after substitution
  */
 	ON TABLE tile_intersects_sahsuland IS 'Tile area id intersects';
-
--- SQL statement 372: Comment tile intersects table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_intersects_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
-
--- SQL statement 373: Comment tile intersects table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_intersects_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
-
--- SQL statement 374: Comment tile intersects table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_intersects_sahsuland.areaid IS 'Area ID';
-
--- SQL statement 375: Comment tile intersects table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_intersects_sahsuland.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
 
 -- SQL statement 376: Comment tile intersects table column >>>
 COMMENT /*
@@ -6208,7 +6159,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_intersects_sahsuland.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
+	ON COLUMN tile_intersects_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
 
 -- SQL statement 377: Comment tile intersects table column >>>
 COMMENT /*
@@ -6223,7 +6174,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_intersects_sahsuland.optimised_geojson IS 'Tile areaid intersect multipolygon in GeoJSON format, optimised for zoomlevel N.';
+	ON COLUMN tile_intersects_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
 
 -- SQL statement 378: Comment tile intersects table column >>>
 COMMENT /*
@@ -6238,7 +6189,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_intersects_sahsuland.within IS 'Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.';
+	ON COLUMN tile_intersects_sahsuland.areaid IS 'Area ID';
 
 -- SQL statement 379: Comment tile intersects table column >>>
 COMMENT /*
@@ -6253,7 +6204,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_intersects_sahsuland.bbox IS 'Bounding box of tile as a polygon.';
+	ON COLUMN tile_intersects_sahsuland.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
 
 -- SQL statement 380: Comment tile intersects table column >>>
 COMMENT /*
@@ -6268,9 +6219,69 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
+	ON COLUMN tile_intersects_sahsuland.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
+
+-- SQL statement 381: Comment tile intersects table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_intersects_sahsuland.optimised_geojson IS 'Tile areaid intersect multipolygon in GeoJSON format, optimised for zoomlevel N.';
+
+-- SQL statement 382: Comment tile intersects table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_intersects_sahsuland.within IS 'Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.';
+
+-- SQL statement 383: Comment tile intersects table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_intersects_sahsuland.bbox IS 'Bounding box of tile as a polygon.';
+
+-- SQL statement 384: Comment tile intersects table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
 	ON COLUMN tile_intersects_sahsuland.geom IS 'Geometry of area.';
 
--- SQL statement 381: Create partitioned tables and insert function for tile intersects table; comment partitioned tables and columns >>>
+-- SQL statement 385: Create partitioned tables and insert function for tile intersects table; comment partitioned tables and columns >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 /*
@@ -6388,7 +6399,7 @@ BEGIN
 END;
 $$ ;
 
--- SQL statement 382: Partition tile intersects table: insert trigger >>>
+-- SQL statement 386: Partition tile intersects table: insert trigger >>>
 /*
  * SQL statement name: 	partition_trigger.sql
  * Type:				Postgres/PostGIS psql
@@ -6402,7 +6413,7 @@ $$ ;
     BEFORE INSERT ON tile_intersects_sahsuland
     FOR EACH ROW EXECUTE PROCEDURE tile_intersects_sahsuland_insert_trigger();
 
--- SQL statement 383: INSERT into tile intersects table >>>
+-- SQL statement 387: INSERT into tile intersects table >>>
 /*
  * SQL statement name: 	tile_intersects_insert.sql
  * Type:				Postgres/PostGIS SQL
@@ -6467,13 +6478,13 @@ SELECT c.geolevel_id,
   FROM c
  ORDER BY c.geolevel_id, c.zoomlevel, c.x, c.y;
 
--- SQL statement 384: Add primary key >>>
+-- SQL statement 388: Add primary key >>>
 ALTER TABLE tile_intersects_sahsuland ADD PRIMARY KEY (geolevel_id, zoomlevel, areaid, x, y);
 
--- SQL statement 385: Analyze table >>>
+-- SQL statement 389: Analyze table >>>
 ANALYZE tile_intersects_sahsuland;
 
--- SQL statement 386: SELECT from tile intersects table >>>
+-- SQL statement 390: SELECT from tile intersects table >>>
 /*
  * SQL statement name: 	tile_intersects_select.sql
  * Type:				Postgres/PostGIS SQL
@@ -6500,7 +6511,7 @@ SELECT geolevel_id,
   FROM tile_intersects_sahsuland
  WHERE zoomlevel = 0 AND geolevel_id = 1;
 
--- SQL statement 387: Create tile intersects table INSERT function >>>
+-- SQL statement 391: Create tile intersects table INSERT function >>>
 CREATE OR REPLACE FUNCTION tileMaker_intersector_sahsuland(
 	l_geolevel_id INTEGER, 
 	l_zoomlevel INTEGER, 
@@ -6620,7 +6631,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
--- SQL statement 388: Create second tile intersects table INSERT function (simplification errors) >>>
+-- SQL statement 392: Create second tile intersects table INSERT function (simplification errors) >>>
 CREATE OR REPLACE FUNCTION tileMaker_intersector2_sahsuland(
 	l_geolevel_id INTEGER, 
 	l_zoomlevel INTEGER, 
@@ -6768,7 +6779,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
--- SQL statement 389: Create tiles table INSERT function (tile aggregator) >>>
+-- SQL statement 393: Create tiles table INSERT function (tile aggregator) >>>
 CREATE OR REPLACE FUNCTION tileMaker_aggregator_sahsuland(
 	l_geolevel_id INTEGER, 
 	l_zoomlevel INTEGER,  
@@ -6857,7 +6868,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
--- SQL statement 390: Create tiles table INSERT function (tile aggregator) >>>
+-- SQL statement 394: Create tiles table INSERT function (tile aggregator) >>>
 /*
  * SQL statement name: 	tileMaker_main_function.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -6985,7 +6996,7 @@ BEGIN
 END;
 $$;
 
--- SQL statement 391: Tile intersects table % savings >>>
+-- SQL statement 395: Tile intersects table % savings >>>
 /*
  * SQL statement name: 	tile_intersects_select2.sql
  * Type:				Postgres/PostGIS SQL
@@ -7031,101 +7042,101 @@ SELECT geolevel_id, zoomlevel,
  GROUP BY geolevel_id, zoomlevel
  ORDER BY 1, 2;
 
--- SQL statement 392: Commit transaction >>>
+-- SQL statement 396: Commit transaction >>>
 END;
 
 --
 -- Analyze tables
 --
 
--- SQL statement 394: Describe table sahsu_grd_level1 >>>
+-- SQL statement 398: Describe table sahsu_grd_level1 >>>
 \dS+ sahsu_grd_level1;
 
--- SQL statement 395: Analyze table sahsu_grd_level1 >>>
+-- SQL statement 399: Analyze table sahsu_grd_level1 >>>
 VACUUM ANALYZE sahsu_grd_level1;
 
--- SQL statement 396: Describe table lookup_sahsu_grd_level1 >>>
+-- SQL statement 400: Describe table lookup_sahsu_grd_level1 >>>
 \dS+ lookup_sahsu_grd_level1;
 
--- SQL statement 397: Analyze table lookup_sahsu_grd_level1 >>>
+-- SQL statement 401: Analyze table lookup_sahsu_grd_level1 >>>
 VACUUM ANALYZE lookup_sahsu_grd_level1;
 
--- SQL statement 398: Describe table sahsu_grd_level2 >>>
+-- SQL statement 402: Describe table sahsu_grd_level2 >>>
 \dS+ sahsu_grd_level2;
 
--- SQL statement 399: Analyze table sahsu_grd_level2 >>>
+-- SQL statement 403: Analyze table sahsu_grd_level2 >>>
 VACUUM ANALYZE sahsu_grd_level2;
 
--- SQL statement 400: Describe table lookup_sahsu_grd_level2 >>>
+-- SQL statement 404: Describe table lookup_sahsu_grd_level2 >>>
 \dS+ lookup_sahsu_grd_level2;
 
--- SQL statement 401: Analyze table lookup_sahsu_grd_level2 >>>
+-- SQL statement 405: Analyze table lookup_sahsu_grd_level2 >>>
 VACUUM ANALYZE lookup_sahsu_grd_level2;
 
--- SQL statement 402: Describe table sahsu_grd_level3 >>>
+-- SQL statement 406: Describe table sahsu_grd_level3 >>>
 \dS+ sahsu_grd_level3;
 
--- SQL statement 403: Analyze table sahsu_grd_level3 >>>
+-- SQL statement 407: Analyze table sahsu_grd_level3 >>>
 VACUUM ANALYZE sahsu_grd_level3;
 
--- SQL statement 404: Describe table lookup_sahsu_grd_level3 >>>
+-- SQL statement 408: Describe table lookup_sahsu_grd_level3 >>>
 \dS+ lookup_sahsu_grd_level3;
 
--- SQL statement 405: Analyze table lookup_sahsu_grd_level3 >>>
+-- SQL statement 409: Analyze table lookup_sahsu_grd_level3 >>>
 VACUUM ANALYZE lookup_sahsu_grd_level3;
 
--- SQL statement 406: Describe table sahsu_grd_level4 >>>
+-- SQL statement 410: Describe table sahsu_grd_level4 >>>
 \dS+ sahsu_grd_level4;
 
--- SQL statement 407: Analyze table sahsu_grd_level4 >>>
+-- SQL statement 411: Analyze table sahsu_grd_level4 >>>
 VACUUM ANALYZE sahsu_grd_level4;
 
--- SQL statement 408: Describe table lookup_sahsu_grd_level4 >>>
+-- SQL statement 412: Describe table lookup_sahsu_grd_level4 >>>
 \dS+ lookup_sahsu_grd_level4;
 
--- SQL statement 409: Analyze table lookup_sahsu_grd_level4 >>>
+-- SQL statement 413: Analyze table lookup_sahsu_grd_level4 >>>
 VACUUM ANALYZE lookup_sahsu_grd_level4;
 
--- SQL statement 410: Describe table geolevels_sahsuland >>>
+-- SQL statement 414: Describe table geolevels_sahsuland >>>
 \dS+ geolevels_sahsuland;
 
--- SQL statement 411: Analyze table geolevels_sahsuland >>>
+-- SQL statement 415: Analyze table geolevels_sahsuland >>>
 VACUUM ANALYZE geolevels_sahsuland;
 
--- SQL statement 412: Describe table geography_sahsuland >>>
+-- SQL statement 416: Describe table geography_sahsuland >>>
 \dS+ geography_sahsuland;
 
--- SQL statement 413: Analyze table geography_sahsuland >>>
+-- SQL statement 417: Analyze table geography_sahsuland >>>
 VACUUM ANALYZE geography_sahsuland;
 
--- SQL statement 414: Describe table hierarchy_sahsuland >>>
+-- SQL statement 418: Describe table hierarchy_sahsuland >>>
 \dS+ hierarchy_sahsuland;
 
--- SQL statement 415: Analyze table hierarchy_sahsuland >>>
+-- SQL statement 419: Analyze table hierarchy_sahsuland >>>
 VACUUM ANALYZE hierarchy_sahsuland;
 
--- SQL statement 416: Describe table geometry_sahsuland >>>
+-- SQL statement 420: Describe table geometry_sahsuland >>>
 \dS+ geometry_sahsuland;
 
--- SQL statement 417: Analyze table geometry_sahsuland >>>
+-- SQL statement 421: Analyze table geometry_sahsuland >>>
 VACUUM ANALYZE geometry_sahsuland;
 
--- SQL statement 418: Describe table tile_intersects_sahsuland >>>
+-- SQL statement 422: Describe table tile_intersects_sahsuland >>>
 \dS+ tile_intersects_sahsuland;
 
--- SQL statement 419: Analyze table tile_intersects_sahsuland >>>
+-- SQL statement 423: Analyze table tile_intersects_sahsuland >>>
 VACUUM ANALYZE tile_intersects_sahsuland;
 
--- SQL statement 420: Describe table tile_limits_sahsuland >>>
+-- SQL statement 424: Describe table tile_limits_sahsuland >>>
 \dS+ tile_limits_sahsuland;
 
--- SQL statement 421: Analyze table tile_limits_sahsuland >>>
+-- SQL statement 425: Analyze table tile_limits_sahsuland >>>
 VACUUM ANALYZE tile_limits_sahsuland;
 
--- SQL statement 422: Describe table t_tiles_sahsuland >>>
+-- SQL statement 426: Describe table t_tiles_sahsuland >>>
 \dS+ t_tiles_sahsuland;
 
--- SQL statement 423: Analyze table t_tiles_sahsuland >>>
+-- SQL statement 427: Analyze table t_tiles_sahsuland >>>
 VACUUM ANALYZE t_tiles_sahsuland;
 
 

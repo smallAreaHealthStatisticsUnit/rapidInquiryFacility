@@ -67,14 +67,13 @@ SELECT z.geography,
             ELSE 0
        END AS no_area_ids, 
        COALESCE(h1.tile_id, 
-				h2.tile_id, 
 				z.geolevel_id::VARCHAR||'_'||z.geolevel_name||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR) AS tile_id,
        z.x,
        z.y,
        z.zoomlevel,
        COALESCE(h1.optimised_topojson, 
 				h2.optimised_topojson, 
-				'{"type": "FeatureCollection","features":[]}'::JSON) AS optimised_topojson
+				'{"type": "FeatureCollection","features":[]}'::JSON /* NULL geojson */) AS optimised_topojson
   FROM z 
 		 LEFT JOIN %4 h1 ON ( /* Multiple area ids in the geolevel */
 				z.areaid_count > 1 AND
