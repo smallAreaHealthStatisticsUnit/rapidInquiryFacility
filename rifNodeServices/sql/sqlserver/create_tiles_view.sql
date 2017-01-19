@@ -47,16 +47,6 @@ WITH a AS (
                ex.xy_series
           FROM c,
                ex 
-), z AS ( 
-		SELECT ey.geolevel_name,
-			   ey.areaid_count,
-               ey.geolevel_id,
-               ey.geography,
-               ex.zoomlevel,
-               ex.xy_series AS x,
-               ey.xy_series AS y
-          FROM ey, ex /* Cross join */
-         WHERE ex.zoomlevel = ey.zoomlevel
 )
 SELECT z.geography,
        z.geolevel_id,
@@ -82,7 +72,17 @@ SELECT z.geography,
        COALESCE(h1.optimised_topojson, 
 				h2.optimised_topojson, 
 				'{"type": "FeatureCollection","features":[]}' /* NULL geojson */) AS optimised_topojson
-  FROM z 
+  FROM ( 
+		SELECT ey.geolevel_name,
+			   ey.areaid_count,
+               ey.geolevel_id,
+               ey.geography,
+               ex.zoomlevel,
+               ex.xy_series AS x,
+               ey.xy_series AS y
+          FROM ey, ex /* Cross join */
+         WHERE ex.zoomlevel = ey.zoomlevel
+		) z
 		 LEFT JOIN %6%4 h1 ON ( /* Multiple area ids in the geolevel */
 				z.areaid_count > 1 AND
 				z.zoomlevel    = h1.zoomlevel AND 
