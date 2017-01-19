@@ -3,8 +3,9 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
 import rifDataLoaderTool.targetDBScriptGenerator.*;
+import rifDataLoaderTool.targetDBScriptGenerator.pg.PGDataLoadingScriptGenerator;
+import rifDataLoaderTool.targetDBScriptGenerator.ms.MSDataLoadingScriptGenerator;
 
 
 import rifGenericLibrary.businessConceptLayer.User;
@@ -145,12 +146,23 @@ public class LinearWorkflowEnactor {
 		System.out.println("Finished workflow!");
 		
 		//Now generate a single script
-		PGDataLoadingScriptGenerator scriptGenerator
+
+		PGDataLoadingScriptGenerator pgScriptGenerator
 			= new PGDataLoadingScriptGenerator();
 		
-		scriptGenerator.writeScript(
+		pgScriptGenerator.writeScript(
 			runDirectory, 
 			dataLoaderToolConfiguration);
+		
+		MSDataLoadingScriptGenerator msScriptGenerator
+			= new MSDataLoadingScriptGenerator();
+		
+		msScriptGenerator.writeScript(
+			runDirectory, 
+			dataLoaderToolConfiguration);
+		
+		
+		
 	}
 
 	private void initialiseJobRunEnvironment(final File exportDirectory) 

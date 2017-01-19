@@ -1,4 +1,4 @@
-package rifDataLoaderTool.targetDBScriptGenerator;
+package rifDataLoaderTool.targetDBScriptGenerator.ms;
 
 import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
@@ -55,7 +55,7 @@ import java.util.ArrayList;
  *
  */
 
-public class PGHealthThemeScriptGenerator {
+public class MSHealthThemeScriptGenerator {
 
 	// ==========================================
 	// Section Constants
@@ -69,7 +69,7 @@ public class PGHealthThemeScriptGenerator {
 	// Section Construction
 	// ==========================================
 
-	public PGHealthThemeScriptGenerator() {
+	public MSHealthThemeScriptGenerator() {
 
 	}
 
