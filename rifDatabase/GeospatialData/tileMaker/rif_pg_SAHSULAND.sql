@@ -388,16 +388,16 @@ COMMENT /*
 --
 
 -- SQL statement 24: Load geolevel lookup table: lookup_sahsu_grd_level1 >>>
-\copy lookup_sahsu_grd_level1 FROM 'lookup_sahsu_grd_level1.csv' DELIMITER ',' CSV HEADER;
+\copy lookup_sahsu_grd_level1 FROM '../../GeospatialData/tileMaker/lookup_sahsu_grd_level1.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 25: Load geolevel lookup table: lookup_sahsu_grd_level2 >>>
-\copy lookup_sahsu_grd_level2 FROM 'lookup_sahsu_grd_level2.csv' DELIMITER ',' CSV HEADER;
+\copy lookup_sahsu_grd_level2 FROM '../../GeospatialData/tileMaker/lookup_sahsu_grd_level2.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 26: Load geolevel lookup table: lookup_sahsu_grd_level3 >>>
-\copy lookup_sahsu_grd_level3 FROM 'lookup_sahsu_grd_level3.csv' DELIMITER ',' CSV HEADER;
+\copy lookup_sahsu_grd_level3 FROM '../../GeospatialData/tileMaker/lookup_sahsu_grd_level3.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 27: Load geolevel lookup table: lookup_sahsu_grd_level4 >>>
-\copy lookup_sahsu_grd_level4 FROM 'lookup_sahsu_grd_level4.csv' DELIMITER ',' CSV HEADER;
+\copy lookup_sahsu_grd_level4 FROM '../../GeospatialData/tileMaker/lookup_sahsu_grd_level4.csv' DELIMITER ',' CSV HEADER;
 
 --
 -- Hierarchy table
@@ -501,7 +501,7 @@ COMMENT /*
 --
 
 -- SQL statement 40: Load hierarchy table from CSV file >>>
-\copy hierarchy_sahsuland FROM 'hierarchy_sahsuland.csv' DELIMITER ',' CSV HEADER;
+\copy hierarchy_sahsuland FROM '../../GeospatialData/tileMaker/hierarchy_sahsuland.csv' DELIMITER ',' CSV HEADER;
 
 --
 -- Create geometry table
@@ -739,7 +739,7 @@ COMMENT /*
 	ON COLUMN geometry_sahsuland.wkt IS 'Well known text';
 
 -- SQL statement 55: Load geometry table from CSV file >>>
-\copy geometry_sahsuland(geolevel_id, areaid, zoomlevel, wkt) FROM 'pg_geometry_sahsuland.csv' DELIMITER ',' CSV HEADER;
+\copy geometry_sahsuland(geolevel_id, areaid, zoomlevel, wkt) FROM '../../GeospatialData/tileMaker/pg_geometry_sahsuland.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 56: Add WKT column >>>
 /*
@@ -1979,16 +1979,16 @@ COMMENT /*
 --
 
 -- SQL statement 121: Load tiles table from geolevel CSV files >>>
-\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM 't_tiles_sahsu_grd_level1.csv' DELIMITER ',' CSV HEADER;
+\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM '../../GeospatialData/tileMaker/t_tiles_sahsu_grd_level1.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 122: Load tiles table from geolevel CSV files >>>
-\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM 't_tiles_sahsu_grd_level2.csv' DELIMITER ',' CSV HEADER;
+\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM '../../GeospatialData/tileMaker/t_tiles_sahsu_grd_level2.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 123: Load tiles table from geolevel CSV files >>>
-\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM 't_tiles_sahsu_grd_level3.csv' DELIMITER ',' CSV HEADER;
+\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM '../../GeospatialData/tileMaker/t_tiles_sahsu_grd_level3.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 124: Load tiles table from geolevel CSV files >>>
-\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM 't_tiles_sahsu_grd_level4.csv' DELIMITER ',' CSV HEADER;
+\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM '../../GeospatialData/tileMaker/t_tiles_sahsu_grd_level4.csv' DELIMITER ',' CSV HEADER;
 
 --
 -- Analyze tables

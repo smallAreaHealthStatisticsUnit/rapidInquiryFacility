@@ -849,6 +849,7 @@ RangeError: Invalid string length
 
 ####  TODO list:
 
+* Relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland)
 * JSZip 3.0 upgrade required (forced to 2.6.0) for present
 * SQL load script generator: still todo, all can wait:
   * Add search path to user schema, check user schema exists, to Postgres version
