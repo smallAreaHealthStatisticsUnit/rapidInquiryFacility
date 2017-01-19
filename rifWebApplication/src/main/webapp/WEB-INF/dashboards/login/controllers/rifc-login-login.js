@@ -4,9 +4,11 @@
 
 angular.module("RIF")
         .controller('LoginCtrl', ['$scope', 'user', '$injector',
-            'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService', 'StatsStateService',
+            'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService',
+            'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService',
             function ($scope, user, $injector,
-                    SubmissionStateService, StudyAreaStateService, CompAreaStateService, ParameterStateService, StatsStateService) {
+                    SubmissionStateService, StudyAreaStateService, CompAreaStateService,
+                    ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
 
                 $scope.username = "kgarwood";
                 $scope.password = "kgarwood";
@@ -17,9 +19,10 @@ angular.module("RIF")
                     if (!$scope.showSpinner) {
                         $scope.showSpinner = true;
                         //check if already logged on
-                        //(TODO: In development, this bypasses password)
-                      //  user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
-                          user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                        user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
+
+                        //In development, this bypasses password)
+                        // user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
                     }
                 };
 
@@ -47,6 +50,8 @@ angular.module("RIF")
                             CompAreaStateService.resetState();
                             ParameterStateService.resetState();
                             StatsStateService.resetState();
+                            ViewerStateService.resetState();
+                            MappingStateService.resetState();
 
                             //initialise the taxonomy service
                             user.initialiseService().then(handleInitialise, handleInitialiseError);

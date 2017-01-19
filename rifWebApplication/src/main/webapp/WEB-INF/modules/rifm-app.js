@@ -57,7 +57,7 @@ angular.module("RIF",
             "ngMaterial"
         ]
         )
-        .config(['$stateProvider', '$urlRouterProvider',
+        .config(['$stateProvider', '$urlRouterProvider', 
             function ($stateProvider, $urlRouterProvider) {
 
                 //Extend Leaflet to handle topojson
@@ -96,7 +96,7 @@ angular.module("RIF",
                             templateUrl: "dashboards/mapping/partials/rifp-dmap-main.html",
                             controller: 'MappingCtrl'
                         });
-                $urlRouterProvider.otherwise("/login"); 
+                $urlRouterProvider.otherwise("/login");
             }])
         .run(function ($rootScope, $state) {
             $rootScope.$state = $state;

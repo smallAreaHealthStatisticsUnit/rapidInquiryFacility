@@ -20,12 +20,38 @@ angular.module("RIF")
                     restrict: 'AE',
                     link: function ($scope) {
 
+                        //TODO: These will be input to get Tiles Method
+                        //pad(<Number> bufferRatio)	LatLngBounds	
+                        //Returns bigger bounds created by extending the current bounds by a given percentage in each direction.
+                        var myZoomLevel;
+                        var myBbox;
+
                         //Called on DOM render completion to ensure basemap is rendered
                         $timeout(function () {
                             $scope.renderMap("area");
                             $scope.renderMap("area");
+
+                            //Store the current zoom and view on map changes
+                            //TODO: track map extents and zoomlevel for getTile service
+                            leafletData.getMap("area").then(function (map) {
+                                map.on('zoomend', function (e) {
+                                    $scope.input.zoomLevel = map.getZoom();
+                                    myZoomLevel = map.getZoom();
+                                    //              console.log(myZoomLevel);
+                                });
+                                map.on('moveend', function (e) {
+                                    $scope.input.view = map.getCenter();
+                                    myBbox = map.getBounds();
+                                    var b = "N: " + myBbox.getNorth() + " S: " + myBbox.getSouth() + " E: " + myBbox.getEast() + " W: " + myBbox.getWest();
+                                    //              console.log(b);
+                                });
+                                L.control.scale({position: 'topleft', imperial: false}).addTo(map);
+
+                                //Attributions to open in new window
+                                map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                            });
                         });
-                        
+
                         /*
                          * LOCAL VARIABLES
                          */
@@ -142,7 +168,7 @@ angular.module("RIF")
                                         map.removeLayer($scope.topoLayer);
                                     }
                                     $scope.topoLayer = new L.TopoJSON(res.data, {
-                                        renderer: L.canvas(),                                 
+                                        renderer: L.canvas(),
                                         style: style,
                                         onEachFeature: function (feature, layer) {
                                             //define polygon centroids
@@ -203,16 +229,10 @@ angular.module("RIF")
                                     maxbounds = $scope.topoLayer.getBounds();
                                     $scope.topoLayer.addTo(map);
                                     $scope.totalPolygonCount = latlngList.length;
-
-                                    //Store the current zoom and view on map changes
-                                    map.on('zoomend', function (e) {
-                                        $scope.input.zoomLevel = map.getZoom();
-                                    });
-                                    map.on('moveend', function (e) {
-                                        $scope.input.view = map.getCenter();
-                                    });
-                                    if ($scope.input.view[0] === 0) {
-                                        map.fitBounds(maxbounds);
+                                    if ($scope.input.view.lng === 0) {
+                                        leafletData.getMap("area").then(function (map) {
+                                            map.fitBounds(maxbounds);
+                                        });
                                     }
                                 });
                             }, handleGeographyError);
@@ -393,7 +413,7 @@ angular.module("RIF")
                             }
                             multiStart = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
                         };
-                        
+
                         //*********************************************************************************************************************
                         //SELECTION METHODS
 
@@ -443,10 +463,6 @@ angular.module("RIF")
                             map.on('draw:drawstart', function (e) {
                                 $scope.input.bDrawing = true;
                             });
-                            L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-
-                            //Attributions to open in new window
-                            map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                         });
 
                         //selection event fired from service
@@ -643,7 +659,7 @@ angular.module("RIF")
                                 scope: $scope,
                                 keyboard: false
                             });
-                        };                     
+                        };
                         //********************************************************************************************************
 
 
