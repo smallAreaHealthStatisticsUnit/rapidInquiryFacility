@@ -805,7 +805,18 @@ RangeError: Invalid string length
 * Zoomlevel and geolevel report (null tiles/total tiles)
 * USA tests to zoomlevel 8 OK. Improved SQL Server tile making efficency and reduced table size to get under 10K limit
 * Fix SQL server load script etc
-
+* Integration to sahsuland_empty build. DO NOT RUN ALTER SCRIPTS OR REBUILD SAHSULAND UNTIL FULL STACK TESTING IS COMPLETE.
+  Notes:
+  * v4_0_alter_5.sql had to be extensively modified to:
+    a) reflect changes from: t_rif40_sahsu_geometry to: geometry_sahsuland. shapefile_geometry is obsoleted and mulitple 
+	   zoomlevels are supported. All data is in 4326. In particular area_id has been deliberately changed to areaid to cause 
+	   parse errors!
+	b) areaid_count added to rif40_geolevels/t_rif40_geolevels
+	c) _rif40_getGeoLevelExtentCommon() to support rif40_geography.geometrytable and zoomlevels
+  * Tiles view and table compared to previous; after slight index and view tune efficeny as before; no missing/extra tiles
+  * The adajacency matrix function needs to be checked.
+  * Check json format in tiles tables.
+  
 #### Current TODO list (January 2017):
 
 * MS Sahsuland projection problem; must be contained within the projection or will fail
