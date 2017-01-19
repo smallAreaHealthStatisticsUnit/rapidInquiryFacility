@@ -60,7 +60,6 @@ angular.module("RIF")
                         templateUrl: 'dashboards/submission/partials/rifp-dsub-status.html',
                         controller: 'ModalStatusInstanceCtrl',
                         windowClass: 'status-Modal',
-                        backdrop: 'static',
                         keyboard: false
                     });
                 };

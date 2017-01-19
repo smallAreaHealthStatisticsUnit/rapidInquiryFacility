@@ -64,13 +64,21 @@ angular.module("RIF")
 
                         x2.domain(x.domain());
 
-                        var y = d3.scaleLinear()
-                                .domain([d3.min(scope.data, function (d) {
-                                        return d[ lowField ];
-                                    }), d3.max(scope.data, function (d) {
-                                        return d[ highField ];
-                                    })])
-                                .range([xHeight, 0]);
+                        var y;
+
+                        if (bConfidence) {
+                            y = d3.scaleLinear()
+                                    .domain([d3.min(scope.data, function (d) {
+                                            return d[ lowField ];
+                                        }), d3.max(scope.data, function (d) {
+                                            return d[ highField ];
+                                        })])
+                                    .range([xHeight, 0]);
+                        } else {
+                            y = d3.scaleLinear()
+                                    .domain([0, 1]) //probability so fixed
+                                    .range([xHeight, 0]);
+                        }
 
                         var y2 = d3.scaleLinear().range([xHeight2, 0]);
 

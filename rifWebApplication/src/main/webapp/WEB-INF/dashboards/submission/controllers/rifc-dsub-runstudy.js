@@ -16,14 +16,14 @@ angular.module("RIF")
                         keyboard: false
                     });
                     modalInstance.result.then(function () {
-                        $scope.showSuccess("Study Submitted");
+                        $scope.showSuccess("Study Submitted: Processing may take several minutes");
                     });
                 };
             }])
         .controller('ModalRunInstanceCtrl', function ($scope, $uibModalInstance, SubmissionStateService, user, ModelService) {
             $scope.input = {};
             $scope.input.studyDescription = SubmissionStateService.getState().studyDescription;
-            //    $scope.input.name = SubmissionStateService.getState().projectName;
+            //$scope.input.name = SubmissionStateService.getState().projectName;
 
             //Fill health themes drop-down
             $scope.input.projects = [];
@@ -68,16 +68,13 @@ angular.module("RIF")
                 //TODO: error if year params not set (if loaded from file)
 
                 var thisStudy = ModelService.get_rif_job_submission_JSON();
-                user.submitStudy(user.currentUser, thisStudy).then(handleSubmit, handleSubmitError);
+                user.submitStudy(user.currentUser, thisStudy).then(handleSubmit, handleSubmit);
 
                 $uibModalInstance.close($scope.input);
             };
 
             function handleSubmit() {
-                console.log("submit called");
-            }
-            function handleSubmitError(e) {
-                console.log("submit called with Error");
+               // console.log("submit called");
             }
 
             $scope.updateModel = function () {

@@ -122,10 +122,14 @@ angular.module("RIF")
                     });
                 }
 
-                //Get the possible studies
+                //update study list if new study processed, but do not update maps
+                $scope.$on('updateStudyDropDown', function (event, args) {
+                    $scope.studyIDs.push(args);
+                });
+
+                //Get the possible studies initially
                 $scope.getStudies = function () {
                     user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
-                        //  $scope.studyIDs.length = 0;
                         for (var i = 0; i < res.data.smoothed_results.length; i++) {
                             if (res.data.smoothed_results[i].study_state === "R") {
                                 var thisStudy = {
@@ -135,10 +139,10 @@ angular.module("RIF")
                                 $scope.studyIDs.push(thisStudy);
                             }
                         }
-                        //sort array on ID
+                        //sort array on ID with most recent first
                         $scope.studyIDs.sort(function (a, b) {
                             return parseFloat(a.study_id) - parseFloat(b.study_id);
-                        });
+                        }).reverse();
                         //Remember defaults
                         for (var j = 0; j < $scope.myMaps.length; j++) {
                             var s = $scope.myService.getState().study[$scope.myMaps[j]].study_id;
@@ -149,7 +153,7 @@ angular.module("RIF")
                                     }
                                 }
                             } else {
-                                $scope.$parent.studyID[$scope.myMaps[j]] = $scope.studyIDs[$scope.studyIDs.length - 1];
+                                $scope.$parent.studyID[$scope.myMaps[j]] = $scope.studyIDs[0];
                             }
                         }
                         //update sex drop-down
@@ -161,48 +165,50 @@ angular.module("RIF")
                     });
                 };
                 $scope.updateSex = function (mapID) {
-                    //Store this study selection
-                    $scope.myService.getState().study[mapID] = $scope.studyID[mapID];
-                    //Get the sexes for this study
-                    user.getSexesForStudy(user.currentUser, $scope.studyID[mapID].study_id, mapID)
-                            .then(handleSexes, clearTheMapOnError(mapID));
-                    function handleSexes(res) {
-                        $scope.sexes[res.config.leaflet].length = 0;
-                        if (!angular.isUndefined(res.data[0].names)) {
-                            for (var i = 0; i < res.data[0].names.length; i++) {
-                                $scope.sexes[res.config.leaflet].push(res.data[0].names[i]);
+                    if ($scope.studyID[mapID] !== null) {
+                        //Store this study selection
+                        $scope.myService.getState().study[mapID] = $scope.studyID[mapID];
+                        //Get the sexes for this study
+                        user.getSexesForStudy(user.currentUser, $scope.studyID[mapID].study_id, mapID)
+                                .then(handleSexes, clearTheMapOnError(mapID));
+                        function handleSexes(res) {
+                            $scope.sexes[res.config.leaflet].length = 0;
+                            if (!angular.isUndefined(res.data[0].names)) {
+                                for (var i = 0; i < res.data[0].names.length; i++) {
+                                    $scope.sexes[res.config.leaflet].push(res.data[0].names[i]);
+                                }
                             }
-                        }
-                        //if no preselection, then set dropdown to last one in list         
-                        if ($scope.sex[res.config.leaflet] === null) {
-                            $scope.sex[res.config.leaflet] = $scope.sexes[res.config.leaflet][0];
-                        }
+                            //if no preselection, then set dropdown to last one in list         
+                            if ($scope.sex[res.config.leaflet] === null) {
+                                $scope.sex[res.config.leaflet] = $scope.sexes[res.config.leaflet][0];
+                            }
 
-                        //dashboard specific
-                        if (mapID === "viewermap") {
-                            //update pyramid if in viewer
-                            $scope.child.fillPyramidData();
-                        } else {
-                            //check selection link is possible
-                            if ($scope.myService.getState().selectionLock) {
-                                var g1 = $scope.tileInfo["diseasemap1"];
-                                var g2 = $scope.tileInfo["diseasemap2"];
-                                if (g1.geography !== null && g2.geography !== null) {
-                                    if (g1.geography !== g2.geography) {
-                                        //different geographies     
-                                        $scope.showWarning("Cannot link selections for different geographies: " + g1.geography + " & " + g2.geography);
-                                        $scope.myService.getState().selectionLock = false;
-                                        $scope.$parent.bLockSelect = false;
-                                    } else {
-                                        if (g1.level !== g2.level) {
-                                            //different levels
-                                            $scope.showWarning("Cannot link selections for different geolevels: " + g1.level + " & " + g2.level);
+                            //dashboard specific
+                            if (mapID === "viewermap") {
+                                //update pyramid if in viewer
+                                $scope.child.fillPyramidData();
+                            } else {
+                                //check selection link is possible
+                                if ($scope.myService.getState().selectionLock) {
+                                    var g1 = $scope.tileInfo["diseasemap1"];
+                                    var g2 = $scope.tileInfo["diseasemap2"];
+                                    if (g1.geography !== null && g2.geography !== null) {
+                                        if (g1.geography !== g2.geography) {
+                                            //different geographies     
+                                            $scope.showWarning("Cannot link selections for different geographies: " + g1.geography + " & " + g2.geography);
+                                            $scope.myService.getState().selectionLock = false;
+                                            $scope.$parent.bLockSelect = false;
+                                        } else {
+                                            if (g1.level !== g2.level) {
+                                                //different levels
+                                                $scope.showWarning("Cannot link selections for different geolevels: " + g1.level + " & " + g2.level);
+                                            }
                                         }
                                     }
                                 }
                             }
+                            $scope.updateStudy(res.config.leaflet);
                         }
-                        $scope.updateStudy(res.config.leaflet);
                     }
                 };
 
@@ -536,7 +542,7 @@ angular.module("RIF")
                             };
                             infoBox["diseasemap2"].update = function (poly) {
                                 if (poly) {
-                                    this._div.innerHTML = hoverUpdateAttr("diseasemap1", poly, ChoroService.getMaps("diseasemap1").feature);
+                                    this._div.innerHTML = hoverUpdateAttr("diseasemap2", poly, ChoroService.getMaps("diseasemap2").feature);
                                 } else {
                                     this._div.innerHTML = '';
                                 }

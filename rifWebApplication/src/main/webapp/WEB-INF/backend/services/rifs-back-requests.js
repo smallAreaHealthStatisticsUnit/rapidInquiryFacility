@@ -113,6 +113,11 @@ angular.module("RIF")
                 };
                 //geography
                 self.getTiles = function (username, geography, geoLevel, leaflet) {
+                    //http://localhost:8080/rifServices/studySubmission/getTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL1&tileIdentifier=4&zoomFactor=2&
+                    //yMax=55.5268097&xMax=-4.88653803&yMin=52.6875343&xMin=-7.58829451
+                    
+                    //TODO: what is tileIdentifier?? 1979_1321 in rifServices/src/test/java/rifServices/test/services/GetTiles.java 
+                    
                     config.leaflet = leaflet; //defines which map is target for these tiles
                     return $http.get(studySubmissionURL + 'getTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
                             '&tileIdentifier=4&zoomFactor=2&yMax=55.5268097&xMax=-4.88653803&yMin=52.6875343&xMin=-7.58829451', config);
