@@ -3135,7 +3135,23 @@ ELSE
 		@level2type = N'Column', @level2name = 'areaid_count';
 GO
 
--- SQL statement 117: Create tiles view >>>
+-- SQL statement 117: Add tiles index: t_tiles_sahsuland_x_tile >>>
+CREATE INDEX t_tiles_sahsuland_x_tile ON rif_data.t_tiles_sahsuland (geolevel_id, zoomlevel, x);
+GO
+
+-- SQL statement 118: Add tiles index: t_tiles_sahsuland_y_tile >>>
+CREATE INDEX t_tiles_sahsuland_y_tile ON rif_data.t_tiles_sahsuland (geolevel_id, zoomlevel, x);
+GO
+
+-- SQL statement 119: Add tiles index: t_tiles_sahsuland_xy_tile >>>
+CREATE INDEX t_tiles_sahsuland_xy_tile ON rif_data.t_tiles_sahsuland (geolevel_id, zoomlevel, x, y);
+GO
+
+-- SQL statement 120: Add tiles index: t_tiles_sahsuland_areaid_count >>>
+CREATE INDEX t_tiles_sahsuland_areaid_count ON rif_data.t_tiles_sahsuland (areaid_count);
+GO
+
+-- SQL statement 121: Create tiles view >>>
 /*
  * SQL statement name: 	create_tiles_view.sql
  * Type:				Microsoft SQL Server SQL statement
@@ -3185,16 +3201,6 @@ WITH a AS (
                ex.xy_series
           FROM c,
                ex 
-), z AS ( 
-		SELECT ey.geolevel_name,
-			   ey.areaid_count,
-               ey.geolevel_id,
-               ey.geography,
-               ex.zoomlevel,
-               ex.xy_series AS x,
-               ey.xy_series AS y
-          FROM ey, ex /* Cross join */
-         WHERE ex.zoomlevel = ey.zoomlevel
 )
 SELECT z.geography,
        z.geolevel_id,
@@ -3204,7 +3210,6 @@ SELECT z.geography,
             ELSE 0
        END AS no_area_ids, 
        COALESCE(h1.tile_id, 
-				h2.tile_id, 
 				CAST(z.geolevel_id AS VARCHAR) + 
 					'_' +
 					z.geolevel_name +
@@ -3220,8 +3225,18 @@ SELECT z.geography,
        z.zoomlevel,
        COALESCE(h1.optimised_topojson, 
 				h2.optimised_topojson, 
-				'{"type": "FeatureCollection","features":[]}') AS optimised_topojson
-  FROM z 
+				'{"type": "FeatureCollection","features":[]}' /* NULL geojson */) AS optimised_topojson
+  FROM ( 
+		SELECT ey.geolevel_name,
+			   ey.areaid_count,
+               ey.geolevel_id,
+               ey.geography,
+               ex.zoomlevel,
+               ex.xy_series AS x,
+               ey.xy_series AS y
+          FROM ey, ex /* Cross join */
+         WHERE ex.zoomlevel = ey.zoomlevel
+		) z
 		 LEFT JOIN rif_data.t_tiles_sahsuland h1 ON ( /* Multiple area ids in the geolevel */
 				z.areaid_count > 1 AND
 				z.zoomlevel    = h1.zoomlevel AND 
@@ -3236,7 +3251,7 @@ SELECT z.geography,
 				h2.geolevel_id = 1);
 GO
 
--- SQL statement 118: Comment tiles view >>>
+-- SQL statement 122: Comment tiles view >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -3258,7 +3273,7 @@ EXECUTE sp_addextendedproperty
 @level1type = N'View', @level1name = 'tiles_sahsuland'   ;
 GO
 
--- SQL statement 119: Comment tiles view column >>>
+-- SQL statement 123: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -3282,7 +3297,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'geography';
 GO
 
--- SQL statement 120: Comment tiles view column >>>
+-- SQL statement 124: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -3306,7 +3321,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'geolevel_id';
 GO
 
--- SQL statement 121: Comment tiles view column >>>
+-- SQL statement 125: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -3330,7 +3345,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'zoomlevel';
 GO
 
--- SQL statement 122: Comment tiles view column >>>
+-- SQL statement 126: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -3354,7 +3369,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'x';
 GO
 
--- SQL statement 123: Comment tiles view column >>>
+-- SQL statement 127: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -3378,7 +3393,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'y';
 GO
 
--- SQL statement 124: Comment tiles view column >>>
+-- SQL statement 128: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -3402,7 +3417,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'optimised_topojson';
 GO
 
--- SQL statement 125: Comment tiles view column >>>
+-- SQL statement 129: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -3426,7 +3441,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'tile_id';
 GO
 
--- SQL statement 126: Comment tiles view column >>>
+-- SQL statement 130: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -3450,7 +3465,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'geolevel_name';
 GO
 
--- SQL statement 127: Comment tiles view column >>>
+-- SQL statement 131: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -3478,14 +3493,14 @@ GO
 -- Load tiles table
 --
 
--- SQL statement 129: Create load tiles view >>>
+-- SQL statement 133: Create load tiles view >>>
 CREATE VIEW rif_data.v_tiles_sahsuland
 AS
 SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson
   FROM rif_data.t_tiles_sahsuland;
 GO
 
--- SQL statement 130: Load tiles table from geolevel CSV files >>>
+-- SQL statement 134: Load tiles table from geolevel CSV files >>>
 BULK INSERT rif_data.v_tiles_sahsuland
 FROM '$(pwd)/t_tiles_sahsu_grd_level1.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
@@ -3495,18 +3510,18 @@ WITH
 );
 GO
 
--- SQL statement 131: Create load tiles view >>>
+-- SQL statement 135: Create load tiles view >>>
 DROP VIEW rif_data.v_tiles_sahsuland;
 GO
 
--- SQL statement 132: Create load tiles view >>>
+-- SQL statement 136: Create load tiles view >>>
 CREATE VIEW rif_data.v_tiles_sahsuland
 AS
 SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson
   FROM rif_data.t_tiles_sahsuland;
 GO
 
--- SQL statement 133: Load tiles table from geolevel CSV files >>>
+-- SQL statement 137: Load tiles table from geolevel CSV files >>>
 BULK INSERT rif_data.v_tiles_sahsuland
 FROM '$(pwd)/t_tiles_sahsu_grd_level2.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
@@ -3516,18 +3531,18 @@ WITH
 );
 GO
 
--- SQL statement 134: Create load tiles view >>>
+-- SQL statement 138: Create load tiles view >>>
 DROP VIEW rif_data.v_tiles_sahsuland;
 GO
 
--- SQL statement 135: Create load tiles view >>>
+-- SQL statement 139: Create load tiles view >>>
 CREATE VIEW rif_data.v_tiles_sahsuland
 AS
 SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson
   FROM rif_data.t_tiles_sahsuland;
 GO
 
--- SQL statement 136: Load tiles table from geolevel CSV files >>>
+-- SQL statement 140: Load tiles table from geolevel CSV files >>>
 BULK INSERT rif_data.v_tiles_sahsuland
 FROM '$(pwd)/t_tiles_sahsu_grd_level3.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
@@ -3537,18 +3552,18 @@ WITH
 );
 GO
 
--- SQL statement 137: Create load tiles view >>>
+-- SQL statement 141: Create load tiles view >>>
 DROP VIEW rif_data.v_tiles_sahsuland;
 GO
 
--- SQL statement 138: Create load tiles view >>>
+-- SQL statement 142: Create load tiles view >>>
 CREATE VIEW rif_data.v_tiles_sahsuland
 AS
 SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson
   FROM rif_data.t_tiles_sahsuland;
 GO
 
--- SQL statement 139: Load tiles table from geolevel CSV files >>>
+-- SQL statement 143: Load tiles table from geolevel CSV files >>>
 BULK INSERT rif_data.v_tiles_sahsuland
 FROM '$(pwd)/t_tiles_sahsu_grd_level4.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
@@ -3558,7 +3573,7 @@ WITH
 );
 GO
 
--- SQL statement 140: Create load tiles view >>>
+-- SQL statement 144: Create load tiles view >>>
 DROP VIEW rif_data.v_tiles_sahsuland;
 GO
 
@@ -3566,7 +3581,7 @@ GO
 -- Analyze tables
 --
 
--- SQL statement 142: Grant table/view lookup_sahsu_grd_level1 >>>
+-- SQL statement 146: Grant table/view lookup_sahsu_grd_level1 >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -3581,7 +3596,7 @@ GO
 GRANT SELECT ON rif_data.lookup_sahsu_grd_level1 TO rif_user, rif_manager;
 GO
 
--- SQL statement 143: Grant table/view lookup_sahsu_grd_level2 >>>
+-- SQL statement 147: Grant table/view lookup_sahsu_grd_level2 >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -3596,7 +3611,7 @@ GO
 GRANT SELECT ON rif_data.lookup_sahsu_grd_level2 TO rif_user, rif_manager;
 GO
 
--- SQL statement 144: Grant table/view lookup_sahsu_grd_level3 >>>
+-- SQL statement 148: Grant table/view lookup_sahsu_grd_level3 >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -3611,7 +3626,7 @@ GO
 GRANT SELECT ON rif_data.lookup_sahsu_grd_level3 TO rif_user, rif_manager;
 GO
 
--- SQL statement 145: Grant table/view lookup_sahsu_grd_level4 >>>
+-- SQL statement 149: Grant table/view lookup_sahsu_grd_level4 >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -3626,7 +3641,7 @@ GO
 GRANT SELECT ON rif_data.lookup_sahsu_grd_level4 TO rif_user, rif_manager;
 GO
 
--- SQL statement 146: Grant table/view hierarchy_sahsuland >>>
+-- SQL statement 150: Grant table/view hierarchy_sahsuland >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -3641,7 +3656,7 @@ GO
 GRANT SELECT ON rif_data.hierarchy_sahsuland TO rif_user, rif_manager;
 GO
 
--- SQL statement 147: Grant table/view geometry_sahsuland >>>
+-- SQL statement 151: Grant table/view geometry_sahsuland >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -3656,7 +3671,7 @@ GO
 GRANT SELECT ON rif_data.geometry_sahsuland TO rif_user, rif_manager;
 GO
 
--- SQL statement 148: Grant table/view t_tiles_sahsuland >>>
+-- SQL statement 152: Grant table/view t_tiles_sahsuland >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -3671,7 +3686,7 @@ GO
 GRANT SELECT ON rif_data.t_tiles_sahsuland TO rif_user, rif_manager;
 GO
 
--- SQL statement 149: Grant table/view tiles_sahsuland >>>
+-- SQL statement 153: Grant table/view tiles_sahsuland >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -3686,7 +3701,7 @@ GO
 GRANT SELECT ON rif_data.tiles_sahsuland TO rif_user, rif_manager;
 GO
 
--- SQL statement 150: Commit transaction >>>
+-- SQL statement 154: Commit transaction >>>
 COMMIT;
 GO
 
@@ -3694,59 +3709,59 @@ GO
 -- Analyze tables
 --
 
--- SQL statement 152: Describe table lookup_sahsu_grd_level1 >>>
+-- SQL statement 156: Describe table lookup_sahsu_grd_level1 >>>
 -- EXEC sp_help rif_data.lookup_sahsu_grd_level1;
 GO
 
--- SQL statement 153: Analyze table lookup_sahsu_grd_level1 >>>
+-- SQL statement 157: Analyze table lookup_sahsu_grd_level1 >>>
 UPDATE STATISTICS rif_data.lookup_sahsu_grd_level1;
 GO
 
--- SQL statement 154: Describe table lookup_sahsu_grd_level2 >>>
+-- SQL statement 158: Describe table lookup_sahsu_grd_level2 >>>
 -- EXEC sp_help rif_data.lookup_sahsu_grd_level2;
 GO
 
--- SQL statement 155: Analyze table lookup_sahsu_grd_level2 >>>
+-- SQL statement 159: Analyze table lookup_sahsu_grd_level2 >>>
 UPDATE STATISTICS rif_data.lookup_sahsu_grd_level2;
 GO
 
--- SQL statement 156: Describe table lookup_sahsu_grd_level3 >>>
+-- SQL statement 160: Describe table lookup_sahsu_grd_level3 >>>
 -- EXEC sp_help rif_data.lookup_sahsu_grd_level3;
 GO
 
--- SQL statement 157: Analyze table lookup_sahsu_grd_level3 >>>
+-- SQL statement 161: Analyze table lookup_sahsu_grd_level3 >>>
 UPDATE STATISTICS rif_data.lookup_sahsu_grd_level3;
 GO
 
--- SQL statement 158: Describe table lookup_sahsu_grd_level4 >>>
+-- SQL statement 162: Describe table lookup_sahsu_grd_level4 >>>
 -- EXEC sp_help rif_data.lookup_sahsu_grd_level4;
 GO
 
--- SQL statement 159: Analyze table lookup_sahsu_grd_level4 >>>
+-- SQL statement 163: Analyze table lookup_sahsu_grd_level4 >>>
 UPDATE STATISTICS rif_data.lookup_sahsu_grd_level4;
 GO
 
--- SQL statement 160: Describe table hierarchy_sahsuland >>>
+-- SQL statement 164: Describe table hierarchy_sahsuland >>>
 -- EXEC sp_help rif_data.hierarchy_sahsuland;
 GO
 
--- SQL statement 161: Analyze table hierarchy_sahsuland >>>
+-- SQL statement 165: Analyze table hierarchy_sahsuland >>>
 UPDATE STATISTICS rif_data.hierarchy_sahsuland;
 GO
 
--- SQL statement 162: Describe table geometry_sahsuland >>>
+-- SQL statement 166: Describe table geometry_sahsuland >>>
 -- EXEC sp_help rif_data.geometry_sahsuland;
 GO
 
--- SQL statement 163: Analyze table geometry_sahsuland >>>
+-- SQL statement 167: Analyze table geometry_sahsuland >>>
 UPDATE STATISTICS rif_data.geometry_sahsuland;
 GO
 
--- SQL statement 164: Describe table t_tiles_sahsuland >>>
+-- SQL statement 168: Describe table t_tiles_sahsuland >>>
 -- EXEC sp_help rif_data.t_tiles_sahsuland;
 GO
 
--- SQL statement 165: Analyze table t_tiles_sahsuland >>>
+-- SQL statement 169: Analyze table t_tiles_sahsuland >>>
 UPDATE STATISTICS rif_data.t_tiles_sahsuland;
 GO
 
