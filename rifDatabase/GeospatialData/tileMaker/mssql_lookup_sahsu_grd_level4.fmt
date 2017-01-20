@@ -6,10 +6,12 @@
  <RECORD>
    <FIELD ID="0" xsi:type="CharTerm" TERMINATOR='"' />
    <FIELD ID="1" xsi:type="CharTerm" TERMINATOR='","' />
-   <FIELD ID="2" xsi:type="CharTerm" TERMINATOR='"\r\n' />
+   <FIELD ID="2" xsi:type="CharTerm" TERMINATOR='","' />
+   <FIELD ID="3" xsi:type="CharTerm" TERMINATOR='"\r\n' />
  </RECORD>
  <ROW>
    <COLUMN SOURCE="1" NAME="sahsu_grd_level4" xsi:type="SQLVARYCHAR" />
    <COLUMN SOURCE="2" NAME="areaname" xsi:type="SQLVARYCHAR" />
+   <COLUMN SOURCE="3" NAME="gid" xsi:type="SQLINT" />
  </ROW>
 </BCPFORMAT>
