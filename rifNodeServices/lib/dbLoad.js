@@ -694,7 +694,14 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()	/* Column name */,
 					"Area ID field"													/* Comment */), 
 				sqlArray, dbType);	
-				
+	
+			var sqlStmt=new Sql("Comment " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() + " columns",
+				getSqlFromFile("comment_column.sql", 
+					dbType, 
+					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
+					"gid"														/* Column name */,
+					"GID field"													/* Comment */), 
+				sqlArray, dbType);					
 			var sqlStmt=new Sql("Comment " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() + " columns",
 				getSqlFromFile("comment_column.sql", 
 					dbType, 

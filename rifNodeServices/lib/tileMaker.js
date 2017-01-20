@@ -1869,7 +1869,7 @@ REFERENCE (from shapefile) {
 					else if (dbType == "MSSQLServer") {	
 						request=new dbSql.Request();
 					}
-					var sql="SELECT * FROM " + lookupTable;
+					var sql="SELECT * FROM " + lookupTable + " ORDER BY gid";
 					try { // Create CSV file for lookup table
 						var lookupCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
 						winston.log("info", "Creating lookup CSV file: " + csvFileName + 
@@ -1909,7 +1909,7 @@ REFERENCE (from shapefile) {
 								var keys=Object.keys(record[i]);
 								var values=[];
 								for (var j=0; j<keys.length; j++) {
-									var str=record[i][keys[j]];
+									var str=record[i][keys[j]].toString();
 									str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 	
 									values.push(str);
 								}

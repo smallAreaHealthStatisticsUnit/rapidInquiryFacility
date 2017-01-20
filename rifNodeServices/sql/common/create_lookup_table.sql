@@ -12,5 +12,6 @@
 CREATE TABLE %3%1 (
 	%2			VARCHAR(100)  NOT NULL,
 	areaname	VARCHAR(1000),
+	gid			INTEGER		  NOT NULL,
 	PRIMARY KEY (%2)
 )
