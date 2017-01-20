@@ -72,3 +72,12 @@ Principal Work Area: JavaScript User interface development
 - Atlas colour scheme options for choropleth mapping
 - Study status modal linked to database
 
+#2017
+##January
+
+- Refactoring of mapping and ui-grid code
+- Added middle ware method to get geography info for complete study
+- Polling of study status using $interval to notify on completion of submitted job
+- Modified getSmoothedResults method to not need a year
+- Population pyramids plotable by year
+
