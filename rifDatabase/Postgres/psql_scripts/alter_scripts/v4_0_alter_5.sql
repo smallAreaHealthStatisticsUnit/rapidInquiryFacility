@@ -51,6 +51,10 @@
 --
 -- Peter Hambly, SAHSU
 --
+-- e.g.
+--
+-- psql -U rif40 -d sahsuland_dev -w -e -P pager=off -v testuser=peter -v verbosity= -v debug_level=1 -v use_plr= -v pghost=localhost -v echo=all -f alter_scripts/v4_0_alter_5.sql
+--
 \set ECHO all
 \set ON_ERROR_STOP ON
 \timing

@@ -817,7 +817,11 @@ RangeError: Invalid string length
 	   tileMaker support retained
   * Tiles view and table compared to previous; after slight index and view tune efficeny as before; no missing/extra tiles
   * The adajacency matrix function needs to be checked.
-  * Check json format in tiles tables.
+  * Check json format in tiles tables. New tiles have a BBOX! Changed for full compatibility: 
+	  id to gid,
+	  areaID to area_id,
+	  areaName to name
+	The default names are not quite the same: "Kozniewska LEVEL4(01.013.016800.3)" as opposed to "01.013.016800.3"
   * Added GID to lookup tables
   
 #### Current TODO list (January 2017):
