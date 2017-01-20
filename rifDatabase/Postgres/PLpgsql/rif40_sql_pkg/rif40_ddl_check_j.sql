@@ -253,7 +253,7 @@ BEGIN
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_j', 
 					'[70501]: Extra partition related temporary table: %.% [IGNORED]', 
 					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR);				
-			ELSIF c10_rec.table_schema IN ('gis') THEN
+			ELSIF c10_rec.table_schema IN ('gis', 'rif_data') THEN
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_j', 
 					'[70502]: Extra table/view column: %.%.% [IGNORED]', 
 					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR, c10_rec.column_name::VARCHAR);

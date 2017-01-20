@@ -812,10 +812,13 @@ RangeError: Invalid string length
 	   zoomlevels are supported. All data is in 4326. In particular area_id has been deliberately changed to areaid to cause 
 	   parse errors!
 	b) areaid_count added to rif40_geolevels/t_rif40_geolevels
-	c) _rif40_getGeoLevelExtentCommon() to support rif40_geography.geometrytable and zoomlevels
+	c) _rif40_getGeoLevelExtentCommon() to support rif40_geography.geometrytable and zoomlevels; pre tileMaker support retained
+	d) rif40_GetMapAreas.sql() to support rif40_geography.geometrytable and zoomlevels; fiz for old sahsuland hard coding; pre 
+	   tileMaker support retained
   * Tiles view and table compared to previous; after slight index and view tune efficeny as before; no missing/extra tiles
   * The adajacency matrix function needs to be checked.
   * Check json format in tiles tables.
+  * Added GID to lookup tables
   
 #### Current TODO list (January 2017):
 
