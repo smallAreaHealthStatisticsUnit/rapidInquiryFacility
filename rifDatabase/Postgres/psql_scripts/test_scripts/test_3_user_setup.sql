@@ -61,6 +61,11 @@ END;
 $$;
 
 --
+-- Reload DDL check code
+--
+\i ../PLpgsql/v4_0_rif40_sql_pkg_ddl_checks.sql
+
+--
 -- Test user account
 -- 
 \set ntestuser '''XXXX':testuser''''
