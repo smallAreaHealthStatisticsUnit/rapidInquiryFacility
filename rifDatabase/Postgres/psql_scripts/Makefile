@@ -317,6 +317,7 @@ sahsuland_empty: $(PLR_DIRS)
 	$(MAKE) recreate_sahsuland_empty_db.rpt PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
 	$(MAKE) v4_0_create_sahsuland_empty.rpt PGDATABASE=sahsuland_empty
 	$(MAKE) -C alter_scripts clean all DEBUG_LEVEL=1 ECHO=all PGDATABASE=sahsuland_empty
+#	-$(MAKE) -C test_scripts clean all DEBUG_LEVEL=1 ECHO=all PGDATABASE=sahsuland_empty
 	
 #- topojson_convert: GeoJSON to topoJSON converter
 topojson_convert:

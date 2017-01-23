@@ -104,11 +104,13 @@ COMMENT ON TABLE "rif40_study_shares" IS 'Users granted access by a RIF_MANAGER 
 COMMENT ON TABLE "rif40_table_outcomes" IS 'Intersection of health outcomes in logical groups and Health tables. Mutliple groups supported per table';
 COMMENT ON TABLE "rif40_tables" IS 'RIF numerator and denominator tables';
 COMMENT ON TABLE "rif40_version" IS 'RIF version';
+/*
 COMMENT ON TABLE gis.sahsuland_geography IS 'SAHSU example database - geography';
 COMMENT ON TABLE gis.sahsuland_level1 IS 'level1';
 COMMENT ON TABLE gis.sahsuland_level2 IS 'level2';
 COMMENT ON TABLE gis.sahsuland_level3 IS 'level3';
 COMMENT ON TABLE gis.sahsuland_level4 IS 'level4';
+*/
 COMMENT ON TABLE "t_rif40_comparison_areas" IS 'Links comparison areas and bands for a given study.';
 COMMENT ON TABLE "t_rif40_contextual_stats" IS 'Contextual stats for results map. Also includes values used in internal calculations.';
 COMMENT ON TABLE "t_rif40_fdw_tables" IS 'RIF numerator tables which are Foreign data wrappers in Postgres';
@@ -243,6 +245,7 @@ COMMENT ON COLUMN "rif40_version"."cvs_revision" IS 'CVS revison control informa
 COMMENT ON COLUMN "rif40_version"."schema_amended" IS 'Date schema amended';
 COMMENT ON COLUMN "rif40_version"."schema_created" IS 'Date schema created';
 COMMENT ON COLUMN "rif40_version"."version" IS 'Version. Used for change control to ensure front end matches database.';
+/*
 COMMENT ON COLUMN gis.sahsuland_geography.level1 IS 'level1';
 COMMENT ON COLUMN gis.sahsuland_geography.level2 IS 'level2';
 COMMENT ON COLUMN gis.sahsuland_geography.level3 IS 'level3';
@@ -257,6 +260,7 @@ COMMENT ON COLUMN gis.sahsuland_level4.level4 IS 'level4';
 COMMENT ON COLUMN gis.sahsuland_level4.name IS 'name';
 COMMENT ON COLUMN gis.sahsuland_level4.x_coordinate IS 'X Co-ordinate for centroid';
 COMMENT ON COLUMN gis.sahsuland_level4.y_coordinate IS 'Y Co-ordinate for centroid';
+*/
 COMMENT ON COLUMN "t_rif40_comparison_areas"."area_id" IS 'An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE';
 COMMENT ON COLUMN "t_rif40_comparison_areas"."study_id" IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
 COMMENT ON COLUMN "t_rif40_comparison_areas"."username" IS 'Username';
