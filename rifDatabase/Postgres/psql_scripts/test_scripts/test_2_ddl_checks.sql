@@ -66,6 +66,11 @@ END;
 $$;
 
 --
+-- Reload DDL check code
+--
+\i ../PLpgsql/v4_0_rif40_sql_pkg_ddl_checks.sql
+
+--
 -- Check all tables and views are built
 --
 SELECT table_or_view, LOWER(table_or_view_name_hide) AS table_or_view_name
