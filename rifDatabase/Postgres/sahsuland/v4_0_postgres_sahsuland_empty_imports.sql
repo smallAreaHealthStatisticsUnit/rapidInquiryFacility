@@ -140,7 +140,7 @@ VALUES ('SINGLE_ICD', 'SAHSULAND_CANCER', 1993);
 \COPY rif40_reference_tables FROM '../sahsuland/data/rif40_reference_tables.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 --\COPY sahsuland_pop FROM '../sahsuland/data/sahsuland_pop.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 --\COPY sahsuland_cancer FROM '../sahsuland/data/sahsuland_cancer.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
-\COPY sahsuland_geography FROM '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+--\COPY sahsuland_geography FROM '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 --\COPY sahsuland_covariates_level3 FROM '../sahsuland/data/sahsuland_covariates_level3.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 --\COPY sahsuland_covariates_level4 FROM '../sahsuland/data/sahsuland_covariates_level4.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 \COPY rif40_age_group_names FROM '../sahsuland/data/rif40_age_group_names.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
