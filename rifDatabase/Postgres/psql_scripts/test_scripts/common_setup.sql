@@ -94,9 +94,9 @@ BEGIN
 		RAISE INFO 'common_setup.sql() test user account parameter="%"', c1_rec.testuser;
 	END IF;
 	IF c3_rec.pgdatabase IN ('XXXX', 'XXXX:pgdatabase') THEN
-		RAISE EXCEPTION 'common_setup.sql() C209xx: No -v pgdatabase=<PG database: sahsuland/sahsuland_dev> parameter';	
-	ELSIF SUBSTR(c3_rec.pgdatabase, 5) NOT IN ('sahsuland', 'sahsuland_dev') THEN
-		RAISE EXCEPTION 'common_setup.sql() C209xx: Invalid pgdatabas parameter: %; must be sahsuland/sahsuland_dev', SUBSTR(c3_rec.pgdatabase, 5);	
+		RAISE EXCEPTION 'common_setup.sql() C209xx: No -v pgdatabase=<PG database: sahsuland/sahsuland_dev/sahsuland_empty> parameter';	
+	ELSIF SUBSTR(c3_rec.pgdatabase, 5) NOT IN ('sahsuland', 'sahsuland_dev', 'sahsuland_empty') THEN
+		RAISE EXCEPTION 'common_setup.sql() C209xx: Invalid pgdatabas parameter: %; must be sahsuland/sahsuland_dev/sahsuland_empty', SUBSTR(c3_rec.pgdatabase, 5);	
 	ELSIF SUBSTR(c3_rec.pgdatabase, 5) != current_database() THEN
 		RAISE EXCEPTION 'common_setup.sql() C209xx: pgdatabas parameter: % != current: %',SUBSTR(c3_rec.pgdatabase, 5), current_database();	
 		

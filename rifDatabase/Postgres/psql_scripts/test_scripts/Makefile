@@ -140,7 +140,8 @@ SOURCES=$(NO_ALTER_SOURCES) test_6_middleware_1.sql test_4_study_id_1.sql test_5
 # Test 8 removed because it uses Node and all node dependencies are to be removed
 #
 #	test_8_triggers.sql
-SAHSULAND_EMPTY_SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_user_setup.sql
+# test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_6_middleware_1.sql
+SAHSULAND_EMPTY_SOURCES=test_3_user_setup.sql
 #
 # Derive targets from sources
 # Phony (i.e. not a file) targets
