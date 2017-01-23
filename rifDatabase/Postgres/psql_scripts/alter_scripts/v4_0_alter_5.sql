@@ -273,6 +273,58 @@ COMMENT ON COLUMN rif40_geolevels.areaid_count IS 'Area ID count'; /* New for ti
 --SELECT * FROM rif40_columns WHERE column_name_hide = 'ST_SIMPLIFY_TOLERANCE';
 DELETE FROM rif40_columns WHERE column_name_hide = 'ST_SIMPLIFY_TOLERANCE';
 
+DELETE FROM rif40_columns
+ WHERE column_name_hide IN ('AREAID_COUNT')
+   AND table_or_view_name_hide IN ('RIF40_GEOLEVELS', 'T_RIF40_GEOLEVELS'); 
+DELETE FROM rif40_columns 
+ WHERE column_name_hide IN ('MAXZOOMLEVEL', 'MINZOOMLEVEL', 'GEOMETRYTABLE', 'HIERARCHYTABLE') 
+   AND table_or_view_name_hide IN ('RIF40_GEOGRAPHIES'); 
+
+INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   		 
+SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
+      CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
+       col_description(b.oid, d.attnum) AS comments
+  FROM pg_class b, pg_attribute d, pg_type t
+ WHERE b.relname::regclass = d.attrelid
+   AND d.atttypid = t.oid
+   AND b.relname IN ('rif40_geolevels')
+   AND b.relkind = 'v'
+   AND col_description(b.oid, d.attnum) IS NOT NULL
+   AND d.attname NOT IN (
+		SELECT LOWER(column_name_hide) AS column_name
+ 		  FROM rif40_columns
+		 WHERE table_or_view_name_hide IN ('RIF40_GEOLEVELS')); 
+		 
+INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   		 
+SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
+      CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
+       col_description(b.oid, d.attnum) AS comments
+  FROM pg_class b, pg_attribute d, pg_type t
+ WHERE b.relname::regclass = d.attrelid
+   AND d.atttypid = t.oid
+   AND b.relname IN ('t_rif40_geolevels')
+   AND b.relkind = 'r'
+   AND col_description(b.oid, d.attnum) IS NOT NULL
+   AND d.attname NOT IN (
+		SELECT LOWER(column_name_hide) AS column_name
+ 		  FROM rif40_columns
+		 WHERE table_or_view_name_hide IN ('T_RIF40_GEOLEVELS')); 
+		 
+INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   		 
+SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
+      CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
+       col_description(b.oid, d.attnum) AS comments
+  FROM pg_class b, pg_attribute d, pg_type t
+ WHERE b.relname::regclass = d.attrelid
+   AND d.atttypid = t.oid
+   AND b.relname IN ('rif40_geographies')
+   AND b.relkind = 'r'
+   AND col_description(b.oid, d.attnum) IS NOT NULL
+   AND d.attname NOT IN (
+		SELECT LOWER(column_name_hide) AS column_name
+ 		  FROM rif40_columns
+		 WHERE table_or_view_name_hide IN ('RIF40_GEOGRAPHIES')); 
+		 
 WITH b AS (
 	SELECT geography, srid, rif40_geo_pkg.rif40_zoom_levels(	
 			ST_Y( 														/* Get latitude */
