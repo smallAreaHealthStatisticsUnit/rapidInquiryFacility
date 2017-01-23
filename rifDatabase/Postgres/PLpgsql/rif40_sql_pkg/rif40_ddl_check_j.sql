@@ -267,11 +267,18 @@ BEGIN
 					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR, c10_rec.column_name::VARCHAR);								
 			ELSE
 				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_j', 
-					'[70505]: Extra table/view column: %.%.%', 
+					'[70505]: Extra table/view column: %.%.% [FAILURE]', 
 					c10_rec.table_schema::VARCHAR, c10_rec.table_or_view::VARCHAR, c10_rec.column_name::VARCHAR);
 				i:=i+1;
 			END IF;
 		END LOOP;
+--
+	IF i = 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_j', '[70506]: Any extra table/view column(s) were IGNORED');
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_j', '[70507]: % extra table/view column(s) are FAILURES', 
+			i::VARCHAR);
+	END IF;
 --
 	RETURN i;
 END;

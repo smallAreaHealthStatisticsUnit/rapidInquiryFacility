@@ -135,15 +135,25 @@ BEGIN
 				'g_rif40_comparison_areas', 'g_rif40_study_areas', 'rif40_user_version') THEN
 			NULL;
 		ELSIF USER = 'rifupg34' THEN
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_a', '[70051]: Missing foreign data wrapper table/table/view: %', 
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_a', '[70051]: Missing foreign data wrapper table/table/view: % [FAILURE]', 
 				c1_rec.table_or_view::VARCHAR);
 			i:=i+1;
+		ELSIF c1_rec.table_or_view IN ('rif40_population_europe', 'rif40_population_uk', 'rif40_population_us', 'rif40_population_world') THEN -- Not currently used
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_a', '[70052]: Missing table/view: % [IGNORED]', 
+				c1_rec.table_or_view::VARCHAR);
 		ELSE
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_a', '[70052]: Missing table/view: %', 
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_a', '[70052]: Missing table/view: % [FAILURE]', 
 				c1_rec.table_or_view::VARCHAR);
 			i:=i+1;
 		END IF;
 	END LOOP;
+--
+	IF i = 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_a', '[70053]: Any missing table/views were IGNORED');
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_a', '[70054]: % missing table/view(s) are FAILURES', 
+			i::VARCHAR);
+	END IF;
 --
 	RETURN i;
 END;

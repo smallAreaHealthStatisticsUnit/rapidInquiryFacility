@@ -248,45 +248,52 @@ DECLARE
 --
 	i INTEGER:=0;
 BEGIN
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_k', '[70550]: Checking for missing comments');
-		FOR c11_rec IN c11 LOOP
-		 	IF c11_rec.missing_comments > 0 THEN
-				IF c11_rec.object_schema LIKE 'rif40%' OR c11_rec.object_schema = 'rif_studies' THEN
-					tag:='WARNING';
-				ELSE
-					tag:='INFO';
-				END IF;
-				PERFORM rif40_log_pkg.rif40_log(tag::rif40_log_pkg.rif40_log_debug_level, 'rif40_ddl_check_k', '[70551]: Missing %/% comments for schema % %s', 
-					c11_rec.missing_comments::VARCHAR, 
-					c11_rec.total_objects::VARCHAR,
-					c11_rec.object_schema::VARCHAR, 
-					c11_rec.object_type::VARCHAR); 
-				FOR c12_rec IN c12(c11_rec.object_type, c11_rec.object_schema) LOOP
-					IF c12_rec.description IS NOT NULL THEN
-						PERFORM rif40_log_pkg.rif40_log(tag::rif40_log_pkg.rif40_log_debug_level, 'rif40_ddl_check_k', '[70552]: Found comment for % %.%', 
-							c12_rec.object_type::VARCHAR,
-							c12_rec.object_schema::VARCHAR, 
-							c12_rec.object_name::VARCHAR);					
-					ELSIF c11_rec.object_schema LIKE 'rif40%' OR c11_rec.object_schema = 'rif_studies' THEN
-						i:=i+1;
-						PERFORM rif40_log_pkg.rif40_log(tag::rif40_log_pkg.rif40_log_debug_level, 'rif40_ddl_check_k', '[70552]: Missing comment for % %.%', 
-							c12_rec.object_type::VARCHAR,
-							c12_rec.object_schema::VARCHAR, 
-							c12_rec.object_name::VARCHAR);
-					ELSE
-						PERFORM rif40_log_pkg.rif40_log(tag::rif40_log_pkg.rif40_log_debug_level, 'rif40_ddl_check_k', '[70552]: Missing comment for % %.% [INGORED]', 
-							c12_rec.object_type::VARCHAR,
-							c12_rec.object_schema::VARCHAR, 
-							c12_rec.object_name::VARCHAR);
-					END IF;
-				END LOOP;
+	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_k', '[70550]: Checking for missing comments');
+	FOR c11_rec IN c11 LOOP
+		IF c11_rec.missing_comments > 0 THEN
+			IF c11_rec.object_schema LIKE 'rif40%' OR c11_rec.object_schema = 'rif_studies' THEN
+				tag:='WARNING';
 			ELSE
-				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_k', '[70553]: No missing comments for schema % %s (%)', 
-					c11_rec.object_schema::VARCHAR, 
-					c11_rec.object_type::VARCHAR,
-					c11_rec.total_objects::VARCHAR);
+				tag:='INFO';
 			END IF;
-		END LOOP;
+			PERFORM rif40_log_pkg.rif40_log(tag::rif40_log_pkg.rif40_log_debug_level, 'rif40_ddl_check_k', '[70551]: Missing %/% comments for schema % %s', 
+				c11_rec.missing_comments::VARCHAR, 
+				c11_rec.total_objects::VARCHAR,
+				c11_rec.object_schema::VARCHAR, 
+				c11_rec.object_type::VARCHAR); 
+			FOR c12_rec IN c12(c11_rec.object_type, c11_rec.object_schema) LOOP
+				IF c12_rec.description IS NOT NULL THEN
+					PERFORM rif40_log_pkg.rif40_log(tag::rif40_log_pkg.rif40_log_debug_level, 'rif40_ddl_check_k', '[70552]: Found comment for % %.%', 
+						c12_rec.object_type::VARCHAR,
+						c12_rec.object_schema::VARCHAR, 
+						c12_rec.object_name::VARCHAR);					
+				ELSIF c11_rec.object_schema LIKE 'rif40%' OR c11_rec.object_schema = 'rif_studies' THEN
+					i:=i+1;
+					PERFORM rif40_log_pkg.rif40_log(tag::rif40_log_pkg.rif40_log_debug_level, 'rif40_ddl_check_k', '[70553]: Missing comment for % %.% [FAILURE]', 
+						c12_rec.object_type::VARCHAR,
+						c12_rec.object_schema::VARCHAR, 
+						c12_rec.object_name::VARCHAR);
+				ELSE
+					PERFORM rif40_log_pkg.rif40_log(tag::rif40_log_pkg.rif40_log_debug_level, 'rif40_ddl_check_k', '[70554]: Missing comment for % %.% [INGORED]', 
+						c12_rec.object_type::VARCHAR,
+						c12_rec.object_schema::VARCHAR, 
+						c12_rec.object_name::VARCHAR);
+				END IF;
+			END LOOP;
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_k', '[70555]: No missing comments for schema % %s (%)', 
+				c11_rec.object_schema::VARCHAR, 
+				c11_rec.object_type::VARCHAR,
+				c11_rec.total_objects::VARCHAR);
+		END IF;
+	END LOOP;
+--
+	IF i = 0 THEN
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_k', '[70556]: Any missing comments were IGNORED');
+	ELSE
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_k', '[70557]: % missing comment(s) are FAILURES', 
+			i::VARCHAR);
+	END IF;
 --
 	RETURN i;
 END;
