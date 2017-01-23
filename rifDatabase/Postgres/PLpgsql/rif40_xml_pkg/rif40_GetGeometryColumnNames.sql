@@ -11,6 +11,8 @@
 -- Rapid Enquiry Facility (RIF) - Web services integration functions for middleware
 --     				  rif40_GetGeometryColumnNames
 --
+-- Tilemaker converted 
+--
 -- Copyright:
 --
 -- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -142,18 +144,32 @@ BEGIN
 --
 -- Get all the SRID 4326 (WGS84) geometry column names for geography
 --
-	BEGIN
-		RETURN QUERY
-			SELECT b.column_name::VARCHAR,
-			       COALESCE(col_description((quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry'))::regclass /* Obj id */, 
-					b.ordinal_position /* Column number */), '[Column not found]')::VARCHAR AS column_description
-				  FROM geometry_columns a, information_schema.columns b 
-					 WHERE a.f_table_name      = b.table_name
-			    		   AND a.f_geometry_column = b.column_name
-					   AND a.srid              = 4326 /* WGS84 */
-					   AND b.table_name        = quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')
-				 ORDER BY 1;
-		GET DIAGNOSTICS i = ROW_COUNT;
+	BEGIN	
+		IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+			RETURN QUERY
+				SELECT b.column_name::VARCHAR,
+					   COALESCE(col_description((quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry'))::regclass /* Obj id */, 
+						b.ordinal_position /* Column number */), '[Column not found]')::VARCHAR AS column_description
+					  FROM geometry_columns a, information_schema.columns b 
+						 WHERE a.f_table_name      = b.table_name
+						   AND a.f_geometry_column = b.column_name
+						   AND a.srid              = 4326 /* WGS84 */
+						   AND b.table_name        = quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')
+					 ORDER BY 1;
+			GET DIAGNOSTICS i = ROW_COUNT;
+		ELSE
+			RETURN QUERY
+				SELECT b.column_name::VARCHAR /* Tilemaker: specified geometry table */,
+					   COALESCE(col_description((quote_ident(LOWER(c1_rec.geometrytable)))::regclass /* Obj id */, 
+						b.ordinal_position /* Column number */), '[Column not found]')::VARCHAR AS column_description
+					  FROM geometry_columns a, information_schema.columns b 
+						 WHERE a.f_table_name      = b.table_name
+						   AND a.f_geometry_column = b.column_name
+						   AND a.srid              = 4326 /* WGS84 */
+						   AND b.table_name        = quote_ident(LOWER(c1_rec.geometrytable))
+					 ORDER BY 1;
+			GET DIAGNOSTICS i = ROW_COUNT;	
+		END IF;
 	EXCEPTION
 		WHEN others THEN
 --
@@ -173,8 +189,8 @@ BEGIN
 	took:=age(etp, stp);
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetGeometryColumnNames', 
 		'[51004] Geography: %; SQL fetch returned % rows, took: %.', 			
-		l_geography::VARCHAR			/* Geography */, 
-		i::VARCHAR				/* Actual */,
+		l_geography::VARCHAR		/* Geography */, 
+		i::VARCHAR					/* Actual */,
 		took::VARCHAR				/* Time taken */);
 --
 	RETURN;

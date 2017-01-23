@@ -11,6 +11,8 @@
 -- Rapid Enquiry Facility (RIF) - Web services integration functions for middleware
 --     				  rif40_CreateMapAreaAttributeSource
 --
+-- Tilemaker checked - potential for trouble with column names 
+--
 -- Copyright:
 --
 -- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 

@@ -10,6 +10,8 @@
 --
 -- Rapid Enquiry Facility (RIF) - Get study area adjacency matrix required by INLA
 --
+-- Tilemaker converted 
+--
 -- Copyright:
 --
 -- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -142,10 +144,19 @@ SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(1) LIMIT 10;
 		  FROM t_rif40_studies
 		 WHERE study_id     = l_study_id
 		   AND USER         = 'rif40';
-	c2adjacency 	REFCURSOR;
+ 	c2adjacency CURSOR(l_geography VARCHAR) FOR
+		SELECT *
+		  FROM rif40_geographies
+		 WHERE geography = l_geography;
+	c3adjacency CURSOR(l_geography VARCHAR, l_geolevel VARCHAR) FOR
+		SELECT *
+		  FROM rif40_geolevels
+		 WHERE geography     = l_geography
+		   AND geolevel_name = l_geolevel;	
 --
 	c1_rec 			RECORD;
 	c2_rec 			RECORD;
+	c3_rec 			RECORD;
 --
 	sql_stmt 		VARCHAR;
 --
@@ -170,7 +181,29 @@ BEGIN
 			l_study_id::VARCHAR		/* Study ID */);
 	END IF;
 --
-	sql_stmt:='WITH b AS ('||E'\n'||
+	OPEN c2adjacency(c1_rec.geography);
+	FETCH c2adjacency INTO c2_rec;
+	CLOSE c2adjacency;
+--
+	IF c2_rec.geography IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-52002, 'rif40_GetAdjacencyMatrix', 'geography: % not found', 
+			c1_rec.geography::VARCHAR	/* Geography */);
+	END IF;		
+--
+-- Test <geolevel view/area> exist
+--
+	OPEN c3adjacency(c1_rec.geography, c1_rec.study_geolevel_name);
+	FETCH c3adjacency INTO c3_rec;
+	CLOSE c3adjacency;
+--
+	IF c3_rec.geolevel_name IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-52004, 'rif40_GetAdjacencyMatrix', 'geography: %, <geoevel view> %: not found', 
+			c1_rec.geography::VARCHAR	/* Geography */, 
+			c1_rec.study_geolevel_name::VARCHAR	/* Geolevel view */);
+	END IF;	
+--
+	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+		sql_stmt:='WITH b AS ( /* Pre tilemaker: no geometry table */ '||E'\n'||
 '	SELECT area_id, band_id'||E'\n'||
 '	  FROM rif40_study_areas b1'||E'\n'||
 '	 WHERE b1.study_id = $1'||E'\n'||
@@ -197,13 +230,47 @@ BEGIN
 'SELECT e.*'||E'\n'||
 '  FROM e'||E'\n'||
 '  ORDER BY 1, 2';
+	ELSE
+		sql_stmt:='WITH b AS ( /* Tilemaker: has geometry table */ '||E'\n'||
+'	SELECT area_id, band_id'||E'\n'||
+'	  FROM rif40_study_areas b1'||E'\n'||
+'	 WHERE b1.study_id = $1'||E'\n'||
+'), c AS ('||E'\n'||
+'	SELECT b.area_id, b.band_id, c1.geom'||E'\n'||
+'	  FROM '||quote_ident(LOWER(c2_rec.geometrytable))||' c1, b'||E'\n'||
+'    WHERE c1.geolevel_id   = $2'||E'\n'||
+'      AND c1.areaid        = b.area_id'||E'\n'||	  
+'	   AND c1.zoomlevel     = '||c2_rec.maxzoomlevel||'   /* max zoomlevel: Partition eliminate */'||E'\n'||	  
+'), d AS ('||E'\n'||
+'	SELECT d1.band_id,'||E'\n'||
+'		   d1.area_id,'||E'\n'|| 
+'		   d2.area_id AS adjacent_area_id,'||E'\n'||
+'		   COUNT(d2.area_id) OVER(PARTITION BY d1.area_id ORDER BY d2.area_id) AS num_adjacencies'||E'\n'||
+'	  FROM c d1, c d2'||E'\n'||
+'	 WHERE d1.area_id       != d2.area_id'||E'\n'||
+'	   AND ST_Touches(d1.geom, d2.geom)'||E'\n'||
+'), e AS ('||E'\n'||
+'	SELECT d.area_id::VARCHAR AS area_id,'||E'\n'||
+'		   COUNT(d.area_id)::INTEGER AS num_adjacencies,'||E'\n'|| 
+'		   string_agg(d.adjacent_area_id, '','' ORDER BY d.adjacent_area_id)::VARCHAR AS adjacency_list'||E'\n'||
+'	  FROM d'||E'\n'||
+'	 GROUP BY d.area_id'||E'\n'||
+')'||E'\n'||
+'SELECT e.*'||E'\n'||
+'  FROM e'||E'\n'||
+'  ORDER BY 1, 2';
+	END IF;
 --
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetAdjacencyMatrix', '[52002] SQL>'||E'\n'||'%;', sql_stmt::VARCHAR);
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetAdjacencyMatrix', '[52005] SQL>'||E'\n'||'%;', sql_stmt::VARCHAR);
 --
 -- Execute
 --
 	BEGIN
-		RETURN QUERY EXECUTE sql_stmt USING c1_rec.study_id, c1_rec.study_geolevel_name;
+		IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+			RETURN QUERY EXECUTE sql_stmt USING c1_rec.study_id, c1_rec.study_geolevel_name;
+		ELSE
+			RETURN QUERY EXECUTE sql_stmt USING c1_rec.study_id, c3_rec.geolevel_id;
+		END IF;
 	EXCEPTION
 		WHEN others THEN
 --
@@ -212,7 +279,7 @@ BEGIN
 			GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 			error_message:='rif40_GetAdjacencyMatrix() caught: '||E'\n'||
 				SQLERRM::VARCHAR||' in SQL> '||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
-			RAISE INFO '52003: %', error_message;
+			RAISE INFO '52006: %', error_message;
 --
 			RAISE;
 	END;

@@ -137,7 +137,7 @@ NO_ALTER_SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_use
 SOURCES=$(NO_ALTER_SOURCES) test_6_middleware_1.sql test_4_study_id_1.sql test_5_clone_delete_test.sql \
 	test_7_middleware_2.sql
 #	test_8_triggers.sql
-
+SAHSULAND_EMPTY_SOURCES=test_1_sahsuland_geography.sql test_2_ddl_checks.sql test_3_user_setup.sql
 #
 # Derive targets from sources
 # Phony (i.e. not a file) targets
@@ -146,17 +146,19 @@ SOURCES=$(NO_ALTER_SOURCES) test_6_middleware_1.sql test_4_study_id_1.sql test_5
 ifeq ($(PGDATABASE),sahsuland)
 #
 TARGETS=$(SOURCES:%.sql=%.sahsuland_rpt)
+SAHSULAND_EMPTY_TARGETS=$(SAHSULAND_EMPTY_SOURCES:%.sql=%.sahsuland_rpt)
 NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.sahsuland_rpt)
 .SUFFIXES: .sql .sahsuland_rpt
 .sql.sahsuland_rpt:
 		$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 
 #
-$(info Database is: sahsuland; targets: $(TARGETS); no_alter targets: $(NO_ALTER_TARGETS)) 	
+$(info Database is: sahsuland; targets: $(TARGETS); no_alter targets: $(NO_ALTER_TARGETS); sahsuland_empty targets: $(SAHSULAND_EMPTY_TARGETS)) 	
 #	
 else
 ifeq ($(PGDATABASE),sahsuland_empty)
 #
-TARGETS=$(SOURCES:%.sql=%.sahsuland_empty_rpt)
+TARGETS=$(SAHSULAND_EMPTY_SOURCES:%.sql=%.sahsuland_empty_rpt)
+SAHSULAND_EMPTY_TARGETS=$(SAHSULAND_EMPTY_SOURCES:%.sql=%.sahsuland_rpt)
 DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_empty_rpt)
 .SUFFIXES: .sql .sahsuland_empty_rpt
 .sql.sahsuland_empty_rpt:
@@ -168,6 +170,7 @@ else
 ifeq ($(PGDATABASE),sahsuland_dev)
 #
 TARGETS=$(SOURCES:%.sql=%.sahsuland_dev_rpt)
+DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_empty_rpt)
 NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.sahsuland_dev_rpt)
 .SUFFIXES: .sql .sahsuland_dev_rpt
 .sql.sahsuland_dev_rpt:

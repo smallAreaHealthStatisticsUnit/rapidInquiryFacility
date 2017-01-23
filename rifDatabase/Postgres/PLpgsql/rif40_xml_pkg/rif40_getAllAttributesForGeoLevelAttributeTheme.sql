@@ -11,6 +11,8 @@
 -- Rapid Enquiry Facility (RIF) - Web services integration functions for middleware
 --     				  GetAllAttributesForGeoLevelAttributeTheme
 --
+-- Tilemaker converted 
+--
 -- Copyright:
 --
 -- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -422,41 +424,76 @@ by 3;
 			       	       b.is_numeric::BOOLEAN AS is_numeric	
 				  FROM b
 				 ORDER BY 1, 6 /* population */;
-		ELSIF l_theme = 'geometry' THEN
-			RETURN QUERY
-				WITH a AS (
-					SELECT 't_rif40_'||LOWER(a.geography)||'_geometry' AS geometry_table,
-					       a.description AS source_description
-					  FROM rif40_geographies a
-				), b AS (
-					SELECT a.geometry_table,
-					       b.column_name,
-					       b.ordinal_position,
-					       a.source_description,
-						   CASE WHEN a.geometry_table IS NOT NULL THEN
-									COALESCE(col_description(quote_ident(LOWER((a.geometry_table)))::regclass /* Obj id */, 
-										b.ordinal_position /* Column number */), '[No comment for Geography table]') 
-								ELSE '[Geography table not yet created]' END AS name_description,
-					       CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
-					  FROM a, information_schema.columns b 
-					 WHERE quote_ident(LOWER(a.geometry_table)) = b.table_name
-					   AND b.column_name NOT IN ('area_id', 'geolevel_name', 'gid', 'gid_rowindex',
-							'optimised_geometry', 'optimised_geometry_2', 'optimised_geometry_3', 
-							'shapefile_geometry', 
-							'optimised_geojson', 'optimised_geojson_2', 'optimised_geojson_3', 'geography') 	
-						/* Not relevant/You get this anyway!!! */
-					   AND (l_attribute_name_array IS NULL OR UPPER(b.column_name) IN (
-							SELECT UPPER(unnest(l_attribute_name_array)))) 
-		 		)
-				SELECT LOWER(b.geometry_table)::VARCHAR AS attribute_source,
-				       b.column_name::VARCHAR AS attribute_name,
-				       l_theme::VARCHAR AS theme,
-				       b.source_description::VARCHAR AS source_description,
-				       b.name_description::VARCHAR AS name_description,
-				       b.ordinal_position::INTEGER AS ordinal_position,
-		       		       b.is_numeric::BOOLEAN AS is_numeric	
-				  FROM b
-				 ORDER BY 1, 6 /* geometry */;
+		ELSIF l_theme = 'geometry' THEN			
+			IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+				RETURN QUERY
+					WITH a AS (
+						SELECT 't_rif40_'||LOWER(a.geography)||'_geometry' AS geometry_table,
+							   a.description AS source_description
+						  FROM rif40_geographies a
+					), b AS (
+						SELECT a.geometry_table,
+							   b.column_name,
+							   b.ordinal_position,
+							   a.source_description,
+							   CASE WHEN a.geometry_table IS NOT NULL THEN
+										COALESCE(col_description(quote_ident(LOWER((a.geometry_table)))::regclass /* Obj id */, 
+											b.ordinal_position /* Column number */), '[No comment for Geography table]') 
+									ELSE '[Geography table not yet created]' END AS name_description,
+							   CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
+						  FROM a, information_schema.columns b 
+						 WHERE quote_ident(LOWER(a.geometry_table)) = b.table_name
+						   AND b.column_name NOT IN ('area_id', 'geolevel_name', 'gid', 'gid_rowindex',
+								'optimised_geometry', 'optimised_geometry_2', 'optimised_geometry_3', 
+								'shapefile_geometry', 
+								'optimised_geojson', 'optimised_geojson_2', 'optimised_geojson_3', 'geography') 	
+							/* Not relevant/You get this anyway!!! */
+						   AND (l_attribute_name_array IS NULL OR UPPER(b.column_name) IN (
+								SELECT UPPER(unnest(l_attribute_name_array)))) 
+					)
+					SELECT LOWER(b.geometry_table)::VARCHAR AS attribute_source,
+						   b.column_name::VARCHAR AS attribute_name,
+						   l_theme::VARCHAR AS theme,
+						   b.source_description::VARCHAR AS source_description,
+						   b.name_description::VARCHAR AS name_description,
+						   b.ordinal_position::INTEGER AS ordinal_position,
+							   b.is_numeric::BOOLEAN AS is_numeric	
+					  FROM b
+					 ORDER BY 1, 6 /* geometry */;
+			ELSE
+				RETURN QUERY
+					WITH a AS (
+						SELECT LOWER(c1_rec.geometrytable) AS geometry_table,
+							   a.description AS source_description
+						  FROM rif40_geographies a
+					), b AS (
+						SELECT a.geometry_table,
+							   b.column_name,
+							   b.ordinal_position,
+							   a.source_description,
+							   CASE WHEN a.geometry_table IS NOT NULL THEN
+										COALESCE(col_description(quote_ident(LOWER((a.geometry_table)))::regclass /* Obj id */, 
+											b.ordinal_position /* Column number */), '[No comment for Geography table]') 
+									ELSE '[Geography table not yet created]' END AS name_description,
+							   CASE WHEN b.numeric_precision IS NOT NULL THEN true ELSE false END is_numeric
+						  FROM a, information_schema.columns b 
+						 WHERE quote_ident(LOWER(a.geometry_table)) = b.table_name
+						   AND b.column_name NOT IN ('areaid', 'geolevel_id', 'geom', 'wkt', 'zoomlevel') 	
+							/* Not relevant/You get this anyway!!! */
+						   AND (l_attribute_name_array IS NULL OR UPPER(b.column_name) IN (
+								SELECT UPPER(unnest(l_attribute_name_array)))) 
+					)
+					SELECT LOWER(b.geometry_table)::VARCHAR AS attribute_source,
+						   b.column_name::VARCHAR AS attribute_name,
+						   l_theme::VARCHAR AS theme,
+						   b.source_description::VARCHAR AS source_description,
+						   b.name_description::VARCHAR AS name_description,
+						   b.ordinal_position::INTEGER AS ordinal_position,
+							   b.is_numeric::BOOLEAN AS is_numeric	
+					  FROM b
+					 ORDER BY 1, 6 /* geometry */;
+			
+			END IF;
 		ELSE	
 --	
 -- This may mean the theme is not supported yet...

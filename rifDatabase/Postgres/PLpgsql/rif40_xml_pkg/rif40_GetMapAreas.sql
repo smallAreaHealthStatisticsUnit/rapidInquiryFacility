@@ -12,6 +12,8 @@
 --     				  rif40_GetMapAreas() - Get area IDs for <geolevel_view> for 
 --											map area bounding box
 --
+-- Tilemaker converted 
+--
 -- Copyright:
 --
 -- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -189,7 +191,6 @@ BEGIN
 --
 -- Generate SQL statement
 --
-
 	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
 		sql_stmt:='WITH a AS ( /* Pre tilemaker: no geometry table */'||E'\n'||
 			  '	SELECT area_id,'||E'\n'||
