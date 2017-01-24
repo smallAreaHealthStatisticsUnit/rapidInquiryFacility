@@ -33,3 +33,8 @@ refactor and removal of duplicate code. JQuery UI frontend, zip, dbf and ESRI ex
 * [September 2016](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2016/September%202016.md)
 * [October 2016](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2016/October%202016.md)
 * [November 2016](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2016/November%202016.md)
+* [December 2016](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2016/December%202016.md)
+
+### 2017
+
+* [January 2017](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/January%202016.md)
