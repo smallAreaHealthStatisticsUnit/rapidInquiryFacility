@@ -1,6 +1,5 @@
-/* CONTROLLER for disease submission retrieve study modal
- * 
- * 
+/* 
+ * CONTROLLER for disease submission summary study modal
  */
 angular.module("RIF")
         .controller('ModalSummaryCtrl', ['$scope', '$uibModal', 'ModelService', '$sce',

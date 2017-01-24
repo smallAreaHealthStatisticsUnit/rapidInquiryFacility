@@ -152,7 +152,7 @@ angular.module("RIF")
                                     html2canvas(thisScale, {
                                         onrendered: function (canvas1) {
                                             thisScaleCanvas = canvas1;
-                                            if (!angular.isUndefined(scope.child)) {
+                                            if (!angular.isUndefined(scope.child.renderMap)) {
                                                 scope.child.renderMap(attr.mapid);
                                             } else {
                                                 scope.renderMap(attr.mapid);

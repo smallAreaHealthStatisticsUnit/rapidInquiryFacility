@@ -31,7 +31,7 @@ angular.module("RIF")
                         features: [],
                         brewerName: "LightGreen",
                         intervals: 1,
-                        feature: "smoothed_smr",
+                        feature: "relative_risk",
                         invert: false,
                         method: "quantile",
                         renderer:
@@ -49,7 +49,7 @@ angular.module("RIF")
                         features: [],
                         brewerName: "LightGreen",
                         intervals: 1,
-                        feature: "smoothed_smr",
+                        feature: "relative_risk",
                         invert: false,
                         method: "quantile",
                         renderer:
@@ -64,39 +64,41 @@ angular.module("RIF")
                     }
                 };
                 var defaults = angular.copy(JSON.parse(JSON.stringify(maps)));
+                
                 //used in viewer map
-                function renderFeature(scale, attr, selected) {
+                function renderFeatureMapping(scale, value, selected) {
                     //returns fill colour
                     //selected
-                    if (selected && !angular.isUndefined(attr)) {
+                    if (selected && !angular.isUndefined(value)) {
                         return "green";
                     }
                     //choropleth
-                    if (scale && !angular.isUndefined(attr)) {
-                        return scale(attr);
-                    } else if (angular.isUndefined(attr)) {
-                        return "gray";
+                    if (scale && !angular.isUndefined(value)) {
+                        return scale(value);
+                    } else if (angular.isUndefined(value)) {
+                        return "lightgray";
                     } else {
                         return "#9BCD9B";
                     }
                 }
 
                 //used in disease mapping
-                function renderFeature2(feature, value, scale, attr, selection) {
+                function renderFeatureViewer(scale, feature, value, selection) { 
                     //returns [fill colour, border colour, border width]
                     //selected (a single polygon)
                     if (selection === feature.properties.area_id) {
-                        if (scale && attr !== "") {
+                        if (scale && !angular.isUndefined(value)) {
                             return [scale(value), "green", 5];
                         } else {
                             return ["lightgreen", "green", 5];
                         }
                     }
                     //choropleth
-                    if (scale && !angular.isUndefined(attr)) {
+                    if (scale && !angular.isUndefined(value)) {
                         return [scale(value), "gray", 1];
+                    } else if (angular.isUndefined(value)) {
+                        return ["lightgray", "gray", 1];
                     } else {
-                        //constant colour
                         return ["#9BCD9B", "gray", 1];
                     }
                 }
@@ -264,11 +266,11 @@ angular.module("RIF")
                     getMaps: function (i) {
                         return maps[i];
                     },
-                    getRenderFeature: function (layer, scale, attr) {
-                        return renderFeature(layer, scale, attr);
+                    getRenderFeatureMapping: function (scale, value, selected) {
+                        return renderFeatureMapping(scale, value, selected);
                     },
-                    getRenderFeature2: function (feature, layer, scale, attr, selected) {
-                        return renderFeature2(feature, layer, scale, attr, selected);
+                    getRenderFeatureViewer: function (scale, feature, value, selected) {
+                        return renderFeatureViewer(scale, feature, value, selected);
                     },
                     getChoroScale: function (method, domain, rangeIn, flip, map) {
                         return choroScale(method, domain, rangeIn, flip, map);

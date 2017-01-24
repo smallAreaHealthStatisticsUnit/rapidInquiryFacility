@@ -1,5 +1,5 @@
-/* SERVICE for map-table directive in comaprison and study areas
- * Used by rifd-dsub-maptable.js
+/* 
+ * SERVICE for map-table directive in comaprison and study areas
  */
 /* global d3 */
 
@@ -19,21 +19,21 @@ angular.module("RIF")
                         rowTemplate: rowTemplate()
                     };
                     var areaTableColumnDefs = [
-                        {field: 'id', enableHiding: false, width: "*"},
+                        {field: 'area_id', enableHiding: false, width: "*"},
                         {field: 'label', enableHiding: false, width: "*"},
                         {field: 'band', enableHiding: false, width: "*"}
                     ];
 
                     //Set-up rows to capture click and keypress events
                     function rowTemplate() {
-                        return  '<div id="testdiv" tabindex="0" ng-keydown="grid.appScope.keyDown($event)" ng-keyup="grid.appScope.keyUp($event);">' +
+                        return  '<div id="testdiv" tabindex="0" ng-keydown="grid.appScope.keyDown($event)" ng-keyup="grid.appScope.keyUp($event)";>' +
                                 '<div style="height: 100%" ng-class="{ ' +
                                 'band1: row.entity.band===1,' +
                                 'band2: row.entity.band===2,' +
                                 'band3: row.entity.band===3,' +
                                 'band4: row.entity.band===4,' +
                                 'band5: row.entity.band===5,' +
-                                'band9: row.entity.band===6' +
+                                'band6: row.entity.band===6' +
                                 '}">' +
                                 '<div ng-click="grid.appScope.rowClick(row)">' +
                                 '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>' +
@@ -46,7 +46,7 @@ angular.module("RIF")
                             var rowCollection = [];
                             for (var i = 0; i < data.objects['2_1_1'].geometries.length; i++) {
                                 var obj = {
-                                    id: data.objects['2_1_1'].geometries[i].properties.area_id,
+                                    area_id: data.objects['2_1_1'].geometries[i].properties.area_id,
                                     label: data.objects['2_1_1'].geometries[i].properties.name,
                                     band: data.objects['2_1_1'].geometries[i].properties.band
                                 };
@@ -60,14 +60,6 @@ angular.module("RIF")
                         },
                         getAreaTableColumnDefs: function () {
                             return areaTableColumnDefs;
-                        },
-                        //used for table multiple select
-                        matchRowNumber: function (visible, id) {
-                            for (var i = 0; i < visible.length; i++) {
-                                if (visible[i].entity.id === id) {
-                                    return(i);
-                                }
-                            }
                         }
                     };
                 });

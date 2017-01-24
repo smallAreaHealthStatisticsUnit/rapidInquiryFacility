@@ -18,7 +18,9 @@ Used by rifd-dsub-maptable.js
 </div>      
 <button class="mapListButton" ng-click="openFromList()">Upload from List</button>
 <div class='modalAreaSelectionContent'>
-    <div ng-if="!refresh" class="grid" ui-grid="gridOptions" ui-grid-selection ui-grid-resize-columns></div>
+    <div ng-controller="MultiSelectCtrl">
+        <div ng-if="!refresh" class="grid" ng-mouseleave="mouseleave($event)" ui-grid="gridOptions" ui-grid-selection ui-grid-resize-columns></div>
+    </div>
     <div id='areaSelectionMap'>
         <div class="submenuMapping" >
             <ul class="mapBoxOpts">
@@ -45,7 +47,7 @@ Used by rifd-dsub-maptable.js
 
             </ul>                 
         </div>    
-        <leaflet id= "area" tiles="tiles" width="100%" height="100%" geojson="geojson"></leaflet>      
+        <leaflet id= "area" tiles="tiles" width="100%" height="100%" geojson="geojson" lf-center="input.center"></leaflet>      
     </div>  
 
     <div id='mapSelectionCounter' class='mapCounter'>

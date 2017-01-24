@@ -18,7 +18,7 @@ Viewer
         <div class="mappingPageLabel">VIEW RESULTS</div>
         <div >
             <div>Study:</div>
-            <select ng-change='child.updateSex("viewermap")'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +   ": " +   s.name) for s in child.studyIDs'></select>
+            <select ng-change='child.updateSex("viewermap")'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +       ": " +       s.name) for s in child.studyIDs'></select>
         </div>
         <div>
             <div>Sex:</div>
@@ -68,8 +68,8 @@ Viewer
                 <leaflet id="viewermap" tiles="thisLayer[viewermap]" width="100%" height="calc(100% - 40px)" lf-center="center"></leaflet>  
             </div>
             <div ui-layout-container class="js-back">
-                <div ui-grid="viewerTableOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns ui-grid-move-columns ui-grid-exporter class="grid-viewer" ng-grid="viewerTableOptions"></div>
+                <div ng-controller="MultiSelectCtrl">
+                    <div ui-grid="viewerTableOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns ui-grid-move-columns ui-grid-exporter class="grid-viewer" ng-mouseleave="mouseleave($event)" ng-grid="viewerTableOptions"></div>
+                </div>
             </div>
         </div>
-    </div>
-</div>

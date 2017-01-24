@@ -30,10 +30,10 @@ angular.module("RIF")
                         }
                     }
                     return {
-                        get_pointinpolygon: function (point, poly) {
+                        getPointinpolygon: function (point, poly) {
                             return isPointInPolygon(point, poly);
                         },
-                        get_pointincircle: function (point, circle) {
+                        getPointincircle: function (point, circle) {
                             return isPointInCircle(point, circle);
                         }
                     };

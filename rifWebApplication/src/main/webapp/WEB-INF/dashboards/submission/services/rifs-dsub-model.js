@@ -5,7 +5,7 @@
 angular.module("RIF")
         .factory('ModelService', function (StudyAreaStateService, CompAreaStateService, StatsStateService,
                 SubmissionStateService, ParameterStateService, user) {
-            updateModel = function () {                               
+            updateModel = function () {
                 var model = {
                     "rif_job_submission": {
                         "submitted_by": user.currentUser,
@@ -40,7 +40,18 @@ angular.module("RIF")
                                     }
                                 },
                                 "map_areas": {
-                                    "map_area": StudyAreaStateService.getState().polygonIDs
+                                    "map_area": function () {
+                                        var tmp = [];
+                                        for (var i = 0; i < StudyAreaStateService.getState().polygonIDs.length; i++) {
+                                            tmp.push({
+                                                "id": StudyAreaStateService.getState().polygonIDs[i].area_id,
+                                                "gid": StudyAreaStateService.getState().polygonIDs[i].gid,
+                                                "label": StudyAreaStateService.getState().polygonIDs[i].label,
+                                                "band": StudyAreaStateService.getState().polygonIDs[i].band
+                                            });
+                                        }
+                                        return tmp;
+                                    }()
                                 }
                             },
                             "comparison_area": {
@@ -59,7 +70,18 @@ angular.module("RIF")
                                     }
                                 },
                                 "map_areas": {
-                                    "map_area": CompAreaStateService.getState().polygonIDs
+                                    "map_area": function () {
+                                        var tmp = [];
+                                        for (var i = 0; i < CompAreaStateService.getState().polygonIDs.length; i++) {
+                                            tmp.push({
+                                                "id": CompAreaStateService.getState().polygonIDs[i].area_id,
+                                                "gid": CompAreaStateService.getState().polygonIDs[i].gid,
+                                                "label": CompAreaStateService.getState().polygonIDs[i].label,
+                                                "band": CompAreaStateService.getState().polygonIDs[i].band
+                                            });
+                                        }
+                                        return tmp;
+                                    }()
                                 }
                             },
                             "investigations": {"investigation": ParameterStateService.getModelInvestigation()}

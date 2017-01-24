@@ -1,12 +1,6 @@
 /*
  * DIRECTIVE for map and table linked area selections
  * Used in Study Area and Comparison Area Modals
- * 
- * Map and table selections are synchronised by updating the array 'selectedPolygon'
- * 'selectedPolygon' is updated using click events on the map and table
- * captured clicks do not lead directly to an update of the map or table rather
- * 'selectedPolygon' is monitored using a $watchCollection which renders the selections on changes
- * 
  */
 
 /* global L, d3, key, topojson */
@@ -19,6 +13,9 @@ angular.module("RIF")
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
                     link: function ($scope) {
+
+                        //Reference the child scope
+                        $scope.child = {};
 
                         //TODO: These will be input to get Tiles Method
                         //pad(<Number> bufferRatio)	LatLngBounds	
@@ -35,20 +32,24 @@ angular.module("RIF")
                             //TODO: track map extents and zoomlevel for getTile service
                             leafletData.getMap("area").then(function (map) {
                                 map.on('zoomend', function (e) {
-                                    $scope.input.zoomLevel = map.getZoom();
+                                    $scope.input.center.zoom = map.getZoom();
                                     myZoomLevel = map.getZoom();
                                     //              console.log(myZoomLevel);
                                 });
                                 map.on('moveend', function (e) {
-                                    $scope.input.view = map.getCenter();
+                                    $scope.input.center.lng = map.getCenter().lng;
+                                    $scope.input.center.lat = map.getCenter().lat;
                                     myBbox = map.getBounds();
                                     var b = "N: " + myBbox.getNorth() + " S: " + myBbox.getSouth() + " E: " + myBbox.getEast() + " W: " + myBbox.getWest();
                                     //              console.log(b);
                                 });
+                                //Set initial map extents
+                                $scope.center = $scope.input.center;
+                                //scalebar
                                 L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-
                                 //Attributions to open in new window
                                 map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                                map.doubleClickZoom.disable();
                             });
                         });
 
@@ -76,7 +77,6 @@ angular.module("RIF")
                         //d3 polygon rendering, changed by slider
                         $scope.transparency = $scope.input.transparency;
 
-
                         /*
                          * TOOL STRIP
                          */
@@ -100,13 +100,13 @@ angular.module("RIF")
                         $scope.selectAll = function () {
                             $scope.selectedPolygon.length = 0;
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
-                                $scope.selectedPolygon.push({id: $scope.gridOptions.data[i].id, gid: $scope.gridOptions.data[i].id, label: $scope.gridOptions.data[i].label, band: $scope.currentBand});
+                                $scope.selectedPolygon.push({id: $scope.gridOptions.data[i].area_id, gid: $scope.gridOptions.data[i].area_id, label: $scope.gridOptions.data[i].label, band: $scope.currentBand});
                             }
                         };
 
                         $scope.changeOpacity = function () {
                             $scope.input.transparency = $scope.transparency;
-                            $scope.topoLayer.eachLayer(handleLayer);
+                            $scope.geoJSON.eachLayer(handleLayer);
                         };
 
                         //Reset only the selected band back to 0
@@ -164,10 +164,10 @@ angular.module("RIF")
                                 leafletData.getMap("area").then(function (map) {
                                     latlngList = [];
                                     centroidMarkers = new L.layerGroup();
-                                    if (map.hasLayer($scope.topoLayer)) {
-                                        map.removeLayer($scope.topoLayer);
+                                    if (map.hasLayer($scope.geoJSON)) {
+                                        map.removeLayer($scope.geoJSON);
                                     }
-                                    $scope.topoLayer = new L.TopoJSON(res.data, {
+                                    $scope.geoJSON = new L.TopoJSON(res.data, {
                                         renderer: L.canvas(),
                                         style: style,
                                         onEachFeature: function (feature, layer) {
@@ -203,7 +203,7 @@ angular.module("RIF")
                                                 $scope.thisPolygon = feature.properties.name;
                                             });
                                             layer.on('mouseout', function (e) {
-                                                $scope.topoLayer.resetStyle(e.target);
+                                                $scope.geoJSON.resetStyle(e.target);
                                                 $scope.thisPolygon = "";
                                             });
                                             layer.on('click', function (e) {
@@ -226,10 +226,10 @@ angular.module("RIF")
                                             });
                                         }
                                     });
-                                    maxbounds = $scope.topoLayer.getBounds();
-                                    $scope.topoLayer.addTo(map);
+                                    maxbounds = $scope.geoJSON.getBounds();
+                                    $scope.geoJSON.addTo(map);
                                     $scope.totalPolygonCount = latlngList.length;
-                                    if ($scope.input.view.lng === 0) {
+                                    if ($scope.input.center.lng === 0) {
                                         leafletData.getMap("area").then(function (map) {
                                             map.fitBounds(maxbounds);
                                         });
@@ -314,8 +314,6 @@ angular.module("RIF")
                                     $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
                                     map.addLayer($scope.thisLayer);
                                 }
-                                //restore setView
-                                map.setView($scope.input.view, $scope.input.zoomLevel);
                                 //hack to refresh map
                                 setTimeout(function () {
                                     map.invalidateSize();
@@ -352,67 +350,6 @@ angular.module("RIF")
                                 fillOpacity: $scope.transparency
                             });
                         }
-
-                        /*
-                         * TABLE CONTROLS
-                         */
-                        //Multiple select with shift
-                        //detect shift key (16) down
-                        var bShift = false;
-                        var multiStart = -1;
-                        var multiStop = -1;
-                        $scope.keyDown = function ($event) {
-                            if (!bShift && $event.keyCode === 16) {
-                                bShift = true;
-                            }
-                        };
-                        //detect shift key (16) up
-                        $scope.keyUp = function ($event) {
-                            if (bShift && $event.keyCode === 16) {
-                                bShift = false;
-                                multiStop = -1;
-                            }
-                        };
-
-                        //Table click event to update selectedPolygon 
-                        $scope.rowClick = function (row) {
-                            var myVisibleRows = $scope.gridApi.core.getVisibleRows();
-                            if (!bShift) {
-                                //We are doing a single click select on the table
-                                var thisPoly = row.entity.label;
-                                var thisPolyID = row.entity.id;
-                                var bFound = false;
-                                for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                    if ($scope.selectedPolygon[i].id === thisPolyID) {
-                                        bFound = true;
-                                        $scope.selectedPolygon.splice(i, 1);
-                                        break;
-                                    }
-                                }
-                                if (!bFound) {
-                                    $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
-                                }
-                            } else {
-                                //We are doing a multiple select on the table, shift key is down
-                                multiStop = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
-                                for (var i = Math.min(multiStop, multiStart);
-                                        i <= Math.min(multiStop, multiStart) + (Math.abs(multiStop - multiStart)); i++) {
-                                    var thisPoly = myVisibleRows[i].entity.label;
-                                    var thisPolyID = myVisibleRows[i].entity.id;
-                                    var bFound = false;
-                                    for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                                        if ($scope.selectedPolygon[j].id === thisPolyID) {
-                                            bFound = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!bFound) {
-                                        $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
-                                    }
-                                }
-                            }
-                            multiStart = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
-                        };
 
                         //*********************************************************************************************************************
                         //SELECTION METHODS
@@ -474,9 +411,9 @@ angular.module("RIF")
                                 //is point in defined polygon?
                                 var test;
                                 if (shape.circle) {
-                                    test = GISService.get_pointincircle(point[0], shape);
+                                    test = GISService.getPointincircle(point[0], shape);
                                 } else {
-                                    test = GISService.get_pointinpolygon(point[0], shape);
+                                    test = GISService.getPointinpolygon(point[0], shape);
                                 }
                                 if (test) {
                                     var thisPoly = point[1];
@@ -626,11 +563,11 @@ angular.module("RIF")
                                     var bInvalid = false;
                                     for (var i = 0; i < listOfIDs.length; i++) {
                                         for (var j = 0; j < $scope.gridOptions.data.length; j++) {
-                                            if ($scope.gridOptions.data[j].id === listOfIDs[i].ID) {
+                                            if ($scope.gridOptions.data[j].area_id === listOfIDs[i].ID) {
                                                 var thisBand = Number(listOfIDs[i].Band);
                                                 if ($scope.possibleBands.indexOf(thisBand) !== -1) {
                                                     bPushed = true;
-                                                    $scope.selectedPolygon.push({id: $scope.gridOptions.data[j].id, gid: $scope.gridOptions.data[j].id,
+                                                    $scope.selectedPolygon.push({id: $scope.gridOptions.data[j].area_id, gid: $scope.gridOptions.data[j].area_id,
                                                         label: $scope.gridOptions.data[j].label, band: Number(listOfIDs[i].Band)});
                                                     break;
                                                 } else {
@@ -660,9 +597,8 @@ angular.module("RIF")
                                 keyboard: false
                             });
                         };
+
                         //********************************************************************************************************
-
-
                         //This function fires all the rendering from UI events
                         //Watch selectedPolygon array for any changes
                         $scope.$watchCollection('selectedPolygon', function (newNames, oldNames) {
@@ -681,31 +617,13 @@ angular.module("RIF")
                             }
                             //Update the area counter
                             $scope.selectedPolygonCount = newNames.length;
-                            if (!$scope.topoLayer) {
+                            if (!$scope.geoJSON) {
                                 return;
                             } else {
                                 //Update map selection
-                                $scope.topoLayer.eachLayer(handleLayer);
+                                $scope.geoJSON.eachLayer(handleLayer);
                             }
                         });
                     }
                 };
-            }])
-        .controller('ModalAOIShapefileInstanceCtrl', function ($scope, $uibModalInstance) {
-            $scope.close = function () {
-                $uibModalInstance.dismiss();
-            };
-            $scope.submit = function () {
-                $scope.uploadShapeFile();
-                $uibModalInstance.close();
-            };
-        })
-        .controller('ModalFileListInstanceCtrl', function ($scope, $uibModalInstance) {
-            $scope.close = function () {
-                $uibModalInstance.dismiss();
-            };
-            $scope.submit = function () {
-                $scope.uploadFile();
-                $uibModalInstance.close();
-            };
-        });
+            }]);

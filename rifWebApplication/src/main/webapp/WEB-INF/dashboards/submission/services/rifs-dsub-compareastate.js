@@ -1,6 +1,5 @@
-/* SERVICE to store state of comparison area modal
- * will be used eventually to load studies
- * and also write to the JSON model object
+/* 
+ * SERVICE to store state of comparison area modal
  */
 angular.module("RIF")
         .factory('CompAreaStateService',
@@ -9,8 +8,7 @@ angular.module("RIF")
                         polygonIDs: [],
                         selectAt: "",
                         studyResolution: "",
-                        zoomLevel: -1,
-                        view: [0, 0],
+                        center: {'zoom': 1, 'lng': 0, 'lat': 0},
                         transparency: 0.7,
                         geography: ""
                     };
