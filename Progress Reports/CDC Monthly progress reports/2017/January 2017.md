@@ -2,7 +2,7 @@
 
 ## Highlight
 
-* Results viewer improving through testing; R integration fully complete.
+* Data.loader and tilemaker integration on Postgres, SQL Server: tilemaker only.
 
 ## January Summary
 

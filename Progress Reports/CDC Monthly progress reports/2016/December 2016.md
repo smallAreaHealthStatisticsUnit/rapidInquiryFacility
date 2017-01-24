@@ -2,7 +2,7 @@
 
 ## Highlight
 
-* Results viewer improving through testing; R integration fully complete.
+* Good progress on dataload and geospatial tilemaker.
 
 ## December Summary
 
