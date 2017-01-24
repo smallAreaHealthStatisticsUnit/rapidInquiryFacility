@@ -287,7 +287,11 @@ BEGIN
 		sql_stmt:=sql_stmt||E'\t'||'SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js'||E'\n';
 	END IF;
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,'||E'\n'; 
+	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+		sql_stmt:=sql_stmt||E'\t'||'SELECT ROW_NUMBER() OVER(ORDER BY area_id) AS ord,'||E'\n'; 
+	ELSE
+		sql_stmt:=sql_stmt||E'\t'||'SELECT ROW_NUMBER() OVER(ORDER BY areaid) AS ord,'||E'\n'; 
+	END IF;
 	sql_stmt:=sql_stmt||E'\t'||'       ''{"type": "Feature","properties":''||'||E'\n'; 
 --
 -- If the zoom level is 12 (1 in 145,313) or more then the properties are minimised to just the gid.
@@ -310,7 +314,7 @@ BEGIN
 		IF zoom_level >= 12 OR NOT properties THEN
 			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{},''||'||E'\n';
 		ELSE
-			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{"area_id":"''||areaid||''"},''||'||E'\n';
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{"area_id":"''||areaid||''", "name":"''||areaid||''"},''||'||E'\n';
 		END IF;
 	END IF;
 --
@@ -319,24 +323,20 @@ BEGIN
 			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||optimised_geojson||''}'' AS js'||E'\n'; 
 		ELSE
 			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||optimised_geojson||''} /* ''||'||E'\n';
-			sql_stmt:=sql_stmt||E'\t'||'       row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js'||E'\n'; 
+			sql_stmt:=sql_stmt||E'\t'||'       ROW_NUMBER() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js'||E'\n'; 
 		END IF;
 	ELSE -- Will be slow - but we should not longer be using this function
-		IF produce_json_only THEN /* No comments */
-			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||ST_AsGeoJSON(geom)||''}'' AS js'||E'\n'; 
-		ELSE
-			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||ST_AsGeoJSON(geom)||''} /* ''||'||E'\n';
-			sql_stmt:=sql_stmt||E'\t'||'       row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js'||E'\n'; 
-		END IF;
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||ST_AsGeoJSON(geom)||''}'' AS js'||E'\n' /* No comments */; 
 	END IF;
 --	
 	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
 		sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n';
 		sql_stmt:=sql_stmt||E'\t'||' WHERE geolevel_name = $1 /* <geolevel view> */ AND area_id IN (SELECT UNNEST($2) /* <geolevel area id list> */)'||E'\n'; 
 	ELSE
-		sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident(LOWER(c2_rec.geometrytable))||E'\n';
-		sql_stmt:=sql_stmt||E'\t'||' WHERE geolevel_id = $1 /* <geolevel view> */ AND areaid IN (SELECT UNNEST($2) /* <geolevel area id list> */)'||E'\n'; 
-		sql_stmt:=sql_stmt||E'\t'||'   AND zoomlevel  = $3'||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident(LOWER(c1_rec.geometrytable))||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||' WHERE geolevel_id = $1 /* <geolevel id> */'||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||'   AND areaid     IN (SELECT UNNEST($2) /* <geolevel area id list> */)'||E'\n'; 
+		sql_stmt:=sql_stmt||E'\t'||'   AND zoomlevel   = $3'||E'\n';
 	END IF;
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
 	IF produce_json_only THEN /* No comments */
@@ -390,9 +390,9 @@ BEGIN
 -- Create results temporary table, extract explain plan  using _rif40_geojson_explain_ddl() helper function.
 -- This ensures the EXPLAIN PLAN output is a field called explain_line 
 --
-			sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl('||quote_literal(sql_stmt)||', $1, $2)';
 			
 			IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+				sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl('||quote_literal(sql_stmt)||', $1, $2)';
 				FOR c3_rec IN EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list LOOP
 					IF explain_text IS NULL THEN
 						explain_text:=c3_rec.explain_line;
@@ -401,7 +401,8 @@ BEGIN
 					END IF;
 				END LOOP;
 			ELSE
-				FOR c3_rec IN EXECUTE sql_stmt USING geolevel_view, c2_rec.geolevel_id, zoom_level LOOP
+				sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl('||quote_literal(sql_stmt)||', $1, $2, $3)';
+				FOR c3_rec IN EXECUTE sql_stmt USING c2_rec.geolevel_id, geolevel_area_id_list, zoom_level LOOP
 					IF explain_text IS NULL THEN
 						explain_text:=c3_rec.explain_line;
 					ELSE
@@ -433,8 +434,13 @@ BEGIN
 --
 	ELSE
 		BEGIN
-			RETURN QUERY EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list;
-			GET DIAGNOSTICS i = ROW_COUNT;
+			IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+				RETURN QUERY EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list;
+				GET DIAGNOSTICS i = ROW_COUNT;
+			ELSE
+				RETURN QUERY EXECUTE sql_stmt USING c2_rec.geolevel_id, geolevel_area_id_list, zoom_level;
+				GET DIAGNOSTICS i = ROW_COUNT;			
+			END IF;
 		EXCEPTION
 			WHEN others THEN
 --
@@ -444,7 +450,10 @@ BEGIN
 										v_context = PG_EXCEPTION_CONTEXT;
 				error_message:='_rif40_get_geojson_as_js() caught: '||E'\n'||
 					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||
-							'Context: '||v_context::VARCHAR;
+							'Context: '||v_context::VARCHAR||E'\n'||
+							'geolevel_id: '||c2_rec.geolevel_id::Text||
+								', geolevel_area_id_list: '||geolevel_area_id_list::Text||
+								', zoom_level: '||zoom_level::Text;
 				RAISE INFO '50216: %', error_message;
 --
 				RAISE;

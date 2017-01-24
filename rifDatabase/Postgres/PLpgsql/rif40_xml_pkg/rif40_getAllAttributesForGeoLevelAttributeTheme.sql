@@ -529,8 +529,8 @@ by 3;
 --
 -- Check all attribute expected were found
 --
-		PERFORM rif40_log_pkg.rif40_error(-50806, 'rif40_getAllAttributesForGeoLevelAttributeTheme', 
-			'Geography: %, geolevel select: %, theme: %; SQL fetch only returned % attribute names, expected: % [%], took: %.', 			
+		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_getAllAttributesForGeoLevelAttributeTheme', 
+			'[50806] Geography: %, geolevel select: %, theme: %; SQL fetch only returned % attribute names, expected: % [%], took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			l_geolevel_select::VARCHAR		/* Geolevel select */, 
 			l_theme::VARCHAR			/* Theme */, 

@@ -110,13 +110,13 @@ $$;
 --
 -- Tests
 --
--- Check gid, gid_rowindex present
+-- Check gid, gid_rowindex present [REMOVED]
 --
 \pset title 'Check gid, gid_rowindex present'
-SElECT area_id, name, gid, gid_rowindex
-  FROM t_rif40_sahsu_geometry
- WHERE geolevel_name = 'LEVEL2'
- ORDER BY gid;
+SElECT areaid
+  FROM geometry_sahsuland
+ WHERE geolevel_id = 2 AND zoomlevel = 11
+ ORDER BY areaid;
 /*
  area_id |    name    | gid |     gid_rowindex
 ---------+------------+-----+-----------------------
@@ -144,7 +144,7 @@ SElECT area_id, name, gid, gid_rowindex
 -- Bounding box functions
 --
 \pset title 'rif40_getGeoLevelFullExtentForStudy: LEVEL2'
-SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtent('SAHSU' /* Geography */, 'LEVEL2' /* Geolevel view */);
+SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelFullExtent('SAHSULAND' /* Geography */, 'SAHSU_GRD_LEVEL2' /* Geolevel view */);
 /*
   y_max  |  x_max   |  y_min  |  x_min
 ---------+----------+---------+----------
@@ -159,7 +159,7 @@ WITH a AS (
 )
 SELECT b.* 
   FROM a, rif40_xml_pkg.rif40_getGeoLevelFullExtentForStudy(
-	'SAHSU' /* Geography */, 'LEVEL4' /* Geolevel view */, a.min_study_id /* Study ID */) b;
+	'SAHSULAND' /* Geography */, 'SAHSU_GRD_LEVEL4' /* Geolevel view */, a.min_study_id /* Study ID */) b;
 /*
   y_max  |  x_max   |  y_min  |  x_min
 ---------+----------+---------+----------
@@ -168,7 +168,7 @@ SELECT b.*
 */
 
 \pset title 'rif40_getGeoLevelBoundsForArea'
-SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU' /* Geography */, 'LEVEL2' /* Geolevel view */, '01.004' /* Map area ID */);
+SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSULAND' /* Geography */, 'SAHSU_GRD_LEVEL2' /* Geolevel view */, '01.004' /* Map area ID */);
 /*
   y_max  |  x_max   |  y_min  |  x_min
 ---------+----------+---------+----------
@@ -183,9 +183,9 @@ SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU' /* Geography 
 -- or in this case: 
 -- "View the <geolevel view> (e.g. LEVEL4) of <geolevel area> (e.g. 01.004) and select at <geolevel select> (e.g. LEVEL2) level".
 --
-\copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* return_one_row flag: output multiple rows so it is readable! */)) to ../psql_scripts/test_scripts/data/test_6_geojson_test_01.js 
-\copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSU' /* Geography */, 'LEVEL4' /* geolevel view */, 'LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* return_one_row flag: output multiple rows so it is readable! */, TRUE /* Produce JSON not JS */)) to ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json 
-\copy (SELECT CASE WHEN optimised_topojson::Text = '"X"' THEN optimised_geojson ELSE optimised_topojson END optimised_topojson FROM t_rif40_sahsu_maptiles WHERE tile_id = 'SAHSU_4_LEVEL4_0_0_0') to ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
+\copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSULAND' /* Geography */, 'SAHSU_GRD_LEVEL4' /* geolevel view */, 'SAHSU_GRD_LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* return_one_row flag: output multiple rows so it is readable! */)) to ../psql_scripts/test_scripts/data/test_6_geojson_test_01.js 
+\copy (SELECT * FROM rif40_xml_pkg.rif40_get_geojson_as_js('SAHSULAND' /* Geography */, 'SAHSU_GRD_LEVEL4' /* geolevel view */, 'SAHSU_GRD_LEVEL2' /* geolevel area */, '01.004' /* geolevel area id */, FALSE /* return_one_row flag: output multiple rows so it is readable! */, TRUE /* Produce JSON not JS */)) to ../psql_scripts/test_scripts/data/test_6_geojson_test_01.json 
+\copy (SELECT optimised_topojson FROM t_tiles_sahsuland WHERE tile_id = 'SAHSU_4_LEVEL4_0_0_0') to ../psql_scripts/test_scripts/data/test_6_sahsu_4_level4_0_0_0.json
  
 --
 -- GetGeoJsonTiles interface
@@ -193,7 +193,7 @@ SELECT * FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU' /* Geography 
 \pset title 'GetGeoJsonTiles interface'
 WITH a AS (
 	SELECT *
-          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSULAND', 'SAHSU_GRD_LEVEL2', '01.004')
 ), b AS (
 	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
 	  FROM a
@@ -216,8 +216,8 @@ WITH a AS (
 ) 
 SELECT SUBSTRING(
 		rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			'SAHSULAND'::VARCHAR 	/* Geography */, 
+			'SAHSU_GRD_LEVEL4'::VARCHAR 	/* geolevel view */, 
 			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
 			e.zoom_level::INTEGER /* Zoom level */)::Text 
 			FROM 1 FOR 160 /* Truncate to 160 chars */) AS json 
@@ -242,11 +242,11 @@ SELECT SUBSTRING(
 \pset title 'rif40_GetMapAreas interface'
 WITH a AS (
 	SELECT *
-          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSULAND', 'SAHSU_GRD_LEVEL2', '01.004')
 ) 
 SELECT rif40_xml_pkg.rif40_GetMapAreas(
-			'SAHSU' 	/* Geography */, 
-			'LEVEL4' 	/* geolevel view */, 
+			'SAHSULAND' 	/* Geography */, 
+			'SAHSU_GRD_LEVEL4' 	/* geolevel view */, 
 			a.y_max, a.x_max, a.y_min, a.x_min /* Bounding box - from cte */) AS json 
   FROM a LIMIT 4;
 --
@@ -254,7 +254,7 @@ SELECT rif40_xml_pkg.rif40_GetMapAreas(
 --
 \pset title 'Get SAHSULAND LEVEL4 covariates'
 SELECT * 
-  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'covariate');
+  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSULAND', 'SAHSU_GRD_LEVEL4', 'covariate');
 /*
       attribute_source       | attribute_name |   theme   |       source_description       |                         name_descriptio
 n                          | ordinal_position | is_numeric
@@ -282,7 +282,7 @@ Note there is currently no support for health themes.
  
 \pset title 'rif40_AttributeExistsForGeoLevelAttributeTheme() example'
 SELECT * 
-  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'population')
+  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSULAND', 'SAHSU_GRD_LEVEL4', 'population')
  WHERE is_numeric /* rif40_getNumericAttributesForGeoLevelAttributeTheme() example */;
 /*
  attribute_source | attribute_name |   theme    | source_description | name_description | ordinal_position | is_numeric
@@ -295,7 +295,7 @@ SELECT *
  
 \pset title 'rif40_AttributeExistsForGeoLevelAttributeTheme() example 2'
 SELECT * 
-  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'covariate', 
+  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSULAND', 'SAHSU_GRD_LEVEL4', 'covariate', 
 		ARRAY['SES'] /* rif40_AttributeExistsForGeoLevelAttributeTheme() example */);
 /*
       attribute_source       | attribute_name |   theme   |       source_description       |          name_description          | or
@@ -347,9 +347,9 @@ _position | is_numeric
 -- rif40_GetGeoLevelAttributeTheme() not implemented, purpose unclear
 -- rif40_GetGeometryColumnNames() 
 --
-\pset title 'rif40_GetGeometryColumnNames(SAHSU)'
+\pset title 'rif40_GetGeometryColumnNames(SAHSULAND)'
 SELECT * 
-  FROM rif40_xml_pkg.rif40_GetGeometryColumnNames('SAHSU');
+  FROM rif40_xml_pkg.rif40_GetGeometryColumnNames('SAHSULAND');
 /*
     column_name     |
 
@@ -383,7 +383,7 @@ ocessing as edges.
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_2' /* Temporary table */, 
-		'SAHSU', 'LEVEL2', 'health', 'sahsuland_cancer');
+		'SAHSULAND', 'SAHSU_GRD_LEVEL2', 'health', 'sahsuland_cancer');
 \pset title 'Demo 1. Sahsuland cancer. All defaults (i.e. all columns, fetch 1000 rows at offset 0)'
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
@@ -397,7 +397,7 @@ FETCH FORWARD 5 IN c4getallatt4theme_2;
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_1' /* Temporary table */, 
-		'SAHSU', 'LEVEL4', 'covariate', 'sahsuland_covariates_level4', ARRAY['SES', 'year']);
+		'SAHSULAND', 'SAHSU_GRD_LEVEL4', 'covariate', 'sahsuland_covariates_level4', ARRAY['SES', 'year']);
 \pset title 'Demo 2. covariate theme; specified columns (forcing re-sort); otherwise defaults'
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
@@ -443,7 +443,7 @@ Time: 6559.317 ms
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_3' /* Temporary table */, 
-		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop');
+		'SAHSULAND', 'SAHSU_GRD_LEVEL2', 'population', 'sahsuland_pop');
 --
 -- Create REFCURSOR
 --
@@ -490,7 +490,7 @@ SELECT rif40_xml_pkg.rif40_DeleteMapAreaAttributeSource('c4getallatt4theme_3');
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_3' /* Temporary table */, 
-		'SAHSU', 'LEVEL2', 'population', 'sahsuland_pop');
+		'SAHSULAND', 'SAHSU_GRD_LEVEL2', 'population', 'sahsuland_pop');
 \pset title 'Demo 4: Use of offset and row limit, cursor control using FETCH'
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue('c4getallatt4theme_3' /* Temporary table */);
@@ -534,7 +534,7 @@ SELECT rif40_log_pkg.rif40_add_to_debug('rif40_CreateMapAreaAttributeSource:DEBU
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_5' /* Must be unique with a TX */, 
-		'SAHSU', 'LEVEL2', 'geometry', 't_rif40_sahsu_geometry', 
+		'SAHSULAND', 'SAHSU_GRD_LEVEL2', 'geometry', 't_rif40_sahsu_geometry', 
 		ARRAY['name', 'area', 'total_males', 'total_females', 'population_year']);
 
 \pset title 'Demo 5: Check offset works OK'
@@ -557,8 +557,8 @@ SELECT * FROM pg_cursors;
 -- Test for code 50426 - now a debug message - not an error. Tile does not intersect sahsuland
 --
 SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			'SAHSULAND'::VARCHAR 	/* Geography */, 
+			'SAHSU_GRD_LEVEL4'::VARCHAR 	/* geolevel view */, 
 			52.4827805::REAL /* y_max */, 0::REAL /* x_max */, 50.736454::REAL /* y_min */, -2.8125 /* x_min - Bounding box */,
 			6::INTEGER /* Zoom level */,
 			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
@@ -567,30 +567,30 @@ SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
 -- Test for missing tiles
 --
 SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			'SAHSULAND'::VARCHAR 	/* Geography */, 
+			'SAHSU_GRD_LEVEL4'::VARCHAR 	/* geolevel view */, 
 			54.52108149544362::REAL /* y_max */, 6.679687499999985::REAL /* x_max */, 54.47003761280576::REAL /* y_min */, -6.767578125000016 /* x_min - Bounding box */,
 			10::INTEGER /* Zoom level */,
 			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
 			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
 SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			'SAHSULAND'::VARCHAR 	/* Geography */, 
+			'SAHSU_GRD_LEVEL4'::VARCHAR 	/* geolevel view */, 
 			54.52108149544362::REAL /* y_max */, 6.679687499999985::REAL /* x_max */, 54.47003761280576::REAL /* y_min */, 6.767578125000016 /* x_min - Bounding box */,
 			12::INTEGER /* Zoom level */,
 			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
 			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
 SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			'SAHSULAND'::VARCHAR 	/* Geography */, 
+			'SAHSU_GRD_LEVEL4'::VARCHAR 	/* geolevel view */, 
 			54.110942942724314::REAL /* y_max */, -6.328124999999994::REAL /* x_max */, 54.05938788662357::REAL /* y_min */, -6.416015624999993 /* x_min - Bounding box */,
 			12::INTEGER /* Zoom level */,
 			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
 			FALSE /* Lack of topoJSON is an error [Default: TRUE] */)::Text from 1 for 100) AS json;
 			
 SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			'SAHSULAND'::VARCHAR 	/* Geography */, 
+			'SAHSU_GRD_LEVEL4'::VARCHAR 	/* geolevel view */, 
 			11::INTEGER 		/* Zoom level */,
 			989::INTEGER 		/* X tile number */,
 			660::INTEGER		/* Y tile number */)::Text from 1 for 100) AS json;
