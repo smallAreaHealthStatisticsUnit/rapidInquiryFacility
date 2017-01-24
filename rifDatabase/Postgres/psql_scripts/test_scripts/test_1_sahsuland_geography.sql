@@ -54,9 +54,9 @@
 DO LANGUAGE plpgsql $$
 BEGIN
 	IF user = 'rif40' THEN
-		RAISE INFO 'test_1_sahsuland_geography.sql: T1__01: User check: %', user;	
+		RAISE INFO 'test_1_hierarchy_sahsuland.sql: T1__01: User check: %', user;	
 	ELSE
-		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1__02: User check failed: % is not rif40', user;	
+		RAISE EXCEPTION 'test_1_hierarchy_sahsuland.sql: T1__02: User check failed: % is not rif40', user;	
 	END IF;
 END;
 $$;
@@ -80,17 +80,17 @@ SELECT area_id, name, area, gid, total_males, total_females, population_year
 
 SELECT area_id, a.name, area, a.gid, b.gid, total_males, total_females, population_year
   FROM t_rif40_sahsu_geometry a
-			LEFT OUTER JOIN sahsuland_level4 b ON (a.area_id = b.level4)
+			LEFT OUTER JOIN sahsu_grd_level4 b ON (a.area_id = b.level4)
  WHERE geolevel_name = 'LEVEL4'
  ORDER BY 2 LIMIT 20;
  
  */
  
 --
--- There is a fault in the original intersection where islands were not handled correctly, so sahsuland_geography was updated
+-- There is a fault in the original intersection where islands were not handled correctly, so hierarchy_sahsuland was updated
 -- Note that the numbers now appear to be wrong!
 --
--- \COPY sahsuland_geography(level1, level2, level3, level4) TO '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+-- \COPY hierarchy_sahsuland(level1, level2, level3, level4) TO '../sahsuland/data/hierarchy_sahsuland.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 --
 -- This algorithm implments the prototype in: ../postgres/gis_intersection_prototype.sql. The SAHSU alogoritm differs in that
 -- Where intersections overlap (e.g. level4 appears in more than 1 level3) the level3 with the greatest intersected area is chosen 
@@ -126,22 +126,39 @@ SELECT area_id, a.name, area, a.gid, b.gid, total_males, total_females, populati
 (22 rows)
  */
 \pset title 'SAHSULAND geography WHERE level4 level3 substring != level3 (intersction fault in old RIF)'
-SELECT * FROM sahsuland_geography
- WHERE substr(level4, 1, 13) != level3;
+SELECT * FROM hierarchy_sahsuland
+ WHERE substr(sahsu_grd_level4, 1, 13) != sahsu_grd_level3;
 \pset title 
-SELECT * FROM sahsuland_geography WHERE level3 IN ('01.015.016900', '01.015.016200');
+SELECT * FROM hierarchy_sahsuland WHERE sahsu_grd_level3 IN ('01.015.016900', '01.015.016200');
 
-DROP TABLE IF EXISTS sahsuland_geography_orig;
-CREATE TABLE sahsuland_geography_orig AS SELECT * FROM sahsuland_geography;
-TRUNCATE TABLE sahsuland_geography_orig;
+DROP TABLE IF EXISTS hierarchy_sahsuland_orig;
+CREATE TABLE hierarchy_sahsuland_orig AS SELECT * FROM hierarchy_sahsuland;
+TRUNCATE TABLE hierarchy_sahsuland_orig;
 --
 -- Import geospatial intersection files
 --
-\COPY sahsuland_geography_orig(level1, level2, level3, level4) FROM  '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
+\COPY hierarchy_sahsuland_orig(sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4) FROM  '../sahsuland/data/sahsuland_geography.csv' WITH (FORMAT csv, QUOTE '"', ESCAPE '\');
 --
 -- For vi's benefit
-CREATE UNIQUE INDEX sahsuland_geography_orig_pk ON sahsuland_geography_orig(level4);
+CREATE UNIQUE INDEX hierarchy_sahsuland_orig_pk ON hierarchy_sahsuland_orig(sahsu_grd_level4);
 
+SELECT * FROM hierarchy_sahsuland
+EXCEPT
+SELECT * FROM hierarchy_sahsuland_orig
+ORDER BY 1, 2, 3, 4;
+
+SELECT * FROM hierarchy_sahsuland_orig
+EXCEPT
+SELECT * FROM hierarchy_sahsuland
+ORDER BY 1, 2, 3, 4;
+/*
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE INFO 'Aborting (script being tested)';
+	RAISE EXCEPTION 'C20999: Abort';
+END;
+$$;
+ */
 --\set VERBOSITY verbose
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -164,10 +181,10 @@ BEGIN
 -- Test parameter
 --
 	IF c4sm_rec.debug_level IN ('XXXX', 'XXXX:debug_level') THEN
-		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1-01: No -v testuser=<debug level> parameter';	
+		RAISE EXCEPTION 'test_1_hierarchy_sahsuland.sql: T1-01: No -v testuser=<debug level> parameter';	
 	ELSE
 		debug_level:=LOWER(SUBSTR(c4sm_rec.debug_level, 5))::INTEGER;
-		RAISE INFO 'T1--02: test_1_sahsuland_geography.sql: debug level parameter="%"', debug_level::Text;
+		RAISE INFO 'T1--02: test_1_hierarchy_sahsuland.sql: debug level parameter="%"', debug_level::Text;
 	END IF;
 --
 -- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
@@ -177,7 +194,7 @@ BEGIN
 		RAISE INFO 'T1--04: NULL debug_level';
 		debug_level:=0;
 	ELSIF debug_level > 4 THEN
-		RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1--03: Invalid debug level [0-4]: %', debug_level;
+		RAISE EXCEPTION 'test_1_hierarchy_sahsuland.sql: T1--03: Invalid debug level [0-4]: %', debug_level;
 	ELSIF debug_level BETWEEN 1 AND 4 THEN
 		RAISE INFO 'T1--04: debug_level %', debug_level;
         PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
@@ -185,95 +202,95 @@ BEGIN
 -- Enabled debug on select rif40_sm_pkg functions
 --
 		FOREACH l_function IN ARRAY rif40_pkg_functions LOOP
-			RAISE INFO 'T1--05: test_1_sahsuland_geography.sql: Enable debug for function: %', l_function;
+			RAISE INFO 'T1--05: test_1_hierarchy_sahsuland.sql: Enable debug for function: %', l_function;
 			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
 		END LOOP;
 	ELSE
 		RAISE INFO 'T1--04: debug_level %', debug_level;
 	END IF;
 --
--- Validate 2 sahsuland_geography tables are the same
+-- Validate 2 hierarchy_sahsuland tables are the same
 --
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__06(sahsuland_geography)' /* Test tag */, 'sahsuland_geography', 'sahsuland_geography_orig');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__06(hierarchy_sahsuland)' /* Test tag */, 'hierarchy_sahsuland', 'hierarchy_sahsuland_orig');
 --
 	CREATE TEMPORARY TABLE test_1_temp_1 AS
-	SELECT level4 FROM sahsuland_level4;
+	SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4;
 	CREATE TEMPORARY TABLE test_1_temp_2 AS
-	SELECT level4 FROM sahsuland_geography;
-	CREATE TEMPORARY TABLE test_1_temp_3 AS
-	SELECT DISTINCT level4 FROM x_sahsu_level4;
+	SELECT sahsu_grd_level4 FROM hierarchy_sahsuland;
+--	CREATE TEMPORARY TABLE test_1_temp_3 AS
+--	SELECT DISTINCT level4 FROM x_sahsu_level4;
 	PERFORM rif40_sql_pkg.rif40_table_diff('T1__07(level4)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__08(x_sahsu_level4)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
+--	PERFORM rif40_sql_pkg.rif40_table_diff('T1__08(x_sahsu_level4)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
-	DROP TABLE test_1_temp_3;
+--	DROP TABLE test_1_temp_3;
 --
 	CREATE TEMPORARY TABLE test_1_temp_1 AS
-	SELECT level3 FROM sahsuland_level3;
+	SELECT sahsu_grd_level3 FROM lookup_sahsu_grd_level3;
 	CREATE TEMPORARY TABLE test_1_temp_2 AS
-	SELECT DISTINCT level3 FROM sahsuland_geography;
-	CREATE TEMPORARY TABLE test_1_temp_3 AS
-	SELECT DISTINCT level3 FROM x_sahsu_level3;
+	SELECT DISTINCT sahsu_grd_level3 FROM hierarchy_sahsuland;
+--	CREATE TEMPORARY TABLE test_1_temp_3 AS
+--	SELECT DISTINCT level3 FROM x_sahsu_level3;
 	PERFORM rif40_sql_pkg.rif40_table_diff('T1__09(level3)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__10(x_sahsu_level3)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
+--	PERFORM rif40_sql_pkg.rif40_table_diff('T1__10(x_sahsu_level3)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
-	DROP TABLE test_1_temp_3;
+--  DROP TABLE test_1_temp_3;
 --
 	CREATE TEMPORARY TABLE test_1_temp_1 AS
-	SELECT level2 FROM sahsuland_level2;
+	SELECT sahsu_grd_level2 FROM lookup_sahsu_grd_level2;
 	CREATE TEMPORARY TABLE test_1_temp_2 AS
-	SELECT DISTINCT level2 FROM sahsuland_geography;
-	CREATE TEMPORARY TABLE test_1_temp_3 AS
-	SELECT DISTINCT level2 FROM x_sahsu_level2;
+	SELECT DISTINCT sahsu_grd_level2 FROM hierarchy_sahsuland;
+--	CREATE TEMPORARY TABLE test_1_temp_3 AS
+--	SELECT DISTINCT level2 FROM x_sahsu_level2;
 	PERFORM rif40_sql_pkg.rif40_table_diff('T1__11(level2)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_2');
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__12(x_sahsu_level2)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
+--	PERFORM rif40_sql_pkg.rif40_table_diff('T1__12(x_sahsu_level2)' /* Test tag */, 'test_1_temp_1', 'test_1_temp_3');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
-	DROP TABLE test_1_temp_3;
+--	DROP TABLE test_1_temp_3;
 --
 -- Tests 13-16 gid match
 --
 	CREATE TEMPORARY TABLE test_1_temp_1 AS
-	SELECT level1 AS area_id, name, gid FROM sahsuland_level1;
+	SELECT sahsu_grd_level1 AS area_id FROM lookup_sahsu_grd_level1;
 	CREATE TEMPORARY TABLE test_1_temp_2 AS
-	SELECT area_id, name, gid
-	  FROM t_rif40_sahsu_geometry 
-	 WHERE geolevel_name = 'LEVEL1';
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__13(level1 gid match: sahsuland_level1, t_rif40_sahsu_geometry[LEVEL1])' /* Test tag */, 
+	SELECT areaid AS area_id
+	  FROM geometry_sahsuland
+	 WHERE geolevel_id = 1  AND zoomlevel = 11;
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__13(level1 gid match: sahsu_grd_level1, t_rif40_sahsu_geometry[LEVEL1])' /* Test tag */, 
 		'test_1_temp_1', 'test_1_temp_2');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
 	
 	CREATE TEMPORARY TABLE test_1_temp_1 AS
-	SELECT level2 AS area_id, name, gid FROM sahsuland_level2;
+	SELECT sahsu_grd_level2 AS area_id FROM lookup_sahsu_grd_level2;
 	CREATE TEMPORARY TABLE test_1_temp_2 AS
-	SELECT area_id, name, gid
-	  FROM t_rif40_sahsu_geometry 
-	 WHERE geolevel_name = 'LEVEL2';
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__14(level2 gid match: sahsuland_level2, t_rif40_sahsu_geometry[LEVEL2])' /* Test tag */, 
+	SELECT areaid AS area_id
+	  FROM geometry_sahsuland 
+	 WHERE geolevel_id = 2 AND zoomlevel = 11;
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__14(level2 gid match: sahsu_grd_level2, geometry_sahsuland[2])' /* Test tag */, 
 		'test_1_temp_1', 'test_1_temp_2');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
 	
 	CREATE TEMPORARY TABLE test_1_temp_1 AS
-	SELECT level3 AS area_id, name, gid FROM sahsuland_level3;
+	SELECT sahsu_grd_level3 AS area_id FROM lookup_sahsu_grd_level3;
 	CREATE TEMPORARY TABLE test_1_temp_2 AS
-	SELECT area_id, name, gid
-	  FROM t_rif40_sahsu_geometry 
-	 WHERE geolevel_name = 'LEVEL3';
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__15(level3 gid match: sahsuland_level3, t_rif40_sahsu_geometry[LEVEL3])' /* Test tag */, 
+	SELECT areaid AS area_id
+	  FROM geometry_sahsuland 
+	 WHERE geolevel_id = 3 AND zoomlevel = 11;
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__15(level3 gid match: sahsu_grd_level3, geometry_sahsuland[3])' /* Test tag */, 
 		'test_1_temp_1', 'test_1_temp_2');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
 	
 	CREATE TEMPORARY TABLE test_1_temp_1 AS
-	SELECT level4 AS area_id, name, gid FROM sahsuland_level4;
+	SELECT sahsu_grd_level4 AS area_id FROM lookup_sahsu_grd_level4;
 	CREATE TEMPORARY TABLE test_1_temp_2 AS
-	SELECT area_id, name, gid
-	  FROM t_rif40_sahsu_geometry 
-	 WHERE geolevel_name = 'LEVEL4';
-	PERFORM rif40_sql_pkg.rif40_table_diff('T1__16(level4 gid match: sahsuland_level4, t_rif40_sahsu_geometry[LEVEL4])' /* Test tag */, 
+	SELECT areaid AS area_id
+	  FROM geometry_sahsuland 
+	 WHERE geolevel_id = 4 AND zoomlevel = 11;
+	PERFORM rif40_sql_pkg.rif40_table_diff('T1__16(level4 gid match: sahsu_grd_level4, geometry_sahsuland[4])' /* Test tag */, 
 		'test_1_temp_1', 'test_1_temp_2');
 	DROP TABLE test_1_temp_1;
 	DROP TABLE test_1_temp_2;
@@ -282,32 +299,32 @@ BEGIN
 END;
 $$;
 
-\pset title 'Movement diff sahsuland_geography_orig vs. sahsuland_geography'
+\pset title 'Movement diff hierarchy_sahsuland_orig vs. hierarchy_sahsuland'
 WITH a_missing AS (
-	SELECT level1, level2, level3, level4
-	  FROM sahsuland_geography
+	SELECT sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
+	  FROM hierarchy_sahsuland
 	EXCEPT
-	SELECT level1, level2, level3, level4
-	  FROM sahsuland_geography_orig
+	SELECT sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
+	  FROM hierarchy_sahsuland_orig
 ),
 a_extra AS (
-	SELECT level1, level2, level3, level4
-	  FROM sahsuland_geography_orig
+	SELECT sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
+	  FROM hierarchy_sahsuland_orig
 	EXCEPT
-	SELECT level1, level2, level3, level4
-	  FROM sahsuland_geography
+	SELECT sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
+	  FROM hierarchy_sahsuland
 ), b AS (
-	SELECT a_missing.level4, 
-               a_missing.level3 AS missing_level3, 
-               a_extra.level3 AS extra_level3, 
-               a_missing.level2 AS missing_level2, 
-               a_extra.level2 AS extra_level2, 
-               a_missing.level1 AS missing_level1, 
-               a_extra.level1 AS extra_level1 
+	SELECT a_missing.sahsu_grd_level4, 
+               a_missing.sahsu_grd_level3 AS missing_level3, 
+               a_extra.sahsu_grd_level3 AS extra_level3, 
+               a_missing.sahsu_grd_level2 AS missing_level2, 
+               a_extra.sahsu_grd_level2 AS extra_level2, 
+               a_missing.sahsu_grd_level1 AS missing_level1, 
+               a_extra.sahsu_grd_level1 AS extra_level1 
 	  FROM a_missing
-		LEFT OUTER JOIN a_extra ON (a_extra.level4 = a_missing.level4)
+		LEFT OUTER JOIN a_extra ON (a_extra.sahsu_grd_level4 = a_missing.sahsu_grd_level4)
 )
-SELECT level4,
+SELECT sahsu_grd_level4,
        CASE WHEN missing_level3 = extra_level3 THEN 'Same: '||extra_level3 ELSE 'Move: '||extra_level3||'=>'||missing_level3 END AS level3,
        CASE WHEN missing_level2 = extra_level2 THEN 'Same: '||extra_level2 ELSE 'Move: '||extra_level2||'=>'||missing_level2 END AS level2,
        CASE WHEN missing_level1 = extra_level1 THEN 'Same: '||extra_level1 ELSE 'Move: '||extra_level1||'=>'||missing_level1 END AS level1
@@ -320,38 +337,38 @@ DO LANGUAGE plpgsql $$
 DECLARE
     c0 CURSOR FOR
 		WITH a AS (
-			SELECT COUNT(a.level4) AS total_sahsuland_geography
-			  FROM sahsuland_geography a
+			SELECT COUNT(a.sahsu_grd_level4) AS total_hierarchy_sahsuland
+			  FROM hierarchy_sahsuland a
 		), b AS (
-			SELECT COUNT(b.level4) AS total_sahsuland_geography_orig
-			  FROM sahsuland_geography_orig b
+			SELECT COUNT(b.sahsu_grd_level4) AS total_hierarchy_sahsuland_orig
+			  FROM hierarchy_sahsuland_orig b
 		)
-		SELECT a.total_sahsuland_geography, b.total_sahsuland_geography_orig
+		SELECT a.total_hierarchy_sahsuland, b.total_hierarchy_sahsuland_orig
 		  FROM a, b;
 	c1 CURSOR FOR 
 		WITH a_missing AS (
-			SELECT level1, level2, level3, level4
-			  FROM sahsuland_geography
+			SELECT sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
+			  FROM hierarchy_sahsuland
 			EXCEPT
-			SELECT level1, level2, level3, level4
-			  FROM sahsuland_geography_orig
+			SELECT sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
+			  FROM hierarchy_sahsuland_orig
 		),
 		a_extra AS (
-			SELECT level1, level2, level3, level4
-			  FROM sahsuland_geography_orig
+			SELECT sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
+			  FROM hierarchy_sahsuland_orig
 			EXCEPT
-			SELECT level1, level2, level3, level4
-			  FROM sahsuland_geography
+			SELECT sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
+			  FROM hierarchy_sahsuland
 		), b AS (
-			SELECT a_missing.level4, 
-				   a_missing.level3 AS missing_level3, 
-                   a_extra.level3 AS extra_level3, 
-                   a_missing.level2 AS missing_level2, 
-                   a_extra.level2 AS extra_level2, 
-                   a_missing.level1 AS missing_level1, 
-                   a_extra.level1 AS extra_level1 
+			SELECT a_missing.sahsu_grd_level4, 
+				   a_missing.sahsu_grd_level3 AS missing_level3, 
+                   a_extra.sahsu_grd_level3 AS extra_level3, 
+                   a_missing.sahsu_grd_level2 AS missing_level2, 
+                   a_extra.sahsu_grd_level2 AS extra_level2, 
+                   a_missing.sahsu_grd_level1 AS missing_level1, 
+                   a_extra.sahsu_grd_level1 AS extra_level1 
 			  FROM a_missing
-					LEFT OUTER JOIN a_extra ON (a_extra.level4 = a_missing.level4)
+					LEFT OUTER JOIN a_extra ON (a_extra.sahsu_grd_level4 = a_missing.sahsu_grd_level4)
 		)
 		SELECT SUM(CASE WHEN missing_level3 = extra_level3 THEN 0 ELSE 1 END) AS total_level3_moved,
 			   SUM(CASE WHEN missing_level2 = extra_level2 THEN 0 ELSE 1 END) AS total_level2_moved,
@@ -364,12 +381,12 @@ BEGIN
 	OPEN c0;
 	FETCH c0 INTO c0_rec;
 	CLOSE c0;
-	IF c0_rec.total_sahsuland_geography = c0_rec.total_sahsuland_geography_orig THEN
-			RAISE INFO 'test_1_sahsuland_geography.sql: T1__03: sahsuland_geography: % (under test) and sahsuland_geography_orig: % (reference version) have the same row counts',
-				c0_rec.total_sahsuland_geography, c0_rec.total_sahsuland_geography_orig;
+	IF c0_rec.total_hierarchy_sahsuland = c0_rec.total_hierarchy_sahsuland_orig THEN
+			RAISE INFO 'test_1_hierarchy_sahsuland.sql: T1__03: hierarchy_sahsuland: % (under test) and hierarchy_sahsuland_orig: % (reference version) have the same row counts',
+				c0_rec.total_hierarchy_sahsuland, c0_rec.total_hierarchy_sahsuland_orig;
 	ELSE
-			RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1__04: sahsuland_geography: % (under test) and sahsuland_geography_orig: % (reference version) have differing row counts',
-				c0_rec.total_sahsuland_geography, c0_rec.total_sahsuland_geography_orig;
+			RAISE EXCEPTION 'test_1_hierarchy_sahsuland.sql: T1__04: hierarchy_sahsuland: % (under test) and hierarchy_sahsuland_orig: % (reference version) have differing row counts',
+				c0_rec.total_hierarchy_sahsuland, c0_rec.total_hierarchy_sahsuland_orig;
 	END IF;
 --
 	OPEN c1;
@@ -377,32 +394,32 @@ BEGIN
 	CLOSE c1;
 --
 	IF c1_rec.total_level3_moved > 0 OR c1_rec.total_level2_moved > 0 OR c1_rec.total_level1_moved > 0 THEN
-			RAISE EXCEPTION 'test_1_sahsuland_geography.sql: T1__05: sahsuland_geography (under test) and sahsuland_geography_orig (reference version) are NOT the same; movement detected; level3: % ,level2: %, level1: %', 
+			RAISE EXCEPTION 'test_1_hierarchy_sahsuland.sql: T1__05: hierarchy_sahsuland (under test) and hierarchy_sahsuland_orig (reference version) are NOT the same; movement detected; level3: % ,level2: %, level1: %', 
 				c1_rec.total_level3_moved::Text, 
 				c1_rec.total_level2_moved::Text, 
 				c1_rec.total_level1_moved::Text;	
 	ELSE
-			RAISE INFO 'test_1_sahsuland_geography.sql: T1__06: Geospatial tables: sahsuland_geography (under test) and sahsuland_geography_orig (reference version) are the same';
+			RAISE INFO 'test_1_hierarchy_sahsuland.sql: T1__06: Geospatial tables: hierarchy_sahsuland (under test) and hierarchy_sahsuland_orig (reference version) are the same';
 	END IF;
 END;
 $$;
 
-DROP TABLE IF EXISTS sahsuland_geography_orig;
+DROP TABLE IF EXISTS hierarchy_sahsuland_orig;
 
 /*
 
 SELECT level4, COUNT(DISTINCT(level3)) AS total
-  FROM sahsuland_geography
+  FROM hierarchy_sahsuland
  GROUP BY level4
 HAVING COUNT(DISTINCT(level3)) > 1;
 
 
-SELECT level3 FROM sahsuland_geography EXCEPT SELECT level3 FROM sahsuland_level3;
-SELECT level3 FROM x_sahsu_level3 WHERE level3 IN (SELECT level3 FROM sahsuland_geography EXCEPT SELECT level3 FROM sahsuland_level3);
-SELECT level3 FROM x_sahsu_level3 EXCEPT SELECT level3 FROM sahsuland_level3;
-SELECT level4 FROM sahsuland_level4 EXCEPT SELECT level4 FROM sahsuland_geography;
-SELECT level4 FROM x_sahsu_level4 WHERE level4 IN (SELECT level4 FROM sahsuland_geography EXCEPT SELECT level4 FROM sahsuland_level4);
-SELECT level4 FROM x_sahsu_level4 EXCEPT SELECT level4 FROM sahsuland_geography;
+SELECT level3 FROM hierarchy_sahsuland EXCEPT SELECT level3 FROM sahsu_grd_level3;
+SELECT level3 FROM x_sahsu_level3 WHERE level3 IN (SELECT level3 FROM hierarchy_sahsuland EXCEPT SELECT level3 FROM sahsu_grd_level3);
+SELECT level3 FROM x_sahsu_level3 EXCEPT SELECT level3 FROM sahsu_grd_level3;
+SELECT level4 FROM sahsu_grd_level4 EXCEPT SELECT level4 FROM hierarchy_sahsuland;
+SELECT level4 FROM x_sahsu_level4 WHERE level4 IN (SELECT level4 FROM hierarchy_sahsuland EXCEPT SELECT level4 FROM sahsu_grd_level4);
+SELECT level4 FROM x_sahsu_level4 EXCEPT SELECT level4 FROM hierarchy_sahsuland;
  */
 
 \pset title 'T_RIF40_GEOLEVELS a)'
@@ -428,28 +445,28 @@ SELECT geography, geolevel_name, avg_npoints_geom, avg_npoints_opt, file_geojson
  ORDER BY geography, geolevel_id;
 \pset title
 
-\pset title 'Geolevels: sahsuland_geography'
-SELECT COUNT(DISTINCT(level1)) AS level1,
-       COUNT(DISTINCT(level2)) AS level2,
-       COUNT(DISTINCT(level3)) AS level3,
-       COUNT(DISTINCT(level4)) AS level4
-  FROM sahsuland_geography;
+\pset title 'Geolevels: hierarchy_sahsuland'
+SELECT COUNT(DISTINCT(sahsu_grd_level1)) AS sahsu_grd_level1,
+       COUNT(DISTINCT(sahsu_grd_level2)) AS sahsu_grd_level2,
+       COUNT(DISTINCT(sahsu_grd_level3)) AS sahsu_grd_level3,
+       COUNT(DISTINCT(sahsu_grd_level4)) AS sahsu_grd_level4
+  FROM hierarchy_sahsuland;
 
-\pset title 'Geolevels: sahsuland_geography: lookup tables'
+\pset title 'Geolevels: hierarchy_sahsuland: lookup tables'
 WITH a AS (
-	SELECT COUNT(level1) AS level1
-	   FROM sahsuland_level1
+	SELECT COUNT(sahsu_grd_level1) AS sahsu_grd_level1
+	   FROM lookup_sahsu_grd_level1
 ), b AS (
-	SELECT COUNT(level2) AS level2
-	   FROM sahsuland_level2
+	SELECT COUNT(sahsu_grd_level2) AS sahsu_grd_level2
+	   FROM lookup_sahsu_grd_level2
 ), c AS (
-	SELECT COUNT(level3) AS level3
-	   FROM sahsuland_level3
+	SELECT COUNT(sahsu_grd_level3) AS sahsu_grd_level3
+	   FROM lookup_sahsu_grd_level3
 ), d AS (
-	SELECT COUNT(level4) AS level4
-	   FROM sahsuland_level4
+	SELECT COUNT(sahsu_grd_level4) AS sahsu_grd_level4
+	   FROM lookup_sahsu_grd_level4
 )
-SELECT level1,level2, level3, level4
+SELECT sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
   FROM a, b, c, d;
 /*
 
@@ -478,7 +495,7 @@ SELECT lo_unlink(2630819);
  /*
 \pset pager off
 \dS+ t_rif40_sahsu_geometry
-\dS+ sahsuland_geography
+\dS+ hierarchy_sahsuland
 \dS+ rif40_geolevels_geometry
  */
  
