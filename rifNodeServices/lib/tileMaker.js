@@ -1312,7 +1312,15 @@ REFERENCE (from shapefile) {
 		zstart = new Date().getTime(); // Set timer for zoomlevel
 		
 		// Create CSV file for tiles
-		var fileNoext = "t_tiles_" + geolevelName.toLowerCase();	
+		var fileNoext;
+		
+		if (dbType == "PostGres") {	
+			fileNoext="pg_t_tiles_" + geolevelName.toLowerCase();	
+		}
+		else if (dbType == "MSSQLServer") {
+			fileNoext="mssql_t_tiles_" + geolevelName.toLowerCase();	
+		}
+		
 		var csvFileName=(xmlFileDir + "/data/" + fileNoext + ".csv");		
 		try { // Create tiles CSV files for each geolevel
 			var tilesCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
@@ -1860,13 +1868,15 @@ REFERENCE (from shapefile) {
 					
 					var lookupTable=getDataLoaderParameter(value, "lookupTable")||"lookup_" + geographyName;
 					lookupTable=lookupTable.toString().toLowerCase();
-					var csvFileName=xmlFileDir + "/data/" + lookupTable + ".csv";
+					var csvFileName;
 					
 					var request;
 					if (dbType == "PostGres") {
+						csvFileName=xmlFileDir + "/data/pg_" + lookupTable + ".csv";
 						request=client;
 					}		
 					else if (dbType == "MSSQLServer") {	
+						csvFileName=xmlFileDir + "/data/mssql_" + lookupTable + ".csv";
 						request=new dbSql.Request();
 					}
 					var sql="SELECT * FROM " + lookupTable + " ORDER BY gid";
@@ -1953,17 +1963,27 @@ REFERENCE (from shapefile) {
 		var geographyName=getDataLoaderParameter(dataLoader, "geographyName");
 		var hierarchyTable=getDataLoaderParameter(dataLoader, "hierarchyTable")||"hierarchy_" + geographyName;
 		hierarchyTable=hierarchyTable.toString().toLowerCase();
-		var csvFileName=xmlFileDir + "/data/" + hierarchyTable + ".csv";
+		var csvFileName;
 		var geographyTableDescription=getDataLoaderParameter(dataLoader, "geographyDesc");
 		
 		var request;
 		if (dbType == "PostGres") {
+			csvFileName=xmlFileDir + "/data/pg_" + hierarchyTable + ".csv";
 			request=client;
 		}		
 		else if (dbType == "MSSQLServer") {	
+			csvFileName=xmlFileDir + "/data/mssql_" + hierarchyTable + ".csv";
 			request=new dbSql.Request();
 		}
 		var sql="SELECT * FROM " + hierarchyTable;
+		for (var i=1; i<=numGeolevels; i++) { // Add ordering
+			if (i == 1) {
+				sql+="\n ORDER BY 1";
+			}
+			else {
+				sql+=", " + i;
+			}
+		}
 		try { // Create CSV file for hierarchy table
 			var hierarchyCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
 			winston.log("info", "Creating hierarchy CSV file: " + csvFileName + 

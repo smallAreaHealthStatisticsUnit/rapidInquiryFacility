@@ -473,7 +473,13 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 				getSqlFromFile("partition_trigger.sql", 
 					dbType, 
 					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
-				sqlArray, dbType);						
+				sqlArray, dbType);	
+				
+			var sqlStmt=new Sql("Comment partition geometry table: insert trigger",		
+				getSqlFromFile("comment_partition_trigger.sql", 
+					dbType, 
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
+				sqlArray, dbType);					
 		}
 		
 	} // End of createGeometryTable()
@@ -1124,7 +1130,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			}
 			
 			// Needs to be SQL to psql command (i.e. COPY FROM stdin)
-			var sqlStmt=new Sql("Load table from CSV file");
+			var sqlStmt=new Sql("Load table from CSV file"); // CSV file comes from Tilemaker so is not DB dependent
 			if (dbType == "PostGres") {	
 				sqlStmt.sql="\\copy " + csvFiles[i].tableName + " FROM '" + csvFiles[i].tableName + 
 					".csv' DELIMITER ',' CSV HEADER";
@@ -1567,6 +1573,12 @@ UPDATE sahsu_grd_level1
 
 				var sqlStmt=new Sql("Partition tile intersects table: insert trigger",
 					getSqlFromFile("partition_trigger.sql", 
+						dbType, 
+						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
+					sqlArray, dbType);	
+					
+				var sqlStmt=new Sql("Comment partition tile intersects table: insert trigger",
+					getSqlFromFile("comment_partition_trigger.sql", 
 						dbType, 
 						"tile_intersects_" + xmlConfig.dataLoader.geographyName.toLowerCase()		/* Table name */), 
 					sqlArray, dbType);						
@@ -2143,15 +2155,15 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
 				var lookupTable=(xmlConfig.dataLoader.geoLevel[i].lookupTable ||
 						 "LOOKUP_" +  xmlConfig.dataLoader.geographyName).toLowerCase();
-				var sqlStmt=new Sql("Load geolevel lookup table: " + lookupTable);
+				var sqlStmt=new Sql("Load DB specific geolevel lookup table: (mssql_/pg_)" + lookupTable);
 				if (dbType == "PostGres") {	
 					sqlStmt.sql="\\copy " + lookupTable +  
-						" FROM '" + lookupTable +
+						" FROM 'pg_" + lookupTable +
 						".csv' DELIMITER ',' CSV HEADER";
 				}
 				else if (dbType == "MSSQLServer") {	
 					sqlStmt.sql="BULK INSERT " + (schema||"") + lookupTable + "\n" + 
-"FROM '$(pwd)/" + lookupTable + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
+"FROM '$(pwd)/mssql_" + lookupTable + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 "WITH\n" + 
 "(\n" + 
 "	FORMATFILE = '$(pwd)/mssql_" + lookupTable + ".fmt',		-- Use a format file\n" +
@@ -2170,15 +2182,15 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		 */	
 		var loadHierarchyTable=function loadHierarchyTable(schema) {
 			sqlArray.push(new Sql("Load hierarchy table"));
-			var sqlStmt=new Sql("Load hierarchy table from CSV file");
+			var sqlStmt=new Sql("Load DB dependent hierarchy table from CSV file");
 			if (dbType == "PostGres") {	
 				sqlStmt.sql="\\copy " + "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
-					" FROM '" + "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
+					" FROM 'pg_hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
 					".csv' DELIMITER ',' CSV HEADER";
 			}
 			else if (dbType == "MSSQLServer") {	
 				sqlStmt.sql="BULK INSERT " + (schema||"") + "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
-"FROM '$(pwd)/" + "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
+"FROM '$(pwd)/mssql_hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 "WITH\n" + 
 "(\n" + 
 "	FORMATFILE = '$(pwd)/mssql_hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',		-- Use a format file\n" +
@@ -2228,7 +2240,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				sqlArray, dbType);	
 					
 			if (dbType == "PostGres") {		
-				var sqlStmt=new Sql("Load geometry table from CSV file", 
+				var sqlStmt=new Sql("Load DB dependent geometry table from CSV file", 
 					"\\copy " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
 					"(geolevel_id, areaid, zoomlevel, wkt)" +
 					" FROM '" + "pg_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
@@ -2242,7 +2254,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					"SELECT geolevel_id,areaid,zoomlevel,wkt\n" +
 					"  FROM " + (schema||"") + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 					sqlArray, dbType);			
-				var sqlStmt=new Sql("Load geometry table from CSV file", 
+				var sqlStmt=new Sql("Load DB dependent geometry table from CSV file", 
 					"BULK INSERT " + (schema||"") + "v_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
 "FROM '$(pwd)/" + "mssql_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 "WITH\n" + 
@@ -2338,11 +2350,11 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		// Tables: t_tiles_<geometry>.csv
 		
 			for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
-				var sqlStmt=new Sql("Load tiles table from geolevel CSV files");
+				var sqlStmt=new Sql("Load DB dependent tiles table from geolevel CSV files");
 				if (dbType == "PostGres") {	
 					sqlStmt.sql="\\copy " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
 						"(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson)" + 
-						" FROM '" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + 
+						" FROM 'pg_t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + 
 						".csv' DELIMITER ',' CSV HEADER";				
 					sqlStmt.dbType=dbType;
 					sqlArray.push(sqlStmt);	
@@ -2355,7 +2367,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 						"  FROM " + (schema||"") + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 						sqlArray, dbType);					
 					sqlStmt.sql="BULK INSERT " + (schema||"") + "v_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
-	"FROM '$(pwd)/" + "t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
+	"FROM '$(pwd)/mssql_t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
 	"WITH\n" + 
 	"(\n" + 
 	"	FORMATFILE = '$(pwd)/mssql_t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + ".fmt',		-- Use a format file\n" +
