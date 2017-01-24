@@ -3,7 +3,6 @@
  */
 
 /* global L, key, topojson, d3 */
-
 angular.module("RIF")
         .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', '$timeout',
             'ViewerStateService', 'ChoroService',
@@ -22,19 +21,19 @@ angular.module("RIF")
                 $timeout(function () {
                     leafletData.getMap("viewermap").then(function (map) {
                         map.on('zoomend', function (e) {
-                            ViewerStateService.getState().center.zoom = map.getZoom();
+                            ViewerStateService.getState().center["viewermap"].zoom = map.getZoom();
                         });
                         map.on('moveend', function (e) {
-                            ViewerStateService.getState().center.lng = map.getCenter().lng;
-                            ViewerStateService.getState().center.lat = map.getCenter().lat;
+                            ViewerStateService.getState().center["viewermap"].lng = map.getCenter().lng;
+                            ViewerStateService.getState().center["viewermap"].lat = map.getCenter().lat;
                         });
                         new L.Control.GeoSearch({
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
                         L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-
                         //Attributions to open in new window
                         map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                        map.doubleClickZoom.disable();
                     });
                     //Set initial map extents
                     $scope.center = ViewerStateService.getState().center['viewermap'];
@@ -202,68 +201,6 @@ angular.module("RIF")
                         for (var j = 0; j < $scope.thisPoly.length; j++) {
                             if ($scope.viewerTableOptions.data[i].area_id === $scope.thisPoly[j]) {
                                 $scope.viewerTableOptions.data[i]._selected = 1;
-                            }
-                        }
-                    }
-                };
-
-                //Multiple select with shift
-                var bShift = false;
-                var multiStart = -1;
-                var multiStop = -1;
-                //detect shift key (16) down
-                $scope.keyDown = function ($event) {
-                    if (!bShift && $event.keyCode === 16) {
-                        bShift = true;
-                    }
-                };
-                //detect shift key (16) up
-                $scope.keyUp = function ($event) {
-                    if (bShift && $event.keyCode === 16) {
-                        bShift = false;
-                        multiStop = -1;
-                    }
-                };
-                $scope.rowClick = function (row) {
-                    var myVisibleRows = $scope.gridApi.core.getVisibleRows();
-                    if (!bShift) {
-                        //We are doing a single click select on the table
-                        var thisPoly = row.entity.area_id;
-                        var bFound = false;
-                        for (var i = 0; i < $scope.thisPoly.length; i++) {
-                            if ($scope.thisPoly[i] === thisPoly) {
-                                bFound = true;
-                                $scope.thisPoly.splice(i, 1);
-                                break;
-                            }
-                        }
-                        if (!bFound) {
-                            $scope.thisPoly.push(thisPoly);
-                        }
-                    } else {
-                        //We are doing a multiple select on the table, shift key is down
-                        multiStop = matchRowNumber(myVisibleRows, row.entity.area_id);
-                        for (var i = Math.min(multiStop, multiStart);
-                                i <= Math.min(multiStop, multiStart) + (Math.abs(multiStop - multiStart)); i++) {
-                            var thisPoly = myVisibleRows[i].entity.area_id;
-                            var bFound = false;
-                            for (var j = 0; j < $scope.thisPoly.length; j++) {
-                                if ($scope.thisPoly[j] === thisPoly) {
-                                    bFound = true;
-                                    break;
-                                }
-                            }
-                            if (!bFound) {
-                                $scope.thisPoly.push(thisPoly);
-                            }
-                        }
-                    }
-                    multiStart = matchRowNumber(myVisibleRows, row.entity.area_id);
-
-                    function matchRowNumber(visible, id) {
-                        for (var i = 0; i < visible.length; i++) {
-                            if (visible[i].entity.area_id === id) {
-                                return(i);
                             }
                         }
                     }

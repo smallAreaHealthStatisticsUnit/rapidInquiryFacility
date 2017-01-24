@@ -1,6 +1,6 @@
-/* CONTROLLER for disease submission comparison area modal
+/* 
+ * CONTROLLER for disease submission comparison area modal
  * Uses the maptable directive
- * On close(), stores results in ModelService
  */
 /* global L */
 
@@ -44,8 +44,7 @@ angular.module("RIF")
                         CompAreaStateService.getState().polygonIDs = input.selectedPolygon;
                         CompAreaStateService.getState().selectAt = input.selectAt;
                         CompAreaStateService.getState().studyResolution = input.studyResolution;
-                        CompAreaStateService.getState().zoomLevel = input.zoomLevel;
-                        CompAreaStateService.getState().view = input.view;
+                        CompAreaStateService.getState().center = input.center;
                         CompAreaStateService.getState().geography = input.geography;
                         CompAreaStateService.getState().transparency = input.transparency;
                     });
@@ -57,8 +56,7 @@ angular.module("RIF")
             $scope.input.selectedPolygon = CompAreaStateService.getState().polygonIDs;
             $scope.input.selectAt = CompAreaStateService.getState().selectAt;
             $scope.input.studyResolution = CompAreaStateService.getState().studyResolution;
-            $scope.input.zoomLevel = CompAreaStateService.getState().zoomLevel;
-            $scope.input.view = CompAreaStateService.getState().view;
+            $scope.input.center = CompAreaStateService.getState().center;
             $scope.input.geography = CompAreaStateService.getState().geography;
             $scope.input.transparency = CompAreaStateService.getState().transparency;
             $scope.input.bands = [1];

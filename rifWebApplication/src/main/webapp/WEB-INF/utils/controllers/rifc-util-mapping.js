@@ -15,9 +15,10 @@ angular.module("RIF")
                 //Reference the parent scope
                 var parentScope = $scope.$parent;
                 parentScope.child = $scope;
+
                 //Reference the state service
                 $scope.myService = MappingStateService;
-                if ($scope.myMaps[0] === "viewermap") {
+                if (parentScope.myMaps[0] === "viewermap") {
                     $scope.myService = ViewerStateService;
                 }
 
@@ -37,6 +38,7 @@ angular.module("RIF")
                     'diseasemap2': L.control({position: 'bottomleft'}),
                     'viewermap': null
                 };
+
                 //Handle UI-Layout resize events
                 $scope.$on('ui.layout.loaded', function () {
                     $scope.getD3Frames();
@@ -44,16 +46,18 @@ angular.module("RIF")
                 $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
                     $scope.getD3FramesOnResize(beforeContainer, afterContainer);
                 });
+
                 //Rescale leaflet container       
                 $scope.rescaleLeafletContainer = function () {
-                    for (var i in $scope.myMaps) {
-                        leafletData.getMap($scope.myMaps[i]).then(function (map) {
+                    for (var i in parentScope.myMaps) {
+                        leafletData.getMap(parentScope.myMaps[i]).then(function (map) {
                             setTimeout(function () {
                                 map.invalidateSize();
                             }, 50);
                         });
                     }
                 };
+
                 //the default basemap              
                 $scope.thisLayer = {
                     "diseasemap1": LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("diseasemap1")),
@@ -66,7 +70,6 @@ angular.module("RIF")
                     "diseasemap2": {'geography': null, 'level': null},
                     "viewermap": {'geography': null, 'level': null}
                 };
-
                 //attribute being mapped
                 $scope.attr = {
                     "diseasemap1": "",
@@ -90,6 +93,7 @@ angular.module("RIF")
                     "diseasemap2": [],
                     "viewermap": []
                 };
+
                 /*
                  * Tidy up on error
                  */
@@ -144,26 +148,27 @@ angular.module("RIF")
                             return parseFloat(a.study_id) - parseFloat(b.study_id);
                         }).reverse();
                         //Remember defaults
-                        for (var j = 0; j < $scope.myMaps.length; j++) {
-                            var s = $scope.myService.getState().study[$scope.myMaps[j]].study_id;
+                        for (var j = 0; j < parentScope.myMaps.length; j++) {
+                            var s = $scope.myService.getState().study[parentScope.myMaps[j]].study_id;
                             if (s !== null) {
                                 for (var i = 0; i < $scope.studyIDs.length; i++) {
                                     if ($scope.studyIDs[i].study_id === s) {
-                                        $scope.$parent.studyID[$scope.myMaps[j]] = $scope.studyIDs[i];
+                                        $scope.$parent.studyID[parentScope.myMaps[j]] = $scope.studyIDs[i];
                                     }
                                 }
                             } else {
-                                $scope.$parent.studyID[$scope.myMaps[j]] = $scope.studyIDs[0];
+                                $scope.$parent.studyID[parentScope.myMaps[j]] = $scope.studyIDs[0];
                             }
                         }
                         //update sex drop-down
-                        for (var j = 0; j < $scope.myMaps.length; j++) {
-                            $scope.updateSex($scope.myMaps[j]);
+                        for (var j = 0; j < parentScope.myMaps.length; j++) {
+                            $scope.updateSex(parentScope.myMaps[j]);
                         }
                     }, function (e) {
                         $scope.showError("Could not retrieve study status");
                     });
                 };
+
                 $scope.updateSex = function (mapID) {
                     if ($scope.studyID[mapID] !== null) {
                         //Store this study selection
@@ -224,6 +229,7 @@ angular.module("RIF")
                         }
                     });
                 };
+
                 //Draw the map
                 $scope.refresh = function (mapID) {
                     //get selected colour ramp
@@ -257,6 +263,7 @@ angular.module("RIF")
                     //GET D3...
                     $scope.getD3chart(mapID, $scope.attr[mapID]);
                 };
+
                 //apply relevent renderer to layer
                 $scope.handleLayer = function (layer) {
                     var mapID = layer.options.map_id;
@@ -274,7 +281,7 @@ angular.module("RIF")
                         if (angular.isArray($scope.thisPoly) && $scope.thisPoly.indexOf(layer.feature.properties.area_id) !== -1) {
                             selected = true;
                         }
-                        var polyStyle = ChoroService.getRenderFeature(thisMap["viewermap"].scale, thisAttr, selected);
+                        var polyStyle = ChoroService.getRenderFeatureMapping(thisMap["viewermap"].scale, thisAttr, selected);
                         layer.setStyle({
                             fillColor: polyStyle,
                             fillOpacity: $scope.child.transparency[mapID]
@@ -284,12 +291,11 @@ angular.module("RIF")
                             var thisAttr;
                             for (var i = 0; i < $scope.tableData[mapID].length; i++) {
                                 if ($scope.tableData[mapID][i].area_id === layer.feature.properties.area_id) {
-                                    thisAttr = $scope.tableData[mapID][i][$scope.attr[mapID]];
+                                    thisAttr = $scope.tableData[mapID][i][ChoroService.getMaps(mapID).feature];
                                     break;
                                 }
                             }
-                            var polyStyle = ChoroService.getRenderFeature2(layer.feature, thisAttr,
-                                    thisMap[mapID].scale, $scope.attr[mapID], $scope.thisPoly[mapID]);
+                            var polyStyle = ChoroService.getRenderFeatureViewer(thisMap[mapID].scale, layer.feature, thisAttr, $scope.thisPoly[mapID]);
                             layer.setStyle({
                                 weight: polyStyle[2],
                                 color: polyStyle[1],
@@ -348,8 +354,7 @@ angular.module("RIF")
                                         weight: 1,
                                         opacity: 1,
                                         color: "gray",
-                                        fillColor: "#9BCD9B",
-                                        fillOpacity: $scope.child.transparency[mapID]
+                                        fillColor: "transparent"
                                     });
                                 },
                                 onEachFeature: function (feature, layer) {
@@ -471,126 +476,90 @@ angular.module("RIF")
                     /*
                      * INFO BOXES AND LEGEND
                      */
-                    function hoverUpdateAttr(map, poly, feature) {
-                        var tmp;
-                        var inner;
-                        for (var i = 0; i < $scope.tableData[map].length; i++) {
-                            if ($scope.tableData[map][i].area_id === poly) {
-                                tmp = $scope.tableData[map][i][$scope.attr[map]];
-                                break;
+                    //An empty control on map
+                    function closureAddControl(m) {
+                        return function () {
+                            this._div = L.DomUtil.create('div', 'info');
+                            this.update();
+                            return this._div;
+                        };
+                    }
+                    //The hover box
+                    function closureInfoBoxUpdate(m) {
+                        return function (poly) {
+                            if (poly) {
+                                this._div.innerHTML =
+                                        function () {
+                                            var feature = ChoroService.getMaps(m).feature;
+                                            var tmp;
+                                            var inner = '<h4>ID: ' + poly + '</h4>';
+                                            if ($scope.attr[m] !== "") {
+                                                for (var i = 0; i < $scope.tableData[m].length; i++) {
+                                                    if ($scope.tableData[m][i].area_id === poly) {
+                                                        tmp = $scope.tableData[m][i][$scope.attr[m]];
+                                                        break;
+                                                    }
+                                                }
+                                                if (feature !== "" && angular.isNumber(Number(tmp))) {
+                                                    inner = '<h4>ID: ' + poly + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h4>';
+                                                }
+                                            }
+                                            return inner;
+                                        }();
+                            } else {
+                                this._div.innerHTML = '';
                             }
-                        }
-                        if (feature !== "" && angular.isNumber(tmp)) {
-                            inner = '<h4>ID: ' + poly + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h4>';
-                        } else {
-                            inner = '<h4>ID: ' + poly + '</h4>';
-                        }
-                        return inner;
+                        };
+                    }
+                    //Area info box
+                    function closureInfoBox2Update(m) {
+                        return function (poly) {
+                            if (poly === null) {
+                                this._div.innerHTML = "";
+                            } else {
+                                var results = null;
+                                for (var i = 0; i < $scope.tableData["diseasemap1"].length; i++) {
+                                    if ($scope.tableData["diseasemap1"][i].area_id === poly) {
+                                        results = $scope.tableData["diseasemap1"][i];
+                                    }
+                                }
+                                if (results !== null) {
+                                    this._div.innerHTML =
+                                            '<h4>ID: ' + poly + '</br>' +
+                                            'Population: ' + results.population + '</br>' +
+                                            'Observed: ' + results.observed + '</br>' +
+                                            'Expected: ' + Number(results.expected).toFixed(2) + '</br>' + '</h4>';
+                                } else {
+                                    this._div.innerHTML = "";
+                                }
+                            }
+                        };
                     }
 
-                    //Cannot seem to do this by other than declaring each explicitly
-                    for (var i = 0; i < $scope.myMaps.length; i++) {
-                        if ($scope.myMaps.indexOf("diseasemap1") !== -1) {
-                            infoBox["diseasemap1"].onAdd = function () {
-                                this._div = L.DomUtil.create('div', 'info');
-                                this.update();
-                                return this._div;
-                            };
-                            infoBox["diseasemap1"].update = function (poly) {
-                                if (poly) {
-                                    this._div.innerHTML = hoverUpdateAttr("diseasemap1", poly, ChoroService.getMaps("diseasemap1").feature);
-                                } else {
-                                    this._div.innerHTML = '';
-                                }
-                            };
-                            $scope.infoBox2["diseasemap1"].onAdd = function () {
-                                this._div = L.DomUtil.create('div', 'info');
-                                this.update();
-                                return this._div;
-                            };
-                            $scope.infoBox2["diseasemap1"].update = function (poly) {
-                                if (poly === null) {
-                                    this._div.innerHTML = "";
-                                } else {
-                                    var results = null;
-                                    for (var i = 0; i < $scope.tableData["diseasemap1"].length; i++) {
-                                        if ($scope.tableData["diseasemap1"][i].area_id === poly) {
-                                            results = $scope.tableData["diseasemap1"][i];
-                                        }
-                                    }
-                                    if (results !== null) {
-                                        this._div.innerHTML =
-                                                '<h4>ID: ' + poly + '</br>' +
-                                                'Population: ' + results.population + '</br>' +
-                                                'Observed: ' + results.observed + '</br>' +
-                                                'Expected: ' + Number(results.expected).toFixed(2) + '</br>' + '</h4>';
-                                    } else {
-                                        this._div.innerHTML = "";
-                                    }
-                                }
-                            };
+                    //Add the controls
+                    for (var i = 0; i < parentScope.myMaps.length; i++) {
+                        var m = parentScope.myMaps[i];
+                        infoBox[m].onAdd = closureAddControl(m);
+                        infoBox[m].update = closureInfoBoxUpdate(m);
+                        if (m !== "viewermap") {
+                            $scope.infoBox2[m].onAdd = closureAddControl(m);
+                            $scope.infoBox2[m].update = closureInfoBox2Update(m);
+                        }
+                    }
+                    for (var i = 0; i < parentScope.myMaps.length; i++) {
+                        if (parentScope.myMaps.indexOf("diseasemap1") !== -1) {
                             leafletData.getMap("diseasemap1").then(function (map) {
-                                $scope.infoBox2["diseasemap1"].addTo(map);
                                 infoBox["diseasemap1"].addTo(map);
+                                $scope.infoBox2["diseasemap1"].addTo(map);
                             });
                         }
-                        if ($scope.myMaps.indexOf("diseasemap2") !== -1) {
-                            infoBox["diseasemap2"].onAdd = function () {
-                                this._div = L.DomUtil.create('div', 'info');
-                                this.update();
-                                return this._div;
-                            };
-                            infoBox["diseasemap2"].update = function (poly) {
-                                if (poly) {
-                                    this._div.innerHTML = hoverUpdateAttr("diseasemap2", poly, ChoroService.getMaps("diseasemap2").feature);
-                                } else {
-                                    this._div.innerHTML = '';
-                                }
-                            };
-                            $scope.infoBox2["diseasemap2"].onAdd = function () {
-                                this._div = L.DomUtil.create('div', 'info');
-                                this.update();
-                                return this._div;
-                            };
-                            $scope.infoBox2["diseasemap2"].update = function (poly) {
-                                if (poly === null) {
-                                    this._div.innerHTML = "";
-                                } else {
-                                    var results = null;
-                                    for (var i = 0; i < $scope.tableData["diseasemap2"].length; i++) {
-                                        if ($scope.tableData["diseasemap2"][i].area_id === poly) {
-                                            results = $scope.tableData["diseasemap2"][i];
-                                        }
-                                    }
-                                    if (results !== null) {
-                                        this._div.innerHTML =
-                                                '<h4>ID: ' + poly + '</br>' +
-                                                'Population: ' + results.population + '</br>' +
-                                                'Observed: ' + results.observed + '</br>' +
-                                                'Expected: ' + Number(results.expected).toFixed(2) + '</br>' + '</h4>';
-                                    } else {
-                                        this._div.innerHTML = "";
-                                    }
-                                }
-                            };
+                        if (parentScope.myMaps.indexOf("diseasemap2") !== -1) {
                             leafletData.getMap("diseasemap2").then(function (map) {
-                                $scope.infoBox2["diseasemap2"].addTo(map);
                                 infoBox["diseasemap2"].addTo(map);
+                                $scope.infoBox2["diseasemap2"].addTo(map);
                             });
                         }
-                        if ($scope.myMaps.indexOf("viewermap") !== -1) {
-                            infoBox["viewermap"].onAdd = function () {
-                                this._div = L.DomUtil.create('div', 'info');
-                                this.update();
-                                return this._div;
-                            };
-                            infoBox["viewermap"].update = function (poly) {
-                                if (poly) {
-                                    this._div.innerHTML = hoverUpdateAttr("viewermap", poly, ChoroService.getMaps("viewermap").feature);
-                                } else {
-                                    this._div.innerHTML = '';
-                                }
-                            };
+                        if (parentScope.myMaps.indexOf("viewermap") !== -1) {
                             leafletData.getMap("viewermap").then(function (map) {
                                 infoBox["viewermap"].addTo(map);
                             });

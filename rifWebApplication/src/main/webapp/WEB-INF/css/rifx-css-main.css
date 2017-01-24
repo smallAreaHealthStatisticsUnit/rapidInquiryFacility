@@ -987,13 +987,13 @@ div.headerBlock{
     font-size: 12px;
 }
 
-#retrieve, #run, #status {
+#save, #run, #status {
     padding-bottom: 8px;
     margin-bottom: 8px;
     border-bottom: 5px solid #FFDAB9;
 }
 
-#retrieve:hover, #run:hover {
+#save:hover, #run:hover {
     -webkit-transition: border 0.3s;
     -moz-transition: border 0.3s;
     -o-transition: border 0.3s;

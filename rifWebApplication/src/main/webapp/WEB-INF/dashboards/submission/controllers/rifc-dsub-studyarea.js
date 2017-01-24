@@ -49,8 +49,7 @@ angular.module("RIF")
                         StudyAreaStateService.getState().polygonIDs = input.selectedPolygon;
                         StudyAreaStateService.getState().selectAt = input.selectAt;
                         StudyAreaStateService.getState().studyResolution = input.studyResolution;
-                        StudyAreaStateService.getState().zoomLevel = input.zoomLevel;
-                        StudyAreaStateService.getState().view = input.view;
+                        StudyAreaStateService.getState().center = input.center;
                         StudyAreaStateService.getState().geography = input.geography;
                         StudyAreaStateService.getState().transparency = input.transparency;
                     });
@@ -62,8 +61,7 @@ angular.module("RIF")
             $scope.input.selectedPolygon = StudyAreaStateService.getState().polygonIDs;
             $scope.input.selectAt = StudyAreaStateService.getState().selectAt;
             $scope.input.studyResolution = StudyAreaStateService.getState().studyResolution;
-            $scope.input.zoomLevel = StudyAreaStateService.getState().zoomLevel;
-            $scope.input.view = StudyAreaStateService.getState().view;
+            $scope.input.center = StudyAreaStateService.getState().center;
             $scope.input.geography = StudyAreaStateService.getState().geography;
             $scope.input.transparency = StudyAreaStateService.getState().transparency;
             $scope.input.bands = [1, 2, 3, 4, 5, 6];

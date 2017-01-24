@@ -62,8 +62,8 @@
         <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"> 
 
         <!-- Leaflet -->
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>  
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>  
         <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.css' rel='stylesheet' />
         <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.js'></script>
         <script src="libs/ui-leaflet.min.js"></script>
@@ -118,11 +118,12 @@
         <script src="dashboards/submission/services/rifs-dsub-statsstate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-mainstate.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-runstudy.js"></script>
-        <script src="dashboards/submission/controllers/rifc-dsub-retrieve.js"></script>
+        <script src="dashboards/submission/controllers/rifc-dsub-save.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-reset.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-summary.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-fromfile.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-status.js"></script>
+        <script src="dashboards/submission/controllers/rifc-dsub-selectmodals.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-maptable.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-model.js"></script>       
         <script src="dashboards/submission/directives/rifd-dsub-onreadfile.js"></script>    
@@ -147,9 +148,11 @@
         <script src="dashboards/mapping/services/rifs-dmap-mappingstate.js"></script>
         <script src="dashboards/mapping/directives/rifd-dmap-d3rrzoom.js"></script>
         <script src="utils/services/rifs-util-mapping.js"></script>
+        <script src="utils/services/rifs-util-uigrid.js"></script>
         <script src="utils/controllers/rifc-util-mapping.js"></script>
         <script src="utils/directives/rifd-util-leafletTools.js"></script>
         <script src="utils/directives/rifd-util-savechart.js"></script>
+        <script src="utils/controllers/rifc-util-multiselect.js"></script>
 
         <!-- RIF 4.0 CSS -->   
         <link href="css/rifx-css-main.css" rel="stylesheet" media="screen" />
@@ -164,6 +167,7 @@
 
     <body ng-controller="AlertCtrl">
         <div>
+            <!-- the notification bar -->
             <notifications-bar class="notifications"></notifications-bar>
         </div>
         <div class="rifwrap">

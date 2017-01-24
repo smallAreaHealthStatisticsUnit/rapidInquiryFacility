@@ -12,7 +12,7 @@ angular.module("RIF")
                             try {
                                 AuthService.isLoggedIn(AuthService.currentUser).then(loggedIn, loggedIn);
                                 function loggedIn(res) {                                  
-                                    if (angular.isUndefined(res.data) || res.data[0].result === "false") { 
+                                    if (angular.isUndefined(res) || angular.isUndefined(res.data) || res.data[0].result === "false") { 
                                         //Redirect to login screen
                                         $injector.get('$state').transitionTo('state0');
                                     }

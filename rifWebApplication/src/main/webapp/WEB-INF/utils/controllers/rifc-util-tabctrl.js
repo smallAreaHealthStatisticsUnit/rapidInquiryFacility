@@ -8,7 +8,7 @@ angular.module("RIF")
                 //The user to display
                 $scope.username = user.currentUser;
 
-                //Check for update in status
+                //Check for update in status every 4s
                 var stop;
                 var studies;
                 $scope.studyIds;
@@ -95,5 +95,3 @@ angular.module("RIF")
                         $uibModalInstance.close();
                     };
                 });
-
-
