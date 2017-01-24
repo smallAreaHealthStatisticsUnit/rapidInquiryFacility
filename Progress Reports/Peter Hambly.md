@@ -824,17 +824,32 @@ RangeError: Invalid string length
 	The default names are not quite the same: "Kozniewska LEVEL4(01.013.016800.3)" as opposed to "01.013.016800.3"
   * Added GID to lookup tables
   
+#### 23rd to 27th January
+  
+  * Converted remaining rif40_xml_pkg functions to support tilemaker table names 
+  * Allow non study or health data related test scripts (1, 2, 3 and 6) to run on sahusland_empty
+  * Found bug in MS SQL hierarchy table: row numbers are the same but the smaller areas are being picked.
+  * Separate Postgres and SQL server tiles, hierarchy and lookup CSV files (so they can be compared)
+  * Lookup files are the same, and ordered
+  * Added comment to Postgres geometry partition
+
 #### Current TODO list (January 2017):
 
-* MS Sahsuland projection problem; must be contained within the projection or will fail
-* Drop scripts
+* Fix SQL Server heirarchy bug
+* Convert v4_0_create_sahsuland.sql to use tileMaker sahsuland, and remaining test scripts
+* Alter 9:
+
+  1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
+  2. Make RIF40_TABLES.THEME nullable for denominators
+  
+* MS Sahsuland projection problem; must be fully contained within the projection or area calculations and intersections will fail. 
+  This needs to be detected
+* Check (warn/error) if geometry not within projection (sahsuland was using Nevada north 1927, now using OSGB at present)
+* Tilemaker drop scripts
 * Fix zoomlevel miss-set from config file (defaults are wrong)
-* Check (warn/error) if geometry not within projection (sahsuland is using Nevada north 1927 at present)
-
-### Alter 9
-
-1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
-2. Make RIF40_TABLES.THEME nullable for denominators
+* Add support for rif relative relative path
+* QGIS integration for SQL Server: ..\rifNodeServices\sql\sqlserver\create_mssql_geometry_columns.sql
+* TileViewer web screen by DB/geography; DB web service
 
 ### Database Bugs
 
