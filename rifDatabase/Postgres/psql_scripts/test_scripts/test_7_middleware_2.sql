@@ -115,17 +115,17 @@ $$;
 --
 \pset title 'rif40_getAllAttributesForGeoLevelAttributeTheme SAHSU level 4 extract'
 SELECT * 
-  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'extract');
+  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSULAND', 'SAHSU_GRD_LEVEL4', 'extract');
 
 \pset title 'rif40_CreateMapAreaAttributeSource: c4getallatt4theme_4'
 WITH a AS (
 	SELECT MIN(attribute_source) AS min_attribute_source
-	  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'extract')
+	  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSULAND', 'SAHSU_GRD_LEVEL4', 'extract')
 )
 SELECT b.* 
   FROM a, rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_4', 
-		'SAHSU', 'LEVEL4', 'extract', a.min_attribute_source) b;
+		'SAHSULAND', 'SAHSU_GRD_LEVEL4', 'extract', a.min_attribute_source) b;
 		
 \pset title 'rif40_GetMapAreaAttributeValue: c4getallatt4theme_4'
 SELECT * 
@@ -152,17 +152,17 @@ otal_pop
 
 \pset title 'rif40_getAllAttributesForGeoLevelAttributeTheme SAHSU level 4 results'
 SELECT * 
-  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'results');
+  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSULAND', 'SAHSU_GRD_LEVEL4', 'results');
 
 \pset title 'rif40_CreateMapAreaAttributeSource SAHSU level 4 results'
 WITH a AS (
 	SELECT MIN(attribute_source) AS min_attribute_source
-	  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSU', 'LEVEL4', 'results')
+	  FROM rif40_xml_pkg.rif40_getAllAttributesForGeoLevelAttributeTheme('SAHSULAND', 'SAHSU_GRD_LEVEL4', 'results')
 )
 SELECT b.* 
   FROM a, rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_5', 
-		'SAHSU', 'LEVEL4', 'results', a.min_attribute_source) b;
+		'SAHSULAND', 'SAHSU_GRD_LEVEL4', 'results', a.min_attribute_source) b;
 		
 \pset title 'rif40_GetMapAreaAttributeValue: c4getallatt4theme_5'
 SELECT * 
@@ -226,8 +226,8 @@ END;
 $$; 
 
 SELECT SUBSTRING(rif40_xml_pkg.rif40_GetMapAreas(
-			'SAHSU' 	/* Geography */, 
-			'LEVEL3' 	/* geolevel view */, 
+			'SAHSULAND' 	/* Geography */, 
+			'SAHSU_GRD_LEVEL3' 	/* geolevel view */, 
 			55.5268097::REAL /* y_max */, -4.88653803 /* x_max */, 52.6875343 /* y_min */, -7.58829451 /* x_min - Bounding box - from cte */)::Text
 				FROM 1 FOR 160) AS json 
 LIMIT 4;
