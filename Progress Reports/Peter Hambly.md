@@ -832,10 +832,11 @@ RangeError: Invalid string length
   * Separate Postgres and SQL server tiles, hierarchy and lookup CSV files (so they can be compared)
   * Lookup files are the same, and ordered
   * Added comment to Postgres geometry partition
+  * Fixed SQL Server heirarchy bug. Caused by geography datatype. Fixed geom_orig to be geometry datatype and used that. Also  
+    ordered hierarchy CSV files. Postgres and SQL Server hierarchy and lookup tables now exactly the same. Regression tests OK.
 
 #### Current TODO list (January 2017):
 
-* Fix SQL Server heirarchy bug
 * Convert v4_0_create_sahsuland.sql to use tileMaker sahsuland, and remaining test scripts
 * Alter 9:
 
