@@ -1976,7 +1976,9 @@ REFERENCE (from shapefile) {
 			request=new dbSql.Request();
 		}
 		var sql="SELECT * FROM " + hierarchyTable;
-		for (var i=1; i<=numGeolevels; i++) { // Add ordering
+		
+		var geoLevel=getDataLoaderParameter(dataLoader, "geoLevel");
+		for (var i=1; i<=geoLevel.length; i++) { // Add ordering
 			if (i == 1) {
 				sql+="\n ORDER BY 1";
 			}
@@ -2005,7 +2007,7 @@ REFERENCE (from shapefile) {
 				dbErrorHandler(err, sql);
 			}
 			else {	
-//				winston.log("verbose", "SQL> " + sql);
+				winston.log("debug", "SQL> " + sql);
 				var record;
 				if (dbType == "PostGres") {
 					record=recordSet.rows;
