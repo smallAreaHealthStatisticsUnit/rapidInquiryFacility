@@ -221,6 +221,18 @@ x23 AS (
 	       ST_Area(ST_Intersection(a2.geom, a3.geom)) AS a23_area
           FROM a2 CROSS JOIN a3
 	 WHERE ST_Intersects(a2.geom, a3.geom)
+	 
+SQL Server:
+
+SELECT a1.areaid AS SAHSU_GRD_LEVEL1,
+       a2.areaid AS SAHSU_GRD_LEVEL2,
+       a2.geom_11.STArea() AS a2_area,
+       a1.geom_11.STIntersection(a2.geom_orig).STArea() AS a12_area
+  INTO x12_52
+  FROM SAHSU_GRD_LEVEL1 a1 CROSS JOIN SAHSU_GRD_LEVEL2 a2
+ WHERE a1.geom_11.STIntersects(a2.geom_11) = 1
+   AND a1.geom_11.STIntersection(a2.geom_11).STArea() > 0;	 
+	 
  */		
 			BEGIN
 				SET @sql_stmt=			
@@ -238,8 +250,8 @@ x23 AS (
 				    '  INTO ##x' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_' + CAST(@@spid AS VARCHAR) + @crlf + 
 					'  FROM ' + @shapefile_table + ' a' + CAST(@i AS VARCHAR) + 
 					' CROSS JOIN ' + @n_shapefile_table + ' a' + CAST(@i+1 AS VARCHAR) + '' + @crlf + 
-					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
-						'.geom_%2) = 1';
+					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersects(a' + CAST(@i+1 AS VARCHAR) + '.geom_%2) = 1' + @crlf + 		
+					'   AND a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_%2).STArea() > 0';
 				PRINT 'SQL> ' + @sql_stmt;
 				EXECUTE @rowcount = sp_executesql @sql_stmt;	
 			END;			

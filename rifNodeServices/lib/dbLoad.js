@@ -1176,11 +1176,12 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					'POINT' 				/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray, dbType);	
 				
 			var sqlStmt=new Sql("Add geometry column for original SRID geometry",
-				getSqlFromFile("add_geometry_column.sql", dbType, 
-					csvFiles[i].tableName 	/* 1: Table name; e.g. cb_2014_us_county_500k */,
-					'geom_orig' 			/* 2: column name; e.g. geographic_centroid */,
+				getSqlFromFile("add_geometry_column2.sql", dbType, 
+					csvFiles[i].tableName 		/* 1: Table name; e.g. cb_2014_us_county_500k */,
+					'geom_orig' 				/* 2: column name; e.g. geographic_centroid */,
 					xmlConfig.dataLoader.srid	/* 3: Column SRID; e.g. 4326 */,
-					'MULTIPOLYGON' 			/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */), sqlArray, dbType);
+					'MULTIPOLYGON' 				/* 4: Spatial geometry type: e.g. POINT, MULTIPOLYGON */,
+					""							/* 5: Schema (rif_data. or "") [NEVER USED IN POSTGRES] */), sqlArray, dbType);
 	
 			for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 				var sqlStmt=new Sql("Add geometry column for zoomlevel: " + k,
@@ -1242,7 +1243,7 @@ UPDATE sahsu_grd_level1
        geom_9 = geography::STGeomFromText(wkt_9, 4326).MakeValid(),
        geom_10 = geography::STGeomFromText(wkt_10, 4326).MakeValid(),
        geom_11 = geography::STGeomFromText(wkt_11, 4326).MakeValid(),
-       geom_orig = NULL;
+       geom_orig = geometry::STGeomFromText(geometry::STGeomFromText(wkt_11, 4326).MakeValid().STAsText(), 27700);
 
  */
 				var sqlStmt=new Sql("Update geographic centroid, geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID");
@@ -1251,10 +1252,9 @@ UPDATE sahsu_grd_level1
 				for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 					sqlStmt.sql+="       geom_" + k + " = geography::STGeomFromText(wkt_" + k + ", 4326).MakeValid(),\n";
 				}	
-// Needs codeplex SQL Server Spatial Tools:  http://sqlspatialtools.codeplex.com/wikipage?title=Current%20Contents&referringTitle=Home				
 				sqlStmt.sql+="" +
-"       geom_orig = /* geography::STTransform(geography::STGeomFromText(wkt_" + xmlConfig.dataLoader.maxZoomlevel + ", 4326).MakeValid(), " + 
-					xmlConfig.dataLoader.srid + ") NOT POSSIBLE */ NULL"; 
+"       geom_orig = geometry::STGeomFromText(geometry::STGeomFromText(wkt_11, 4326).MakeValid().STAsText(), " + 
+					xmlConfig.dataLoader.srid + ")"; 
 				sqlStmt.dbType=dbType;
 				sqlArray.push(sqlStmt);
 			}
@@ -1386,13 +1386,29 @@ UPDATE sahsu_grd_level1
 						csvFiles[i].tableName + "_geom_" + k + "_gix"	/* Index name */,
 						csvFiles[i].tableName  							/* Table name */, 
 						"geom_" + k 									/* Index column(s) */), sqlArray, dbType); 
-			}				
-			var sqlStmt=new Sql("Index geometry column for original SRID geometry",
-				getSqlFromFile("create_spatial_index.sql", dbType, 
-					csvFiles[i].tableName + "_geom_orig_gix"	/* Index name */,
-					csvFiles[i].tableName  						/* Table name */, 
-					"geom_orig" 								/* Index column(s) */), sqlArray, dbType);
+			}	
 
+			if (dbType == "PostGres") { 
+				var sqlStmt=new Sql("Index geometry column for original SRID geometry",
+					getSqlFromFile("create_spatial_index.sql", dbType, 
+						csvFiles[i].tableName + "_geom_orig_gix"	/* Index name */,
+						csvFiles[i].tableName  						/* Table name */, 
+						"geom_orig" 								/* Index column(s) */), sqlArray, dbType);			
+			}
+			else if (dbType == "MSSQLServer") {	
+				var sqlStmt=new Sql("Index geometry column for original SRID geometry",
+					getSqlFromFile("create_spatial_geometry_index.sql", 
+						dbType, 
+						csvFiles[i].tableName + "_geom_orig_gix"	/* 1: Index name */,
+						csvFiles[i].tableName  						/* 2: Table name */,  
+						"geom_orig"									/* 2: Geometry field name */,
+						csvFiles[0].bbox[0]							/* 4: Xmin (4326); e.g. -179.13729006727 */,
+						csvFiles[0].bbox[1]							/* 5: Ymin (4326); e.g. -14.3737802873213 */, 
+						csvFiles[0].bbox[2]							/* 6: Xmax (4326); e.g.  179.773803959804 */,
+						csvFiles[0].bbox[3]							/* 7: Ymax (4326); e.g. 71.352561 */), 
+					sqlArray, dbType);				
+			}
+					
 			sqlArray.push(new Sql("Reports"));	
 			
 			var sqlStmt=new Sql("Areas and centroids report",
