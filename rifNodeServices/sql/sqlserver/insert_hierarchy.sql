@@ -17,11 +17,11 @@ SQL> SELECT /- Subqueries x12 ... x34: intersection aggregate geometries startin
                Calculate the area of the higher resolution geolevel and the area of the intersected area -/
        a1.areaid AS SAHSU_GRD_LEVEL1,
        a2.areaid AS SAHSU_GRD_LEVEL2,
-       a2.geom_11.STArea() AS a2_area,
-       a1.geom_11.STIntersection(a2.geom_11).STArea() AS a12_area
+       a2.geom_orig.STArea() AS a2_area,
+       a1.geom_orig.STIntersection(a2.geom_orig).STArea() AS a12_area
   INTO ##x12_52
   FROM SAHSU_GRD_LEVEL1 a1 CROSS JOIN SAHSU_GRD_LEVEL2 a2
- WHERE a1.geom_11.STIntersects(a2.geom_11) = 1
+ WHERE a1.geom_orig.STIntersects(a2.geom_orig) = 1
 
 (17 rows affected)
 SQL> SELECT /- Subqueries x23 ... x34: intersection aggregate geometries starting from the lowest resolution.
@@ -29,11 +29,11 @@ SQL> SELECT /- Subqueries x23 ... x34: intersection aggregate geometries startin
                Calculate the area of the higher resolution geolevel and the area of the intersected area -/
        a2.areaid AS SAHSU_GRD_LEVEL2,
        a3.areaid AS SAHSU_GRD_LEVEL3,
-       a3.geom_11.STArea() AS a3_area,
-       a2.geom_11.STIntersection(a3.geom_11).STArea() AS a23_area
+       a3.geom_orig.STArea() AS a3_area,
+       a2.geom_orig.STIntersection(a3.geom_orig).STArea() AS a23_area
   INTO ##x23_52
   FROM SAHSU_GRD_LEVEL2 a2 CROSS JOIN SAHSU_GRD_LEVEL3 a3
- WHERE a2.geom_11.STIntersects(a3.geom_11) = 1
+ WHERE a2.geom_orig.STIntersects(a3.geom_orig) = 1
 
 (331 rows affected)
 SQL> SELECT /- Subqueries x34 ... x34: intersection aggregate geometries starting from the lowest resolution.
@@ -41,11 +41,11 @@ SQL> SELECT /- Subqueries x34 ... x34: intersection aggregate geometries startin
                Calculate the area of the higher resolution geolevel and the area of the intersected area -/
        a3.areaid AS SAHSU_GRD_LEVEL3,
        a4.areaid AS SAHSU_GRD_LEVEL4,
-       a4.geom_11.STArea() AS a4_area,
-       a3.geom_11.STIntersection(a4.geom_11).STArea() AS a34_area
+       a4.geom_orig.STArea() AS a4_area,
+       a3.geom_orig.STIntersection(a4.geom_orig).STArea() AS a34_area
   INTO ##x34_52
   FROM SAHSU_GRD_LEVEL3 a3 CROSS JOIN SAHSU_GRD_LEVEL4 a4
- WHERE a3.geom_11.STIntersects(a4.geom_11) = 1
+ WHERE a3.geom_orig.STIntersects(a4.geom_orig) = 1
 
 (50954 rows affected)
 SQL>
@@ -206,11 +206,11 @@ BEGIN
 
 SELECT a1.areaid AS cb_2014_us_nation_5m,
 	   a2.areaid AS cb_2014_us_state_500k,
-	   a2.geom_11.STArea() AS a2_area,
-	   a1.geom_11.STIntersection(a2.geom_11).STArea() AS a12_area
+	   a2.geom_orig.STArea() AS a2_area,
+	   a1.geom_orig.STIntersection(a2.geom_orig).STArea() AS a12_area
   INTO dbo.#x12
   FROM cb_2014_us_nation_5m a1   CROSS JOIN cb_2014_us_state_500k a2
- WHERE a1.geom_11.STIntersects(a2.geom_11) = 1;
+ WHERE a1.geom_orig.STIntersects(a2.geom_orig) = 1;
 	
 Postgres Original: 
 	
@@ -226,12 +226,12 @@ SQL Server:
 
 SELECT a1.areaid AS SAHSU_GRD_LEVEL1,
        a2.areaid AS SAHSU_GRD_LEVEL2,
-       a2.geom_11.STArea() AS a2_area,
-       a1.geom_11.STIntersection(a2.geom_orig).STArea() AS a12_area
+       a2.geom_orig.STArea() AS a2_area,
+       a1.geom_orig.STIntersection(a2.geom_orig).STArea() AS a12_area
   INTO x12_52
   FROM SAHSU_GRD_LEVEL1 a1 CROSS JOIN SAHSU_GRD_LEVEL2 a2
- WHERE a1.geom_11.STIntersects(a2.geom_11) = 1
-   AND a1.geom_11.STIntersection(a2.geom_11).STArea() > 0;	 
+ WHERE a1.geom_orig.STIntersects(a2.geom_orig) = 1
+   AND a1.geom_orig.STIntersection(a2.geom_orig).STArea() > 0;	 
 	 
  */		
 			BEGIN
@@ -260,11 +260,11 @@ SELECT a1.areaid AS SAHSU_GRD_LEVEL1,
 
 SELECT a2.areaid AS cb_2014_us_state_500k,
 	   a3.areaid AS cb_2014_us_county_500k,
-	   a3.geom_11.STArea() AS a3_area,
-	   a2.geom_11.STIntersection(a3.geom_11).ST_Area() AS a23_area
+	   a3.geom_orig.STArea() AS a3_area,
+	   a2.geom_orig.STIntersection(a3.geom_orig).ST_Area() AS a23_area
   INTO dbo.#x23
   FROM cb_2014_us_state_500k a2  CROSS JOIN cb_2014_us_county_500k a3
- WHERE a2.geom_11.STntersects(a3.geom_11) = 1;
+ WHERE a2.geom_orig.STntersects(a3.geom_orig) = 1;
 
 */
 			BEGIN
@@ -292,11 +292,11 @@ SELECT a2.areaid AS cb_2014_us_state_500k,
 
 SELECT a2.areaid AS cb_2014_us_state_500k,
 	   a3.areaid AS cb_2014_us_county_500k,
-	   a3.geom_11.STArea() AS a3_area,
-	   a2.geom_11.STIntersection(a3.geom_11).STArea() AS a23_area
+	   a3.geom_orig.STArea() AS a3_area,
+	   a2.geom_orig.STIntersection(a3.geom_orig).STArea() AS a23_area
   INTO dbo.#x23
   FROM cb_2014_us_state_500k a2 CROSS JOIN cb_2014_us_county_500k a3
- WHERE a2.geom_11.STIntersects(a3.geom_11) = 1;
+ WHERE a2.geom_orig.STIntersects(a3.geom_orig) = 1;
 		
 Postgres Original: 
 

@@ -800,12 +800,22 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					"check_hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Function name */), 
 				sqlArray, dbType);		
 				
-			var sqlStmt=new Sql("Insert into hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
-				getSqlFromFile("insert_hierarchy.sql", 
-					dbType, 
-					xmlConfig.dataLoader.geographyName.toUpperCase()		/* 1: Geography */,
-					xmlConfig.dataLoader.maxZoomlevel 						/* 2: Max zoomlevel */), 
-				sqlArray, dbType);
+			if (dbType == "PostGres") { 					
+				var sqlStmt=new Sql("Insert into hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
+					getSqlFromFile("insert_hierarchy.sql", 
+						dbType, 
+						xmlConfig.dataLoader.geographyName.toUpperCase()		/* 1: Geography */,
+						xmlConfig.dataLoader.maxZoomlevel 						/* 2: Max zoomlevel */), 
+					sqlArray, dbType);
+			}
+			if (dbType == "MSSQLServer") { 					
+				var sqlStmt=new Sql("Insert into hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
+					getSqlFromFile("insert_hierarchy.sql", 
+						dbType, 
+						xmlConfig.dataLoader.geographyName.toUpperCase()		/* 1: Geography */,
+						"orig"							 						/* 2: Use geom_orig */), 
+					sqlArray, dbType);
+			}
 			
 			var sqlStmt=new Sql("Check intersctions  for geograpy: " + 
 					xmlConfig.dataLoader.geographyName.toLowerCase(),
