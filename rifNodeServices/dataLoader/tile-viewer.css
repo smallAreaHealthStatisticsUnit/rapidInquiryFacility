@@ -4,3 +4,9 @@
 #databaseSelect-button {
 	vertical-align : middle;
 }
+#geographySelect {
+    width: 600px; 
+}
+#geographySelect-button {
+	vertical-align : middle;
+}

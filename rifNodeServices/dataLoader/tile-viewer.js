@@ -65,6 +65,50 @@ function databaseSelectChange(event, ui) {
  */
 function getGeographies(data, status, xhr) {
 	consoleLog("getGeographies() OK: " + JSON.stringify(data, null, 2));	
+	
+	var result=data.result;
+	var html='<label title="Choose geography to display" for="geography">Geography:\n' +
+		'<select required id="geographySelect" name="database" form="dbSelect">';
+	
+	if (result == undefined) {
+		errorPopup("getGeographies() FAILED: no geographies found in database");
+	}
+	else {		
+		for (var i=0; i<result.length; i++) {
+			if (i == 0) {
+			     html+='<option value="' + 
+					result[i].table_catalog + '.' +
+					result[i].table_schema + '.' +
+					result[i].table_name + '.' +
+					result[i].geography + '" selected="selected">' + 
+					result[i].table_schema + '.' +
+					result[i].table_name + ': ' +
+					result[i].description + '</option>';
+			}
+			else {
+			     html+='<option value="' + 
+					result[i].table_catalog + '.' +
+					result[i].table_schema + '.' +
+					result[i].table_name + '.' +
+					result[i].geography + '">' + 
+					result[i].table_schema + '.' +
+					result[i].table_name + ': ' +
+					result[i].description + '</option>';
+			}
+		}
+		html+='</select>\n' +		
+			'</label>';		
+//		consoleLog("Add HTML to #dbSelector: " + html);
+		document.getElementById('dbSelector').innerHTML+= html;
+		$( "#geographySelect" )									// Geography selector
+		.selectmenu({
+			change: function( event, ui ) {					// DB Change function
+				databaseSelectChange( event, ui );
+			}
+		})
+		.selectmenu( "menuWidget" ).addClass( "overflow" );
+		$( "#geographySelect" ).button();
+	}
 			
 } // End of getGeographies()
 		

@@ -282,9 +282,11 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 		dbRequest: dbRequest
 	});
 	
-	var sql="SELECT * FROM rif40_geographies";
-	
-	var query=dbRequest.query(sql, function getAllGeographiesResult(err, result) {
+	var sql="SELECT table_catalog, table_schema, table_name\n" + 
+			"  FROM information_schema.columns\n" +
+			" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
+			"   AND column_name = 'hierarchytable'"; 
+	var query=dbRequest.query(sql, function getAllGeographiesTables(err, sqlResult) {
 		if (err) {
 			var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
 			nerr.stack=err.stack;
@@ -293,15 +295,64 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 		else {
 			var result;
 			if (databaseType == "Postgres") {
-				result=result.rows;
+				result=sqlResult.rows;
 			}
 			else if (databaseType == "MS SQL Server") {
-				result=rows;
+				result=sqlResult;
+			}	
+			
+			var sql="";
+			if (result.length == 0) {
+				getGeographiesErrorHandler(new Error(databaseType + " database: " + databaseName + "; has no tile maker or RIF tables"));
 			}
-			getAllGeographiesCallback(result);
+			else {
+//				console.error("RESULT: " + JSON.stringify(result, null, 2));
+				for (i=0; i<result.length; i++) {
+					if (i == 0) {
+						sql+="SELECT '" + result[i].table_catalog + "' AS table_catalog, '" + 
+								result[i].table_schema + "' AS table_schema, '" + result[i].table_name + 
+							"' AS table_name, geography, description\n" + 
+							"  FROM " + result[i].table_schema + "." + result[i].table_name;	
+					}
+					else {
+						sql+="\nUNION\n" + 
+							"SELECT '" + result[i].table_catalog + "' AS table_catalog, '" + 
+								result[i].table_schema + "' AS table_schema, '" + result[i].table_name + 
+							"' AS table_name, geography, description\n" + 
+							"  FROM " + result[i].table_schema + "." + result[i].table_name;	
+					}	
+				}
+			}
+			if (sql) {
+				sql+="\n ORDER BY 1, 2, 3, 4, 5";
+//				console.error("SQL> " + sql);
+			}
+			else {
+				getGeographiesErrorHandler(new Error(databaseType + " database: " + databaseName + 
+					"; getAllGeographiesTables() no SQL generated"));
+			}
+	
+			var query=dbRequest.query(sql, function getAllGeographiesResult(err, sqlResult) {
+				if (err) {
+					var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
+					nerr.stack=err.stack;
+					getGeographiesErrorHandler(nerr);	
+				}
+				else {
+					var result;
+					if (databaseType == "Postgres") {
+						result=sqlResult.rows;
+					}
+					else if (databaseType == "MS SQL Server") {
+						result=sqlResult;
+					}
+					getAllGeographiesCallback(result);
+				}
+			} // End of getAllGeographiesResult()
+			);
 		}
-	} // End of getAllGeographiesResult()
-	);
+	} // End of getAllGeographiesTables()
+	); 
 } // End of selectFromRif40Geographies()
 
 module.exports.getMapTile = getMapTile;
