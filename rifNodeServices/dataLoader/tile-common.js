@@ -208,7 +208,7 @@ function errorPopup(msg, extendedMessage) {
 		$( "#error" ).dialog(dialogObject);
 	}	
 
-	consoleError("FATAL! " + msg);
+	consoleError(msg);
 }
 
 /*
@@ -235,6 +235,7 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 		callback: methodCallback, 
 		methodFields: methodFields
 	});
+	
 	var jqXHR=$.get(methodName, methodFields, methodCallback, // callback function
 		"json");	
 
@@ -248,8 +249,8 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 					response=JSON.parse(x.responseText);
 				}
 			}
-			catch (e) {
-				msg+="Error parsing response: " + e.message;
+			catch (err) {
+				msg+="Error parsing response: " + err.message;
 			}
 			
 			if (x.status == 0) {
@@ -261,17 +262,29 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 			else if (x.status == 500) {
 				msg+="Unable to " + methodDescription + "; internal server error";
 				if (response && response.message) {
-					msg+="<br><pre>" + response.message + "</pre>";
+					msg+="<p>" + response.message + "</p>";
+				}	
+				else if (response) {
+					msg+="<br><pre>Response: " + JSON.stringify(response, null, 4) + "</pre>";
+				}
+				else if (x.responseText) {
+					msg+="<br><pre>Response Text: " + x.responseText + "</pre>";
+				}
+				else  {
+					msg+="<br><pre>No reponse text</pre>";
 				}
 			}  
 			else if (response && response.message) {
 				msg+="Unable to " + methodDescription + "; unknown error: " + x.status + "<p>" + response.message + "</p>";
 			}	
 			else if (response) {
-				msg+="Unable to " + methodDescription + "; unknown error: " + x.status + "<br><pre>" + JSON.stringify(response, null, 4) + "</pre>";
+				msg+="Unable to " + methodDescription + "; unknown error: " + x.status + "<br><pre>Response: " + JSON.stringify(response, null, 4) + "</pre>";
+			}
+			else if (x.responseText) {
+				msg+="Unable to " + methodDescription + "; unknown error: " + x.status + "<br><pre>Response Text: " + x.responseText + "</pre>";
 			}
 			else {
-				msg+="Unable to " + methodDescription + "; unknown error: " + x.status + "<br><pre>" + x.responseText + "</pre>";
+				msg+="Unable to " + methodDescription + "; unknown error: " + x.status + "<br><pre>No reponse text</pre>";
 			}
 			
 			if (e && e.message) {

@@ -1,0 +1,310 @@
+// ************************************************************************
+//
+// GIT Header
+//
+// $Format:Git ID: (%h) %ci$
+// $Id: 7ccec3471201c4da4d181af6faef06a362b29526 $
+// Version hash: $Format:%H$
+//
+// Description:
+//
+// Rapid Enquiry Facility (RIF) - Node Geospatial webservices
+//
+// Copyright:
+//
+// The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+// that rapidly addresses epidemiological and public health questions using 
+// routinely collected health and population data and generates standardised 
+// rates and relative risks for any given health outcome, for specified age 
+// and year ranges, for any given geographical area.
+//
+// Copyright 2014 Imperial College London, developed by the Small Area
+// Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+// is funded by the Public Health England as part of the MRC-PHE Centre for 
+// Environment and Health. Funding for this project has also been received 
+// from the Centers for Disease Control and Prevention.  
+//
+// This file is part of the Rapid Inquiry Facility (RIF) project.
+// RIF is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// RIF is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+// to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+// Boston, MA 02110-1301 USA
+//
+// Author:
+//
+// Peter Hambly, SAHSU
+//
+// Usage: tests/requests.js
+//
+// Uses:
+//
+// CONVERTS GEOJSON(MAX 100MB) TO TOPOJSON
+// Only POST requests are processed
+// Expects a vaild geojson as input
+// Topojson have quantization on
+// The level of quantization is based on map tile zoom level
+// More info on quantization here: https://github.com/mbostock/topojson/wiki/Command-Line-Reference
+//
+// Prototype author: Federico Fabbri
+// Imperial College London
+//
+
+/*
+ * Function:	getMapTile()
+ * Parameters:	response, HTTP request object, http response object, serverLog object, httpErrorResponse object
+ * Returns:		Status array as JSON
+ * Description: Get status from file
+ */	
+getMapTile = function getMapTile(response, req, res, serverLog, httpErrorResponse) {
+	scopeChecker(__file, __line, {
+		serverLog: serverLog,
+		httpErrorResponse: httpErrorResponse,
+		response: response,
+		req: req,
+		res: res
+	});
+	
+}
+
+/*
+ * Function:	tileViewerReponseProcessing()
+ * Parameters:	service, response, HTTP request object, http response object, serverLog object, httpErrorResponse object
+ * Returns:		Nothing
+ * Description: Send response to client
+ */	
+function tileViewerReponseProcessing(service, response, req, res, serverLog, httpErrorResponse) {
+	scopeChecker(__file, __line, {
+		service: service,
+		serverLog: serverLog,
+		httpErrorResponse: httpErrorResponse,
+		response: response,
+		req: req,
+		res: res
+	});
+	
+	if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
+
+		var output = JSON.stringify(response);// Convert output response to JSON 
+// Need to test res was not finished by an expection to avoid "write after end" errors			
+		try {
+			res.write(output);                  // Write output  
+			res.end();	
+			if (response.message) {
+				console.error(service + "() Complete OK; Diagnostics >>>\n" + response.message + "\n<<< End of diagnostics");
+			}
+		}
+		catch(e) {
+			serverLog.serverError(__file, __line, "getStatus", "Error in sending response to client", req, e, response);
+		}
+	}
+	else {
+		serverLog.serverError2(__file, __line, "getStatus", 
+			"Unable to return OK response to user - httpErrorResponse() already processed", 
+			req, undefined /* err */, response);
+	}		
+} // End of tileViewerReponseProcessing()
+
+/*
+ * Function:	getGeographies()
+ * Parameters:	response, HTTP request object, http response object, serverLog object, httpErrorResponse object
+ * Returns:		Status array as JSON
+ * Description: Get geographies in a database
+ */	
+getGeographies = function getGeographies(response, req, res, serverLog, httpErrorResponse) {
+	scopeChecker(__file, __line, {
+		serverLog: serverLog,
+		httpErrorResponse: httpErrorResponse,
+		response: response,
+		req: req,
+		res: res
+	});
+
+	response.message="In: getGeographies()";	
+	var msg="getGeographies(): ";	
+	var lstart=new Date().getTime();
+	response.fields=req.query;
+
+/*
+ * Function:	getGeographiesErrorHandler()
+ * Parameters:	error object
+ * Returns:		Nothing
+ * Description: Handle error in own context to prevent re-throws
+ */		
+	function getGeographiesErrorHandler(err) {
+		msg+=err.message;
+		response.message+=err.message;
+		try {
+			httpErrorResponse.httpErrorResponse(__file, __line, "getGeographies", 
+				serverLog, 500, req, res, msg, undefined /* Error: do not re-throw */, response);
+		}
+		catch (e) {
+			console.error("Unexpected re-throw: " + e.message);
+		}		
+	} // End of getGeographiesErrorHandler()
+
+/*
+ * Function:	getGeographiesResponse()
+ * Parameters:	None (callback)
+ * Returns:		Nothing
+ * Description: Send response to client
+ */	
+	function getGeographiesResponse(result) {
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse,
+			response: response,
+			req: req,
+			res: res
+		});	
+		
+		response.result=result;	
+		msg+="Return result: " + result.length + " rows\n";
+		response.message+=msg;
+		tileViewerReponseProcessing("getGeographies", response, req, res, serverLog, httpErrorResponse);
+	} // getGeographiesResponse()
+	
+	try { 
+	
+		if (response.fields && response.fields["database"]) { // Can get geographies
+			if (response.fields["database"] == "Postgres") {
+				const pg=require('pg');		
+				
+				var p_user=process.env["PGUSER"] || process.env["USERNAME"] || process.env["USER"];
+				if (p_user == undefined) {
+					throw new Error("Unable to determine postgres user logon from: PGUSER/USERNAME/USER");
+				}
+				var p_hostname=process.env["PGHOST"] || "localhost";
+				var p_port=process.env["PGPOST"] || 5432;
+				var p_database=process.env["PGDATABASE"];
+				if (p_database == undefined) {
+					throw new Error("Unable to determine postgres database from: PGDATABASE");
+				}
+				var pgConnectionString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=tileViewer';
+				// Use PGHOST, native authentication (i.e. same as psql)
+				var pgClient = new pg.Client(pgConnectionString);
+				// Connect to Postgres database
+				pgClient.connect(function(err) {	
+					if (err) {
+						var nerr=new Error("Unable to connect to Postgres using: " + pgConnectionString + "; error: " + err.message);
+						nerr.stack=err.stack;
+						getGeographiesErrorHandler(nerr);			
+					}
+					else {
+						msg+="Database type: " + response.fields["database"] + " connected\n";
+						getAllGeographies(
+							response.fields["database"],	// Database type
+							p_database,						// Databse name
+							pgClient,						// dbRequest	
+							getGeographiesResponse,			// Callback
+							getGeographiesErrorHandler		// Error callback
+						)
+					}
+				});	
+			}
+			else if (response.fields["database"] == "MS SQL Server") {
+				const mssql=require('mssql')
+				
+				var p_hostname=process.env["SQLCMDSERVER"] || "localhost";
+				var p_database=process.env["SQLCMDDBNAME"] || "" // Use sql Server defined default;
+				var config = {
+					driver: 'msnodesqlv8',
+					server: p_hostname,
+					database: p_database,
+					options: {
+						trustedConnection: true,
+						useUTC: true,
+						appName: 'mssqlTileMaker.js'
+					}
+				};
+				
+				// Connect to SQL server database
+				var mssqlClient=mssql.connect(config, function(err) {
+					if (err) {
+						winston.log("error", 'Could not connect to SQL server client using: %s\nError: %s', JSON.stringify(config, null, 4), err.message, err);
+						process.exit(1);	
+					}
+					else {
+						var dbRequest=new mssql.Request();
+						msg+="Database type: " + response.fields["database"] + " connected\n";
+						getAllGeographies(
+							response.fields["database"],	// Database type
+							p_database,						// Databse name
+							dbRequest,						// dbRequest
+							getGeographiesResponse,			// Callback
+							getGeographiesErrorHandler		// Error callback
+						)						
+					}
+				});			
+			}
+			else {
+				throw new Error("Invalid database type: " + response.fields["database"]);
+			}
+		}
+		else {
+			throw new Error("\nCannot get database; insufficent fields: " + JSON.stringify(response.fields, null, 2));
+		}
+	}	
+	catch (err) {	
+		msg+=err.message;
+		response.message+=err.message;
+		try {
+			httpErrorResponse.httpErrorResponse(__file, __line, "getGeographies", 
+				serverLog, 500, req, res, msg, undefined /* Error: do not re-throw */, response);
+		}
+		catch (e) {
+			console.error("Unexpected re-throw: " + e.message);
+		}
+	}
+} // End of getGeographies()
+
+/*
+ * Function:	getAllGeographies()
+ * Parameters:	database type, database name, database request object, getAllGeographiesCallback, getGeographiesErrorHandler
+ * Returns:		Nothing
+ * Description: Handle error in own context to prevent re-throws
+ */	
+function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeographiesCallback, getGeographiesErrorHandler) {
+	scopeChecker(__file, __line, {
+		callback: getAllGeographiesCallback,
+		callback: getGeographiesErrorHandler,
+		databaseType: databaseType,
+		databaseName:databaseName,
+		dbRequest: dbRequest
+	});
+	
+	var sql="SELECT * FROM rif40_geographies";
+	
+	var query=dbRequest.query(sql, function getAllGeographiesResult(err, result) {
+		if (err) {
+			var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
+			nerr.stack=err.stack;
+			getGeographiesErrorHandler(nerr);	
+		}
+		else {
+			var result;
+			if (databaseType == "Postgres") {
+				result=result.rows;
+			}
+			else if (databaseType == "MS SQL Server") {
+				result=rows;
+			}
+			getAllGeographiesCallback(result);
+		}
+	} // End of getAllGeographiesResult()
+	);
+} // End of selectFromRif40Geographies()
+
+module.exports.getMapTile = getMapTile;
+module.exports.getGeographies = getGeographies;
+
+// Eof

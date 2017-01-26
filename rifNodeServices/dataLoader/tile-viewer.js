@@ -64,7 +64,7 @@ function databaseSelectChange(event, ui) {
  * Description:	getGeographies XHR GET reponse callback
  */
 function getGeographies(data, status, xhr) {
-	consoleLog(methodDescription + " OK");	
+	consoleLog("getGeographies() OK: " + JSON.stringify(data, null, 2));	
 			
 } // End of getGeographies()
 		

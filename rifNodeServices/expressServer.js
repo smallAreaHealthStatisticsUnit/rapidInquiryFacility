@@ -154,15 +154,16 @@ var services=["/:shpConvert",
 			  "/:getShpConvertStatus" ,
 			  "/:getShpConvertTopoJSON" ,
 			  "/:shpConvertGetConfig.xml" ,
-			  "/:shpConvertGetResults.zip" /*,
+			  "/:shpConvertGetResults.zip",
+			  "/:getGeographies",
+			  "/:getMapTile" /*,
 			  "/simplifyGeoJSON",
 			  "/geoJSON2WKT",
 			  "/createHierarchy",
 			  "/createCentroids",
 			  "/createMaptiles",
 			  "/getGeospatialData",
-			  "/getNumShapefilesInSet",
-			  "/getMapTile" */];
+			  "/getNumShapefilesInSet"*/];
 var theDate = new Date();
 for (var i=0; i<services.length; i++) { // Call common method
 // Get methods are dummies for test purposes
