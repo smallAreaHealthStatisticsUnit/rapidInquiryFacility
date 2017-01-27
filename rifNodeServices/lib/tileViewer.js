@@ -309,17 +309,23 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 //				console.error("RESULT: " + JSON.stringify(result, null, 2));
 				for (i=0; i<result.length; i++) {
 					if (i == 0) {
-						sql+="SELECT '" + result[i].table_catalog + "' AS table_catalog, '" + 
+						sql+="SELECT '" + databaseType + "' AS database_type, '" + 
+								result[i].table_catalog + "' AS table_catalog, '" + 
 								result[i].table_schema + "' AS table_schema, '" + result[i].table_name + 
-							"' AS table_name, geography, description\n" + 
-							"  FROM " + result[i].table_schema + "." + result[i].table_name;	
+							"' AS table_name,\n" + 
+							        "geography, description, maxzoomlevel, minzoomlevel\n" + 
+							"  FROM " + result[i].table_schema + "." + result[i].table_name + '\n' +
+							" WHERE hierarchytable IS NOT NULL";
 					}
 					else {
 						sql+="\nUNION\n" + 
-							"SELECT '" + result[i].table_catalog + "' AS table_catalog, '" + 
+							"SELECT '" + databaseType + "' AS database_type, '" + 
+								result[i].table_catalog + "' AS table_catalog, '" + 
 								result[i].table_schema + "' AS table_schema, '" + result[i].table_name + 
-							"' AS table_name, geography, description\n" + 
-							"  FROM " + result[i].table_schema + "." + result[i].table_name;	
+							"' AS table_name,\n" + 
+							        "geography, description, maxzoomlevel, minzoomlevel\n" + 
+							"  FROM " + result[i].table_schema + "." + result[i].table_name + ' a\n' +
+							" WHERE hierarchytable IS NOT NULL";	
 					}	
 				}
 			}

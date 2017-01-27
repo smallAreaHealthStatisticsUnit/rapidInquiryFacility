@@ -295,4 +295,80 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 			}
 		} // End of jqXHRError()
 	);		
-} // xhrGetMethod()
+} // End of xhrGetMethod()
+
+/*
+ * Function: 	createMap()
+ * Parameters: 	Bounding box, number of Zoomlevels
+ * Returns: 	map
+ * Description:	Create map, add Openstreetmap basemap and scale
+ */	
+function createMap(boundingBox, noZoomlevels) {
+							
+	consoleLog("Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
+	var map = new L.map('map' , {
+			zoom: 11,
+			// Tell the map to use a fullsreen control
+			fullscreenControl: true
+		} 
+	);
+	
+	try {
+		var loadingControl = L.Control.loading({
+			separate: true
+		});
+		map.addControl(loadingControl);
+	}
+	catch (e) {
+		try {
+			map.remove();
+		}
+		catch (e2) {
+			consoleLog("WARNING! Unable to remove map during error recovery");
+		}
+		throw new Error("Unable to add loading control to map: " + e.message);
+	}
+	
+	if (boundingBox) {
+		try {
+			map.fitBounds([
+				[boundingBox.ymin, boundingBox.xmin],
+				[boundingBox.ymax, boundingBox.xmax]], {maxZoom: 11}
+			);
+		}
+		catch (e) {
+			try {
+				map.remove();
+			}
+			catch (e2) {
+				consoleLog("WARNING! Unable to remove map during error recovery");
+			}
+			throw new Error("Unable to create map: " + e.message);
+		}
+	}			
+	
+	try {	
+		consoleLog("Creating basemap...");															
+		tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
+			maxZoom: 11,
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+				'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
+			id: 'mapbox.light'
+		});
+		tileLayer.addTo(map);	
+		L.control.scale().addTo(map); // Add scale	
+		consoleLog("Added tileLayer and scale to map");	
+	
+		return map;
+	}
+	catch (e) {
+		try {
+			map.remove();
+		}
+		catch (e2) {
+			consoleLog("WARNING! Unable to remove map during error recovery");
+		}		
+		throw new Error("Unable to add tile layer to map: " + e.message);
+	}
+} // End of createMap()

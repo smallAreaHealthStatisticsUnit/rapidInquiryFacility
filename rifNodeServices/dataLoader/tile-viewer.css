@@ -5,8 +5,12 @@
 	vertical-align : middle;
 }
 #geographySelect {
+	float: right;
     width: 600px; 
 }
 #geographySelect-button {
-	vertical-align : middle;
+	vertical-align: middle;
+}
+#geographyLabel {
+	float: right;
 }

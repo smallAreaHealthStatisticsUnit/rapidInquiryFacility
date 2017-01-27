@@ -69,12 +69,16 @@ $(document).ready(function documentReady() {
       <form id="dbSelect">
 	    <fieldset>
           <div id="dbSelector" class="ui-tabs ui-widget ui-widget-content ui-corner-all">	
-  	        <label title="Choose database type to connect to" for="database">Database:
+  	        <label id="databaseLabel" title="Choose database type to connect to" for="database">Database:
 		      <select required id="databaseSelect" name="database" form="dbSelect">
 			     <option value="Postgres" selected="selected">Postgres</option>
 			     <option value="MS SQL Server">MS SQL Server</option>
 		  	  </select> 		
 		    </label>  
+			<label id="geographyLabel"  title="Choose geography to display" for="geography">Geography:
+              <select required id="geographySelect" name="database" form="dbSelect">
+		  	  </select> 		
+		    </label> 
    	      </div>
 	    </fieldset>	
       </form>  
