@@ -7,6 +7,12 @@ Principal Work Area: **Microsoft SQL server database port**
 ###January
 Java related to the MS SQL Server port (+ handover)
 
+######24 January
+* Back to Query formatters for a little bit
+MSSQLFieldVarianceQueryFormatter: Is that used at all?  I corrected the SQL
+MSSQLFunctionCallerQueryFormatter: whether the SQL is valid depends on the user-defined function itself.  Is there an example for how is it used?
+MSSQLImportTableFromCSVQueryFormatter: needs to be bulk insert and should use format files (messy)
+
 ######9 January
 * Taking advantage of being stranded by the tube strike to focus on this code again.
 MSSQLCreateIndexQueryFormatter: still uncertain whether there should be checks about whether columns can be indexed, whether they have full text enabled, checked with Kevin what kind of checks he normally does in the Java utliity classes

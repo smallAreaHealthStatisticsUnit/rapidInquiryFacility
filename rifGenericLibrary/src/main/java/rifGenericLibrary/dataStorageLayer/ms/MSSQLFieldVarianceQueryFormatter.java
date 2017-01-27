@@ -134,7 +134,7 @@ public final class MSSQLFieldVarianceQueryFormatter
 		addQueryPhrase(0, "SELECT");
 		padAndFinishLine();
 		addQueryPhrase(1, fieldOfInterest);
-		addQueryPhrase(" AS value,");
+		addQueryPhrase(" AS fieldValue,");
 		padAndFinishLine();
 		addQueryPhrase(1, "COUNT(");
 		addQueryPhrase(fieldOfInterest);
@@ -147,13 +147,13 @@ public final class MSSQLFieldVarianceQueryFormatter
 		padAndFinishLine();
 		addQueryPhrase(0, "GROUP BY");
 		padAndFinishLine();
-		addQueryPhrase(1, "value");
+		addQueryPhrase(1, fieldOfInterest);
 		padAndFinishLine();
 		addQueryPhrase(0, "ORDER BY");
 		padAndFinishLine();
 		addQueryPhrase(1, "COUNT(");
 		addQueryPhrase(fieldOfInterest);
-		addQueryPhrase(") DESC;");
+		addQueryPhrase(") DESC");
 				
 		return super.generateQuery();
 	}
