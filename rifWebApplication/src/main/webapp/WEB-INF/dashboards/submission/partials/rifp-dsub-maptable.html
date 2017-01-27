@@ -4,18 +4,20 @@ Used in Study Area and Comparison Area Modals, each with own respective controll
 Used by rifd-dsub-maptable.js
 !refresh is a hack to ensure the table redraws itself
 -->
+
 <div class='modalAreaSelectionMenu'>
-    <div id='selectAtSelection' class='styleUnderline dropdowns availablesWrapper'>
-        <select type="text" ng-model="input.studyResolution" id='selectAt' class='dropdownSelect' ng-options="l for l in geoLevelsViews"></select>
-        <div class="dropDownLabel">Resolution of Results</div>
-        <div id='selectAtAvailable' class='availables'></div>
-    </div>
-    <div id='resolutionSelection' class="styleUnderline dropdowns availablesWrapper">
-        <select type="text" ng-model="input.selectAt" id='resolution' class='dropdownSelect' ng-options="l for l in geoLevels" ng-change="geoLevelChange()"></select>
-        <div class="dropDownLabel">Selection Resolution</div>
-        <div id='resolutionAvailable' class='availables'></div>
-    </div>
-</div>      
+       <div id='selectAtSelection' class='styleUnderline dropdowns availablesWrapper'>
+           <select type="text" ng-model="input.studyResolution" id='selectAt' class='dropdownSelect' ng-options="l for l in geoLevelsViews"></select>
+           <div class="dropDownLabel">Resolution of Results</div>
+           <div id='selectAtAvailable' class='availables'></div>
+       </div>
+       <div id='resolutionSelection' class="styleUnderline dropdowns availablesWrapper">
+           <select type="text" ng-model="input.selectAt" id='resolution' class='dropdownSelect' ng-options="l for l in geoLevels" ng-change="geoLevelChange()"></select>
+           <div class="dropDownLabel">Selection Resolution</div>
+           <div id='resolutionAvailable' class='availables'></div>
+       </div> 
+</div>  
+
 <button class="mapListButton" ng-click="openFromList()">Upload from List</button>
 <div class='modalAreaSelectionContent'>
     <div ng-controller="MultiSelectCtrl">

@@ -1,3 +1,7 @@
+/*
+* CSS for modals
+*/
+
 .msettings .txt-fld #breaks input {
     float: left;
     width: 58px;
@@ -357,13 +361,18 @@
 }
 
 #breakstable tr td {
-    height: 20px;
+    height: 22px;
 }
 
 #swatchtable {
     vertical-align: top;
     margin-top: 10px;
     display: inline-block;
+}
+
+#brewerLabel {
+    position: absolute;
+    margin-left:100px;
 }
 
 #swatchtable tr td {

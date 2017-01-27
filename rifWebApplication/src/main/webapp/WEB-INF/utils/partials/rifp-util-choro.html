@@ -7,10 +7,12 @@
         <div id="choroWrap">
             <div class="left">
                 <div class="txt-fld">
-                    <label for="colourScale"> Colour scale:</label> 
-                    <select ng-style="{'text-transform': 'none'}" id='colourScale' ng-model="input.selectedSchemeName" ng-change="renderSwatch(false, false)">
-                        <option ng-repeat='o in input.mySchemes' value='{{o}}'>{{o}}</option> 
-                    </select>
+                    <label for="colourPicker"> Colour scale:</label> 
+                    <md-select class="colourPicker" data-ng-model="input.currOption" ng-change="renderSwatch(false, false)">
+                        <md-select-label><img src="{{input.currOption.image}}" /></md-select-label>
+                        <md-option id="swatch" data-ng-value="opt" data-ng-repeat="opt in options"><img src="{{opt.image}}" /></md-option>
+                    </md-select>
+                    <div id="brewerLabel">ColorBrewer: {{input.currOption.name}}</div>
                     <div class='invertWrapper'>
                         <input type="checkbox" name="inverter" id="invertColors" ng-model="input.checkboxInvert" ng-change="renderSwatch(false, false)"> 
                         <label for = "invertColors" id="invertColorsLabel"> Invert </label>
@@ -38,7 +40,7 @@
                     </select>
                 </div>
             </div>
-            <div style="margin-top: 10px">Edit Breaks</div>
+            <div style="margin-top: 15px">Breaks:</div>
             <div class="right">          
                 <table id="swatchtable">
                     <tr ng-repeat="i in input.thisMap.range">

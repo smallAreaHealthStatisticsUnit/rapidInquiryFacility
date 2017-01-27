@@ -410,7 +410,7 @@ angular.module("RIF")
                     };
 
                     var modalInstance = $uibModal.open({
-                        animation: true,
+                        animation: false,
                         templateUrl: 'dashboards/submission/partials/rifp-dsub-fromfile.html',
                         controller: 'ModalRunFileInstanceCtrl',
                         windowClass: 'stats-Modal',

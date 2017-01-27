@@ -159,6 +159,12 @@ angular.module("RIF")
                             time: '',
                             tilematrixset: 'GoogleMapsCompatible_Level'
                         })});
+                    basemaps.push({name: "OSM UK Postcodes", tile: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-npe/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">OSM Postcode</a>'
+                        })});
+                    basemaps.push({name: "Code-Point Open UK Postcodes", tile: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-os/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">Code-Point Open layers</a>'
+                        })});
                     return {
                         //Get a list of all basemaps available to fill modal selects
                         getBaseMapList: function () {

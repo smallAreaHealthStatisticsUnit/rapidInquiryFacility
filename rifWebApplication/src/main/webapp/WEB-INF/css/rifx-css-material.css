@@ -40,3 +40,62 @@ div #status:focus {
     outline: none !important; 
     border-bottom: 5px solid #FFDAB9;
 }
+
+/*COLORBREWER PICKER*/
+
+.colourPicker {
+    position: absolute;
+    width: 220px;
+    height: 41px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    font-size: 1.1em;
+    background: #F7F7F7;
+    border: 1px solid #cccccc;
+    color: #999999;
+    position: relative;
+    margin: 0px;
+}
+
+md-select:not([disabled]):focus .md-select-value,
+md-input-container.md-default-theme .md-input, md-input-container .md-input:hover,
+md-input-container:not(.md-input-invalid).md-input-focused .md-input {
+    border: none;
+}
+
+.md-select-value img {
+    width: 220px;
+    padding: 8px 6px 2px 6px;
+    height: 35px;
+}
+
+.md-select-value .md-select-icon {
+    margin: 0px;
+    color: transparent;
+    width: 0px; 
+}
+
+.md-select-value {
+    padding: 0px;
+}
+
+md-select-label img,
+#swatch img, #colourPicker img {
+    width: 220px;
+    height: 20px;
+}
+
+md-select-label img {
+    border: 1px solid black;
+}
+
+#swatch {
+    padding: 0px;
+    height: 20px;
+    width: 220px;
+}
+
+/*HACK: https://github.com/angular/material/issues/2942*/
+.md-select-menu-container {
+    z-index: 99999999;
+}

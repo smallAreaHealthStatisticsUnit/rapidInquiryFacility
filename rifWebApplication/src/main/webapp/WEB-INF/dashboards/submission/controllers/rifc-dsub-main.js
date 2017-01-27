@@ -1,14 +1,15 @@
 /*
  * CONTROLLER for the main 'tree' page
  */
+
 angular.module("RIF")
-        .controller('SumbmissionCtrl', ['$scope', 'user', '$state', 'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService', 
+        .controller('SumbmissionCtrl', ['$scope', 'user', '$state', 'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService',
             function ($scope, user, $state, SubmissionStateService, StudyAreaStateService, CompAreaStateService, ParameterStateService) {
-               
                 /*
                  * STUDY, GEOGRAPHY AND FRACTION DROP-DOWNS
                  * Calls to API returns a chain of promises
                  */
+
                 $scope.geographies = [];
 
                 //Get geographies
@@ -102,7 +103,7 @@ angular.module("RIF")
                 /*
                  * RESET
                  */
-                $scope.resetState = function() {
+                $scope.resetState = function () {
                     $state.go('state1').then(function () {
                         $state.reload();
                     });

@@ -3,9 +3,6 @@
  */
 
 /* global L */
-
-//TODO: remove year from getSmoothedResults
-
 angular.module("RIF")
         .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'leafletData', 'ChoroService',
             'MappingStateService', 'ViewerStateService', 'MappingService',
@@ -127,8 +124,8 @@ angular.module("RIF")
                 }
 
                 //update study list if new study processed, but do not update maps
-                $scope.$on('updateStudyDropDown', function (event, args) {
-                    $scope.studyIDs.push(args);
+                $scope.$on('updateStudyDropDown', function (event, thisStudy) {
+                    $scope.studyIDs.push(thisStudy);
                 });
 
                 //Get the possible studies initially
@@ -484,7 +481,7 @@ angular.module("RIF")
                             return this._div;
                         };
                     }
-                    //The hover box
+                    //The hover box update
                     function closureInfoBoxUpdate(m) {
                         return function (poly) {
                             if (poly) {
@@ -500,7 +497,7 @@ angular.module("RIF")
                                                         break;
                                                     }
                                                 }
-                                                if (feature !== "" && angular.isNumber(Number(tmp))) {
+                                                if (feature !== "" && !isNaN(Number(tmp))) {
                                                     inner = '<h4>ID: ' + poly + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h4>';
                                                 }
                                             }
@@ -511,16 +508,16 @@ angular.module("RIF")
                             }
                         };
                     }
-                    //Area info box
+                    //Area info box update
                     function closureInfoBox2Update(m) {
                         return function (poly) {
                             if (poly === null) {
                                 this._div.innerHTML = "";
                             } else {
                                 var results = null;
-                                for (var i = 0; i < $scope.tableData["diseasemap1"].length; i++) {
-                                    if ($scope.tableData["diseasemap1"][i].area_id === poly) {
-                                        results = $scope.tableData["diseasemap1"][i];
+                                for (var i = 0; i < $scope.tableData[m].length; i++) {
+                                    if ($scope.tableData[m][i].area_id === poly) {
+                                        results = $scope.tableData[m][i];
                                     }
                                 }
                                 if (results !== null) {

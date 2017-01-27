@@ -60,6 +60,11 @@
     color: white;
 }
 
+.grid-recap .ui-grid-row:hover {
+    background-color: red;
+    color: black;
+}
+
 .ui-grid-canvas {
     position: relative;
 }
@@ -136,9 +141,9 @@
     opacity: 0.8;
 }
 .statusR .ui-grid-cell-contents {
-  /*  background-color: lightgreen;
-    color: black;
-    opacity: 0.8;*/
+    /*  background-color: lightgreen;
+      color: black;
+      opacity: 0.8;*/
 }
 .statusU .ui-grid-cell-contents {
     background-color: pink;

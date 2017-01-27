@@ -43,7 +43,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" >
         <meta name="description" content="RIF, Software for Environmental Spatial Epidemiology">
         <meta name="keywords" content="Disease mapping, Spatial epidemiology, Environental exposure, Health data, GIS, Biostatistics">
-
+        
         <!-- Angular -->
         <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-animate.js"></script>
@@ -103,20 +103,14 @@
         <script src="libs/leaflet.shpfile.js"></script>
         <script src="libs/shp.min.js"></script>   
 
-        <!-- RIF 4.0 JS -->
+        <!-- RIF 4.0 ANGULAR JS-->
         <script src="modules/rifm-app.js"></script> 
         <script src="dashboards/login/controllers/rifc-login-login.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-comparea.js"></script>
-        <script src="dashboards/submission/services/rifs-dsub-compareastate.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-params.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-studyarea.js"></script>
-        <script src="dashboards/submission/services/rifs-dsub-studyareastate.js"></script>
-        <script src="dashboards/submission/directives/rifd-dsub-maptable.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-stats.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-main.js"></script>
-        <script src="dashboards/submission/services/rifs-dsub-paramstate.js"></script>
-        <script src="dashboards/submission/services/rifs-dsub-statsstate.js"></script>
-        <script src="dashboards/submission/services/rifs-dsub-mainstate.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-runstudy.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-save.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-reset.js"></script>
@@ -124,17 +118,33 @@
         <script src="dashboards/submission/controllers/rifc-dsub-fromfile.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-status.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-selectmodals.js"></script>
+        <script src="dashboards/submission/services/rifs-dsub-studyareastate.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-maptable.js"></script>
         <script src="dashboards/submission/services/rifs-dsub-model.js"></script>       
-        <script src="dashboards/submission/directives/rifd-dsub-onreadfile.js"></script>    
+        <script src="dashboards/submission/services/rifs-dsub-compareastate.js"></script>
+        <script src="dashboards/submission/services/rifs-dsub-paramstate.js"></script>
+        <script src="dashboards/submission/services/rifs-dsub-statsstate.js"></script>
+        <script src="dashboards/submission/services/rifs-dsub-submissionstate.js"></script>
+        <script src="dashboards/submission/directives/rifd-dsub-maptable.js"></script>
+        <script src="dashboards/submission/directives/rifd-dsub-onreadfile.js"></script>  
         <script src="dashboards/viewer/controllers/rifc-view-viewer.js"></script>
         <script src="dashboards/viewer/services/rifs-view-viewerstate.js"></script>
         <script src="dashboards/viewer/directives/rifd-view-d3distHisto.js"></script>
         <script src="dashboards/viewer/directives/rifd-view-d3pyramid.js"></script>
-        <script src="utils/directives/rifd-util-d3histBreaks.js"></script>
+        <script src="dashboards/mapping/controllers/rifc-dmap-main.js"></script>
+        <script src="dashboards/mapping/services/rifs-dmap-mappingstate.js"></script>
+        <script src="dashboards/mapping/directives/rifd-dmap-d3rrzoom.js"></script>
         <script src="utils/controllers/rifc-util-basemap.js"></script>
         <script src="utils/controllers/rifc-util-choro.js"></script>
         <script src="utils/controllers/rifc-util-alert.js"></script>
+        <script src="utils/controllers/rifc-util-multiselect.js"></script>
+        <script src="utils/controllers/rifc-util-mapping.js"></script>
+        <script src="utils/controllers/rifc-util-tabctrl.js"></script>
+        <script src="utils/directives/rifd-util-leafletTools.js"></script>
+        <script src="utils/directives/rifd-util-savechart.js"></script>
+        <script src="utils/directives/rifd-util-d3histBreaks.js"></script>
+        <script src="utils/services/rifs-util-mapping.js"></script>
+        <script src="utils/services/rifs-util-uigrid.js"></script>
         <script src="utils/services/rifs-util-basemap.js"></script>
         <script src="utils/services/rifs-util-colorbrewer.js"></script>
         <script src="utils/services/rifs-util-leafletdraw.js"></script>
@@ -142,17 +152,7 @@
         <script src="utils/services/rifs-util-choro.js"></script>
         <script src="utils/services/rifs-util-JSON.js"></script>
         <script src="backend/services/rifs-back-requests.js"></script>
-        <script src="utils/controllers/rifc-util-tabctrl.js"></script>
         <script src="backend/services/rifs-back-interceptor.js"></script>
-        <script src="dashboards/mapping/controllers/rifc-dmap-main.js"></script>
-        <script src="dashboards/mapping/services/rifs-dmap-mappingstate.js"></script>
-        <script src="dashboards/mapping/directives/rifd-dmap-d3rrzoom.js"></script>
-        <script src="utils/services/rifs-util-mapping.js"></script>
-        <script src="utils/services/rifs-util-uigrid.js"></script>
-        <script src="utils/controllers/rifc-util-mapping.js"></script>
-        <script src="utils/directives/rifd-util-leafletTools.js"></script>
-        <script src="utils/directives/rifd-util-savechart.js"></script>
-        <script src="utils/controllers/rifc-util-multiselect.js"></script>
 
         <!-- RIF 4.0 CSS -->   
         <link href="css/rifx-css-main.css" rel="stylesheet" media="screen" />

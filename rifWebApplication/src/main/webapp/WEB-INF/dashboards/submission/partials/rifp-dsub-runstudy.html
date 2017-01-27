@@ -14,12 +14,13 @@ Disease submission modal to run study
                 <div id='studyOptions' >
                     <div id="buttons" class='positioning'>
                         <div class='styleUnderline dropdowns availablesWrapper'>
-                            <select type="text" ng-model="input.project" id='projectCode' class='dropdownSelect' ng-options="s.name for s in input.projects" ng-change="updateModel()">
+                            <select type="text" ng-model="input.projectName" id='projectCode' class='dropdownSelect' ng-options="s for s in input.projects" ng-change="updateModel()">
                             </select>   
                              <div class="dropDownLabel">Project Name</div>
                         </div>
                     </div>
-                    <textarea ng-model="input.studyDescription" placeholder="Study Description (Optional)" ng-change="updateModel()" name='studyDescription' id='studyDescription' class='description'></textarea>   
+                    <textarea ng-model="input.studyDescription" placeholder="Study Description (Optional)" ng-change="updateModel()" 
+                              name='studyDescription' id='studyDescription' class='description'></textarea>   
                     <button id='finalRun' class='myButton' ng-click="submit()"> RUN </button>
                 </div>
             </div>

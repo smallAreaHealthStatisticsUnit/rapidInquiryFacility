@@ -44,7 +44,7 @@ angular.module("RIF")
                                         var tmp = [];
                                         for (var i = 0; i < StudyAreaStateService.getState().polygonIDs.length; i++) {
                                             tmp.push({
-                                                "id": StudyAreaStateService.getState().polygonIDs[i].area_id,
+                                                "id": StudyAreaStateService.getState().polygonIDs[i].id,
                                                 "gid": StudyAreaStateService.getState().polygonIDs[i].gid,
                                                 "label": StudyAreaStateService.getState().polygonIDs[i].label,
                                                 "band": StudyAreaStateService.getState().polygonIDs[i].band
@@ -74,7 +74,7 @@ angular.module("RIF")
                                         var tmp = [];
                                         for (var i = 0; i < CompAreaStateService.getState().polygonIDs.length; i++) {
                                             tmp.push({
-                                                "id": CompAreaStateService.getState().polygonIDs[i].area_id,
+                                                "id": CompAreaStateService.getState().polygonIDs[i].id,
                                                 "gid": CompAreaStateService.getState().polygonIDs[i].gid,
                                                 "label": CompAreaStateService.getState().polygonIDs[i].label,
                                                 "band": CompAreaStateService.getState().polygonIDs[i].band
@@ -117,7 +117,6 @@ angular.module("RIF")
                         "<th>Identifier</th>" +
                         "<th>Description</th>" +
                         "<th>Years</th>" +
-                        "<th>Interval</th>" +
                         "<th>Sex</th>" +
                         "<th>Age Range</th>" +
                         "<th>Covariates</th>" +
@@ -137,7 +136,6 @@ angular.module("RIF")
                                     inv[i].health_codes.health_code[j].name_space + "</td>" +
                                     "<td>" + inv[i].health_codes.health_code[j].description + "</td>" +
                                     "<td>" + inv[i].year_range.lower_bound + "-" + inv[i].year_range.upper_bound + "</td>" +
-                                    "<td>" + inv[i].years_per_interval + "</td>" +
                                     "<td>" + inv[i].sex + "</td>" +
                                     "<td> LWR: " + inv[i].age_band.lower_age_group.name + ", UPR: " + inv[i].age_band.upper_age_group.name + "</td>" +
                                     "<td>" + covars + "</td>" +

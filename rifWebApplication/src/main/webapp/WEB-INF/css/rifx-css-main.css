@@ -739,7 +739,8 @@ select {
 
 .dropdownSelectSingle:hover,
 .dropdownSelect:hover {
-    border-bottom: solid 4px rgba(135,206,250, 1);
+    border-bottom: solid 4px #4daf4a;
+    opacity: 1;
 }
 .dropdownSelectSingle,
 .dropdownSelect option {
@@ -805,10 +806,10 @@ input[type="file"].fileOpener {
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
     border: 1px solid #BBB;
-    text-align: center;
     background-color: #EDEDED;
     cursor: pointer;
 }
+
 .dropdownInputSmall {
     font-size: 14px !important;
     border-bottom: solid 1px #CAE1FF !important;

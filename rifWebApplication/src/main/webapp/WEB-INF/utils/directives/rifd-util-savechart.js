@@ -9,6 +9,7 @@ angular.module("RIF")
             return {
                 restrict: 'A',
                 link: function (scope, element, attr) {
+
                     //export options set in scope
                     var opts;
 
@@ -114,6 +115,16 @@ angular.module("RIF")
 
 
                     element.on('click', function (event) {
+                        //check if using IE or EDGE
+                        //http://stackoverflow.com/questions/31757852/how-can-i-detect-internet-explorer-ie-and-microsoft-edge-using-javascript
+                        if (/MSIE 10/i.test(navigator.userAgent) ||
+                                /MSIE 9/i.test(navigator.userAgent) ||
+                                /rv:11.0/i.test(navigator.userAgent) ||
+                                /Edge\/\d./i.test(navigator.userAgent)) {
+                            alert("You are using Internet Explorer:\nPlease use 'right click' then 'save picture as...' instead");
+                            return;
+                        }
+
                         opts = scope.$parent.optionsd3[attr.mapid];
 
                         var container;

@@ -7,23 +7,26 @@ Disease submission main 'trees' menu
         <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
     </div>
     <div class='nav'>
-        <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping</a>
-        <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer</a>
-        <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
+        <a ui-sref="state3" ng-class="{
+                    active: $state.includes('state3')
+                }">Disease Mapping</a>
+        <a ui-sref="state2" ng-class="{
+                    active: $state.includes('state2')}">Data Viewer</a>
+        <a ui-sref="state1" ng-class="{
+                    active: $state.includes('state1')}">Study Submission</a>
     </div>
 </div>
 
 <!-- 5 Submission drop downs-->
 <div id="buttons" class='positioning'>
-    <div class='geoDrops'>
+    <div class='geoDrops'>      
         <div>
             <div  class='styleUnderline'>
                 <input type="text" ng-model="studyName" placeholder = "my study name" id='studyName' class='dropdownSelectSingle' ng-change="studyNameChanged()">
                 <div id='studyAvailables' class='availables' > </div>
                 <div class="dropDownLabel">Study Name</div>
             </div>
-
-        </div>
+        </div>  
         <div>
             <div class='styleUnderline dropdowns availablesWrapper'>
                 <select type="text" ng-model="healthTheme" id='healthTheme' class='dropdownSelect' ng-options="s.name for s in healthThemes" ng-change="healthThemeChange()">

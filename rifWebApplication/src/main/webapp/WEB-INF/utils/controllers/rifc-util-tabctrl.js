@@ -8,7 +8,8 @@ angular.module("RIF")
                 //The user to display
                 $scope.username = user.currentUser;
 
-                //Check for update in status every 4s
+                //Check for update in status every x ms Seconds
+                var ms = 4000;
                 var stop;
                 var studies;
                 $scope.studyIds;
@@ -26,7 +27,7 @@ angular.module("RIF")
                     }, function (e) {
                         //console.log("Could not retrieve study status");
                     });
-                }, 4000);
+                }, ms);
 
                 $scope.$on('$destroy', function () {
                     if (!angular.isUndefined(stop)) {
