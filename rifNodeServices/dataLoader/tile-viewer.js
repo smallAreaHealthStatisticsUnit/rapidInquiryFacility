@@ -66,13 +66,28 @@ function databaseSelectChange(event, ui) {
 function geographySelectChange(event, ui) {
 	var geographyText = (ui && ui.item && ui.item.value) || $( "#geographySelect option:checked" ).val();
 
-	var methodFields = JSON.parse(geographyText)
-
-	consoleLog("geographySelectChange: " +  JSON.stringify(methodFields, null, 2)); 
+	var methodFields;
+	var geography;
+	
+	try {
+		geography=JSON.parse(geographyText);
+		methodFields={
+			database_type: geography.database_type,
+			table_catalog: geography.table_catalog,
+			table_schema: geography.table_schema,
+			table_name: geography.table_name,
+			geography: geography.geography
+		}
+		consoleLog("geographySelectChange: " +  JSON.stringify(methodFields, null, 2)); 
 //	xhrGetMethod("getMapTile", "get gmap tile from " + methodFields.database_type + " database: " + methodFields.table_catalog, 
 //		getMapTile, methodFields);
 		
-	createMap();
+		createMap({xmin: -180.0000, ymin: -90.0000, xmax: 180.0000, ymax: 90.0000} /* whole world bounding box */, 
+			geography.maxzoomlevel);
+	}
+	catch (e) {
+		errorPopup("geographySelectChange() caught: " + e.message);
+	}
 	
 } // End of databaseSelectChange()
 
@@ -117,6 +132,10 @@ function getGeographies(data, status, xhr) {
 			x = w.innerWidth || e.clientWidth || g.clientWidth,
 			y = w.innerHeight|| e.clientHeight|| g.clientHeight;
 		document.getElementById('geographySelect').style.width=(x-550) + "px";	
+
+		var height=y-46; // Merge all the correction factors (46px)
+		setHeight("mapcontainer", (height-52));
+		setHeight("map", (height-55));		
 		
 		$( "#geographySelect" )								// Geography selector
 		.selectmenu({

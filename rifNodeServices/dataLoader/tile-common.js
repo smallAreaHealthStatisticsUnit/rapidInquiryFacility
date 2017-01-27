@@ -45,6 +45,7 @@
 // Peter Hambly, SAHSU
 
 var lstart=new Date().getTime(); 	// GLOBAL: Start time for console log/error messages
+var map;
 
 /*
  * Function: 	scopeChecker()
@@ -298,16 +299,36 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 } // End of xhrGetMethod()
 
 /*
+ * Function: 	setHeight()
+ * Parameters: 	id, height
+ * Returns: 	map
+ * Description:	Set object height
+ */
+function setHeight(id, lheight) {
+	document.getElementById(id).setAttribute("style","display:block;cursor:pointer;cursor:hand;");
+	document.getElementById(id).setAttribute("draggable", "true");
+	document.getElementById(id).style.display = "block"	;
+	document.getElementById(id).style.cursor = "hand";			
+	document.getElementById(id).style.height=lheight + "px";						
+	
+	consoleLog(id + " h x w: " + document.getElementById(id).offsetHeight + "x" + document.getElementById(id).offsetWidth);	
+} // End of setHeight()
+		
+/*
  * Function: 	createMap()
- * Parameters: 	Bounding box, number of Zoomlevels
+ * Parameters: 	Bounding box, max Zoomlevel
  * Returns: 	map
  * Description:	Create map, add Openstreetmap basemap and scale
  */	
-function createMap(boundingBox, noZoomlevels) {
-							
+function createMap(boundingBox, maxZoomlevel) {
+		
+	if (map) {
+		return;
+	}
+
 	consoleLog("Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
-	var map = new L.map('map' , {
-			zoom: 11,
+	map = new L.map('map' , {
+			zoom: maxZoomlevel||11,
 			// Tell the map to use a fullsreen control
 			fullscreenControl: true
 		} 
@@ -333,7 +354,7 @@ function createMap(boundingBox, noZoomlevels) {
 		try {
 			map.fitBounds([
 				[boundingBox.ymin, boundingBox.xmin],
-				[boundingBox.ymax, boundingBox.xmax]], {maxZoom: 11}
+				[boundingBox.ymax, boundingBox.xmax]], {maxZoom: maxZoomlevel||11}
 			);
 		}
 		catch (e) {
@@ -350,7 +371,7 @@ function createMap(boundingBox, noZoomlevels) {
 	try {	
 		consoleLog("Creating basemap...");															
 		tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-			maxZoom: 11,
+			maxZoom: maxZoomlevel||11,
 			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
 				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 				'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
