@@ -121,7 +121,46 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 		tileViewerReponseProcessing("getMapTile", response, req, res, serverLog, httpErrorResponse);
 	} // getMapTileResponse()
 
-	getMapTileResponse(response.result); 
+	/*
+ * Function:	getGeographiesDbCallback()
+ * Parameters:	database, databaseName, dbRequest
+ * Returns:		Nothing
+ * Description: Post connection database processing callback
+ */		
+	function getGeographiesDbCallback(database, databaseName, dbRequest) {
+		getAllGeographies(
+			database,						// Database type
+			databaseName,					// Databse name
+			dbRequest,						// dbRequest	
+			getGeographiesResponse,			// Callback
+			getGeographiesErrorHandler		// Error callback
+		)	
+	} // End of getGeographiesDbCallback()
+	
+/*
+ * Function:	getMapTileDbCallback()
+ * Parameters:	database, databaseName, dbRequest
+ * Returns:		Nothing
+ * Description: Post connection database processing callback
+ */		
+	function getMapTileDbCallback(database, databaseName, dbRequest) {	
+		getMapTileResponse(response.result); // Replace with just geojson
+	}
+	
+	try { 
+		dbConnect(response, getMapTileDbCallback, getMapTileHandler);
+	}	
+	catch (err) {	
+		msg+=err.message;
+		response.message+=err.message;
+		try {
+			httpErrorResponse.httpErrorResponse(__file, __line, "getGeographies", 
+				serverLog, 500, req, res, msg, undefined /* Error: do not re-throw */, response);
+		}
+		catch (e) {
+			console.error("Unexpected re-throw: " + e.message);
+		}
+	}
 }
 
 /*
@@ -202,7 +241,7 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 
 /*
  * Function:	getGeographiesResponse()
- * Parameters:	None (callback)
+ * Parameters:	Result array
  * Returns:		Nothing
  * Description: Send response to client
  */	
@@ -219,112 +258,26 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 		msg+="Return result: " + result.length + " rows\n";
 		response.message+=msg;
 		tileViewerReponseProcessing("getGeographies", response, req, res, serverLog, httpErrorResponse);
-	} // getGeographiesResponse()
+	} // End of getGeographiesResponse()
+
+/*
+ * Function:	getGeographiesDbCallback()
+ * Parameters:	database, databaseName, dbRequest
+ * Returns:		Nothing
+ * Description: Post connection database processing callback
+ */		
+	function getGeographiesDbCallback(database, databaseName, dbRequest) {
+		getAllGeographies(
+			database,						// Database type
+			databaseName,					// Databse name
+			dbRequest,						// dbRequest	
+			getGeographiesResponse,			// Callback
+			getGeographiesErrorHandler		// Error callback
+		)	
+	} // End of getGeographiesDbCallback()
 	
 	try { 
-
-		if (response.fields && response.fields["database"]) { // Can get geographies
-			if (response.fields["database"] == "Postgres") {
-
-				var p_database=process.env["PGDATABASE"];			
-				if (p_database == undefined) {
-					throw new Error("Unable to determine postgres database from: PGDATABASE");
-				}
-				if (pgClient) {
-					getAllGeographies(
-						response.fields["database"],	// Database type
-						p_database,						// Databse name
-						pgClient,						// dbRequest	
-						getGeographiesResponse,			// Callback
-						getGeographiesErrorHandler		// Error callback
-					)
-				}
-				else {
-					var p_user=process.env["PGUSER"] || process.env["USERNAME"] || process.env["USER"];
-					if (p_user == undefined) {
-						throw new Error("Unable to determine postgres user logon from: PGUSER/USERNAME/USER");
-					}
-					var p_hostname=process.env["PGHOST"] || "localhost";
-					var p_port=process.env["PGPOST"] || 5432;
-				
-					var pgConnectionString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=tileViewer';
-					// Use PGHOST, native authentication (i.e. same as psql)
-					pgClient = new pg.Client(pgConnectionString);
-					// Connect to Postgres database
-					pgClient.connect(function(err) {	
-						if (err) {
-							var nerr=new Error("Unable to connect to Postgres using: " + pgConnectionString + "; error: " + err.message);
-							nerr.stack=err.stack;
-							getGeographiesErrorHandler(nerr);			
-						}
-						else {
-							msg+="Database type: " + response.fields["database"] + " connected\n";
-							getAllGeographies(
-								response.fields["database"],	// Database type
-								p_database,						// Databse name
-								pgClient,						// dbRequest	
-								getGeographiesResponse,			// Callback
-								getGeographiesErrorHandler		// Error callback
-							)
-						}
-					});						
-				}
-
-			}
-			else if (response.fields["database"] == "MS SQL Server") {
-
-				var p_database=process.env["SQLCMDDBNAME"] || "" // Use sql Server defined default;				
-				if (mssqlClient) {
-					var dbRequest=new mssql.Request();
-					getAllGeographies(
-						response.fields["database"],	// Database type
-						p_database,						// Databse name
-						dbRequest,						// dbRequest
-						getGeographiesResponse,			// Callback
-						getGeographiesErrorHandler		// Error callback
-					)					
-				}
-				else {
-					var p_hostname=process.env["SQLCMDSERVER"] || "localhost";
-					var config = {
-						driver: 'msnodesqlv8',
-						server: p_hostname,
-						database: p_database,
-						options: {
-							trustedConnection: true,
-							useUTC: true,
-							appName: 'mssqlTileMaker.js'
-						}
-					};
-					
-					// Connect to SQL server database
-					mssqlClient=mssql.connect(config, function(err) {
-						if (err) {
-							winston.log("error", 'Could not connect to SQL server client using: %s\nError: %s', JSON.stringify(config, null, 4), err.message, err);
-							process.exit(1);	
-						}
-						else {
-							var dbRequest=new mssql.Request();
-							msg+="Database type: " + response.fields["database"] + " connected\n";
-							getAllGeographies(
-								response.fields["database"],	// Database type
-								p_database,						// Databse name
-								dbRequest,						// dbRequest
-								getGeographiesResponse,			// Callback
-								getGeographiesErrorHandler		// Error callback
-							)						
-						}
-					});						
-				}
-		
-			}
-			else {
-				throw new Error("Invalid database type: " + response.fields["database"]);
-			}
-		}
-		else {
-			throw new Error("\nCannot get database; insufficent fields: " + JSON.stringify(response.fields, null, 2));
-		}
+		dbConnect(response, getGeographiesDbCallback, getGeographiesErrorHandler);
 	}	
 	catch (err) {	
 		msg+=err.message;
@@ -339,6 +292,108 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 	}
 } // End of getGeographies()
 
+/*
+ * Function:	dbConnect()
+ * Parameters:	response, db callback, dbErrorHandler callback 
+ * Returns:		Nothing
+ * Description: Post connection database processing callback
+ */	
+function dbConnect(response, dbCallback, dbErrorHandler) {
+	if (response.fields && response.fields["database"]) { // Can get geographies
+		if (response.fields["database"] == "Postgres") {
+
+			var p_database=process.env["PGDATABASE"];			
+			if (p_database == undefined) {
+				throw new Error("Unable to determine postgres database from: PGDATABASE");
+			}
+			if (pgClient) {
+				dbCallback(
+					response.fields["database"],	// Database type
+					p_database,						// Databse name
+					pgClient						// dbRequest	
+				)
+			}
+			else {
+				var p_user=process.env["PGUSER"] || process.env["USERNAME"] || process.env["USER"];
+				if (p_user == undefined) {
+					throw new Error("Unable to determine postgres user logon from: PGUSER/USERNAME/USER");
+				}
+				var p_hostname=process.env["PGHOST"] || "localhost";
+				var p_port=process.env["PGPOST"] || 5432;
+			
+				var pgConnectionString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=tileViewer';
+				// Use PGHOST, native authentication (i.e. same as psql)
+				pgClient = new pg.Client(pgConnectionString);
+				// Connect to Postgres database
+				pgClient.connect(function(err) {	
+					if (err) {
+						var nerr=new Error("Unable to connect to Postgres using: " + pgConnectionString + "; error: " + err.message);
+						nerr.stack=err.stack;
+						dbErrorHandler(nerr);			
+					}
+					else {
+						dbCallback(
+							response.fields["database"],	// Database type
+							p_database,						// Databse name
+							pgClient						// dbRequest	
+						)
+					}
+				});						
+			}
+
+		}
+		else if (response.fields["database"] == "MS SQL Server") {
+
+			var p_database=process.env["SQLCMDDBNAME"] || "" // Use sql Server defined default;				
+			if (mssqlClient) {
+				var dbRequest=new mssql.Request();
+				dbCallback(
+					response.fields["database"],	// Database type
+					p_database,						// Databse name
+					dbRequest						// dbRequest	
+				)				
+			}
+			else {
+				var p_hostname=process.env["SQLCMDSERVER"] || "localhost";
+				var config = {
+					driver: 'msnodesqlv8',
+					server: p_hostname,
+					database: p_database,
+					options: {
+						trustedConnection: true,
+						useUTC: true,
+						appName: 'tileViewer.js'
+					}
+				};
+				
+				// Connect to SQL server database
+				mssqlClient=mssql.connect(config, function(err) {
+					if (err) {
+						var nerr=new Error("Unable to connect to SQL server using: " + JSON.stringify(config, null, 4), + "; error: " + err.message);
+						nerr.stack=err.stack;
+						dbErrorHandler(nerr);								
+					}
+					else {
+						var dbRequest=new mssql.Request();
+						dbCallback(
+							response.fields["database"],	// Database type
+							p_database,						// Databse name
+							dbRequest						// dbRequest	
+						)						
+					}
+				});						
+			}
+	
+		}
+		else {
+			throw new Error("Invalid database type: " + response.fields["database"]);
+		}
+	}
+	else {
+		throw new Error("\nCannot get database; insufficent fields: " + JSON.stringify(response.fields, null, 2));
+	}		
+} // End of dbConnect()
+	
 /*
  * Function:	getAllGeographies()
  * Parameters:	database type, database name, database request object, getAllGeographiesCallback, getGeographiesErrorHandler
