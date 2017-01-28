@@ -46,6 +46,8 @@
 
 var lstart=new Date().getTime(); 	// GLOBAL: Start time for console log/error messages
 var map;
+var geojsonTileLayer;
+var baseLayer;
 
 /*
  * Function: 	scopeChecker()
@@ -322,36 +324,38 @@ function setHeight(id, lheight) {
  */	
 function createMap(boundingBox, maxZoomlevel) {
 		
-	if (map) {
-		return;
-	}
-
-	consoleLog("Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
-	map = new L.map('map' , {
-			zoom: maxZoomlevel||11,
-			// Tell the map to use a fullsreen control
-			fullscreenControl: true
-		} 
-	);
-	
-	try {
-		var loadingControl = L.Control.loading({
-			separate: true
-		});
-		map.addControl(loadingControl);
-	}
-	catch (e) {
+	if (map == undefined) {
+		consoleLog("Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
+		map = new L.map('map' , {
+				zoom: maxZoomlevel||11,
+				// Tell the map to use a fullsreen control
+				fullscreenControl: true
+			} 
+		);
+		
 		try {
-			map.remove();
+			var loadingControl = L.Control.loading({
+				separate: true
+			});
+			map.addControl(loadingControl);
 		}
-		catch (e2) {
-			consoleLog("WARNING! Unable to remove map during error recovery");
-		}
-		throw new Error("Unable to add loading control to map: " + e.message);
+		catch (e) {
+			try {
+				map.remove();
+			}
+			catch (e2) {
+				consoleLog("WARNING! Unable to remove map during error recovery");
+			}
+			throw new Error("Unable to add loading control to map: " + e.message);
+		}		
+	}	
+	else {
+		consoleLog("Leaflet map already created; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
 	}
 	
 	if (boundingBox) {
 		try {
+			consoleLog("Fit bounding box...");	
 			map.fitBounds([
 				[boundingBox.ymin, boundingBox.xmin],
 				[boundingBox.ymax, boundingBox.xmax]], {maxZoom: maxZoomlevel||11}
@@ -366,20 +370,45 @@ function createMap(boundingBox, maxZoomlevel) {
 			}
 			throw new Error("Unable to create map: " + e.message);
 		}
-	}			
-	
+	}	
+		
 	try {	
-		consoleLog("Creating basemap...");															
-		tileLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-			maxZoom: maxZoomlevel||11,
-			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-				'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
-			id: 'mapbox.light'
-		});
-		tileLayer.addTo(map);	
-		L.control.scale().addTo(map); // Add scale	
-		consoleLog("Added tileLayer and scale to map");	
+		if (baseLayer) {
+			consoleLog("Redrawing basemap...");	
+			map.invalidateSize();
+			baseLayer.redraw();
+		}
+		else {
+			consoleLog("Creating basemap...");															
+			baseLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
+				maxZoom: maxZoomlevel||11,
+				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+					'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+					'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
+				id: 'mapbox.light',
+				noWrap: true
+			});
+			baseLayer.addTo(map);	
+			L.control.scale().addTo(map); // Add scale	
+			consoleLog("Added baseLayer and scale to map");	
+/*			
+			(function mapResetButton() {
+				var control = new L.Control({position:'topright'});
+				control.onAdd = function mapResetButtonControl(map) {
+						var azoom = L.DomUtil.create('a','resetzoom');
+						azoom.innerHTML = "[Reset Zoom]";
+						L.DomEvent
+							.disableClickPropagation(azoom)
+							.addListener(azoom, 'click', function mapResetButtonListener() {
+								consoleLog("Map reset");	
+								map.setView(map.options.center, map.options.zoom);
+							},azoom);
+						return azoom;
+					};
+				return control;
+			}())
+			.addTo(map); */
+		}
 	
 		return map;
 	}
@@ -393,3 +422,63 @@ function createMap(boundingBox, maxZoomlevel) {
 		throw new Error("Unable to add tile layer to map: " + e.message);
 	}
 } // End of createMap()
+
+/*
+ * Function: 	addTileLayer()
+ * Parameters: 	methodFields object
+ * Returns: 	Nothing
+ * Description:	Adyerd tile la map,; remove oold layer if required
+ */
+function addTileLayer(methodFields) {
+    var style = {
+        "clickable": true,
+        "color": "#00D",
+        "fillColor": "#00D",
+        "weight": 1.0,
+        "opacity": 0.3,
+        "fillOpacity": 0.2
+    };
+    var hoverStyle = {
+        "fillOpacity": 0.5
+    };
+
+    var geojsonURL = 'http://127.0.0.1:3000/getMapTile/?zoomlevel={z}&x={x}&y={y}';
+	for (var key in methodFields) {
+		geojsonURL+='&' + key + '=' + methodFields[key];
+	}
+
+	consoleLog("geojsonURL: " + geojsonURL);
+	
+	if (geojsonTileLayer) {
+		map.removeLayer(geojsonTileLayer);
+	}
+    geojsonTileLayer = new L.TileLayer.GeoJSON(geojsonURL, {
+            clipTiles: true,
+            unique: function (feature) {
+                return feature.id; 
+            }
+        }, {
+            style: style,
+            onEachFeature: function (feature, layer) {
+                if (feature.properties) {
+                    var popupString = '<div class="popup">';
+                    for (var k in feature.properties) {
+                        var v = feature.properties[k];
+                        popupString += k + ': ' + v + '<br />';
+                    }
+                    popupString += '</div>';
+                    layer.bindPopup(popupString);
+                }
+                if (!(layer instanceof L.Point)) {
+                    layer.on('mouseover', function () {
+                        layer.setStyle(hoverStyle);
+                    });
+                    layer.on('mouseout', function () {
+                        layer.setStyle(style);
+                    });
+                }
+            }
+        }
+    );
+    map.addLayer(geojsonTileLayer);
+} // End of addTileLayer()

@@ -76,7 +76,9 @@ function geographySelectChange(event, ui) {
 			table_catalog: geography.table_catalog,
 			table_schema: geography.table_schema,
 			table_name: geography.table_name,
-			geography: geography.geography
+			geography: geography.geography,
+			tiletable: geography.tiletable,
+			geolevel_id: 0,
 		}
 		consoleLog("geographySelectChange: " +  JSON.stringify(methodFields, null, 2)); 
 //	xhrGetMethod("getMapTile", "get gmap tile from " + methodFields.database_type + " database: " + methodFields.table_catalog, 
@@ -84,6 +86,7 @@ function geographySelectChange(event, ui) {
 		
 		createMap({xmin: -180.0000, ymin: -90.0000, xmax: 180.0000, ymax: 90.0000} /* whole world bounding box */, 
 			geography.maxzoomlevel);
+//		addTileLayer(methodFields);
 	}
 	catch (e) {
 		errorPopup("geographySelectChange() caught: " + e.message);
@@ -100,24 +103,24 @@ function geographySelectChange(event, ui) {
 function getGeographies(data, status, xhr) {
 //	consoleLog("getGeographies() OK: " + JSON.stringify(data, null, 2));	
 	
-	var result=data.result;
+	var geographies=data.geographies;
 	var html='<label id="geographyLabel"  title="Choose geography to display" for="geography">Geography:\n' +
 		'<select required id="geographySelect" name="database" form="dbSelect">';
 	
-	if (result == undefined) {
+	if (geographies == undefined) {
 		errorPopup("getGeographies() FAILED: no geographies found in database");
 	}
 	else {		
-		for (var i=0; i<result.length; i++) {
+		for (var i=0; i<geographies.length; i++) {
 		
 			if (i == 0) {
-				consoleLog("getGeographies() OK for " + result[i].database_type + " database: " + result[i].table_catalog);
-			     html+="<option value='" + JSON.stringify(result[i]) + "' selected='selected'>" + 
-					result[i].table_schema + "." + result[i].table_name + ": " + result[i].description + "</option>";
+				consoleLog("getGeographies() OK for " + geographies[i].database_type + " database: " + geographies[i].table_catalog);
+			     html+="<option value='" + JSON.stringify(geographies[i]) + "' selected='selected'>" + 
+					geographies[i].table_schema + "." + geographies[i].table_name + ": " + geographies[i].description + "</option>";
 			}
 			else {
-			     html+="<option value='" + JSON.stringify(result[i]) + "'>" + 
-					result[i].table_schema + "." +result[i].table_name + ": " + result[i].description + "</option>";
+			     html+="<option value='" + JSON.stringify(geographies[i]) + "'>" + 
+					geographies[i].table_schema + "." +geographies[i].table_name + ": " + geographies[i].description + "</option>";
 			}
 		}
 		html+='</select>\n' +		
@@ -134,8 +137,10 @@ function getGeographies(data, status, xhr) {
 		document.getElementById('geographySelect').style.width=(x-550) + "px";	
 
 		var height=y-46; // Merge all the correction factors (46px)
-		setHeight("mapcontainer", (height-52));
-		setHeight("map", (height-55));		
+		if (map == undefined) { // Only set the height if leaflet is not initialised or you will make a mess of the screen
+			setHeight("mapcontainer", (height-52));
+			setHeight("map", (height-55));			
+		}		
 		
 		$( "#geographySelect" )								// Geography selector
 		.selectmenu({

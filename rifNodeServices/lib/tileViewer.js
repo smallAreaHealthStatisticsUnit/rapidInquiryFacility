@@ -73,7 +73,51 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 		req: req,
 		res: res
 	});
-	
+
+	response.message="In: getMapTile()";	
+	var msg="getMapTile(): ";	
+	var lstart=new Date().getTime();
+	response.fields=req.query;
+
+/*
+ * Function:	getMapTileHandler()
+ * Parameters:	error object
+ * Returns:		Nothing
+ * Description: Handle error in own context to prevent re-throws
+ */		
+	function getMapTileHandler(err) {
+		msg+=err.message;
+		response.message+=err.message;
+		try {
+			httpErrorResponse.httpErrorResponse(__file, __line, "getMapTile", 
+				serverLog, 500, req, res, msg, undefined /* Error: do not re-throw */, response);
+		}
+		catch (e) {
+			console.error("Unexpected re-throw: " + e.message);
+		}		
+	} // End of getMapTileHandler()
+
+/*
+ * Function:	getMapTileResponse()
+ * Parameters:	None (callback)
+ * Returns:		Nothing
+ * Description: Send response to client
+ */	
+	function getMapTileResponse(result) {
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse,
+			response: response,
+			req: req,
+			res: res
+		});	
+		
+		response.result='{"type": "FeatureCollection","features":[]}';	// null geojson
+		response.message+=msg;
+		tileViewerReponseProcessing("getMapTile", response, req, res, serverLog, httpErrorResponse);
+	} // getMapTileResponse()
+
+	getMapTileResponse(response.result); 
 }
 
 /*
@@ -167,7 +211,7 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 			res: res
 		});	
 		
-		response.result=result;	
+		response.geographies=result;	
 		msg+="Return result: " + result.length + " rows\n";
 		response.message+=msg;
 		tileViewerReponseProcessing("getGeographies", response, req, res, serverLog, httpErrorResponse);
@@ -285,7 +329,7 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 	var sql="SELECT table_catalog, table_schema, table_name\n" + 
 			"  FROM information_schema.columns\n" +
 			" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
-			"   AND column_name = 'hierarchytable'"; 
+			"   AND column_name = 'tiletable'"; 
 	var query=dbRequest.query(sql, function getAllGeographiesTables(err, sqlResult) {
 		if (err) {
 			var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
@@ -313,9 +357,9 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 								result[i].table_catalog + "' AS table_catalog, '" + 
 								result[i].table_schema + "' AS table_schema, '" + result[i].table_name + 
 							"' AS table_name,\n" + 
-							        "geography, description, maxzoomlevel, minzoomlevel\n" + 
+							        "geography, description, maxzoomlevel, minzoomlevel, tiletable\n" + 
 							"  FROM " + result[i].table_schema + "." + result[i].table_name + '\n' +
-							" WHERE hierarchytable IS NOT NULL";
+							" WHERE tiletable IS NOT NULL";
 					}
 					else {
 						sql+="\nUNION\n" + 
@@ -323,9 +367,9 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 								result[i].table_catalog + "' AS table_catalog, '" + 
 								result[i].table_schema + "' AS table_schema, '" + result[i].table_name + 
 							"' AS table_name,\n" + 
-							        "geography, description, maxzoomlevel, minzoomlevel\n" + 
+							        "geography, description, maxzoomlevel, minzoomlevel, tiletable\n" + 
 							"  FROM " + result[i].table_schema + "." + result[i].table_name + ' a\n' +
-							" WHERE hierarchytable IS NOT NULL";	
+							" WHERE tiletable IS NOT NULL";	
 					}	
 				}
 			}
