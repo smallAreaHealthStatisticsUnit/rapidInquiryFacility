@@ -53,7 +53,7 @@
 function databaseSelectChange(event, ui) {
 	var db = (ui && ui.item && ui.item.value) || $( "#databaseSelect option:checked" ).val();
 	
-	xhrGetMethod("getGeographies", "get geography listing from database: " + db, getGeographies, {database: db});
+	xhrGetMethod("getGeographies", "get geography listing from database: " + db, getGeographies, {databaseType: db});
 		
 } // End of databaseSelectChange()
 
@@ -72,7 +72,7 @@ function geographySelectChange(event, ui) {
 	try {
 		geography=JSON.parse(geographyText);
 		methodFields={
-			database_type: geography.database_type,
+			databaseType: geography.database_type,
 			table_catalog: geography.table_catalog,
 			table_schema: geography.table_schema,
 			table_name: geography.table_name,
@@ -105,7 +105,7 @@ function getGeographies(data, status, xhr) {
 	
 	var geographies=data.geographies;
 	var html='<label id="geographyLabel"  title="Choose geography to display" for="geography">Geography:\n' +
-		'<select required id="geographySelect" name="database" form="dbSelect">';
+		'<select required id="geographySelect" name="databaseType" form="dbSelect">';
 	
 	if (geographies == undefined) {
 		errorPopup("getGeographies() FAILED: no geographies found in database");

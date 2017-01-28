@@ -67,7 +67,11 @@ const mssql=require('mssql');
  * Function:	getMapTile()
  * Parameters:	response, HTTP request object, http response object, serverLog object, httpErrorResponse object
  * Returns:		Status array as JSON
- * Description: Get status from file
+ * Description: Get from from DB
+ *
+ * Example URL:
+ *
+ * 127.0.0.1:3000/getMapTile/?zoomlevel=0&x=0&y=0&databaseType=PostGres&table_catalog=sahsuland_dev&table_schema=peter&table_name=geography_sahsuland&geography=SAHSULAND&geolevel_id=0
  */	
 getMapTile = function getMapTile(response, req, res, serverLog, httpErrorResponse) {
 	scopeChecker(__file, __line, {
@@ -78,18 +82,18 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 		res: res
 	});
 
-	response.message="In: getMapTile()";	
-	var msg="getMapTile(): ";	
+	response.message="In: getMapTile() ";	
+	var msg="";	
 	var lstart=new Date().getTime();
 	response.fields=req.query;
 
 /*
- * Function:	getMapTileHandler()
+ * Function:	getMapTileErrorHandler()
  * Parameters:	error object
  * Returns:		Nothing
  * Description: Handle error in own context to prevent re-throws
  */		
-	function getMapTileHandler(err) {
+	function getMapTileErrorHandler(err) {
 		msg+=err.message;
 		response.message+=err.message;
 		try {
@@ -99,7 +103,7 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 		catch (e) {
 			console.error("Unexpected re-throw: " + e.message);
 		}		
-	} // End of getMapTileHandler()
+	} // End of getMapTileErrorHandler()
 
 /*
  * Function:	getMapTileResponse()
@@ -118,18 +122,21 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 		
 		response.result='{"type": "FeatureCollection","features":[]}';	// null geojson
 		response.message+=msg;
-		tileViewerReponseProcessing("getMapTile", response, req, res, serverLog, httpErrorResponse);
+		msg+="Return result map tile x: " + response.fields.x + ", y: " + response.fields.y + " z: " + response.fields.zoomlevel + "\n" +
+			JSON.stringify(response.fields, null, 2);
+		response.message+=msg;
+		tileViewerReponseProcessing("getMapTile", response, response.result, req, res, serverLog, httpErrorResponse);
 	} // getMapTileResponse()
 
 	/*
  * Function:	getGeographiesDbCallback()
- * Parameters:	database, databaseName, dbRequest
+ * Parameters:	databaseType, databaseName, dbRequest
  * Returns:		Nothing
  * Description: Post connection database processing callback
  */		
-	function getGeographiesDbCallback(database, databaseName, dbRequest) {
+	function getGeographiesDbCallback(databaseType, databaseName, dbRequest) {
 		getAllGeographies(
-			database,						// Database type
+			databaseType,					// Database type
 			databaseName,					// Databse name
 			dbRequest,						// dbRequest	
 			getGeographiesResponse,			// Callback
@@ -143,45 +150,38 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
  * Returns:		Nothing
  * Description: Post connection database processing callback
  */		
-	function getMapTileDbCallback(database, databaseName, dbRequest) {	
+	function getMapTileDbCallback(databaseType, databaseName, dbRequest) {	
 		getMapTileResponse(response.result); // Replace with just geojson
 	}
 	
 	try { 
-		dbConnect(response, getMapTileDbCallback, getMapTileHandler);
+		dbConnect(response, getMapTileDbCallback, getMapTileErrorHandler);
 	}	
 	catch (err) {	
-		msg+=err.message;
-		response.message+=err.message;
-		try {
-			httpErrorResponse.httpErrorResponse(__file, __line, "getGeographies", 
-				serverLog, 500, req, res, msg, undefined /* Error: do not re-throw */, response);
-		}
-		catch (e) {
-			console.error("Unexpected re-throw: " + e.message);
-		}
+		getMapTileErrorHandler(err);	// Use scope of calling function
 	}
-}
+} // End of getMapTile
 
 /*
  * Function:	tileViewerReponseProcessing()
- * Parameters:	service, response, HTTP request object, http response object, serverLog object, httpErrorResponse object
+ * Parameters:	service, response, HTTP request object, http response object, result object, serverLog object, httpErrorResponse object
  * Returns:		Nothing
  * Description: Send response to client
  */	
-function tileViewerReponseProcessing(service, response, req, res, serverLog, httpErrorResponse) {
+function tileViewerReponseProcessing(service, response, result, req, res, serverLog, httpErrorResponse) {
 	scopeChecker(__file, __line, {
 		service: service,
 		serverLog: serverLog,
 		httpErrorResponse: httpErrorResponse,
 		response: response,
+		result: result,
 		req: req,
 		res: res
 	});
 	
 	if (!res.finished) { // Reply with error if httpErrorResponse.httpErrorResponse() NOT already processed
 
-		var output = JSON.stringify(response);// Convert output response to JSON 
+		var output = JSON.stringify(result);// Convert output response to JSON 
 // Need to test res was not finished by an expection to avoid "write after end" errors			
 		try {
 			res.write(output);                  // Write output  
@@ -216,8 +216,8 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 		res: res
 	});
 
-	response.message="In: getGeographies()";	
-	var msg="getGeographies(): ";	
+	response.message="In: getGeographies() ";	
+	var msg="";	
 	var lstart=new Date().getTime();
 	response.fields=req.query;
 
@@ -255,20 +255,20 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 		});	
 		
 		response.geographies=result;	
-		msg+="Return result: " + result.length + " rows\n";
+		msg+="Return result geography: " + (result && result.length) + " rows\n";
 		response.message+=msg;
-		tileViewerReponseProcessing("getGeographies", response, req, res, serverLog, httpErrorResponse);
+		tileViewerReponseProcessing("getGeographies", response, response, req, res, serverLog, httpErrorResponse);
 	} // End of getGeographiesResponse()
 
 /*
  * Function:	getGeographiesDbCallback()
- * Parameters:	database, databaseName, dbRequest
+ * Parameters:	databaseType, databaseName, dbRequest
  * Returns:		Nothing
  * Description: Post connection database processing callback
  */		
-	function getGeographiesDbCallback(database, databaseName, dbRequest) {
+	function getGeographiesDbCallback(databaseType, databaseName, dbRequest) {
 		getAllGeographies(
-			database,						// Database type
+			databaseType,					// Database type
 			databaseName,					// Databse name
 			dbRequest,						// dbRequest	
 			getGeographiesResponse,			// Callback
@@ -280,27 +280,19 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 		dbConnect(response, getGeographiesDbCallback, getGeographiesErrorHandler);
 	}	
 	catch (err) {	
-		msg+=err.message;
-		response.message+=err.message;
-		try {
-			httpErrorResponse.httpErrorResponse(__file, __line, "getGeographies", 
-				serverLog, 500, req, res, msg, undefined /* Error: do not re-throw */, response);
-		}
-		catch (e) {
-			console.error("Unexpected re-throw: " + e.message);
-		}
+		getGeographiesErrorHandler(err);	// Use scope of calling function
 	}
 } // End of getGeographies()
 
 /*
  * Function:	dbConnect()
- * Parameters:	response, db callback, dbErrorHandler callback 
+ * Parameters:	response, db callback, dbErrorHandler callback (to use scope of callimng function)
  * Returns:		Nothing
  * Description: Post connection database processing callback
  */	
 function dbConnect(response, dbCallback, dbErrorHandler) {
-	if (response.fields && response.fields["database"]) { // Can get geographies
-		if (response.fields["database"] == "Postgres") {
+	if (response.fields && response.fields["databaseType"]) { // Can get geographies
+		if (response.fields["databaseType"] == "PostGres") {
 
 			var p_database=process.env["PGDATABASE"];			
 			if (p_database == undefined) {
@@ -308,7 +300,7 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 			}
 			if (pgClient) {
 				dbCallback(
-					response.fields["database"],	// Database type
+					response.fields["databaseType"],// Database type
 					p_database,						// Databse name
 					pgClient						// dbRequest	
 				)
@@ -329,11 +321,11 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 					if (err) {
 						var nerr=new Error("Unable to connect to Postgres using: " + pgConnectionString + "; error: " + err.message);
 						nerr.stack=err.stack;
-						dbErrorHandler(nerr);			
+						dbErrorHandler(nerr);	// Use scope of calling function	
 					}
 					else {
 						dbCallback(
-							response.fields["database"],	// Database type
+							response.fields["databaseType"],// Database type
 							p_database,						// Databse name
 							pgClient						// dbRequest	
 						)
@@ -342,13 +334,13 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 			}
 
 		}
-		else if (response.fields["database"] == "MS SQL Server") {
+		else if (response.fields["databaseType"] == "MSSQLServer") {
 
 			var p_database=process.env["SQLCMDDBNAME"] || "" // Use sql Server defined default;				
 			if (mssqlClient) {
 				var dbRequest=new mssql.Request();
 				dbCallback(
-					response.fields["database"],	// Database type
+					response.fields["databaseType"],// Database type
 					p_database,						// Databse name
 					dbRequest						// dbRequest	
 				)				
@@ -371,12 +363,12 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 					if (err) {
 						var nerr=new Error("Unable to connect to SQL server using: " + JSON.stringify(config, null, 4), + "; error: " + err.message);
 						nerr.stack=err.stack;
-						dbErrorHandler(nerr);								
+						dbErrorHandler(nerr);	// Use scope of calling function							
 					}
 					else {
 						var dbRequest=new mssql.Request();
 						dbCallback(
-							response.fields["database"],	// Database type
+							response.fields["databaseType"],// Database type
 							p_database,						// Databse name
 							dbRequest						// dbRequest	
 						)						
@@ -386,11 +378,11 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 	
 		}
 		else {
-			throw new Error("Invalid database type: " + response.fields["database"]);
+			throw new Error("Invalid database type: " + response.fields["databaseType"]);
 		}
 	}
 	else {
-		throw new Error("\nCannot get database; insufficent fields: " + JSON.stringify(response.fields, null, 2));
+		throw new Error("\nCannot determine database from fields: " + JSON.stringify(response.fields, null, 2));
 	}		
 } // End of dbConnect()
 	
@@ -421,10 +413,10 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 		}
 		else {
 			var result;
-			if (databaseType == "Postgres") {
+			if (databaseType == "PostGres") {
 				result=sqlResult.rows;
 			}
-			else if (databaseType == "MS SQL Server") {
+			else if (databaseType == "MSSQLServer") {
 				result=sqlResult;
 			}	
 			
@@ -473,10 +465,10 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 				}
 				else {
 					var result;
-					if (databaseType == "Postgres") {
+					if (databaseType == "PostGres") {
 						result=sqlResult.rows;
 					}
-					else if (databaseType == "MS SQL Server") {
+					else if (databaseType == "MSSQLServer") {
 						result=sqlResult;
 					}
 					getAllGeographiesCallback(result);
