@@ -71,7 +71,7 @@ const mssql=require('mssql');
  *
  * Example URL:
  *
- * 127.0.0.1:3000/getMapTile/?zoomlevel=0&x=0&y=0&databaseType=PostGres&table_catalog=sahsuland_dev&table_schema=peter&table_name=geography_sahsuland&geography=SAHSULAND&geolevel_id=0
+ * 127.0.0.1:3000/getMapTile/?zoomlevel=0&x=0&y=0&databaseType=PostGres&table_catalog=sahsuland_dev&table_schema=peter&table_name=geography_sahsuland&geography=SAHSULAND&geolevel_id=2&tiletable=tiles_sahsuland
  */	
 getMapTile = function getMapTile(response, req, res, serverLog, httpErrorResponse) {
 	scopeChecker(__file, __line, {
@@ -120,29 +120,12 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 			res: res
 		});	
 		
-		response.result='{"type": "FeatureCollection","features":[]}';	// null geojson
 		response.message+=msg;
-		msg+="Return result map tile x: " + response.fields.x + ", y: " + response.fields.y + " z: " + response.fields.zoomlevel + "\n" +
+		msg+="\n" +
 			JSON.stringify(response.fields, null, 2);
 		response.message+=msg;
 		tileViewerReponseProcessing("getMapTile", response, response.result, req, res, serverLog, httpErrorResponse);
 	} // getMapTileResponse()
-
-	/*
- * Function:	getGeographiesDbCallback()
- * Parameters:	databaseType, databaseName, dbRequest
- * Returns:		Nothing
- * Description: Post connection database processing callback
- */		
-	function getGeographiesDbCallback(databaseType, databaseName, dbRequest) {
-		getAllGeographies(
-			databaseType,					// Database type
-			databaseName,					// Databse name
-			dbRequest,						// dbRequest	
-			getGeographiesResponse,			// Callback
-			getGeographiesErrorHandler		// Error callback
-		)	
-	} // End of getGeographiesDbCallback()
 	
 /*
  * Function:	getMapTileDbCallback()
@@ -151,11 +134,24 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
  * Description: Post connection database processing callback
  */		
 	function getMapTileDbCallback(databaseType, databaseName, dbRequest) {	
-		getMapTileResponse(response.result); // Replace with just geojson
+	
+		getMapTileFromDB(
+			databaseType,					// Database type
+			databaseName,					// Databse name
+			dbRequest,						// dbRequest	
+			getMapTileResponse,				// Callback
+			getMapTileErrorHandler,			// Error callback
+			response, 
+			response.fields.tiletable, 
+			response.fields.geolevel_id, 
+			response.fields.zoomlevel, 
+			response.fields.x, 
+			response.fields.y
+		)	
 	}
 
 	var requiredArgs=["zoomlevel", "x", "y", "databaseType", "table_catalog", "table_schema", "table_name", 
-		"geography", "geolevel_id"];
+		"geography", "geolevel_id", "tiletable"];
 	
 	for (var i=0; i<requiredArgs.length; i++) { // Validate fields
 		if (response.fields[requiredArgs[i]] == undefined) {
@@ -422,6 +418,115 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 		throw new Error("\nCannot determine database from fields: " + JSON.stringify(response.fields, null, 2));
 	}		
 } // End of dbConnect()
+
+/*
+ * Function:	getMapTileFromDB()
+ * Parameters:	databaseType, databaseName, dbRequest, getMapTileResponse, getMapTileErrorHandler
+ * Returns:		Nothing
+ * Description: Get map tile from database
+ */		
+function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileResponse, getMapTileErrorHandler,
+	response, tileTable, geolevel_id, zoomlevel, x, y) {
+	scopeChecker(__file, __line, {
+		callback: getMapTileResponse,
+		callback: getMapTileErrorHandler,
+		databaseType: databaseType,
+		databaseName: databaseName,
+		dbRequest: dbRequest,
+		response: response,
+		message: response.message
+	});
+	
+	var sql;
+	
+	
+	if (databaseType == "PostGres") {	
+		sql='SELECT optimised_topojson::Text AS optimised_topojson FROM ' + tileTable.toLowerCase() + '\n' +
+				' WHERE geolevel_id = $1\n' +
+				'   AND zoomlevel   = $2\n' +
+				'   AND x           = $3\n' +
+				'   AND y           = $4';
+		response.message+="\npg SQL> " + sql + ";\ngeolevel_id: " + 
+			geolevel_id + "; zoomlevel: " + zoomlevel + "; x: " + x + "; y: " + y;
+		var selectArray=[];
+		selectArray.push(geolevel_id);
+		selectArray.push(zoomlevel);
+		selectArray.push(x);
+		selectArray.push(y);
+		var query=dbRequest.query(sql, selectArray, function pgGetMapTileFromDBQuery(err, result) {
+			if (err) {
+				var nerr=new Error("Error: " + err.message + "\nin SQL> " + sql + ";");
+				nerr.stack=err.stack;
+				getMapTileErrorHandler(nerr);
+			}
+			else {
+				if (result.rows.length != 1) {
+					getMapTileErrorHandler(new Error("pgGetMapTileFromDBQuery(): rows returned != 1 (" + 
+						result.rows.length + ")\nfor SQL> " + sql + ";"));
+				}
+				else if (result.rows[0].optimised_topojson == undefined) {
+					getMapTileErrorHandler(new Error("pgGetMapTileFromDBQuery(): NULL optimised_topojson\nfor SQL> " + 
+						sql + ";"));
+				}
+				else {
+					try {
+						response.result=JSON.parse(result.rows[0].optimised_topojson);
+					}
+					catch (err) {
+						getMapTileErrorHandler(nerr);
+					}
+				}
+				response.message+="\noptimised_topojson: " +  result.rows[0].optimised_topojson.length;
+				getMapTileResponse(response.result); // Replace with just geojson	
+			}		
+		} // End of pgGetMapTileFromDBQuery()
+		);
+	}
+	else if (databaseType == "MSSQLServer") {
+		sql='SELECT optimised_topojson FROM ' + tileTable.toLowerCase() + '\n' +
+				' WHERE geolevel_id = @geolevel_id\n' +
+				'   AND zoomlevel   = @zoomlevel\n' +
+				'   AND x           = @x\n' +
+				'   AND y           = @y';
+		response.message+="\nmssql SQL> " + sql + ";\ngeolevel_id: " + 
+			geolevel_id + "; zoomlevel: " + zoomlevel + "; x: " + x + "; y: " + y;
+
+		dbRequest.input('geolevel_id', mssql.Int, geolevel_id);
+		dbRequest.input('zoomlevel', mssql.Int, zoomlevel);
+		dbRequest.input('x', mssql.Int, x);
+		dbRequest.input('y', mssql.Int, y);
+		
+		var query=dbRequest.query(sql, function mssqlGetMapTileFromDBQuery(err, result) {
+			if (err) {
+				var nerr=new Error("Error: " + err.message + "\nin SQL> " + sql + ";");
+				nerr.stack=err.stack;
+				getMapTileErrorHandler(nerr);
+			}
+			else {
+				if (result.length != 1) {
+					getMapTileErrorHandler(new Error("mssqlGetMapTileFromDBQuery(): rows returned != 1 (" + 
+						result.length + ")\nfor SQL> " + sql + ";"));
+				}
+				else if (result[0].optimised_topojson == undefined) {
+					getMapTileErrorHandler(new Error("mssqlGetMapTileFromDBQuery(): NULL optimised_topojson\nfor SQL> " + 
+						sql + ";"));
+				}
+				else {
+					try {
+						response.result=JSON.parse(result[0].optimised_topojson);
+					}
+					catch (err) {
+						getMapTileErrorHandler(nerr);
+					}
+				}
+				response.message+="\noptimised_topojson: " +  result[0].optimised_topojson.length;
+				getMapTileResponse(response.result); // Replace with just geojson	
+			}		
+		} // End of mssqlGetMapTileFromDBQuery()
+		);		
+	}
+	
+} // End of getMapTileFromDB()
 	
 /*
  * Function:	getAllGeographies()
@@ -434,7 +539,7 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 		callback: getAllGeographiesCallback,
 		callback: getGeographiesErrorHandler,
 		databaseType: databaseType,
-		databaseName:databaseName,
+		databaseName: databaseName,
 		dbRequest: dbRequest
 	});
 	

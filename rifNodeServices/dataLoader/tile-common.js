@@ -441,9 +441,13 @@ function addTileLayer(methodFields) {
     var hoverStyle = {
         "fillOpacity": 0.5
     };
-
+/*
+ * Example URL:
+ *
+ * 127.0.0.1:3000/getMapTile/?zoomlevel=1&x=0&y=0&databaseType=PostGres&table_catalog=sahsuland_dev&table_schema=peter&table_name=geography_sahsuland&geography=SAHSULAND&geolevel_id=2&tiletable=tiles_sahsuland
+ */
     var geojsonURL = 'http://127.0.0.1:3000/getMapTile/?zoomlevel={z}&x={x}&y={y}';
-	for (var key in methodFields) {
+	for (var key in methodFields) { // append methodFields
 		geojsonURL+='&' + key + '=' + methodFields[key];
 	}
 

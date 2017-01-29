@@ -78,7 +78,7 @@ function geographySelectChange(event, ui) {
 			table_name: geography.table_name,
 			geography: geography.geography,
 			tiletable: geography.tiletable,
-			geolevel_id: 0,
+			geolevel_id: 2,
 		}
 		consoleLog("geographySelectChange: " +  JSON.stringify(methodFields, null, 2)); 
 //	xhrGetMethod("getMapTile", "get gmap tile from " + methodFields.database_type + " database: " + methodFields.table_catalog, 
@@ -86,7 +86,7 @@ function geographySelectChange(event, ui) {
 		
 		createMap({xmin: -180.0000, ymin: -90.0000, xmax: 180.0000, ymax: 90.0000} /* whole world bounding box */, 
 			geography.maxzoomlevel);
-//		addTileLayer(methodFields);
+		addTileLayer(methodFields);
 	}
 	catch (e) {
 		errorPopup("geographySelectChange() caught: " + e.message);
