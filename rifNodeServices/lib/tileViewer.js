@@ -153,7 +153,44 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 	function getMapTileDbCallback(databaseType, databaseName, dbRequest) {	
 		getMapTileResponse(response.result); // Replace with just geojson
 	}
+
+	var requiredArgs=["zoomlevel", "x", "y", "databaseType", "table_catalog", "table_schema", "table_name", 
+		"geography", "geolevel_id"];
 	
+	for (var i=0; i<requiredArgs.length; i++) { // Validate fields
+		if (response.fields[requiredArgs[i]] == undefined) {
+			getMapTileErrorHandler(new Error("getMapTile() Missing argument: " + requiredArgs[i]));
+		}
+		else if (requiredArgs[i] == 'x' &&
+			typeof(Number(response.fields[requiredArgs[i]])) != "number") { // Numeric field
+			getMapTileErrorHandler(new Error("getMapTile() Argument: " + requiredArgs[i] + 
+				" is not a number: " + response.fields[requiredArgs[i]] + 
+				"; is: " + typeof(response.fields[requiredArgs[i]])));
+		}
+		else if (requiredArgs[i] == 'y' &&
+			typeof(Number(response.fields[requiredArgs[i]])) != "number") { // Numeric field
+			getMapTileErrorHandler(new Error("getMapTile() Argument: " + requiredArgs[i] + 
+				" is not a number: " + response.fields[requiredArgs[i]] + 
+				"; is: " + typeof(response.fields[requiredArgs[i]])));
+		}
+		else if (requiredArgs[i] == 'zoomlevel' &&
+			typeof(Number(response.fields[requiredArgs[i]])) != "number") { // Numeric field
+			getMapTileErrorHandler(new Error("getMapTile() Argument: " + requiredArgs[i] + 
+				" is not a number: " + response.fields[requiredArgs[i]] + 
+				"; is: " + typeof(response.fields[requiredArgs[i]])));
+		}
+		else if (requiredArgs[i] == 'geolevel_id' &&
+			typeof(Number(response.fields[requiredArgs[i]])) != "number") { // Numeric field
+			getMapTileErrorHandler(new Error("getMapTile() Argument: " + requiredArgs[i] + 
+				" is not a number: " + response.fields[requiredArgs[i]] + 
+				"; is: " + typeof(response.fields[requiredArgs[i]])));
+		}
+		else if (requiredArgs[i] == "databaseType" && 
+				response.fields[requiredArgs[i]] != 'PostGres' && response.fields[requiredArgs[i]] != 'MSSQLServer') {
+			getMapTileErrorHandler(new Error("getMapTile() Invalid database type: " + response.fields[requiredArgs[i]]));
+		}
+	}
+ 
 	try { 
 		dbConnect(response, getMapTileDbCallback, getMapTileErrorHandler);
 	}	
