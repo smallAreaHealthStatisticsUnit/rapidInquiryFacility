@@ -487,6 +487,10 @@ function createMap(boundingBox, maxZoomlevel) {
  * Description:	Adyerd tile la map,; remove oold layer if required
  */
 function addTileLayer(methodFields) {
+	if (map == undefined) {
+		return;
+	}
+	
     var style = {
         "clickable": true,
         "color": "#00D",
@@ -515,8 +519,8 @@ function addTileLayer(methodFields) {
 	geolevel.tableName=methodFields.table_schema + '.' + methodFields.table_name;
 	geolevel.geography=methodFields.geography;
 	
-	consoleLog("geolevel data: " + JSON.stringify(geolevel, null, 0));
-	consoleLog("topojsonURL: " + topojsonURL);
+//	consoleLog("geolevel data: " + JSON.stringify(geolevel, null, 0));
+//	consoleLog("topojsonURL: " + topojsonURL);
 	
 	if (topojsonTileLayer) {
 		map.removeLayer(topojsonTileLayer);
@@ -569,7 +573,7 @@ function addTileLayer(methodFields) {
 		}
 
 		var html = '<table id="legend">' + labels.join("") + '</table>';
-		consoleLog("Add legend: " + html);
+//		consoleLog("Add legend: " + html);
 		div.innerHTML = html;
 		return div;
 	};

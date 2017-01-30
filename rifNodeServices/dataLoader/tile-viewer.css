@@ -15,6 +15,7 @@
 #geographyLabel {
 }
 #geolevelSelect {
+    width: 190px; 
 	float: right; 
 }
 #geolevelSelect-button {
