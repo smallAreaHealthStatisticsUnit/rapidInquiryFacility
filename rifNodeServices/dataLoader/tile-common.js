@@ -48,6 +48,7 @@ var lstart=new Date().getTime(); 	// GLOBAL: Start time for console log/error me
 var map;
 var topojsonTileLayer;
 var baseLayer;
+var legend;
 
 /*
  * Function: 	scopeChecker()
@@ -504,9 +505,12 @@ function addTileLayer(methodFields) {
  */
     var topojsonURL = 'http://127.0.0.1:3000/getMapTile/?zoomlevel={z}&x={x}&y={y}';
 	for (var key in methodFields) { // append methodFields
-		topojsonURL+='&' + key + '=' + methodFields[key];
+		if (key != 'geolevel') {
+			topojsonURL+='&' + key + '=' + methodFields[key];
+		}
 	}
-
+	var geolevel=methodFields.geolevel[(methodFields.geolevel_id-1)];
+	consoleLog("geolevel data: " + JSON.stringify(geolevel, null, 0));
 	consoleLog("topojsonURL: " + topojsonURL);
 	
 	if (topojsonTileLayer) {
@@ -514,7 +518,7 @@ function addTileLayer(methodFields) {
 	}
     topojsonTileLayer = new L.TileLayer.GeoJSON(topojsonURL, {
             clipTiles: true,
-			attribution: 'Tiles &copy; <a href="http://www.sahsu.org/copyright">Imperial College London</a>',
+			attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
             unique: function (feature) {
                 return feature.id; 
             }
@@ -545,6 +549,27 @@ function addTileLayer(methodFields) {
 		consoleLog("Error: " + error + " loading tile: " + tile);
 	});
     map.addLayer(topojsonTileLayer);
+	
+	if (legend) {
+		map.removeControl(legend);
+	}
+	legend = L.control({position: 'bottomright'});
+			
+	legend.onAdd = function onAddLegend(map) {
+		var div = L.DomUtil.create('div', 'info legend');
+		var labels=[];
+
+		for (var key in geolevel) {
+			labels.push("<tr><td>" + key + ": </td><td>" + geolevel[key] + "</td></tr>");			
+		}
+
+		var html = '<table id="legend">' + labels.join("") + '</table>';
+		consoleLog("Add legend: " + html);
+		div.innerHTML = html;
+		return div;
+	};
+
+	legend.addTo(map);
 } // End of addTileLayer()
 
 /*

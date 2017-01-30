@@ -690,7 +690,7 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 									else if (databaseType == "MSSQLServer") {
 										result=sqlResult;
 									}
-									geographies[i].geolevels=result;
+									geographies[i].geolevel=result;
 									geographySeriesCallback();
 								}
 							} // End of geographySeriesGeolevels
