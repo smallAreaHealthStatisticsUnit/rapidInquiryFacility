@@ -190,15 +190,20 @@ function consoleLog(msg) {
 function consoleError(msg) {
 	var end=new Date().getTime();
 	var elapsed=(Math.round((end - lstart)/100))/10; // in S
-	if (window.console && console && console.error && typeof console.error == "function") {
-		if (isIE()) {
-			if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {	
-				console.log("+" + elapsed + " ERROR: " + msg);
+	try {
+		if (window.console && console && console.error && typeof console.error == "function") {
+			if (isIE()) {
+				if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {	
+					console.log("+" + elapsed + " ERROR: " + msg);
+				}
+			}
+			else {
+				console.error("+" + elapsed + " ERROR: " + msg);
 			}
 		}
-		else {
-			console.error("+" + elapsed + " ERROR: " + msg);
-		}
+	}
+	catch (err) {
+		console.log("consoleError: ERROR: " + err.message + "\n" + msg);
 	}
 }
 
@@ -383,7 +388,7 @@ function createMap(boundingBox, maxZoomlevel) {
 	
 	if (boundingBox) {
 		try {
-			consoleLog("Fit bounding box...");	
+			consoleLog("Fit bounding box: " + JSON.stringify(boundingBox));	
 			map.fitBounds([
 				[boundingBox.ymin, boundingBox.xmin],
 				[boundingBox.ymax, boundingBox.xmax]], {maxZoom: maxZoomlevel||11}
@@ -486,11 +491,12 @@ function addTileLayer(methodFields) {
 	}
     topojsonTileLayer = new L.TileLayer.GeoJSON(topojsonURL, {
             clipTiles: true,
+			attribution: '&copy; <a href="http://www.sahsu.org/copyright">SAHSU</a>',
             unique: function (feature) {
                 return feature.id; 
             }
         }, {
-            style: style,
+            style: style /*,
             onEachFeature: function (feature, layer) {
                 if (feature.properties) {
                     var popupString = '<div class="popup">';
@@ -509,7 +515,7 @@ function addTileLayer(methodFields) {
                         layer.setStyle(style);
                     });
                 }
-            }
+            } */
         }
     );
 	topojsonTileLayer.on('tileerror', function(error, tile) {
@@ -517,3 +523,72 @@ function addTileLayer(methodFields) {
 	});
     map.addLayer(topojsonTileLayer);
 } // End of addTileLayer()
+
+/*
+ * Function:	getBbox()
+ * Parameters:	databaseType, databaseName, databaseSchema, geography, table_name, tileTable, getBboxCallback
+ * Returns:		Nothing
+ * Description: Get boundoiing box from root tile
+ */	
+function getBbox(databaseType, databaseName, databaseSchema, geography, table_name, tileTable, getBboxCallback) {
+	scopeChecker({
+		callback: getBboxCallback,
+		databaseType: databaseType,
+		databaseName: databaseName,			
+		databaseSchema: databaseSchema,
+		table_name: table_name,
+		geography: geography,
+		tileTable: tileTable
+	});
+	//http://127.0.0.1:3000/getMapTile/?zoomlevel=1&x=0&y=0&databaseType=PostGres&table_catalog=sahsuland_dev
+	// &table_schema=peter&table_name=geography_sahsuland&geography=SAHSULAND
+	// &geolevel_id=2&tiletable=tiles_sahsuland&output=topojson
+	var getMapTileParams={ 
+			zoomlevel: 0, 
+			x: 0,
+			y: 0,
+			geolevel_id: 1,
+			databaseType: databaseType,	
+			table_catalog: databaseName,
+			table_schema: databaseSchema,
+			table_name: table_name,
+			geography: geography,
+			tiletable: tileTable,
+			output: "topojson"
+		};
+	consoleLog("getBbox() getMapTileParams: " + JSON.stringify(getMapTileParams, null, 0));
+	
+	var jqXHRgetBboxStatus=$.get("getMapTile", getMapTileParams,
+		function getBboxStatus(data, status, xhr) {
+			consoleLog("getBboxStatus() data: " + JSON.stringify(data, null, 0).substring(1, 100));
+			// "type":"Topology","objects":{"collection":{"type":"GeometryCollection","bbox":[-7.58829480400111,52
+			var bbox;
+			if (data && data.objects && data.objects.collection) {
+				bbox={
+					xmin: data.objects.collection.bbox[0],
+					ymin: data.objects.collection.bbox[1],
+					xmax: data.objects.collection.bbox[2],
+					ymax: data.objects.collection.bbox[3]
+				};
+			}
+			else {
+				bbox={xmin: -180.0000, ymin: -90.0000, xmax: 180.0000, ymax: 90.0000}; /* whole world bounding box */			
+			}
+			getBboxCallback(bbox);
+		}, // End of getBboxStatus() 
+		"json");
+	jqXHRgetBboxStatus.fail(function getBboxError(x, e) {
+		try {
+			if (x.responseText) {
+				response=JSON.parse(x.responseText);
+			}
+			errorPopup(response.message, 
+				"<pre>" + response.diagnostic + "</pre><pre>Fields: " + 
+				JSON.stringify(response.fields, null, 2) + "</pre>");
+		}
+		catch (e) {
+			errorPopup("getBbox(): Error parsing response: " + e.message);
+		}
+	} // End of getBboxError()
+	);
+} // End of getBbox()

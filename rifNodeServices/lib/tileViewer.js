@@ -468,7 +468,7 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 		callback: getMapTileErrorHandler,
 		databaseType: databaseType,
 		databaseName: databaseName,
-		dbRequest: dbRequest,
+		databaseName: databaseName,
 		response: response,
 		message: response.message
 	});
