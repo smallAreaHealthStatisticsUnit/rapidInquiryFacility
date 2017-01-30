@@ -841,8 +841,24 @@ RangeError: Invalid string length
   same way). This has the potential to case bugs in the SQL Server scripts if you run the build phase not as a Windows authenticated user.
 * MS Sahsuland projection problem; parked: see below.
 
-#### Current TODO list (January 2017):
+#### 30th January to 3rd February 
 
+* TileViewer (tile-viewer.html) web screen by DB/geography; DB web service. Currently slow because using geoJSON.
+  Both SQL server and Postgres tiles display for both SAHSULAND and USA to county level.
+* Note resizing bug in tile-maker.html is probably caused by setting the height of the map div in html once 
+  leaflet is initialized.
+
+#### Current TODO list (February 2017): SQL Server Port
+
+* SQL Server run study port
+* SQL server fault in rfi40_geographies/geometry insert triggers
+
+* TileViewer (May?):
+  * Resize
+  * TopoJSON support
+  * UUID support
+  * Add Winston logging
+  * Separate DB logons using UUID; add username/password support
 * Convert v4_0_create_sahsuland.sql to use tileMaker sahsuland, and remaining test scripts)
 * Tilemaker drop scripts. Probably needed for v4_0_drop.sql and hence sahsuland_dev rebuild
 * Alter 9:
@@ -861,7 +877,6 @@ RangeError: Invalid string length
   These will need to use a suitable projection within bounds and also be translated to the desired place. i.e. using proj4 in Node.
   
 * Fix zoomlevel miss-set from config file (defaults are wrong)
-* TileViewer web screen by DB/geography; DB web service
 
 ### Database Bugs [alter 9]
 
@@ -870,11 +885,6 @@ RangeError: Invalid string length
   * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
   * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
 * Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
-
-### SQL Server Port (February 2017)
-
-* SQL Server run study port
-* SQL server fault in rfi40_geographies/geometry insert triggers
 
 ####  TODO list:
 
