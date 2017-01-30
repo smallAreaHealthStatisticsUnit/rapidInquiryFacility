@@ -60,8 +60,10 @@
 //
 var pgClient;	
 var mssqlClient;
-const pg=require('pg');		
-const mssql=require('mssql');
+const pg=require('pg'),	
+	  mssql=require('mssql'),
+	  topojson=require('topojson'),
+	  clone = require('clone');
 
 /*
  * Function:	getMapTile()
@@ -94,8 +96,11 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
  * Description: Handle error in own context to prevent re-throws
  */		
 	function getMapTileErrorHandler(err) {
-		msg+=err.message;
-		response.message+=err.message;
+		if (err == undefined) {
+			err=new Error("getMapTileErrorHandler(): No error defined");
+		}
+		var msg=err.message;
+		response.message+="\n" + err.message + "\n" + err.stack;;
 		try {
 			httpErrorResponse.httpErrorResponse(__file, __line, "getMapTile", 
 				serverLog, 500, req, res, msg, undefined /* Error: do not re-throw */, response);
@@ -120,11 +125,39 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 			res: res
 		});	
 		
-		response.message+=msg;
-		msg+="\n" +
-			JSON.stringify(response.fields, null, 2);
-		response.message+=msg;
-		tileViewerReponseProcessing("getMapTile", response, response.result, req, res, serverLog, httpErrorResponse);
+		try {
+			response.message+=msg;
+			msg+="\n" +
+				JSON.stringify(response.fields, null, 2);
+			response.message+=msg;
+			
+			var geojson;
+			if (response.result == undefined) {
+				throw new Error("getMapTileResponse() No result.");
+			}
+			else if (response.result.features && response.result.features.length == 0) { // NULL geojson
+																// '{"type": "FeatureCollection","features":[]}';
+				geojson=response.result;
+			}
+			else if (response.fields.output == "topojson") {		// output=topojson parameter
+				geojson=response.result;
+			}
+			else {
+				var bbox=clone(response.result.bbox);
+				var jsonData=response.result;
+				for (key in jsonData.objects) {						// Convert to geojson
+					geojson = topojson.feature(jsonData, jsonData.objects[key]);
+				}
+				if (bbox) {											// Add back bbox
+					response.message+="\nAdd back bbox: " + bbox;
+					geojson.bbox=bbox;
+				}				
+			}
+		}
+		catch (err) {	
+			getMapTileErrorHandler(err);	// Use scope of calling function
+		}		
+		tileViewerReponseProcessing("getMapTile", response, geojson, req, res, serverLog, httpErrorResponse);
 	} // getMapTileResponse()
 	
 /*
@@ -261,8 +294,11 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
  * Description: Handle error in own context to prevent re-throws
  */		
 	function getGeographiesErrorHandler(err) {
-		msg+=err.message;
-		response.message+=err.message;
+		if (err == undefined) {
+			err=new Error("getGeographiesErrorHandler(): No error defined");
+		}
+		var msg=err.message;
+		response.message+="\n" + err.message + "\n" + err.stack;
 		try {
 			httpErrorResponse.httpErrorResponse(__file, __line, "getGeographies", 
 				serverLog, 500, req, res, msg, undefined /* Error: do not re-throw */, response);
@@ -469,10 +505,14 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 						sql + ";"));
 				}
 				else {
+					var topojson_string=result.rows[0].optimised_topojson;
 					try {
-						response.result=JSON.parse(result.rows[0].optimised_topojson);
+						response.result=JSON.parse(topojson_string);
 					}
 					catch (err) {
+						var nerr=new Error("Error: " + err.message + "\nJSON.parse(" + 
+							((topojson_string && topojson_string.substring(1, 30) || "Null string")) + ")");
+						nerr.stack=err.stack;
 						getMapTileErrorHandler(nerr);
 					}
 				}
@@ -495,6 +535,7 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 		dbRequest.input('zoomlevel', mssql.Int, zoomlevel);
 		dbRequest.input('x', mssql.Int, x);
 		dbRequest.input('y', mssql.Int, y);
+		dbRequest.output('optimised_topojson', mssql.NVarChar(mssql.MAX));
 		
 		var query=dbRequest.query(sql, function mssqlGetMapTileFromDBQuery(err, result) {
 			if (err) {
@@ -512,14 +553,21 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 						sql + ";"));
 				}
 				else {
+					var topojson_string="";
+					for (var i=0; i< result[0].optimised_topojson.length; i++) {
+						topojson_string+=result[0].optimised_topojson[i];
+					}
+					response.message+="\noptimised_topojson: " +  topojson_string.length + "\n";
 					try {
-						response.result=JSON.parse(result[0].optimised_topojson);
+						response.result=JSON.parse(topojson_string);
 					}
 					catch (err) {
+						var nerr=new Error("Error: " + err.message + "\nJSON.parse(" + 
+							((topojson_string && topojson_string.substring(1, 30) || "Null string")) + ")");
+						nerr.stack=err.stack;
 						getMapTileErrorHandler(nerr);
-					}
+					}					
 				}
-				response.message+="\noptimised_topojson: " +  result[0].optimised_topojson.length;
 				getMapTileResponse(response.result); // Replace with just geojson	
 			}		
 		} // End of mssqlGetMapTileFromDBQuery()

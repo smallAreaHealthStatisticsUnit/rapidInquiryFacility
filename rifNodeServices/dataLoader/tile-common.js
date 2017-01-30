@@ -46,7 +46,7 @@
 
 var lstart=new Date().getTime(); 	// GLOBAL: Start time for console log/error messages
 var map;
-var geojsonTileLayer;
+var topojsonTileLayer;
 var baseLayer;
 
 /*
@@ -130,6 +130,34 @@ function leafletEnabletopoJson() {
 		}
 	  }  
 	});
+	
+	/* OR: https://gist.github.com/brendanvinson/0e3c3c86d96863f1c33f55454705bca7
+
+L.TopoJSON = L.GeoJSON.extend({
+    addData: function (data) {
+        var geojson, key;
+        if (data.type === "Topology") {
+            for (key in data.objects) {
+                if (data.objects.hasOwnProperty(key)) {
+                    geojson = topojson.feature(data, data.objects[key]);
+                    L.GeoJSON.prototype.addData.call(this, geojson);
+                }
+            }
+
+            return this;
+        }
+
+        L.GeoJSON.prototype.addData.call(this, data);
+
+        return this;
+    }
+});
+
+L.topoJson = function (data, options) {
+    return new L.TopoJSON(data, options);
+};
+
+	 */
 }
  
 /*
@@ -446,17 +474,17 @@ function addTileLayer(methodFields) {
  *
  * 127.0.0.1:3000/getMapTile/?zoomlevel=1&x=0&y=0&databaseType=PostGres&table_catalog=sahsuland_dev&table_schema=peter&table_name=geography_sahsuland&geography=SAHSULAND&geolevel_id=2&tiletable=tiles_sahsuland
  */
-    var geojsonURL = 'http://127.0.0.1:3000/getMapTile/?zoomlevel={z}&x={x}&y={y}';
+    var topojsonURL = 'http://127.0.0.1:3000/getMapTile/?zoomlevel={z}&x={x}&y={y}';
 	for (var key in methodFields) { // append methodFields
-		geojsonURL+='&' + key + '=' + methodFields[key];
+		topojsonURL+='&' + key + '=' + methodFields[key];
 	}
 
-	consoleLog("geojsonURL: " + geojsonURL);
+	consoleLog("topojsonURL: " + topojsonURL);
 	
-	if (geojsonTileLayer) {
-		map.removeLayer(geojsonTileLayer);
+	if (topojsonTileLayer) {
+		map.removeLayer(topojsonTileLayer);
 	}
-    geojsonTileLayer = new L.TileLayer.GeoJSON(geojsonURL, {
+    topojsonTileLayer = new L.TileLayer.GeoJSON(topojsonURL, {
             clipTiles: true,
             unique: function (feature) {
                 return feature.id; 
@@ -484,5 +512,8 @@ function addTileLayer(methodFields) {
             }
         }
     );
-    map.addLayer(geojsonTileLayer);
+	topojsonTileLayer.on('tileerror', function(error, tile) {
+		consoleLog("Error: " + error + " loading tile: " + tile);
+	});
+    map.addLayer(topojsonTileLayer);
 } // End of addTileLayer()
