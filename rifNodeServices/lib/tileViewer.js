@@ -62,6 +62,7 @@ var pgClient;
 var mssqlClient;
 const pg=require('pg'),	
 	  mssql=require('mssql'),
+	  async = require('async'),
 	  topojson=require('topojson'),
 	  clone = require('clone');
 
@@ -325,7 +326,7 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 		
 		response.geographies=result;	
 		msg+="Return result geography: " + (result && result.length) + " rows\n";
-		response.message+=msg;
+		response.message+=msg + JSON.stringify(response.geographies, null, 2) + "\n";
 		tileViewerReponseProcessing("getGeographies", response, response, req, res, serverLog, httpErrorResponse);
 	} // End of getGeographiesResponse()
 
@@ -661,7 +662,51 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 					else if (databaseType == "MSSQLServer") {
 						result=sqlResult;
 					}
-					getAllGeographiesCallback(result);
+					
+					var geographies=result;
+					async.forEachOfSeries(geographies, 
+						function geographySeries(value, i, geographySeriesCallback) { // Processing code
+							var geolevelsTable;
+							if (geographies[i].table_name.toLowerCase() == 'rif40_geographies') {
+								geolevelsTable='rif40_geolevels';
+							}
+							else {
+								geolevelsTable='geolevels_' + geographies[i].geography.toLowerCase();
+							}
+							sql="SELECT geolevel_id, geolevel_name, description, areaid_count\n" + 
+							    "  FROM " + geographies[i].table_schema + "." + geolevelsTable + "\n" +
+								" ORDER BY geolevel_id";
+							var query=dbRequest.query(sql, function geographySeriesGeolevels(err, sqlResult) {
+								if (err) {
+									var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
+									nerr.stack=err.stack;
+									getGeographiesErrorHandler(nerr);	
+								}
+								else {
+									var result;
+									if (databaseType == "PostGres") {
+										result=sqlResult.rows;
+									}
+									else if (databaseType == "MSSQLServer") {
+										result=sqlResult;
+									}
+									geographies[i].geolevels=result;
+									geographySeriesCallback();
+								}
+							} // End of geographySeriesGeolevels
+							);			
+						}, // End of geographySeries()
+						function geographySeriesEnd(err) { //  Callback	
+							if (err) {
+								var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
+								nerr.stack=err.stack;
+								getGeographiesErrorHandler(nerr);
+							}
+							else {
+								getAllGeographiesCallback(geographies);
+							}
+						} // End of geographySeriesEnd()
+					); // End of async.forEachOfSeries()
 				}
 			} // End of getAllGeographiesResult()
 			);
