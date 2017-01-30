@@ -1,12 +1,12 @@
 #databaseSelect {
-    width: 200px; 
+    width: 190px; 
 }
 #databaseSelect-button {
 	vertical-align : middle;
 }
 #geographySelect {
 	float: right;
-    width: 600px; 
+    width: 400px; 
 }
 #geographySelect-button {
 	vertical-align: middle;

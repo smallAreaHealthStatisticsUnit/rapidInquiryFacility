@@ -334,6 +334,29 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 } // End of xhrGetMethod()
 
 /*
+ * Function: 	addSelector()
+ * Parameters: 	selectorId, selectorChangeCallback
+ * Returns: 	map
+ * Description:	Add JQuery selector
+ */	
+function addSelector(selectorId, selectorChangeCallback) {
+	scopeChecker({
+		selectorId: selectorId,
+		callback: selectorChangeCallback}
+	);
+		
+	$( selectorId )									// Quantization selector
+		.selectmenu({
+			change: function( event, ui ) {					// DB Change function
+				selectorChangeCallback( event, ui );
+			}
+		})
+		.selectmenu( "menuWidget" ).addClass( "overflow" );
+	$( selectorId ).button();
+	selectorChangeCallback();	// Defaults
+} // End of addSelector()
+
+/*
  * Function: 	setHeight()
  * Parameters: 	id, height
  * Returns: 	map
@@ -491,7 +514,7 @@ function addTileLayer(methodFields) {
 	}
     topojsonTileLayer = new L.TileLayer.GeoJSON(topojsonURL, {
             clipTiles: true,
-			attribution: '&copy; <a href="http://www.sahsu.org/copyright">SAHSU</a>',
+			attribution: 'Tiles &copy; <a href="http://www.sahsu.org/copyright">Imperial College London</a>',
             unique: function (feature) {
                 return feature.id; 
             }

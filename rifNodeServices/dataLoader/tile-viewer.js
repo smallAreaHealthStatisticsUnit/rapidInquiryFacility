@@ -149,16 +149,7 @@ function getGeographies(data, status, xhr) {
 			setHeight("map", (height-55));			
 		}		
 		
-		$( "#geographySelect" )								// Geography selector
-		.selectmenu({
-			change: function( event, ui ) {					// DB Change function
-				geographySelectChange( event, ui );
-			}
-		})
-		.selectmenu( "menuWidget" ).addClass( "overflow" );
-		$( "#geographySelect" ).button(); 
-		
-		geographySelectChange();
+		addSelector("#geographySelect", geographySelectChange);
 	}
 			
 } // End of getGeographies()

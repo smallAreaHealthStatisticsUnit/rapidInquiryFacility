@@ -38,16 +38,7 @@ $(document).ready(function documentReady() {
 		});
 	}
 	
-	$( "#databaseSelect" )									// Quantization selector
-		.selectmenu({
-			change: function( event, ui ) {					// DB Change function
-				databaseSelectChange( event, ui );
-			}
-		})
-		.selectmenu( "menuWidget" ).addClass( "overflow" );
-	$( "#databaseSelect" ).button();
-	
-	databaseSelectChange();									// Sutup default DB
+	addSelector("#databaseSelect", databaseSelectChange);
 
 	$('input').addClass("ui-corner-all");					// Nice round corners everywhere
 					
@@ -72,8 +63,8 @@ $(document).ready(function documentReady() {
           <div id="dbSelector" class="ui-tabs ui-widget ui-widget-content ui-corner-all">	
   	        <label id="databaseLabel" title="Choose database type to connect to" for="databaseType">Database:
 		      <select required id="databaseSelect" name="databaseType" form="dbSelect">
-			     <option value="PostGres" selected="selected">Postgres</option>
-			     <option value="MSSQLServer">MS SQL Server</option>
+			     <option value="MSSQLServer" selected="selected">MS SQL Server</option>
+			     <option value="PostGres">Postgres</option>
 		  	  </select> 		
 		    </label>  
 			<label id="geographyLabel"  title="Choose geography to display" for="geography">Geography:
