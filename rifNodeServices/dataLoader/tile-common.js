@@ -510,6 +510,11 @@ function addTileLayer(methodFields) {
 		}
 	}
 	var geolevel=methodFields.geolevel[(methodFields.geolevel_id-1)];
+	geolevel.databaseType=methodFields.databaseType;
+	geolevel.databaseName=methodFields.table_catalog;
+	geolevel.tableName=methodFields.table_schema + '.' + methodFields.table_name;
+	geolevel.geography=methodFields.geography;
+	
 	consoleLog("geolevel data: " + JSON.stringify(geolevel, null, 0));
 	consoleLog("topojsonURL: " + topojsonURL);
 	
