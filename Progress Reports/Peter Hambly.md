@@ -847,6 +847,7 @@ RangeError: Invalid string length
   Both SQL server and Postgres tiles display for both SAHSULAND and USA to county level.
 * Note resizing bug in tile-maker.html is probably caused by setting the height of the map div in html once 
   leaflet is initialized.
+* All tiles confirmed OK
 
 #### Current TODO list (February 2017): SQL Server Port
 
@@ -855,7 +856,7 @@ RangeError: Invalid string length
 
 * TileViewer (May?):
   * Resize
-  * TopoJSON support
+  * TopoJSON support (Needs Leaflet gridlayer, Leaflet 1.0+ upgrade, leaflet-geojson-gridlayer)
   * UUID support
   * Add Winston logging
   * Separate DB logons using UUID; add username/password support

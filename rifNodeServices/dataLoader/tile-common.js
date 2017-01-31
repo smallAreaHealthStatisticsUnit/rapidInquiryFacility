@@ -493,6 +493,9 @@ function createMap(boundingBox, maxZoomlevel) {
 			baseLayer.addTo(map);	
 			L.control.scale().addTo(map); // Add scale	
 			consoleLog("Added baseLayer and scale to map");	
+			
+//			addGridLayer(); 	// Add grid layer Leaflet 1.0+
+			
 /*			
 			(function mapResetButton() {
 				var control = new L.Control({position:'topright'});
@@ -609,12 +612,22 @@ function addTileLayer(methodFields) {
 	}
 	legend = L.control({position: 'bottomright'});
 			
+	var keyTable = {	// Translate tags
+		geolevel_id: 	"GEOLEVEL_ID",
+		geolevel_name: 	"Name",
+		description: 	"Description",
+		areaid_count: 	"AreaID Count",
+		databaseType:	"Database Type",
+		databaseName:	"Database Name",
+		tableName:		"Table",
+		geography:		"Geography"
+	}
 	legend.onAdd = function onAddLegend(map) {
 		var div = L.DomUtil.create('div', 'info legend');
 		var labels=[];
 
 		for (var key in geolevel) {
-			labels.push("<tr><td>" + key + ": </td><td>" + geolevel[key] + "</td></tr>");			
+			labels.push("<tr><td>" + (keyTable[key]||key) + ": </td><td>" + geolevel[key] + "</td></tr>");			
 		}
 
 		var html = '<table id="legend">' + labels.join("") + '</table>';
@@ -694,3 +707,48 @@ function getBbox(databaseType, databaseName, databaseSchema, geography, table_na
 	} // End of getBboxError()
 	);
 } // End of getBbox()
+
+/*
+ * Function:	addGridLayer()
+ * Parameters:	None
+ * Returns:		Nothing
+ * Description: Leaflet GridLayer example with Canvas
+ *				By Maik Riechert: https://gist.github.com/letmaik/e71eae5b3ae9e09f8aeb288c3b95230b
+ *
+ *				Needs Leaflet 1.0+
+ *
+ * 				See also: https://github.com/ebrelsford/leaflet-geojson-gridlayer/tree/master/src
+ */	
+function addGridLayer() {
+	
+	var tiles = new L.GridLayer();
+	tiles.createTile = function(coords) {
+	  var tile = L.DomUtil.create('canvas', 'leaflet-tile');
+	  var ctx = tile.getContext('2d');
+	  var size = this.getTileSize()
+	  tile.width = size.x
+	  tile.height = size.y
+	  
+	  // calculate projection coordinates of top left tile pixel
+	  var nwPoint = coords.scaleBy(size)
+	  
+	  // calculate geographic coordinates of top left tile pixel
+	  var nw = map.unproject(nwPoint, coords.z)
+	  
+	  ctx.fillStyle = 'white';
+	  ctx.fillRect(0, 0, size.x, 50);
+	  ctx.fillStyle = 'black';
+	  ctx.fillText('x: ' + coords.x + ', y: ' + coords.y + ', zoom: ' + coords.z, 20, 20);
+	  ctx.fillText('lat: ' + nw.lat + ', lon: ' + nw.lng, 20, 40);
+	  ctx.strokeStyle = 'red';
+	  ctx.beginPath();
+	  ctx.moveTo(0, 0);
+	  ctx.lineTo(size.x-1, 0);
+	  ctx.lineTo(size.x-1, size.y-1);
+	  ctx.lineTo(0, size.y-1);
+	  ctx.closePath();
+	  ctx.stroke();
+	  return tile;
+	}
+	tiles.addTo(map);
+} // End of addGridLayer()
