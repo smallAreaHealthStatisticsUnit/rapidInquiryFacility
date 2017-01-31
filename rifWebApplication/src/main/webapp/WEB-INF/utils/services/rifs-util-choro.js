@@ -1,3 +1,36 @@
+/**
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * Copyright 2016 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ *
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+
+ * David Morley
+ * @author dmorley
+ */
+
 /*
  * SERVICE to render choropleth maps using Colorbrewer
  */
@@ -7,96 +40,64 @@
 angular.module("RIF")
         .factory('ChoroService', ['ColorBrewerService',
             function (ColorBrewerService) {
+                
+                //a default symbology
+                function symbology() {
+                    this.features = [];
+                    this.brewerName = "LightGreen";
+                    this.intervals = 1;
+                    this.feature = "relative_risk";
+                    this.invert = false;
+                    this.method = "quantile";
+                    this.renderer = {
+                        scale: null,
+                        breaks: [],
+                        range: ["#9BCD9B"],
+                        mn: null,
+                        mx: null
+                    };
+                    this.init = false;
+                }
                 var maps = {
-                    "viewermap": {
-                        map: "viewermap",
-                        features: [],
-                        brewerName: "LightGreen",
-                        intervals: 1,
-                        feature: "relative_risk",
-                        invert: false,
-                        method: "quantile",
-                        renderer:
-                                {
-                                    scale: null,
-                                    breaks: null,
-                                    range: ["#9BCD9B"],
-                                    mn: null,
-                                    mx: null
-                                },
-                        init: false
-                    },
-                    "diseasemap1": {
-                        map: "diseasemap1",
-                        features: [],
-                        brewerName: "LightGreen",
-                        intervals: 1,
-                        feature: "smoothed_smr",
-                        invert: false,
-                        method: "quantile",
-                        renderer:
-                                {
-                                    scale: null,
-                                    breaks: null,
-                                    range: ["#9BCD9B"],
-                                    mn: null,
-                                    mx: null
-                                },
-                        init: false
-                    },
-                    "diseasemap2": {
-                        map: "diseasemap2",
-                        features: [],
-                        brewerName: "LightGreen",
-                        intervals: 1,
-                        feature: "smoothed_smr",
-                        invert: false,
-                        method: "quantile",
-                        renderer:
-                                {
-                                    scale: null,
-                                    breaks: null,
-                                    range: ["#9BCD9B"],
-                                    mn: null,
-                                    mx: null
-                                },
-                        init: false
-                    }
+                    'viewermap': new symbology(),
+                    'diseasemap1': new symbology(),
+                    'diseasemap2': new symbology()
                 };
-                var defaults = angular.copy(JSON.parse(JSON.stringify(maps)));
+                
                 //used in viewer map
-                function renderFeature(scale, attr, selected) {
+                function renderFeatureMapping(scale, value, selected) {
                     //returns fill colour
                     //selected
-                    if (selected && !angular.isUndefined(attr)) {
+                    if (selected && !angular.isUndefined(value)) {
                         return "green";
                     }
                     //choropleth
-                    if (scale && !angular.isUndefined(attr)) {
-                        return scale(attr);
-                    } else if (angular.isUndefined(attr)) {
-                        return "gray";
+                    if (scale && !angular.isUndefined(value)) {
+                        return scale(value);
+                    } else if (angular.isUndefined(value)) {
+                        return "lightgray";
                     } else {
                         return "#9BCD9B";
                     }
                 }
 
                 //used in disease mapping
-                function renderFeature2(feature, value, scale, attr, selection) {
+                function renderFeatureViewer(scale, feature, value, selection) {
                     //returns [fill colour, border colour, border width]
                     //selected (a single polygon)
                     if (selection === feature.properties.area_id) {
-                        if (scale && attr !== "") {
+                        if (scale && !angular.isUndefined(value)) {
                             return [scale(value), "green", 5];
                         } else {
                             return ["lightgreen", "green", 5];
                         }
                     }
                     //choropleth
-                    if (scale && !angular.isUndefined(attr)) {
+                    if (scale && !angular.isUndefined(value)) {
                         return [scale(value), "gray", 1];
+                    } else if (angular.isUndefined(value)) {
+                        return ["lightgray", "gray", 1];
                     } else {
-                        //constant colour
                         return ["#9BCD9B", "gray", 1];
                     }
                 }
@@ -264,11 +265,11 @@ angular.module("RIF")
                     getMaps: function (i) {
                         return maps[i];
                     },
-                    getRenderFeature: function (layer, scale, attr) {
-                        return renderFeature(layer, scale, attr);
+                    getRenderFeatureMapping: function (scale, value, selected) {
+                        return renderFeatureMapping(scale, value, selected);
                     },
-                    getRenderFeature2: function (feature, layer, scale, attr, selected) {
-                        return renderFeature2(feature, layer, scale, attr, selected);
+                    getRenderFeatureViewer: function (scale, feature, value, selected) {
+                        return renderFeatureViewer(scale, feature, value, selected);
                     },
                     getChoroScale: function (method, domain, rangeIn, flip, map) {
                         return choroScale(method, domain, rangeIn, flip, map);
@@ -276,8 +277,9 @@ angular.module("RIF")
                     getMakeLegend: function (thisMap, attr) {
                         return makeLegend(thisMap, attr);
                     },
+                    //TODO: not used, add reset button
                     resetState: function (map) {
-                        maps[map] = angular.copy(defaults[map]);
+                        maps[map] = new symbology();
                     }
                 };
             }]);

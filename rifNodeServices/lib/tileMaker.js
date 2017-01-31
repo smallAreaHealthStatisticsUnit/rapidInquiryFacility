@@ -90,7 +90,7 @@ var createSVGTile = function createSVGTile(geolevel_id, zoomlevel, x, y, geojson
 	bbox[3]=tile2latitude(y+1, zoomlevel);	/* Ymax (4326); e.g. 71.352561 */
 	geojson.bbox=bbox;						// Bounding box of tile
 	var bboxPolygon = turf.bboxPolygon(bbox);	
-	bboxPolygon.properties.id='bound';	
+	bboxPolygon.properties.gid='bound';	
 // Could use: turf-bbox-clip:
 //	for (var i=0; i<geojson.features.length; i++) {
 //		turf.bbox-clip(geojson.features[i], bbox);		
@@ -385,11 +385,11 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			return d.properties;
 		};
 		this.id = function TopojsonOptionsId(d) {
-			if (!d.properties["id"]) {
-				throw new Error("FIELD PROCESSING ERROR! Invalid id field: d.properties.id does not exist in geoJSON");
+			if (!d.properties["gid"]) {
+				throw new Error("FIELD PROCESSING ERROR! Invalid id field: d.properties.gid does not exist in geoJSON");
 			}
 			else {
-				return d.properties["id"];
+				return d.properties["gid"];
 			}							
 		};
 	} // End of TopojsonOptions() object constructor
@@ -429,7 +429,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			tileArray.push(this);	
 			tileNo++;
 			this.id=tileNo;
-			this.geojson.features[0].properties.id=this.id;
+			this.geojson.features[0].properties.gid=this.id;
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 'areaid', 'areaname'];
@@ -503,7 +503,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			
 			this.geojson.features.push(geojson);
 			this.areaid_count++;
-			this.geojson.features[(this.geojson.features.length-1)].properties.id=this.id;
+			this.geojson.features[(this.geojson.features.length-1)].properties.gid=this.id;
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 'areaid', 'areaname'];
@@ -677,9 +677,9 @@ REFERENCE (from shapefile) {
 		var geojson={
 			type: "Feature",
 			properties: {
-				id: 	  undefined,
-				areaID:   row.areaid,
-				areaName: row.areaname
+				gid: 	  	undefined,
+				area_id:   row.areaid,
+				name: 	row.areaname
 			}, 
 			geometry: wellknown.parse(wkt)
 		};
@@ -699,8 +699,8 @@ REFERENCE (from shapefile) {
 		if (tileArray.length == 0) { // First row in zoomlevel/geolevel combination
 			var geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
 			winston.log("debug", 'First tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + ": " + 
-				geojsonTile.geojson.features[0].properties["areaId"] + "; " +
-				geojsonTile.geojson.features[0].properties["areaName"]);
+				geojsonTile.geojson.features[0].properties["area_id"] + "; " +
+				geojsonTile.geojson.features[0].properties["name"]);
 		}
 		else {
 			var geojsonTile=tileArray[(tileArray.length-1)]; // Get last tile from array
@@ -709,12 +709,12 @@ REFERENCE (from shapefile) {
 					geojsonTile.addFeature(row, geojson);	// Add geoJSON feature to collection
 					winston.log("debug", 'Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + 
 						'; add areaID: ' + row.areaid + ": " + 
-						geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
+						geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["name"]);
 				}
 				else {
 					winston.log("warn", 'Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + 
 						'; no geojson; unable to add areaID: ' + row.areaid + ": " + 
-						geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
+						geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["mame"]);
 				}
 			}
 			else if (geojson) {										// New tile or already processed
@@ -739,7 +739,7 @@ REFERENCE (from shapefile) {
 					geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
 															// Create new tile
 					winston.log("debug", 'Next tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + ": " + 
-						geojsonTile.geojson.features[0].properties["areaName"]);	
+						geojsonTile.geojson.features[0].properties["name"]);	
 				}
 				else {
 					var geojsonTile=tileArray[(tileArray.length-1)]; // Get last tile from array
@@ -749,13 +749,13 @@ REFERENCE (from shapefile) {
 					geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
 															// Create new tile
 					winston.log("debug", 'New tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + ": " + 
-						geojsonTile.geojson.features[0].properties["areaID"] + "; " +
-						geojsonTile.geojson.features[0].properties["areaName"]);	
+						geojsonTile.geojson.features[0].properties["area_id"] + "; " +
+						geojsonTile.geojson.features[0].properties["name"]);	
 				}
 			}	
 			else {
 				winston.log("warn", 'Tile ' + geojsonTile.id + '; no geojson; unable to add(2) areaID: ' + row.areaid + ": " + 
-					geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["areaName"]);
+					geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["name"]);
 			}
 		}	
 		return tileSize;
@@ -1312,7 +1312,15 @@ REFERENCE (from shapefile) {
 		zstart = new Date().getTime(); // Set timer for zoomlevel
 		
 		// Create CSV file for tiles
-		var fileNoext = "t_tiles_" + geolevelName.toLowerCase();	
+		var fileNoext;
+		
+		if (dbType == "PostGres") {	
+			fileNoext="pg_t_tiles_" + geolevelName.toLowerCase();	
+		}
+		else if (dbType == "MSSQLServer") {
+			fileNoext="mssql_t_tiles_" + geolevelName.toLowerCase();	
+		}
+		
 		var csvFileName=(xmlFileDir + "/data/" + fileNoext + ".csv");		
 		try { // Create tiles CSV files for each geolevel
 			var tilesCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
@@ -1860,13 +1868,15 @@ REFERENCE (from shapefile) {
 					
 					var lookupTable=getDataLoaderParameter(value, "lookupTable")||"lookup_" + geographyName;
 					lookupTable=lookupTable.toString().toLowerCase();
-					var csvFileName=xmlFileDir + "/data/" + lookupTable + ".csv";
+					var csvFileName;
 					
 					var request;
 					if (dbType == "PostGres") {
+						csvFileName=xmlFileDir + "/data/pg_" + lookupTable + ".csv";
 						request=client;
 					}		
 					else if (dbType == "MSSQLServer") {	
+						csvFileName=xmlFileDir + "/data/mssql_" + lookupTable + ".csv";
 						request=new dbSql.Request();
 					}
 					var sql="SELECT * FROM " + lookupTable + " ORDER BY gid";
@@ -1953,17 +1963,29 @@ REFERENCE (from shapefile) {
 		var geographyName=getDataLoaderParameter(dataLoader, "geographyName");
 		var hierarchyTable=getDataLoaderParameter(dataLoader, "hierarchyTable")||"hierarchy_" + geographyName;
 		hierarchyTable=hierarchyTable.toString().toLowerCase();
-		var csvFileName=xmlFileDir + "/data/" + hierarchyTable + ".csv";
+		var csvFileName;
 		var geographyTableDescription=getDataLoaderParameter(dataLoader, "geographyDesc");
 		
 		var request;
 		if (dbType == "PostGres") {
+			csvFileName=xmlFileDir + "/data/pg_" + hierarchyTable + ".csv";
 			request=client;
 		}		
 		else if (dbType == "MSSQLServer") {	
+			csvFileName=xmlFileDir + "/data/mssql_" + hierarchyTable + ".csv";
 			request=new dbSql.Request();
 		}
 		var sql="SELECT * FROM " + hierarchyTable;
+		
+		var geoLevel=getDataLoaderParameter(dataLoader, "geoLevel");
+		for (var i=1; i<=geoLevel.length; i++) { // Add ordering
+			if (i == 1) {
+				sql+="\n ORDER BY 1";
+			}
+			else {
+				sql+=", " + i;
+			}
+		}
 		try { // Create CSV file for hierarchy table
 			var hierarchyCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
 			winston.log("info", "Creating hierarchy CSV file: " + csvFileName + 
@@ -1985,7 +2007,7 @@ REFERENCE (from shapefile) {
 				dbErrorHandler(err, sql);
 			}
 			else {	
-//				winston.log("verbose", "SQL> " + sql);
+				winston.log("debug", "SQL> " + sql);
 				var record;
 				if (dbType == "PostGres") {
 					record=recordSet.rows;

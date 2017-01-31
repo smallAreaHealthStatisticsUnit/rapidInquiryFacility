@@ -1,11 +1,43 @@
-/* SERVICE storing results of the submission stage
- * This is filled by the states provided in services in dsub dashboard
- * Returns either JSON or HTML for the study summary dialogue
+/**
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * Copyright 2016 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ *
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+
+ * David Morley
+ * @author dmorley
+ */
+
+/* 
+ * SERVICE storing results of the submission stage
  */
 angular.module("RIF")
         .factory('ModelService', function (StudyAreaStateService, CompAreaStateService, StatsStateService,
                 SubmissionStateService, ParameterStateService, user) {
-            updateModel = function () {                               
+            updateModel = function () {
                 var model = {
                     "rif_job_submission": {
                         "submitted_by": user.currentUser,
@@ -40,7 +72,18 @@ angular.module("RIF")
                                     }
                                 },
                                 "map_areas": {
-                                    "map_area": StudyAreaStateService.getState().polygonIDs
+                                    "map_area": function () {
+                                        var tmp = [];
+                                        for (var i = 0; i < StudyAreaStateService.getState().polygonIDs.length; i++) {
+                                            tmp.push({
+                                                "id": StudyAreaStateService.getState().polygonIDs[i].id,
+                                                "gid": StudyAreaStateService.getState().polygonIDs[i].gid,
+                                                "label": StudyAreaStateService.getState().polygonIDs[i].label,
+                                                "band": StudyAreaStateService.getState().polygonIDs[i].band
+                                            });
+                                        }
+                                        return tmp;
+                                    }()
                                 }
                             },
                             "comparison_area": {
@@ -59,7 +102,18 @@ angular.module("RIF")
                                     }
                                 },
                                 "map_areas": {
-                                    "map_area": CompAreaStateService.getState().polygonIDs
+                                    "map_area": function () {
+                                        var tmp = [];
+                                        for (var i = 0; i < CompAreaStateService.getState().polygonIDs.length; i++) {
+                                            tmp.push({
+                                                "id": CompAreaStateService.getState().polygonIDs[i].id,
+                                                "gid": CompAreaStateService.getState().polygonIDs[i].gid,
+                                                "label": CompAreaStateService.getState().polygonIDs[i].label,
+                                                "band": CompAreaStateService.getState().polygonIDs[i].band
+                                            });
+                                        }
+                                        return tmp;
+                                    }()
                                 }
                             },
                             "investigations": {"investigation": ParameterStateService.getModelInvestigation()}
@@ -95,7 +149,6 @@ angular.module("RIF")
                         "<th>Identifier</th>" +
                         "<th>Description</th>" +
                         "<th>Years</th>" +
-                        "<th>Interval</th>" +
                         "<th>Sex</th>" +
                         "<th>Age Range</th>" +
                         "<th>Covariates</th>" +
@@ -115,7 +168,6 @@ angular.module("RIF")
                                     inv[i].health_codes.health_code[j].name_space + "</td>" +
                                     "<td>" + inv[i].health_codes.health_code[j].description + "</td>" +
                                     "<td>" + inv[i].year_range.lower_bound + "-" + inv[i].year_range.upper_bound + "</td>" +
-                                    "<td>" + inv[i].years_per_interval + "</td>" +
                                     "<td>" + inv[i].sex + "</td>" +
                                     "<td> LWR: " + inv[i].age_band.lower_age_group.name + ", UPR: " + inv[i].age_band.upper_age_group.name + "</td>" +
                                     "<td>" + covars + "</td>" +

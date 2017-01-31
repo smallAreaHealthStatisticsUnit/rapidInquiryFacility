@@ -59,7 +59,7 @@
 // Imperial College London
 //
  
-//  Globals: it needs to be because it checks for variab;le scoping
+//  Globals: it needs to be because it checks for variable scoping
 global.scopeChecker=require('../lib/scopeChecker');
 
 // Locals to this module. Not necesarily to all async or required modules (hence the need for the scope checker)!!!!	
@@ -76,7 +76,7 @@ var util = require('util'),
     serverLog = require('../lib/serverLog'),
     nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
 	simplifyGeoJSON=require('../lib/simplifyGeoJSON'),
-	
+	tileViewer=require('../lib/tileViewer'),
 /*
  * Function: 	TempData() 
  * Parameters:  NONE
@@ -216,6 +216,8 @@ exports.convert = function exportsConvert(req, res) {
  * getShpConvertTopoJSON: Get shapefile converts into topoJSON optimised for zoomnlevels 6-11
  * shpConvertGetConfig.xml: Get shapefile conversion XML configuration
  * shpConvertGetResults.zip: Get shapefile conversion results zip file
+ * getGeographies: Get geogrpahies in a database
+ * getMapTile: Get maptile for specified database, geography, geolevel, zoomlevel, X and Y tile number.
  *
  * Not yet imnplement:
  *
@@ -226,22 +228,22 @@ exports.convert = function exportsConvert(req, res) {
  * createMaptiles: Create topoJSON maptiles for all geolevels and zoomlevels; 
  * getGeospatialData: Fetches GeoSpatial Data;
  * getNumShapefilesInSet: Returns the number of shapefiles in the set. This is the same as the highest resolution geolevel id;
- * getMapTile: Get maptile for specified geolevel, zoomlevel, X and Y tile number.
  */		
 		if (!((req.params["shpConvert"] == 'shpConvert') ||
 			  (req.params["shpConvert"] == 'geo2TopoJSON') ||
 			  (req.params["shpConvert"] == 'getShpConvertStatus') ||
 			  (req.params["shpConvert"] == 'getShpConvertTopoJSON') ||
 			  (req.params["shpConvert"] == 'shpConvertGetConfig.xml') ||
-			  (req.params["shpConvert"] == 'shpConvertGetResults.zip') /* ||
-			  (req.url == '/simplifyGeoJSON') ||
-			  (req.url == '/geoJSONtoWKT') ||
-			  (req.url == '/createHierarchy') ||
-			  (req.url == '/createCentroids') ||
-			  (req.url == '/createMaptiles') ||
-			  (req.url == '/getGeospatialData') ||
-			  (req.url == '/getNumShapefilesInSet') ||
-			  (req.url == '/getMapTile') */ )) {
+			  (req.params["shpConvert"] == 'shpConvertGetResults.zip') ||
+			  (req.params["shpConvert"] == 'getGeographies') ||
+			  (req.params["shpConvert"] == 'getMapTile') /* ||
+			  (req.params["shpConvert"] == '/simplifyGeoJSON') ||
+			  (req.params["shpConvert"] == '/geoJSONtoWKT') ||
+			  (req.params["shpConvert"] == '/createHierarchy') ||
+			  (req.params["shpConvert"] == '/createCentroids') ||
+			  (req.params["shpConvert"] == '/createMaptiles') ||
+			  (req.params["shpConvert"]["shpConvert"] == '/getGeospatialData') ||
+			  (req.params["shpConvert"] == '/getNumShapefilesInSet') */ )) {
 			var msg="ERROR! " + req.url + " service invalid; please see: " + 
 				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help"; 
 			response.fields=req.query;
@@ -1265,6 +1267,30 @@ exports.convert = function exportsConvert(req, res) {
 	
 			nodeGeoSpatialServicesCommon.shpConvertGetResults(response, req, res, serverLog, httpErrorResponse);				
 		} // End of get method: shpConvertGetResults.zip		
+		else if (req.method == 'GET' && (req.params["shpConvert"] == 'getGeographies')) { // Get method: getGeographies		
+
+			scopeChecker(__file, __line, {
+				serverLog: serverLog,
+				httpErrorResponse: httpErrorResponse,
+				response: response,
+				req: req,
+				res: res
+			});
+	
+			tileViewer.getGeographies(response, req, res, serverLog, httpErrorResponse);				
+		} // End of get method: getGeographies
+		else if (req.method == 'GET' && (req.params["shpConvert"] == 'getMapTile')) { // Get method: getMapTile		
+
+			scopeChecker(__file, __line, {
+				serverLog: serverLog,
+				httpErrorResponse: httpErrorResponse,
+				response: response,
+				req: req,
+				res: res
+			});
+	
+			tileViewer.getMapTile(response, req, res, serverLog, httpErrorResponse);				
+		} // End of get method: getMapTile		
 		else {								// All other methods are errors
 			var msg="ERROR! "+ req.method + " Requests not allowed; please see: " + 
 				"https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/readme.md Node Web Services API for RIF 4.0 documentation for help";

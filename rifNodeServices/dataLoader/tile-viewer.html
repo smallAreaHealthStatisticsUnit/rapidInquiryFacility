@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="jquery-2.2.3.js"></script> 
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+    <script src="leaflet/leaflet.js"></script>
+    <script src="topojson.min.js"></script>
+    <link rel="stylesheet" href="leaflet.zoomdisplay.css" />
+    <script src="leaflet.zoomdisplay.js"></script>
+    <script src="jquery.form.js"></script> 
+<!--    <script src="angular.min.js"></script> -->
+    <script src="async.js"></script> 
+	<link rel="stylesheet" href="tile-viewer.css" />
+    <script src="Control.FullScreen.js"></script>
+	<link rel="stylesheet" href="Control.FullScreen.css" />
+	<script src="Control.Loading.js"></script>
+	<link rel="stylesheet" href="Control.Loading.css" />
+	<script type="text/javascript" src="sizeof.js"></script>
+	<script type="text/javascript" src="jszip.js"></script>
+    <link href="jquery-ui-1.11.4.custom/jquery-ui.css" rel="stylesheet"/>
+    <script src="jquery-ui-1.11.4.custom/jquery-ui.js"></script>
+    <script src="xml2json.js"></script>
+    <script src="tile-viewer.js"></script>
+    <script src="tile-common.js"></script>
+    <script src="TileLayer.GeoJSON.js"></script>
+    <script> 
+
+// Extend Leaflet to use topoJSON
+leafletEnabletopoJson();
+	
+// wait for the DOM to be loaded 
+// prepare the JQuery form when the DOM is ready 
+$(document).ready(function documentReady() { 
+	if (isIE()) {				
+		$.ajaxSetup({
+			// Disable caching of AJAX responses
+			cache: false
+		});
+	}
+	
+	setupTileViewer();
+	
+	addSelector("#databaseSelect", databaseSelectChange, $( "#databaseSelect" ).html(), 
+		undefined /* Use checked */);
+
+	$('input').addClass("ui-corner-all");					// Nice round corners everywhere
+					
+	$(document).tooltip(									// Enable tooltips
+		{
+			position: { 					
+				my: "right bottom+50"
+			},
+			tooltipClass: "entry-tooltip-positioner"
+		}
+	);	
+	
+});
+
+    </script>
+<title>Tile Viewer</title>
+</head>
+  <body id="tileviewerbody">
+    <div id="tileviewer">
+      <form id="dbSelect">
+	    <fieldset>
+          <div id="dbSelector" class="ui-tabs ui-widget ui-widget-content ui-corner-all">	
+  	        <label id="databaseLabel" title="Choose database type to connect to" for="databaseType">Database:
+		      <select required id="databaseSelect" name="databaseType" form="dbSelect">
+			     <option value="MSSQLServer" selected="selected">MS SQL Server</option>
+			     <option value="PostGres">Postgres</option>
+		  	  </select> 		
+		    </label>  
+			<label id="geographyLabel"  title="Choose geography to display" for="geographySelect">Geography:
+              <select required id="geographySelect" name="database" form="dbSelect">
+		  	  </select> 		
+		    </label> 
+			<label id="geolevelLabel"  title="Choose geolevel to display" for="geolevelSelect">Geolevel:
+              <select required id="geolevelSelect" name="database" form="dbSelect">
+		  	  </select> 		
+		    </label> 
+   	      </div>
+	    </fieldset>	
+      </form>  
+   	</div>
+	<div id="mapcontainer">
+	  <div id="map">
+      </div>
+    </div>	
+    <div id="error"> <!-- Error popup -->
+    </div>
+  </body>
+</html>

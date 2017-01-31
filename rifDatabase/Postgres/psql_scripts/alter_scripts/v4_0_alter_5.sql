@@ -51,6 +51,10 @@
 --
 -- Peter Hambly, SAHSU
 --
+-- e.g.
+--
+-- psql -U rif40 -d sahsuland_dev -w -e -P pager=off -v testuser=peter -v verbosity= -v debug_level=1 -v use_plr= -v pghost=localhost -v echo=all -f alter_scripts/v4_0_alter_5.sql
+--
 \set ECHO all
 \set ON_ERROR_STOP ON
 \timing
@@ -122,7 +126,7 @@ $$;
 -- Add zoomlevel support etc
 --
 \i ../PLpgsql/v4_0_rif40_geo_pkg.sql
-\i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
+--\i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
 \i ../PLpgsql/v4_0_rif40_xml_pkg.sql
 \i ../PLpgsql/v4_0_rif40_sql_pkg_ddl_checks.sql
 \i ../PLpgsql/rif40_sql_pkg/rif40_ddl.sql
@@ -197,7 +201,8 @@ CREATE OR REPLACE VIEW rif40_geolevels AS
     a.listing,
     a.restricted,
     a.centroidxcoordinate_column,
-    a.centroidycoordinate_column
+    a.centroidycoordinate_column,
+	a.areaid_count
    FROM t_rif40_geolevels a
   WHERE sys_context('SAHSU_CONTEXT'::character varying, 'RIF_STUDENT'::character varying)::text = 'YES'::text AND a.restricted <> 1
 UNION
@@ -225,7 +230,8 @@ UNION
     a.listing,
     a.restricted,
     a.centroidxcoordinate_column,
-    a.centroidycoordinate_column
+    a.centroidycoordinate_column,
+	a.areaid_count
    FROM t_rif40_geolevels a
   WHERE sys_context('SAHSU_CONTEXT'::character varying, 'RIF_STUDENT'::character varying) IS NULL OR sys_context('SAHSU_CONTEXT'::character varying, 'RIF_STUDENT'::character varying)::text = 'NO'::text
   ORDER BY 1, 3 DESC;
@@ -262,10 +268,63 @@ COMMENT ON COLUMN rif40_geolevels.listing IS 'Able to be used in a disease map l
 COMMENT ON COLUMN rif40_geolevels.restricted IS 'Is geolevel access rectricted by Inforamtion Governance restrictions (0/1). If 1 (Yes) then a) students cannot access this geolevel and b) if the system parameter ExtractControl=1 then the user must be granted permission by a RIF_MANAGER to extract from the database the results, data extract and maps tables. This is enforced by the RIF application.';
 COMMENT ON COLUMN rif40_geolevels.centroidxcoordinate_column IS 'Lookup table centroid X co-ordinate column name. Can also use CENTROIDSFILE instead.';
 COMMENT ON COLUMN rif40_geolevels.centroidycoordinate_column IS 'Lookup table centroid Y co-ordinate column name.';
+COMMENT ON COLUMN rif40_geolevels.areaid_count IS 'Area ID count'; /* New for tileMaker */
 
 --SELECT * FROM rif40_columns WHERE column_name_hide = 'ST_SIMPLIFY_TOLERANCE';
 DELETE FROM rif40_columns WHERE column_name_hide = 'ST_SIMPLIFY_TOLERANCE';
 
+DELETE FROM rif40_columns
+ WHERE column_name_hide IN ('AREAID_COUNT')
+   AND table_or_view_name_hide IN ('RIF40_GEOLEVELS', 'T_RIF40_GEOLEVELS'); 
+DELETE FROM rif40_columns 
+ WHERE column_name_hide IN ('MAXZOOMLEVEL', 'MINZOOMLEVEL', 'GEOMETRYTABLE', 'HIERARCHYTABLE') 
+   AND table_or_view_name_hide IN ('RIF40_GEOGRAPHIES'); 
+
+INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   		 
+SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
+      CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
+       col_description(b.oid, d.attnum) AS comments
+  FROM pg_class b, pg_attribute d, pg_type t
+ WHERE b.relname::regclass = d.attrelid
+   AND d.atttypid = t.oid
+   AND b.relname IN ('rif40_geolevels')
+   AND b.relkind = 'v'
+   AND col_description(b.oid, d.attnum) IS NOT NULL
+   AND d.attname NOT IN (
+		SELECT LOWER(column_name_hide) AS column_name
+ 		  FROM rif40_columns
+		 WHERE table_or_view_name_hide IN ('RIF40_GEOLEVELS')); 
+		 
+INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   		 
+SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
+      CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
+       col_description(b.oid, d.attnum) AS comments
+  FROM pg_class b, pg_attribute d, pg_type t
+ WHERE b.relname::regclass = d.attrelid
+   AND d.atttypid = t.oid
+   AND b.relname IN ('t_rif40_geolevels')
+   AND b.relkind = 'r'
+   AND col_description(b.oid, d.attnum) IS NOT NULL
+   AND d.attname NOT IN (
+		SELECT LOWER(column_name_hide) AS column_name
+ 		  FROM rif40_columns
+		 WHERE table_or_view_name_hide IN ('T_RIF40_GEOLEVELS')); 
+		 
+INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   		 
+SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
+      CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
+       col_description(b.oid, d.attnum) AS comments
+  FROM pg_class b, pg_attribute d, pg_type t
+ WHERE b.relname::regclass = d.attrelid
+   AND d.atttypid = t.oid
+   AND b.relname IN ('rif40_geographies')
+   AND b.relkind = 'r'
+   AND col_description(b.oid, d.attnum) IS NOT NULL
+   AND d.attname NOT IN (
+		SELECT LOWER(column_name_hide) AS column_name
+ 		  FROM rif40_columns
+		 WHERE table_or_view_name_hide IN ('RIF40_GEOGRAPHIES')); 
+		 
 WITH b AS (
 	SELECT geography, srid, rif40_geo_pkg.rif40_zoom_levels(	
 			ST_Y( 														/* Get latitude */
@@ -317,64 +376,49 @@ psql:alter_scripts/v4_0_alter_5.sql:134: INFO:  [DEBUG1] rif40_zoom_levels(): [6
 --
 -- Projection was wrong, is now correct; i.e. SAHSULAND is 3,286 square km is size...
 --
-SELECT a.geolevel_name, 
-/*	   ST_Distance_Spheroid(
-			ST_GeomFromEWKT('SRID=27700;POINT(0 0)'), 
-			ST_GeomFromEWKT('SRID=27700;POINT('||b.st_simplify_tolerance||' 0)'),
-			'SPHEROID["Airy 1830",6377563.396,299.3249646]') st_simplify_tolerance_in_m, WRONG - IN DEGREES */
-       COUNT(a.area_id) AS t_areas, 
-       SUM(ST_NPoints(a.shapefile_geometry)) AS t_points, 
-	   ROUND((SUM(ST_Area(a.shapefile_geometry)))::NUMERIC, 1) AS t_area, 
-	   ROUND((SUM(ST_perimeter(a.shapefile_geometry)))::NUMERIC, 1) AS t_perimeter,
-	   ROUND((SUM(ST_Area(a.shapefile_geometry))/10000001)::NUMERIC, 1) AS t_area_km2, 
-	   ROUND((SUM(ST_perimeter(a.shapefile_geometry))/1000)::NUMERIC, 1) AS t_perimeter_km
-  FROM t_rif40_sahsu_geometry a, rif40_geolevels b
- WHERE a.geolevel_name = b.geolevel_name
- GROUP BY b.geolevel_id, a.geolevel_name
- ORDER BY b.geolevel_id;
+SELECT b.geolevel_id, b.geolevel_name, a.zoomlevel,
+       COUNT(a.areaid) AS t_areas, 
+       SUM(ST_NPoints(a.geom)) AS t_points, 
+	   ROUND((SUM(ST_Area(ST_Transform(a.geom, 27700))))::NUMERIC, 1) AS t_area, /* Transform 4326 => 27700 so in metres */
+	   ROUND((SUM(ST_perimeter(ST_Transform(a.geom, 27700))))::NUMERIC, 1) AS t_perimeter,
+	   ROUND((SUM(ST_Area(ST_Transform(a.geom, 27700)))/10000001)::NUMERIC, 1) AS t_area_km2, 
+	   ROUND((SUM(ST_perimeter(ST_Transform(a.geom, 27700)))/1000)::NUMERIC, 1) AS t_perimeter_km
+  FROM geometry_sahsuland a, rif40_geolevels b
+ WHERE a.geolevel_id = b.geolevel_id
+   AND b.geography = 'SAHSULAND'
+ GROUP BY b.geolevel_id, b.geolevel_name, a.zoomlevel
+ ORDER BY b.geolevel_id, a.zoomlevel;
+ 
 /*
- geolevel_name | st_simplify_tolerance | st_simplify_tolerance_in_m | t_areas | t_points |    t_area     | t_perimeter | t_area_km2 | t_perimeter_km
----------------+-----------------------+----------------------------+---------+----------+---------------+-------------+------------+----------------
- LEVEL1        |                   500 |           15583327.1301406 |       1 |    12344 | 32857211853.1 |   1677331.4 |     3285.7 |         1677.3
- LEVEL2        |                   100 |           11130947.9501005 |      17 |    41566 | 32857211853.0 |   4774429.0 |     3285.7 |         4774.4
- LEVEL3        |                    50 |           5565473.97505023 |     200 |    85247 | 32857211852.8 |   9651243.6 |     3285.7 |         9651.2
- LEVEL4        |                    10 |           1113094.79501005 |    1230 |   135813 | 32857211853.1 |  15287760.5 |     3285.7 |        15287.8
-(4 rows)
+ geolevel_id |  geolevel_name   | zoomlevel | t_areas | t_points |    t_area     | t_perimeter | t_area_km2 | t_perimeter_km
+-------------+------------------+-----------+---------+----------+---------------+-------------+------------+----------------
+           1 | SAHSU_GRD_LEVEL1 |         6 |       1 |     2931 | 32857231766.8 |   1645397.9 |     3285.7 |         1645.4
+           1 | SAHSU_GRD_LEVEL1 |         7 |       1 |     3907 | 32857285476.1 |   1658366.5 |     3285.7 |         1658.4
+           1 | SAHSU_GRD_LEVEL1 |         8 |       1 |     5209 | 32857256959.2 |   1666751.1 |     3285.7 |         1666.8
+           1 | SAHSU_GRD_LEVEL1 |         9 |       1 |     6945 | 32857269513.8 |   1672475.1 |     3285.7 |         1672.5
+           1 | SAHSU_GRD_LEVEL1 |        10 |       1 |     9259 | 32857221701.0 |   1676206.0 |     3285.7 |         1676.2
+           1 | SAHSU_GRD_LEVEL1 |        11 |       1 |    12344 | 32857217943.8 |   1677334.0 |     3285.7 |         1677.3
+           2 | SAHSU_GRD_LEVEL2 |         6 |      17 |     9548 | 32857288251.2 |   4703034.2 |     3285.7 |         4703.0
+           2 | SAHSU_GRD_LEVEL2 |         7 |      17 |    12777 | 32857343159.3 |   4731288.1 |     3285.7 |         4731.3
+           2 | SAHSU_GRD_LEVEL2 |         8 |      17 |    17097 | 32857286912.3 |   4750950.5 |     3285.7 |         4751.0
+           2 | SAHSU_GRD_LEVEL2 |         9 |      17 |    22832 | 32857235257.6 |   4764624.7 |     3285.7 |         4764.6
+           2 | SAHSU_GRD_LEVEL2 |        10 |      17 |    30640 | 32857214725.2 |   4772586.6 |     3285.7 |         4772.6
+           2 | SAHSU_GRD_LEVEL2 |        11 |      17 |    41566 | 32857217966.5 |   4774439.2 |     3285.7 |         4774.4
+           3 | SAHSU_GRD_LEVEL3 |         6 |     200 |    19222 | 32857283587.4 |   9516423.6 |     3285.7 |         9516.4
+           3 | SAHSU_GRD_LEVEL3 |         7 |     200 |    25924 | 32857370298.1 |   9573614.2 |     3285.7 |         9573.6
+           3 | SAHSU_GRD_LEVEL3 |         8 |     200 |    34866 | 32857251293.8 |   9611402.8 |     3285.7 |         9611.4
+           3 | SAHSU_GRD_LEVEL3 |         9 |     200 |    46753 | 32857222245.8 |   9635716.6 |     3285.7 |         9635.7
+           3 | SAHSU_GRD_LEVEL3 |        10 |     200 |    62731 | 32857218639.5 |   9649455.1 |     3285.7 |         9649.5
+           3 | SAHSU_GRD_LEVEL3 |        11 |     200 |    85247 | 32857217913.8 |   9651264.4 |     3285.7 |         9651.3
+           4 | SAHSU_GRD_LEVEL4 |         6 |    1230 |    28280 | 32857401524.9 |  15054114.9 |     3285.7 |        15054.1
+           4 | SAHSU_GRD_LEVEL4 |         7 |    1230 |    39188 | 32857279136.4 |  15167444.5 |     3285.7 |        15167.4
+           4 | SAHSU_GRD_LEVEL4 |         8 |    1230 |    53807 | 32857284741.1 |  15230184.0 |     3285.7 |        15230.2
+           4 | SAHSU_GRD_LEVEL4 |         9 |    1230 |    73244 | 32857222648.6 |  15266530.5 |     3285.7 |        15266.5
+           4 | SAHSU_GRD_LEVEL4 |        10 |    1230 |    99280 | 32857216238.4 |  15286010.4 |     3285.7 |        15286.0
+           4 | SAHSU_GRD_LEVEL4 |        11 |    1230 |   135809 | 32857217943.8 |  15287777.0 |     3285.7 |        15287.8
+(24 rows)
  */
 
- /*
- "PROJCS["OSGB 1936 / British National Grid",
-	GEOGCS["OSGB 1936",
-		DATUM["OSGB_1936",
-			SPHEROID["Airy 1830",6377563.396,299.3249646,AUTHORITY["EPSG","7001"]],
-			TOWGS84[446.448,-125.157,542.06,0.15,0.247,0.842,-20.489],AUTHORITY["EPSG","6277"]
-			],
-		PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],
-		UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],
-		AUTHORITY["EPSG","4277"]
-		],
-	UNIT["metre",1,AUTHORITY["EPSG","9001"]],
-	PROJECTION["Transverse_Mercator"],
-		PARAMETER["latitude_of_origin",49],
-		PARAMETER["central_meridian",-2],
-		PARAMETER["scale_factor",0.9996012717],
-		PARAMETER["false_easting",400000],
-		PARAMETER["false_northing",-100000],
-		AUTHORITY["EPSG","27700"],
-		AXIS["Easting",EAST],
-		AXIS["Northing",NORTH]
-	]"
-	
-GEOGCS["WGS 84",
-	DATUM["WGS_1984",
-		SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],
-		AUTHORITY["EPSG","6326"]],
-	PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],
-	UNIT["degree",0.0174532925199433,
-	AUTHORITY["EPSG","9122"]],
-AUTHORITY["EPSG","4326"]]
- */
- 
 WITH a AS (
 	SELECT srid, 
 	       substring(srtext, position('SPHEROID[' in srtext)) AS l_spheroid
@@ -444,7 +488,7 @@ SELECT rif40_geo_pkg.y_osm_tile2_tms_tile(rif40_geo_pkg.latitude2tile(52.5153851
 
 WITH a AS (
 	SELECT *
-          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSULAND', 'SAHSU_GRD_LEVEL2', '01.004')
 ), b AS (
 	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
 	  FROM a
@@ -473,18 +517,17 @@ SELECT * FROM e;
          11 | -6.5067982673645 | 54.8289222717285 | -6.48998333253028 | 54.66796875 | -6.66460756202846 | 54.84375 |   1061 |   1335
 		
  */
-	
 --
 -- rif40_GetMapAreas interface
 --
 \pset title 'rif40_GetMapAreas interface'
 WITH a AS (
 	SELECT *
-          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSULAND', 'SAHSU_GRD_LEVEL2', '01.004')
 ) 
 SELECT rif40_xml_pkg.rif40_GetMapAreas(
-			'SAHSU' 	/* Geography */, 
-			'LEVEL4' 	/* geolevel view */, 
+			'SAHSULAND' /* Geography */, 
+			'SAHSU_GRD_LEVEL4' 	/* geolevel view */, 
 			a.y_max, a.x_max, a.y_min, a.x_min /* Bounding box - from cte */) AS json 
   FROM a LIMIT 4;
   
@@ -512,211 +555,270 @@ CREATE TYPE rif40_goejson_type AS (
 	population_year				INTEGER,
 	gid							INTEGER);
 COMMENT ON TYPE rif40_goejson_type IS 'Special type to allow ROW() elements to be named; for ROW_TO_JSON()';
-	
-DO LANGUAGE plpgsql $$
-DECLARE
-	c1alter5 CURSOR FOR
-		SELECT column_name 
-		  FROM information_schema.columns 
-		 WHERE table_name = 't_rif40_sahsu_geometry' AND column_name = 'optimised_geojson_3' AND table_schema = 'rif_data';
-	c1_rec RECORD;
---
-	rif40_geo_pkg_functions 	VARCHAR[] := ARRAY['lf_check_rif40_hierarchy_lookup_tables', 
-							'populate_rif40_geometry_tables', 
-							'populate_hierarchy_table', 
-							'create_rif40_geolevels_geometry_tables',
-							'add_population_to_rif40_geolevels_geometry',
-							'fix_null_geolevel_names',
-							'rif40_ddl',
-							'simplify_geometry',
-							'populate_rif40_tiles'];
-	l_function 			VARCHAR;
-	i				INTEGER:=0;
---
-	stp TIMESTAMP WITH TIME ZONE;
-	etp TIMESTAMP WITH TIME ZONE;
-	took INTERVAL;
-BEGIN
---
-	stp:=clock_timestamp();
---
--- Call init function is case called from main build scripts
---
-	PERFORM rif40_sql_pkg.rif40_startup();
---
--- Turn on some debug
---
-    PERFORM rif40_log_pkg.rif40_log_setup();
-    PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
---
--- Enabled debug on select rif40_sm_pkg functions
---
-	SET rif40.debug = '';
-	FOREACH l_function IN ARRAY rif40_geo_pkg_functions LOOP
-		RAISE INFO 'v4_0_alter_5.sql: Enable debug for function: %', l_function;
-		PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG1');
-
-	END LOOP;
---
--- Check if run already
---
-	OPEN c1alter5;
-	FETCH c1alter5 INTO c1_rec;
-	CLOSE c1alter5;
---	IF c1_rec.column_name = 'optimised_geojson_3' THEN
---		RAISE INFO 'v4_0_alter_5.sql: Column: t_rif40_sahsu_geometry.optimised_geojson_3 exists; no need to rebuild geometry tables';
---	ELSE
---
--- Drop old geometry tables
---
-		PERFORM rif40_geo_pkg.drop_rif40_geolevels_geometry_tables('SAHSU');
-		PERFORM rif40_geo_pkg.drop_rif40_geolevels_lookup_tables('SAHSU');
-		DROP TABLE IF EXISTS sahsuland_geography_orig;
---
--- These are the new T_RIF40_<GEOGRAPHY>_GEOMETRY tables and
--- new p_rif40_geolevels_geometry_<GEOGRAPHY>_<GEOELVELS> partitioned tables
---
-		PERFORM rif40_geo_pkg.create_rif40_geolevels_geometry_tables('SAHSU');
---	RAISE EXCEPTION 'v4_0_alter_5.sql: Stop!!!';
---
--- Create and populate rif40_geolevels lookup and create hierarchy tables 
---
-		PERFORM rif40_geo_pkg.create_rif40_geolevels_lookup_tables('SAHSU');
---
--- Populate geometry tables
---
-		PERFORM rif40_geo_pkg.populate_rif40_geometry_tables('SAHSU');
---
--- Simplify geometry
---
--- Must be done before to avoid invalid geometry errors in intersection code:
---
--- psql:rif40_geolevels_ew01_geometry.sql:174: ERROR:  Error performing intersection: TopologyException: found non-noded intersection between LINESTRING (-2.9938 53.3669, -2.98342 53.367) and LINESTRING (-2.98556 53.367, -2.98556 53.367) at -2.9855578257498334 53.366966593247653
---
-		PERFORM rif40_geo_pkg.simplify_geometry('SAHSU', 10 /* l_min_point_resolution [1] */);
---
--- Populate hierarchy tables
---
--- The following SQL snippet from rif40_geo_pkg.populate_hierarchy_table() 
--- causes ERROR:  invalid join selectivity: 1.000000 in PostGIS 2.1.1 (fixed in 2.2.1/2.1.2 - to be release May 3rd 2014)
---
--- See: http://trac.osgeo.org/postgis/ticket/2543
---
--- SELECT a2.area_id AS level2, a3.area_id AS level3,
---       ST_Area(a3.optimised_geometry) AS a3_area,
---       ST_Area(ST_Intersection(a2.optimised_geometry, a3.optimised_geometry)) AS a23_area
---  FROM p_rif40_geolevels_geometry_sahsu_level3 a3, p_rif40_geolevels_geometry_sahsu_level2 a2  
--- WHERE ST_Intersects(a2.optimised_geometry, a3.optimised_geometry);
---
-		PERFORM rif40_geo_pkg.populate_hierarchy_table('SAHSU'); 
---
--- Add denominator population table to geography geolevel geomtry data
---
---		PERFORM rif40_geo_pkg.add_population_to_rif40_geolevels_geometry('SAHSU', 'SAHSULAND_POP'); 
---
--- Fix NULL geolevel names in geography geolevel geometry and lookup table data 
---
-		PERFORM rif40_geo_pkg.fix_null_geolevel_names('SAHSU'); 
---
--- Make level1 names consistent
---
-		UPDATE sahsuland_level1 a 
-		SET name = (
-			SELECT name 
-			  FROM t_rif40_sahsu_geometry b
- 			 WHERE b.geolevel_name = 'LEVEL1'
-		       AND b.area_id = a.level1);
---
--- Add: gid_rowindex (i.e 1_1). Where gid corresponds to gid in geometry table
--- row_index is an incremental serial aggregated by gid ( starts from one for each gid)
---
-		PERFORM rif40_geo_pkg.gid_rowindex_fix('SAHSU');
---	END IF;
---
--- Populate Map tiles
---
-	PERFORM rif40_geo_pkg.populate_rif40_tiles('SAHSU'); 
---
-	etp:=clock_timestamp();
-	took:=age(etp, stp);
-	RAISE INFO 'v4_0_alter_5.sql: Processed SAHSU geography: %s', took;
---
-END;
-$$;
-  
-WITH b AS (
-			SELECT geography, srid, rif40_geo_pkg.rif40_zoom_levels(	
-				ST_Y( 														/* Get latitude */
-					ST_transform( 											/* Transform to 4326 */
-						ST_GeomFromEWKT('SRID='||a.srid||';POINT(0 0)') 	/* Grid Origin */, 
-						4326)
-					)::NUMERIC) AS zl
-			  FROM rif40_geographies a		  
-		), c6 AS (
-		SELECT geography, (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_6
-		  FROM b
-		 WHERE (zl).zoom_level = 6 /* RIF zoomlevels */
-		), c8 AS (
-		SELECT geography, (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_8
-		  FROM b
-		 WHERE (zl).zoom_level = 8 /* RIF zoomlevels */
-		), c11 AS (
-		SELECT geography, (zl).simplify_tolerance AS st_simplify_tolerance_zoomlevel_11
-		  FROM b
-		 WHERE (zl).zoom_level = 11 /* RIF zoomlevels */
-		)
-		SELECT c6.geography, c6.st_simplify_tolerance_zoomlevel_6,
-		       c8.st_simplify_tolerance_zoomlevel_8,
-			   c11.st_simplify_tolerance_zoomlevel_11
-		  FROM c6, c8, c11
-		 WHERE c6.geography = c8.geography
-		   AND c6.geography = c11.geography;  
 
 /*
- geography | st_simplify_tolerance_zoomlevel_6 | st_simplify_tolerance_zoomlevel_8 | st_simplify_tolerance_zoomlevel_11
------------+-----------------------------------+-----------------------------------+------------------------------------
- SAHSU     |                             0.022 |                            0.0055 |                            0.00069
- EW01      |                             0.022 |                            0.0055 |                            0.00069
- UK91      |                             0.022 |                            0.0055 |                            0.00069
-(3 rows)
-
- */
- 
---\i ../psql_scripts/test_scripts/test_1_sahsuland_geography.sql
-/*  
-DO LANGUAGE plpgsql $$
-BEGIN
-	RAISE INFO 'v4_0_alter_5.sql: Aborting (script being tested)';
-	RAISE EXCEPTION 'v4_0_alter_5.sql: C20999: Abort';
-END;
-$$;
- */
- \dS+ rif40_sahsu_maptiles
+ geolevel_name | geography | zoomlevel | x_tile_number | y_tile_number |             optimised_topojson              |         tile_
+id
+---------------+-----------+-----------+---------------+---------------+---------------------------------------------+--------------
+------------
+ LEVEL1        | SAHSU     |         9 |           264 |           330 | {"type": "FeatureCollection","features":[]} | SAHSU_1_LEVEL
+1_9_264_330
+ LEVEL1        | SAHSU     |         9 |           265 |           330 | {"type": "FeatureCollection","features":[]} | SAHSU_1_LEVEL
+1_9_265_330
+(2 rows)
+ */	
 --
 -- Test performance (FAST .. 31.834 ms)
 --
 \timing on
-SELECT geolevel_name, geography, zoomlevel, x_tile_number, y_tile_number, optimised_topojson, tile_id
+
+/* OLD tile table: no null tiles
+SELECT optimised_topojson::Text
+  FROM t_rif40_sahsu_maptiles 
+ WHERE geolevel_name = 'LEVEL2'
+   AND LENGTH(optimised_topojson::Text) < 100 LiMIT 10;
+ optimised_topojson
+--------------------
+(0 rows)
+  
+SELECT geolevel_name, geography, zoomlevel, 
+       MIN(x_tile_number) AS min_x, MAX(x_tile_number) AS max_x, MIN(y_tile_number) AS min_y, MAX(y_tile_number) AS max_y,
+	   COUNT(tiles) AS tiles
+  FROM t_rif40_sahsu_maptiles 
+ WHERE geolevel_name = 'LEVEL2'
+ GROUP BY geolevel_name, geography, zoomlevel
+ ORDER BY geolevel_name, geography, zoomlevel;
+
+ geolevel_name | geography | zoomlevel | min_x | max_x | min_y | max_y | tiles
+---------------+-----------+-----------+-------+-------+-------+-------+-------
+ LEVEL2        | SAHSU     |         0 |     0 |     0 |     0 |     0 |     1
+ LEVEL2        | SAHSU     |         1 |     0 |     0 |     0 |     0 |     1
+ LEVEL2        | SAHSU     |         2 |     1 |     1 |     1 |     1 |     1
+ LEVEL2        | SAHSU     |         3 |     3 |     3 |     2 |     2 |     1
+ LEVEL2        | SAHSU     |         4 |     7 |     7 |     5 |     5 |     1
+ LEVEL2        | SAHSU     |         5 |    15 |    15 |    10 |    10 |     1
+ LEVEL2        | SAHSU     |         6 |    30 |    31 |    20 |    20 |     2
+ LEVEL2        | SAHSU     |         7 |    61 |    62 |    40 |    41 |     4
+ LEVEL2        | SAHSU     |         8 |   122 |   124 |    80 |    83 |    11
+ LEVEL2        | SAHSU     |         9 |   245 |   249 |   160 |   167 |    33
+ LEVEL2        | SAHSU     |        10 |   490 |   498 |   321 |   335 |   110
+ LEVEL2        | SAHSU     |        11 |   980 |   996 |   642 |   670 |   378
+(12 rows)
+ */
+
+-- NEW Tile table. Note tiles present in higher zoomlevel but same tilees are missing from lower geolevels
+-- The view puts them back
+SELECT geolevel_id, zoomlevel, 
+       MIN(x) AS min_x, MAX(x) AS max_x, MIN(y) AS min_y, MAX(y) AS max_y,
+	   COUNT(tile_id) AS tiles
+  FROM t_tiles_sahsuland 
+ WHERE geolevel_id = 2
+ GROUP BY geolevel_id, zoomlevel
+ ORDER BY geolevel_id, zoomlevel;
+/*
+ geolevel_id | zoomlevel | min_x | max_x | min_y | max_y | tiles
+-------------+-----------+-------+-------+-------+-------+-------
+           2 |         0 |     0 |     0 |     0 |     0 |     1
+           2 |         1 |     0 |     0 |     0 |     0 |     1
+           2 |         2 |     1 |     1 |     1 |     1 |     1
+           2 |         3 |     3 |     3 |     2 |     2 |     1
+           2 |         4 |     7 |     7 |     5 |     5 |     1
+           2 |         5 |    15 |    15 |    10 |    10 |     1
+           2 |         6 |    30 |    31 |    20 |    20 |     2
+           2 |         7 |    61 |    62 |    40 |    41 |     4
+           2 |         8 |   122 |   124 |    80 |    83 |    11
+           2 |         9 |   245 |   249 |   160 |   167 |    29
+           2 |        10 |   490 |   498 |   321 |   335 |    92
+           2 |        11 |   980 |   996 |   642 |   670 |   235
+(12 rows)
+ */
+
+-- Adding back the view shows the numbers are the same (SLOW!)
+/*
+WITH a AS (
+	SELECT geolevel_id, zoomlevel, 
+		   MIN(x) AS min_x, MAX(x) AS max_x, MIN(y) AS min_y, MAX(y) AS max_y,
+		   COUNT(tile_id) AS tiles
+	  FROM t_tiles_sahsuland 
+	 WHERE geolevel_id = 2
+	 GROUP BY geolevel_id, zoomlevel
+)
+SELECT b.geolevel_name, b.zoomlevel, 
+       MIN(b.x) AS min_x, MAX(b.x) AS max_x, MIN(b.y) AS min_y, MAX(b.y) AS max_y,
+	   COUNT(tile_id) AS tiles,
+	   SUM(CASE WHEN b.optimised_topojson::Text = '{"type": "FeatureCollection","features":[]}' THEN 0 ELSE 1 END) AS not_null_tiles
+  FROM a, tiles_sahsuland b 
+ WHERE a.geolevel_id = b.geolevel_id
+   AND a.zoomlevel   = b.zoomlevel
+   AND b.x BETWEEN a.min_x AND a.max_x
+   AND b.y BETWEEN a.min_y AND a.max_y
+ GROUP BY b.geolevel_name, b.zoomlevel
+ ORDER BY b.geolevel_name, b.zoomlevel;
+
+  geolevel_name   | zoomlevel | min_x | max_x | min_y | max_y | tiles | not_null_tiles
+------------------+-----------+-------+-------+-------+-------+-------+----------------
+ SAHSU_GRD_LEVEL2 |         0 |     0 |     0 |     0 |     0 |     1 |              1
+ SAHSU_GRD_LEVEL2 |         1 |     0 |     0 |     0 |     0 |     1 |              1
+ SAHSU_GRD_LEVEL2 |         2 |     1 |     1 |     1 |     1 |     1 |              1
+ SAHSU_GRD_LEVEL2 |         3 |     3 |     3 |     2 |     2 |     1 |              1
+ SAHSU_GRD_LEVEL2 |         4 |     7 |     7 |     5 |     5 |     1 |              1
+ SAHSU_GRD_LEVEL2 |         5 |    15 |    15 |    10 |    10 |     1 |              1
+ SAHSU_GRD_LEVEL2 |         6 |    30 |    31 |    20 |    20 |     2 |              2
+ SAHSU_GRD_LEVEL2 |         7 |    61 |    62 |    40 |    41 |     4 |              4
+ SAHSU_GRD_LEVEL2 |         8 |   122 |   124 |    80 |    83 |    12 |             11
+ SAHSU_GRD_LEVEL2 |         9 |   245 |   249 |   160 |   167 |    40 |             29
+ SAHSU_GRD_LEVEL2 |        10 |   490 |   498 |   321 |   335 |   135 |             92
+ SAHSU_GRD_LEVEL2 |        11 |   980 |   996 |   642 |   670 |   493 |            235
+(12 rows)
+ */
+
+/*
+-- Extra
+WITH a AS (
+	SELECT geolevel_id, zoomlevel, 
+		   MIN(x) AS min_x, MAX(x) AS max_x, MIN(y) AS min_y, MAX(y) AS max_y,
+		   COUNT(tile_id) AS tiles
+	  FROM t_tiles_sahsuland 
+	 GROUP BY geolevel_id, zoomlevel
+), b AS (
+	SELECT b.geolevel_id, b.zoomlevel, b.x, b.y
+	  FROM a, tiles_sahsuland b 
+	 WHERE a.geolevel_id = b.geolevel_id
+	   AND a.zoomlevel   = b.zoomlevel
+	   AND b.x BETWEEN a.min_x AND a.max_x
+	   AND b.y BETWEEN a.min_y AND a.max_y
+	EXCEPT 
+	SELECT CASE 
+				WHEN geolevel_name = 'LEVEL1' THEN 1 
+				WHEN geolevel_name = 'LEVEL2' THEN 2 
+				WHEN geolevel_name = 'LEVEL3' THEN 3 
+				WHEN geolevel_name = 'LEVEL4' THEN 4 
+				ELSE NULL
+		   END AS geolevel_id, 
+	       zoomlevel, x_tile_number, y_tile_number
+	  FROM t_rif40_sahsu_maptiles   
+)
+SELECT b.*, 
+       SUBSTRING(c.optimised_topojson::Text FROM 1 FOR 50) AS optimised_topojson 
+  FROM b, tiles_sahsuland c 
+	 WHERE c.geolevel_id = b.geolevel_id
+	   AND c.zoomlevel   = b.zoomlevel
+	   AND c.x           = b.x
+	   AND c.y           = b.y
+       AND c.optimised_topojson::Text != '{"type": "FeatureCollection","features":[]}'
+ ORDER BY 1, 2, 3, 4;
+ geolevel_id | zoomlevel | x | y | optimised_topojson
+-------------+-----------+---+---+--------------------
+(0 rows)
+*/
+
+/*
+-- Missing (goelevel 1 only has 1 row in t_tiles_sahsuland)
+WITH a AS (
+	SELECT geolevel_id, zoomlevel, 
+		   MIN(x) AS min_x, MAX(x) AS max_x, MIN(y) AS min_y, MAX(y) AS max_y,
+		   COUNT(tile_id) AS tiles
+	  FROM t_tiles_sahsuland 
+	 WHERE geolevel_id > 1
+	 GROUP BY geolevel_id, zoomlevel
+	UNION
+	SELECT 1 geolevel_id, zoomlevel, -* geolevel_id 1 has only 1 tile; so use geolevel_id 2 *-
+		   MIN(x) AS min_x, MAX(x) AS max_x, MIN(y) AS min_y, MAX(y) AS max_y,
+		   COUNT(tile_id) AS tiles
+	  FROM t_tiles_sahsuland 
+	 WHERE geolevel_id = 2
+	 GROUP BY geolevel_id, zoomlevel	
+)
+SELECT CASE 
+			WHEN geolevel_name = 'LEVEL1' THEN 1 
+			WHEN geolevel_name = 'LEVEL2' THEN 2 
+			WHEN geolevel_name = 'LEVEL3' THEN 3 
+			WHEN geolevel_name = 'LEVEL4' THEN 4 
+			ELSE NULL
+	   END AS geolevel_id, 
+	   zoomlevel, x_tile_number, y_tile_number
+  FROM t_rif40_sahsu_maptiles 
+EXCEPT 
+SELECT b.geolevel_id, b.zoomlevel, b.x, b.y
+  FROM a, tiles_sahsuland b 
+ WHERE a.geolevel_id = b.geolevel_id
+   AND a.zoomlevel   = b.zoomlevel
+   AND b.x BETWEEN a.min_x AND a.max_x
+   AND b.y BETWEEN a.min_y AND a.max_y
+ ORDER BY 1, 2, 3, 4;
+ geolevel_id | zoomlevel | x_tile_number | y_tile_number
+-------------+-----------+---------------+---------------
+(0 rows)
+ */
+ /*
+SELECT z.geolevel_name, z.geolevel_id, z.zoomlevel, z.no_area_ids,
+	   MIN(z.x) AS min_x, MAX(z.x) AS max_x, MIN(z.y) AS min_y, MAX(z.y) AS max_y,
+	   COUNT(z.tile_id) AS tiles,
+	   SUM(CASE WHEN z.optimised_topojson::Text = '{"type": "FeatureCollection","features":[]}' THEN 1 ELSE 0 END) AS null_tiles
+  FROM tiles_sahsuland z
+ WHERE geolevel_id = 1
+ GROUP BY z.geolevel_name, z.geolevel_id, z.zoomlevel, z.no_area_ids
+ ORDER BY z.geolevel_name, z.geolevel_id, z.zoomlevel, z.no_area_ids;
+
+  geolevel_name   | geolevel_id | zoomlevel | no_area_ids | min_x | max_x | min_y | max_y |  tiles  | null_tiles
+------------------+-------------+-----------+-------------+-------+-------+-------+-------+---------+------------
+ SAHSU_GRD_LEVEL1 |           1 |         0 |           0 |     0 |     0 |     0 |     0 |       1 |          0
+ SAHSU_GRD_LEVEL1 |           1 |         1 |           0 |     0 |     1 |     0 |     1 |       4 |          0
+ SAHSU_GRD_LEVEL1 |           1 |         2 |           0 |     0 |     3 |     0 |     3 |      16 |          0
+ SAHSU_GRD_LEVEL1 |           1 |         3 |           0 |     0 |     7 |     0 |     7 |      64 |          0
+ SAHSU_GRD_LEVEL1 |           1 |         4 |           0 |     0 |    15 |     0 |    15 |     256 |          0
+ SAHSU_GRD_LEVEL1 |           1 |         5 |           0 |     0 |    31 |     0 |    31 |    1024 |          0
+ SAHSU_GRD_LEVEL1 |           1 |         6 |           0 |     0 |    63 |     0 |    63 |    4096 |          0
+ SAHSU_GRD_LEVEL1 |           1 |         7 |           0 |     0 |   127 |     0 |   127 |   16384 |          0
+ SAHSU_GRD_LEVEL1 |           1 |         8 |           0 |     0 |   255 |     0 |   255 |   65536 |          0
+ SAHSU_GRD_LEVEL1 |           1 |         9 |           0 |     0 |   511 |     0 |   511 |  262144 |          0
+ SAHSU_GRD_LEVEL1 |           1 |        10 |           0 |     0 |  1023 |     0 |  1023 | 1048576 |          0
+ SAHSU_GRD_LEVEL1 |           1 |        11 |           0 |     0 |  2047 |     0 |  2047 | 4194304 |          0
+(12 rows)
+*/
+
+/*
+SELECT geolevel_name, geography, zoomlevel, x_tile_number, y_tile_number, 
+       SUBSTRING(optimised_topojson::Text FROM 1 FOR 50) AS optimised_topojson, tile_id
   FROM rif40_sahsu_maptiles
- WHERE geolevel_name = 'LEVEL1'
+ WHERE geolevel_name = 'LEVEL4'
    AND zoomlevel     = 9
-   AND x_tile_number IN (264, 265)
-   AND y_tile_number = 330
+   AND x_tile_number IN (245, 247)
+   AND y_tile_number IN (160, 169)
  ORDER BY tile_id; 
-SELECT geolevel_name, geography, zoomlevel, x_tile_number, y_tile_number, optimised_topojson, tile_id
-  FROM rif40_sahsu_maptiles
- WHERE geolevel_name = 'LEVEL1'
-   AND zoomlevel     = 9
-   AND x_tile_number IN (264, 265)
-   AND y_tile_number = 330
+
+ geolevel_name | geography | zoomlevel | x_tile_number | y_tile_number |                 optimised_topojson                 |  tile_id
+---------------+-----------+-----------+---------------+---------------+----------------------------------------------------+--------------------------
+ LEVEL4        | SAHSU     |         9 |           245 |           160 | {"type": "FeatureCollection","features":[]}        | SAHSU_4_LEVEL4_9_245_160
+ LEVEL4        | SAHSU     |         9 |           245 |           169 | {"type": "FeatureCollection","features":[]}        | SAHSU_4_LEVEL4_9_245_169
+ LEVEL4        | SAHSU     |         9 |           247 |           160 | {"type":"Topology","objects":{"9_247_160":{"type": | SAHSU_4_LEVEL4_9_247_160
+ LEVEL4        | SAHSU     |         9 |           247 |           169 | {"type": "FeatureCollection","features":[]}        | SAHSU_4_LEVEL4_9_247_169
+(4 rows)
+ */
+/* EXPLAIN (ANALYZE, BUFFERS) */ SELECT geolevel_name, geography, zoomlevel, x, y, 
+       SUBSTRING(optimised_topojson::Text FROM 1 FOR 50) AS optimised_topojson, tile_id
+  FROM tiles_sahsuland
+ WHERE geolevel_id = 4
+   AND zoomlevel   = 9
+   AND x IN (245, 247)
+   AND y IN (160, 169)
  ORDER BY tile_id; 
+/*
+  geolevel_name   | geography | zoomlevel |  x  |  y  |                 optimised_topojson                 |           tile_id
+------------------+-----------+-----------+-----+-----+----------------------------------------------------+------------------------------
+ SAHSU_GRD_LEVEL4 | SAHSULAND |         9 | 245 | 160 | {"type": "FeatureCollection","features":[]}        | 4_SAHSU_GRD_LEVEL4_9_245_160
+ SAHSU_GRD_LEVEL4 | SAHSULAND |         9 | 245 | 169 | {"type": "FeatureCollection","features":[]}        | 4_SAHSU_GRD_LEVEL4_9_245_169
+ SAHSU_GRD_LEVEL4 | SAHSULAND |         9 | 247 | 160 | {"type":"Topology","objects":{"collection":{"type" | 4_SAHSU_GRD_LEVEL4_9_247_160
+ SAHSU_GRD_LEVEL4 | SAHSULAND |         9 | 247 | 169 | {"type": "FeatureCollection","features":[]}        | 4_SAHSU_GRD_LEVEL4_9_247_169
+(4 rows)
+ */
 
 --
 -- Test new rif40_get_geojson_tiles()
 -- 	
 WITH a AS (
 	SELECT *
-          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSULAND', 'SAHSU_GRD_LEVEL2', '01.004')
 ), b AS (
 	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
 	  FROM a
@@ -739,8 +841,8 @@ WITH a AS (
 ) 
 SELECT SUBSTRING(
 		rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			'SAHSULAND'::VARCHAR 	/* Geography */, 
+			'SAHSU_GRD_LEVEL4'::VARCHAR 	/* geolevel view */, 
 			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
 			e.zoom_level::INTEGER /* Zoom level */,
 			FALSE /* Check tile co-ordinates [Default: FALSE] */,			
@@ -836,52 +938,22 @@ Time: 31.834 ms
  LEVEL4        |        11 |                4194109 | 4194304
 (48 rows)
  */ 
-END;
-
---
--- Vacuum ANALYZE all RIF40 tables
---
-\i  ../psql_scripts/v4_0_vacuum_analyse.sql
-
-UPDATE t_rif40_sahsu_maptiles
-   SET optimised_topojson = '"X"'::JSON;
-   
---
--- Run geoJSON to topoJSON converter
---
-\! make -C ../Node topojson_convert
-
---
--- Check TopoJSON really has been converted
---
-DO LANGUAGE plpgsql $$
-DECLARE
-	c1 CURSOR FOR
-		SELECT COUNT(CASE WHEN optimised_topojson::Text = '"X"'::Text THEN tile_id ELSE NULL END) AS unconverted_tiles, 
-		       COUNT(tile_id) AS total_tiles
-		  FROM t_rif40_sahsu_maptiles;
-	c1_rec RECORD;
-BEGIN
-	OPEN c1;
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
---
-	IF c1_rec.total_tiles = 0 THEN
-		RAISE EXCEPTION 'v4_0_alter_5.sql: C20999: No tiles found';	
-	ELSIF c1_rec.unconverted_tiles > 0 THEN
-		RAISE EXCEPTION 'v4_0_alter_5.sql: C20999: %/% Unconverted optimised_topojson files found', c1_rec.unconverted_tiles, c1_rec.total_tiles;
-	ELSE
-		RAISE INFO 'v4_0_alter_5.sql: C20999: All % optimised_topojson files converted', c1_rec.total_tiles;
-	END IF;
-END;
-$$; 
+ 
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE INFO 'Aborting (script being tested)';
+--	RAISE EXCEPTION 'C20999: Abort';
+--END;
+--$$;
+ 
+-- END;
 
 --
 -- Test new rif40_get_geojson_tiles() produces topoJSON
 -- 	
 WITH a AS (
 	SELECT *
-          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSU', 'LEVEL2', '01.004')
+          FROM rif40_xml_pkg.rif40_getGeoLevelBoundsForArea('SAHSULAND', 'SAHSU_GRD_LEVEL2', '01.004')
 ), b AS (
 	SELECT ST_Centroid(ST_MakeEnvelope(a.x_min, a.y_min, a.x_max, a.y_max)) AS centroid
 	  FROM a
@@ -904,8 +976,8 @@ WITH a AS (
 ) 
 SELECT SUBSTRING(
 		rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			'SAHSULAND'::VARCHAR 	/* Geography */, 
+			'SAHSU_GRD_LEVEL4'::VARCHAR 	/* geolevel view */, 
 			e.y_max::REAL, e.x_max::REAL, e.y_min::REAL, e.x_min::REAL, /* Bounding box - from cte */
 			e.zoom_level::INTEGER /* Zoom level */,
 			FALSE /* Check tile co-ordinates [Default: FALSE] */,
@@ -917,74 +989,72 @@ SELECT SUBSTRING(
 -- New function
 -- 
 SELECT substring(rif40_xml_pkg.rif40_get_geojson_tiles(
-			'SAHSU'::VARCHAR 	/* Geography */, 
-			'LEVEL4'::VARCHAR 	/* geolevel view */, 
+			'SAHSULAND'::VARCHAR 	/* Geography */, 
+			'SAHSU_GRD_LEVEL4'::VARCHAR 	/* geolevel view */, 
 			11::INTEGER 		/* Zoom level */,
 			989::INTEGER 		/* X tile number */,
-			660::INTEGER		/* Y tile number */)::Text from 1 for 100) AS json;
+			660::INTEGER		/* Y tile number */)::Text from 1 for 100) AS json; 
 
-
-SELECT geolevel_name, zoomlevel, 
-       MIN(X_tile_number) AS min_x_tile, MAX(X_tile_number) AS max_x_tile,
-       MIN(Y_tile_number) AS min_y_tile, MAX(Y_tile_number) AS max_y_tile, 
-	   COUNT(zoomlevel) AS total, 
-	   (MAX(X_tile_number)-MIN(X_tile_number)+1)*(MAX(X_tile_number)-MIN(X_tile_number)+1) AS check
-  FROM t_rif40_sahsu_maptiles
-  GROUP BY geolevel_name, zoomlevel
+SELECT geolevel_id, zoomlevel, 
+       MIN(x) AS min_x_tile, MAX(x) AS max_x_tile,
+       MIN(y) AS min_y_tile, MAX(y) AS max_y_tile, 
+	   COUNT(zoomlevel) AS total
+  FROM t_tiles_sahsuland
+  GROUP BY geolevel_id, zoomlevel
   ORDER BY 1, 2;
 /*  
- geolevel_name | zoomlevel | min_x_tile | max_x_tile | min_y_tile | max_y_tile | total | check
----------------+-----------+------------+------------+------------+------------+-------+-------
- LEVEL1        |         0 |          0 |          0 |          0 |          0 |     1 |     1
- LEVEL1        |         1 |          0 |          0 |          0 |          0 |     1 |     1
- LEVEL1        |         2 |          1 |          1 |          1 |          1 |     1 |     1
- LEVEL1        |         3 |          3 |          3 |          2 |          2 |     1 |     1
- LEVEL1        |         4 |          7 |          7 |          5 |          5 |     1 |     1
- LEVEL1        |         5 |         15 |         15 |         10 |         10 |     1 |     1
- LEVEL1        |         6 |         30 |         31 |         20 |         20 |     2 |     4
- LEVEL1        |         7 |         61 |         62 |         40 |         41 |     4 |     4
- LEVEL1        |         8 |        122 |        124 |         80 |         83 |    12 |     9
- LEVEL1        |         9 |        245 |        249 |        160 |        167 |    40 |    25
- LEVEL1        |        10 |        490 |        498 |        321 |        335 |   135 |    81
- LEVEL1        |        11 |        980 |        996 |        642 |        670 |   493 |   289
- LEVEL2        |         0 |          0 |          0 |          0 |          0 |     1 |     1
- LEVEL2        |         1 |          0 |          0 |          0 |          0 |     1 |     1
- LEVEL2        |         2 |          1 |          1 |          1 |          1 |     1 |     1
- LEVEL2        |         3 |          3 |          3 |          2 |          2 |     1 |     1
- LEVEL2        |         4 |          7 |          7 |          5 |          5 |     1 |     1
- LEVEL2        |         5 |         15 |         15 |         10 |         10 |     1 |     1
- LEVEL2        |         6 |         30 |         31 |         20 |         20 |     2 |     4
- LEVEL2        |         7 |         61 |         62 |         40 |         41 |     4 |     4
- LEVEL2        |         8 |        122 |        124 |         80 |         83 |    11 |     9
- LEVEL2        |         9 |        245 |        249 |        160 |        167 |    33 |    25
- LEVEL2        |        10 |        490 |        498 |        321 |        335 |   110 |    81
- LEVEL2        |        11 |        980 |        996 |        642 |        670 |   378 |   289
- LEVEL3        |         0 |          0 |          0 |          0 |          0 |     1 |     1
- LEVEL3        |         1 |          0 |          0 |          0 |          0 |     1 |     1
- LEVEL3        |         2 |          1 |          1 |          1 |          1 |     1 |     1
- LEVEL3        |         3 |          3 |          3 |          2 |          2 |     1 |     1
- LEVEL3        |         4 |          7 |          7 |          5 |          5 |     1 |     1
- LEVEL3        |         5 |         15 |         15 |         10 |         10 |     1 |     1
- LEVEL3        |         6 |         30 |         31 |         20 |         20 |     2 |     4
- LEVEL3        |         7 |         61 |         62 |         40 |         41 |     4 |     4
- LEVEL3        |         8 |        122 |        124 |         80 |         83 |    11 |     9
- LEVEL3        |         9 |        245 |        249 |        160 |        167 |    31 |    25
- LEVEL3        |        10 |        490 |        498 |        321 |        335 |   103 |    81
- LEVEL3        |        11 |        980 |        996 |        642 |        670 |   353 |   289
- LEVEL4        |         0 |          0 |          0 |          0 |          0 |     1 |     1
- LEVEL4        |         1 |          0 |          0 |          0 |          0 |     1 |     1
- LEVEL4        |         2 |          1 |          1 |          1 |          1 |     1 |     1
- LEVEL4        |         3 |          3 |          3 |          2 |          2 |     1 |     1
- LEVEL4        |         4 |          7 |          7 |          5 |          5 |     1 |     1
- LEVEL4        |         5 |         15 |         15 |         10 |         10 |     1 |     1
- LEVEL4        |         6 |         30 |         31 |         20 |         20 |     2 |     4
- LEVEL4        |         7 |         61 |         62 |         40 |         41 |     4 |     4
- LEVEL4        |         8 |        122 |        124 |         80 |         83 |    11 |     9
- LEVEL4        |         9 |        245 |        249 |        160 |        167 |    31 |    25
- LEVEL4        |        10 |        490 |        498 |        321 |        335 |   103 |    81
- LEVEL4        |        11 |        980 |        996 |        642 |        670 |   353 |   289
-(48 rows)
+ geolevel_id | zoomlevel | min_x_tile | max_x_tile | min_y_tile | max_y_tile | total
+-------------+-----------+------------+------------+------------+------------+-------
+           1 |         0 |          0 |          0 |          0 |          0 |     1
+           2 |         0 |          0 |          0 |          0 |          0 |     1
+           2 |         1 |          0 |          0 |          0 |          0 |     1
+           2 |         2 |          1 |          1 |          1 |          1 |     1
+           2 |         3 |          3 |          3 |          2 |          2 |     1
+           2 |         4 |          7 |          7 |          5 |          5 |     1
+           2 |         5 |         15 |         15 |         10 |         10 |     1
+           2 |         6 |         30 |         31 |         20 |         20 |     2
+           2 |         7 |         61 |         62 |         40 |         41 |     4
+           2 |         8 |        122 |        124 |         80 |         83 |    11
+           2 |         9 |        245 |        249 |        160 |        167 |    29
+           2 |        10 |        490 |        498 |        321 |        335 |    92
+           2 |        11 |        980 |        996 |        642 |        670 |   235
+           3 |         0 |          0 |          0 |          0 |          0 |     1
+           3 |         1 |          0 |          0 |          0 |          0 |     1
+           3 |         2 |          1 |          1 |          1 |          1 |     1
+           3 |         3 |          3 |          3 |          2 |          2 |     1
+           3 |         4 |          7 |          7 |          5 |          5 |     1
+           3 |         5 |         15 |         15 |         10 |         10 |     1
+           3 |         6 |         30 |         31 |         20 |         20 |     2
+           3 |         7 |         61 |         62 |         40 |         41 |     4
+           3 |         8 |        122 |        124 |         80 |         83 |    11
+           3 |         9 |        245 |        249 |        160 |        167 |    29
+           3 |        10 |        490 |        498 |        321 |        335 |    93
+           3 |        11 |        980 |        996 |        642 |        670 |   274
+           4 |         0 |          0 |          0 |          0 |          0 |     1
+           4 |         1 |          0 |          0 |          0 |          0 |     1
+           4 |         2 |          1 |          1 |          1 |          1 |     1
+           4 |         3 |          3 |          3 |          2 |          2 |     1
+           4 |         4 |          7 |          7 |          5 |          5 |     1
+           4 |         5 |         15 |         15 |         10 |         10 |     1
+           4 |         6 |         30 |         31 |         20 |         20 |     2
+           4 |         7 |         61 |         62 |         40 |         41 |     4
+           4 |         8 |        122 |        124 |         80 |         83 |    11
+           4 |         9 |        245 |        249 |        160 |        167 |    29
+           4 |        10 |        490 |        498 |        321 |        335 |    93
+           4 |        11 |        980 |        996 |        642 |        670 |   287
+(37 rows)
+
+Time: 1.191 ms
  */ 
- 
+
+--DO LANGUAGE plpgsql $$
+--BEGIN
+--	RAISE INFO 'Aborting (script being tested)';
+--	RAISE EXCEPTION 'C20999: Abort';
+--END;
+--$$;
+
+END;
+
 --
 -- Eof

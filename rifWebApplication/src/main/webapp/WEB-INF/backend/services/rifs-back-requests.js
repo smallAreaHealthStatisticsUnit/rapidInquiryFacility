@@ -1,3 +1,36 @@
+/**
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * Copyright 2016 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ *
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+
+ * David Morley
+ * @author dmorley
+ */
+
 /*
  * SERVICE for all requests to the middleware
  */
@@ -77,6 +110,11 @@ angular.module("RIF")
                     //[{"name":"TEST","description":null}]
                     return $http.get(studySubmissionURL + 'getProjects?userID=' + username, config);
                 };
+                self.getProjectDescription = function (username, projectName) {
+                    //http://localhost:8080/rifServices/studySubmission/getProjectDescription?userID=kgarwood&projectName=TEST
+                    //[{"result":"Test Project. Will be disabled when in production."}]
+                    return $http.get(studySubmissionURL + 'getProjectDescription?userID=' + username + '&projectName=' + projectName, config);
+                };
                 self.getGeographies = function (username) {
                     //http://localhost:8080/rifServices/studySubmission/getGeographies?userID=kgarwood
                     //[{"names":["EW01","SAHSU","UK91"]}]
@@ -87,13 +125,13 @@ angular.module("RIF")
                     //[{"name":"SAHSULAND","description":"SAHSU land cancer incidence example data"}]
                     return $http.get(studySubmissionURL + 'getHealthThemes?userID=' + username + '&geographyName=' + geography, config);
                 };
-                self.getFractions = function (username, geography, healthThemeDescription) {
+                self.getNumerator = function (username, geography, healthThemeDescription) {
                     //http://localhost:8080/rifServices/studySubmission/getNumerator?userID=kgarwood&geographyName=SAHSU&healthThemeDescription=SAHSU%20land%20cancer%20incidence%20example%20data
                     //[{"numeratorTableName":"SAHSULAND_CANCER","numeratorTableDescription":"Cancer cases in SAHSU land","denominatorTableName":"SAHSULAND_POP","denominatorTableDescription":"SAHSU land population"}]
                     return $http.get(studySubmissionURL + 'getNumerator?userID=' + username + '&geographyName=' + geography + "&healthThemeDescription=" + healthThemeDescription, config);
                 };
                 //Investigation parameters
-                self.getYears = function (username, geography, numeratorTableName) {
+                self.getYearRange = function (username, geography, numeratorTableName) {
                     //http://localhost:8080/rifServices/studySubmission/getYearRange?userID=kgarwood&geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER
                     //[{"lowerBound":"1989","upperBound":"1996"}]
                     return $http.get(studySubmissionURL + 'getYearRange?userID=' + username + '&geographyName=' + geography + '&numeratorTableName=' + numeratorTableName, config);
@@ -115,9 +153,9 @@ angular.module("RIF")
                 self.getTiles = function (username, geography, geoLevel, leaflet) {
                     //http://localhost:8080/rifServices/studySubmission/getTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL1&tileIdentifier=4&zoomFactor=2&
                     //yMax=55.5268097&xMax=-4.88653803&yMin=52.6875343&xMin=-7.58829451
-                    
+
                     //TODO: what is tileIdentifier?? 1979_1321 in rifServices/src/test/java/rifServices/test/services/GetTiles.java 
-                    
+
                     config.leaflet = leaflet; //defines which map is target for these tiles
                     return $http.get(studySubmissionURL + 'getTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
                             '&tileIdentifier=4&zoomFactor=2&yMax=55.5268097&xMax=-4.88653803&yMin=52.6875343&xMin=-7.58829451', config);

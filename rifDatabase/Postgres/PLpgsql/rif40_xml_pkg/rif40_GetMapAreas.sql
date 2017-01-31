@@ -12,6 +12,8 @@
 --     				  rif40_GetMapAreas() - Get area IDs for <geolevel_view> for 
 --											map area bounding box
 --
+-- Tilemaker converted 
+--
 -- Copyright:
 --
 -- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -125,7 +127,9 @@ Example format:
 --
 	drop_stmt 		VARCHAR;
 	explain_text 	VARCHAR;
-	temp_table 		VARCHAR;	
+	temp_table 		VARCHAR;
+--
+	s_geolevel_view	VARCHAR;
 --
 	stp 			TIMESTAMP WITH TIME ZONE:=clock_timestamp();
 	etp 			TIMESTAMP WITH TIME ZONE;
@@ -187,29 +191,59 @@ BEGIN
 --
 -- Generate SQL statement
 --
-	sql_stmt:='WITH a AS ('||E'\n'||
-		  '	SELECT area_id,'||E'\n'||
-		  '            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */, 4326 /* WGS 84 */) AS geom	/* Bound */'||E'\n'||
-		  '	  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n'||
-		  '	 WHERE ST_Intersects(optimised_geometry_3,'||E'\n'||
-		  '        		ST_MakeEnvelope($1 /* Xmin */,'||E'\n'||
-		  '        					 $2 	/* Ymin */,'||E'\n'||
-		  '       			 		 $3 	/* Xmax */,'||E'\n'||
-		  '        					 $4 	/* YMax */,'||E'\n'||
-		  '        					 4326 	/* WGS 84 */))'||E'\n'||
-		  '	   AND geolevel_name = $5		/* Partition eliminate */'||E'\n'||
-		  '	   /* Intersect bound with geolevel geometry */'||E'\n'||
-		  ')'||E'\n'||
-		  'SELECT (''{"gid": ''||ARRAY_TO_JSON(ARRAY_AGG(b.gid ORDER BY b.gid))::Text||'', "area_id": ''||'||E'\n'||
-		  '       ARRAY_TO_JSON(ARRAY_AGG(a.area_id ORDER BY b.gid))::Text||'', "name": ''||'||E'\n'||
-		  '	      ARRAY_TO_JSON(ARRAY_AGG(b.name ORDER BY b.gid))::Text||''}'')::JSON as map_area'||E'\n'||
-		  '  FROM a, '||quote_ident('sahsuland_'||LOWER(l_geolevel_view))||' b'||E'\n'||
-		  ' WHERE a.area_id = b.'||quote_ident(LOWER(l_geolevel_view));
+	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+		sql_stmt:='WITH a AS ( /* Pre tilemaker: no geometry table */'||E'\n'||
+			  '	SELECT area_id,'||E'\n'||
+			  '            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */, 4326 /* WGS 84 */) AS geom	/* Bound */'||E'\n'||
+			  '	  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n'||
+			  '	 WHERE ST_Intersects(optimised_geometry_3,'||E'\n'||
+			  '        		ST_MakeEnvelope($1  /* Xmin */,'||E'\n'||
+			  '        					 $2 	/* Ymin */,'||E'\n'||
+			  '       			 		 $3 	/* Xmax */,'||E'\n'||
+			  '        					 $4 	/* YMax */,'||E'\n'||
+			  '        					 4326 	/* WGS 84 */))'||E'\n'||
+			  '	   AND geolevel_name = $5		/* Partition eliminate */'||E'\n'||
+			  '	   /* Intersect bound with geolevel geometry */'||E'\n'||
+			  ')'||E'\n'||
+			  'SELECT (''{"gid": ''||ARRAY_TO_JSON(ARRAY_AGG(b.gid ORDER BY b.gid))::Text||'', "area_id": ''||'||E'\n'||
+			  '       ARRAY_TO_JSON(ARRAY_AGG(a.area_id ORDER BY b.gid))::Text||'', "name": ''||'||E'\n'||
+			  '	      ARRAY_TO_JSON(ARRAY_AGG(b.name ORDER BY b.gid))::Text||''}'')::JSON as map_area'||E'\n'||
+			  '  FROM a, '||quote_ident(LOWER(c2_rec.lookup_table))||' b'||E'\n'||
+			  ' WHERE a.area_id = b.'||quote_ident(LOWER(l_geolevel_view));
+	ELSE 
+		sql_stmt:='WITH a AS ( /* Tilemaker: specified geometry table */'||E'\n'||
+			  '	SELECT areaid,'||E'\n'||
+			  '            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */, 4326 /* WGS 84 */) AS geom	/* Bound */'||E'\n'||
+			  '	  FROM '||quote_ident(LOWER(c1_rec.geometrytable))||E'\n'||
+			  '	 WHERE ST_Intersects(geom,'||E'\n'||
+			  '            ST_MakeEnvelope($1  /* Xmin */,'||E'\n'||
+			  '                          $2     /* Ymin */,'||E'\n'||
+			  '                          $3     /* Xmax */,'||E'\n'||
+			  '                          $4     /* YMax */,'||E'\n'||
+			  '                          4326   /* WGS 84 */))'||E'\n'||
+			  '	   AND zoomlevel     = '||c1_rec.maxzoomlevel||'   /* max zoomlevel: Partition eliminate */'||E'\n'||
+			  '	   AND geolevel_id   = $5::Integer /* Partition eliminate */'||E'\n'||
+			  '	   /* Intersect bound with geolevel geometry */'||E'\n'||
+			  ')'||E'\n'||
+			  'SELECT (''{"gid": ''||ARRAY_TO_JSON(ARRAY_AGG(b.gid ORDER BY b.gid))::Text||'', "area_id": ''||'||E'\n'||
+			  '       ARRAY_TO_JSON(ARRAY_AGG(a.areaid ORDER BY b.gid))::Text||'', "name": ''||'||E'\n'||
+			  '	      ARRAY_TO_JSON(ARRAY_AGG(b.areaname ORDER BY b.gid))::Text||''}'')::JSON as map_area'||E'\n'||
+			  '  FROM a, '||quote_ident(LOWER(c2_rec.lookup_table))||' b'||E'\n'||
+			  ' WHERE a.areaid = b.'||quote_ident(LOWER(l_geolevel_view));
+	END IF;
+	
 --
 -- Begin execution block to trap parse errors
 --
 -- EXPLAIN PLAN version
 --
+
+	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+		s_geolevel_view:=l_geolevel_view; 
+	ELSE
+		s_geolevel_view:=c2_rec.geolevel_id; 
+	END IF;
+	
 	IF rif40_log_pkg.rif40_is_debug_enabled('rif40_GetMapAreas', 'DEBUG2') THEN
 		BEGIN
 --
@@ -218,7 +252,7 @@ BEGIN
 --
 			sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl2('||quote_literal(
 					'EXPLAIN ANALYZE VERBOSE CREATE TEMPORARY TABLE '||temp_table||' AS '||E'\n'||sql_stmt)||', $1, $2, $3, $4, $5)';
-			FOR c4_rec IN EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, l_geolevel_view LOOP
+			FOR c4_rec IN EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, s_geolevel_view LOOP
 				IF explain_text IS NULL THEN
 					explain_text:=c4_rec.explain_line;
 				ELSE
@@ -247,7 +281,7 @@ BEGIN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_GetMapAreas', '[52056] Bounds EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
 	ELSE
 		BEGIN
-			FOR c3_rec IN EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, l_geolevel_view LOOP
+			FOR c3_rec IN EXECUTE sql_stmt USING x_min, y_min, x_max, y_max, s_geolevel_view LOOP
 				RETURN NEXT c3_rec.map_area;
 			END LOOP;		
 		EXCEPTION

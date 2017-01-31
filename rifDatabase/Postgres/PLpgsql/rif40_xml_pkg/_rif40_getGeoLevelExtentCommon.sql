@@ -11,6 +11,8 @@
 -- Rapid Enquiry Facility (RIF) - Web services integration functions for middleware
 --     				  Get bounding box Y max, X max, Y min, X min for <geography> <geolevel view>
 --
+-- Tilemaker converted 
+--
 -- Copyright:
 --
 -- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -215,12 +217,22 @@ BEGIN
 	ELSIF l_map_area IS NOT NULL AND l_study_id IS NULL THEN
 -- Map area ID only: Called from: rif40_getGeoLevelBoundsForArea
 -- Check map area ID exists
-
-		sql_stmt:='SELECT *'||E'\n'||
+		IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+			sql_stmt:='SELECT area_id AS areaid /* pre tilemaker */'||E'\n'||
 E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' /* '||l_geography||' */'||E'\n'||
 E'\t'||' WHERE geolevel_name = $1 /* <Geolevel view> */'||E'\n'||
 E'\t'||'   AND area_id       = $2 /* <map area> */';
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_getGeoLevelExtentCommon', '[50005] c3geofullext SQL>'||E'\n'||'%;', sql_stmt::VARCHAR);
+		ELSE
+			sql_stmt:='SELECT areaid /* Tilemaker */'||E'\n'||
+E'\t'||'  FROM '||quote_ident(LOWER(c1_rec.geometrytable))||' a /* '||l_geography||' */, rif40_geolevels b'||E'\n'||
+E'\t'||' WHERE a.geolevel_id   = b.geolevel_id'||E'\n'||
+E'\t'||'   AND b.geolevel_name = $1 /* <Geolevel view> */'||E'\n'||
+E'\t'||'   AND a.areaid        = $2 /* <map area> */'||E'\n'||
+E'\t'||'   AND b.geography     = '''||l_geography||''' /* <geography> */'||E'\n'||
+E'\t'||'   AND a.zoomlevel     = '||c1_rec.maxzoomlevel||' /* <max zoomlevel> */';
+		END IF;
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_getGeoLevelExtentCommon', '[50005] c3geofullext SQL>'||E'\n'||'%;', 
+			sql_stmt::VARCHAR);
 --
 -- Execute
 --
@@ -240,18 +252,18 @@ E'\t'||'   AND area_id       = $2 /* <map area> */';
 --
 				RAISE;
 		END;
-		IF c3_rec.area_id IS NULL THEN
+		IF c3_rec.areaid IS NULL THEN
 			PERFORM rif40_log_pkg.rif40_error(-50007, '_rif40_getGeoLevelExtentCommon', 
 				'geography: %, <geoevel view> %: map area (%) not found.', 
 				l_geography::VARCHAR		/* Geography */, 
 				l_geolevel_view::VARCHAR	/* Geolevel view */,
-				l_map_area::VARCHAR		/* Map area */);
+				l_map_area::VARCHAR			/* Map area */);
 		ELSE
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_getGeoLevelExtentCommon', 
 				'[50008] Geography: %, <geoevel view> %: map area (%) Validated.', 
 				l_geography::VARCHAR		/* Geography */, 
 				l_geolevel_view::VARCHAR	/* Geolevel view */,
-				c3_rec.area_id::VARCHAR		/* Map area */);
+				c3_rec.areaid::VARCHAR		/* Map area */);
 		END IF;
 	ELSIF l_map_area IS NULL AND l_study_id IS NOT NULL THEN
 -- Study ID only: Called from: rif40_getGeoLevelFullExtentForStudy
@@ -306,14 +318,30 @@ E'\t'||'   AND area_id       = $2 /* <map area> */';
 --
 -- Create SQL statement
 --
-	sql_stmt:='WITH a AS ('||E'\n'||
+
+	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+		sql_stmt:='WITH a AS ( /* pre tilemaker II */'||E'\n'||
 E'\t'||'SELECT ST_Extent(optimised_geometry) AS g'||E'\n'||
 E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' /* '||l_geography||' */'||E'\n'||
-E'\t'||' WHERE geolevel_name = $1 /* <Geolevel view> */';
-	IF l_map_area IS NOT NULL AND l_study_id IS NULL THEN
-		sql_stmt:=sql_stmt||E'\n'||
-E'\t'||'   AND area_id       = $2 /* <Map area ID> */';
+E'\t'||' WHERE geolevel_name = $1 /* <Geolevel view> */';	
+		IF l_map_area IS NOT NULL AND l_study_id IS NULL THEN
+			sql_stmt:=sql_stmt||E'\n'||
+	E'\t'||'   AND area_id       = $2 /* <Map area ID> */';
+		END IF;
+	ELSE
+		sql_stmt:='WITH a AS ( /* Tilemaker II */'||E'\n'||
+E'\t'||'SELECT ST_Extent(geom) AS g'||E'\n'||
+E'\t'||'  FROM '||quote_ident(LOWER(c1_rec.geometrytable))||' a /* '||l_geography||' */, rif40_geolevels b'||E'\n'||
+E'\t'||' WHERE a.geolevel_id   = b.geolevel_id'||E'\n'||
+E'\t'||'   AND b.geolevel_name = $1 /* <Geolevel view> */'||E'\n'||
+E'\t'||'   AND b.geography     = '''||l_geography||''' /* <geography> */'||E'\n'||
+E'\t'||'   AND a.zoomlevel     = '||c1_rec.maxzoomlevel||' /* max zoomlevel */';
+		IF l_map_area IS NOT NULL AND l_study_id IS NULL THEN
+			sql_stmt:=sql_stmt||E'\n'||
+	E'\t'||'   AND areaid       = $2 /* <Map area ID> */';
+		END IF;
 	END IF;
+
 	sql_stmt:=sql_stmt||E'\n'||
 E'\t'||')'||E'\n'||
 E'\t'||'SELECT ST_Ymax(g)::REAL AS ymax, ST_Xmax(g)::REAL AS xmax, ST_Ymin(g)::REAL AS ymin, ST_Xmin(g)::REAL AS xmin'||E'\n'||

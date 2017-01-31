@@ -11,6 +11,8 @@
 -- Rapid Enquiry Facility (RIF) - Web services integration functions for middleware
 --     				  Encapsulate geoJSON in Javascript (internal common function)
 --
+-- Tilemaker checked (no longer used; tiles come from tiles table)
+--
 -- Copyright:
 --
 -- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -197,6 +199,17 @@ Validated with JSlint: http://www.javascriptlint.com/online_lint.php
 
 */
 DECLARE
+ 	c1geojsonasjs CURSOR(l_geography VARCHAR) FOR
+		SELECT *
+		  FROM rif40_geographies
+		 WHERE geography = l_geography;
+	c2geojsonasjs CURSOR(l_geography VARCHAR, l_geolevel VARCHAR) FOR
+		SELECT *
+		  FROM rif40_geolevels
+		 WHERE geography     = l_geography
+		   AND geolevel_name = l_geolevel;
+	c1_rec 			RECORD;
+	c2_rec 			RECORD;
 	c3_rec 			RECORD;
 --
 	sql_stmt 		VARCHAR;
@@ -214,6 +227,33 @@ DECLARE
 	v_context 		VARCHAR;
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
+--
+-- Test geography
+--
+	IF l_geography IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-50210, '_rif40_get_geojson_as_js', 'NULL geography parameter');
+	END IF;	
+--
+	OPEN c1geojsonasjs(l_geography);
+	FETCH c1geojsonasjs INTO c1_rec;
+	CLOSE c1geojsonasjs;
+--
+	IF c1_rec.geography IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-50211, '_rif40_get_geojson_as_js', 'geography: % not found', 
+			l_geography::VARCHAR	/* Geography */);
+	END IF;	
+--
+-- Test <geolevel view/area> exist
+--
+	OPEN c2geojsonasjs(l_geography, geolevel_view);
+	FETCH c2geojsonasjs INTO c2_rec;
+	CLOSE c2geojsonasjs;
+--
+	IF c2_rec.geolevel_name IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-50212, '_rif40_get_geojson_as_js', 'geography: %, <geoevel view> %: not found', 
+			l_geography::VARCHAR	/* Geography */, 
+			geolevel_view::VARCHAR	/* Geolevel view */);
+	END IF;	
 --
 -- Create unique results temporary table
 --
@@ -247,32 +287,57 @@ BEGIN
 		sql_stmt:=sql_stmt||E'\t'||'SELECT 0 ord, ''var spatialData={ "type": "FeatureCollection","features": [ /* Start */'' js'||E'\n';
 	END IF;
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'SELECT ROW_NUMBER() OVER(ORDER BY area_id) ord,'||E'\n'; 
+	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+		sql_stmt:=sql_stmt||E'\t'||'SELECT ROW_NUMBER() OVER(ORDER BY area_id) AS ord,'||E'\n'; 
+	ELSE
+		sql_stmt:=sql_stmt||E'\t'||'SELECT ROW_NUMBER() OVER(ORDER BY areaid) AS ord,'||E'\n'; 
+	END IF;
 	sql_stmt:=sql_stmt||E'\t'||'       ''{"type": "Feature","properties":''||'||E'\n'; 
 --
 -- If the zoom level is 12 (1 in 145,313) or more then the properties are minimised to just the gid.
 -- This is to minimise the file size.
 --
-	IF zoom_level >= 12 OR NOT properties THEN
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{"gid":"''||gid||''"},''||'||E'\n';
+
+	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+		IF zoom_level >= 12 OR NOT properties THEN
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{"gid":"''||gid||''"},''||'||E'\n';
+		ELSE
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{"area_id":"''||area_id||''",''||'||E'\n'; 
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"name":"''||COALESCE(name, '''')||''",''||'||E'\n'; 
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"area":"''||COALESCE(area::Text, '''')||''",''||'||E'\n'; 
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"total_males":"''||COALESCE(total_males::Text, '''')||''",''||'||E'\n'; 
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"total_females":"''||COALESCE(total_females::Text, '''')||''",''||'||E'\n'; 
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"population_year":"''||COALESCE(LTRIM(TO_CHAR(population_year, ''9990'')), '''')||''",''||'||E'\n'; 
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"gid":"''||gid||''"},''||'||E'\n'; 
+		END IF;
 	ELSE
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{"area_id":"''||area_id||''",''||'||E'\n'; 
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"name":"''||COALESCE(name, '''')||''",''||'||E'\n'; 
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"area":"''||COALESCE(area::Text, '''')||''",''||'||E'\n'; 
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"total_males":"''||COALESCE(total_males::Text, '''')||''",''||'||E'\n'; 
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"total_females":"''||COALESCE(total_females::Text, '''')||''",''||'||E'\n'; 
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"population_year":"''||COALESCE(LTRIM(TO_CHAR(population_year, ''9990'')), '''')||''",''||'||E'\n'; 
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"gid":"''||gid||''"},''||'||E'\n'; 
+		IF zoom_level >= 12 OR NOT properties THEN
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{},''||'||E'\n';
+		ELSE
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'''{"area_id":"''||areaid||''", "name":"''||areaid||''"},''||'||E'\n';
+		END IF;
 	END IF;
 --
-	IF produce_json_only THEN /* No comments */
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||optimised_geojson||''}'' AS js'||E'\n'; 
-	ELSE
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||optimised_geojson||''} /* ''||'||E'\n';
-		sql_stmt:=sql_stmt||E'\t'||'       row_number() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js'||E'\n'; 
+	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+		IF produce_json_only THEN /* No comments */
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||optimised_geojson||''}'' AS js'||E'\n'; 
+		ELSE
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||optimised_geojson||''} /* ''||'||E'\n';
+			sql_stmt:=sql_stmt||E'\t'||'       ROW_NUMBER() over()||'' : ''||area_id||'' : ''||'' : ''||COALESCE(name, '''')||'' */ '' AS js'||E'\n'; 
+		END IF;
+	ELSE -- Will be slow - but we should not longer be using this function
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||' ''"geometry": ''||ST_AsGeoJSON(geom)||''}'' AS js'||E'\n' /* No comments */; 
 	END IF;
-	sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||' WHERE geolevel_name = $1 /* <geolevel view> */ AND area_id IN (SELECT UNNEST($2) /* <geolevel area id list> */)'||E'\n'; 
+--	
+	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+		sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||' WHERE geolevel_name = $1 /* <geolevel view> */ AND area_id IN (SELECT UNNEST($2) /* <geolevel area id list> */)'||E'\n'; 
+	ELSE
+		sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident(LOWER(c1_rec.geometrytable))||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||' WHERE geolevel_id = $1 /* <geolevel id> */'||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||'   AND areaid     IN (SELECT UNNEST($2) /* <geolevel area id list> */)'||E'\n'; 
+		sql_stmt:=sql_stmt||E'\t'||'   AND zoomlevel   = $3'||E'\n';
+	END IF;
 	sql_stmt:=sql_stmt||E'\t'||'UNION'||E'\n';
 	IF produce_json_only THEN /* No comments */
 		sql_stmt:=sql_stmt||E'\t'||'SELECT 999999 ord, '']}'' js'||E'\n';
@@ -310,7 +375,7 @@ BEGIN
 --
 -- Execute SQL statement, returning Javascript
 --
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', '[50210] Results EXPLAIN SQL> [using: %, %]'||E'\n'||'%;', 
+	PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', '[50213] Results EXPLAIN SQL> [using: %, %]'||E'\n'||'%;', 
 		geolevel_view::VARCHAR, 
 		geolevel_area_id_list::VARCHAR,
 		sql_stmt::VARCHAR		/* SQL statement */);
@@ -325,14 +390,26 @@ BEGIN
 -- Create results temporary table, extract explain plan  using _rif40_geojson_explain_ddl() helper function.
 -- This ensures the EXPLAIN PLAN output is a field called explain_line 
 --
-			sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl('||quote_literal(sql_stmt)||', $1, $2)';
-			FOR c3_rec IN EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list LOOP
-				IF explain_text IS NULL THEN
-					explain_text:=c3_rec.explain_line;
-				ELSE
-					explain_text:=explain_text||E'\n'||c3_rec.explain_line;
-				END IF;
-			END LOOP;
+			
+			IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+				sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl('||quote_literal(sql_stmt)||', $1, $2)';
+				FOR c3_rec IN EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list LOOP
+					IF explain_text IS NULL THEN
+						explain_text:=c3_rec.explain_line;
+					ELSE
+						explain_text:=explain_text||E'\n'||c3_rec.explain_line;
+					END IF;
+				END LOOP;
+			ELSE
+				sql_stmt:='SELECT explain_line FROM rif40_xml_pkg._rif40_geojson_explain_ddl('||quote_literal(sql_stmt)||', $1, $2, $3)';
+				FOR c3_rec IN EXECUTE sql_stmt USING c2_rec.geolevel_id, geolevel_area_id_list, zoom_level LOOP
+					IF explain_text IS NULL THEN
+						explain_text:=c3_rec.explain_line;
+					ELSE
+						explain_text:=explain_text||E'\n'||c3_rec.explain_line;
+					END IF;
+				END LOOP;
+			END IF;
 --
 -- Now extract actual results from temp table
 --	
@@ -347,18 +424,23 @@ BEGIN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
 				error_message:='_rif40_get_geojson_as_js() caught: '||E'\n'||
 					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR;
-				RAISE INFO '50211: %', error_message;
+				RAISE INFO '50214: %', error_message;
 --
 				RAISE;
 		END;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG2', '_rif40_get_geojson_as_js', '[50212] Results EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
+		PERFORM rif40_log_pkg.rif40_log('DEBUG2', '_rif40_get_geojson_as_js', '[50215] Results EXPLAIN PLAN.'||E'\n'||'%', explain_text::VARCHAR);
 --
 -- Non EXPLAIN PLAN version (i.e. normal execution path)
 --
 	ELSE
 		BEGIN
-			RETURN QUERY EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list;
-			GET DIAGNOSTICS i = ROW_COUNT;
+			IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+				RETURN QUERY EXECUTE sql_stmt USING geolevel_view, geolevel_area_id_list;
+				GET DIAGNOSTICS i = ROW_COUNT;
+			ELSE
+				RETURN QUERY EXECUTE sql_stmt USING c2_rec.geolevel_id, geolevel_area_id_list, zoom_level;
+				GET DIAGNOSTICS i = ROW_COUNT;			
+			END IF;
 		EXCEPTION
 			WHEN others THEN
 --
@@ -368,8 +450,11 @@ BEGIN
 										v_context = PG_EXCEPTION_CONTEXT;
 				error_message:='_rif40_get_geojson_as_js() caught: '||E'\n'||
 					SQLERRM::VARCHAR||' in SQL> '||E'\n'||sql_stmt||E'\n'||'Detail: '||v_detail::VARCHAR||E'\n'||
-							'Context: '||v_context::VARCHAR;
-				RAISE INFO '50213: %', error_message;
+							'Context: '||v_context::VARCHAR||E'\n'||
+							'geolevel_id: '||c2_rec.geolevel_id::Text||
+								', geolevel_area_id_list: '||geolevel_area_id_list::Text||
+								', zoom_level: '||zoom_level::Text;
+				RAISE INFO '50216: %', error_message;
 --
 				RAISE;
 		END;
@@ -383,23 +468,23 @@ BEGIN
 -- Check number of rows processed
 --
 	IF i IS NULL THEN
-		PERFORM rif40_log_pkg.rif40_error(-50214, '_rif40_get_geojson_as_js', 
+		PERFORM rif40_log_pkg.rif40_error(-50217, '_rif40_get_geojson_as_js', 
 			'geography: %, SQL fetch returned NULL area rows, took: %.', 
 			l_geography::VARCHAR			/* Geography */,
 			took::VARCHAR					/* Time taken */);
 	ELSIF produce_json_only AND i = 1 THEN	/* Expected result for JSON */
 		PERFORM rif40_log_pkg.rif40_log('DEBUG2', '_rif40_get_geojson_as_js', 
-			'[50217] Geography: %, SQL JSON fetch returned correct number of area rows, got: %, took: %.', 			
+			'[50218] Geography: %, SQL JSON fetch returned correct number of area rows, got: %, took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			i::VARCHAR						/* Actual */,
 			took::VARCHAR					/* Time taken */);
 	ELSIF i = 2 THEN
-		PERFORM rif40_log_pkg.rif40_error(-50215, '_rif40_get_geojson_as_js', 
+		PERFORM rif40_log_pkg.rif40_error(-50219, '_rif40_get_geojson_as_js', 
 			'geography: %, SQL fetch returned no area rows, took: %.', 
 			l_geography::VARCHAR			/* Geography */,
 			took::VARCHAR					/* Time taken */);
 	ELSIF i != l_expected_rows THEN
-		PERFORM rif40_log_pkg.rif40_error(-50216, '_rif40_get_geojson_as_js', 
+		PERFORM rif40_log_pkg.rif40_error(-50220, '_rif40_get_geojson_as_js', 
 			'geography: %, SQL fetch returned wrong number of area rows, expecting: %, got: %, area_ids: %, took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			l_expected_rows::VARCHAR		/* Expected rows */,
@@ -408,7 +493,7 @@ BEGIN
 			took::VARCHAR					/* Time taken */);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', '_rif40_get_geojson_as_js', 
-			'[50217] Geography: %, SQL fetch returned correct number of area rows, got: %, took: %.', 			
+			'[50221] Geography: %, SQL fetch returned correct number of area rows, got: %, took: %.', 			
 			l_geography::VARCHAR			/* Geography */, 
 			i::VARCHAR						/* Actual */,
 			took::VARCHAR					/* Time taken */);

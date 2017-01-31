@@ -210,7 +210,7 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		if (g_response && g_response.status && nodeGeoSpatialServicesCommon && 
 		    nodeGeoSpatialServicesCommon.addStatus && typeof nodeGeoSpatialServicesCommon.addStatus == "function") { // Add error status
 			try {	
-//				console.error("httpErrorResponse(): Call addStatus()");
+				console.error("httpErrorResponse(): Call addStatus(): " + status);
 				nodeGeoSpatialServicesCommon.addStatus(file, line, g_response, "FATAL", 
 					status /* HTTP status */, serverLog, req, httpErrorResponseAddStatusCallback);
 					
@@ -237,7 +237,7 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 			else if (typeof nodeGeoSpatialServicesCommon.addStatus != "function") {	
 				serverLog.serverLog2(file, line, calling_function, "WARNING: httpErrorResponse(): addStatus() is not a function; unable to addStatus()", req, undefined /* No exception */);
 			}
-			httpErrorResponseAddStatusCallback(); // Cannot add status, run callback anyway (or you won't get a result...
+			httpErrorResponseAddStatusCallback(); // Cannot add status, run callback anyway (or you won't get a result)...
 		}
 
 	} catch (e) {                            // Catch conversion errors

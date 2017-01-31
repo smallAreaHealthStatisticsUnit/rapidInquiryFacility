@@ -893,9 +893,9 @@ GO
 -- Load geolevel lookup tables
 --
 
--- SQL statement 28: Load geolevel lookup table: lookup_sahsu_grd_level1 >>>
+-- SQL statement 28: Load DB specific geolevel lookup table: (mssql_/pg_)lookup_sahsu_grd_level1 >>>
 BULK INSERT rif_data.lookup_sahsu_grd_level1
-FROM '$(pwd)/lookup_sahsu_grd_level1.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+FROM '$(pwd)/mssql_lookup_sahsu_grd_level1.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_lookup_sahsu_grd_level1.fmt',		-- Use a format file
@@ -903,9 +903,9 @@ WITH
 );
 GO
 
--- SQL statement 29: Load geolevel lookup table: lookup_sahsu_grd_level2 >>>
+-- SQL statement 29: Load DB specific geolevel lookup table: (mssql_/pg_)lookup_sahsu_grd_level2 >>>
 BULK INSERT rif_data.lookup_sahsu_grd_level2
-FROM '$(pwd)/lookup_sahsu_grd_level2.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+FROM '$(pwd)/mssql_lookup_sahsu_grd_level2.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_lookup_sahsu_grd_level2.fmt',		-- Use a format file
@@ -913,9 +913,9 @@ WITH
 );
 GO
 
--- SQL statement 30: Load geolevel lookup table: lookup_sahsu_grd_level3 >>>
+-- SQL statement 30: Load DB specific geolevel lookup table: (mssql_/pg_)lookup_sahsu_grd_level3 >>>
 BULK INSERT rif_data.lookup_sahsu_grd_level3
-FROM '$(pwd)/lookup_sahsu_grd_level3.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+FROM '$(pwd)/mssql_lookup_sahsu_grd_level3.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_lookup_sahsu_grd_level3.fmt',		-- Use a format file
@@ -923,9 +923,9 @@ WITH
 );
 GO
 
--- SQL statement 31: Load geolevel lookup table: lookup_sahsu_grd_level4 >>>
+-- SQL statement 31: Load DB specific geolevel lookup table: (mssql_/pg_)lookup_sahsu_grd_level4 >>>
 BULK INSERT rif_data.lookup_sahsu_grd_level4
-FROM '$(pwd)/lookup_sahsu_grd_level4.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+FROM '$(pwd)/mssql_lookup_sahsu_grd_level4.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_lookup_sahsu_grd_level4.fmt',		-- Use a format file
@@ -1182,9 +1182,9 @@ GO
 -- Load hierarchy table
 --
 
--- SQL statement 44: Load hierarchy table from CSV file >>>
+-- SQL statement 44: Load DB dependent hierarchy table from CSV file >>>
 BULK INSERT rif_data.hierarchy_sahsuland
-FROM '$(pwd)/hierarchy_sahsuland.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+FROM '$(pwd)/mssql_hierarchy_sahsuland.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_hierarchy_sahsuland.fmt',		-- Use a format file
@@ -1583,7 +1583,7 @@ SELECT geolevel_id,areaid,zoomlevel,wkt
   FROM rif_data.geometry_sahsuland;
 GO
 
--- SQL statement 60: Load geometry table from CSV file >>>
+-- SQL statement 60: Load DB dependent geometry table from CSV file >>>
 BULK INSERT rif_data.v_geometry_sahsuland
 FROM '$(pwd)/mssql_geometry_sahsuland.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
@@ -3680,9 +3680,9 @@ SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson
   FROM rif_data.t_tiles_sahsuland;
 GO
 
--- SQL statement 138: Load tiles table from geolevel CSV files >>>
+-- SQL statement 138: Load DB dependent tiles table from geolevel CSV files >>>
 BULK INSERT rif_data.v_tiles_sahsuland
-FROM '$(pwd)/t_tiles_sahsu_grd_level1.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+FROM '$(pwd)/mssql_t_tiles_sahsu_grd_level1.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_t_tiles_sahsu_grd_level1.fmt',		-- Use a format file
@@ -3701,9 +3701,9 @@ SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson
   FROM rif_data.t_tiles_sahsuland;
 GO
 
--- SQL statement 141: Load tiles table from geolevel CSV files >>>
+-- SQL statement 141: Load DB dependent tiles table from geolevel CSV files >>>
 BULK INSERT rif_data.v_tiles_sahsuland
-FROM '$(pwd)/t_tiles_sahsu_grd_level2.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+FROM '$(pwd)/mssql_t_tiles_sahsu_grd_level2.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_t_tiles_sahsu_grd_level2.fmt',		-- Use a format file
@@ -3722,9 +3722,9 @@ SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson
   FROM rif_data.t_tiles_sahsuland;
 GO
 
--- SQL statement 144: Load tiles table from geolevel CSV files >>>
+-- SQL statement 144: Load DB dependent tiles table from geolevel CSV files >>>
 BULK INSERT rif_data.v_tiles_sahsuland
-FROM '$(pwd)/t_tiles_sahsu_grd_level3.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+FROM '$(pwd)/mssql_t_tiles_sahsu_grd_level3.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_t_tiles_sahsu_grd_level3.fmt',		-- Use a format file
@@ -3743,9 +3743,9 @@ SELECT geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson
   FROM rif_data.t_tiles_sahsuland;
 GO
 
--- SQL statement 147: Load tiles table from geolevel CSV files >>>
+-- SQL statement 147: Load DB dependent tiles table from geolevel CSV files >>>
 BULK INSERT rif_data.v_tiles_sahsuland
-FROM '$(pwd)/t_tiles_sahsu_grd_level4.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+FROM '$(pwd)/mssql_t_tiles_sahsu_grd_level4.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 WITH
 (
 	FORMATFILE = '$(pwd)/mssql_t_tiles_sahsu_grd_level4.fmt',		-- Use a format file

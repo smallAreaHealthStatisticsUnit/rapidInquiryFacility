@@ -114,11 +114,13 @@ CREATE TABLE rif40_opcs4 (
 	text_3char varchar(250),
 	text_4char varchar(250)
 );
+/*
 CREATE TABLE gis.sahsuland_level2 (
 	level2 varchar(20) NOT NULL,
 	name varchar(200) NOT NULL
 );
 CREATE UNIQUE INDEX sahsuland_level2_pk ON gis.sahsuland_level2 (level2);
+*/
 CREATE TABLE rif40_covariates (
 	geography varchar(50) NOT NULL,
 	geolevel_name varchar(30) NOT NULL,
@@ -277,11 +279,12 @@ CREATE TABLE rif40_predefined_groups (
 );
 ALTER TABLE rif40_predefined_groups ADD CONSTRAINT rif40_predefined_groups_pk PRIMARY KEY (predefined_group_name);
 ALTER TABLE rif40_predefined_groups ADD CONSTRAINT outcome_type_ck3 CHECK (outcome_type IN ('A&E', 'ICD', 'ICD-O', 'OPCS', 'BIRTHWEIGHT'));
-CREATE TABLE gis.sahsuland_level3 (
+
+/* CREATE TABLE gis.sahsuland_level3 (
 	level3 varchar(20) NOT NULL,
 	name varchar(200) NOT NULL
 );
-CREATE UNIQUE INDEX sahsuland_level3_pk ON gis.sahsuland_level3 (level3);
+CREATE UNIQUE INDEX sahsuland_level3_pk ON gis.sahsuland_level3 (level3); */
 CREATE TABLE rif40_age_group_names (
 	age_group_id smallint NOT NULL,
 	age_group_name varchar(50) NOT NULL
@@ -300,6 +303,7 @@ CREATE TABLE rif40_reference_tables (
 	table_name varchar(30) NOT NULL
 );
 ALTER TABLE rif40_reference_tables ADD CONSTRAINT rif40_reference_tables_pk PRIMARY KEY (table_name);
+/*
 CREATE TABLE gis.sahsuland_geography (
 	level1 varchar(20) NOT NULL,
 	level2 varchar(20) NOT NULL,
@@ -310,6 +314,7 @@ CREATE INDEX sahsuland_geography_bm2 ON gis.sahsuland_geography (level1);
 CREATE INDEX sahsuland_geography_bm4 ON gis.sahsuland_geography (level3);
 CREATE INDEX sahsuland_geography_bm3 ON gis.sahsuland_geography (level2);
 CREATE UNIQUE INDEX sahsuland_geography_pk ON gis.sahsuland_geography (level4);
+*/
 CREATE TABLE rif40_geographies (
 	geography varchar(50) NOT NULL,
 	description varchar(250) NOT NULL,
@@ -431,13 +436,15 @@ CREATE TABLE rif40_error_messages (
 );
 ALTER TABLE rif40_error_messages ADD CONSTRAINT rif40_error_messages_pk PRIMARY KEY (error_code,tag);
 ALTER TABLE rif40_error_messages ADD CONSTRAINT rif40_error_messages_code_ck CHECK (error_code IN (-1, -4088, -2290, -2291) OR error_code BETWEEN -20999 AND -20000);
+/*
 CREATE TABLE gis.sahsuland_level4 (
 	level4 varchar(20) NOT NULL,
 	name varchar(200) NOT NULL,
 	x_coordinate integer NOT NULL,
 	y_coordinate integer NOT NULL
-);
+); 
 CREATE UNIQUE INDEX sahsuland_level4_pk ON gis.sahsuland_level4 (level4);
+*/
 CREATE TABLE t_rif40_projects (
 	project varchar(30) NOT NULL,
 	description varchar(250) NOT NULL,
@@ -446,11 +453,13 @@ CREATE TABLE t_rif40_projects (
 );
 ALTER TABLE t_rif40_projects ADD CONSTRAINT t_rif40_projects_pk PRIMARY KEY (project);
 ALTER TABLE t_rif40_projects ADD CONSTRAINT t_rif40_projects_date_ck CHECK (date_ended IS NULL OR (date_ended >= date_started));
-CREATE TABLE gis.sahsuland_level1 (
+
+/*CREATE TABLE gis.sahsuland_level1 (
 	level1 varchar(20) NOT NULL,
 	name varchar(200) NOT NULL
 );
 CREATE UNIQUE INDEX sahsuland_level1_pk ON gis.sahsuland_level1 (level1);
+ */
 CREATE TABLE t_rif40_study_sql_log (
 	username varchar(90) DEFAULT USER,
 	study_id integer NOT NULL,

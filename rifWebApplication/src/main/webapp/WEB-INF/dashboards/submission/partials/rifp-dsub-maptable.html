@@ -1,24 +1,63 @@
+<!--
+/**
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * Copyright 2016 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ *
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+
+ * David Morley
+ * @author dmorley
+ */
+-->
+
 <!-- 
 PARTIAL for maptable directive in disease submission
 Used in Study Area and Comparison Area Modals, each with own respective controller
 Used by rifd-dsub-maptable.js
 !refresh is a hack to ensure the table redraws itself
 -->
+
 <div class='modalAreaSelectionMenu'>
-    <div id='selectAtSelection' class='styleUnderline dropdowns availablesWrapper'>
-        <select type="text" ng-model="input.studyResolution" id='selectAt' class='dropdownSelect' ng-options="l for l in geoLevelsViews"></select>
-        <div class="dropDownLabel">Resolution of Results</div>
-        <div id='selectAtAvailable' class='availables'></div>
-    </div>
-    <div id='resolutionSelection' class="styleUnderline dropdowns availablesWrapper">
-        <select type="text" ng-model="input.selectAt" id='resolution' class='dropdownSelect' ng-options="l for l in geoLevels" ng-change="geoLevelChange()"></select>
-        <div class="dropDownLabel">Selection Resolution</div>
-        <div id='resolutionAvailable' class='availables'></div>
-    </div>
-</div>      
+       <div id='selectAtSelection' class='styleUnderline dropdowns availablesWrapper'>
+           <select type="text" ng-model="input.studyResolution" id='selectAt' class='dropdownSelect' ng-options="l for l in geoLevelsViews"></select>
+           <div class="dropDownLabel">Resolution of Results</div>
+           <div id='selectAtAvailable' class='availables'></div>
+       </div>
+       <div id='resolutionSelection' class="styleUnderline dropdowns availablesWrapper">
+           <select type="text" ng-model="input.selectAt" id='resolution' class='dropdownSelect' ng-options="l for l in geoLevels" ng-change="geoLevelChange()"></select>
+           <div class="dropDownLabel">Selection Resolution</div>
+           <div id='resolutionAvailable' class='availables'></div>
+       </div> 
+</div>  
+
 <button class="mapListButton" ng-click="openFromList()">Upload from List</button>
 <div class='modalAreaSelectionContent'>
-    <div ng-if="!refresh" class="grid" ui-grid="gridOptions" ui-grid-selection ui-grid-resize-columns></div>
+    <div ng-controller="MultiSelectCtrl">
+        <div ng-if="!refresh" class="grid" ng-mouseleave="mouseleave($event)" ui-grid="gridOptions" ui-grid-selection ui-grid-resize-columns></div>
+    </div>
     <div id='areaSelectionMap'>
         <div class="submenuMapping" >
             <ul class="mapBoxOpts">
@@ -45,7 +84,7 @@ Used by rifd-dsub-maptable.js
 
             </ul>                 
         </div>    
-        <leaflet id= "area" tiles="tiles" width="100%" height="100%" geojson="geojson"></leaflet>      
+        <leaflet id= "area" tiles="tiles" width="100%" height="100%" geojson="geojson" lf-center="input.center"></leaflet>      
     </div>  
 
     <div id='mapSelectionCounter' class='mapCounter'>

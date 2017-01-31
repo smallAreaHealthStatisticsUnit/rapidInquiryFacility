@@ -812,24 +812,73 @@ RangeError: Invalid string length
 	   zoomlevels are supported. All data is in 4326. In particular area_id has been deliberately changed to areaid to cause 
 	   parse errors!
 	b) areaid_count added to rif40_geolevels/t_rif40_geolevels
-	c) _rif40_getGeoLevelExtentCommon() to support rif40_geography.geometrytable and zoomlevels
+	c) _rif40_getGeoLevelExtentCommon() to support rif40_geography.geometrytable and zoomlevels; pre tileMaker support retained
+	d) rif40_GetMapAreas.sql() to support rif40_geography.geometrytable and zoomlevels; fiz for old sahsuland hard coding; pre 
+	   tileMaker support retained
   * Tiles view and table compared to previous; after slight index and view tune efficeny as before; no missing/extra tiles
   * The adajacency matrix function needs to be checked.
-  * Check json format in tiles tables.
+  * Check json format in tiles tables. New tiles have a BBOX! Changed for full compatibility: 
+	  id to gid,
+	  areaID to area_id,
+	  areaName to name
+	The default names are not quite the same: "Kozniewska LEVEL4(01.013.016800.3)" as opposed to "01.013.016800.3"
+  * Added GID to lookup tables
   
-#### Current TODO list (January 2017):
+#### 23rd to 27th January
+  
+* Converted remaining rif40_xml_pkg functions to support tilemaker table names 
+* Allow non study or health data related test scripts (1, 2, 3 and 6) to run on sahusland_empty
+* Found bug in MS SQL hierarchy table: row numbers are the same but the smaller areas are being picked.
+* Separate Postgres and SQL server tiles, hierarchy and lookup CSV files (so they can be compared)
+* Lookup files are the same, and ordered
+* Added comment to Postgres geometry partition
+* Fixed SQL Server heirarchy bug. Caused by geography datatype. Fixed geom_orig to be geometry datatype and used that. Also  
+  ordered hierarchy CSV files. Postgres and SQL Server hierarchy and lookup tables now exactly the same; and agree with old PostGIS
+  tile build. Regression tests OK.
+* QGIS integration for SQL Server: ..\rifDatabase\GeospatialData\create_mssql_geometry_columns.sql. Note that the original sp_executesql()
+  behaved differently with -E (windows authentication) to -U/P (username/password authentication). Solution is to use sp_executesql() if later SQL 
+  needs access to variables. This is an execution context related issue which has yet to be explained to me. (per tx temporary tables behave the 
+  same way). This has the potential to case bugs in the SQL Server scripts if you run the build phase not as a Windows authenticated user.
+* MS Sahsuland projection problem; parked: see below.
 
-* MS Sahsuland projection problem; must be contained within the projection or will fail
-* Drop scripts
+#### 30th January to 3rd February 
+
+* TileViewer (tile-viewer.html) web screen by DB/geography; DB web service. Currently slow because using geoJSON.
+  Both SQL server and Postgres tiles display for both SAHSULAND and USA to county level.
+* Note resizing bug in tile-maker.html is probably caused by setting the height of the map div in html once 
+  leaflet is initialized.
+
+#### Current TODO list (February 2017): SQL Server Port
+
+* SQL Server run study port
+* SQL server fault in rfi40_geographies/geometry insert triggers
+
+* TileViewer (May?):
+  * Resize
+  * TopoJSON support
+  * UUID support
+  * Add Winston logging
+  * Separate DB logons using UUID; add username/password support
+* Convert v4_0_create_sahsuland.sql to use tileMaker sahsuland, and remaining test scripts)
+* Tilemaker drop scripts. Probably needed for v4_0_drop.sql and hence sahsuland_dev rebuild
+* Alter 9:
+
+  1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
+  2. Make RIF40_TABLES.THEME nullable for denominators
+   
+* SAHSULAND was using Nevada north 1927, now using OSGB at present. The original plan
+  was for tandard test configurations:
+  * SAHSULAND: relocated to Utah: reprojected to 1983 North American Projection (EPSG:4269)
+	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
+  * DOGGERLAND: relocated to 54°20'0"N 5°42'59"E on the Dogger Bank. This is the site of wreck of SMS Blucher. 
+    https://www.google.co.uk/maps/place/54%C2%B020'00.0%22N+5%C2%B042'59.0%22E/@54.3332107,0.9702213,5.92z/data=!4m5!3m4!1s0x0:0x0!8m2!3d54.3333333!4d5.7163889 
+  * USA: USA to county level [this is OK]
+  
+  These will need to use a suitable projection within bounds and also be translated to the desired place. i.e. using proj4 in Node.
+  
 * Fix zoomlevel miss-set from config file (defaults are wrong)
-* Check (warn/error) if geometry not within projection (sahsuland is using Nevada north 1927 at present)
 
-### Alter 9
-
-1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
-2. Make RIF40_TABLES.THEME nullable for denominators
-
-### Database Bugs
+### Database Bugs [alter 9]
 
 * INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
 * Fix:
@@ -837,45 +886,49 @@ RangeError: Invalid string length
   * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
 * Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
 
-* Standard test configurations:
-  * SAHSULAND: relocated to Utah: reprojected to 1983 North American Projection (EPSG:4269)
-	* Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
-  * DOGGERLAND: relocated to 54°20'0"N 5°42'59"E on the Dogger Bank. This is the site of wreck of SMS Blucher. 
-    https://www.google.co.uk/maps/place/54%C2%B020'00.0%22N+5%C2%B042'59.0%22E/@54.3332107,0.9702213,5.92z/data=!4m5!3m4!1s0x0:0x0!8m2!3d54.3333333!4d5.7163889 
-  * USA: USA to county level
-* Bugs, general RIF database Todo
-* SQL Server run study port
-* SQL server fault in rfi40_geographies/geometry insert triggers
-
 ####  TODO list:
 
-* Relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland)
+* Convert remaining use of geography:: datatype in SQL Server to geometry::. The geography:: datatype is used in the build
+  to intersect tiles and will may have issues. Production SQL Server is using the geometry:: datatype. This will be parked if 
+  it is not a problem.
+* Relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). Currently 
+  edited by hand.
 * JSZip 3.0 upgrade required (forced to 2.6.0) for present
 * SQL load script generator: still todo, all can wait:
   * Add search path to user schema, check user schema exists, to Postgres version
-  * Confirm Postgres and SQL Server geolevel intersections are the same;
 * Get methods: 
   * ZIP results;
   * Run front end and batch from XML config file.
   * Add CSV files meta to XML config;
+* Tilemaker etc:
+  * Add old fileds in DBF file to lookup tables;  
   * Drive database script generator from XML config file (not internal data structures);
   * Missing comments on other columns from shapefile via extended attributes XML file;
   * Dump SQL to XML/JSON files (Postgres and SQL Server) so Kevin does not need to generate it;
-  * Add trigger verification code from Postgres;
+  * Add trigger verification code from Postgres to tilemaker build tables (t_rif40_geolelvels, rif40_geographies);
   * Fix in Node:
     - Triangles (to keep QGIS happy)
-    - Self-intersection at or near point -76.329400888614401 39.31505881204005
+    - Self-intersections, e.g. at or near point -76.329400888614401 39.31505881204005
     - Too few points in geometry component at or near point -91.774770828512843 46.946012696542709
   * Check Turf JS centroid code (figures are wrong);
   * Compare Turf/PostGIS/SQL Server area and centroid caculations;
-
-SQL Server porting started in August(nearly complete 27/10/2016); so far I was able to use Turf. The Node.js backend needs to be 
-able to run the scripts so that the fixed and validated geometry data becomes available.
 
 Note: no bounding box (bbox) in tiles.
 
 #### Parked TODO (todon't) list (as required):
 
+* MS Sahsuland projection problem; must be fully contained within the projection or area calculations and intersections will fail. 
+  This needs to be detected. Currently geography datatype caluclates area wrong even after the polygon has been reorientated (i.e. 
+  follow the right hand rule). The script: area_check.sql fails on SQL Server at this point. PostGIS will complain:
+
+	transform: couldn't project point (-77.0331 -12.1251 0):
+		latitude or longitude exceeded limits (-14)
+  
+   PostGIS, SQL Server and PROJ.4 (i.e. the projection file)  does not  have these bounds. Each projection's bounds are unique, and are 
+   traditionally published by the authority that designed the projection. One of the primary sources for this data is from 
+   https://www.epsg-registry.org. This would require an additional table. 
+
+   So it is not easy to check if the geometry not within projected bounds, although possible.
 * Read DBF header so shapefile reader knows number of expected records; add to status update
 * Timeout recovery (switches to batch mode).
 * Favicon support: https://github.com/expressjs/serve-favicon

@@ -80,4 +80,11 @@ Principal Work Area: JavaScript User interface development
 - Polling of study status using $interval to notify on completion of submitted job
 - Modified getSmoothedResults method to not need a year
 - Population pyramids plotable by year
+- Adding colour swatches to choropleth maps
+- UK postcode base layers
+
+##February
+
+- More refactoring
+- Browser compatibility fixes
 

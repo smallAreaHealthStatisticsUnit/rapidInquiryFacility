@@ -8,6 +8,93 @@ DECLARE @l_geography AS VARCHAR(200)='%1';
  *
  * Description:			Create insert statement into hierarchy table
  * Note:				%%%% becomes %% after substitution
+ *
+ * Output for SAHSULAND:
+ 
+Populating SAHSULAND geography hierarchy table: HIERARCHY_SAHSULAND; spid: 52
+SQL> SELECT /- Subqueries x12 ... x34: intersection aggregate geometries starting from the lowest resolution.
+               Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+               Calculate the area of the higher resolution geolevel and the area of the intersected area -/
+       a1.areaid AS SAHSU_GRD_LEVEL1,
+       a2.areaid AS SAHSU_GRD_LEVEL2,
+       a2.geom_orig.STArea() AS a2_area,
+       a1.geom_orig.STIntersection(a2.geom_orig).STArea() AS a12_area
+  INTO ##x12_52
+  FROM SAHSU_GRD_LEVEL1 a1 CROSS JOIN SAHSU_GRD_LEVEL2 a2
+ WHERE a1.geom_orig.STIntersects(a2.geom_orig) = 1
+
+(17 rows affected)
+SQL> SELECT /- Subqueries x23 ... x34: intersection aggregate geometries starting from the lowest resolution.
+               Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+               Calculate the area of the higher resolution geolevel and the area of the intersected area -/
+       a2.areaid AS SAHSU_GRD_LEVEL2,
+       a3.areaid AS SAHSU_GRD_LEVEL3,
+       a3.geom_orig.STArea() AS a3_area,
+       a2.geom_orig.STIntersection(a3.geom_orig).STArea() AS a23_area
+  INTO ##x23_52
+  FROM SAHSU_GRD_LEVEL2 a2 CROSS JOIN SAHSU_GRD_LEVEL3 a3
+ WHERE a2.geom_orig.STIntersects(a3.geom_orig) = 1
+
+(331 rows affected)
+SQL> SELECT /- Subqueries x34 ... x34: intersection aggregate geometries starting from the lowest resolution.
+               Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+               Calculate the area of the higher resolution geolevel and the area of the intersected area -/
+       a3.areaid AS SAHSU_GRD_LEVEL3,
+       a4.areaid AS SAHSU_GRD_LEVEL4,
+       a4.geom_orig.STArea() AS a4_area,
+       a3.geom_orig.STIntersection(a4.geom_orig).STArea() AS a34_area
+  INTO ##x34_52
+  FROM SAHSU_GRD_LEVEL3 a3 CROSS JOIN SAHSU_GRD_LEVEL4 a4
+ WHERE a3.geom_orig.STIntersects(a4.geom_orig) = 1
+
+(50954 rows affected)
+SQL>
+SELECT /- Join x45 ... x34intersections, pass through the computed areas, compute intersected area/higher resolution geolevel area,
+             compute maximum intersected area/higher resolution geolevel area using an analytic partition of all
+             duplicate higher resolution geolevels -/
+               x12.SAHSU_GRD_LEVEL1,
+               x12.SAHSU_GRD_LEVEL2,
+               x23.SAHSU_GRD_LEVEL3,
+               x34.SAHSU_GRD_LEVEL4,
+               CASE WHEN x12.a2_area > 0 THEN x12.a12_area/x12.a2_area ELSE NULL END test12,
+               MAX(x12.a12_area/x12.a2_area) OVER (PARTITION BY x12.SAHSU_GRD_LEVEL2) AS max12,
+               CASE WHEN x23.a3_area > 0 THEN x23.a23_area/x23.a3_area ELSE NULL END test23,
+               MAX(x23.a23_area/x23.a3_area) OVER (PARTITION BY x23.SAHSU_GRD_LEVEL3) AS max23,
+               CASE WHEN x34.a4_area > 0 THEN x34.a34_area/x34.a4_area ELSE NULL END test34,
+               MAX(x34.a34_area/x34.a4_area) OVER (PARTITION BY x34.SAHSU_GRD_LEVEL4) AS max34
+  INTO ##y_52
+  FROM ##x12_52 x12, ##x23_52 x23, ##x34_52 x34
+ WHERE x12.SAHSU_GRD_LEVEL2 = x23.SAHSU_GRD_LEVEL2
+   AND x23.SAHSU_GRD_LEVEL3 = x34.SAHSU_GRD_LEVEL3
+
+(84488 rows affected)
+SQL> DROP TABLE ##x12_52
+SQL> DROP TABLE ##x23_52
+SQL> DROP TABLE ##x34_52
+SQL> INSERT INTO hierarchy_sahsuland (sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4)
+SELECT /- Select y intersection, eliminating duplicates using selecting the lower geolevel resolution
+         with the largest intersection by area for each (higher resolution) geolevel -/
+       sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
+  FROM ##y_52
+ WHERE max12 = test12
+   AND max12 > 0.5 /- >50% overlap -/
+   AND max23 = test23
+   AND max23 > 0.5 /- >50% overlap -/
+   AND max34 = test34
+   AND max34 > 0.5 /- >50% overlap -/
+ ORDER BY 1, 2, 3, 4
+
+(1230 rows affected)
+SQL> DROP TABLE ##y_52
+name
+--------------------------------------------------------------------------------------------------------------------------------
+
+(0 rows affected)
+SQL> ALTER INDEX hierarchy_sahsuland_sahsu_grd_level2 ON hierarchy_sahsuland REORGANIZE
+SQL> ALTER INDEX hierarchy_sahsuland_sahsu_grd_level3 ON hierarchy_sahsuland REORGANIZE
+SQL> ALTER INDEX PK__hierarch__61FEBAD4794A035D ON hierarchy_sahsuland REORGANIZE
+SQL> UPDATE STATISTICS hierarchy_sahsuland
+ 
  */
 --
 	
@@ -119,11 +206,11 @@ BEGIN
 
 SELECT a1.areaid AS cb_2014_us_nation_5m,
 	   a2.areaid AS cb_2014_us_state_500k,
-	   a2.geom_11.STArea() AS a2_area,
-	   a1.geom_11.STIntersection(a2.geom_11).STArea() AS a12_area
+	   a2.geom_orig.STArea() AS a2_area,
+	   a1.geom_orig.STIntersection(a2.geom_orig).STArea() AS a12_area
   INTO dbo.#x12
   FROM cb_2014_us_nation_5m a1   CROSS JOIN cb_2014_us_state_500k a2
- WHERE a1.geom_11.STIntersects(a2.geom_11) = 1;
+ WHERE a1.geom_orig.STIntersects(a2.geom_orig) = 1;
 	
 Postgres Original: 
 	
@@ -134,6 +221,18 @@ x23 AS (
 	       ST_Area(ST_Intersection(a2.geom, a3.geom)) AS a23_area
           FROM a2 CROSS JOIN a3
 	 WHERE ST_Intersects(a2.geom, a3.geom)
+	 
+SQL Server:
+
+SELECT a1.areaid AS SAHSU_GRD_LEVEL1,
+       a2.areaid AS SAHSU_GRD_LEVEL2,
+       a2.geom_orig.STArea() AS a2_area,
+       a1.geom_orig.STIntersection(a2.geom_orig).STArea() AS a12_area
+  INTO x12_52
+  FROM SAHSU_GRD_LEVEL1 a1 CROSS JOIN SAHSU_GRD_LEVEL2 a2
+ WHERE a1.geom_orig.STIntersects(a2.geom_orig) = 1
+   AND a1.geom_orig.STIntersection(a2.geom_orig).STArea() > 0;	 
+	 
  */		
 			BEGIN
 				SET @sql_stmt=			
@@ -151,8 +250,8 @@ x23 AS (
 				    '  INTO ##x' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_' + CAST(@@spid AS VARCHAR) + @crlf + 
 					'  FROM ' + @shapefile_table + ' a' + CAST(@i AS VARCHAR) + 
 					' CROSS JOIN ' + @n_shapefile_table + ' a' + CAST(@i+1 AS VARCHAR) + '' + @crlf + 
-					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
-						'.geom_%2) = 1';
+					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersects(a' + CAST(@i+1 AS VARCHAR) + '.geom_%2) = 1' + @crlf + 		
+					'   AND a' + CAST(@i AS VARCHAR) + '.geom_%2.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_%2).STArea() > 0';
 				PRINT 'SQL> ' + @sql_stmt;
 				EXECUTE @rowcount = sp_executesql @sql_stmt;	
 			END;			
@@ -161,11 +260,11 @@ x23 AS (
 
 SELECT a2.areaid AS cb_2014_us_state_500k,
 	   a3.areaid AS cb_2014_us_county_500k,
-	   a3.geom_11.STArea() AS a3_area,
-	   a2.geom_11.STIntersection(a3.geom_11).ST_Area() AS a23_area
+	   a3.geom_orig.STArea() AS a3_area,
+	   a2.geom_orig.STIntersection(a3.geom_orig).ST_Area() AS a23_area
   INTO dbo.#x23
   FROM cb_2014_us_state_500k a2  CROSS JOIN cb_2014_us_county_500k a3
- WHERE a2.geom_11.STntersects(a3.geom_11) = 1;
+ WHERE a2.geom_orig.STntersects(a3.geom_orig) = 1;
 
 */
 			BEGIN
@@ -193,11 +292,11 @@ SELECT a2.areaid AS cb_2014_us_state_500k,
 
 SELECT a2.areaid AS cb_2014_us_state_500k,
 	   a3.areaid AS cb_2014_us_county_500k,
-	   a3.geom_11.STArea() AS a3_area,
-	   a2.geom_11.STIntersection(a3.geom_11).STArea() AS a23_area
+	   a3.geom_orig.STArea() AS a3_area,
+	   a2.geom_orig.STIntersection(a3.geom_orig).STArea() AS a23_area
   INTO dbo.#x23
   FROM cb_2014_us_state_500k a2 CROSS JOIN cb_2014_us_county_500k a3
- WHERE a2.geom_11.STIntersects(a3.geom_11) = 1;
+ WHERE a2.geom_orig.STIntersects(a3.geom_orig) = 1;
 		
 Postgres Original: 
 
@@ -469,6 +568,11 @@ SELECT level1, level2, level3, level4,
 		ELSE
 			SET @sql_stmt+='   AND max' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + 
 				' = test' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + @crlf;
+--
+-- Remove all joins that have <50% overlap
+--				
+		SET @sql_stmt+='   AND max' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + ' > 0.5 /* >50% overlap */' + @crlf;
+		
 		SET @i+=1;	
 	END;
 --

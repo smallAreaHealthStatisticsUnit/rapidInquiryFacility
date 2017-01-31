@@ -209,7 +209,7 @@ $$;
 -- PG psql code (geo processing)
 --
 \i ../PLpgsql/v4_0_rif40_geo_pkg.sql
-\i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
+--\i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
 
 --
 -- PG psql code (middleware)
@@ -307,12 +307,12 @@ VALUES(
 --
 -- Load SAHSU geospatial data
 --
-\i ../shapefiles/sahsuland_shapefiles.sql
+--\i ../shapefiles/sahsuland_shapefiles.sql
 
 --
 -- SAHSUland geolevel setup. Fully processed
 --
-\i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
+--\i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
 
 
 
@@ -457,7 +457,12 @@ $$;
 --
 -- This is a modified ../postgres/rif40_geolevels_geometry.sql (creates T_RIF40_<GEOELVEL>_GEOMETRY etc)
 --
-\i ../psql_scripts/rif40_geolevels_sahsuland_geometry.sql
+--\i ../psql_scripts/rif40_geolevels_sahsuland_geometry.sql
+
+--
+-- Load new tileMaker SAHSULAND
+--
+\i ../../GeospatialData/tileMaker/rif_pg_SAHSULAND.sql
 
 --
 -- Grants
@@ -541,7 +546,7 @@ DECLARE
 		SELECT v.tablename, v.viewname
 		  FROM v
 			LEFT OUTER JOIN t ON (t.relname = v.viewname)
- 		WHERE viewname NOT IN ('rif40_num_denom', 'rif40_projects', 'rif40_geolevels', 'rif40_sahsu_maptiles') /* These views cannot be inserted into */
+ 		WHERE viewname NOT IN ('rif40_num_denom', 'rif40_projects', 'rif40_geolevels', 'rif40_sahsu_maptiles', 'tiles_sahsuland') /* These views cannot be inserted into */
  		  AND  t.trigger_name IS NULL
  		ORDER BY 1, 2;
 	c1_rec RECORD;
@@ -621,7 +626,7 @@ $$;
 -- End of transaction
 --
 END;
-
+/*
 --
 -- Post transaction SQL
 --
@@ -636,7 +641,7 @@ ALTER TABLE "sahsuland_level4" ALTER COLUMN name  SET NOT NULL;
 --
 
 ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
-
+ */
 --
 -- Vacuum ANALYZE all RIF40 tables
 --

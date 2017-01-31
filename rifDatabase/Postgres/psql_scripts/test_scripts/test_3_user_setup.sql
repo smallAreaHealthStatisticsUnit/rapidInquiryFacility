@@ -61,6 +61,11 @@ END;
 $$;
 
 --
+-- Reload DDL check code
+--
+\i ../PLpgsql/v4_0_rif40_sql_pkg_ddl_checks.sql
+
+--
 -- Test user account
 -- 
 \set ntestuser '''XXXX':testuser''''
@@ -248,8 +253,12 @@ BEGIN
 	OPEN c1;
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
-	IF c1_rec.total = 0 THEN
+	IF c1_rec.total = 0 AND current_database() = 'sahsuland_empty' THEN
+		RAISE INFO 'C20900: RIF40_NUM_DENOM had no rows (sahsuland_empty)';
+	ELSIF c1_rec.total = 0 AND current_database() != 'sahsuland_empty' THEN
 		RAISE EXCEPTION 'C20900: RIF40_NUM_DENOM had no rows';
+	ELSIF c1_rec.total > 0 AND current_database() = 'sahsuland_empty' THEN
+		RAISE EXCEPTION 'C20900: RIF40_NUM_DENOM had % rows I(sahsuland_empty)', c1_rec.total::Text;
 	ELSE
 		RAISE INFO 'C20900: RIF40_NUM_DENOM had % rows', c1_rec.total::Text;	
 	END IF;

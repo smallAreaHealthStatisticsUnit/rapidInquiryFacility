@@ -1,3 +1,38 @@
+<!--
+/**
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * Copyright 2016 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ *
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+
+ * David Morley
+ * @author dmorley
+ */
+-->
+
 <!-- 
 HTML partial for ui-router
 Viewer
@@ -18,7 +53,7 @@ Viewer
         <div class="mappingPageLabel">VIEW RESULTS</div>
         <div >
             <div>Study:</div>
-            <select ng-change='child.updateSex("viewermap")'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +   ": " +   s.name) for s in child.studyIDs'></select>
+            <select ng-change='child.updateSex("viewermap")'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +       ": " +       s.name) for s in child.studyIDs'></select>
         </div>
         <div>
             <div>Sex:</div>
@@ -55,7 +90,7 @@ Viewer
                     <ul class="mapBoxOpts">
                         <li><a ng-controller="ChoroplethModalCtrl" ng-click="open('viewermap')" id="choroplethBtn" title="Choropleth map"></a></li>
                         <li><a ng-controller="BaseMapModalCtrl" ng-click="open('viewermap')" id="baseMapBtn" title="Base map"></a></li>	
-                        <li><a id="clearSelection" title="Clear selection" clear-array-selection mapid="viewermap"></a></li>        
+                        <li><a id="clearSelection" title="Clear selection" clear-array-selection mapid="viewermap"></a></li>
                         <li><a id="zoomExtent" title="Zoom to full extent" zoom-extent mapid="viewermap"></a></li>
                         <li><a id="zoomStudy" title="Zoom to study extent" zoom-study mapid="viewermap"></a></li>
                         <li><a id="zoomSelection" title="Zoom to selected" zoom-selection-multiple mapid="viewermap"></a></li> 
@@ -68,8 +103,8 @@ Viewer
                 <leaflet id="viewermap" tiles="thisLayer[viewermap]" width="100%" height="calc(100% - 40px)" lf-center="center"></leaflet>  
             </div>
             <div ui-layout-container class="js-back">
-                <div ui-grid="viewerTableOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns ui-grid-move-columns ui-grid-exporter class="grid-viewer" ng-grid="viewerTableOptions"></div>
+                <div ng-controller="MultiSelectCtrl">
+                    <div ui-grid="viewerTableOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns ui-grid-move-columns ui-grid-exporter class="grid-viewer" ng-mouseleave="mouseleave($event)" ng-grid="viewerTableOptions"></div>
+                </div>
             </div>
         </div>
-    </div>
-</div>

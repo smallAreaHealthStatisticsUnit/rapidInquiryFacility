@@ -1,12 +1,38 @@
+/**
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * Copyright 2016 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ *
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+
+ * David Morley
+ * @author dmorley
+ */
+
 /*
  * DIRECTIVE for map and table linked area selections
- * Used in Study Area and Comparison Area Modals
- * 
- * Map and table selections are synchronised by updating the array 'selectedPolygon'
- * 'selectedPolygon' is updated using click events on the map and table
- * captured clicks do not lead directly to an update of the map or table rather
- * 'selectedPolygon' is monitored using a $watchCollection which renders the selections on changes
- * 
  */
 
 /* global L, d3, key, topojson */
@@ -19,6 +45,10 @@ angular.module("RIF")
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
                     link: function ($scope) {
+
+                        //Reference the child scope
+                        $scope.child = {};
+                        var alertScope = $scope.$parent.$$childHead.$parent.$parent.$$childHead;
 
                         //TODO: These will be input to get Tiles Method
                         //pad(<Number> bufferRatio)	LatLngBounds	
@@ -35,20 +65,24 @@ angular.module("RIF")
                             //TODO: track map extents and zoomlevel for getTile service
                             leafletData.getMap("area").then(function (map) {
                                 map.on('zoomend', function (e) {
-                                    $scope.input.zoomLevel = map.getZoom();
+                                    $scope.input.center.zoom = map.getZoom();
                                     myZoomLevel = map.getZoom();
-                                    //              console.log(myZoomLevel);
+                                    //console.log(myZoomLevel);
                                 });
                                 map.on('moveend', function (e) {
-                                    $scope.input.view = map.getCenter();
+                                    $scope.input.center.lng = map.getCenter().lng;
+                                    $scope.input.center.lat = map.getCenter().lat;
                                     myBbox = map.getBounds();
                                     var b = "N: " + myBbox.getNorth() + " S: " + myBbox.getSouth() + " E: " + myBbox.getEast() + " W: " + myBbox.getWest();
-                                    //              console.log(b);
+                                    //console.log(b);
                                 });
+                                //Set initial map extents
+                                $scope.center = $scope.input.center;
+                                //scalebar
                                 L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-
                                 //Attributions to open in new window
                                 map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                                map.doubleClickZoom.disable();
                             });
                         });
 
@@ -76,7 +110,6 @@ angular.module("RIF")
                         //d3 polygon rendering, changed by slider
                         $scope.transparency = $scope.input.transparency;
 
-
                         /*
                          * TOOL STRIP
                          */
@@ -100,13 +133,13 @@ angular.module("RIF")
                         $scope.selectAll = function () {
                             $scope.selectedPolygon.length = 0;
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
-                                $scope.selectedPolygon.push({id: $scope.gridOptions.data[i].id, gid: $scope.gridOptions.data[i].id, label: $scope.gridOptions.data[i].label, band: $scope.currentBand});
+                                $scope.selectedPolygon.push({id: $scope.gridOptions.data[i].area_id, gid: $scope.gridOptions.data[i].area_id, label: $scope.gridOptions.data[i].label, band: $scope.currentBand});
                             }
                         };
 
                         $scope.changeOpacity = function () {
                             $scope.input.transparency = $scope.transparency;
-                            $scope.topoLayer.eachLayer(handleLayer);
+                            $scope.geoJSON.eachLayer(handleLayer);
                         };
 
                         //Reset only the selected band back to 0
@@ -164,10 +197,10 @@ angular.module("RIF")
                                 leafletData.getMap("area").then(function (map) {
                                     latlngList = [];
                                     centroidMarkers = new L.layerGroup();
-                                    if (map.hasLayer($scope.topoLayer)) {
-                                        map.removeLayer($scope.topoLayer);
+                                    if (map.hasLayer($scope.geoJSON)) {
+                                        map.removeLayer($scope.geoJSON);
                                     }
-                                    $scope.topoLayer = new L.TopoJSON(res.data, {
+                                    $scope.geoJSON = new L.TopoJSON(res.data, {
                                         renderer: L.canvas(),
                                         style: style,
                                         onEachFeature: function (feature, layer) {
@@ -193,7 +226,6 @@ angular.module("RIF")
                                                 }
                                                 this.setStyle({
                                                     color: 'gray',
-                                                    dashArray: 'none',
                                                     weight: 1.5,
                                                     fillOpacity: function () {
                                                         //set tranparency from slider
@@ -203,7 +235,7 @@ angular.module("RIF")
                                                 $scope.thisPolygon = feature.properties.name;
                                             });
                                             layer.on('mouseout', function (e) {
-                                                $scope.topoLayer.resetStyle(e.target);
+                                                $scope.geoJSON.resetStyle(e.target);
                                                 $scope.thisPolygon = "";
                                             });
                                             layer.on('click', function (e) {
@@ -226,10 +258,10 @@ angular.module("RIF")
                                             });
                                         }
                                     });
-                                    maxbounds = $scope.topoLayer.getBounds();
-                                    $scope.topoLayer.addTo(map);
+                                    maxbounds = $scope.geoJSON.getBounds();
+                                    $scope.geoJSON.addTo(map);
                                     $scope.totalPolygonCount = latlngList.length;
-                                    if ($scope.input.view.lng === 0) {
+                                    if ($scope.input.center.lng === 0) {
                                         leafletData.getMap("area").then(function (map) {
                                             map.fitBounds(maxbounds);
                                         });
@@ -247,8 +279,14 @@ angular.module("RIF")
                         user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
 
                         $scope.geoLevelChange = function () {
+                            //Clear the map
                             $scope.selectedPolygon.length = 0;
                             $scope.clearAOI();
+                            leafletData.getMap("area").then(function (map) {
+                                if (map.hasLayer(centroidMarkers)) {
+                                    map.removeLayer(centroidMarkers);
+                                }
+                            });
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
 
@@ -314,8 +352,6 @@ angular.module("RIF")
                                     $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
                                     map.addLayer($scope.thisLayer);
                                 }
-                                //restore setView
-                                map.setView($scope.input.view, $scope.input.zoomLevel);
                                 //hack to refresh map
                                 setTimeout(function () {
                                     map.invalidateSize();
@@ -342,7 +378,6 @@ angular.module("RIF")
                                 weight: 1,
                                 opacity: 1,
                                 color: 'gray',
-                                dashArray: '3',
                                 fillOpacity: $scope.transparency
                             };
                         }
@@ -352,67 +387,32 @@ angular.module("RIF")
                                 fillOpacity: $scope.transparency
                             });
                         }
-
-                        /*
-                         * TABLE CONTROLS
-                         */
-                        //Multiple select with shift
-                        //detect shift key (16) down
-                        var bShift = false;
-                        var multiStart = -1;
-                        var multiStop = -1;
-                        $scope.keyDown = function ($event) {
-                            if (!bShift && $event.keyCode === 16) {
-                                bShift = true;
+                        
+                        //********************************************************************************************************
+                        //Watch selectedPolygon array for any changes
+                        $scope.$watchCollection('selectedPolygon', function (newNames, oldNames) {
+                            if (newNames === oldNames) {
+                                return;
                             }
-                        };
-                        //detect shift key (16) up
-                        $scope.keyUp = function ($event) {
-                            if (bShift && $event.keyCode === 16) {
-                                bShift = false;
-                                multiStop = -1;
-                            }
-                        };
-
-                        //Table click event to update selectedPolygon 
-                        $scope.rowClick = function (row) {
-                            var myVisibleRows = $scope.gridApi.core.getVisibleRows();
-                            if (!bShift) {
-                                //We are doing a single click select on the table
-                                var thisPoly = row.entity.label;
-                                var thisPolyID = row.entity.id;
-                                var bFound = false;
-                                for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                    if ($scope.selectedPolygon[i].id === thisPolyID) {
-                                        bFound = true;
-                                        $scope.selectedPolygon.splice(i, 1);
-                                        break;
+                            //Update table selection
+                            $scope.gridApi.selection.clearSelectedRows();
+                            for (var i = 0; i < $scope.gridOptions.data.length; i++) {
+                                $scope.gridOptions.data[i].band = 0;
+                                for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+                                    if ($scope.gridOptions.data[i].label === $scope.selectedPolygon[j].label) {
+                                        $scope.gridOptions.data[i].band = $scope.selectedPolygon[j].band;
                                     }
                                 }
-                                if (!bFound) {
-                                    $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
-                                }
+                            }
+                            //Update the area counter
+                            $scope.selectedPolygonCount = newNames.length;
+                            if (!$scope.geoJSON) {
+                                return;
                             } else {
-                                //We are doing a multiple select on the table, shift key is down
-                                multiStop = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
-                                for (var i = Math.min(multiStop, multiStart);
-                                        i <= Math.min(multiStop, multiStart) + (Math.abs(multiStop - multiStart)); i++) {
-                                    var thisPoly = myVisibleRows[i].entity.label;
-                                    var thisPolyID = myVisibleRows[i].entity.id;
-                                    var bFound = false;
-                                    for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                                        if ($scope.selectedPolygon[j].id === thisPolyID) {
-                                            bFound = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!bFound) {
-                                        $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
-                                    }
-                                }
+                                //Update map selection
+                                $scope.geoJSON.eachLayer(handleLayer);
                             }
-                            multiStart = ModalAreaService.matchRowNumber(myVisibleRows, row.entity.id);
-                        };
+                        });
 
                         //*********************************************************************************************************************
                         //SELECTION METHODS
@@ -422,8 +422,8 @@ angular.module("RIF")
                          */
                         //Add Leaflet.Draw capabilities
                         var drawnItems;
-                        LeafletDrawService.get_CircleCapability(Math.max.apply(null, $scope.possibleBands));
-                        LeafletDrawService.get_PolygonCapability();
+                        LeafletDrawService.getCircleCapability(Math.max.apply(null, $scope.possibleBands));
+                        LeafletDrawService.getPolygonCapability();
 
                         //Add Leaflet.Draw toolbar
                         leafletData.getMap("area").then(function (map) {
@@ -474,9 +474,9 @@ angular.module("RIF")
                                 //is point in defined polygon?
                                 var test;
                                 if (shape.circle) {
-                                    test = GISService.get_pointincircle(point[0], shape);
+                                    test = GISService.getPointincircle(point[0], shape);
                                 } else {
-                                    test = GISService.get_pointinpolygon(point[0], shape);
+                                    test = GISService.getPointinpolygon(point[0], shape);
                                 }
                                 if (test) {
                                     var thisPoly = point[1];
@@ -556,7 +556,7 @@ angular.module("RIF")
                                 var file = files[0];
                                 if (file.name.slice(-3) !== 'zip') {
                                     //not a zip file
-                                    $scope.$parent.$$childHead.$parent.$parent.$$childHead.showError("All parts of the Shapefile expected in one zipped file");
+                                    alertScope.showError("All parts of the Shapefile expected in one zipped file");
                                     return;
                                 } else {
                                     var reader = new FileReader();
@@ -594,13 +594,13 @@ angular.module("RIF")
                                                 shpfile.addTo(map);
                                                 map.fitBounds(poly.getBounds());
                                             } catch (err) {
-                                                $scope.$parent.$$childHead.$parent.$parent.$$childHead.showError("Could not open Shapefile, no valid polygons");
+                                                alertScope.showError("Could not open Shapefile, no valid polygons");
                                             }
                                         });
                                     }
                                 }
                             } catch (err) {
-                                $scope.$parent.$$childHead.$parent.$parent.$$childHead.showError("Could not open Shapefile: " + err.message);
+                                alertScope.showError("Could not open Shapefile: " + err.message);
                             }
                         };
 
@@ -626,11 +626,11 @@ angular.module("RIF")
                                     var bInvalid = false;
                                     for (var i = 0; i < listOfIDs.length; i++) {
                                         for (var j = 0; j < $scope.gridOptions.data.length; j++) {
-                                            if ($scope.gridOptions.data[j].id === listOfIDs[i].ID) {
+                                            if ($scope.gridOptions.data[j].area_id === listOfIDs[i].ID) {
                                                 var thisBand = Number(listOfIDs[i].Band);
                                                 if ($scope.possibleBands.indexOf(thisBand) !== -1) {
                                                     bPushed = true;
-                                                    $scope.selectedPolygon.push({id: $scope.gridOptions.data[j].id, gid: $scope.gridOptions.data[j].id,
+                                                    $scope.selectedPolygon.push({id: $scope.gridOptions.data[j].area_id, gid: $scope.gridOptions.data[j].area_id,
                                                         label: $scope.gridOptions.data[j].label, band: Number(listOfIDs[i].Band)});
                                                     break;
                                                 } else {
@@ -640,14 +640,14 @@ angular.module("RIF")
                                         }
                                     }
                                     if (!bPushed) {
-                                        $scope.$parent.$$childHead.$parent.$parent.$$childHead.showWarning("No valid districts found in your list");
+                                        alertScope.showWarning("No valid districts found in your list");
                                     } else if (!bInvalid) {
-                                        $scope.$parent.$$childHead.$parent.$parent.$$childHead.showSuccess("List uploaded sucessfully");
+                                        alertScope.showSuccess("List uploaded sucessfully");
                                     } else {
-                                        $scope.$parent.$$childHead.$parent.$parent.$$childHead.showSuccess("List uploaded sucessfully, but some enteries were not valid");
+                                        alertScope.showSuccess("List uploaded sucessfully, but some enteries were not valid");
                                     }
                                 } catch (e) {
-                                    $scope.$parent.$$childHead.$parent.$parent.$$childHead.showError("Could not read or process the file: Please check formatting");
+                                    alertScope.showError("Could not read or process the file: Please check formatting");
                                 }
                             };
                             var modalInstance = $uibModal.open({
@@ -660,52 +660,6 @@ angular.module("RIF")
                                 keyboard: false
                             });
                         };
-                        //********************************************************************************************************
-
-
-                        //This function fires all the rendering from UI events
-                        //Watch selectedPolygon array for any changes
-                        $scope.$watchCollection('selectedPolygon', function (newNames, oldNames) {
-                            if (newNames === oldNames) {
-                                return;
-                            }
-                            //Update table selection
-                            $scope.gridApi.selection.clearSelectedRows();
-                            for (var i = 0; i < $scope.gridOptions.data.length; i++) {
-                                $scope.gridOptions.data[i].band = 0;
-                                for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                                    if ($scope.gridOptions.data[i].label === $scope.selectedPolygon[j].label) {
-                                        $scope.gridOptions.data[i].band = $scope.selectedPolygon[j].band;
-                                    }
-                                }
-                            }
-                            //Update the area counter
-                            $scope.selectedPolygonCount = newNames.length;
-                            if (!$scope.topoLayer) {
-                                return;
-                            } else {
-                                //Update map selection
-                                $scope.topoLayer.eachLayer(handleLayer);
-                            }
-                        });
                     }
                 };
-            }])
-        .controller('ModalAOIShapefileInstanceCtrl', function ($scope, $uibModalInstance) {
-            $scope.close = function () {
-                $uibModalInstance.dismiss();
-            };
-            $scope.submit = function () {
-                $scope.uploadShapeFile();
-                $uibModalInstance.close();
-            };
-        })
-        .controller('ModalFileListInstanceCtrl', function ($scope, $uibModalInstance) {
-            $scope.close = function () {
-                $uibModalInstance.dismiss();
-            };
-            $scope.submit = function () {
-                $scope.uploadFile();
-                $uibModalInstance.close();
-            };
-        });
+            }]);

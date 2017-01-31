@@ -862,21 +862,19 @@ GO
 
 -- SQL statement 25: Add geometry column for original SRID geometry >>>
 /*
- * SQL statement name: 	add_geometry_column.sql
+ * SQL statement name: 	add_geometry_column2.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
  * Parameters:
- *						1: Table name; e.g. cb_2014_us_county_500k
- *						2: column name; e.g. geographic_centroid
- *						3: Column SRID; e.g. 4326
- *						4: Spatial geometry type: e.g. POINT, MULTIPOLYGON
+ *						1: Table name; e.g. geometry_cb_2014_us_500k
+ *						2: column name; e.g. geom
+ *						3: Column SRID; e.g. 4326 [NEVER USED IN SQL SERVER, set during WKT conversion]
+ *						4: Spatial geometry type: e.g. POINT, MULTIPOLYGON [NEVER USED IN SQL SERVER]
+ *                      5: Schema (rif_data. or "")
  *
- * Description:			Add *** geography ***  column to table
+ * Description:			Add *** geometry *** column to table
  * Note:				%% becomes % after substitution
- *
- * May need to be swapped to geometry to be the same datatype as PostGIS (see: add_geometry_column2.sql):
- * ALTER TABLE sahsu_grd_level1 ADD geom_orig geometry
  */
-ALTER TABLE sahsu_grd_level1 ADD geom_orig geography;
+ALTER TABLE sahsu_grd_level1 ADD geom_orig geometry;
 GO
 
 -- SQL statement 26: Add geometry column for zoomlevel: 6 >>>
@@ -1002,7 +1000,7 @@ UPDATE sahsu_grd_level1
        geom_9 = geography::STGeomFromText(wkt_9, 4326).MakeValid(),
        geom_10 = geography::STGeomFromText(wkt_10, 4326).MakeValid(),
        geom_11 = geography::STGeomFromText(wkt_11, 4326).MakeValid(),
-       geom_orig = /* geography::STTransform(geography::STGeomFromText(wkt_11, 4326).MakeValid(), 27700) NOT POSSIBLE */ NULL;
+       geom_orig = geometry::STGeomFromText(geometry::STGeomFromText(wkt_11, 4326).MakeValid().STAsText(), 27700);
 GO
 
 --
@@ -1377,7 +1375,23 @@ CREATE SPATIAL INDEX sahsu_grd_level1_geom_11_gix ON sahsu_grd_level1 (geom_11);
 GO
 
 -- SQL statement 51: Index geometry column for original SRID geometry >>>
-CREATE SPATIAL INDEX sahsu_grd_level1_geom_orig_gix ON sahsu_grd_level1 (geom_orig);
+/*
+ * SQL statement name: 	create_spatial_geometry_index.sql
+ * Type:				MS SQL Server SQL statement
+ * Parameters:
+ *						1: index name;e.g. geometry_cb_2014_us_500k_gix
+ *						2: table name; e.g. geometry_cb_2014_us_500k
+ *						3: Geometry field name; e.g. geom
+ *						4: Xmin (4326); e.g. -179.13729006727 
+ *						5: Ymin (4326); e.g. -14.3737802873213 
+ *						6: Xmax (4326); e.g.  179.773803959804  
+ *						7: Ymax (4326); e.g. 71.352561 
+ *
+ * Description:			Create geometry table
+ * Note:				% becomes % after substitution
+ */
+CREATE SPATIAL INDEX sahsu_grd_level1_geom_orig_gix ON sahsu_grd_level1 (geom_orig)
+	WITH ( BOUNDING_BOX = (xmin=-7.546294616103237, ymin=52.66328216508047, xmax=-5.036247072101617, ymax=55.56628680089157));
 GO
 
 --
@@ -2229,21 +2243,19 @@ GO
 
 -- SQL statement 78: Add geometry column for original SRID geometry >>>
 /*
- * SQL statement name: 	add_geometry_column.sql
+ * SQL statement name: 	add_geometry_column2.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
  * Parameters:
- *						1: Table name; e.g. cb_2014_us_county_500k
- *						2: column name; e.g. geographic_centroid
- *						3: Column SRID; e.g. 4326
- *						4: Spatial geometry type: e.g. POINT, MULTIPOLYGON
+ *						1: Table name; e.g. geometry_cb_2014_us_500k
+ *						2: column name; e.g. geom
+ *						3: Column SRID; e.g. 4326 [NEVER USED IN SQL SERVER, set during WKT conversion]
+ *						4: Spatial geometry type: e.g. POINT, MULTIPOLYGON [NEVER USED IN SQL SERVER]
+ *                      5: Schema (rif_data. or "")
  *
- * Description:			Add *** geography ***  column to table
+ * Description:			Add *** geometry *** column to table
  * Note:				%% becomes % after substitution
- *
- * May need to be swapped to geometry to be the same datatype as PostGIS (see: add_geometry_column2.sql):
- * ALTER TABLE sahsu_grd_level2 ADD geom_orig geometry
  */
-ALTER TABLE sahsu_grd_level2 ADD geom_orig geography;
+ALTER TABLE sahsu_grd_level2 ADD geom_orig geometry;
 GO
 
 -- SQL statement 79: Add geometry column for zoomlevel: 6 >>>
@@ -2369,7 +2381,7 @@ UPDATE sahsu_grd_level2
        geom_9 = geography::STGeomFromText(wkt_9, 4326).MakeValid(),
        geom_10 = geography::STGeomFromText(wkt_10, 4326).MakeValid(),
        geom_11 = geography::STGeomFromText(wkt_11, 4326).MakeValid(),
-       geom_orig = /* geography::STTransform(geography::STGeomFromText(wkt_11, 4326).MakeValid(), 27700) NOT POSSIBLE */ NULL;
+       geom_orig = geometry::STGeomFromText(geometry::STGeomFromText(wkt_11, 4326).MakeValid().STAsText(), 27700);
 GO
 
 --
@@ -2744,7 +2756,23 @@ CREATE SPATIAL INDEX sahsu_grd_level2_geom_11_gix ON sahsu_grd_level2 (geom_11);
 GO
 
 -- SQL statement 104: Index geometry column for original SRID geometry >>>
-CREATE SPATIAL INDEX sahsu_grd_level2_geom_orig_gix ON sahsu_grd_level2 (geom_orig);
+/*
+ * SQL statement name: 	create_spatial_geometry_index.sql
+ * Type:				MS SQL Server SQL statement
+ * Parameters:
+ *						1: index name;e.g. geometry_cb_2014_us_500k_gix
+ *						2: table name; e.g. geometry_cb_2014_us_500k
+ *						3: Geometry field name; e.g. geom
+ *						4: Xmin (4326); e.g. -179.13729006727 
+ *						5: Ymin (4326); e.g. -14.3737802873213 
+ *						6: Xmax (4326); e.g.  179.773803959804  
+ *						7: Ymax (4326); e.g. 71.352561 
+ *
+ * Description:			Create geometry table
+ * Note:				% becomes % after substitution
+ */
+CREATE SPATIAL INDEX sahsu_grd_level2_geom_orig_gix ON sahsu_grd_level2 (geom_orig)
+	WITH ( BOUNDING_BOX = (xmin=-7.546294616103237, ymin=52.66328216508047, xmax=-5.036247072101617, ymax=55.56628680089157));
 GO
 
 --
@@ -3551,21 +3579,19 @@ GO
 
 -- SQL statement 130: Add geometry column for original SRID geometry >>>
 /*
- * SQL statement name: 	add_geometry_column.sql
+ * SQL statement name: 	add_geometry_column2.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
  * Parameters:
- *						1: Table name; e.g. cb_2014_us_county_500k
- *						2: column name; e.g. geographic_centroid
- *						3: Column SRID; e.g. 4326
- *						4: Spatial geometry type: e.g. POINT, MULTIPOLYGON
+ *						1: Table name; e.g. geometry_cb_2014_us_500k
+ *						2: column name; e.g. geom
+ *						3: Column SRID; e.g. 4326 [NEVER USED IN SQL SERVER, set during WKT conversion]
+ *						4: Spatial geometry type: e.g. POINT, MULTIPOLYGON [NEVER USED IN SQL SERVER]
+ *                      5: Schema (rif_data. or "")
  *
- * Description:			Add *** geography ***  column to table
+ * Description:			Add *** geometry *** column to table
  * Note:				%% becomes % after substitution
- *
- * May need to be swapped to geometry to be the same datatype as PostGIS (see: add_geometry_column2.sql):
- * ALTER TABLE sahsu_grd_level3 ADD geom_orig geometry
  */
-ALTER TABLE sahsu_grd_level3 ADD geom_orig geography;
+ALTER TABLE sahsu_grd_level3 ADD geom_orig geometry;
 GO
 
 -- SQL statement 131: Add geometry column for zoomlevel: 6 >>>
@@ -3691,7 +3717,7 @@ UPDATE sahsu_grd_level3
        geom_9 = geography::STGeomFromText(wkt_9, 4326).MakeValid(),
        geom_10 = geography::STGeomFromText(wkt_10, 4326).MakeValid(),
        geom_11 = geography::STGeomFromText(wkt_11, 4326).MakeValid(),
-       geom_orig = /* geography::STTransform(geography::STGeomFromText(wkt_11, 4326).MakeValid(), 27700) NOT POSSIBLE */ NULL;
+       geom_orig = geometry::STGeomFromText(geometry::STGeomFromText(wkt_11, 4326).MakeValid().STAsText(), 27700);
 GO
 
 --
@@ -4066,7 +4092,23 @@ CREATE SPATIAL INDEX sahsu_grd_level3_geom_11_gix ON sahsu_grd_level3 (geom_11);
 GO
 
 -- SQL statement 156: Index geometry column for original SRID geometry >>>
-CREATE SPATIAL INDEX sahsu_grd_level3_geom_orig_gix ON sahsu_grd_level3 (geom_orig);
+/*
+ * SQL statement name: 	create_spatial_geometry_index.sql
+ * Type:				MS SQL Server SQL statement
+ * Parameters:
+ *						1: index name;e.g. geometry_cb_2014_us_500k_gix
+ *						2: table name; e.g. geometry_cb_2014_us_500k
+ *						3: Geometry field name; e.g. geom
+ *						4: Xmin (4326); e.g. -179.13729006727 
+ *						5: Ymin (4326); e.g. -14.3737802873213 
+ *						6: Xmax (4326); e.g.  179.773803959804  
+ *						7: Ymax (4326); e.g. 71.352561 
+ *
+ * Description:			Create geometry table
+ * Note:				% becomes % after substitution
+ */
+CREATE SPATIAL INDEX sahsu_grd_level3_geom_orig_gix ON sahsu_grd_level3 (geom_orig)
+	WITH ( BOUNDING_BOX = (xmin=-7.546294616103237, ymin=52.66328216508047, xmax=-5.036247072101617, ymax=55.56628680089157));
 GO
 
 --
@@ -4963,21 +5005,19 @@ GO
 
 -- SQL statement 184: Add geometry column for original SRID geometry >>>
 /*
- * SQL statement name: 	add_geometry_column.sql
+ * SQL statement name: 	add_geometry_column2.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
  * Parameters:
- *						1: Table name; e.g. cb_2014_us_county_500k
- *						2: column name; e.g. geographic_centroid
- *						3: Column SRID; e.g. 4326
- *						4: Spatial geometry type: e.g. POINT, MULTIPOLYGON
+ *						1: Table name; e.g. geometry_cb_2014_us_500k
+ *						2: column name; e.g. geom
+ *						3: Column SRID; e.g. 4326 [NEVER USED IN SQL SERVER, set during WKT conversion]
+ *						4: Spatial geometry type: e.g. POINT, MULTIPOLYGON [NEVER USED IN SQL SERVER]
+ *                      5: Schema (rif_data. or "")
  *
- * Description:			Add *** geography ***  column to table
+ * Description:			Add *** geometry *** column to table
  * Note:				%% becomes % after substitution
- *
- * May need to be swapped to geometry to be the same datatype as PostGIS (see: add_geometry_column2.sql):
- * ALTER TABLE sahsu_grd_level4 ADD geom_orig geometry
  */
-ALTER TABLE sahsu_grd_level4 ADD geom_orig geography;
+ALTER TABLE sahsu_grd_level4 ADD geom_orig geometry;
 GO
 
 -- SQL statement 185: Add geometry column for zoomlevel: 6 >>>
@@ -5103,7 +5143,7 @@ UPDATE sahsu_grd_level4
        geom_9 = geography::STGeomFromText(wkt_9, 4326).MakeValid(),
        geom_10 = geography::STGeomFromText(wkt_10, 4326).MakeValid(),
        geom_11 = geography::STGeomFromText(wkt_11, 4326).MakeValid(),
-       geom_orig = /* geography::STTransform(geography::STGeomFromText(wkt_11, 4326).MakeValid(), 27700) NOT POSSIBLE */ NULL;
+       geom_orig = geometry::STGeomFromText(geometry::STGeomFromText(wkt_11, 4326).MakeValid().STAsText(), 27700);
 GO
 
 --
@@ -5478,7 +5518,23 @@ CREATE SPATIAL INDEX sahsu_grd_level4_geom_11_gix ON sahsu_grd_level4 (geom_11);
 GO
 
 -- SQL statement 210: Index geometry column for original SRID geometry >>>
-CREATE SPATIAL INDEX sahsu_grd_level4_geom_orig_gix ON sahsu_grd_level4 (geom_orig);
+/*
+ * SQL statement name: 	create_spatial_geometry_index.sql
+ * Type:				MS SQL Server SQL statement
+ * Parameters:
+ *						1: index name;e.g. geometry_cb_2014_us_500k_gix
+ *						2: table name; e.g. geometry_cb_2014_us_500k
+ *						3: Geometry field name; e.g. geom
+ *						4: Xmin (4326); e.g. -179.13729006727 
+ *						5: Ymin (4326); e.g. -14.3737802873213 
+ *						6: Xmax (4326); e.g.  179.773803959804  
+ *						7: Ymax (4326); e.g. 71.352561 
+ *
+ * Description:			Create geometry table
+ * Note:				% becomes % after substitution
+ */
+CREATE SPATIAL INDEX sahsu_grd_level4_geom_orig_gix ON sahsu_grd_level4 (geom_orig)
+	WITH ( BOUNDING_BOX = (xmin=-7.546294616103237, ymin=52.66328216508047, xmax=-5.036247072101617, ymax=55.56628680089157));
 GO
 
 --
@@ -8742,6 +8798,93 @@ DECLARE @l_geography AS VARCHAR(200)='SAHSULAND';
  *
  * Description:			Create insert statement into hierarchy table
  * Note:				%% becomes % after substitution
+ *
+ * Output for SAHSULAND:
+ 
+Populating SAHSULAND geography hierarchy table: HIERARCHY_SAHSULAND; spid: 52
+SQL> SELECT /- Subqueries x12 ... x34: intersection aggregate geometries starting from the lowest resolution.
+               Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+               Calculate the area of the higher resolution geolevel and the area of the intersected area -/
+       a1.areaid AS SAHSU_GRD_LEVEL1,
+       a2.areaid AS SAHSU_GRD_LEVEL2,
+       a2.geom_11.STArea() AS a2_area,
+       a1.geom_11.STIntersection(a2.geom_11).STArea() AS a12_area
+  INTO ##x12_52
+  FROM SAHSU_GRD_LEVEL1 a1 CROSS JOIN SAHSU_GRD_LEVEL2 a2
+ WHERE a1.geom_11.STIntersects(a2.geom_11) = 1
+
+(17 rows affected)
+SQL> SELECT /- Subqueries x23 ... x34: intersection aggregate geometries starting from the lowest resolution.
+               Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+               Calculate the area of the higher resolution geolevel and the area of the intersected area -/
+       a2.areaid AS SAHSU_GRD_LEVEL2,
+       a3.areaid AS SAHSU_GRD_LEVEL3,
+       a3.geom_11.STArea() AS a3_area,
+       a2.geom_11.STIntersection(a3.geom_11).STArea() AS a23_area
+  INTO ##x23_52
+  FROM SAHSU_GRD_LEVEL2 a2 CROSS JOIN SAHSU_GRD_LEVEL3 a3
+ WHERE a2.geom_11.STIntersects(a3.geom_11) = 1
+
+(331 rows affected)
+SQL> SELECT /- Subqueries x34 ... x34: intersection aggregate geometries starting from the lowest resolution.
+               Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+               Calculate the area of the higher resolution geolevel and the area of the intersected area -/
+       a3.areaid AS SAHSU_GRD_LEVEL3,
+       a4.areaid AS SAHSU_GRD_LEVEL4,
+       a4.geom_11.STArea() AS a4_area,
+       a3.geom_11.STIntersection(a4.geom_11).STArea() AS a34_area
+  INTO ##x34_52
+  FROM SAHSU_GRD_LEVEL3 a3 CROSS JOIN SAHSU_GRD_LEVEL4 a4
+ WHERE a3.geom_11.STIntersects(a4.geom_11) = 1
+
+(50954 rows affected)
+SQL>
+SELECT /- Join x45 ... x34intersections, pass through the computed areas, compute intersected area/higher resolution geolevel area,
+             compute maximum intersected area/higher resolution geolevel area using an analytic partition of all
+             duplicate higher resolution geolevels -/
+               x12.SAHSU_GRD_LEVEL1,
+               x12.SAHSU_GRD_LEVEL2,
+               x23.SAHSU_GRD_LEVEL3,
+               x34.SAHSU_GRD_LEVEL4,
+               CASE WHEN x12.a2_area > 0 THEN x12.a12_area/x12.a2_area ELSE NULL END test12,
+               MAX(x12.a12_area/x12.a2_area) OVER (PARTITION BY x12.SAHSU_GRD_LEVEL2) AS max12,
+               CASE WHEN x23.a3_area > 0 THEN x23.a23_area/x23.a3_area ELSE NULL END test23,
+               MAX(x23.a23_area/x23.a3_area) OVER (PARTITION BY x23.SAHSU_GRD_LEVEL3) AS max23,
+               CASE WHEN x34.a4_area > 0 THEN x34.a34_area/x34.a4_area ELSE NULL END test34,
+               MAX(x34.a34_area/x34.a4_area) OVER (PARTITION BY x34.SAHSU_GRD_LEVEL4) AS max34
+  INTO ##y_52
+  FROM ##x12_52 x12, ##x23_52 x23, ##x34_52 x34
+ WHERE x12.SAHSU_GRD_LEVEL2 = x23.SAHSU_GRD_LEVEL2
+   AND x23.SAHSU_GRD_LEVEL3 = x34.SAHSU_GRD_LEVEL3
+
+(84488 rows affected)
+SQL> DROP TABLE ##x12_52
+SQL> DROP TABLE ##x23_52
+SQL> DROP TABLE ##x34_52
+SQL> INSERT INTO hierarchy_sahsuland (sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4)
+SELECT /- Select y intersection, eliminating duplicates using selecting the lower geolevel resolution
+         with the largest intersection by area for each (higher resolution) geolevel -/
+       sahsu_grd_level1, sahsu_grd_level2, sahsu_grd_level3, sahsu_grd_level4
+  FROM ##y_52
+ WHERE max12 = test12
+   AND max12 > 0.5 /- >50% overlap -/
+   AND max23 = test23
+   AND max23 > 0.5 /- >50% overlap -/
+   AND max34 = test34
+   AND max34 > 0.5 /- >50% overlap -/
+ ORDER BY 1, 2, 3, 4
+
+(1230 rows affected)
+SQL> DROP TABLE ##y_52
+name
+--------------------------------------------------------------------------------------------------------------------------------
+
+(0 rows affected)
+SQL> ALTER INDEX hierarchy_sahsuland_sahsu_grd_level2 ON hierarchy_sahsuland REORGANIZE
+SQL> ALTER INDEX hierarchy_sahsuland_sahsu_grd_level3 ON hierarchy_sahsuland REORGANIZE
+SQL> ALTER INDEX PK__hierarch__61FEBAD4794A035D ON hierarchy_sahsuland REORGANIZE
+SQL> UPDATE STATISTICS hierarchy_sahsuland
+ 
  */
 --
 	
@@ -8868,6 +9011,18 @@ x23 AS (
 	       ST_Area(ST_Intersection(a2.geom, a3.geom)) AS a23_area
           FROM a2 CROSS JOIN a3
 	 WHERE ST_Intersects(a2.geom, a3.geom)
+	 
+SQL Server:
+
+SELECT a1.areaid AS SAHSU_GRD_LEVEL1,
+       a2.areaid AS SAHSU_GRD_LEVEL2,
+       a2.geom_11.STArea() AS a2_area,
+       a1.geom_11.STIntersection(a2.geom_orig).STArea() AS a12_area
+  INTO x12_52
+  FROM SAHSU_GRD_LEVEL1 a1 CROSS JOIN SAHSU_GRD_LEVEL2 a2
+ WHERE a1.geom_11.STIntersects(a2.geom_11) = 1
+   AND a1.geom_11.STIntersection(a2.geom_11).STArea() > 0;	 
+	 
  */		
 			BEGIN
 				SET @sql_stmt=			
@@ -8879,14 +9034,14 @@ x23 AS (
 						@tab + '       Calculate the area of the higher resolution geolevel and the area of the intersected area */' + @crlf +
 					'       a' + CAST(@i AS VARCHAR) + '.areaid AS ' + @geolevel_name + ',' + @crlf + 
 					'       a' + CAST(@i+1 AS VARCHAR) + '.areaid AS ' + @n_geolevel_name + ',' + @crlf +
-					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_11.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
-					'       a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_11).STArea() AS a' + 
+					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_orig.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
+					'       a' + CAST(@i AS VARCHAR) + '.geom_orig.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_orig).STArea() AS a' + 
 						CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_area' + @crlf + 
 				    '  INTO ##x' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_' + CAST(@@spid AS VARCHAR) + @crlf + 
 					'  FROM ' + @shapefile_table + ' a' + CAST(@i AS VARCHAR) + 
 					' CROSS JOIN ' + @n_shapefile_table + ' a' + CAST(@i+1 AS VARCHAR) + '' + @crlf + 
-					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
-						'.geom_11) = 1';
+					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_orig.STIntersects(a' + CAST(@i+1 AS VARCHAR) + '.geom_orig) = 1' + @crlf + 		
+					'   AND a' + CAST(@i AS VARCHAR) + '.geom_orig.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_orig).STArea() > 0';
 				PRINT 'SQL> ' + @sql_stmt;
 				EXECUTE @rowcount = sp_executesql @sql_stmt;	
 			END;			
@@ -8912,13 +9067,13 @@ SELECT a2.areaid AS cb_2014_us_state_500k,
 						@tab + '       Calculate the area of the higher resolution geolevel and the area of the intersected area */' + @crlf + 
 					'       a' + CAST(@i AS VARCHAR) + '.areaid AS ' + @geolevel_name + ',' + @crlf + 
 					'       a' + CAST(@i+1 AS VARCHAR) + '.areaid AS ' + @n_geolevel_name + ',' + @crlf + 
-					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_11.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
-					'       a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_11).STArea() AS a' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_area' + @crlf + 
+					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_orig.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
+					'       a' + CAST(@i AS VARCHAR) + '.geom_orig.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_orig).STArea() AS a' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_area' + @crlf + 
 				    '  INTO ##x' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_' + CAST(@@spid AS VARCHAR) + @crlf + 
 					'  FROM ' + @shapefile_table + ' a' + CAST(@i AS VARCHAR) + 
 					' CROSS JOIN ' + @n_shapefile_table + ' a' + CAST(@i+1 AS VARCHAR) + '' + @crlf + 
-					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
-						'.geom_11) = 1';
+					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_orig.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
+						'.geom_orig) = 1';
 				PRINT 'SQL> ' + @sql_stmt;
 				EXECUTE @rowcount = sp_executesql @sql_stmt;
 			END;
@@ -8953,12 +9108,12 @@ Postgres Original:
 						@tab + '       Calculate the area of the higher resolution geolevel and the area of the intersected area */' + @crlf + 
 					'       a' + CAST(@i AS VARCHAR) + '.areaid AS ' + @geolevel_name + ',' + @crlf + 
 					'       a' + CAST(@i+1 AS VARCHAR) + '.areaid AS ' + @n_geolevel_name + ',' + @crlf + 
-					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_11.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
-					'       a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_11).STArea() AS a' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_area' + @crlf + 
+					'       a' + CAST(@i+1 AS VARCHAR) + '.geom_orig.STArea() AS a' + CAST(@i+1 AS VARCHAR) + '_area,' + @crlf + 
+					'       a' + CAST(@i AS VARCHAR) + '.geom_orig.STIntersection(a' + CAST(@i+1 AS VARCHAR) + '.geom_orig).STArea() AS a' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_area' + @crlf + 
 				    '  INTO ##x' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + '_' + CAST(@@spid AS VARCHAR) + @crlf + 
 					'  FROM ' + @shapefile_table + ' a' + CAST(@i AS VARCHAR) + ' CROSS JOIN ' + @n_shapefile_table + ' a' + CAST(@i+1 AS VARCHAR) + '' + @crlf + 
-					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_11.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
-						'.geom_11) = 1';
+					' WHERE a' + CAST(@i AS VARCHAR) + '.geom_orig.STIntersects(a' + CAST(@i+1 AS VARCHAR) + 
+						'.geom_orig) = 1';
 				PRINT 'SQL> ' + @sql_stmt;
 				EXECUTE @rowcount = sp_executesql @sql_stmt;
 			END;
@@ -9203,6 +9358,11 @@ SELECT level1, level2, level3, level4,
 		ELSE
 			SET @sql_stmt+='   AND max' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + 
 				' = test' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + @crlf;
+--
+-- Remove all joins that have <50% overlap
+--				
+		SET @sql_stmt+='   AND max' + CAST(@i AS VARCHAR) + CAST(@i+1 AS VARCHAR) + ' > 0.5 /* >50% overlap */' + @crlf;
+		
 		SET @i+=1;	
 	END;
 --
