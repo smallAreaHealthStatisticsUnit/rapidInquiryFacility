@@ -577,6 +577,8 @@ function addTileLayer(methodFields) {
 	geolevel.geography=methodFields.geography;
 	geolevel.maxzoomlevel=methodFields.maxzoomlevel;
 	
+	map.options.maxZoom = methodFields.maxzoomlevel;
+	
 //	consoleLog("geolevel data: " + JSON.stringify(geolevel, null, 0));
 //	consoleLog("topojsonURL: " + topojsonURL);
 	
