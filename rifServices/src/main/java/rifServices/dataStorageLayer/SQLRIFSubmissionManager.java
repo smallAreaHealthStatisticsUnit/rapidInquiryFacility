@@ -357,6 +357,17 @@ final class SQLRIFSubmissionManager
 			CalculationMethod calculationMethod
 				= studySubmission.getCalculationMethods().get(0);
 			
+			//@TODO: This needs to be reworked.  At the moment, we support
+			//only one covariate for a study.  We're passing that as a parameter
+			//to the script generation service to make it easier for the R program
+			//to just use the name of the covariate rather than itself try to
+			//obtain the covariate name.  Here we assume we have at least one 
+			//investigation, which will have exactly one covariate.
+			Investigation investigation
+				= studySubmission.getStudy().getInvestigations().get(0);
+			AbstractCovariate covariate
+				= investigation.getCovariates().get(0);
+			
 			BayesianSmoothingService bayesianSmoothingService
 				= new BayesianSmoothingService();
 			bayesianSmoothingService.initialise(
@@ -365,6 +376,7 @@ final class SQLRIFSubmissionManager
 				rScriptFileName, 
 				rifServiceStartupOptions, 
 				studyID, 
+				covariate,
 				calculationMethod);
 			
 			writeStudyToZipFile(

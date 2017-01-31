@@ -2,6 +2,7 @@ package rifServices.statisticalServices;
 
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.businessConceptLayer.CalculationMethod;
+import rifServices.businessConceptLayer.AbstractCovariate;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -76,37 +77,6 @@ import java.util.Properties;
  */
 
 public class BayesianSmoothingService extends AbstractRService {
-
-	public static void main(String[] args) {
-		BayesianSmoothingService bayesianSmoothingService
-			= new BayesianSmoothingService();
-		try {
-						
-			ArrayList<Parameter> parameters = new ArrayList<Parameter>();
-			
-			//Add parameters related to database access
-			RIFServiceStartupOptions rifStartupOptions 
-				= RIFServiceStartupOptions.newInstance(false, false);
-			rifStartupOptions.setHost("wpea-rif1");
-			CalculationMethod hetCalculationMethod 
-				= CalculationMethod.newInstance();
-			hetCalculationMethod.setName("HET");
-			
-			String rScriptFileName = "Adj_Cov_Smooth.R";
-
-			//String rScriptFileName = "TestSmoothingRoutine.R";
-			bayesianSmoothingService.initialise(
-				"kgarwood", 
-				"kgarwood", 
-				rScriptFileName, 
-				rifStartupOptions, 
-				"1", 
-				hetCalculationMethod);
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-		}
-	}
 	
 	// ==========================================
 	// Section Constants
@@ -133,6 +103,7 @@ public class BayesianSmoothingService extends AbstractRService {
 		final String rScriptFileName,
 		final RIFServiceStartupOptions rifStartupOptions,
 		final String studyID,
+		final AbstractCovariate covariate,
 		final CalculationMethod calculationMethod) 
 		throws RIFServiceException {
 		
@@ -142,6 +113,7 @@ public class BayesianSmoothingService extends AbstractRService {
 			= rifStartupOptions.extractParameters();
 		addParameters(rifStartupOptionParameters);
 		addParameter("study_id", studyID);
+		addParameter("covariate_name", covariate.getName());
 		setCalculationMethod(calculationMethod);
 		
 		setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
@@ -153,8 +125,7 @@ public class BayesianSmoothingService extends AbstractRService {
 		addParameterToVerify(startupOptionParameterNames);
 		addParameterToVerify("study_id");		
 		validateCommandLineExpressionComponents();
-		
-		
+			
 		String commandLineExpression
 			= generateCommandLineExpression();
 		
