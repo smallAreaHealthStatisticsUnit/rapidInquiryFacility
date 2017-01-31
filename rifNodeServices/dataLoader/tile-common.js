@@ -399,6 +399,15 @@ function addSelector(selectorId, selectorChangeCallback, newHTML, defaultValue) 
 		}		
 	}
 		
+	$( selectorId ).tooltip(									// Enable tooltips
+		{
+			position: { 					
+				my: "right bottom+50"
+			},
+			tooltipClass: "entry-tooltip-positioner"
+		}
+	);	
+	
 	selectorChangeCallback();	// Defaults
 } // End of addSelector()
 
@@ -566,6 +575,7 @@ function addTileLayer(methodFields) {
 	geolevel.databaseName=methodFields.table_catalog;
 	geolevel.tableName=methodFields.table_schema + '.' + methodFields.table_name;
 	geolevel.geography=methodFields.geography;
+	geolevel.maxzoomlevel=methodFields.maxzoomlevel;
 	
 //	consoleLog("geolevel data: " + JSON.stringify(geolevel, null, 0));
 //	consoleLog("topojsonURL: " + topojsonURL);
@@ -620,7 +630,8 @@ function addTileLayer(methodFields) {
 		databaseType:	"Database Type",
 		databaseName:	"Database Name",
 		tableName:		"Table",
-		geography:		"Geography"
+		geography:		"Geography",
+		maxzoomlevel:	"Max zoomlevel"
 	}
 	legend.onAdd = function onAddLegend(map) {
 		var div = L.DomUtil.create('div', 'info legend');

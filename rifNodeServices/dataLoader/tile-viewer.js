@@ -111,7 +111,8 @@ function geographySelectChange(event, ui) {
 			geography: geography.geography,
 			tiletable: geography.tiletable,
 			geolevel_id: geolevel || 2,
-			geolevel: geography.geolevel
+			geolevel: geography.geolevel,
+			maxzoomlevel: geography.maxzoomlevel
 		}
 //		consoleLog("geographySelectChange: " +  JSON.stringify(methodFields, null, 2)); 
 //	xhrGetMethod("getMapTile", "get gmap tile from " + methodFields.database_type + " database: " + methodFields.table_catalog, 

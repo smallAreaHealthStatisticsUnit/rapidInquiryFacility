@@ -45,3 +45,9 @@
 	margin-right: 8px;
 	opacity: 0.7;
 }
+
+label { /* This needs to inherit the correct JQuery UI class style; the .css() function won't work! */
+	background: #e4f1fb url("jquery-ui-1.11.4.custom/images/ui-bg_glass_100_e4f1fb_1x400.png") 50% 50% repeat-x;
+	font-weight: bold;
+	color: #0070a3;
+}
