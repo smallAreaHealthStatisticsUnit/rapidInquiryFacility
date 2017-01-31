@@ -1556,7 +1556,7 @@ public class RIFStudySubmissionWebServiceResource
 			
 		return super.submitStudy(
 			servletRequest, 
-			"kgarwood", 
+			userID, 
 			fileFormat,
 			inputStream);
 
