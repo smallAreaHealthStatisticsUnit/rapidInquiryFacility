@@ -1,7 +1,4 @@
-/* global L, topojson */
-
 /**
- * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
  * that rapidly addresses epidemiological and public health questions using 
  * routinely collected health and population data and generates standardised 
@@ -13,8 +10,7 @@
  * is funded by the Public Health England as part of the MRC-PHE Centre for 
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
+
  * This file is part of the Rapid Inquiry Facility (RIF) project.
  * RIF is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -30,15 +26,12 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
- * </pre>
- * <hr>
  */
 
 /*
  * MODULE for the main RIF web application
- * Third-party modules injected here
- * Navbar state changes and notifications handled
  */
+/* global L, topojson */
 
 angular.module("RIF",
         [
@@ -57,7 +50,7 @@ angular.module("RIF",
             "ngMaterial"
         ]
         )
-        .config(['$stateProvider', '$urlRouterProvider', 
+        .config(['$stateProvider', '$urlRouterProvider',
             function ($stateProvider, $urlRouterProvider) {
 
                 //Extend Leaflet to handle topojson

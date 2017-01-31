@@ -1,3 +1,36 @@
+/**
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * Copyright 2016 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ *
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+
+ * David Morley
+ * @author dmorley
+ */
+
 /*
  * CONTROLLER to handle map panels
  */
@@ -19,23 +52,6 @@ angular.module("RIF")
                     $scope.myService = ViewerStateService;
                 }
 
-                //Legends and Infoboxes
-                $scope.legend = {
-                    'diseasemap1': L.control({position: 'topright'}),
-                    'diseasemap2': L.control({position: 'topright'}),
-                    'viewermap': L.control({position: 'topright'})
-                };
-                var infoBox = {
-                    'diseasemap1': L.control({position: 'bottomright'}),
-                    'diseasemap2': L.control({position: 'bottomright'}),
-                    'viewermap': L.control({position: 'bottomright'})
-                };
-                $scope.infoBox2 = {
-                    'diseasemap1': L.control({position: 'bottomleft'}),
-                    'diseasemap2': L.control({position: 'bottomleft'}),
-                    'viewermap': null
-                };
-
                 //Handle UI-Layout resize events
                 $scope.$on('ui.layout.loaded', function () {
                     $scope.getD3Frames();
@@ -53,6 +69,23 @@ angular.module("RIF")
                             }, 50);
                         });
                     }
+                };
+
+                //Legends and Infoboxes
+                $scope.legend = {
+                    'diseasemap1': L.control({position: 'topright'}),
+                    'diseasemap2': L.control({position: 'topright'}),
+                    'viewermap': L.control({position: 'topright'})
+                };
+                var infoBox = {
+                    'diseasemap1': L.control({position: 'bottomright'}),
+                    'diseasemap2': L.control({position: 'bottomright'}),
+                    'viewermap': L.control({position: 'bottomright'})
+                };
+                $scope.infoBox2 = {
+                    'diseasemap1': L.control({position: 'bottomleft'}),
+                    'diseasemap2': L.control({position: 'bottomleft'}),
+                    'viewermap': null
                 };
 
                 //the default basemap              
@@ -123,6 +156,9 @@ angular.module("RIF")
                     });
                 }
 
+                /*.
+                 * Fill the study drop-downs
+                 */
                 //update study list if new study processed, but do not update maps
                 $scope.$on('updateStudyDropDown', function (event, thisStudy) {
                     $scope.studyIDs.push(thisStudy);
@@ -173,6 +209,7 @@ angular.module("RIF")
                         //Get the sexes for this study
                         user.getSexesForStudy(user.currentUser, $scope.studyID[mapID].study_id, mapID)
                                 .then(handleSexes, clearTheMapOnError(mapID));
+
                         function handleSexes(res) {
                             $scope.sexes[res.config.leaflet].length = 0;
                             if (!angular.isUndefined(res.data[0].names)) {
@@ -214,6 +251,9 @@ angular.module("RIF")
                     }
                 };
 
+                /*
+                 * Map rendering
+                 */
                 //change the basemaps 
                 $scope.renderMap = function (mapID) {
                     leafletData.getMap(mapID).then(function (map) {
@@ -229,13 +269,12 @@ angular.module("RIF")
 
                 //Draw the map
                 $scope.refresh = function (mapID) {
-                    //get selected colour ramp
-                    var rangeIn = ChoroService.getMaps(mapID).renderer.range;
-                    $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
                     //get choropleth map renderer
+                    $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
                     thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
+
                     //not a choropleth, but single colour
-                    if (rangeIn.length === 1) {
+                    if (thisMap[mapID].range.length === 1) {
                         $scope.attr[mapID] = "";
                         leafletData.getMap(mapID).then(function (map) {
                             //remove existing legend
@@ -310,7 +349,6 @@ angular.module("RIF")
                     } else {
                         //Reset all renderers, but only if not called from state change
                         if (!$scope.myService.getState().initial) {
-                            ChoroService.resetState(mapID);
                             thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
                         }
                         $scope.myService.getState().initial = false;
