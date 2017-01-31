@@ -57,7 +57,7 @@ var methodFields;
 function databaseSelectChange(event, ui) {
 	var db = (ui && ui.item && ui.item.value) || $( "#databaseSelect option:checked" ).val();
 
-	consoleLog("databaseSelectChange() db: " + db);	
+	consoleLog("databaseSelectChange() db: " + db + "; ui: " + ((ui == undefined) && 0 || 1));	
 	xhrGetMethod("getGeographies", "get geography listing from database: " + db, 
 		getGeographies, {databaseType: db});
 		
@@ -72,9 +72,14 @@ function databaseSelectChange(event, ui) {
 function geolevelSelectChange(event, ui) {
 	var geolevel = (ui && ui.item && ui.item.value) || $( "#geolevelSelect option:checked" ).val();
 	
-	consoleLog("geolevelSelectChange() geolevel: " + geolevel);
-	methodFields.geolevel_id=geolevel || 2;
-	addTileLayer(methodFields);
+	consoleLog("geolevelSelectChange() geolevel: " + geolevel + "; ui: " + ((ui == undefined) && 0 || 1));
+	if (methodFields) {
+		methodFields.geolevel_id=geolevel || 2;
+		addTileLayer(methodFields);
+	}
+	else {
+		consoleLog("geolevelSelectChange(): No methodFields");
+	}
 	
 } // End of geolevelSelectChange()
 
@@ -87,10 +92,11 @@ function geolevelSelectChange(event, ui) {
 function geographySelectChange(event, ui) {
 	var geographyIndex = (ui && ui.item && ui.item.value) || $( "#geographySelect option:checked" ).val();
 
-	consoleLog("geographySelectChange() geographyIndex: " + geographyIndex);	
-//	consoleLog("Replace #geolevelSelect HTML: " + geolevelsHtml[geographyIndex]);
-	document.getElementById('geolevelSelect').innerHTML=geolevelsHtml[geographyIndex];
-	consoleLog("getGeographies() Set geolevelSelect");
+	consoleLog("geographySelectChange() geographyIndex: " + geographyIndex + "; ui: " + 
+		((ui == undefined) && 0 || 1));	
+	
+	addSelector("#geolevelSelect", geolevelSelectChange, geolevelsHtml[geographyIndex], 
+		undefined /* Use checked */);
 	var geolevel = $( "#geolevelSelect option:checked" ).val();
 		
 	var geography;
@@ -107,8 +113,6 @@ function geographySelectChange(event, ui) {
 			geolevel_id: geolevel || 2,
 			geolevel: geography.geolevel
 		}
-		
-		addSelector("#geolevelSelect", geolevelSelectChange);
 //		consoleLog("geographySelectChange: " +  JSON.stringify(methodFields, null, 2)); 
 //	xhrGetMethod("getMapTile", "get gmap tile from " + methodFields.database_type + " database: " + methodFields.table_catalog, 
 //		getMapTile, methodFields);
@@ -132,7 +136,7 @@ function geographySelectChange(event, ui) {
 
 /*
  * Function: 	getGeographies()
- * Parameters: 	data, status,XHR object
+ * Parameters: 	data, status, XHR object
  * Returns: 	Nothing
  * Description:	getGeographies XHR GET reponse callback
  */
@@ -140,7 +144,7 @@ function getGeographies(data, status, xhr) {
 //	consoleLog("getGeographies() OK: " + JSON.stringify(data, null, 2));	
 	
 	var geographies=data.geographies;
-	var html='<label id="geographyLabel"  title="Choose geography to display" for="geography">Geography:\n' +
+	var geographyHtml='<label id="geographyLabel"  title="Choose geography to display" for="geography">Geography:\n' +
 		'<select required id="geographySelect" name="databaseType" form="dbSelect">';
 
 	if (geographies == undefined) {
@@ -151,11 +155,11 @@ function getGeographies(data, status, xhr) {
 			geographiesJson[i]=geographies[i];
 			if (i == 0) {
 				consoleLog("getGeographies() OK for " + geographies[i].database_type + " database: " + geographies[i].table_catalog);
-			     html+="<option value='" + i + "' selected='selected'>" + 
+			     geographyHtml+="<option value='" + i + "' selected='selected'>" + 
 					geographies[i].table_schema + "." + geographies[i].table_name + ": " + geographies[i].description + "</option>";
 			}
 			else {
-			     html+="<option value='" + i + "'>" + 
+			     geographyHtml+="<option value='" + i + "'>" + 
 					geographies[i].table_schema + "." +geographies[i].table_name + ": " + geographies[i].description + "</option>";
 			}
 			geolevelsHtml[i]='<label id="geolevelLabel"  title="Choose geolevel to display" for="geolevel">Geolevel:\n' +
@@ -173,31 +177,39 @@ function getGeographies(data, status, xhr) {
 			}
 			geolevelsHtml[i]+='</select>\n' + '</label>';
 		}
-		html+='</select>\n' + '</label>';		
-//		consoleLog("geolevelsHtml: " + JSON.stringify(geolevelsHtml, null, 2));
-		document.getElementById('geographySelect').innerHTML=html;
-		document.getElementById('geolevelSelect').innerHTML=geolevelsHtml[0];
-		consoleLog("Replace #geolevelSelect HTML: " + geolevelsHtml[0]);
-		consoleLog("getGeographies() Set geographySelect geolevelSelect");
-
-		var w = window,
-			d = document,
-			e = d.documentElement,
-			g = d.getElementsByTagName('body')[0],
-			x = w.innerWidth || e.clientWidth || g.clientWidth,
-			y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+		geographyHtml+='</select>\n' + '</label>';		
 		
-		var databaseSelect = document.getElementById("databaseSelect");
-		var databaseSelectWidth = window.getComputedStyle(databaseSelect, null).getPropertyValue("width");
-		var geolevelSelect = document.getElementById("geolevelSelect");
-		var geolevelSelectWidth = window.getComputedStyle(geolevelSelect, null).getPropertyValue("width");
-		var newWidth=200;
-		if (x >1400) {
-			newWidth=650;
-		}
-		else if (x >1000) {
-			newWidth=350;
-		}
+		addSelector("#geographySelect", geographySelectChange, geographyHtml, undefined /* Use checked */);
+		addSelector("#geolevelSelect", geolevelSelectChange, geolevelsHtml[0], undefined /* Use checked */);	
+	}
+			
+} // End of getGeographies()
+		
+/*
+ * Function: 	setupTileViewer()
+ * Parameters: 	None
+ * Returns: 	Nothing
+ * Description:	Seup tile viewer screen size
+ */		
+function setupTileViewer() {
+	var w = window,
+		d = document,
+		e = d.documentElement,
+		g = d.getElementsByTagName('body')[0],
+		x = w.innerWidth || e.clientWidth || g.clientWidth,
+		y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+	
+	var databaseSelect = document.getElementById("databaseSelect");
+	var databaseSelectWidth = window.getComputedStyle(databaseSelect, null).getPropertyValue("width");
+	var geolevelSelect = document.getElementById("geolevelSelect");
+	var geolevelSelectWidth = window.getComputedStyle(geolevelSelect, null).getPropertyValue("width");
+	var newWidth=200;
+	if (x >1400) {
+		newWidth=650;
+	}
+	else if (x >1000) {
+		newWidth=350;
+	}
 /*
 +0.2: Window width: 1408 px
 databaseSelect width: 190px
@@ -212,28 +224,22 @@ geolevelSelect width: 190px
 spare: 379 px; newWidth: 350 px
 
 */
-		document.getElementById('geographySelect').style.width=newWidth + "px";	
-		
-		var geographySelect = document.getElementById("geographySelect");
-		var geographySelectWidth = window.getComputedStyle(geographySelect, null).getPropertyValue("width");
-		var spare = (x -(parseInt(databaseSelectWidth.substring(0, databaseSelectWidth.length - 2)) + 
-			parseInt(geolevelSelectWidth.substring(0, geolevelSelectWidth.length - 2)) + 
-			parseInt(geographySelectWidth.substring(0, geographySelectWidth.length - 2))));
-		consoleLog("Window width: " + x + " px\n" +
-			"databaseSelect width: " + databaseSelectWidth + "\n" +
-			"geographySelect width: " + geographySelectWidth + "\n" + 	
-			"geolevelSelect width: " + geolevelSelectWidth + "\n" +
-			"spare: " + spare + " px; newWidth: " + newWidth + " px");	
-		
-		var height=y-46; // Merge all the correction factors (46px)
-		if (map == undefined) { // Only set the height if leaflet is not initialised or you will make a mess of the screen
-			setHeight("mapcontainer", (height-52));
-			setHeight("map", (height-55));			
-		}		
-		
-		addSelector("#geographySelect", geographySelectChange);
-		addSelector("#geolevelSelect", geolevelSelectChange);
-	}
-			
-} // End of getGeographies()
-		
+	document.getElementById('geographySelect').style.width=newWidth + "px";	
+	
+	var geographySelect = document.getElementById("geographySelect");
+	var geographySelectWidth = window.getComputedStyle(geographySelect, null).getPropertyValue("width");
+	var spare = (x -(parseInt(databaseSelectWidth.substring(0, databaseSelectWidth.length - 2)) + 
+		parseInt(geolevelSelectWidth.substring(0, geolevelSelectWidth.length - 2)) + 
+		parseInt(geographySelectWidth.substring(0, geographySelectWidth.length - 2))));
+	consoleLog("Window width: " + x + " px\n" +
+		"databaseSelect width: " + databaseSelectWidth + "\n" +
+		"geographySelect width: " + geographySelectWidth + "\n" + 	
+		"geolevelSelect width: " + geolevelSelectWidth + "\n" +
+		"spare: " + spare + " px; newWidth: " + newWidth + " px");	
+	
+	var height=y-46; // Merge all the correction factors (46px)
+	if (map == undefined) { // Only set the height if leaflet is not initialised or you will make a mess of the screen
+		setHeight("mapcontainer", (height-52));
+		setHeight("map", (height-55));			
+	}				
+} // End of setupTileViewer()

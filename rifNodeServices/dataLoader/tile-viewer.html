@@ -38,7 +38,10 @@ $(document).ready(function documentReady() {
 		});
 	}
 	
-	addSelector("#databaseSelect", databaseSelectChange);
+	setupTileViewer();
+	
+	addSelector("#databaseSelect", databaseSelectChange, $( "#databaseSelect" ).html(), 
+		undefined /* Use checked */);
 
 	$('input').addClass("ui-corner-all");					// Nice round corners everywhere
 					

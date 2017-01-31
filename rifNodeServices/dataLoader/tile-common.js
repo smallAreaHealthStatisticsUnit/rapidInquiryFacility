@@ -336,24 +336,69 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 
 /*
  * Function: 	addSelector()
- * Parameters: 	selectorId, selectorChangeCallback
+ * Parameters: 	selectorId, selectorChangeCallback, newHTML, defaultValue
  * Returns: 	map
  * Description:	Add JQuery selector
  */	
-function addSelector(selectorId, selectorChangeCallback) {
+function addSelector(selectorId, selectorChangeCallback, newHTML, defaultValue) {
 	scopeChecker({
 		selectorId: selectorId,
+		newHTML: newHTML,
 		callback: selectorChangeCallback}
 	);
 		
-	$( selectorId )									// Quantization selector
-		.selectmenu({
-			change: function( event, ui ) {					// DB Change function
-				selectorChangeCallback( event, ui );
-			}
-		})
-		.selectmenu( "menuWidget" ).addClass( "overflow" );
-	$( selectorId ).button();
+	var buttonObject=$( selectorId ).button( "instance" );
+	if (buttonObject) {
+		$( selectorId ).html(newHTML);		
+		var checkedValue=$( selectorId + " option:checked" ).val();
+		
+		$( selectorId ).button( "refresh" );
+		$( selectorId ).selectmenu( "refresh" );
+			
+		if (defaultValue) {
+			$( selectorId ).val(defaultValue);			
+			consoleLog("addSelector(): refresh with defaultValue: " + selectorId + 
+				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
+				"; HTML>\n" + newHTML);
+		}
+		else {
+			$( selectorId ).val(checkedValue);
+			consoleLog("addSelector(): refresh with checkedValue: " + selectorId + 
+				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
+				"; HTML>\n" + newHTML);
+		}			
+	}
+	else {
+		$( selectorId ).html(newHTML);		
+		var checkedValue=$( selectorId + " option:checked" ).val();
+
+		consoleLog("addSelector(): pre-create: " + selectorId + 
+			"; val: " + $( selectorId ).val()   + " ; checkedValue: " + checkedValue + 
+			" ; HTML>\n" + newHTML);
+			
+		$( selectorId )									// Create selector
+			.selectmenu({
+				change: function( event, ui ) {			// DB Change function
+					selectorChangeCallback( event, ui );
+				}
+			})
+			.selectmenu( "menuWidget" ).addClass( "overflow" );
+		$( selectorId ).button();
+
+		if (defaultValue) {
+			$( selectorId ).val(defaultValue);
+			consoleLog("addSelector(): create with defaultValue: " + selectorId + 
+				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
+				"; HTML>\n" + newHTML);
+		}
+		else {
+			$( selectorId ).val(checkedValue);
+			consoleLog("addSelector(): create with checkedValue: " + selectorId + 
+				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
+				"; HTML>\n" + newHTML);
+		}		
+	}
+		
 	selectorChangeCallback();	// Defaults
 } // End of addSelector()
 
