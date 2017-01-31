@@ -1263,7 +1263,7 @@ UPDATE sahsu_grd_level1
 					sqlStmt.sql+="       geom_" + k + " = geography::STGeomFromText(wkt_" + k + ", 4326).MakeValid(),\n";
 				}	
 				sqlStmt.sql+="" +
-"       geom_orig = geometry::STGeomFromText(geometry::STGeomFromText(wkt_11, 4326).MakeValid().STAsText(), " + 
+"       geom_orig = geometry::STGeomFromText(geometry::STGeomFromText(wkt_" + xmlConfig.dataLoader.maxZoomlevel+ ", 4326).MakeValid().STAsText(), " + 
 					xmlConfig.dataLoader.srid + ")"; 
 				sqlStmt.dbType=dbType;
 				sqlArray.push(sqlStmt);
