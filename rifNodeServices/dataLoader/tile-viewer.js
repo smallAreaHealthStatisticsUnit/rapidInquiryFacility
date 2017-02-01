@@ -125,8 +125,17 @@ function geographySelectChange(event, ui) {
 			geography.table_name,
 			geography.tiletable, 
 			function getBboxCallback(bbox) {
-				createMap(bbox, geography.maxzoomlevel);
-				addTileLayer(methodFields);
+				map=createMap(bbox, geography.maxzoomlevel);
+				
+				map.whenReady( // Basemap is ready
+					function whenMapIsReady() { 
+						var tLayer=addTileLayer(methodFields);
+						tLayer.on('load', function() {
+							consoleLog("Tile layer loaded");
+							$( "geolevelSelect" ).dialog( "moveToTop" ); 
+						});
+					}
+				);
 			}) // End of getBbox() call
 	}
 	catch (e) {

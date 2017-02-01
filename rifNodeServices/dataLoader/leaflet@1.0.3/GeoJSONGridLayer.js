@@ -1,5 +1,8 @@
 /*
- * Leaflet.GeoJSONGridLayer 
+ * Modified from: 
+ *
+ * Leaflet.GeoJSONGridLayer: https://github.com/ebrelsford/leaflet-geojson-gridlayer
+ * by Eric Brelsford 
  */
 
 (function () {
@@ -97,6 +100,16 @@
             },
 
             addData: function (data) {
+				
+				if (data.type === "Topology") { // Add topojson support
+					for (key in data.objects) {
+						if (data.objects.hasOwnProperty(key)) {
+							geojson = topojson.feature(data, data.objects[key]);
+						}
+					}
+					data=geojson;
+				}
+		
                 if (data.type === 'FeatureCollection') {
                     this.addSubLayerData('default', data);
                 }

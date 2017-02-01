@@ -436,7 +436,8 @@ function setHeight(id, lheight) {
 function createMap(boundingBox, maxZoomlevel) {
 		
 	if (map == undefined) {
-		consoleLog("Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
+		consoleLog("Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + 
+			document.getElementById('map').style.width + "; version: " + L.version);	
 		map = new L.map('map' , {
 				zoom: maxZoomlevel||11,
 				// Tell the map to use a fullsreen control
@@ -503,8 +504,10 @@ function createMap(boundingBox, maxZoomlevel) {
 			L.control.scale().addTo(map); // Add scale	
 			consoleLog("Added baseLayer and scale to map");	
 			
-//			addGridLayer(); 	// Add grid layer Leaflet 1.0+
 			
+			if (L.version >= "1.0.0") { // Leaflet 0.7 code
+				addGridLayer(); 	// Add grid layer Leaflet 1.0+
+			}
 /*			
 			(function mapResetButton() {
 				var control = new L.Control({position:'topright'});
@@ -523,7 +526,7 @@ function createMap(boundingBox, maxZoomlevel) {
 			}())
 			.addTo(map); */
 		}
-	
+		
 		return map;
 	}
 	catch (e) {
@@ -540,12 +543,12 @@ function createMap(boundingBox, maxZoomlevel) {
 /*
  * Function: 	addTileLayer()
  * Parameters: 	methodFields object
- * Returns: 	Nothing
+ * Returns: 	tile layer
  * Description:	Adyerd tile la map,; remove oold layer if required
  */
 function addTileLayer(methodFields) {
 	if (map == undefined) {
-		return;
+		return undefined;
 	}
 	
     var style = {
@@ -576,48 +579,69 @@ function addTileLayer(methodFields) {
 	geolevel.tableName=methodFields.table_schema + '.' + methodFields.table_name;
 	geolevel.geography=methodFields.geography;
 	geolevel.maxzoomlevel=methodFields.maxzoomlevel;
+	geolevel.output="GeoJSON";
 	
 	map.options.maxZoom = methodFields.maxzoomlevel;
 	
 //	consoleLog("geolevel data: " + JSON.stringify(geolevel, null, 0));
-//	consoleLog("topojsonURL: " + topojsonURL);
+	consoleLog("topojsonURL: " + topojsonURL);
 	
 	if (topojsonTileLayer) {
 		map.removeLayer(topojsonTileLayer);
 	}
-    topojsonTileLayer = new L.TileLayer.GeoJSON(topojsonURL, {
-            clipTiles: true,
-			attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
-            unique: function (feature) {
-                return feature.id; 
-            }
-        }, {
-            style: style /*,
-            onEachFeature: function (feature, layer) {
-                if (feature.properties) {
-                    var popupString = '<div class="popup">';
-                    for (var k in feature.properties) {
-                        var v = feature.properties[k];
-                        popupString += k + ': ' + v + '<br />';
-                    }
-                    popupString += '</div>';
-                    layer.bindPopup(popupString);
+	
+	if (L.version < "1.0.0") { // Leaflet 0.7 code
+		topojsonTileLayer = new L.TileLayer.GeoJSON(topojsonURL, {
+				clipTiles: true,
+				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
+				unique: function (feature) {
+					return feature.id; 
+				}
+			}, {
+				style: style /*,
+				onEachFeature: function (feature, layer) {
+					if (feature.properties) {
+						var popupString = '<div class="popup">';
+						for (var k in feature.properties) {
+							var v = feature.properties[k];
+							popupString += k + ': ' + v + '<br />';
+						}
+						popupString += '</div>';
+						layer.bindPopup(popupString);
+					}
+					if (!(layer instanceof L.Point)) {
+						layer.on('mouseover', function () {
+							layer.setStyle(hoverStyle);
+						});
+						layer.on('mouseout', function () {
+							layer.setStyle(style);
+						});
+					}
+				} */
+			}
+		);
+		topojsonTileLayer.on('tileerror', function(error, tile) {
+			consoleLog("Error: " + error + " loading tile: " + tile);
+		});
+		map.addLayer(topojsonTileLayer);	
+	} // End of Leaflet 0.7 code
+	else { // Leadflet 1.0 code - uses topoJSON
+		geolevel.output="TopoJSON";
+		topojsonURL+='&output=topojson';
+		topojsonTileLayer = new L.geoJsonGridLayer(topojsonURL, {
+				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
+                layers: {
+                    'geolevel': {}
                 }
-                if (!(layer instanceof L.Point)) {
-                    layer.on('mouseover', function () {
-                        layer.setStyle(hoverStyle);
-                    });
-                    layer.on('mouseout', function () {
-                        layer.setStyle(style);
-                    });
-                }
-            } */
-        }
-    );
-	topojsonTileLayer.on('tileerror', function(error, tile) {
-		consoleLog("Error: " + error + " loading tile: " + tile);
-	});
-    map.addLayer(topojsonTileLayer);
+			}, {
+				style: style 
+			}
+		);
+		topojsonTileLayer.on('tileerror', function(error, tile) {
+			consoleLog("Error: " + error + " loading tile: " + tile);
+		});
+		map.addLayer(topojsonTileLayer);
+	}
 	
 	if (legend) {
 		map.removeControl(legend);
@@ -633,7 +657,8 @@ function addTileLayer(methodFields) {
 		databaseName:	"Database Name",
 		tableName:		"Table",
 		geography:		"Geography",
-		maxzoomlevel:	"Max zoomlevel"
+		maxzoomlevel:	"Max zoomlevel",
+		output:			"Tile format"
 	}
 	legend.onAdd = function onAddLegend(map) {
 		var div = L.DomUtil.create('div', 'info legend');
@@ -650,6 +675,8 @@ function addTileLayer(methodFields) {
 	};
 
 	legend.addTo(map);
+	
+	return topojsonTileLayer;
 } // End of addTileLayer()
 
 /*
