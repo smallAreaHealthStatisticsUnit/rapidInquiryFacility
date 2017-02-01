@@ -51,10 +51,15 @@ mapTableName <- ""
 #its fields and fields that appear in the map table skeleton.  
 temporarySmoothedResultsTableName <- ""
 
-#The name of the investigation. Is an input parameter, but default is set here fro debug purposes
-investigationName <- "inv1"
+#The name of the investigation. Is an input parameter, but default is set here for debug purposes
+investigationName <- "inv_1"
 #The id of the investigation - used when writing the results back to the database. Input paremeter
 investigationId <- "1"
+
+#name of adjustment (covariate) variable (except age group and sex). 
+#todo add more adjustment variables and test the capabilities. 
+names.adj<-c('ses')
+
 
 ##====================================================================
 ## FUNCTION: processCommandLineArguments
@@ -111,9 +116,11 @@ processCommandLineArguments <- function() {
       } else if (grepl('models', parametersDataFrame[i, 1]) == TRUE){
         model <<- parametersDataFrame[i, 2]				
       }	else if (grepl('adj', parametersDataFrame[i, 1]) == TRUE){
-        if (parametersDataFrame[i, 2] == 'TRUE') {
+      if (parametersDataFrame[i, 2] == 'TRUE') {
           adj <<- TRUE
         }
+      } else if (grepl('covariate_name', parametersDataFrame[i, 1]) == TRUE){
+        names.adj <<- parametersDataFrame[i, 2]
       }
     }
     
@@ -222,10 +229,7 @@ performSmoothingActivity <- function() {
   
   data=data[which(is.na(data$band_id)==FALSE),]
   
-  #enter names of adjustement variables (except age group and sex).
-  # TODO need to add more adjustment variable and test the capabilities. Currently ses hardcoded 
-  names.adj=c('ses')
-  
+  # Section checking names of adjustment variables that should be passed in as paremeters
   #Find corresponding columns in data and comp
   i.d.adj=c()
   i.c.adj=c()
