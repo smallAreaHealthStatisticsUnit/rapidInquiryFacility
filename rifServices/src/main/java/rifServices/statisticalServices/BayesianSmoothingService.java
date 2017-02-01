@@ -131,12 +131,10 @@ public class BayesianSmoothingService extends AbstractRService {
 		
 		try {
 			System.out.println("RUN=="+commandLineExpression+"==");
-/*
 			Process process
 				= Runtime.getRuntime().exec(commandLineExpression);	
 			int exitValue = process.waitFor();
-			System.out.println("Exit value=="+exitValue+"==");
-*/			
+			System.out.println("Exit value=="+exitValue+"==");			
 		}
 		catch(Exception ioException) {
 			RIFServiceExceptionFactory rifServiceExceptionFactory

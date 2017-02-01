@@ -163,8 +163,8 @@ public final class SampleTestObjectGenerator {
 		ArrayList<CalculationMethod> calculationMethods
 			= new ArrayList<CalculationMethod>();
 		calculationMethods.add(createSampleCARMethod());
-		calculationMethods.add(createSampleBYMMethod());
 		calculationMethods.add(createSampleHETMethod());
+		calculationMethods.add(createSampleBYMMethod());
 		
 		return calculationMethods;
 	}
@@ -180,10 +180,10 @@ public final class SampleTestObjectGenerator {
 		calculationMethod.setNewRecord(false);
 		calculationMethod.setName("CAR");
 		calculationMethod.setCodeRoutineName("car_r_procedure");
-		calculationMethod.setDescription("Applies CAR-based bayesian smoothing");
+		calculationMethod.setDescription("Conditional auto-regressive (CAR) model type");
 		calculationMethod.setPrior(CalculationMethodPrior.STANDARD_DEVIATION);		
-		Parameter c = Parameter.newInstance("a", "5");
-		calculationMethod.addParameter(c);
+		//Parameter c = Parameter.newInstance("a", "5");
+		//calculationMethod.addParameter(c);
 		return calculationMethod;		
 	}
 	
@@ -198,10 +198,10 @@ public final class SampleTestObjectGenerator {
 		calculationMethod.setNewRecord(false);
 		calculationMethod.setName("BYM");
 		calculationMethod.setCodeRoutineName("bym_r_procedure");
-		calculationMethod.setDescription("Besag, York and Mollie Model");
+		calculationMethod.setDescription("Besag, York and Mollie (BYM) model type");
 		calculationMethod.setPrior(CalculationMethodPrior.STANDARD_DEVIATION);		
-		Parameter c = Parameter.newInstance("c", "10");
-		calculationMethod.addParameter(c);
+	//	Parameter c = Parameter.newInstance("c", "10");
+	//	calculationMethod.addParameter(c);
 		return calculationMethod;		
 	}
 
@@ -224,7 +224,7 @@ public final class SampleTestObjectGenerator {
 		Parameter b = Parameter.newInstance("b", "5");
 
 		calculationMethod.addParameter(a);
-		calculationMethod.addParameter(b);
+	calculationMethod.addParameter(b);
 
 		return calculationMethod;		
 	}		
@@ -242,13 +242,13 @@ public final class SampleTestObjectGenerator {
 			= CalculationMethod.newInstance();
 		calculationMethod.setName("HET");
 		calculationMethod.setCodeRoutineName("het_r_procedure");
-		calculationMethod.setDescription("Does HET things");
+		calculationMethod.setDescription("Heterogenous (HET) model type");
 		calculationMethod.setPrior(CalculationMethodPrior.STANDARD_DEVIATION);		
-		Parameter a = Parameter.newInstance("a", "10");
-		Parameter b = Parameter.newInstance("b", "5");
+		//Parameter a = Parameter.newInstance("a", "10");
+		//Parameter b = Parameter.newInstance("b", "5");
 
-		calculationMethod.addParameter(a);
-		calculationMethod.addParameter(b);
+		//calculationMethod.addParameter(a);
+		//calculationMethod.addParameter(b);
 
 		return calculationMethod;		
 	}	
