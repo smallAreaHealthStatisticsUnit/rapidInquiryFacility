@@ -506,7 +506,7 @@ function createMap(boundingBox, maxZoomlevel) {
 			
 			
 			if (L.version >= "1.0.0") { // Leaflet 0.7 code
-				addGridLayer(); 	// Add grid layer Leaflet 1.0+
+//				addGridLayer(); 	// Add grid layer Leaflet 1.0+
 			}
 /*			
 			(function mapResetButton() {
@@ -631,12 +631,15 @@ function addTileLayer(methodFields) {
 		topojsonTileLayer = new L.geoJsonGridLayer(topojsonURL, {
 				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
                 layers: {
-                    'geolevel': {}
+                    'geolevel': {
+						style: style 
+					}
                 }
-			}, {
+			}/*, {			
 				style: style 
-			}
+			} */
 		);
+//		topojsonTileLayer.setOpacity(0.3);
 		topojsonTileLayer.on('tileerror', function(error, tile) {
 			consoleLog("Error: " + error + " loading tile: " + tile);
 		});

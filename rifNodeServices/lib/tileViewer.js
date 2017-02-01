@@ -128,8 +128,8 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 		
 		try {
 			response.message+=msg;
-			msg+="\n" +
-				JSON.stringify(response.fields, null, 2);
+//			msg+="\n" +
+//				JSON.stringify(response.fields, null, 2);
 			response.message+=msg;
 			
 			var geojson;
@@ -517,7 +517,7 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 						getMapTileErrorHandler(nerr);
 					}
 				}
-				response.message+="\noptimised_topojson: " +  result.rows[0].optimised_topojson.length;
+				response.message+="optimised_topojson: " +  result.rows[0].optimised_topojson.length;
 				getMapTileResponse(response.result); // Replace with just geojson	
 			}		
 		} // End of pgGetMapTileFromDBQuery()
@@ -529,7 +529,8 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 				'   AND zoomlevel   = @zoomlevel\n' +
 				'   AND x           = @x\n' +
 				'   AND y           = @y';
-		response.message+="\nmssql SQL> " + sql + ";\ngeolevel_id: " + 
+//		response.message+="\nmssql SQL> " + sql + ";";
+		response.message+="\ngeolevel_id: " + 
 			geolevel_id + "; zoomlevel: " + zoomlevel + "; x: " + x + "; y: " + y;
 
 		dbRequest.input('geolevel_id', mssql.Int, geolevel_id);
@@ -558,7 +559,7 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 					for (var i=0; i< result[0].optimised_topojson.length; i++) {
 						topojson_string+=result[0].optimised_topojson[i];
 					}
-					response.message+="\noptimised_topojson: " +  topojson_string.length + "\n";
+					response.message+="optimised_topojson: " +  topojson_string.length + "\n";
 					try {
 						response.result=JSON.parse(topojson_string);
 					}

@@ -132,10 +132,15 @@ function geographySelectChange(event, ui) {
 						var tLayer=addTileLayer(methodFields);
 						tLayer.on('load', function() {
 							consoleLog("Tile layer loaded");
-							$( "geolevelSelect" ).dialog( "moveToTop" ); 
 						});
 					}
 				);
+				map.on('zoomend', function() {
+					consoleLog("Map zoom changed");
+				});	
+				map.on('resoze', function() {
+					consoleLog("Map resized");
+				});				
 			}) // End of getBbox() call
 	}
 	catch (e) {
