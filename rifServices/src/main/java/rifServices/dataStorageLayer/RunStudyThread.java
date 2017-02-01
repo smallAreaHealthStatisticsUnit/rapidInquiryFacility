@@ -181,10 +181,11 @@ public class RunStudyThread
 		generateResultsSubmissionStep
 			= new SQLGenerateResultsSubmissionStep(rifDatabaseProperties);
 		
+		//KLG: @TODO - we need a facility to feed password to this.
 		smoothResultsSubmissionStep = new SQLSmoothResultsSubmissionStep();
 		smoothResultsSubmissionStep.initialise(
-			"kgarwood", 
-			"kgarwood", 
+			user.getUserID(), 
+			user.getUserID(), 
 			rifServiceStartupOptions);
 
 		String extractDirectory
