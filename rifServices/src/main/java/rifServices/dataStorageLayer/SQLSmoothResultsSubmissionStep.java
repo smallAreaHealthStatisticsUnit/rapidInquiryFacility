@@ -4,7 +4,7 @@ package rifServices.dataStorageLayer;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
 
-import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.*;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -158,6 +158,11 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 				createDatabaseFriendlyInvestigationName(firstInvestigation.getTitle()));
 			addParameterToVerify("investigation_name");
 
+			String covariateName = getCovariateName(studySubmission);
+			addParameter(
+				"covariate_name", 
+				covariateName);
+						
 			Integer investigationID
 				= getInvestigationID(
 					connection,
@@ -202,6 +207,28 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 			rifServiceExceptionFactory.createFileCommandLineRunException(generateCommandLineExpression());
 		}		
 	}
+	
+	/*
+	 * @TODO: KLG - Currently the study submission data model allows for it to have a study with multiple investigations,
+	 * each of which can have multiple different covariates.  In practice, we are finding that we are using one covariate.
+	 * This is a method that should be migrated into the RIFStudySubmission class.
+	 */
+	private String getCovariateName(final RIFStudySubmission studySubmission) {
+		AbstractStudy study
+			= studySubmission.getStudy();
+		ArrayList<Investigation> investigations = study.getInvestigations();
+		//Get the covariates from the first investigation
+		ArrayList<AbstractCovariate> covariates = investigations.get(0).getCovariates();
+		
+		
+		//This just takes the first covariate of the first investigation and returns its name.  That's the one we will
+		//assume will appear in the extract table.  Note though that this needs to be changed in future because at the 
+		//moment our model accommodates multiple covariates in multiple investigations.
+		String covariateName
+			= covariates.get(0).getName();
+		return covariateName;
+	}
+	
 	
 	private String createDatabaseFriendlyInvestigationName(final String investigationName) {
 		return investigationName.trim().toUpperCase().replaceAll(" ", "_");		
