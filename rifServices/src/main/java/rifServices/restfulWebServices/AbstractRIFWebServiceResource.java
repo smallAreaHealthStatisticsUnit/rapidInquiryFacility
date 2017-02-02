@@ -130,8 +130,6 @@ abstract class AbstractRIFWebServiceResource {
 		
 		try {
 			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
-			//rifStudyServiceBundle.login("ffabbri", new String("ffabbri").toCharArray());
-			//rifStudyServiceBundle.login("kgarwood", new String("kgarwood").toCharArray());
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);

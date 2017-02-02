@@ -82,50 +82,6 @@ import java.util.HashSet;
  */
 
 public class SQLSmoothedResultManager extends AbstractSQLManager {
-
-	public static void main(String[] args) {
-
-		try {
-
-		TestRIFStudyServiceBundle testServiceBundle
-			= TestRIFStudyServiceBundle.getRIFServiceBundle();
-	
-		RIFServiceStartupOptions rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false, false);
-		rifServiceStartupOptions.setHost("wpea-rif1");
-		testServiceBundle.initialise(rifServiceStartupOptions);
-	
-		RIFServiceResources rifServiceResources
-			= testServiceBundle.getRIFServiceResources();
-		SQLConnectionManager connectionManager
-			= rifServiceResources.getSqlConnectionManager();
-		User user = User.newInstance("kgarwood", "kgarwood");
-		connectionManager.login(user.getUserID(), "kgarwood");
-		Connection connection
-			= connectionManager.assignPooledWriteConnection(user);
-
-		
-		TestRIFStudySubmissionService submissionService
-			= new TestRIFStudySubmissionService();
-			
-			SQLSmoothedResultManager manager
-				= new SQLSmoothedResultManager(rifServiceStartupOptions.getRIFDatabaseProperties());
-
-			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
-			mapAreas.add(MapArea.newInstance("01.001.000100.1", "01.001.000100.1", "01.001.000100.1"));
-			mapAreas.add(MapArea.newInstance("01.002.002000.2", "01.002.002000.2", "01.002.002000.2"));
-			
-			RIFResultTable rifResultTable
-				= manager.getPopulationPyramidData(connection, "1", 1990, mapAreas);
-			//rifResultTable.print();
-			
-			//rifResultTable.print(50);
-		}
-		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-		}
-		
-	}
 	
 	// ==========================================
 	// Section Constants

@@ -1,9 +1,53 @@
+/####
+ ## The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ ## that rapidly addresses epidemiological and public health questions using 
+ ## routinely collected health and population data and generates standardised 
+ ## rates and relative risks for any given health outcome, for specified age 
+ ## and year ranges, for any given geographical area.
+ ##
+ ## Copyright 2016 Imperial College London, developed by the Small Area
+ ## Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ ## is funded by the Public Health England as part of the MRC-PHE Centre for 
+ ## Environment and Health. Funding for this project has also been received 
+ ## from the United States Centers for Disease Control and Prevention.  
+ ##
+ ## This file is part of the Rapid Inquiry Facility (RIF) project.
+ ## RIF is free software: you can redistribute it and/or modify
+ ## it under the terms of the GNU Lesser General Public License as published by
+ ## the Free Software Foundation, either version 3 of the License, or
+ ## (at your option) any later version.
+ ##
+ ## RIF is distributed in the hope that it will be useful,
+ ## but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ ## GNU Lesser General Public License for more details.
+ ##
+ ## You should have received a copy of the GNU Lesser General Public License
+ ## along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ ## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ ## Boston, MA 02110-1301 USA
+
+ ## Brandon Parkes
+ ## @author bparkes
+ ##/
+
 ############################################################################################################
 #   RIF PROJECT
 #   Basic disease map results
 #   Adjusted for covariates
 #   Apply Bayesian smoothing with INLA
 ############################################################################################################
+
+## CHECK & AUTO INSTALL MISSING PACKAGES
+#packages <- c("plyr", "abind", "maptools", "spdep", "RODBC")
+#if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
+#  install.packages(setdiff(packages, rownames(installed.packages())))  
+#}
+#if (!require(INLA)) {
+#	install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
+#}
+
+#TODO: (DM) Run if no optional model selected 
 
 library(plyr)
 library(abind)
@@ -51,10 +95,15 @@ mapTableName <- ""
 #its fields and fields that appear in the map table skeleton.  
 temporarySmoothedResultsTableName <- ""
 
-#The name of the investigation. Is an input parameter, but default is set here fro debug purposes
-investigationName <- "inv1"
+#The name of the investigation. Is an input parameter, but default is set here for debug purposes
+investigationName <- "inv_1"
 #The id of the investigation - used when writing the results back to the database. Input paremeter
 investigationId <- "1"
+
+#name of adjustment (covariate) variable (except age group and sex). 
+#todo add more adjustment variables and test the capabilities. 
+names.adj<-c('ses')
+
 
 ##====================================================================
 ## FUNCTION: processCommandLineArguments
@@ -111,9 +160,11 @@ processCommandLineArguments <- function() {
       } else if (grepl('models', parametersDataFrame[i, 1]) == TRUE){
         model <<- parametersDataFrame[i, 2]				
       }	else if (grepl('adj', parametersDataFrame[i, 1]) == TRUE){
-        if (parametersDataFrame[i, 2] == 'TRUE') {
+      if (parametersDataFrame[i, 2] == 'TRUE') {
           adj <<- TRUE
         }
+      } else if (grepl('covariate_name', parametersDataFrame[i, 1]) == TRUE){
+        names.adj <<- tolower(parametersDataFrame[i, 2])
       }
     }
     
@@ -221,17 +272,14 @@ performSmoothingActivity <- function() {
   data=data[which(data$study_or_comparison=='S'),]
   
   data=data[which(is.na(data$band_id)==FALSE),]
-  
-  #enter names of adjustement variables (except age group and sex).
-  # TODO need to add more adjustment variable and test the capabilities. Currently ses hardcoded 
-  names.adj=c('ses')
-  
+
+  # Section checking names of adjustment variables that should be passed in as paremeters
   #Find corresponding columns in data and comp
   i.d.adj=c()
   i.c.adj=c()
   for (i in 1:length(names.adj)){
-    id=which(names(data)==names.adj[i])
-    ic=which(names(comp)==names.adj[i])
+    id=which(tolower(names(data))==names.adj[i])
+    ic=which(tolower(names(comp))==names.adj[i])
     if (length(id)==0|length(ic)==0){
       print(paste('covariate', names.adj[i], 'not found, data will not be adjusted for it!'))
     }else{

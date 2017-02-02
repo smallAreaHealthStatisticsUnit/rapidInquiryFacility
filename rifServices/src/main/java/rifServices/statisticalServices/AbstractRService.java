@@ -165,12 +165,12 @@ public abstract class AbstractRService {
 		
 		Map<String, String> environmentVariables = System.getenv();
 		String rHomeValue = environmentVariables.get("R_HOME");
+		System.out.println("R HOME IS=="+rHomeValue+"==");
 		expression.append(rHomeValue);
 		expression.append(File.separator);
 		expression.append("bin");
 		expression.append(File.separator);
 		expression.append("x64");		
-		//expression.append("C:\\\"Program Files\"\\R\\R-3.2.2\\bin\\x64");
 		expression.append(File.separator);
 		expression.append("RScript ");
 		expression.append(rScriptFile.getAbsolutePath());

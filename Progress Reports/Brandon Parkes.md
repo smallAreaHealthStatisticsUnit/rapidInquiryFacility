@@ -23,12 +23,14 @@ June 2016 progress report
 
 ##September
 - No changes required
-
-##October
-- Change to the way the comparison area is used. Previously several comparison areas were identified based on the first part of the study area ids. Now only one comparison is area is used.
+##Octoberparison area is used. Previously several comparison areas were identified based on the first part of the study area ids. Now only one comparison is area is used.
 
 ##November
 - Enhancement to populate the posterior probability field after performing the smoothing. Writing to the database
 
 ##December
 Started work on documentation
+#2017
+
+##January
+- Minor changes & documentation

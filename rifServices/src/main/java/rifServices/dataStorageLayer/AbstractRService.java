@@ -2,7 +2,6 @@ package rifServices.dataStorageLayer;
 
 
 import rifServices.businessConceptLayer.CalculationMethod;
-
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.system.RIFServiceMessages;
@@ -10,6 +9,7 @@ import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.util.FilePathCleaner;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.io.*;
 import java.util.Date;
 
@@ -189,18 +189,18 @@ public abstract class AbstractRService {
 	
 	private String generateDefaultRScriptProgramPath() {
 	
+
 		StringBuilder mainCommand = new StringBuilder();
-		mainCommand.append("C:");
-		mainCommand.append(File.separator);
-		mainCommand.append("Program Files");
-		mainCommand.append(File.separator);
-		mainCommand.append("R");
-		mainCommand.append(File.separator);
-		mainCommand.append("R-3.2.2");
+		
+		Map<String, String> environmentVariables = System.getenv();
+		
+		String rHomeValue = environmentVariables.get("R_HOME");
+		System.out.println("R HOME IS=="+rHomeValue+"==");
+		mainCommand.append(rHomeValue);
 		mainCommand.append(File.separator);
 		mainCommand.append("bin");
 		mainCommand.append(File.separator);
-		mainCommand.append("x64");
+		mainCommand.append("x64");		
 		mainCommand.append(File.separator);
 		mainCommand.append("RScript");
 
