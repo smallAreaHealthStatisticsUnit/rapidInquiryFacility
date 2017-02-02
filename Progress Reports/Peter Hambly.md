@@ -848,9 +848,17 @@ RangeError: Invalid string length
 * Note resizing bug in tile-maker.html is probably caused by setting the height of the map div in html once 
   leaflet is initialized.
 * All tiles confirmed OK
+* Converted to topoJSON/Leaflet 1.0.3
+* Removed spurious points (using tile-viewer)
+* Made some lovely slides for next week
+
+#### 6th to 10th February 
+
+* CDC Visit
 
 #### Current TODO list (February 2017): SQL Server Port
 
+* Remove spurious points using tilemaker. These are caused by the simplification
 * SQL Server run study port
 * SQL server fault in rfi40_geographies/geometry insert triggers
 
