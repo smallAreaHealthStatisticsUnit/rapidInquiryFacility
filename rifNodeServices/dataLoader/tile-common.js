@@ -643,6 +643,10 @@ function addTileLayer(methodFields) {
 		topojsonTileLayer.on('tileerror', function(error, tile) {
 			consoleLog("Error: " + error + " loading tile: " + tile);
 		});
+		topojsonTileLayer.on('load', function() {
+			consoleLog("Tile layer loaded; geolevel_id: " + methodFields.geolevel_id);
+			getAllMarkers();
+		});
 		map.addLayer(topojsonTileLayer);
 	}
 	
@@ -807,17 +811,27 @@ function getAllMarkers() {
 
     var allMarkersObjArray = []; // for marker objects
     var allMarkersGeoJsonArray = []; // for readable geoJson markers
-
+	
+    consoleLog("getAllMarkers() start");
     $.each(map._layers, function (ml) {
 
         if (map._layers[ml].feature) {
 
 			allMarkersObjArray.push(this);
-            allMarkersGeoJsonArray.push(this.toGeoJSON())
+			var geojson=this.toGeoJSON();
+			var popop=[];
+			for (var key in geojson.properties) {
+				popop.push("<tr><td>" + (key) + ": </td><td>" + geojson.properties[key] + "</td></tr>");			
+			}
+			var html = '<table id="popups">' + popop.join("") + '</table>';
+			this.bindPopup(html);
+//            allMarkersGeoJsonArray.push(geojson);
         }
     })
+	
+    consoleLog("getAllMarkers() added: " + allMarkersGeoJsonArray.length + " popups");
+	return;
 
-//    consoleLog("getAllMarkers() allMarkersGeoJsonArray: " + allMarkersGeoJsonArray.length);
 	for (var i=0; i<allMarkersGeoJsonArray.length; i++) {
 		
 		var geoTypes={};	

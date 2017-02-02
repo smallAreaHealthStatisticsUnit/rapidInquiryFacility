@@ -75,7 +75,7 @@ function geolevelSelectChange(event, ui) {
 	consoleLog("geolevelSelectChange() geolevel: " + geolevel + "; ui: " + ((ui == undefined) && 0 || 1));
 	if (methodFields) {
 		methodFields.geolevel_id=geolevel || 2;
-		addTileLayer(methodFields);
+		var tlayer=addTileLayer(methodFields);	
 	}
 	else {
 		consoleLog("geolevelSelectChange(): No methodFields");
@@ -130,10 +130,6 @@ function geographySelectChange(event, ui) {
 				map.whenReady( // Basemap is ready
 					function whenMapIsReady() { 
 						var tLayer=addTileLayer(methodFields);
-						tLayer.on('load', function() {
-							consoleLog("Tile layer loaded");
-//							getAllMarkers();
-						});
 					}
 				);
 				map.on('zoomend', function() {
