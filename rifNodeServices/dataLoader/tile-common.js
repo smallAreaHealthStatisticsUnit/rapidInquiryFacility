@@ -793,5 +793,75 @@ function addGridLayer() {
 	  ctx.stroke();
 	  return tile;
 	}
+	
 	tiles.addTo(map);
 } // End of addGridLayer()
+
+/*
+ * Function:	getAllMarkers()
+ * Parameters:	None
+ * Returns:		Nothing
+ * Description: Get all the markers at once; find the point geospatial types
+ */
+function getAllMarkers() {
+
+    var allMarkersObjArray = []; // for marker objects
+    var allMarkersGeoJsonArray = []; // for readable geoJson markers
+
+    $.each(map._layers, function (ml) {
+
+        if (map._layers[ml].feature) {
+
+			allMarkersObjArray.push(this);
+            allMarkersGeoJsonArray.push(this.toGeoJSON())
+        }
+    })
+
+//    consoleLog("getAllMarkers() allMarkersGeoJsonArray: " + allMarkersGeoJsonArray.length);
+	for (var i=0; i<allMarkersGeoJsonArray.length; i++) {
+		
+		var geoTypes={};	
+		
+//		if (i == 0) {
+//			consoleLog("getAllMarkers() allMarkersGeoJsonArray[0]: " + 
+//				JSON.stringify(allMarkersGeoJsonArray[i]).substring(1, 400));
+//		}
+
+/*
++11: getAllMarkers() gid: 7; x: 0; y: 1; points: 0; dimensions: 2;
+JSON: "type":"Feature","id":7,
+"properties":{"gid":7,"area_id":"01779789","name":"Michigan","x":0,"y":1,"block":1,"CB_2014_US_STATE_500K":"01779789"},
+"geometry":{"geometries":[
+{"type":"Point","coordinates":[-83.19802550495056,42.03458311057784]},
+{"type":"Polygon","coordinates":[[[-83.23392183248332,45.056254727129456],[-83.19802550495056,45.05100876946183],[-83.19802550495056,45.045762811794205],[-83.19 */	
+
+		if (allMarkersGeoJsonArray[i].geometry.geometries) {
+			for (var j=0; j<allMarkersGeoJsonArray[i].geometry.geometries.length; j++) {
+				if (geoTypes[allMarkersGeoJsonArray[i].geometry.geometries[j].type] == undefined) {
+					geoTypes[allMarkersGeoJsonArray[i].geometry.geometries[j].type]=1;			
+				}
+				else {
+					geoTypes[allMarkersGeoJsonArray[i].geometry.geometries[j].type]++;
+				}
+			}
+		}
+		else if (allMarkersGeoJsonArray[i].geometry && allMarkersGeoJsonArray[i].geometry.type) {
+			if (geoTypes[allMarkersGeoJsonArray[i].geometry.type] == undefined) {
+				geoTypes[allMarkersGeoJsonArray[i].geometry.type]=1;			
+			}
+			else {
+				geoTypes[allMarkersGeoJsonArray[i].geometry.type]++;
+			}
+		}
+		if (geoTypes == undefined) {		
+			consoleLog("getAllMarkers() gid: " + allMarkersGeoJsonArray[i].properties.gid + 
+				"; x: " + allMarkersGeoJsonArray[i].properties.x + 
+				"; y: " + allMarkersGeoJsonArray[i].properties.y +
+				";\nJSON: " + JSON.stringify(allMarkersGeoJsonArray[i]).substring(1, 200));
+		}
+		consoleLog("getAllMarkers() gid: " + allMarkersGeoJsonArray[i].properties.gid + 
+			"; x: " + allMarkersGeoJsonArray[i].properties.x + 
+			"; y: " + allMarkersGeoJsonArray[i].properties.y +
+			"; geoTypes: " + JSON.stringify(geoTypes));			
+	}
+}

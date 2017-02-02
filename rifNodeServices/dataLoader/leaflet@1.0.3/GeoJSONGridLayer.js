@@ -1,5 +1,5 @@
 /*
- * Modified from: 
+ * Modified to support TopoJSON from: 
  *
  * Leaflet.GeoJSONGridLayer: https://github.com/ebrelsford/leaflet-geojson-gridlayer
  * by Eric Brelsford 
@@ -107,9 +107,38 @@
 							geojson = topojson.feature(data, data.objects[key]);
 						}
 					}
+	
+//					if (geojson.bbox) { 	// Remove bounding box
+//						delete geojson.bbox;
+//					}
+
+					// Remove points
+					if (geojson.features) {
+						for (var i=0; i<geojson.features.length; i++) {
+							var feature=geojson.features[i];
+							if (feature.geometry && feature.geometry.geometries != undefined) {
+								for (var j=0; j<feature.geometry.geometries.length; j++) {
+									if (feature.geometry.geometries[j].type && 
+									    feature.geometry.geometries[j].type == "Point") {
+										consoleLog("Remove feature from geojson[" + i + ", " + j + "]: " + 
+											JSON.stringify(feature.geometry.geometries[j]).substring(1, 300));
+										delete feature.geometry.geometries[j];			
+									}
+								} 
+							}
+							else if (feature.geometry && feature.geometry.type) {
+								if (feature.geometry.type && feature.geometry.type == "Point") {
+									consoleLog("Remove feature from geojson[" + i + "]: " + 
+										JSON.stringify(feature.geometry).substring(1, 300));
+									delete feature.geometry;			
+								}
+							}	 								
+						}
+					}
+
 					data=geojson;
 				}
-		
+								
                 if (data.type === 'FeatureCollection') {
                     this.addSubLayerData('default', data);
                 }

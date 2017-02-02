@@ -132,6 +132,7 @@ function geographySelectChange(event, ui) {
 						var tLayer=addTileLayer(methodFields);
 						tLayer.on('load', function() {
 							consoleLog("Tile layer loaded");
+//							getAllMarkers();
 						});
 					}
 				);
