@@ -697,7 +697,7 @@ public class RIFStudySubmissionWebServiceResource
 			//Call service API
 			RIFStudySubmissionAPI studySubmissionService
 				= getRIFStudySubmissionService();			
-			studySubmissionService.test();
+			studySubmissionService.test(user);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);

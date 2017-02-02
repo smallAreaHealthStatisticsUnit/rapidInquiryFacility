@@ -75,51 +75,6 @@ import java.sql.*;
 public class RunStudyThread 
 	implements Runnable {
 
-	public static void main(String[] arguments) {
-		
-		try {
-			
-			TestRIFStudyServiceBundle testServiceBundle
-				= TestRIFStudyServiceBundle.getRIFServiceBundle();
-			
-			RIFServiceStartupOptions rifServiceStartupOptions
-				= RIFServiceStartupOptions.newInstance(false, false);
-			rifServiceStartupOptions.setHost("wpea-rif1");
-			testServiceBundle.initialise(rifServiceStartupOptions);
-			
-			RIFServiceResources rifServiceResources
-				= testServiceBundle.getRIFServiceResources();
-			SQLConnectionManager connectionManager
-				= rifServiceResources.getSqlConnectionManager();
-			User user = User.newInstance("kgarwood", "kgarwood");
-			connectionManager.login(user.getUserID(), "kgarwood");
-			Connection connection
-				= connectionManager.assignPooledWriteConnection(user);
-			
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
-			RIFStudySubmission studySubmission
-				= sampleTestObjectGenerator.createTypicalStudySubmission();
-			//= sampleTestObjectGenerator.createSampleRIFJobSubmission();
-
-			RunStudyThread runStudyThread = new RunStudyThread();
-			
-			runStudyThread.initialise(
-				connection, 
-				user, 
-				studySubmission,
-				rifServiceStartupOptions,
-				rifServiceResources);								
-			runStudyThread.run();
-		}
-		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-		}
-		
-		
-		
-	}
-	
 	// ==========================================
 	// Section Constants
 	// ==========================================

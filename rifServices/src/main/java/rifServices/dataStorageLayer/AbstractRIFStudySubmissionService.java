@@ -184,14 +184,12 @@ abstract class AbstractRIFStudySubmissionService
 	// ==========================================
 	
 	
-	public void test()		
+	public void test(final User user)		
 		throws RIFServiceException {
 			
 		//Defensively copy parameters and guard against blocked users
 		SQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
-
-		User user = User.newInstance("kgarwood", "kgarwood");
 
 		Connection connection = null;
 		try {
