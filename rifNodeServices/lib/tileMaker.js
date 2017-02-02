@@ -432,14 +432,15 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			this.geojson.features[0].properties.gid=this.id;
 			
 			// Add other keys to properties; i.e, anything else in lookup table
-			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 'areaid', 'areaname', 'bound'];
+			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 
+				'areaid', 'areaname', 'bound'];
 			for (var key in row) {
 				if (usedAready.indexOf(key) ==	-1) { // Not tile_id, geolevel_id, zoomlevel, optimised_wkt, areaid, areaName
 					// Already added: areaName, areaID
 					this.geojson.features[0].properties[key] = row[key];	
 				}
 			}
-			geojson.features[0].properties.zoomlevel=zoomlevel;
+			this.geojson.features[0].properties.zoomlevel=this.zoomlevel;
 			winston.log("debug", "Create tile: " + this.id + "; tile_id: " + this.tileId +
 				"; features: " + JSON.stringify(this.geojson.features[0].properties));
 		}
@@ -500,13 +501,30 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 				throw new Error("addFeature(): Unable to add feature, no additional geojson supplied for tile: " + 
 					this.id + "; tile_id: " + this.tileId);
 			}
-			
+			// Remove point data from geojson
+			if (geojson.geometry && geojson.geometry.geometries != undefined) {
+				for (var j=0; j<geojson.geometry.geometries.length; j++) {
+					if (geojson.geometry.geometries[j].type && 
+						geojson.geometry.geometries[j].type == "Point") {
+						winston.log("info", "Remove feature from geojson geometries[" + j + "]: " + 
+							JSON.stringify(geojson.geometry.geometries[j]).substring(1, 300));
+//						delete geojson.geometry.geometries[j];			
+					}
+				} 
+			}
+			else if (geojson.geometry && geojson.geometry.type && geojson.geometry.type == "Point") {
+				winston.log("info", "Remove feature from geojson: " + 
+					JSON.stringify(geojson.geometry).substring(1, 300));
+//				delete geojson.geometry;			
+			}	 				
+							
 			this.geojson.features.push(geojson);
 			this.areaid_count++;
 			this.geojson.features[(this.geojson.features.length-1)].properties.gid=this.id;
 			
 			// Add other keys to properties; i.e, anything else in lookup table
-			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 'areaid', 'areaname'];
+			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 
+				'areaid', 'areaname', 'bound'];
 			for (var key in row) {
 				if (usedAready.indexOf(key) ==	-1 && 
 					this.geojson.features[(this.geojson.features.length-1)].properties[key] == undefined) { 
@@ -515,6 +533,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 					this.geojson.features[(this.geojson.features.length-1)].properties[key] = row[key];
 				}
 			}
+			this.geojson.features[(this.geojson.features.length-1)].properties.zoomlevel=row.zoomlevel;
 		},
 		/*
 		 * Function: 	addTopoJson()
