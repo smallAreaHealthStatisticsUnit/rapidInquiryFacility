@@ -432,14 +432,14 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			this.geojson.features[0].properties.gid=this.id;
 			
 			// Add other keys to properties; i.e, anything else in lookup table
-			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 'areaid', 'areaname'];
+			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 'areaid', 'areaname', 'bound'];
 			for (var key in row) {
 				if (usedAready.indexOf(key) ==	-1) { // Not tile_id, geolevel_id, zoomlevel, optimised_wkt, areaid, areaName
 					// Already added: areaName, areaID
 					this.geojson.features[0].properties[key] = row[key];	
 				}
 			}
-			
+			geojson.features[0].properties.zoomlevel=zoomlevel;
 			winston.log("debug", "Create tile: " + this.id + "; tile_id: " + this.tileId +
 				"; features: " + JSON.stringify(this.geojson.features[0].properties));
 		}
