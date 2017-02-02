@@ -46,11 +46,11 @@ Expected highlights this month:
 | 9    | 27 February 2017  |                                                               |                                                                                                   |                                                                                                |                                                                     |                                                                                           | Data loader SQL Server install                                         |       |
 | 10   | 06 March 2017     |                                                               | SQL Server middleware testing (including run study)                                               |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
 | 11   | 13 March 2017     | SQL Server Installer documentation                            |                                                                                                   |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
-| 12   | 20 March 2017     | Assist with middleware                                        |                                                                                                   |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
+| 12   | 20 March 2017     | Assist with middleware                                        | Leaves for Cabinet Office                                                                         |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
 | 13   | 27 March 2017     |                                                               |                                                                                                   |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
 | 14   | 03 April 2017     |                                                               |                                                                                                   |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
 | 15   | 10 April 2017     |                                                               |                                                                                                   |                                                                                                |                                                                     |                                                                                           | Study submission and Results viewer running on SQL server              |       |
-| 16   | 17 April 2017     | Assist with SQL Server dataloader                             | SQL Server dataloader driving tables                                                              |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
+| 16   | 17 April 2017     | Assist with SQL Server dataloader                             |                                                                                                   | SQL Server dataloader driving tables                                                           |                                                                     |                                                                                           |                                                                        |       |
 | 17   | 24 April 2017     |                                                               |                                                                                                   |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
 | 18   | 01 May 2017       |                                                               |                                                                                                   |                                                                                                |                                                                     |                                                                                           | SQL Server RIF complete                                                |       |
 
@@ -64,6 +64,8 @@ Expected highlights this month:
 - Polling of study status using $interval to notify on completion of submitted job
 - Modified getSmoothedResults method to not need a year
 - Population pyramids plotable by year
+- Adding colour swatches to choropleth maps
+- UK postcode base layers
 
 ## Middleware
 
@@ -71,8 +73,11 @@ Expected highlights this month:
 
 ### Run study batch - Kevin
 
+- No progress required.
 
 #### R - Brandon
+
+- Minor changes & documentation
 
 ### Ontology support - Kevin
  
@@ -80,6 +85,42 @@ Expected highlights this month:
 
 ### Node geospatial services (tile-maker) - Peter
 
+* Completed production load script: SQL Server;
+* Regression tests.
+* SAHSULAND tests; fixes for numgeolevels, precision fuuzy match in proj4 data; event race, PG schema issues; 
+  removed optimized_geojson from tiles table
+* Installed new sahsuland geometry, tiles etc.
+* RIF and non RIF path fixes for Postgres
+* Check tiles all generated and not null, no extra, none missing 
+* Zoomlevel and geolevel report (null tiles/total tiles)
+* USA tests to zoomlevel 8 OK. Improved SQL Server tile making efficency and reduced table size to get under 10K limit
+* Fix SQL server load script etc
+* Integration to sahsuland_empty build. 
+  * Tiles view and table compared to previous; after slight index and view tune efficeny as before; no missing/extra tiles
+  * The adajacency matrix function needs to be checked.
+  * Check json format in tiles tables. New tiles have a BBOX! Changed for full compatibility: 
+	  id to gid,
+	  areaID to area_id,
+	  areaName to name
+	The default names are not quite the same: "Kozniewska LEVEL4(01.013.016800.3)" as opposed to "01.013.016800.3"
+  * Added GID to lookup tables
+* Converted remaining rif40_xml_pkg functions to support tilemaker table names 
+* Allow non study or health data related test scripts (1, 2, 3 and 6) to run on sahusland_empty
+* Found bug in MS SQL hierarchy table: row numbers are the same but the smaller areas are being picked.
+* Separate Postgres and SQL server tiles, hierarchy and lookup CSV files (so they can be compared)
+* Lookup files are the same, and ordered
+* Fixed SQL Server heirarchy bug. Caused by geography datatype. Fixed geom_orig to be geometry datatype and used that. Also  
+  ordered hierarchy CSV files. Postgres and SQL Server hierarchy and lookup tables now exactly the same; and agree with old PostGIS
+  tile build. Regression tests OK.
+* MS Sahsuland projection problem; parked: see below.
+
+#### 30th January to 3rd February 
+
+* TileViewer (tile-viewer.html) web screen by DB/geography; DB web service. Currently slow because using geoJSON.
+  Both SQL server and Postgres tiles display for both SAHSULAND and USA to county level.
+* Note resizing bug in tile-maker.html is probably caused by setting the height of the map div in html once 
+  leaflet is initialized.
+* All tiles confirmed OK
 
 ## Databases
 
