@@ -58,8 +58,6 @@ angular.module("RIF")
                 var tmpSex;
                 var tmpCovariate;
 
-                var tmpAgeRange;
-
                 /*
                  * THE FUNCIONS FOR CHECKING RIFJOB
                  */
@@ -201,7 +199,7 @@ angular.module("RIF")
                     function uploadHandleProjects(res) {
                         var bFound = false;
                         for (var i = 0; i < res.data.length; i++) {
-                            if (res.data[i].name === tmpProjects.name && res.data[i].description === tmpProjects.description) {
+                            if (res.data[i].name === tmpProjects.name) {
                                 bFound = true;
                                 break;
                             }

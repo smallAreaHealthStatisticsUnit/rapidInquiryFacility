@@ -494,7 +494,6 @@ angular.module("RIF")
                                             }
                                         }
                                         //draw and refresh histogram and table
-                                        $scope.distHistoName = ChoroService.getMaps("viewermap").feature;
                                         ChoroService.getMaps("viewermap").features = attrs;
                                         $scope.viewerTableOptions.columnDefs = colDef;
                                         $scope.viewerTableOptions.data = $scope.tableData.viewermap;

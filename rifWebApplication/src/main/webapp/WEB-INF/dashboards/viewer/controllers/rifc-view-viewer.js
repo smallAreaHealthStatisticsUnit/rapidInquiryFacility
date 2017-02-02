@@ -162,6 +162,7 @@ angular.module("RIF")
                  */
                 //Draw the attribute histogram
                 $scope.getD3chart = function (mapID, attribute) {
+                    $scope.distHistoName = ChoroService.getMaps("viewermap").feature;
                     $scope.histoData["viewermap"].length = 0;
                     for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
                         $scope.histoData[mapID].push($scope.child.tableData[mapID][i][ChoroService.getMaps(mapID).feature]);
