@@ -120,7 +120,7 @@ processCommandLineArguments <- function() {
           adj <<- TRUE
         }
       } else if (grepl('covariate_name', parametersDataFrame[i, 1]) == TRUE){
-        names.adj <<- parametersDataFrame[i, 2]
+        names.adj <<- tolower(parametersDataFrame[i, 2])
       }
     }
     
@@ -228,14 +228,14 @@ performSmoothingActivity <- function() {
   data=data[which(data$study_or_comparison=='S'),]
   
   data=data[which(is.na(data$band_id)==FALSE),]
-  
+
   # Section checking names of adjustment variables that should be passed in as paremeters
   #Find corresponding columns in data and comp
   i.d.adj=c()
   i.c.adj=c()
   for (i in 1:length(names.adj)){
-    id=which(names(data)==names.adj[i])
-    ic=which(names(comp)==names.adj[i])
+    id=which(tolower(names(data))==names.adj[i])
+    ic=which(tolower(names(comp))==names.adj[i])
     if (length(id)==0|length(ic)==0){
       print(paste('covariate', names.adj[i], 'not found, data will not be adjusted for it!'))
     }else{
