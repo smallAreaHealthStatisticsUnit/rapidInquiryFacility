@@ -210,6 +210,8 @@ public abstract class AbstractRService {
 	
 	protected void setCalculationMethod(final CalculationMethod calculationMethod) {
 		this.calculationMethod = calculationMethod;
+		
+		addParameter("r_model", calculationMethod.getName());
 	}
 	
 	protected void setOperatingSystemType(final OperatingSystemType operatingSystemType) {
@@ -236,7 +238,7 @@ public abstract class AbstractRService {
 			parameterPhrase.append("=");
 			parameterPhrase.append(parameter.getValue());			
 			commandLineComponents.add(parameterPhrase.toString());
-		}
+		}		
 		
 		commandLineComponents.add(" --odbc_data_source=" + odbcDataSourceName);
 		commandLineComponents.add(" --user_id=" + userID);
