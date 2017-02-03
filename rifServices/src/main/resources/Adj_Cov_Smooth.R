@@ -157,8 +157,16 @@ processCommandLineArguments <- function() {
         investigationId <<- parametersDataFrame[i, 2]
       } else if (grepl('odbc_data_source', parametersDataFrame[i, 1]) == TRUE){
         odbcDataSource <<- parametersDataFrame[i, 2]
-      } else if (grepl('models', parametersDataFrame[i, 1]) == TRUE){
-        model <<- parametersDataFrame[i, 2]				
+      } else if (grepl('r_model', parametersDataFrame[i, 1]) == TRUE){     
+    	model.full <- parametersDataFrame[i, 2]	
+      	if (model.full == "het_r_procedure") {
+      		model.short <- "HET"
+      	} else if (model.full == "car_r_procedure") {
+      		model.short == "CAR"
+      	} else {
+      	    model.short == "BYM"
+      	}
+        model <<- model.short			
       }	else if (grepl('adj', parametersDataFrame[i, 1]) == TRUE){
       if (parametersDataFrame[i, 2] == 'TRUE') {
           adj <<- TRUE
