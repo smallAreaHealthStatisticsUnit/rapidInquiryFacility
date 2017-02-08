@@ -113,6 +113,7 @@
 //					}
 
 					// Remove points
+					/* Now done by tileMaker
 					if (geojson.features) {
 						for (var i=0; i<geojson.features.length; i++) {
 							var feature=geojson.features[i];
@@ -134,7 +135,7 @@
 								}
 							}	 								
 						}
-					}
+					} */
 
 					data=geojson;
 				}

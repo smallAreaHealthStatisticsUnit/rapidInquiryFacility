@@ -858,7 +858,12 @@ RangeError: Invalid string length
 
 #### Current TODO list (February 2017): SQL Server Port
 
-* Remove spurious points using tilemaker. These are caused by the simplification
+* Remove spurious points using tilemaker. These are caused by the simplification.
+* Add geography meta data XML: sahsuland_geography_metadata.xml for data loader.
+* Fix blank name properties, remove block
+* Add all Shapefile DBF fields to lookup table, and geographic centroid
+* Add all properties from lookup table
+* NVarchar support for areaName
 * SQL Server run study port
 * SQL server fault in rfi40_geographies/geometry insert triggers
 

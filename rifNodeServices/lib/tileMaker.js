@@ -433,7 +433,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 
-				'areaid', 'areaname', 'bound'];
+				'areaid', 'areaname', 'block'];
 			for (var key in row) {
 				if (usedAready.indexOf(key) ==	-1) { // Not tile_id, geolevel_id, zoomlevel, optimised_wkt, areaid, areaName
 					// Already added: areaName, areaID
@@ -441,6 +441,9 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 				}
 			}
 			this.geojson.features[0].properties.zoomlevel=this.zoomlevel;
+			if (this.geojson.features[0].properties.name == undefined) {
+				this.geojson.features[0].properties.name=(row[areaname] || row[areaid]);
+			}
 			winston.log("debug", "Create tile: " + this.id + "; tile_id: " + this.tileId +
 				"; features: " + JSON.stringify(this.geojson.features[0].properties));
 		}
@@ -475,6 +478,84 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			);
 		},
 		/*
+		 * Function: 	removePointFromFeature()
+		 * Parameters:	geojson
+		 * Returns:		Nothing
+		 * Description:	From points from geoJSON feaure
+		 */	
+		removePointFromFeature: function(geojson) {
+			if (geojson && geojson.geometry && geojson.geometry.geometries != undefined) {
+				for (var j=0; j<geojson.geometry.geometries.length; j++) {
+					if (geojson.geometry.geometries[j].type && 
+						geojson.geometry.geometries[j].type == "Point") {
+						winston.log("verbose", "Remove Point from geojson feature geometries[" + j + 
+							"]: tile: " + this.id + "; tile_id: " + this.tileId + "\nGeoJSON: " + 
+							JSON.stringify(geojson.geometry.geometries[j]).substring(1, 300));
+						delete geojson.geometry.geometries[j];			
+					}
+					else if (geojson.geometry.geometries[j].type && 
+						geojson.geometry.geometries[j].type == "MultiPoint") {
+						winston.log("verbose", "Remove MultiPoint from geojson feature geometries[" + j + 
+							"]: tile: " + this.id + "; tile_id: " + this.tileId + "\nGeoJSON: " + 
+							JSON.stringify(geojson.geometry.geometries[j]).substring(1, 300));
+						delete geojson.geometry.geometries[j];			
+					}
+					else if (geojson.geometry.geometries[j].type && 
+						geojson.geometry.geometries[j].type == "LineString") {
+						winston.log("verbose", "Remove LineString from geojson feature geometries[" + j + 
+							"]: tile: " + this.id + "; tile_id: " + this.tileId + "\nGeoJSON: " + 
+							JSON.stringify(geojson.geometry.geometries[j]).substring(1, 300));
+						delete geojson.geometry.geometries[j];			
+					}
+					else if (geojson.geometry.geometries[j].type && geojson.geometry.geometries[j].type && 
+						geojson.geometry.geometries[j].type == "Polygon") { 
+						// Ignore
+					}
+					else if (geojson.geometry.geometries[j].type && geojson.geometry.geometries[j].type && 
+						geojson.geometry.geometries[j].type == "MultiPolygon") { 
+						// Ignore
+					}
+					else if (geojson.geometry.geometries[j].type && geojson.geometry.geometries[j].type && 
+						geojson.geometry.geometries[j].type != undefined) {
+						throw new Error("addFeature(): Unable to add feature, geojson geometries unknown type[" + j + 
+							"]: " + geojson.geometry.geometries[j].type + "; tile: " + 
+							this.id + "; tile_id: " + this.tileId + "\nGeoJSON: " + 
+							JSON.stringify(geojson.geometry.geometries[j]).substring(1, 300));
+					}
+				} 
+			}
+			else if (geojson && geojson.geometry && geojson.geometry.type && geojson.geometry.type == "Polygon") { 
+				// Ignore
+			}
+			else if (geojson && geojson.geometry && geojson.geometry.type && geojson.geometry.type == "MultiPolygon") {
+				// Ignore
+			}
+			else if (geojson && geojson.geometry && geojson.geometry.type && geojson.geometry.type == "LineString") {
+				winston.log("verbose", "Remove LineString from geojson feature geometry; tile: " + 
+					this.id + "; tile_id: " + this.tileId + "\nGeoJSON: " + 
+					JSON.stringify(geojson.geometry).substring(1, 300));
+				delete geojson.geometry;			
+			}
+			else if (geojson && geojson.geometry && geojson.geometry.type && geojson.geometry.type == "MultiPoint") {
+				winston.log("verbose", "Remove MultiPoint from geojson feature geometry; tile: " + 
+					this.id + "; tile_id: " + this.tileId + "\nGeoJSON: " + 
+					JSON.stringify(geojson.geometry).substring(1, 300));
+				delete geojson.geometry;			
+			}	
+			else if (geojson && geojson.geometry && geojson.geometry.type && geojson.geometry.type == "Point") {
+				winston.log("verbose", "Remove Point from geojson feature geometry; tile: " + 
+					this.id + "; tile_id: " + this.tileId + "\nGeoJSON: " + 
+					JSON.stringify(geojson.geometry).substring(1, 300));
+				delete geojson.geometry;			
+			}				
+			else if (geojson && geojson.geometry && geojson.geometry.type && geojson.geometry.type != undefined) {
+				throw new Error("addFeature(): Unable to add feature, geojson geometry unknown type: " + 
+					geojson.geometry.type + "; tile: " + 
+					this.id + "; tile_id: " + this.tileId + "\nGeoJSON: " + 
+					JSON.stringify(geojson.geometry).substring(1, 300));
+			}			
+		},
+		/*
 		 * Function: 	addFeature()
 		 * Parameters:	Row object (from SQL query), geojson
 		 * Returns:		Nothing
@@ -501,22 +582,6 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 				throw new Error("addFeature(): Unable to add feature, no additional geojson supplied for tile: " + 
 					this.id + "; tile_id: " + this.tileId);
 			}
-			// Remove point data from geojson
-			if (geojson.geometry && geojson.geometry.geometries != undefined) {
-				for (var j=0; j<geojson.geometry.geometries.length; j++) {
-					if (geojson.geometry.geometries[j].type && 
-						geojson.geometry.geometries[j].type == "Point") {
-						winston.log("info", "Remove feature from geojson geometries[" + j + "]: " + 
-							JSON.stringify(geojson.geometry.geometries[j]).substring(1, 300));
-//						delete geojson.geometry.geometries[j];			
-					}
-				} 
-			}
-			else if (geojson.geometry && geojson.geometry.type && geojson.geometry.type == "Point") {
-				winston.log("info", "Remove feature from geojson: " + 
-					JSON.stringify(geojson.geometry).substring(1, 300));
-//				delete geojson.geometry;			
-			}	 				
 							
 			this.geojson.features.push(geojson);
 			this.areaid_count++;
@@ -524,7 +589,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 
-				'areaid', 'areaname', 'bound'];
+				'areaid', 'areaname', 'block'];
 			for (var key in row) {
 				if (usedAready.indexOf(key) ==	-1 && 
 					this.geojson.features[(this.geojson.features.length-1)].properties[key] == undefined) { 
@@ -534,6 +599,9 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 				}
 			}
 			this.geojson.features[(this.geojson.features.length-1)].properties.zoomlevel=row.zoomlevel;
+			if (this.geojson.features[(this.geojson.features.length-1)].properties.name == undefined) {
+				this.geojson.features[(this.geojson.features.length-1)].properties.name=(row[areaname] || row[areaid]);
+			}
 		},
 		/*
 		 * Function: 	addTopoJson()
@@ -549,9 +617,25 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 				throw new Error("addTopoJson(): called " + this.addTopoJsonCalls + ": topojson exists for tile: " + this.tileId)
 			}
 			else if (this.geojson) {
-				var bbox=turf.bbox(this.geojson);
-				this.geojson.bbox=bbox;
+				var bbox;
 				var numFeatures=(this.geojson.features.length || 0);	
+				try {
+					bbox=turf.bbox(this.geojson);
+				}
+				catch (e) {
+					var nerr=new Error("addTopoJson(): caught: " + e.message + " for tile: " + this.tileId + 
+						"; features: " + numFeatures +
+						"\nGeoGSON: " + JSON.stringify(this.geojson).substring(1, 300));
+					nerr.stack=e.stack;
+					throw nerr;
+				}
+				this.geojson.bbox=bbox;
+				
+				for (var j=0; j<this.geojson.features.length; j++) {
+					// Remove point data from geojson
+					this.removePointFromFeature(this.geojson.features[j]);
+				}
+				
 				if (this.id == 1 && (winston.level == "debug" || winston.level == "silly")) {
 					this.topojson_options.verbose=true;
 					winston.log("debug", "GEOJSON: " + JSON.stringify(this.geojson, null, 2).substring(0, 1000));
@@ -1290,7 +1374,7 @@ REFERENCE (from shapefile) {
 			sql="WITH a AS (\n" +
 				"	SELECT z.geolevel_id::VARCHAR||'_'||'" + geolevelName + 
 								"'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
-				"	       z.areaid, z.geolevel_id, z.zoomlevel, z.geom, z.x, z.y, y.block, a.*\n" +				
+				"	       z.areaid, z.geolevel_id, z.zoomlevel, ST_AsText(z.geom) AS optimised_wkt, z.x, z.y, y.block, a.*\n" +				
 				"	  FROM " + tileIntersectsTable + " z, " + tileBlocksTable + " y, lookup_" + geolevelName + " a\n" +
 				"	 WHERE z.geolevel_id = $2\n" + 
 				"	   AND z.zoomlevel   = $1\n" + 
@@ -1302,7 +1386,7 @@ REFERENCE (from shapefile) {
 				"	   AND y.y           = z.y\n" +
 				")\n" +
 				"SELECT tile_id, areaid, geolevel_id, zoomlevel, x, y, block,\n" + 
-				"       areaname, " + geolevelName + ", ST_AsText(geom) AS optimised_wkt\n" + 
+				"       areaname, " + geolevelName + ", optimised_wkt\n" + 
 				"       FROM a\n" + 
 				" ORDER BY tile_id, areaid";
 		}		
@@ -1310,7 +1394,7 @@ REFERENCE (from shapefile) {
 			sql="WITH a AS (\n" +
 				"	SELECT CAST(z.geolevel_id AS VARCHAR) + '_' + '" + geolevelName + 
 							"' + '_' + CAST(z.zoomlevel AS VARCHAR) + '_' + CAST(z.x AS VARCHAR) + '_' + CAST(z.y AS VARCHAR) AS tile_id,\n" +
-				"  	     z.geolevel_id, z.zoomlevel, z.geom, z.areaid, z.x, z.y, y.block, a.*\n" +				
+				"  	     z.geolevel_id, z.zoomlevel, z.geom.STAsText() AS optimised_wkt, z.areaid, z.x, z.y, y.block, a.*\n" +				
 				" 	 FROM " + tileBlocksTable + " y, " + tileIntersectsTable + " z, lookup_" + geolevelName + " a\n" +
 				"	 WHERE y.geolevel_id = @geolevel_id\n" + 
 				"	   AND y.zoomlevel   = @zoomlevel\n" + 
@@ -1322,7 +1406,7 @@ REFERENCE (from shapefile) {
 				"	   AND z.areaid      = a." + geolevelName + "\n" + 
 				")\n" +
 				"SELECT tile_id, areaid, geolevel_id, zoomlevel, x, y, block,\n" + 
-				"       areaname, " + geolevelName + ", geom.STAsText() AS optimised_wkt\n" + 
+				"       areaname, " + geolevelName + ", optimised_wkt\n" + 
 				"       FROM a\n" + 
 				" ORDER BY tile_id, areaid"
 		}
@@ -1845,7 +1929,7 @@ REFERENCE (from shapefile) {
 	/*
 	 * Function: 	getDataLoaderParameter()
 	 * Parameters:	Data loader object (dataLoader in XML), parameter name 
-	 * Returns:		Valuye
+	 * Returns:		Value
 	 * Description:	Get data loader parameter. Cope with single arrays instead of object itemdsds
 	 */		
 	function getDataLoaderParameter(dataLoader, parameter) {
