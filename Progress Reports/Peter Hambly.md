@@ -868,30 +868,36 @@ RangeError: Invalid string length
 
 * Bug in rif40 Postgres and SQL server geolevels select (all, not geography specified!)
 * Check SQL Server production import (double ""'s are present)
-* Fix blank name properties
-* Add geographic centroid to lookup table;
-* Add all properties from lookup table
-* Missing name in level2 sahsuland
-* Add parent area_id, name
-* NVarchar support for areaName
-* SQL Server run study port
-* SQL server fault in rif40_geographies/geometry insert triggers
-
 * Re-plan for Feb 22nd meeting
-
-* TileViewer (May?):
-  * Resize
-  * Add all Shapefile DBF fields to lookup table;
-  * UUID support
-  * Add Winston logging
-  * Separate DB logons using UUID; add username/password support
-* Convert v4_0_create_sahsuland.sql to use tileMaker sahsuland, and remaining test scripts)
-* Tilemaker drop scripts. Probably needed for v4_0_drop.sql and hence sahsuland_dev rebuild
+* Add geographic centroid to lookup table;
 * Alter 9:
 
   1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
   2. Make RIF40_TABLES.THEME nullable for denominators
-   
+  3. INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
+  3. Fix:
+     * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
+     * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
+  4. Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
+ 
+* SQL Server run study port
+* SQL server fault in rif40_geographies/geometry insert triggers
+
+#### TileViewer TODO (defferred to May?):
+ 
+* Fix blank name properties
+* Add all properties from lookup table
+* Missing name in level2 sahsuland
+* Add parent area_id, name
+* NVarchar support for areaName
+* Resize
+* Add all Shapefile DBF fields to lookup table;
+* UUID support
+* Add Winston logging
+* Separate DB logons using UUID; add username/password support
+* Convert v4_0_create_sahsuland.sql to use tileMaker sahsuland, and remaining test scripts)
+* Tilemaker drop scripts. Probably needed for v4_0_drop.sql and hence sahsuland_dev rebuild
+  
 * SAHSULAND was using Nevada north 1927, now using OSGB at present. The original plan
   was for tandard test configurations:
   * SAHSULAND: relocated to Utah: reprojected to 1983 North American Projection (EPSG:4269)
@@ -903,14 +909,6 @@ RangeError: Invalid string length
   These will need to use a suitable projection within bounds and also be translated to the desired place. i.e. using proj4 in Node.
   
 * Fix zoomlevel miss-set from config file (defaults are wrong)
-
-### Database Bugs [alter 9]
-
-* INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
-* Fix:
-  * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
-  * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
-* Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
 
 ####  TODO list:
 
@@ -1005,7 +1003,7 @@ Note: no bounding box (bbox) in tiles.
   Alternatively check in rif40_run_study
 * Rename offset in age_sex_groups (reserved keyword)
   
-### Early December
+### New features
 
 2. New study state "S" - Smoothed; new method: setStudyState(study_id, state) {…}
 2. New study status table: t_rif40_study_status(username, study_id, study_state, creation_date, ith_update, message); ith_update is auto increment
