@@ -67,7 +67,8 @@ const async = require('async'),
 	  proj4 = require("proj4"),
 	  wellknown = require('wellknown'),
 	  topojson = require('topojson'),
-	  sizeof = require('object-sizeof');
+	  sizeof = require('object-sizeof'),
+	  xml2js = require('xml2js');
 
 /*
  * Function: 	createSVGTile
@@ -1251,7 +1252,7 @@ REFERENCE (from shapefile) {
 			request=new dbSql.Request();
 		}
 		
-		sql="SELECT geolevel_name, geolevel_id FROM " + geolevelsTable +
+		sql="SELECT geolevel_name, geolevel_id, description FROM " + geolevelsTable +
 		    " WHERE geography = '" +geographyTableData.geography  + "' ORDER BY geolevel_id";
 		var query=request.query(sql, function setSearchPath(err, result) {
 			if (err) {
@@ -1272,8 +1273,19 @@ REFERENCE (from shapefile) {
 			winston.log("verbose", "Geography: " + geographyTableData.geography + "; geolevels: " + geolvelTableData.length);
 	
 			var i=0;
+			var geographyMetaData = {
+				geography: {
+					name: geographyTableData.geography,
+					geographical_resolution_level: []
+				}
+			};
 			async.doWhilst(
 				function geolevelProcessing(callback) {		
+					geographyMetaData.geography.geographical_resolution_level[i] = {
+						order: geolvelTableData[i].geolevel_id,
+						display_name: (geolvelTableData[i].description || "Unknown"),
+						database_field_name: geolvelTableData[i].geolevel_name
+					}
 					tileIntersectsProcessingZoomlevelLoopOuter(tileIntersectsTable, 
 						geolvelTableData[i].geolevel_name, geolvelTableData[i].geolevel_id, 
 						geographyTableData.geography, xmlFileDir, callback);
@@ -1286,24 +1298,98 @@ REFERENCE (from shapefile) {
 					return (res);
 				},
 				function geolevelProcessingEndCallback(err) { // Call main tileMaker complete 
-					tileTests(geographyTableData.geography, function preTransactionCallback(err) {
+					createGeographyMetaData(geographyMetaData, 
+						function createGeographyMetaDataCallback(err) {
 						if (err) {
-							endTransaction(err, dbTileMakerCallback, undefined  /* sql */);			
+							dbErrorHandler(err);
 						}
-						else if (createPngfile) {
-							convertSVG2Png(function convertSVG2PngCallback(err) {	// Convert all SVG to PNG
-								endTransaction(err, dbTileMakerCallback, undefined  /* sql */);			
-							});		
+						else {
+							tileTests(geographyTableData.geography, function preTransactionCallback(err) {
+								if (err) {
+									endTransaction(err, dbTileMakerCallback, undefined  /* sql */);			
+								}
+								else if (createPngfile) {
+									convertSVG2Png(function convertSVG2PngCallback(err) {	// Convert all SVG to PNG
+										endTransaction(err, dbTileMakerCallback, undefined  /* sql */);			
+									});		
+								}
+								else {	
+									endTransaction(err, dbTileMakerCallback, undefined  /* sql */);			
+								}
+							});	
 						}
-						else {	
-							endTransaction(err, dbTileMakerCallback, undefined  /* sql */);			
-						}
-					});	
+					});
 				});		
 		});
 		 
 	} // End of tileIntersectsProcessingGeolevelLoop()
+	
+	/*
+	 * Function: 	createGeographyMetaData()
+	 * Parameters:	Geography meta data, callback: main tileMaker complete
+	 * Returns:		Nothing
+	 * Description:	Create geography metadata
+	 
+<geography_meta_data>
+	<file_path>C:\Users\Kevin\Documents\rif_dl\sahsu_data_sets\sahsuland_geography_metadata.xml</file_path>
+	<geographies>
+		<geography>
+			<name>SAHSULAND</name>
+			<geographical_resolution_level>
+				<order>1</order>
+				<display_name>Level 1</display_name>
+				<database_field_name>SAHSU_GRD_LEVEL1</database_field_name>
+			</geographical_resolution_level>
+			<geographical_resolution_level>
+				<order>2</order>
+				<display_name>Level 2</display_name>
+				<database_field_name>SAHSU_GRD_LEVEL2</database_field_name>
+			</geographical_resolution_level>
+			<geographical_resolution_level>
+				<order>3</order>
+				<display_name>Level 3</display_name>
+				<database_field_name>SAHSU_GRD_LEVEL3</database_field_name>
+			</geographical_resolution_level>
+			<geographical_resolution_level>
+				<order>4</order>
+				<display_name>Level 4</display_name>
+				<database_field_name>SAHSU_GRD_LEVEL4</database_field_name>
+			</geographical_resolution_level>
+		</geography>
+	</geographies>
+</geography_meta_data>
 
+	 */		
+	function createGeographyMetaData(geographyMetaData, createGeographyMetaDataCallback) {
+		scopeChecker(__file, __line, { // Check callback
+			callback: createGeographyMetaDataCallback,
+			xmlConfig: tileMakerConfig.xmlConfig
+		});		
+		try {		
+			var geography_meta_data = {
+				file_path: tileMakerConfig.xmlConfig.xmlFileDir + "/" + 
+					geographyMetaData.geography.name.toLowerCase() + "_geography_metadata.xml" ,
+				geographies: [geographyMetaData]
+			}
+			var builder = new xml2js.Builder({
+				rootName: "geography_meta_data" /*,
+				doctype: { // DOES NOT WORK!!!!
+						'ext': "geoDataLoader.xsd"
+				} */
+				});		
+			var xmlDoc = builder.buildObject(geography_meta_data);
+			
+			winston.log("info", "Created dataLoader XML config [xml]: " + geography_meta_data.file_path + 
+				" >>>\n" + xmlDoc + "\n<<< end of XML config [xml]");
+			winston.log("verbose", "dataLoader XML config as json >>>\n" + JSON.stringify(geography_meta_data, null, 4) + "\n<<< end of XM config as json");
+
+			fs.writeFile(geography_meta_data.file_path, xmlDoc, createGeographyMetaDataCallback);
+		}		
+		catch (e) {
+			createGeographyMetaDataCallback(e);
+		}
+	} // End of createGeographyMetaData()
+	
 	/*
 	 * Function: 	convertSVG2Png()
 	 * Parameters:	Callback: end of transcation

@@ -854,22 +854,32 @@ RangeError: Invalid string length
 
 #### 6th to 10th February 
 
-* CDC Visit
-
+* CDC Visit;
+* Remove spurious points using tilemaker. These are caused by the simplification; remove block attribute;
+* TopoJSON support (Needs Leaflet gridlayer, Leaflet 1.0+ upgrade, leaflet-geojson-gridlayer);
+* Specify Java middleware;
+* Porting notes for dataLoader;
+* Added geography meta data XML: sahsuland_geography_metadata.xml for data loader;
+  
 #### Current TODO list (February 2017): SQL Server Port
 
-* Remove spurious points using tilemaker. These are caused by the simplification.
-* Add geography meta data XML: sahsuland_geography_metadata.xml for data loader.
-* Fix blank name properties, remove block
-* Add all Shapefile DBF fields to lookup table, and geographic centroid
+* Prevent geography reload in production scripts if in use on a study.
+* Check SQL Server production import (double ""'s are present)
+* SQL Server multi DB support (suspect possible)
+* Fix blank name properties
+* Add geographic centroid to lookup table;
 * Add all properties from lookup table
+* Missing name in level2 sahsuland
+* Add parent area_id, name
 * NVarchar support for areaName
 * SQL Server run study port
-* SQL server fault in rfi40_geographies/geometry insert triggers
+* SQL server fault in rif40_geographies/geometry insert triggers
+
+* Re-plan for Feb 22nd meeting
 
 * TileViewer (May?):
   * Resize
-  * TopoJSON support (Needs Leaflet gridlayer, Leaflet 1.0+ upgrade, leaflet-geojson-gridlayer)
+  * Add all Shapefile DBF fields to lookup table;
   * UUID support
   * Add Winston logging
   * Separate DB logons using UUID; add username/password support
