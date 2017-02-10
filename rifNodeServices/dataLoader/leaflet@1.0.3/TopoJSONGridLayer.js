@@ -12,8 +12,8 @@
         warn: function () {}
     };
 
-    function defineLeafletGeoJSONGridLayer(L) {
-        L.GeoJSONGridLayer = L.GridLayer.extend({
+    function defineLeafletTopoJSONGridLayer(L) {
+        L.TopoJSONGridLayer = L.GridLayer.extend({
             initialize: function (url, options) {
                 L.GridLayer.prototype.initialize.call(this, options);
 
@@ -191,20 +191,20 @@
             }
         });
 
-        L.geoJsonGridLayer = function(url, options) {
-            return new L.GeoJSONGridLayer(url, options);
+        L.topoJsonGridLayer = function(url, options) {
+            return new L.TopoJSONGridLayer(url, options);
         };
     }
 
     if (typeof define === 'function' && define.amd) {
         // Try to add leaflet.loading to Leaflet using AMD
         define(['leaflet'], function (L) {
-            defineLeafletGeoJSONGridLayer(L);
+            defineLeafletTopoJSONGridLayer(L);
         });
     }
     else {
         // Else use the global L
-        defineLeafletGeoJSONGridLayer(L);
+        defineLeafletTopoJSONGridLayer(L);
     }
 
 })();

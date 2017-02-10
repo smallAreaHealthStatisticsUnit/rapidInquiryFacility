@@ -628,7 +628,7 @@ function addTileLayer(methodFields) {
 	else { // Leadflet 1.0 code - uses topoJSON
 		geolevel.output="TopoJSON";
 		topojsonURL+='&output=topojson';
-		topojsonTileLayer = new L.geoJsonGridLayer(topojsonURL, {
+		topojsonTileLayer = new L.topoJsonGridLayer(topojsonURL, {
 				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
                 layers: {
                     'geolevel': {
