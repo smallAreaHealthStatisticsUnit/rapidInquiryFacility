@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<geography_meta_data>
+  <file_path>C:/Users/Peter/AppData/Local/Temp/shpConvert/1f6fdd76-f75b-42ac-807a-79e3a86fe94b/sahsuland_geography_metadata.xml</file_path>
+  <geographies>
+    <geography>
+      <name>SAHSULAND</name>
+      <geographical_resolution_level>
+        <order>1</order>
+        <display_name>Level 1 (top level)</display_name>
+        <database_field_name>SAHSU_GRD_LEVEL1</database_field_name>
+      </geographical_resolution_level>
+      <geographical_resolution_level>
+        <order>2</order>
+        <display_name>Level 2</display_name>
+        <database_field_name>SAHSU_GRD_LEVEL2</database_field_name>
+      </geographical_resolution_level>
+      <geographical_resolution_level>
+        <order>3</order>
+        <display_name>Level 3</display_name>
+        <database_field_name>SAHSU_GRD_LEVEL3</database_field_name>
+      </geographical_resolution_level>
+      <geographical_resolution_level>
+        <order>4</order>
+        <display_name>Level 4</display_name>
+        <database_field_name>SAHSU_GRD_LEVEL4</database_field_name>
+      </geographical_resolution_level>
+    </geography>
+  </geographies>
+</geography_meta_data>
