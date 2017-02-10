@@ -454,16 +454,18 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 	} // End of ~Tile() object constructor
 	Tile.prototype = { // Add methods
 		/*
-		 * Function: 	addFeature()
-		 * Parameters:	Row object (from SQL query), geojson
-		 * Returns:		Nothing
-		 * Description:	Add geoJSON feature to object
+		 * Function: 	toCSV()
+		 * Parameters:	database type
+		 * Returns:		tile row as CSV
+		 * Description:	Convert tile data to CSV for database import
 		 */	
-		toCSV: function() {
+		toCSV: function(dbType) {
 			var str='{"type": "FeatureCollection","features":[]}'; // Null geojson
 			if (this.topojson) {
 				str=JSON.stringify(this.topojson);
-				str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 		
+				if (dbType == "PostGres") {
+					str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 	
+				}	
 			}
 			this.topojson=undefined; // Free up memory used for topojson	
 			// geolevel_id, zoomlevel, x, y, tile_id, areaid_count, optimised_topojson
@@ -1839,7 +1841,7 @@ REFERENCE (from shapefile) {
 					function tileArrayCSVSeries(value, j, csvCallback) { // Processing code	
 						l++;
 //						winston.log("verbose", "value[" + l + "/" + tileArray.length + "]: " + JSON.stringify(value).substring(0, 200));
-						buf=value.toCSV();
+						buf=value.toCSV(dbType);
 						
 //						winston.log("verbose", "buf[" + l + "/" + tileArray.length + "]: " + JSON.stringify(buf).substring(0, 200));
 						buf+="\r\n";

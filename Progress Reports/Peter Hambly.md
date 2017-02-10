@@ -864,10 +864,10 @@ RangeError: Invalid string length
 * Rebuild production import scripts: rebuild rif40_geolevels view
 * SQL Server multi DB support
 * Bug in rif40 Postgres and SQL server geolevels select (all, not geography specified!)
+* Fix for SQL Server production import (double ""'s are present). Curiously it was not bothering Leaflet!
  
 #### Current TODO list (February 2017): SQL Server Port
 
-* Check SQL Server production import (double ""'s are present)
 * Re-plan for Feb 22nd meeting
 * Add geographic centroid to lookup table;
 * Alter 9:
