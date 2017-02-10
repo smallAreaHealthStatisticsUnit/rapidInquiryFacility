@@ -168,11 +168,13 @@ function getGeographies(data, status, xhr) {
 			if (i == 0) {
 				consoleLog("getGeographies() OK for " + geographies[i].database_type + " database: " + geographies[i].table_catalog);
 			     geographyHtml+="<option value='" + i + "' selected='selected'>" + 
-					geographies[i].table_schema + "." + geographies[i].table_name + ": " + geographies[i].description + "</option>";
+					geographies[i].table_catalog + "." + geographies[i].table_schema + "." + 
+						geographies[i].table_name + ": " + geographies[i].description + "</option>";
 			}
 			else {
 			     geographyHtml+="<option value='" + i + "'>" + 
-					geographies[i].table_schema + "." +geographies[i].table_name + ": " + geographies[i].description + "</option>";
+					geographies[i].table_catalog + "." + geographies[i].table_schema + "." +
+						geographies[i].table_name + ": " + geographies[i].description + "</option>";
 			}
 			geolevelsHtml[i]='<label id="geolevelLabel"  title="Choose geolevel to display" for="geolevel">Geolevel:\n' +
 				'<select required id="geolevelSelect" name="databaseType" form="dbSelect">';		

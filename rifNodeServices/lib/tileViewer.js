@@ -336,10 +336,10 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
  * Returns:		Nothing
  * Description: Post connection database processing callback
  */		
-	function getGeographiesDbCallback(databaseType, databaseName, dbRequest) {
+	function getGeographiesDbCallback(databaseType, databaseNames, dbRequest) {
 		getAllGeographies(
 			databaseType,					// Database type
-			databaseName,					// Databse name
+			databaseNames,					// Databse names array
 			dbRequest,						// dbRequest	
 			getGeographiesResponse,			// Callback
 			getGeographiesErrorHandler		// Error callback
@@ -382,7 +382,8 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 				}
 				var p_hostname=process.env["PGHOST"] || "localhost";
 				var p_port=process.env["PGPOST"] || 5432;
-			
+				var dbNamesList=[];
+				dbNamesList.push(p_database);
 				var pgConnectionString = 'postgres://' + p_user + '@' + p_hostname + ':' + p_port + '/' + p_database + '?application_name=tileViewer';
 				// Use PGHOST, native authentication (i.e. same as psql)
 				pgClient = new pg.Client(pgConnectionString);
@@ -396,7 +397,7 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 					else {
 						dbCallback(
 							response.fields["databaseType"],// Database type
-							p_database,						// Databse name
+							dbNamesList,					// Database names list [ONLY ONE: Postgres!]
 							pgClient						// dbRequest	
 						)
 					}
@@ -406,14 +407,42 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 		}
 		else if (response.fields["databaseType"] == "MSSQLServer") {
 
-			var p_database=process.env["SQLCMDDBNAME"] || "" // Use sql Server defined default;				
+			var p_database=process.env["SQLCMDDBNAME"] || "" // Use sql Server defined default;						
+			var dbNamesList=[];
+			
+			function getDatabaseNames(dbNamesList, dbRequest) { // Get list of all SQL server databases
+				var sql="SELECT name, db_name() AS default_db\n" + 
+"  FROM sys.databases\n" + 
+" WHERE user_access  = 0\n" + 
+"   AND is_read_only = 0\n" + 
+"   AND state_desc   = 'ONLINE'\n" + 
+"   AND name NOT IN ('tempdb', 'master', 'model', 'msdb')";
+				var query=dbRequest.query(sql, function getAllGeographiesTables(err, result) {
+					if (err) {
+						var nerr=new Error(databaseType + " database: " + p_database + "; error: " + err.message + "\nin SQL> " + sql +";");
+						nerr.stack=err.stack;
+						dbErrorHandler(nerr);	
+					}
+					else {
+						dbNamesList.push(result[0].default_db);
+						for (var i=0; i<result.length; i++) {
+							if (result[i].name != result[0].default_db) {
+								dbNamesList.push(result[i].name);
+							}
+						}
+						dbCallback(
+							response.fields["databaseType"],// Database type
+							dbNamesList,					// Database names list
+							dbRequest						// dbRequest	
+						)						
+					}
+				});
+				
+			}		
+			
 			if (mssqlClient) {
 				var dbRequest=new mssql.Request();
-				dbCallback(
-					response.fields["databaseType"],// Database type
-					p_database,						// Databse name
-					dbRequest						// dbRequest	
-				)				
+				getDatabaseNames(dbNamesList, dbRequest);
 			}
 			else {
 				var p_hostname=process.env["SQLCMDSERVER"] || "localhost";
@@ -435,13 +464,9 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 						nerr.stack=err.stack;
 						dbErrorHandler(nerr);	// Use scope of calling function							
 					}
-					else {
+					else {					
 						var dbRequest=new mssql.Request();
-						dbCallback(
-							response.fields["databaseType"],// Database type
-							p_database,						// Databse name
-							dbRequest						// dbRequest	
-						)						
+						getDatabaseNames(dbNamesList, dbRequest);					
 					}
 				});						
 			}
@@ -580,30 +605,36 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 	
 /*
  * Function:	getAllGeographies()
- * Parameters:	database type, database name, database request object, getAllGeographiesCallback, getGeographiesErrorHandler
+ * Parameters:	database type, database names list, database request object, getAllGeographiesCallback, getGeographiesErrorHandler
  * Returns:		Nothing
  * Description: Handle error in own context to prevent re-throws
  */	
-function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeographiesCallback, getGeographiesErrorHandler) {
+function getAllGeographies(databaseType, databaseNamesList, dbRequest, getAllGeographiesCallback, getGeographiesErrorHandler) {
 	scopeChecker(__file, __line, {
 		callback: getAllGeographiesCallback,
 		callback: getGeographiesErrorHandler,
 		databaseType: databaseType,
-		databaseName: databaseName,
 		dbRequest: dbRequest
 	});
+	var databaseName=databaseNamesList[0] || "Default";
 	
 	var sql="SELECT table_catalog, table_schema, table_name\n" + 
 			"  FROM information_schema.columns\n" +
 			" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
 			"   AND column_name = 'tiletable'"; 	
-	if (databaseType == "MSSQLServer") { // Need to check can access sahsuland_dev; add sahsuland
-		sql+="\n" + 
+	if (databaseType == "MSSQLServer") { // May  need to check can access
+		sql="SELECT table_catalog, table_schema, table_name\n" + 
+				"  FROM " + databaseNamesList[0] + ".information_schema.columns\n" +
+				" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
+				"   AND column_name = 'tiletable'"; 
+		for (var i=1; i<databaseNamesList.length; i++) {
+			sql+="\n" + 
 				"UNION\n" + 
 				"SELECT table_catalog, table_schema, table_name\n" + 
-				"  FROM sahsuland_dev.information_schema.columns\n" +
+				"  FROM " + databaseNamesList[i] + ".information_schema.columns\n" +
 				" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
-				"   AND column_name = 'tiletable'"; 		
+				"   AND column_name = 'tiletable'"; 
+		} 		
 	} 
 	
 	var query=dbRequest.query(sql, function getAllGeographiesTables(err, sqlResult) {
