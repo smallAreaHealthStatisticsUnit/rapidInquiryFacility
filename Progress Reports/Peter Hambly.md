@@ -863,10 +863,10 @@ RangeError: Invalid string length
 * Prevent geography reload in production scripts if in use on a study.
 * Rebuild production import scripts: rebuild rif40_geolevels view
 * SQL Server multi DB support
+* Bug in rif40 Postgres and SQL server geolevels select (all, not geography specified!)
  
 #### Current TODO list (February 2017): SQL Server Port
 
-* Bug in rif40 Postgres and SQL server geolevels select (all, not geography specified!)
 * Check SQL Server production import (double ""'s are present)
 * Re-plan for Feb 22nd meeting
 * Add geographic centroid to lookup table;

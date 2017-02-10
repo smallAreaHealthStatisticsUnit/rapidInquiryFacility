@@ -688,7 +688,8 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 							sql="SELECT geolevel_id, geolevel_name, description, areaid_count\n" + 
 							    "  FROM " + geographies[i].table_catalog + "." + 
 									geographies[i].table_schema + "." + geolevelsTable + "\n" +
-								" ORDER BY geolevel_id";
+								" WHERE geography = '" + geographies[i].geography + "'\n" +
+								" ORDER BY geolevel_id"; 
 							console.error("SQL[" + i + "]> " + sql + ";");
 							var query=dbRequest.query(sql, function geographySeriesGeolevels(err, sqlResult) {
 								if (err) {
