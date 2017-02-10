@@ -2013,7 +2013,11 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 						newColumnComment[i]			/* 3: Comment */), 
 					sqlArray, dbType);	
 			}
-			
+			var sqlStmt=new Sql("Recreate rif40_geolevels view with new columns", // Add if needed
+				getSqlFromFile("rif40_geolevels_view.sql", 
+					dbType), 
+				sqlArray, dbType);	 
+					
 			if (dbType == "MSSQLServer") { 
 				var sqlStmt=new Sql("Set comment schema path to rif_data")
 				sqlStmt.nonsql=':SETVAR SchemaName "rif_data"';
