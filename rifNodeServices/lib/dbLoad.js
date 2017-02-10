@@ -2415,6 +2415,11 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		
 		var sqlStmt=new Sql("RIF initialisation", 
 			getSqlFromFile("rif_startup.sql", dbType), 
+			sqlArray, dbType); 	
+			
+		var sqlStmt=new Sql("Check if geography is in use in studies. Raise error if it is.", 
+			getSqlFromFile("in_use_check.sql", dbType, 
+				xmlConfig.dataLoader.geographyName.toUpperCase() /* 1: Geography */), 
 			sqlArray, dbType); 
 				
 		createGeolevelsLookupTables(sqlArray, dbType, 'rif_data.' /* Schema */);

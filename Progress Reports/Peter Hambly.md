@@ -860,10 +860,10 @@ RangeError: Invalid string length
 * Specify Java middleware;
 * Porting notes for dataLoader;
 * Added geography meta data XML: sahsuland_geography_metadata.xml for data loader;
-  
+* Prevent geography reload in production scripts if in use on a study.
+ 
 #### Current TODO list (February 2017): SQL Server Port
 
-* Prevent geography reload in production scripts if in use on a study.
 * Check SQL Server production import (double ""'s are present)
 * Rebuild production import scripts: rebuild rif40_geolevels view
 * SQL Server multi DB support (is possible; needs to detect available DBs)
