@@ -597,6 +597,15 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 			"  FROM information_schema.columns\n" +
 			" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
 			"   AND column_name = 'tiletable'"; 
+	/*		
+	if (databaseType == "MSSQLServer") { // Need to check can access sahsuland_dev; add sahsuland
+		sql+="\n" + 
+				"UNION\n" + 
+				"SELECT table_catalog, table_schema, table_name\n" + 
+				"  FROM sahsuland_dev.information_schema.columns\n" +
+				" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
+				"   AND column_name = 'tiletable'"; 		
+	} */
 	var query=dbRequest.query(sql, function getAllGeographiesTables(err, sqlResult) {
 		if (err) {
 			var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
@@ -625,7 +634,8 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 								result[i].table_schema + "' AS table_schema, '" + result[i].table_name + 
 							"' AS table_name,\n" + 
 							        "geography, description, maxzoomlevel, minzoomlevel, tiletable\n" + 
-							"  FROM " + result[i].table_schema + "." + result[i].table_name + '\n' +
+							"  FROM " + result[i].table_catalog + "." + 
+								result[i].table_schema + "." + result[i].table_name + '\n' +
 							" WHERE tiletable IS NOT NULL";
 					}
 					else {
@@ -635,7 +645,8 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 								result[i].table_schema + "' AS table_schema, '" + result[i].table_name + 
 							"' AS table_name,\n" + 
 							        "geography, description, maxzoomlevel, minzoomlevel, tiletable\n" + 
-							"  FROM " + result[i].table_schema + "." + result[i].table_name + ' a\n' +
+							"  FROM " + result[i].table_catalog + "." + 
+								result[i].table_schema + "." + result[i].table_name + ' a\n' +
 							" WHERE tiletable IS NOT NULL";	
 					}	
 				}
@@ -675,7 +686,8 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 								geolevelsTable='geolevels_' + geographies[i].geography.toLowerCase();
 							}
 							sql="SELECT geolevel_id, geolevel_name, description, areaid_count\n" + 
-							    "  FROM " + geographies[i].table_schema + "." + geolevelsTable + "\n" +
+							    "  FROM " + geographies[i].table_catalog + "." + 
+									geographies[i].table_schema + "." + geolevelsTable + "\n" +
 								" ORDER BY geolevel_id";
 							var query=dbRequest.query(sql, function geographySeriesGeolevels(err, sqlResult) {
 								if (err) {

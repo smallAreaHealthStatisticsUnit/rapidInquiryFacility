@@ -865,7 +865,8 @@ RangeError: Invalid string length
 
 * Prevent geography reload in production scripts if in use on a study.
 * Check SQL Server production import (double ""'s are present)
-* SQL Server multi DB support (suspect possible)
+* Rebuild production import scripts: rebuild rif40_geolevels view
+* SQL Server multi DB support (is possible; needs to detect available DBs)
 * Fix blank name properties
 * Add geographic centroid to lookup table;
 * Add all properties from lookup table
