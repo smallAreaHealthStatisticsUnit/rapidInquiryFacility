@@ -596,8 +596,7 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 	var sql="SELECT table_catalog, table_schema, table_name\n" + 
 			"  FROM information_schema.columns\n" +
 			" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
-			"   AND column_name = 'tiletable'"; 
-	/*		
+			"   AND column_name = 'tiletable'"; 	
 	if (databaseType == "MSSQLServer") { // Need to check can access sahsuland_dev; add sahsuland
 		sql+="\n" + 
 				"UNION\n" + 
@@ -605,7 +604,8 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 				"  FROM sahsuland_dev.information_schema.columns\n" +
 				" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
 				"   AND column_name = 'tiletable'"; 		
-	} */
+	} 
+	
 	var query=dbRequest.query(sql, function getAllGeographiesTables(err, sqlResult) {
 		if (err) {
 			var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
@@ -689,6 +689,7 @@ function getAllGeographies(databaseType, databaseName, dbRequest, getAllGeograph
 							    "  FROM " + geographies[i].table_catalog + "." + 
 									geographies[i].table_schema + "." + geolevelsTable + "\n" +
 								" ORDER BY geolevel_id";
+							console.error("SQL[" + i + "]> " + sql + ";");
 							var query=dbRequest.query(sql, function geographySeriesGeolevels(err, sqlResult) {
 								if (err) {
 									var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
