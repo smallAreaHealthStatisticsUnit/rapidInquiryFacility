@@ -117,13 +117,23 @@ public class PGNumeratorScriptGenerator
 		final GeographyMetaData geographyMetaData,
 		final DataSetConfiguration denominator) {
 		
-		//Part I: Make a create table statement 
-		PGSQLCreateTableQueryFormatter createTableQueryFormatter
-			= new PGSQLCreateTableQueryFormatter();
-		
 		//The name the table will have in the schema 'pop'
 		String publishedDenominatorTableName
 			= denominator.getPublishedTableName();		
+	
+		//Part I: Delete table if it already exists.
+		//See caution notes in deleteTable method.
+		/*
+		deleteTable(
+			denominatorEntry, 
+			publishedDenominatorTableName);
+		*/
+		
+		//Part II: Make a create table statement 
+		PGSQLCreateTableQueryFormatter createTableQueryFormatter
+			= new PGSQLCreateTableQueryFormatter();
+		
+		
 		//Field properties that will help us construct the 
 		//create and copy into statements
 		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
@@ -167,34 +177,6 @@ public class PGNumeratorScriptGenerator
 				filePath);
 
 		denominatorEntry.append(bulkInsertStatement);
-		
-		/*
-		SQLGeneralQueryFormatter importFromCSVQueryFormatter
-			= new SQLGeneralQueryFormatter();
-		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
-		importFromCSVQueryFormatter.addQueryPhrase(0, "COPY ");
-		importFromCSVQueryFormatter.addQueryPhrase("rif_data.");		
-		importFromCSVQueryFormatter.addQueryPhrase(publishedDenominatorTableName);		
-		importFromCSVQueryFormatter.addQueryPhrase(" (");
-		importFromCSVQueryFormatter.padAndFinishLine();
-		importFromCSVQueryFormatter.addQueryLine(1, "year,");
-		importFromCSVQueryFormatter.addQueryLine(1, "age_sex_group,");
-		for (String levelName : levelNames) {
-			importFromCSVQueryFormatter.addQueryLine(1, levelName.toLowerCase() + ",");
-		}
-		importFromCSVQueryFormatter.addQueryLine(1, "total)");
-		importFromCSVQueryFormatter.addQueryLine(0, "FROM ");
-		importFromCSVQueryFormatter.addQueryLine(1, "%L");
-		importFromCSVQueryFormatter.addQueryPhrase(0, "(FORMAT CSV, HEADER)', '");
-		
-		String filePath
-			= super.getPublishedFilePath(denominator);
-		importFromCSVQueryFormatter.addQueryPhrase(filePath);
-		importFromCSVQueryFormatter.addQueryPhrase(".csv");
-		importFromCSVQueryFormatter.addQueryPhrase("')");
-
-		denominatorEntry.append(importFromCSVQueryFormatter.generateQuery());
-		*/
 	}
 	
 	private void addEntryToRIF40Tables(

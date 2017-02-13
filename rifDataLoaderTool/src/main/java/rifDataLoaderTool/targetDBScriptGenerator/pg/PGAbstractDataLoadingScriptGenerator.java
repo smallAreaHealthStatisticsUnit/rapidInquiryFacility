@@ -85,6 +85,21 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	/*
+	protected void deleteTable(
+		final StringBuilder tableEntry, 
+		final String tableNameToDelete) {
+		
+		//@TODO: KLG Note that when we later consider iteratively 
+		//running the loading scripts they should not be dropped
+		//if other tables already refer to them.
+		PGSQLDeleteTableQueryFormatter deleteTableQueryFormatter
+			= new PGSQLDeleteTableQueryFormatter();
+		deleteTableQueryFormatter.setTableToDelete(tableNameToDelete);
+		tableEntry.append(deleteTableQueryFormatter.generateQuery());
+		tableEntry.append("\n");
+	}
+	*/
 	
 	protected String createBulkCopyStatement(
 		final String tableName,
@@ -115,16 +130,6 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		System.out.println("AbstractDLQuery copy 2===");
 		
 		return queryFormatter.generateQuery();
-		
-		//queryFormatter.finishLine();	
-/*		
-		queryFormatter.addQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, "'");
-		queryFormatter.addQueryPhrase(importFilePath);
-		queryFormatter.addQueryPhrase("' ");		
-		queryFormatter.addQueryPhrase(0, "WITH (FORMAT csv, QUOTE '\"', ESCAPE '\\'");		
-		return queryFormatter.generateQuery();
-*/
 	}
 	
 	protected String getPublishedFilePath(

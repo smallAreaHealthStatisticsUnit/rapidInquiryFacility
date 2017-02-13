@@ -113,13 +113,22 @@ public class PGDenominatorScriptGenerator
 		DataSetFieldConfiguration totalFieldConfiguration
 			= denominator.getFieldHavingConvertFieldName("total");
 		
+		//The name the table will have in the schema 'pop'
+		String publishedDenominatorTableName
+			= denominator.getPublishedTableName().toUpperCase();		
+		
+		/*
+		//Part I: Delete table if it already exists.
+		//See caution notes in deleteTable method.
+		deleteTable(
+			denominatorEntry, 
+			publishedDenominatorTableName);		
+		*/
+		
 		//Part I: Make a create table statement 
 		PGSQLCreateTableQueryFormatter createTableQueryFormatter
 			= new PGSQLCreateTableQueryFormatter();
 		
-		//The name the table will have in the schema 'pop'
-		String publishedDenominatorTableName
-			= denominator.getPublishedTableName().toUpperCase();		
 		//Field properties that will help us construct the 
 		//create and copy into statements
 

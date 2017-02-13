@@ -205,6 +205,21 @@ public final class PGSQLDeleteRowsQueryFormatter
 
 		whereConditions.add(whereCondition.toString());
 	}
+
+	public void addWhereParameterWithLiteralValue(
+		final String fieldName,
+		final String literalValue) {
+		
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(fieldName);
+		whereCondition.append("='");
+		whereCondition.append(literalValue);
+		whereCondition.append("'");
+
+		whereConditions.add(whereCondition.toString());
+	}
+		
+
 	
 	@Override
 	public String generateQuery() {
@@ -228,8 +243,7 @@ public final class PGSQLDeleteRowsQueryFormatter
 			}
 		}
 		
-		addQueryPhrase(";");
-		finishLine();
+		//finishLine();
 		
 		return super.generateQuery();		
 	}

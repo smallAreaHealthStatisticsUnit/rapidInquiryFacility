@@ -3,8 +3,6 @@ package rifDataLoaderTool.targetDBScriptGenerator.pg;
 import rifDataLoaderTool.businessConceptLayer.HealthTheme;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
 
-import java.util.ArrayList;
-
 /**
  *
  *

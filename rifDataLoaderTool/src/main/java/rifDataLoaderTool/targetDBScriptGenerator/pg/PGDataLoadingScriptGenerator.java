@@ -64,7 +64,7 @@ public class PGDataLoadingScriptGenerator {
 	public static void main(String[] args) {
 		try {
 			File sampleConfigFile
-				= new File("C:\\rifDataLoaderTool\\SAHSULAND_ConfigurationFile.xml");
+				= new File("C:\\data_loader_tool_demo\\RevisedSAHSUDemo.xml");
 			DataLoaderToolConfigurationReader reader	
 				 = new DataLoaderToolConfigurationReader();
 			reader.readFile(sampleConfigFile);
@@ -72,9 +72,9 @@ public class PGDataLoadingScriptGenerator {
 				= reader.getDataLoaderToolConfiguration();
 			PGDataLoadingScriptGenerator scriptGenerator
 				= new PGDataLoadingScriptGenerator();
-			File scriptFile
-				= new File("C:\\rifDataLoaderTool\\LoadItScript.sql");
-			scriptGenerator.writeScript(scriptFile, dataLoaderToolConfiguration);
+			File outputDirectory
+				= new File("C:\\data_loader_tool_demo\\generated_files");
+			scriptGenerator.writeScript(outputDirectory, dataLoaderToolConfiguration);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -88,6 +88,7 @@ public class PGDataLoadingScriptGenerator {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private PGDeletionUtility deletionScriptGenerator;
 	private PGHealthThemeScriptGenerator healthThemeScriptGenerator;
 	private PGDenominatorScriptGenerator denominatorScriptGenerator;
 	private PGNumeratorScriptGenerator numeratorScriptGenerator;
@@ -98,6 +99,7 @@ public class PGDataLoadingScriptGenerator {
 	// ==========================================
 
 	public PGDataLoadingScriptGenerator() {
+		deletionScriptGenerator = new PGDeletionUtility();
 		healthThemeScriptGenerator = new PGHealthThemeScriptGenerator();
 		denominatorScriptGenerator = new PGDenominatorScriptGenerator();
 		numeratorScriptGenerator = new PGNumeratorScriptGenerator();
@@ -123,12 +125,16 @@ public class PGDataLoadingScriptGenerator {
 		
 			addBeginTransactionSection(bufferedWriter);
 
+			//Part I: Attempt to delete any old tables or table entries
+			//from the last time this script was run
+			String preliminaryCleanupScriptText
+				= deletionScriptGenerator.deleteExistingTableEntries(dataLoaderToolConfiguration);
+			bufferedWriter.write(preliminaryCleanupScriptText);
 			
-			//Part I: Pre-pend script for loading geospatial data
-		
+			//Part II: Pre-pend script for loading geospatial data
+			
 
-
-			//Part II: Load health themes
+			//Part III: Load health themes
 			addSectionHeading(bufferedWriter, "Health Themes");
 			ArrayList<HealthTheme> healthThemes
 				= dataLoaderToolConfiguration.getHealthThemes();
