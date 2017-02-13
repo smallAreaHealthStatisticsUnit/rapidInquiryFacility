@@ -679,7 +679,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			}
 			
 			var sqlStmt=new Sql("Create table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
-				getSqlFromFile("create_lookup_table.sql", undefined /* Common */, (
+				getSqlFromFile("create_lookup_table.sql", dbType, (
 					xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase().toLowerCase() /* 1: Table name */,
 					xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()	/* 2: shapefile table name */,
 					(schema||"")													/* 3: Schema; e.g.rif_data. or "" */
@@ -714,7 +714,14 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
 					"areaname"														/* Column name */,
 					"Area Name field"												/* Comment */), 
-				sqlArray, dbType);		
+				sqlArray, dbType);	
+			var sqlStmt=new Sql("Comment " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() + " columns",
+				getSqlFromFile("comment_column.sql", 
+					dbType, 
+					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
+					"geographic_centroid"											/* Column name */,
+					"Geographic centroid"											/* Comment */), 
+				sqlArray, dbType);						
 		}				
 	} // End of createGeolevelsLookupTables()
 		
@@ -773,7 +780,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			sqlArray.push(new Sql("Insert Geolevels lookup tables"));
 			for (var i=0; i<csvFiles.length; i++) {			
 				var sqlStmt=new Sql("Insert table " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(), 
-					getSqlFromFile("insert_lookup_table.sql", undefined /* Common */, 
+					getSqlFromFile("insert_lookup_table.sql", dbType, 
 						(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() /* Table name */,
 						xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase()		/* shapefile table name */ ), 
 					sqlArray, dbType);					
@@ -2185,9 +2192,10 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			for (var i=0; i<csvFiles.length; i++) { // Main file process loop	
 				var lookupTable=(xmlConfig.dataLoader.geoLevel[i].lookupTable ||
 						 "LOOKUP_" +  xmlConfig.dataLoader.geographyName).toLowerCase();
+				var shapefileTable=xmlConfig.dataLoader.geoLevel[i].shapeFileTable.toLowerCase();
 				var sqlStmt=new Sql("Load DB specific geolevel lookup table: (mssql_/pg_)" + lookupTable);
 				if (dbType == "PostGres") {	
-					sqlStmt.sql="\\copy " + lookupTable +  
+					sqlStmt.sql="\\copy " + lookupTable + "(" + shapefileTable + ", areaname, gid, geographic_centroid)" +
 						" FROM 'pg_" + lookupTable +
 						".csv' DELIMITER ',' CSV HEADER";
 				}

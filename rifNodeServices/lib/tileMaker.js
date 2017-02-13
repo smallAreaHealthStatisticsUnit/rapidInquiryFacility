@@ -430,7 +430,9 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			tileArray.push(this);	
 			tileNo++;
 			this.id=tileNo;
-			this.geojson.features[0].properties.gid=this.id;
+			if (this.geojson.features[0].properties.gid == undefined) {
+				this.geojson.features[0].properties.gid=this.id;
+			}
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 
@@ -588,7 +590,9 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 							
 			this.geojson.features.push(geojson);
 			this.areaid_count++;
-			this.geojson.features[(this.geojson.features.length-1)].properties.gid=this.id;
+			if (this.geojson.features[(this.geojson.features.length-1)].properties.gid == undefined) {
+				this.geojson.features[(this.geojson.features.length-1)].properties.gid=this.id;
+			}
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 
@@ -762,7 +766,7 @@ REFERENCE (from shapefile) {
 		var wkt;
 		
 		if (row.optimised_wkt == undefined) {
-			throw new error("tileIntersectsRowProcessing() row.optimised_wkt is undefined; row: " + JSON.stringify(row).substring(0, 1000));
+			throw new Error("tileIntersectsRowProcessing() row.optimised_wkt is undefined; row: " + JSON.stringify(row).substring(0, 1000));
 		}
 //		else {
 //			winston.log("debug", "tileIntersectsRowProcessing() row.optimised_wkt: " + JSON.stringify(row.optimised_wkt, null, 2).substring(0, 1000));	
@@ -780,12 +784,28 @@ REFERENCE (from shapefile) {
 			}
 		}
 		var tileArray=getTileArray();
+		var geographic_centroid;
+		try {
+			if (row.geographic_centroid) { 
+				geographic_centroid=JSON.parse(row.geographic_centroid);
+			}
+		}
+		catch (e) {
+			var nerr=new Error("tileIntersectsRowProcessing() cannot parse geographic_centroid: " + e.message +
+				"\nrow: " + 
+				JSON.stringify(row).substring(0, 1000));
+			nerr.stack=e.stack;
+			winston.log("error", nerr.message);
+			throw nerr;
+		}
+		
 		var geojson={
 			type: "Feature",
 			properties: {
-				gid: 	  	undefined,
-				area_id:   row.areaid,
-				name: 	row.areaname
+				gid: 	  			 row.gid,
+				area_id:   			 row.areaid,
+				name: 				 (row.areaname||row.areaid),
+				geographic_centroid: geographic_centroid
 			}, 
 			geometry: wellknown.parse(wkt)
 		};
@@ -796,7 +816,9 @@ REFERENCE (from shapefile) {
 		}
 		winston.log("debug", "Block: " + row.block +
 			"; tile_id: " + row.tile_id +
-			"; areaid: " + row.areaid +
+			"; areaid: " + geojson.properties.areaid +
+			"; name: " + geojson.properties.name +
+			"; geographic_centroid: " + geojson.properties.geographic_centroid +
 			"; wkt len: " + wkt.length +
 			"; geojsonOK: " + geojsonOK);
 			
@@ -806,7 +828,8 @@ REFERENCE (from shapefile) {
 			var geojsonTile=new Tile(row, geojson, topojson_options, tileArray);
 			winston.log("debug", 'First tile ' + geojsonTile.id + ': ' + geojsonTile.tileId + ": " + 
 				geojsonTile.geojson.features[0].properties["area_id"] + "; " +
-				geojsonTile.geojson.features[0].properties["name"]);
+				geojsonTile.geojson.features[0].properties["name"] + 
+				"\nRow: " + JSON.stringify(row, null, 2).substring(1, 300));
 		}
 		else {
 			var geojsonTile=tileArray[(tileArray.length-1)]; // Get last tile from array
@@ -1474,7 +1497,7 @@ REFERENCE (from shapefile) {
 				"	   AND y.y           = z.y\n" +
 				")\n" +
 				"SELECT tile_id, areaid, geolevel_id, zoomlevel, x, y, block,\n" + 
-				"       areaname, " + geolevelName + ", optimised_wkt\n" + 
+				"       areaname, " + geolevelName + ", geographic_centroid::Text AS geographic_centroid, optimised_wkt\n" + 
 				"       FROM a\n" + 
 				" ORDER BY tile_id, areaid";
 		}		
@@ -1494,7 +1517,7 @@ REFERENCE (from shapefile) {
 				"	   AND z.areaid      = a." + geolevelName + "\n" + 
 				")\n" +
 				"SELECT tile_id, areaid, geolevel_id, zoomlevel, x, y, block,\n" + 
-				"       areaname, " + geolevelName + ", optimised_wkt\n" + 
+				"       areaname, " + geolevelName + ", geographic_centroid, optimised_wkt\n" + 
 				"       FROM a\n" + 
 				" ORDER BY tile_id, areaid"
 		}
@@ -2062,15 +2085,21 @@ REFERENCE (from shapefile) {
 					var csvFileName;
 					
 					var request;
+					var shapefileTable=geoLevel[i].shapeFileTable.toString().toLowerCase();
+					var sql;
 					if (dbType == "PostGres") {
 						csvFileName=xmlFileDir + "/data/pg_" + lookupTable + ".csv";
 						request=client;
+						sql="SELECT " + shapefileTable + ", areaname, gid, geographic_centroid::Text AS geographic_centroid\n" +
+							"  FROM " + lookupTable + " ORDER BY gid";
 					}		
 					else if (dbType == "MSSQLServer") {	
 						csvFileName=xmlFileDir + "/data/mssql_" + lookupTable + ".csv";
 						request=new dbSql.Request();
-					}
-					var sql="SELECT * FROM " + lookupTable + " ORDER BY gid";
+						sql="SELECT " + shapefileTable + ", areaname, gid, geographic_centroid\n" +
+							"  FROM " + lookupTable + " ORDER BY gid";
+					}					
+
 					try { // Create CSV file for lookup table
 						var lookupCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
 						winston.log("info", "Creating lookup CSV file: " + csvFileName + 

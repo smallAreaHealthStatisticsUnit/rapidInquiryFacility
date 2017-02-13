@@ -821,8 +821,55 @@ function getAllMarkers() {
 			var geojson=this.toGeoJSON();
 			var popop=[];
 			for (var key in geojson.properties) {
-				popop.push("<tr><td>" + (key) + ": </td><td>" + geojson.properties[key] + "</td></tr>");			
-			}
+				if (key == "geographic_centroid") {
+					if (typeof geojson.properties[key] == "object") {
+						if (geojson.properties[key].type && 
+						    geojson.properties[key].type == "Point" && 
+							geojson.properties[key].coordinates) {
+							popop.push("<tr><td>" + (key) + ": </td><td>" +
+								JSON.stringify(geojson.properties[key].coordinates, null, 2) + "</td></tr>");
+						}
+						else {
+							errorPopup("getAllMarkers() Unknown geojson.properties[key] JSON: " +
+								JSON.stringify(geojson.properties[key]) + 
+								"; for: " + JSON.stringify(geojson.properties, null, 2));	
+						}
+					}
+					else if (geojson.properties[key]) { // Parse: why?
+						var geographic_centroid=geojson.properties[key];
+						consoleLog("getAllMarkers() Had to parse stringified JSON: " +
+							JSON.stringify(geographic_centroid) + 
+							"; for: " + JSON.stringify(geojson.properties, null, 2));
+									
+						try {
+							geographic_centroid=JSON.parse(geojson.properties[key]);
+							if (geographic_centroid.type && 
+								geographic_centroid.type == "Point" && 
+								geographic_centroid.coordinates) {
+								popop.push("<tr><td>" + (key) + ": </td><td>" +
+									JSON.stringify(geographic_centroid.coordinates, null, 2) + "</td></tr>");
+							}
+							else {
+								errorPopup("getAllMarkers() Unknown geographic_centroid JSON: " +
+									JSON.stringify(geographic_centroid) + 
+									"; for: " + JSON.stringify(geojson.properties, null, 2));									
+							}
+						}
+						catch (e) {
+							errorPopup("getAllMarkers() cannot parse geographic_centroid: " + e.message, 
+								"geojson.properties[key]: " + 
+								geojson.properties[key] + 
+								"; for: " + JSON.stringify(geojson.properties, null, 2));
+						}
+					}	
+					else {
+						errorPopup("getAllMarkers()No centroid for: " + JSON.stringify(geojson.properties, null, 2));	
+					}					
+				}
+				else {
+					popop.push("<tr><td>" + (key) + ": </td><td>" + geojson.properties[key] + "</td></tr>");	
+				}		
+			} // End of for loop
 			var html = '<table id="popups">' + popop.join("") + '</table>';
 			this.bindPopup(html);
 //            allMarkersGeoJsonArray.push(geojson);
