@@ -3,8 +3,8 @@ package rifDataLoaderTool.businessConceptLayer;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.DLGeography;
-import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
+import rifDataLoaderTool.businessConceptLayer.Geography;
+import rifDataLoaderTool.businessConceptLayer.HealthTheme;
 
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
@@ -153,7 +153,7 @@ import java.text.Collator;
  */
 
 public class DataSetConfiguration 
-	extends AbstractRIFDataLoaderToolConcept 
+	extends AbstractDataLoaderToolConcept 
 	implements DescriptiveConfigurationItem {
 
 	// ==========================================
@@ -171,8 +171,8 @@ public class DataSetConfiguration
 	private String description;
 	private String filePath;
 	private RIFSchemaArea rifSchemaArea;
-	private DLGeography geography;
-	private DLHealthTheme healthTheme;
+	private Geography geography;
+	private HealthTheme healthTheme;
 	private ArrayList<DataSetFieldConfiguration> fieldConfigurations;
 	public WorkflowState currentWorkflowState;
 	private boolean fileHasFieldNamesDefined;
@@ -425,19 +425,19 @@ public class DataSetConfiguration
 		this.rifSchemaArea = rifSchemaArea;
 	}
 
-	public DLGeography getGeography() {
+	public Geography getGeography() {
 		return geography;
 	}
 	
-	public void setGeography(final DLGeography geography) {
+	public void setGeography(final Geography geography) {
 		this.geography = geography;
 	}
 	
-	public DLHealthTheme getHealthTheme() {
+	public HealthTheme getHealthTheme() {
 		return healthTheme;
 	}
 	
-	public void setHealthTheme(final DLHealthTheme healthTheme) {
+	public void setHealthTheme(final HealthTheme healthTheme) {
 		this.healthTheme = healthTheme;
 	}
 	
@@ -913,7 +913,7 @@ public class DataSetConfiguration
 			if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD){
 				
 				RIFDataType dataType = fieldConfiguration.getRIFDataType();
-				if (dataType.getFieldValidationPolicy() != RIFFieldActionPolicy.DO_NOTHING) {
+				if (dataType.getFieldValidationPolicy() != FieldActionPolicy.DO_NOTHING) {
 					fieldsWithValidationChecks.add(fieldConfiguration);
 				}			
 			}
@@ -928,7 +928,7 @@ public class DataSetConfiguration
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			if (fieldSupportsFieldCheck(
 				fieldConfiguration, 
-				RIFCheckOption.PERCENT_EMPTY)) {
+				CheckOption.PERCENT_EMPTY)) {
 
 				fieldsWithEmptyFieldCheck.add(fieldConfiguration);
 			}
@@ -943,7 +943,7 @@ public class DataSetConfiguration
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			if (fieldSupportsFieldCheck(
 				fieldConfiguration, 
-				RIFCheckOption.PERCENT_EMPTY_PER_YEAR)) {
+				CheckOption.PERCENT_EMPTY_PER_YEAR)) {
 
 				fieldsWithEmptyPerYearFieldCheck.add(fieldConfiguration);
 			}
@@ -956,11 +956,11 @@ public class DataSetConfiguration
 	
 	private boolean fieldSupportsFieldCheck(
 		final DataSetFieldConfiguration dataSetFieldConfiguration, 
-		final RIFCheckOption targetCheckOption) {
+		final CheckOption targetCheckOption) {
 		
-		ArrayList<RIFCheckOption> rifCheckOptions
+		ArrayList<CheckOption> rifCheckOptions
 			= dataSetFieldConfiguration.getCheckOptions();
-		for (RIFCheckOption rifCheckOption : rifCheckOptions) {
+		for (CheckOption rifCheckOption : rifCheckOptions) {
 			if (targetCheckOption == rifCheckOption) {
 				return true;
 			}

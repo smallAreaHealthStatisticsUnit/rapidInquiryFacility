@@ -81,7 +81,7 @@ public class MSNumeratorScriptGenerator
 	// ==========================================
 
 	public String generateScript(
-		final DLGeographyMetaData geographyMetaData,
+		final GeographyMetaData geographyMetaData,
 		final DataSetConfiguration numerator) {
 
 		StringBuilder numeratorEntry = new StringBuilder();
@@ -114,7 +114,7 @@ public class MSNumeratorScriptGenerator
 	
 	private void createTableStructureAndImportCSV(
 		final StringBuilder denominatorEntry,
-		final DLGeographyMetaData geographyMetaData,
+		final GeographyMetaData geographyMetaData,
 		final DataSetConfiguration denominator) {
 		
 		//Part I: Make a create table statement 
@@ -133,10 +133,13 @@ public class MSNumeratorScriptGenerator
 
 		//Do we assume these field names will be in increasing order of 
 		//geographical resolution?
-		DLGeography geography = denominator.getGeography();
+		Geography geography = denominator.getGeography();
 		ArrayList<String> levelNames = geography.getLevelNames();
 		for (String levelName : levelNames) {
-			createTableQueryFormatter.addTextFieldDeclaration(levelName, false);
+			createTableQueryFormatter.addTextFieldDeclaration(
+				levelName, 
+				20, 
+				false);		
 		}
 		createTableQueryFormatter.addTextFieldDeclaration("icd", false);
 		createTableQueryFormatter.addIntegerFieldDeclaration("total", false);
@@ -216,7 +219,7 @@ public class MSNumeratorScriptGenerator
 		queryFormatter.addQueryLine(1, "age_group_id) ");
 		queryFormatter.addQueryLine(0, "SELECT ");
 		
-		DLHealthTheme healthTheme = dataSet.getHealthTheme();
+		HealthTheme healthTheme = dataSet.getHealthTheme();
 		if (healthTheme == null) {
 			queryFormatter.addQueryLine(1, "'SAHSULAND',");			
 		}
@@ -251,7 +254,7 @@ public class MSNumeratorScriptGenerator
 		String[] literalParameterValues = new String[7];
 		
 		//Obtain value for 'geography' field
-		DLGeography geography
+		Geography geography
 			= numerator.getGeography();
 		literalParameterValues[0] = geography.getName();
 		
@@ -260,7 +263,7 @@ public class MSNumeratorScriptGenerator
 		//Obtain value for the 'numerator_description' field
 		literalParameterValues[2] = numerator.getDescription();
 		//Obtain value for the 'theme_description'
-		DLHealthTheme healthTheme = numerator.getHealthTheme();
+		HealthTheme healthTheme = numerator.getHealthTheme();
 		//Obtain value for health theme description
 		literalParameterValues[3] = healthTheme.getDescription();
 		

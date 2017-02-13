@@ -92,7 +92,7 @@ import java.util.Objects;
  */
 
 public final class CleaningRule 
-	extends AbstractRIFDataLoaderToolConcept {
+	extends AbstractDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants

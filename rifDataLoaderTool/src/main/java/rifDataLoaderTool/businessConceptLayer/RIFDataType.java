@@ -153,12 +153,12 @@ public final class RIFDataType
 	private String name;
 	private String description;
 	
-	private RIFFieldActionPolicy fieldValidationPolicy;
+	private FieldActionPolicy fieldValidationPolicy;
 	private ArrayList<ValidationRule> validationRules;
 	private String validationFunctionName;
 	private String validationFunctionParameterPhrase;
 
-	private RIFFieldActionPolicy fieldCleaningPolicy;	
+	private FieldActionPolicy fieldCleaningPolicy;	
 	private String cleaningFunctionName;
 	private String cleaningFunctionParameterPhrase;
 	private ArrayList<CleaningRule> cleaningRules;
@@ -214,11 +214,11 @@ public final class RIFDataType
 		this.name = name;
 		this.description = description;
 
-		fieldValidationPolicy = RIFFieldActionPolicy.DO_NOTHING;
+		fieldValidationPolicy = FieldActionPolicy.DO_NOTHING;
 		validationRules = new ArrayList<ValidationRule>();
 		validationFunctionName = "";
 		
-		fieldCleaningPolicy = RIFFieldActionPolicy.DO_NOTHING;
+		fieldCleaningPolicy = FieldActionPolicy.DO_NOTHING;
 		cleaningRules = new ArrayList<CleaningRule>();	
 		cleaningFunctionName = "";
 		
@@ -278,7 +278,7 @@ public final class RIFDataType
 		destination.setValidationRules(cloneValidationRules);
 		destination.setValidationFunctionName(source.getValidationFunctionName());
 		
-		RIFFieldActionPolicy originalFieldCleaningPolicy
+		FieldActionPolicy originalFieldCleaningPolicy
 			= source.getFieldCleaningPolicy();
 		destination.setFieldCleaningPolicy(originalFieldCleaningPolicy);
 		
@@ -426,12 +426,12 @@ public final class RIFDataType
 		this.description = description;
 	}
 
-	public RIFFieldActionPolicy getFieldValidationPolicy() {
+	public FieldActionPolicy getFieldValidationPolicy() {
 		return fieldValidationPolicy;
 	}
 
 	public void setFieldValidationPolicy(
-		final RIFFieldActionPolicy fieldValidationPolicy) {
+		final FieldActionPolicy fieldValidationPolicy) {
 
 		this.fieldValidationPolicy = fieldValidationPolicy;
 	}
@@ -466,12 +466,12 @@ public final class RIFDataType
 		this.validationFunctionName = validationFunctionName;
 	}
 
-	public RIFFieldActionPolicy getFieldCleaningPolicy() {
+	public FieldActionPolicy getFieldCleaningPolicy() {
 		return fieldCleaningPolicy;
 	}
 
 	public void setFieldCleaningPolicy(
-		final RIFFieldActionPolicy fieldCleaningPolicy) {
+		final FieldActionPolicy fieldCleaningPolicy) {
 		
 		this.fieldCleaningPolicy = fieldCleaningPolicy;
 	}
@@ -551,7 +551,7 @@ public final class RIFDataType
 			return false;
 		}		
 	 		
-		RIFFieldActionPolicy otherFieldCleaningPolicy
+		FieldActionPolicy otherFieldCleaningPolicy
 			= otherRIFDataType.getFieldCleaningPolicy();
 		if (fieldCleaningPolicy != otherFieldCleaningPolicy) {		
 			return false;
@@ -573,7 +573,7 @@ public final class RIFDataType
 			return false;
 		}		
 		
-		RIFFieldActionPolicy otherFieldValidationPolicy
+		FieldActionPolicy otherFieldValidationPolicy
 			= otherRIFDataType.getFieldValidationPolicy();
 		if (fieldValidationPolicy != otherFieldValidationPolicy) {
 			

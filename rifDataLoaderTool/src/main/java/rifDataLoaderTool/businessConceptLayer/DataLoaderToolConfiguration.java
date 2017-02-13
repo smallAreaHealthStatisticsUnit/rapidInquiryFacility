@@ -68,8 +68,8 @@ public class DataLoaderToolConfiguration {
 	// Section Properties
 	// ==========================================
 	private DatabaseConnectionsConfiguration databaseConnections;
-	private DLGeographyMetaData geographyMetaData;
-	private ArrayList<DLHealthTheme> healthThemes;
+	private GeographyMetaData geographyMetaData;
+	private ArrayList<HealthTheme> healthThemes;
 	private RIFDataTypeFactory rifDataTypeFactory;
 	private ArrayList<DataSetConfiguration> denominators;
 	private ArrayList<DataSetConfiguration> numerators;
@@ -83,9 +83,9 @@ public class DataLoaderToolConfiguration {
 	private DataLoaderToolConfiguration() {	
 		databaseConnections
 			= DatabaseConnectionsConfiguration.newInstance();
-		geographyMetaData = DLGeographyMetaData.newInstance();
+		geographyMetaData = GeographyMetaData.newInstance();
 
-		healthThemes = new ArrayList<DLHealthTheme>();
+		healthThemes = new ArrayList<HealthTheme>();
 		
 		denominators = new ArrayList<DataSetConfiguration>();
 		numerators = new ArrayList<DataSetConfiguration>();
@@ -119,16 +119,16 @@ public class DataLoaderToolConfiguration {
 			return false;
 		}
 		
-		DLGeographyMetaData otherGeographyMetaData
+		GeographyMetaData otherGeographyMetaData
 			= otherDataLoaderToolConfiguration.getGeographyMetaData();		
 		if (geographyMetaData.hasIdenticalContents(otherGeographyMetaData) == false) {
 			System.out.println("Other geography meta data is DIFFERENT");
 			return false;
 		}
 
-		ArrayList<DLHealthTheme> otherHealthThemes
+		ArrayList<HealthTheme> otherHealthThemes
 			= otherDataLoaderToolConfiguration.getHealthThemes();		
-		if (DLHealthTheme.hasIdenticalContents(healthThemes, otherHealthThemes) == false) {
+		if (HealthTheme.hasIdenticalContents(healthThemes, otherHealthThemes) == false) {
 			System.out.println("Other health themes is DIFFERENT");
 			return false;
 		}
@@ -200,28 +200,28 @@ public class DataLoaderToolConfiguration {
 		return databaseConnections;
 	}
 	
-	public void setGeographyMetaData(final DLGeographyMetaData geographyMetaData) {
+	public void setGeographyMetaData(final GeographyMetaData geographyMetaData) {
 		this.geographyMetaData = geographyMetaData;
 	}
 	
-	public DLGeographyMetaData getGeographyMetaData() {
+	public GeographyMetaData getGeographyMetaData() {
 		return geographyMetaData;
 	}
 	
-	public ArrayList<DLHealthTheme> getHealthThemes() {
+	public ArrayList<HealthTheme> getHealthThemes() {
 		return healthThemes;
 	}
 	
 	public String[] getHealthThemeNames() {
 		ArrayList<String> healthThemeNames = new ArrayList<String>();
-		for (DLHealthTheme healthTheme : healthThemes) {
+		for (HealthTheme healthTheme : healthThemes) {
 			healthThemeNames.add(healthTheme.getDisplayName());
 		}		
 		return healthThemeNames.toArray(new String[0]);
 	}
 	
-	public DLHealthTheme getHealthTheme(final String targetHealthThemeName) {
-		for (DLHealthTheme healthTheme : healthThemes) {
+	public HealthTheme getHealthTheme(final String targetHealthThemeName) {
+		for (HealthTheme healthTheme : healthThemes) {
 			String currentHealthThemeName
 				= healthTheme.getDisplayName();
 			if (currentHealthThemeName.equals(targetHealthThemeName)) {
@@ -231,22 +231,22 @@ public class DataLoaderToolConfiguration {
 		return null;
 	}
 	
-	public void setHealthThemes(final ArrayList<DLHealthTheme> healthThemes) {
+	public void setHealthThemes(final ArrayList<HealthTheme> healthThemes) {
 		this.healthThemes = healthThemes;
 	}
 	
-	public void addHealthTheme(final DLHealthTheme healthTheme) {
+	public void addHealthTheme(final HealthTheme healthTheme) {
 		healthThemes.add(healthTheme);
 	}
 	
 	public void updateHealthTheme(
-		final DLHealthTheme originalHealthTheme,
-		final DLHealthTheme revisedHealthTheme) {
+		final HealthTheme originalHealthTheme,
+		final HealthTheme revisedHealthTheme) {
 		
-		DLHealthTheme.copyInto(revisedHealthTheme, originalHealthTheme);
+		HealthTheme.copyInto(revisedHealthTheme, originalHealthTheme);
 	}
 	
-	public void deleteHealthTheme(final DLHealthTheme healthTheme) {
+	public void deleteHealthTheme(final HealthTheme healthTheme) {
 		healthThemes.remove(healthTheme);
 	}
 	
@@ -407,12 +407,12 @@ public class DataLoaderToolConfiguration {
 	// Section Errors and Validation
 	// ==========================================
 	public void checkHealthThemeNameNotExists(
-		final DLHealthTheme candidateHealthTheme) 
+		final HealthTheme candidateHealthTheme) 
 		throws RIFServiceException {
 		
 		String candidateDisplayName = candidateHealthTheme.getDisplayName();
 		
-		for (DLHealthTheme healthTheme : healthThemes) {
+		for (HealthTheme healthTheme : healthThemes) {
 			String currentDisplayName
 				= healthTheme.getDisplayName();
 			if (currentDisplayName.equals(candidateDisplayName)) {

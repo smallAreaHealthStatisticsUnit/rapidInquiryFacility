@@ -59,8 +59,8 @@ import rifServices.businessConceptLayer.Investigation;
  *
  */
 
-public class DLGeographicalResolutionLevel 
-	extends AbstractRIFDataLoaderToolConcept {
+public class GeographicalResolutionLevel 
+	extends AbstractDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants
@@ -77,7 +77,7 @@ public class DLGeographicalResolutionLevel
 	// Section Construction
 	// ==========================================
 
-	private DLGeographicalResolutionLevel(
+	private GeographicalResolutionLevel(
 		final int order,
 		final String displayName,
 		final String databaseFieldName) {
@@ -87,19 +87,19 @@ public class DLGeographicalResolutionLevel
 		this.databaseFieldName = databaseFieldName;		
 	}
 
-	private DLGeographicalResolutionLevel() {
+	private GeographicalResolutionLevel() {
 		order = 0;
 		displayName = "";
 		databaseFieldName = "";
 	}
 	
-	public static DLGeographicalResolutionLevel newInstance(
+	public static GeographicalResolutionLevel newInstance(
 		final int order,
 		final String displayName,
 		final String databaseFieldName) {
 		
-		DLGeographicalResolutionLevel level
-			 = new DLGeographicalResolutionLevel(
+		GeographicalResolutionLevel level
+			 = new GeographicalResolutionLevel(
 				order,
 				displayName,
 				databaseFieldName);
@@ -108,19 +108,19 @@ public class DLGeographicalResolutionLevel
 	}
 
 	
-	public static DLGeographicalResolutionLevel newInstance() {
+	public static GeographicalResolutionLevel newInstance() {
 		
-		DLGeographicalResolutionLevel level
-			 = new DLGeographicalResolutionLevel(1, "", "");
+		GeographicalResolutionLevel level
+			 = new GeographicalResolutionLevel(1, "", "");
 		
 		return level;		
 	}
 	
-	public static DLGeographicalResolutionLevel createCopy(
-		final DLGeographicalResolutionLevel originalLevel) {
+	public static GeographicalResolutionLevel createCopy(
+		final GeographicalResolutionLevel originalLevel) {
 		
-		DLGeographicalResolutionLevel cloneLevel
-			= new DLGeographicalResolutionLevel();
+		GeographicalResolutionLevel cloneLevel
+			= new GeographicalResolutionLevel();
 		copyInto(
 			originalLevel, 
 			cloneLevel);
@@ -129,8 +129,8 @@ public class DLGeographicalResolutionLevel
 	}
 	
 	public static void copyInto(
-		final DLGeographicalResolutionLevel source,
-		final DLGeographicalResolutionLevel destination) {
+		final GeographicalResolutionLevel source,
+		final GeographicalResolutionLevel destination) {
 		
 		destination.setOrder(source.getOrder());
 		destination.setDisplayName(source.getDisplayName());
@@ -138,8 +138,8 @@ public class DLGeographicalResolutionLevel
 	}
 	
 	public static final boolean hasIdenticalContents(
-		final ArrayList<DLGeographicalResolutionLevel> levelsA, 
-		final ArrayList<DLGeographicalResolutionLevel> levelsB) {
+		final ArrayList<GeographicalResolutionLevel> levelsA, 
+		final ArrayList<GeographicalResolutionLevel> levelsB) {
 		
 		if (FieldValidationUtility.hasDifferentNullity(
 			levelsA, 
@@ -153,16 +153,16 @@ public class DLGeographicalResolutionLevel
 			return false;
 		}		
 		
-		ArrayList<DLGeographicalResolutionLevel> sortedALevels
+		ArrayList<GeographicalResolutionLevel> sortedALevels
 			= sortLevels(levelsA);
-		ArrayList<DLGeographicalResolutionLevel> sortedBLevels
+		ArrayList<GeographicalResolutionLevel> sortedBLevels
 			= sortLevels(levelsB);
 	
 		int numberOfHealthCodes = sortedALevels.size();
 		for (int i = 0; i < numberOfHealthCodes; i++) {
-			DLGeographicalResolutionLevel levelA
+			GeographicalResolutionLevel levelA
 				= sortedALevels.get(i);				
-			DLGeographicalResolutionLevel levelB
+			GeographicalResolutionLevel levelB
 				= sortedBLevels.get(i);
 			if (levelA.hasIdenticalContents(levelB) == false) {					
 				return false;
@@ -172,21 +172,21 @@ public class DLGeographicalResolutionLevel
 		return true;
 	}
 	
-	public static ArrayList<DLGeographicalResolutionLevel> sortLevels(
-		final ArrayList<DLGeographicalResolutionLevel> levels) {
+	public static ArrayList<GeographicalResolutionLevel> sortLevels(
+		final ArrayList<GeographicalResolutionLevel> levels) {
 		
 		DisplayableItemSorter sorter = new DisplayableItemSorter();
 		
-		for (DLGeographicalResolutionLevel level : levels) {
+		for (GeographicalResolutionLevel level : levels) {
 			sorter.addDisplayableListItem(level);
 		}
 		
-		ArrayList<DLGeographicalResolutionLevel> results 
-			= new ArrayList<DLGeographicalResolutionLevel>();
+		ArrayList<GeographicalResolutionLevel> results 
+			= new ArrayList<GeographicalResolutionLevel>();
 		ArrayList<String> identifiers = sorter.sortIdentifiersList();
 		for (String identifier : identifiers) {
-			DLGeographicalResolutionLevel sortedLevel 
-				= (DLGeographicalResolutionLevel) sorter.getItemFromIdentifier(identifier);
+			GeographicalResolutionLevel sortedLevel 
+				= (GeographicalResolutionLevel) sorter.getItemFromIdentifier(identifier);
 			results.add(sortedLevel);
 		}
 			
@@ -194,7 +194,7 @@ public class DLGeographicalResolutionLevel
 	}
 	
 	public boolean hasIdenticalContents(
-		final DLGeographicalResolutionLevel otherLevel) {
+		final GeographicalResolutionLevel otherLevel) {
 		
 		if (otherLevel == null) {
 			return false;

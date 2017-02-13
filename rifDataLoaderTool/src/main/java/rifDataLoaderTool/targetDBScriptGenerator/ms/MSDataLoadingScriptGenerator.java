@@ -130,9 +130,9 @@ public class MSDataLoadingScriptGenerator {
 
 			//Part II: Load health themes
 			addSectionHeading(bufferedWriter, "Health Themes");
-			ArrayList<DLHealthTheme> healthThemes
+			ArrayList<HealthTheme> healthThemes
 				= dataLoaderToolConfiguration.getHealthThemes();
-			for (DLHealthTheme healthTheme : healthThemes) {
+			for (HealthTheme healthTheme : healthThemes) {
 				String healthThemeEntry
 					= healthThemeScriptGenerator.generateScript(healthTheme);
 				bufferedWriter.write(healthThemeEntry);
@@ -143,12 +143,12 @@ public class MSDataLoadingScriptGenerator {
 			addSectionHeading(bufferedWriter, "Denominators");
 			
 			//Processing Denominators
-			DLGeographyMetaData geographyMetaData
+			GeographyMetaData geographyMetaData
 				= dataLoaderToolConfiguration.getGeographyMetaData();
 			ArrayList<DataSetConfiguration> denominators
 				= dataLoaderToolConfiguration.getDenominatorDataSetConfigurations();
 			for (DataSetConfiguration denominator : denominators) {
-				DLHealthTheme healthTheme
+				HealthTheme healthTheme
 					= denominator.getHealthTheme();
 				addDataSetHeading(bufferedWriter, denominator.getDisplayName());
 				

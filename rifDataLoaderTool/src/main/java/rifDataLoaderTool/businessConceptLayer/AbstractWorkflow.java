@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * 
  * <p>
  * In future, we may decide to require projects to split or combine large
- * files as a pre- or post- procesing activity.  If this happens, then there 
+ * files as a pre- or post- processing activity.  If this happens, then there 
  * will be no need for the Data Loader Tool to support a branched work flow.
  * </p>
  * 
@@ -76,7 +76,7 @@ import java.util.ArrayList;
  *
  */
 
-abstract class AbstractRIFWorkflow {
+abstract class AbstractWorkflow {
 
 	// ==========================================
 	// Section Constants
@@ -96,7 +96,7 @@ abstract class AbstractRIFWorkflow {
 	// Section Construction
 	// ==========================================
 
-	public AbstractRIFWorkflow() {
+	public AbstractWorkflow() {
 		dataSetConfigurations = new ArrayList<DataSetConfiguration>();
 		
 		isNewRecord = true;
@@ -105,8 +105,8 @@ abstract class AbstractRIFWorkflow {
 	abstract public void initialise();
 	
 	public static void copyAttributes(
-		final AbstractRIFWorkflow sourceWorkflow, 
-		final AbstractRIFWorkflow destinationWorkflow) {
+		final AbstractWorkflow sourceWorkflow, 
+		final AbstractWorkflow destinationWorkflow) {
 		
 		destinationWorkflow.setNewRecord(sourceWorkflow.isNewRecord());
 		

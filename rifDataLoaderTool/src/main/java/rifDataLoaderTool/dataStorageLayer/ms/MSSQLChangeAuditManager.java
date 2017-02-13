@@ -250,7 +250,7 @@ final public class MSSQLChangeAuditManager
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL, 
+			DataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL, 
 			auditValidationFailuresTable);
 	}
 	
@@ -389,7 +389,7 @@ final public class MSSQLChangeAuditManager
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL, 
+			DataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL, 
 			auditTableName);
 
 	}

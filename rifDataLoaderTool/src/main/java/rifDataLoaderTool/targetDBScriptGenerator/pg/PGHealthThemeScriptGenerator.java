@@ -1,6 +1,6 @@
 package rifDataLoaderTool.targetDBScriptGenerator.pg;
 
-import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
+import rifDataLoaderTool.businessConceptLayer.HealthTheme;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
 
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ public class PGHealthThemeScriptGenerator {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	final String generateScript(final DLHealthTheme healthTheme) {
+	final String generateScript(final HealthTheme healthTheme) {
 		
 		PGSQLInsertQueryFormatter queryFormatter
 			= new PGSQLInsertQueryFormatter();

@@ -68,8 +68,8 @@ import java.util.Objects;
  *
  */
 
-public class DLGeography 
-	extends AbstractRIFDataLoaderToolConcept {
+public class Geography 
+	extends AbstractDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants
@@ -79,29 +79,29 @@ public class DLGeography
 	// Section Properties
 	// ==========================================
 	private String name;
-	private ArrayList<DLGeographicalResolutionLevel> levels;
+	private ArrayList<GeographicalResolutionLevel> levels;
 			
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private DLGeography() {
+	private Geography() {
 		name = "";
-		levels = new ArrayList<DLGeographicalResolutionLevel>();
+		levels = new ArrayList<GeographicalResolutionLevel>();
 	}
 
-	public static DLGeography newInstance() {
-		DLGeography geography
-			= new DLGeography();
+	public static Geography newInstance() {
+		Geography geography
+			= new Geography();
 		return geography;
 	}
 
-	public static final DLGeography createCopy(
-		final DLGeography originalGeography) {
+	public static final Geography createCopy(
+		final Geography originalGeography) {
 		
-		DLGeography cloneGeography
-			= DLGeography.newInstance();
+		Geography cloneGeography
+			= Geography.newInstance();
 		copyInto(
 			originalGeography, 
 			cloneGeography);
@@ -110,27 +110,27 @@ public class DLGeography
 	}
 	
 	public static final void copyInto(
-		final DLGeography source,
-		final DLGeography destination) {
+		final Geography source,
+		final Geography destination) {
 		
 		destination.setIdentifier(source.getIdentifier());
 		destination.setName(source.getName());
 		
 		destination.clearLevels();
 		
-		ArrayList<DLGeographicalResolutionLevel> sourceLevels
+		ArrayList<GeographicalResolutionLevel> sourceLevels
 			= source.getLevels();
-		for (DLGeographicalResolutionLevel sourceLevel : sourceLevels) {
-			DLGeographicalResolutionLevel cloneLevel
-				= DLGeographicalResolutionLevel.createCopy(sourceLevel);
+		for (GeographicalResolutionLevel sourceLevel : sourceLevels) {
+			GeographicalResolutionLevel cloneLevel
+				= GeographicalResolutionLevel.createCopy(sourceLevel);
 			destination.addLevel(cloneLevel);
 		}
 		
 	}
 	
 	public static boolean hasIdenticalContents(
-		final ArrayList<DLGeography> geographyListA,
-		final ArrayList<DLGeography> geographyListB) {
+		final ArrayList<Geography> geographyListA,
+		final ArrayList<Geography> geographyListB) {
 		
 		if (FieldValidationUtility.hasDifferentNullity(
 			geographyListA, 
@@ -146,14 +146,14 @@ public class DLGeography
 		
 		//create temporary sorted lists to enable item by item comparisons
 		//in corresponding lists
-		ArrayList<DLGeography> geographiesA = sortGeographies(geographyListA);
-		ArrayList<DLGeography> geographiesB = sortGeographies(geographyListB);
+		ArrayList<Geography> geographiesA = sortGeographies(geographyListA);
+		ArrayList<Geography> geographiesB = sortGeographies(geographyListB);
 
 		int numberOfHealthCodes = geographiesA.size();
 		for (int i = 0; i < numberOfHealthCodes; i++) {
-			DLGeography geographyA
+			Geography geographyA
 				= geographiesA.get(i);				
-			DLGeography geographyB
+			Geography geographyB
 				= geographiesB.get(i);
 			if (geographyA.hasIdenticalContents(geographyB) == false) {					
 				return false;
@@ -170,20 +170,20 @@ public class DLGeography
 	 * @return the array list
 	 */
 
-	private static ArrayList<DLGeography> sortGeographies(
-		final ArrayList<DLGeography> geographies) {
+	private static ArrayList<Geography> sortGeographies(
+		final ArrayList<Geography> geographies) {
 
 		DisplayableItemSorter sorter = new DisplayableItemSorter();
 		
-		for (DLGeography geography : geographies) {
+		for (Geography geography : geographies) {
 			sorter.addDisplayableListItem(geography);
 		}
 		
-		ArrayList<DLGeography> results = new ArrayList<DLGeography>();
+		ArrayList<Geography> results = new ArrayList<Geography>();
 		ArrayList<String> identifiers = sorter.sortIdentifiersList();
 		for (String identifier : identifiers) {
-			DLGeography sortedGeography 
-				= (DLGeography) sorter.getItemFromIdentifier(identifier);
+			Geography sortedGeography 
+				= (Geography) sorter.getItemFromIdentifier(identifier);
 			results.add(sortedGeography);
 		}
 			
@@ -203,14 +203,27 @@ public class DLGeography
 		this.name = name;
 	}
 	
-	public ArrayList<DLGeographicalResolutionLevel> getLevels() {
+	public ArrayList<GeographicalResolutionLevel> getLevels() {
 		return levels;
 	}
 	
+	public ArrayList<String> getLevelCodeNames() {
+		ArrayList<String> levelCodeNames = new ArrayList<String>();
+		
+		for (GeographicalResolutionLevel level : levels) {
+			String currentLevelName
+				= level.getDatabaseFieldName();
+			levelCodeNames.add(currentLevelName);
+		}
+				
+		return levelCodeNames;		
+	}
+	
 	public ArrayList<String> getLevelNames() {
+
 		ArrayList<String> levelNames = new ArrayList<String>();
 		
-		for (DLGeographicalResolutionLevel level : levels) {
+		for (GeographicalResolutionLevel level : levels) {
 			String currentLevelName
 				= level.getDisplayName();
 			levelNames.add(currentLevelName);
@@ -219,9 +232,9 @@ public class DLGeography
 		return levelNames;
 	}
 	
-	public DLGeographicalResolutionLevel getLevel(final String targetLevelName) {
+	public GeographicalResolutionLevel getLevel(final String targetLevelName) {
 
-		for (DLGeographicalResolutionLevel level : levels) {
+		for (GeographicalResolutionLevel level : levels) {
 			String currentLevelName
 				= level.getDisplayName();
 			if (currentLevelName.equals(targetLevelName)) {
@@ -233,7 +246,7 @@ public class DLGeography
 	}
 	
 	public void addLevel(
-		final DLGeographicalResolutionLevel level) {
+		final GeographicalResolutionLevel level) {
 		
 		levels.add(level);
 	}
@@ -243,8 +256,8 @@ public class DLGeography
 		final String displayName, 
 		final String databaseFieldName) {
 		
-		DLGeographicalResolutionLevel level 
-			= DLGeographicalResolutionLevel.newInstance(
+		GeographicalResolutionLevel level 
+			= GeographicalResolutionLevel.newInstance(
 				order, 
 				displayName, 
 				databaseFieldName);
@@ -257,7 +270,7 @@ public class DLGeography
 	}
 	
 	public boolean hasIdenticalContents(
-		final DLGeography otherGeography) {
+		final Geography otherGeography) {
 		
 		if (otherGeography == null) {
 			return false;			
@@ -275,7 +288,7 @@ public class DLGeography
 		}
 		
 		//go through the levels
-		return DLGeographicalResolutionLevel.hasIdenticalContents(
+		return GeographicalResolutionLevel.hasIdenticalContents(
 			levels, 
 			otherGeography.getLevels());
 	}

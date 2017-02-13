@@ -227,7 +227,7 @@ final class DataSetConfigurationHandler
 				"description", 
 				dataSetConfiguration.getDescription());
 
-			DLHealthTheme healthTheme
+			HealthTheme healthTheme
 				= dataSetConfiguration.getHealthTheme();
 			if (healthTheme != null) {
 				xmlUtility.writeField(
@@ -236,7 +236,7 @@ final class DataSetConfigurationHandler
 					healthTheme.getName());
 			}
 			
-			DLGeography geography
+			Geography geography
 				= dataSetConfiguration.getGeography();
 			if (geography != null) {
 				xmlUtility.writeField(

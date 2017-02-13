@@ -56,7 +56,7 @@ package rifDataLoaderTool.businessConceptLayer;
  */
 
 public class BranchedWorkflow 
-	extends AbstractRIFWorkflow {
+	extends AbstractWorkflow {
 
 	// ==========================================
 	// Section Constants

@@ -246,7 +246,7 @@ public class LinearWorkflowEnactor {
 				logWriter,
 				runDirectory,
 				linearWorkflowFile,
-				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
+				DataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				dataSetConfiguration);
 			
 			dataLoaderService.extractConfiguration(

@@ -58,7 +58,7 @@ import java.util.Date;
  *
  */
 
-public class DLHealthTheme implements DisplayableListItemInterface {
+public class HealthTheme implements DisplayableListItemInterface {
 
 	// ==========================================
 	// Section Constants
@@ -75,13 +75,13 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 	// Section Construction
 	// ==========================================
 
-	private DLHealthTheme() {
+	private HealthTheme() {
 		this.name = "";
 		this.description = "";
 		updateLastModifiedTime();
 	}
 
-	private DLHealthTheme(
+	private HealthTheme(
 		final String name, 
 		final String description) {
 		
@@ -90,35 +90,35 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 		updateLastModifiedTime();
 	}
 	
-	public static DLHealthTheme newInstance(
+	public static HealthTheme newInstance(
 		final String name, 
 		final String description) {
 		
-		DLHealthTheme healthTheme 
-			 = new DLHealthTheme(
+		HealthTheme healthTheme 
+			 = new HealthTheme(
 					name, 
 					description);
 		return healthTheme;
 	}
 
-	public static DLHealthTheme newInstance() {			
-		DLHealthTheme healthTheme 
-			= new DLHealthTheme();
+	public static HealthTheme newInstance() {			
+		HealthTheme healthTheme 
+			= new HealthTheme();
 		return healthTheme;
 	}	
 	
-	public static DLHealthTheme createCopy(
-		final DLHealthTheme healthTheme) {
+	public static HealthTheme createCopy(
+		final HealthTheme healthTheme) {
 		
-		DLHealthTheme cloneHealthTheme
-			= DLHealthTheme.newInstance();
+		HealthTheme cloneHealthTheme
+			= HealthTheme.newInstance();
 		copyInto(healthTheme, cloneHealthTheme);
 		return cloneHealthTheme;
 	}
 	
 	public static void copyInto(
-		final DLHealthTheme source, 
-		final DLHealthTheme destination) {
+		final HealthTheme source, 
+		final HealthTheme destination) {
 		
 		destination.setName(source.getName());
 		destination.setDescription(source.getDescription());
@@ -126,8 +126,8 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 	}
 	
 	public static boolean hasIdenticalContents(
-		final ArrayList<DLHealthTheme> healthThemesListA,
-		final ArrayList<DLHealthTheme> healthThemesListB) {
+		final ArrayList<HealthTheme> healthThemesListA,
+		final ArrayList<HealthTheme> healthThemesListB) {
 			
 		if (FieldValidationUtility.hasDifferentNullity(
 			healthThemesListA, 
@@ -143,14 +143,14 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 			
 		//create temporary sorted lists to enable item by item comparisons
 		//in corresponding lists
-		ArrayList<DLHealthTheme> healthThemesA = sortHealthThemes(healthThemesListA);
-		ArrayList<DLHealthTheme> healthThemesB = sortHealthThemes(healthThemesListB);
+		ArrayList<HealthTheme> healthThemesA = sortHealthThemes(healthThemesListA);
+		ArrayList<HealthTheme> healthThemesB = sortHealthThemes(healthThemesListB);
 
 		int numberOfHealthCodes = healthThemesA.size();
 		for (int i = 0; i < numberOfHealthCodes; i++) {
-			DLHealthTheme healthThemeA
+			HealthTheme healthThemeA
 				= healthThemesA.get(i);				
-			DLHealthTheme healthThemeB
+			HealthTheme healthThemeB
 				= healthThemesB.get(i);
 			if (healthThemeA.hasIdenticalContents(healthThemeB) == false) {
 				System.out.println("hasIdent 4");
@@ -162,27 +162,27 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 	}
 
 
-	private static ArrayList<DLHealthTheme> sortHealthThemes(
-		final ArrayList<DLHealthTheme> healthThemes) {
+	private static ArrayList<HealthTheme> sortHealthThemes(
+		final ArrayList<HealthTheme> healthThemes) {
 
 		DisplayableItemSorter sorter = new DisplayableItemSorter();
 		
-		for (DLHealthTheme healthTheme : healthThemes) {
+		for (HealthTheme healthTheme : healthThemes) {
 			sorter.addDisplayableListItem(healthTheme);
 		}
 		
-		ArrayList<DLHealthTheme> results = new ArrayList<DLHealthTheme>();
+		ArrayList<HealthTheme> results = new ArrayList<HealthTheme>();
 		ArrayList<String> identifiers = sorter.sortIdentifiersList();
 		for (String identifier : identifiers) {
-			DLHealthTheme sortedHealthTheme
-				= (DLHealthTheme) sorter.getItemFromIdentifier(identifier);
+			HealthTheme sortedHealthTheme
+				= (HealthTheme) sorter.getItemFromIdentifier(identifier);
 			results.add(sortedHealthTheme);
 		}
 		
 		return results;
 	}
 	
-	public boolean hasIdenticalContents(final DLHealthTheme otherHealthTheme) {
+	public boolean hasIdenticalContents(final HealthTheme otherHealthTheme) {
 		if (otherHealthTheme == null) {
 			return false;			
 		}
@@ -246,8 +246,8 @@ public class DLHealthTheme implements DisplayableListItemInterface {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public void update(final DLHealthTheme revisedHealthTheme) {
-		DLHealthTheme.copyInto(revisedHealthTheme, this);
+	public void update(final HealthTheme revisedHealthTheme) {
+		HealthTheme.copyInto(revisedHealthTheme, this);
 		updateLastModifiedTime();
 	}
 	

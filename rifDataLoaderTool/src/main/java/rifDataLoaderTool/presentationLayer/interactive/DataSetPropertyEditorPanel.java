@@ -81,7 +81,7 @@ public class DataSetPropertyEditorPanel {
 	private boolean isRenderingForConfigurationHintsFeature;
 	private DataLoaderToolConfiguration dataLoaderToolConfiguration;
 	private DataSetConfiguration dataSetConfiguration;
-	private DLGeographyMetaData geographyMetaData;
+	private GeographyMetaData geographyMetaData;
 	
 	private UserInterfaceFactory userInterfaceFactory;
 	private JPanel panel;
@@ -122,7 +122,7 @@ public class DataSetPropertyEditorPanel {
 		}
 		
 		actionListeners = new ArrayList<ActionListener>();
-		buildUI();
+		buildUI();	
 	}
 
 	public void buildUI() {
@@ -220,8 +220,10 @@ public class DataSetPropertyEditorPanel {
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
 		panelGC.weightx = 1;
 		
+		String[] geographyNames
+			= geographyMetaData.getAllGeographyNames();
 		geographyComboBox
-			= userInterfaceFactory.createComboBox(geographyMetaData.getAllGeographyNames());
+			= userInterfaceFactory.createComboBox(geographyNames);
 		panel.add(geographyComboBox, panelGC);
 		
 		if (preSetSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {	
@@ -240,6 +242,11 @@ public class DataSetPropertyEditorPanel {
 			panelGC.fill = GridBagConstraints.HORIZONTAL;
 			panelGC.weightx = 1;
 		
+			String[] healthThemeNames
+				= dataLoaderToolConfiguration.getHealthThemeNames();
+			for (String healthThemeName : healthThemeNames) {
+				System.out.println("=DSPEP health theme ==" + healthThemeName + "==");
+			}
 			healthThemesComboBox
 				= userInterfaceFactory.createComboBox(
 					dataLoaderToolConfiguration.getHealthThemeNames());
@@ -334,7 +341,7 @@ public class DataSetPropertyEditorPanel {
 		return RIFSchemaArea.getSchemaAreaFromName(rifSchemaAreaName);
 	}
 	
-	public DLGeography getSelectedGeography() {
+	public Geography getSelectedGeography() {
 		String selectedGeographyName
 			= (String) geographyComboBox.getSelectedItem();
 		return geographyMetaData.getGeography(selectedGeographyName);
@@ -368,14 +375,14 @@ public class DataSetPropertyEditorPanel {
 		
 		String currentlySelectedGeographyName
 			= (String) geographyComboBox.getSelectedItem();
-		DLGeography currentGeography
+		Geography currentGeography
 			= geographyMetaData.getGeography(currentlySelectedGeographyName);
 		dataSetConfiguration.setGeography(currentGeography);
 		
 		if (preSetSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
 			String healthThemeName
 				= (String) healthThemesComboBox.getSelectedItem();
-			DLHealthTheme healthTheme	
+			HealthTheme healthTheme	
 				= dataLoaderToolConfiguration.getHealthTheme(healthThemeName);
 			dataSetConfiguration.setHealthTheme(healthTheme);
 			
@@ -427,14 +434,14 @@ public class DataSetPropertyEditorPanel {
 				}
 			}
 			
-			DLGeography geography = dataSetConfiguration.getGeography();
+			Geography geography = dataSetConfiguration.getGeography();
 			if (geography != null) {
 				geographyComboBox.setSelectedItem(geography.getDisplayName());		
 			}
 			restoreAllActionListeners();
 		
 			if (preSetSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {				
-				DLHealthTheme healthTheme
+				HealthTheme healthTheme
 					= dataSetConfiguration.getHealthTheme();
 				if (healthTheme != null) {
 					healthThemesComboBox.setSelectedItem(healthTheme.getDisplayName());

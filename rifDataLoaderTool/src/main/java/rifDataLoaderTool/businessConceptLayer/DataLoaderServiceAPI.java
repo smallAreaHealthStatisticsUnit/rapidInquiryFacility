@@ -112,7 +112,7 @@ public interface DataLoaderServiceAPI {
 		final Writer logWriter,
 		final File exportDirectory,		
 		final File file,
-		final RIFDataLoadingResultTheme rifDataLoadingResultTheme,
+		final DataLoadingResultTheme rifDataLoadingResultTheme,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException;
 	

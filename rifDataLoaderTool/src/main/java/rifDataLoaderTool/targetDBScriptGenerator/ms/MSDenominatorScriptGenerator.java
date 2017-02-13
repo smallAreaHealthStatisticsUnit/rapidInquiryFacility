@@ -141,7 +141,11 @@ public class MSDenominatorScriptGenerator
 		
 		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
 			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
-			createTableQueryFormatter.addTextFieldDeclaration(fieldName, false);			
+			createTableQueryFormatter.addTextFieldDeclaration(
+				fieldName, 
+				20, 
+				false);			
+			
 		}
 		
 		createTableQueryFormatter.addIntegerFieldDeclaration(

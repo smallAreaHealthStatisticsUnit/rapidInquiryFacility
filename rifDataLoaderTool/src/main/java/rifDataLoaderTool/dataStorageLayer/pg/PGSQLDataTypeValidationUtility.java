@@ -237,15 +237,15 @@ public class PGSQLDataTypeValidationUtility {
 		
 		RIFDataType rifDataType
 			= dataSetFieldConfiguration.getRIFDataType();
-		RIFFieldActionPolicy fieldValidationPolicy
+		FieldActionPolicy fieldValidationPolicy
 			= rifDataType.getFieldValidationPolicy();
-		if (fieldValidationPolicy == RIFFieldActionPolicy.DO_NOTHING) {
+		if (fieldValidationPolicy == FieldActionPolicy.DO_NOTHING) {
 			//just allow load field value to pass
 			queryFormatter.addQueryPhrase(
 				baseIndentationLevel, 
 				cleanFieldName); //xxx
 		}
-		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_RULES) {
+		else if (fieldValidationPolicy == FieldActionPolicy.USE_RULES) {
 			/*
 			 * eg:
 			 *
@@ -299,7 +299,7 @@ public class PGSQLDataTypeValidationUtility {
 			
 			}
 		}
-		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
+		else if (fieldValidationPolicy == FieldActionPolicy.USE_FUNCTION) {
 			
 				
 			/*

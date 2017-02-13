@@ -122,7 +122,7 @@ import java.util.Objects;
  */
 
 public class LinearWorkflow 
-	extends AbstractRIFWorkflow {
+	extends AbstractWorkflow {
 
 	// ==========================================
 	// Section Constants

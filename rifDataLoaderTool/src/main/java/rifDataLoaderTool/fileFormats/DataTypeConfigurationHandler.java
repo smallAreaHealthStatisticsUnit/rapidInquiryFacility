@@ -344,7 +344,7 @@ final public class DataTypeConfigurationHandler
 						
 			if (currentDelegatedHandler.isActive() == false) {
 				if (currentDelegatedHandler == cleaningPolicyConfigurationHandler) {
-					RIFFieldActionPolicy fieldCleaningPolicy
+					FieldActionPolicy fieldCleaningPolicy
 						= cleaningPolicyConfigurationHandler.getFieldCleaningPolicy();
 					currentRIFDataType.setFieldCleaningPolicy(fieldCleaningPolicy);
 					ArrayList<CleaningRule> cleaningRules
@@ -356,7 +356,7 @@ final public class DataTypeConfigurationHandler
 					cleaningPolicyConfigurationHandler.resetPolicyAttributes();
 				}
 				else if (currentDelegatedHandler == validatingPolicyConfigurationHandler) {
-					RIFFieldActionPolicy fieldValidationPolicy
+					FieldActionPolicy fieldValidationPolicy
 						= validatingPolicyConfigurationHandler.getFieldValidationPolicy();
 					currentRIFDataType.setFieldValidationPolicy(fieldValidationPolicy);
 					ArrayList<ValidationRule> validationRules

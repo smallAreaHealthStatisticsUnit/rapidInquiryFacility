@@ -1,8 +1,8 @@
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.DLGeographyMetaData;
-import rifDataLoaderTool.businessConceptLayer.DLGeography;
-import rifDataLoaderTool.businessConceptLayer.DLGeographicalResolutionLevel;
+import rifDataLoaderTool.businessConceptLayer.GeographyMetaData;
+import rifDataLoaderTool.businessConceptLayer.Geography;
+import rifDataLoaderTool.businessConceptLayer.GeographicalResolutionLevel;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -77,9 +77,9 @@ public class GeographyMetaDataConfigurationHandler
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DLGeographyMetaData geographyMetaData;
-	private DLGeography currentGeography;
-	private DLGeographicalResolutionLevel currentGeographicalResolution;
+	private GeographyMetaData geographyMetaData;
+	private Geography currentGeography;
+	private GeographicalResolutionLevel currentGeographicalResolution;
 	
 	private String geographicalResolutionLevelTag;
 	
@@ -88,7 +88,7 @@ public class GeographyMetaDataConfigurationHandler
 	// ==========================================
 
 	public GeographyMetaDataConfigurationHandler() {
-		geographyMetaData = new DLGeographyMetaData();
+		geographyMetaData = new GeographyMetaData();
 		
 		setSingularRecordName("geography_meta_data");
 		
@@ -99,23 +99,23 @@ public class GeographyMetaDataConfigurationHandler
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public DLGeographyMetaData getGeographyMetaData() {
+	public GeographyMetaData getGeographyMetaData() {
 		return geographyMetaData;
 	}
 	
-	public DLGeography getGeography(final String geographyName) {
+	public Geography getGeography(final String geographyName) {
 		return geographyMetaData.getGeography(geographyName);
 	}
 	
 	public String getHTML( 
-		final DLGeographyMetaData geographyMetaData) 
+		final GeographyMetaData geographyMetaData) 
 		throws RIFServiceException {
 
 		String htmlText  = "";
 		
 		try {
 			
-			ArrayList<DLGeography> geographies
+			ArrayList<Geography> geographies
 				= geographyMetaData.getGeographies();
 
 			ByteArrayOutputStream outputStream
@@ -142,14 +142,14 @@ public class GeographyMetaDataConfigurationHandler
 			String levelDatabaseNameHeaderText
 				= RIFDataLoaderToolMessages.getMessage("dlGeographicalResolution.databaseFieldName.label");
 
-			for (DLGeography geography : geographies) {
+			for (Geography geography : geographies) {
 				htmlUtility.writeHeader(2, geography.getDisplayName());
 				htmlUtility.writeHeader(3, geographicalResolutionsHeaderText);
 							
 				htmlUtility.beginTable();
 
 				
-				ArrayList<DLGeographicalResolutionLevel> levels
+				ArrayList<GeographicalResolutionLevel> levels
 					= geography.getLevels();
 
 				htmlUtility.beginRow();				
@@ -158,7 +158,7 @@ public class GeographyMetaDataConfigurationHandler
 				htmlUtility.writeBoldColumnValue(levelDatabaseNameHeaderText);
 				htmlUtility.endRow();
 				
-				for (DLGeographicalResolutionLevel level : levels) {
+				for (GeographicalResolutionLevel level : levels) {
 					htmlUtility.beginRow();
 					htmlUtility.writeColumnValue(String.valueOf(level.getOrder()));
 					htmlUtility.writeBoldColumnValue(level.getDisplayName());
@@ -184,7 +184,7 @@ public class GeographyMetaDataConfigurationHandler
 		return htmlText;
 	}
 	
-	public void writeXML(final DLGeographyMetaData geographyMetaData) 
+	public void writeXML(final GeographyMetaData geographyMetaData) 
 		throws IOException {
 		
 		XMLUtility xmlUtility = getXMLUtility();
@@ -197,15 +197,15 @@ public class GeographyMetaDataConfigurationHandler
 				geographyMetaData.getFilePath());
 	
 		xmlUtility.writeRecordStartTag("geographies");
-		ArrayList<DLGeography> geographies = geographyMetaData.getGeographies();
-		for (DLGeography geography : geographies) {
+		ArrayList<Geography> geographies = geographyMetaData.getGeographies();
+		for (Geography geography : geographies) {
 			xmlUtility.writeRecordStartTag("geography");
 					
 			xmlUtility.writeField("geography", "name", geography.getName());
 			
-			ArrayList<DLGeographicalResolutionLevel> levels
+			ArrayList<GeographicalResolutionLevel> levels
 				= geography.getLevels();
-			for (DLGeographicalResolutionLevel level : levels) {
+			for (GeographicalResolutionLevel level : levels) {
 				xmlUtility.writeRecordStartTag(geographicalResolutionLevelTag);
 
 				xmlUtility.writeField(
@@ -248,10 +248,10 @@ public class GeographyMetaDataConfigurationHandler
 			geographyMetaData.clearGeographies();
 		}
 		if (equalsFieldName("geography", qualifiedName) == true) {
-			currentGeography = DLGeography.newInstance();
+			currentGeography = Geography.newInstance();
 		}
 		else if (equalsFieldName("geographical_resolution_level", qualifiedName) == true) {
-			currentGeographicalResolution = DLGeographicalResolutionLevel.newInstance();
+			currentGeographicalResolution = GeographicalResolutionLevel.newInstance();
 		}
 	}
 	

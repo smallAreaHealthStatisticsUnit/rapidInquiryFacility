@@ -1,7 +1,7 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.DLGeographyMetaData;
+import rifDataLoaderTool.businessConceptLayer.GeographyMetaData;
 import rifDataLoaderTool.fileFormats.GeographyMetaDataReader;
 import rifDataLoaderTool.fileFormats.GeographyMetaDataConfigurationHandler;
 
@@ -84,7 +84,7 @@ public class GeographyMetaDataEditingDialog extends OKCloseButtonDialog {
 	private File selectedFile;
 	private JButton browseButton;
 	
-	private DLGeographyMetaData geographyMetaData;
+	private GeographyMetaData geographyMetaData;
 	private JScrollPane scrollPane;
 	private JEditorPane htmlPane;
 		
@@ -175,7 +175,7 @@ public class GeographyMetaDataEditingDialog extends OKCloseButtonDialog {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void setData(final DLGeographyMetaData geographyMetaData) {
+	public void setData(final GeographyMetaData geographyMetaData) {
 		this.geographyMetaData = geographyMetaData;
 		
 		try {
@@ -191,7 +191,7 @@ public class GeographyMetaDataEditingDialog extends OKCloseButtonDialog {
 		}
 	}
 
-	public DLGeographyMetaData getData() {
+	public GeographyMetaData getData() {
 		return geographyMetaData;
 	}
 	
@@ -209,10 +209,10 @@ public class GeographyMetaDataEditingDialog extends OKCloseButtonDialog {
 			GeographyMetaDataReader geographyMetaDataReader
 				= new GeographyMetaDataReader();
 			geographyMetaDataReader.readFile(selectedFile);
-			DLGeographyMetaData fileGeographyMetaData
+			GeographyMetaData fileGeographyMetaData
 				= geographyMetaDataReader.getGeographicalMetaData();
 			
-			DLGeographyMetaData.copyInto(
+			GeographyMetaData.copyInto(
 				fileGeographyMetaData, 
 				geographyMetaData);
 
@@ -230,7 +230,7 @@ public class GeographyMetaDataEditingDialog extends OKCloseButtonDialog {
 	}
 	
 	private void showGeographyMetaDataProperties(
-		final DLGeographyMetaData geographyMetaData) 
+		final GeographyMetaData geographyMetaData) 
 		throws RIFServiceException {
 		
 		GeographyMetaDataConfigurationHandler metaDataHandler

@@ -84,7 +84,7 @@ public class DataSetFieldNameGenerator {
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public static String generateDataSetConfigurationName(final AbstractRIFWorkflow workflow) {
+	public static String generateDataSetConfigurationName(final AbstractWorkflow workflow) {
 		String baseDataSetName
 			= RIFDataLoaderToolMessages.getMessage("dataSetConfiguration.baseDataSetName");
 		String [] existingDataSetNames

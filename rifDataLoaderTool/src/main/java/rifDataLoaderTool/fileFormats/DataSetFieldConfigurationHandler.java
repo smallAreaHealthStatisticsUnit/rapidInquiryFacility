@@ -3,11 +3,11 @@ package rifDataLoaderTool.fileFormats;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.FieldPurpose;
-import rifDataLoaderTool.businessConceptLayer.RIFConversionFunction;
-import rifDataLoaderTool.businessConceptLayer.RIFConversionFunctionFactory;
+import rifDataLoaderTool.businessConceptLayer.ConversionFunction;
+import rifDataLoaderTool.businessConceptLayer.ConversionFunctionFactory;
 import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
 import rifDataLoaderTool.businessConceptLayer.FieldChangeAuditLevel;
-import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
+import rifDataLoaderTool.businessConceptLayer.CheckOption;
 import rifDataLoaderTool.businessConceptLayer.RIFDataType;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
@@ -86,7 +86,7 @@ final class DataSetFieldConfigurationHandler
 	private CheckOptionConfigurationHandler rifCheckOptionConfigurationHandler;
 	
 	private RIFDataTypeFactory rifDataTypeFactory;
-	private RIFConversionFunctionFactory rifConversionFunctionFactory;
+	private ConversionFunctionFactory rifConversionFunctionFactory;
 	private ArrayList<DataSetFieldConfiguration> dataSetFieldConfigurations;
 	private DataSetFieldConfiguration currentDataSetFieldConfiguration;
 	
@@ -96,7 +96,7 @@ final class DataSetFieldConfigurationHandler
 
 	public DataSetFieldConfigurationHandler() {
 		isSerialisingHints = false;
-		rifConversionFunctionFactory = RIFConversionFunctionFactory.newInstance();
+		rifConversionFunctionFactory = ConversionFunctionFactory.newInstance();
 		rifCheckOptionConfigurationHandler
 			= new CheckOptionConfigurationHandler();
 		
@@ -181,7 +181,7 @@ final class DataSetFieldConfigurationHandler
 
 			
 			
-			RIFConversionFunction rifConversionFunction
+			ConversionFunction rifConversionFunction
 				= fieldConfiguration.getConvertFunction();
 			if (rifConversionFunction != null) {
 				xmlUtility.writeField(
@@ -228,7 +228,7 @@ final class DataSetFieldConfigurationHandler
 				"field_purpose", 
 				fieldPurpose.getCode());
 			
-			ArrayList<RIFCheckOption> checkOptions
+			ArrayList<CheckOption> checkOptions
 				= fieldConfiguration.getCheckOptions();			
 			rifCheckOptionConfigurationHandler.writeXML(checkOptions);
 			
@@ -312,11 +312,11 @@ final class DataSetFieldConfigurationHandler
 			
 			if (currentDelegatedHandler.isActive() == false) {
 				if (currentDelegatedHandler == rifCheckOptionConfigurationHandler) {
-					ArrayList<RIFCheckOption> checkOptions
+					ArrayList<CheckOption> checkOptions
 						= rifCheckOptionConfigurationHandler.getCheckOptions();
 					currentDataSetFieldConfiguration.setCheckOptions(checkOptions);
 					
-					ArrayList<RIFCheckOption> mystuff
+					ArrayList<CheckOption> mystuff
 						= currentDataSetFieldConfiguration.getCheckOptions();
 				}
 				else {
@@ -357,7 +357,7 @@ final class DataSetFieldConfigurationHandler
 		}	
 		else if (equalsFieldName("convert_field_function", qualifiedName)) {
 			String functionName = getCurrentFieldValue();	
-			RIFConversionFunction rifConversionFunction
+			ConversionFunction rifConversionFunction
 				= rifConversionFunctionFactory.getRIFConvertFunction(functionName);
 			currentDataSetFieldConfiguration.setConvertFunction(rifConversionFunction);
 		}	

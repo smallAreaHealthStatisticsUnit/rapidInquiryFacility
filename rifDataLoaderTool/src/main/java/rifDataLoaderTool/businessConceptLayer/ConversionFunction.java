@@ -75,7 +75,7 @@ import java.text.Collator;
  *
  */
 
-public class RIFConversionFunction {
+public class ConversionFunction {
 
 	// ==========================================
 	// Section Constants
@@ -100,7 +100,7 @@ public class RIFConversionFunction {
 	// Section Construction
 	// ==========================================
 
-	private RIFConversionFunction() {
+	private ConversionFunction() {
 		formalParameterNames = new ArrayList<String>();
 		dataTypeFromFormalParameterName = new HashMap<String, RIFDataType>();
 		convertFieldName = "";
@@ -108,18 +108,18 @@ public class RIFConversionFunction {
 		supportsOneToOneConversion = true;
 	}
 	
-	public static RIFConversionFunction newInstance() {
-		RIFConversionFunction rifConversionFunction
-			= new RIFConversionFunction();
+	public static ConversionFunction newInstance() {
+		ConversionFunction rifConversionFunction
+			= new ConversionFunction();
 
 		return rifConversionFunction;
 	}
 	
-	public static RIFConversionFunction createCopy(
-		final RIFConversionFunction originalFunction) {
+	public static ConversionFunction createCopy(
+		final ConversionFunction originalFunction) {
 		
-		RIFConversionFunction cloneFunction
-			= new RIFConversionFunction();
+		ConversionFunction cloneFunction
+			= new ConversionFunction();
 		cloneFunction.setCode(originalFunction.getCode());
 		cloneFunction.setSchemaName(originalFunction.getSchemaName());
 		cloneFunction.setFunctionName(originalFunction.getFunctionName());
@@ -415,7 +415,7 @@ public class RIFConversionFunction {
 	}
 	
 	public boolean hasIdenticalContents(
-		final RIFConversionFunction otherRIFConversionFunction) {
+		final ConversionFunction otherRIFConversionFunction) {
 		
 		if (otherRIFConversionFunction == null) {
 			return false;

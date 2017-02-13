@@ -89,7 +89,7 @@ final class FieldCleaningPolicyConfigurationHandler
 // ==========================================
 // Section Properties
 // ==========================================
-	private RIFFieldActionPolicy policy;
+	private FieldActionPolicy policy;
 	private String functionName;
 	private ArrayList<CleaningRule> rules;
 	private CleaningRuleConfigurationHandler rulesConfigurationHandler;
@@ -110,7 +110,7 @@ final class FieldCleaningPolicyConfigurationHandler
 	public void resetPolicyAttributes() {
 		rules.clear();
 		functionName = "";
-		policy = RIFFieldActionPolicy.DO_NOTHING;
+		policy = FieldActionPolicy.DO_NOTHING;
 	}	
 
 	@Override
@@ -144,7 +144,7 @@ final class FieldCleaningPolicyConfigurationHandler
 	 *
 	 * @return the disease mapping study
 	 */
-	public RIFFieldActionPolicy getFieldCleaningPolicy() {
+	public FieldActionPolicy getFieldCleaningPolicy() {
 		return policy;
 	}
 	
@@ -166,7 +166,7 @@ final class FieldCleaningPolicyConfigurationHandler
 		
 		String recordType = getSingularRecordName();
 		xmlUtility.writeRecordStartTag(recordType);
-		RIFFieldActionPolicy fieldCleaningPolicy
+		FieldActionPolicy fieldCleaningPolicy
 			= rifDataType.getFieldCleaningPolicy();
 		xmlUtility.writeField(
 			recordType, 
@@ -277,7 +277,7 @@ final class FieldCleaningPolicyConfigurationHandler
 			}
 		}
 		else if (equalsFieldName("policy_type", qualifiedName)) {
-			policy = RIFFieldActionPolicy.getPolicyFromTagName(getCurrentFieldValue());
+			policy = FieldActionPolicy.getPolicyFromTagName(getCurrentFieldValue());
 		}		
 		else if (equalsFieldName("cleaning_function_name", qualifiedName)) {			
 			functionName = getCurrentFieldValue();

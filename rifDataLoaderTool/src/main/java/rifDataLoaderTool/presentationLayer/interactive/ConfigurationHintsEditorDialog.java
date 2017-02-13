@@ -339,7 +339,7 @@ public class ConfigurationHintsEditorDialog
  			DataSetConfiguration dataSetConfiguration
  				= DataSetConfiguration.newInstance();
  			
- 			DLGeography currentlySelectedGeography
+ 			Geography currentlySelectedGeography
  				= dataSetPropertyEditorPanel.getSelectedGeography();
 			dataSetFieldPropertyEditorPanel.setData(
 				dataSetConfiguration,

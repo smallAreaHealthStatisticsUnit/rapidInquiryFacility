@@ -71,7 +71,7 @@ import java.util.Date;
  *
  */
 
-abstract class AbstractRIFDataLoaderToolConcept
+abstract class AbstractDataLoaderToolConcept
 	implements DisplayableListItemInterface {
 
 	// ==========================================
@@ -89,7 +89,7 @@ abstract class AbstractRIFDataLoaderToolConcept
 	// Section Construction
 	// ==========================================
 
-	public AbstractRIFDataLoaderToolConcept() {
+	public AbstractDataLoaderToolConcept() {
 		isChanged = false;
 		lastModifiedTime = new Date(System.currentTimeMillis());
 		updateLastModifiedTime();
@@ -139,7 +139,7 @@ abstract class AbstractRIFDataLoaderToolConcept
 		this.identifier = identifier;
 	}
 
-	protected boolean lastModifiedDatesIdentical(final AbstractRIFDataLoaderToolConcept otherConcept) {
+	protected boolean lastModifiedDatesIdentical(final AbstractDataLoaderToolConcept otherConcept) {
 		
 		Date otherLastModifiedTime = otherConcept.getLastModifiedTime();
 		if (FieldValidationUtility.hasDifferentNullity(

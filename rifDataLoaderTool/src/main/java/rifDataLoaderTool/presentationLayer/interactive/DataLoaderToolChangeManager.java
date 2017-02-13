@@ -123,7 +123,7 @@ public class DataLoaderToolChangeManager
 	}
 	
 	public void setGeographyMetaData(
-		final DLGeographyMetaData geographyMetaData)
+		final GeographyMetaData geographyMetaData)
 		throws RIFServiceException {
 		
 		//if (originalGeographyMetaData.hasIdenticalContents(revisedGeographyMetaData)) {
@@ -151,7 +151,7 @@ public class DataLoaderToolChangeManager
 		notifyObservers(DataLoadingOrder.GEOGRAPHY_META_DATA_SPECIFIED);	
 	}
 	
-	public void addHealthTheme(final DLHealthTheme healthTheme) {
+	public void addHealthTheme(final HealthTheme healthTheme) {
 		DataLoaderToolConfiguration dataLoaderToolConfiguration
 			= getCurrentDataLoaderToolConfiguration();
 
@@ -177,8 +177,8 @@ public class DataLoaderToolChangeManager
 
 	
 	public void updateHealthTheme(
-		final DLHealthTheme originalHealthTheme, 
-		final DLHealthTheme revisedHealthTheme) {
+		final HealthTheme originalHealthTheme, 
+		final HealthTheme revisedHealthTheme) {
 		
 		if (originalHealthTheme.hasIdenticalContents(revisedHealthTheme)) {
 			return;
@@ -192,7 +192,7 @@ public class DataLoaderToolChangeManager
 			revisedHealthTheme);
 	}
 	
-	public void deleteHealthTheme(final DLHealthTheme healthTheme) 
+	public void deleteHealthTheme(final HealthTheme healthTheme) 
 		throws RIFServiceException {
 		
 		DataLoaderToolConfiguration dataLoaderToolConfiguration

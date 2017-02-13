@@ -82,7 +82,7 @@ class DataSetFieldPropertyEditorPanel
 	private DataSetConfiguration originalDataSetConfiguration;
 	private DataSetFieldConfiguration originalDataSetFieldConfiguration;
 	private DataSetFieldConfiguration workingCopyDataSetFieldConfiguration;
-	private DLGeography currentGeography;
+	private Geography currentGeography;
 	private RIFSchemaArea currentRIFSchemaArea;
 	
 	private boolean isRenderingForConfigurationHintsFeature;	
@@ -675,7 +675,7 @@ class DataSetFieldPropertyEditorPanel
 	
 	public void setData(
 		final DataSetConfiguration originalDataSetConfiguration,
-		final DLGeography currentGeography,
+		final Geography currentGeography,
 		final DataSetFieldConfiguration originalDataSetFieldConfiguration) {
 
 		this.originalDataSetConfiguration = originalDataSetConfiguration;
@@ -754,7 +754,7 @@ class DataSetFieldPropertyEditorPanel
 			fieldChangeAuditLevelComboBox.setSelectedItem(currentFieldChangeAuditLevel.getName());
 
 			convertComboBox.setSelectedItem(dataSetFieldConfiguration.getConvertFieldName());
-			RIFConversionFunction rifConversionFunction
+			ConversionFunction rifConversionFunction
 				= dataSetFieldConfiguration.getConvertFunction();
 			if (rifConversionFunction == null) {
 				conversionFunctionTextField.setText("");			
@@ -766,13 +766,13 @@ class DataSetFieldPropertyEditorPanel
 			includePercentEmptyCheckBox.setSelected(false);
 			includePercentEmptyPerYearCheckBox.setSelected(false);
 
-			ArrayList<RIFCheckOption> checkOptions
+			ArrayList<CheckOption> checkOptions
 				= dataSetFieldConfiguration.getCheckOptions();
-			for (RIFCheckOption checkOption : checkOptions) {
-				if (checkOption == RIFCheckOption.PERCENT_EMPTY) {
+			for (CheckOption checkOption : checkOptions) {
+				if (checkOption == CheckOption.PERCENT_EMPTY) {
 					includePercentEmptyCheckBox.setSelected(true);
 				}
-				else if (checkOption == RIFCheckOption.PERCENT_EMPTY_PER_YEAR) {
+				else if (checkOption == CheckOption.PERCENT_EMPTY_PER_YEAR) {
 					includePercentEmptyPerYearCheckBox.setSelected(true);
 				}
 			}
@@ -792,6 +792,7 @@ class DataSetFieldPropertyEditorPanel
 			fieldRequirementLevelComboBox.addActionListener(this);
 			rifDataTypeComboBox.addActionListener(this);
 			fieldChangeAuditLevelComboBox.addActionListener(this);
+			cleanComboBox.addActionListener(this);
 			convertComboBox.addActionListener(this);	
 			optimiseUsingIndexCheckBox.addActionListener(this);
 			includePercentEmptyCheckBox.addActionListener(this);
@@ -804,6 +805,7 @@ class DataSetFieldPropertyEditorPanel
 			fieldRequirementLevelComboBox.removeActionListener(this);
 			rifDataTypeComboBox.removeActionListener(this);
 			fieldChangeAuditLevelComboBox.removeActionListener(this);
+			cleanComboBox.removeActionListener(this);
 			convertComboBox.removeActionListener(this);	
 			optimiseUsingIndexCheckBox.removeActionListener(this);
 			includePercentEmptyCheckBox.removeActionListener(this);
@@ -828,7 +830,7 @@ class DataSetFieldPropertyEditorPanel
 				= session.getDataLoaderToolConfiguration();
 			
 			ArrayList<String> geographicalResolutionFieldNames
-				= currentGeography.getLevelNames();
+				= currentGeography.getLevelCodeNames();
 							
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();		
@@ -839,13 +841,18 @@ class DataSetFieldPropertyEditorPanel
 				DefaultComboBoxModel<String> defaultComboBoxModel
 					= new DefaultComboBoxModel<String>(geographicalResolutionFieldNames.toArray(new String[0]));
 				cleanComboBox.setModel(defaultComboBoxModel);
+				convertComboBox.setSelectedItem(pleaseChooseMessage);
 			}
 			else {
 				DefaultComboBoxModel<String> defaultComboBoxModel
 					= new DefaultComboBoxModel<String>(geographicalResolutionFieldNames.toArray(new String[0]));
 				cleanComboBox.setModel(defaultComboBoxModel);
 				cleanComboBox.setSelectedItem(cleanField);
+				convertComboBox.setSelectedItem(cleanField);
 			}
+			
+			
+			
 		}
 		else {
 			//let user specify whatever clean field name they want
@@ -855,6 +862,7 @@ class DataSetFieldPropertyEditorPanel
 				= new DefaultComboBoxModel<String>(new String[0]);
 			cleanComboBox.setModel(defaultComboBoxModel);
 			cleanComboBox.setSelectedItem(cleanField);
+			convertComboBox.setSelectedItem(cleanField);			
 		}
 	}
 
@@ -863,7 +871,7 @@ class DataSetFieldPropertyEditorPanel
 		updateUI();
 	}
 		
-	public void setCurrentGeography(final DLGeography currentGeography) {
+	public void setCurrentGeography(final Geography currentGeography) {
 		this.currentGeography = currentGeography;
 		
 		FieldPurpose fieldPurpose
@@ -1018,10 +1026,10 @@ class DataSetFieldPropertyEditorPanel
 		//Set Check stage attributes
 		dataSetFieldConfigurationFromForm.clearCheckOptions();
 		if (includePercentEmptyCheckBox.isSelected()) {
-			dataSetFieldConfigurationFromForm.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
+			dataSetFieldConfigurationFromForm.addCheckOption(CheckOption.PERCENT_EMPTY);
 		}
 		if (includePercentEmptyPerYearCheckBox.isSelected()) {
-			dataSetFieldConfigurationFromForm.addCheckOption(RIFCheckOption.PERCENT_EMPTY_PER_YEAR);
+			dataSetFieldConfigurationFromForm.addCheckOption(CheckOption.PERCENT_EMPTY_PER_YEAR);
 		}
 		dataSetFieldConfigurationFromForm.setDuplicateIdentificationField(
 			usedToIdentifyDuplicatesCheckBox.isSelected());
@@ -1154,6 +1162,11 @@ class DataSetFieldPropertyEditorPanel
 			FieldPurpose currentFieldPurpose
 				= FieldPurpose.getFieldPurposeFromName(currentFieldPurposeText);
 			updateCleanFieldName(currentFieldPurpose);
+		}
+		else if (source == cleanComboBox) {
+			String currentCleanFieldValue
+				= (String) cleanComboBox.getSelectedItem();
+			convertComboBox.setSelectedItem(currentCleanFieldValue);
 		}
 		
 		changesMade = true;

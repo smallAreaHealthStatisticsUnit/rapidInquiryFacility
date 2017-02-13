@@ -131,8 +131,8 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		final DataSetConfiguration dataSetConfiguration) {
 		
 		StringBuilder filePath = new StringBuilder();
-		filePath.append(scriptDirectory.getAbsolutePath());
-		filePath.append(File.separator);		
+		//filePath.append(scriptDirectory.getAbsolutePath());
+		//filePath.append(File.separator);		
 		String coreDataSetName
 			= dataSetConfiguration.getName();
 		RIFSchemaArea rifSchemaArea 

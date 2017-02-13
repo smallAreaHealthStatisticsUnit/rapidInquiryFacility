@@ -133,8 +133,11 @@ public class PGCovariateScriptGenerator
 			false);
 		createTableQueryFormatter.addTextFieldDeclaration(
 			resolutionFieldConfiguration.getConvertFieldName(), 
+			20, 
 			false);
+		System.out.println("There are ==" + covariateFields.size()+"== covariate fields");
 		for (DataSetFieldConfiguration covariateField : covariateFields) {
+			System.out.println("Printing covariate...");
 			covariateField.print();
 			
 			RIFDataType rifDataType = covariateField.getRIFDataType();			
@@ -261,7 +264,7 @@ public class PGCovariateScriptGenerator
 		//SET covariate_table=[published covariate table name]
 		//WHERE geography=[geography] AND geolevel_name=[resolutionField.getName()
 		
-		DLGeography geography = covariate.getGeography();
+		Geography geography = covariate.getGeography();
 		DataSetFieldConfiguration resolutionFieldLevel
 			= DataSetConfigurationUtility.getRequiredGeographicalResolutionField(covariate);
 		String publishedTableName
@@ -285,7 +288,7 @@ public class PGCovariateScriptGenerator
 		String covariateTableName
 			= covariateConfiguration.getPublishedTableName().toUpperCase();
 		
-		DLGeography geography = covariateConfiguration.getGeography();
+		Geography geography = covariateConfiguration.getGeography();
 		String geographyName = geography.getName().toUpperCase();
 		
 		DataSetFieldConfiguration requiredGeographicalResolutionField

@@ -659,9 +659,9 @@ public class WorkflowValidator {
 			= new ArrayList<DataSetFieldConfiguration>();
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			
-			ArrayList<RIFCheckOption> checkOptions
+			ArrayList<CheckOption> checkOptions
 				= fieldConfiguration.getCheckOptions();		
-			for (RIFCheckOption checkOption : checkOptions) {
+			for (CheckOption checkOption : checkOptions) {
 				if (schemaAreaPropertyManager.isRIFCheckOptionAllowed(
 					rifSchemaArea, 
 					checkOption) == false) {

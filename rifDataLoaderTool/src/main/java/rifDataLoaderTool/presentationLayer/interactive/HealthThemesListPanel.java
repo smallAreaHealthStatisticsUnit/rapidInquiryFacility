@@ -1,6 +1,6 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
-import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
+import rifDataLoaderTool.businessConceptLayer.HealthTheme;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.DataLoaderToolSession;
@@ -112,11 +112,11 @@ public class HealthThemesListPanel
 		DataLoaderToolSession session = getSession();
 		DataLoaderToolConfiguration dataLoaderToolConfiguration
 			= session.getDataLoaderToolConfiguration();
-		ArrayList<DLHealthTheme> healthThemes
+		ArrayList<HealthTheme> healthThemes
 			= dataLoaderToolConfiguration.getHealthThemes();
 		ArrayList<DisplayableListItemInterface> listItemsToAdd
 			= new ArrayList<DisplayableListItemInterface>();
-		for (DLHealthTheme healthTheme : healthThemes) {
+		for (HealthTheme healthTheme : healthThemes) {
 			listItemsToAdd.add(healthTheme);
 		}
 		setListItems(listItemsToAdd);
@@ -125,8 +125,8 @@ public class HealthThemesListPanel
 
 	@Override
 	protected void addListItem() {
-		DLHealthTheme healthTheme
-			= DLHealthTheme.newInstance();
+		HealthTheme healthTheme
+			= HealthTheme.newInstance();
 		UserInterfaceFactory userInterfaceFactory
 			= getUserInterfaceFactory();
 		HealthThemeEditorDialog dialog
@@ -145,11 +145,11 @@ public class HealthThemesListPanel
 	
 	@Override
 	protected void editSelectedListItem() {
-		DLHealthTheme selectedHealthTheme 
-			= (DLHealthTheme) getSelectedListItem();
+		HealthTheme selectedHealthTheme 
+			= (HealthTheme) getSelectedListItem();
 		
-		DLHealthTheme cloneHealthTheme
-			= DLHealthTheme.createCopy(selectedHealthTheme);
+		HealthTheme cloneHealthTheme
+			= HealthTheme.createCopy(selectedHealthTheme);
 		
 		UserInterfaceFactory userInterfaceFactory
 			= getUserInterfaceFactory();
@@ -185,8 +185,8 @@ public class HealthThemesListPanel
 			ArrayList<DisplayableListItemInterface> itemsToDelete
 				= getSelectedListItems();
 			for (DisplayableListItemInterface itemToDelete : itemsToDelete) {
-				DLHealthTheme healthThemeToDelete
-					= (DLHealthTheme) itemToDelete;
+				HealthTheme healthThemeToDelete
+					= (HealthTheme) itemToDelete;
 				dependencyManager.checkHealthThemeDependencies(healthThemeToDelete);
 			}
 			

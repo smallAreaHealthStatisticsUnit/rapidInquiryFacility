@@ -78,7 +78,7 @@ public class GeographyMetaDataLoadingPanel
 	// Section Properties
 	// ==========================================
 	private DataLoaderToolSession session;
-	private DLGeographyMetaData geographyMetaData;
+	private GeographyMetaData geographyMetaData;
 	private DataLoaderToolChangeManager changeManager;
 	private UserInterfaceFactory userInterfaceFactory;
 	private JFrame frame;
@@ -152,7 +152,7 @@ public class GeographyMetaDataLoadingPanel
 		populateForm();		
 	}
 	
-	public void setData(final DLGeographyMetaData geographyMetaData) {
+	public void setData(final GeographyMetaData geographyMetaData) {
 		this.geographyMetaData = geographyMetaData;
 		populateForm();
 	}

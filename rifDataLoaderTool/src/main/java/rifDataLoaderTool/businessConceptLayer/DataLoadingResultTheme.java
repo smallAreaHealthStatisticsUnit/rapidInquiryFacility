@@ -50,7 +50,7 @@ package rifDataLoaderTool.businessConceptLayer;
  *
  */
 
-public enum RIFDataLoadingResultTheme {
+public enum DataLoadingResultTheme {
 
 	ARCHIVE_ORIGINAL_EXTRACT("original_extract_query"),
 	ARCHIVE_ORIGINAL_DATA("original_data"),
@@ -62,7 +62,7 @@ public enum RIFDataLoadingResultTheme {
 	
 	private String subDirectoryName;
 	
-	RIFDataLoadingResultTheme(final String subDirectoryName) {
+	DataLoadingResultTheme(final String subDirectoryName) {
 		this.subDirectoryName = subDirectoryName;
 	}
 	

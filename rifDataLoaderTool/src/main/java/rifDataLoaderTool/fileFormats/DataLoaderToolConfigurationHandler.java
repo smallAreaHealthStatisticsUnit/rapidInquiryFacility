@@ -207,7 +207,7 @@ final class DataLoaderToolConfigurationHandler
 		geographyMetaDataConfigurationHandler.writeXML(
 			dataLoaderToolConfiguration.getGeographyMetaData());
 		
-		ArrayList<DLHealthTheme> healthThemes
+		ArrayList<HealthTheme> healthThemes
 			= dataLoaderToolConfiguration.getHealthThemes();
 		healthThemesConfigurationHandler.writeXML(healthThemes);		
 		rifDataTypeConfigurationHandler.writeXML(
@@ -231,13 +231,13 @@ final class DataLoaderToolConfigurationHandler
 			
 			String geographyName
 				= dataSetConfigurationHandler.getGeographyName(dataSetConfiguration);
-			DLGeography geography
+			Geography geography
 				= geographyMetaDataConfigurationHandler.getGeography(geographyName);
 			dataSetConfiguration.setGeography(geography);
 			
 			String healthThemeName
 				= dataSetConfigurationHandler.getHealthThemeName(dataSetConfiguration);
-			DLHealthTheme healthTheme
+			HealthTheme healthTheme
 				= healthThemesConfigurationHandler.getHealthTheme(healthThemeName);
 			dataSetConfiguration.setHealthTheme(healthTheme);
 		}
@@ -343,13 +343,13 @@ final class DataLoaderToolConfigurationHandler
 					dataLoaderToolConfiguration.setDatabaseConnectionConfiguration(databaseConnectionsConfiguration);
 				}
 				else if (currentDelegatedHandler == geographyMetaDataConfigurationHandler) {
-					DLGeographyMetaData geographyMetaData
+					GeographyMetaData geographyMetaData
 						= geographyMetaDataConfigurationHandler.getGeographyMetaData();
 					dataLoaderToolConfiguration.setGeographyMetaData(geographyMetaData);
 				}
 				
 				else if (currentDelegatedHandler == healthThemesConfigurationHandler) {
-					ArrayList<DLHealthTheme> healthThemes
+					ArrayList<HealthTheme> healthThemes
 						= healthThemesConfigurationHandler.getHealthThemes();
 					dataLoaderToolConfiguration.setHealthThemes(healthThemes);
 				}			

@@ -318,9 +318,9 @@ public class ConfigurationHints {
 			= fieldConfiguration.getFieldRequirementLevel();
 		if (fieldRequirementLevel == FieldRequirementLevel.REQUIRED_BY_RIF) {
 
-			RIFConversionFunctionFactory conversionFunctionFactory
-				= RIFConversionFunctionFactory.newInstance();
-			RIFConversionFunction convertAgeSexFunction
+			ConversionFunctionFactory conversionFunctionFactory
+				= ConversionFunctionFactory.newInstance();
+			ConversionFunction convertAgeSexFunction
 				= conversionFunctionFactory.getRIFConvertFunction("convert_age_sex");
 			
 			RIFDataType rifDataType = fieldConfiguration.getRIFDataType();

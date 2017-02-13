@@ -57,8 +57,8 @@ import java.util.ArrayList;
  *
  */
 
-public class DLGeographyMetaData 
-	extends AbstractRIFDataLoaderToolConcept {
+public class GeographyMetaData 
+	extends AbstractDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants
@@ -68,41 +68,41 @@ public class DLGeographyMetaData
 	// Section Properties
 	// ==========================================
 	private String filePath;
-	private ArrayList<DLGeography> geographies;
+	private ArrayList<Geography> geographies;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public DLGeographyMetaData() {
-		geographies = new ArrayList<DLGeography>();
+	public GeographyMetaData() {
+		geographies = new ArrayList<Geography>();
 		filePath = "";
 	}
 
-	public static DLGeographyMetaData newInstance() {
-		DLGeographyMetaData cloneGeographyMetaData
-			= new DLGeographyMetaData();
+	public static GeographyMetaData newInstance() {
+		GeographyMetaData cloneGeographyMetaData
+			= new GeographyMetaData();
 		return cloneGeographyMetaData;
 	}
 	
-	public static DLGeographyMetaData createCopy(final DLGeographyMetaData originalGeographyMetaData) {
-		DLGeographyMetaData cloneGeographyMetaData
-			= new DLGeographyMetaData();
+	public static GeographyMetaData createCopy(final GeographyMetaData originalGeographyMetaData) {
+		GeographyMetaData cloneGeographyMetaData
+			= new GeographyMetaData();
 		copyInto(originalGeographyMetaData, cloneGeographyMetaData);
 		return cloneGeographyMetaData;
 	}
 	
 	public static void copyInto(
-		final DLGeographyMetaData source, 
-		final DLGeographyMetaData destination) {
+		final GeographyMetaData source, 
+		final GeographyMetaData destination) {
 		
 		destination.setFilePath(source.getFilePath());
 		
-		ArrayList<DLGeography> originalGeographies
+		ArrayList<Geography> originalGeographies
 			= source.getGeographies();
-		for (DLGeography originalGeography : originalGeographies) {
-			DLGeography cloneGeography
-				= DLGeography.createCopy(originalGeography);
+		for (Geography originalGeography : originalGeographies) {
+			Geography cloneGeography
+				= Geography.createCopy(originalGeography);
 			destination.addGeography(cloneGeography);
 		}		
 	}
@@ -123,15 +123,15 @@ public class DLGeographyMetaData
 	public String[] getAllGeographyNames() {
 		ArrayList<String> geographyNames = new ArrayList<String>();
 
-		for (DLGeography geography : geographies) {
+		for (Geography geography : geographies) {
 			geographyNames.add(geography.getName());
 		}
 				
 		return geographyNames.toArray(new String[0]);
 	}
 	
-	public DLGeography getGeography(final String targetGeographName) {
-		for (DLGeography geography : geographies) {
+	public Geography getGeography(final String targetGeographName) {
+		for (Geography geography : geographies) {
 			String currentGeographyName
 				= geography.getName();
 			if (currentGeographyName.equals(targetGeographName)) {
@@ -142,11 +142,11 @@ public class DLGeographyMetaData
 		return null;
 	}
 	
-	public ArrayList<DLGeography> getGeographies() {
+	public ArrayList<Geography> getGeographies() {
 		return geographies;
 	}
 	
-	public void addGeography(final DLGeography geography) {
+	public void addGeography(final Geography geography) {
 		geographies.add(geography);
 	}
 
@@ -162,7 +162,7 @@ public class DLGeographyMetaData
 	 * @return
 	 */
 	public boolean hasIdenticalContents(
-		final DLGeographyMetaData otherGeographyMetaData) {
+		final GeographyMetaData otherGeographyMetaData) {
 		
 		if (otherGeographyMetaData == null) {
 			return false;
@@ -183,7 +183,7 @@ public class DLGeographyMetaData
 			}			
 		}
 
-		return DLGeography.hasIdenticalContents(
+		return Geography.hasIdenticalContents(
 			geographies, 
 			otherGeographyMetaData.getGeographies());
 	}

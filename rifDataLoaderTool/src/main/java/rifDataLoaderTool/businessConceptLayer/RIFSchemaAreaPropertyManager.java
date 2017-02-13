@@ -141,19 +141,19 @@ public class RIFSchemaAreaPropertyManager {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public ArrayList<RIFCheckOption> getCheckOptions(
+	public ArrayList<CheckOption> getCheckOptions(
 		final RIFSchemaArea rifSchemaArea) {
 		
-		ArrayList<RIFCheckOption> rifCheckOptions
-			= new ArrayList<RIFCheckOption>();
+		ArrayList<CheckOption> rifCheckOptions
+			= new ArrayList<CheckOption>();
 		
-		rifCheckOptions.add(RIFCheckOption.PERCENT_EMPTY);
+		rifCheckOptions.add(CheckOption.PERCENT_EMPTY);
 		if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
 			(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
 			
 			//with these parts of the schema, we can guarantee there will
 			//be a year field
-			rifCheckOptions.add(RIFCheckOption.PERCENT_EMPTY_PER_YEAR);
+			rifCheckOptions.add(CheckOption.PERCENT_EMPTY_PER_YEAR);
 		}
 		
 		return rifCheckOptions;		
@@ -161,9 +161,9 @@ public class RIFSchemaAreaPropertyManager {
 	
 	public boolean isRIFCheckOptionAllowed(
 		final RIFSchemaArea rifSchemaArea,
-		final RIFCheckOption checkOption) {
+		final CheckOption checkOption) {
 		
-		if ((checkOption == RIFCheckOption.PERCENT_EMPTY_PER_YEAR) &&
+		if ((checkOption == CheckOption.PERCENT_EMPTY_PER_YEAR) &&
 			(rifSchemaArea != RIFSchemaArea.HEALTH_NUMERATOR_DATA) &&
 			(rifSchemaArea != RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
 				

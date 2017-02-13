@@ -2,7 +2,7 @@ package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.RIFDataType;
 
-import rifDataLoaderTool.businessConceptLayer.RIFFieldActionPolicy;
+import rifDataLoaderTool.businessConceptLayer.FieldActionPolicy;
 import rifDataLoaderTool.businessConceptLayer.CleaningRule;
 import rifDataLoaderTool.businessConceptLayer.ValidationRule;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -224,14 +224,14 @@ class DataTypeEditingPanel
 			isEditable);			
 
 
-		RIFFieldActionPolicy fieldCleaningPolicy
+		FieldActionPolicy fieldCleaningPolicy
 			= originalRIFDataType.getFieldCleaningPolicy();
-		if (fieldCleaningPolicy == RIFFieldActionPolicy.USE_RULES) {
+		if (fieldCleaningPolicy == FieldActionPolicy.USE_RULES) {
 			ArrayList<CleaningRule> cleaningRules
 				= originalRIFDataType.getCleaningRules();
 			dataCleaningPolicyEditingPanel.setCleaningRulesPolicy(cleaningRules);
 		}
-		else if (fieldCleaningPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
+		else if (fieldCleaningPolicy == FieldActionPolicy.USE_FUNCTION) {
 			String cleaningFunctionName
 				= originalRIFDataType.getCleaningFunctionName();
 			dataCleaningPolicyEditingPanel.setUseFunctionPolicy(cleaningFunctionName);
@@ -240,19 +240,19 @@ class DataTypeEditingPanel
 			dataCleaningPolicyEditingPanel.setDoNothingPolicy();
 		}
 
-		RIFFieldActionPolicy fieldValidationPolicy
+		FieldActionPolicy fieldValidationPolicy
 			= originalRIFDataType.getFieldValidationPolicy();
-		if (fieldValidationPolicy == RIFFieldActionPolicy.USE_RULES) {
+		if (fieldValidationPolicy == FieldActionPolicy.USE_RULES) {
 			ArrayList<ValidationRule> validationRules
 				= originalRIFDataType.getValidationRules();
 			dataValidationPolicyEditingPanel.setValidationRulesPolicy(validationRules);
 		}
-		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
+		else if (fieldValidationPolicy == FieldActionPolicy.USE_FUNCTION) {
 			String validationFunctionName
 				= originalRIFDataType.getValidationFunctionName();
 			dataValidationPolicyEditingPanel.setUseFunctionPolicy(validationFunctionName);
 		}
-		else if (fieldValidationPolicy == RIFFieldActionPolicy.DO_NOTHING) {
+		else if (fieldValidationPolicy == FieldActionPolicy.DO_NOTHING) {
 			dataValidationPolicyEditingPanel.setDoNothingPolicy();			
 		}
 		else {
@@ -316,31 +316,31 @@ class DataTypeEditingPanel
 		rifDataType.setDescription(descriptionTextField.getText().trim());
 		
 		//set values in the cleaning policy panel
-		RIFFieldActionPolicy fieldCleaningActionPolicy
+		FieldActionPolicy fieldCleaningActionPolicy
 			= dataCleaningPolicyEditingPanel.getFieldActionPolicy();
 		rifDataType.setFieldCleaningPolicy(fieldCleaningActionPolicy);
-		if (fieldCleaningActionPolicy == RIFFieldActionPolicy.USE_RULES) {
+		if (fieldCleaningActionPolicy == FieldActionPolicy.USE_RULES) {
 			ArrayList<CleaningRule> cleaningRules
 				= dataCleaningPolicyEditingPanel.getCleaningRules();
 			rifDataType.setCleaningRules(cleaningRules);
 		}
-		else if (fieldCleaningActionPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
+		else if (fieldCleaningActionPolicy == FieldActionPolicy.USE_FUNCTION) {
 			String cleaningFunctionName
 				= dataCleaningPolicyEditingPanel.getCleaningFunctionName();
 			rifDataType.setCleaningFunctionName(cleaningFunctionName);
 		}
 		
 		//set values in the validation policy panel
-		RIFFieldActionPolicy fieldValidationPolicy
+		FieldActionPolicy fieldValidationPolicy
 			= dataValidationPolicyEditingPanel.getFieldActionPolicy();
 		rifDataType.setFieldValidationPolicy(fieldValidationPolicy);
-		if (fieldValidationPolicy == RIFFieldActionPolicy.USE_RULES) {
+		if (fieldValidationPolicy == FieldActionPolicy.USE_RULES) {
 			ArrayList<ValidationRule> validationRules
 				= dataValidationPolicyEditingPanel.getValidationRules();
 
 			rifDataType.setValidationRules(validationRules);
 		}
-		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
+		else if (fieldValidationPolicy == FieldActionPolicy.USE_FUNCTION) {
 			String validationFunctionName
 				= dataValidationPolicyEditingPanel.getFunctionName();
 			rifDataType.setValidationFunctionName(validationFunctionName);

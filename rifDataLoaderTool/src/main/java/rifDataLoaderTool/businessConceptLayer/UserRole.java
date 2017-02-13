@@ -57,7 +57,7 @@ import java.text.Collator;
  *
  */
 
-public enum RIFUserRole {
+public enum UserRole {
 
 	
 	RIF_USER("userRole.rifUser.label"),
@@ -66,7 +66,7 @@ public enum RIFUserRole {
 	
 	private String propertyName;
 	
-	private RIFUserRole(
+	private UserRole(
 		final String propertyName) {
 		
 		this.propertyName = propertyName;
@@ -89,7 +89,7 @@ public enum RIFUserRole {
 		return collator.equals(name, userRoleName);
 	}
 	
-	public static RIFUserRole getUserRole(
+	public static UserRole getUserRole(
 		final String userRoleName) {
 		
 		if (RIF_MANAGER.isUserRole(userRoleName)) {

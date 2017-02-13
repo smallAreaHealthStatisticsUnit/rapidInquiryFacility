@@ -1,7 +1,7 @@
 
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.DLGeographyMetaData;
+import rifDataLoaderTool.businessConceptLayer.GeographyMetaData;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
@@ -155,8 +155,8 @@ public final class GeographyMetaDataReader {
 		}
 	}			
 	
-	public DLGeographyMetaData getGeographicalMetaData() {
-		DLGeographyMetaData geographyMetaData
+	public GeographyMetaData getGeographicalMetaData() {
+		GeographyMetaData geographyMetaData
 			= geographyMetaDataConfigurationHandler.getGeographyMetaData();
 		geographyMetaData.setFilePath(
 			geographyMetaDataConfigurationFile.getAbsolutePath());

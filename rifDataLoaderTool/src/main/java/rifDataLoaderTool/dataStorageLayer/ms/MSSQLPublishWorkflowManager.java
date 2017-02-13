@@ -130,7 +130,7 @@ final class MSSQLPublishWorkflowManager
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.ARCHIVE_RESULTS,
+			DataLoadingResultTheme.ARCHIVE_RESULTS,
 			publishTableName);
 		
 		//Generate the script that is supposed to be specific to SQL Server or PostgreSQL
@@ -139,7 +139,7 @@ final class MSSQLPublishWorkflowManager
 		File dataLoadingScriptFile
 			= createDataLoadingScriptFileName(
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.ARCHIVE_RESULTS,
+				DataLoadingResultTheme.ARCHIVE_RESULTS,
 				dataSetConfiguration);
 		scriptWriter.writeFile(
 			dataLoadingScriptFile, 
@@ -155,7 +155,7 @@ final class MSSQLPublishWorkflowManager
 	
 	private File createDataLoadingScriptFileName(
 		final String exportDirectoryPath,
-		final RIFDataLoadingResultTheme dataLoadingResultTheme,
+		final DataLoadingResultTheme dataLoadingResultTheme,
 		final DataSetConfiguration dataSetConfiguration) {
 		
 		String coreDataSetName = dataSetConfiguration.getName();
@@ -166,7 +166,7 @@ final class MSSQLPublishWorkflowManager
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(exportDirectoryPath);
 		buffer.append(File.separator);
-		if (dataLoadingResultTheme != RIFDataLoadingResultTheme.MAIN_RESULTS) {
+		if (dataLoadingResultTheme != DataLoadingResultTheme.MAIN_RESULTS) {
 			buffer.append(dataLoadingResultTheme.getSubDirectoryName());
 			buffer.append(File.separator);			
 		}
@@ -262,7 +262,7 @@ final class MSSQLPublishWorkflowManager
 			StringBuilder temporaryResultsDirectoryPath = new StringBuilder();
 			temporaryResultsDirectoryPath.append(loadJobDirectoryPath.toString());
 			temporaryResultsDirectoryPath.append(File.separator);
-			temporaryResultsDirectoryPath.append(RIFDataLoadingResultTheme.ARCHIVE_RESULTS.getSubDirectoryName());
+			temporaryResultsDirectoryPath.append(DataLoadingResultTheme.ARCHIVE_RESULTS.getSubDirectoryName());
 			File temporaryResultsDirectory 
 				= new File(temporaryResultsDirectoryPath.toString());
 			FileUtils.copyDirectory(temporaryResultsDirectory, exportDirectory);

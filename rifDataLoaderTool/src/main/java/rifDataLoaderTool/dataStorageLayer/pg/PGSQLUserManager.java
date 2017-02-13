@@ -4,7 +4,7 @@ import java.util.Date;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.businessConceptLayer.RIFUserRole;
+import rifDataLoaderTool.businessConceptLayer.UserRole;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
@@ -89,7 +89,7 @@ final class PGSQLUserManager {
 		final Connection connection,
 		final String userID,
 		final String password,
-		final RIFUserRole rifUserRole,
+		final UserRole rifUserRole,
 		final Date expirationDate)
 		throws RIFServiceException {
 
@@ -105,13 +105,13 @@ final class PGSQLUserManager {
 			statement.setString(1, userID);
 			statement.setString(2, password);
 			
-			if (rifUserRole == RIFUserRole.RIF_MANAGER) {
+			if (rifUserRole == UserRole.RIF_MANAGER) {
 				statement.setString(3, "rif_manager");
 			}
-			else if (rifUserRole == RIFUserRole.RIF_STUDENT) {
+			else if (rifUserRole == UserRole.RIF_STUDENT) {
 				statement.setString(3, "rif_student");			
 			}
-			else if (rifUserRole == RIFUserRole.RIF_USER) {
+			else if (rifUserRole == UserRole.RIF_USER) {
 				statement.setString(3, "rif_user");				
 			}
 			else {
@@ -144,7 +144,7 @@ final class PGSQLUserManager {
 		final Connection connection,
 		final User user,
 		final String updatedPassword,
-		final RIFUserRole rifUserRole,
+		final UserRole rifUserRole,
 		final Date expirationDate) 
 		throws RIFServiceException {
 		
@@ -161,13 +161,13 @@ final class PGSQLUserManager {
 			statement.setString(1, user.getUserID());
 			statement.setString(2, updatedPassword);
 		
-			if (rifUserRole == RIFUserRole.RIF_MANAGER) {
+			if (rifUserRole == UserRole.RIF_MANAGER) {
 				statement.setString(3, "rif_manager");
 			}
-			else if (rifUserRole == RIFUserRole.RIF_STUDENT) {
+			else if (rifUserRole == UserRole.RIF_STUDENT) {
 				statement.setString(3, "rif_student");			
 			}
-			else if (rifUserRole == RIFUserRole.RIF_USER) {
+			else if (rifUserRole == UserRole.RIF_USER) {
 				statement.setString(3, "rif_user");				
 			}
 			else {

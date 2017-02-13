@@ -233,7 +233,7 @@ public final class PGCleaningStepQueryGenerator {
 		
 		RIFDataType rifDataType 
 			= dataSetFieldConfiguration.getRIFDataType();
-		RIFFieldActionPolicy fieldActionPolicy
+		FieldActionPolicy fieldActionPolicy
 			= rifDataType.getFieldCleaningPolicy();
 		
 		
@@ -403,16 +403,16 @@ public final class PGCleaningStepQueryGenerator {
 		 *  
 		 */
 		RIFDataType rifDataType = fieldConfiguration.getRIFDataType();
-		RIFFieldActionPolicy fieldValidationPolicy
+		FieldActionPolicy fieldValidationPolicy
 			= rifDataType.getFieldValidationPolicy();
 		
 		String cleanedFieldName
 			= fieldConfiguration.getCleanFieldName();
-		if (fieldValidationPolicy == RIFFieldActionPolicy.DO_NOTHING) {
+		if (fieldValidationPolicy == FieldActionPolicy.DO_NOTHING) {
 			queryFormatter.addQueryPhrase(cleanedFieldName);
 			queryFormatter.padAndFinishLine();
 		}
-		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
+		else if (fieldValidationPolicy == FieldActionPolicy.USE_FUNCTION) {
 			queryFormatter.addQueryPhrase(rifDataType.getValidationFunctionName());
 			queryFormatter.addQueryPhrase("(");
 			queryFormatter.addQueryPhrase(cleanedFieldName);
@@ -423,7 +423,7 @@ public final class PGCleaningStepQueryGenerator {
 			queryFormatter.addQueryPhrase(cleanedFieldName);
 			queryFormatter.padAndFinishLine();
 		}
-		else if (fieldValidationPolicy == RIFFieldActionPolicy.USE_RULES) {
+		else if (fieldValidationPolicy == FieldActionPolicy.USE_RULES) {
 		
 			ArrayList<ValidationRule> validationRules
 				= rifDataType.getValidationRules();

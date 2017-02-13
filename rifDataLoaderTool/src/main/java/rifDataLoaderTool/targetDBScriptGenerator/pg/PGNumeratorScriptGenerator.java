@@ -81,7 +81,7 @@ public class PGNumeratorScriptGenerator
 	// ==========================================
 
 	public String generateScript(
-		final DLGeographyMetaData geographyMetaData,
+		final GeographyMetaData geographyMetaData,
 		final DataSetConfiguration numerator) {
 
 		StringBuilder numeratorEntry = new StringBuilder();
@@ -114,7 +114,7 @@ public class PGNumeratorScriptGenerator
 	
 	private void createTableStructureAndImportCSV(
 		final StringBuilder denominatorEntry,
-		final DLGeographyMetaData geographyMetaData,
+		final GeographyMetaData geographyMetaData,
 		final DataSetConfiguration denominator) {
 		
 		//Part I: Make a create table statement 
@@ -133,10 +133,13 @@ public class PGNumeratorScriptGenerator
 
 		//Do we assume these field names will be in increasing order of 
 		//geographical resolution?
-		DLGeography geography = denominator.getGeography();
-		ArrayList<String> levelNames = geography.getLevelNames();
-		for (String levelName : levelNames) {
-			createTableQueryFormatter.addTextFieldDeclaration(levelName, false);
+		Geography geography = denominator.getGeography();
+		ArrayList<String> levelCodeNames = geography.getLevelCodeNames();
+		for (String levelCodeName : levelCodeNames) {
+			createTableQueryFormatter.addTextFieldDeclaration(
+				levelCodeName, 
+				20, 
+				false);			
 		}
 		createTableQueryFormatter.addTextFieldDeclaration("icd", false);
 		createTableQueryFormatter.addIntegerFieldDeclaration("total", false);
@@ -148,8 +151,8 @@ public class PGNumeratorScriptGenerator
 		ArrayList<String> fieldNames = new ArrayList<String>();
 		fieldNames.add("year");
 		fieldNames.add("age_sex_group");
-		for (String levelName : levelNames) {
-			fieldNames.add(levelName);
+		for (String levelCodeName : levelCodeNames) {
+			fieldNames.add(levelCodeName);
 		}
 		fieldNames.add("icd");
 		fieldNames.add("total");
@@ -216,12 +219,12 @@ public class PGNumeratorScriptGenerator
 		queryFormatter.addQueryLine(1, "age_group_id) ");
 		queryFormatter.addQueryLine(0, "SELECT ");
 		
-		DLHealthTheme healthTheme = dataSet.getHealthTheme();
+		HealthTheme healthTheme = dataSet.getHealthTheme();
 		if (healthTheme == null) {
 			queryFormatter.addQueryLine(1, "'SAHSULAND',");			
 		}
 		else {
-			queryFormatter.addQueryLine(1, "'" + healthTheme.getName().toUpperCase() + "',");			
+			queryFormatter.addQueryLine(1, "'" + healthTheme.getName() + "',");			
 		}
 		
 		queryFormatter.addQueryLine(1, "'" + dataSet.getPublishedTableName().toUpperCase() + "',");
@@ -251,7 +254,7 @@ public class PGNumeratorScriptGenerator
 		String[] literalParameterValues = new String[7];
 		
 		//Obtain value for 'geography' field
-		DLGeography geography
+		Geography geography
 			= numerator.getGeography();
 		literalParameterValues[0] = geography.getName();
 		
@@ -260,7 +263,7 @@ public class PGNumeratorScriptGenerator
 		//Obtain value for the 'numerator_description' field
 		literalParameterValues[2] = numerator.getDescription();
 		//Obtain value for the 'theme_description'
-		DLHealthTheme healthTheme = numerator.getHealthTheme();
+		HealthTheme healthTheme = numerator.getHealthTheme();
 		//Obtain value for health theme description
 		literalParameterValues[3] = healthTheme.getDescription();
 		

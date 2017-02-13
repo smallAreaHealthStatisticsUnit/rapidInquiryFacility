@@ -141,7 +141,7 @@ public class PGDenominatorScriptGenerator
 		
 		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
 			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
-			createTableQueryFormatter.addTextFieldDeclaration(fieldName, false);			
+			createTableQueryFormatter.addTextFieldDeclaration(fieldName, 20, false);
 		}
 		
 		createTableQueryFormatter.addIntegerFieldDeclaration(
@@ -153,13 +153,13 @@ public class PGDenominatorScriptGenerator
 		
 		//How do we handle extra fields?
 		ArrayList<String> fieldNames = new ArrayList<String>();
-		fieldNames.add("year");
-		fieldNames.add("age_sex_group");
+		fieldNames.add("YEAR");
+		fieldNames.add("AGE_SEX_GROUP");
 		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
 			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
 			fieldNames.add(fieldName);
 		}		
-		fieldNames.add("total");
+		fieldNames.add("TOTAL");
 			
 		String filePath
 			= super.getPublishedFilePath(denominator) + ".csv";		
@@ -222,13 +222,11 @@ public class PGDenominatorScriptGenerator
 		queryFormatter.addQueryLine(1, "age_sex_group_field_name,");
 		queryFormatter.addQueryLine(1, "age_group_id) ");
 		queryFormatter.addQueryLine(0, "SELECT ");
-		queryFormatter.addQueryLine(1, "'SAHSULAND',");
-		
-		
+		queryFormatter.addQueryLine(1, "'cancers',");
 		queryFormatter.addQueryLine(1, "'" + denominator.getPublishedTableName().toUpperCase() + "',");
 		queryFormatter.addQueryLine(1, "'" + denominator.getDescription() + "',");
-		queryFormatter.addQueryLine(1, "MIN(year),");
-		queryFormatter.addQueryLine(1, "MAX(year),");
+		queryFormatter.addQueryLine(1, "MIN(YEAR),");
+		queryFormatter.addQueryLine(1, "MAX(YEAR),");
 		queryFormatter.addQueryLine(1, "null,");
 		queryFormatter.addQueryLine(1, "1,");
 		queryFormatter.addQueryLine(1, "0,");
@@ -274,7 +272,7 @@ public class PGDenominatorScriptGenerator
 		denominatorEntry.append(
 				createTableFieldCommentQuery(
 					publishedCovariateTableName, 
-					"age_sex_group", 
+					"AGE_SEX_GROUP", 
 					ageSexGroupComment));		
 		
 		ArrayList<DataSetFieldConfiguration> resolutionFields

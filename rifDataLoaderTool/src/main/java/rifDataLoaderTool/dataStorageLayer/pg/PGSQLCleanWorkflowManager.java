@@ -5,7 +5,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCountQueryFormatter;
@@ -177,7 +177,7 @@ final public class PGSQLCleanWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
+				DataLoadingResultTheme.ARCHIVE_STAGES, 
 				RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName));			
 			
 			
@@ -216,7 +216,7 @@ final public class PGSQLCleanWorkflowManager
 					connection, 
 					logFileWriter, 
 					exportDirectoryPath, 
-					RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
+					DataLoadingResultTheme.ARCHIVE_STAGES, 
 					RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName));			
 			
 			checkTotalRowsMatch(
@@ -249,7 +249,7 @@ final public class PGSQLCleanWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
+				DataLoadingResultTheme.ARCHIVE_STAGES, 
 				RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName));			
 			
 			
@@ -288,7 +288,7 @@ final public class PGSQLCleanWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
+				DataLoadingResultTheme.ARCHIVE_STAGES, 
 				finalCleaningTableName);			
 			
 			/*

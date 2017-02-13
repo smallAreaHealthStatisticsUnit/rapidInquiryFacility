@@ -369,7 +369,7 @@ abstract class AbstractPGSQLDataLoaderService
 			StringBuilder destinationFilePath = new StringBuilder();
 			destinationFilePath.append(dataSetExportDirectoryPath);
 			destinationFilePath.append(File.separator);
-			destinationFilePath.append(RIFDataLoadingResultTheme.ARCHIVE_ORIGINAL_DATA.getSubDirectoryName());
+			destinationFilePath.append(DataLoadingResultTheme.ARCHIVE_ORIGINAL_DATA.getSubDirectoryName());
 			destinationFilePath.append(File.separator);
 			destinationFilePath.append(fileName);
 			File destinationFile = new File(destinationFilePath.toString());
@@ -408,7 +408,7 @@ abstract class AbstractPGSQLDataLoaderService
 		final Writer logWriter,
 		final File outputDirectory,
 		final File originalFile,
-		final RIFDataLoadingResultTheme rifDataLoadingResultTheme,
+		final DataLoadingResultTheme rifDataLoadingResultTheme,
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	
@@ -1776,11 +1776,11 @@ abstract class AbstractPGSQLDataLoaderService
 				Files.createDirectory(temporaryDirectory.toPath());
 			}
 					
-			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_ORIGINAL_DATA);
-			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL);
-			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_RESULTS);
-			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_STAGES);
-			createSubDirectory(mainScratchDirectoryPath, RIFDataLoadingResultTheme.ARCHIVE_OTHER);
+			createSubDirectory(mainScratchDirectoryPath, DataLoadingResultTheme.ARCHIVE_ORIGINAL_DATA);
+			createSubDirectory(mainScratchDirectoryPath, DataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL);
+			createSubDirectory(mainScratchDirectoryPath, DataLoadingResultTheme.ARCHIVE_RESULTS);
+			createSubDirectory(mainScratchDirectoryPath, DataLoadingResultTheme.ARCHIVE_STAGES);
+			createSubDirectory(mainScratchDirectoryPath, DataLoadingResultTheme.ARCHIVE_OTHER);
 		}
 		catch(IOException ioException) {
 			logException(
@@ -1802,7 +1802,7 @@ abstract class AbstractPGSQLDataLoaderService
 		
 	private void createSubDirectory(
 		final String mainScratchDirectoryPath,
-		final RIFDataLoadingResultTheme resultTheme) 
+		final DataLoadingResultTheme resultTheme) 
 		throws IOException {
 		
 		StringBuilder subDirectoryPath = new StringBuilder();

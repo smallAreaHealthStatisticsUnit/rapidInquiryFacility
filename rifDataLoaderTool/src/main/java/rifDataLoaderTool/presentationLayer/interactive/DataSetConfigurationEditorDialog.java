@@ -155,7 +155,8 @@ class DataSetConfigurationEditorDialog
 		setInstructionText(instructionsText);
 		setMainPanel(createMainPanel(rifSchemaArea));
 		setSize(1200, 700);
-		
+		///dataSetPropertyEditorPanel
+
 		buildUI();
 	}
 
@@ -325,7 +326,7 @@ class DataSetConfigurationEditorDialog
 			DataSetFieldConfiguration selectedDataSetFieldConfiguration
 				= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
 			
-			DLGeography currentlySelectedGeography
+			Geography currentlySelectedGeography
 				= dataSetPropertyEditorPanel.getSelectedGeography();
 			dataSetFieldPropertyEditorPanel.setData(
 				dataSetConfiguration,
@@ -470,7 +471,7 @@ class DataSetConfigurationEditorDialog
 			dataSetFieldPropertyEditorPanel.setCurrentRIFSchemaArea(rifSchemaArea);
 		}
 		else if (dataSetPropertyEditorPanel.isGeographyComboBox(source)) {
-			DLGeography selectedGeography
+			Geography selectedGeography
 				= dataSetPropertyEditorPanel.getSelectedGeography();
 			dataSetFieldPropertyEditorPanel.setCurrentGeography(selectedGeography);
 		}		
@@ -508,7 +509,7 @@ class DataSetConfigurationEditorDialog
 			DataSetFieldConfiguration selectedFieldConfiguration
 				= (DataSetFieldConfiguration) dataSetFieldListPanel.getSelectedItem();
 
-			DLGeography selectedGeography
+			Geography selectedGeography
 				= dataSetPropertyEditorPanel.getSelectedGeography();
 			dataSetFieldPropertyEditorPanel.setData(
 				workingCopyDataSetConfiguration,

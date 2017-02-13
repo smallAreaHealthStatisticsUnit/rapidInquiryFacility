@@ -186,7 +186,7 @@ final public class PGSQLConvertWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
+				DataLoadingResultTheme.ARCHIVE_STAGES, 
 				convertedTableName);
 			
 			updateLastCompletedWorkState(
@@ -260,7 +260,7 @@ final public class PGSQLConvertWorkflowManager
 			= DataSetConfigurationUtility.getFieldsWithConversionFunctions(
 				dataSetConfiguration);
 		for (DataSetFieldConfiguration fieldWithConversion : fieldsWithConversions) {
-			RIFConversionFunction rifConversionFunction
+			ConversionFunction rifConversionFunction
 				= fieldWithConversion.getConvertFunction();
 			if (rifConversionFunction.supportsOneToOneConversion()) {
 				rifConversionFunction.addActualParameter(fieldWithConversion);
@@ -294,15 +294,15 @@ final public class PGSQLConvertWorkflowManager
 			if ((ageFieldConfiguration != null) &&
 				(sexFieldConfiguration != null)) {
 				
-				RIFConversionFunctionFactory rifConversionFunctionFactory
-					= RIFConversionFunctionFactory.newInstance();
+				ConversionFunctionFactory rifConversionFunctionFactory
+					= ConversionFunctionFactory.newInstance();
 
 				/*
 				 * #POSSIBLE_PORTING_ISSUE
 				 * These conversion functions will have to be rewritten for both
 				 * SQL Server and PostgreSQL
 				 */				
-				RIFConversionFunction ageSexConversionFunction
+				ConversionFunction ageSexConversionFunction
 					= rifConversionFunctionFactory.getRIFConvertFunction("convert_age_sex");
 				ageSexConversionFunction.addActualParameter(ageFieldConfiguration);
 				ageSexConversionFunction.addActualParameter(sexFieldConfiguration);

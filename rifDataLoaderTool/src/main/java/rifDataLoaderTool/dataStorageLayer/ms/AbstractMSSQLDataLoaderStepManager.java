@@ -7,7 +7,7 @@ import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
@@ -567,13 +567,13 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 	
 	protected File createExportTableFile(
 		final String exportDirectoryPath,
-		final RIFDataLoadingResultTheme rifDataLoaderResultTheme,
+		final DataLoadingResultTheme rifDataLoaderResultTheme,
 		final String tableName) {
 		
 		StringBuilder exportFileName = new StringBuilder();
 		exportFileName.append(exportDirectoryPath);
 		exportFileName.append(File.separator);
-		if (rifDataLoaderResultTheme != RIFDataLoadingResultTheme.MAIN_RESULTS) {
+		if (rifDataLoaderResultTheme != DataLoadingResultTheme.MAIN_RESULTS) {
 			exportFileName.append(rifDataLoaderResultTheme.getSubDirectoryName());		
 			exportFileName.append(File.separator);
 		}
@@ -588,14 +588,14 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final Connection connection, 
 		final Writer logFileWriter,
 		final String exportDirectoryPath,
-		final RIFDataLoadingResultTheme rifDataLoaderResultTheme,
+		final DataLoadingResultTheme rifDataLoaderResultTheme,
 		final String tableName) 
 		throws RIFServiceException {
 				
 		StringBuilder exportFileName = new StringBuilder();
 		exportFileName.append(exportDirectoryPath);
 		exportFileName.append(File.separator);
-		if (rifDataLoaderResultTheme != RIFDataLoadingResultTheme.MAIN_RESULTS) {
+		if (rifDataLoaderResultTheme != DataLoadingResultTheme.MAIN_RESULTS) {
 			exportFileName.append(rifDataLoaderResultTheme.getSubDirectoryName());		
 			exportFileName.append(File.separator);
 		}

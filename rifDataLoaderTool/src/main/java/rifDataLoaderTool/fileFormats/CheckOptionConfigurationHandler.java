@@ -1,7 +1,7 @@
 package rifDataLoaderTool.fileFormats;
 
 
-import rifDataLoaderTool.businessConceptLayer.RIFCheckOption;
+import rifDataLoaderTool.businessConceptLayer.CheckOption;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
 import org.xml.sax.Attributes;
@@ -70,14 +70,14 @@ final class CheckOptionConfigurationHandler
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private ArrayList<RIFCheckOption> checkOptions;
+	private ArrayList<CheckOption> checkOptions;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public CheckOptionConfigurationHandler() {
-		checkOptions = new ArrayList<RIFCheckOption>();
+		checkOptions = new ArrayList<CheckOption>();
 		
 		setPluralRecordName("check_options");
 		setSingularRecordName("check_option");
@@ -88,18 +88,18 @@ final class CheckOptionConfigurationHandler
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public ArrayList<RIFCheckOption> getCheckOptions() {
+	public ArrayList<CheckOption> getCheckOptions() {
 		return checkOptions;
 	}
 
 	public void writeXML(
-		final ArrayList<RIFCheckOption> checkOptions)
+		final ArrayList<CheckOption> checkOptions)
 		throws IOException {
 		
 		XMLUtility xmlUtility = getXMLUtility();
 		xmlUtility.writeRecordStartTag(getPluralRecordName());
 
-		for (RIFCheckOption checkOption : checkOptions) {
+		for (CheckOption checkOption : checkOptions) {
 			xmlUtility.writeRecordStartTag(getSingularRecordName());
 			xmlUtility.writeValue(checkOption.getCode());
 			xmlUtility.writeRecordEndTag(getSingularRecordName());
@@ -119,7 +119,7 @@ final class CheckOptionConfigurationHandler
 		
 		if (isPluralRecordName(qualifiedName)) {
 			activate();
-			checkOptions = new ArrayList<RIFCheckOption>();
+			checkOptions = new ArrayList<CheckOption>();
 		}
 
 	}
@@ -136,8 +136,8 @@ final class CheckOptionConfigurationHandler
 		else if (isSingularRecordName(qualifiedName)) {
 			String checkOptionName
 				= getCurrentFieldValue();
-			RIFCheckOption rifCheckOption
-				= RIFCheckOption.getOptionFromCode(checkOptionName);
+			CheckOption rifCheckOption
+				= CheckOption.getOptionFromCode(checkOptionName);
 			checkOptions.add(rifCheckOption);
 		}
 	}

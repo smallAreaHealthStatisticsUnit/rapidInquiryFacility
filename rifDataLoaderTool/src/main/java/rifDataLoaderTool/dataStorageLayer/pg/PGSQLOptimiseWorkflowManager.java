@@ -152,7 +152,7 @@ final class PGSQLOptimiseWorkflowManager
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
+			DataLoadingResultTheme.ARCHIVE_STAGES, 
 			optimiseTableName);
 		
 		updateLastCompletedWorkState(

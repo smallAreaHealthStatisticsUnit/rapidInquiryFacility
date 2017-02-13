@@ -103,8 +103,8 @@ public class SampleDataGenerator {
 	
 	public DataSetConfiguration createCancerNumeratorConfiguration() {
 
-		RIFConversionFunctionFactory rifConversionFactory
-			= RIFConversionFunctionFactory.newInstance();
+		ConversionFunctionFactory rifConversionFactory
+			= ConversionFunctionFactory.newInstance();
 		RIFDataTypeFactory rifDataTypeFactory
 			= RIFDataTypeFactory.newInstance();
 		rifDataTypeFactory.populateFactoryWithBuiltInTypes();
@@ -609,8 +609,8 @@ public class SampleDataGenerator {
 	public DataSetConfiguration createTest4StudyID1ExtractConfiguration() {
 		RIFDataTypeFactory rifDataTypeFactory
 			= RIFDataTypeFactory.newInstance();
-		RIFConversionFunctionFactory rifConversionFunctionFactory
-			= RIFConversionFunctionFactory.newInstance();
+		ConversionFunctionFactory rifConversionFunctionFactory
+			= ConversionFunctionFactory.newInstance();
 		
 		DataSetConfiguration test4Study1Configuration
 			= DataSetConfiguration.newInstance();
@@ -664,7 +664,7 @@ public class SampleDataGenerator {
 				"area_id");	
 		areaIDFieldConfiguration.setDuplicateIdentificationField(true);
 		areaIDFieldConfiguration.setCoreFieldDescription("area identifier");
-		areaIDFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
+		areaIDFieldConfiguration.addCheckOption(CheckOption.PERCENT_EMPTY);
 		areaIDFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		areaIDFieldConfiguration.setFieldPurpose(FieldPurpose.GEOGRAPHICAL_RESOLUTION);
 		test4Study1Configuration.addFieldConfiguration(areaIDFieldConfiguration);	
@@ -675,7 +675,7 @@ public class SampleDataGenerator {
 				"test4_study_id1", 
 				"band_id");	
 		bandIDFieldConfiguration.setCoreFieldDescription("band identifier");
-		bandIDFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
+		bandIDFieldConfiguration.addCheckOption(CheckOption.PERCENT_EMPTY);
 		bandIDFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		bandIDFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
 		test4Study1Configuration.addFieldConfiguration(bandIDFieldConfiguration);	
@@ -690,7 +690,7 @@ public class SampleDataGenerator {
 		sexFieldConfiguration.setDuplicateIdentificationField(true);
 		sexFieldConfiguration.setCoreFieldDescription("sex");
 
-		RIFConversionFunction ageSexConversionFunction
+		ConversionFunction ageSexConversionFunction
 			= rifConversionFunctionFactory.getRIFConvertFunction("convert_age_sex");
 		sexFieldConfiguration.setConvertFunction(ageSexConversionFunction);
 		sexFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
@@ -819,9 +819,9 @@ public class SampleDataGenerator {
 		sexFieldConfiguration.setCoreFieldDescription("sex of patient");
 		sexFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 
-		RIFConversionFunctionFactory rifConversionFunctionFactory
-			= RIFConversionFunctionFactory.newInstance();
-		RIFConversionFunction ageSexConversionFunction
+		ConversionFunctionFactory rifConversionFunctionFactory
+			= ConversionFunctionFactory.newInstance();
+		ConversionFunction ageSexConversionFunction
 			= rifConversionFunctionFactory.getRIFConvertFunction("convert_age_sex");	
 		sexFieldConfiguration.setConvertFunction(ageSexConversionFunction);		
 		
@@ -857,7 +857,7 @@ public class SampleDataGenerator {
 		dobFieldConfiguration.setCoreFieldDescription("date of birth of patient");
 		dobFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		dobFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
-		dobFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
+		dobFieldConfiguration.addCheckOption(CheckOption.PERCENT_EMPTY);
 		dataSetConfiguration.addFieldConfiguration(dobFieldConfiguration);		
 		
 		DataSetFieldConfiguration postalCodeFieldConfiguration
@@ -870,8 +870,8 @@ public class SampleDataGenerator {
 		postalCodeFieldConfiguration.setDuplicateIdentificationField(true);
 		postalCodeFieldConfiguration.setCoreFieldDescription("UK postal code");
 		postalCodeFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
-		postalCodeFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY);
-		postalCodeFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY_PER_YEAR);
+		postalCodeFieldConfiguration.addCheckOption(CheckOption.PERCENT_EMPTY);
+		postalCodeFieldConfiguration.addCheckOption(CheckOption.PERCENT_EMPTY_PER_YEAR);
 		postalCodeFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
 		
 		dataSetConfiguration.addFieldConfiguration(postalCodeFieldConfiguration);		
@@ -887,7 +887,7 @@ public class SampleDataGenerator {
 		scoreFieldConfiguration.setCoreFieldDescription("some kind of score that needs to be quintilised");
 		scoreFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
 		scoreFieldConfiguration.setFieldPurpose(FieldPurpose.COVARIATE);
-		scoreFieldConfiguration.addCheckOption(RIFCheckOption.PERCENT_EMPTY_PER_YEAR);
+		scoreFieldConfiguration.addCheckOption(CheckOption.PERCENT_EMPTY_PER_YEAR);
 		dataSetConfiguration.addFieldConfiguration(scoreFieldConfiguration);		
 		
 		DataSetFieldConfiguration icd1FieldConfiguration

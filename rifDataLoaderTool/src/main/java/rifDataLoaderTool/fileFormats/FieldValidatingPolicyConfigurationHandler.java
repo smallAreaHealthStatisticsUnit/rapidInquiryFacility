@@ -101,7 +101,7 @@ final class FieldValidatingPolicyConfigurationHandler
 // ==========================================
 // Section Properties
 // ==========================================
-	private RIFFieldActionPolicy policy;
+	private FieldActionPolicy policy;
 	private String functionName;
 	private ArrayList<ValidationRule> rules;
 	private ValidationRuleConfigurationHandler rulesConfigurationHandler;
@@ -123,7 +123,7 @@ final class FieldValidatingPolicyConfigurationHandler
 	public void resetPolicyAttributes() {
 		rules.clear();
 		functionName = "";
-		policy = RIFFieldActionPolicy.DO_NOTHING;
+		policy = FieldActionPolicy.DO_NOTHING;
 	}
 
 	@Override
@@ -160,7 +160,7 @@ final class FieldValidatingPolicyConfigurationHandler
 	 *
 	 * @return the disease mapping study
 	 */
-	public RIFFieldActionPolicy getFieldValidationPolicy() {
+	public FieldActionPolicy getFieldValidationPolicy() {
 		return policy;
 	}
 	
@@ -183,7 +183,7 @@ final class FieldValidatingPolicyConfigurationHandler
 		
 		String recordType = getSingularRecordName();
 		xmlUtility.writeRecordStartTag(recordType);
-		RIFFieldActionPolicy fieldValidationPolicy
+		FieldActionPolicy fieldValidationPolicy
 			= rifDataType.getFieldValidationPolicy();
 		xmlUtility.writeField(
 			recordType, 
@@ -294,7 +294,7 @@ final class FieldValidatingPolicyConfigurationHandler
 			}
 		}
 		else if (equalsFieldName("policy_type", qualifiedName)) {	
-			policy = RIFFieldActionPolicy.getPolicyFromTagName(getCurrentFieldValue());
+			policy = FieldActionPolicy.getPolicyFromTagName(getCurrentFieldValue());
 		}		
 		else if (equalsFieldName("validation_function_name", qualifiedName)) {
 			functionName = getCurrentFieldValue();

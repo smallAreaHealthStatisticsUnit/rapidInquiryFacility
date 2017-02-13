@@ -189,7 +189,7 @@ public class RIFDataLoaderToolMenuBar
 			return DataLoadingOrder.HEALTH_THEMES_SPECIFIED;
 		}
 		
-		DLGeographyMetaData geographyMetaData
+		GeographyMetaData geographyMetaData
 			= dataLoaderToolConfiguration.getGeographyMetaData();
 		if (geographyMetaData.getGeographies().size() > 0) {
 			return DataLoadingOrder.GEOGRAPHY_META_DATA_SPECIFIED;

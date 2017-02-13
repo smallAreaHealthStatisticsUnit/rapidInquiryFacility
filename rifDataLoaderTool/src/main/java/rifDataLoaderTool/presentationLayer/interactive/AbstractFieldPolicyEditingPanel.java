@@ -1,6 +1,6 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
-import rifDataLoaderTool.businessConceptLayer.RIFFieldActionPolicy;
+import rifDataLoaderTool.businessConceptLayer.FieldActionPolicy;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 
@@ -145,7 +145,7 @@ abstract class AbstractFieldPolicyEditingPanel
 		panelGC.gridy++;		
 		doNothingRadioButton
 			= userInterfaceFactory.createRadioButton(
-				RIFFieldActionPolicy.DO_NOTHING.getName());
+				FieldActionPolicy.DO_NOTHING.getName());
 		policyButtonGroup.add(doNothingRadioButton);
 		doNothingRadioButton.addActionListener(this);
 		panel.add(doNothingRadioButton, panelGC);
@@ -153,7 +153,7 @@ abstract class AbstractFieldPolicyEditingPanel
 		panelGC.gridy++;	
 		useRulesRadioButton
 			= userInterfaceFactory.createRadioButton(
-				RIFFieldActionPolicy.USE_RULES.getName());
+				FieldActionPolicy.USE_RULES.getName());
 		useRulesRadioButton.addActionListener(this);		
 		policyButtonGroup.add(useRulesRadioButton);
 		panel.add(useRulesRadioButton, panelGC);
@@ -216,7 +216,7 @@ abstract class AbstractFieldPolicyEditingPanel
 			= userInterfaceFactory.createGridBagConstraints();		
 		useFunctionRadioButton
 			= userInterfaceFactory.createRadioButton(
-				RIFFieldActionPolicy.USE_FUNCTION.getName());
+				FieldActionPolicy.USE_FUNCTION.getName());
 		policyButtonGroup.add(useFunctionRadioButton);
 		useFunctionRadioButton.addActionListener(this);	
 		upperPanel.add(useFunctionRadioButton, upperPanelGC);
@@ -266,15 +266,15 @@ abstract class AbstractFieldPolicyEditingPanel
 		return rulesListPanel.getDisplayNames();
 	}
 	
-	public RIFFieldActionPolicy getFieldActionPolicy() {
+	public FieldActionPolicy getFieldActionPolicy() {
 		if (useRulesRadioButton.isSelected()) {
-			return RIFFieldActionPolicy.USE_RULES;
+			return FieldActionPolicy.USE_RULES;
 		}
 		else if (useFunctionRadioButton.isSelected()) {
-			return RIFFieldActionPolicy.USE_FUNCTION;
+			return FieldActionPolicy.USE_FUNCTION;
 		}		
 		else {
-			return RIFFieldActionPolicy.DO_NOTHING;
+			return FieldActionPolicy.DO_NOTHING;
 		}	
 	}
 		

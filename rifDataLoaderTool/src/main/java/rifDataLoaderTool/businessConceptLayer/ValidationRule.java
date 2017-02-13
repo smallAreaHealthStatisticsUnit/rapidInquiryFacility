@@ -93,7 +93,7 @@ import java.util.HashMap;
  */
 
 public final class ValidationRule 
-	extends AbstractRIFDataLoaderToolConcept {
+	extends AbstractDataLoaderToolConcept {
 
 	
 	// ==========================================

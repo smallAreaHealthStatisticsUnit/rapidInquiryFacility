@@ -109,7 +109,7 @@ public class RIFDataLoaderToolApplication
 	private RIFDataLoaderToolMenuBar menuBar;
 	private UserInterfaceFactory userInterfaceFactory;
 	
-	private DLGeographyMetaData geographyMetaData;
+	private GeographyMetaData geographyMetaData;
 		
 	private GeographyMetaDataLoadingPanel geographyMetaDataPanel;
 	private HealthThemesListPanel healthThemeListPanel;
@@ -138,7 +138,7 @@ public class RIFDataLoaderToolApplication
 		
 		this.userInterfaceFactory = session.getUserInterfaceFactory();
 
-		geographyMetaData = DLGeographyMetaData.newInstance();
+		geographyMetaData = GeographyMetaData.newInstance();
 		dependencyManager = new DLDependencyManager();
 		changeManager = new DataLoaderToolChangeManager(session);
 
@@ -390,6 +390,9 @@ public class RIFDataLoaderToolApplication
 				outputDirectory, 
 				session.getDataLoaderToolConfiguration(),
 				workflow);
+			
+			
+			
 		}
 		catch(RIFServiceException rifServiceException) {
 			ErrorDialog.showError(

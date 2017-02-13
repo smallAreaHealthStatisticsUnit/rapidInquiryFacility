@@ -133,7 +133,8 @@ public class MSCovariateScriptGenerator
 			false);
 		createTableQueryFormatter.addTextFieldDeclaration(
 			resolutionFieldConfiguration.getConvertFieldName(), 
-			false);
+			20, 
+			false);		
 		for (DataSetFieldConfiguration covariateField : covariateFields) {
 			covariateField.print();
 			
@@ -261,7 +262,7 @@ public class MSCovariateScriptGenerator
 		//SET covariate_table=[published covariate table name]
 		//WHERE geography=[geography] AND geolevel_name=[resolutionField.getName()
 		
-		DLGeography geography = covariate.getGeography();
+		Geography geography = covariate.getGeography();
 		DataSetFieldConfiguration resolutionFieldLevel
 			= DataSetConfigurationUtility.getRequiredGeographicalResolutionField(covariate);
 		String publishedTableName
@@ -285,7 +286,7 @@ public class MSCovariateScriptGenerator
 		String covariateTableName
 			= covariateConfiguration.getPublishedTableName().toUpperCase();
 		
-		DLGeography geography = covariateConfiguration.getGeography();
+		Geography geography = covariateConfiguration.getGeography();
 		String geographyName = geography.getName().toUpperCase();
 		
 		DataSetFieldConfiguration requiredGeographicalResolutionField

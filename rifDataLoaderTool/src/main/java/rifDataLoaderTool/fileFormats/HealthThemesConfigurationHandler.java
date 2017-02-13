@@ -1,7 +1,7 @@
 package rifDataLoaderTool.fileFormats;
 
 
-import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
+import rifDataLoaderTool.businessConceptLayer.HealthTheme;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 
@@ -76,8 +76,8 @@ final class HealthThemesConfigurationHandler
 	// ==========================================
 	private boolean isSerialisingHints;
 	
-	private ArrayList<DLHealthTheme> healthThemes;
-	private DLHealthTheme currentHealthTheme;
+	private ArrayList<HealthTheme> healthThemes;
+	private HealthTheme currentHealthTheme;
 	
 	
 	// ==========================================
@@ -86,7 +86,7 @@ final class HealthThemesConfigurationHandler
 
 	public HealthThemesConfigurationHandler() {
 		isSerialisingHints = false;
-		healthThemes = new ArrayList<DLHealthTheme>();
+		healthThemes = new ArrayList<HealthTheme>();
 		
 		setPluralRecordName("health_themes");		
 		setSingularRecordName("health_theme");
@@ -105,8 +105,8 @@ final class HealthThemesConfigurationHandler
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public DLHealthTheme getHealthTheme(final String targetHealthThemeName) {
-		for (DLHealthTheme healthTheme : healthThemes) {
+	public HealthTheme getHealthTheme(final String targetHealthThemeName) {
+		for (HealthTheme healthTheme : healthThemes) {
 			String currentHealthThemeName = healthTheme.getName();
 			if (currentHealthThemeName.equals(targetHealthThemeName)) {
 				return healthTheme;
@@ -120,24 +120,24 @@ final class HealthThemesConfigurationHandler
 		this.isSerialisingHints = isSerialisingHints;
 	}
 	
-	public ArrayList<DLHealthTheme> getHealthThemes() {
+	public ArrayList<HealthTheme> getHealthThemes() {
 		return healthThemes;
 	}
 	
 	public String getHTML(
-		final DLHealthTheme healthTheme) {
+		final HealthTheme healthTheme) {
 
 		return "";
 	}
 	
 	public void writeXML(
-		final ArrayList<DLHealthTheme> healthThemes)
+		final ArrayList<HealthTheme> healthThemes)
 		throws IOException {
 		
 		XMLUtility xmlUtility = getXMLUtility();
 		xmlUtility.writeRecordStartTag(getPluralRecordName());
 
-		for (DLHealthTheme healthTheme : healthThemes) {
+		for (HealthTheme healthTheme : healthThemes) {
 			
 			xmlUtility.writeRecordStartTag(getSingularRecordName());
 
@@ -176,7 +176,7 @@ final class HealthThemesConfigurationHandler
 		}
 		else if (isSingularRecordName(qualifiedName) == true) {			
 			currentHealthTheme
-				= DLHealthTheme.newInstance();
+				= HealthTheme.newInstance();
 		}		
 		else {
 			assert false;

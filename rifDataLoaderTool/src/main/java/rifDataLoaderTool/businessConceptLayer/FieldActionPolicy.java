@@ -72,7 +72,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
  *
  */
 
-public enum RIFFieldActionPolicy {
+public enum FieldActionPolicy {
 	USE_FUNCTION(
 		"use_function", 
 		"fieldActionPolicy.useFunction.label"),
@@ -86,7 +86,7 @@ public enum RIFFieldActionPolicy {
 	private String tagName;
 	private String propertyName;
 	
-	RIFFieldActionPolicy(
+	FieldActionPolicy(
 		final String tagName,
 		final String propertyName) {
 		
@@ -102,7 +102,7 @@ public enum RIFFieldActionPolicy {
 		return tagName;
 	}
 	
-	public static RIFFieldActionPolicy getPolicyFromTagName(final String candidateTagName) {
+	public static FieldActionPolicy getPolicyFromTagName(final String candidateTagName) {
 		if (candidateTagName == null) {
 			return null;
 		}

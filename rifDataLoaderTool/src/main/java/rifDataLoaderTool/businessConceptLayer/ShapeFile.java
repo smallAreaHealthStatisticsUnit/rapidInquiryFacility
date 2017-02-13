@@ -64,7 +64,7 @@ import java.util.Objects;
  */
 
 public class ShapeFile 
-	extends AbstractRIFDataLoaderToolConcept {
+	extends AbstractDataLoaderToolConcept {
 
 	// ==========================================
 	// Section Constants

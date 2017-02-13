@@ -104,7 +104,7 @@ class MSSQLReportManager
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath,
-			RIFDataLoadingResultTheme.ARCHIVE_RESULTS,
+			DataLoadingResultTheme.ARCHIVE_RESULTS,
 			publishTableName);
 
 
@@ -115,7 +115,7 @@ class MSSQLReportManager
 				connection,
 				logFileWriter,
 				exportDirectoryPath,
-				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
+				DataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				emptyFieldsDataQualityTableName);
 		}
 
@@ -126,7 +126,7 @@ class MSSQLReportManager
 				connection,
 				logFileWriter,
 				exportDirectoryPath,
-				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
+				DataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				emptyFieldsPerYearDataQualityTableName);			
 		}
 
@@ -138,7 +138,7 @@ class MSSQLReportManager
 				connection,
 				logFileWriter,
 				exportDirectoryPath,
-				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
+				DataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				changeTableName);			
 		}
 		
@@ -149,7 +149,7 @@ class MSSQLReportManager
 				connection,
 				logFileWriter,
 				exportDirectoryPath,
-				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
+				DataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				failedValidationTableName);			
 		}
 

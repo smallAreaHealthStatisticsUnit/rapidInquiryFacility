@@ -91,7 +91,7 @@ import java.util.Objects;
  */
 
 public class DataSetFieldConfiguration 
-	extends AbstractRIFDataLoaderToolConcept 
+	extends AbstractDataLoaderToolConcept 
 	implements DescriptiveConfigurationItem {
 
 	// ==========================================
@@ -167,7 +167,7 @@ public class DataSetFieldConfiguration
 	 * Function that is associated with mapping a cleaned field value to 
 	 * a field in the converted table (eg: age, sex --> age_sex_group).
 	 */
-	private RIFConversionFunction rifConversionFunction;
+	private ConversionFunction rifConversionFunction;
 	
 	/**
 	 * Describes what the field does, and is used later on in validation to make
@@ -215,10 +215,10 @@ public class DataSetFieldConfiguration
 	/**
 	 * Describes what data quality checks should appear in the published data set.
 	 * For example, the PERCENT_EMPTY 
-	 * {@link rifDataLoaderTool.businessConceptLayer.RIFCheckOption} check will 
+	 * {@link rifDataLoaderTool.businessConceptLayer.CheckOption} check will 
 	 * determine how many of the rows showed an empty value for a given column.
 	 */
-	private ArrayList<RIFCheckOption> checkOptions;	
+	private ArrayList<CheckOption> checkOptions;	
 	
 	/**
 	 * Determines whether a field can accept an empty value or not.
@@ -281,7 +281,7 @@ public class DataSetFieldConfiguration
 		coreFieldDescription = "";
 		rifDataType = RIFDataTypeFactory.RIF_TEXT_DATA_TYPE;
 		optimiseUsingIndex = false;
-		checkOptions = new ArrayList<RIFCheckOption>();
+		checkOptions = new ArrayList<CheckOption>();
 			
 		fieldPurpose = FieldPurpose.OTHER;
 		isDuplicateIdentificationField = false;
@@ -343,7 +343,7 @@ public class DataSetFieldConfiguration
 		
 		destinationConfiguration.setRIFDataType(sourceConfiguration.getRIFDataType());
 		
-		RIFConversionFunction originalRIFConversionFunction
+		ConversionFunction originalRIFConversionFunction
 			= sourceConfiguration.getConvertFunction();
 		destinationConfiguration.setConvertFunction(originalRIFConversionFunction);
 		
@@ -362,7 +362,7 @@ public class DataSetFieldConfiguration
 			sourceConfiguration.getFieldChangeAuditLevel());
 
 		
-		ArrayList<RIFCheckOption> originalCheckOptions
+		ArrayList<CheckOption> originalCheckOptions
 			= sourceConfiguration.getCheckOptions();
 		destinationConfiguration.setCheckOptions(originalCheckOptions);	
 		
@@ -478,12 +478,12 @@ public class DataSetFieldConfiguration
 	}
 
 	public void setConvertFunction(
-		final RIFConversionFunction rifConversionFunction) {
+		final ConversionFunction rifConversionFunction) {
 		
 		this.rifConversionFunction = rifConversionFunction;
 	}
 	
-	public RIFConversionFunction getConvertFunction() {
+	public ConversionFunction getConvertFunction() {
 		
 		return rifConversionFunction;
 	}
@@ -499,20 +499,20 @@ public class DataSetFieldConfiguration
 		this.optimiseUsingIndex = optimiseUsingIndex;
 	}
 	
-	public ArrayList<RIFCheckOption> getCheckOptions() {
+	public ArrayList<CheckOption> getCheckOptions() {
 		
 		return checkOptions;
 	}
 	
 	public void addCheckOption(
-		final RIFCheckOption rifCheckOption) {
+		final CheckOption rifCheckOption) {
 		
 		checkOptions.add(rifCheckOption);
 	}
 	
 	
 	public void setCheckOptions(
-		final ArrayList<RIFCheckOption> checkOptions) {
+		final ArrayList<CheckOption> checkOptions) {
 		
 		this.checkOptions = checkOptions;
 	}
@@ -687,7 +687,7 @@ public class DataSetFieldConfiguration
 			return false;			
 		}
 		
-		RIFConversionFunction otherRIFConversionFunction
+		ConversionFunction otherRIFConversionFunction
 			= otherDataSetFieldConfiguration.getConvertFunction();
 		
 		if (rifConversionFunction != otherRIFConversionFunction) {
@@ -721,9 +721,9 @@ public class DataSetFieldConfiguration
 			return false;
 		}
 		
-		ArrayList<RIFCheckOption> otherCheckOptions
+		ArrayList<CheckOption> otherCheckOptions
 			= otherDataSetFieldConfiguration.getCheckOptions();
-		if (RIFCheckOption.hasIdenticalContents(checkOptions, otherCheckOptions) == false) {
+		if (CheckOption.hasIdenticalContents(checkOptions, otherCheckOptions) == false) {
 			return false;
 		}
 

@@ -6,7 +6,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.RIFDataLoadingResultTheme;
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
@@ -159,7 +159,7 @@ final public class PGSQLCheckWorkflowManager
 			connection, 
 			logFileWriter, 
 			exportDirectoryPath, 
-			RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
+			DataLoadingResultTheme.ARCHIVE_STAGES, 
 			checkTableName);
 		
 		updateLastCompletedWorkState(
@@ -281,7 +281,12 @@ final public class PGSQLCheckWorkflowManager
 				logFileWriter,
 				"checkConfiguration", 
 				queryFormatter);
-						
+			
+			
+			System.out.println("=====Check query start ====");
+			System.out.println(queryFormatter.generateQuery());
+			System.out.println("=====Check query end ====");
+			
 			statement 
 				= createPreparedStatement(connection, queryFormatter);
 			statement.executeUpdate();
@@ -309,7 +314,7 @@ final public class PGSQLCheckWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.ARCHIVE_STAGES, 
+				DataLoadingResultTheme.ARCHIVE_STAGES, 
 				checkTableName);
 			
 		}
@@ -632,7 +637,7 @@ final public class PGSQLCheckWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
+				DataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				emptyFieldsDataQualityTableName);
 		}
 		catch(SQLException sqlException) {
@@ -957,7 +962,7 @@ final public class PGSQLCheckWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
+				DataLoadingResultTheme.ARCHIVE_AUDIT_TRAIL,
 				emptyPerYearFieldsDataQualityTableName);
 			
 		}

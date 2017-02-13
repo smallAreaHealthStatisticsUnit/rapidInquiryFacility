@@ -65,7 +65,7 @@ import java.util.ArrayList;
  *
  */
 
-public enum RIFCheckOption {
+public enum CheckOption {
 	PERCENT_EMPTY_PER_YEAR(
 		"percent_empty_per_year",
 		"rifCheckOption.percentEmptyPerYear.label",
@@ -80,7 +80,7 @@ public enum RIFCheckOption {
 	private String nameProperty;
 	private String descriptionProperty;
 	
-	private RIFCheckOption(
+	private CheckOption(
 		final String code,
 		final String nameProperty,
 		final String descriptionProperty) {
@@ -90,15 +90,15 @@ public enum RIFCheckOption {
 		this.descriptionProperty = descriptionProperty;
 	}
 	
-	public static RIFCheckOption getOptionFromCode(
+	public static CheckOption getOptionFromCode(
 		final String code) {
 		
 		Collator collator = RIFGenericLibraryMessages.getCollator();
 		if (collator.equals(code, "percent_empty")) {
-			return RIFCheckOption.PERCENT_EMPTY;
+			return CheckOption.PERCENT_EMPTY;
 		}
 		if (collator.equals(code, "percent_empty_per_year")) {
-			return RIFCheckOption.PERCENT_EMPTY_PER_YEAR;
+			return CheckOption.PERCENT_EMPTY_PER_YEAR;
 		}
 		else {
 			//should never happen
@@ -120,10 +120,10 @@ public enum RIFCheckOption {
 		return displayName;
 	}
 		
-	public ArrayList<RIFCheckOption> getAllCheckOptions() {
+	public ArrayList<CheckOption> getAllCheckOptions() {
 
-		ArrayList<RIFCheckOption> allCheckOptions 
-			= new ArrayList<RIFCheckOption>();
+		ArrayList<CheckOption> allCheckOptions 
+			= new ArrayList<CheckOption>();
 		allCheckOptions.add(PERCENT_EMPTY);
 		allCheckOptions.add(PERCENT_EMPTY_PER_YEAR);
 		
@@ -150,8 +150,8 @@ public enum RIFCheckOption {
 	 * Assume neither collection is null
 	 */
 	public static boolean hasIdenticalContents(
-		final ArrayList<RIFCheckOption> rifCheckOptionsA,
-		final ArrayList<RIFCheckOption> rifCheckOptionsB) {
+		final ArrayList<CheckOption> rifCheckOptionsA,
+		final ArrayList<CheckOption> rifCheckOptionsB) {
 		
 		if (rifCheckOptionsA == rifCheckOptionsB) {
 			return true;
@@ -170,8 +170,8 @@ public enum RIFCheckOption {
 		
 		
 		for (int i = 0; i < numberCheckOptionsA; i++) {
-			RIFCheckOption rifCheckOptionA = rifCheckOptionsA.get(i);
-			RIFCheckOption rifCheckOptionB = rifCheckOptionsB.get(i);
+			CheckOption rifCheckOptionA = rifCheckOptionsA.get(i);
+			CheckOption rifCheckOptionB = rifCheckOptionsB.get(i);
 			if (rifCheckOptionA != rifCheckOptionB) {
 				return false;
 			}

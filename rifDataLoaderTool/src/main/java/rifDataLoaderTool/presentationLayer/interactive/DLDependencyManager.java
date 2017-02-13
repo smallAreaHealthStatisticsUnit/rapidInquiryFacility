@@ -1,9 +1,9 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DLGeography;
-import rifDataLoaderTool.businessConceptLayer.DLGeographyMetaData;
-import rifDataLoaderTool.businessConceptLayer.DLHealthTheme;
+import rifDataLoaderTool.businessConceptLayer.Geography;
+import rifDataLoaderTool.businessConceptLayer.GeographyMetaData;
+import rifDataLoaderTool.businessConceptLayer.HealthTheme;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
 
@@ -76,22 +76,22 @@ public class DLDependencyManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DLGeographyMetaData geographyMetaData;
+	private GeographyMetaData geographyMetaData;
 	private HashMap<DataSetConfiguration, ArrayList<DataSetConfiguration>> dependenciesOnDenominator;
-	private HashMap<DLGeography, ArrayList<DataSetConfiguration>> dependenciesOnGeography;
-	private HashMap<DLHealthTheme, ArrayList<DataSetConfiguration>> dependenciesOnHealthTheme;
+	private HashMap<Geography, ArrayList<DataSetConfiguration>> dependenciesOnGeography;
+	private HashMap<HealthTheme, ArrayList<DataSetConfiguration>> dependenciesOnHealthTheme;
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public DLDependencyManager() {
-		geographyMetaData = new DLGeographyMetaData();
+		geographyMetaData = new GeographyMetaData();
 		dependenciesOnDenominator 
 			= new HashMap<DataSetConfiguration, ArrayList<DataSetConfiguration>>();
 		dependenciesOnGeography
-			= new HashMap<DLGeography, ArrayList<DataSetConfiguration>>();
+			= new HashMap<Geography, ArrayList<DataSetConfiguration>>();
 		dependenciesOnHealthTheme
-			= new HashMap<DLHealthTheme, ArrayList<DataSetConfiguration>>();
+			= new HashMap<HealthTheme, ArrayList<DataSetConfiguration>>();
 	}
 
 	// ==========================================
@@ -109,10 +109,10 @@ public class DLDependencyManager {
 		ArrayList<DataSetConfiguration> dataSetConfigurations
 			= dataLoaderToolConfiguration.getAllDataSetConfigurations();
 		for (DataSetConfiguration dataSetConfiguration : dataSetConfigurations) {
-			DLGeography geography
+			Geography geography
 				= dataSetConfiguration.getGeography();
 			registerDependencyOnGeography(dataSetConfiguration, geography);
-			DLHealthTheme healthTheme
+			HealthTheme healthTheme
 				= dataSetConfiguration.getHealthTheme();
 			registerDependencyOnHealthTheme(dataSetConfiguration, healthTheme);
 			
@@ -124,7 +124,7 @@ public class DLDependencyManager {
 		}
 	}
 	
-	public void registerGeographyMetaData(final DLGeographyMetaData geographyMetaData) {
+	public void registerGeographyMetaData(final GeographyMetaData geographyMetaData) {
 		this.geographyMetaData = geographyMetaData;
 	}
 		
@@ -147,7 +147,7 @@ public class DLDependencyManager {
 	
 	public void registerDependencyOnHealthTheme(
 		final DataSetConfiguration dataSetConfiguration,
-		final DLHealthTheme healthTheme) {
+		final HealthTheme healthTheme) {
 		
 		ArrayList<DataSetConfiguration> dataSetConfigurations
 			= dependenciesOnHealthTheme.get(healthTheme);
@@ -182,7 +182,7 @@ public class DLDependencyManager {
 	private void deregisterGeographyDependencyOfDataSet(
 		final DataSetConfiguration dataSetConfiguration) {
 		
-		DLGeography geography = dataSetConfiguration.getGeography();
+		Geography geography = dataSetConfiguration.getGeography();
 		
 		ArrayList<DataSetConfiguration> dataSetConfigurations
 			= dependenciesOnGeography.get(geography);
@@ -198,7 +198,7 @@ public class DLDependencyManager {
 	private void deregisterHealthThemeDependencyOfDataSet(
 		final DataSetConfiguration dataSetConfiguration) {
 			
-		DLHealthTheme healthTheme 
+		HealthTheme healthTheme 
 			= dataSetConfiguration.getHealthTheme();		
 		ArrayList<DataSetConfiguration> dataSetConfigurations
 			= dependenciesOnHealthTheme.get(healthTheme);
@@ -215,7 +215,7 @@ public class DLDependencyManager {
 	
 	public void registerDependencyOnGeography(
 		final DataSetConfiguration dataSetConfiguration,
-		final DLGeography geography) {
+		final Geography geography) {
 
 		
 		ArrayList<DataSetConfiguration> dependentDataSetConfigurations
@@ -281,7 +281,7 @@ public class DLDependencyManager {
 	 * @throws RIFServiceException
 	 */
 	public void checkGeographyDependencies(
-		final DLGeography geography) 
+		final Geography geography) 
 		throws RIFServiceException {
 		
 		ArrayList<DataSetConfiguration> dependentDataSets
@@ -323,7 +323,7 @@ public class DLDependencyManager {
 	 * @throws RIFServiceException
 	 */
 	public void checkHealthThemeDependencies(
-		final DLHealthTheme healthTheme) 
+		final HealthTheme healthTheme) 
 		throws RIFServiceException {
 		
 		ArrayList<DataSetConfiguration> dependentDataSets

@@ -81,23 +81,23 @@ public class DLTestDataGenerator {
 		DataLoaderToolConfiguration dataLoaderToolConfiguration
 			= DataLoaderToolConfiguration.newInstance();
 		
-		DLGeographyMetaData geographyMetaData
+		GeographyMetaData geographyMetaData
 			= createTestGeographyMetaData();
 		dataLoaderToolConfiguration.setGeographyMetaData(geographyMetaData);
 		
 		//Create Health Themes
-		DLHealthTheme cancerHealthTheme
-			= DLHealthTheme.newInstance("cancers", "cancer registry data");
-		DLHealthTheme respiratoryHealthTheme
-			= DLHealthTheme.newInstance("respiratory disorders", "Asthma UK data set");
-		DLHealthTheme skinDiseasesHealthTheme
-			= DLHealthTheme.newInstance("skin diseases", "");
+		HealthTheme cancerHealthTheme
+			= HealthTheme.newInstance("cancers", "cancer registry data");
+		HealthTheme respiratoryHealthTheme
+			= HealthTheme.newInstance("respiratory disorders", "Asthma UK data set");
+		HealthTheme skinDiseasesHealthTheme
+			= HealthTheme.newInstance("skin diseases", "");
 		dataLoaderToolConfiguration.addHealthTheme(cancerHealthTheme);
 		dataLoaderToolConfiguration.addHealthTheme(respiratoryHealthTheme);
 		dataLoaderToolConfiguration.addHealthTheme(skinDiseasesHealthTheme);
 		
 		//Create denominator data set
-		DLGeography ukGeography = geographyMetaData.getGeography("UK");
+		Geography ukGeography = geographyMetaData.getGeography("UK");
 				
 		DataSetConfiguration ukDenominator		
 			= createPopulationHealthDataSet(
@@ -159,9 +159,9 @@ public class DLTestDataGenerator {
 	}
 	
 	
-	public DLGeographyMetaData createTestGeographyMetaData() {
-		DLGeographyMetaData geographyMetaData
-			= DLGeographyMetaData.newInstance();
+	public GeographyMetaData createTestGeographyMetaData() {
+		GeographyMetaData geographyMetaData
+			= GeographyMetaData.newInstance();
 		
 		StringBuilder filePath = new StringBuilder();
 		filePath.append("C:");
@@ -171,7 +171,7 @@ public class DLTestDataGenerator {
 		filePath.append("ExampleRIFGeographyMetaData.xml");
 		geographyMetaData.setFilePath(filePath.toString());
 		
-		DLGeography ukGeography = DLGeography.newInstance();
+		Geography ukGeography = Geography.newInstance();
 		ukGeography.setName("UK");
 		ukGeography.setIdentifier("uk");
 		ukGeography.addLevel(1, "Region", "region_level");
@@ -180,14 +180,14 @@ public class DLTestDataGenerator {
 		ukGeography.addLevel(4, "Output Area", "oa_level");
 		ukGeography.addLevel(5, "Super Output Area", "soa_level");
 			
-		DLGeography usaGeography = DLGeography.newInstance();
+		Geography usaGeography = Geography.newInstance();
 		usaGeography.setName("USA");
 		usaGeography.setIdentifier("usa");
 		usaGeography.addLevel(1, "Region", "region_level");
 		usaGeography.addLevel(2, "State", "state_level");
 		usaGeography.addLevel(3, "County", "county_level");
 		
-		DLGeography canadaGeography = DLGeography.newInstance();
+		Geography canadaGeography = Geography.newInstance();
 		canadaGeography.setName("Canada");
 		canadaGeography.setIdentifier("ca");
 		canadaGeography.addLevel(1, "Region", "region_level");
@@ -202,8 +202,8 @@ public class DLTestDataGenerator {
 	}
 	
 	public DataSetConfiguration createCancerNumerator(
-		final DLGeography geography,
-		final DLHealthTheme healthTheme,
+		final Geography geography,
+		final HealthTheme healthTheme,
 		final DataSetConfiguration denominator) {
 		
 		DataSetConfiguration result = DataSetConfiguration.newInstance();
@@ -218,8 +218,8 @@ public class DLTestDataGenerator {
 	
 	public DataSetConfiguration createPopulationHealthDataSet(
 		final RIFSchemaArea rifSchemaArea,
-		final DLGeography geography,		
-		final DLHealthTheme healthTheme,
+		final Geography geography,		
+		final HealthTheme healthTheme,
 		final DataSetConfiguration denominator,
 		final String name,
 		final String version,
@@ -272,8 +272,8 @@ public class DLTestDataGenerator {
 			= RIFDataTypeFactory.newInstance();
 		rifDataTypeFactory.populateFactoryWithBuiltInTypes();		
 		
-		RIFConversionFunctionFactory rifConversionFactory
-			= RIFConversionFunctionFactory.newInstance();
+		ConversionFunctionFactory rifConversionFactory
+			= ConversionFunctionFactory.newInstance();
 		
 		DataSetFieldConfiguration yearFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(

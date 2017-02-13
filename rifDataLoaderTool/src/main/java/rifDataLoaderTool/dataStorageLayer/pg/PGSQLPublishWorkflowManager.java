@@ -216,7 +216,7 @@ final class PGSQLPublishWorkflowManager
 				connection, 
 				logFileWriter, 
 				exportDirectoryPath, 
-				RIFDataLoadingResultTheme.ARCHIVE_RESULTS,
+				DataLoadingResultTheme.ARCHIVE_RESULTS,
 				publishTableName);			
 						
 			updateLastCompletedWorkState(
@@ -372,7 +372,7 @@ final class PGSQLPublishWorkflowManager
 			StringBuilder temporaryResultsDirectoryPath = new StringBuilder();
 			temporaryResultsDirectoryPath.append(loadJobDirectoryPath.toString());
 			temporaryResultsDirectoryPath.append(File.separator);
-			temporaryResultsDirectoryPath.append(RIFDataLoadingResultTheme.ARCHIVE_RESULTS.getSubDirectoryName());
+			temporaryResultsDirectoryPath.append(DataLoadingResultTheme.ARCHIVE_RESULTS.getSubDirectoryName());
 			File temporaryResultsDirectory 
 				= new File(temporaryResultsDirectoryPath.toString());
 			FileUtils.copyDirectory(temporaryResultsDirectory, exportDirectory);

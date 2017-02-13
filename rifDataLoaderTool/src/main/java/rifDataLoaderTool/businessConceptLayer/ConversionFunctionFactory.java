@@ -54,7 +54,7 @@ import java.util.HashMap;
  *
  */
 
-public class RIFConversionFunctionFactory {
+public class ConversionFunctionFactory {
 
 	// ==========================================
 	// Section Constants
@@ -63,21 +63,21 @@ public class RIFConversionFunctionFactory {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private HashMap<String, RIFConversionFunction> functionFromName;
+	private HashMap<String, ConversionFunction> functionFromName;
 	
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	private RIFConversionFunctionFactory() {
-		functionFromName = new HashMap<String, RIFConversionFunction>();
+	private ConversionFunctionFactory() {
+		functionFromName = new HashMap<String, ConversionFunction>();
 	}
 	
-	public static RIFConversionFunctionFactory newInstance() {
+	public static ConversionFunctionFactory newInstance() {
 
-		RIFConversionFunctionFactory factory
-			= new RIFConversionFunctionFactory();
+		ConversionFunctionFactory factory
+			= new ConversionFunctionFactory();
 		
 		/*
 		 * Function: age_sex_group_converter
@@ -88,8 +88,8 @@ public class RIFConversionFunctionFactory {
 		 * Returns:
 		 * age_sex_group : IntegerRIFDataType
 		 */
-		final RIFConversionFunction ageSexConversionFunction
-			= RIFConversionFunction.newInstance();
+		final ConversionFunction ageSexConversionFunction
+			= ConversionFunction.newInstance();
 		ageSexConversionFunction.setSupportsOneToOneConversion(false);
 		ageSexConversionFunction.setSchemaName(null);
 		ageSexConversionFunction.setFunctionName("convert_age_sex");
@@ -110,8 +110,8 @@ public class RIFConversionFunctionFactory {
 		 * Returns:
 		 * age_sex_group : IntegerRIFDataType
 		 */
-		final RIFConversionFunction dateFormattingFunction
-			= RIFConversionFunction.newInstance();
+		final ConversionFunction dateFormattingFunction
+			= ConversionFunction.newInstance();
 		dateFormattingFunction.setSchemaName(null);
 		dateFormattingFunction.setFunctionName("format_date");
 		dateFormattingFunction.setSupportsOneToOneConversion(true);
@@ -131,8 +131,8 @@ public class RIFConversionFunctionFactory {
 		 * Returns:
 		 * age : AgeRIFDataType
 		 */
-		final RIFConversionFunction extractAgeFromDateFunction
-			= RIFConversionFunction.newInstance();
+		final ConversionFunction extractAgeFromDateFunction
+			= ConversionFunction.newInstance();
 		extractAgeFromDateFunction.setSupportsOneToOneConversion(true);
 		extractAgeFromDateFunction.setSchemaName(null);
 		extractAgeFromDateFunction.setFunctionName("extract_age");
@@ -152,12 +152,12 @@ public class RIFConversionFunctionFactory {
 	
 	private void registerConvertFunction(
 		final String code,
-		final RIFConversionFunction rifConversionFunction) {
+		final ConversionFunction rifConversionFunction) {
 		
 		functionFromName.put(code, rifConversionFunction);		
 	}
 	
-	public RIFConversionFunction getRIFConvertFunction(
+	public ConversionFunction getRIFConvertFunction(
 		final String code) {
 		
 		return functionFromName.get(code);

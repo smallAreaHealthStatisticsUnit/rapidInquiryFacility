@@ -224,10 +224,10 @@ public class RIFDataTypeFactory {
 		ageRIFDataType.addValidationRule(validationRule);
 		*/
 		
-		ageRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_FUNCTION);
+		ageRIFDataType.setFieldValidationPolicy(FieldActionPolicy.USE_FUNCTION);
 		ageRIFDataType.setValidationFunctionName("is_valid_age");
 
-		ageRIFDataType.setFieldCleaningPolicy(RIFFieldActionPolicy.USE_FUNCTION);
+		ageRIFDataType.setFieldCleaningPolicy(FieldActionPolicy.USE_FUNCTION);
 		ageRIFDataType.setCleaningFunctionName("clean_age");
 		
 		return ageRIFDataType;
@@ -261,7 +261,7 @@ public class RIFDataTypeFactory {
 		doubleRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_RULES);		
 		*/
 		
-		doubleRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_FUNCTION);
+		doubleRIFDataType.setFieldValidationPolicy(FieldActionPolicy.USE_FUNCTION);
 		doubleRIFDataType.setValidationFunctionName("is_valid_double");
 		
 		return doubleRIFDataType;
@@ -280,8 +280,8 @@ public class RIFDataTypeFactory {
 				true);		
 		
 		icdCodeRIFDataType.setCleaningFunctionName("clean_icd_code");	
-		icdCodeRIFDataType.setFieldCleaningPolicy(RIFFieldActionPolicy.USE_FUNCTION);
-		icdCodeRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.DO_NOTHING);
+		icdCodeRIFDataType.setFieldCleaningPolicy(FieldActionPolicy.USE_FUNCTION);
+		icdCodeRIFDataType.setFieldValidationPolicy(FieldActionPolicy.DO_NOTHING);
 		
 		return icdCodeRIFDataType;
 	}
@@ -311,8 +311,8 @@ public class RIFDataTypeFactory {
 		validationRule.setDescription(validationRuleDescription1);
 		
 		validationRule.setValidValue("^(19|20)\\d{2}$");
-		yearRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_RULES);
-		yearRIFDataType.setFieldCleaningPolicy(RIFFieldActionPolicy.DO_NOTHING);		
+		yearRIFDataType.setFieldValidationPolicy(FieldActionPolicy.USE_RULES);
+		yearRIFDataType.setFieldCleaningPolicy(FieldActionPolicy.DO_NOTHING);		
 		yearRIFDataType.addValidationRule(validationRule);
 		return yearRIFDataType;		
 	}
@@ -443,9 +443,9 @@ public class RIFDataTypeFactory {
 		sexRIFDataType.addCleaningRule(cleaningRule8);
 		
 		
-		sexRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_RULES);
+		sexRIFDataType.setFieldValidationPolicy(FieldActionPolicy.USE_RULES);
 		
-		sexRIFDataType.setFieldCleaningPolicy(RIFFieldActionPolicy.USE_RULES);		
+		sexRIFDataType.setFieldCleaningPolicy(FieldActionPolicy.USE_RULES);		
 
 		ValidationRule validationRule
 			= ValidationRule.newInstance();
@@ -484,7 +484,7 @@ public class RIFDataTypeFactory {
 		integerRIFDataType.addValidationRule(validationRule);
 		*/
 		
-		integerRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_FUNCTION);
+		integerRIFDataType.setFieldValidationPolicy(FieldActionPolicy.USE_FUNCTION);
 		integerRIFDataType.setValidationFunctionName("is_valid_integer");
 		
 		
@@ -506,8 +506,8 @@ public class RIFDataTypeFactory {
 		ValidationRule validationRule
 			= ValidationRule.newInstance();
 		validationRule.setValidValue("^(\\w+)");
-		textDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_RULES);
-		textDataType.setFieldCleaningPolicy(RIFFieldActionPolicy.DO_NOTHING);			
+		textDataType.setFieldValidationPolicy(FieldActionPolicy.USE_RULES);
+		textDataType.setFieldCleaningPolicy(FieldActionPolicy.DO_NOTHING);			
 		
 		return textDataType;
 	}
@@ -674,7 +674,7 @@ public class RIFDataTypeFactory {
 		
 		//String validationRegularExpression = "^(\\d+)";
 		//addValidationExpression(validationRegularExpression);
-		quintiliseDataType.setFieldValidationPolicy(RIFFieldActionPolicy.DO_NOTHING);		
+		quintiliseDataType.setFieldValidationPolicy(FieldActionPolicy.DO_NOTHING);		
 		
 		return quintiliseDataType;
 	}
@@ -704,9 +704,9 @@ public class RIFDataTypeFactory {
 				"^(\\w+)", 
 				true);
 
-		asciiTextRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_RULES);
+		asciiTextRIFDataType.setFieldValidationPolicy(FieldActionPolicy.USE_RULES);
 		asciiTextRIFDataType.addValidationRule(validationRule);	
-		asciiTextRIFDataType.setFieldCleaningPolicy(RIFFieldActionPolicy.DO_NOTHING);			
+		asciiTextRIFDataType.setFieldCleaningPolicy(FieldActionPolicy.DO_NOTHING);			
 
 		return asciiTextRIFDataType;
 	}
@@ -724,9 +724,9 @@ public class RIFDataTypeFactory {
 				description,
 				true);
 
-		ukPostalCodeRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_FUNCTION);
+		ukPostalCodeRIFDataType.setFieldValidationPolicy(FieldActionPolicy.USE_FUNCTION);
 		ukPostalCodeRIFDataType.setValidationFunctionName("is_valid_uk_postal_code");
-		ukPostalCodeRIFDataType.setFieldCleaningPolicy(RIFFieldActionPolicy.USE_FUNCTION);
+		ukPostalCodeRIFDataType.setFieldCleaningPolicy(FieldActionPolicy.USE_FUNCTION);
 		ukPostalCodeRIFDataType.setCleaningFunctionName("clean_uk_postal_code");		
 		
 		return ukPostalCodeRIFDataType;
@@ -776,7 +776,7 @@ public class RIFDataTypeFactory {
 				description,
 				true);
 		
-		dateDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_RULES);
+		dateDataType.setFieldValidationPolicy(FieldActionPolicy.USE_RULES);
 		
 		dateDataType.setValidationRules(validationRules);	
 		

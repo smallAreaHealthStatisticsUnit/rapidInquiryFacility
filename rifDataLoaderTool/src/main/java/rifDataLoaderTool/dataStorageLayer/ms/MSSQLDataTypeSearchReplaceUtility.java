@@ -248,11 +248,11 @@ public class MSSQLDataTypeSearchReplaceUtility {
 		
 		RIFDataType rifDataType
 			= dataSetFieldConfiguration.getRIFDataType();
-		RIFFieldActionPolicy fieldCleaningPolicy
+		FieldActionPolicy fieldCleaningPolicy
 			= rifDataType.getFieldCleaningPolicy();
 
 		
-		if (fieldCleaningPolicy == RIFFieldActionPolicy.DO_NOTHING) {
+		if (fieldCleaningPolicy == FieldActionPolicy.DO_NOTHING) {
 			//just allow load field value to pass
 			
 			queryFormatter.addQueryPhrase(baseIndentationLevel, loadFieldName);
@@ -265,7 +265,7 @@ public class MSSQLDataTypeSearchReplaceUtility {
 				loadFieldName);
 */				
 		}
-		else if (fieldCleaningPolicy == RIFFieldActionPolicy.USE_RULES) {
+		else if (fieldCleaningPolicy == FieldActionPolicy.USE_RULES) {
 			/*
 			 * eg:
 			 *
@@ -309,7 +309,7 @@ public class MSSQLDataTypeSearchReplaceUtility {
 			queryFormatter.addQueryPhrase(baseIndentationLevel, "END AS ");
 			queryFormatter.addQueryPhrase(cleanFieldName);
 		}
-		else if (fieldCleaningPolicy == RIFFieldActionPolicy.USE_FUNCTION) {
+		else if (fieldCleaningPolicy == FieldActionPolicy.USE_FUNCTION) {
 			/*
 			 * eg: 
 			 * 
