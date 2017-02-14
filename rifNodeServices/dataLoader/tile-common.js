@@ -49,6 +49,7 @@ var map;
 var topojsonTileLayer;
 var baseLayer;
 var legend;
+var mouseoverPopup;
 
 /*
  * Function: 	scopeChecker()
@@ -586,8 +587,13 @@ function addTileLayer(methodFields) {
 //	consoleLog("geolevel data: " + JSON.stringify(geolevel, null, 0));
 	consoleLog("topojsonURL: " + topojsonURL);
 	
-	if (topojsonTileLayer) {
+	if (topojsonTileLayer && map) { // Remove topoJSON layer
 		map.removeLayer(topojsonTileLayer);
+	}
+		
+	if (mouseoverPopup && map) { // Remove old popup
+		map.closePopup(mouseoverPopup);
+		mouseoverPopup = null;
 	}
 	
 	if (L.version < "1.0.0") { // Leaflet 0.7 code
@@ -645,7 +651,7 @@ function addTileLayer(methodFields) {
 		});
 		topojsonTileLayer.on('load', function() {
 			consoleLog("Tile layer loaded; geolevel_id: " + methodFields.geolevel_id);
-			getAllMarkers();
+			addPopups();
 		});
 		map.addLayer(topojsonTileLayer);
 	}
@@ -802,17 +808,17 @@ function addGridLayer() {
 } // End of addGridLayer()
 
 /*
- * Function:	getAllMarkers()
+ * Function:	addPopups()
  * Parameters:	None
  * Returns:		Nothing
  * Description: Get all the markers at once; find the point geospatial types
  */
-function getAllMarkers() {
+function addPopups() {
 
     var allMarkersObjArray = []; // for marker objects
-    var allMarkersGeoJsonArray = []; // for readable geoJson markers
+		
+    consoleLog("addPopups() start");
 	
-    consoleLog("getAllMarkers() start");
     $.each(map._layers, function (ml) {
 
         if (map._layers[ml].feature) {
@@ -820,6 +826,7 @@ function getAllMarkers() {
 			allMarkersObjArray.push(this);
 			var geojson=this.toGeoJSON();
 			var popop=[];
+			var latlng;
 			for (var key in geojson.properties) {
 				if (key == "geographic_centroid") {
 					if (typeof geojson.properties[key] == "object") {
@@ -828,9 +835,15 @@ function getAllMarkers() {
 							geojson.properties[key].coordinates) {
 							popop.push("<tr><td>" + (key) + ": </td><td>" +
 								JSON.stringify(geojson.properties[key].coordinates, null, 2) + "</td></tr>");
+							latlng=L.latLng({
+								lat: geojson.properties[key].coordinates[1], 
+								lng: geojson.properties[key].coordinates[0]
+							});
+//							popop.push("<tr><td>latlng: </td><td>" +
+//								JSON.stringify(latlng, null, 2) + "</td></tr>");
 						}
 						else {
-							errorPopup("getAllMarkers() Unknown geojson.properties[key] JSON: " +
+							errorPopup("addPopups() Unknown geojson.properties[key] JSON: " +
 								JSON.stringify(geojson.properties[key]) + 
 								"; for: " + JSON.stringify(geojson.properties, null, 2));	
 						}
@@ -845,25 +858,29 @@ function getAllMarkers() {
 								geographic_centroid.coordinates) {
 								popop.push("<tr><td>" + (key) + ": </td><td>" +
 									JSON.stringify(geographic_centroid.coordinates, null, 2) + "</td></tr>");
-								errorPopup("getAllMarkers() Had to parse stringified JSON: " +
+									latlng=L.latLng({
+										lat: geographic_centroid.coordinates[1], 
+										lng: geographic_centroid.coordinates[0]
+									});	
+									errorPopup("addPopups() Had to parse stringified JSON: " +
 									JSON.stringify(geographic_centroid) + 
 									"; for: " + JSON.stringify(geojson.properties, null, 2));
 							}
 							else {
-								errorPopup("getAllMarkers() Unknown geographic_centroid JSON: " +
+								errorPopup("addPopups() Unknown geographic_centroid JSON: " +
 									JSON.stringify(geographic_centroid) + 
 									"; for: " + JSON.stringify(geojson.properties, null, 2));									
 							}
 						}
 						catch (e) {
-							errorPopup("getAllMarkers() cannot parse geographic_centroid: " + e.message, 
+							errorPopup("addPopups() cannot parse geographic_centroid: " + e.message, 
 								"geojson.properties[key]: " + 
 								geojson.properties[key] + 
 								"; for: " + JSON.stringify(geojson.properties, null, 2));
 						}
 					}	
 					else {
-						errorPopup("getAllMarkers()No centroid for: " + JSON.stringify(geojson.properties, null, 2));	
+						errorPopup("addPopups()No centroid for: " + JSON.stringify(geojson.properties, null, 2));	
 					}					
 				}
 				else {
@@ -871,58 +888,17 @@ function getAllMarkers() {
 				}		
 			} // End of for loop
 			var html = '<table id="popups">' + popop.join("") + '</table>';
-			this.bindPopup(html);
-//            allMarkersGeoJsonArray.push(geojson);
+			
+//			this.bindPopup(html);
+			this.on('click', function(e) { // Create popup dynamically
+		  //open popup;
+				mouseoverPopup = L.popup()
+					.setLatLng(latlng || e.latlng) 
+					.setContent(html)
+					.openOn(map);
+				});	
         }
     })
 	
-    consoleLog("getAllMarkers() added: " + allMarkersGeoJsonArray.length + " popups");
-	return;
-
-	for (var i=0; i<allMarkersGeoJsonArray.length; i++) {
-		
-		var geoTypes={};	
-		
-//		if (i == 0) {
-//			consoleLog("getAllMarkers() allMarkersGeoJsonArray[0]: " + 
-//				JSON.stringify(allMarkersGeoJsonArray[i]).substring(1, 400));
-//		}
-
-/*
-+11: getAllMarkers() gid: 7; x: 0; y: 1; points: 0; dimensions: 2;
-JSON: "type":"Feature","id":7,
-"properties":{"gid":7,"area_id":"01779789","name":"Michigan","x":0,"y":1,"block":1,"CB_2014_US_STATE_500K":"01779789"},
-"geometry":{"geometries":[
-{"type":"Point","coordinates":[-83.19802550495056,42.03458311057784]},
-{"type":"Polygon","coordinates":[[[-83.23392183248332,45.056254727129456],[-83.19802550495056,45.05100876946183],[-83.19802550495056,45.045762811794205],[-83.19 */	
-
-		if (allMarkersGeoJsonArray[i].geometry.geometries) {
-			for (var j=0; j<allMarkersGeoJsonArray[i].geometry.geometries.length; j++) {
-				if (geoTypes[allMarkersGeoJsonArray[i].geometry.geometries[j].type] == undefined) {
-					geoTypes[allMarkersGeoJsonArray[i].geometry.geometries[j].type]=1;			
-				}
-				else {
-					geoTypes[allMarkersGeoJsonArray[i].geometry.geometries[j].type]++;
-				}
-			}
-		}
-		else if (allMarkersGeoJsonArray[i].geometry && allMarkersGeoJsonArray[i].geometry.type) {
-			if (geoTypes[allMarkersGeoJsonArray[i].geometry.type] == undefined) {
-				geoTypes[allMarkersGeoJsonArray[i].geometry.type]=1;			
-			}
-			else {
-				geoTypes[allMarkersGeoJsonArray[i].geometry.type]++;
-			}
-		}
-		if (geoTypes == undefined) {		
-			consoleLog("getAllMarkers() gid: " + allMarkersGeoJsonArray[i].properties.gid + 
-				"; x: " + allMarkersGeoJsonArray[i].properties.x + 
-				"; y: " + allMarkersGeoJsonArray[i].properties.y +
-				";\nJSON: " + JSON.stringify(allMarkersGeoJsonArray[i]).substring(1, 200));
-		}
-		consoleLog("getAllMarkers() gid: " + allMarkersGeoJsonArray[i].properties.gid + 
-			"; x: " + allMarkersGeoJsonArray[i].properties.x + 
-			"; y: " + allMarkersGeoJsonArray[i].properties.y +
-			"; geoTypes: " + JSON.stringify(geoTypes));			
-	}
+    consoleLog("addPopups() added: " + allMarkersGeoJsonArray.length + " popups");
 }
