@@ -267,7 +267,7 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 	
 	var endCallBack = function endCallBack(err) {
 		if (err) {
-			winston.log("error", "Exit due to SQL server error: %", err.message, err);
+			winston.log("error", "mssqlTileMaker.js exit due to SQL server error: %", err.message, err);
 			process.exit(1);		
 		}
 
@@ -280,7 +280,7 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 		var end = new Date().getTime();
 		var elapsedTime=(end - start)/1000; // in S
 		
-		winston.log("info", "Exit: OK;  took: " + elapsedTime + "s; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
+		winston.log("info", "mssqlTileMaker.js exit: OK;  took: " + elapsedTime + "s; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
 		process.exit(0);
 	}
 

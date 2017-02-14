@@ -436,7 +436,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 
-				'areaid', 'areaname', 'block'];
+				'areaid', 'areaname', 'block', 'geographic_centroid'];
 			for (var key in row) {
 				if (usedAready.indexOf(key) ==	-1) { // Not tile_id, geolevel_id, zoomlevel, optimised_wkt, areaid, areaName
 					// Already added: areaName, areaID
@@ -596,7 +596,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 
-				'areaid', 'areaname', 'block'];
+				'areaid', 'areaname', 'block', 'geographic_centroid'];
 			for (var key in row) {
 				if (usedAready.indexOf(key) ==	-1 && 
 					this.geojson.features[(this.geojson.features.length-1)].properties[key] == undefined) { 
@@ -818,10 +818,9 @@ REFERENCE (from shapefile) {
 			"; tile_id: " + row.tile_id +
 			"; areaid: " + geojson.properties.areaid +
 			"; name: " + geojson.properties.name +
-			"; geographic_centroid: " + geojson.properties.geographic_centroid +
+			"; geographic_centroid: " + JSON.stringify(geographic_centroid) +
 			"; wkt len: " + wkt.length +
 			"; geojsonOK: " + geojsonOK);
-			
 		var tileSize=0;
 
 		if (tileArray.length == 0) { // First row in zoomlevel/geolevel combination
@@ -838,7 +837,9 @@ REFERENCE (from shapefile) {
 					geojsonTile.addFeature(row, geojson);	// Add geoJSON feature to collection
 					winston.log("debug", 'Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + 
 						'; add areaID: ' + row.areaid + ": " + 
-						geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["name"]);
+						geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties["name"] +
+						"; properties: " + 
+						JSON.stringify(geojsonTile.geojson.features[(geojsonTile.geojson.features.length-1)].properties));
 				}
 				else {
 					winston.log("warn", 'Tile ' + geojsonTile.id + ': "' + geojsonTile.tileId + 

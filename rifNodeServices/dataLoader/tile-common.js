@@ -835,12 +835,9 @@ function getAllMarkers() {
 								"; for: " + JSON.stringify(geojson.properties, null, 2));	
 						}
 					}
-					else if (geojson.properties[key]) { // Parse: why?
+					else if (geojson.properties[key]) { // Parse: caused by bug in tileMaker
 						var geographic_centroid=geojson.properties[key];
-						consoleLog("getAllMarkers() Had to parse stringified JSON: " +
-							JSON.stringify(geographic_centroid) + 
-							"; for: " + JSON.stringify(geojson.properties, null, 2));
-									
+						
 						try {
 							geographic_centroid=JSON.parse(geojson.properties[key]);
 							if (geographic_centroid.type && 
@@ -848,6 +845,9 @@ function getAllMarkers() {
 								geographic_centroid.coordinates) {
 								popop.push("<tr><td>" + (key) + ": </td><td>" +
 									JSON.stringify(geographic_centroid.coordinates, null, 2) + "</td></tr>");
+								errorPopup("getAllMarkers() Had to parse stringified JSON: " +
+									JSON.stringify(geographic_centroid) + 
+									"; for: " + JSON.stringify(geojson.properties, null, 2));
 							}
 							else {
 								errorPopup("getAllMarkers() Unknown geographic_centroid JSON: " +

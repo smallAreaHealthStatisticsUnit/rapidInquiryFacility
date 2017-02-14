@@ -274,7 +274,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 	
 	var endCallBack = function endCallBack(err) {
 		if (err) {
-			winston.log("error", "Exit due to error: " + err.message, err);
+			winston.log("error", "pgTileMaker.js exit due to error: " + err.message, err);
 			process.exit(1);		
 		}
 //		console.error(JSON.stringify(winston, null, 4));
@@ -285,7 +285,7 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 
 		var end = new Date().getTime();
 		var elapsedTime=(end - start)/1000; // in S		
-		winston.log("info", "Exit: OK; took: " + elapsedTime + "s; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
+		winston.log("info", "pgTileMaker.js exit: OK; took: " + elapsedTime + "s; " + (errors.length || 0) + " error(s); " + (messages.length || 0) + " messages(s)");
 		process.exit(0);
 	}
 	

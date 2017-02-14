@@ -277,12 +277,13 @@ topology: 1579 arcs, 247759 points
 		myPropertyTransform=function myPropertyTransform(feature) {
 			var propertyTransform = {};
 			for (var i=0; i<dbf_fields.length; i++) {
-				propertyTransform[dbf_fields[i]]=feature.properties[dbf_fields[i]];
+				propertyTransform[dbf_fields[i].toUpperCase()]=feature.properties[dbf_fields[i]];
 			}
 			return propertyTransform;
 		}	
 		topojson_options["property-transform"]=myPropertyTransform;
-		response.message+="; property-transform enabled (dbf_fields only)";
+		response.message+="; property-transform enabled (dbf_fields only)" + 
+			JSON.stringify(topojson_options["property-transform"], null, 4);
 	}
 	else {
 		response.message+="; property-transform disabled";
