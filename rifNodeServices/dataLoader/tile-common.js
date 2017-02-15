@@ -493,20 +493,9 @@ function createMap(boundingBox, maxZoomlevel) {
 			baseLayer.redraw();
 		}
 		else {
-			consoleLog("Creating basemap...");															
-			baseLayer=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-				maxZoom: maxZoomlevel||11,
-				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-					'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-					'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
-				id: 'mapbox.light',
-				noWrap: true
-			});
-			baseLayer.addTo(map);	
-			L.control.scale().addTo(map); // Add scale	
-			consoleLog("Added baseLayer and scale to map");	
-			
-			
+			consoleLog("Creating basemap...");		
+			addBaseLayers(maxZoomlevel);			
+					
 			if (L.version >= "1.0.0") { // Leaflet 0.7 code
 //				addGridLayer(); 	// Add grid layer Leaflet 1.0+
 			}
@@ -543,10 +532,101 @@ function createMap(boundingBox, maxZoomlevel) {
 } // End of createMap()
 
 /*
+ * Function: 	addBaseLayers()
+ * Parameters: 	maxZoomlevel
+ * Returns: 	Nothing
+ * Description:	Add baselayers
+ */
+function addBaseLayers(maxZoomlevel) {
+	
+	L.control.scale({position: 'topleft'}).addTo(map); // Add scale	
+	
+	var roadMutant = L.gridLayer.googleMutant({
+		maxZoom: maxZoomlevel||11,
+		type:'roadmap'
+	});
+
+	var satMutant = L.gridLayer.googleMutant({
+		maxZoom: maxZoomlevel||11,
+		type:'satellite'
+	});
+
+	var terrainMutant = L.gridLayer.googleMutant({
+		maxZoom: maxZoomlevel||11,
+		type:'terrain'
+	});
+
+	var hybridMutant = L.gridLayer.googleMutant({
+		maxZoom: maxZoomlevel||11,
+		type:'hybrid'
+	});
+/*	
+	var locality = L.gridLayer.googleMutant({
+		maxZoom: maxZoomlevel||11,
+		type:'administrative.locality'
+	}).addTo(map);
+ */	
+	var osmLight=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
+		maxZoom: maxZoomlevel||11,
+		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
+		id: 'mapbox.light',
+		noWrap: true
+	}).addTo(map);
+	
+	var osmStreets=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
+		maxZoom: maxZoomlevel||11,
+		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
+		id: 'mapbox.streets',
+		noWrap: true
+	});	
+	
+/*
+	var styleMutant = L.gridLayer.googleMutant({
+		styles: [
+			{elementType: 'labels', stylers: [{visibility: 'off'}]},
+			{featureType: 'water', stylers: [{color: '#444444'}]},
+			{featureType: 'landscape', stylers: [{color: '#eeeeee'}]},
+			{featureType: 'road', stylers: [{visibility: 'off'}]},
+			{featureType: 'poi', stylers: [{visibility: 'off'}]},
+			{featureType: 'transit', stylers: [{visibility: 'off'}]},
+			{featureType: 'administrative', stylers: [{visibility: 'off'}]},
+			{featureType: 'administrative.locality', stylers: [{visibility: 'off'}]}
+		],
+		maxZoom: maxZoomlevel||11,
+		type:'roadmap'
+	}); */
+
+	L.control.layers({
+		"OSM Light": osmLight,
+		"OSM Streets": osmStreets,
+		"Google Roadmap": roadMutant,
+		"Google Aerial": satMutant,
+		"Google Terrain": terrainMutant,
+		"Google Hybrid": hybridMutant
+//		Locality: locality
+//		Styles: styleMutant 
+	}, {}, {
+		collapsed: false
+	}).addTo(map);
+	
+	baseLayer = L.gridLayer({
+		attribution: 'Grid Layer'
+	});
+	
+	map.addLayer(baseLayer);
+	
+	consoleLog("Added baseLayer and scale to map");	
+ }
+ 
+/*
  * Function: 	addTileLayer()
  * Parameters: 	methodFields object
  * Returns: 	tile layer
- * Description:	Adyerd tile la map,; remove oold layer if required
+ * Description:	Add tile layer to map; remove old layer if required
  */
 function addTileLayer(methodFields) {
 	if (map == undefined) {
@@ -556,14 +636,14 @@ function addTileLayer(methodFields) {
     var style = {
         "clickable": true,
         "color": "#00D",
-        "fillColor": "#00D",
+        "fillColor": "#81aefa",
         "weight": 1.0,
-        "opacity": 0.3,
-        "fillOpacity": 0.2
+        "opacity": 0.7,
+        "fillOpacity": 0.02
     };
-    var hoverStyle = {
-        "fillOpacity": 0.5
-    };
+//    var hoverStyle = {
+//       "fillOpacity": 0.5
+//    };
 /*
  * Example URL:
  *
@@ -643,13 +723,13 @@ function addTileLayer(methodFields) {
 		topojsonTileLayer = new L.topoJsonGridLayer(topojsonURL, {
 				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
                 layers: {
-                    'geolevel': {
+                   default: {
 						style: style 
-					}
+					} 
                 }
-			}/*, {			
+			}, {			
 				style: style 
-			} */
+			} 
 		);
 //		topojsonTileLayer.setOpacity(0.3);
 		topojsonTileLayer.on('tileerror', function(error, tile) {
