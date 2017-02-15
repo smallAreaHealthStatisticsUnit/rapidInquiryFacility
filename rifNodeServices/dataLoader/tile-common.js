@@ -50,6 +50,7 @@ var topojsonTileLayer;
 var baseLayer;
 var legend;
 var mouseoverPopup;
+var topojsonTileLayerCount=0;
 
 /*
  * Function: 	scopeChecker()
@@ -597,6 +598,8 @@ function addTileLayer(methodFields) {
 	}
 	
 	if (L.version < "1.0.0") { // Leaflet 0.7 code
+		topojsonTileLayerCount++;
+
 		topojsonTileLayer = new L.TileLayer.GeoJSON(topojsonURL, {
 				clipTiles: true,
 				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
@@ -635,6 +638,8 @@ function addTileLayer(methodFields) {
 		geolevel.output="TopoJSON";
 		topojsonURL+='&output=topojson';
 
+		topojsonTileLayerCount++;
+		
 		topojsonTileLayer = new L.topoJsonGridLayer(topojsonURL, {
 				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
                 layers: {
@@ -651,9 +656,9 @@ function addTileLayer(methodFields) {
 			consoleLog("Error: " + error + " loading tile: " + tile);
 		});
 		topojsonTileLayer.on('load', function topojsonTileLayerLoad() {
-			consoleLog("Tile layer loaded; geolevel_id: " + methodFields.geolevel_id);
-			addPopups();
-			consoleLog("Add popups complete; geolevel_id: " + methodFields.geolevel_id);
+			consoleLog("Tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id);
+			addPopups(topojsonTileLayerCount);
+			consoleLog("Add popups complete for tile layer " + topojsonTileLayerCount + " ; geolevel_id: " + methodFields.geolevel_id);
 		});
 		map.addLayer(topojsonTileLayer);
 	}
@@ -811,15 +816,15 @@ function addGridLayer() {
 
 /*
  * Function:	addPopups()
- * Parameters:	None
+ * Parameters:	topojsonTileLayerCount
  * Returns:		Nothing
  * Description: Get all the geojson layers from map; a mouseclick dynamic popups. Check geometry types
  */
-function addPopups() {
+function addPopups(myTopojsonTileLayerCount) {
 
     var allMarkersObjArray = []; // for marker objects
-		
-    consoleLog("addPopups() start");
+	var newLayerFlagged=false;
+    consoleLog("addPopups() tile layer " + topojsonTileLayerCount + " start");
     $.each(map._layers, function (ml) { // JQuery element iteratpor
         if (map._layers[ml].feature) {
 			allMarkersObjArray.push(this);
@@ -827,12 +832,21 @@ function addPopups() {
 	});
 	
 	var errorArray = [];
-    consoleLog("addPopups() processing " + allMarkersObjArray.length + " layers");	
+    consoleLog("addPopups() tile layer " + topojsonTileLayerCount + " processing " + allMarkersObjArray.length + " layers");	
 	async.forEachOfSeries(allMarkersObjArray, 
 		function layerSeries(value, i, layerSeriesCallback) { // Processing code
 			var geojson=value.toGeoJSON();
 			if (geojson == undefined) {
 				errorArray.push("addPopups() No geoJSON for layer: " + i);
+				layerSeriesCallback();
+			}
+			if (myTopojsonTileLayerCount != topojsonTileLayerCount) {
+				if (newLayerFlagged == false) {
+					consoleError("addPopups() tile layer " + topojsonTileLayerCount + " new layer detected; quit processing " + 
+						allMarkersObjArray.length + " layers")
+						newLayerFlagged=true;
+				}
+				layerSeriesCallback();
 			}
 			else {
 				var popop=[];
@@ -896,55 +910,57 @@ function addPopups() {
 					else {
 						popop.push("<tr><td>" + (key) + ": </td><td>" + geojson.properties[key] + "</td></tr>");	
 					}		
-				}
-			} // End of for loop
-			var html = '<table id="popups">' + popop.join("") + '</table>';
-			
-//			consoleLog("geoJSON popup for layer " + i + ": " + html);
-//			value.bindPopup(html);			// Non dynamic popup
-			value.on('click', function(e) { // Create popup dynamically. Omnly one at a time is allowed by default
-				if (mouseoverPopup && map) { // Remove old popup
-					map.closePopup(mouseoverPopup);
-					mouseoverPopup = null;
-				}
-				mouseoverPopup = L.popup()
-					.setLatLng(latlng || e.latlng) 
-					.setContent(html)
-					.openOn(map);
-				});	
-	
-// Scan geometry types: reject LineString, MultiPoint, Point etc	
-			if (geojson.geometry.geometries) {
-				for (var j=0; j<geojson.geometry.geometries.length; j++) {
+				} // End of for loop
+				
+				var html = '<table id="popups">' + popop.join("") + '</table>';
+				
+	//			consoleLog("geoJSON popup for layer " + i + ": " + html);
+	//			value.bindPopup(html);			// Non dynamic popup
+				value.on('click', function(e) { // Create popup dynamically. Omnly one at a time is allowed by default
+					if (mouseoverPopup && map) { // Remove old popup
+						map.closePopup(mouseoverPopup);
+						mouseoverPopup = null;
+					}
+					mouseoverPopup = L.popup()
+						.setLatLng(latlng || e.latlng) 
+						.setContent(html)
+						.openOn(map);
+					});	
+		
+	// Scan geometry types: reject LineString, MultiPoint, Point etc	
+				if (geojson.geometry.geometries) {
+					for (var j=0; j<geojson.geometry.geometries.length; j++) {
 
-					if (geoTypes[geojson.geometry.geometries[j].type] != "Polygon" && geoTypes[geojson.geometry.geometries[j].type] != "MultiPolygon") {
-							errorArray.push("addPopups() Invalid  multi geometry type: " + 
-								geoTypes[geojson.geometry.geometries[j].type] + 
-								"; for: " + JSON.stringify(geojson.properties, null, 2));	
-					}	
+						if (geojson.geometry.geometries[j].type != "Polygon" && 
+						    geojson.geometry.geometries[j].type != "MultiPolygon") {
+								errorArray.push("addPopups() Invalid  multi geometry type: " + 
+									geojson.geometry.geometries[j].type + 
+									"; for: " + JSON.stringify(geojson.properties, null, 2));	
+						}	
+					}
 				}
-			}
-			else if (geojson.geometry && geojson.geometry.type) {
-				if (geojson.geometry.type != "Polygon" && geojson.geometry.type != "MultiPolygon") {
-					errorArray.push("addPopups() Invalid  geometry type: " + geojson.geometry.type + 
-						"; for: " + JSON.stringify(geojson.properties, null, 2));	
+				else if (geojson.geometry && geojson.geometry.type) {
+					if (geojson.geometry.type != "Polygon" && geojson.geometry.type != "MultiPolygon") {
+						errorArray.push("addPopups() Invalid  geometry type: " + geojson.geometry.type + 
+							"; for: " + JSON.stringify(geojson.properties, null, 2));	
+					}
+				}	
+				
+				if (errorArray.length == 0) {
+					layerSeriesCallback(); // Causing "too much recursion" error in Mozilla
 				}
-			}	
-			
-			if (errorArray.length == 0) {
-				layerSeriesCallback();
-			}
-			else {
-				layerSeriesCallback(new Error("addPopups(): " + errorArray.length + " error(s) adding: " + 
-					allMarkersObjArray.length + " dynamic popups"));
-			}				
+				else {
+					layerSeriesCallback(new Error("addPopups() tile layer " + topojsonTileLayerCount + ": " + errorArray.length + " error(s) adding: " + 
+						allMarkersObjArray.length + " dynamic popups"));
+				}			
+			} 	
         }, // End of layerSeries()
 		function layerSeriesEnd(err) { //  Callback	
 			if (err) {
 				errorPopup(err.message, "<pre>" + errorArray.join("\n") + "</pre>");
 			}
 			else {			
-				consoleLog("addPopups() added: " + allMarkersObjArray.length + " dynamic popups; no errors");			
+				consoleLog("addPopups() tile layer " + topojsonTileLayerCount + " added: " + allMarkersObjArray.length + " dynamic popups; no errors");			
 			}
 		} // End of layerSeriesEnd()
 	); // End of async.forEachOfSeries()
