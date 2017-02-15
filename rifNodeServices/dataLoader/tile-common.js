@@ -634,6 +634,7 @@ function addTileLayer(methodFields) {
 	else { // Leadflet 1.0 code - uses topoJSON
 		geolevel.output="TopoJSON";
 		topojsonURL+='&output=topojson';
+
 		topojsonTileLayer = new L.topoJsonGridLayer(topojsonURL, {
 				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
                 layers: {
@@ -649,9 +650,10 @@ function addTileLayer(methodFields) {
 		topojsonTileLayer.on('tileerror', function(error, tile) {
 			consoleLog("Error: " + error + " loading tile: " + tile);
 		});
-		topojsonTileLayer.on('load', function() {
+		topojsonTileLayer.on('load', function topojsonTileLayerLoad() {
 			consoleLog("Tile layer loaded; geolevel_id: " + methodFields.geolevel_id);
 			addPopups();
+			consoleLog("Add popups complete; geolevel_id: " + methodFields.geolevel_id);
 		});
 		map.addLayer(topojsonTileLayer);
 	}
@@ -811,94 +813,140 @@ function addGridLayer() {
  * Function:	addPopups()
  * Parameters:	None
  * Returns:		Nothing
- * Description: Get all the markers at once; find the point geospatial types
+ * Description: Get all the geojson layers from map; a mouseclick dynamic popups. Check geometry types
  */
 function addPopups() {
 
     var allMarkersObjArray = []; // for marker objects
 		
     consoleLog("addPopups() start");
-	
-    $.each(map._layers, function (ml) {
-
+    $.each(map._layers, function (ml) { // JQuery element iteratpor
         if (map._layers[ml].feature) {
-
 			allMarkersObjArray.push(this);
-			var geojson=this.toGeoJSON();
-			var popop=[];
-			var latlng;
-			for (var key in geojson.properties) {
-				if (key == "geographic_centroid") {
-					if (typeof geojson.properties[key] == "object") {
-						if (geojson.properties[key].type && 
-						    geojson.properties[key].type == "Point" && 
-							geojson.properties[key].coordinates) {
-							popop.push("<tr><td>" + (key) + ": </td><td>" +
-								JSON.stringify(geojson.properties[key].coordinates, null, 2) + "</td></tr>");
-							latlng=L.latLng({
-								lat: geojson.properties[key].coordinates[1], 
-								lng: geojson.properties[key].coordinates[0]
-							});
-//							popop.push("<tr><td>latlng: </td><td>" +
-//								JSON.stringify(latlng, null, 2) + "</td></tr>");
-						}
-						else {
-							errorPopup("addPopups() Unknown geojson.properties[key] JSON: " +
-								JSON.stringify(geojson.properties[key]) + 
-								"; for: " + JSON.stringify(geojson.properties, null, 2));	
-						}
-					}
-					else if (geojson.properties[key]) { // Parse: caused by bug in tileMaker
-						var geographic_centroid=geojson.properties[key];
-						
-						try {
-							geographic_centroid=JSON.parse(geojson.properties[key]);
-							if (geographic_centroid.type && 
-								geographic_centroid.type == "Point" && 
-								geographic_centroid.coordinates) {
+		}	
+	});
+	
+	var errorArray = [];
+    consoleLog("addPopups() processing " + allMarkersObjArray.length + " layers");	
+	async.forEachOfSeries(allMarkersObjArray, 
+		function layerSeries(value, i, layerSeriesCallback) { // Processing code
+			var geojson=value.toGeoJSON();
+			if (geojson == undefined) {
+				errorArray.push("addPopups() No geoJSON for layer: " + i);
+			}
+			else {
+				var popop=[];
+				var latlng;
+				for (var key in geojson.properties) { // Process properties
+					if (key == "geographic_centroid") {
+						if (typeof geojson.properties[key] == "object") {
+							if (geojson.properties[key].type && 
+								geojson.properties[key].type == "Point" && 
+								geojson.properties[key].coordinates) {
 								popop.push("<tr><td>" + (key) + ": </td><td>" +
-									JSON.stringify(geographic_centroid.coordinates, null, 2) + "</td></tr>");
-									latlng=L.latLng({
-										lat: geographic_centroid.coordinates[1], 
-										lng: geographic_centroid.coordinates[0]
-									});	
-									errorPopup("addPopups() Had to parse stringified JSON: " +
-									JSON.stringify(geographic_centroid) + 
-									"; for: " + JSON.stringify(geojson.properties, null, 2));
+									JSON.stringify(geojson.properties[key].coordinates, null, 2) + "</td></tr>");
+								latlng=L.latLng({
+									lat: geojson.properties[key].coordinates[1], 
+									lng: geojson.properties[key].coordinates[0]
+								});
+	//							popop.push("<tr><td>latlng: </td><td>" +
+	//								JSON.stringify(latlng, null, 2) + "</td></tr>");
 							}
 							else {
-								errorPopup("addPopups() Unknown geographic_centroid JSON: " +
-									JSON.stringify(geographic_centroid) + 
-									"; for: " + JSON.stringify(geojson.properties, null, 2));									
+								errorArray.push("addPopups() Unknown geojson.properties[key] JSON: " +
+									JSON.stringify(geojson.properties[key]) + 
+									"; for: " + JSON.stringify(geojson.properties, null, 2));	
 							}
 						}
-						catch (e) {
-							errorPopup("addPopups() cannot parse geographic_centroid: " + e.message, 
-								"geojson.properties[key]: " + 
-								geojson.properties[key] + 
-								"; for: " + JSON.stringify(geojson.properties, null, 2));
-						}
-					}	
+						else if (geojson.properties[key]) { // Parse: caused by bug in tileMaker
+							var geographic_centroid=geojson.properties[key];
+							
+							try {
+								geographic_centroid=JSON.parse(geojson.properties[key]);
+								if (geographic_centroid.type && 
+									geographic_centroid.type == "Point" && 
+									geographic_centroid.coordinates) {
+									popop.push("<tr><td>" + (key) + ": </td><td>" +
+										JSON.stringify(geographic_centroid.coordinates, null, 2) + "</td></tr>");
+										latlng=L.latLng({
+											lat: geographic_centroid.coordinates[1], 
+											lng: geographic_centroid.coordinates[0]
+										});	
+										errorArray.push("addPopups() Had to parse stringified JSON: " +
+										JSON.stringify(geographic_centroid) + 
+										"; for: " + JSON.stringify(geojson.properties, null, 2));
+								}
+								else {
+									errorArray.push("addPopups() Unknown geographic_centroid JSON: " +
+										JSON.stringify(geographic_centroid) + 
+										"; for: " + JSON.stringify(geojson.properties, null, 2));									
+								}
+							}
+							catch (e) {
+								errorArray.push("addPopups() cannot parse geographic_centroid: " + e.message, 
+									"geojson.properties[key]: " + 
+									geojson.properties[key] + 
+									"; for: " + JSON.stringify(geojson.properties, null, 2));
+							}
+						}	
+						else {
+							errorArray.push("addPopups() No centroid for: " + JSON.stringify(geojson.properties, null, 2));	
+						}					
+					}
 					else {
-						errorPopup("addPopups()No centroid for: " + JSON.stringify(geojson.properties, null, 2));	
-					}					
+						popop.push("<tr><td>" + (key) + ": </td><td>" + geojson.properties[key] + "</td></tr>");	
+					}		
 				}
-				else {
-					popop.push("<tr><td>" + (key) + ": </td><td>" + geojson.properties[key] + "</td></tr>");	
-				}		
 			} // End of for loop
 			var html = '<table id="popups">' + popop.join("") + '</table>';
 			
-//			this.bindPopup(html);
-			this.on('click', function(e) { // Create popup dynamically
-		  //open popup;
+//			consoleLog("geoJSON popup for layer " + i + ": " + html);
+//			value.bindPopup(html);			// Non dynamic popup
+			value.on('click', function(e) { // Create popup dynamically. Omnly one at a time is allowed by default
+				if (mouseoverPopup && map) { // Remove old popup
+					map.closePopup(mouseoverPopup);
+					mouseoverPopup = null;
+				}
 				mouseoverPopup = L.popup()
 					.setLatLng(latlng || e.latlng) 
 					.setContent(html)
 					.openOn(map);
 				});	
-        }
-    })
 	
-    consoleLog("addPopups() added: " + allMarkersGeoJsonArray.length + " popups");
-}
+// Scan geometry types: reject LineString, MultiPoint, Point etc	
+			if (geojson.geometry.geometries) {
+				for (var j=0; j<geojson.geometry.geometries.length; j++) {
+
+					if (geoTypes[geojson.geometry.geometries[j].type] != "Polygon" && geoTypes[geojson.geometry.geometries[j].type] != "MultiPolygon") {
+							errorArray.push("addPopups() Invalid  multi geometry type: " + 
+								geoTypes[geojson.geometry.geometries[j].type] + 
+								"; for: " + JSON.stringify(geojson.properties, null, 2));	
+					}	
+				}
+			}
+			else if (geojson.geometry && geojson.geometry.type) {
+				if (geojson.geometry.type != "Polygon" && geojson.geometry.type != "MultiPolygon") {
+					errorArray.push("addPopups() Invalid  geometry type: " + geojson.geometry.type + 
+						"; for: " + JSON.stringify(geojson.properties, null, 2));	
+				}
+			}	
+			
+			if (errorArray.length == 0) {
+				layerSeriesCallback();
+			}
+			else {
+				layerSeriesCallback(new Error("addPopups(): " + errorArray.length + " error(s) adding: " + 
+					allMarkersObjArray.length + " dynamic popups"));
+			}				
+        }, // End of layerSeries()
+		function layerSeriesEnd(err) { //  Callback	
+			if (err) {
+				errorPopup(err.message, "<pre>" + errorArray.join("\n") + "</pre>");
+			}
+			else {			
+				consoleLog("addPopups() added: " + allMarkersObjArray.length + " dynamic popups; no errors");			
+			}
+		} // End of layerSeriesEnd()
+	); // End of async.forEachOfSeries()
+	
+} // End of addPopups()
