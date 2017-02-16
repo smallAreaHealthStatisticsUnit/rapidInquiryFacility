@@ -58,6 +58,30 @@ $(document).ready(function documentReady() {
 		});
 	}
 	
+	var name = $("#databaseSelect"),
+        geographySelect = $("#geographySelect"),
+        geolevelSelect = $("#geolevelSelect"),
+        allFields = $([]).add(name).add(geographySelect).add(geolevelSelect);
+		
+	var dialog = $("#dialog-form").dialog({
+        autoOpen: false,
+        height: 300,
+        width: 550,
+        modal: true,
+        buttons: {
+            "Select": function () {
+                dialog.dialog("close");
+            },
+            "Cancel": function () {
+                dialog.dialog("close");
+            }
+        },
+        close: function () {
+            form[0].reset();
+            allFields.removeClass("ui-state-error");
+        }
+    });
+	
 	setupTileViewer();
 	
 	addSelector("#databaseSelect", databaseSelectChange, $( "#databaseSelect" ).html(), 
@@ -74,34 +98,47 @@ $(document).ready(function documentReady() {
 		}
 	);	
 	
+	var form = dialog.find("form").on("submit", function (event) {
+        event.preventDefault();
+        selectFunc();
+    });
+
+    $("#select-button").button().on("click", function () {
+        dialog.dialog("open");
+    });
 });
 
     </script>
 <title>Tile Viewer</title>
 </head>
   <body id="tileviewerbody">
-    <div id="tileviewer">
+    <div id="dialog-form" title="Select database, geography and geolevel">
       <form id="dbSelect">
 	    <fieldset>
           <div id="dbSelector" class="ui-tabs ui-widget ui-widget-content ui-corner-all">	
-  	        <label id="databaseLabel" title="Choose database type to connect to" for="databaseType">Database:
-		      <select required id="databaseSelect" name="databaseType" form="dbSelect">
+  	        <label id="databaseLabel" class="labelClass" title="Choose database type to connect to" for="databaseType">Database:
+		      <select required id="databaseSelect" class="selectClass" name="databaseType" form="dbSelect">
 			     <option value="MSSQLServer" selected="selected">MS SQL Server</option>
 			     <option value="PostGres">Postgres</option>
 		  	  </select> 		
 		    </label>  
-			<label id="geographyLabel"  title="Choose geography to display" for="geographySelect">Geography:
-              <select required id="geographySelect" name="database" form="dbSelect">
+			</br>
+			<label id="geographyLabel" class="labelClass" title="Choose geography to display" for="geographySelect">Geography:
+              <select required id="geographySelect" class="selectClass" name="database" form="dbSelect">
 		  	  </select> 		
 		    </label> 
-			<label id="geolevelLabel"  title="Choose geolevel to display" for="geolevelSelect">Geolevel:
-              <select required id="geolevelSelect" name="database" form="dbSelect">
+			</br>
+			<label id="geolevelLabel" class="labelClass" title="Choose geolevel to display" for="geolevelSelect">Geolevel:
+              <select required id="geolevelSelect" class="selectClass" name="database" form="dbSelect">
 		  	  </select> 		
 		    </label> 
    	      </div>
 	    </fieldset>	
       </form>  
    	</div>
+	<div id="selectDiv">
+	  <button id="select-button">Select database, geography and geolevel</button>
+    </div>	
 	<div id="mapcontainer">
 	  <div id="map">
       </div>

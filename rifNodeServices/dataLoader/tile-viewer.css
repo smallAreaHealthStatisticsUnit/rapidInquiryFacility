@@ -1,28 +1,28 @@
-#tileviewer: {
-	font-size: smaller;	
+body {
+	font-size: smalller;
 }
-#databaseSelect {
+.selectClass {
     width: 190px; 
+	float: right; 
+}
+.labelClass {
+	float: left; 
+    width: 480px;
+}
+#selectDiv {
+	height: 40px;
 }
 #databaseSelect-button {
 	vertical-align : middle;
-}
-#geographySelect {
+	float: right; 
 }
 #geographySelect-button {
 	vertical-align: middle;
-}
-#geographyLabel {
-}
-#geolevelSelect {
-    width: 190px; 
 	float: right; 
 }
 #geolevelSelect-button {
 	vertical-align: middle;
-}
-#geolevelLabel {
- 	float: right; 
+	float: right; 
 }
 .legend {
 	text-align: left;
