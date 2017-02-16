@@ -124,11 +124,7 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		queryFormatter.addQueryPhrase(importFilePath);
 		queryFormatter.addQueryPhrase("' ");		
 		queryFormatter.addQueryPhrase("DELIMITER ',' CSV HEADER");	
-		
-		System.out.println("AbstractDLQuery copy 1===");
-		System.out.println("=" + queryFormatter.generateQuery()+"==");
-		System.out.println("AbstractDLQuery copy 2===");
-		
+				
 		return queryFormatter.generateQuery();
 	}
 	

@@ -4,6 +4,7 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.dataStorageLayer.pg.*;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
 
@@ -82,7 +83,8 @@ public class MSNumeratorScriptGenerator
 
 	public String generateScript(
 		final GeographyMetaData geographyMetaData,
-		final DataSetConfiguration numerator) {
+		final DataSetConfiguration numerator) 
+		throws RIFServiceException {
 
 		StringBuilder numeratorEntry = new StringBuilder();
 		
@@ -90,9 +92,9 @@ public class MSNumeratorScriptGenerator
 			numeratorEntry, 
 			geographyMetaData, 
 			numerator);
-		//addSchemaComments(
-		//	numeratorEntry, 
-		//	numerator);
+		addSchemaComments(
+			numeratorEntry, 
+			numerator);
 		createIndices(
 			numeratorEntry, 
 			numerator);
@@ -115,15 +117,17 @@ public class MSNumeratorScriptGenerator
 	private void createTableStructureAndImportCSV(
 		final StringBuilder denominatorEntry,
 		final GeographyMetaData geographyMetaData,
-		final DataSetConfiguration denominator) {
-		
-		//Part I: Make a create table statement 
-		PGSQLCreateTableQueryFormatter createTableQueryFormatter
-			= new PGSQLCreateTableQueryFormatter();
+		final DataSetConfiguration numerator) 
+		throws RIFServiceException {
 		
 		//The name the table will have in the schema 'pop'
 		String publishedDenominatorTableName
-			= denominator.getPublishedTableName();		
+			= numerator.getPublishedTableName();		
+	
+		//Make a create table statement 
+		PGSQLCreateTableQueryFormatter createTableQueryFormatter
+			= new PGSQLCreateTableQueryFormatter();
+
 		//Field properties that will help us construct the 
 		//create and copy into statements
 		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
@@ -133,13 +137,13 @@ public class MSNumeratorScriptGenerator
 
 		//Do we assume these field names will be in increasing order of 
 		//geographical resolution?
-		Geography geography = denominator.getGeography();
-		ArrayList<String> levelNames = geography.getLevelNames();
-		for (String levelName : levelNames) {
+		Geography geography = numerator.getGeography();
+		ArrayList<String> levelCodeNames = geography.getLevelCodeNames();
+		for (String levelCodeName : levelCodeNames) {
 			createTableQueryFormatter.addTextFieldDeclaration(
-				levelName, 
+				levelCodeName, 
 				20, 
-				false);		
+				false);			
 		}
 		createTableQueryFormatter.addTextFieldDeclaration("icd", false);
 		createTableQueryFormatter.addIntegerFieldDeclaration("total", false);
@@ -151,50 +155,16 @@ public class MSNumeratorScriptGenerator
 		ArrayList<String> fieldNames = new ArrayList<String>();
 		fieldNames.add("year");
 		fieldNames.add("age_sex_group");
-		for (String levelName : levelNames) {
-			fieldNames.add(levelName);
+		for (String levelCodeName : levelCodeNames) {
+			fieldNames.add(levelCodeName);
 		}
 		fieldNames.add("icd");
 		fieldNames.add("total");
-			
-		String filePath
-			= super.getPublishedFilePath(denominator) + ".csv";
 		
 		String bulkInsertStatement
-			= createBulkCopyStatement(
-				publishedDenominatorTableName,
-				fieldNames,
-				filePath);
+			= createBulkCopyStatement(numerator);
 
 		denominatorEntry.append(bulkInsertStatement);
-		
-		/*
-		SQLGeneralQueryFormatter importFromCSVQueryFormatter
-			= new SQLGeneralQueryFormatter();
-		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
-		importFromCSVQueryFormatter.addQueryPhrase(0, "COPY ");
-		importFromCSVQueryFormatter.addQueryPhrase("rif_data.");		
-		importFromCSVQueryFormatter.addQueryPhrase(publishedDenominatorTableName);		
-		importFromCSVQueryFormatter.addQueryPhrase(" (");
-		importFromCSVQueryFormatter.padAndFinishLine();
-		importFromCSVQueryFormatter.addQueryLine(1, "year,");
-		importFromCSVQueryFormatter.addQueryLine(1, "age_sex_group,");
-		for (String levelName : levelNames) {
-			importFromCSVQueryFormatter.addQueryLine(1, levelName.toLowerCase() + ",");
-		}
-		importFromCSVQueryFormatter.addQueryLine(1, "total)");
-		importFromCSVQueryFormatter.addQueryLine(0, "FROM ");
-		importFromCSVQueryFormatter.addQueryLine(1, "%L");
-		importFromCSVQueryFormatter.addQueryPhrase(0, "(FORMAT CSV, HEADER)', '");
-		
-		String filePath
-			= super.getPublishedFilePath(denominator);
-		importFromCSVQueryFormatter.addQueryPhrase(filePath);
-		importFromCSVQueryFormatter.addQueryPhrase(".csv");
-		importFromCSVQueryFormatter.addQueryPhrase("')");
-
-		denominatorEntry.append(importFromCSVQueryFormatter.generateQuery());
-		*/
 	}
 	
 	private void addEntryToRIF40Tables(
@@ -224,7 +194,7 @@ public class MSNumeratorScriptGenerator
 			queryFormatter.addQueryLine(1, "'SAHSULAND',");			
 		}
 		else {
-			queryFormatter.addQueryLine(1, "'" + healthTheme.getName().toUpperCase() + "',");			
+			queryFormatter.addQueryLine(1, "'" + healthTheme.getName() + "',");			
 		}
 		
 		queryFormatter.addQueryLine(1, "'" + dataSet.getPublishedTableName().toUpperCase() + "',");
@@ -326,6 +296,7 @@ public class MSNumeratorScriptGenerator
 		//Add comments to table
 		numeratorEntry.append(
 			createTableCommentQuery(
+				"rif_data",
 				publishedCovariateTableName, 
 				numerator.getDescription()));
 

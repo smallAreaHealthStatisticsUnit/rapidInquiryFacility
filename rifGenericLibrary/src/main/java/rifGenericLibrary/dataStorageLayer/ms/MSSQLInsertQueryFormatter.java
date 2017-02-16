@@ -2,9 +2,6 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
-
 /**
  *
  *
@@ -70,7 +67,7 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  */
 
 public final class MSSQLInsertQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -147,9 +144,8 @@ public final class MSSQLInsertQueryFormatter
 			addQueryPhrase("?");			
 		}
 
-		addQueryPhrase(");");
-		finishLine();
-		
+		addQueryPhrase(")");
+	
 		return super.generateQuery();		
 	}
 	

@@ -1,8 +1,5 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
-
 /**
  * Convenience class to generate query that drops a database
  *
@@ -67,7 +64,7 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  */
 
 public final class MSSQLCreateDatabaseQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants

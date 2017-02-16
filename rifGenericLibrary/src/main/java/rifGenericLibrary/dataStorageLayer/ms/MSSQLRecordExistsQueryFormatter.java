@@ -2,9 +2,6 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
-
 /**
  * Class designed to create a template for queries that resemble this example:
  * <code> 
@@ -80,7 +77,7 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  */
 
 public final class MSSQLRecordExistsQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -206,9 +203,6 @@ public final class MSSQLRecordExistsQueryFormatter
 				}
 			}		
 		}
-
-		addQueryPhrase(";");
-		finishLine();
 				
 		return super.generateQuery();
 	}

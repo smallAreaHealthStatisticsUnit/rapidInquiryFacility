@@ -117,15 +117,7 @@ public class PGDenominatorScriptGenerator
 		String publishedDenominatorTableName
 			= denominator.getPublishedTableName().toUpperCase();		
 		
-		/*
-		//Part I: Delete table if it already exists.
-		//See caution notes in deleteTable method.
-		deleteTable(
-			denominatorEntry, 
-			publishedDenominatorTableName);		
-		*/
-		
-		//Part I: Make a create table statement 
+		//Make a create table statement 
 		PGSQLCreateTableQueryFormatter createTableQueryFormatter
 			= new PGSQLCreateTableQueryFormatter();
 		
@@ -179,35 +171,6 @@ public class PGDenominatorScriptGenerator
 				filePath);
 
 		denominatorEntry.append(bulkInsertStatement);
-		
-		/*
-		SQLGeneralQueryFormatter importFromCSVQueryFormatter
-			= new SQLGeneralQueryFormatter();
-		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
-		importFromCSVQueryFormatter.addQueryPhrase(0, "COPY ");
-		importFromCSVQueryFormatter.addQueryPhrase("pop.");		
-		importFromCSVQueryFormatter.addQueryPhrase(publishedDenominatorTableName);		
-		importFromCSVQueryFormatter.addQueryPhrase(" (");
-		importFromCSVQueryFormatter.padAndFinishLine();
-		importFromCSVQueryFormatter.addQueryLine(1, "year,");
-		importFromCSVQueryFormatter.addQueryLine(1, "age_sex_group,");
-		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
-			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
-			importFromCSVQueryFormatter.addQueryLine(1, fieldName + ",");			
-		}
-		importFromCSVQueryFormatter.addQueryLine(1, "total)");
-		importFromCSVQueryFormatter.addQueryLine(0, "FROM ");
-		importFromCSVQueryFormatter.addQueryLine(1, "%L");
-		importFromCSVQueryFormatter.addQueryPhrase(0, "(FORMAT CSV, HEADER)', '");
-		
-		String filePath
-			= super.getPublishedFilePath(denominator);
-		importFromCSVQueryFormatter.addQueryPhrase(filePath);
-		importFromCSVQueryFormatter.addQueryPhrase(".csv");		
-		importFromCSVQueryFormatter.addQueryPhrase("')");
-
-		denominatorEntry.append(importFromCSVQueryFormatter.generateQuery());
-		*/
 	}
 	
 	private void addEntryToRIF40Tables(

@@ -127,6 +127,9 @@ public class PGDataLoadingScriptGenerator {
 
 			//Part I: Attempt to delete any old tables or table entries
 			//from the last time this script was run
+			addSectionHeading(
+				bufferedWriter, 
+				"Deleting data from previous run of this script");
 			String preliminaryCleanupScriptText
 				= deletionScriptGenerator.deleteExistingTableEntries(dataLoaderToolConfiguration);
 			bufferedWriter.write(preliminaryCleanupScriptText);
@@ -135,7 +138,7 @@ public class PGDataLoadingScriptGenerator {
 			
 
 			//Part III: Load health themes
-			addSectionHeading(bufferedWriter, "Health Themes");
+			addSectionHeading(bufferedWriter, "Adding Health Themes");
 			ArrayList<HealthTheme> healthThemes
 				= dataLoaderToolConfiguration.getHealthThemes();
 			for (HealthTheme healthTheme : healthThemes) {
@@ -146,7 +149,7 @@ public class PGDataLoadingScriptGenerator {
 				bufferedWriter.flush();
 			}
 
-			addSectionHeading(bufferedWriter, "Denominators");
+			addSectionHeading(bufferedWriter, "Adding Denominators");
 			
 			//Processing Denominators
 			GeographyMetaData geographyMetaData
@@ -154,8 +157,6 @@ public class PGDataLoadingScriptGenerator {
 			ArrayList<DataSetConfiguration> denominators
 				= dataLoaderToolConfiguration.getDenominatorDataSetConfigurations();
 			for (DataSetConfiguration denominator : denominators) {
-				HealthTheme healthTheme
-					= denominator.getHealthTheme();
 				addDataSetHeading(bufferedWriter, denominator.getDisplayName());
 				
 				String denominatorEntry
@@ -167,7 +168,7 @@ public class PGDataLoadingScriptGenerator {
 			}
 
 			//Processing Numerators
-			addSectionHeading(bufferedWriter, "Numerators");
+			addSectionHeading(bufferedWriter, "Adding Numerators");
 			ArrayList<DataSetConfiguration> numerators
 				= dataLoaderToolConfiguration.getNumeratorDataSetConfigurations();
 			for (DataSetConfiguration numerator : numerators) {
@@ -185,7 +186,7 @@ public class PGDataLoadingScriptGenerator {
 			}
 		
 			//Processing Covariates
-			addSectionHeading(bufferedWriter, "Covariates");
+			addSectionHeading(bufferedWriter, "Adding Covariates");
 			ArrayList<DataSetConfiguration> covariateConfigurations
 				= dataLoaderToolConfiguration.getCovariateDataSetConfigurations();
 			for (DataSetConfiguration covariateConfiguration : covariateConfigurations) {
@@ -240,12 +241,12 @@ public class PGDataLoadingScriptGenerator {
 		final String headingName) 
 		throws IOException {
 	
-		bufferedWriter.write("-- ===============================================");
+		bufferedWriter.write("-- =========================================================");
 		bufferedWriter.newLine();
-		bufferedWriter.write("-- Adding ");
+		bufferedWriter.write("-- ");
 		bufferedWriter.write(headingName);
 		bufferedWriter.newLine();
-		bufferedWriter.write("-- ===============================================");
+		bufferedWriter.write("-- =========================================================");
 		bufferedWriter.newLine();
 		bufferedWriter.newLine();
 	}

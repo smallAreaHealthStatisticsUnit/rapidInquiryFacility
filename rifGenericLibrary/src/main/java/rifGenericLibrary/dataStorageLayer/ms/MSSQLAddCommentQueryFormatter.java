@@ -1,6 +1,5 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -54,7 +53,7 @@ import java.sql.SQLException;
  *
  */
 
-public class MSSQLAddCommentQueryFormatter extends AbstractSQLQueryFormatter {
+public class MSSQLAddCommentQueryFormatter extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -92,6 +91,7 @@ public class MSSQLAddCommentQueryFormatter extends AbstractSQLQueryFormatter {
 	}
 	
 	//use a user-defined function to simplify adding/updating comments
+	@Override	
 	public String generateQuery()  {
 		
 		

@@ -1,7 +1,5 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
 /**
  *
  * <hr>
@@ -63,7 +61,7 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  */
 
 public final class MSSQLCountTableRowsQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -116,6 +114,7 @@ public final class MSSQLCountTableRowsQueryFormatter
 	// ==========================================
 	// Section Override
 	// ==========================================
+	@Override
 	public String generateQuery() {
 		StringBuilder query = new StringBuilder();
 		
@@ -139,7 +138,6 @@ public final class MSSQLCountTableRowsQueryFormatter
 		
 		query.append("FROM ");
 		query.append(convertCase(getSchemaTableName(tableName)));
-		
-		return query.toString();		
+		return super.generateQuery();
 	}
 }

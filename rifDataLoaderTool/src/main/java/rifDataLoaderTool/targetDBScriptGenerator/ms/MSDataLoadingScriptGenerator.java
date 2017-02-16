@@ -1,8 +1,13 @@
 package rifDataLoaderTool.targetDBScriptGenerator.ms;
 
 import rifDataLoaderTool.businessConceptLayer.*;
+
 import rifDataLoaderTool.fileFormats.DataLoaderToolConfigurationReader;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
+
+import rifDataLoaderTool.targetDBScriptGenerator.pg.*;
+
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,17 +69,21 @@ public class MSDataLoadingScriptGenerator {
 	public static void main(String[] args) {
 		try {
 			File sampleConfigFile
-				= new File("C:\\rifDataLoaderTool\\SAHSULAND_ConfigurationFile.xml");
+				= new File("C:\\data_loader_tool_demo\\RevisedSAHSUDemo.xml");
 			DataLoaderToolConfigurationReader reader	
 				 = new DataLoaderToolConfigurationReader();
 			reader.readFile(sampleConfigFile);
 			DataLoaderToolConfiguration dataLoaderToolConfiguration
 				= reader.getDataLoaderToolConfiguration();
-			MSDataLoadingScriptGenerator scriptGenerator
+			System.out.println("Number of denominators==" + dataLoaderToolConfiguration.getDenominatorDataSetConfigurations().size()+"==");
+			MSDataLoadingScriptGenerator msScriptGenerator
 				= new MSDataLoadingScriptGenerator();
-			File scriptFile
-				= new File("C:\\rifDataLoaderTool\\LoadItScript.sql");
-			scriptGenerator.writeScript(scriptFile, dataLoaderToolConfiguration);
+			PGDataLoadingScriptGenerator pgScriptGenerator
+				= new PGDataLoadingScriptGenerator();
+			File outputDirectory
+				= new File("C:\\data_loader_tool_demo\\generated_files");
+			msScriptGenerator.writeScript(outputDirectory, dataLoaderToolConfiguration);
+			pgScriptGenerator.writeScript(outputDirectory, dataLoaderToolConfiguration);
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -88,6 +97,7 @@ public class MSDataLoadingScriptGenerator {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private MSDeletionUtility deletionScriptGenerator;
 	private MSHealthThemeScriptGenerator healthThemeScriptGenerator;
 	private MSDenominatorScriptGenerator denominatorScriptGenerator;
 	private MSNumeratorScriptGenerator numeratorScriptGenerator;
@@ -98,6 +108,7 @@ public class MSDataLoadingScriptGenerator {
 	// ==========================================
 
 	public MSDataLoadingScriptGenerator() {
+		deletionScriptGenerator = new MSDeletionUtility();
 		healthThemeScriptGenerator = new MSHealthThemeScriptGenerator();
 		denominatorScriptGenerator = new MSDenominatorScriptGenerator();
 		numeratorScriptGenerator = new MSNumeratorScriptGenerator();
@@ -110,9 +121,9 @@ public class MSDataLoadingScriptGenerator {
 	// ==========================================
 	public void writeScript(
 		final File outputDirectory,
-		final DataLoaderToolConfiguration dataLoaderToolConfiguration) {
+		final DataLoaderToolConfiguration dataLoaderToolConfiguration) 
+		throws RIFServiceException {
 
-		
 		setOutputDirectory(outputDirectory);
 		
 		BufferedWriter bufferedWriter = null;
@@ -123,13 +134,21 @@ public class MSDataLoadingScriptGenerator {
 		
 			addBeginTransactionSection(bufferedWriter);
 
+			//Part I: Attempt to delete any old tables or table entries
+			//from the last time this script was run
+			addSectionHeading(
+				bufferedWriter, 
+				"Deleting data from previous run of this script");
+			String preliminaryCleanupScriptText
+				= deletionScriptGenerator.deleteExistingTableEntries(dataLoaderToolConfiguration);
+			bufferedWriter.write(preliminaryCleanupScriptText);
 			
-			//Part I: Pre-pend script for loading geospatial data
-		
+			//Part II: Pre-pend script for loading geospatial data
 
+			System.out.println("MS dl script 1");
 
-			//Part II: Load health themes
-			addSectionHeading(bufferedWriter, "Health Themes");
+			//Part III: Load health themes
+			addSectionHeading(bufferedWriter, "Adding Health Themes");
 			ArrayList<HealthTheme> healthThemes
 				= dataLoaderToolConfiguration.getHealthThemes();
 			for (HealthTheme healthTheme : healthThemes) {
@@ -140,7 +159,9 @@ public class MSDataLoadingScriptGenerator {
 				bufferedWriter.flush();
 			}
 
-			addSectionHeading(bufferedWriter, "Denominators");
+			addSectionHeading(bufferedWriter, "Adding Denominators");
+
+			System.out.println("MS dl script 2");
 			
 			//Processing Denominators
 			GeographyMetaData geographyMetaData
@@ -148,8 +169,6 @@ public class MSDataLoadingScriptGenerator {
 			ArrayList<DataSetConfiguration> denominators
 				= dataLoaderToolConfiguration.getDenominatorDataSetConfigurations();
 			for (DataSetConfiguration denominator : denominators) {
-				HealthTheme healthTheme
-					= denominator.getHealthTheme();
 				addDataSetHeading(bufferedWriter, denominator.getDisplayName());
 				
 				String denominatorEntry
@@ -159,9 +178,9 @@ public class MSDataLoadingScriptGenerator {
 				bufferedWriter.newLine();
 				bufferedWriter.flush();
 			}
-
+			
 			//Processing Numerators
-			addSectionHeading(bufferedWriter, "Numerators");
+			addSectionHeading(bufferedWriter, "Adding Numerators");
 			ArrayList<DataSetConfiguration> numerators
 				= dataLoaderToolConfiguration.getNumeratorDataSetConfigurations();
 			for (DataSetConfiguration numerator : numerators) {
@@ -177,9 +196,11 @@ public class MSDataLoadingScriptGenerator {
 				bufferedWriter.newLine();
 				bufferedWriter.flush();
 			}
-		
+
+			System.out.println("MS dl script 4");
+			
 			//Processing Covariates
-			addSectionHeading(bufferedWriter, "Covariates");
+			addSectionHeading(bufferedWriter, "Adding Covariates");
 			ArrayList<DataSetConfiguration> covariateConfigurations
 				= dataLoaderToolConfiguration.getCovariateDataSetConfigurations();
 			for (DataSetConfiguration covariateConfiguration : covariateConfigurations) {
@@ -194,6 +215,8 @@ public class MSDataLoadingScriptGenerator {
 				bufferedWriter.newLine();
 				bufferedWriter.flush();
 			}
+
+			System.out.println("MS dl script 5");
 			
 			addEndTransactionSection(bufferedWriter);
 	
@@ -211,7 +234,6 @@ public class MSDataLoadingScriptGenerator {
 		final BufferedWriter bufferedWriter)
 		throws IOException {
 		
-		/*
 		bufferedWriter.write("\\set ECHO all");
 		bufferedWriter.newLine();
 		bufferedWriter.write("\\set ON_ERROR_STOP ON");
@@ -220,18 +242,14 @@ public class MSDataLoadingScriptGenerator {
 		bufferedWriter.newLine();
 		bufferedWriter.write("BEGIN TRANSACTION;");
 		bufferedWriter.newLine();
-		
-		*/
 	}
 	
 	private void addEndTransactionSection(
 		final BufferedWriter bufferedWriter)
 		throws IOException {
 		
-		/*
 		bufferedWriter.newLine();
 		bufferedWriter.write("COMMIT TRANSACTION;");
-		*/
 	}
 	
 	private void addSectionHeading(
@@ -239,12 +257,12 @@ public class MSDataLoadingScriptGenerator {
 		final String headingName) 
 		throws IOException {
 	
-		bufferedWriter.write("-- ===============================================");
+		bufferedWriter.write("-- =========================================================");
 		bufferedWriter.newLine();
-		bufferedWriter.write("-- Adding ");
+		bufferedWriter.write("-- ");
 		bufferedWriter.write(headingName);
 		bufferedWriter.newLine();
-		bufferedWriter.write("-- ===============================================");
+		bufferedWriter.write("-- =========================================================");
 		bufferedWriter.newLine();
 		bufferedWriter.newLine();
 	}

@@ -1,9 +1,5 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
-
-
 
 /**
  *
@@ -69,7 +65,7 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  */
 
 public final class MSSQLDeleteTableQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -89,7 +85,7 @@ public final class MSSQLDeleteTableQueryFormatter
 	 * Instantiates a new SQL delete table query formatter.
 	 */
 	public MSSQLDeleteTableQueryFormatter() {
-
+		setEndWithSemiColon(false);
 	}
 
 	// ==========================================
@@ -114,9 +110,14 @@ public final class MSSQLDeleteTableQueryFormatter
 		
 		//test whether table already exists?
 		
-		addQueryPhrase(0, "DROP TABLE ");
-		addQueryPhrase(getSchemaTableName(tableToDelete));
-
+		String tableName 
+			= getSchemaTableName(tableToDelete);		
+		
+		addQueryPhrase(0, "IF OBJECT_ID('");
+		addQueryPhrase(tableName.toLowerCase());
+		addQueryPhrase("', 'U') IS NOT NULL DROP TABLE ");
+		addQueryPhrase(tableName);
+		
 		return super.generateQuery();		
 	}
 	

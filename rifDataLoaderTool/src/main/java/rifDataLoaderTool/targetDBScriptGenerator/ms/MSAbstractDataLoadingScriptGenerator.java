@@ -3,10 +3,10 @@ package rifDataLoaderTool.targetDBScriptGenerator.ms;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSchemaCommentQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSchemaCommentQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.io.File;
-import java.util.ArrayList;
 
 /**
  *
@@ -69,6 +69,7 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 	// ==========================================
 	private File scriptDirectory;
 	
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -84,55 +85,34 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
 	
 	protected String createBulkCopyStatement(
-		final String tableName,
-		final ArrayList<String> fieldNames,
-		final String importFilePath) {
+		final DataSetConfiguration dataSetConfiguration) 
+		throws RIFServiceException {
 		
-		SQLGeneralQueryFormatter queryFormatter
-			= new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryPhrase(0, "\\copy ");
-		queryFormatter.addQueryPhrase(tableName);
-		queryFormatter.addQueryPhrase("(");
-		//queryFormatter.finishLine();
-		int numberOfFields = fieldNames.size();
-		for (int i = 0; i < numberOfFields; i++) {
-			if (i != 0) {
-				queryFormatter.addQueryPhrase(",");
-				//queryFormatter.finishLine();
-			}
-			queryFormatter.addQueryPhrase(1, fieldNames.get(i));
-		}
-		queryFormatter.addQueryPhrase(") FROM '");
-		queryFormatter.addQueryPhrase(importFilePath);
-		queryFormatter.addQueryPhrase("' ");		
-		queryFormatter.addQueryPhrase("DELIMITER ',' CSV HEADER");	
+		MSBulkInsertQueryFormatter queryFormatter
+			= new MSBulkInsertQueryFormatter();
 		
-		System.out.println("AbstractDLQuery copy 1===");
-		System.out.println("=" + queryFormatter.generateQuery()+"==");
-		System.out.println("AbstractDLQuery copy 2===");
+		//first, write out the *.fmt file that is needed by
+		//MS Server's bulk insert command
+		queryFormatter.writeFormatFile(
+			scriptDirectory, 
+			dataSetConfiguration);
+		//now write out the actual syntax for the bulk insert
+		//command
 		
+		String tableName
+			= dataSetConfiguration.getPublishedTableName();
+		queryFormatter.setTableName(tableName);
 		return queryFormatter.generateQuery();
-		
-		//queryFormatter.finishLine();	
-/*		
-		queryFormatter.addQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, "'");
-		queryFormatter.addQueryPhrase(importFilePath);
-		queryFormatter.addQueryPhrase("' ");		
-		queryFormatter.addQueryPhrase(0, "WITH (FORMAT csv, QUOTE '\"', ESCAPE '\\'");		
-		return queryFormatter.generateQuery();
-*/
 	}
 	
 	protected String getPublishedFilePath(
 		final DataSetConfiguration dataSetConfiguration) {
 		
 		StringBuilder filePath = new StringBuilder();
-		filePath.append(scriptDirectory.getAbsolutePath());
-		filePath.append(File.separator);		
+		//filePath.append(scriptDirectory.getAbsolutePath());
+		//filePath.append(File.separator);		
 		String coreDataSetName
 			= dataSetConfiguration.getName();
 		RIFSchemaArea rifSchemaArea 
@@ -164,11 +144,13 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 	}	
 	
 	protected String createTableCommentQuery(
+		final String databaseSchemaName,
 		final String tableName,
 		final String comment) {
 		
-		PGSQLSchemaCommentQueryFormatter queryFormatter 
-			= new PGSQLSchemaCommentQueryFormatter();
+		MSSQLSchemaCommentQueryFormatter queryFormatter 
+			= new MSSQLSchemaCommentQueryFormatter();
+		queryFormatter.setDatabaseSchemaName(databaseSchemaName);
 		
 		queryFormatter.setTableComment(
 			tableName.toUpperCase(), 
@@ -182,8 +164,8 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 		final String columnName,
 		final String comment) {
 			
-		PGSQLSchemaCommentQueryFormatter queryFormatter 
-			= new PGSQLSchemaCommentQueryFormatter();
+		MSSQLSchemaCommentQueryFormatter queryFormatter 
+			= new MSSQLSchemaCommentQueryFormatter();
 		queryFormatter.setTableColumnComment(
 			tableName.toUpperCase(), 
 			columnName.toUpperCase(), 

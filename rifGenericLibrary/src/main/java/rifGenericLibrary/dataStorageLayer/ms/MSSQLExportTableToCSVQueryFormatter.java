@@ -1,8 +1,5 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
-
 /**
  *
  *
@@ -68,7 +65,7 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  */
 
 public final class MSSQLExportTableToCSVQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -136,14 +133,7 @@ public final class MSSQLExportTableToCSVQueryFormatter
 		addPaddedQueryLine(0, "COPY");
 		addPaddedQueryLine(1, getSchemaTableName(tableToExport));
 		addPaddedQueryLine(0, "TO STDOUT WITH DELIMITER ',' CSV HEADER");
-		/*
-		addQueryPhrase(1, "'");
-		addQueryPhrase(outputFileName);
-		addQueryPhrase("' DELIMITER ");
-		addQueryPhrase("'");
-		addQueryPhrase(delimiters);
-		addQueryPhrase("' CSV HEADER");
-	*/
+
 		return super.generateQuery();		
 	}
 	

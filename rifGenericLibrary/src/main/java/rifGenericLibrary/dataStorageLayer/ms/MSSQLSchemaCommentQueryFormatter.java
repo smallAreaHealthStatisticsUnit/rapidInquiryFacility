@@ -1,10 +1,5 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
-import java.util.ArrayList;
-
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
-
 /**
  * Convenience class used to help comment part of a schema
  *
@@ -69,7 +64,7 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  */
 
 public final class MSSQLSchemaCommentQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -87,7 +82,10 @@ public final class MSSQLSchemaCommentQueryFormatter
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
+	public MSSQLSchemaCommentQueryFormatter() {
+		setEndWithSemiColon(false);
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -111,26 +109,30 @@ public final class MSSQLSchemaCommentQueryFormatter
 	
 	@Override
 	public String generateQuery() {
-
-		if (columnName == null) {
-			//it is a table comment
-			addQueryPhrase(0, "COMMENT ON TABLE ");
-			addQueryPhrase(getSchemaTableName(tableName));
-		}
-		else {
-			//it is a table column comment
-			addQueryPhrase(0, "COMMENT ON COLUMN ");
-			addQueryPhrase(getSchemaTableName(tableName));
-			addQueryPhrase(".");
-			addQueryPhrase(columnName);
-		}
-		addQueryPhrase(" IS ");
-		addQueryPhrase("'");
+	
+		addQueryLine(0, "EXECUTE sp_addextendedproperty");
+		addQueryLine(1, "@name = 'MS Description',");
+		addQueryPhrase(1, "@value = '");
 		addQueryPhrase(comment);
+		addQueryPhrase("',");
+		finishLine();
+		addQueryPhrase(1, "@level0type = N'Schema', @level0name='");
+		addQueryPhrase(getDatabaseSchemaName());
+		addQueryPhrase("',");
+		finishLine();
+		addQueryPhrase(1, "@level1type = N'Table', @level0name='");
+		addQueryPhrase(tableName.toLowerCase());
 		addQueryPhrase("'");
+		
+		if (columnName != null) {
+			//We end the query here with a semi colon
+			addQueryPhrase(",");
+			finishLine();
+			addQueryPhrase(1, "@level2type = N'Column', @level2name='");
+			addQueryPhrase(columnName.toLowerCase());
+			addQueryPhrase("'");		
+		}
 
-		addQueryPhrase(";");
-				
 		return super.generateQuery();
 	}
 		

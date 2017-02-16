@@ -4,6 +4,7 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.dataStorageLayer.pg.*;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
 
@@ -81,16 +82,17 @@ public class MSDenominatorScriptGenerator
 	// ==========================================
 
 	public String generateScript(
-		final DataSetConfiguration denominator) {
+		final DataSetConfiguration denominator) 
+		throws RIFServiceException {
 
 		StringBuilder denominatorEntry = new StringBuilder();
 		
 		createTableStructureAndImportCSV(
 			denominatorEntry, 
 			denominator);
-		//addSchemaComments(
-		//	denominatorEntry,
-		//	denominator);
+		addSchemaComments(
+			denominatorEntry,
+			denominator);
 		createIndices(
 			denominatorEntry,
 			denominator);
@@ -104,7 +106,8 @@ public class MSDenominatorScriptGenerator
 	
 	private void createTableStructureAndImportCSV(
 		final StringBuilder denominatorEntry,
-		final DataSetConfiguration denominator) {
+		final DataSetConfiguration denominator) 
+		throws RIFServiceException {
 
 		DataSetFieldConfiguration yearFieldConfiguration
 			= denominator.getFieldHavingConvertFieldName("year");		
@@ -113,13 +116,14 @@ public class MSDenominatorScriptGenerator
 		DataSetFieldConfiguration totalFieldConfiguration
 			= denominator.getFieldHavingConvertFieldName("total");
 		
-		//Part I: Make a create table statement 
-		PGSQLCreateTableQueryFormatter createTableQueryFormatter
-			= new PGSQLCreateTableQueryFormatter();
-		
 		//The name the table will have in the schema 'pop'
 		String publishedDenominatorTableName
 			= denominator.getPublishedTableName().toUpperCase();		
+		
+		//Make a create table statement 
+		PGSQLCreateTableQueryFormatter createTableQueryFormatter
+			= new PGSQLCreateTableQueryFormatter();
+		
 		//Field properties that will help us construct the 
 		//create and copy into statements
 
@@ -141,11 +145,7 @@ public class MSDenominatorScriptGenerator
 		
 		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
 			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
-			createTableQueryFormatter.addTextFieldDeclaration(
-				fieldName, 
-				20, 
-				false);			
-			
+			createTableQueryFormatter.addTextFieldDeclaration(fieldName, 20, false);
 		}
 		
 		createTableQueryFormatter.addIntegerFieldDeclaration(
@@ -157,52 +157,18 @@ public class MSDenominatorScriptGenerator
 		
 		//How do we handle extra fields?
 		ArrayList<String> fieldNames = new ArrayList<String>();
-		fieldNames.add("year");
-		fieldNames.add("age_sex_group");
+		fieldNames.add("YEAR");
+		fieldNames.add("AGE_SEX_GROUP");
 		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
 			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
 			fieldNames.add(fieldName);
 		}		
-		fieldNames.add("total");
-			
-		String filePath
-			= super.getPublishedFilePath(denominator) + ".csv";		
+		fieldNames.add("TOTAL");
+				
 		String bulkInsertStatement
-			= createBulkCopyStatement(
-				publishedDenominatorTableName,
-				fieldNames,
-				filePath);
+			= createBulkCopyStatement(denominator);
 
 		denominatorEntry.append(bulkInsertStatement);
-		
-		/*
-		SQLGeneralQueryFormatter importFromCSVQueryFormatter
-			= new SQLGeneralQueryFormatter();
-		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
-		importFromCSVQueryFormatter.addQueryPhrase(0, "COPY ");
-		importFromCSVQueryFormatter.addQueryPhrase("pop.");		
-		importFromCSVQueryFormatter.addQueryPhrase(publishedDenominatorTableName);		
-		importFromCSVQueryFormatter.addQueryPhrase(" (");
-		importFromCSVQueryFormatter.padAndFinishLine();
-		importFromCSVQueryFormatter.addQueryLine(1, "year,");
-		importFromCSVQueryFormatter.addQueryLine(1, "age_sex_group,");
-		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
-			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
-			importFromCSVQueryFormatter.addQueryLine(1, fieldName + ",");			
-		}
-		importFromCSVQueryFormatter.addQueryLine(1, "total)");
-		importFromCSVQueryFormatter.addQueryLine(0, "FROM ");
-		importFromCSVQueryFormatter.addQueryLine(1, "%L");
-		importFromCSVQueryFormatter.addQueryPhrase(0, "(FORMAT CSV, HEADER)', '");
-		
-		String filePath
-			= super.getPublishedFilePath(denominator);
-		importFromCSVQueryFormatter.addQueryPhrase(filePath);
-		importFromCSVQueryFormatter.addQueryPhrase(".csv");		
-		importFromCSVQueryFormatter.addQueryPhrase("')");
-
-		denominatorEntry.append(importFromCSVQueryFormatter.generateQuery());
-		*/
 	}
 	
 	private void addEntryToRIF40Tables(
@@ -226,13 +192,11 @@ public class MSDenominatorScriptGenerator
 		queryFormatter.addQueryLine(1, "age_sex_group_field_name,");
 		queryFormatter.addQueryLine(1, "age_group_id) ");
 		queryFormatter.addQueryLine(0, "SELECT ");
-		queryFormatter.addQueryLine(1, "'SAHSULAND',");
-		
-		
+		queryFormatter.addQueryLine(1, "'cancers',");
 		queryFormatter.addQueryLine(1, "'" + denominator.getPublishedTableName().toUpperCase() + "',");
 		queryFormatter.addQueryLine(1, "'" + denominator.getDescription() + "',");
-		queryFormatter.addQueryLine(1, "MIN(year),");
-		queryFormatter.addQueryLine(1, "MAX(year),");
+		queryFormatter.addQueryLine(1, "MIN(YEAR),");
+		queryFormatter.addQueryLine(1, "MAX(YEAR),");
 		queryFormatter.addQueryLine(1, "null,");
 		queryFormatter.addQueryLine(1, "1,");
 		queryFormatter.addQueryLine(1, "0,");
@@ -263,6 +227,7 @@ public class MSDenominatorScriptGenerator
 		//Add comments to table
 		denominatorEntry.append(
 			createTableCommentQuery(
+				"pop",
 				publishedCovariateTableName, 
 				denominator.getDescription()));
 
@@ -278,7 +243,7 @@ public class MSDenominatorScriptGenerator
 		denominatorEntry.append(
 				createTableFieldCommentQuery(
 					publishedCovariateTableName, 
-					"age_sex_group", 
+					"AGE_SEX_GROUP", 
 					ageSexGroupComment));		
 		
 		ArrayList<DataSetFieldConfiguration> resolutionFields

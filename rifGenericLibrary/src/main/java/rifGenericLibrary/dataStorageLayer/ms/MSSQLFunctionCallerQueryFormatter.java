@@ -1,10 +1,8 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
-import java.util.ArrayList;
-
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter.SortOrder;
 
+import java.util.ArrayList;
 
 /**
  * Convenience class used to help format typical SELECT FROM WHERE clauses.
@@ -73,7 +71,7 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter.SortOrder
  */
 
 public final class MSSQLFunctionCallerQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -209,9 +207,7 @@ public final class MSSQLFunctionCallerQueryFormatter
 		this.useDistinct = useDistinct;
 	}
 	
-	/*
-	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
-	 */
+	@Override
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "SELECT ");
@@ -282,9 +278,6 @@ public final class MSSQLFunctionCallerQueryFormatter
 			}
 		}
 		
-		addQueryPhrase(";");
-		finishLine();
-				
 		return super.generateQuery();
 	}
 	

@@ -2,7 +2,8 @@ package rifDataLoaderTool.targetDBScriptGenerator.ms;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.dataStorageLayer.*;
-import rifGenericLibrary.dataStorageLayer.pg.*;
+import rifGenericLibrary.dataStorageLayer.ms.*;
+import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
 
@@ -80,7 +81,8 @@ public class MSCovariateScriptGenerator
 	// ==========================================
 
 	public String generateScript(
-		final DataSetConfiguration covariate) {
+		final DataSetConfiguration covariate) 
+		throws RIFServiceException {
 
 		//Make a new table in the database for the covariate file
 		StringBuilder covariateEntry = new StringBuilder();			
@@ -88,9 +90,9 @@ public class MSCovariateScriptGenerator
 			covariateEntry, 
 			covariate);
 		covariateEntry.append(createIndices(covariate));	
-		//addSchemaComments(
-		//	covariateEntry,
-		//	covariate);
+		addSchemaComments(
+			covariateEntry,
+			covariate);
 		createPermissions(covariate);
 		
 		//Ensure covariate geolevel is known in t_rif50_geolevels
@@ -108,13 +110,22 @@ public class MSCovariateScriptGenerator
 	
 	private void createTableStructureAndImportCSV(
 		final StringBuilder covariateEntry,
-		final DataSetConfiguration covariate) {
-		
+		final DataSetConfiguration covariate) 
+		throws RIFServiceException {
 
 		//The name the table will have in the schema 'pop'
 		String publishedCovariateTableName
 			= covariate.getPublishedTableName().toUpperCase();		
-
+		
+		/*
+		
+		//Delete table if it already exists.
+		//See caution notes in deleteTable method.
+		deleteTable(
+			covariateEntry, 
+			publishedCovariateTableName);
+		*/
+		
 		//Identify the fields of interest
 		DataSetFieldConfiguration yearFieldConfiguration
 			= DataSetConfigurationUtility.getRequiredYearField(covariate);
@@ -124,8 +135,8 @@ public class MSCovariateScriptGenerator
 			= DataSetConfigurationUtility.getCovariateFields(covariate);
 		
 		//Create an empty table that will be the target of the import
-		PGSQLCreateTableQueryFormatter createTableQueryFormatter
-			= new PGSQLCreateTableQueryFormatter();
+		MSSQLCreateTableQueryFormatter createTableQueryFormatter
+			= new MSSQLCreateTableQueryFormatter();
 		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		createTableQueryFormatter.setTableName(publishedCovariateTableName);
 		createTableQueryFormatter.addIntegerFieldDeclaration(
@@ -134,7 +145,8 @@ public class MSCovariateScriptGenerator
 		createTableQueryFormatter.addTextFieldDeclaration(
 			resolutionFieldConfiguration.getConvertFieldName(), 
 			20, 
-			false);		
+			false);
+
 		for (DataSetFieldConfiguration covariateField : covariateFields) {
 			covariateField.print();
 			
@@ -162,52 +174,11 @@ public class MSCovariateScriptGenerator
 		for (DataSetFieldConfiguration covariateField : covariateFields) {
 			fieldNames.add(covariateField.getConvertFieldName());
 		}					
-		String filePath
-			= super.getPublishedFilePath(covariate) + ".csv";
 		
 		String bulkInsertStatement
-			= createBulkCopyStatement(
-				publishedCovariateTableName,
-				fieldNames,
-				filePath);
+			= createBulkCopyStatement(covariate);
 
 		covariateEntry.append(bulkInsertStatement);
-		
-		/*
-		SQLGeneralQueryFormatter importFromCSVQueryFormatter
-			= new SQLGeneralQueryFormatter();
-		importFromCSVQueryFormatter.addQueryLine(0, "EXECUTE format ('");
-		importFromCSVQueryFormatter.addQueryPhrase(0, "COPY ");
-		importFromCSVQueryFormatter.addQueryPhrase("rif_data.");		
-		importFromCSVQueryFormatter.addQueryPhrase(publishedCovariateTableName);		
-		importFromCSVQueryFormatter.addQueryPhrase(" (");
-		importFromCSVQueryFormatter.padAndFinishLine();
-		
-		importFromCSVQueryFormatter.addQueryLine(
-			1, 
-			yearFieldConfiguration.getCleanFieldName() + ",");		
-		importFromCSVQueryFormatter.addQueryPhrase(
-			1, 
-			resolutionFieldConfiguration.getCleanFieldName());
-		for (DataSetFieldConfiguration covariateField : covariateFields) {
-				importFromCSVQueryFormatter.addQueryPhrase(",");
-				importFromCSVQueryFormatter.finishLine();			
-				importFromCSVQueryFormatter.addQueryPhrase(
-					1, 
-					covariateField.getCleanFieldName());
-		}
-		importFromCSVQueryFormatter.addQueryPhrase(")");
-		importFromCSVQueryFormatter.padAndFinishLine();
-		importFromCSVQueryFormatter.addQueryLine(0, "FROM ");
-		importFromCSVQueryFormatter.addQueryLine(1, "%L");
-		importFromCSVQueryFormatter.addQueryPhrase(0, "(FORMAT CSV, HEADER)', '");		
-		String filePath
-			= super.getPublishedFilePath(covariate);
-		importFromCSVQueryFormatter.addQueryPhrase(filePath);
-		importFromCSVQueryFormatter.addQueryPhrase(".csv");
-		importFromCSVQueryFormatter.addQueryPhrase("')");
-		covariateEntry.append(importFromCSVQueryFormatter.generateQuery());
-		*/
 	}
 
 	private void addSchemaComments(
@@ -226,6 +197,7 @@ public class MSCovariateScriptGenerator
 		//Add comments to table
 		covariateEntry.append(
 			createTableCommentQuery(
+				"rif_data",
 				publishedCovariateTableName, 
 				covariate.getDescription()));
 		covariateEntry.append(
@@ -378,9 +350,6 @@ public class MSCovariateScriptGenerator
 		
 		return queryFormatter.generateQuery();	
 	}
-		
-
-	
 	
 	// ==========================================
 	// Section Errors and Validation

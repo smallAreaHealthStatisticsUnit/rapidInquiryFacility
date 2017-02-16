@@ -114,15 +114,6 @@ public class PGCovariateScriptGenerator
 		String publishedCovariateTableName
 			= covariate.getPublishedTableName().toUpperCase();		
 		
-		/*
-		
-		//Delete table if it already exists.
-		//See caution notes in deleteTable method.
-		deleteTable(
-			covariateEntry, 
-			publishedCovariateTableName);
-		*/
-		
 		//Identify the fields of interest
 		DataSetFieldConfiguration yearFieldConfiguration
 			= DataSetConfigurationUtility.getRequiredYearField(covariate);

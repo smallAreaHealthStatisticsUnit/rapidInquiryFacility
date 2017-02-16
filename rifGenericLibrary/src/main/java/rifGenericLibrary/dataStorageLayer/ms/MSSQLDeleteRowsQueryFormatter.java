@@ -2,8 +2,6 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
 
 /**
  *
@@ -69,7 +67,7 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  */
 
 public final class MSSQLDeleteRowsQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -167,12 +165,23 @@ public final class MSSQLDeleteRowsQueryFormatter
 			}
 		}
 		
-		addQueryPhrase(";");
-		finishLine();
-		
 		return super.generateQuery();		
 	}
-	
+
+
+	public void addWhereParameterWithLiteralValue(
+		final String fieldName,
+		final String literalValue) {
+		
+		StringBuilder whereCondition = new StringBuilder();
+		whereCondition.append(fieldName);
+		whereCondition.append("='");
+		whereCondition.append(literalValue);
+		whereCondition.append("'");
+
+		whereConditions.add(whereCondition.toString());
+	}
+		
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

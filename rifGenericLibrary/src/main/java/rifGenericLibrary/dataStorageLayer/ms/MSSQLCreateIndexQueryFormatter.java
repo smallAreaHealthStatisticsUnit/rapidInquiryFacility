@@ -1,9 +1,5 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
-
-
 
 /**
  *
@@ -69,7 +65,7 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  */
 
 public final class MSSQLCreateIndexQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -135,7 +131,6 @@ public final class MSSQLCreateIndexQueryFormatter
 		addQueryPhrase(" (");
 		addQueryPhrase(indexTableField);		
 		addQueryPhrase(")");
-		
 
 		return super.generateQuery();		
 	}

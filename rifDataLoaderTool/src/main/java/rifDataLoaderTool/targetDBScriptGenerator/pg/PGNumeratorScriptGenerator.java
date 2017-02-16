@@ -113,23 +113,15 @@ public class PGNumeratorScriptGenerator
 	}
 	
 	private void createTableStructureAndImportCSV(
-		final StringBuilder denominatorEntry,
+		final StringBuilder numeratorEntry,
 		final GeographyMetaData geographyMetaData,
-		final DataSetConfiguration denominator) {
+		final DataSetConfiguration numerator) {
 		
 		//The name the table will have in the schema 'pop'
 		String publishedDenominatorTableName
-			= denominator.getPublishedTableName();		
+			= numerator.getPublishedTableName();		
 	
-		//Part I: Delete table if it already exists.
-		//See caution notes in deleteTable method.
-		/*
-		deleteTable(
-			denominatorEntry, 
-			publishedDenominatorTableName);
-		*/
-		
-		//Part II: Make a create table statement 
+		//Make a create table statement 
 		PGSQLCreateTableQueryFormatter createTableQueryFormatter
 			= new PGSQLCreateTableQueryFormatter();
 		
@@ -143,7 +135,7 @@ public class PGNumeratorScriptGenerator
 
 		//Do we assume these field names will be in increasing order of 
 		//geographical resolution?
-		Geography geography = denominator.getGeography();
+		Geography geography = numerator.getGeography();
 		ArrayList<String> levelCodeNames = geography.getLevelCodeNames();
 		for (String levelCodeName : levelCodeNames) {
 			createTableQueryFormatter.addTextFieldDeclaration(
@@ -154,8 +146,8 @@ public class PGNumeratorScriptGenerator
 		createTableQueryFormatter.addTextFieldDeclaration("icd", false);
 		createTableQueryFormatter.addIntegerFieldDeclaration("total", false);
 
-		denominatorEntry.append(createTableQueryFormatter.generateQuery());
-		denominatorEntry.append("\n");
+		numeratorEntry.append(createTableQueryFormatter.generateQuery());
+		numeratorEntry.append("\n");
 		
 		//How do we handle extra fields?
 		ArrayList<String> fieldNames = new ArrayList<String>();
@@ -168,7 +160,7 @@ public class PGNumeratorScriptGenerator
 		fieldNames.add("total");
 			
 		String filePath
-			= super.getPublishedFilePath(denominator) + ".csv";
+			= super.getPublishedFilePath(numerator) + ".csv";
 		
 		String bulkInsertStatement
 			= createBulkCopyStatement(
@@ -176,7 +168,7 @@ public class PGNumeratorScriptGenerator
 				fieldNames,
 				filePath);
 
-		denominatorEntry.append(bulkInsertStatement);
+		numeratorEntry.append(bulkInsertStatement);
 	}
 	
 	private void addEntryToRIF40Tables(
