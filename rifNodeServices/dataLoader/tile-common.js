@@ -583,7 +583,24 @@ function addBaseLayers(maxZoomlevel) {
 		id: 'mapbox.streets',
 		noWrap: true
 	});	
+
+	var osmTerrian=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
+		maxZoom: maxZoomlevel||11,
+		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
+		id: 'mapbox.outdoors',
+		noWrap: true
+	});		
 	
+	var osmSatellite=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
+		maxZoom: maxZoomlevel||11,
+		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
+		id: 'mapbox.satellite',
+		noWrap: true
+	});	
 /*
 	var styleMutant = L.gridLayer.googleMutant({
 		styles: [
@@ -603,6 +620,8 @@ function addBaseLayers(maxZoomlevel) {
 	L.control.layers({
 		"OSM Light": osmLight,
 		"OSM Streets": osmStreets,
+		"OSM Terrian": osmTerrian,
+		"OSM Satellite": osmSatellite,
 		"Google Roadmap": roadMutant,
 		"Google Aerial": satMutant,
 		"Google Terrain": terrainMutant,
@@ -776,6 +795,7 @@ function addTileLayer(methodFields) {
 		return div;
 	};
 	
+	// MOVE TO tile-viewer.js
 	var geolevel=methodFields.geolevel[(methodFields.geolevel_id-1)];
 	$( "#geographyGeolevelInput" ).val(geolevel["table_description"] + "/" + geolevel["description"]);
 						
