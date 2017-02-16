@@ -659,6 +659,7 @@ function addTileLayer(methodFields) {
 	geolevel.databaseType=methodFields.databaseType;
 	geolevel.databaseName=methodFields.table_catalog;
 	geolevel.tableName=methodFields.table_schema + '.' + methodFields.table_name;
+	geolevel.table_description=methodFields.table_description;
 	geolevel.geography=methodFields.geography;
 	geolevel.maxzoomlevel=methodFields.maxzoomlevel;
 	geolevel.output="GeoJSON";
@@ -749,16 +750,17 @@ function addTileLayer(methodFields) {
 	legend = L.control({position: 'bottomright'});
 			
 	var keyTable = {	// Translate tags
-		geolevel_id: 	"GEOLEVEL_ID",
-		geolevel_name: 	"Name",
-		description: 	"Description",
-		areaid_count: 	"AreaID Count",
-		databaseType:	"Database Type",
-		databaseName:	"Database Name",
-		tableName:		"Table",
-		geography:		"Geography",
-		maxzoomlevel:	"Max zoomlevel",
-		output:			"Tile format"
+		geolevel_id: 		"GEOLEVEL_ID",
+		geolevel_name: 		"Name",
+		table_description:	"Table Description",
+		description: 		"Geolevel Description",
+		areaid_count: 		"AreaID Count",
+		databaseType:		"Database Type",
+		databaseName:		"Database Name",
+		tableName:			"Table",
+		geography:			"Geography",
+		maxzoomlevel:		"Max zoomlevel",
+		output:				"Tile format"
 	}
 	legend.onAdd = function onAddLegend(map) {
 		var div = L.DomUtil.create('div', 'info legend');
@@ -773,7 +775,10 @@ function addTileLayer(methodFields) {
 		div.innerHTML = html;
 		return div;
 	};
-
+	
+	var geolevel=methodFields.geolevel[(methodFields.geolevel_id-1)];
+	$( "#geographyGeolevelInput" ).val(geolevel["table_description"] + "/" + geolevel["description"]);
+						
 	legend.addTo(map);
 	
 	return topojsonTileLayer;

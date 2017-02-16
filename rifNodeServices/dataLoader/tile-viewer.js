@@ -108,6 +108,7 @@ function geographySelectChange(event, ui) {
 			table_catalog: geography.table_catalog,
 			table_schema: geography.table_schema,
 			table_name: geography.table_name,
+			table_description: geography.description,
 			geography: geography.geography,
 			tiletable: geography.tiletable,
 			geolevel_id: geolevel || 2,
@@ -219,12 +220,15 @@ function setupTileViewer() {
 	var mapcontainerHeight=y-selectDivHeight-20; 
 	var dialogFormHieght=y-selectDivHeight-50; 
 	var dialogFormWidth=x-250; 
+	var selectButtonWidthStr=$("#select-button").css("width");
+	var selectButtonWidth = parseInt(selectButtonWidthStr.substring(0, selectButtonWidthStr.length - 2));
 	consoleLog("Window Width: " + x + " px\n" +
 		"Window Height: " + y + " px\n" +
 		"selectDiv Height: " + selectDivHeight + " px\n" +
 		"mapcontainer Height: " + mapcontainerHeight + " px\n" +
 		"dialogFormHieght Height: " + dialogFormHieght + " px\n" +
-		"dialogFormHieght Width: " + dialogFormWidth + " px");
+		"dialogFormHieght Width: " + dialogFormWidth + " px\n" +
+		"selectButton Width: " + selectButtonWidth + " px");
 	
 	if (map == undefined) { // Only set the height if leaflet is not initialised or you will make a mess of the screen
 		setHeight("mapcontainer", mapcontainerHeight);
@@ -248,5 +252,6 @@ function setupTileViewer() {
 	for (var i=0;i<selectClass.length; i++) {
 		selectClass[i].style.width=(dialogFormWidth-210) + "px";
 	}	
+	document.getElementById("geographyGeolevelInput").style.width=(x-selectButtonWidth-200) + "px";
 	
 } // End of setupTileViewer()
