@@ -444,9 +444,10 @@ function createMap(boundingBox, maxZoomlevel) {
 				zoom: maxZoomlevel||11,
 				// Tell the map to use a fullsreen control
 				fullscreenControl: true
-			} 
+			} 	
 		);
-		
+		L.control.scale({position: 'topleft'}).addTo(map); // Add scale
+			
 		try {
 			var loadingControl = L.Control.loading({
 				separate: true
@@ -539,8 +540,6 @@ function createMap(boundingBox, maxZoomlevel) {
  */
 function addBaseLayers(maxZoomlevel) {
 	
-	L.control.scale({position: 'topleft'}).addTo(map); // Add scale	
-	
 	var roadMutant = L.gridLayer.googleMutant({
 		maxZoom: maxZoomlevel||11,
 		type:'roadmap'
@@ -574,7 +573,8 @@ function addBaseLayers(maxZoomlevel) {
 		id: 'mapbox.light',
 		noWrap: true
 	}).addTo(map);
-	
+
+// Mapbox/OSM layers
 	var osmStreets=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 		maxZoom: maxZoomlevel||11,
 		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -597,7 +597,7 @@ function addBaseLayers(maxZoomlevel) {
 		maxZoom: maxZoomlevel||11,
 		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
 			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
+			'Imagery &copy; <a href="http://mapbox.com">Mapbox &copy; <a href="https://www.digitalglobe.com">Digiglobe</a>',
 		id: 'mapbox.satellite',
 		noWrap: true
 	});	
@@ -656,7 +656,7 @@ function addTileLayer(methodFields) {
         "clickable": true,
         "color": "#00D",
         "fillColor": "#81aefa",
-        "weight": 1.0,
+        "weight": 3.0,
         "opacity": 0.7,
         "fillOpacity": 0.02
     };
@@ -794,10 +794,6 @@ function addTileLayer(methodFields) {
 		div.innerHTML = html;
 		return div;
 	};
-	
-	// MOVE TO tile-viewer.js
-	var geolevel=methodFields.geolevel[(methodFields.geolevel_id-1)];
-	$( "#geographyGeolevelInput" ).val(geolevel["table_description"] + "/" + geolevel["description"]);
 						
 	legend.addTo(map);
 	

@@ -43,6 +43,7 @@
     <script src="tile-viewer.js"></script>
     <script src="tile-common.js"></script>
     <script src="TileLayer.GeoJSON.js"></script>
+	<script src="es6-promise.auto.js"></script>
     <script> 
 
 // Extend Leaflet to use topoJSON
@@ -138,9 +139,7 @@ $(document).ready(function documentReady() {
       </form>  
    	</div>
 	<div id="selectDiv">
-	  <button id="select-button">Select database, geography and geolevel</button>
-	  <input type="text" id="geographyGeolevelInput" class="ui-tabs ui-widget ui-widget-content ui-corner-all"
-			 value="No database/geography/geolevel selected" readonly size="40">	
+	  <button id="select-button">Change database, geography and geolevel</button>	
     </div>	
 	<div id="mapcontainer">
 	  <div id="map">

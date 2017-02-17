@@ -75,6 +75,8 @@ function geolevelSelectChange(event, ui) {
 	consoleLog("geolevelSelectChange() geolevel: " + geolevel + "; ui: " + ((ui == undefined) && 0 || 1));
 	if (methodFields) {
 		methodFields.geolevel_id=geolevel || 2;
+		
+		var geolevel=methodFields.geolevel[(methodFields.geolevel_id-1)];		
 		var tlayer=addTileLayer(methodFields);	
 	}
 	else {
@@ -136,7 +138,7 @@ function geographySelectChange(event, ui) {
 				map.on('zoomend', function() {
 					consoleLog("Map zoom changed");
 				});	
-				map.on('resoze', function() {
+				map.on('resize', function() {
 					consoleLog("Map resized");
 				});				
 			}) // End of getBbox() call
@@ -252,6 +254,5 @@ function setupTileViewer() {
 	for (var i=0;i<selectClass.length; i++) {
 		selectClass[i].style.width=(dialogFormWidth-210) + "px";
 	}	
-	document.getElementById("geographyGeolevelInput").style.width=(x-selectButtonWidth-200) + "px";
 	
 } // End of setupTileViewer()

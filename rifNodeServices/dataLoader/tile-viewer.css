@@ -24,13 +24,6 @@ body {
 	vertical-align: middle;
 	float: right; 
 }
-#geographyGeolevelInput { 
-	vertical-align: middle;
-	text-align: right;
-	float: right;
-	color: #0070a3;
-	height: 28px;
-}
 .legend {
 	text-align: left;
 	line-height: 18px;
