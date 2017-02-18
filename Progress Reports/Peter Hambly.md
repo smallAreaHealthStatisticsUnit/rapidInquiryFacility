@@ -873,7 +873,7 @@ RangeError: Invalid string length
 * Added Google maps, OSM satellite and terrain data
 * Use onEachFeature to call createPopup() - much more efficient
 * Fixed feature gid to be gid of areaID
-* Sync sahsuland_empty 
+* Sync sahsuland_empty: tiles and lookup tables 
  
 #### 20th to 24th February
 
