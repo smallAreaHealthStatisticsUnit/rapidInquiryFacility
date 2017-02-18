@@ -866,13 +866,17 @@ RangeError: Invalid string length
 * Bug in rif40 Postgres and SQL server geolevels select (all, not geography specified!)
 * Fix for SQL Server production import (double ""'s are present). Curiously it was not bothering Leaflet!
  
-#### 13th to 18th February 
+#### 13th to 17th February 
 
 * Add geographic centroid to lookup table
 * Change db/geography/geomlevel made a popup dialog box; auto sizing now OK
 * Added Google maps, OSM satellite and terrain data
 * Use onEachFeature to call createPopup() - much more efficient
+* Fixed feature gid to be gid of areaID
+* Sync sahsuland_empty 
  
+#### 20th to 24th February
+
 #### Current TODO list (February 2017): SQL Server Port
 
 * Re-plan for Feb 22nd meeting
@@ -891,8 +895,9 @@ RangeError: Invalid string length
 
 #### TileViewer TODO (defferred to May?):
  
+* Add tileid to tile topoJSON/GeoJSON; include in error messages
+ 
 * Fix blank name properties
-* Fix gid to be gid of areaID
 * Add all properties from lookup table
 * Missing name in level2 sahsuland (caused by mixed case field names)
 * Add parent area_id, name

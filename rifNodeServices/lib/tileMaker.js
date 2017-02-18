@@ -436,7 +436,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 
-				'areaid', 'areaname', 'block', 'geographic_centroid'];
+				'areaid', 'areaname', 'block', 'geographic_centroid', 'lookup_gid'];
 			for (var key in row) {
 				if (usedAready.indexOf(key) ==	-1) { // Not tile_id, geolevel_id, zoomlevel, optimised_wkt, areaid, areaName
 					// Already added: areaName, areaID
@@ -596,7 +596,7 @@ var dbTileMaker = function dbTileMaker(dbSql, client, createPngfile, tileMakerCo
 			
 			// Add other keys to properties; i.e, anything else in lookup table
 			var usedAready=['tile_id', 'geolevel_id', 'zoomlevel', 'optimised_wkt', 
-				'areaid', 'areaname', 'block', 'geographic_centroid'];
+				'areaid', 'areaname', 'block', 'geographic_centroid', 'lookup_gid'];
 			for (var key in row) {
 				if (usedAready.indexOf(key) ==	-1 && 
 					this.geojson.features[(this.geojson.features.length-1)].properties[key] == undefined) { 
@@ -802,7 +802,7 @@ REFERENCE (from shapefile) {
 		var geojson={
 			type: "Feature",
 			properties: {
-				gid: 	  			 row.gid,
+				gid: 	  			 row.lookup_gid,
 				area_id:   			 row.areaid,
 				name: 				 (row.areaname||row.areaid),
 				geographic_centroid: geographic_centroid
@@ -1486,7 +1486,8 @@ REFERENCE (from shapefile) {
 			sql="WITH a AS (\n" +
 				"	SELECT z.geolevel_id::VARCHAR||'_'||'" + geolevelName + 
 								"'||'_'||z.zoomlevel::VARCHAR||'_'||z.x::VARCHAR||'_'||z.y::VARCHAR AS tile_id,\n" +
-				"	       z.areaid, z.geolevel_id, z.zoomlevel, ST_AsText(z.geom) AS optimised_wkt, z.x, z.y, y.block, a.*\n" +				
+				"	       z.areaid, z.geolevel_id, z.zoomlevel, ST_AsText(z.geom) AS optimised_wkt, z.x, z.y, y.block,\n" + 
+				" 		   a.gid AS lookup_gid, a.*\n" +								
 				"	  FROM " + tileIntersectsTable + " z, " + tileBlocksTable + " y, lookup_" + geolevelName + " a\n" +
 				"	 WHERE z.geolevel_id = $2\n" + 
 				"	   AND z.zoomlevel   = $1\n" + 
@@ -1498,7 +1499,7 @@ REFERENCE (from shapefile) {
 				"	   AND y.y           = z.y\n" +
 				")\n" +
 				"SELECT tile_id, areaid, geolevel_id, zoomlevel, x, y, block,\n" + 
-				"       areaname, " + geolevelName + ", geographic_centroid::Text AS geographic_centroid, optimised_wkt\n" + 
+				"       areaname, " + geolevelName + ", geographic_centroid::Text AS geographic_centroid, optimised_wkt, lookup_gid\n" + 
 				"       FROM a\n" + 
 				" ORDER BY tile_id, areaid";
 		}		
@@ -1506,7 +1507,8 @@ REFERENCE (from shapefile) {
 			sql="WITH a AS (\n" +
 				"	SELECT CAST(z.geolevel_id AS VARCHAR) + '_' + '" + geolevelName + 
 							"' + '_' + CAST(z.zoomlevel AS VARCHAR) + '_' + CAST(z.x AS VARCHAR) + '_' + CAST(z.y AS VARCHAR) AS tile_id,\n" +
-				"  	     z.geolevel_id, z.zoomlevel, z.geom.STAsText() AS optimised_wkt, z.areaid, z.x, z.y, y.block, a.*\n" +				
+				"  	     z.geolevel_id, z.zoomlevel, z.geom.STAsText() AS optimised_wkt, z.areaid, z.x, z.y, y.block,\n" + 
+				" 		 a.gid AS lookup_gid, a.*\n" +				
 				" 	 FROM " + tileBlocksTable + " y, " + tileIntersectsTable + " z, lookup_" + geolevelName + " a\n" +
 				"	 WHERE y.geolevel_id = @geolevel_id\n" + 
 				"	   AND y.zoomlevel   = @zoomlevel\n" + 
@@ -1518,7 +1520,7 @@ REFERENCE (from shapefile) {
 				"	   AND z.areaid      = a." + geolevelName + "\n" + 
 				")\n" +
 				"SELECT tile_id, areaid, geolevel_id, zoomlevel, x, y, block,\n" + 
-				"       areaname, " + geolevelName + ", geographic_centroid, optimised_wkt\n" + 
+				"       areaname, " + geolevelName + ", geographic_centroid, optimised_wkt, lookup_gid\n" + 
 				"       FROM a\n" + 
 				" ORDER BY tile_id, areaid"
 		}
