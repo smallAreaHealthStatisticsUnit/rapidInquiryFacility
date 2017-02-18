@@ -3,6 +3,23 @@
  *
  * Leaflet.GeoJSONGridLayer: https://github.com/ebrelsford/leaflet-geojson-gridlayer
  * by Eric Brelsford 
+ *
+ * Usage:
+ 
+ 		topojsonTileLayer = new L.topoJsonGridLayer(topojsonURL, 
+		// E.g. http://127.0.0.1:3000/getMapTile/?zoomlevel=1&x=0&y=0&databaseType=PostGres&table_catalog=sahsuland_dev&table_schema=peter&table_name=geography_sahsuland&geography=SAHSULAND&geolevel_id=2&tiletable=tiles_sahsuland&output=topojson
+			{
+				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
+                layers: {
+					default: { // If not using a feature collection (which we are not)
+						style: style,
+						onEachFeature: createPopup // i.e. Call createPopup(feature, layer) function,
+						... more L.GeoJSON options
+					} 
+                }
+			}
+		);
+		
  */
 
 (function () {
@@ -107,36 +124,6 @@
 							geojson = topojson.feature(data, data.objects[key]);
 						}
 					}
-	
-//					if (geojson.bbox) { 	// Remove bounding box
-//						delete geojson.bbox;
-//					}
-
-					// Remove points
-					/* Now done by tileMaker
-					if (geojson.features) {
-						for (var i=0; i<geojson.features.length; i++) {
-							var feature=geojson.features[i];
-							if (feature.geometry && feature.geometry.geometries != undefined) {
-								for (var j=0; j<feature.geometry.geometries.length; j++) {
-									if (feature.geometry.geometries[j].type && 
-									    feature.geometry.geometries[j].type == "Point") {
-										consoleLog("Remove feature from geojson[" + i + ", " + j + "]: " + 
-											JSON.stringify(feature.geometry.geometries[j]).substring(1, 300));
-										delete feature.geometry.geometries[j];			
-									}
-								} 
-							}
-							else if (feature.geometry && feature.geometry.type) {
-								if (feature.geometry.type && feature.geometry.type == "Point") {
-									consoleLog("Remove feature from geojson[" + i + "]: " + 
-										JSON.stringify(feature.geometry).substring(1, 300));
-									delete feature.geometry;			
-								}
-							}	 								
-						}
-					} */
-
 					data=geojson;
 				}
 								
@@ -150,10 +137,9 @@
                     });
                 }
             },
-
             addSubLayerData: function (sublayer, data) {
                 if (!this._geojsons[sublayer]) {
-                    this._geojsons[sublayer] = new this.geoJsonClass(null, this.options.layers[sublayer]).addTo(this._map);
+                    this._geojsons[sublayer] = new this.geoJsonClass(null, this.options.layers[sublayer]).addTo(this._map);	
                     this.checkZoomConditions(this._map.getZoom());
                 }
                 var toAdd = data.features.filter(function (feature) {
@@ -168,10 +154,10 @@
                     this._features[sublayer][id] = feature;
                 }, this);
 
-                this._geojsons[sublayer].addData({
+                var geoJSONlayer=this._geojsons[sublayer].addData({ // Add geoJSON data. This creates multiple layers
                     type: 'FeatureCollection',
                     features: toAdd
-                });
+				});
             },
 
             checkZoomConditions: function (zoom) {

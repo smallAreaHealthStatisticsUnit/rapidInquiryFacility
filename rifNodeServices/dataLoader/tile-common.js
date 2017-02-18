@@ -707,32 +707,10 @@ function addTileLayer(methodFields) {
 					return feature.id; 
 				}
 			}, {
-				style: style /*,
-				onEachFeature: function (feature, layer) {
-					if (feature.properties) {
-						var popupString = '<div class="popup">';
-						for (var k in feature.properties) {
-							var v = feature.properties[k];
-							popupString += k + ': ' + v + '<br />';
-						}
-						popupString += '</div>';
-						layer.bindPopup(popupString);
-					}
-					if (!(layer instanceof L.Point)) {
-						layer.on('mouseover', function () {
-							layer.setStyle(hoverStyle);
-						});
-						layer.on('mouseout', function () {
-							layer.setStyle(style);
-						});
-					}
-				} */
+				style: style,
+				onEachFeature: createPopup
 			}
-		);
-		topojsonTileLayer.on('tileerror', function(error, tile) {
-			consoleLog("Error: " + error + " loading tile: " + tile);
-		});
-		map.addLayer(topojsonTileLayer);	
+		);	
 	} // End of Leaflet 0.7 code
 	else { // Leadflet 1.0 code - uses topoJSON
 		geolevel.output="TopoJSON";
@@ -743,26 +721,23 @@ function addTileLayer(methodFields) {
 		topojsonTileLayer = new L.topoJsonGridLayer(topojsonURL, {
 				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
                 layers: {
-                   default: {
-						style: style 
+					default: { // If not using a feature collection (which we are not)
+						style: style,
+						onEachFeature: createPopup
 					} 
                 }
-			}, {			
-				style: style 
-			} 
+			}
 		);
-//		topojsonTileLayer.setOpacity(0.3);
-		topojsonTileLayer.on('tileerror', function(error, tile) {
-			consoleLog("Error: " + error + " loading tile: " + tile);
-		});
-		topojsonTileLayer.on('load', function topojsonTileLayerLoad() {
-			consoleLog("Tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id);
-			addPopups(topojsonTileLayerCount);
-			consoleLog("Add popups complete for tile layer " + topojsonTileLayerCount + " ; geolevel_id: " + methodFields.geolevel_id);
-		});
-		map.addLayer(topojsonTileLayer);
 	}
-	
+		
+	topojsonTileLayer.on('tileerror', function(error, tile) {
+		consoleLog("Error: " + error + " loading tile: " + tile);
+	});
+	topojsonTileLayer.on('load', function topojsonTileLayerLoad() {
+		consoleLog("Tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id);
+	});
+	map.addLayer(topojsonTileLayer);
+		
 	if (legend) {
 		map.removeControl(legend);
 	}
@@ -800,6 +775,99 @@ function addTileLayer(methodFields) {
 	return topojsonTileLayer;
 } // End of addTileLayer()
 
+/*
+ * Function:	createPopup()
+ * Parameters:	GeoJSON feature, layer
+ * Returns:		Nothing
+ * Description: Create Leaflet popup from geoJSON features using onEachFeature option
+ */	
+function createPopup(feature, layer) {
+	var popop=[];
+	var errorArray=[];
+	var latlng;
+	var id = feature.id ? feature.id : feature.properties.id;
+	
+	for (var key in feature.properties) { // Process properties
+		if (key == "geographic_centroid") {
+			if (typeof feature.properties[key] == "object") {
+				if (feature.properties[key].type && 
+					feature.properties[key].type == "Point" && 
+					feature.properties[key].coordinates) {
+					popop.push("<tr><td>" + (key) + ": </td><td>" +
+						JSON.stringify(feature.properties[key].coordinates, null, 2) + "</td></tr>");
+					latlng=L.latLng({
+						lat: feature.properties[key].coordinates[1], 
+						lng: feature.properties[key].coordinates[0]
+					});
+				}
+				else {
+					errorArray.push("createPopup() Unknown feature.properties[key] JSON: " +
+						JSON.stringify(feature.properties[key]) + 
+						"; for: " + JSON.stringify(feature.properties, null, 2));	
+				}
+			}
+			else if (feature.properties[key]) { // Parse: caused by bug in tileMaker
+				var geographic_centroid=feature.properties[key];
+				
+				try {
+					geographic_centroid=JSON.parse(feature.properties[key]);
+					if (geographic_centroid.type && 
+						geographic_centroid.type == "Point" && 
+						geographic_centroid.coordinates) {
+						popop.push("<tr><td>" + (key) + ": </td><td>" +
+							JSON.stringify(geographic_centroid.coordinates, null, 2) + "</td></tr>");
+							latlng=L.latLng({
+								lat: geographic_centroid.coordinates[1], 
+								lng: geographic_centroid.coordinates[0]
+							});	
+						errorArray.push("createPopup() Had to parse stringified JSON: " +
+							JSON.stringify(geographic_centroid) + 
+							"; for: " + JSON.stringify(feature.properties, null, 2));
+					}
+					else {
+						errorArray.push("createPopup() Unknown geographic_centroid JSON: " +
+							JSON.stringify(geographic_centroid) + 
+							"; for: " + JSON.stringify(feature.properties, null, 2));									
+					}
+				}
+				catch (e) {
+					consoleError("createPopup() cannot parse geographic_centroid: " + e.message, 
+						"feature.properties[key]: " + 
+						feature.properties[key] + 
+						"; for: " + JSON.stringify(feature.properties, null, 2));
+				}
+			}	
+			else {
+				errorArray.push("createPopup() No centroid for: " + JSON.stringify(feature.properties, null, 2));	
+			}					
+		}
+		else {
+			popop.push("<tr><td>" + (key) + ": </td><td>" + feature.properties[key] + "</td></tr>");	
+		}		
+		
+	} // End of for loop				
+	var html = '<a><table id="popups">' + (popop.join("")||"No data, id: " + feature.properties.id) + '</table></a>';
+//	consoleLog("Popup HTML, id: " + feature.properties.id + " >>>\n" + html);
+	
+//	layer.bindPopup(html);			// Non dynamic popup
+	layer.on('click', function(e) { // Create popup dynamically. Only one at a time is allowed by default
+		if (mouseoverPopup && map) { // Remove old popup
+			map.closePopup(mouseoverPopup);
+			mouseoverPopup = null;
+		}
+		mouseoverPopup = L.popup()
+			.setLatLng(latlng || e.latlng) 
+			.setContent(html)
+			.openOn(map);
+	});	
+	
+	if (errorArray.length > 0) {
+		errorPopup(new Error("createPopup() tile id " + 0 + ": " + errorArray.length + " error(s) adding: " + 
+			feature.length + " dynamic popups"), "<pre>" + errorArray.join("\n") + "</pre>");
+	}
+
+} // End of createPopup()
+			
 /*
  * Function:	getBbox()
  * Parameters:	databaseType, databaseName, databaseSchema, geography, table_name, tileTable, getBboxCallback
@@ -914,156 +982,3 @@ function addGridLayer() {
 	
 	tiles.addTo(map);
 } // End of addGridLayer()
-
-/*
- * Function:	addPopups()
- * Parameters:	topojsonTileLayerCount
- * Returns:		Nothing
- * Description: Get all the geojson layers from map; a mouseclick dynamic popups. Check geometry types
- */
-function addPopups(myTopojsonTileLayerCount) {
-
-    var allMarkersObjArray = []; // for marker objects
-	var newLayerFlagged=false;
-    consoleLog("addPopups() tile layer " + topojsonTileLayerCount + " start");
-    $.each(map._layers, function (ml) { // JQuery element iteratpor
-        if (map._layers[ml].feature) {
-			allMarkersObjArray.push(this);
-		}	
-	});
-	
-	var errorArray = [];
-    consoleLog("addPopups() tile layer " + topojsonTileLayerCount + " processing " + allMarkersObjArray.length + " layers");	
-	async.forEachOfSeries(allMarkersObjArray, 
-		function layerSeries(value, i, layerSeriesCallback) { // Processing code
-			var geojson=value.toGeoJSON();
-			if (geojson == undefined) {
-				errorArray.push("addPopups() No geoJSON for layer: " + i);
-				layerSeriesCallback();
-			}
-			if (myTopojsonTileLayerCount != topojsonTileLayerCount) {
-				if (newLayerFlagged == false) {
-					consoleError("addPopups() tile layer " + topojsonTileLayerCount + " new layer detected; quit processing " + 
-						allMarkersObjArray.length + " layers")
-						newLayerFlagged=true;
-				}
-				layerSeriesCallback();
-			}
-			else {
-				var popop=[];
-				var latlng;
-				for (var key in geojson.properties) { // Process properties
-					if (key == "geographic_centroid") {
-						if (typeof geojson.properties[key] == "object") {
-							if (geojson.properties[key].type && 
-								geojson.properties[key].type == "Point" && 
-								geojson.properties[key].coordinates) {
-								popop.push("<tr><td>" + (key) + ": </td><td>" +
-									JSON.stringify(geojson.properties[key].coordinates, null, 2) + "</td></tr>");
-								latlng=L.latLng({
-									lat: geojson.properties[key].coordinates[1], 
-									lng: geojson.properties[key].coordinates[0]
-								});
-	//							popop.push("<tr><td>latlng: </td><td>" +
-	//								JSON.stringify(latlng, null, 2) + "</td></tr>");
-							}
-							else {
-								errorArray.push("addPopups() Unknown geojson.properties[key] JSON: " +
-									JSON.stringify(geojson.properties[key]) + 
-									"; for: " + JSON.stringify(geojson.properties, null, 2));	
-							}
-						}
-						else if (geojson.properties[key]) { // Parse: caused by bug in tileMaker
-							var geographic_centroid=geojson.properties[key];
-							
-							try {
-								geographic_centroid=JSON.parse(geojson.properties[key]);
-								if (geographic_centroid.type && 
-									geographic_centroid.type == "Point" && 
-									geographic_centroid.coordinates) {
-									popop.push("<tr><td>" + (key) + ": </td><td>" +
-										JSON.stringify(geographic_centroid.coordinates, null, 2) + "</td></tr>");
-										latlng=L.latLng({
-											lat: geographic_centroid.coordinates[1], 
-											lng: geographic_centroid.coordinates[0]
-										});	
-										errorArray.push("addPopups() Had to parse stringified JSON: " +
-										JSON.stringify(geographic_centroid) + 
-										"; for: " + JSON.stringify(geojson.properties, null, 2));
-								}
-								else {
-									errorArray.push("addPopups() Unknown geographic_centroid JSON: " +
-										JSON.stringify(geographic_centroid) + 
-										"; for: " + JSON.stringify(geojson.properties, null, 2));									
-								}
-							}
-							catch (e) {
-								errorArray.push("addPopups() cannot parse geographic_centroid: " + e.message, 
-									"geojson.properties[key]: " + 
-									geojson.properties[key] + 
-									"; for: " + JSON.stringify(geojson.properties, null, 2));
-							}
-						}	
-						else {
-							errorArray.push("addPopups() No centroid for: " + JSON.stringify(geojson.properties, null, 2));	
-						}					
-					}
-					else {
-						popop.push("<tr><td>" + (key) + ": </td><td>" + geojson.properties[key] + "</td></tr>");	
-					}		
-				} // End of for loop
-				
-				var html = '<table id="popups">' + popop.join("") + '</table>';
-				
-	//			consoleLog("geoJSON popup for layer " + i + ": " + html);
-	//			value.bindPopup(html);			// Non dynamic popup
-				value.on('click', function(e) { // Create popup dynamically. Omnly one at a time is allowed by default
-					if (mouseoverPopup && map) { // Remove old popup
-						map.closePopup(mouseoverPopup);
-						mouseoverPopup = null;
-					}
-					mouseoverPopup = L.popup()
-						.setLatLng(latlng || e.latlng) 
-						.setContent(html)
-						.openOn(map);
-					});	
-		
-	// Scan geometry types: reject LineString, MultiPoint, Point etc	
-				if (geojson.geometry.geometries) {
-					for (var j=0; j<geojson.geometry.geometries.length; j++) {
-
-						if (geojson.geometry.geometries[j].type != "Polygon" && 
-						    geojson.geometry.geometries[j].type != "MultiPolygon") {
-								errorArray.push("addPopups() Invalid  multi geometry type: " + 
-									geojson.geometry.geometries[j].type + 
-									"; for: " + JSON.stringify(geojson.properties, null, 2));	
-						}	
-					}
-				}
-				else if (geojson.geometry && geojson.geometry.type) {
-					if (geojson.geometry.type != "Polygon" && geojson.geometry.type != "MultiPolygon") {
-						errorArray.push("addPopups() Invalid  geometry type: " + geojson.geometry.type + 
-							"; for: " + JSON.stringify(geojson.properties, null, 2));	
-					}
-				}	
-				
-				if (errorArray.length == 0) {
-					layerSeriesCallback(); // Causing "too much recursion" error in Mozilla
-				}
-				else {
-					layerSeriesCallback(new Error("addPopups() tile layer " + topojsonTileLayerCount + ": " + errorArray.length + " error(s) adding: " + 
-						allMarkersObjArray.length + " dynamic popups"));
-				}			
-			} 	
-        }, // End of layerSeries()
-		function layerSeriesEnd(err) { //  Callback	
-			if (err) {
-				errorPopup(err.message, "<pre>" + errorArray.join("\n") + "</pre>");
-			}
-			else {			
-				consoleLog("addPopups() tile layer " + topojsonTileLayerCount + " added: " + allMarkersObjArray.length + " dynamic popups; no errors");			
-			}
-		} // End of layerSeriesEnd()
-	); // End of async.forEachOfSeries()
-	
-} // End of addPopups()
