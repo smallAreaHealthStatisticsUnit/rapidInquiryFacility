@@ -547,16 +547,16 @@ COMMENT /*
 --
 
 -- SQL statement 33: Load DB specific geolevel lookup table: (mssql_/pg_)lookup_sahsu_grd_level1 >>>
-\copy lookup_sahsu_grd_level1(sahsu_grd_level1, areaname, gid, geographic_centroid) FROM 'pg_lookup_sahsu_grd_level1.csv' DELIMITER ',' CSV HEADER;
+\copy lookup_sahsu_grd_level1(sahsu_grd_level1, areaname, gid, geographic_centroid) FROM '../../GeospatialData/tileMaker/pg_lookup_sahsu_grd_level1.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 34: Load DB specific geolevel lookup table: (mssql_/pg_)lookup_sahsu_grd_level2 >>>
-\copy lookup_sahsu_grd_level2(sahsu_grd_level2, areaname, gid, geographic_centroid) FROM 'pg_lookup_sahsu_grd_level2.csv' DELIMITER ',' CSV HEADER;
+\copy lookup_sahsu_grd_level2(sahsu_grd_level2, areaname, gid, geographic_centroid) FROM '../../GeospatialData/tileMaker/pg_lookup_sahsu_grd_level2.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 35: Load DB specific geolevel lookup table: (mssql_/pg_)lookup_sahsu_grd_level3 >>>
-\copy lookup_sahsu_grd_level3(sahsu_grd_level3, areaname, gid, geographic_centroid) FROM 'pg_lookup_sahsu_grd_level3.csv' DELIMITER ',' CSV HEADER;
+\copy lookup_sahsu_grd_level3(sahsu_grd_level3, areaname, gid, geographic_centroid) FROM '../../GeospatialData/tileMaker/pg_lookup_sahsu_grd_level3.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 36: Load DB specific geolevel lookup table: (mssql_/pg_)lookup_sahsu_grd_level4 >>>
-\copy lookup_sahsu_grd_level4(sahsu_grd_level4, areaname, gid, geographic_centroid) FROM 'pg_lookup_sahsu_grd_level4.csv' DELIMITER ',' CSV HEADER;
+\copy lookup_sahsu_grd_level4(sahsu_grd_level4, areaname, gid, geographic_centroid) FROM '../../GeospatialData/tileMaker/pg_lookup_sahsu_grd_level4.csv' DELIMITER ',' CSV HEADER;
 
 --
 -- Hierarchy table
@@ -660,7 +660,7 @@ COMMENT /*
 --
 
 -- SQL statement 49: Load DB dependent hierarchy table from CSV file >>>
-\copy hierarchy_sahsuland FROM 'pg_hierarchy_sahsuland.csv' DELIMITER ',' CSV HEADER;
+\copy hierarchy_sahsuland FROM '../../GeospatialData/tileMaker/pg_hierarchy_sahsuland.csv' DELIMITER ',' CSV HEADER;
 
 --
 -- Create geometry table
@@ -910,7 +910,7 @@ COMMENT /*
 	ON COLUMN geometry_sahsuland.wkt IS 'Well known text';
 
 -- SQL statement 65: Load DB dependent geometry table from CSV file >>>
-\copy geometry_sahsuland(geolevel_id, areaid, zoomlevel, wkt) FROM 'pg_geometry_sahsuland.csv' DELIMITER ',' CSV HEADER;
+\copy geometry_sahsuland(geolevel_id, areaid, zoomlevel, wkt) FROM '../../GeospatialData/tileMaker/pg_geometry_sahsuland.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 66: Add WKT column >>>
 /*
@@ -2253,16 +2253,16 @@ COMMENT /*
 --
 
 -- SQL statement 132: Load DB dependent tiles table from geolevel CSV files >>>
-\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM 'pg_t_tiles_sahsu_grd_level1.csv' DELIMITER ',' CSV HEADER;
+\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM '../../GeospatialData/tileMaker/pg_t_tiles_sahsu_grd_level1.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 133: Load DB dependent tiles table from geolevel CSV files >>>
-\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM 'pg_t_tiles_sahsu_grd_level2.csv' DELIMITER ',' CSV HEADER;
+\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM '../../GeospatialData/tileMaker/pg_t_tiles_sahsu_grd_level2.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 134: Load DB dependent tiles table from geolevel CSV files >>>
-\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM 'pg_t_tiles_sahsu_grd_level3.csv' DELIMITER ',' CSV HEADER;
+\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM '../../GeospatialData/tileMaker/pg_t_tiles_sahsu_grd_level3.csv' DELIMITER ',' CSV HEADER;
 
 -- SQL statement 135: Load DB dependent tiles table from geolevel CSV files >>>
-\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM 'pg_t_tiles_sahsu_grd_level4.csv' DELIMITER ',' CSV HEADER;
+\copy t_tiles_sahsuland(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson) FROM '../../GeospatialData/tileMaker/pg_t_tiles_sahsu_grd_level4.csv' DELIMITER ',' CSV HEADER;
 
 --
 -- Analyze tables
