@@ -136,8 +136,12 @@ BEGIN
 	FOR c1_rec IN c1 LOOP
 		i:=i+1;
 		sql_stmt[i]:='COMMENT ON COLUMN '||c1_rec.table_or_view||'.'||c1_rec.column_name||' IS '''||c1_rec.description||'''';
+		BEGIN
+			PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+		EXCEPTION	
+			WHEN others THEN NULL; -- Ignore missing columns not in views: e.g. st_simplify_tolerance in rif40_geolevels
+		END;
 	END LOOP;
-	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
 END;
 $$;
 \set VERBOSITY default
