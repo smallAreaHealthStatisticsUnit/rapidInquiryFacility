@@ -1,5 +1,7 @@
 To install database, run in this order (I think):
 
+0. Install SQL Server 2012 SP2 (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
+
 1. Create database and rif40 user (pleased set rif40 password); run as Administrator:
 
 	```
