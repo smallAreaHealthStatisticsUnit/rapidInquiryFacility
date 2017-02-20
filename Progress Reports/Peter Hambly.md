@@ -885,10 +885,10 @@ RangeError: Invalid string length
   1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
   2. Make RIF40_TABLES.THEME nullable for denominators
   3. INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
-  3. Fix:
+  4. Fix:
      * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
      * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
-  4. Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
+  5. Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
  
 * SQL Server run study port
 * SQL server fault in rif40_geographies/geometry insert triggers
@@ -920,7 +920,7 @@ RangeError: Invalid string length
   
   These will need to use a suitable projection within bounds and also be translated to the desired place. i.e. using proj4 in Node.
   
-* Fix zoomlevel miss-set from config file (defaults are wrong)
+* Fix zoomlevel field miss-set from config file (defaults are wrong)
 
 ####  TODO list:
 
@@ -1005,7 +1005,7 @@ Note: no bounding box (bbox) in tiles.
   
 ##	General RIF database Todo (parked):
   
-### Database Bugs
+### Database Bugs (deffered)
 
 * AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
   for duplicate county names within a state
@@ -1015,7 +1015,7 @@ Note: no bounding box (bbox) in tiles.
   Alternatively check in rif40_run_study
 * Rename offset in age_sex_groups (reserved keyword)
   
-### New features
+### New features (deffered)
 
 2. New study state "S" - Smoothed; new method: setStudyState(study_id, state) {…}
 2. New study status table: t_rif40_study_status(username, study_id, study_state, creation_date, ith_update, message); ith_update is auto increment
