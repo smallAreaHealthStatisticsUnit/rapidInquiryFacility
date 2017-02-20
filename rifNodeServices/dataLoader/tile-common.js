@@ -559,12 +559,16 @@ function addBaseLayers(maxZoomlevel) {
 		maxZoom: maxZoomlevel||11,
 		type:'hybrid'
 	});
+	hybridMutant.on('tileerror', function(tile) {
+		consoleError("Error: loading hybridMutant tile: " + JSON.stringify(tile.coords)||"UNK");
+	});
 /*	
 	var locality = L.gridLayer.googleMutant({
 		maxZoom: maxZoomlevel||11,
 		type:'administrative.locality'
 	}).addTo(map);
  */	
+// Mapbox/OSM layers
 	var osmLight=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 		maxZoom: maxZoomlevel||11,
 		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -573,8 +577,10 @@ function addBaseLayers(maxZoomlevel) {
 		id: 'mapbox.light',
 		noWrap: true
 	}).addTo(map);
+	osmLight.on('tileerror', function(tile) {
+		consoleError("Error: loading osmLight tile: " + JSON.stringify(tile.coords)||"UNK");
+	});
 
-// Mapbox/OSM layers
 	var osmStreets=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 		maxZoom: maxZoomlevel||11,
 		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -582,6 +588,9 @@ function addBaseLayers(maxZoomlevel) {
 			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
 		id: 'mapbox.streets',
 		noWrap: true
+	});
+	osmStreets.on('tileerror', function(tile) {
+		consoleError("Error: loading osmStreets tile: " + JSON.stringify(tile.coords)||"UNK");
 	});	
 
 	var osmTerrian=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
@@ -591,7 +600,10 @@ function addBaseLayers(maxZoomlevel) {
 			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
 		id: 'mapbox.outdoors',
 		noWrap: true
-	});		
+	});	
+	osmTerrian.on('tileerror', function(tile) {
+		consoleError("Error: loading osmTerrian tile: " + JSON.stringify(tile.coords)||"UNK");
+	});	
 	
 	var osmSatellite=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 		maxZoom: maxZoomlevel||11,
@@ -601,6 +613,10 @@ function addBaseLayers(maxZoomlevel) {
 		id: 'mapbox.satellite',
 		noWrap: true
 	});	
+	osmSatellite.on('tileerror', function(tile) {
+		consoleError("Error: loading osmSatellite tile: " + JSON.stringify(tile.coords)||"UNK");
+	});
+	
 /*
 	var styleMutant = L.gridLayer.googleMutant({
 		styles: [
@@ -731,7 +747,7 @@ function addTileLayer(methodFields) {
 	}
 		
 	topojsonTileLayer.on('tileerror', function(error, tile) {
-		consoleLog("Error: " + error + " loading tile: " + tile);
+		consoleError("Error: " + error.message + " loading topoJSON tile: " + tile);
 	});
 	topojsonTileLayer.on('load', function topojsonTileLayerLoad() {
 		consoleLog("Tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id);
