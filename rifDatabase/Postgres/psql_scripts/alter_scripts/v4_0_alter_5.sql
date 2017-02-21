@@ -279,7 +279,7 @@ DELETE FROM rif40_columns
 DELETE FROM rif40_columns 
  WHERE column_name_hide IN ('MAXZOOMLEVEL', 'MINZOOMLEVEL', 'GEOMETRYTABLE', 'HIERARCHYTABLE') 
    AND table_or_view_name_hide IN ('RIF40_GEOGRAPHIES'); 
-
+/*
 INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   		 
 SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
       CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,
@@ -294,7 +294,7 @@ SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_n
 		SELECT LOWER(column_name_hide) AS column_name
  		  FROM rif40_columns
 		 WHERE table_or_view_name_hide IN ('RIF40_GEOLEVELS')); 
-		 
+ */		 
 INSERT INTO rif40_columns (table_or_view_name_hide, column_name_hide, nullable, oracle_data_type, comments)   		 
 SELECT UPPER(b.relname) AS table_or_view_name_hide, UPPER(d.attname) AS column_name_hide, 
       CASE WHEN d.attnotnull THEN 'NOT NULL' ELSE 'NULL' END AS nullable, t.typname AS oracle_data_type,

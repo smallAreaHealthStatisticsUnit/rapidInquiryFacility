@@ -711,6 +711,13 @@ ALTER TABLE rif40_columns
   DROP CONSTRAINT IF EXISTS table_or_view_name_hide_fk;  
 ALTER TABLE rif40_columns
   DROP CONSTRAINT IF EXISTS nullable_ck;
+ 
+SELECT table_or_view_name_hide, column_name_hide, COUNT(column_name_hide)
+  FROM rif40_columns
+ GROUP BY table_or_view_name_hide, column_name_hide
+ HAVING COUNT(column_name_hide) > 1
+ ORDER BY 1, 2;
+ 
 ALTER TABLE rif40_columns			
   ADD CONSTRAINT rif40_columns_pk PRIMARY KEY (table_or_view_name_hide, column_name_hide);
 ALTER TABLE rif40_columns	

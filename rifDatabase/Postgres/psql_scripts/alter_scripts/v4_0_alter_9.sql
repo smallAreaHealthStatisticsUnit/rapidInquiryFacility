@@ -78,7 +78,7 @@ BEGIN;
 --
 -- Load new tileMaker SAHSULAND
 --
-\i ../../GeospatialData/tileMaker/rif_pg_SAHSULAND.sql
+--\i ../../GeospatialData/tileMaker/rif_pg_SAHSULAND.sql
 
 --
 --  2. Make RIF40_TABLES.THEME nullable for denominators

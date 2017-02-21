@@ -578,7 +578,7 @@ function addBaseLayers(maxZoomlevel) {
 		noWrap: true
 	}).addTo(map);
 	osmLight.on('tileerror', function(tile) {
-		consoleError("Error: loading osmLight tile: " + JSON.stringify(tile.coords)||"UNK");
+		consoleError("Error: " + tile.error.prototype.toString() + " loading osmLight tile: " + JSON.stringify(tile.coords)||"UNK");
 	});
 
 	var osmStreets=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {

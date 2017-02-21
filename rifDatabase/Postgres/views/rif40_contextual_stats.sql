@@ -66,10 +66,11 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE VIEW "rif40_contextual_stats" ("username", "study_id", "inv_id", "area_id", "area_population", 
-	"area_observed", "total_comparision_population", "variance_high", "variance_low", "hash_partition_number") 
+DROP VIEW IF EXISTS "rif40_contextual_stats";
+CREATE VIEW "rif40_contextual_stats" ("username", "study_id", "inv_id", "area_id", "area_population", 
+	"area_observed", "total_comparison_population", "variance_high", "variance_low", "hash_partition_number") 
 AS 
-SELECT  username, c.study_id, inv_id, area_id, area_population, area_observed, total_comparision_population, 
+SELECT  username, c.study_id, inv_id, area_id, area_population, area_observed, total_comparison_population, 
         variance_high, variance_low, c.hash_partition_number
    FROM t_rif40_contextual_stats c
 	LEFT OUTER JOIN rif40_study_shares s ON (c.study_id = s.study_id AND s.grantee_username = USER)
@@ -88,7 +89,7 @@ COMMENT ON COLUMN rif40_contextual_stats.inv_id IS 'Unique investigation index: 
 COMMENT ON COLUMN rif40_contextual_stats.area_id IS 'An area id, the value of a geolevel; i.e. the value of the column T_RIF40_GEOLEVELS.GEOLEVEL_NAME in table T_RIF40_GEOLEVELS.LOOKUP_TABLE';
 COMMENT ON COLUMN rif40_contextual_stats.area_population IS 'Total population in area';
 COMMENT ON COLUMN rif40_contextual_stats.area_observed IS 'Total observed in area';
-COMMENT ON COLUMN rif40_contextual_stats.total_comparision_population IS 'Total comparison population. Used for internal calculations.';
+COMMENT ON COLUMN rif40_contextual_stats.total_comparison_population IS 'Total comparison population. Used for internal calculations.';
 COMMENT ON COLUMN rif40_contextual_stats.variance_high IS 'Variance (observed &gt; 100). Used for internal calculations.';
 COMMENT ON COLUMN rif40_contextual_stats.variance_low IS 'Variance (observed &lt;= 100). Used for internal calculations.';
 COMMENT ON COLUMN rif40_contextual_stats.hash_partition_number IS 'Hash partition number. Used for partition elimination';
