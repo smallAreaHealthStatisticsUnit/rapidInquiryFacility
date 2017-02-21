@@ -99,12 +99,14 @@ AS
          INSERT INTO [rif40].[rif40_ErrorLog]
          (
              ERROR_NUMBER
+			 ,ERROR_LINE
              ,ERROR_LOCATION
              ,ERROR_MESSAGE
          )
          VALUES 
         (
              -100
+			 ,-100
              ,OBJECT_NAME(@@PROCID)
              ,'Error Log Procedure Errored out'
          );

@@ -133,6 +133,15 @@ Or run:
 
 * rif40_sahsuland_dev_install.bat
 
+
+cd ..\..\GeospatialData\tileMaker
+
+sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i rif_mssql_SAHSULAND.sql -v pwd="%cd%"
+
+5. Load geography with:
+
+6. Load sahsuland example data with:
+
 Notes:
 
 * All scripts are now transactional, with a script of the same name usually in the source code directory;

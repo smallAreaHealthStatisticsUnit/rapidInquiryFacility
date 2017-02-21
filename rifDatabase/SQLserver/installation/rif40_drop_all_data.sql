@@ -25,6 +25,8 @@ TRUNCATE TABLE [rif40].[rif40_age_groups];
 GO
 DELETE FROM [rif40].[rif40_predefined_groups];
 GO
+DELETE FROM [rif40].[rif40_table_outcomes];
+GO
 DELETE FROM [rif40].[rif40_outcome_groups];
 GO
 TRUNCATE TABLE [rif40].[rif40_table_outcomes];

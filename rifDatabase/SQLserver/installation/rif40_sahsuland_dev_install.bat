@@ -46,5 +46,9 @@ REM MUST BE RUN AS ADMINSTRATOR
 REM
 sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_sahsuland_dev_install.sql -v path="%cd%\..\.." -I
 
+REM Does not work in github tree - strange permission problem!
+REM sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i ..\..\GeospatialData\tileMaker\rif_mssql_SAHSULAND.sql -v pwd="%cd%\..\..\GeospatialData\tileMaker"
+
+REM sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i ms_run_data_loader_20-Feb-2017_14_31_36.sql -v pwd="%cd%"
 REM
 REM Eof

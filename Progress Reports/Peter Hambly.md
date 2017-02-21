@@ -886,6 +886,8 @@ RangeError: Invalid string length
      * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
      * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
   5. Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
+     Stick with Postgres
+
 * sahsuland_empty fix in alter 5 for:
 ```
 	ALTER TABLE rif40_columns
@@ -900,7 +902,21 @@ RangeError: Invalid string length
 
  
 * SQL Server run study port
-* SQL server fault in rif40_geographies/geometry insert triggers
+* SQL server faults in insert triggers: tr_covariates_check, tr_geolevel_check, tr_rif40_tables_checks;
+```
+Msg 8114, Level 16, State 5, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_covariates_check, Line 12
+Error converting data type varchar to numeric.
+```
+
+```
+Msg 51146, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_geolevel_check, Line 36
+Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
+```
+
+```
+Msg 51147, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_rif40_tables_checks, Line 38
+Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
+```
 
 #### TileViewer TODO (defferred to May?):
  
