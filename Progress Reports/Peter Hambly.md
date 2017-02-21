@@ -877,9 +877,6 @@ RangeError: Invalid string length
  
 #### 20th to 24th February
 
-#### Current TODO list (February 2017): SQL Server Port
-
-* Re-plan for Feb 22nd meeting
 * Alter 9:
 
   1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
@@ -889,6 +886,18 @@ RangeError: Invalid string length
      * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
      * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
   5. Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
+* sahsuland_empty fix in alter 5 for:
+```
+	ALTER TABLE rif40_columns
+	  ADD CONSTRAINT rif40_columns_pk PRIMARY KEY (table_or_view_name_hide, column_name_hide);
+	psql:alter_scripts/v4_0_alter_7.sql:715: ERROR:  could not create unique index "rif40_columns_pk"
+	DETAIL:  Key (table_or_view_name_hide, column_name_hide)=(RIF40_GEOLEVELS, AREAID_COUNT) is duplicated.
+```
+
+#### Current TODO list (February 2017): SQL Server Port
+
+* Re-plan for Feb 22nd meeting
+
  
 * SQL Server run study port
 * SQL server fault in rif40_geographies/geometry insert triggers
