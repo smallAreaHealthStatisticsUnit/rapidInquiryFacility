@@ -495,7 +495,8 @@ function createMap(boundingBox, maxZoomlevel) {
 		}
 		else {
 			consoleLog("Creating basemap...");		
-			addBaseLayers(maxZoomlevel);			
+//			addBaseLayers(maxZoomlevel);	
+			initBaseMaps("OpenStreetMap Mapnik", maxZoomlevel);			
 					
 			if (L.version >= "1.0.0") { // Leaflet 0.7 code
 //				addGridLayer(); 	// Add grid layer Leaflet 1.0+
@@ -562,12 +563,14 @@ function addBaseLayers(maxZoomlevel) {
 	hybridMutant.on('tileerror', function(tile) {
 		consoleError("Error: loading hybridMutant tile: " + JSON.stringify(tile.coords)||"UNK");
 	});
+	
 /*	
 	var locality = L.gridLayer.googleMutant({
 		maxZoom: maxZoomlevel||11,
 		type:'administrative.locality'
 	}).addTo(map);
  */	
+ 
 // Mapbox/OSM layers
 	var osmLight=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
 		maxZoom: maxZoomlevel||11,
@@ -578,7 +581,7 @@ function addBaseLayers(maxZoomlevel) {
 		noWrap: true
 	}).addTo(map);
 	osmLight.on('tileerror', function(tile) {
-		consoleError("Error: " + tile.error.prototype.toString() + " loading osmLight tile: " + JSON.stringify(tile.coords)||"UNK");
+		consoleError("Error: loading osmLight tile: " + JSON.stringify(tile.coords)||"UNK");
 	});
 
 	var osmStreets=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
@@ -633,7 +636,7 @@ function addBaseLayers(maxZoomlevel) {
 		type:'roadmap'
 	}); */
 
-	L.control.layers({
+	L.control.layers({ // Base layers
 		"OSM Light": osmLight,
 		"OSM Streets": osmStreets,
 		"OSM Terrian": osmTerrian,
@@ -644,10 +647,13 @@ function addBaseLayers(maxZoomlevel) {
 		"Google Hybrid": hybridMutant
 //		Locality: locality
 //		Styles: styleMutant 
-	}, {}, {
+	}, 
+	{ // Overlays
+		
+	}, {
 		collapsed: false
-	}).addTo(map);
-	
+	}).addTo(map); 
+
 	baseLayer = L.gridLayer({
 		attribution: 'Grid Layer'
 	});
@@ -770,7 +776,8 @@ function addTileLayer(methodFields) {
 		tableName:			"Table",
 		geography:			"Geography",
 		maxzoomlevel:		"Max zoomlevel",
-		output:				"Tile format"
+		output:				"Tile format",
+		baseLayer:			"Base layer"
 	}
 	legend.onAdd = function onAddLegend(map) {
 		var div = L.DomUtil.create('div', 'info legend');
@@ -779,7 +786,8 @@ function addTileLayer(methodFields) {
 		for (var key in geolevel) {
 			labels.push("<tr><td>" + (keyTable[key]||key) + ": </td><td>" + geolevel[key] + "</td></tr>");			
 		}
-
+		labels.push("<tr><td>" + (keyTable["baseLayer"]) + ": </td><td>" + baseLayer.name + "</td></tr>");	
+		
 		var html = '<table id="legend">' + labels.join("") + '</table>';
 //		consoleLog("Add legend: " + html);
 		div.innerHTML = html;
