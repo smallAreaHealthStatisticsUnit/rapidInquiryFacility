@@ -74,6 +74,7 @@ function Basemap(basemapOptions, basemapArray) {
 	}; // End of Tile() object
 	
 var basemapArray=[];
+var overlaymapArray=[];
 
 function initBaseMaps(defaultBaseMap, maxZoomlevel) {
 	new Basemap({
@@ -179,7 +180,125 @@ function initBaseMaps(defaultBaseMap, maxZoomlevel) {
 			subdomains: 'abcd',
 			ext: 'png'
 		})}, basemapArray);		
-
+	new Basemap({
+		name: "Esri WorldStreetMap", 
+		tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+		})}, basemapArray);
+	new Basemap({
+		name: "Esri DeLorme", 
+		tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Specialty/DeLorme_World_Base_Map/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; Copyright: &copy;2012 DeLorme'
+		})}, basemapArray);
+	new Basemap({
+		name: "Esri WorldTopoMap", 
+		tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+		})}, basemapArray);
+	new Basemap({
+		name: "Esri WorldImagery", 
+		tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+		})}, basemapArray);
+	new Basemap({
+		name: "Esri WorldTerrain", 
+		tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS'
+		})}, basemapArray);
+	new Basemap({
+		name: "Esri WorldShadedRelief", 
+		tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; Source: Esri'
+		})}, basemapArray);
+	new Basemap({
+		name: "Esri WorldPhysical ", 
+		tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; Source: US National Park Service'
+		})}, basemapArray);
+	new Basemap({
+		name: "Esri OceanBasemap", 
+		tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri'
+		})}, basemapArray);
+	new Basemap({
+		name: "Esri NatGeoWorldMap", 
+		tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC'
+		})}, basemapArray);
+	new Basemap({
+		name: "Esri WorldGrayCanvas", 
+		tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+			attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+		})}, basemapArray);
+	new Basemap({
+		name: "CartoDB Positron", 
+		tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
+			subdomains: 'abcd'
+		})}, basemapArray);
+	new Basemap({
+		name: "CartoDB PositronNoLabels", 
+		tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
+			subdomains: 'abcd'
+		})}, basemapArray);
+	new Basemap({
+		name: "CartoDB PositronOnlyLabels", 
+		tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
+			subdomains: 'abcd'
+		})}, basemapArray);
+	new Basemap({
+		name: "CartoDB DarkMatter", 
+		tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
+			subdomains: 'abcd'
+		})}, basemapArray);
+	new Basemap({
+		name: "CartoDB DarkMatterNoLabels", 
+		tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
+			subdomains: 'abcd'
+		})}, basemapArray);
+	new Basemap({
+		name: "CartoDB DarkMatterOnlyLabels", 
+		tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
+			subdomains: 'abcd'
+		})}, basemapArray);
+	new Basemap({
+		name: "HikeBike HikeBike", 
+		tileLayer: L.tileLayer('http://{s}.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+		})}, basemapArray);
+	new Basemap({
+		name: "HikeBike HillShading", 
+		tileLayer: L.tileLayer('http://{s}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+		})}, basemapArray);
+	new Basemap({
+		name: "NASAGIBS ViirsEarthAtNight2012", 
+		tileLayer: L.tileLayer('http://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/{time}/{tilematrixset}{maxZoom}/{z}/{y}/{x}.{format}', {
+			attribution: 'Imagery provided by services from the Global Imagery Browse Services (GIBS), operated by the NASA/GSFC/Earth Science Data and Information System (<a href="https://earthdata.nasa.gov" target="_blank">ESDIS</a>) with funding provided by NASA/HQ.',
+			bounds: [[-85.0511287776, -179.999999975], [85.0511287776, 179.999999975]],
+			minZoom: 1,
+			maxZoom: 8,
+			format: 'jpg',
+			time: '',
+			tilematrixset: 'GoogleMapsCompatible_Level'
+		})}, basemapArray);
+	//Additional
+	new Basemap({
+		name: "OSM UK Postcodes", 
+		tileLayer: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-npe/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">OSM Postcode</a>'
+		})}, overlaymapArray);
+	new Basemap({
+		name: "Code-Point Open UK Postcodes", 
+		tileLayer: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-os/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">Code-Point Open layers</a>'
+		})}, overlaymapArray);
+						
 	var currentBaseMap;	
 	var layerList = {};
 	for (var i=0; i<basemapArray.length; i++) {
@@ -187,19 +306,24 @@ function initBaseMaps(defaultBaseMap, maxZoomlevel) {
 			consoleError("Error: loading " + baseLayer.name + " tile: " + JSON.stringify(tile.coords)||"UNK");
 		});
 		basemapArray[i].tileLayer.name=basemapArray[i].name;
-		if (basemapArray[i].name == defaultBaseMap) {
-			currentBaseMap=basemapArray[i].tileLayer;
-		}
-		else {
-			layerList[basemapArray[i].name]=currentBaseMap=basemapArray[i].tileLayer;
-		}
+		currentBaseMap=basemapArray[i].tileLayer;
+		layerList[basemapArray[i].name]=currentBaseMap=basemapArray[i].tileLayer;
 	}
-	if (currentBaseMap) {
-		layerList[defaultBaseMap]=currentBaseMap;
+		
+	var overlayList = {};
+	for (var i=0; i<overlaymapArray.length; i++) {
+		overlaymapArray[i].tileLayer.name=overlaymapArray[i].name;
+		overlayList[overlaymapArray[i].name]=currentBaseMap=overlaymapArray[i].tileLayer;
+	}
+	
+	if (layerList[defaultBaseMap]) {
+		
+		currentBaseMap=layerList[defaultBaseMap];
 		currentBaseMap.addTo(map);
-		controlLayers=L.control.layers(layerList, // Base layers 
-		{ // Overlays
-		}, {
+		controlLayers=L.control.layers(
+			layerList, 		// Base layers 
+			overlayList, 	// Overlays
+		{
 			position: 'topright',
 			collapsed: true
 		});	
@@ -208,6 +332,7 @@ function initBaseMaps(defaultBaseMap, maxZoomlevel) {
 		map.on('baselayerchange', function baselayerchangeEvent(changeEvent) {
 			baseLayer=changeEvent.layer;
 			consoleLog("base layer changed to: " + changeEvent.layer.name);
+			document.getElementById("legend_baseLayer_value").innerHTML=changeEvent.layer.name;
 		});
 		map.on('overlayadd', function baselayerchangeEvent(changeEvent) {
 			consoleLog("overlayer added: " + changeEvent.name);
@@ -217,92 +342,11 @@ function initBaseMaps(defaultBaseMap, maxZoomlevel) {
 		});
 		controlLayers.addTo(map);
 		
-		consoleLog("Added baseLayer to map: " + baseLayer.name);	
+		consoleLog("Added baseLayer to map: " + baseLayer.name + "; default: " + defaultBaseMap);	
 	}
 	else {
-		errorPopup(new Error("Cannot load: " + currentBaseMap + "; not found in basemapArray"));
+		errorPopup(new Error("Cannot load: " + defaultBaseMap + "; not found in basemapArray"));
 	}
 } // End of initBaseMaps()
-
-/*
-
-                    
-                    basemaps.push({name: "Esri WorldStreetMap", tile: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
-                        })});
-                    basemaps.push({name: "Esri DeLorme", tile: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Specialty/DeLorme_World_Base_Map/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'Tiles &copy; Esri &mdash; Copyright: &copy;2012 DeLorme'
-                        })});
-                    basemaps.push({name: "Esri WorldTopoMap", tile: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
-                        })});
-                    basemaps.push({name: "Esri WorldImagery", tile: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-                        })});
-                    basemaps.push({name: "Esri WorldTerrain", tile: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS'
-                        })});
-                    basemaps.push({name: "Esri WorldShadedRelief", tile: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'Tiles &copy; Esri &mdash; Source: Esri'
-                        })});
-                    basemaps.push({name: "Esri WorldPhysical ", tile: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'Tiles &copy; Esri &mdash; Source: US National Park Service'
-                        })});
-                    basemaps.push({name: "Esri OceanBasemap", tile: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri'
-                        })});
-                    basemaps.push({name: "Esri NatGeoWorldMap", tile: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC'
-                        })});
-                    basemaps.push({name: "Esri WorldGrayCanvas", tile: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-                            attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
-                        })});
-                    basemaps.push({name: "CartoDB Positron", tile: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-                            subdomains: 'abcd'
-                        })});
-                    basemaps.push({name: "CartoDB PositronNoLabels", tile: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-                            subdomains: 'abcd'
-                        })});
-                    basemaps.push({name: "CartoDB PositronOnlyLabels", tile: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-                            subdomains: 'abcd'
-                        })});
-                    basemaps.push({name: "CartoDB DarkMatter", tile: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-                            subdomains: 'abcd'
-                        })});
-                    basemaps.push({name: "CartoDB DarkMatterNoLabels", tile: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-                            subdomains: 'abcd'
-                        })});
-                    basemaps.push({name: "CartoDB DarkMatterOnlyLabels", tile: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-                            subdomains: 'abcd'
-                        })});
-                    basemaps.push({name: "HikeBike HikeBike", tile: L.tileLayer('http://{s}.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
-                        })});
-                    basemaps.push({name: "HikeBike HillShading", tile: L.tileLayer('http://{s}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
-                        })});
-                    basemaps.push({name: "NASAGIBS ViirsEarthAtNight2012", tile: L.tileLayer('http://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/{time}/{tilematrixset}{maxZoom}/{z}/{y}/{x}.{format}', {
-                            attribution: 'Imagery provided by services from the Global Imagery Browse Services (GIBS), operated by the NASA/GSFC/Earth Science Data and Information System (<a href="https://earthdata.nasa.gov" target="_blank">ESDIS</a>) with funding provided by NASA/HQ.',
-                            bounds: [[-85.0511287776, -179.999999975], [85.0511287776, 179.999999975]],
-                            minZoom: 1,
-                            maxZoom: 8,
-                            format: 'jpg',
-                            time: '',
-                            tilematrixset: 'GoogleMapsCompatible_Level'
-                        })});
-                    //Additional
-                    basemaps.push({name: "OSM UK Postcodes", tile: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-npe/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">OSM Postcode</a>'
-                        })});
-                    basemaps.push({name: "Code-Point Open UK Postcodes", tile: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-os/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">Code-Point Open layers</a>'
-                        })});
-						*/
 						
 // Eof

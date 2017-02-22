@@ -51,6 +51,7 @@ var baseLayer;
 var legend;
 var mouseoverPopup;
 var topojsonTileLayerCount=0;
+var LegendDiv;
 
 /*
  * Function: 	scopeChecker()
@@ -763,7 +764,7 @@ function addTileLayer(methodFields) {
 	if (legend) {
 		map.removeControl(legend);
 	}
-	legend = L.control({position: 'bottomright'});
+	legend = L.control({position: 'bottomleft'});
 			
 	var keyTable = {	// Translate tags
 		geolevel_id: 		"GEOLEVEL_ID",
@@ -780,18 +781,20 @@ function addTileLayer(methodFields) {
 		baseLayer:			"Base layer"
 	}
 	legend.onAdd = function onAddLegend(map) {
-		var div = L.DomUtil.create('div', 'info legend');
+		LegendDiv = L.DomUtil.create('div', 'info legend');
 		var labels=[];
 
 		for (var key in geolevel) {
-			labels.push("<tr><td>" + (keyTable[key]||key) + ": </td><td>" + geolevel[key] + "</td></tr>");			
+			labels.push('<tr><td id="legend_' + key + '">' + (keyTable[key]||key) + 
+				': </td><td id="legend_' + key + '_value">' + geolevel[key] + "</td></tr>");			
 		}
-		labels.push("<tr><td>" + (keyTable["baseLayer"]) + ": </td><td>" + baseLayer.name + "</td></tr>");	
+		labels.push('<tr><td id="legend_baseLayer">' + (keyTable["baseLayer"]) + 
+			': </td><td id="legend_baseLayer_value">' + baseLayer.name + "</td></tr>");	
 		
 		var html = '<table id="legend">' + labels.join("") + '</table>';
 //		consoleLog("Add legend: " + html);
-		div.innerHTML = html;
-		return div;
+		LegendDiv.innerHTML = html;
+		return LegendDiv;
 	};
 						
 	legend.addTo(map);
