@@ -895,6 +895,7 @@ RangeError: Invalid string length
 	psql:alter_scripts/v4_0_alter_7.sql:715: ERROR:  could not create unique index "rif40_columns_pk"
 	DETAIL:  Key (table_or_view_name_hide, column_name_hide)=(RIF40_GEOLEVELS, AREAID_COUNT) is duplicated.
 ```
+* SQL Server data loader script integration
 * SQL server faults in insert triggers: tr_covariates_check, tr_geolevel_check, tr_rif40_tables_checks;
 ```
 Msg 8114, Level 16, State 5, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_covariates_check, Line 12
@@ -919,6 +920,12 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 * Integrate geosptial and data loader data into sahsuland_dev
 * SQL Server installer
 * SQL Server run study port
+* Postgres data loader script integration
+* SQL Server Installer documentation
+
+#### Current TODO list (April 2017):
+
+* Assist with middleware (database fixes); SQL Server full install testing
 
 #### TileViewer TODO (defferred to May?):
  
