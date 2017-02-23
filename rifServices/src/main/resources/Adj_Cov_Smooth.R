@@ -47,7 +47,6 @@
 #	install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
 #}
 
-#TODO: (DM) Run if no optional model selected 
 
 library(plyr)
 library(abind)
@@ -159,8 +158,6 @@ processCommandLineArguments <- function() {
         odbcDataSource <<- parametersDataFrame[i, 2]
       } else if (grepl('r_model', parametersDataFrame[i, 1]) == TRUE){     
         model.full <- parametersDataFrame[i, 2]	
-        
-        ##TODO: DM sort this out after CDC
         if (model.full == "het_r_procedure") {
           model <<- "HET"
         } else if (model.full == "car_r_procedure") {
@@ -168,19 +165,14 @@ processCommandLineArguments <- function() {
         } else {
           model <<- "BYM"
         }
-
-      }	else if (grepl('adj', parametersDataFrame[i, 1]) == TRUE){
-        ##TODO: DM. ADJ is not an arguement. comment out this
-        if (parametersDataFrame[i, 2] == 'TRUE') {
-          adj <<- TRUE
-        }
-      } else if (grepl('covariate_name', parametersDataFrame[i, 1]) == TRUE){
+      }	
+      else if (grepl('covariate_name', parametersDataFrame[i, 1]) == TRUE){
         names.adj <<- tolower(parametersDataFrame[i, 2])
-        #if (names.adj != "none") {adj <<- TRUE} 
-        
+        if (names.adj != "none") {
+          adj <<- TRUE
+        } 
       }
     }
-    
     return(parametersDataFrame)
   }
 }
