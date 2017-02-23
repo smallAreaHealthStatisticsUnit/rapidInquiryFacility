@@ -110,7 +110,7 @@ CREATE TABLE rif_data.pop_sahsuland_pop (
    sahsu_grd_level3 VARCHAR(20) NOT NULL,
    sahsu_grd_level4 VARCHAR(20) NOT NULL,
    total INTEGER NOT NULL);
-
+GO
 
 
 BULK INSERT rif_data.pop_sahsuland_pop FROM '$(pwd)/pop_sahsuland_pop.csv'

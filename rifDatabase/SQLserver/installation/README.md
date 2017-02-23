@@ -135,6 +135,9 @@ Or run:
 
 * rif40_sahsuland_dev_install.bat (see note 4.1 below)
 
+Notes
+#####
+
 4.1 SQL Server access to BULK INSERT files
 
 SQL Server needs access to the relative directories: ..\..\GeospatialData\tileMaker and ..\..\\DataLoaderData\SAHSULAND. The simplest
@@ -153,9 +156,26 @@ Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
 Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
 
-cd ..\..\GeospatialData\tileMaker
+4.2 Re-running rif40_sahsuland_tiles.bat
 
-sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i rif_mssql_SAHSULAND.sql -v pwd="%cd%"
+This will produce the following error:
+
+```
+-- SQL statement 75: Remove old geolevels meta data table >>>
+DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
+
+Msg 547, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
+The DELETE statement conflicted with the REFERENCE constraint "rif40_covariates_geolevel_fk". The conflict occurred in database "sah
+suland_dev", table "rif40.rif40_covariates".
+Msg 3621, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
+The statement has been terminated.
+```
+
+To resolve: delete the coariates. You must re-run rif40_sahsuland_data.bat afterwards.
+
+```
+DELETE FROM rif40.rif40_covariates WHERE geography = 'SAHSULAND';
+```
 
 5. Load geography with:
 
