@@ -47,8 +47,15 @@ Declare  @XTYPE varchar(5);
 			SET @XTYPE = 'I'
 	END
 
+-- Check if studies have been run
+DECLARE @has_studies_check VARCHAR(MAX) = 
+(
+	SELECT count(study_id) as total
+	FROM [rif40].[t_rif40_studies]
+);
+
 --delete not allowed
-IF @XTYPE = 'D'
+IF @XTYPE = 'D' AND @has_studies_check>0
 BEGIN TRY
 	rollback;
 	DECLARE @err_msg0 VARCHAR(MAX) = formatmessage(51146);
@@ -60,11 +67,7 @@ BEGIN CATCH
 END CATCH;	
 
 --insert OK if during initial build
-DECLARE @has_studies_check VARCHAR(MAX) = 
-(
-	SELECT count(study_id) as total
-	FROM [rif40].[t_rif40_results]
-);
+
 IF @has_studies_check=0
 BEGIN
 	EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_geolevels]', 't_rif40_geolevels insert allowed during build before first result is added to system';

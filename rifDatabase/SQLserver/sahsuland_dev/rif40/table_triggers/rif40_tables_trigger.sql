@@ -50,8 +50,15 @@ Declare  @XTYPE varchar(5);
 			SET @XTYPE = 'I'
 	END
 
+-- Check if studies have been run
+DECLARE @has_studies_check VARCHAR(MAX) = 
+(
+	SELECT count(study_id) as total
+	FROM [rif40].[t_rif40_studies]
+);
+
 --delete not allowed
-IF @XTYPE = 'D'
+IF @XTYPE = 'D' AND @has_studies_check>0
 BEGIN TRY
 	rollback;
 	DECLARE @err_msg0 VARCHAR(MAX) = formatmessage(51147);
