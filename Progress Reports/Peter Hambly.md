@@ -877,6 +877,7 @@ RangeError: Invalid string length
  
 #### 20th to 24th February
 
+* Re-plan for Feb 22nd meeting
 * Alter 9:
 
   1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; use rif40_geolevels lookup_table/tile_table
@@ -884,7 +885,6 @@ RangeError: Invalid string length
   3. INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
   4. Fix:
      * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
-     * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
   5. Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
      Stick with Postgres
 
@@ -895,13 +895,6 @@ RangeError: Invalid string length
 	psql:alter_scripts/v4_0_alter_7.sql:715: ERROR:  could not create unique index "rif40_columns_pk"
 	DETAIL:  Key (table_or_view_name_hide, column_name_hide)=(RIF40_GEOLEVELS, AREAID_COUNT) is duplicated.
 ```
-
-#### Current TODO list (February 2017): SQL Server Port
-
-* Re-plan for Feb 22nd meeting
-
- 
-* SQL Server run study port
 * SQL server faults in insert triggers: tr_covariates_check, tr_geolevel_check, tr_rif40_tables_checks;
 ```
 Msg 8114, Level 16, State 5, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_covariates_check, Line 12
@@ -918,10 +911,18 @@ Msg 51147, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_rif40_ta
 Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 ```
 
+* Fix for T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
+  due to script interaction.
+  
+#### Current TODO list (February/March 2017): SQL Server Port
+
+* Integrate geosptial and data loader data into sahsuland_dev
+* SQL Server installer
+* SQL Server run study port
+
 #### TileViewer TODO (defferred to May?):
  
-* Add tileid to tile topoJSON/GeoJSON; include in error messages
- 
+* Add tileid to tile topoJSON/GeoJSON; include in error messages; add version number (yyyymmddhh24mi) for caching
 * Fix blank name properties
 * Add all properties from lookup table
 * Missing name in level2 sahsuland (caused by mixed case field names)
