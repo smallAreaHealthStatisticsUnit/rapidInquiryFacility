@@ -222,15 +222,31 @@ function setupTileViewer() {
 	var mapcontainerHeight=y-selectDivHeight-20; 
 	var dialogFormHieght=y-selectDivHeight-50; 
 	var dialogFormWidth=x-250; 
+	if (dialogFormWidth < 200) {
+		dialogFormWidth=200;
+	}
 	var selectButtonWidthStr=$("#select-button").css("width");
 	var selectButtonWidth = parseInt(selectButtonWidthStr.substring(0, selectButtonWidthStr.length - 2));
+	var dbSelectorHeight=dialogFormHieght-320;
+	if (dbSelectorHeight < 200) {
+		dbSelectorHeight=200;
+	}
+	var labelClassWidth=dialogFormWidth-90;
+	var selectClassWidth=dialogFormWidth-210;
+	if (selectClassWidth < 300) {
+		selectClassWidth=180;
+		labelClassWidth=300;
+	}	
 	consoleLog("Window Width: " + x + " px\n" +
 		"Window Height: " + y + " px\n" +
 		"selectDiv Height: " + selectDivHeight + " px\n" +
 		"mapcontainer Height: " + mapcontainerHeight + " px\n" +
 		"dialogFormHieght Height: " + dialogFormHieght + " px\n" +
 		"dialogFormHieght Width: " + dialogFormWidth + " px\n" +
-		"selectButton Width: " + selectButtonWidth + " px");
+		"selectButton Width: " + selectButtonWidth + " px\n" +
+		"labelClass Width: " + labelClassWidth + " px\n" +
+		"selectClass Width: " + selectClassWidth + " px\n" +
+		"dbSelector Height: " + dbSelectorHeight + " px");
 	
 	if (map == undefined) { // Only set the height if leaflet is not initialised or you will make a mess of the screen
 		setHeight("mapcontainer", mapcontainerHeight);
@@ -241,18 +257,22 @@ function setupTileViewer() {
 //		setHeight("map", mapcontainerHeight-3);		
 //		map.invalidateSize();​
 	}
-	
-	setHeight("dbSelector", dialogFormHieght-320);			
+	setHeight("topbar", selectDivHeight);
+
+	setHeight("dbSelector", dbSelectorHeight);			
 
 	$( "#dialog-form" ).dialog( "option", "height", dialogFormHieght );	
-	$( "#dialog-form" ).dialog( "option", "width", dialogFormWidth );	
+	$( "#dialog-form" ).dialog( "option", "width", dialogFormWidth );
+	$( "#settings-form" ).dialog( "option", "height", dialogFormHieght );	
+	$( "#settings-form" ).dialog( "option", "width", dialogFormWidth );	
+	
 	var labelClass=document.getElementsByClassName("labelClass");
 	for (var i=0;i<labelClass.length; i++) {
-		labelClass[i].style.width=(dialogFormWidth-90) + "px";
+		labelClass[i].style.width=labelClassWidth + "px";
 	}
 	var selectClass=document.getElementsByClassName("selectClass");
 	for (var i=0;i<selectClass.length; i++) {
-		selectClass[i].style.width=(dialogFormWidth-210) + "px";
+		selectClass[i].style.width=selectClassWidth + "px";
 	}	
 	
 } // End of setupTileViewer()

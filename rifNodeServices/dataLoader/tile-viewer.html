@@ -63,7 +63,7 @@ $(document).ready(function documentReady() {
 	var name = $("#databaseSelect"),
         geographySelect = $("#geographySelect"),
         geolevelSelect = $("#geolevelSelect"),
-        allFields = $([]).add(name).add(geographySelect).add(geolevelSelect);
+        allSelectFields = $([]).add(name).add(geographySelect).add(geolevelSelect);
 		
 	var dialog = $("#dialog-form").dialog({
         autoOpen: false,
@@ -75,14 +75,45 @@ $(document).ready(function documentReady() {
             "Select": function () {
                 dialog.dialog("close");
             },
-            "Cancel": function () {
+            "Cancel": function () { // This needs to restore the precvious state
                 dialog.dialog("close");
             }
         },
         close: function () {
             form[0].reset();
-            allFields.removeClass("ui-state-error");
+            allSelectFields.removeClass("ui-state-error");
         }
+    });
+	var form = dialog.find("form").on("submit", function (event) {
+        event.preventDefault();
+        selectFunc();
+    });
+	
+	
+//	var name = $("#databaseSelect"),
+//       geographySelect = $("#geographySelect"),
+//        geolevelSelect = $("#geolevelSelect"),
+//        allSettingsFields = $([]).add(name).add(geographySelect).add(geolevelSelect);
+		
+	var settings = $("#settings-form").dialog({
+        autoOpen: false,
+        height: 300,
+        width: 550,
+        modal: true,
+		resizable: true,
+        buttons: {
+            "Done": function () {
+                settings.dialog("close");
+            }
+        },
+        close: function () {
+            form[0].reset();
+//            allSettingsFields.removeClass("ui-state-error");
+        }
+    });
+	var form = settings.find("form").on("submit", function (event) {
+        event.preventDefault();
+//        settingsFunc();
     });
 	
 	setupTileViewer();
@@ -101,14 +132,26 @@ $(document).ready(function documentReady() {
 		}
 	);	
 	
-	var form = dialog.find("form").on("submit", function (event) {
-        event.preventDefault();
-        selectFunc();
-    });
-
     $("#select-button").button().on("click", function () {
         dialog.dialog("open");
     });
+
+    $("#settings-button").button({ 
+		icons: { secondary: "ui-icon-gear" },
+//		text: false
+		}).on("click", function () {
+			settings.dialog("open");
+    });
+	
+//
+// Enable resize
+//
+	$( window ).resize(function windowResize() {	
+		consoleLog("windowResize(): resize; body; h x w: " + document.getElementById('tileviewerbody').offsetHeight +
+			"x" + document.getElementById('tileviewerbody').offsetWidth);
+			setupTileViewer();
+	});
+
 });
 
     </script>
@@ -138,10 +181,21 @@ $(document).ready(function documentReady() {
    	      </div>
 	    </fieldset>	
       </form>  
-   	</div>
-	<div id="selectDiv">
-	  <button id="select-button">Change database, geography and geolevel</button>	
-    </div>	
+   	</div>	
+    <div id="settings-form" title="Settings">
+	  <form id="settingsSelect">
+	    <fieldset>
+	    </fieldset>	
+      </form>  
+   	</div>	
+	<div id="topbar">
+  	  <div id="selectDiv">
+	    <button id="select-button">Change database, geography and geolevel</button>	
+      </div>	
+	  <div id="settingsDiv">
+	    <button id="settings-button">Settings</button>	
+      </div>	
+   	</div>	
 	<div id="mapcontainer">
 	  <div id="map">
       </div>
