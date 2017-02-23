@@ -134,8 +134,7 @@ processCommandLineArguments <- function() {
     
     print("Parsing parameters")
     for (i in 1:nrow(parametersDataFrame)) {
-      print(parametersDataFrame[i,1])
-      
+      #print(parametersDataFrame[i,1])
       if (grepl('user_id', parametersDataFrame[i, 1]) == TRUE) {
         userID <<- parametersDataFrame[i, 2]
       } else if (grepl('password', parametersDataFrame[i, 1]) == TRUE){
@@ -167,10 +166,13 @@ processCommandLineArguments <- function() {
         }
       }	
       else if (grepl('covariate_name', parametersDataFrame[i, 1]) == TRUE){
-        names.adj <<- tolower(parametersDataFrame[i, 2])
-        if (names.adj != "none") {
-          adj <<- TRUE
-        } 
+        names.adj <<- c(toupper(parametersDataFrame[i, 2]))
+        if (names.adj[1] != "NONE") {
+           adj <<- TRUE
+        }  else {
+		   adj <<- FALSE
+		   names.adj <<- c()
+		}
       }
     }
     return(parametersDataFrame)
@@ -282,22 +284,26 @@ performSmoothingActivity <- function() {
   #Find corresponding columns in data and comp
   i.d.adj=c()
   i.c.adj=c()
-  for (i in 1:length(names.adj)){
-    id=which(tolower(names(data))==names.adj[i])
-    ic=which(tolower(names(comp))==names.adj[i])
-    if (length(id)==0|length(ic)==0){
-      print(paste('covariate', names.adj[i], 'not found, data will not be adjusted for it!'))
-    }else{
-      i.d.adj=c(i.d.adj,id)
-      i.c.adj=c(i.c.adj,ic)
-    }
-  }
+  if (adj) {
+	  for (i in 1:length(names.adj)){
+		id=which(toupper(names(data))==names.adj[i])
+		ic=which(toupper(names(comp))==names.adj[i])
+		if (length(id)==0|length(ic)==0){
+		  print(paste('covariate', names.adj[i], 'not found, data will not be adjusted for it!'))
+		}else{
+		  i.d.adj=c(i.d.adj,id)
+		  i.c.adj=c(i.c.adj,ic)
+		}
+	  }
+  }	  
   ncov=length(i.d.adj)
-  for (i in 1:ncov){
-    data[,i.d.adj[i]]=findNULL(data[,i.d.adj[i]])
-    comp[,i.c.adj[i]]=findNULL(comp[,i.c.adj[i]])
-    data[,i.d.adj[i]]=as.numeric(as.character(data[,i.d.adj[i]]))
-    comp[,i.c.adj[i]]=as.numeric(as.character(comp[,i.c.adj[i]])) 
+  if (adj) {
+	  for (i in 1:ncov){
+		data[,i.d.adj[i]]=findNULL(data[,i.d.adj[i]])
+		comp[,i.c.adj[i]]=findNULL(comp[,i.c.adj[i]])
+		data[,i.d.adj[i]]=as.numeric(as.character(data[,i.d.adj[i]]))
+		comp[,i.c.adj[i]]=as.numeric(as.character(comp[,i.c.adj[i]])) 
+	  } 
   }
   #Result table
   RES=ddply(data,.variables=c('area_id','sex'),.fun=function(x){
@@ -319,7 +325,7 @@ performSmoothingActivity <- function() {
     return(data.frame(study_or_comparison,study_id,area_id,band_id,gender,observed))})
   RES=rbind(RES,RES2)
   RES=RES[order(RES$area_id, RES$gender),]
-  
+   
   #COPY OF INV_1 and total_pop fields in a array of dim 4
   #It is necessary that data stay order by year, area, sex and age_group
   data=data[order(data$year,data$area_id,data$sex,data$age_group),]
@@ -334,39 +340,56 @@ performSmoothingActivity <- function() {
   POP=abind(POP,apply(POP,MARGIN=c(1,3),FUN=sum),along=2)#Add a third sex (sum of 1 and 2)
   
   RATES=CASES/POP
-  
-  
+    
   #from data, determine the total number of adjustement strata (all possible combination of adjustement variables)
   ADJ=matrix(NA,nrow=length(unique(data$area_id)),ncol=ncov)
-  for (i in 1:ncov){
-    ADJ[,i]=array(data[,i.d.adj[i]],dim=c(length(unique(data$age_group)),length(unique(data$sex)),length(unique(data$area_id)),length(unique(data$year))))[1,1,,1]
+  if (adj) {
+	  for (i in 1:ncov){
+		ADJ[,i]=array(data[,i.d.adj[i]],dim=c(length(unique(data$age_group)),length(unique(data$sex)),length(unique(data$area_id)),length(unique(data$year))))[1,1,,1]
+	  }
+  
+	  concADJ=apply(ADJ,MARGIN=1,FUN=conc)
+	   
+	  #ADJcomb is a vector with all encoutered adjustement stratas, m the number of stratas
+	  ADJcomb=unique(c(concADJ),)
+	  ADJcomb=ADJcomb[order(ADJcomb)]
+	  m=length(ADJcomb)
+	  
+	  #Make comparative variables in a array of dim: age-sex-area-year-adjustement
+	  #increase comp to compComplete so that there is one row for each combination of 
+	  #age-sex-area-year-adjustement 
+	  # BP- the area field in the comparison rows should NOT be used. Just need to match comparison rows by area, sex, year and ADJcomb
+	  compComplete=expand.grid(unique(comp$age_group),unique(comp$sex),unique(comp$area_id),unique(comp$year),ADJcomb)
+	  #compComplete=expand.grid(unique(comp$age_group),unique(comp$sex),unique(comp$year),ADJcomb)
+	  compComplete=as.data.frame(compComplete)
+	  names(compComplete)=c('age_group','sex','area_id','year','comb')
+	  
+	  #names(compComplete)=c('age_group','sex','year','comb')
+	  compComplete$comb=as.character(compComplete$comb)
+	  comp$comb=apply(as.matrix(comp[,i.c.adj],ncol=ncov),MARGIN=1,FUN=conc)
+	  compComplete=merge(compComplete, comp,by=c('age_group','sex','area_id','year','comb'),all.x=TRUE)
+	  #compComplete=merge(compComplete, comp,by=c('age_group','sex','year','comb'),all.x=TRUE)
+	  
+	  #Fill the array for comparative areas
+	  compComplete=compComplete[order(compComplete$comb,compComplete$year,compComplete$area_id,compComplete$sex,compComplete$age_group),]
+	  cCASES=array(compComplete$inv_1,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year)),m))
+
+  } else {
+
+		##TODO: IF covariate == NONE
+		
+		##Also see if the "if (adj) {}" are in the correct places
+  
+  
+  
+  
+  
+  
+  
+  
+	  
   }
-  
-  concADJ=apply(ADJ,MARGIN=1,FUN=conc)
-  
-  #ADJcomb is a vector with all encoutered adjustement stratas, m the number of stratas
-  ADJcomb=unique(c(concADJ),)
-  ADJcomb=ADJcomb[order(ADJcomb)]
-  m=length(ADJcomb)
-  
-  #Make comparative variables in a array of dim: age-sex-area-year-adjustement
-  #increase comp to compComplete so that there is one row for each combination of 
-  #age-sex-area-year-adjustement 
-  # BP- the area field in the comparison rows should NOT be used. Just need to match comparison rows by area, sex, year and ADJcomb
-  compComplete=expand.grid(unique(comp$age_group),unique(comp$sex),unique(comp$area_id),unique(comp$year),ADJcomb)
-  #compComplete=expand.grid(unique(comp$age_group),unique(comp$sex),unique(comp$year),ADJcomb)
-  compComplete=as.data.frame(compComplete)
-  names(compComplete)=c('age_group','sex','area_id','year','comb')
-  #names(compComplete)=c('age_group','sex','year','comb')
-  compComplete$comb=as.character(compComplete$comb)
-  comp$comb=apply(as.matrix(comp[,i.c.adj],ncol=ncov),MARGIN=1,FUN=conc)
-  compComplete=merge(compComplete, comp,by=c('age_group','sex','area_id','year','comb'),all.x=TRUE)
-  #compComplete=merge(compComplete, comp,by=c('age_group','sex','year','comb'),all.x=TRUE)
-  
-  #Fill the array for comparative areas
-  compComplete=compComplete[order(compComplete$comb,compComplete$year,compComplete$area_id,compComplete$sex,compComplete$age_group),]
-  cCASES=array(compComplete$inv_1,dim=c(length(unique(compComplete$age_group)),length(unique(compComplete$sex)),length(unique(compComplete$area_id)),length(unique(compComplete$year)),m))
-  
+   
   #cCASES=apply(cCASES,MARGIN=c(1,2,3,5),FUN=sum) #Mean over the years -
   cCASES=apply(cCASES,MARGIN=c(1,2,3,5),FUN=sum) #Mean over the years -
   cCASESNoArea=apply(cCASES,MARGIN=c(1,2,4),FUN=sum,na.rm=TRUE) #Mean over the areas
