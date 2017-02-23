@@ -26,7 +26,7 @@ for insert ,update
 as 
 SET XACT_ABORT off
 begin
-
+/*
 --valid values
 DECLARE @invalid_values VARCHAR(max) =
 (
@@ -48,7 +48,7 @@ BEGIN CATCH
 	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_covariates]';
 	THROW 51030, @err_msg1, 1;
 END CATCH;
-
+ */
 
 ---------------------------------------------------------------------------------
 --Check <T_RIF40_GEOLEVELS.COVARIATE_TABLE>.<COVARIATE_NAME> column exists.
@@ -61,7 +61,7 @@ DECLARE @no_covar_table NVARCHAR(MAX)=
 		(select 1 from  [rif40].[t_rif40_geolevels] b
 		where covariate_table is not null and covariate_table <> '' 
 		and b.geolevel_name=a.geolevel_name
-		and [rif40].[rif40_is_object_resolvable](covariate_table) = 1)
+		and [rif40].[rif40_is_object_resolvable]('rif_data.' + LOWER(covariate_table)) = 1)
  FOR XML PATH('') 
 ); 
 

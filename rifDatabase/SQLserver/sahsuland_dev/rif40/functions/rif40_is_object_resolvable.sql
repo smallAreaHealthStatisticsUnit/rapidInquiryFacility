@@ -15,7 +15,7 @@ CREATE FUNCTION [rif40].[rif40_is_object_resolvable](@l_table_name VARCHAR(500))
   RETURNS INT AS
 BEGIN
 	DECLARE @database_name VARCHAR(500) = DB_NAME(); -- current database name
-	DECLARE @schema_name VARCHAR(500) = 'dbo';
+	DECLARE @schema_name VARCHAR(500) = 'rif_data';
 	DECLARE @table_name VARCHAR(500) = @l_table_name;
 	DECLARE @server_name VARCHAR(500) = @@SERVERNAME; -- current server name
 --
@@ -38,12 +38,12 @@ BEGIN
 	*/
 	
 	IF SUSER_SNAME() <> 'rif40' AND  IS_MEMBER(N'[rif_manager]') = 0 
-		RETURN 0;
+		RETURN -1;
 		
 -- If inputs are NULL return 0
 --
 	IF @l_table_name IS NULL 
-		RETURN 0;
+		RETURN -2;
 	
 --
 
@@ -54,6 +54,7 @@ BEGIN
 
 	--more detail about the missing table... (not at all confident about the rest of this)
 	--can be [remote server].[database].[schema].[table]
+	
 	IF CHARINDEX('.',@l_table_name) > 0 
 	BEGIN
 		SET @table_name = RIGHT(@l_table_name,len(@l_table_name) -CHARINDEX('.',@l_table_name));
@@ -71,6 +72,7 @@ BEGIN
 	END 
 	
 	--remote connection (not certain if this is right):
+	/*
 	IF upper(@server_name) <> upper(@@SERVERNAME)
 	BEGIN
 		IF NOT EXISTS (select name from sys.servers where upper(name)=upper(@server_name))
@@ -96,24 +98,24 @@ BEGIN
 			--schema does not exist
 			RETURN 0;
 		END
-	END
+	END */
 	
 	IF @table_name IS NOT NULL AND @table_name <> ''
 	BEGIN
-		IF NOT EXISTS (select [TABLE_NAME] from [INFORMATION_SCHEMA].[TABLES] where upper([TABLE_NAME])=upper(@schema_name))
+		IF NOT EXISTS (select [TABLE_NAME] from [INFORMATION_SCHEMA].[TABLES] where upper([TABLE_NAME])=upper(@table_name))
 		BEGIN
 			--table/view does not exist
-			RETURN 0;
+			RETURN -3;
 		END
 	END
-	
-	
+		
 	IF EXISTS (select * from sys.fn_my_permissions(@l_table_name, N'OBJECT') where  subentity_name = N'' ) -- you have some sort of permissions
+	
 			RETURN 1;
 		ELSE
-			RETURN 0; -- no permission to access
+			RETURN -4; -- no permission to access
 			
-	RETURN 0;
+	RETURN -5;
 END;
 
 
@@ -122,7 +124,7 @@ END;
 /*
 COMMENT ON FUNCTION rif40_sql_pkg.rif40_is_object_resolvable(character varying) IS 'Function: 	rif40_is_object_resolvable()
 Parameters:	Table/view name
-Returns: 	1 - resolvable and accessible, 0 - NOT
+Returns: 	1 - resolvable and accessible, negative number otherwise
 Description:	Is object resolvable?
 
 Search search path for table/view/foreign table; check resolvable

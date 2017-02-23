@@ -131,8 +131,25 @@ To install database, run in this order (I think):
 
 Or run:
 
-* rif40_sahsuland_dev_install.bat
+* rif40_sahsuland_dev_install.bat (see note 4.1 below)
 
+4.1 SQL Server access to BULK INSERT files
+
+SQL Server needs access to the relative directory: ..\..\GeospatialData\tileMaker. The simplest way is to allow read/execute 
+access to the local users group (e.g. PH-LAPTOP\Users).
+
+```
+BULK INSERT rif_data.lookup_sahsu_grd_level1
+FROM 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv'     -- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+WITH
+(
+        FORMATFILE = 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.fmt',            -- Use a format file
+        TABLOCK                                 -- Table lock
+);
+
+Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
+Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
+```
 
 cd ..\..\GeospatialData\tileMaker
 
