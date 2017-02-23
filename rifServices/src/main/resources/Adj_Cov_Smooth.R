@@ -1,35 +1,35 @@
-/####
- ## The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- ## that rapidly addresses epidemiological and public health questions using 
- ## routinely collected health and population data and generates standardised 
- ## rates and relative risks for any given health outcome, for specified age 
- ## and year ranges, for any given geographical area.
- ##
- ## Copyright 2016 Imperial College London, developed by the Small Area
- ## Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- ## is funded by the Public Health England as part of the MRC-PHE Centre for 
- ## Environment and Health. Funding for this project has also been received 
- ## from the United States Centers for Disease Control and Prevention.  
- ##
- ## This file is part of the Rapid Inquiry Facility (RIF) project.
- ## RIF is free software: you can redistribute it and/or modify
- ## it under the terms of the GNU Lesser General Public License as published by
- ## the Free Software Foundation, either version 3 of the License, or
- ## (at your option) any later version.
- ##
- ## RIF is distributed in the hope that it will be useful,
- ## but WITHOUT ANY WARRANTY; without even the implied warranty of
- ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- ## GNU Lesser General Public License for more details.
- ##
- ## You should have received a copy of the GNU Lesser General Public License
- ## along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- ## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- ## Boston, MA 02110-1301 USA
+####
+  ## The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+  ## that rapidly addresses epidemiological and public health questions using 
+  ## routinely collected health and population data and generates standardised 
+  ## rates and relative risks for any given health outcome, for specified age 
+  ## and year ranges, for any given geographical area.
+  ##
+  ## Copyright 2016 Imperial College London, developed by the Small Area
+  ## Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+  ## is funded by the Public Health England as part of the MRC-PHE Centre for 
+  ## Environment and Health. Funding for this project has also been received 
+  ## from the United States Centers for Disease Control and Prevention.  
+##
+## This file is part of the Rapid Inquiry Facility (RIF) project.
+## RIF is free software: you can redistribute it and/or modify
+## it under the terms of the GNU Lesser General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## RIF is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+## GNU Lesser General Public License for more details.
+##
+## You should have received a copy of the GNU Lesser General Public License
+## along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+## Boston, MA 02110-1301 USA
 
- ## Brandon Parkes
- ## @author bparkes
- ##/
+## Brandon Parkes
+## @author bparkes
+##
 
 ############################################################################################################
 #   RIF PROJECT
@@ -158,21 +158,26 @@ processCommandLineArguments <- function() {
       } else if (grepl('odbc_data_source', parametersDataFrame[i, 1]) == TRUE){
         odbcDataSource <<- parametersDataFrame[i, 2]
       } else if (grepl('r_model', parametersDataFrame[i, 1]) == TRUE){     
-    	model.full <- parametersDataFrame[i, 2]	
-      	if (model.full == "het_r_procedure") {
-      		model.short <- "HET"
-      	} else if (model.full == "car_r_procedure") {
-      		model.short == "CAR"
-      	} else {
-      	    model.short == "BYM"
-      	}
-        model <<- model.short			
+        model.full <- parametersDataFrame[i, 2]	
+        
+        ##TODO: DM sort this out after CDC
+        if (model.full == "het_r_procedure") {
+          model <<- "HET"
+        } else if (model.full == "car_r_procedure") {
+          model <<- "CAR"
+        } else {
+          model <<- "BYM"
+        }
+
       }	else if (grepl('adj', parametersDataFrame[i, 1]) == TRUE){
-      if (parametersDataFrame[i, 2] == 'TRUE') {
+        ##TODO: DM. ADJ is not an arguement. comment out this
+        if (parametersDataFrame[i, 2] == 'TRUE') {
           adj <<- TRUE
         }
       } else if (grepl('covariate_name', parametersDataFrame[i, 1]) == TRUE){
         names.adj <<- tolower(parametersDataFrame[i, 2])
+        #if (names.adj != "none") {adj <<- TRUE} 
+        
       }
     }
     
@@ -280,7 +285,7 @@ performSmoothingActivity <- function() {
   data=data[which(data$study_or_comparison=='S'),]
   
   data=data[which(is.na(data$band_id)==FALSE),]
-
+  
   # Section checking names of adjustment variables that should be passed in as paremeters
   #Find corresponding columns in data and comp
   i.d.adj=c()
@@ -470,8 +475,8 @@ performSmoothingActivity <- function() {
   cPOP3dNoArea=apply(cPOPNoArea,MARGIN=c(1,2),FUN=sum,na.rm=TRUE)
   
   #  RES$RATE_UNADJ[which(RES$gender==1)]=colSums(RATES[,1,]*cPOP3d[,1,StoC])/colSums(cPOP3d[,1,StoC])*100000
-#  RES$RATE_UNADJ[which(RES$gender==2)]=colSums(RATES[,2,]*cPOP3d[,2,StoC])/colSums(cPOP3d[,2,StoC])*100000
-#  RES$RATE_UNADJ[which(RES$gender==3)]=colSums(RATES[,3,]*cPOP3d[,3,StoC])/colSums(cPOP3d[,3,StoC])*100000
+  #  RES$RATE_UNADJ[which(RES$gender==2)]=colSums(RATES[,2,]*cPOP3d[,2,StoC])/colSums(cPOP3d[,2,StoC])*100000
+  #  RES$RATE_UNADJ[which(RES$gender==3)]=colSums(RATES[,3,]*cPOP3d[,3,StoC])/colSums(cPOP3d[,3,StoC])*100000
   RES$RATE_UNADJ[which(RES$gender==1)]=colSums(RATES[,1,]*cPOP3dNoArea[,1])/sum(cPOP3dNoArea[,1])*100000
   RES$RATE_UNADJ[which(RES$gender==2)]=colSums(RATES[,2,]*cPOP3dNoArea[,2])/sum(cPOP3dNoArea[,2])*100000
   RES$RATE_UNADJ[which(RES$gender==3)]=colSums(RATES[,3,]*cPOP3dNoArea[,3])/sum(cPOP3dNoArea[,3])*100000
@@ -535,7 +540,7 @@ performSmoothingActivity <- function() {
   ###ADJUSTED
   #Expected number of cases adjusted
   RES$EXP_ADJ=NA
-
+  
   #sADJRATES=FindAdjust(cADJRATES, StoC=StoC, StoCcomp=StoCcomp)
   sADJRATESNoArea=FindAdjustNoArea(cADJRATESNoArea, StoCcomp=StoCcomp)
   
@@ -790,9 +795,9 @@ performSmoothingActivity <- function() {
     result = c()
     if (adj==FALSE){
       result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,])
-     }else{
-       result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,])
-     }
+    }else{
+      result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,])
+    }
     
     # store the results the dataframe
     if (adj==FALSE){
@@ -851,7 +856,7 @@ performSmoothingActivity <- function() {
     print("Posterior probability calculated")
     
   }
-
+  
   # call the function to convert data to the format the db is expecting
   originalExtractTable = convertToDBFormat(data)
   return(originalExtractTable) 
@@ -864,8 +869,8 @@ performSmoothingActivity <- function() {
 
 #Find NULL data within adjustement covariates and replace by 0
 findNULL=function(x){return(sapply(x,FUN=function(y){ans=y
-                                                     if (y=='NULL'){ans=0}
-                                                     return(ans)}))}
+if (y=='NULL'){ans=0}
+return(ans)}))}
 #Empirical Bayes function
 EmpBayes=function(O,E){
   #initialize
@@ -918,9 +923,9 @@ FindAdjustNoArea=function(cADJRATESNoArea, StoCcomp){
 }
 
 conc=function(x){x=as.character(x)
-                 res=c(x)
-                 if (length(x)>1){for (i in 2:length(x)){res=paste(res,x[i],sep='-')}}
-                 return(res)}
+res=c(x)
+if (length(x)>1){for (i in 2:length(x)){res=paste(res,x[i],sep='-')}}
+return(res)}
 
 ##====================================================================
 ##FUNCTION: convertToDBFormat
@@ -937,7 +942,7 @@ convertToDBFormat=function(dataIn){
   dataOut = cbind(dataOut, study_id)
   inv_id = as.integer(as.character(investigationId)) #Input parameter
   dataOut = cbind(dataOut, inv_id)
- 
+  
   band_id = dataIn$band_id
   genders = dataIn$gender
   direct_standardisation = 0 # For now RIf only does indirect standardisation

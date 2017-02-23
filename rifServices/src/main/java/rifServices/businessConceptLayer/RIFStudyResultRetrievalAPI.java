@@ -114,6 +114,15 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * geom - contains geoJson
 	 * 
 	 */
+	public String getTileMakerTiles(
+		final User user,
+		final Geography geography,
+		final GeoLevelSelect geoLevelSelect,
+		final Integer zoomlevel,
+		final Integer x,
+		final Integer y)
+		throws RIFServiceException;
+	
 	public String getTiles(
 		final User user,
 		final Geography geography,
@@ -122,6 +131,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		final Integer zoomLevel,
 		final BoundaryRectangle boundaryRectangle) 
 		throws RIFServiceException;
+
 
 	public String getTilesGivenTile(
 		final User user,

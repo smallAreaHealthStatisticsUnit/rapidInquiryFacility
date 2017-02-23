@@ -1449,17 +1449,16 @@ class AbstractRIFUserService extends AbstractRIFService {
 		}
 			
 	}
-
 	
-	public String getTiles(
+	public String getTileMakerTiles(
 		final User _user,
 		final Geography _geography,
 		final GeoLevelSelect _geoLevelSelect,
-		final String tileIdentifier,
-		final Integer zoomFactor,
-		final BoundaryRectangle _boundaryRectangle)
+		final Integer zoomlevel,
+		final Integer x,
+		final Integer y)
 		throws RIFServiceException {
-
+		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLConnectionManager sqlConnectionManager
@@ -1471,9 +1470,6 @@ class AbstractRIFUserService extends AbstractRIFService {
 			= Geography.createCopy(_geography);
 		GeoLevelSelect geoLevelSelect 
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
-		BoundaryRectangle boundaryRectangle
-			= BoundaryRectangle.createCopy(_boundaryRectangle);
-
 		
 		String result = "";
 		Connection connection = null;
@@ -1482,37 +1478,37 @@ class AbstractRIFUserService extends AbstractRIFService {
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
-				"getTiles",
+				"getTileMakerTiles",
 				"user",
 				user);
 			fieldValidationUtility.checkNullMethodParameter(
-				"getTiles",
+				"getTileMakerTiles",
 				"geography",
 				geography);	
 			fieldValidationUtility.checkNullMethodParameter(
-				"getTiles",
+				"getTileMakerTiles",
 				"getLevelSelect",
 				geoLevelSelect);	
 			fieldValidationUtility.checkNullMethodParameter(
-				"getTiles",
-				"tileIdentifier",
-				tileIdentifier);	
+				"getTileMakerTiles",
+				"zoomlevel",
+				zoomlevel);
 			fieldValidationUtility.checkNullMethodParameter(
-				"getTiles",
-				"zoomFactor",
-				zoomFactor);		
+				"getTileMakerTiles",
+				"x",
+				x);	
 			fieldValidationUtility.checkNullMethodParameter(
-				"getTiles",
-				"boundaryRectangle",
-				boundaryRectangle);	
-
+				"getTileMakerTiles",
+				"y",
+				y);	
+			
 			//check that zoomFactor
-			if ((zoomFactor <1) || (zoomFactor > 20)) {
+			if ((zoomlevel <1) || (zoomlevel > 20)) {
 				//zoom factor is out of range.
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"getTiles.zoomFactor.error",
-						String.valueOf(zoomFactor));
+						String.valueOf(zoomlevel));
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						RIFServiceError.INVALID_ZOOM_FACTOR, 
@@ -1524,45 +1520,46 @@ class AbstractRIFUserService extends AbstractRIFService {
 			validateUser(user);
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();	
-			boundaryRectangle.checkSecurityViolations();
 			
+			//System.out.println(geography.getDisplayName());
+								
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getTiles",
+				= RIFServiceMessages.getMessage("logging.getTileMakerTiles",
 					user.getUserID(),
 					user.getIPAddress(),
-					boundaryRectangle.getDisplayName(),
 					geography.getDisplayName(),
-					geoLevelSelect.getDisplayName());
+					geoLevelSelect.getDisplayName(),
+					String.valueOf(zoomlevel),
+					String.valueOf(x),
+					String.valueOf(y));
 			rifLogger.info(
 				getClass(),
 				auditTrailMessage);
-
-
+			
 			//Assign pooled connection
 			connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
-
+			
 			//Delegate operation to a specialised manager class
 			SQLResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			result
-				= sqlResultsQueryManager.getTiles(
+				= sqlResultsQueryManager.getTileMakerTiles(
 					connection,
 					user,
 					geography,
 					geoLevelSelect,
-					tileIdentifier,
-					zoomFactor,
-					boundaryRectangle);
-			
-		}
+					zoomlevel,
+					x,
+					y);
+		} 
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
 				user,
-				"getTiles",
+				"getTileMakerTiles",
 				rifServiceException);			
 		}
 		finally {
@@ -1572,9 +1569,133 @@ class AbstractRIFUserService extends AbstractRIFService {
 				connection);			
 		}
 
-		return result;
-		
-	}	
+		return result;	
+	}
+	
+	public String getTiles(
+			final User _user,
+			final Geography _geography,
+			final GeoLevelSelect _geoLevelSelect,
+			final String tileIdentifier,
+			final Integer zoomFactor,
+			final BoundaryRectangle _boundaryRectangle)
+			throws RIFServiceException {
+
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			SQLConnectionManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user) == true) {
+				return null;
+			}
+			Geography geography
+				= Geography.createCopy(_geography);
+			GeoLevelSelect geoLevelSelect 
+				= GeoLevelSelect.createCopy(_geoLevelSelect);
+			BoundaryRectangle boundaryRectangle
+				= BoundaryRectangle.createCopy(_boundaryRectangle);
+
+			
+			String result = "";
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTiles",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTiles",
+					"geography",
+					geography);	
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTiles",
+					"getLevelSelect",
+					geoLevelSelect);	
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTiles",
+					"tileIdentifier",
+					tileIdentifier);	
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTiles",
+					"zoomFactor",
+					zoomFactor);		
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTiles",
+					"boundaryRectangle",
+					boundaryRectangle);	
+
+				//check that zoomFactor
+				if ((zoomFactor <1) || (zoomFactor > 20)) {
+					//zoom factor is out of range.
+					String errorMessage
+						= RIFServiceMessages.getMessage(
+							"getTiles.zoomFactor.error",
+							String.valueOf(zoomFactor));
+					RIFServiceException rifServiceException
+						= new RIFServiceException(
+							RIFServiceError.INVALID_ZOOM_FACTOR, 
+							errorMessage);
+					throw rifServiceException;
+				}
+				
+				//Check for security violations
+				validateUser(user);
+				geography.checkSecurityViolations();
+				geoLevelSelect.checkSecurityViolations();	
+				boundaryRectangle.checkSecurityViolations();
+				
+				//Audit attempt to do operation
+				RIFLogger rifLogger = RIFLogger.getLogger();				
+				String auditTrailMessage
+					= RIFServiceMessages.getMessage("logging.getTiles",
+						user.getUserID(),
+						user.getIPAddress(),
+						boundaryRectangle.getDisplayName(),
+						geography.getDisplayName(),
+						geoLevelSelect.getDisplayName());
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+
+
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+
+				//Delegate operation to a specialised manager class
+				SQLResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getTiles(
+						connection,
+						user,
+						geography,
+						geoLevelSelect,
+						tileIdentifier,
+						zoomFactor,
+						boundaryRectangle);
+				
+			}
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getTiles",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;
+			
+		}
 	
 	public String getTilesGivenTile(
 		final User _user,

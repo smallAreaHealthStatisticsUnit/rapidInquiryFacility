@@ -325,106 +325,97 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		}		
 	}
 	
-	
-	
-	public String getTiles(
+	public String getTileMakerTiles(
 		final Connection connection,
 		final User user,
 		final Geography geography,
 		final GeoLevelSelect geoLevelSelect,
-		final String tileIdentifier,
-		final Integer zoomFactor,		
-		final BoundaryRectangle boundaryRectangle) 
+		final Integer zoomlevel,
+		final Integer x,		
+		final Integer y)
 		throws RIFServiceException {
-
-		
-		String existingTileResult
-			= inMemoryTileCache.getTileResult(
-				geography, 
-				geoLevelSelect, 
-				tileIdentifier, 
-				zoomFactor, 
-				boundaryRectangle);
-	
-		if (existingTileResult != null) {			
-			return existingTileResult;
-		}
-
-		//Validate parameters
+				
+		//TODO: inMemoryTileCache //String existingTileResult 
 		/*
-		validateCommonParameters(
-			connection,
-			user,
-			geography,
-			geoLevelSelect);		
-			boundaryRectangle.checkErrors();
+		PGSQLSelectQueryFormatter getMapTileTableQueryFormatter
+			= new PGSQLSelectQueryFormatter();		
+		getMapTileTableQueryFormatter.setDatabaseSchemaName("rif40");
+		getMapTileTableQueryFormatter.addFromTable("rif40_geographies");
+		getMapTileTableQueryFormatter.addWhereParameter("geography");
 		*/
-
-		//check cache
-		//if tile with tileIdentifier+zoomFactor has already been used, return that
-		//instead of making another call to the database
-
-		PGSQLFunctionCallerQueryFormatter queryFormatter
-			= new PGSQLFunctionCallerQueryFormatter();
-		configureQueryFormatterForDB(queryFormatter);
-		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
-		queryFormatter.setFunctionName("rif40_get_geojson_tiles");
-		queryFormatter.setNumberOfFunctionParameters(8);
+	
+		PGSQLSelectQueryFormatter getMapTilesQueryFormatter
+			= new PGSQLSelectQueryFormatter();
 		
+		getMapTilesQueryFormatter.addSelectField("rif40_sahsu_maptiles", "optimised_topojson");
+	//	getMapTilesQueryFormatter.setDatabaseSchemaName("rif40");
+		getMapTilesQueryFormatter.addFromTable("rif40_sahsu_maptiles");
+		getMapTilesQueryFormatter.addFromTable("rif40_geolevels");
+		getMapTilesQueryFormatter.addWhereJoinCondition("rif40_sahsu_maptiles", "geolevel_name", "rif40_geolevels", "geolevel_name");
+		getMapTilesQueryFormatter.addWhereParameter("rif40_geolevels", "geolevel_name");
+		getMapTilesQueryFormatter.addWhereParameter("rif40_sahsu_maptiles", "zoomlevel");
+		getMapTilesQueryFormatter.addWhereParameter("rif40_sahsu_maptiles", "geography");
+		getMapTilesQueryFormatter.addWhereParameter("rif40_sahsu_maptiles", "x_tile_number");
+		getMapTilesQueryFormatter.addWhereParameter("rif40_sahsu_maptiles", "y_tile_number");
+		
+		/*
+		 * http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel={z}&x={x}&y={y}
+		 * http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel=3&x=3&y=2
+		 */
+		
+		/*
+		SELECT optimised_topojson::Text AS optimised_topojson 
+		  FROM rif40_sahsu_maptiles a, rif40_geolevels b
+		 WHERE b.geolevel_name   = 'LEVEL2'
+		   AND a.geolevel_name = b.geolevel_name
+		   AND a.zoomlevel     = 3   
+		   AND a.geography     = 'SAHSU'  
+		   AND a.x_tile_number = 3
+		   AND a.y_tile_number = 2;
+		*/
+				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
+		
 		try {
-				
 			//Create query
-
 			
 			logSQLQuery(
-				"getTiles",
-				queryFormatter,
+				"getMapTilesQueryFormatter",
+				getMapTilesQueryFormatter,
 				String.valueOf(geography.getName()),
 				String.valueOf(geoLevelSelect.getName()),
-				String.valueOf(boundaryRectangle.getYMax()),
-				String.valueOf(boundaryRectangle.getXMax()),
-				String.valueOf(boundaryRectangle.getYMin()),
-				String.valueOf(boundaryRectangle.getXMin()),
-				String.valueOf(zoomFactor),
-				String.valueOf(false),
-				String.valueOf(true));
-
-		
-			//getTilesQueryFormatter
+				String.valueOf(zoomlevel),
+				String.valueOf(x),
+				String.valueOf(y));
+					
+			statement = connection.prepareStatement(getMapTilesQueryFormatter.generateQuery());
 			
-			//Execute query and generate results
-			statement 
-				= createPreparedStatement(connection, getTilesQueryFormatter);
-			statement.setString(1, geography.getName());
-			statement.setString(2, geoLevelSelect.getName());
-			statement.setFloat(3, Float.valueOf(boundaryRectangle.getYMax()));
-			statement.setFloat(4, Float.valueOf(boundaryRectangle.getXMax()));
-			statement.setFloat(5, Float.valueOf(boundaryRectangle.getYMin()));
-			statement.setFloat(6, Float.valueOf(boundaryRectangle.getXMin()));
-			statement.setInt(7, zoomFactor);
-			statement.setBoolean(8, false);
-			statement.setBoolean(9, true);
+			statement.setString(1, geoLevelSelect.getName().toUpperCase());
+			statement.setInt(2, zoomlevel);
+			statement.setString(3, geography.getName().toUpperCase());
+			statement.setInt(4, x);
+			statement.setInt(5, y);
 			
 			resultSet = statement.executeQuery();
-
+			
 			//Assume at least one row will be returned
 			resultSet.next();
 			
 			//returns JSON
 			String result = resultSet.getString(1);
-			
-			
+					
 			connection.commit();
 			
+			/* TODO:
 			inMemoryTileCache.putTileResult(
 				geography, 
 				geoLevelSelect, 
-				tileIdentifier, 
 				zoomFactor, 
-				boundaryRectangle, 
+				xTileIdentifier, 
+				yTileIdentifier,
 				result);
+			 */
 			
 			return result;
 		}
@@ -444,10 +435,133 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			//SQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(statement);
 			PGSQLQueryUtility.close(resultSet);
-		}		
+		}			
 	}
+			
+	
+	public String getTiles(
+			final Connection connection,
+			final User user,
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect,
+			final String tileIdentifier,
+			final Integer zoomFactor,		
+			final BoundaryRectangle boundaryRectangle) 
+			throws RIFServiceException {
+
+			
+			String existingTileResult
+				= inMemoryTileCache.getTileResult(
+					geography, 
+					geoLevelSelect, 
+					tileIdentifier, 
+					zoomFactor, 
+					boundaryRectangle);
+		
+			if (existingTileResult != null) {			
+				return existingTileResult;
+			}
+
+			//Validate parameters
+			/*
+			validateCommonParameters(
+				connection,
+				user,
+				geography,
+				geoLevelSelect);		
+				boundaryRectangle.checkErrors();
+			*/
+
+			//check cache
+			//if tile with tileIdentifier+zoomFactor has already been used, return that
+			//instead of making another call to the database
+
+			PGSQLFunctionCallerQueryFormatter queryFormatter
+				= new PGSQLFunctionCallerQueryFormatter();
+			configureQueryFormatterForDB(queryFormatter);
+			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
+			queryFormatter.setFunctionName("rif40_get_geojson_tiles");
+			queryFormatter.setNumberOfFunctionParameters(8);
+			
+			PreparedStatement statement = null;
+			ResultSet resultSet = null;
+			try {
+					
+				//Create query
+
+				
+				logSQLQuery(
+					"getTiles",
+					queryFormatter,
+					String.valueOf(geography.getName()),
+					String.valueOf(geoLevelSelect.getName()),
+					String.valueOf(boundaryRectangle.getYMax()),
+					String.valueOf(boundaryRectangle.getXMax()),
+					String.valueOf(boundaryRectangle.getYMin()),
+					String.valueOf(boundaryRectangle.getXMin()),
+					String.valueOf(zoomFactor),
+					String.valueOf(false),
+					String.valueOf(true));
+
+			
+				//getTilesQueryFormatter
+				
+				//Execute query and generate results
+				statement 
+					= createPreparedStatement(connection, getTilesQueryFormatter);
+				statement.setString(1, geography.getName());
+				statement.setString(2, geoLevelSelect.getName());
+				statement.setFloat(3, Float.valueOf(boundaryRectangle.getYMax()));
+				statement.setFloat(4, Float.valueOf(boundaryRectangle.getXMax()));
+				statement.setFloat(5, Float.valueOf(boundaryRectangle.getYMin()));
+				statement.setFloat(6, Float.valueOf(boundaryRectangle.getXMin()));
+				statement.setInt(7, zoomFactor);
+				statement.setBoolean(8, false);
+				statement.setBoolean(9, true);
+				
+				resultSet = statement.executeQuery();
+
+				//Assume at least one row will be returned
+				resultSet.next();
+				
+				//returns JSON
+				String result = resultSet.getString(1);
+				
+				
+				connection.commit();
+				
+				inMemoryTileCache.putTileResult(
+					geography, 
+					geoLevelSelect, 
+					tileIdentifier, 
+					zoomFactor, 
+					boundaryRectangle, 
+					result);
+				
+				return result;
+			}
+			catch(SQLException sqlException) {
+				//Record original exception, throw sanitised, human-readable version			
+				logSQLException(sqlException);
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"sqlResultsQueryManager.unableToGetTiles",
+						geoLevelSelect.getDisplayName(),
+						geography.getDisplayName());
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.DATABASE_QUERY_FAILED,
+						errorMessage);
+				throw rifServiceException;
+			}
+			finally {
+				//Cleanup database resources
+				//SQLQueryUtility.close(statement);
+				PGSQLQueryUtility.close(resultSet);
+			}		
+		}
 
 	
 	public String getTilesGivenTile(

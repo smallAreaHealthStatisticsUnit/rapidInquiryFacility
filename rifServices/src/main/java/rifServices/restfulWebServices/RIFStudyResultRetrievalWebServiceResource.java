@@ -776,7 +776,29 @@ public class RIFStudyResultRetrievalWebServiceResource
 			geoLevelSelectName);
 		
 	}
-
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getTileMakerTiles")
+	public Response getTileMakerTiles(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName, //SAHSU
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName, //LEVEL2
+		@QueryParam("zoomlevel") Integer zoomlevel,	//3	
+		@QueryParam("x") Integer x, //3
+		@QueryParam("y") Integer y) { //2
+				
+		return super.getTileMakerTiles(
+				servletRequest, 
+				userID, 
+				geographyName, 
+				geoLevelSelectName, 
+				zoomlevel, 
+				x, 
+				y);	
+	}
+		
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getTiles")
