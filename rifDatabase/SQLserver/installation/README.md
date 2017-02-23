@@ -128,6 +128,8 @@ To install database, run in this order (I think):
 * rif40_install_table_triggers.bat
 * rif40_install_view_triggers.bat
 * rif40_data_install_tables.bat
+* rif40_sahsuland_tiles.bat (see note 4.1 below)
+* rif40_sahsuland_data.bat (see note 4.1 below)
 
 Or run:
 
@@ -135,8 +137,8 @@ Or run:
 
 4.1 SQL Server access to BULK INSERT files
 
-SQL Server needs access to the relative directory: ..\..\GeospatialData\tileMaker. The simplest way is to allow read/execute 
-access to the local users group (e.g. PH-LAPTOP\Users).
+SQL Server needs access to the relative directories: ..\..\GeospatialData\tileMaker and ..\..\\DataLoaderData\SAHSULAND. The simplest
+way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users).
 
 ```
 BULK INSERT rif_data.lookup_sahsu_grd_level1
