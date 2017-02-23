@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -64,6 +64,12 @@ angular.module("RIF")
                         new L.Control.GeoSearch({
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
+                        //full screen control
+                        map.addControl(new L.Control.Fullscreen());
+                        map.on('fullscreenchange', function () {
+                            $scope.child.rescaleLeafletContainer();
+                        });
+                        //scalebar
                         L.control.scale({position: 'topleft', imperial: false}).addTo(map);
                         //Attributions to open in new window
                         map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
@@ -80,6 +86,12 @@ angular.module("RIF")
                         new L.Control.GeoSearch({
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
+                        //full screen control
+                        map.addControl(new L.Control.Fullscreen());
+                        map.on('fullscreenchange', function () {
+                            $scope.child.rescaleLeafletContainer();
+                        });
+                        //scalebar
                         L.control.scale({position: 'topleft', imperial: false}).addTo(map);
                         //Attributions to open in new window
                         map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
@@ -144,7 +156,7 @@ angular.module("RIF")
                     "diseasemap1": MappingStateService.getState().transparency["diseasemap1"],
                     "diseasemap2": MappingStateService.getState().transparency["diseasemap2"]
                 };
-                //target for getTiles topoJSON
+                //target for geoJSON
                 $scope.geoJSON = {};
                 //selected polygons
                 $scope.thisPoly = {
@@ -359,13 +371,13 @@ angular.module("RIF")
                     //update map
                     if (map) {
                         $scope.thisPoly[mapID] = gid;
-                        $scope.geoJSON[mapID].eachLayer($scope.child.handleLayer);
+                        $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.child.handleLayer);
                         $scope.child.infoBox2[mapID].update($scope.thisPoly[mapID]);
                         if ($scope.bLockSelect) {
                             var otherMap = MappingService.getOtherMap(mapID);
                             $scope.thisPoly[otherMap] = gid;
                             if (!angular.isUndefined($scope.geoJSON[otherMap])) {
-                                $scope.geoJSON[otherMap].eachLayer($scope.child.handleLayer);
+                                $scope.geoJSON[otherMap]._geojsons.default.eachLayer($scope.child.handleLayer);
                             }
                         }
                     }

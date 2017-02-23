@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -47,19 +47,24 @@ angular.module("RIF")
                 var studies;
                 $scope.studyIds;
 
+                //In DEBUG set false to keep Tomcat console clear
+                var bPoll = true;
+
                 stop = $interval(function () {
-                    user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
-                        studies = res.data.smoothed_results;
-                        var check = [];
-                        for (var i = 0; i < studies.length; i++) {
-                            if (studies[i].study_state === "R") {
-                                check.push(studies[i].study_id);
+                    if (bPoll) {
+                        user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
+                            studies = res.data.smoothed_results;
+                            var check = [];
+                            for (var i = 0; i < studies.length; i++) {
+                                if (studies[i].study_state === "R") {
+                                    check.push(studies[i].study_id);
+                                }
                             }
-                        }
-                        $scope.studyIds = angular.copy(check);
-                    }, function (e) {
-                        //console.log("Could not retrieve study status");
-                    });
+                            $scope.studyIds = angular.copy(check);
+                        }, function (e) {
+                            //console.log("Could not retrieve study status");
+                        });
+                    }
                 }, ms);
 
                 $scope.$on('$destroy', function () {

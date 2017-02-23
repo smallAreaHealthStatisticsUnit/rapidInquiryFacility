@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -63,6 +63,12 @@ angular.module("RIF")
                         new L.Control.GeoSearch({
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo(map);
+                        //full screen control
+                        map.addControl(new L.Control.Fullscreen());
+                        map.on('fullscreenchange', function () {
+                            $scope.child.rescaleLeafletContainer();
+                        });
+                        //scalebar
                         L.control.scale({position: 'topleft', imperial: false}).addTo(map);
                         //Attributions to open in new window
                         map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
@@ -252,6 +258,6 @@ angular.module("RIF")
                     $scope.updateTable();
                     ViewerStateService.getState().selected["viewermap"] = newNames;
                     //Update map selection
-                    $scope.geoJSON["viewermap"].eachLayer($scope.child.handleLayer);
+                    $scope.geoJSON["viewermap"]._geojsons.default.eachLayer($scope.child.handleLayer);
                 });
             }]);

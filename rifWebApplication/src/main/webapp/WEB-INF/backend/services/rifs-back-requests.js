@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -149,17 +149,6 @@ angular.module("RIF")
                     //http://localhost:8080/rifServices/studySubmission/getAgeGroups?userID=kgarwood&geographyName=SAHSU&numeratorTableName=SAHSULAND_CANCER
                     return $http.get(studySubmissionURL + 'getAgeGroups?userID=' + username + '&geographyName=' + geography + '&numeratorTableName=' + numerator, config);
                 };
-                //geography
-                self.getTiles = function (username, geography, geoLevel, leaflet) {
-                    //http://localhost:8080/rifServices/studySubmission/getTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL1&tileIdentifier=4&zoomFactor=2&
-                    //yMax=55.5268097&xMax=-4.88653803&yMin=52.6875343&xMin=-7.58829451
-
-                    //TODO: what is tileIdentifier?? 1979_1321 in rifServices/src/test/java/rifServices/test/services/GetTiles.java 
-
-                    config.leaflet = leaflet; //defines which map is target for these tiles
-                    return $http.get(studySubmissionURL + 'getTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
-                            '&tileIdentifier=4&zoomFactor=2&yMax=55.5268097&xMax=-4.88653803&yMin=52.6875343&xMin=-7.58829451', config);
-                };
                 //geography info
                 self.getDefaultGeoLevelSelectValue = function (username, geography) {
                     //http://localhost:8080/rifServices/studySubmission/getDefaultGeoLevelSelectValue?userID=kgarwood&geographyName=SAHSU
@@ -217,5 +206,17 @@ angular.module("RIF")
                     //http://localhost:8080/rifServices/studyResultRetrieval/getGeographyAndLevelForStudy?userID=kgarwood&studyID=239
                     //[["SAHSU","LEVEL3"]]
                     return $http.get(studyResultRetrievalURL + 'getGeographyAndLevelForStudy?userID=' + username + '&studyID=' + studyID);
+                };
+                //get the map tiles from Tile-Maker
+                //returns a string not a promise, is resolved in Leaflet Grid Layer
+                self.getTileMakerTiles = function (username, geography, geoLevel) {
+                    //'http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel={z}&x={x}&y={y}';
+                    return (studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
+                            '&zoomlevel={z}&x={x}&y={y}');
+                };
+                //get 'global' geography for attribute table
+                self.getTileMakerTilesAttributes = function (username, geography, geoLevel) {
+                    return $http.get(studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
+                            '&zoomlevel=1&x=0&y=0', config);
                 };
             }]);

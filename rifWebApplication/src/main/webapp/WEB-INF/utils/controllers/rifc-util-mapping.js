@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -282,7 +282,7 @@ angular.module("RIF")
                                 map.removeControl($scope.legend[mapID]);
                             }
                         });
-                        $scope.geoJSON[mapID].eachLayer($scope.handleLayer);
+                        $scope.$parent.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
                         return;
                     }
 
@@ -295,14 +295,14 @@ angular.module("RIF")
                         $scope.legend[mapID].addTo(map);
                     });
                     //force a redraw
-                    $scope.geoJSON[mapID].eachLayer($scope.handleLayer);
-                    //GET D3...
+                    $scope.$parent.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+                    //GET D3
                     $scope.getD3chart(mapID, $scope.attr[mapID]);
                 };
 
                 //apply relevent renderer to layer
                 $scope.handleLayer = function (layer) {
-                    var mapID = layer.options.map_id;
+                    var mapID = layer.options.mapID;
                     if (mapID === "viewermap") {
                         //Join geography and results table
                         var thisAttr;
@@ -371,93 +371,95 @@ angular.module("RIF")
                                 function (res) {
                                     $scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
                                     $scope.tileInfo[mapID].level = res.data[0][1]; //e.g. LEVEL3
-                                    user.getTiles(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level, mapID).then(
-                                            handleTopoJSON, handleTopoJSONError);
-                                }
-                        );
-                    }
 
-                    function handleTopoJSON(res) {
-                        var mapID = res.config.leaflet;
-                        leafletData.getMap(mapID).then(function (map) {
-                            map.keyboard.disable();
-                            $scope.geoJSON[mapID] = new L.TopoJSON(res.data, {
-                                renderer: L.canvas(),
-                                map_id: mapID,
-                                style: function (feature) {
-                                    return({
-                                        weight: 1,
-                                        opacity: 1,
-                                        color: "gray",
-                                        fillColor: "transparent"
-                                    });
-                                },
-                                onEachFeature: function (feature, layer) {
-                                    layer.on('mouseover', function (e) {
-                                        this.setStyle({
-                                            color: 'gray',
-                                            weight: 1.5,
-                                            fillOpacity: function () {
-                                                return($scope.child.transparency[mapID] - 0.3 > 0 ? $scope.child.transparency[mapID] - 0.3 : 0.1);
-                                            }()
-                                        });
-                                        infoBox[mapID].update(layer.feature.properties.area_id);
-                                    });
-                                    layer.on('click', function (e) {
-                                        if (mapID === "viewermap") {
-                                            //Multiple selections
-                                            var thisPoly = e.target.feature.properties.area_id;
-                                            var bFound = false;
-                                            for (var i = 0; i < $scope.thisPoly.length; i++) {
-                                                if ($scope.thisPoly[i] === thisPoly) {
-                                                    bFound = true;
-                                                    $scope.thisPoly.splice(i, 1);
-                                                    break;
+                                    leafletData.getMap(mapID).then(function (map) {
+                                        var topojsonURL = user.getTileMakerTiles(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level);
+                                        $scope.$parent.geoJSON[mapID] = new L.topoJsonGridLayer(topojsonURL, {
+                                            attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
+                                            renderer: L.canvas(),
+                                            layers: {
+                                                default: {
+                                                    mapID: mapID,
+                                                    style: function (feature) {
+                                                        return({
+                                                            weight: 1,
+                                                            opacity: 1,
+                                                            color: "gray",
+                                                            fillColor: "transparent"
+                                                        });
+                                                    },
+                                                    onEachFeature: function (feature, layer) {
+                                                        layer.on('mouseover', function (e) {
+                                                            this.setStyle({
+                                                                color: 'gray',
+                                                                weight: 1.5,
+                                                                fillOpacity: function () {
+                                                                    return($scope.child.transparency[mapID] - 0.3 > 0 ? $scope.child.transparency[mapID] - 0.3 : 0.1);
+                                                                }()
+                                                            });
+                                                            infoBox[mapID].update(layer.feature.properties.area_id);
+                                                        });
+                                                        layer.on('mouseout', function (e) {
+                                                            $scope.$parent.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+                                                            infoBox[mapID].update(false);
+                                                        });
+                                                        layer.on('click', function (e) {
+                                                            if (mapID === "viewermap") {
+                                                                //Multiple selections
+                                                                var thisPoly = e.target.feature.properties.area_id;
+                                                                var bFound = false;
+                                                                for (var i = 0; i < $scope.thisPoly.length; i++) {
+                                                                    if ($scope.thisPoly[i] === thisPoly) {
+                                                                        bFound = true;
+                                                                        $scope.thisPoly.splice(i, 1);
+                                                                        break;
+                                                                    }
+                                                                }
+                                                                if (!bFound) {
+                                                                    $scope.thisPoly.push(thisPoly);
+                                                                }
+                                                            } else {
+                                                                //Single selections
+                                                                $scope.thisPoly[mapID] = e.target.feature.properties.area_id;
+                                                                $scope.myService.getState().area_id[mapID] = e.target.feature.properties.area_id;
+                                                                $scope.infoBox2[mapID].update($scope.thisPoly[mapID]);
+                                                                $scope.updateMapSelection($scope.thisPoly[mapID], mapID);
+                                                                if ($scope.bLockSelect) {
+                                                                    var otherMap = MappingService.getOtherMap(mapID);
+                                                                    $scope.thisPoly[otherMap] = e.target.feature.properties.area_id;
+                                                                    $scope.myService.getState().area_id[otherMap] = e.target.feature.properties.area_id;
+                                                                    dropLine(otherMap, e.target.feature.properties.area_id, true);
+                                                                }
+                                                            }
+                                                        });
+                                                    }
                                                 }
                                             }
-                                            if (!bFound) {
-                                                $scope.thisPoly.push(thisPoly);
-                                            }
-                                        } else {
-                                            //Single selections
-                                            $scope.thisPoly[mapID] = e.target.feature.properties.area_id;
-                                            $scope.myService.getState().area_id[mapID] = e.target.feature.properties.area_id;
-                                            $scope.infoBox2[mapID].update($scope.thisPoly[mapID]);
-                                            $scope.updateMapSelection($scope.thisPoly[mapID], mapID);
-                                            if ($scope.bLockSelect) {
-                                                var otherMap = MappingService.getOtherMap(mapID);
-                                                $scope.thisPoly[otherMap] = e.target.feature.properties.area_id;
-                                                $scope.myService.getState().area_id[otherMap] = e.target.feature.properties.area_id;
-                                                dropLine(otherMap, e.target.feature.properties.area_id, true);
-                                            }
-                                        }
-                                    });
-                                    layer.on('mouseout', function (e) {
-                                        $scope.geoJSON[mapID].eachLayer($scope.handleLayer);
-                                        infoBox[mapID].update(false);
-                                    });
-                                }
-                            });
-                            $scope.geoJSON[mapID].addTo(map);
-                            //do not get maxbounds for diseasemap2
-                            if (mapID !== "diseasemap2") {
-                                $scope.maxbounds = $scope.geoJSON[mapID].getBounds();
-                                if ($scope.myService.getState().center[mapID].lng === 0) {
-                                    leafletData.getMap(mapID).then(function (map) {
-                                        map.fitBounds($scope.maxbounds);
-                                    });
-                                }
-                            }
-                        }).then(function () {
-                            getAttributeTable(mapID);
-                        }).then(function () {
-                            $scope.renderMap(mapID);
-                            $scope.refresh(mapID);
-                        });
-                    }
+                                        });
+                                        $scope.$parent.geoJSON[mapID].on('load', function (e) {
+                                            //force re-render of new tiles
+                                            $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+                                        });
+                                        $scope.$parent.geoJSON[mapID].addTo(map);
 
-                    function handleTopoJSONError() {
-                        $scope.showError("Something went wrong when getting the geography");
+                                        //do not get maxbounds for diseasemap2
+                                        if (mapID !== "diseasemap2") {
+                                            user.getTileMakerTilesAttributes(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level).then(function (res) {
+                                                $scope.maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
+                                                if ($scope.myService.getState().center[mapID].lng === 0) {
+                                                    leafletData.getMap(mapID).then(function (map) {
+                                                        map.fitBounds($scope.maxbounds);
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    }).then(function () {
+                                        getAttributeTable(mapID);
+                                    }).then(function () {
+                                        $scope.renderMap(mapID);
+                                    });
+                                }
+                        );
                     }
 
                     function getAttributeTable(mapID) {

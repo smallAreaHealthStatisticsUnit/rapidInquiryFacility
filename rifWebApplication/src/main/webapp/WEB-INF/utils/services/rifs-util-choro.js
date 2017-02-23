@@ -173,18 +173,6 @@ angular.module("RIF")
                                     .domain(breaks)
                                     .range(range);
                             break;
-                        case "equalSize":
-                            //Equal number of points per group
-                            var n = Math.floor(domain.length / range.length);
-                            domain.sort(d3.ascending);
-                            var breaks = [];
-                            for (var i = 1; i <= range.length - 1; i++) {
-                                breaks.push(domain[i * n]);
-                            }
-                            scale = d3.scaleThreshold()
-                                    .domain(breaks)
-                                    .range(range);
-                            break;
                         case "AtlasRelativeRisk":
                             //RR scale as used in Health Atlas
                             var tmp;

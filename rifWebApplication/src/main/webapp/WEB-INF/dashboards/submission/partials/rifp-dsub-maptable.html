@@ -41,16 +41,16 @@ Used by rifd-dsub-maptable.js
 -->
 
 <div class='modalAreaSelectionMenu'>
-       <div id='selectAtSelection' class='styleUnderline dropdowns availablesWrapper'>
-           <select type="text" ng-model="input.studyResolution" id='selectAt' class='dropdownSelect' ng-options="l for l in geoLevelsViews"></select>
-           <div class="dropDownLabel">Resolution of Results</div>
-           <div id='selectAtAvailable' class='availables'></div>
-       </div>
-       <div id='resolutionSelection' class="styleUnderline dropdowns availablesWrapper">
-           <select type="text" ng-model="input.selectAt" id='resolution' class='dropdownSelect' ng-options="l for l in geoLevels" ng-change="geoLevelChange()"></select>
-           <div class="dropDownLabel">Selection Resolution</div>
-           <div id='resolutionAvailable' class='availables'></div>
-       </div> 
+    <div id='selectAtSelection' class='styleUnderline dropdowns availablesWrapper'>
+        <select type="text" ng-model="input.studyResolution" id='selectAt' class='dropdownSelect' ng-options="l for l in geoLevelsViews"></select>
+        <div class="dropDownLabel">Resolution of Results</div>
+        <div id='selectAtAvailable' class='availables'></div>
+    </div>
+    <div id='resolutionSelection' class="styleUnderline dropdowns availablesWrapper">
+        <select type="text" ng-model="input.selectAt" id='resolution' class='dropdownSelect' ng-options="l for l in geoLevels" ng-change="geoLevelChange()"></select>
+        <div class="dropDownLabel">Selection Resolution</div>
+        <div id='resolutionAvailable' class='availables'></div>
+    </div> 
 </div>  
 
 <button class="mapListButton" ng-click="openFromList()">Upload from List</button>
@@ -84,11 +84,11 @@ Used by rifd-dsub-maptable.js
 
             </ul>                 
         </div>    
-        <leaflet id= "area" tiles="tiles" width="100%" height="100%" geojson="geojson" lf-center="input.center"></leaflet>      
+        <leaflet id= "area" width="100%" height="100%" tiles="tiles" lf-center="input.center"></leaflet>    
     </div>  
 
     <div id='mapSelectionCounter' class='mapCounter'>
-        <span id='resolutionCount' class='counter'> {{thisPolygon}}  </span> 
+        <span id='resolutionCount' class='counter'> {{thisPolygon}} </span> 
     </div>
     <div id='comparisonSelectionCounter' class='tableCounter'>
         <span id='comparisonResolutionCount' class='counter'> {{selectedPolygonCount}} / {{totalPolygonCount}} </span>

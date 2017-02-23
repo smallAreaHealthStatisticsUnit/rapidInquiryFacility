@@ -42,7 +42,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" >
         <meta name="description" content="RIF, Software for Environmental Spatial Epidemiology">
         <meta name="keywords" content="Disease mapping, Spatial epidemiology, Environental exposure, Health data, GIS, Biostatistics">
-        
+
         <!-- Angular -->
         <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-animate.js"></script>
@@ -70,6 +70,11 @@
         <script src="libs/l.geosearch.provider.openstreetmap.js"></script>
         <link rel="stylesheet" href="libs/l.geosearch.css" />
         <script src="libs/leaflet-image.js"></script>
+        <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+        <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
+
+        <!--tile maker-->
+        <script src="libs/TopoJSONGridLayer.js"></script>
 
         <!-- save html2canvas -->
         <script src="libs/html2canvas.js"></script>
@@ -95,12 +100,13 @@
         <link rel="stylesheet" href="libs/ngNotificationsBar.css">
         <script src="libs/ngNotificationsBar.min.js"></script>   
 
-        <!-- topojson -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.20/topojson.min.js"></script>
-
         <!-- shapefile in leaflet -->
         <script src="libs/leaflet.shpfile.js"></script>
         <script src="libs/shp.min.js"></script>   
+
+        <!-- topojson -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.20/topojson.min.js"></script>
+
 
         <!-- RIF 4.0 ANGULAR JS-->
         <script src="modules/rifm-app.js"></script> 

@@ -46,7 +46,7 @@ angular.module("RIF")
                 link: function (scope, element, attr) {
                     scope.$watch(attr['ngModel'], function (v) {
                         if (!angular.isUndefined(scope.$parent.geoJSON[attr.mapid])) {
-                            scope.$parent.geoJSON[attr.mapid].eachLayer(scope.child.handleLayer);
+                            scope.$parent.geoJSON[attr.mapid]._geojsons.default.eachLayer(scope.child.handleLayer);
                             scope.myService.getState().transparency = v;
                         }
                     });
@@ -74,7 +74,7 @@ angular.module("RIF")
                     link: function (scope, element, attr) {
                         element.on('click', function (event) {
                             var studyBounds = new L.LatLngBounds();
-                            scope.geoJSON[attr.mapid].eachLayer(function (layer) {
+                            scope.geoJSON[attr.mapid]._geojsons.default.eachLayer(function (layer) {
                                 //if area ID is in the attribute table
                                 for (var i = 0; i < scope.child.tableData[attr.mapid].length; i++) {
                                     if (scope.child.tableData[attr.mapid][i]['area_id'].indexOf(layer.feature.properties.area_id) !== -1) {
@@ -98,7 +98,7 @@ angular.module("RIF")
                         element.on('click', function (event) {
                             //Zoom to a single selected Polygon
                             var selbounds = null;
-                            scope.geoJSON[attr.mapid].eachLayer(function (layer) {
+                            scope.geoJSON[attr.mapid]._geojsons.default.eachLayer(function (layer) {
                                 if (layer.feature.properties.area_id === scope.thisPoly[attr.mapid]) {
                                     selbounds = layer.getBounds();
                                 }
@@ -119,7 +119,7 @@ angular.module("RIF")
                         element.on('click', function (event) {
                             //Zoom to combined extent of selected polygons       
                             var studyBounds = new L.LatLngBounds();
-                            scope.geoJSON[attr.mapid].eachLayer(function (layer) {
+                            scope.geoJSON[attr.mapid]._geojsons.default.eachLayer(function (layer) {
                                 //if area ID is in the attribute table
                                 for (var i = 0; i < scope.child.tableData[attr.mapid].length; i++) {
                                     if (scope.child.tableData[attr.mapid][i]['area_id'] === layer.feature.properties.area_id) {
