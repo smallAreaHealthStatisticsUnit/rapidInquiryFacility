@@ -99,29 +99,27 @@ $$;
 
 --  4. Fix:
 --     * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
---     * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
+--     * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION 
+--		 (Fixed in core build: too many interactions)
 --
 DO LANGUAGE plpgsql $$
 BEGIN
 	ALTER TABLE rif40_tables RENAME COLUMN columnn_exists TO column_exists;
+	UPDATE rif40_columns
+ 	   SET column_name_hide = 'column_exists'
+ 	 WHERE column_name_hide = 'columnn_exists' 
+	   AND table_or_view_name_hide = 'rif40_tables';
 EXCEPTION
 	WHEN undefined_column THEN
 		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
 END;
 $$;
-
-DO LANGUAGE plpgsql $$
-BEGIN
-	ALTER TABLE t_rif40_contextual_stats RENAME COLUMN total_comparision_population TO total_comparison_population;
-EXCEPTION
-	WHEN undefined_column THEN
-		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
-END;
-$$;
-
+   
 --
 --  5. Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) from PARAM_DESCRIPTION (Postgres)
+--     Stick with Postgres
 --
+/*
 DO LANGUAGE plpgsql $$
 BEGIN
 	ALTER TABLE rif40_parameters RENAME COLUMN param_description TO description; 
@@ -129,17 +127,28 @@ EXCEPTION
 	WHEN undefined_column THEN
 		RAISE NOTICE 'Column already renamed: %',SQLERRM::Text;  
 END;
-$$;
+$$; */
+--
+-- Missing comments
+--
+COMMENT ON COLUMN "rif40_parameters"."param_description" IS 'Description';
+COMMENT ON COLUMN "rif40_parameters"."param_name" IS 'Parameter';
+COMMENT ON COLUMN "rif40_parameters"."param_value" IS 'Value';
+COMMENT ON COLUMN "rif40_projects"."date_ended" IS 'Date project ended';
+COMMENT ON COLUMN "rif40_projects"."date_started" IS 'Date project started';
+COMMENT ON COLUMN "rif40_projects"."description" IS 'Project description';
+COMMENT ON COLUMN "rif40_projects"."project" IS 'Project name';
 
 --
 -- Testing stop
 --
---DO LANGUAGE plpgsql $$
---BEGIN
---	RAISE EXCEPTION 'Stop processing';
---END;
---$$;
-  
+/*
+DO LANGUAGE plpgsql $$
+BEGIN
+	RAISE EXCEPTION 'Stop processing';
+END;
+$$;
+ */  
 END;
 --
 --  Eof 

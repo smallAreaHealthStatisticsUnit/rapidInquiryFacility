@@ -144,9 +144,14 @@ DECLARE
 BEGIN	
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_c', '[70150]: Checking for missing table/view columns');
 	FOR c3_rec IN c3(schema_owner) LOOP
-		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_c', '[70151]: Missing table/view column: %.%', 
-			c3_rec.table_or_view::VARCHAR, c3_rec.column_name::VARCHAR);
-		i:=i+1;
+		IF current_database() = 'sahsuland_empty' AND c3_rec.column_name IN ('comparision_population', 'total_comparision_population') THEN
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_c', '[70151]: Missing table/view column: %.% [IGNORED]', 
+				c3_rec.table_or_view::VARCHAR, c3_rec.column_name::VARCHAR);
+		ELSE
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_c', '[70152]: Missing table/view column: %.% [FAILURE]', 
+				c3_rec.table_or_view::VARCHAR, c3_rec.column_name::VARCHAR);
+			i:=i+1;
+		END IF;
 	END LOOP;
 --
 	RETURN i;

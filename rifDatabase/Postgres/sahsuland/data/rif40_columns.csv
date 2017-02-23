@@ -49,7 +49,7 @@ RIF40_CONTEXTUAL_STATS,AREA_OBSERVED,NULL,"NUMBER(38,6)",Total observed in area
 RIF40_CONTEXTUAL_STATS,AREA_POPULATION,NULL,"NUMBER(38,6)",Total population in area
 RIF40_CONTEXTUAL_STATS,INV_ID,NOT NULL,NUMBER(8),Unique investigation index: inv_id. Created by SEQUENCE rif40_inv_id_seq
 RIF40_CONTEXTUAL_STATS,STUDY_ID,NOT NULL,NUMBER(8),Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq
-RIF40_CONTEXTUAL_STATS,TOTAL_COMPARISON_POPULATION,NULL,"NUMBER(38,6)",Total comparison population. Used for internal calculations.
+RIF40_CONTEXTUAL_STATS,TOTAL_COMPARISION_POPULATION,NULL,"NUMBER(38,6)",Total comparison population. Used for internal calculations.
 RIF40_CONTEXTUAL_STATS,USERNAME,NOT NULL,VARCHAR2(90),Username
 RIF40_CONTEXTUAL_STATS,VARIANCE_HIGH,NULL,"NUMBER(38,6)",Variance (observed > 100). Used for internal calculations.
 RIF40_CONTEXTUAL_STATS,VARIANCE_LOW,NULL,"NUMBER(38,6)",Variance (observed <= 100). Used for internal calculations.
@@ -351,7 +351,7 @@ T_RIF40_CONTEXTUAL_STATS,AREA_OBSERVED,NULL,"NUMBER(38,6)",Total observed in are
 T_RIF40_CONTEXTUAL_STATS,AREA_POPULATION,NULL,"NUMBER(38,6)",Total population in area
 T_RIF40_CONTEXTUAL_STATS,INV_ID,NOT NULL,NUMBER(8),Unique investigation index: inv_id. Created by SEQUENCE rif40_inv_id_seq
 T_RIF40_CONTEXTUAL_STATS,STUDY_ID,NOT NULL,NUMBER(8),Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq
-T_RIF40_CONTEXTUAL_STATS,TOTAL_COMPARISON_POPULATION,NULL,"NUMBER(38,6)",Total comparison population. Used for internal calculations.
+T_RIF40_CONTEXTUAL_STATS,TOTAL_COMPARISION_POPULATION,NULL,"NUMBER(38,6)",Total comparison population. Used for internal calculations.
 T_RIF40_CONTEXTUAL_STATS,USERNAME,NOT NULL,VARCHAR2(90),Username
 T_RIF40_CONTEXTUAL_STATS,VARIANCE_HIGH,NULL,"NUMBER(38,6)",Variance (observed &gt; 100). Used for internal calculations.
 T_RIF40_CONTEXTUAL_STATS,VARIANCE_LOW,NULL,"NUMBER(38,6)",Variance (observed &lt;= 100). Used for internal calculations.
