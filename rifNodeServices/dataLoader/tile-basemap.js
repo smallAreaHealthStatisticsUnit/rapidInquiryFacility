@@ -104,201 +104,275 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 			new Basemap({
 				name: "OpenStreetMap Mapnik", 
 				tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "OpenStreetMap BlackAndWhite", 
 				tileLayer: L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
-						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
-				})}, this.basemapArray);
+						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
+					crossOrigin: false
+				})}, this.basemapArray); 
 			new Basemap({
 				name: "OpenTopoMap", 
-				tileLayer: L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-						attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org" target="_blank">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org" target="_blank">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank">CC-BY-SA</a>)'
+				tileLayer: L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { 
+					attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org" target="_blank">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org" target="_blank">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank">CC-BY-SA</a>)',
+					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
+					crossOrigin: false
 				})}, this.basemapArray);
 			new Basemap({
 				 name: "Humanitarian OpenStreetMap", 
 				 tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>'
+						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Thunderforest OpenCycleMap", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', { // API key required
+					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Thunderforest Transport", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png', { // API key required
+					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Thunderforest TransportDark", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/transport-dark/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/transport-dark/{z}/{x}/{y}.png', { // API key required
+					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Thunderforest Landscape", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png', { // API key required
+					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Thunderforest SpinalMap", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png', { // API key required
+					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Thunderforest Outdoors", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png', { // API key required
+					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Thunderforest Pioneer", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/pioneer/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/pioneer/{z}/{x}/{y}.png', { // API key required
+					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "OpenMapSurfer Roads", 
 				tileLayer: L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}', {
-					attribution: 'Imagery from <a href="http://giscience.uni-hd.de/" target="_blank">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+					attribution: 'Imagery from <a href="http://giscience.uni-hd.de/" target="_blank">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "OpenMapSurfer Grayscale", 
 				tileLayer: L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roadsg/x={x}&y={y}&z={z}', {
-					attribution: 'Imagery from <a href="http://giscience.uni-hd.de/" target="_blank">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+					attribution: 'Imagery from <a href="http://giscience.uni-hd.de/" target="_blank">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Hydda Full", 
 				tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
-					attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+					attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
+					crossOrigin: false
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Hydda Base", 
 				tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png', {
-					attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+					attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
+					crossOrigin: false
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Stamen Toner", 
 				tileLayer: L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.{ext}', {
 					attribution: 'Map tiles by <a href="http://stamen.com" target="_blank">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0" target="_blank">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					subdomains: 'abcd',
-					ext: 'png'
+					ext: 'png',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Stamen TonerBackground", 
 				tileLayer: L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}.{ext}', {
 					attribution: 'Map tiles by <a href="http://stamen.com" target="_blank">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0" target="_blank">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					subdomains: 'abcd',
-					ext: 'png'
+					ext: 'png',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Stamen TonerLite", 
 				tileLayer: L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.{ext}', {
 					attribution: 'Map tiles by <a href="http://stamen.com" target="_blank">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0" target="_blank">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					subdomains: 'abcd',
-					ext: 'png'
+					ext: 'png',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Stamen Watercolor", 
 				tileLayer: L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
 					attribution: 'Map tiles by <a href="http://stamen.com" target="_blank">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0" target="_blank">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					subdomains: 'abcd',
-					ext: 'png'
+					ext: 'png',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);		
 			new Basemap({
 				name: "Esri WorldStreetMap", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+					attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Esri DeLorme", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Specialty/DeLorme_World_Base_Map/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Copyright: &copy;2012 DeLorme'
+					attribution: 'Tiles &copy; Esri &mdash; Copyright: &copy;2012 DeLorme',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Esri WorldTopoMap", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+					attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Esri WorldImagery", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+					attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Esri WorldTerrain", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS'
+					attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Esri WorldShadedRelief", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Source: Esri'
+					attribution: 'Tiles &copy; Esri &mdash; Source: Esri',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Esri WorldPhysical ", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Source: US National Park Service'
+					attribution: 'Tiles &copy; Esri &mdash; Source: US National Park Service',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Esri OceanBasemap", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri'
+					attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Esri NatGeoWorldMap", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC'
+					attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "Esri WorldGrayCanvas", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+					attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "CartoDB Positron", 
 				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd'
+					subdomains: 'abcd',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "CartoDB PositronNoLabels", 
 				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd'
+					subdomains: 'abcd',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "CartoDB PositronOnlyLabels", 
 				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd'
+					subdomains: 'abcd',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "CartoDB DarkMatter", 
 				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd'
+					subdomains: 'abcd',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "CartoDB DarkMatterNoLabels", 
 				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd'
+					subdomains: 'abcd',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "CartoDB DarkMatterOnlyLabels", 
 				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd'
+					subdomains: 'abcd',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			new Basemap({
 				name: "HikeBike HikeBike", 
 				tileLayer: L.tileLayer('http://{s}.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
+					crossOrigin: false
 				})}, this.basemapArray);
 			new Basemap({
 				name: "HikeBike HillShading", 
 				tileLayer: L.tileLayer('http://{s}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
+					crossOrigin: false
 				})}, this.basemapArray);
 			new Basemap({
 				name: "NASAGIBS ViirsEarthAtNight2012", 
@@ -309,18 +383,24 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 					maxZoom: 8,
 					format: 'jpg',
 					time: '',
-					tilematrixset: 'GoogleMapsCompatible_Level'
+					tilematrixset: 'GoogleMapsCompatible_Level',
+					useCache: true,
+					crossOrigin: true
 				})}, this.basemapArray);
 			//Additional
 			new Basemap({
 				name: "OSM UK Postcodes", 
 				tileLayer: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-npe/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">OSM Postcode</a>'
+					attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">OSM Postcode</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.overlaymapArray);
 			new Basemap({
 				name: "Code-Point Open UK Postcodes", 
 				tileLayer: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-os/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">Code-Point Open layers</a>'
+					attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">Code-Point Open layers</a>',
+					useCache: true,
+					crossOrigin: true
 				})}, this.overlaymapArray);
 								
 			var currentBaseMap;	
@@ -328,6 +408,15 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 			for (var i=0; i<this.basemapArray.length; i++) {
 				this.basemapArray[i].tileLayer.on('tileerror', function(tile) {
 					consoleError("Error: loading " + baseLayer.name + " tile: " + JSON.stringify(tile.coords)||"UNK");
+				});
+				this.basemapArray[i].tileLayer.on('tilecachehit',function(ev){
+					consoleLog("Cache hit " + baseLayer.name + " tile: " + ev.url);
+				});
+				this.basemapArray[i].tileLayer.on('tilecachemiss',function(ev){
+					consoleLog("Cache miss " + baseLayer.name + " tile: " + ev.url);
+				});
+				this.basemapArray[i].tileLayer.on('tilecacheerror',function(ev){
+					consoleLog("Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile);
 				});
 				this.basemapArray[i].tileLayer.name=this.basemapArray[i].name;
 				currentBaseMap=this.basemapArray[i].tileLayer;
