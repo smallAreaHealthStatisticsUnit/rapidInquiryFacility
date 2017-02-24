@@ -495,9 +495,11 @@ function createMap(boundingBox, maxZoomlevel) {
 			baseLayer.redraw();
 		}
 		else {
-			consoleLog("Creating basemap...");		
+			var defaultBaseMap="OpenStreetMap Mapnik";
+			consoleLog("Creating basemap: " + defaultBaseMap);		
 //			addBaseLayers(maxZoomlevel);	
-			initBaseMaps("OpenStreetMap Mapnik", maxZoomlevel);			
+
+			var basemaps=new mapArrays(map, defaultBaseMap, maxZoomlevel);		
 					
 			if (L.version >= "1.0.0") { // Leaflet 0.7 code
 //				addGridLayer(); 	// Add grid layer Leaflet 1.0+
