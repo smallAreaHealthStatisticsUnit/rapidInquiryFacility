@@ -87,4 +87,7 @@ Principal Work Area: JavaScript User interface development
 
 - More refactoring
 - Browser compatibility fixes
+- Middle ware method getTileMakerTiles to get topojson by leaflet gridLayer
+- Tiled topojson now used in front end
+- Debugging of R smoothing script to work with RIF submission options
 
