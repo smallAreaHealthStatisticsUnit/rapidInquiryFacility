@@ -73,7 +73,13 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 		this.basemapArray=[];
 		this.overlaymapArray=[];
 		
-		this.initBaseMaps(map, defaultBaseMap, maxZoomlevel);
+		this.cacheSize=0;
+		this.totalTiles=0;
+							
+		this.pouchDB=undefined;
+
+		this.initBaseMaps(map, defaultBaseMap, maxZoomlevel);			
+		this._getCacheSize();
 	}
 	mapArrays.prototype = { // Add methods
 		/*
@@ -405,22 +411,27 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 								
 			var currentBaseMap;	
 			var layerList = {};
-			for (var i=0; i<this.basemapArray.length; i++) {
-				this.basemapArray[i].tileLayer.on('tileerror', function(tile) {
-					consoleError("Error: loading " + baseLayer.name + " tile: " + JSON.stringify(tile.coords)||"UNK");
+			for (var i=0; i<this.basemapArray.length; i++) { // Add handlers
+				this.basemapArray[i].tileLayer.on('tileerror', function tileErrorHandler(tile) {
+					consoleError("tileErrorHandler(): Error: loading " + baseLayer.name + " tile: " + JSON.stringify(tile.coords)||"UNK");
 				});
-				this.basemapArray[i].tileLayer.on('tilecachehit',function(ev){
-					consoleLog("Cache hit " + baseLayer.name + " tile: " + ev.url);
+				this.basemapArray[i].tileLayer.on('tilecachehit', function tileCacheHitHandler(ev) {
+					consoleLog("tileCacheHitHandler(): Cache hit " + baseLayer.name + " tile: " + ev.url);
 				});
-				this.basemapArray[i].tileLayer.on('tilecachemiss',function(ev){
-					consoleLog("Cache miss " + baseLayer.name + " tile: " + ev.url);
+				this.basemapArray[i].tileLayer.on('tilecachemiss', function tileCacheMissHandler(ev) {
+					consoleLog("tileCacheMissHandler(): Cache miss " + baseLayer.name + " tile: " + ev.url);
 				});
-				this.basemapArray[i].tileLayer.on('tilecacheerror',function(ev){
-					consoleLog("Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile);
+				this.basemapArray[i].tileLayer.on('tilecacheerror', function tileCacheErrorHandler(ev) {
+					consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile);
 				});
 				this.basemapArray[i].tileLayer.name=this.basemapArray[i].name;
-				currentBaseMap=this.basemapArray[i].tileLayer;
+				if (currentBaseMap == undefined) {
+					currentBaseMap=this.basemapArray[i].tileLayer;
+				}
 				layerList[this.basemapArray[i].name]=this.basemapArray[i].tileLayer;
+				if (this.pouchDB == undefined && this.basemapArray[i].tileLayer._db) {
+					this.pouchDB=this.basemapArray[i].tileLayer._db;
+				}
 			}
 				
 			var overlayList = {};
@@ -429,9 +440,14 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 				overlayList[this.overlaymapArray[i].name]=this.overlaymapArray[i].tileLayer;
 			}
 			
-			if (layerList[defaultBaseMap]) {
-				
+			if (layerList[defaultBaseMap]) {			
 				currentBaseMap=layerList[defaultBaseMap];
+			}
+			else {
+				errorPopup(new Error("initBaseMaps(): Cannot load: " + defaultBaseMap + "; not found in basemapArray"));
+			}
+			
+			if (currentBaseMap) {
 				currentBaseMap.addTo(map);
 				controlLayers=L.control.layers(
 					layerList, 		// Base layers 
@@ -441,26 +457,73 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 					collapsed: true
 				});	
 				baseLayer = currentBaseMap;
-				
+			
 				map.on('baselayerchange', function baselayerchangeEvent(changeEvent) {
 					baseLayer=changeEvent.layer;
-					consoleLog("base layer changed to: " + changeEvent.layer.name);
-					document.getElementById("legend_baseLayer_value").innerHTML=changeEvent.layer.name;
+					if (changeEvent.layer._db) {		
+						changeEvent.layer._db.info(
+							function getInfo(err, result) {		
+								if (err) {
+									consoleError("Error: " + err.message + " in _db.info() for base layer: " + changeEvent.layer.name);			
+								}
+								else {
+									consoleLog("base layer changed to: " + changeEvent.layer.name + "; cache info: " + 
+										JSON.stringify(result));
+								}							
+							});
+					}
+					else {
+						consoleLog("baselayerchangeEvent(): Base layer changed to: " + changeEvent.layer.name + "; not cached");
+					}
+					document.getElementById("legend_baseLayer_value").innerHTML=changeEvent.layer.name;	
 				});
-				map.on('overlayadd', function baselayerchangeEvent(changeEvent) {
-					consoleLog("overlayer added: " + changeEvent.name);
+				map.on('overlayadd', function overlayAddEvent(changeEvent) {
+					consoleLog("overlayAddEvent(): overlay added: " + changeEvent.name);
 				});
-				map.on('overlayremove', function baselayerchangeEvent(changeEvent) {
-					consoleLog("overlayer removed: " + changeEvent.name);
+				map.on('overlayremove', function overlayRemoveEvent(changeEvent) {
+					consoleLog("overlayRemoveEvent(): overlay removed: " + changeEvent.name);
 				});
 				controlLayers.addTo(map);
 				
-				consoleLog("Added baseLayer to map: " + baseLayer.name + "; default: " + defaultBaseMap);	
+				consoleLog("initBaseMaps(): Added baseLayer to map: " + baseLayer.name + "; default: " + defaultBaseMap);	
 			}
 			else {
-				errorPopup(new Error("Cannot load: " + defaultBaseMap + "; not found in basemapArray"));
+				errorPopup(new Error("initBaseMaps(): Cannot load basemap, no currentBaseMap"));
 			}
-		} // End of initBaseMaps()
+		}, // End of initBaseMaps()
+		/*
+		 * Function: 	_getCacheSize()
+		 * Parameters:	callback (optional)
+		 * Returns:		Nothing (use callback to access this.cacheSize, this.totalTiles)
+		 * Description:	Add basemap to basemap array
+		 */	
+		_getCacheSize: function(getCacheSizeCallback) {
+			if (this.pouchDB) {
+				this.pouchDB.allDocs({
+						include_docs: true,
+						attachments: true
+					}, 
+					function getAllDocs(err, result) {
+						if (err) {
+							consoleError("_getCacheSize(): Error: " + err.message + " in _db.allDocs()");
+							if (getCacheSizeCallback) {
+								getCacheSizeCallback(err);
+							}		
+						}
+						else {
+							this.cacheSize=0;
+							this.totalTiles=result.total_rows;
+							for (var i=0; i<result.total_rows; i++) {
+								this.cacheSize+=result.rows[i].doc.dataUrl.length;
+							}
+							if (getCacheSizeCallback) {
+								getCacheSizeCallback();
+							}
+						}
+					}
+				);
+			}
+		} // End of getCacheSize
 		
 }; // End of mapArrays() object	
 						
