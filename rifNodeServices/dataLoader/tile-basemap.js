@@ -56,12 +56,12 @@ function Basemap(basemapOptions, mapArrays) {
 	this.name=basemapOptions.name||"UNK";
 	this.tileLayer=basemapOptions.tileLayer;
 	this.tileLayer.mapArrays=mapArrays; // Add pointer to container object
+	this.tileLayer.cacheStats={
+		hits: 0,
+		misses: 0,
+		errors: 0
+	};
 	if (this.tileLayer.mapArrays) {
-		this.tileLayer.mapArrays.cacheStatsArray[this.name]={
-			hits: 0,
-			misses: 0,
-			errors: 0
-		};
 		this.tileLayer.mapArrays.basemapArray.push(this);
 	}
 	else {
@@ -70,7 +70,6 @@ function Basemap(basemapOptions, mapArrays) {
 	
 	this.tileLayer.on('tileerror', function(tile) {
 		consoleError("Error: loading " + this.name + " tile: " + JSON.stringify(tile.coords)||"UNK");
-		// this.tileLayer.mapArrays.cacheStatsArray[baseLayer.name].errors++;
 	});
 	
 } // End of Basemap() object constructor
@@ -84,7 +83,6 @@ function Basemap(basemapOptions, mapArrays) {
 function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 		this.basemapArray=[];
 		this.overlaymapArray=[];
-		this.cacheStatsArray={};
 		
 		this.cacheSize=0;
 		this.totalTiles=0;					
@@ -425,33 +423,30 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 			for (var i=0; i<this.basemapArray.length; i++) { // Add handlers
 				
 				this.basemapArray[i].tileLayer.on('tilecachehit', function tileCacheHitHandler(ev) {
-					if (baseLayer && baseLayer.mapArrays && baseLayer.mapArrays.cacheStatsArray && 
-					    baseLayer.mapArrays.cacheStatsArray[baseLayer.name]) {
-						baseLayer.mapArrays.cacheStatsArray[baseLayer.name].hits++;
-						consoleLog("tileCacheHitHandler(): Cache hit " + baseLayer.name + " tile: " + ev.url +
-							"; total hits: " + baseLayer.mapArrays.cacheStatsArray[baseLayer.name].hits);
+					if (baseLayer && baseLayer.cacheStats) {
+						baseLayer.cacheStats.hits++;
+//						consoleLog("tileCacheHitHandler(): Cache hit " + baseLayer.name + " tile: " + ev.url +
+//							"; total hits: " + baseLayer.cacheStats.hits);
 					}
 					else {
 						consoleLog("tileCacheHitHandler(): Cache hit " + baseLayer.name + " tile: " + ev.url + " [No stats update]");
 					}
 				});
 				this.basemapArray[i].tileLayer.on('tilecachemiss', function tileCacheMissHandler(ev) {
-					if (baseLayer && baseLayer.mapArrays && baseLayer.mapArrays.cacheStatsArray && 
-					    baseLayer.mapArrays.cacheStatsArray[baseLayer.name]) {
-						baseLayer.mapArrays.cacheStatsArray[baseLayer.name].misses++;
-						consoleLog("tileCacheMissHandler(): Cache miss " + baseLayer.name + " tile: " + ev.url+
-							"; total misses: " + baseLayer.mapArrays.cacheStatsArray[baseLayer.name].misses);
+					if (baseLayer && baseLayer.cacheStats) {
+						baseLayer.cacheStats.misses++;
+//						consoleLog("tileCacheMissHandler(): Cache miss " + baseLayer.name + " tile: " + ev.url+
+//							"; total misses: " + baseLayer.cacheStats.misses);
 					}
 					else {
 						consoleLog("tileCacheMissHandler(): Cache miss " + baseLayer.name + " tile: " + ev.url + " [No stats update]");
 					}
 				});
 				this.basemapArray[i].tileLayer.on('tilecacheerror', function tileCacheErrorHandler(ev) {
-					if (baseLayer && baseLayer.mapArrays && baseLayer.mapArrays.cacheStatsArray && 
-					    baseLayer.mapArrays.cacheStatsArray[baseLayer.name]) {
-						baseLayer.mapArrays.cacheStatsArray[baseLayer.name].errors++;
-						consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile+
-							"; total errors: " + baseLayer.mapArrays.cacheStatsArray[baseLayer.name].errors);
+					if (baseLayer && baseLayer.cacheStats) {
+						baseLayer.cacheStats.errors++;
+//						consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile+
+//							"; total errors: " + baseLayer.cacheStats.errors);
 					}
 					else {
 						consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile + 
@@ -550,6 +545,8 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 		 * Description:	Add basemap to basemap array
 		 */	
 		_getCacheSize: function(getCacheSizeCallback) {
+			var mapArrays=this;
+			
 			if (this.pouchDB) {
 				this.pouchDB.allDocs({
 						include_docs: true,
@@ -563,30 +560,48 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel) {
 							}		
 						}
 						else {
-							this.cacheSize=0;
-							this.totalTiles=result.total_rows;
+							mapArrays.cacheSize=0;
+							mapArrays.totalTiles=result.total_rows;
 							for (var i=0; i<result.total_rows; i++) {
-								this.cacheSize+=result.rows[i].doc.dataUrl.length;
+								mapArrays.cacheSize+=result.rows[i].doc.dataUrl.length;
 							}
 							
 							var cacheRows="";				
-							if (this.cacheStatsArray) {
-								var cacheStatsArray=Object.keys(this.cacheStatsArray);
-								for (var i=0; i<cacheStatsArray.length; i++) {
-									if (this.cacheStatsArray[cacheStatsArray[i]].hits > 0 ||
-										this.cacheStatsArray[cacheStatsArray[i]].misses > 0 ||
-										this.cacheStatsArray[cacheStatsArray[i]].errors > 0) {
-										cacheRows+="\n[" + i + "] " + cacheStatsArray[i] + 
-											": hits: " + this.cacheStatsArray[cacheStatsArray[i]].hits +
-											"misses: " + this.cacheStatsArray[cacheStatsArray[i]].misses +
-											"errors: " + this.cacheStatsArray[cacheStatsArray[i]].errors;
+							if (mapArrays.basemapArray) {
+								for (var i=0; i<mapArrays.basemapArray.length; i++) {
+									if (mapArrays.basemapArray[i].tileLayer && mapArrays.basemapArray[i].tileLayer.cacheStats &&
+										mapArrays.basemapArray[i].tileLayer.cacheStats.hits > 0 ||
+										mapArrays.basemapArray[i].tileLayer.cacheStats.misses > 0 ||
+										mapArrays.basemapArray[i].tileLayer.cacheStats.errors > 0) {
+										cacheRows+="\n[" + i + "] " + mapArrays.basemapArray[i].tileLayer.name + 
+											": hits: " + mapArrays.basemapArray[i].tileLayer.cacheStats.hits +
+											"; misses: " + mapArrays.basemapArray[i].tileLayer.cacheStats.misses +
+											"; errors: " + mapArrays.basemapArray[i].tileLayer.cacheStats.errors;
 									}
 								} 
 							}
 							else {
-								consoleError("_getCacheSize() no cacheStatsArray");
+								consoleError("_getCacheSize() no basemapArray");
 							}
-							consoleLog("_getCacheSize(): " + result.total_rows + " items; size: " + this.cacheSize + cacheRows + " bytes");
+										
+							if (mapArrays.overlaymapArray) {
+								for (var i=0; i<mapArrays.overlaymapArray.length; i++) {
+									if (mapArrays.overlaymapArray[i].tileLayer && mapArrays.overlaymapArray[i].tileLayer.cacheStats &&
+										mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits > 0 ||
+										mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses > 0 ||
+										mapArrays.overlaymapArray[i].tileLayer.cacheStats.errors > 0) {
+										cacheRows+="\n[" + i + "] " + mapArrays.overlaymapArray[i].tileLayer.name + 
+											": hits: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits +
+											"; misses: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses +
+											"; errors: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.errors;
+									}
+								} 
+							}
+							else {
+								consoleError("_getCacheSize() no overlaymapArray");
+							}
+							
+							consoleLog("_getCacheSize(): " + mapArrays.totalTiles + " tiles; size: " + mapArrays.cacheSize + " bytes" + cacheRows);
 							if (getCacheSizeCallback) {
 								getCacheSizeCallback();
 							}
