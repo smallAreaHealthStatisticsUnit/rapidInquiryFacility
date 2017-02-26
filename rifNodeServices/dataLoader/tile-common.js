@@ -52,6 +52,7 @@ var legend;
 var mouseoverPopup;
 var topojsonTileLayerCount=0;
 var LegendDiv;
+var basemaps;
 
 /*
  * Function: 	scopeChecker()
@@ -338,6 +339,29 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 } // End of xhrGetMethod()
 
 /*
+ * Function: 	fileSize()
+ * Parameters: 	File size
+ * Returns: 	Nicely formatted file size
+ * Description:	Display file size nicely	
+ */
+function fileSize(file_size) {
+	var niceFileSize;
+	if (!file_size) {
+		return undefined;
+	}
+	else if (file_size > 1024 * 1024 * 1024) {
+		niceFileSize = (Math.round(file_size * 100 / (1024 * 1024 * 1024)) / 100).toString() + 'GB';
+	}
+	else if (file_size > 1024 * 1024) {
+		niceFileSize = (Math.round(file_size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+	} 
+	else {
+		niceFileSize = (Math.round(file_size * 100 / 1024) / 100).toString() + 'KB';
+	}
+	return niceFileSize;
+}
+
+/*
  * Function: 	addSelector()
  * Parameters: 	selectorId, selectorChangeCallback, newHTML, defaultValue
  * Returns: 	map
@@ -360,24 +384,24 @@ function addSelector(selectorId, selectorChangeCallback, newHTML, defaultValue) 
 			
 		if (defaultValue) {
 			$( selectorId ).val(defaultValue);			
-			consoleLog("addSelector(): refresh with defaultValue: " + selectorId + 
-				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
-				"; HTML>\n" + newHTML);
+//			consoleLog("addSelector(): refresh with defaultValue: " + selectorId + 
+//				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
+//				"; HTML>\n" + newHTML);
 		}
 		else {
 			$( selectorId ).val(checkedValue);
-			consoleLog("addSelector(): refresh with checkedValue: " + selectorId + 
-				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
-				"; HTML>\n" + newHTML);
+//			consoleLog("addSelector(): refresh with checkedValue: " + selectorId + 
+//				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
+//				"; HTML>\n" + newHTML);
 		}			
 	}
 	else {
 		$( selectorId ).html(newHTML);		
 		var checkedValue=$( selectorId + " option:checked" ).val();
 
-		consoleLog("addSelector(): pre-create: " + selectorId + 
-			"; val: " + $( selectorId ).val()   + " ; checkedValue: " + checkedValue + 
-			" ; HTML>\n" + newHTML);
+//		consoleLog("addSelector(): pre-create: " + selectorId + 
+//			"; val: " + $( selectorId ).val()   + " ; checkedValue: " + checkedValue + 
+//			" ; HTML>\n" + newHTML);
 			
 		$( selectorId )									// Create selector
 			.selectmenu({
@@ -390,15 +414,15 @@ function addSelector(selectorId, selectorChangeCallback, newHTML, defaultValue) 
 
 		if (defaultValue) {
 			$( selectorId ).val(defaultValue);
-			consoleLog("addSelector(): create with defaultValue: " + selectorId + 
-				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
-				"; HTML>\n" + newHTML);
+//			consoleLog("addSelector(): create with defaultValue: " + selectorId + 
+//				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
+//				"; HTML>\n" + newHTML);
 		}
 		else {
 			$( selectorId ).val(checkedValue);
-			consoleLog("addSelector(): create with checkedValue: " + selectorId + 
-				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
-				"; HTML>\n" + newHTML);
+//			consoleLog("addSelector(): create with checkedValue: " + selectorId + 
+//				"; val: " + $( selectorId ).val() + " ; checkedValue: " + checkedValue + 
+//				"; HTML>\n" + newHTML);
 		}		
 	}
 		
@@ -498,8 +522,8 @@ function createMap(boundingBox, maxZoomlevel) {
 			var defaultBaseMap="OpenStreetMap Mapnik";
 			consoleLog("Creating basemap: " + defaultBaseMap);		
 //			addBaseLayers(maxZoomlevel);	
-
-			var basemaps=new mapArrays(map, defaultBaseMap, maxZoomlevel);		
+	
+			basemaps=new mapArrays(map, defaultBaseMap, maxZoomlevel);		
 					
 			if (L.version >= "1.0.0") { // Leaflet 0.7 code
 //				addGridLayer(); 	// Add grid layer Leaflet 1.0+

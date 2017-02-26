@@ -201,7 +201,37 @@ function getGeographies(data, status, xhr) {
 	}
 			
 } // End of getGeographies()
-		
+	
+/*
+ * Function: 	cacheTabBeforeActivate()
+ * Parameters: 	None
+ * Returns: 	Nothing
+ * Description:	Setup cache tab html before activation
+ */	
+function cacheTabBeforeActivate() {
+	consoleLog("cacheTabBeforeActivate()");
+	if (basemaps) {
+		document.getElementById("cacheTab").innerHTML="<a>Please wait, fetching cache data...</a>";
+		basemaps._getCacheSize(function getCacheSizeCallback(err, results) {
+			if (err) {
+				errorPopup(new Error("cacheTabBeforeActivate(): _getCacheSize() error: " + err.message));
+			}
+			else {
+				consoleLog("cacheTabBeforeActivate(): _getCacheSize() done.");
+				if (results.tableHtml) {
+					document.getElementById("cacheTab").innerHTML='<a>' + results.tableHtml + '</a><br>' +
+						'<a>Total tiles: ' + results.totalTiles + '</a><br>' +
+						'<a>Cache size: ' + fileSize(results.cacheSize) + '</a><br>' +
+						'<a>Auto compaction: ' + (results.autoCompaction ? "Yes" : "No") + '</a>';
+				}
+				else {
+					consoleLog("cacheTabBeforeActivate() results: " + JSON.stringify(results, nuill, 2));
+				}
+			}			
+		});
+	}
+}
+
 /*
  * Function: 	setupTileViewer()
  * Parameters: 	None
@@ -263,8 +293,8 @@ function setupTileViewer() {
 
 	$( "#dialog-form" ).dialog( "option", "height", dialogFormHieght );	
 	$( "#dialog-form" ).dialog( "option", "width", dialogFormWidth );
-	$( "#settings-form" ).dialog( "option", "height", dialogFormHieght );	
-	$( "#settings-form" ).dialog( "option", "width", dialogFormWidth );	
+	$( "#settings-tabs" ).dialog( "option", "height", dialogFormHieght );	
+	$( "#settings-tabs" ).dialog( "option", "width", dialogFormWidth );	
 	
 	var labelClass=document.getElementsByClassName("labelClass");
 	for (var i=0;i<labelClass.length; i++) {

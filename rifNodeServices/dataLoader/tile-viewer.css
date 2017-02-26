@@ -64,3 +64,9 @@ label { /* This needs to inherit the correct JQuery UI class style; the .css() f
 .ui-dialog {
     z-index: 2;
 }
+#cachetable table, #cachetable  th, #cachetable  td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 2px;
+    text-align: left;
+}

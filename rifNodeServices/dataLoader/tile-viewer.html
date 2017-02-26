@@ -98,7 +98,7 @@ $(document).ready(function documentReady() {
 //        geolevelSelect = $("#geolevelSelect"),
 //        allSettingsFields = $([]).add(name).add(geographySelect).add(geolevelSelect);
 		
-	var settings = $("#settings-form").dialog({
+	var settings = $("#settings-tabs").dialog({
         autoOpen: false,
         height: 300,
         width: 550,
@@ -110,7 +110,7 @@ $(document).ready(function documentReady() {
             }
         },
         close: function () {
-            form[0].reset();
+//            form[0].reset();
 //            allSettingsFields.removeClass("ui-state-error");
         }
     });
@@ -146,6 +146,15 @@ $(document).ready(function documentReady() {
 			settings.dialog("open");
     });
 	
+	$( "#settings-tabs" ).tabs({
+		beforeActivate: function settingsTabsBeforeActivate( event, ui ) {
+			consoleLog("settingsTabsBeforeActivate() newPanel: " + ui.newPanel.attr('id'));
+			if (ui && ui.newPanel && ui.newPanel.attr('id') == "cacheTab") {
+				cacheTabBeforeActivate();
+			}
+		}
+	});
+  
 //
 // Enable resize
 //
@@ -185,11 +194,18 @@ $(document).ready(function documentReady() {
 	    </fieldset>	
       </form>  
    	</div>	
-    <div id="settings-form" title="Settings">
-	  <form id="settingsSelect">
-	    <fieldset>
-	    </fieldset>	
-      </form>  
+    <div id="settings-tabs" title="Settings">
+	  <ul id="tabbox">
+		<li><a href = "#sqlServerTab">SQL Server</a></li>
+		<li><a href = "#postgresTab">Postgres</a></li>
+		<li><a href = "#cacheTab">Cache</a></li>
+	  </ul>
+	  <div id="sqlServerTab">
+	  </div>
+	  <div id="postgresTab">
+	  </div>
+	  <div id="cacheTab">
+	  </div>
    	</div>	
 	<div id="topbar">
   	  <div id="selectDiv">

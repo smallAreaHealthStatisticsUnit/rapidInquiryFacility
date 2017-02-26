@@ -8,7 +8,7 @@ L.TileLayer.addInitHook(function() {
 		return;
 	}
 
-	this._db = new PouchDB('offline-tiles');
+this._db = new PouchDB('offline-tiles', {auto_compaction: this.options.auto_compaction });
 	this._canvas = document.createElement('canvas');
 
 	if (!(this._canvas.getContext && this._canvas.getContext('2d'))) {
@@ -41,6 +41,9 @@ L.TileLayer.prototype.options.cacheFormat = 'image/png';
 // Maximum age of the cache, in milliseconds
 L.TileLayer.prototype.options.cacheMaxAge  = 24*3600*1000;
 
+// 🍂option auto_compaction: true/false
+// This turns on auto compaction, which means compact() is called after every change to the database. Defaults to false.
+L.TileLayer.prototype.options.auto_compaction = false;
 
 L.TileLayer.include({
 
