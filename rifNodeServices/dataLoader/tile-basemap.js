@@ -189,6 +189,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
+				
 			new Basemap({
 				name: "Thunderforest OpenCycleMap", 
 				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', { // API key required
@@ -245,6 +246,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
+				
 			new Basemap({
 				name: "OpenMapSurfer Roads", 
 				tileLayer: L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}', {
@@ -261,6 +263,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
+				
 			new Basemap({
 				name: "Hydda Full", 
 				tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
@@ -275,6 +278,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
 					crossOrigin: false
 				})}, this);
+				
 			new Basemap({
 				name: "Stamen Toner", 
 				tileLayer: L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.{ext}', {
@@ -315,6 +319,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);		
+				
 			new Basemap({
 				name: "Esri WorldStreetMap", 
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
@@ -395,6 +400,44 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
+
+			new Basemap({
+				name: "Google roadmap", 
+				tileLayer: L.gridLayer.googleMutant({
+					maxZoom: maxZoomlevel||11,
+					type: 'roadmap',
+					useCache: true,
+					crossOrigin: true,
+					auto_compaction: this.options.auto_compaction
+				})}, this);
+			new Basemap({
+				name: "Google satellite", 
+				tileLayer: L.gridLayer.googleMutant({
+					maxZoom: maxZoomlevel||11,
+					type: 'satellite',
+					useCache: true,
+					crossOrigin: true,
+					auto_compaction: this.options.auto_compaction
+				})}, this);
+			new Basemap({
+				name: "Google terrain", 
+				tileLayer: L.gridLayer.googleMutant({
+					maxZoom: maxZoomlevel||11,
+					type: 'terrain',
+					useCache: true,
+					crossOrigin: true,
+					auto_compaction: this.options.auto_compaction
+				})}, this);
+			new Basemap({
+				name: "Google hybrid", 
+				tileLayer: L.gridLayer.googleMutant({
+					maxZoom: maxZoomlevel||11,
+					type:'hybrid',
+					useCache: true,
+					crossOrigin: true,
+					auto_compaction: this.options.auto_compaction
+				})}, this); 
+	
 			new Basemap({
 				name: "CartoDB Positron", 
 				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {

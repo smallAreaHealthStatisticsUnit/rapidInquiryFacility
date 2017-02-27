@@ -1,13 +1,13 @@
 
 
-L.TileLayer.addInitHook(function() {
+L.GridLayer.GoogleMutant.addInitHook(function() {
 
 	if (!this.options.useCache) {
 		this._db     = null;
 		this._canvas = null;
 		return;
 	}
-
+	consoleLog("L.GridLayer.GoogleMutant.addInitHook(): ");
 	this._db = new PouchDB('offline-tiles', {auto_compaction: this.options.auto_compaction });
 	this._canvas = document.createElement('canvas');
 
@@ -19,35 +19,35 @@ L.TileLayer.addInitHook(function() {
 	}
 });
 
-// 🍂namespace TileLayer
+// 🍂namespace GridLayer.GoogleMutant
 // 🍂section PouchDB tile caching options
 // 🍂option useCache: Boolean = false
 // Whether to use a PouchDB cache on this tile layer, or not
-L.TileLayer.prototype.options.useCache     = false;
+L.GridLayer.GoogleMutant.prototype.options.useCache     = false;
 
 // 🍂option saveToCache: Boolean = true
 // When caching is enabled, whether to save new tiles to the cache or not
-L.TileLayer.prototype.options.saveToCache  = true;
+L.GridLayer.GoogleMutant.prototype.options.saveToCache  = true;
 
 // 🍂option useOnlyCache: Boolean = false
 // When caching is enabled, whether to request new tiles from the network or not
-L.TileLayer.prototype.options.useOnlyCache = false;
+L.GridLayer.GoogleMutant.prototype.options.useOnlyCache = false;
 
 // 🍂option useCache: String = 'image/png'
 // The image format to be used when saving the tile images in the cache
-L.TileLayer.prototype.options.cacheFormat = 'image/png';
+L.GridLayer.GoogleMutant.prototype.options.cacheFormat = 'image/png';
 
 // 🍂option cacheMaxAge: Number = 24*3600*1000
 // Maximum age of the cache, in milliseconds
-L.TileLayer.prototype.options.cacheMaxAge  = 24*3600*1000;
+L.GridLayer.GoogleMutant.prototype.options.cacheMaxAge  = 24*3600*1000;
 
 // 🍂option auto_compaction: true/false
 // This turns on auto compaction, which means compact() is called after every change to the database. Defaults to false.
-L.TileLayer.prototype.options.auto_compaction = false;
+L.GridLayer.GoogleMutant.prototype.options.auto_compaction = false;
 
-L.TileLayer.include({
+L.GridLayer.GoogleMutant.include({
 
-	// Overwrites L.TileLayer.prototype.createTile
+	// Overwrites L.GridLayer.GoogleMutant.prototype.createTile
 	createTile: function(coords, done) {
 		var tile = document.createElement('img');
 
@@ -178,8 +178,8 @@ L.TileLayer.include({
 			var northEastPoint = this._map.project(bbox.getNorthEast(),z);
 			var southWestPoint = this._map.project(bbox.getSouthWest(),z);
 
-			// Calculate tile indexes as per L.TileLayer._update and
-			//   L.TileLayer._addTilesFromCenterOut
+			// Calculate tile indexes as per L.GridLayer.GoogleMutant._update and
+			//   L.GridLayer.GoogleMutant._addTilesFromCenterOut
 			var tileSize = this.getTileSize();
 			var tileBounds = L.bounds(
 				L.point(Math.floor(northEastPoint.x / tileSize.x), Math.floor(northEastPoint.y / tileSize.y)),
@@ -211,7 +211,7 @@ L.TileLayer.include({
 		return document.createElement('img');
 	},
 
-	// Modified L.TileLayer.getTileUrl, this will use the zoom given by the parameter coords
+	// Modified L.GridLayer.GoogleMutant.getTileUrl, this will use the zoom given by the parameter coords
 	//  instead of the maps current zoomlevel.
 	_getTileUrl: function (coords) {
 		var zoom = coords.z;
