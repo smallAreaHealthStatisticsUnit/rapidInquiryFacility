@@ -71,11 +71,42 @@ function Basemap(basemapOptions, mapArrays) {
 	}
 	
 	this.tileLayer.on('tileerror', function(tile) {
-		consoleError("Error: loading " + this.name + " tile: " + JSON.stringify(tile.coords)||"UNK");
+		consoleError("Error: loading " + this.name + " baselayer tile: " + JSON.stringify(tile.coords)||"UNK");
 		this.cacheStats.errors++;
 	});
 	
 } // End of Basemap() object constructor
+
+/*
+ * Function: 	Overlaymap()
+ * Parameters:	basemapOptions, mapArrays object
+ * Returns:		Basemap() Object
+ * Description:	Create Basemap object
+ */	
+function Overlaymap(overlaymapOptions, mapArrays) { 
+	this.name=overlaymapOptions.name||"UNK";
+	this.tileLayer=overlaymapOptions.tileLayer;
+	this.tileLayer.mapArrays=mapArrays; // Add pointer to container object
+	this.tileLayer.cacheStats={
+		hits: 0,
+		misses: 0,
+		errors: 0,
+		tiles: 0,
+		size: 0
+	};
+	if (this.tileLayer.mapArrays) {
+		this.tileLayer.mapArrays.overlaymapArray.push(this);
+	}
+	else {
+		consoleError("Overlaymap() constructor: no mapArrays object");
+	}
+	
+	this.tileLayer.on('tileerror', function(tile) {
+		consoleError("Error: loading " + this.name + " overlay tile: " + JSON.stringify(tile.coords)||"UNK");
+		this.cacheStats.errors++;
+	});
+	
+} // End of Overlaymap() object constructor
 
 /*
  * Function: 	mapArray() 
@@ -448,21 +479,21 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
-			//Additional
-			new Basemap({
+			//Additional overlays
+			new Overlaymap({
 				name: "OSM UK Postcodes", 
 				tileLayer: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-npe/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">OSM Postcode</a>',
-					useCache: true,
-					crossOrigin: true,
+					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant,
+					crossOrigin: false,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
-			new Basemap({
+			new Overlaymap({
 				name: "Code-Point Open UK Postcodes", 
 				tileLayer: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-os/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">Code-Point Open layers</a>',
-					useCache: true,
-					crossOrigin: true,
+					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant,
+					crossOrigin: false,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
 								
@@ -589,9 +620,10 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 		}, // End of initBaseMaps()
 		/*
 		 * Function: 	empty()
-		 * Parameters:	callback
+		 * Parameters:	callback(err, results)
 		 * Returns:		Nothing (use callback to access this.cacheSize, this.totalTiles)
 		 * Description:	Add basemap to basemap array
+		 *				Then does a viewCleanup()
 		 */	
 		empty: function(emptyCallback) {
 			
@@ -660,8 +692,15 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 										emptyCallback(err);
 									}
 									else {
-										consoleLog("emptyAsyncEachSeriesError() deleted: " + mapArrays.totalTiles);
-										emptyCallback(undefined, {totalTiles: mapArrays.totalTiles});
+										consoleLog("emptyAsyncEachSeriesError() deleted: " + mapArrays.totalTiles + " tiles");
+										var results={ totalTiles: mapArrays.totalTiles };
+										$( "#progressbar" ).progressbar({
+											value: result.total_rows
+										});
+										mapArrays.compact(function() {
+											emptyCallback(undefined, results);
+										});
+										
 										mapArrays.totalTiles=0;
 									}
 								}
@@ -674,10 +713,30 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			}
 		},
 		/*
+		 * Function: 	viewCleanup()
+		 * Parameters:	callback (mandatory)
+		 * Returns:		Nothing 
+		 * Description:	Triggers a viewCleanup operation in the local pouchDB database
+		 */	
+		viewCleanup: function(viewCleanupCallback) {
+			
+			scopeChecker({
+				callback: viewCleanupCallback
+			})
+			
+			if (this.pouchDB && this.options.auto_compaction == false) {
+				this.pouchDB.viewCleanup(viewCleanupCallback)
+			}
+			else {
+				viewCleanupCallback();
+			}
+		},
+		/*
 		 * Function: 	compact()
 		 * Parameters:	callback (mandatory)
 		 * Returns:		Nothing 
 		 * Description:	Triggers a compaction operation in the local pouchDB database if auto_compaction is not on
+		 *				Then does a viewCleanup()
 		 */	
 		compact: function(compactCallback) {
 			
@@ -686,7 +745,11 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			})
 			
 			if (this.pouchDB && this.options.auto_compaction == false) {
-				this.pouchDB.compact(undefined /* Options */, compactCallback)
+				var mapArrays=this;
+				this.pouchDB.compact(undefined /* Options */, 
+					function() {
+						mapArrays.pouchDB.viewCleanup(compactCallback); 
+					});
 			}
 			else {
 				compactCallback();
@@ -694,9 +757,16 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 		},
 		/*
 		 * Function: 	getCacheSize()
-		 * Parameters:	callback (optional)
+		 * Parameters:	callback(err, results) (optional)
 		 * Returns:		Nothing (use callback to access this.cacheSize, this.totalTiles)
-		 * Description:	Add basemap to basemap array
+		 * Description:	Get cacheSize; returns data as results in callback:
+		 *					results: {
+		 *						tableHtml: 		tableHtml,
+		 *						totalTiles: 	mapArrays.totalTiles,
+		 *						cacheSize:		mapArrays.cacheSize,
+		 *	 					autoCompaction:	baseLayer.options.auto_compaction
+		 *					} 
+		 *				Then does a viewCleanup()
 		 */	
 		getCacheSize: function(getCacheSizeCallback) {
 			
@@ -829,14 +899,19 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 							
 							consoleLog("getCacheSize(): " + mapArrays.totalTiles + " tiles; size: " + mapArrays.cacheSize + " bytes" + cacheRows);
 							if (getCacheSizeCallback) {
-								getCacheSizeCallback(undefined /* No error */, 
-								{
-									tableHtml: 		tableHtml,
-									totalTiles: 	mapArrays.totalTiles,
-									cacheSize:		mapArrays.cacheSize,
-									autoCompaction:	baseLayer.options.auto_compaction
-								} // Results
-								);
+								$( "#progressbar" ).progressbar({
+									value: result.total_rows
+								});	
+								mapArrays.viewCleanup(function() {
+									getCacheSizeCallback(undefined /* No error */, 
+										{
+											tableHtml: 		tableHtml,
+											totalTiles: 	mapArrays.totalTiles,
+											cacheSize:		mapArrays.cacheSize,
+											autoCompaction:	baseLayer.options.auto_compaction
+										} // Results
+									);
+								}); 
 							}
 						}
 					}

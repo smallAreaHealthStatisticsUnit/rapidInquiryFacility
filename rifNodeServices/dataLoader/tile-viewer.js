@@ -77,7 +77,7 @@ function geolevelSelectChange(event, ui) {
 		methodFields.geolevel_id=geolevel || 2;
 		
 		var geolevel=methodFields.geolevel[(methodFields.geolevel_id-1)];		
-		var tlayer=addTileLayer(methodFields);	
+		var tlayer=addTileLayer(methodFields, methodFields.maxzoomlevel);	
 	}
 	else {
 		consoleLog("geolevelSelectChange(): No methodFields");
@@ -132,7 +132,7 @@ function geographySelectChange(event, ui) {
 				
 				map.whenReady( // Basemap is ready
 					function whenMapIsReady() { 
-						var tLayer=addTileLayer(methodFields);
+						var tLayer=addTileLayer(methodFields, geography.maxzoomlevel);
 					}
 				);
 				map.on('zoomend', function() {
@@ -247,7 +247,7 @@ function cacheEmpty(settings) {
 				errorPopup(new Error("cacheEmpty(): empty() error: " + err.message));
 			}
 			else {
-				consoleLog("cacheEmpty(): empty() done.");
+				consoleLog("cacheEmpty(): empty() done: " + JSON.stringify(results));
 				document.getElementById("cacheTab").innerHTML="<a>Done; deleted: " + (results && results.totalTiles|| 0) + " tiles</a>";
 //				settings.dialog("close"); 
 			}			

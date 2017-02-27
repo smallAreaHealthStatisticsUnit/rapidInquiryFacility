@@ -466,7 +466,7 @@ function createMap(boundingBox, maxZoomlevel) {
 		consoleLog("Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + 
 			document.getElementById('map').style.width + "; version: " + L.version);	
 		map = new L.map('map' , {
-				zoom: maxZoomlevel||11,
+				zoom: maxZoomlevel,
 				// Tell the map to use a fullsreen control
 				fullscreenControl: true
 			} 	
@@ -498,7 +498,7 @@ function createMap(boundingBox, maxZoomlevel) {
 			consoleLog("Fit bounding box: " + JSON.stringify(boundingBox));	
 			map.fitBounds([
 				[boundingBox.ymin, boundingBox.xmin],
-				[boundingBox.ymax, boundingBox.xmax]], {maxZoom: maxZoomlevel||11}
+				[boundingBox.ymax, boundingBox.xmax]], {maxZoom: maxZoomlevel}
 			);
 		}
 		catch (e) {
@@ -696,7 +696,7 @@ function addBaseLayers(maxZoomlevel) {
  * Returns: 	tile layer
  * Description:	Add tile layer to map; remove old layer if required
  */
-function addTileLayer(methodFields) {
+function addTileLayer(methodFields, maxzoomlevels) {
 	if (map == undefined) {
 		return undefined;
 	}

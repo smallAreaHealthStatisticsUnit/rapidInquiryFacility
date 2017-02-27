@@ -155,6 +155,7 @@ $(document).ready(function documentReady() {
 		icons: { secondary: "ui-icon-gear" },
 //		text: false
 		}).on("click", function () {
+			$( "#settings-tabs" ).tabs("option", "active", 0);
 			settings.dialog("open");
     });
 
