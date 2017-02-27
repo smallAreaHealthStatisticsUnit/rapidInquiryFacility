@@ -404,8 +404,8 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			new Basemap({
 				name: "Google roadmap", 
 				tileLayer: L.gridLayer.googleMutant({
-					maxZoom: maxZoomlevel||11,
 					type: 'roadmap',
+					maxZoom: 18,
 					useCache: true,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
@@ -413,8 +413,8 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			new Basemap({
 				name: "Google satellite", 
 				tileLayer: L.gridLayer.googleMutant({
-					maxZoom: maxZoomlevel||11,
 					type: 'satellite',
+					maxZoom: 18,
 					useCache: true,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
@@ -422,8 +422,8 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			new Basemap({
 				name: "Google terrain", 
 				tileLayer: L.gridLayer.googleMutant({
-					maxZoom: maxZoomlevel||11,
 					type: 'terrain',
+					maxZoom: 18,
 					useCache: true,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
@@ -431,8 +431,8 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			new Basemap({
 				name: "Google hybrid", 
 				tileLayer: L.gridLayer.googleMutant({
-					maxZoom: maxZoomlevel||11,
 					type:'hybrid',
+					maxZoom: 18,
 					useCache: true,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction

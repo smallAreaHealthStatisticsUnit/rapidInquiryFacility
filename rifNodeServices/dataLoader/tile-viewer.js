@@ -132,11 +132,12 @@ function geographySelectChange(event, ui) {
 				
 				map.whenReady( // Basemap is ready
 					function whenMapIsReady() { 
+						consoleLog("Map created, zoom: " + map.getZoom() + "; maxZoom: " + map.getMaxZoom());
 						var tLayer=addTileLayer(methodFields, geography.maxzoomlevel);
 					}
 				);
 				map.on('zoomend', function() {
-					consoleLog("Map zoom changed");
+					consoleLog("Map zoom changed to: " + map.getZoom() + "; maxZoom: " + map.getMaxZoom());
 				});	
 				map.on('resize', function() {
 					consoleLog("Map resized");

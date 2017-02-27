@@ -466,7 +466,8 @@ function createMap(boundingBox, maxZoomlevel) {
 		consoleLog("Create Leaflet map; h x w: " + document.getElementById('map').style.height + "x" + 
 			document.getElementById('map').style.width + "; version: " + L.version);	
 		map = new L.map('map' , {
-				zoom: maxZoomlevel,
+//				zoom: maxZoomlevel,
+				maxZoom: 18 /* maxZoomlevel */,
 				// Tell the map to use a fullsreen control
 				fullscreenControl: true
 			} 	
@@ -498,7 +499,7 @@ function createMap(boundingBox, maxZoomlevel) {
 			consoleLog("Fit bounding box: " + JSON.stringify(boundingBox));	
 			map.fitBounds([
 				[boundingBox.ymin, boundingBox.xmin],
-				[boundingBox.ymax, boundingBox.xmax]], {maxZoom: maxZoomlevel}
+				[boundingBox.ymax, boundingBox.xmax]]
 			);
 		}
 		catch (e) {
@@ -520,8 +521,7 @@ function createMap(boundingBox, maxZoomlevel) {
 		}
 		else {
 			var defaultBaseMap="OpenStreetMap Mapnik";
-			consoleLog("Creating basemap: " + defaultBaseMap);		
-//			addBaseLayers(maxZoomlevel);	
+			consoleLog("Creating basemap: " + defaultBaseMap);	
 	
 			basemaps=new mapArrays(map, defaultBaseMap, maxZoomlevel);		
 					
@@ -559,144 +559,14 @@ function createMap(boundingBox, maxZoomlevel) {
 		throw new Error("Unable to add tile layer to map: " + e.message);
 	}
 } // End of createMap()
-
-/*
- * Function: 	addBaseLayers()
- * Parameters: 	maxZoomlevel
- * Returns: 	Nothing
- * Description:	Add baselayers
- */
-function addBaseLayers(maxZoomlevel) {
-	
-	var roadMutant = L.gridLayer.googleMutant({
-		maxZoom: maxZoomlevel||11,
-		type:'roadmap'
-	});
-
-	var satMutant = L.gridLayer.googleMutant({
-		maxZoom: maxZoomlevel||11,
-		type:'satellite'
-	});
-
-	var terrainMutant = L.gridLayer.googleMutant({
-		maxZoom: maxZoomlevel||11,
-		type:'terrain'
-	});
-
-	var hybridMutant = L.gridLayer.googleMutant({
-		maxZoom: maxZoomlevel||11,
-		type:'hybrid'
-	});
-	hybridMutant.on('tileerror', function(tile) {
-		consoleError("Error: loading hybridMutant tile: " + JSON.stringify(tile.coords)||"UNK");
-	});
-	
-/*	
-	var locality = L.gridLayer.googleMutant({
-		maxZoom: maxZoomlevel||11,
-		type:'administrative.locality'
-	}).addTo(map);
- */	
- 
-// Mapbox/OSM layers
-	var osmLight=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-		maxZoom: maxZoomlevel||11,
-		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
-		id: 'mapbox.light',
-		noWrap: true
-	}).addTo(map);
-	osmLight.on('tileerror', function(tile) {
-		consoleError("Error: loading osmLight tile: " + JSON.stringify(tile.coords)||"UNK");
-	});
-
-	var osmStreets=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-		maxZoom: maxZoomlevel||11,
-		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
-		id: 'mapbox.streets',
-		noWrap: true
-	});
-	osmStreets.on('tileerror', function(tile) {
-		consoleError("Error: loading osmStreets tile: " + JSON.stringify(tile.coords)||"UNK");
-	});	
-
-	var osmTerrian=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-		maxZoom: maxZoomlevel||11,
-		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-			'Imagery &copy; <a href="http://mapbox.com">Mapbox</a>',
-		id: 'mapbox.outdoors',
-		noWrap: true
-	});	
-	osmTerrian.on('tileerror', function(tile) {
-		consoleError("Error: loading osmTerrian tile: " + JSON.stringify(tile.coords)||"UNK");
-	});	
-	
-	var osmSatellite=L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-		maxZoom: maxZoomlevel||11,
-		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-			'Imagery &copy; <a href="http://mapbox.com">Mapbox &copy; <a href="https://www.digitalglobe.com">Digiglobe</a>',
-		id: 'mapbox.satellite',
-		noWrap: true
-	});	
-	osmSatellite.on('tileerror', function(tile) {
-		consoleError("Error: loading osmSatellite tile: " + JSON.stringify(tile.coords)||"UNK");
-	});
-	
-/*
-	var styleMutant = L.gridLayer.googleMutant({
-		styles: [
-			{elementType: 'labels', stylers: [{visibility: 'off'}]},
-			{featureType: 'water', stylers: [{color: '#444444'}]},
-			{featureType: 'landscape', stylers: [{color: '#eeeeee'}]},
-			{featureType: 'road', stylers: [{visibility: 'off'}]},
-			{featureType: 'poi', stylers: [{visibility: 'off'}]},
-			{featureType: 'transit', stylers: [{visibility: 'off'}]},
-			{featureType: 'administrative', stylers: [{visibility: 'off'}]},
-			{featureType: 'administrative.locality', stylers: [{visibility: 'off'}]}
-		],
-		maxZoom: maxZoomlevel||11,
-		type:'roadmap'
-	}); */
-
-	L.control.layers({ // Base layers
-		"OSM Light": osmLight,
-		"OSM Streets": osmStreets,
-		"OSM Terrian": osmTerrian,
-		"OSM Satellite": osmSatellite,
-		"Google Roadmap": roadMutant,
-		"Google Aerial": satMutant,
-		"Google Terrain": terrainMutant,
-		"Google Hybrid": hybridMutant
-//		Locality: locality
-//		Styles: styleMutant 
-	}, 
-	{ // Overlays
-		
-	}, {
-		collapsed: false
-	}).addTo(map); 
-
-	baseLayer = L.gridLayer({
-		attribution: 'Grid Layer'
-	});
-	
-	map.addLayer(baseLayer);
-	
-	consoleLog("Added baseLayer and scale to map");	
- }
  
 /*
  * Function: 	addTileLayer()
- * Parameters: 	methodFields object
+ * Parameters: 	methodFields object, max zoom level
  * Returns: 	tile layer
  * Description:	Add tile layer to map; remove old layer if required
  */
-function addTileLayer(methodFields, maxzoomlevels) {
+function addTileLayer(methodFields, maxzoomlevel) {
 	if (map == undefined) {
 		return undefined;
 	}
@@ -732,7 +602,8 @@ function addTileLayer(methodFields, maxzoomlevels) {
 	geolevel.maxzoomlevel=methodFields.maxzoomlevel;
 	geolevel.output="GeoJSON";
 	
-	map.options.maxZoom = methodFields.maxzoomlevel;
+// This overrides to use the database maxzoomlevel figure	
+//	map.options.maxZoom = methodFields.maxzoomlevel;
 	
 //	consoleLog("geolevel data: " + JSON.stringify(geolevel, null, 0));
 	consoleLog("topojsonURL: " + topojsonURL);
@@ -754,7 +625,8 @@ function addTileLayer(methodFields, maxzoomlevels) {
 				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
 				unique: function (feature) {
 					return feature.id; 
-				}
+				},
+				maxZoom: maxzoomlevel
 			}, {
 				style: style,
 				onEachFeature: createPopup
@@ -774,7 +646,8 @@ function addTileLayer(methodFields, maxzoomlevels) {
 						style: style,
 						onEachFeature: createPopup
 					} 
-                }
+                },
+				maxZoom: maxzoomlevel
 			}
 		);
 	}
@@ -783,10 +656,14 @@ function addTileLayer(methodFields, maxzoomlevels) {
 		consoleError("Error: " + error.message + " loading topoJSON tile: " + tile);
 	});
 	topojsonTileLayer.on('load', function topojsonTileLayerLoad() {
-		consoleLog("Tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id);
+		consoleLog("Tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id +
+			"; zoom: " + map.getZoom() +
+			"; map maxZoom: " + map.getMaxZoom() +
+			"; layer  maxZoom: " + topojsonTileLayer.options.maxZoom);
 	});
 	map.addLayer(topojsonTileLayer);
-		
+	consoleLog("Adding tile layer; maxZoom: " + map.getMaxZoom());
+	
 	if (legend) {
 		map.removeControl(legend);
 	}
