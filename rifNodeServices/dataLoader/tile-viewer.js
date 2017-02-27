@@ -222,7 +222,7 @@ function cacheTabBeforeActivate() {
 					document.getElementById("cacheTab").innerHTML='<a>' + results.tableHtml + '</a>' + 
 						'<a><table>' +
 						'<tr><td>Total tiles: </td><td>' + results.totalTiles + '</td></tr>' +
-						'<tr><td>Cache size: </td><td>' + fileSize(results.cacheSize) + '</td></tr>' +
+						'<tr><td>Cache size: </td><td>' + (fileSize(results.cacheSize)||"N/A") + '</td></tr>' +
 						'<tr><td>Auto compaction: </td><td>' + (results.autoCompaction ? "Yes" : "No") + '</td></tr></table>';
 				}
 				else {
@@ -233,6 +233,28 @@ function cacheTabBeforeActivate() {
 	}
 }
 
+/*
+ * Function: 	cacheEmpty()
+ * Parameters: 	settings JQuery UI dialog object
+ * Returns: 	Nothing
+ * Description:	Empty cache
+ */
+function cacheEmpty(settings) {
+	consoleLog("cacheEmpty()");	if (basemaps) {
+		document.getElementById("cacheTab").innerHTML="<a>Please wait, emptying cache data...</a>";
+		basemaps.empty(function emptyCallback(err, results) {
+			if (err) {
+				errorPopup(new Error("cacheEmpty(): empty() error: " + err.message));
+			}
+			else {
+				consoleLog("cacheEmpty(): empty() done.");
+				document.getElementById("cacheTab").innerHTML="<a>Done; deleted: " + (results && results.totalTiles|| 0) + " tiles</a>";
+//				settings.dialog("close"); 
+			}			
+		});
+	}
+}
+	
 /*
  * Function: 	setupTileViewer()
  * Parameters: 	None
@@ -263,9 +285,9 @@ function setupTileViewer() {
 		dbSelectorHeight=200;
 	}
 	var labelClassWidth=dialogFormWidth-90;
-	var selectClassWidth=dialogFormWidth-210;
+	var selectClassWidth=dialogFormWidth-260;
 	if (selectClassWidth < 300) {
-		selectClassWidth=180;
+		selectClassWidth=200;
 		labelClassWidth=300;
 	}	
 	consoleLog("Window Width: " + x + " px\n" +
@@ -302,6 +324,10 @@ function setupTileViewer() {
 		labelClass[i].style.width=labelClassWidth + "px";
 	}
 	var selectClass=document.getElementsByClassName("selectClass");
+	for (var i=0;i<selectClass.length; i++) {
+		selectClass[i].style.width=selectClassWidth + "px";
+	}
+	var selectClass=document.getElementsByClassName("inputClass");
 	for (var i=0;i<selectClass.length; i++) {
 		selectClass[i].style.width=selectClassWidth + "px";
 	}	

@@ -5,6 +5,10 @@ body {
     width: 190px; 
 	float: right; 
 }
+.inputClass {
+    width: 480px; 
+	float: right; 
+}
 .labelClass {
 	float: left; 
     width: 480px;
@@ -14,6 +18,10 @@ body {
 	float: left; 
 }
 #settingsDiv {
+	height: 40px;
+	float: right; 
+}
+#sqlServerTab {
 	height: 40px;
 	float: right; 
 }

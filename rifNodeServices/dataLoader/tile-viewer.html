@@ -104,11 +104,23 @@ $(document).ready(function documentReady() {
         width: 550,
         modal: true,
 		resizable: true,
-        buttons: {
-            "Done": function () {
-                settings.dialog("close");
-            }
-        },
+        buttons: [ 
+			{
+				text: "Test SQL Server connection",
+				click: function () {
+					sqlServerTest();
+				}
+			},
+			{		
+				text: "Done",
+				icons: {
+					primary: "ui-icon-check"
+				},
+				click: function () {
+					settings.dialog("close");
+				}
+			}
+        ],
         close: function () {
 //            form[0].reset();
 //            allSettingsFields.removeClass("ui-state-error");
@@ -145,13 +157,37 @@ $(document).ready(function documentReady() {
 		}).on("click", function () {
 			settings.dialog("open");
     });
+
+	function sqlServerTest(settings) {
+		consoleLog("sqlServerTest()");
+        settings.dialog("close");
+	}
+	function postgresTest(settings) {
+		consoleLog("postgresTest()");
+        settings.dialog("close");
+	}
 	
 	$( "#settings-tabs" ).tabs({
 		beforeActivate: function settingsTabsBeforeActivate( event, ui ) {
-			consoleLog("settingsTabsBeforeActivate() newPanel: " + ui.newPanel.attr('id'));
+			var buttons=$( "#settings-tabs" ).dialog("option", "buttons"); //Get
+			consoleLog("settingsTabsBeforeActivate() newPanel: " + ui.newPanel.attr('id') + 
+				"; buttons: " + JSON.stringify(buttons));
 			if (ui && ui.newPanel && ui.newPanel.attr('id') == "cacheTab") {
+				buttons[0].text="Empty Cache";
+				buttons[0].click=function() { cacheEmpty(settings); };
+				$( "#settings-tabs" ).dialog("option", "buttons", buttons);	
 				cacheTabBeforeActivate();
 			}
+			else if (ui && ui.newPanel && ui.newPanel.attr('id') == "postgresTab") {			
+				buttons[0].text="Test Postgres connection";
+				buttons[0].click=function() { postgresTest(settings); };
+				$( "#settings-tabs" ).dialog("option", "buttons", buttons);		
+			}
+			else if (ui && ui.newPanel && ui.newPanel.attr('id') == "sqlServerTab") {			
+				buttons[0].text="Test SQL Server connection";
+				buttons[0].click=function() { sqlServerTest(settings); };
+				$( "#settings-tabs" ).dialog("option", "buttons", buttons);		
+			}				
 		}
 	});
   
@@ -201,8 +237,37 @@ $(document).ready(function documentReady() {
 		<li><a href = "#cacheTab">Cache</a></li>
 	  </ul>
 	  <div id="sqlServerTab">
+        <form id="sqlServerSetup">
+	      <fieldset>
+		    <label id="sqlServerLabel" class="labelClass" title="Enter user name" for="sqlServerUsername">User name:           
+			<input type="text" class="inputClass" id="sqlServerUsername"> 		
+		    </label> 
+            <label id="sqlServerPasswordLabel" class="labelClass" title="User user password" for="sqlServerPassword">User password:
+            <input type="password" class="inputClass" id="sqlServerPassword"> 		
+		    </label> 
+            <label id="sqlServerHostnameLabel" class="labelClass" title="Enter server hostname" for="sqlServerHostname">Server hostname:
+            <input type="text" class="inputClass" id="sqlServerHostname"> 		
+		    </label> 
+	      </fieldset>
+		</form>
 	  </div>
 	  <div id="postgresTab">
+        <form id="postgresSetup">
+	      <fieldset>
+		    <label id="postgresUsernameLabel" class="labelClass" title="Enter user name" for="postgresUsername">User name:           
+			<input type="text" class="inputClass" id="postgresUsername"> 		
+		    </label> 
+            <label id="postgresPasswordLabel" class="labelClass" title="User user password" for="postgresPassword">User password:
+            <input type="password" class="inputClass" id="postgresPassword"> 		
+		    </label> 
+            <label id="postgresHostnameLabel" class="labelClass" title="Enter server hostname" for="postgresHostname">Server hostname:
+            <input type="text" class="inputClass" id="postgresHostname"> 		
+		    </label> 
+            <label id="postgresDatabaseLabel" class="labelClass" title="Enter server database name" for="postgresDatabase">Server database:
+            <input type="text" class="inputClass" id="postgresDatabase"> 		
+		    </label> 
+	      </fieldset>
+		</form>
 	  </div>
 	  <div id="cacheTab">
 	  </div>

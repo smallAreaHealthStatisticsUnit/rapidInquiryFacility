@@ -604,7 +604,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				var mapArrays=this;
 			
 				this.pouchDB.allDocs({
-						include_docs: false,
+						include_docs: true,
 						attachments: false
 					}, 
 					function getAllDocs(err, result) {
@@ -616,15 +616,40 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 							mapArrays.cacheSize=0;
 							mapArrays.totalTiles=result.total_rows;
 							async.eachSeries(result.rows, 
-								function asyncEachSeriesHandler(item, callback) {
-									this.pouchDB.delete(result.rows[i].doc, undefined /* Options */, callback); 			
+								function emptyAsyncEachSeriesHandler(item, callback) {
+									if (item.doc) {
+										if (mapArrays.basemapArray) {
+											for (var j=0; j<mapArrays.basemapArray.length; j++) {
+												if (mapArrays.basemapArray[j].name == item.doc.name) {
+													mapArrays.basemapArray[j].tileLayer.cacheStats.tiles=0;
+													mapArrays.basemapArray[j].tileLayer.cacheStats.size=0;
+													break; // Out of for loop
+												}
+											}
+										}	
+										if (mapArrays.overlaymapArray) {
+											for (var j=0; j<mapArrays.overlaymapArray.length; j++) {
+												if (mapArrays.overlaymapArray[j].name == item.doc.name) {
+													mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles=0
+													mapArrays.overlaymapArray[j].tileLayer.cacheStats.size=0;
+													break; // Out of for loop
+												}
+											}
+										}	
+										mapArrays.pouchDB.remove(item.doc, undefined /* Options */, callback); 
+									}
+									else {
+										throw new Error("emptyAsyncEachSeriesHandler: no doc in item: " + 
+											JSON.stringify(item).substring(0, 200));
+									}			
 								}, 
-								function asyncEachSeriesError(err) {
+								function emptyAsyncEachSeriesError(err) {
 									if (err) {
 										emptyCallback(err);
 									}
 									else {
-										consoleLog("empty() deleted: " + mapArrays.totalTiles);
+										consoleLog("emptyAsyncEachSeriesError() deleted: " + mapArrays.totalTiles);
+										emptyCallback(undefined, {totalTiles: mapArrays.totalTiles});
 										mapArrays.totalTiles=0;
 									}
 								}
@@ -696,6 +721,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 											mapArrays.basemapArray[j].tileLayer.cacheStats.tiles++;
 											mapArrays.basemapArray[j].tileLayer.cacheStats.size+=
 												(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
+											break; // Out of for loop
 										}
 									}
 								}																			
@@ -705,6 +731,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 											mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles++;
 											mapArrays.overlaymapArray[j].tileLayer.cacheStats.size+=
 												(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
+											break; // Out of for loop
 										}
 									}
 								}								
