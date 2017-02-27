@@ -211,13 +211,13 @@ function getGeographies(data, status, xhr) {
 function cacheTabBeforeActivate() {
 	consoleLog("cacheTabBeforeActivate()");
 	if (basemaps) {
-		document.getElementById("cacheTab").innerHTML="<a>Please wait, fetching cache data...</a>";
-		basemaps._getCacheSize(function getCacheSizeCallback(err, results) {
+		document.getElementById("cacheTab").innerHTML='<a>Please wait, fetching cache data...</a><div id="progressbar"></div>';
+		basemaps.getCacheSize(function getCacheSizeCallback(err, results) {
 			if (err) {
-				errorPopup(new Error("cacheTabBeforeActivate(): _getCacheSize() error: " + err.message));
+				errorPopup(new Error("cacheTabBeforeActivate(): getCacheSize() error: " + err.message));
 			}
 			else {
-				consoleLog("cacheTabBeforeActivate(): _getCacheSize() done.");
+				consoleLog("cacheTabBeforeActivate(): getCacheSize() done.");
 				if (results.tableHtml) {
 					document.getElementById("cacheTab").innerHTML='<a>' + results.tableHtml + '</a>' + 
 						'<a><table>' +
@@ -241,7 +241,7 @@ function cacheTabBeforeActivate() {
  */
 function cacheEmpty(settings) {
 	consoleLog("cacheEmpty()");	if (basemaps) {
-		document.getElementById("cacheTab").innerHTML="<a>Please wait, emptying cache data...</a>";
+		document.getElementById("cacheTab").innerHTML='<a>Please wait, emptying cache data...</a><div id="progressbar"></div>';
 		basemaps.empty(function emptyCallback(err, results) {
 			if (err) {
 				errorPopup(new Error("cacheEmpty(): empty() error: " + err.message));

@@ -540,13 +540,13 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				currentBaseMap.on('load', function onBaseMapLoad(ev) {		
 					consoleLog("initBaseMaps(): Added baseLayer to map: " + baseLayer.name + "; default: " + defaultBaseMap);
 					/*
-					this._getCacheSize(
-						function _getCacheSizeCallback(err) {
+					this.getCacheSize(
+						function getCacheSizeCallback(err) {
 							if (err) {
-								errorPopup(new Error("initBaseMaps(): _getCacheSize() error: " + err.message));
+								errorPopup(new Error("initBaseMaps(): getCacheSize() error: " + err.message));
 							}
 							else {
-								consoleLog("initBaseMaps(): _getCacheSize() done.");
+								consoleLog("initBaseMaps(): getCacheSize() done.");
 							}
 						}); */
 					});	
@@ -555,7 +555,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				map.on('baselayerchange', function baselayerchangeEvent(changeEvent) {
 					baseLayer=changeEvent.layer;
 					if (changeEvent.layer.mapArrays) {	
-						changeEvent.layer.mapArrays._getCacheSize();
+						changeEvent.layer.mapArrays.getCacheSize();
 					}
 					if (changeEvent.layer._db) {	
 						changeEvent.layer._db.info(
@@ -615,8 +615,20 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 						else {
 							mapArrays.cacheSize=0;
 							mapArrays.totalTiles=result.total_rows;
+							$( "#progressbar" ).progressbar({
+								max: result.total_rows
+							});
+							var i=0;
+
 							async.eachSeries(result.rows, 
 								function emptyAsyncEachSeriesHandler(item, callback) {
+									i++;	
+									if (i%10 == 0) {
+										$( "#progressbar" ).progressbar({
+											value: i
+										});
+									}
+								
 									if (item.doc) {
 										if (mapArrays.basemapArray) {
 											for (var j=0; j<mapArrays.basemapArray.length; j++) {
@@ -681,12 +693,12 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			}
 		},
 		/*
-		 * Function: 	_getCacheSize()
+		 * Function: 	getCacheSize()
 		 * Parameters:	callback (optional)
 		 * Returns:		Nothing (use callback to access this.cacheSize, this.totalTiles)
 		 * Description:	Add basemap to basemap array
 		 */	
-		_getCacheSize: function(getCacheSizeCallback) {
+		getCacheSize: function(getCacheSizeCallback) {
 			
 			scopeChecker(undefined, {
 				callback: getCacheSizeCallback
@@ -701,7 +713,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					}, 
 					function getAllDocs(err, result) {
 						if (err) {
-							consoleError("_getCacheSize(): Error: " + err.message + " in _db.allDocs()");
+							consoleError("getCacheSize(): Error: " + err.message + " in _db.allDocs()");
 							if (getCacheSizeCallback) {
 								getCacheSizeCallback(err);
 							}		
@@ -709,11 +721,26 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 						else {
 							mapArrays.cacheSize=0;
 							mapArrays.totalTiles=result.total_rows;
+							$( "#progressbar" ).progressbar({
+								max: result.total_rows
+							});
+							
+							for (var j=0; j<mapArrays.basemapArray.length; j++) {
+								mapArrays.basemapArray[j].tileLayer.cacheStats.tiles=0;
+								mapArrays.basemapArray[j].tileLayer.cacheStats.size=0;
+							}
+							for (var j=0; j<mapArrays.overlaymapArray.length; j++) {
+								mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles=0;
+								mapArrays.overlaymapArray[j].tileLayer.cacheStats.size=0;
+							}
+							
 							for (var i=0; i<result.total_rows; i++) {
-								if (i<10) {
-									consoleLog("_getCacheSize(): [" + i + "] name: " + result.rows[i].doc.name);
+								if (i%10 == 0) {
+									$( "#progressbar" ).progressbar({
+										value: i
+									});
 								}
-								mapArrays.cacheSize+=result.rows[i].doc.dataUrl.length;
+								mapArrays.cacheSize+=(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
 																			
 								if (mapArrays.basemapArray) {
 									for (var j=0; j<mapArrays.basemapArray.length; j++) {
@@ -771,7 +798,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 								} 
 							}
 							else {
-								consoleError("_getCacheSize() no basemapArray");
+								consoleError("getCacheSize() no basemapArray");
 							}
 										
 							if (mapArrays.overlaymapArray) {
@@ -796,11 +823,11 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 								} 
 							}
 							else {
-								consoleError("_getCacheSize() no overlaymapArray");
+								consoleError("getCacheSize() no overlaymapArray");
 							}
 							tableHtml+='</table>';
 							
-							consoleLog("_getCacheSize(): " + mapArrays.totalTiles + " tiles; size: " + mapArrays.cacheSize + " bytes" + cacheRows);
+							consoleLog("getCacheSize(): " + mapArrays.totalTiles + " tiles; size: " + mapArrays.cacheSize + " bytes" + cacheRows);
 							if (getCacheSizeCallback) {
 								getCacheSizeCallback(undefined /* No error */, 
 								{
