@@ -219,10 +219,11 @@ function cacheTabBeforeActivate() {
 			else {
 				consoleLog("cacheTabBeforeActivate(): _getCacheSize() done.");
 				if (results.tableHtml) {
-					document.getElementById("cacheTab").innerHTML='<a>' + results.tableHtml + '</a><br>' +
-						'<a>Total tiles: ' + results.totalTiles + '</a><br>' +
-						'<a>Cache size: ' + fileSize(results.cacheSize) + '</a><br>' +
-						'<a>Auto compaction: ' + (results.autoCompaction ? "Yes" : "No") + '</a>';
+					document.getElementById("cacheTab").innerHTML='<a>' + results.tableHtml + '</a>' + 
+						'<a><table>' +
+						'<tr><td>Total tiles: </td><td>' + results.totalTiles + '</td></tr>' +
+						'<tr><td>Cache size: </td><td>' + fileSize(results.cacheSize) + '</td></tr>' +
+						'<tr><td>Auto compaction: </td><td>' + (results.autoCompaction ? "Yes" : "No") + '</td></tr></table>';
 				}
 				else {
 					consoleLog("cacheTabBeforeActivate() results: " + JSON.stringify(results, nuill, 2));

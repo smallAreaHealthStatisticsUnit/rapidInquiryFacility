@@ -59,7 +59,9 @@ function Basemap(basemapOptions, mapArrays) {
 	this.tileLayer.cacheStats={
 		hits: 0,
 		misses: 0,
-		errors: 0
+		errors: 0,
+		tiles: 0,
+		size: 0
 	};
 	if (this.tileLayer.mapArrays) {
 		this.tileLayer.mapArrays.basemapArray.push(this);
@@ -70,6 +72,7 @@ function Basemap(basemapOptions, mapArrays) {
 	
 	this.tileLayer.on('tileerror', function(tile) {
 		consoleError("Error: loading " + this.name + " tile: " + JSON.stringify(tile.coords)||"UNK");
+		this.cacheStats.errors++;
 	});
 	
 } // End of Basemap() object constructor
@@ -585,12 +588,85 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			}
 		}, // End of initBaseMaps()
 		/*
+		 * Function: 	empty()
+		 * Parameters:	callback
+		 * Returns:		Nothing (use callback to access this.cacheSize, this.totalTiles)
+		 * Description:	Add basemap to basemap array
+		 */	
+		empty: function(emptyCallback) {
+			
+			scopeChecker({
+				callback: emptyCallback
+			})
+			
+			if (this.pouchDB) {
+
+				var mapArrays=this;
+			
+				this.pouchDB.allDocs({
+						include_docs: false,
+						attachments: false
+					}, 
+					function getAllDocs(err, result) {
+						if (err) {
+							consoleError("empty(): Error: " + err.message + " in _db.allDocs()");
+							emptyCallback(err);
+						}
+						else {
+							mapArrays.cacheSize=0;
+							mapArrays.totalTiles=result.total_rows;
+							async.eachSeries(result.rows, 
+								function asyncEachSeriesHandler(item, callback) {
+									this.pouchDB.delete(result.rows[i].doc, undefined /* Options */, callback); 			
+								}, 
+								function asyncEachSeriesError(err) {
+									if (err) {
+										emptyCallback(err);
+									}
+									else {
+										consoleLog("empty() deleted: " + mapArrays.totalTiles);
+										mapArrays.totalTiles=0;
+									}
+								}
+							);
+						}
+					});
+			}
+			else {
+				emptyCallback();
+			}
+		},
+		/*
+		 * Function: 	compact()
+		 * Parameters:	callback (mandatory)
+		 * Returns:		Nothing 
+		 * Description:	Triggers a compaction operation in the local pouchDB database if auto_compaction is not on
+		 */	
+		compact: function(compactCallback) {
+			
+			scopeChecker({
+				callback: compactCallback
+			})
+			
+			if (this.pouchDB && this.options.auto_compaction == false) {
+				this.pouchDB.compact(undefined /* Options */, compactCallback)
+			}
+			else {
+				compactCallback();
+			}
+		},
+		/*
 		 * Function: 	_getCacheSize()
 		 * Parameters:	callback (optional)
 		 * Returns:		Nothing (use callback to access this.cacheSize, this.totalTiles)
 		 * Description:	Add basemap to basemap array
 		 */	
 		_getCacheSize: function(getCacheSizeCallback) {
+			
+			scopeChecker(undefined, {
+				callback: getCacheSizeCallback
+			})
+			
 			var mapArrays=this;
 			
 			if (this.pouchDB) {
@@ -609,7 +685,29 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 							mapArrays.cacheSize=0;
 							mapArrays.totalTiles=result.total_rows;
 							for (var i=0; i<result.total_rows; i++) {
+								if (i<10) {
+									consoleLog("_getCacheSize(): [" + i + "] name: " + result.rows[i].doc.name);
+								}
 								mapArrays.cacheSize+=result.rows[i].doc.dataUrl.length;
+																			
+								if (mapArrays.basemapArray) {
+									for (var j=0; j<mapArrays.basemapArray.length; j++) {
+										if (mapArrays.basemapArray[j].name == result.rows[i].doc.name) {
+											mapArrays.basemapArray[j].tileLayer.cacheStats.tiles++;
+											mapArrays.basemapArray[j].tileLayer.cacheStats.size+=
+												(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
+										}
+									}
+								}																			
+								if (mapArrays.overlaymapArray) {
+									for (var j=0; j<mapArrays.overlaymapArray.length; j++) {
+										if (mapArrays.overlaymapArray[j].name == result.rows[i].doc.name) {
+											mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles++;
+											mapArrays.overlaymapArray[j].tileLayer.cacheStats.size+=
+												(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
+										}
+									}
+								}								
 							}
 							
 							var cacheRows="";
@@ -620,23 +718,27 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 								'    <th>Misses</th>\n' +
 								'    <th>Errors</th>\n' +
 								'    <th>Cached</th>\n' +
+								'    <th>Size</th>\n' +
 								'  </tr>';							
 							if (mapArrays.basemapArray) {
 								for (var i=0; i<mapArrays.basemapArray.length; i++) {
 									if (mapArrays.basemapArray[i].tileLayer && mapArrays.basemapArray[i].tileLayer.cacheStats &&
 										mapArrays.basemapArray[i].tileLayer.cacheStats.hits > 0 ||
 										mapArrays.basemapArray[i].tileLayer.cacheStats.misses > 0 ||
-										mapArrays.basemapArray[i].tileLayer.cacheStats.errors > 0) {
+										mapArrays.basemapArray[i].tileLayer.cacheStats.errors > 0||
+										mapArrays.basemapArray[i].tileLayer.cacheStats.tiles > 0) {
 										cacheRows+="\n[" + i + "] " + mapArrays.basemapArray[i].tileLayer.name + 
 											": hits: " + mapArrays.basemapArray[i].tileLayer.cacheStats.hits +
 											"; misses: " + mapArrays.basemapArray[i].tileLayer.cacheStats.misses +
-											"; errors: " + mapArrays.basemapArray[i].tileLayer.cacheStats.errors;
+											"; errors: " + mapArrays.basemapArray[i].tileLayer.cacheStats.errors +
+											"; tiles: " + mapArrays.basemapArray[i].tileLayer.cacheStats.tiles;
 										tableHtml+='  <tr>\n' +
 											'    <td>' + mapArrays.basemapArray[i].tileLayer.name + '</td>\n' +
 											'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.hits + '</td>\n' +
 											'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.misses + '</td>\n' +
 											'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.errors +  '</td>\n' +
-											'    <td>' + -1 + '</td>\n' +
+											'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.tiles + '</td>\n' +
+											'    <td>' + (fileSize(mapArrays.basemapArray[i].tileLayer.cacheStats.size)||'N/A') + '</td>\n' +
 											'  </tr>';	
 									}
 								} 
@@ -660,7 +762,8 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 											'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits + '</td>\n' +
 											'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses + '</td>\n' +
 											'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.errors +  '</td>\n' +
-											'    <td>' + -1 + '</td>\n' +
+											'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.tiles + '</td>\n' +
+											'    <td>' + (fileSize(mapArrays.overlaymapArray[i].tileLayer.cacheStats.size)||'N/A') + '</td>\n' +
 											'  </tr>';	
 									}
 								} 

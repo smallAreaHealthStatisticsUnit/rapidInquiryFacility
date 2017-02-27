@@ -149,15 +149,16 @@ L.TileLayer.include({
 			this.fire('tilecacheerror', { tile: tile, error: err });
 			return done();
 		}
-		var doc = {dataUrl: dataUrl, timestamp: Date.now()};
+		var doc = {dataUrl: dataUrl, name: (this.name || "UNK"), urlLength: (dataUrl && dataUrl.length || 0), timestamp: Date.now()};
 
 		if (existingRevision) {
 			this._db.remove(tileUrl, existingRevision);
 		}
 		/// FIXME: There is a deprecation warning about parameters in the
 		///   this._db.put() call.
+		// db.put(doc, id, rev)
 		this._db.put(doc, tileUrl, doc.timestamp);
-//		this._db.put({_id: id, _rev: rev})
+//		this._db.put({_id: tileUrl, _rev: doc.timestamp, data: doc}})
 		if (done) { done(); }
 	},
 
