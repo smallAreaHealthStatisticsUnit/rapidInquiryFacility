@@ -726,79 +726,91 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			if (this.pouchDB) {
 
 				var mapArrays=this;
-			
-				this.pouchDB.allDocs({
-						include_docs: true,
-						attachments: false
-					}, 
-					function getAllDocs(err, result) {
+				mapArrays.pouchDB.info(
+					function getInfo(err, result) {			
 						if (err) {
-							consoleError("empty(): Error: " + err.message + " in _db.allDocs()");
+							consoleError("empty(): Error: " + err.message + " in _db.getInfo()");
 							emptyCallback(err);
 						}
 						else {
-							mapArrays.cacheSize=0;
-							mapArrays.totalTiles=result.total_rows;
 							$( "#progressbar" ).progressbar({
-								max: result.total_rows
+								max: result.doc_count
 							});
-							var i=0;
-
-							async.eachSeries(result.rows, 
-								function emptyAsyncEachSeriesHandler(item, callback) {
-									i++;	
-									if (i%10 == 0) {
-										$( "#progressbar" ).progressbar({
-											value: i
-										});
-									}
-								
-									if (item.doc) {
-										if (mapArrays.basemapArray) {
-											for (var j=0; j<mapArrays.basemapArray.length; j++) {
-												if (mapArrays.basemapArray[j].name == item.doc.name) {
-													mapArrays.basemapArray[j].tileLayer.cacheStats.tiles=0;
-													mapArrays.basemapArray[j].tileLayer.cacheStats.size=0;
-													break; // Out of for loop
-												}
-											}
-										}	
-										if (mapArrays.overlaymapArray) {
-											for (var j=0; j<mapArrays.overlaymapArray.length; j++) {
-												if (mapArrays.overlaymapArray[j].name == item.doc.name) {
-													mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles=0
-													mapArrays.overlaymapArray[j].tileLayer.cacheStats.size=0;
-													break; // Out of for loop
-												}
-											}
-										}	
-										mapArrays.pouchDB.remove(item.doc, undefined /* Options */, callback); 
-									}
-									else {
-										throw new Error("emptyAsyncEachSeriesHandler: no doc in item: " + 
-											JSON.stringify(item).substring(0, 200));
-									}			
+							
+							mapArrays.pouchDB.allDocs({
+									include_docs: true,
+									attachments: false
 								}, 
-								function emptyAsyncEachSeriesError(err) {
+								function getAllDocs(err, result) {
 									if (err) {
+										consoleError("empty(): Error: " + err.message + " in _db.allDocs()");
 										emptyCallback(err);
 									}
 									else {
-										consoleLog("emptyAsyncEachSeriesError() deleted: " + mapArrays.totalTiles + " tiles");
-										var results={ totalTiles: mapArrays.totalTiles };
-										$( "#progressbar" ).progressbar({
-											value: result.total_rows
-										});
-										mapArrays.compact(function() {
-											emptyCallback(undefined, results);
-										});
-										
-										mapArrays.totalTiles=0;
+										mapArrays.cacheSize=0;
+										mapArrays.totalTiles=result.total_rows;
+										var i=0;
+
+										async.eachSeries(result.rows, 
+											function emptyAsyncEachSeriesHandler(item, callback) {
+												i++;	
+												if (i%10 == 0) {
+													$( "#progressbar" ).progressbar({
+														value: i
+													});
+												}
+											
+												if (item.doc) {
+													if (mapArrays.basemapArray) {
+														for (var j=0; j<mapArrays.basemapArray.length; j++) {
+															if (mapArrays.basemapArray[j].name == item.doc.name) {
+																mapArrays.basemapArray[j].tileLayer.cacheStats.tiles=0;
+																mapArrays.basemapArray[j].tileLayer.cacheStats.size=0;
+																break; // Out of for loop
+															}
+														}
+													}	
+													if (mapArrays.overlaymapArray) {
+														for (var j=0; j<mapArrays.overlaymapArray.length; j++) {
+															if (mapArrays.overlaymapArray[j].name == item.doc.name) {
+																mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles=0
+																mapArrays.overlaymapArray[j].tileLayer.cacheStats.size=0;
+																break; // Out of for loop
+															}
+														}
+													}	
+													mapArrays.pouchDB.remove(item.doc, undefined /* Options */, callback); 
+												}
+												else {
+													throw new Error("emptyAsyncEachSeriesHandler: no doc in item: " + 
+														JSON.stringify(item).substring(0, 200));
+												}			
+											}, 
+											function emptyAsyncEachSeriesError(err) {
+												if (err) {
+													emptyCallback(err);
+												}
+												else {
+													consoleLog("emptyAsyncEachSeriesError() deleted: " + mapArrays.totalTiles + " tiles");
+													var results={ totalTiles: mapArrays.totalTiles };
+													$( "#progressbar" ).progressbar({
+														value: result.total_rows
+													});
+													mapArrays.compact(function() {
+														emptyCallback(undefined, results);
+													});
+													
+													mapArrays.totalTiles=0;
+												}
+											}
+										);
 									}
 								}
-							);
+							);							
 						}
-					});
+					}	
+				);				
+
 			}
 			else {
 				emptyCallback();
@@ -869,142 +881,151 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			var mapArrays=this;
 			
 			if (this.pouchDB) {
-				this.pouchDB.allDocs({
-						include_docs: true,
-						attachments: true
-					}, 
-					function getAllDocs(err, result) {
+				
+				mapArrays.pouchDB.info(
+					function getInfo(err, result) {			
 						if (err) {
-							consoleError("getCacheSize(): Error: " + err.message + " in _db.allDocs()");
-							if (getCacheSizeCallback) {
-								getCacheSizeCallback(err);
-							}		
+							consoleError("empty(): Error: " + err.message + " in _db.getInfo()");
+							emptyCallback(err);
 						}
 						else {
-							mapArrays.cacheSize=0;
-							mapArrays.totalTiles=result.total_rows;
 							$( "#progressbar" ).progressbar({
-								max: result.total_rows
+								value: false
 							});
 							
-							for (var j=0; j<mapArrays.basemapArray.length; j++) {
-								mapArrays.basemapArray[j].tileLayer.cacheStats.tiles=0;
-								mapArrays.basemapArray[j].tileLayer.cacheStats.size=0;
-							}
-							for (var j=0; j<mapArrays.overlaymapArray.length; j++) {
-								mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles=0;
-								mapArrays.overlaymapArray[j].tileLayer.cacheStats.size=0;
-							}
-							
-							for (var i=0; i<result.total_rows; i++) {
-								if (i%10 == 0) {
-									$( "#progressbar" ).progressbar({
-										value: i
-									});
-								}
-								mapArrays.cacheSize+=(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
-																			
-								if (mapArrays.basemapArray) {
-									for (var j=0; j<mapArrays.basemapArray.length; j++) {
-										if (mapArrays.basemapArray[j].name == result.rows[i].doc.name) {
-											mapArrays.basemapArray[j].tileLayer.cacheStats.tiles++;
-											mapArrays.basemapArray[j].tileLayer.cacheStats.size+=
-												(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
-											break; // Out of for loop
+							mapArrays.pouchDB.allDocs({
+									include_docs: true,
+									attachments: true
+								}, 
+								function getAllDocs(err, result) {
+									if (err) {
+										consoleError("getCacheSize(): Error: " + err.message + " in _db.allDocs()");
+										if (getCacheSizeCallback) {
+											getCacheSizeCallback(err);
+										}		
+									}
+									else {
+										mapArrays.cacheSize=0;
+										mapArrays.totalTiles=result.total_rows;
+										for (var j=0; j<mapArrays.basemapArray.length; j++) {
+											mapArrays.basemapArray[j].tileLayer.cacheStats.tiles=0;
+											mapArrays.basemapArray[j].tileLayer.cacheStats.size=0;
 										}
-									}
-								}																			
-								if (mapArrays.overlaymapArray) {
-									for (var j=0; j<mapArrays.overlaymapArray.length; j++) {
-										if (mapArrays.overlaymapArray[j].name == result.rows[i].doc.name) {
-											mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles++;
-											mapArrays.overlaymapArray[j].tileLayer.cacheStats.size+=
-												(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
-											break; // Out of for loop
+										for (var j=0; j<mapArrays.overlaymapArray.length; j++) {
+											mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles=0;
+											mapArrays.overlaymapArray[j].tileLayer.cacheStats.size=0;
 										}
-									}
-								}								
-							}
-							
-							var cacheRows="";
-							var tableHtml='<table id="cachetable" style="width:100%">\n' +
-								'  <tr>\n' +
-								'    <th>Name</th>\n' +
-								'    <th>Hits</th>\n' +
-								'    <th>Misses</th>\n' +
-								'    <th>Errors</th>\n' +
-								'    <th>Cached</th>\n' +
-								'    <th>Size</th>\n' +
-								'  </tr>';							
-							if (mapArrays.basemapArray) {
-								for (var i=0; i<mapArrays.basemapArray.length; i++) {
-									if (mapArrays.basemapArray[i].tileLayer && mapArrays.basemapArray[i].tileLayer.cacheStats &&
-										mapArrays.basemapArray[i].tileLayer.cacheStats.hits > 0 ||
-										mapArrays.basemapArray[i].tileLayer.cacheStats.misses > 0 ||
-										mapArrays.basemapArray[i].tileLayer.cacheStats.errors > 0||
-										mapArrays.basemapArray[i].tileLayer.cacheStats.tiles > 0) {
-										cacheRows+="\n[" + i + "] " + mapArrays.basemapArray[i].tileLayer.name + 
-											": hits: " + mapArrays.basemapArray[i].tileLayer.cacheStats.hits +
-											"; misses: " + mapArrays.basemapArray[i].tileLayer.cacheStats.misses +
-											"; errors: " + mapArrays.basemapArray[i].tileLayer.cacheStats.errors +
-											"; tiles: " + mapArrays.basemapArray[i].tileLayer.cacheStats.tiles;
-										tableHtml+='  <tr>\n' +
-											'    <td>' + mapArrays.basemapArray[i].tileLayer.name + '</td>\n' +
-											'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.hits + '</td>\n' +
-											'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.misses + '</td>\n' +
-											'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.errors +  '</td>\n' +
-											'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.tiles + '</td>\n' +
-											'    <td>' + (fileSize(mapArrays.basemapArray[i].tileLayer.cacheStats.size)||'N/A') + '</td>\n' +
-											'  </tr>';	
-									}
-								} 
-							}
-							else {
-								consoleError("getCacheSize() no basemapArray");
-							}
 										
-							if (mapArrays.overlaymapArray) {
-								for (var i=0; i<mapArrays.overlaymapArray.length; i++) {
-									if (mapArrays.overlaymapArray[i].tileLayer && mapArrays.overlaymapArray[i].tileLayer.cacheStats &&
-										mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits > 0 ||
-										mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses > 0 ||
-										mapArrays.overlaymapArray[i].tileLayer.cacheStats.errors > 0) {
-										cacheRows+="\n[" + i + "] " + mapArrays.overlaymapArray[i].tileLayer.name + 
-											": hits: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits +
-											"; misses: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses +
-											"; errors: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.errors;
-										tableHtml+='  <tr>\n' +
-											'    <td>' + mapArrays.overlaymapArray[i].tileLayer.name + '</td>\n' +
-											'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits + '</td>\n' +
-											'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses + '</td>\n' +
-											'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.errors +  '</td>\n' +
-											'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.tiles + '</td>\n' +
-											'    <td>' + (fileSize(mapArrays.overlaymapArray[i].tileLayer.cacheStats.size)||'N/A') + '</td>\n' +
-											'  </tr>';	
+										for (var i=0; i<result.total_rows; i++) {
+											mapArrays.cacheSize+=(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
+																						
+											if (mapArrays.basemapArray) {
+												for (var j=0; j<mapArrays.basemapArray.length; j++) {
+													if (mapArrays.basemapArray[j].name == result.rows[i].doc.name) {
+														mapArrays.basemapArray[j].tileLayer.cacheStats.tiles++;
+														mapArrays.basemapArray[j].tileLayer.cacheStats.size+=
+															(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
+														break; // Out of for loop
+													}
+												}
+											}																			
+											if (mapArrays.overlaymapArray) {
+												for (var j=0; j<mapArrays.overlaymapArray.length; j++) {
+													if (mapArrays.overlaymapArray[j].name == result.rows[i].doc.name) {
+														mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles++;
+														mapArrays.overlaymapArray[j].tileLayer.cacheStats.size+=
+															(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
+														break; // Out of for loop
+													}
+												}
+											}								
+										}
+										$( "#progressbar" ).progressbar({
+											value: result.total_rows
+										});
+										
+										var cacheRows="";
+										var tableHtml='<table id="cachetable" style="width:100%">\n' +
+											'  <tr>\n' +
+											'    <th>Name</th>\n' +
+											'    <th>Hits</th>\n' +
+											'    <th>Misses</th>\n' +
+											'    <th>Errors</th>\n' +
+											'    <th>Cached</th>\n' +
+											'    <th>Size</th>\n' +
+											'  </tr>';							
+										if (mapArrays.basemapArray) {
+											for (var i=0; i<mapArrays.basemapArray.length; i++) {
+												if (mapArrays.basemapArray[i].tileLayer && mapArrays.basemapArray[i].tileLayer.cacheStats &&
+													mapArrays.basemapArray[i].tileLayer.cacheStats.hits > 0 ||
+													mapArrays.basemapArray[i].tileLayer.cacheStats.misses > 0 ||
+													mapArrays.basemapArray[i].tileLayer.cacheStats.errors > 0||
+													mapArrays.basemapArray[i].tileLayer.cacheStats.tiles > 0) {
+													cacheRows+="\n[" + i + "] " + mapArrays.basemapArray[i].tileLayer.name + 
+														": hits: " + mapArrays.basemapArray[i].tileLayer.cacheStats.hits +
+														"; misses: " + mapArrays.basemapArray[i].tileLayer.cacheStats.misses +
+														"; errors: " + mapArrays.basemapArray[i].tileLayer.cacheStats.errors +
+														"; tiles: " + mapArrays.basemapArray[i].tileLayer.cacheStats.tiles;
+													tableHtml+='  <tr>\n' +
+														'    <td>' + mapArrays.basemapArray[i].tileLayer.name + '</td>\n' +
+														'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.hits + '</td>\n' +
+														'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.misses + '</td>\n' +
+														'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.errors +  '</td>\n' +
+														'    <td>' + mapArrays.basemapArray[i].tileLayer.cacheStats.tiles + '</td>\n' +
+														'    <td>' + (fileSize(mapArrays.basemapArray[i].tileLayer.cacheStats.size)||'N/A') + '</td>\n' +
+														'  </tr>';	
+												}
+											} 
+										}
+										else {
+											consoleError("getCacheSize() no basemapArray");
+										}
+													
+										if (mapArrays.overlaymapArray) {
+											for (var i=0; i<mapArrays.overlaymapArray.length; i++) {
+												if (mapArrays.overlaymapArray[i].tileLayer && mapArrays.overlaymapArray[i].tileLayer.cacheStats &&
+													mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits > 0 ||
+													mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses > 0 ||
+													mapArrays.overlaymapArray[i].tileLayer.cacheStats.errors > 0) {
+													cacheRows+="\n[" + i + "] " + mapArrays.overlaymapArray[i].tileLayer.name + 
+														": hits: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits +
+														"; misses: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses +
+														"; errors: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.errors;
+													tableHtml+='  <tr>\n' +
+														'    <td>' + mapArrays.overlaymapArray[i].tileLayer.name + '</td>\n' +
+														'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits + '</td>\n' +
+														'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses + '</td>\n' +
+														'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.errors +  '</td>\n' +
+														'    <td>' + mapArrays.overlaymapArray[i].tileLayer.cacheStats.tiles + '</td>\n' +
+														'    <td>' + (fileSize(mapArrays.overlaymapArray[i].tileLayer.cacheStats.size)||'N/A') + '</td>\n' +
+														'  </tr>';	
+												}
+											} 
+										}
+										else {
+											consoleError("getCacheSize() no overlaymapArray");
+										}
+										tableHtml+='</table>';
+										
+										consoleLog("getCacheSize(): " + mapArrays.totalTiles + " tiles; size: " + mapArrays.cacheSize + " bytes" + cacheRows);
+										if (getCacheSizeCallback) {
+											$( "#progressbar" ).progressbar({
+												value: result.total_rows
+											});	
+											mapArrays.viewCleanup(function() {
+												getCacheSizeCallback(undefined /* No error */, 
+													{
+														tableHtml: 		tableHtml,
+														totalTiles: 	mapArrays.totalTiles,
+														cacheSize:		mapArrays.cacheSize,
+														autoCompaction:	baseLayer.options.auto_compaction
+													} // Results
+												);
+											}); 
+										}
 									}
-								} 
-							}
-							else {
-								consoleError("getCacheSize() no overlaymapArray");
-							}
-							tableHtml+='</table>';
-							
-							consoleLog("getCacheSize(): " + mapArrays.totalTiles + " tiles; size: " + mapArrays.cacheSize + " bytes" + cacheRows);
-							if (getCacheSizeCallback) {
-								$( "#progressbar" ).progressbar({
-									value: result.total_rows
-								});	
-								mapArrays.viewCleanup(function() {
-									getCacheSizeCallback(undefined /* No error */, 
-										{
-											tableHtml: 		tableHtml,
-											totalTiles: 	mapArrays.totalTiles,
-											cacheSize:		mapArrays.cacheSize,
-											autoCompaction:	baseLayer.options.auto_compaction
-										} // Results
-									);
-								}); 
-							}
+								}
+							);
 						}
 					}
 				);
