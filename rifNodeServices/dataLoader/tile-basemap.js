@@ -624,38 +624,48 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 							}
 						}); */
 					});	
-				currentBaseMap.addTo(map);	
 				
-				map.on('baselayerchange', function baselayerchangeEvent(changeEvent) {
-					baseLayer=changeEvent.layer;
-					if (changeEvent.layer.mapArrays) {	
-						changeEvent.layer.mapArrays.getCacheSize();
-					}
-					if (changeEvent.layer._db) {	
-						changeEvent.layer._db.info(
-							function getInfo(err, result) {		
-								if (err) {
-									consoleError("Error: " + err.message + " in _db.info() for base layer: " + changeEvent.layer.name);			
-								}
-								else {
-									consoleLog("base layer changed to: " + changeEvent.layer.name + "; cache info: " + 
-										JSON.stringify(result));
-								}							
-							});
+				currentBaseMap.on('load', function currentBaseMapLoad(ev) {
+					
+					if (baseLayer.useCache) {						
+						consoleLog("currentBaseMapLoad(): Base layer loaded: " + baseLayer.name + "; cached");
 					}
 					else {
-						consoleLog("baselayerchangeEvent(): Base layer changed to: " + changeEvent.layer.name + "; not cached");
+						consoleLog("currentBaseMapLoad(): Base layer loaded: " + baseLayer.name + "; not cached");
 					}
-					document.getElementById("legend_baseLayer_value").innerHTML=changeEvent.layer.name;	
+					
+					map.on('baselayerchange', function baselayerchangeEvent(changeEvent) {
+						baseLayer=changeEvent.layer;
+						if (changeEvent.layer.mapArrays) {	
+							changeEvent.layer.mapArrays.getCacheSize();
+						}
+						if (changeEvent.layer._db) {	
+							changeEvent.layer._db.info(
+								function getInfo(err, result) {		
+									if (err) {
+										consoleError("Error: " + err.message + " in _db.info() for base layer: " + changeEvent.layer.name);			
+									}
+									else {
+										consoleLog("base layer changed to: " + changeEvent.layer.name + "; cache info: " + 
+											JSON.stringify(result));
+									}							
+								});
+						}
+						else {
+							consoleLog("baselayerchangeEvent(): Base layer changed to: " + changeEvent.layer.name + "; not cached");
+						}
+						document.getElementById("legend_baseLayer_value").innerHTML=changeEvent.layer.name;	
+					});
+					map.on('overlayadd', function overlayAddEvent(changeEvent) {
+						consoleLog("overlayAddEvent(): overlay added: " + changeEvent.name);
+					});
+					map.on('overlayremove', function overlayRemoveEvent(changeEvent) {
+						consoleLog("overlayRemoveEvent(): overlay removed: " + changeEvent.name);
+					});
+									
+					currentBaseMap.off('load');							
 				});
-				map.on('overlayadd', function overlayAddEvent(changeEvent) {
-					consoleLog("overlayAddEvent(): overlay added: " + changeEvent.name);
-				});
-				map.on('overlayremove', function overlayRemoveEvent(changeEvent) {
-					consoleLog("overlayRemoveEvent(): overlay removed: " + changeEvent.name);
-				});
-								
-				currentBaseMap.off('load');				
+				currentBaseMap.addTo(map);			
 			}
 			else {
 				errorPopup(new Error("initBaseMaps(): Cannot load basemap, no currentBaseMap"));

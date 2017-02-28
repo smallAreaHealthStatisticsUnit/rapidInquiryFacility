@@ -468,27 +468,14 @@ function createMap(boundingBox, maxZoomlevel) {
 		map = new L.map('map' , {
 //				zoom: maxZoomlevel,
 				maxZoom: 18 /* maxZoomlevel */,
+				preferCanvas: true,
 				// Tell the map to use a fullsreen control
-				fullscreenControl: true
+				fullscreenControl: true,
+				// loadingControl: true
+				// Does not work with Leaflet 1.0
 			} 	
 		);
-		L.control.scale({position: 'topleft'}).addTo(map); // Add scale
-			
-		try {
-			var loadingControl = L.Control.loading({
-				separate: true
-			});
-			map.addControl(loadingControl);
-		}
-		catch (e) {
-			try {
-				map.remove();
-			}
-			catch (e2) {
-				consoleLog("WARNING! Unable to remove map during error recovery");
-			}
-			throw new Error("Unable to add loading control to map: " + e.message);
-		}		
+		L.control.scale({position: 'topleft'}).addTo(map); // Add scale	
 	}	
 	else {
 		consoleLog("Leaflet map already created; h x w: " + document.getElementById('map').style.height + "x" + document.getElementById('map').style.width);	
@@ -661,47 +648,53 @@ function addTileLayer(methodFields, maxzoomlevel) {
 			"; map maxZoom: " + map.getMaxZoom() +
 			"; layer  maxZoom: " + topojsonTileLayer.options.maxZoom);
 	});
+	
 	map.addLayer(topojsonTileLayer);
-	consoleLog("Adding tile layer; maxZoom: " + map.getMaxZoom());
+	map.whenReady( // Tileyaer is ready
+		function whenMapIsReady3() { 
+			consoleLog("Adding tile layer; maxZoom: " + map.getMaxZoom());
 	
-	if (legend) {
-		map.removeControl(legend);
-	}
-	legend = L.control({position: 'bottomleft'});
-			
-	var keyTable = {	// Translate tags
-		geolevel_id: 		"GEOLEVEL_ID",
-		geolevel_name: 		"Name",
-		table_description:	"Table Description",
-		description: 		"Geolevel Description",
-		areaid_count: 		"AreaID Count",
-		databaseType:		"Database Type",
-		databaseName:		"Database Name",
-		tableName:			"Table",
-		geography:			"Geography",
-		maxzoomlevel:		"Max zoomlevel",
-		output:				"Tile format",
-		baseLayer:			"Base layer"
-	}
-	legend.onAdd = function onAddLegend(map) {
-		LegendDiv = L.DomUtil.create('div', 'info legend');
-		var labels=[];
+			if (legend) {
+				map.removeControl(legend);
+			}
+			legend = L.control({position: 'bottomleft'});
+					
+			var keyTable = {	// Translate tags
+				geolevel_id: 		"GEOLEVEL_ID",
+				geolevel_name: 		"Name",
+				table_description:	"Table Description",
+				description: 		"Geolevel Description",
+				areaid_count: 		"AreaID Count",
+				databaseType:		"Database Type",
+				databaseName:		"Database Name",
+				tableName:			"Table",
+				geography:			"Geography",
+				maxzoomlevel:		"Max zoomlevel",
+				output:				"Tile format",
+				baseLayer:			"Base layer"
+			}
+			legend.onAdd = function onAddLegend(map) {
+				LegendDiv = L.DomUtil.create('div', 'info legend');
+				var labels=[];
 
-		for (var key in geolevel) {
-			labels.push('<tr><td id="legend_' + key + '">' + (keyTable[key]||key) + 
-				': </td><td id="legend_' + key + '_value">' + geolevel[key] + "</td></tr>");			
-		}
-		labels.push('<tr><td id="legend_baseLayer">' + (keyTable["baseLayer"]) + 
-			': </td><td id="legend_baseLayer_value">' + baseLayer.name + "</td></tr>");	
-		
-		var html = '<table id="legend">' + labels.join("") + '</table>';
-//		consoleLog("Add legend: " + html);
-		LegendDiv.innerHTML = html;
-		return LegendDiv;
-	};
-						
-	legend.addTo(map);
+				for (var key in geolevel) {
+					labels.push('<tr><td id="legend_' + key + '">' + (keyTable[key]||key) + 
+						': </td><td id="legend_' + key + '_value">' + geolevel[key] + "</td></tr>");			
+				}
+				labels.push('<tr><td id="legend_baseLayer">' + (keyTable["baseLayer"]) + 
+					': </td><td id="legend_baseLayer_value">' + baseLayer.name + "</td></tr>");	
+				
+				var html = '<table id="legend">' + labels.join("") + '</table>';
+		//		consoleLog("Add legend: " + html);
+				LegendDiv.innerHTML = html;
+				return LegendDiv;
+			};
+								
+			legend.addTo(map);
 	
+		}
+	);
+
 	return topojsonTileLayer;
 } // End of addTileLayer()
 
@@ -770,6 +763,9 @@ function createPopup(feature, layer) {
 			else {
 				errorArray.push("createPopup() No centroid for: " + JSON.stringify(feature.properties, null, 2));	
 			}					
+		}
+		else if (key == "zoomlevel") {
+			// Remove - as confusing
 		}
 		else {
 			popop.push("<tr><td>" + (key) + ": </td><td>" + feature.properties[key] + "</td></tr>");	

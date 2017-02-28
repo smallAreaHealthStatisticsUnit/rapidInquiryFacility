@@ -129,13 +129,42 @@ function geographySelectChange(event, ui) {
 			geography.tiletable, 
 			function getBboxCallback(bbox) {
 				map=createMap(bbox, geography.maxzoomlevel);
-				
-				map.whenReady( // Basemap is ready
-					function whenMapIsReady() { 
-						consoleLog("Map created, zoom: " + map.getZoom() + "; maxZoom: " + map.getMaxZoom());
-						var tLayer=addTileLayer(methodFields, geography.maxzoomlevel);
-					}
-				);
+				// Wait 100 mS
+				var timeOut = setTimeout(function() {	
+					map.whenReady( // Basemap is ready
+						function whenMapIsReady() { 
+							consoleLog("Map created, zoom: " + map.getZoom() + "; maxZoom: " + map.getMaxZoom());
+							// Wait 100 mS
+							// Does not work with Leaflet 1.0
+//							try {
+//								var loadingControl = L.Control.loading({
+//									separate: false
+//								});
+//								map.addControl(loadingControl);
+//							}
+//							catch (e) {
+//								try {
+//									map.remove();
+//								}
+//								catch (e2) {
+//									consoleLog("WARNING! Unable to remove map during error recovery");
+//								}
+//								throw new Error("Unable to add loading control to map: " + e.message);
+//							}	
+		
+							var timeOut2 = setTimeout(function() {		 
+								var tLayer=addTileLayer(methodFields, geography.maxzoomlevel);
+								map.whenReady( // Basemap is ready
+									function whenMapIsReady2() { 
+										consoleLog("Tilelayer ready, zoom: " + map.getZoom() + "; maxZoom: " + map.getMaxZoom());
+									}
+								);
+								clearTimeout(timeOut2);
+							}, 100);
+						}
+					);
+					clearTimeout(timeOut);
+				}, 100);
 				map.on('zoomend', function() {
 					consoleLog("Map zoom changed to: " + map.getZoom() + "; maxZoom: " + map.getMaxZoom());
 				});	
