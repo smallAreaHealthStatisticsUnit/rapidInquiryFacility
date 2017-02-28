@@ -35,8 +35,8 @@
  * CONTROLLER for disease submission stats options modal
  */
 angular.module("RIF")
-        .controller('ModalStatsCtrl', ['$scope', '$uibModal', 'StatsStateService', 'SubmissionStateService', 'user',
-            function ($scope, $uibModal, StatsStateService, SubmissionStateService, user) {
+        .controller('ModalStatsCtrl', ['$scope', '$uibModal', 'StatsStateService', 'SubmissionStateService', 'user', '$window',
+            function ($scope, $uibModal, StatsStateService, SubmissionStateService, user, $window) {
                 $scope.tree = SubmissionStateService.getState().statsTree;
 
                 //get available methods
@@ -65,7 +65,8 @@ angular.module("RIF")
                 }
 
                 $scope.openStatsManual = function () {
-                    alert("This will open the stats manual one day");
+                    var baseUrl = "https://www.amazon.co.uk/d/Books/Statistics-Dummies-2E-PhD-Deborah-J-Rumsey/0470911085";
+                    $window.open(baseUrl);
                 };
 
                 $scope.open = function () {

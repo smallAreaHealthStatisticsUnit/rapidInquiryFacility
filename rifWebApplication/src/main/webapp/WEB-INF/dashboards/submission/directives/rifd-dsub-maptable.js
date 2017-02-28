@@ -155,15 +155,15 @@ angular.module("RIF")
                             leafletData.getMap("area").then(function (map) {
                                 if (map.hasLayer($scope.geoJSON)) {
                                     map.removeLayer($scope.geoJSON);
-                                }                                                        
+                                }
                                 latlngList = [];
                                 centroidMarkers = new L.layerGroup();
                                 var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt);
                                 $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
                                     attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
-                                    renderer: L.canvas(),
                                     layers: {
                                         default: {
+                                            renderer: L.canvas(),
                                             style: style,
                                             onEachFeature: function (feature, layer) {
                                                 //get as centroid marker layer
@@ -221,7 +221,7 @@ angular.module("RIF")
                                     }
                                 });
                                 map.addLayer($scope.geoJSON);
-                                
+
                                 //Get overall layer properties
                                 user.getTileMakerTilesAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
                                     //get maxbounds

@@ -31,8 +31,6 @@
 /*
  * MODULE for the main RIF web application
  */
-/* global L, topojson */
-
 angular.module("RIF",
         [
             "ui.router",
@@ -52,21 +50,6 @@ angular.module("RIF",
         )
         .config(['$stateProvider', '$urlRouterProvider',
             function ($stateProvider, $urlRouterProvider) {
-
-                //Extend Leaflet to handle topojson
-                L.TopoJSON = L.GeoJSON.extend({
-                    addData: function (jsonData) {
-                        if (jsonData.type === "Topology") {
-                            for (var key in jsonData.objects) {
-                                geojson = topojson.feature(jsonData, jsonData.objects[key]);
-                                L.GeoJSON.prototype.addData.call(this, geojson);
-                            }
-                        } else {
-                            L.GeoJSON.prototype.addData.call(this, jsonData);
-                        }
-                    }
-                });
-
                 //Handle main page transitions in navbar, login
                 $stateProvider
                         .state('state0', {

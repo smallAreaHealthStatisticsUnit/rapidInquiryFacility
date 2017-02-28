@@ -294,7 +294,6 @@ angular.module("RIF")
                 /*
                  * Specific to handle 2 Leaflet Panels
                  */
-
                 //sync map extents
                 $scope.bLockCenters = MappingStateService.getState().extentLock;
                 $scope.lockExtent = function () {

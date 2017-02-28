@@ -208,7 +208,7 @@ angular.module("RIF")
                     return $http.get(studyResultRetrievalURL + 'getGeographyAndLevelForStudy?userID=' + username + '&studyID=' + studyID);
                 };
                 //get the map tiles from Tile-Maker
-                //returns a string not a promise, is resolved in Leaflet Grid Layer
+                //returns a string not a promise, is resolved in Leaflet GridLayer
                 self.getTileMakerTiles = function (username, geography, geoLevel) {
                     //'http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel={z}&x={x}&y={y}';
                     return (studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +

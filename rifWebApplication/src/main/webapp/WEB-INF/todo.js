@@ -8,8 +8,27 @@
  * --A method to return details of a submitted job from the DB
  * http://localhost:8080/rifServices/studySubmission/getStudySubmission?userID=kgarwood&studyID=280
  * 
- * --Get centroids from the database in study area
+ * -- Get centroids from the database in study area
  * 
  * -- scoping for risk mapping
+ * 
+ * -- bundle libraries for private network
+ * 
+ * -- "none" or "" covariate in submission
+ * 
+ * -- help chm maker
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
  * 
 */

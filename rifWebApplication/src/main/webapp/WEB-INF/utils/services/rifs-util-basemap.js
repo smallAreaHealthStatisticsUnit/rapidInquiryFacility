@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -43,6 +43,7 @@ angular.module("RIF")
                 function () {
 
                     var defaultBaseMap = 'OpenStreetMap Mapnik';
+                    var thunderforestAPIkey = "f01dbbea1da44b649ee7f0ab6be56756";
 
                     //for disease mapping
                     var baseMapInUse = {
@@ -73,25 +74,31 @@ angular.module("RIF")
                     basemaps.push({name: "Humanitarian OpenStreetMap", tile: L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
                             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>'
                         })});
-                    basemaps.push({name: "Thunderforest OpenCycleMap", tile: L.tileLayer('http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', {
+                    basemaps.push({name: "Thunderforest OpenCycleMap", tile: L.tileLayer('http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=' + thunderforestAPIkey, {
                             attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
                         })});
-                    basemaps.push({name: "Thunderforest Transport", tile: L.tileLayer('http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png', {
+                    basemaps.push({name: "Thunderforest Transport", tile: L.tileLayer('http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=' + thunderforestAPIkey, {
                             attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
                         })});
-                    basemaps.push({name: "Thunderforest TransportDark", tile: L.tileLayer('http://{s}.tile.thunderforest.com/transport-dark/{z}/{x}/{y}.png', {
+                    basemaps.push({name: "Thunderforest TransportDark", tile: L.tileLayer('http://{s}.tile.thunderforest.com/transport-dark/{z}/{x}/{y}.png?apikey=' + thunderforestAPIkey, {
                             attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
                         })});
-                    basemaps.push({name: "Thunderforest Landscape", tile: L.tileLayer('http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png', {
+                    basemaps.push({name: "Thunderforest Landscape", tile: L.tileLayer('http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=' + thunderforestAPIkey, {
                             attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
                         })});
-                    basemaps.push({name: "Thunderforest SpinalMap", tile: L.tileLayer('http://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png', {
+                    basemaps.push({name: "Thunderforest SpinalMap", tile: L.tileLayer('http://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png?apikey=' + thunderforestAPIkey, {
                             attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
                         })});
-                    basemaps.push({name: "Thunderforest Outdoors", tile: L.tileLayer('http://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png', {
+                    basemaps.push({name: "Thunderforest Outdoors", tile: L.tileLayer('http://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=' + thunderforestAPIkey, {
                             attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
                         })});
-                    basemaps.push({name: "Thunderforest Pioneer", tile: L.tileLayer('http://{s}.tile.thunderforest.com/pioneer/{z}/{x}/{y}.png', {
+                    basemaps.push({name: "Thunderforest Pioneer", tile: L.tileLayer('http://{s}.tile.thunderforest.com/pioneer/{z}/{x}/{y}.png?apikey=' + thunderforestAPIkey, {
+                            attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+                        })});
+                    basemaps.push({name: "Thunderforest Mobile Atlas", tile: L.tileLayer('https://{s}.tile.thunderforest.com/mobile-atlas/{z}/{x}/{y}.png?apikey=' + thunderforestAPIkey, {
+                            attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+                        })});
+                    basemaps.push({name: "Thunderforest Neighbourhood", tile: L.tileLayer('https://{s}.tile.thunderforest.com/neighbourhood/{z}/{x}/{y}.png?apikey=' + thunderforestAPIkey, {
                             attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
                         })});
                     basemaps.push({name: "OpenMapSurfer Roads", tile: L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}', {
