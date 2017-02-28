@@ -83,21 +83,45 @@
 				if (this.options.useCache) {
 					this._db.get(tileUrl, {revs_info: true}).then(function (doc) {					
 						if (doc && doc.dataUrl) {
+							
+							tileLayer.fire('tilecachehit', {
+								tile: tile,
+								url: tileUrl
+							});
+							
 							// Handle expired
 							consoleLog("_db.get() " + doc.name + 
 								"; _id: " + doc._id + 
 								"; _rev: " + doc._rev + 
 								"; length: " + doc.urlLength);
-							tileLayer.addData(doc.dataUrl);
-							done(null, tile);
+							try {
+								tileLayer.addData(doc.dataUrl);
+								done(null, tile);
+							}
+							catch (err) {
+								tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+								done(err, tile);
+							}
 						}	
 						else {
+							
+							tileLayer.fire('tilecachemiss', {
+								tile: tile,
+								url: tileUrl
+							});
+							
 							tileLayer.fetchTile(coords || tile.coords, function (error) {
 								done(error, tile);
 							});
 						}	
 					}).catch(function (err) {
 						if (err && err.status == 404) {
+							
+							tileLayer.fire('tilecachemiss', {
+								tile: tile,
+								url: tileUrl
+							});
+							
 							tileLayer.fetchTile(coords || tile.coords, function (error) {
 								done(error, tile);
 							});
