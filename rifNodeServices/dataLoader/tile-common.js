@@ -634,13 +634,16 @@ function addTileLayer(methodFields, maxzoomlevel) {
 						onEachFeature: createPopup
 					} 
                 },
-				maxZoom: maxzoomlevel
+				maxZoom: maxzoomlevel,
+				useCache: true,				// Use PouchDB caching
+				auto_compaction: true	
 			}
 		);
 	}
 		
 	topojsonTileLayer.on('tileerror', function(error, tile) {
-		consoleError("Error: " + error.message + " loading topoJSON tile: " + tile);
+		consoleError("Error: loading topoJSON tile: " + 
+			(JSON.stringify(tile.coords)||"UNK"));
 	});
 	topojsonTileLayer.on('load', function topojsonTileLayerLoad() {
 		consoleLog("Tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id +

@@ -666,7 +666,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				
 				currentBaseMap.on('load', function currentBaseMapLoad(ev) {
 					
-					if (baseLayer.useCache) {						
+					if (baseLayer.options && baseLayer.options.useCache) {						
 						consoleLog("currentBaseMapLoad(): Base layer loaded: " + baseLayer.name + "; cached");
 					}
 					else {

@@ -33,13 +33,19 @@
         L.TopoJSONGridLayer = L.GridLayer.extend({
             initialize: function (url, options) {
                 L.GridLayer.prototype.initialize.call(this, options);
-
+	
                 this._url = url;
                 this._geojsons = {};
                 this._features = {};
                 this.geoJsonClass = (this.options.geoJsonClass ? this.options.geoJsonClass : L.GeoJSON);
+				if (!options.useCache) { // Add pouchDB
+					this._db     = null;
+					return;
+				}
+				this._db = new PouchDB('offline-tiles', {auto_compaction: (options.auto_compaction || false) });
+				consoleLog("Created tile cache (PouchDB), auto_compaction: " + options.auto_compaction);
             },
-
+			
             onAdd: function (map) {
                 var layers = this._geojsons;
                 Object.keys(layers).forEach(function (key) {
@@ -70,10 +76,43 @@
                 var size = this.getTileSize();
                 tile.width = size.x;
                 tile.height = size.y;
-
-                this.fetchTile(coords, function (error) {
-                    done(error, tile);
-                });
+				
+                var tileUrl = L.Util.template(this._url, coords);
+                var tileLayer = this;
+				tile.coords = coords;
+				if (this.options.useCache) {
+					this._db.get(tileUrl, {revs_info: true}).then(function (doc) {					
+						if (doc && doc.dataUrl) {
+							// Handle expired
+							consoleLog("_db.get() " + doc.name + 
+								"; _id: " + doc._id + 
+								"; _rev: " + doc._rev + 
+								"; length: " + doc.urlLength);
+							tileLayer.addData(doc.dataUrl);
+							done(null, tile);
+						}	
+						else {
+							tileLayer.fetchTile(coords || tile.coords, function (error) {
+								done(error, tile);
+							});
+						}	
+					}).catch(function (err) {
+						if (err && err.status == 404) {
+							tileLayer.fetchTile(coords || tile.coords, function (error) {
+								done(error, tile);
+							});
+						}
+						else {
+							consoleError("_db.get() error: " + JSON.stringify(err, null, 2));
+							done(err, tile);
+						}
+					});
+				} 
+				else {
+					this.fetchTile(coords, function (error) {
+						done(error, tile);
+					});
+				}
                 return tile;
             },
 
@@ -88,8 +127,23 @@
                     if (request.status >= 200 && request.status < 400) {
                         var data = JSON.parse(request.responseText);
                         tileLayer.addData(data);
-                        done(null);
-                    } else {
+						
+						var doc = {
+								_id: tileUrl,
+								dataUrl: data,
+								timestamp: Date.now(),
+								urlLength: request.responseText.length,
+								name: (tileLayer.options && tileLayer.options.name || "TopoJSONGridLayer")
+							};
+						tileLayer._db.put(doc).then(function (response) {
+								consoleLog("_db.put() " + response.ok + ": " + response.id);
+								done(null);
+							}).catch(function (err) {
+								consoleError("_db.put() error: " + JSON.stringify(err, null, 2));
+								done(err);
+							});
+                    } 
+					else {
                         // We reached our target server, but it returned an error
                         done(request.statusText);
                     }
@@ -177,9 +231,35 @@
             }
         });
 
+		// ðŸ‚namespace TopoJSONGridLayer
+		// ðŸ‚section PouchDB tile caching options
+		// ðŸ‚option useCache: Boolean = false
+		// Whether to use a PouchDB cache on this tile layer, or not
+		L.TopoJSONGridLayer.prototype.options.useCache     = false;
+
+		// ðŸ‚option saveToCache: Boolean = true
+		// When caching is enabled, whether to save new tiles to the cache or not
+		L.TopoJSONGridLayer.prototype.options.saveToCache  = true;
+
+		// ðŸ‚option useOnlyCache: Boolean = false
+		// When caching is enabled, whether to request new tiles from the network or not
+		L.TopoJSONGridLayer.prototype.options.useOnlyCache = false;
+
+		// ðŸ‚option useCache: String = 'image/png'
+		// The image format to be used when saving the tile images in the cache
+		L.TopoJSONGridLayer.prototype.options.cacheFormat = 'image/png';
+
+		// ðŸ‚option cacheMaxAge: Number = 24*3600*1000
+		// Maximum age of the cache, in milliseconds
+		L.TopoJSONGridLayer.prototype.options.cacheMaxAge  = 24*3600*1000;
+
         L.topoJsonGridLayer = function(url, options) {
             return new L.TopoJSONGridLayer(url, options);
         };
+		
+		// ðŸ‚option auto_compaction: true/false
+		// This turns on auto compaction, which means compact() is called after every change to the database. Defaults to false.
+		L.TileLayer.prototype.options.auto_compaction = false;		
     }
 
     if (typeof define === 'function' && define.amd) {
@@ -194,3 +274,4 @@
     }
 
 })();
+
