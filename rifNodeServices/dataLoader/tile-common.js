@@ -467,12 +467,12 @@ function createMap(boundingBox, maxZoomlevel) {
 			document.getElementById('map').style.width + "; version: " + L.version);	
 		map = new L.map('map' , {
 //				zoom: maxZoomlevel,
-				maxZoom: 18 /* maxZoomlevel */,
+				maxZoom: 21 /* maxZoomlevel */,
 				preferCanvas: true,
 				// Tell the map to use a fullsreen control
 				fullscreenControl: true,
 				// loadingControl: true
-				// Does not work with Leaflet 1.0
+				// Does not work with Leaflet 1.0: probably lack of 'done' callbacks in addLayer()'s 
 			} 	
 		);
 		L.control.scale({position: 'topleft'}).addTo(map); // Add scale	
