@@ -44,7 +44,7 @@ angular.module("RIF")
                 //a default symbology
                 function symbology() {
                     this.features = [];
-                    this.brewerName = "LightGreen";
+                    this.brewerName = "Constant";
                     this.intervals = 1;
                     this.feature = "relative_risk";
                     this.invert = false;
@@ -89,7 +89,7 @@ angular.module("RIF")
                         if (scale && !angular.isUndefined(value)) {
                             return [scale(value), "green", 5];
                         } else {
-                            return ["lightgreen", "green", 5];
+                            return ["constant", "green", 5];
                         }
                     }
                     //choropleth
@@ -146,7 +146,7 @@ angular.module("RIF")
                              * Implementation derived by ArcMap Stand. Deviation classification
                              * 5 intervals of which those around the mean are 1/2 the Standard Deviation
                              */
-                            if (maps[map].brewerName === "LightGreen") {
+                            if (maps[map].brewerName === "Constant") {
                                 scale = d3.scaleQuantile()
                                         .domain(domain)
                                         .range(range);
@@ -176,7 +176,7 @@ angular.module("RIF")
                         case "AtlasRelativeRisk":
                             //RR scale as used in Health Atlas
                             var tmp;
-                            var invalidScales = ["LightGreen", "Dark2", "Accent", "Pastel2", "Set2"];
+                            var invalidScales = ["Constant", "Dark2", "Accent", "Pastel2", "Set2"];
                             if (invalidScales.indexOf(maps[map].brewerName) !== -1) {
                                 tmp = ColorBrewerService.getColorbrewer("PuOr", 9).reverse();
                                 maps[map].brewerName = "PuOr";
@@ -198,7 +198,7 @@ angular.module("RIF")
                         case "AtlasProbability":
                             //Probability scale as used in Health Atlas
                             var tmp;
-                            var invalidScales = ["LightGreen"];
+                            var invalidScales = ["Constant"];
                             if (invalidScales.indexOf(maps[map].brewerName) !== -1) {
                                 tmp = angular.copy(ColorBrewerService.getColorbrewer("RdYlGn", 3)).reverse();
                                 maps[map].brewerName = "RdYlGn";

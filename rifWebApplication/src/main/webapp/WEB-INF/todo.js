@@ -19,8 +19,9 @@
  * -- help chm maker
  * 
  * 
- * 
- * 
+ * BEFORE KEVIN LEAVES
+ * 1) Install on a laptop - maven
+ * 2) Get to open in Eclipse on a new laptop
  * 
  * 
  * 

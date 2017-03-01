@@ -45,7 +45,8 @@ angular.module("RIF",
             "ngSanitize",
             "ngNotificationsBar",
             "ui.layout",
-            "ngMaterial"
+            "ngMaterial",
+            "ngPatternRestrict"
         ]
         )
         .config(['$stateProvider', '$urlRouterProvider',

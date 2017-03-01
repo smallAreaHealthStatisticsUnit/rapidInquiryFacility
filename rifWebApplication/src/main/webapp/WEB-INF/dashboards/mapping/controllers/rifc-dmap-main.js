@@ -74,6 +74,7 @@ angular.module("RIF")
                         //Attributions to open in new window
                         map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                         map.doubleClickZoom.disable();
+                        map.keyboard.disable();
                     });
                     leafletData.getMap("diseasemap2").then(function (map) {
                         map.on('zoomend', function (e) {
@@ -96,6 +97,7 @@ angular.module("RIF")
                         //Attributions to open in new window
                         map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                         map.doubleClickZoom.disable();
+                        map.keyboard.disable();
                     });
                     //Set initial map extents
                     if ($scope.bLockCenters) {

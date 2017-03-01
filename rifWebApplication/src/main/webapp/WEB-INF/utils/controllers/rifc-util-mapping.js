@@ -217,9 +217,9 @@ angular.module("RIF")
                                     $scope.sexes[res.config.leaflet].push(res.data[0].names[i]);
                                 }
                             }
-                            //if no preselection, then set dropdown to last one in list         
+                            //if no preselection, then set dropdown to last one in list (=both)        
                             if ($scope.sex[res.config.leaflet] === null) {
-                                $scope.sex[res.config.leaflet] = $scope.sexes[res.config.leaflet][0];
+                                $scope.sex[res.config.leaflet] = $scope.sexes[res.config.leaflet][$scope.sexes[res.config.leaflet].length - 1];
                             }
 
                             //dashboard specific
@@ -428,7 +428,7 @@ angular.module("RIF")
                                                                     var otherMap = MappingService.getOtherMap(mapID);
                                                                     $scope.thisPoly[otherMap] = e.target.feature.properties.area_id;
                                                                     $scope.myService.getState().area_id[otherMap] = e.target.feature.properties.area_id;
-                                                                    dropLine(otherMap, e.target.feature.properties.area_id, true);
+                                                                    $scope.updateMapSelection(otherMap, e.target.feature.properties.area_id);
                                                                 }
                                                             }
                                                         });

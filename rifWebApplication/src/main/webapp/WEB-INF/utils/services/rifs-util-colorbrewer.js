@@ -38,7 +38,7 @@ angular.module("RIF")
         .factory('ColorBrewerService',
                 function () {
                     var colorbrewer = {
-                        LightGreen: {
+                        Constant: {
                             1: ["#9BCD9B"]
                         },
                         YlGn: {
