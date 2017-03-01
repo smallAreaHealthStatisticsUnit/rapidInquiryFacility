@@ -78,8 +78,10 @@
                 tile.height = size.y;
 				
                 var tileUrl = L.Util.template(this._url, coords);
-                var tileLayer = this;
+				tile.tileUrl = tileUrl;	// Added for cacheevents
 				tile.coords = coords;
+				
+                var tileLayer = this;
 				if (this.options.useCache) {
 					this._db.get(tileUrl, {revs_info: true}).then(function (doc) {					
 						if (doc && doc.dataUrl) {
@@ -89,60 +91,72 @@
 								url: tileUrl
 							});
 							
-							// Handle expired
-							consoleLog("_db.get() " + doc.name + 
-								"; _id: " + doc._id + 
-								"; _rev: " + doc._rev + 
-								"; length: " + doc.urlLength);
-							try {
-								tileLayer.addData(doc.dataUrl);
-								done(null, tile);
+
+							if (Date.now() > doc.timestamp + tileLayer.options.cacheMaxAge) {
+							// Tile is too old, try to refresh it
+								var existingRevision = doc._revs_info[0].rev;
+								consoleLog("_db.get() Tile is too old: " + tileUrl + 
+									"; rev: " + existingRevision);
+								tileLayer.fetchTile(coords || tile.coords, existingRevision, function (error) {
+									done(error, tile);
+								});
 							}
-							catch (err) {
-								tileLayer.fire('tilecacheerror', { tile: tile, error: err });
-								done(err, tile);
+							else {
+//								consoleLog("_db.get() " + doc.name + 
+//									"; _id: " + doc._id + 
+//									"; _rev: " + doc._rev + 
+//									"; length: " + doc.urlLength);
+							
+								try {
+									tileLayer.addData(doc.dataUrl);
+									done(null, tile);
+								}
+								catch (err) {
+									tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+									done(err, tile);
+								}
 							}
 						}	
-						else {
-							
-							tileLayer.fire('tilecachemiss', {
-								tile: tile,
-								url: tileUrl
-							});
-							
-							tileLayer.fetchTile(coords || tile.coords, function (error) {
-								done(error, tile);
-							});
+						else { // Cache miss
+							var err=new Error("_db.get() invalid doc: "+ JSON.stringify(doc, null, 2));
+							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+							done(err, tile);
 						}	
 					}).catch(function (err) {
-						if (err && err.status == 404) {
+						if (err && err.status == 404) { // Cache miss
 							
 							tileLayer.fire('tilecachemiss', {
 								tile: tile,
 								url: tileUrl
 							});
 							
-							tileLayer.fetchTile(coords || tile.coords, function (error) {
-								done(error, tile);
-							});
+							tileLayer.fetchTile(coords || tile.coords, undefined /* No pre existing revision */, 
+								function (error) {
+									done(error, tile);
+								});
 						}
 						else {
 							consoleError("_db.get() error: " + JSON.stringify(err, null, 2));
+							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 							done(err, tile);
 						}
 					});
 				} 
 				else {
-					this.fetchTile(coords, function (error) {
+					this.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
 						done(error, tile);
 					});
 				}
                 return tile;
             },
 
-            fetchTile: function (coords, done) {
+            fetchTile: function (coords, existingRevision, done) {
                 var tileUrl = L.Util.template(this._url, coords);
                 var tileLayer = this;
+				var tile = { // Dummy tile object for cacheevents
+					tileUrl: tileUrl,
+					coords: coords
+				};
 
                 var request = new XMLHttpRequest();
                 request.open('GET', tileUrl, true);
@@ -159,11 +173,24 @@
 								urlLength: request.responseText.length,
 								name: (tileLayer.options && tileLayer.options.name || "TopoJSONGridLayer")
 							};
+							
+						if (existingRevision) {
+							this._db.remove(tileUrl, existingRevision);
+						}
 						tileLayer._db.put(doc).then(function (response) {
-								consoleLog("_db.put() " + response.ok + ": " + response.id);
-								done(null);
+								if (response.ok) {
+//									consoleLog("_db.put(): " + response.id);
+									done(null);								
+								}
+								else {
+									var err=new Error("_db.put() invalid response: " + 
+										JSON.stringify(response, null, 2));
+									tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+									done(err);
+								}
 							}).catch(function (err) {
 								consoleError("_db.put() error: " + JSON.stringify(err, null, 2));
+								tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 								done(err);
 							});
                     } 
@@ -260,18 +287,6 @@
 		// ðŸ‚option useCache: Boolean = false
 		// Whether to use a PouchDB cache on this tile layer, or not
 		L.TopoJSONGridLayer.prototype.options.useCache     = false;
-
-		// ðŸ‚option saveToCache: Boolean = true
-		// When caching is enabled, whether to save new tiles to the cache or not
-		L.TopoJSONGridLayer.prototype.options.saveToCache  = true;
-
-		// ðŸ‚option useOnlyCache: Boolean = false
-		// When caching is enabled, whether to request new tiles from the network or not
-		L.TopoJSONGridLayer.prototype.options.useOnlyCache = false;
-
-		// ðŸ‚option useCache: String = 'image/png'
-		// The image format to be used when saving the tile images in the cache
-		L.TopoJSONGridLayer.prototype.options.cacheFormat = 'image/png';
 
 		// ðŸ‚option cacheMaxAge: Number = 24*3600*1000
 		// Maximum age of the cache, in milliseconds
