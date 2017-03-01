@@ -53,6 +53,7 @@ var mouseoverPopup;
 var topojsonTileLayerCount=0;
 var LegendDiv;
 var basemaps;
+var pouchDBErrors = {};
 
 /*
  * Function: 	scopeChecker()
@@ -655,14 +656,20 @@ function addTileLayer(methodFields, maxzoomlevel) {
 		consoleLog("Tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id +
 			"; zoom: " + map.getZoom() +
 			"; map maxZoom: " + map.getMaxZoom() +
-			"; layer  maxZoom: " + topojsonTileLayer.options.maxZoom);
+			"; layer maxZoom: " + topojsonTileLayer.options.maxZoom);
+		if (topojsonTileLayer && topojsonTileLayer.PouchDBError && topojsonTileLayer.PouchDBError.error) {
+			if (! pouchDBErrors[topojsonTileLayer.PouchDBError.name] ) {
+				errorPopup(topojsonTileLayer.PouchDBError.reason, "<pre>" + JSON.stringify(topojsonTileLayer.PouchDBError, null, 0) + "</pre>");
+			}
+			pouchDBErrors[topojsonTileLayer.PouchDBError.name]=true;
+		}
 	});
 	
 	map.addLayer(topojsonTileLayer);
-	map.whenReady( // Tileyaer is ready
+	map.whenReady( // Msp is ready, topojsonTileLayer still loading
 		function whenMapIsReady3() { 
-			consoleLog("Adding tile layer; maxZoom: " + map.getMaxZoom());
-	
+			consoleLog("Adding tile layer; maxZoom: " + map.getMaxZoom()+ "; cached: " + (topojsonTileLayer.options.useCache ? "true" : "false"));
+			
 			if (legend) {
 				map.removeControl(legend);
 			}

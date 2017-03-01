@@ -42,6 +42,7 @@
 					this._db     = null;
 					return;
 				}
+				this.PouchDBError = {};
 				this._db = new PouchDB('offline-tiles', {auto_compaction: (options.auto_compaction || false) });
 				if (this._db == undefined) {
 					this.options.useCache=false;
@@ -141,8 +142,7 @@
 									done(error, tile);
 								});
 						}
-						else 
-						if (err && err.status == 500 && err.name == "indexed_db_went_bad") { 
+						else if (err && err.status == 500 && err.name == "indexed_db_went_bad" && err.error) { 
 						/*
 14:53:54.352 +6.1 ERROR: _db.put() error: {
   "status": 500,
@@ -152,7 +152,8 @@
   "reason": "Failed to open indexedDB, are you in private browsing mode?"
 } 1 tile-common.js:206
 						 */
-							tileLayer.options.useCache=false;
+							tileLayer.options.useCache=false;	// Disable cache
+							tileLayer.PouchDBError = err;		// Flag error
 							consoleError("PouchDB error: " + err.reason + ", useCache disabled");	
 							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 							tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
