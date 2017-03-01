@@ -43,7 +43,13 @@
 					return;
 				}
 				this._db = new PouchDB('offline-tiles', {auto_compaction: (options.auto_compaction || false) });
-				consoleLog("Created tile cache (PouchDB), auto_compaction: " + options.auto_compaction);
+				if (this._db == undefined) {
+					this.options.useCache=false;
+					consoleError("Unable to create PouchDB, useCache disabled");
+				}
+				else {
+					consoleLog("Created tile cache (PouchDB), auto_compaction: " + options.auto_compaction);
+				}
             },
 			
             onAdd: function (map) {
@@ -135,10 +141,30 @@
 									done(error, tile);
 								});
 						}
+						else 
+						if (err && err.status == 500 && err.name == "indexed_db_went_bad") { 
+						/*
+14:53:54.352 +6.1 ERROR: _db.put() error: {
+  "status": 500,
+  "name": "indexed_db_went_bad",
+  "message": "unknown",
+  "error": true,
+  "reason": "Failed to open indexedDB, are you in private browsing mode?"
+} 1 tile-common.js:206
+						 */
+							tileLayer.options.useCache=false;
+							consoleError("PouchDB error: " + err.reason + ", useCache disabled");	
+							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+							tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
+								done(error, tile);
+							});
+						}
 						else {
 							consoleError("_db.get() error: " + JSON.stringify(err, null, 2));
 							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
-							done(err, tile);
+							tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
+								done(error, tile);
+							});
 						}
 					});
 				} 
@@ -166,33 +192,38 @@
                         var data = JSON.parse(request.responseText);
                         tileLayer.addData(data);
 						
-						var doc = {
-								_id: tileUrl,
-								dataUrl: data,
-								timestamp: Date.now(),
-								urlLength: request.responseText.length,
-								name: (tileLayer.options && tileLayer.options.name || "TopoJSONGridLayer")
-							};
-							
-						if (existingRevision) {
-							this._db.remove(tileUrl, existingRevision);
-						}
-						tileLayer._db.put(doc).then(function (response) {
-								if (response.ok) {
-//									consoleLog("_db.put(): " + response.id);
-									done(null);								
-								}
-								else {
-									var err=new Error("_db.put() invalid response: " + 
-										JSON.stringify(response, null, 2));
+						if (tileLayer.options.useCache) {						
+							var doc = {
+									_id: tileUrl,
+									dataUrl: data,
+									timestamp: Date.now(),
+									urlLength: request.responseText.length,
+									name: (tileLayer.options && tileLayer.options.name || "TopoJSONGridLayer")
+								};
+								
+							if (existingRevision) {
+								this._db.remove(tileUrl, existingRevision);
+							}
+							tileLayer._db.put(doc).then(function (response) {
+									if (response.ok) {
+	//									consoleLog("_db.put(): " + response.id);
+										done(null);								
+									}
+									else {
+										var err=new Error("_db.put() invalid response: " + 
+											JSON.stringify(response, null, 2));
+										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+										done(err);
+									}
+								}).catch(function (err) {
+									consoleError("_db.put() error: " + JSON.stringify(err, null, 2));
 									tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 									done(err);
-								}
-							}).catch(function (err) {
-								consoleError("_db.put() error: " + JSON.stringify(err, null, 2));
-								tileLayer.fire('tilecacheerror', { tile: tile, error: err });
-								done(err);
-							});
+								});
+						}
+						else {
+							done(null);								
+						}
                     } 
 					else {
                         // We reached our target server, but it returned an error

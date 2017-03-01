@@ -883,11 +883,11 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			
 			if (this.pouchDB) {
 				
-				mapArrays.pouchDB.info(
+				mapArrays.pouchDB.info( // convert to promises form
 					function getInfo(err, result) {			
 						if (err) {
 							consoleError("empty(): Error: " + err.message + " in _db.getInfo()");
-							emptyCallback(err);
+							getCacheSizeCallback(err);
 						}
 						else {
 							$( "#progressbar" ).progressbar({
