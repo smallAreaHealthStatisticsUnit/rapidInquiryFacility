@@ -131,8 +131,17 @@ endif
 #
 # This is because 7 was written before the partitioning was enabled and does not support it
 #
+
+#
+# Partitioning is not required on sahsuland_empty
+#
+ifeq ($(PGDATABASE),sahsuland_empty)
+PARTITIONING_SOURCES=
+else
+PARTITIONING_SOURCES=v4_0_alter_3.sql v4_0_alter_4.sql
+endif
 SOURCES=v4_0_alter_1.sql v4_0_alter_2.sql v4_0_alter_5.sql $(PLR_SOURCES) v4_0_alter_7.sql v4_0_alter_8.sql v4_0_alter_9.sql \
-		v4_0_alter_3.sql v4_0_alter_4.sql 
+		 $(PARTITIONING_SOURCES)
  
 # DEV_SOURCES=v4_0_alter_4.sql  
 

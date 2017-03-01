@@ -176,6 +176,17 @@ $$;
 -- DROP t_rif40_geolevels.st_simplify_tolerance
 --
 ALTER TABLE t_rif40_geolevels DROP COLUMN IF EXISTS st_simplify_tolerance CASCADE;
+-- Add areaid_count
+DO $$ 
+    BEGIN
+        BEGIN
+            ALTER TABLE t_rif40_geolevels ADD areaid_count INTEGER;
+        EXCEPTION
+            WHEN duplicate_column THEN RAISE NOTICE 'column areaid_count already exists in t_rif40_geolevels.';
+        END;
+    END;
+$$;
+
 CREATE OR REPLACE VIEW rif40_geolevels AS 
  SELECT a.geography,
     a.geolevel_name,
