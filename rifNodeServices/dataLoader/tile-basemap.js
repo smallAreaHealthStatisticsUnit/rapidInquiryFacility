@@ -45,7 +45,8 @@
 // Peter Hambly, SAHSU
 
 var controlLayers;
-
+var autoCompaction=true;
+	
 /*
  * Function: 	Basemap()
  * Parameters:	basemapOptions, mapArrays object
@@ -131,7 +132,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 	
 	mapArrays.prototype = { // Add methods
 		options:	{
-			auto_compaction: true	// option auto_compaction: true/false
+			auto_compaction: autoCompaction	// option auto_compaction: true/false
 			// This turns on auto compaction, which means compact() is called after every change to the database. Defaults to false.
 		},
 		/*

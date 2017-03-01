@@ -636,7 +636,7 @@ function addTileLayer(methodFields, maxzoomlevel) {
                 },
 				maxZoom: maxzoomlevel,
 				useCache: true,				// Use PouchDB caching
-				auto_compaction: true	
+				auto_compaction: autoCompaction	
 			}
 		);
 	}

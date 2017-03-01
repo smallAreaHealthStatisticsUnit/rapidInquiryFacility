@@ -912,8 +912,14 @@ Msg 51147, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_rif40_ta
 Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 ```
 
-* Fix for T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
-  due to script interaction.
+* Fix for T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to
+  TOTAL_COMPARISON_POPULATION not done due to script interaction.
+
+#### 27th February to 3rd March
+
+* Added caching to base layers and topoJSON tile layer; fixed baselayer max zooms; allow test harness to go the 
+  zoomlevel 19 
+* SQL Server test builds
   
 #### Current TODO list (February/March 2017): SQL Server Port
 
@@ -929,7 +935,9 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 
 #### TileViewer TODO (defferred to May?):
  
-* Add tileid to tile topoJSON/GeoJSON; include in error messages; add version number (yyyymmddhh24mi) for caching
+* Get fetch views to handle zoomlevel beyond max zoomlevel (returning the usual NULL geojson)
+* Add tileid to tile topoJSON/GeoJSON; include in error messages; add version number 
+  (yyyymmddhh24mi) for caching (i.e. there is no need to age them out if auto compaction is running)
 * Fix blank name properties
 * Add all properties from lookup table
 * Missing name in level2 sahsuland (caused by mixed case field names)
@@ -957,6 +965,7 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 
 ####  TODO list:
 
+* Fix for T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION
 * Convert remaining use of geography:: datatype in SQL Server to geometry::. The geography:: datatype is used in the build
   to intersect tiles and will may have issues. Production SQL Server is using the geometry:: datatype. This will be parked if 
   it is not a problem.
