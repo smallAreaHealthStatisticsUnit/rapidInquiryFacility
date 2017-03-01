@@ -222,7 +222,7 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 	}
  
 	try { 
-		dbConnect(response, getMapTileDbCallback, getMapTileErrorHandler);
+		dbConnect(response, getMapTileDbCallback, getMapTileErrorHandler, undefined /* getGeographiesConnectionErrorHandler */);
 	}	
 	catch (err) {	
 		getMapTileErrorHandler(err);	// Use scope of calling function
@@ -254,7 +254,8 @@ function tileViewerReponseProcessing(service, response, result, req, res, server
 			res.write(output);                  // Write output  
 			res.end();	
 			if (response.message) {
-				console.error(service + "() Complete OK; Diagnostics >>>\n" + response.message + "\n<<< End of diagnostics");
+				console.error(service + "() Had connection error; Diagnostics >>>\n" + response.message +
+					"\n<<< End of diagnostics\nResponse:\n" + output);
 			}
 		}
 		catch(e) {
@@ -262,7 +263,7 @@ function tileViewerReponseProcessing(service, response, result, req, res, server
 		}
 	}
 	else {
-		serverLog.serverError2(__file, __line, "getStatus", 
+		console.error(__file, __line, "getStatus", 
 			"Unable to return OK response to user - httpErrorResponse() already processed", 
 			req, undefined /* err */, response);
 	}		
@@ -310,6 +311,37 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 	} // End of getGeographiesErrorHandler()
 
 /*
+ * Function:	getGeographiesConnectionErrorHandler()
+ * Parameters:	Error object
+ * Returns:		Nothing
+ * Description: Send response to client
+ */	
+	function getGeographiesConnectionErrorHandler(err) {
+		scopeChecker(__file, __line, {
+			serverLog: serverLog,
+			httpErrorResponse: httpErrorResponse,
+			response: response,
+			req: req,
+			res: res
+		});	
+
+		if (err == undefined || err.message == undefined) {
+			err=new Error("getGeographiesConnectionErrorHandler(): No error defined");
+		}
+		response.connectionError = {
+			message: "Unable to connect to " + (response.fields["databaseType"]||"unknown") + " database",
+			stack:   (err.stack||"no stack")
+		};
+		var msg=err.message;
+		response.geographies=undefined;	
+		response.message+="\n" + (err.message||"no message") + "\nStack: " + (err.stack||"no stack");	
+		response.message+="\nReturn result geography: no rows\n";
+		console.error("getGeographiesConnectionErrorHandler() response: " + JSON.stringify(response, null, 0));
+		
+		tileViewerReponseProcessing("getGeographies", response, response, req, res, serverLog, httpErrorResponse);		
+	} // End of getGeographiesConnectionErrorHandler()
+	
+/*
  * Function:	getGeographiesResponse()
  * Parameters:	Result array
  * Returns:		Nothing
@@ -325,7 +357,7 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 		});	
 		
 		response.geographies=result;	
-		msg+="Return result geography: " + (result && result.length) + " rows\n";
+		msg+="Return result geography: " + (result && result.length || 0) + " rows\n";
 		response.message+=msg + JSON.stringify(response.geographies, null, 2) + "\n";
 		tileViewerReponseProcessing("getGeographies", response, response, req, res, serverLog, httpErrorResponse);
 	} // End of getGeographiesResponse()
@@ -347,20 +379,30 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 	} // End of getGeographiesDbCallback()
 	
 	try { 
-		dbConnect(response, getGeographiesDbCallback, getGeographiesErrorHandler);
+		dbConnect(response, getGeographiesDbCallback, getGeographiesErrorHandler, getGeographiesConnectionErrorHandler);
 	}	
-	catch (err) {	
-		getGeographiesErrorHandler(err);	// Use scope of calling function
+	catch (err) { // DB connect has failed	
+		msg+="Database connection error: " + err.message + "\nStack:\n" + err.stack;
+		getGeographiesResponse(undefined /* No result */);	// Use scope of calling function
 	}
 } // End of getGeographies()
 
 /*
  * Function:	dbConnect()
- * Parameters:	response, db callback, dbErrorHandler callback (to use scope of callimng function)
+ * Parameters:	response, db callback, dbErrorHandler callback (to use scope of callimng function), connectionErrorHandler callback (to use scope of callimng function)
  * Returns:		Nothing
  * Description: Post connection database processing callback
  */	
-function dbConnect(response, dbCallback, dbErrorHandler) {
+function dbConnect(response, dbCallback, dbErrorHandler, connectionErrorHandler) {
+	
+	scopeChecker(__file, __line, {
+		response: response,
+		callback: dbErrorHandler
+	},
+	{
+		callback: connectionErrorHandler
+	});
+		
 	if (response.fields && response.fields["databaseType"]) { // Can get geographies
 		if (response.fields["databaseType"] == "PostGres") {
 
@@ -392,7 +434,8 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 					if (err) {
 						var nerr=new Error("Unable to connect to Postgres using: " + pgConnectionString + "; error: " + err.message);
 						nerr.stack=err.stack;
-						dbErrorHandler(nerr);	// Use scope of calling function	
+						pgClient=undefined;
+						connectionErrorHandler(nerr);	// Use scope of calling function	
 					}
 					else {
 						dbCallback(
@@ -419,7 +462,7 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 "   AND name NOT IN ('tempdb', 'master', 'model', 'msdb')";
 				var query=dbRequest.query(sql, function getAllGeographiesTables(err, result) {
 					if (err) {
-						var nerr=new Error(databaseType + " database: " + p_database + "; error: " + err.message + "\nin SQL> " + sql +";");
+						var nerr=new Error(response.fields["databaseType"] + " database: " + p_database + "; error: " + err.message + "\nin SQL> " + sql +";");
 						nerr.stack=err.stack;
 						dbErrorHandler(nerr);	
 					}
@@ -462,7 +505,8 @@ function dbConnect(response, dbCallback, dbErrorHandler) {
 					if (err) {
 						var nerr=new Error("Unable to connect to SQL server using: " + JSON.stringify(config, null, 4), + "; error: " + err.message);
 						nerr.stack=err.stack;
-						dbErrorHandler(nerr);	// Use scope of calling function							
+						mssqlClient=undefined;
+						connectionErrorHandler(nerr);	// Use scope of calling function							
 					}
 					else {					
 						var dbRequest=new mssql.Request();

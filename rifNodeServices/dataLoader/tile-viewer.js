@@ -193,7 +193,13 @@ function getGeographies(data, status, xhr) {
 		'<select required id="geographySelect" name="databaseType" form="dbSelect">';
 
 	if (geographies == undefined) {
-		errorPopup("getGeographies() FAILED: no geographies found in database");
+		var msg="getGeographies() FAILED: no geographies found in database";
+		var extendedMasg;
+		if (data && data.connectionError) {
+			msg+="; error: " + (data.connectionError.message||JSON.stringify(data.connectionError));
+			extendedMasg="<pre>" + (data.message||data.connectionError.stack||"N/A") + "</pre>";
+		}
+		errorPopup(msg, extendedMasg);
 	}
 	else {		
 		for (var i=0; i<geographies.length; i++) {

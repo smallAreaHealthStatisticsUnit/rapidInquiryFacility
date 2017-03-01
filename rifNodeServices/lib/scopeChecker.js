@@ -116,6 +116,13 @@ scopeChecker = function scopeChecker(fFile, sLine, array, optionalArray) {
 			errors++;
 		}
 	}	
+	if (array && array["callback2"]) { // Check callback is a function if in scope
+		if (typeof array["callback2"] != "function") {
+			msg+="\nMandatory 2nd callback (" + typeof(callback2) + "): " + (callback2.name || "anonymous") + " is in use but is not a function: " + 
+				typeof callback2;
+			errors++;
+		}
+	}		
 	// Check optional callback
 	if (optionalArray && optionalArray["callback"]) { // Check callback is a function if in scope
 		if (typeof optionalArray["callback"] != "function") {
