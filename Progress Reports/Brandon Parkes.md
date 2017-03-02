@@ -34,3 +34,5 @@ Started work on documentation
 
 ##January
 - Minor changes & documentation
+##February
+- Completed first draft of user guide
