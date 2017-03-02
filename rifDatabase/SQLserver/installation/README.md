@@ -1,7 +1,7 @@
 SQL Server database installation
 
 # Contents
-- [1. Install SQL Server 2012 SP2](#1. Install SQL Server 2012 SP2)
+- [1. Install SQL Server 2012 SP2](#1.)
 - [2. Create databases and users](#2. Create databases and users)
    - [2.1 Network connection errors](#2.1 Network connection errors)
    - [2.2 Logon errors](#2.2 Logon errors)
@@ -10,7 +10,7 @@ SQL Server database installation
 - [4. Installing the RIF Schema](#4. Installing the RIF Schema)
   - [4.1 BULK INSERT permission](#4.1 BULK INSERT permission)
 	 
-# 1. Install SQL Server 2012 SP2 
+## 1. Install SQL Server 2012 SP2
 
   Install SQL Server 2012 SP2  (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
 
@@ -20,7 +20,7 @@ SQL Server database installation
 
   Please edit to set rif40/rifuser/rifmanager passwords as they are set to their **_usernames_**, especially if your SQL Server database is networked!. 
 
-  **This script will destroy all existing users and data**
+  **_This script will destroy all existing users and data_**
 
   Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
 
@@ -31,9 +31,9 @@ sqlcmd -E -b -m-1 -e -i rif40_database_creation.sql
   The test database is for building geosptial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
   a separate database is used.
 
-## 2.1 Network connection errors	
+## 2.1 Network connection errors
 
-  This is when the above command will not run.
+This is when the above command will not run.
 
 ```	
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql
@@ -49,13 +49,13 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
   * Check your firewall permits access to TCP port 1433. Be careful not to allow Internet access unless you intend it.
   * The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
 
-  Now test your can connecti to the database.
+Now test your can connect to the database.
 
 ## 2.2 Logon errors
 
   Test for logon errors as rif40/rifuser/rifmanager
 
-  Command: sqlcmd -U rif40 -P rif40 -d sahsuland_dev
+  Command: *sqlcmd -U rif40 -P rif40 -d sahsuland_dev*
 
   Test all combinations of rfi40/rifuser/rifmanager and sahsuland/sahsuland_dev
 
