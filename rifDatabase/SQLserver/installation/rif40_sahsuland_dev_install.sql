@@ -2,7 +2,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF40 create sahsuland_dev database objects and install data
+-- Rapid Enquiry Facility (RIF) - RIF40 create sahsuland/sahsuland_dev database objects and install data
 --
 -- Copyright:
 --
@@ -40,7 +40,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_sahsuland_dev_install.sql -v path="%cd%\..\.." -I
+-- Usage: sqlcmd -d <sahsuland/sahsuland_dev< -b -m-1 -e -i rif40_sahsuland_dev_install.sql -v path="%cd%\..\.." -I
 --
 -- MUST BE RUN AS ADMINSTRATOR SO CAN CREATE OBJECTS OR RUN AS RIF40 (with -U rif40)
 --

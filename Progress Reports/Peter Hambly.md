@@ -919,11 +919,16 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 
 * Added caching to base layers and topoJSON tile layer; fixed baselayer max zooms; allow test harness to go the 
   zoomlevel 19 
+* Cache ageing, global auto compaction
 * SQL Server test builds
+* SQL Server database build: sahsuland, sahsuland_dev and test; fully scripted and documented (and added to wiki) with no need for Server Adminstrator
+  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md
+* Fixed private browsing mode issues
+* Support database (i.e. SQL Server not present)
   
-#### Current TODO list (February/March 2017): SQL Server Port
+#### Current TODO list (March 2017): SQL Server Port
 
-* Integrate geosptial and data loader data into sahsuland_dev
+* Integrate geosptial and data loader data into sahsuland_dev, sahsuland
 * SQL Server installer
 * SQL Server run study port
 * Postgres data loader script integration
@@ -932,6 +937,7 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 #### Current TODO list (April 2017):
 
 * Assist with middleware (database fixes); SQL Server full install testing
+* Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-r8un without rebuilding the entire database
 
 #### TileViewer TODO (defferred to May?):
  

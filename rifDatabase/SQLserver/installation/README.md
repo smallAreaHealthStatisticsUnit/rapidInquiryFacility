@@ -1,18 +1,20 @@
-SQL Server database installation
+SQL Server Database Installation
 ================================
 
 # Contents
 - [1. Install SQL Server 2012 SP2](#1-install-sql-server-2012-sp2)
-- [2. Create databases and users](#2-create-databases-and-users)
+- [2. Create Databases and Users](#2-create-databases-and-users)
    - [2.1 Network connection errors](#21-network-connection-errors)
    - [2.2 Logon errors](#22-logon-errors)
      - [2.2.1 Wrong server authentication mode](#221-wrong-server-authentication-mode)
-- [3. Create additional users](#3-create-additional-users)
+- [3. Create Additional Users](#3-create-additional-users)
 - [4. Installing the RIF Schema](#4-installing-the-rif-schema)
   - [4.1 BULK INSERT Permission](#41-bulk-insert-permission)
   - [4.2 Re-running scripts](#42-re-running-scripts)
     - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#421-geospatial-script-rif40_sahsuland_tilesbat)
   - [4.2.2 Re-load sahsuland example data](#422-re-load-sahsuland-example-data)
+  -[4.3 SQL Server BULK INSERT Issues](#43-sql-server-bulk-insert-issues)
+    -[4.3.1 Line Termination](#431-line-termination)
 - [5. Script Notes](#5-script-notes)
   - [5.1 Script and documentation TODO](#51-script-and-documentation-todo)	
 	
@@ -20,7 +22,22 @@ SQL Server database installation
 
 Install SQL Server 2012 SP2  (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
 
-# 2. Create databases and users
+Check the version of your database:
+```
+sqlcmd -E
+1> SELECT @@version AS version, compatibility_level FROM sys.databases Where DB_NAME() = name ;
+2> go
+version                                                                                               compatibility_level                                                                                                                                                                                                                      compatibility_level
+----------------------------------------------------------------------------------------------------- -------------------
+Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
+        Sep 23 2016 16:56:29
+        Copyright (c) Microsoft Corporation
+        Express Edition (64-bit) on Windows NT 6.1 <X64> (Build 7601: Service Pack 1)                 110
+```
+* The compatibility level should be *110* and the version *Microsoft SQL Server 2012 (SP2...*. If it is not then you have more 
+  than one SQL Server database on your machine, see setting *SQLCMDSERVER* in the next section.
+
+# 2. Create Databases and Users
 
 Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
 
@@ -53,7 +70,7 @@ Named Pipes Provider: Could not open a connection to SQL Server [2].
 Mirosoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.
 Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 ```
-  * You may need to specify the instance name: e.g. -S Peter-PC\SQLEXPRESS. If you set this it will ned to be set in the environment as SQLCMDSERVER. This is usually caused by 
+  * You may need to specify the instance name: e.g. -S PETER-PC\SAHSU. If you set this it will ned to be set in the environment as SQLCMDSERVER. This is usually caused by 
     multiple installations of SQL server on the machine in the past, i.e. the DefaultLocalInstance registry key is wrong.
   * Check if remote access is enabled (it should be) using SQL Server Management Studio as adminstrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
   * SQL Server Configuration Manager as adminstrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
@@ -100,7 +117,7 @@ sahsuland_dev
 (1 rows affected)
 1>
 ``` 
-# 3. Create additional users
+# 3. Create Additional Users
 
 Run the optional script *rif40_test_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
 the -v newuser=<my new userr> parameter. Run as Administrator:
@@ -141,7 +158,9 @@ Run the following scripts ad Administrator:
 * rif40_sahsuland_dev_install.bat (see note 4.1 below before you run this script)
 * rif40_sahsuland_install.bat (see note 4.1 below before you run this script)
 
-The indivuidual scripts can be run by batch files for sahsuland_Dev only, but they must be run in this order:
+**These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
+
+The indivuidual scripts can be run by batch files for sahsuland_dev only, but they must be run in this order:
 
 * rif40_install_sequences.bat
 * rif40_install_tables.bat
@@ -199,6 +218,34 @@ DELETE FROM rif40.rif40_covariates WHERE geography = 'SAHSULAND';
 ### 4.2.2 Re-load sahsuland example data
 
 Re-load sahsuland example data with: rif40_sahsuland_data.bat
+
+## 4.3 SQL Server BULK INSERT Issues
+
+### 4.3.1 Line Termination
+
+```
+BULK INSERT rif_data.pop_sahsuland_pop FROM 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\DataLoaderData\SAHSULAND/pop_sahsuland_pop.csv'
+WITH
+(
+   FORMATFILE = 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\DataLoaderData\SAHSULAND/pop_sahsuland_pop.fmt',
+   TABLOCK,
+   FIRSTROW=2
+);
+
+Msg 245, Level 16, State 1, Server PETER-PC\SAHSU, Line 3
+' to data type int.hen converting the varchar value '0
+```
+* This is caused by line termination. SQL Server is expecting a Unix format file (i.e. with "\n" as a line terminator). The file is almost certainly in DOS 
+  format (with \r\n as a line terminator). Convert the file to Unix format using Notetab++, Cygwin/MingW dos2unix or perl:
+```
+perl -i -p -e "s/\r//" <oldfilename >newfilename
+```
+* The Githib repository has been fixed using a .gitattributes file:
+```
+# Declare files that will always have CRLF line endings on checkout.
+*.csv text eol=crlf
+*.fmt text eol=crlf
+```
 
 # 5. Script Notes
 

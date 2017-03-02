@@ -2,7 +2,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF40 create data load tables for SAHUSLAND data
+-- Rapid Enquiry Facility (RIF) - RIF40 create data load tables for SAHSULAND data
 --
 -- Copyright:
 --
@@ -95,6 +95,7 @@ ROWTERMINATOR = '\n'
 )
 GO
 
+/*
 BULK
 INSERT [rif_data].[sahsuland_level1]
 FROM '$(path)\Postgres\sahsuland\data\sahsuland_level1.csv'
@@ -164,7 +165,7 @@ FIELDTERMINATOR = ',',
 ROWTERMINATOR = '\n'
 )
 GO
-
+ */
 BULK
 INSERT [rif40].[rif40_version]
 FROM '$(path)\Postgres\sahsuland\data\rif40_version.csv'
@@ -244,6 +245,7 @@ ROWTERMINATOR = '\n'
 )
 GO
 
+/*
 BULK
 INSERT [rif40].[rif40_tables]
 FROM '$(path)\Postgres\sahsuland\data\rif40_tables.csv'
@@ -263,6 +265,7 @@ FIELDTERMINATOR = ',',
 ROWTERMINATOR = '\n'
 )
 GO
+*/
 
 BULK
 INSERT [rif40].[rif40_outcome_groups]
@@ -331,7 +334,7 @@ FIELDTERMINATOR = '|',
 ROWTERMINATOR = '\n'
 )
 GO
-
+/*
 BULK
 INSERT [rif_data].[sahsuland_cancer]
 FROM '$(path)\Postgres\sahsuland\data\sahsuland_cancer.csv'
@@ -351,6 +354,10 @@ WITH
 	TABLOCK																				-- Table lock
 )
 GO
+ */
  
 COMMIT;
 GO
+
+--
+-- Eof

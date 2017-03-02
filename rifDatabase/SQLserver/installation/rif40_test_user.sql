@@ -109,7 +109,7 @@ BEGIN
 --
 	EXEC sp_addrolemember @membername = N'$(NEWUSER)', @rolename = N'rif_user'; 
 	EXEC sp_addrolemember @membername = N'$(NEWUSER)', @rolename = N'rif_manager'; 
-
+--
 	EXEC('CREATE SCHEMA [$(NEWUSER)] AUTHORIZATION [$(NEWUSER)]');
 	ALTER USER [$(NEWUSER)] WITH DEFAULT_SCHEMA=[$(NEWUSER)];
 	
@@ -137,7 +137,7 @@ BEGIN
 	GRANT CREATE PROCEDURE TO [$(NEWUSER)];
 	GRANT CREATE TABLE TO [$(NEWUSER)];
 	GRANT CREATE VIEW TO [$(NEWUSER)];
-
+--
 	EXEC('CREATE SCHEMA [$(NEWUSER)] AUTHORIZATION [$(NEWUSER)]');
 	ALTER USER [$(NEWUSER)] WITH DEFAULT_SCHEMA=[$(NEWUSER)];
 	
