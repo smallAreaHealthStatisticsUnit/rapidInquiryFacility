@@ -1,14 +1,14 @@
 SQL Server database installation
 
 # Contents
-## 1. Install SQL Server 2012 SP2 
-## 2. Create databases and users
-### 2.1 Network connection errors
-### 2.2 Logon errors
-#### 2.2.1 Wrong server authentication mode
-## 3. Create additional users
-## 4. Installing the RIF Schema
-### 4.1 BULK INSERT permission 
+[1. Install SQL Server 2012 SP2] 
+[2. Create databases and users]
+[2.1 Network connection errors]
+[2.2 Logon errors]
+[2.2.1 Wrong server authentication mode]
+[3. Create additional users]
+[4. Installing the RIF Schema]
+[4.1 BULK INSERT permission]
 	 
 # 1. Install SQL Server 2012 SP2 
 
