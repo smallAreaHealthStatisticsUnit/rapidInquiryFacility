@@ -242,9 +242,9 @@ perl -i -p -e "s/\r//" <oldfilename >newfilename
 ```
 * The Githib repository has been fixed using a .gitattributes file:
 ```
-# Declare files that will always have CRLF line endings on checkout.
-*.csv text eol=crlf
-*.fmt text eol=crlf
+# Declare files that will always have Unix LF line endings on checkout.
+*.csv text eol=lf
+*.fmt text eol=lf
 ```
 
 # 5. Script Notes
