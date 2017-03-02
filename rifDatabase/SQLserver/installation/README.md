@@ -1,27 +1,39 @@
-To install database, run in this order (I think):
+SQL Server database installation
 
-1. Install SQL Server 2012 SP2 (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
+# Contents
+## 1. Install SQL Server 2012 SP2 
+## 2. Create databases and users
+### 2.1 Network connection errors
+### 2.2 Logon errors
+#### 2.2.1 Wrong server authentication mode
+## 3. Create additional users
+## 4. Installing the RIF Schema
+### 4.1 BULK INSERT permission 
+	 
+# 1. Install SQL Server 2012 SP2 
 
-2. Create databases and users
+  Install SQL Server 2012 SP2  (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
 
-Drop and create sahsuland, sahsuland_dev and test databasea and the rif40, rifuser and rifmanager users. Create rif_user, rif_manager etc roles.
+# 2. Create databases and users
 
-Please edit to set rif40/rifuser/rifmanager passwords as they are set to their usernames, especially if your SQL Server database is networked!. 
+  Drop and create sahsuland, sahsuland_dev and test databasea and the rif40, rifuser and rifmanager users. Creates rif_user, rif_manager etc roles.
 
-This script will destroy all existing users and data
+  Please edit to set rif40/rifuser/rifmanager passwords as they are set to their **_usernames_**, especially if your SQL Server database is networked!. 
 
-Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
+  **This script will destroy all existing users and data**
+
+  Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
 
 ```
 sqlcmd -E -b -m-1 -e -i rif40_database_creation.sql
 ```
 
-The test database is for building geosptial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
-a separate database is used.
+  The test database is for building geosptial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
+  a separate database is used.
 
-2.1 Network connection errors	
+## 2.1 Network connection errors	
 
-This is when the above commd will not run.
+  This is when the above command will not run.
 
 ```	
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql
@@ -30,25 +42,27 @@ Named Pipes Provider: Could not open a connection to SQL Server [2].
 Mirosoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.
 Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 ```
-* You may need to specify the instance name: e.g. -S Peter-PC\SQLEXPRESS. If you set this it will ned to be set in the environment as SQLCMDSERVER. This is usually caused by 
-  multiple installations of SQL server on the machine in the past, i.e. the DefaultLocalInstance registry key is wrong.
-* Check if remote access is enabled (it should be) using SQL Server Management Studio as adminstrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
-* SQL Server Configuration Manager as adminstrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
-* Check your firewall permits access to TCP port 1433. Be careful not to allow Internet access unless you intend it.
-* The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
+  * You may need to specify the instance name: e.g. -S Peter-PC\SQLEXPRESS. If you set this it will ned to be set in the environment as SQLCMDSERVER. This is usually caused by 
+    multiple installations of SQL server on the machine in the past, i.e. the DefaultLocalInstance registry key is wrong.
+  * Check if remote access is enabled (it should be) using SQL Server Management Studio as adminstrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
+  * SQL Server Configuration Manager as adminstrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
+  * Check your firewall permits access to TCP port 1433. Be careful not to allow Internet access unless you intend it.
+  * The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
 
-Now test your can connecti to the database.
+  Now test your can connecti to the database.
 
-2.2 Connection errors as rif40/rifuser/rifmanager etc
+## 2.2 Logon errors
 
-Command: sqlcmd -U rif40 -P rif40 -d sahsuland_dev
+  Test for logon errors as rif40/rifuser/rifmanager
 
-Test all combinations of rfi40/rifuser/rifmanager and sahsuland/sahsuland_dev
+  Command: sqlcmd -U rif40 -P rif40 -d sahsuland_dev
 
-* Wrong server authentication mode
+  Test all combinations of rfi40/rifuser/rifmanager and sahsuland/sahsuland_dev
 
-The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server. 
-See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
+### 2.2.1 Wrong server authentication mode
+
+  The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server. 
+  See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40 -d sahsuland_dev
@@ -56,14 +70,15 @@ Msg 18456, Level 14, State 1, Server PETER-PC\SQLEXPRESS, Line 1
 Login failed for user 'rif40'.
 ```
 
+  In the Window "applications" event log:
 ```
 Login failed for user 'rif40'. Reason: An attempt to login using SQL authentication failed. Server is configured for Windows authentication only. [CLIENT: <local machine>]
 ```
 
-The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
-attacks by dictionary or all possible passwords.
+  The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
+  attacks by dictionary or all possible passwords.
 
-This is what a successful login looks like: sqlcmd -U rif40 -P rif40
+  This is what a successful login looks like: sqlcmd -U rif40 -P rif40
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40
@@ -75,23 +90,24 @@ sahsuland_dev
 
 (1 rows affected)
 1>
-```
+``` 
+# 3. Create additional users
 
-3. Run optional rif40_test_user.sql. This creates a default user %newuser% from the environment. This is set from the command line using the -v newuser=<my new userr> 
-   parameter. Run as Administrator:
+  Run optional rif40_test_user.sql. This creates a default user %newuser% from the environment. This is set from the command line using 
+  the -v newuser=<my new userr> parameter. Run as Administrator:
 
 ```
 sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=peter
 sqlcmd -E -S Peter-PC\SQLEXPRESS -b -m-1 -e -r1 -i rif40_test_user.sql -v newuser=peter
 ```
 
-* User is created with rif_user (can create tables and views), rif_manager (can also create procedures and functions), can do BULK INSERT
-* User can use sahsuland, sahsuland_dev and test databases.
-* The test database is for geospatial processing and does not have the rif_user and rif_manager roles, the user can create tables, views,
-* procedures and function and do BULK INSERTs
-* Will fail to re-create a user if the user already has objects (tables, views etc)
+  * User is created with rif_user (can create tables and views), rif_manager (can also create procedures and functions), can do BULK INSERT
+  * User can use sahsuland, sahsuland_dev and test databases.
+  * The test database is for geospatial processing and does not have the rif_user and rif_manager roles, the user can create tables, views,
+  * procedures and function and do BULK INSERTs
+  * Will fail to re-create a user if the user already has objects (tables, views etc)
 
-Test connection and object privilges:
+  Test connection and object privilges:
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P peter -d test
@@ -109,29 +125,33 @@ test
 
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
 ```
-   
-4. Run the following scripts:
+ 
+# 4. Installing the RIF Schema
 
-* rif40_sahsuland_dev_install.bat (see note 4.1 below)
-* rif40_sahsuland_install.bat (see note 4.1 below)
+  Run the following scripts:
 
-The indivuidual scripts can be run by batch files for sahsuland_Dev only, but they must be run in this order:
+  * rif40_sahsuland_dev_install.bat (see note 4.1 below)
+  * rif40_sahsuland_install.bat (see note 4.1 below)
 
-* rif40_install_sequences.bat
-* rif40_install_tables.bat
-* rif40_install_log_error_handling.bat
-* rif40_install_functions.bat
-* rif40_install_views.bat
-* rif40_install_table_triggers.bat
-* rif40_install_view_triggers.bat
-* rif40_data_install_tables.bat
-* rif40_sahsuland_tiles.bat (see note 4.1 below)
-* rif40_sahsuland_data.bat (see note 4.1 below)
+ The indivuidual scripts can be run by batch files for sahsuland_Dev only, but they must be run in this order:
 
-4.1 SQL Server access to BULK INSERT files
+  * rif40_install_sequences.bat
+  * rif40_install_tables.bat
+  * rif40_install_log_error_handling.bat
+  * rif40_install_functions.bat
+  * rif40_install_views.bat
+  * rif40_install_table_triggers.bat
+  * rif40_install_view_triggers.bat
+  * rif40_data_install_tables.bat
+  * rif40_sahsuland_tiles.bat (see note 4.1 below)
+  * rif40_sahsuland_data.bat (see note 4.1 below)
 
-SQL Server needs access to the relative directories: ..\..\GeospatialData\tileMaker and ..\..\\DataLoaderData\SAHSULAND. The simplest
-way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users).
+## 4.1 BULK INSERT permission
+
+  SQL Server needs access granted to BULK INSERT files, they are not coipied from the client to the server.
+
+  SQL Server needs access to the relative directories: ..\..\GeospatialData\tileMaker and ..\..\\DataLoaderData\SAHSULAND. The simplest
+  way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users).
 
 ```
 BULK INSERT rif_data.lookup_sahsu_grd_level1
@@ -146,7 +166,7 @@ Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
 Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
 
-4.2 Re-running rif40_sahsuland_tiles.bat
+## 4.2 Re-running rif40_sahsuland_tiles.bat
 
 This will produce the following error:
 
