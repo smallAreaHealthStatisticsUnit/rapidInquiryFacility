@@ -8,8 +8,6 @@ Check - relative_risk, smoothed_relative_risk, posterior_probability, posterior_
 	are NULL for directly standardised results
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT *  FROM sys.triggers tr
 INNER JOIN sys.tables t ON tr.parent_id = t.object_id

@@ -12,9 +12,9 @@ SQL Server Database Installation
   - [4.1 BULK INSERT Permission](#41-bulk-insert-permission)
   - [4.2 Re-running scripts](#42-re-running-scripts)
     - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#421-geospatial-script-rif40_sahsuland_tilesbat)
-  - [4.2.2 Re-load sahsuland example data](#422-re-load-sahsuland-example-data)
-  -[4.3 SQL Server BULK INSERT Issues](#43-sql-server-bulk-insert-issues)
-    -[4.3.1 Line Termination](#431-line-termination)
+    - [4.2.2 Re-load sahsuland example data](#422-re-load-sahsuland-example-data)
+  - [4.3 SQL Server BULK INSERT Issues](#43-sql-server-bulk-insert-issues)
+    - [4.3.1 Line Termination](#431-line-termination)
 - [5. Script Notes](#5-script-notes)
   - [5.1 Script and documentation TODO](#51-script-and-documentation-todo)	
 	
@@ -27,7 +27,7 @@ Check the version of your database:
 sqlcmd -E
 1> SELECT @@version AS version, compatibility_level FROM sys.databases Where DB_NAME() = name ;
 2> go
-version                                                                                               compatibility_level                                                                                                                                                                                                                      compatibility_level
+version                                                                                               compatibility_level
 ----------------------------------------------------------------------------------------------------- -------------------
 Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
         Sep 23 2016 16:56:29
@@ -70,11 +70,11 @@ Named Pipes Provider: Could not open a connection to SQL Server [2].
 Mirosoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.
 Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 ```
-  * You may need to specify the instance name: e.g. -S PETER-PC\SAHSU. If you set this it will ned to be set in the environment as SQLCMDSERVER. This is usually caused by 
-    multiple installations of SQL server on the machine in the past, i.e. the DefaultLocalInstance registry key is wrong.
+  * You may need to specify the instance name: e.g. `-S PETER-PC\SAHSU`. If you set this it will ned to be set in the environment as *SQLCMDSERVER*. This is usually caused by 
+    multiple installations of SQL server on the machine in the past, i.e. the *DefaultLocalInstance* registry key is wrong.
   * Check if remote access is enabled (it should be) using SQL Server Management Studio as adminstrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
-  * SQL Server Configuration Manager as adminstrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
-  * Check your firewall permits access to TCP port 1433. Be careful not to allow Internet access unless you intend it.
+  * Check TCP access is enabled using SQL Server Configuration Manager as adminstrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
+  * Check your firewall permits access to TCP port 1433. **Be careful _not_ to allow Internet access unless you intend it.**
   * The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
 
 Now test your can connect to the database.

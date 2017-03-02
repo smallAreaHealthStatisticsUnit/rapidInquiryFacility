@@ -7,8 +7,6 @@ I don't see a nice way to set parameters or system variables in SQL Server
 Just create a rif_student role?  Or was that design choice already rejected for some reason?  I will ask Peter.
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_geolevels]') AND type in (N'V'))

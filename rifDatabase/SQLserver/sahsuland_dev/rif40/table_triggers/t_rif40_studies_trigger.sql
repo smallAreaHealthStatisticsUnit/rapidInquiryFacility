@@ -27,8 +27,6 @@ IF USER = NEW.username (i.e. not initial RIF40 INSERT) THEN
 	grant to all shared users if not already granted
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT *  FROM sys.triggers tr
 INNER JOIN sys.tables t ON tr.parent_id = t.object_id

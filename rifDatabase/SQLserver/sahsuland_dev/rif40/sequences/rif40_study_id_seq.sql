@@ -1,5 +1,3 @@
-USE [sahsuland_dev]
-GO
 
 -- this was not named before so will have a funny name like: DF__t_rif40_i__inv_i__5C979F60
 IF EXISTS (SELECT * FROM sys.objects 

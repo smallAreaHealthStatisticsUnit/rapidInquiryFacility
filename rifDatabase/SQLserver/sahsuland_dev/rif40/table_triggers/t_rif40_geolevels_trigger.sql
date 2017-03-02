@@ -10,8 +10,6 @@ Check &lt;postal_population_table&gt;.&lt;GEOLEVEL_NAME&gt; column exists if POS
 
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT *  FROM sys.triggers tr
 INNER JOIN sys.tables t ON tr.parent_id = t.object_id

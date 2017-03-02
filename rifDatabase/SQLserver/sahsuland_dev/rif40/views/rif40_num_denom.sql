@@ -5,8 +5,6 @@ needs functions:
 	rif40_auto_indirect_checks
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_num_denom]') AND type in (N'V'))

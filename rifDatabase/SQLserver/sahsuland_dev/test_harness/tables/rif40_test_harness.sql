@@ -2,8 +2,6 @@
 Test harness test cases and last run information
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_test_harness]') AND type in (N'U'))

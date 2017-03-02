@@ -10,8 +10,6 @@ Check current_value_Nchar AND current_description_Nchar columns exists if NOT NU
 Check previous_value_Nchar AND previous_description_Nchar if NOT NULL AND previous_lookup_table IS NOT NULL: need clarification , as canr see the proc or fucntion 
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT *  FROM sys.triggers tr
 INNER JOIN sys.tables t ON tr.parent_id = t.object_id

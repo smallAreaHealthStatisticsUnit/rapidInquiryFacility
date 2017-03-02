@@ -2,7 +2,7 @@
 Custom error messages for functions in rif40.  Mostly used by the trigger functions.
 */
 
-use master;
+USE master;
 
 --clean up old versions:
 EXEC [sahsuland_dev].[rif40].[rif40_setup_custom_errors];
@@ -462,3 +462,8 @@ EXEC sp_addmessage 51151, 16,
 	
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
+
+USE sahsuland_dev;
+
+--
+-- Eof

@@ -1,7 +1,5 @@
 --30/6/2015: Create view script fails unless create view is run separately from create comments on view.  
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_num_denom_errors]') AND type in (N'V'))

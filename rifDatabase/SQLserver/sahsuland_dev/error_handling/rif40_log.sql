@@ -6,7 +6,6 @@ to have a log function to call in the triggers.
 
 Currently output messages to screen.
 */
-use sahsuland_dev;
 
 IF EXISTS (SELECT * FROM sys.objects WHERE type = N'P' AND 
 object_id = OBJECT_ID(N'[rif40].[rif40_log]'))

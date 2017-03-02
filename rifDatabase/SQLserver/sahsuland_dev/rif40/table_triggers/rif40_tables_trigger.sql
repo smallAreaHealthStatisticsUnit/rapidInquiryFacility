@@ -11,8 +11,6 @@ Check table_name, total_field, sex_field_name, age_group_field_name, age_sex_gro
 </trigger_rif40_tables_checks_description>
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT *  FROM sys.triggers tr
 INNER JOIN sys.tables t ON tr.parent_id = t.object_id

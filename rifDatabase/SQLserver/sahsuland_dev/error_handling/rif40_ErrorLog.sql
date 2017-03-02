@@ -3,8 +3,6 @@ Saves error messages into rif40_ErrorLog table
 Also saves them in the general rif40_log program 
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_ErrorLog]') AND type in (N'U'))

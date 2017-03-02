@@ -2,8 +2,6 @@
 removed foreign key temporarily
 */
 
-USE [sahsuland_dev]
-GO
 
 --drop if already exists
 IF EXISTS (SELECT * FROM sys.objects 

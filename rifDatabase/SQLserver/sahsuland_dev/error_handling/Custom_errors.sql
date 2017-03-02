@@ -2,7 +2,7 @@
 Original custom error messages from RH, slightly edited.  Now all integrated into rif40_custom_error_messages.sql
 */
 
-use master;
+USE master;
 
 ------------------------------------------------
 --register custom errors  : geography table 
@@ -183,9 +183,7 @@ EXEC sp_addmessage 50098, 16,
    N'Table_name: [rif40].[T_RIF40_INV_COVARIATES], Study geolevel name not found in rif40_geolevels:(%s)';
 GO
 
+USE sahsuland_dev;
 
-
-
-
-
-
+--
+-- Eof

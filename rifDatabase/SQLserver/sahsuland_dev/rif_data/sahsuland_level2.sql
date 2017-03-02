@@ -1,5 +1,3 @@
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif_data].[sahsuland_level2]') AND type in (N'U'))

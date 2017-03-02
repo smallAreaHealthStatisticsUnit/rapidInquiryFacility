@@ -4,8 +4,6 @@ I assume that numer_tab in [t_rif40_investigations] has the schema specified so 
 "column_exists" returns 'true' and 'false' instead of boolean true/false in the postgres version
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_inv_conditions]') AND type=(N'V'))

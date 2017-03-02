@@ -1,5 +1,3 @@
-USE [sahsuland_dev]
-GO
 
 --drop if exists
 IF EXISTS (SELECT * FROM sys.objects 

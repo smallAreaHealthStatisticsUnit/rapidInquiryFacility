@@ -2,8 +2,6 @@
 28 May 2015: No longer in Postgres database -- should this be deleted?
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_opcs4]') AND type in (N'U'))

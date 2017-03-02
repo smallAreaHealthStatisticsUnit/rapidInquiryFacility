@@ -1,5 +1,3 @@
-USE [sahsuland_dev]
-GO
 
 -- Remove incorrectly named trigger: tr_rif40_use_projects
 IF EXISTS (SELECT *  FROM sys.triggers tr

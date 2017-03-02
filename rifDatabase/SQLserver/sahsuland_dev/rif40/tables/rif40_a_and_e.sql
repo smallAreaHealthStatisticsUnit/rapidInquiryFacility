@@ -2,8 +2,6 @@
 29 May 2015: This table no longer appears in Postgres rif40 table list.  Was it moved or deleted?
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_a_and_e]') AND type in (N'U'))

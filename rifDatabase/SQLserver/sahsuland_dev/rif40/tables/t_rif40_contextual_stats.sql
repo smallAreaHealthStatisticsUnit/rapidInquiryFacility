@@ -1,5 +1,3 @@
-USE [sahsuland_dev]
-GO
 
 --drop table if exists
 IF EXISTS (SELECT * FROM sys.objects 

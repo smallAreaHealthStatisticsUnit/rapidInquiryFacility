@@ -1,6 +1,3 @@
-USE [sahsuland_dev]
-GO
-
 
 --drop table if exists + foreign keys that reference table
 /*

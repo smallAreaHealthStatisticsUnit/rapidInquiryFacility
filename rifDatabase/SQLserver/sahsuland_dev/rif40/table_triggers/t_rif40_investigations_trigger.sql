@@ -9,8 +9,6 @@ Check - INV_NAME is a valid Oracle name of 20 characters only.
 Check - AGE_GROUP_ID, AGE_SEX_GROUP/AGE_GROUP/SEX_FIELD_NAMES are the same between numerator, denonminator and direct standardisation tables
 */
 
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT *  FROM sys.triggers tr
 INNER JOIN sys.tables t ON tr.parent_id = t.object_id

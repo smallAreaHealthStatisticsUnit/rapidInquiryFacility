@@ -1,5 +1,3 @@
-use sahsuland_dev
-GO
 
 /*
 Function checks if there exists any custom error messages already installed in the database that are not RIF-related. 

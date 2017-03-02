@@ -1,5 +1,3 @@
-USE [sahsuland_dev]
-GO
 
 IF EXISTS (SELECT * FROM sys.objects 
 WHERE object_id = OBJECT_ID(N'[rif40].[rif40_numerator_outcome_columns]') AND type in (N'V'))
