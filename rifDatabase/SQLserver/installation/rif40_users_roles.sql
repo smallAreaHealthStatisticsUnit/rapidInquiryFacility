@@ -2,6 +2,8 @@
 
 THIS SCRIPT MUST BE RUN AS ADMINSITRATOR
 
+THIS SCRIPT IS NOW OBSOLETE
+
 Required roles: 
 rif_manager
 rif_user

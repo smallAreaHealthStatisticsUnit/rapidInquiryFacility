@@ -1,74 +1,92 @@
 To install database, run in this order (I think):
 
-0. Install SQL Server 2012 SP2 (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
+1. Install SQL Server 2012 SP2 (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
 
-1. Create database and rif40 user (pleased set rif40 password); run as Administrator:
+2. Create databases and users
 
-	```
-	sqlcmd -E -b -m-1 -e -i rif40_database_creation.sql
-	/*
-	Creation of sahsuland_dev database
-	*/
+Drop and create sahsuland, sahsuland_dev and test databasea and the rif40, rifuser and rifmanager users. Create rif_user, rif_manager etc roles.
 
-	IF EXISTS(SELECT * FROM sys.sysdatabases where name='sahsuland_dev')
-			DROP DATABASE sahsuland_dev;
+Please edit to set rif40/rifuser/rifmanager passwords as they are set to their usernames, especially if your SQL Server database is networked!. 
 
+Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
 
-	CREATE DATABASE sahsuland_dev;
+```
+sqlcmd -E -b -m-1 -e -i rif40_database_creation.sql
+```
 
+The test database is for building geosptial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
+a separate database is used.
 
-	USE [sahsuland_dev];
+2.1 Network connection errors	
 
-	CREATE LOGIN rif40 WITH PASSWORD='rif40';
-	CREATE USER [rif40] FOR LOGIN [rif40] WITH DEFAULT_SCHEMA=[dbo];
+This is when the above commd will not run.
 
-	Msg 5701, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 2
-	Changed database context to 'sahsuland_dev'.
-	CREATE SCHEMA [rif40] AUTHORIZATION [rif40];
+```	
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql
+Result 0x2, Level 16, State 1
+Named Pipes Provider: Could not open a connection to SQL Server [2].
+Mirosoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.
+Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
+```
+* You may need to specify the instance name: e.g. -S Peter-PC\SQLEXPRESS. If you set this it will ned to be set in the environment as SQLCMDSERVER. This is usually caused by 
+  multiple installations of SQL server on the machine in the past, i.e. the DefaultLocalInstance registry key is wrong.
+* Check if remote access is enabled (it should be) using SQL Server Management Studio as adminstrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
+* SQL Server Configuration Manager as adminstrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
+* Check your firewall permits access to TCP port 1433. Be careful not to allow Internet access unless you intend it.
+* The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
 
-	CREATE SCHEMA [rif_data] AUTHORIZATION [rif40];
+Now test your can connecti to the database.
 
-	ALTER USER [rif40] WITH DEFAULT_SCHEMA=[rif40];
-	```
+2.2 Connection errors as rif40/rifuser/rifmanager etc
 
-2. Create database roles; run as Administrator:
+Command: sqlcmd -U rif40 -P rif40 -d sahsuland_dev
 
-	```
-	sqlcmd -E -b -m-1 -e -i rif40_users_roles.sql 
-	/*
-	Required roles:
-	rif_manager
-	rif_user
+Test all combinations of rfi40/rifuser/rifmanager and sahsuland/sahsuland_dev
 
-	Optional:
-	rif_student
-	rif_no_suppression (?)
+* Wrong server authentication mode
 
-	Testing:
-	notarifuser
-	*/
-	USE [sahsuland_dev];
+The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server. 
+See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
 
-	IF DATABASE_PRINCIPAL_ID('rif_manager') IS NULL
-			CREATE ROLE [rif_manager];
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40 -d sahsuland_dev
+Msg 18456, Level 14, State 1, Server PETER-PC\SQLEXPRESS, Line 1
+Login failed for user 'rif40'.
+```
 
-	IF DATABASE_PRINCIPAL_ID('rif_user') IS NULL
-			CREATE ROLE [rif_user];
+```
+Login failed for user 'rif40'. Reason: An attempt to login using SQL authentication failed. Server is configured for Windows authentication only. [CLIENT: <local machine>]
+```
 
-	IF DATABASE_PRINCIPAL_ID('rif_student') IS NULL
-			CREATE ROLE [rif_student];
+The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
+attacks by dictionary or all possible passwords.
 
-	IF DATABASE_PRINCIPAL_ID('rif_no_suppression') IS NULL
-			CREATE ROLE [rif_no_suppression];
+This is what a successful lopgin looks like: sqlcmd -U rif40 -P rif40
 
-	IF DATABASE_PRINCIPAL_ID('notarifuser') IS NULL
-			CREATE ROLE [notarifuser];
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40
+1> SELECT db_name();
+2> GO
 
+--------------------------------------------------------------------------------------------------------------------------------
+sahsuland_dev
 
-	Msg 5701, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 13
-	Changed database context to 'sahsuland_dev'.
+(1 rows affected)
+1>
+```
 
-	```
+2.3 Adding you own user. Do not use windows native authentication or you will not be able to use the RIF!
+
+```
+USE [master];
+
+CREATE LOGIN [Peter] WITH PASSWORD='Peter';
+CREATE USER [Peter] FOR LOGIN [Peter] WITH DEFAULT_SCHEMA=[dbo];
+CREATE SCHEMA [Peter] AUTHORIZATION [Peter];
+ALTER USER [Peter] WITH DEFAULT_SCHEMA=[Peter];
+GO
+
+```
 
 3. Run optional rif40_test_user.sql. This creates a default user %USERNAME% from the environment; run as Administrator:
 
