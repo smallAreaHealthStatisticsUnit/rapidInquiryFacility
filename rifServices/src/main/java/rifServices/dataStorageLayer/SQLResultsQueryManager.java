@@ -334,16 +334,37 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		final Integer x,		
 		final Integer y)
 		throws RIFServiceException {
-				
-		//TODO: inMemoryTileCache //String existingTileResult 
+		
 		/*
+		 * http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel={z}&x={x}&y={y}
+		 */
+		
+		//TODO:DM - currently using the depreciated version of rif40_sahsu_maptiles
+		
+		//STEP 1: get the tile table name
+						
+				/*
 		PGSQLSelectQueryFormatter getMapTileTableQueryFormatter
 			= new PGSQLSelectQueryFormatter();		
+			
 		getMapTileTableQueryFormatter.setDatabaseSchemaName("rif40");
 		getMapTileTableQueryFormatter.addFromTable("rif40_geographies");
 		getMapTileTableQueryFormatter.addWhereParameter("geography");
 		*/
 	
+		
+		
+		//STEP 2: get the tiles
+		/*
+		SELECT optimised_topojson::Text AS optimised_topojson 
+		  FROM rif40_sahsu_maptiles a, rif40_geolevels b
+		 WHERE b.geolevel_name   = 'LEVEL2'
+		   AND a.geolevel_name = b.geolevel_name
+		   AND a.zoomlevel     = 3   
+		   AND a.geography     = 'SAHSU'  
+		   AND a.x_tile_number = 3
+		   AND a.y_tile_number = 2;
+		*/
 		PGSQLSelectQueryFormatter getMapTilesQueryFormatter
 			= new PGSQLSelectQueryFormatter();
 		
@@ -358,22 +379,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		getMapTilesQueryFormatter.addWhereParameter("rif40_sahsu_maptiles", "x_tile_number");
 		getMapTilesQueryFormatter.addWhereParameter("rif40_sahsu_maptiles", "y_tile_number");
 		
-		/*
-		 * http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel={z}&x={x}&y={y}
-		 * http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel=3&x=3&y=2
-		 */
-		
-		/*
-		SELECT optimised_topojson::Text AS optimised_topojson 
-		  FROM rif40_sahsu_maptiles a, rif40_geolevels b
-		 WHERE b.geolevel_name   = 'LEVEL2'
-		   AND a.geolevel_name = b.geolevel_name
-		   AND a.zoomlevel     = 3   
-		   AND a.geography     = 'SAHSU'  
-		   AND a.x_tile_number = 3
-		   AND a.y_tile_number = 2;
-		*/
-				
+					
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		
@@ -406,17 +412,7 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			String result = resultSet.getString(1);
 					
 			connection.commit();
-			
-			/* TODO:
-			inMemoryTileCache.putTileResult(
-				geography, 
-				geoLevelSelect, 
-				zoomFactor, 
-				xTileIdentifier, 
-				yTileIdentifier,
-				result);
-			 */
-			
+						
 			return result;
 		}
 		catch(SQLException sqlException) {
