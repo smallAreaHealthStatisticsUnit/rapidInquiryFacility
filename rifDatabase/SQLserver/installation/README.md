@@ -10,27 +10,35 @@ SQL Server database installation
 - [4. Installing the RIF Schema](#4-installing-the-rif-schema)
   - [4.1 BULK INSERT Permission](#41-bulk-insert-permission)
   - [4.2 Re-running scripts](#42-re-running-scripts)
-    - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#21-geospatial-script-rif40_sahsuland_tilesbat)
+    - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#421-geospatial-script-rif40_sahsuland_tilesbat)
+  - [4.2.2 Re-load sahsuland example data(#422-re-load-sahsuland-example-data)
+- [5. Script Notes(#5-script-notes)
+  - [5.1 Script TODO[(#51-script-todo)	
 	
-## 1. Install SQL Server 2012 SP2
+# 1. Install SQL Server 2012 SP2
 
-  Install SQL Server 2012 SP2  (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
+Install SQL Server 2012 SP2  (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
 
 # 2. Create databases and users
 
-  Drop and create sahsuland, sahsuland_dev and test databasea and the rif40, rifuser and rifmanager users. Creates rif_user, rif_manager etc roles.
-
-  Please edit to set rif40/rifuser/rifmanager passwords as they are set to their **_usernames_**, especially if your SQL Server database is networked!. 
-
-  **_This script will destroy all existing users and data_**
-
-  Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
+Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
 
 ```
 sqlcmd -E -b -m-1 -e -i rif40_database_creation.sql
 ```
-
-  The test database is for building geosptial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
+Note:
+- **_This script will destroy all existing users and data_**;
+- This script will:
+  * Drops and creates the *sahsuland*, *sahsuland_dev* and *test* databasea and the *rif40*, *rifuser* and *rifmanager* user (logon) roles;   
+  * Creates *rif_user*, *rif_manager*, *rif_no_suppression*, *rif_student* and *notarifuser* non logon (i.e. group) roles;
+  * The role *rif_user* allows users to create tables and views;
+  * The role *rif_manager* allows users to additionally create procedures and functions;
+  * The rif40 user can do BULK INSERT;
+  * The default database is *sahsuland_dev*;
+- The application is installed in the *rif40* schema and data is installed in the *rif_data* schema; both owned by the *rif40* role;
+- Please edit the script to set *rif40*/*rifuser*/*rifmanager* passwords as they are set to their **_usernames_**, especially if 
+  your SQL Server database is networked! 
+- The test database is for building geosptial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
   a separate database is used.
 
 ## 2.1 Network connection errors
@@ -55,16 +63,14 @@ Now test your can connect to the database.
 
 ## 2.2 Logon errors
 
-  Test for logon errors as rif40/rifuser/rifmanager
+Test for logon errors as using the command: `sqlcmd -U rif40 -P rif40 -d sahsuland_dev`
 
-  Command: *sqlcmd -U rif40 -P rif40 -d sahsuland_dev*
-
-  Test all combinations of rfi40/rifuser/rifmanager and sahsuland/sahsuland_dev
+Test all combinations of *rif40*/*rifuser*/*rifmanager* logon roles and *sahsuland*/*sahsuland_dev* databases.
 
 ### 2.2.1 Wrong server authentication mode
 
-  The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server. 
-  See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
+The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server. 
+See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40 -d sahsuland_dev
@@ -80,7 +86,7 @@ Login failed for user 'rif40'. Reason: An attempt to login using SQL authenticat
   The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
   attacks by dictionary or all possible passwords.
 
-  This is what a successful login looks like: sqlcmd -U rif40 -P rif40
+  This is what a successful login looks like: `sqlcmd -U rif40 -P rif40`
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40
@@ -95,22 +101,21 @@ sahsuland_dev
 ``` 
 # 3. Create additional users
 
-  Run optional rif40_test_user.sql. This creates a default user %newuser% from the environment. This is set from the command line using 
-  the -v newuser=<my new userr> parameter. Run as Administrator:
+Run the optional script *rif40_test_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
+the -v newuser=<my new userr> parameter. Run as Administrator:
 
 ```
 sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=peter
 sqlcmd -E -S Peter-PC\SQLEXPRESS -b -m-1 -e -r1 -i rif40_test_user.sql -v newuser=peter
 ```
 
-  * User is created with rif_user (can create tables and views), rif_manager (can also create procedures and functions), can do BULK INSERT
-  * User can use sahsuland, sahsuland_dev and test databases.
-  * The test database is for geospatial processing and does not have the rif_user and rif_manager roles, the user can create tables, views,
-  * procedures and function and do BULK INSERTs
-  * Will fail to re-create a user if the user already has objects (tables, views etc)
+* User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions), can do `BULK INSERT`;
+* User can use *sahsuland, sahsuland_dev and test databases;
+* The test database is for geospatial processing and does not have the *rif_user* and *rif_manager* roles, the user can create tables, views,
+* procedures and function and do `BULK INSERT`s
+* Will fail to re-create a user if the user already has objects (tables, views etc)
 
-  Test connection and object privilges:
-
+Test connection and object privilges:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P peter -d test
 1> SELECT db_name() AS db_name INTO test_table;
@@ -130,30 +135,30 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
  
 # 4. Installing the RIF Schema
 
-  Run the following scripts:
+Run the following scripts ad Administrator:
 
-  * rif40_sahsuland_dev_install.bat (see note 4.1 below)
-  * rif40_sahsuland_install.bat (see note 4.1 below)
+* rif40_sahsuland_dev_install.bat (see note 4.1 below before you run this script)
+* rif40_sahsuland_install.bat (see note 4.1 below before you run this script)
 
- The indivuidual scripts can be run by batch files for sahsuland_Dev only, but they must be run in this order:
+The indivuidual scripts can be run by batch files for sahsuland_Dev only, but they must be run in this order:
 
-  * rif40_install_sequences.bat
-  * rif40_install_tables.bat
-  * rif40_install_log_error_handling.bat
-  * rif40_install_functions.bat
-  * rif40_install_views.bat
-  * rif40_install_table_triggers.bat
-  * rif40_install_view_triggers.bat
-  * rif40_data_install_tables.bat
-  * rif40_sahsuland_tiles.bat (see note 4.1 below)
-  * rif40_sahsuland_data.bat (see note 4.1 below)
+* rif40_install_sequences.bat
+* rif40_install_tables.bat
+* rif40_install_log_error_handling.bat
+* rif40_install_functions.bat
+* rif40_install_views.bat
+* rif40_install_table_triggers.bat
+* rif40_install_view_triggers.bat
+* rif40_data_install_tables.bat
+* rif40_sahsuland_tiles.bat (see note 4.1 below)
+* rif40_sahsuland_data.bat (see note 4.1 below)
 
 ## 4.1 BULK INSERT Permission
 
-  SQL Server needs access granted to BULK INSERT files, they are not coipied from the client to the server.
+SQL Server needs access granted to `BULK INSERT` files, they are not coipied from the client to the server.
 
-  SQL Server needs access to the relative directories: ..\..\GeospatialData\tileMaker and ..\..\\DataLoaderData\SAHSULAND. The simplest
-  way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users).
+SQL Server needs access to the relative directories: *..\..\GeospatialData\tileMaker* and *..\..\\DataLoaderData\SAHSULAND*. The simplest
+way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users).
 
 ```
 BULK INSERT rif_data.lookup_sahsu_grd_level1
@@ -172,7 +177,7 @@ Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryF
 
 ### 4.2.1 Geospatial script: rif40_sahsuland_tiles.bat
 
-This will produce the following error:
+Re-runniong the geospatial script: rif40_sahsuland_tiles.bat will produce the following error:
 
 ```
 -- SQL statement 75: Remove old geolevels meta data table >>>
@@ -190,12 +195,11 @@ To resolve: delete the coariates. You must re-run rif40_sahsuland_data.bat after
 ```
 DELETE FROM rif40.rif40_covariates WHERE geography = 'SAHSULAND';
 ```
+### 4.2.2 Re-load sahsuland example data
 
-# 5 Load geography with:
+Re-load sahsuland example data with: rif40_sahsuland_data.bat
 
-# 6 Load sahsuland example data with:
-
-Notes:
+# 5. Script Notes
 
 * All scripts except database creation are now transactional, with a script of the same name usually in the source code directory; 
   The T-SQL functions sp_addsrvrolemember() and sp_addrolemember() are not tranactional;
@@ -231,6 +235,8 @@ Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being re
 
 	G_RIF40_COMPARISON_AREAS                            
 	G_RIF40_STUDY_AREAS 
+
+## 5.1 Script TODO
 	
 Still to do:
 
