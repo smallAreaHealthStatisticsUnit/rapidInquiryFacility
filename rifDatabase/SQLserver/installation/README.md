@@ -11,9 +11,9 @@ SQL Server database installation
   - [4.1 BULK INSERT Permission](#41-bulk-insert-permission)
   - [4.2 Re-running scripts](#42-re-running-scripts)
     - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#421-geospatial-script-rif40_sahsuland_tilesbat)
-  - [4.2.2 Re-load sahsuland example data(#422-re-load-sahsuland-example-data)
-- [5. Script Notes(#5-script-notes)
-  - [5.1 Script TODO[(#51-script-todo)	
+  - [4.2.2 Re-load sahsuland example data](#422-re-load-sahsuland-example-data)
+- [5. Script Notes](#5-script-notes)
+  - [5.1 Script TODO](#51-script-todo)	
 	
 # 1. Install SQL Server 2012 SP2
 
@@ -236,12 +236,13 @@ Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being re
 	G_RIF40_COMPARISON_AREAS                            
 	G_RIF40_STUDY_AREAS 
 
-## 5.1 Script TODO
+## 5.1 Script and documentation TODO
 	
 Still to do:
 
-* Search path
-* On logon trigger - Postgres rif40_startup() function
+* Search path notes
+* On logon trigger - Postgres *rif40_startup()* function
+* Run study procedure *rif40_run_study()*
 * Fix selected columns:
 
 | type    | column_name                                                 | nullable | data_type        | Notes                           |       
@@ -258,4 +259,5 @@ Still to do:
 * Fix NULL/NOT NULL issues in postgres_diff_report.txt
 * Check Postgres alter 1-8 for minor changes
 
-
+Peter Hambly
+2nd March 2017
