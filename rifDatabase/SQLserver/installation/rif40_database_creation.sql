@@ -45,9 +45,6 @@
 -- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql 
 -- Connect flags if required: -E -S<myServerinstanceName>
 --
--- You must set the current schema if you cannot write to the default schema!
--- You need create privilege for the various object and the bulkadmin role
---
 
 -- 
 -- Use master DB
@@ -55,7 +52,7 @@
 USE master;
 
 --
--- Re-create databases
+-- Re-create databases. This will destroy all existing users and data
 --
 IF EXISTS(SELECT * FROM sys.sysdatabases where name='sahsuland_dev')
 	DROP DATABASE sahsuland_dev;
@@ -99,6 +96,10 @@ GO
 --
 CREATE LOGIN [rif40] WITH PASSWORD='rif40';	-- Chnage this password if your SQL Server database is networked!
 GO
+
+--
+-- Allow BULK INSERT
+--
 EXEC sp_addsrvrolemember @loginame = N'rif40', @rolename = N'bulkadmin';
 GO
 
@@ -144,7 +145,7 @@ CREATE USER [rifmanager] FOR LOGIN [rifmanager] WITH DEFAULT_SCHEMA=[dbo];
 GO
 
 --
--- Schmeas
+-- Schemas
 --	
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif40')
 EXEC('CREATE SCHEMA [rif40] AUTHORIZATION [rif40]');
@@ -170,7 +171,7 @@ ALTER USER [rifmanager] WITH DEFAULT_SCHEMA=[rifmanager];
 GO
 
 --
--- Default per databasxe (not server!) roles
+-- Default per database (not server!) roles
 --
 IF DATABASE_PRINCIPAL_ID('rif_manager') IS NULL
 	CREATE ROLE [rif_manager];
@@ -189,9 +190,27 @@ IF DATABASE_PRINCIPAL_ID('notarifuser') IS NULL
 GO
 
 --
+-- Object privilege grants
+--
+GRANT CREATE FUNCTION TO [rif_manager];
+GO
+GRANT CREATE PROCEDURE TO [rif_manager];
+GO
+GRANT CREATE TABLE TO [rif_manager];
+GO
+GRANT CREATE VIEW TO [rif_manager];
+GO
+GRANT CREATE TABLE TO [rif_user];
+GO
+GRANT CREATE VIEW TO [rif_user];
+GO
+
+--
 -- Grant roles to users
 --
 EXEC sp_addrolemember @membername = N'rifuser', @rolename = N'rif_user'; 
+GO
+EXEC sp_addrolemember @membername = N'rif40', @rolename = N'rif_user'; 
 GO
 EXEC sp_addrolemember @membername = N'rifmanager', @rolename = N'rif_user'; 
 GO
@@ -266,6 +285,22 @@ IF DATABASE_PRINCIPAL_ID('rif_no_suppression') IS NULL
 GO
 IF DATABASE_PRINCIPAL_ID('notarifuser') IS NULL
 	CREATE ROLE [notarifuser];
+GO
+
+--
+-- Object privilege grants
+--
+GRANT CREATE FUNCTION TO [rif_manager];
+GO
+GRANT CREATE PROCEDURE TO [rif_manager];
+GO
+GRANT CREATE TABLE TO [rif_manager];
+GO
+GRANT CREATE VIEW TO [rif_manager];
+GO
+GRANT CREATE TABLE TO [rif_user];
+GO
+GRANT CREATE VIEW TO [rif_user];
 GO
 
 --

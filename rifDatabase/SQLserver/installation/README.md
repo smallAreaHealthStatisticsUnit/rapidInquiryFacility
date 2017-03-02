@@ -8,6 +8,8 @@ Drop and create sahsuland, sahsuland_dev and test databasea and the rif40, rifus
 
 Please edit to set rif40/rifuser/rifmanager passwords as they are set to their usernames, especially if your SQL Server database is networked!. 
 
+This script will destroy all existing users and data
+
 Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
 
 ```
@@ -61,7 +63,7 @@ Login failed for user 'rif40'. Reason: An attempt to login using SQL authenticat
 The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
 attacks by dictionary or all possible passwords.
 
-This is what a successful lopgin looks like: sqlcmd -U rif40 -P rif40
+This is what a successful login looks like: sqlcmd -U rif40 -P rif40
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40
@@ -75,68 +77,45 @@ sahsuland_dev
 1>
 ```
 
-2.3 Adding you own user. Do not use windows native authentication or you will not be able to use the RIF!
+3. Run optional rif40_test_user.sql. This creates a default user %newuser% from the environment. This is set from the command line using the -v newuser=<my new userr> 
+   parameter. Run as Administrator:
 
 ```
-USE [master];
-
-CREATE LOGIN [Peter] WITH PASSWORD='Peter';
-CREATE USER [Peter] FOR LOGIN [Peter] WITH DEFAULT_SCHEMA=[dbo];
-CREATE SCHEMA [Peter] AUTHORIZATION [Peter];
-ALTER USER [Peter] WITH DEFAULT_SCHEMA=[Peter];
-GO
-
+sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=peter
+sqlcmd -E -S Peter-PC\SQLEXPRESS -b -m-1 -e -r1 -i rif40_test_user.sql -v newuser=peter
 ```
 
-3. Run optional rif40_test_user.sql. This creates a default user %USERNAME% from the environment; run as Administrator:
+* User is created with rif_user (can create tables and views), rif_manager (can also create procedures and functions), can do BULK INSERT
+* User can use sahsuland, sahsuland_dev and test databases.
+* The test database is for geospatial processing and does not have the rif_user and rif_manager roles, the user can create tables, views,
+* procedures and function and do BULK INSERTs
+* Will fail to re-create a user if the user already has objects (tables, views etc)
 
-	```
-	sqlcmd -E -b -m-1 -e -i rif40_test_user.sql
-	/*
-	Need some test people - $(USERNAME) is the user environment username (admin in my case)
+Test connection and object privilges:
 
-	THIS SCRIPT MUST BE RUN AS ADMINSITRATOR
-	*/
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P peter -d test
+1> SELECT db_name() AS db_name INTO test_table;
+2> SELECT * FROM test_table;
+3> go
 
-	BEGIN
-	IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = N'admin')
-		BEGIN
-					CREATE LOGIN admin WITH PASSWORD='admin';
-					CREATE USER [admin] FOR LOGIN [admin] WITH DEFAULT_SCHEMA=[dbo];
-					ALTER SERVER ROLE [rif_manager] ADD MEMBER [admin];
-					ALTER SERVER ROLE [rif_user] ADD MEMBER [admin];
-			END;
+(1 rows affected)
+db_name
+--------------------------------------------------------------------------------------------------------------------------------
+test
 
-	IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'admin')
-			BEGIN
-					EXEC('CREATE SCHEMA [admin] AUTHORIZATION [admin]');
-					ALTER USER [admin] WITH DEFAULT_SCHEMA=[admin];
-			END;
+(1 rows affected)
+1> quit
 
-	SELECT name, type_desc FROM sys.database_principals WHERE name = N'admin';
-	SELECT * FROM sys.schemas WHERE name = N'admin';
-
-	END;
-
-	name                                                                                                                             type_desc
-
-	-------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------------------
-	---------
-	admin                                                                                                                            SQL_USER
-
-
-	(1 rows affected)
-	name                                                                                                                             schema_id   principal_id
-	-------------------------------------------------------------------------------------------------------------------------------- ----------- ------------
-	admin                                                                                                                                      7            7
-
-	(1 rows affected)
-	```
-   In the case where the user already exists they need to be granted access to the sahsuland_dev database or the ```ALTER 
-   SERVER ROLE [rif_manager] ADD MEMBER [Peter];``` command will fail. Use SQL Server Management Studio to do this until 
-   I work out the obscure SQL command required (see: create_peter.sql)
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
+```
    
-4. Run the following scripts in order:
+4. Run the following scripts:
+
+* rif40_sahsuland_dev_install.bat (see note 4.1 below)
+* rif40_sahsuland_install.bat (see note 4.1 below)
+
+The indivuidual scripts can be run by batch files for sahsuland_Dev only, but they must be run in this order:
 
 * rif40_install_sequences.bat
 * rif40_install_tables.bat
@@ -148,13 +127,6 @@ GO
 * rif40_data_install_tables.bat
 * rif40_sahsuland_tiles.bat (see note 4.1 below)
 * rif40_sahsuland_data.bat (see note 4.1 below)
-
-Or run:
-
-* rif40_sahsuland_dev_install.bat (see note 4.1 below)
-
-Notes
-#####
 
 4.1 SQL Server access to BULK INSERT files
 
@@ -201,7 +173,8 @@ DELETE FROM rif40.rif40_covariates WHERE geography = 'SAHSULAND';
 
 Notes:
 
-* All scripts are now transactional, with a script of the same name usually in the source code directory;
+* All scripts except database creation are now transactional, with a script of the same name usually in the source code directory; 
+  The T-SQL functions sp_addsrvrolemember() and sp_addrolemember() are not tranactional;
 * The function rif40_sequence_current_value() is created earlier by the sequences SQL script and 
   cannot be recreated once tables have been created;
 * rif40_import_data.bat is now path independent. The SQL script (in this directory) will now delete all 
