@@ -1,4 +1,5 @@
-# _SQL Server database installation_
+SQL Server database installation
+================================
 
 # Contents
 - [1. Install SQL Server 2012 SP2](#1-install-sql-server-2012-sp2)
