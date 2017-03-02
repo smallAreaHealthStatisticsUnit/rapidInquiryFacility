@@ -13,7 +13,7 @@ SQL Server database installation
     - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#421-geospatial-script-rif40_sahsuland_tilesbat)
   - [4.2.2 Re-load sahsuland example data](#422-re-load-sahsuland-example-data)
 - [5. Script Notes](#5-script-notes)
-  - [5.1 Script TODO](#51-script-todo)	
+  - [5.1 Script and documentation TODO](#51-script-and-documentation-todo)	
 	
 # 1. Install SQL Server 2012 SP2
 
