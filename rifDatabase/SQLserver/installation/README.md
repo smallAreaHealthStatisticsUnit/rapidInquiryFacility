@@ -1,15 +1,17 @@
 SQL Server database installation
 
 # Contents
-- [1. Install SQL Server 2012 SP2](#1.)
-- [2. Create databases and users](#2. Create databases and users)
-   - [2.1 Network connection errors](#2.1 Network connection errors)
-   - [2.2 Logon errors](#2.2 Logon errors)
-     - [2.2.1 Wrong server authentication mode](#2.2.1 Wrong server authentication mode)
-- [3. Create additional users](#3. Create additional users)
-- [4. Installing the RIF Schema](#4. Installing the RIF Schema)
-  - [4.1 BULK INSERT Permission](#4.1)
-	 
+- [1. Install SQL Server 2012 SP2](#1-install-sql-server-2012-sp2)
+- [2. Create databases and users](#2-create-databases-and-users)
+   - [2.1 Network connection errors](#21-network-connection-errors)
+   - [2.2 Logon errors](#22-logon-errors)
+     - [2.2.1 Wrong server authentication mode](#221-wrong-server-authentication-mode)
+- [3. Create additional users](#3-create-additional-users)
+- [4. Installing the RIF Schema](#4-installing-the-rif-schema)
+  - [4.1 BULK INSERT Permission](#41-bulk-insert-permission)
+  - [4.2 Re-running scripts](#42-re-running-scripts)
+    - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#21-geospatial-script-rif40_sahsuland_tilesbat)
+	
 ## 1. Install SQL Server 2012 SP2
 
   Install SQL Server 2012 SP2  (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
@@ -166,7 +168,9 @@ Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
 Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
 
-## 4.2 Re-running rif40_sahsuland_tiles.bat
+## 4.2 Re-running scripts
+
+### 4.2.1 Geospatial script: rif40_sahsuland_tiles.bat
 
 This will produce the following error:
 
@@ -187,9 +191,9 @@ To resolve: delete the coariates. You must re-run rif40_sahsuland_data.bat after
 DELETE FROM rif40.rif40_covariates WHERE geography = 'SAHSULAND';
 ```
 
-5. Load geography with:
+# 5 Load geography with:
 
-6. Load sahsuland example data with:
+# 6 Load sahsuland example data with:
 
 Notes:
 
