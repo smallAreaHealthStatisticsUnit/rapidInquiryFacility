@@ -8,7 +8,7 @@ SQL Server database installation
      - [2.2.1 Wrong server authentication mode](#2.2.1 Wrong server authentication mode)
 - [3. Create additional users](#3. Create additional users)
 - [4. Installing the RIF Schema](#4. Installing the RIF Schema)
-  - [4.1 BULK INSERT permission](#4.1 BULK INSERT permission)
+  - [4.1 BULK INSERT Permission](#4.1)
 	 
 ## 1. Install SQL Server 2012 SP2
 
@@ -146,7 +146,7 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
   * rif40_sahsuland_tiles.bat (see note 4.1 below)
   * rif40_sahsuland_data.bat (see note 4.1 below)
 
-## 4.1 BULK INSERT permission
+## 4.1 BULK INSERT Permission
 
   SQL Server needs access granted to BULK INSERT files, they are not coipied from the client to the server.
 
