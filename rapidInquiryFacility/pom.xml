@@ -37,5 +37,12 @@
   		<artifactId>slf4j-log4j13</artifactId>
   		<version>1.0.1</version>
   	</dependency>
+  	
+	<dependency>
+    	<groupId>com.microsoft.sqlserver</groupId>
+    	<artifactId>mssql-jdbc</artifactId>
+    	<version>6.1.0.jre8</version>
+	</dependency>
+ 	
   </dependencies>
 </project>

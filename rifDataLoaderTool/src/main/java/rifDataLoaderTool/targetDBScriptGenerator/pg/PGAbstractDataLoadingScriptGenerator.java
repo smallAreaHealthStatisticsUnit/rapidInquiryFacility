@@ -201,6 +201,7 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		String indexName = tableName.toUpperCase() + "_" + fieldName.toUpperCase();
 			
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryPhrase(0, "CREATE INDEX ");
 		queryFormatter.addQueryPhrase(indexName);
 		queryFormatter.addQueryPhrase(" ON ");

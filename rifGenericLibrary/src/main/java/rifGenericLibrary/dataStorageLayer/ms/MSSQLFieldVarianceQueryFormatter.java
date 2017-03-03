@@ -90,8 +90,8 @@ public final class MSSQLFieldVarianceQueryFormatter
 	/**
 	 * Instantiates a new SQL count query formatter.
 	 */
-	public MSSQLFieldVarianceQueryFormatter() {
-
+	public MSSQLFieldVarianceQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 	}
 
 	// ==========================================

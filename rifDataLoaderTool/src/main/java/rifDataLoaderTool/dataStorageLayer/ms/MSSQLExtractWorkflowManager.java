@@ -1,6 +1,5 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
-
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
@@ -10,10 +9,10 @@ import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -126,7 +125,7 @@ final class MSSQLExtractWorkflowManager
 				sqlException);
 		}
 		finally {
-			PGSQLQueryUtility.close(connection);
+			MSSQLQueryUtility.close(connection);
 		}
 		return resultTable;
 	}
@@ -159,8 +158,10 @@ final class MSSQLExtractWorkflowManager
 			
 			//drop the table if it already exists so we can recreate it
 			//without raising a 'table already exists' exception
-			PGSQLCreateTableQueryFormatter createExtractTableQueryFormatter
-				 = new PGSQLCreateTableQueryFormatter();
+			MSSQLCreateTableQueryFormatter createExtractTableQueryFormatter
+				 = new MSSQLCreateTableQueryFormatter(false);
+			//KLG_SCHEMA
+			//createExtractTableQueryFormatter.setDatabaseSchemaName("dbo");
 			createExtractTableQueryFormatter.setTextFieldLength(TEXT_FIELD_WIDTH);
 			createExtractTableQueryFormatter.setTableName(targetExtractTable);
 
@@ -178,6 +179,9 @@ final class MSSQLExtractWorkflowManager
 				"create_extract_table", 
 				createExtractTableQueryFormatter);
 			
+			System.out.println("YYYYYYYYYYYYYYY START");
+			System.out.println(createExtractTableQueryFormatter.generateQuery());
+			System.out.println("YYYYYYYYYYYYYYY END");
 			createExtractTableStatement
 				= connection.prepareStatement(createExtractTableQueryFormatter.generateQuery());
 			createExtractTableStatement.executeUpdate();
@@ -239,7 +243,7 @@ final class MSSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {			
-			PGSQLQueryUtility.close(createExtractTableStatement);
+			MSSQLQueryUtility.close(createExtractTableStatement);
 		}	
 	}
 	
@@ -293,7 +297,7 @@ final class MSSQLExtractWorkflowManager
 		PreparedStatement statement = null;
 		try {
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
+			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(targetExtractTable);
 			queryFormatter.addQueryPhrase(" ADD COLUMN data_set_id INTEGER DEFAULT ");
 			queryFormatter.addQueryPhrase(String.valueOf(dataSetIdentifier));
@@ -321,7 +325,7 @@ final class MSSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}		
 		
 		
@@ -346,7 +350,7 @@ final class MSSQLExtractWorkflowManager
 			 * Do PostgreSQL and SQL Server provide support for BIGSERIAL?
 			 */				
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
+			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(targetExtractTable);
 			queryFormatter.addQueryPhrase(" ADD COLUMN row_number BIGSERIAL");
 		
@@ -370,7 +374,7 @@ final class MSSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}		
 	}
 	public void addExtractTableData(
@@ -384,8 +388,8 @@ final class MSSQLExtractWorkflowManager
 			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(
 					dataSetConfiguration.getName());		
 		
-		PGSQLInsertQueryFormatter queryFormatter 
-			= new PGSQLInsertQueryFormatter();
+		MSSQLInsertQueryFormatter queryFormatter 
+			= new MSSQLInsertQueryFormatter(false);
 		queryFormatter.setIntoTable(loadTableName);
 		queryFormatter.addInsertField("data_source_id");
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
@@ -422,7 +426,7 @@ final class MSSQLExtractWorkflowManager
 				sqlException);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -446,8 +450,8 @@ final class MSSQLExtractWorkflowManager
 			 * it uses a drop-if-exists, which is a construction that may be
 			 * supported differently in SQL Server
 			 */				
-			PGSQLDeleteTableQueryFormatter deleteExtractTableQueryFormatter
-				= new PGSQLDeleteTableQueryFormatter();
+			MSSQLDeleteTableQueryFormatter deleteExtractTableQueryFormatter
+				= new MSSQLDeleteTableQueryFormatter(false);
 			deleteExtractTableQueryFormatter.setTableToDelete(tableToDelete);
 
 			statement 
@@ -468,7 +472,7 @@ final class MSSQLExtractWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);			
+			MSSQLQueryUtility.close(statement);			
 		}	
 	}
 		

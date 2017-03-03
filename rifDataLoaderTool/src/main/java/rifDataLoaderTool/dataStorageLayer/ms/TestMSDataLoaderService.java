@@ -1,5 +1,6 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
+import rifDataLoaderTool.businessConceptLayer.TestDataLoaderServiceAPI;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -58,7 +59,8 @@ import java.sql.Connection;
  */
 
 public class TestMSDataLoaderService 
-	extends AbstractMSSQLDataLoaderService {
+	extends AbstractMSSQLDataLoaderService 
+	implements TestDataLoaderServiceAPI {
 
 	// ==========================================
 	// Section Constants

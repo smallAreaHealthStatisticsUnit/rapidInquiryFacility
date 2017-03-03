@@ -331,7 +331,7 @@ public class PGSQLDataTypeValidationUtility {
 				queryFormatter.addQueryPhrase(validationRules.get(0).getValidValue());
 				queryFormatter.addQueryPhrase("'");
 			}
-			queryFormatter.addQueryPhrase(") THEN ");
+			queryFormatter.addQueryPhrase(") = 1 THEN ");
 			queryFormatter.addQueryPhrase(loadFieldName);
 			queryFormatter.padAndFinishLine();
 				

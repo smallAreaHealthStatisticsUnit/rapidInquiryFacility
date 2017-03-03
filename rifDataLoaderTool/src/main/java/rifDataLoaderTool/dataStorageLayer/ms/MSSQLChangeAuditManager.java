@@ -5,11 +5,11 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.*;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -106,12 +106,16 @@ final public class MSSQLChangeAuditManager
 		final Writer logFileWriter)
 		throws RIFServiceException {
 
-		PGSQLDeleteRowsQueryFormatter clearChangeLogQueryFormatter
-			= new PGSQLDeleteRowsQueryFormatter();
+		MSSQLDeleteRowsQueryFormatter clearChangeLogQueryFormatter
+			= new MSSQLDeleteRowsQueryFormatter(false);
+		//KLG_SCHEMA
+		//clearChangeLogQueryFormatter.setDatabaseSchemaName("dbo");
 		clearChangeLogQueryFormatter.setFromTable("rif_change_log");		
 
-		PGSQLDeleteRowsQueryFormatter clearValidationFailuresLogQueryFormatter
-			= new PGSQLDeleteRowsQueryFormatter();
+		MSSQLDeleteRowsQueryFormatter clearValidationFailuresLogQueryFormatter
+			= new MSSQLDeleteRowsQueryFormatter(false);
+		//KLG_SCHEMA
+		//clearValidationFailuresLogQueryFormatter.setDatabaseSchemaName("dbo");
 		clearValidationFailuresLogQueryFormatter.setFromTable("rif_failed_val_log");			
 		
 		PreparedStatement clearChangeLogStatement = null;
@@ -138,8 +142,8 @@ final public class MSSQLChangeAuditManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(clearChangeLogStatement);
-			PGSQLQueryUtility.close(clearValidationFailuresLogStatement);
+			MSSQLQueryUtility.close(clearChangeLogStatement);
+			MSSQLQueryUtility.close(clearValidationFailuresLogStatement);
 		}
 	}
 	
@@ -195,7 +199,7 @@ final public class MSSQLChangeAuditManager
 
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
 		queryFormatter.addQueryPhrase(auditValidationFailuresTable);
 		queryFormatter.addQueryPhrase(" AS");		
 		queryFormatter.padAndFinishLine();
@@ -215,8 +219,7 @@ final public class MSSQLChangeAuditManager
 					dataSetFieldConfiguration);
 			queryFormatter.addQueryPhrase(fieldLevelFailureSelectQuery);
 		}
-		
-		
+
 		logSQLQuery(
 			logFileWriter,
 			"add to validation table", 
@@ -243,7 +246,7 @@ final public class MSSQLChangeAuditManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 		exportTable(
@@ -262,7 +265,8 @@ final public class MSSQLChangeAuditManager
 		
 		String cleanFieldName = dataSetFieldConfiguration.getCleanFieldName();
 		
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter 
+			= new MSSQLSelectQueryFormatter(false);
 		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addSelectField(searchReplaceTableName, "data_set_id");
 		queryFormatter.addSelectField(searchReplaceTableName, "row_number");
@@ -272,7 +276,8 @@ final public class MSSQLChangeAuditManager
 			cleanFieldName, 
 			"invalid_field_value");
 		queryFormatter.addSelectFieldWithAlias("current_timestamp", "time_stamp");
-		
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.addFromTable(searchReplaceTableName);
 		queryFormatter.addFromTable(searchValidationTableName);
 		queryFormatter.addWhereJoinCondition(
@@ -329,7 +334,7 @@ final public class MSSQLChangeAuditManager
 				return;
 			}
 			else {
-				queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+				queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
 				queryFormatter.addQueryPhrase(auditTableName);
 				queryFormatter.addQueryPhrase(" AS");
 				queryFormatter.padAndFinishLine();
@@ -381,7 +386,7 @@ final public class MSSQLChangeAuditManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}	
 		
 		
@@ -563,8 +568,10 @@ final public class MSSQLChangeAuditManager
 		String cleanFieldName
 			= auditableField.getCleanFieldName();
 		
-		PGSQLSelectQueryFormatter queryFormatter
-			= new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter
+			= new MSSQLSelectQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setEndWithSemiColon(false);
 
 		queryFormatter.addSelectField(cleanSearchReplaceTableName, "data_set_id");
@@ -614,8 +621,10 @@ final public class MSSQLChangeAuditManager
 		String cleanFieldName
 			= auditableField.getCleanFieldName();
 		
-		PGSQLSelectQueryFormatter queryFormatter
-			= new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter
+			= new MSSQLSelectQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setEndWithSemiColon(false);
 
 		queryFormatter.addSelectField(finalCleanedTableName, "data_set_id");
@@ -668,7 +677,8 @@ final public class MSSQLChangeAuditManager
 		ResultSet resultSet = null;
 		PreparedStatement statement = null;
 		try {
-			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter 
+				= new MSSQLSelectQueryFormatter(false);
 			queryFormatter.addSelectField("id");
 			queryFormatter.addFromTable("data_set_configurations");
 			queryFormatter.addWhereParameter("core_data_set_name");
@@ -706,8 +716,8 @@ final public class MSSQLChangeAuditManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
 		}
 	}
 	
@@ -739,13 +749,15 @@ final public class MSSQLChangeAuditManager
 		PreparedStatement getIdentifierStatement = null;		
 		PreparedStatement addDataSetStatement = null;
 		ResultSet resultSet = null;
-		PGSQLInsertQueryFormatter addDataSetQueryFormatter
-			= new PGSQLInsertQueryFormatter();		
+		MSSQLInsertQueryFormatter addDataSetQueryFormatter
+			= new MSSQLInsertQueryFormatter(false);		
 		
 		SQLGeneralQueryFormatter getIdentifierQueryFormatter
 			= new SQLGeneralQueryFormatter();
 		
 		try {
+			//KLG_SCHEMA
+			//addDataSetQueryFormatter.setDatabaseSchemaName("dbo");
 			addDataSetQueryFormatter.setIntoTable("data_set_configurations");
 			addDataSetQueryFormatter.addInsertField("core_data_set_name");
 			addDataSetQueryFormatter.addInsertField("version");
@@ -792,9 +804,9 @@ final public class MSSQLChangeAuditManager
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(addDataSetStatement);			
-			PGSQLQueryUtility.close(getIdentifierStatement);			
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(addDataSetStatement);			
+			MSSQLQueryUtility.close(getIdentifierStatement);			
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		return result;
@@ -806,8 +818,10 @@ final public class MSSQLChangeAuditManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 	
-		PGSQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
-			= new PGSQLDeleteRowsQueryFormatter();
+		MSSQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
+			= new MSSQLDeleteRowsQueryFormatter(false);
+		//KLG_SCHEMA
+		//deleteDataSetStatementQueryFormatter.setDatabaseSchemaName("dbo");
 		deleteDataSetStatementQueryFormatter.setFromTable("data_set_configurations");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("core_data_set_name");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("version");
@@ -840,7 +854,7 @@ final public class MSSQLChangeAuditManager
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(deleteDataSetConfigurationStatement);
+			MSSQLQueryUtility.close(deleteDataSetConfigurationStatement);
 		}
 		
 	}
@@ -852,8 +866,10 @@ final public class MSSQLChangeAuditManager
 		throws RIFServiceException {
 				
 		PreparedStatement statement = null;
-		PGSQLRecordExistsQueryFormatter queryFormatter
-			= new PGSQLRecordExistsQueryFormatter();
+		MSSQLRecordExistsQueryFormatter queryFormatter
+			= new MSSQLRecordExistsQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setFromTable("data_set_configurations");
 		queryFormatter.setLookupKeyFieldName("core_data_set_name");
 		queryFormatter.addWhereParameter("version");
@@ -898,7 +914,10 @@ final public class MSSQLChangeAuditManager
 		throws RIFServiceException {
 
 		//Create SQL query
-		PGSQLDeleteRowsQueryFormatter queryFormatter = new PGSQLDeleteRowsQueryFormatter();
+		MSSQLDeleteRowsQueryFormatter queryFormatter 
+			= new MSSQLDeleteRowsQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setFromTable("data_set_configurations");
 
 		PreparedStatement statement = null;
@@ -919,7 +938,7 @@ final public class MSSQLChangeAuditManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}		
 	}
 	

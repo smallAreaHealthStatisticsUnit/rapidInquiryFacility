@@ -7,7 +7,7 @@ import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 
 import org.apache.commons.io.FileUtils;
@@ -200,7 +200,7 @@ final class MSSQLPublishWorkflowManager
 			statement.executeUpdate();
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);			
+			MSSQLQueryUtility.close(statement);			
 		}
 	}
 	

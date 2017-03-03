@@ -85,8 +85,8 @@ public final class MSSQLDropDatabaseQueryFormatter
 	/**
 	 * Instantiates a new SQL count query formatter.
 	 */
-	public MSSQLDropDatabaseQueryFormatter() {
-
+	public MSSQLDropDatabaseQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 	}
 
 	// ==========================================

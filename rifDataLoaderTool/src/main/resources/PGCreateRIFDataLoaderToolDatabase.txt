@@ -50,14 +50,14 @@ CREATE TABLE rif_failed_val_log (
 -- =====================================================================
 
 CREATE OR REPLACE FUNCTION clean_date(
-	date_value TEXT,
-	date_format TEXT)
-	RETURNS BOOLEAN AS 
+	date_value VARCHAR(30),
+	date_format VARCHAR(30))
+	RETURNS VARCHAR(30) AS 
 $$
 DECLARE
-	result BOOLEAN;
+	result VARCHAR(30);
 BEGIN
-   SELECT TO_CHAR(TO_DATE(date_value,date_format),date_format) = date_value
+   SELECT TO_CHAR(TO_DATE(date_value,date_format),date_format)
    INTO result;
    RETURN result;
 END;
@@ -65,11 +65,11 @@ $$   LANGUAGE plpgsql;
 --SELECT date_matches_format('05/20/1995', 'MM/DD/YYYY');
 
 CREATE OR REPLACE FUNCTION clean_year(
-	year_value TEXT)
-	RETURNS TEXT AS 
+	year_value VARCHAR(30))
+	RETURNS VARCHAR(30) AS 
 $$
 DECLARE
-	result TEXT;
+	result VARCHAR(30);
 BEGIN
 
 	IF length(year_value) = 2 THEN 
@@ -84,11 +84,11 @@ $$   LANGUAGE plpgsql;
 --SELECT date_matches_format('05/20/1995', 'MM/DD/YYYY');
 
 CREATE OR REPLACE FUNCTION clean_age(
-	original_age TEXT)
-	RETURNS TEXT AS 
+	original_age VARCHAR(30))
+	RETURNS VARCHAR(30) AS 
 $$
 DECLARE
-	cleaned_age TEXT;
+	cleaned_age VARCHAR(30);
 BEGIN
 	--This is just a stub function to demonstrate functionality.
 
@@ -99,11 +99,11 @@ $$   LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION clean_icd_code(
-	original_icd_code TEXT)
-	RETURNS TEXT AS 
+	original_icd_code VARCHAR(30))
+	RETURNS VARCHAR(30) AS 
 $$
 DECLARE
-	cleaned_icd_code TEXT;
+	cleaned_icd_code VARCHAR(30);
 BEGIN
 	cleaned_icd_code := REPLACE(original_icd_code, '.', '');
 	RETURN cleaned_icd_code;
@@ -111,11 +111,11 @@ END;
 $$   LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION clean_uk_postal_code(
-	original_uk_postal_code TEXT)
-	RETURNS TEXT AS 
+	original_uk_postal_code VARCHAR(30))
+	RETURNS VARCHAR(30) AS 
 $$
 DECLARE
-	cleaned_uk_postal_code TEXT;
+	cleaned_uk_postal_code VARCHAR(30);
 BEGIN
 
 	cleaned_uk_postal_code := UPPER(REPLACE(original_uk_postal_code, ' ', ''));
@@ -124,11 +124,11 @@ END;
 $$   LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION clean_icd(
-	original_icd_code TEXT)
-	RETURNS TEXT AS 
+	original_icd_code VARCHAR(30))
+	RETURNS VARCHAR(30) AS 
 $$
 DECLARE
-	cleaned_icd_code TEXT;
+	cleaned_icd_code VARCHAR(30);
 BEGIN
 	cleaned_icd_code := REPLACE(original_icd_code, '.', '');
 	RETURN cleaned_icd_code;
@@ -142,24 +142,32 @@ $$   LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION date_matches_format(
-	date_value TEXT,
-	date_format TEXT)
-	RETURNS BOOLEAN AS 
+	date_value VARCHAR(30),
+	date_format VARCHAR(30))
+	RETURNS INT AS 
 $$
 DECLARE
-	result BOOLEAN;
+	result INT;
 BEGIN
    IF date_value IS NULL OR date_format IS NULL THEN
-      RETURN FALSE;
+      RETURN 0;
    END IF;
 
-   SELECT TO_CHAR(TO_DATE(date_value,date_format),date_format) = date_value
+   SELECT 
+      CASE
+         WHEN TO_CHAR(TO_DATE(date_value,date_format),date_format) = date_value THEN
+            1
+         ELSE
+            0
+      END AS date_matches
    INTO result;
    RETURN result;
    
-   EXCEPTION 
-      WHEN others THEN RETURN FALSE;
-   
+
+EXCEPTION 
+	WHEN others THEN
+	RETURN 0;	
+
 END;
 $$   LANGUAGE plpgsql;
 --SELECT date_matches_format('05/20/1995', 'MM/DD/YYYY');
@@ -177,15 +185,21 @@ $$   LANGUAGE plpgsql;
  *    false if the text value is not a number
  */
 CREATE OR REPLACE FUNCTION is_numeric(text) 
-	RETURNS BOOLEAN AS '
+	RETURNS INT AS '
 	
-	SELECT $1 ~ ''^[0-9]+$''
+	SELECT 
+	   CASE
+	      WHEN $1 ~ ''^[0-9]+$'' THEN 
+	         1
+	      ELSE
+	         0
+	   END AS provides_match
 ' LANGUAGE 'sql';
 
 
 CREATE OR REPLACE FUNCTION is_valid_age(
-	candidate_age TEXT)
-	RETURNS BOOLEAN AS 
+	candidate_age VARCHAR(30))
+	RETURNS INT AS 
 $$
 DECLARE
 	age_value INT;
@@ -194,53 +208,32 @@ BEGIN
 	
 	age_value := candidate_age :: INT;
 	IF (age_value < 0) OR (age_value > 120) THEN
-		RETURN FALSE;
+		RETURN 0;
 	ELSE
-		RETURN TRUE;
+		RETURN 1;
 	END IF;	
 
-EXCEPTION WHEN others THEN
-	RETURN FALSE;
-	
-END;
-$$   LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION is_valid_age(
-	candidate_age TEXT)
-	RETURNS BOOLEAN AS 
-$$
-DECLARE
-	age_value INT;
-
-BEGIN
-	
-	age_value := candidate_age :: INT;
-	IF (age_value < 0) OR (age_value > 120) THEN
-		RETURN FALSE;
-	ELSE
-		RETURN TRUE;
-	END IF;	
-
-EXCEPTION WHEN others THEN
-	RETURN FALSE;
+EXCEPTION 
+	WHEN others THEN
+	RETURN 0;
 	
 END;
 $$   LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION is_valid_uk_postal_code(
-	candidate_postal_code TEXT)
-	RETURNS BOOLEAN AS 
+	candidate_postal_code VARCHAR(30))
+	RETURNS INT AS 
 $$
 DECLARE
-	cleaned_postal_code TEXT;
+	cleaned_postal_code VARCHAR(30);
 BEGIN
 
 	cleaned_postal_code := UPPER(REPLACE(candidate_postal_code, ' ', ''));
 	RAISE NOTICE 'The cleaned postal code is %', cleaned_postal_code;
 	IF cleaned_postal_code ~ '^[A-Z]{1,2}[0-9R][0-9A-Z]?[0-9][ABD-HJLNP-UW-Z]{2}$' THEN 
-		RETURN TRUE;
+		RETURN 1;
 	ELSE 
-		RETURN FALSE;
+		RETURN 0;
 	END IF;
 
 END;
@@ -250,7 +243,7 @@ $$   LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION is_valid_double(
 	candidate_double VARCHAR(20))
-	RETURNS BOOLEAN AS 
+	RETURNS INT AS 
 $$
 DECLARE
 	double_value DOUBLE PRECISION;
@@ -259,24 +252,26 @@ BEGIN
 	SELECT cast(candidate_double as double precision)
 	INTO double_value;
 		
-	RETURN TRUE;
-EXCEPTION WHEN others THEN
-	RETURN FALSE;
+	RETURN 1;
+
+
+EXCEPTION 
+	WHEN others THEN
+	RETURN 0;	
 
 END;
 $$   LANGUAGE plpgsql;
 
-CREATE FUNCTION is_valid_integer(candidate_integer TEXT) 
-RETURNS BOOLEAN AS '
-SELECT candidate_integer ~ ''^[0-9]+$''
+CREATE FUNCTION is_valid_integer(candidate_integer VARCHAR(30)) 
+RETURNS INT AS '
+SELECT 
+   CASE
+      WHEN candidate_integer ~ ''^[0-9]+$'' THEN 
+         1
+      ELSE
+         0
+   END provides_match
 ' LANGUAGE 'sql';
-
-
-
-
-
-
-
 
 -- =====================================================================
 -- Data Transformation Functions
@@ -308,8 +303,8 @@ $$   LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION map_age_to_rif_age_group(
-	original_age TEXT)
-	RETURNS TEXT AS 
+	original_age VARCHAR(30))
+	RETURNS VARCHAR(30) AS 
 $$
 DECLARE
 	age INT;

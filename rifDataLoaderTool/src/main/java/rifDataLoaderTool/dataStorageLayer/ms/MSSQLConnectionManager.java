@@ -516,16 +516,18 @@ final class MSSQLConnectionManager {
 			Properties databaseProperties = new Properties();
 			
 			if (userID != null) {
+				System.out.println("createConnection 222 userID ==" + userID + "==");
 				databaseProperties.setProperty("user", userID);
 				databaseProperties.setProperty("password", password);
 			}
 			//databaseProperties.setProperty("ssl", "true");
 			//databaseProperties.setProperty("logUnclosedConnections", "true");
-			databaseProperties.setProperty("prepareThreshold", "3");
+			//databaseProperties.setProperty("prepareThreshold", "3");
 			//KLG: @TODO this introduces a porting issue
 			//int logLevel = org.postgresql.Driver.DEBUG;
 			//databaseProperties.setProperty("loglevel", String.valueOf(logLevel));
-			
+			System.out.println("MSSQLConnectionManager databaseURL=="+ databaseURL + "==");
+
 			connection
 				= DriverManager.getConnection(databaseURL, databaseProperties);
 			connection.setReadOnly(false);

@@ -61,13 +61,25 @@ public class AbstractMSSQLQueryFormatter
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	boolean useGoCommand = false;
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public AbstractMSSQLQueryFormatter() {
-		setEndWithSemiColon(false);
+		init(true);
+	}
+	
+	public AbstractMSSQLQueryFormatter(final boolean useGoCommand) {
+		init(useGoCommand);
+	}
+	
+	private void init(final boolean useGoCommand) {
+		this.useGoCommand = useGoCommand;
+		setEndWithSemiColon(false);		
+		//KLG_SCHEMA
+		//setDatabaseSchemaName("dbo");
 	}
 
 	// ==========================================
@@ -78,8 +90,15 @@ public class AbstractMSSQLQueryFormatter
 		StringBuilder result = new StringBuilder();		
 		result.append(getQueryBuilder().toString());
 		result.append(";\n");
-		result.append("GO");
-		result.append("\n\n");
+		
+		if (useGoCommand) {
+			result.append("GO");
+		}
+		else {
+			result.append("\n");			
+		}
+		result.append("\n");
+		
 		return result.toString();
 	}
 	

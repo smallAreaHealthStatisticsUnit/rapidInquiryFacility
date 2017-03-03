@@ -89,7 +89,8 @@ public final class MSSQLImportTableFromCSVQueryFormatter
 	/**
 	 * Instantiates a new SQL insert query formatter.
 	 */
-	public MSSQLImportTableFromCSVQueryFormatter() {
+	public MSSQLImportTableFromCSVQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		tableToImport = "";
 		importFileName = "";
 		delimiters = ",";

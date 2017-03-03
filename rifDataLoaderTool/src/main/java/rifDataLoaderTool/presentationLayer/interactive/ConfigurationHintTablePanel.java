@@ -13,7 +13,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.GridBagConstraints;
 import java.util.ArrayList;
-import java.util.Observer;
 
 /**
  *

@@ -78,8 +78,10 @@ public final class MSSQLCountTableRowsQueryFormatter
 	// Section Construction
 	// ==========================================
 
-	public MSSQLCountTableRowsQueryFormatter() {
+	public MSSQLCountTableRowsQueryFormatter(
+		final boolean useGoCommand) {
 
+		super(useGoCommand);
 	}
 
 	// ==========================================

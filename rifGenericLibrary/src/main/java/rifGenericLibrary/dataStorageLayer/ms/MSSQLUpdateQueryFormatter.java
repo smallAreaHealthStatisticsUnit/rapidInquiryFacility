@@ -98,8 +98,8 @@ public final class MSSQLUpdateQueryFormatter
 	/**
 	 * Instantiates a new SQL insert query formatter.
 	 */
-	public MSSQLUpdateQueryFormatter() {
-		
+	public MSSQLUpdateQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		orAllWhereConditions = false;
 		updateFields = new ArrayList<String>();		
 		whereConditions = new ArrayList<String>();

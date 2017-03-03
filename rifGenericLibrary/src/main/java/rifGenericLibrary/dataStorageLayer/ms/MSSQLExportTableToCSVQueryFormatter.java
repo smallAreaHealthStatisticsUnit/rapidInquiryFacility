@@ -89,7 +89,9 @@ public final class MSSQLExportTableToCSVQueryFormatter
 	/**
 	 * Instantiates a new SQL insert query formatter.
 	 */
-	public MSSQLExportTableToCSVQueryFormatter() {
+	public MSSQLExportTableToCSVQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
+		
 		tableToExport = "";
 		outputFileName = "";
 		delimiters = ",";

@@ -177,13 +177,11 @@ abstract class AbstractPGSQLDataLoaderService
 		reportManager
 			= new PGSQLReportManager();
 	}
-	
-	public void initialiseService(final DataLoaderToolConfiguration dataLoaderToolConfiguration) 
-		throws RIFServiceException {
 
-		this.dataLoaderToolConfiguration = dataLoaderToolConfiguration;
-		DatabaseConnectionsConfiguration dbParameters
-			= dataLoaderToolConfiguration.getDatabaseConnectionConfiguration();
+	
+	public void initialiseService(
+		final DatabaseConnectionsConfiguration dbParameters) 
+		throws RIFServiceException {
 		
 		sqlConnectionManager
 			= new PGSQLConnectionManager(

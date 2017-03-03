@@ -3,7 +3,7 @@ package rifDataLoaderTool.targetDBScriptGenerator.ms;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.dataStorageLayer.*;
-import rifGenericLibrary.dataStorageLayer.pg.*;
+import rifGenericLibrary.dataStorageLayer.ms.*;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
@@ -104,34 +104,38 @@ public class MSNumeratorScriptGenerator
 				numeratorEntry, 
 			numerator);	
 		numeratorEntry.append("\n");
-		//addEntryToNumDenomTable(
-		//	numeratorEntry,
-		//	numerator);
+		
+		addRIF40OutcomeGroupsEntry(
+			numeratorEntry,
+			numerator);
+		numeratorEntry.append("\n");
+
 		addRIF40TableOutcomesEntry(
 			numeratorEntry,
 			numerator);
+		numeratorEntry.append("\n");
 
 		return numeratorEntry.toString();
 	}
 	
 	private void createTableStructureAndImportCSV(
-		final StringBuilder denominatorEntry,
+		final StringBuilder numeratorEntry,
 		final GeographyMetaData geographyMetaData,
 		final DataSetConfiguration numerator) 
 		throws RIFServiceException {
 		
 		//The name the table will have in the schema 'pop'
-		String publishedDenominatorTableName
-			= numerator.getPublishedTableName();		
+		String publishedNumeratorTableName
+			= numerator.getPublishedTableName().toLowerCase();		
 	
 		//Make a create table statement 
-		PGSQLCreateTableQueryFormatter createTableQueryFormatter
-			= new PGSQLCreateTableQueryFormatter();
+		MSSQLCreateTableQueryFormatter createTableQueryFormatter
+			= new MSSQLCreateTableQueryFormatter(true);
 
 		//Field properties that will help us construct the 
 		//create and copy into statements
 		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
-		createTableQueryFormatter.setTableName(publishedDenominatorTableName);
+		createTableQueryFormatter.setTableName(publishedNumeratorTableName);
 		createTableQueryFormatter.addIntegerFieldDeclaration("year", false);
 		createTableQueryFormatter.addIntegerFieldDeclaration("age_sex_group", false);
 
@@ -145,11 +149,11 @@ public class MSNumeratorScriptGenerator
 				20, 
 				false);			
 		}
-		createTableQueryFormatter.addTextFieldDeclaration("icd", false);
+		createTableQueryFormatter.addTextFieldDeclaration("icd", 20, false);
 		createTableQueryFormatter.addIntegerFieldDeclaration("total", false);
 
-		denominatorEntry.append(createTableQueryFormatter.generateQuery());
-		denominatorEntry.append("\n");
+		numeratorEntry.append(createTableQueryFormatter.generateQuery());
+		numeratorEntry.append("\n");
 		
 		//How do we handle extra fields?
 		ArrayList<String> fieldNames = new ArrayList<String>();
@@ -162,9 +166,9 @@ public class MSNumeratorScriptGenerator
 		fieldNames.add("total");
 		
 		String bulkInsertStatement
-			= createBulkCopyStatement(numerator);
+			= createBulkCopyStatement("rif_data", numerator);
 
-		denominatorEntry.append(bulkInsertStatement);
+		numeratorEntry.append(bulkInsertStatement);
 	}
 	
 	private void addEntryToRIF40Tables(
@@ -172,6 +176,7 @@ public class MSNumeratorScriptGenerator
 		final DataSetConfiguration dataSet) {
 
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_tables (");
 		queryFormatter.addQueryLine(1, "theme,");
 		queryFormatter.addQueryLine(1, "table_name,");
@@ -211,7 +216,12 @@ public class MSNumeratorScriptGenerator
 		queryFormatter.addQueryLine(1, "'AGE_SEX_GROUP',");
 		queryFormatter.addQueryLine(1, "1");
 		queryFormatter.addQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, dataSet.getPublishedTableName());
+		queryFormatter.addQueryPhrase(1, "rif_data.");		
+		queryFormatter.addQueryPhrase(dataSet.getPublishedTableName());
+		queryFormatter.addQueryPhrase(";");
+		queryFormatter.finishLine();
+		queryFormatter.addQueryLine(0, "GO");
+		
 		String query
 			= queryFormatter.generateQuery();
 		denominatorEntry.append(query);	
@@ -246,8 +256,8 @@ public class MSNumeratorScriptGenerator
 		//Obtain value for 'denominator_description' field
 		literalParameterValues[5] = denominator.getDescription();
 		
-		PGSQLInsertQueryFormatter insertQueryFormatter
-			= new PGSQLInsertQueryFormatter();
+		MSSQLInsertQueryFormatter insertQueryFormatter
+			= new MSSQLInsertQueryFormatter(true);
 		insertQueryFormatter.setDatabaseSchemaName("rif40");
 		insertQueryFormatter.setIntoTable("rif_num_denom");
 		insertQueryFormatter.addInsertField("geography", true);
@@ -262,14 +272,37 @@ public class MSNumeratorScriptGenerator
 		numeratorEntry.append(query);		
 	}
 	
+	private void addRIF40OutcomeGroupsEntry(
+		final StringBuilder numeratorEntry,
+		final DataSetConfiguration numerator) {
+		
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
+		
+		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_outcome_groups(");
+		queryFormatter.addQueryLine(1, "outcome_type, outcome_group_name, outcome_group_description, field_name, multiple_field_count)");
+		queryFormatter.addQueryLine(0, "SELECT");
+		queryFormatter.addQueryLine(1, "'ICD' AS outcome_type,");
+		queryFormatter.addQueryLine(1, "'SAHSULAND_ICD' AS outcome_group_name,");
+		queryFormatter.addQueryLine(1, "'SAHSULAND ICD' AS outcome_group_description,");
+		queryFormatter.addQueryLine(1, "'ICD' AS field_name,");
+		queryFormatter.addQueryLine(1, "0 AS multiple_field_count");
+		queryFormatter.addQueryPhrase(0, "WHERE NOT EXISTS ");
+		queryFormatter.addQueryPhrase("(SELECT outcome_group_name FROM ");
+		queryFormatter.addQueryPhrase(" rif40.rif40_outcome_groups WHERE outcome_group_name = 'SAHSULAND_ICD');");
+		queryFormatter.finishLine();
+		queryFormatter.addQueryLine(0, "GO");
+		numeratorEntry.append(queryFormatter.generateQuery());
+	}
 	private void addRIF40TableOutcomesEntry(
 		final StringBuilder numeratorEntry,
 		final DataSetConfiguration numerator) {
 		
 		String publishedNumeratorTableName
 			= numerator.getPublishedTableName();
-		
+
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_table_outcomes (");
 		queryFormatter.addQueryLine(1, "outcome_group_name,");
 		queryFormatter.addQueryLine(1, "numer_tab,");
@@ -279,7 +312,12 @@ public class MSNumeratorScriptGenerator
 		queryFormatter.addQueryLine(1, "'" + publishedNumeratorTableName.toUpperCase() + "',");
 		queryFormatter.addQueryLine(1, "MIN(year) ");
 		queryFormatter.addQueryLine(0, "FROM ");
-		queryFormatter.addQueryPhrase(1, publishedNumeratorTableName.toUpperCase());
+
+		queryFormatter.addQueryPhrase(1, "rif_data.");
+		queryFormatter.addQueryPhrase(publishedNumeratorTableName.toUpperCase());
+		queryFormatter.addQueryPhrase(";");
+		queryFormatter.finishLine();
+		queryFormatter.addQueryLine(0, "GO");
 		numeratorEntry.append(queryFormatter.generateQuery());		
 	}
 
@@ -296,7 +334,6 @@ public class MSNumeratorScriptGenerator
 		//Add comments to table
 		numeratorEntry.append(
 			createTableCommentQuery(
-				"rif_data",
 				publishedCovariateTableName, 
 				numerator.getDescription()));
 

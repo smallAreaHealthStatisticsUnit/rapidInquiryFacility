@@ -113,6 +113,8 @@ public class RIFDataLoaderToolApplication
 	private GeographyMetaDataLoadingPanel geographyMetaDataPanel;
 	private HealthThemesListPanel healthThemeListPanel;
 	
+	
+	private DataTypesLoadingPanel dataTypesLoadingPanel;
 	private ConfigurationHintsLoadingPanel configurationHintsPanel;
 	
 	private DenominatorsListPanel denominatorsListPanel;
@@ -154,7 +156,13 @@ public class RIFDataLoaderToolApplication
 				dependencyManager,
 				changeManager);
 		changeManager.addObserver(healthThemeListPanel);
-
+		
+		dataTypesLoadingPanel
+			= new DataTypesLoadingPanel(
+				session,
+				changeManager);
+		changeManager.addObserver(dataTypesLoadingPanel);
+		
 		configurationHintsPanel
 			= new ConfigurationHintsLoadingPanel(
 				session,
@@ -235,6 +243,13 @@ public class RIFDataLoaderToolApplication
 		panel.add(
 			healthThemeListPanel.getPanel(), 
 			panelGC);
+
+		panelGC.gridy++;
+		panelGC.fill = GridBagConstraints.HORIZONTAL;
+		panelGC.weighty = 0;
+		panel.add(
+				dataTypesLoadingPanel.getPanel(), 
+				panelGC);
 
 		panelGC.gridy++;
 		panelGC.fill = GridBagConstraints.HORIZONTAL;
@@ -346,6 +361,7 @@ public class RIFDataLoaderToolApplication
 		dependencyManager.resetDependencies(dataLoaderToolConfiguration);
 		geographyMetaDataPanel.refresh();
 		healthThemeListPanel.refresh();
+		dataTypesLoadingPanel.refresh();
 		configurationHintsPanel.refresh();
 		denominatorsListPanel.refresh();
 		numeratorsListPanel.refresh();

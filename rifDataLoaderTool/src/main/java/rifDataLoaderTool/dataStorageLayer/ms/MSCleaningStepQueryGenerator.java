@@ -4,8 +4,8 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
 
 import java.util.ArrayList;
 
@@ -181,6 +181,7 @@ public final class MSCleaningStepQueryGenerator {
 			= dataSetConfiguration.getName();
 		String searchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
+		queryFormatter.addQueryPhrase("");//KLG_SCHEMA
 		queryFormatter.addQueryPhrase(searchReplaceTableName);
 		queryFormatter.finishLine(" AS ");
 		
@@ -209,12 +210,12 @@ public final class MSCleaningStepQueryGenerator {
 		String loadTableName
 			= RIFTemporaryTablePrefixes.EXTRACT.getTableName(
 					dataSetConfiguration.getName());
-		queryFormatter.addQueryPhrase(2, loadTableName);
+		queryFormatter.addQueryPhrase(2, "");//KLG_SCHEMA
+		queryFormatter.addQueryPhrase(loadTableName);
 		queryFormatter.addQueryPhrase(";");
-
 		
 		//add a primary key to the new temporary table
-		queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
+		queryFormatter.addQueryPhrase(0, "ALTER TABLE ");//KLG_SCHEMA
 		queryFormatter.addQueryPhrase(searchReplaceTableName);
 		queryFormatter.addQueryPhrase(" ADD PRIMARY KEY (data_set_id, row_number);");
 		
@@ -354,6 +355,7 @@ public final class MSCleaningStepQueryGenerator {
 			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName);
 		String searchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
+		queryFormatter.addQueryPhrase("");//KLG_SCHEMA
 		queryFormatter.addQueryPhrase(validationTableName);
 		queryFormatter.finishLine(" AS ");
 		
@@ -378,7 +380,8 @@ public final class MSCleaningStepQueryGenerator {
 		}	
 		queryFormatter.finishLine();
 		queryFormatter.addQueryLine(1, "FROM");
-		queryFormatter.addQueryPhrase(2, searchReplaceTableName);
+		queryFormatter.addQueryPhrase(2, "");//KLG_SCHEMA
+		queryFormatter.addQueryPhrase(searchReplaceTableName);
 		queryFormatter.addQueryPhrase(";");
 		queryFormatter.finishLine();
 		
@@ -484,8 +487,8 @@ public final class MSCleaningStepQueryGenerator {
 	public String generateDropValidationTableQuery(
 		final DataSetConfiguration dataSetConfiguration) {
 
-		PGSQLDeleteTableQueryFormatter queryFormatter
-			= new PGSQLDeleteTableQueryFormatter();
+		MSSQLDeleteTableQueryFormatter queryFormatter
+			= new MSSQLDeleteTableQueryFormatter(false);
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.dropValidationQuery.comment1");		
 		queryFormatter.addCommentLine(queryCommentLine1);
@@ -496,7 +499,8 @@ public final class MSCleaningStepQueryGenerator {
 
 		String validationTableName
 			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(
-					dataSetConfiguration.getName());	
+					dataSetConfiguration.getName());
+		queryFormatter.setDatabaseSchemaName("");//KLG_SCHEMA
 		queryFormatter.setTableToDelete(validationTableName);
 			
 		return queryFormatter.generateQuery();		
@@ -510,7 +514,8 @@ public final class MSCleaningStepQueryGenerator {
 		 * WHERE
 		 *    data_set_id=?;
 		 */
-		PGSQLDeleteRowsQueryFormatter queryFormatter = new PGSQLDeleteRowsQueryFormatter();
+		MSSQLDeleteRowsQueryFormatter queryFormatter 
+			= new MSSQLDeleteRowsQueryFormatter(false);
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.deleteAuditsQuery.comment1");		
 		queryFormatter.addCommentLine(queryCommentLine1);
@@ -519,7 +524,7 @@ public final class MSCleaningStepQueryGenerator {
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.deleteAuditsQuery.comment2");		
 		queryFormatter.addCommentLine(queryCommentLine2);
 		
-		queryFormatter.setFromTable("rif_audit_table");
+		queryFormatter.setFromTable("rif_audit_table");//KLG_SCHEMA
 		queryFormatter.addWhereParameter("data_set_id");
 		
 		return queryFormatter.generateQuery();
@@ -693,10 +698,12 @@ public final class MSCleaningStepQueryGenerator {
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "FROM");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(2, loadTableName);
+		queryFormatter.addQueryPhrase(2, "");//KLG_SCHEMA
+		queryFormatter.addQueryPhrase(loadTableName);
 		queryFormatter.addQueryPhrase(" loadTable,");
 		queryFormatter.finishLine();
-		queryFormatter.addQueryPhrase(2, searchReplaceTableName);
+		queryFormatter.addQueryPhrase(2, "");//KLG_SCHEMA
+		queryFormatter.addQueryPhrase(searchReplaceTableName);
 		queryFormatter.addQueryPhrase(" searchReplaceTable");
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "WHERE");
@@ -710,7 +717,7 @@ public final class MSCleaningStepQueryGenerator {
 		
 		//now that we've created the with table, we can use it.  
 		queryFormatter.addQueryPhrase(0, "INSERT INTO ");
-		queryFormatter.addQueryPhrase("rif_audit_table (");
+		queryFormatter.addQueryPhrase("rif_audit_table (");//KLG_SCHEMA
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryLine(1, "data_set_id,");
 		queryFormatter.addQueryLine(1, "row_number,");
@@ -755,7 +762,7 @@ public final class MSCleaningStepQueryGenerator {
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryPhrase(1, "FROM");
 			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryPhrase(2, "change_indicators");
+			queryFormatter.addQueryPhrase(2, "change_indicators");//KLG_SCHEMA
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryPhrase(1, "WHERE");			
 			queryFormatter.padAndFinishLine();
@@ -799,7 +806,7 @@ public final class MSCleaningStepQueryGenerator {
 		queryFormatter.addCommentLine(queryCommentLine3);		
 		
 		queryFormatter.addQueryPhrase(0, "INSERT INTO ");
-		queryFormatter.addQueryPhrase("rif_audit_table (");
+		queryFormatter.addQueryPhrase("rif_audit_table (");//KLG_SCHEMA
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryLine(1, "data_set_id,");
 		queryFormatter.addQueryLine(1, "row_number,");
@@ -844,7 +851,8 @@ public final class MSCleaningStepQueryGenerator {
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryPhrase(1, "FROM");
 			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryPhrase(2, cleanValidationTableName);
+			queryFormatter.addQueryPhrase(2, "");//KLG_SCHEMA
+			queryFormatter.addQueryPhrase(cleanValidationTableName);
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryPhrase(1, "WHERE");			
 			queryFormatter.padAndFinishLine();
@@ -886,7 +894,7 @@ public final class MSCleaningStepQueryGenerator {
 		queryFormatter.addCommentLine(queryCommentLine3);		
 		
 		queryFormatter.addQueryPhrase(0, "INSERT INTO ");
-		queryFormatter.addQueryPhrase("rif_audit_table (");
+		queryFormatter.addQueryPhrase("rif_audit_table (");//KLG_SCHEMA
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryLine(1, "data_set_id,");
 		queryFormatter.addQueryLine(1, "row_number,");
@@ -931,7 +939,8 @@ public final class MSCleaningStepQueryGenerator {
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryPhrase(1, "FROM");
 			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryPhrase(2, cleanValidationTableName);
+			queryFormatter.addQueryPhrase(2, "");//KLG_SCHEMA
+			queryFormatter.addQueryPhrase(cleanValidationTableName);
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryPhrase(1, "WHERE");			
 			queryFormatter.padAndFinishLine();
@@ -944,18 +953,6 @@ public final class MSCleaningStepQueryGenerator {
 		queryFormatter.finishLine();
 		return queryFormatter.generateQuery();
 	}
-	
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	/*
 	private void addWhenBlankStatement(
@@ -1094,7 +1091,8 @@ public final class MSCleaningStepQueryGenerator {
 	public String generateDropSearchReplaceTableQuery(
 		final DataSetConfiguration dataSetConfiguration) {
 
-		PGSQLDeleteTableQueryFormatter queryFormatter = new PGSQLDeleteTableQueryFormatter();
+		MSSQLDeleteTableQueryFormatter queryFormatter 
+			= new MSSQLDeleteTableQueryFormatter(false);
 		String queryCommentLine
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.dropSearchReplaceQuery.comments1");
 		queryFormatter.addCommentLine(queryCommentLine);
@@ -1171,6 +1169,7 @@ public final class MSCleaningStepQueryGenerator {
 			= dataSetConfiguration.getName();
 		String castingTableName
 			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
+		queryFormatter.addQueryPhrase("");//KLG_SCHEMA
 		queryFormatter.addQueryPhrase(castingTableName);
 		queryFormatter.addQueryPhrase(" AS ");
 		queryFormatter.finishLine();
@@ -1200,12 +1199,14 @@ public final class MSCleaningStepQueryGenerator {
 
 		String searchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_VALIDATION.getTableName(coreDataSetName);
-		queryFormatter.addQueryPhrase(2, searchReplaceTableName);
+		queryFormatter.addQueryPhrase(2, "");//KLG_SCHEMA
+		queryFormatter.addQueryPhrase(searchReplaceTableName);
 		queryFormatter.addQueryPhrase(";");
 		queryFormatter.finishLine();
 
 		//add a primary key to the new temporary table
 		queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
+		queryFormatter.addQueryPhrase("");//KLG_SCHEMA
 		queryFormatter.addQueryPhrase(castingTableName);
 		queryFormatter.addQueryPhrase(" ADD PRIMARY KEY (data_set_id, row_number);");
 		
@@ -1315,8 +1316,8 @@ public final class MSCleaningStepQueryGenerator {
 	public String generateDropCastingTableQuery(
 		final DataSetConfiguration dataSetConfiguration) {
 
-		PGSQLDeleteTableQueryFormatter queryFormatter
-			= new PGSQLDeleteTableQueryFormatter();
+		MSSQLDeleteTableQueryFormatter queryFormatter
+			= new MSSQLDeleteTableQueryFormatter(false);
 		String queryCommentLine
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.dropCastQuery.comment1");
 		queryFormatter.addCommentLine(queryCommentLine);
@@ -1324,6 +1325,8 @@ public final class MSCleaningStepQueryGenerator {
 		String cleanedTableName
 			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(
 					dataSetConfiguration.getName());
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setTableToDelete(cleanedTableName);
 		
 		return queryFormatter.generateQuery();
@@ -1342,5 +1345,3 @@ public final class MSCleaningStepQueryGenerator {
 	// ==========================================
 
 }
-
-

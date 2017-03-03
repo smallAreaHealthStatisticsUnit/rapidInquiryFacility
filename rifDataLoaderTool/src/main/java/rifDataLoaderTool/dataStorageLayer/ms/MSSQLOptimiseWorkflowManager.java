@@ -5,9 +5,9 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateIndexQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteIndexQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateIndexQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteIndexQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.sql.*;
@@ -189,8 +189,8 @@ final class MSSQLOptimiseWorkflowManager
 				 * different syntax for importing CSV files than PostgreSQL.
 				 */								
 				if (excludeFromIndexableFields(indexFieldName) == false) {					
-					PGSQLCreateIndexQueryFormatter queryFormatter
-						= new PGSQLCreateIndexQueryFormatter();
+					MSSQLCreateIndexQueryFormatter queryFormatter
+						= new MSSQLCreateIndexQueryFormatter(false);
 					queryFormatter.setIndexTable(targetTable);				
 					queryFormatter.setIndexTableField(indexFieldName);
 
@@ -207,7 +207,7 @@ final class MSSQLOptimiseWorkflowManager
 							queryFormatter);
 					statement.executeUpdate();
 				
-					PGSQLQueryUtility.close(statement);				
+					MSSQLQueryUtility.close(statement);				
 				
 				}
 			}
@@ -229,7 +229,7 @@ final class MSSQLOptimiseWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -272,8 +272,10 @@ final class MSSQLOptimiseWorkflowManager
 			
 				if (excludeFromIndexableFields(indexFieldName) == false) {					
 			
-					PGSQLDeleteIndexQueryFormatter queryFormatter
-						= new PGSQLDeleteIndexQueryFormatter();
+					MSSQLDeleteIndexQueryFormatter queryFormatter
+						= new MSSQLDeleteIndexQueryFormatter(false);
+					//KLG_SCHEMA
+					//queryFormatter.setDatabaseSchemaName("dbo");
 					queryFormatter.setIndexTable(targetTable);				
 					queryFormatter.setIndexTableField(indexFieldName);
 
@@ -290,7 +292,7 @@ final class MSSQLOptimiseWorkflowManager
 							queryFormatter);
 					statement.executeUpdate();
 				
-					PGSQLQueryUtility.close(statement);			
+					MSSQLQueryUtility.close(statement);			
 				}
 			}
 						

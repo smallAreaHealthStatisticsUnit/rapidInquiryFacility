@@ -141,7 +141,7 @@ public class MSDeletionUtility {
 		String themeToDelete = healthTheme.getName();
 		
 		MSSQLDeleteRowsQueryFormatter queryFormatter
-			= new MSSQLDeleteRowsQueryFormatter();
+			= new MSSQLDeleteRowsQueryFormatter(true);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_health_study_themes");
 		queryFormatter.addWhereParameterWithLiteralValue(
@@ -162,7 +162,7 @@ public class MSDeletionUtility {
 		
 		deleteDataSetTable(
 			queryScriptText,
-			"pop", 
+			"rif_data", 
 			denominator);		
 	}
 	
@@ -206,7 +206,7 @@ public class MSDeletionUtility {
 		String tableToDelete 
 			= dataSetConfiguration.getPublishedTableName().toUpperCase();
 		MSSQLDeleteTableQueryFormatter queryFormatter
-			= new MSSQLDeleteTableQueryFormatter();
+			= new MSSQLDeleteTableQueryFormatter(true);
 		queryFormatter.setDatabaseSchemaName(databaseSchemaName);
 		queryFormatter.setTableToDelete(tableToDelete);
 		
@@ -230,7 +230,7 @@ public class MSDeletionUtility {
 			String covariateName = covariateField.getCleanFieldName().toUpperCase();
 			
 			MSSQLDeleteRowsQueryFormatter queryFormatter
-				= new MSSQLDeleteRowsQueryFormatter();
+				= new MSSQLDeleteRowsQueryFormatter(true);
 			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.setFromTable("rif40_covariates");
 			queryFormatter.addWhereParameterWithLiteralValue(
@@ -255,7 +255,7 @@ public class MSDeletionUtility {
 		String tableToDelete
 			= dataSetConfiguration.getPublishedTableName().toUpperCase();
 		MSSQLDeleteRowsQueryFormatter queryFormatter
-			= new MSSQLDeleteRowsQueryFormatter();
+			= new MSSQLDeleteRowsQueryFormatter(true);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_tables");
 		queryFormatter.addWhereParameterWithLiteralValue(
@@ -273,7 +273,7 @@ public class MSDeletionUtility {
 		String tableToDelete
 			= numerator.getPublishedTableName().toUpperCase();
 		MSSQLDeleteRowsQueryFormatter queryFormatter
-			= new MSSQLDeleteRowsQueryFormatter();
+			= new MSSQLDeleteRowsQueryFormatter(true);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_table_outcomes");
 		queryFormatter.addWhereParameterWithLiteralValue(

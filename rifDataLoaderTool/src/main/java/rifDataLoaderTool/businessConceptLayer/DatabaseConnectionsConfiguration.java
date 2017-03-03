@@ -92,6 +92,32 @@ public class DatabaseConnectionsConfiguration {
 		return rifDatabaseConnectionParameters;
 	}
 	
+	public static DatabaseConnectionsConfiguration createDefaultPostgreSQL() {
+		DatabaseConnectionsConfiguration configuration
+			= new DatabaseConnectionsConfiguration();
+		configuration.setDatabaseType(DatabaseType.POSTGRESQL);
+		configuration.setDatabaseDriverClassName("org.postgresql.Driver");
+		configuration.setDatabaseDriverPrefix("jdbc:postgresql");
+		configuration.setDatabaseName("tmp_sahsu_db");
+		configuration.setPortName("5432");
+		configuration.setHostName("localhost");
+		
+		return configuration;
+	}
+
+	public static DatabaseConnectionsConfiguration createDefaultSQLServer() {
+		DatabaseConnectionsConfiguration configuration
+			= new DatabaseConnectionsConfiguration();
+		configuration.setDatabaseType(DatabaseType.SQL_SERVER);
+		configuration.setDatabaseDriverClassName(
+			"com.microsoft.sqlserver.jdbc.SQLServerDriver");
+		configuration.setDatabaseDriverPrefix("jdbc:sqlserver");
+		configuration.setDatabaseName("tmp_sahsu_db");
+		configuration.setPortName("1433");
+		configuration.setHostName("KEVIN_GARWOOD\\SQLEXPRESS");
+
+		return configuration;
+	}
 	
 	// ==========================================
 	// Section Accessors and Mutators
@@ -160,15 +186,31 @@ public class DatabaseConnectionsConfiguration {
 	
 	
 	public String getDatabaseURL() {
+		
 		StringBuilder urlText = new StringBuilder();
-		urlText.append(databaseDriverPrefix);
-		urlText.append(":");
-		urlText.append("//");
-		urlText.append(hostName);
-		urlText.append(":");
-		urlText.append(portName);
-		urlText.append("/");
-		urlText.append(databaseName);	
+		if (databaseType == DatabaseType.POSTGRESQL) {
+
+			urlText.append(databaseDriverPrefix);
+			urlText.append(":");
+			urlText.append("//");
+			urlText.append(hostName);
+			urlText.append(":");
+			urlText.append(portName);
+			urlText.append("/");
+			urlText.append(databaseName);
+		}
+		else {
+			urlText.append(databaseDriverPrefix);
+			urlText.append(":");
+			urlText.append("//");
+			urlText.append(hostName);
+			urlText.append(":");
+			urlText.append(portName);
+			urlText.append(";");
+			urlText.append("databaseName=");
+			urlText.append(databaseName);
+		}
+		
 		return urlText.toString();
 	}
 	

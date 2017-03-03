@@ -89,7 +89,8 @@ public final class MSSQLDeleteRowsQueryFormatter
 	/**
 	 * Instantiates a new SQL delete query formatter.
 	 */
-	public MSSQLDeleteRowsQueryFormatter() {
+	public MSSQLDeleteRowsQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		whereConditions = new ArrayList<String>();
 	}
 

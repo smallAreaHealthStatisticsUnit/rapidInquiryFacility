@@ -115,16 +115,7 @@ public class MSCovariateScriptGenerator
 
 		//The name the table will have in the schema 'pop'
 		String publishedCovariateTableName
-			= covariate.getPublishedTableName().toUpperCase();		
-		
-		/*
-		
-		//Delete table if it already exists.
-		//See caution notes in deleteTable method.
-		deleteTable(
-			covariateEntry, 
-			publishedCovariateTableName);
-		*/
+			= covariate.getPublishedTableName().toLowerCase();	
 		
 		//Identify the fields of interest
 		DataSetFieldConfiguration yearFieldConfiguration
@@ -136,7 +127,7 @@ public class MSCovariateScriptGenerator
 		
 		//Create an empty table that will be the target of the import
 		MSSQLCreateTableQueryFormatter createTableQueryFormatter
-			= new MSSQLCreateTableQueryFormatter();
+			= new MSSQLCreateTableQueryFormatter(true);
 		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		createTableQueryFormatter.setTableName(publishedCovariateTableName);
 		createTableQueryFormatter.addIntegerFieldDeclaration(
@@ -148,7 +139,6 @@ public class MSCovariateScriptGenerator
 			false);
 
 		for (DataSetFieldConfiguration covariateField : covariateFields) {
-			covariateField.print();
 			
 			RIFDataType rifDataType = covariateField.getRIFDataType();			
 			if (rifDataType == RIFDataTypeFactory.RIF_INTEGER_DATA_TYPE) {
@@ -176,7 +166,7 @@ public class MSCovariateScriptGenerator
 		}					
 		
 		String bulkInsertStatement
-			= createBulkCopyStatement(covariate);
+			= createBulkCopyStatement("rif_data", covariate);
 
 		covariateEntry.append(bulkInsertStatement);
 	}
@@ -197,7 +187,6 @@ public class MSCovariateScriptGenerator
 		//Add comments to table
 		covariateEntry.append(
 			createTableCommentQuery(
-				"rif_data",
 				publishedCovariateTableName, 
 				covariate.getDescription()));
 		covariateEntry.append(
@@ -230,9 +219,6 @@ public class MSCovariateScriptGenerator
 		final StringBuilder covariateEntry,
 		final DataSetConfiguration covariate) {
 		
-		//UPDATE t_rif40_geolevels
-		//SET covariate_table=[published covariate table name]
-		//WHERE geography=[geography] AND geolevel_name=[resolutionField.getName()
 		
 		Geography geography = covariate.getGeography();
 		DataSetFieldConfiguration resolutionFieldLevel
@@ -240,6 +226,7 @@ public class MSCovariateScriptGenerator
 		String publishedTableName
 			= covariate.getPublishedTableName();
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryLine(0, "UPDATE t_rif40_geolevels ");
 		queryFormatter.addQueryPhrase("SET covariate_table = '");
 		queryFormatter.addQueryPhrase(publishedTableName.toUpperCase());
@@ -247,7 +234,9 @@ public class MSCovariateScriptGenerator
 		queryFormatter.addQueryPhrase(geography.getName().toUpperCase());
 		queryFormatter.addQueryPhrase("' AND geolevel_name='");
 		queryFormatter.addQueryPhrase(resolutionFieldLevel.getConvertFieldName().toUpperCase());
-		queryFormatter.addQueryPhrase("'");		
+		queryFormatter.addQueryPhrase("';");	
+		queryFormatter.finishLine();
+		queryFormatter.addQueryLine(1,  "GO");
 		covariateEntry.append(queryFormatter.generateQuery());
 	}
 	
@@ -290,6 +279,7 @@ public class MSCovariateScriptGenerator
 			= covariateFieldConfiguration.getCleanFieldName().toUpperCase();		
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_covariates (");
 		queryFormatter.addQueryLine(1, "geography,");
 		queryFormatter.addQueryLine(1, "geolevel_name,");
@@ -315,7 +305,12 @@ public class MSCovariateScriptGenerator
 			queryFormatter.addQueryLine(1, "1");
 		}
 		queryFormatter.addQueryLine(0, "FROM ");
-		queryFormatter.addQueryPhrase(1, covariateTableName);
+		queryFormatter.addQueryPhrase(1, "rif_data.");
+		queryFormatter.addQueryPhrase(covariateTableName);
+		queryFormatter.addQueryPhrase(";");
+		queryFormatter.finishLine();
+		queryFormatter.addQueryLine(0, "GO");
+		
 		String query
 			= queryFormatter.generateQuery();
 		covariateEntry.append(query);	
@@ -338,15 +333,18 @@ public class MSCovariateScriptGenerator
 		
 		String indexName = publishedTableName + "_pk";
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryPhrase(0, "CREATE UNIQUE INDEX ");
 		queryFormatter.addQueryPhrase(indexName);
-		queryFormatter.addQueryPhrase(" ON ");
-		queryFormatter.addQueryPhrase(publishedTableName);		
+		queryFormatter.addQueryPhrase(" ON rif_data.");
+		queryFormatter.addQueryPhrase(publishedTableName.toLowerCase());		
 		queryFormatter.addQueryPhrase("(");
 		queryFormatter.addQueryPhrase(yearFieldName);
 		queryFormatter.addQueryPhrase(",");
 		queryFormatter.addQueryPhrase(resolutionFieldName);
-		queryFormatter.addQueryPhrase(")");
+		queryFormatter.addQueryPhrase(");");
+		queryFormatter.finishLine();
+		queryFormatter.addQueryLine(0, "GO");
 		
 		return queryFormatter.generateQuery();	
 	}

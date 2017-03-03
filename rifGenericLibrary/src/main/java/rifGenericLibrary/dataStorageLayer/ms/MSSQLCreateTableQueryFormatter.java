@@ -87,7 +87,8 @@ public final class MSSQLCreateTableQueryFormatter
 	private ArrayList<String> fieldDeclarations;
 	
 	private boolean isTemporaryTable;
-
+	private static final String DEFAULT_VAR_CHAR_LENGTH = "200";
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -95,7 +96,8 @@ public final class MSSQLCreateTableQueryFormatter
 	/**
 	 * Instantiates a new SQL insert query formatter.
 	 */
-	public MSSQLCreateTableQueryFormatter() {
+	public MSSQLCreateTableQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		fieldDeclarations = new ArrayList<String>();
 	}
 
@@ -172,11 +174,13 @@ public final class MSSQLCreateTableQueryFormatter
 		
 		StringBuilder textFieldType = new StringBuilder();
 		
-		textFieldType.append("NVARCHAR(MAX)");
+		textFieldType.append("NVARCHAR");
+
+		//textFieldType.append("NVARCHAR(DEFAULT_VAR_CHAR_LENGTH)");
 		if (textFieldLength > 0 ) {
 			textFieldType.append("("+textFieldLength+")");
 		} else {
-			textFieldType.append("(MAX)");		
+			textFieldType.append("(" + DEFAULT_VAR_CHAR_LENGTH +")");		
 		}
 		
 		addFieldDeclaration(

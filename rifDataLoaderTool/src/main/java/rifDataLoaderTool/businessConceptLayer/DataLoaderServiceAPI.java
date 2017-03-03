@@ -70,9 +70,10 @@ import java.util.ArrayList;
  */
 
 public interface DataLoaderServiceAPI {
-	public void initialiseService(final DataLoaderToolConfiguration dataLoaderToolConfiguration)
+	public void initialiseService(
+		final DatabaseConnectionsConfiguration dbParameters)
 		throws RIFServiceException;
-	
+
 	public void login(
 		final String userID,
 		final String password)

@@ -483,7 +483,7 @@ class PopulationHealthDataLoaderDialog
 			DataLoaderToolConfiguration dataLoaderToolConfiguration
 				= session.getDataLoaderToolConfiguration();
 			
-			dataLoaderService.initialiseService(dataLoaderToolConfiguration);	
+			dataLoaderService.initialiseService(dataLoaderToolConfiguration.getDatabaseConnectionConfiguration());	
 
 			LinearWorkflowEnactor linearWorkflowEnactor
 				= new LinearWorkflowEnactor(

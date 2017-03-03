@@ -4,16 +4,9 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 
-
-
-
-
-
-
-
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreatePrimaryKeyQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreatePrimaryKeyQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
 
 import java.util.ArrayList;
 
@@ -154,8 +147,10 @@ public class MSSQLDataTypeSearchReplaceUtility {
 		queryFormatter.addCommentLine(queryCommentLine2);
 		
 		//delete any version of the same table
-		PGSQLDeleteTableQueryFormatter deleteQueryFormatter
-			= new PGSQLDeleteTableQueryFormatter();
+		MSSQLDeleteTableQueryFormatter deleteQueryFormatter
+			= new MSSQLDeleteTableQueryFormatter(false);
+		//KLG_SCHEMA
+		//deleteQueryFormatter.setDatabaseSchemaName("dbo");
 		deleteQueryFormatter.setTableToDelete(cleanSearchReplaceTableName);
 		queryFormatter.addQueryPhrase(deleteQueryFormatter.generateQuery());
 		
@@ -182,8 +177,8 @@ public class MSSQLDataTypeSearchReplaceUtility {
 		queryFormatter.addQuery(createValidationCTASQueryFormatter);
 				
 		//Add primary key statement
-		PGSQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
-			= new PGSQLCreatePrimaryKeyQueryFormatter();
+		MSSQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
+			= new MSSQLCreatePrimaryKeyQueryFormatter(false);
 		createPrimaryKeyQueryFormatter.setTable(cleanSearchReplaceTableName);
 		createPrimaryKeyQueryFormatter.setPrimaryKeyPhrase("data_set_id, row_number");
 		queryFormatter.addQuery(createPrimaryKeyQueryFormatter);

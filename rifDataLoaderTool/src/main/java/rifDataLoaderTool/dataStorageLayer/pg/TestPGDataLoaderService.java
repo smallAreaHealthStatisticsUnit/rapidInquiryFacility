@@ -1,5 +1,6 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
+import rifDataLoaderTool.businessConceptLayer.TestDataLoaderServiceAPI;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -58,7 +59,8 @@ import java.sql.Connection;
  */
 
 public class TestPGDataLoaderService 
-	extends AbstractPGSQLDataLoaderService {
+	extends AbstractPGSQLDataLoaderService 
+	implements TestDataLoaderServiceAPI {
 
 	// ==========================================
 	// Section Constants

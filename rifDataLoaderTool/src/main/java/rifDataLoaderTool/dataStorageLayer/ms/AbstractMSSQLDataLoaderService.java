@@ -16,7 +16,7 @@ import java.io.*;
 import java.nio.file.*;
 
 /**
- * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.pg.AbstractPGSQLDataLoaderService}.
+ * Main implementation of the {@link rifDataLoaderTool.dataStorageLayer.pg.AbstractMSSQLDataLoaderService}.
  * Almost every method in this class has the following common steps:
  * <ol>
  * <li>
@@ -111,7 +111,7 @@ abstract class AbstractMSSQLDataLoaderService
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private DataLoaderToolConfiguration dataLoaderToolConfiguration;
+	//private DataLoaderToolConfiguration dataLoaderToolConfiguration;
 	
 	private MSSQLConnectionManager sqlConnectionManager;
 		
@@ -178,13 +178,14 @@ abstract class AbstractMSSQLDataLoaderService
 			= new MSSQLReportManager();
 	}
 	
-	public void initialiseService(final DataLoaderToolConfiguration dataLoaderToolConfiguration) 
+	public void initialiseService(
+		final DatabaseConnectionsConfiguration dbParameters) 
 		throws RIFServiceException {
 
-		this.dataLoaderToolConfiguration = dataLoaderToolConfiguration;
-		DatabaseConnectionsConfiguration dbParameters
-			= dataLoaderToolConfiguration.getDatabaseConnectionConfiguration();
-		
+		String databaseDriverClassName
+			= dbParameters.getDatabaseDriverClassName();
+		dbParameters.setDatabaseDriverClassName(databaseDriverClassName);
+
 		sqlConnectionManager
 			= new MSSQLConnectionManager(
 				dbParameters.getDatabaseURL());

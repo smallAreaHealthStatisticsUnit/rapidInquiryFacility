@@ -154,6 +154,7 @@ public class WorkflowValidator {
 		WorkflowState expectedStartStateOfDataSets
 			= linearWorkflow.getStartWorkflowState();
 		if (commonWorkflowState != expectedStartStateOfDataSets) {
+			System.out.println("Print common=="+commonWorkflowState.getStateName() + "==expected=="+ expectedStartStateOfDataSets.getStateName()+"==");
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"workflowValidator.error.workflowAndDataSetsNeedSameStartingState",

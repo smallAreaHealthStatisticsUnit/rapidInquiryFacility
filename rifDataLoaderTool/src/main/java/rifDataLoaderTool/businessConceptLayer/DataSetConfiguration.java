@@ -478,6 +478,21 @@ public class DataSetConfiguration
 		
 	}
 	
+	public void deleteField(final String convertFieldName) {
+	
+		int numberOfFieldConfigurations = fieldConfigurations.size();
+		for (int i = 0; i < numberOfFieldConfigurations; i++) {
+			DataSetFieldConfiguration fieldConfiguration
+				= fieldConfigurations.get(i);
+			String currentConvertFieldName
+				= fieldConfiguration.getConvertFieldName();
+			if (currentConvertFieldName.equals(convertFieldName)) {
+				fieldConfigurations.remove(i);
+				break;
+			}
+		}		
+	}
+	
 	public void setFieldConfigurations(
 		final ArrayList<DataSetFieldConfiguration> fieldConfigurations) {
 		

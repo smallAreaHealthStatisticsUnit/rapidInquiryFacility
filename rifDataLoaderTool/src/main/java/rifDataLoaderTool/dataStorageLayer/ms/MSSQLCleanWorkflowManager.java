@@ -8,9 +8,9 @@ import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCountQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLCountQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 
@@ -123,7 +123,7 @@ final public class MSSQLCleanWorkflowManager
 				sqlException);
 		}
 		finally {
-			PGSQLQueryUtility.close(connection);
+			MSSQLQueryUtility.close(connection);
 		}
 		return resultTable;
 	}
@@ -327,9 +327,9 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(searchReplaceStatement);
-			PGSQLQueryUtility.close(validationStatement);
-			PGSQLQueryUtility.close(castingStatement);
+			MSSQLQueryUtility.close(searchReplaceStatement);
+			MSSQLQueryUtility.close(validationStatement);
+			MSSQLQueryUtility.close(castingStatement);
 		}
 		
 	}
@@ -340,7 +340,10 @@ final public class MSSQLCleanWorkflowManager
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 		
-		PGSQLCountQueryFormatter queryFormatter = new PGSQLCountQueryFormatter();
+		MSSQLCountQueryFormatter queryFormatter 
+			= new MSSQLCountQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setCountField("data_source_id");
 		queryFormatter.addFromTable("rif_audit_table");
 		queryFormatter.addWhereParameter("data_source_id");
@@ -385,8 +388,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -399,7 +402,10 @@ final public class MSSQLCleanWorkflowManager
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 		
-		PGSQLCountQueryFormatter queryFormatter = new PGSQLCountQueryFormatter();
+		MSSQLCountQueryFormatter queryFormatter 
+			= new MSSQLCountQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setCountField("data_source_id");
 		queryFormatter.addFromTable("rif_audit_table");
 		queryFormatter.addWhereParameter("data_source_id");
@@ -441,8 +447,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -454,7 +460,10 @@ final public class MSSQLCleanWorkflowManager
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 	
-		PGSQLCountQueryFormatter queryFormatter = new PGSQLCountQueryFormatter();
+		MSSQLCountQueryFormatter queryFormatter 
+			= new MSSQLCountQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setCountField("data_source_id");
 		queryFormatter.addFromTable("rif_audit_table");
 		queryFormatter.addWhereParameter("data_source_id");
@@ -497,8 +506,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -512,7 +521,10 @@ final public class MSSQLCleanWorkflowManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 				
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter 
+			= new MSSQLSelectQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.addSelectField("data_source_id");
 		queryFormatter.addFromTable("rif_audit_table");
 		queryFormatter.addWhereParameter("data_source_id");
@@ -560,8 +572,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -575,7 +587,10 @@ final public class MSSQLCleanWorkflowManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 	
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter 
+			= new MSSQLSelectQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.addSelectField("data_source_id");
 		queryFormatter.addFromTable("rif_audit_table");
 		queryFormatter.addWhereParameter("data_source_id");
@@ -624,8 +639,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
 		}		
 		
 		return result;
@@ -640,7 +655,10 @@ final public class MSSQLCleanWorkflowManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 		
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter 
+			= new MSSQLSelectQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.addSelectField("data_source_id");
 		queryFormatter.addFromTable("rif_audit_table");
 		queryFormatter.addWhereParameter("data_source_id");
@@ -687,8 +705,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
 		}		
 		
 		return result;

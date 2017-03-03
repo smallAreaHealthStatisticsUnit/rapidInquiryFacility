@@ -84,7 +84,8 @@ public final class MSSQLDeleteTableQueryFormatter
 	/**
 	 * Instantiates a new SQL delete table query formatter.
 	 */
-	public MSSQLDeleteTableQueryFormatter() {
+	public MSSQLDeleteTableQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		setEndWithSemiColon(false);
 	}
 
@@ -110,10 +111,12 @@ public final class MSSQLDeleteTableQueryFormatter
 		
 		//test whether table already exists?
 		
+		String databaseSchemaName
+			= getDatabaseSchemaName();
 		String tableName 
-			= getSchemaTableName(tableToDelete);		
-		
+			= getSchemaTableName(tableToDelete);	
 		addQueryPhrase(0, "IF OBJECT_ID('");
+		
 		addQueryPhrase(tableName.toLowerCase());
 		addQueryPhrase("', 'U') IS NOT NULL DROP TABLE ");
 		addQueryPhrase(tableName);

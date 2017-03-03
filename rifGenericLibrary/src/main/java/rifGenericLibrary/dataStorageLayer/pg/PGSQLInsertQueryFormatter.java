@@ -185,6 +185,7 @@ public final class PGSQLInsertQueryFormatter
 			}
 			addQueryPhrase(1, insertFields.get(i).trim());			
 		}
+
 		addQueryPhrase(")");
 		padAndFinishLine();
 		addQueryPhrase(0, "VALUES (");

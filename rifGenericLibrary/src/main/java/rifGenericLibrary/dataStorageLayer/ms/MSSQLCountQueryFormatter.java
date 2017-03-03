@@ -103,8 +103,10 @@ public final class MSSQLCountQueryFormatter
 	/**
 	 * Instantiates a new SQL count query formatter.
 	 */
-	public MSSQLCountQueryFormatter() {
+	public MSSQLCountQueryFormatter(
+		final boolean useGoCommand) {
 
+		super(useGoCommand);
 		useDistinct = false;
 		fromTables = new ArrayList<String>();
 		whereConditions = new ArrayList<String>();

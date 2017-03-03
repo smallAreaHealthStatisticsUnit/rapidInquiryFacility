@@ -136,7 +136,6 @@ public class PGCovariateScriptGenerator
 			false);
 
 		for (DataSetFieldConfiguration covariateField : covariateFields) {
-			covariateField.print();
 			
 			RIFDataType rifDataType = covariateField.getRIFDataType();			
 			if (rifDataType == RIFDataTypeFactory.RIF_INTEGER_DATA_TYPE) {
@@ -317,7 +316,7 @@ public class PGCovariateScriptGenerator
 		final DataSetConfiguration covariate) {
 
 		String publishedTableName
-			= covariate.getPublishedTableName().toUpperCase();
+			= covariate.getPublishedTableName().toLowerCase();
 		DataSetFieldConfiguration yearFieldConfiguration
 			= DataSetConfigurationUtility.getRequiredYearField(covariate);
 		String yearFieldName
@@ -332,7 +331,7 @@ public class PGCovariateScriptGenerator
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "CREATE UNIQUE INDEX ");
 		queryFormatter.addQueryPhrase(indexName);
-		queryFormatter.addQueryPhrase(" ON ");
+		queryFormatter.addQueryPhrase(" ON rif_data.");
 		queryFormatter.addQueryPhrase(publishedTableName);		
 		queryFormatter.addQueryPhrase("(");
 		queryFormatter.addQueryPhrase(yearFieldName);

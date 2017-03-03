@@ -103,8 +103,8 @@ public final class MSSQLRecordExistsQueryFormatter
 	/**
 	 * Instantiates a new SQL record exists query formatter.
 	 */
-	public MSSQLRecordExistsQueryFormatter() {
-		
+	public MSSQLRecordExistsQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		whereConditions = new ArrayList<String>();
 	}
 

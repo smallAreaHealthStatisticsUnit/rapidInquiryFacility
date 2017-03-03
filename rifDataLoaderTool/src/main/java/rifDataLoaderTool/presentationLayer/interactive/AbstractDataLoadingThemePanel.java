@@ -16,7 +16,8 @@ import java.util.*;
 
 /**
  *
- *
+ * The class is meant to support common properties for the GUI components
+ * that support each of the Data Loader Tool's main sections.  
  * <hr>
  * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 

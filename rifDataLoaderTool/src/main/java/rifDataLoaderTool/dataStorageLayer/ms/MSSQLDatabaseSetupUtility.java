@@ -4,9 +4,9 @@ import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
 import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateDatabaseQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDropDatabaseQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateDatabaseQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDropDatabaseQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 import java.io.*;
@@ -165,8 +165,8 @@ public class MSSQLDatabaseSetupUtility {
 				System.out.println("Database does not exist yet");
 			}
 			
-			PGSQLDropDatabaseQueryFormatter dropDatabaseQueryFormatter
-				= new PGSQLDropDatabaseQueryFormatter();
+			MSSQLDropDatabaseQueryFormatter dropDatabaseQueryFormatter
+				= new MSSQLDropDatabaseQueryFormatter(false);
 			dropDatabaseQueryFormatter.setDatabaseName(dbParameters.getDatabaseName());
 			System.out.println(dropDatabaseQueryFormatter.generateQuery());
 			dropDatabaseStatement 
@@ -174,8 +174,8 @@ public class MSSQLDatabaseSetupUtility {
 					dropDatabaseQueryFormatter.generateQuery());
 			dropDatabaseStatement.executeUpdate();
 
-			PGSQLCreateDatabaseQueryFormatter createDatabaseQueryFormatter
-				= new PGSQLCreateDatabaseQueryFormatter();
+			MSSQLCreateDatabaseQueryFormatter createDatabaseQueryFormatter
+				= new MSSQLCreateDatabaseQueryFormatter(false);
 			createDatabaseQueryFormatter.setDatabaseName(dbParameters.getDatabaseName());
 			System.out.println(createDatabaseQueryFormatter.generateQuery());
 			createDatabaseStatement
@@ -184,9 +184,9 @@ public class MSSQLDatabaseSetupUtility {
 			createDatabaseStatement.executeUpdate();	
 		}
 		finally {
-			PGSQLQueryUtility.close(createDatabaseStatement);
-			PGSQLQueryUtility.close(dropDatabaseStatement);
-			PGSQLQueryUtility.close(connection);
+			MSSQLQueryUtility.close(createDatabaseStatement);
+			MSSQLQueryUtility.close(dropDatabaseStatement);
+			MSSQLQueryUtility.close(connection);
 		}
 	}
 	
@@ -271,7 +271,7 @@ public class MSSQLDatabaseSetupUtility {
 			statement.executeUpdate();
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);			
+			MSSQLQueryUtility.close(statement);			
 		}		
 	}
 	
@@ -333,7 +333,7 @@ public class MSSQLDatabaseSetupUtility {
 			statement.executeUpdate();
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);			
+			MSSQLQueryUtility.close(statement);			
 		}				
 	}
 	
@@ -371,7 +371,7 @@ public class MSSQLDatabaseSetupUtility {
 			}			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 	}
 	
@@ -413,12 +413,12 @@ public class MSSQLDatabaseSetupUtility {
 		 * but perhaps DROP IF EXISTS is something that presents a porting
 		 * issue.
 		 */		
-		PGSQLDropDatabaseQueryFormatter dropDatabaseQueryFormatter
-			= new PGSQLDropDatabaseQueryFormatter();
+		MSSQLDropDatabaseQueryFormatter dropDatabaseQueryFormatter
+			= new MSSQLDropDatabaseQueryFormatter(false);
 		dropDatabaseQueryFormatter.setDatabaseName(dbParameters.getDatabaseName());
 
-		PGSQLCreateDatabaseQueryFormatter createDatabaseQueryFormatter
-			= new PGSQLCreateDatabaseQueryFormatter();
+		MSSQLCreateDatabaseQueryFormatter createDatabaseQueryFormatter
+			= new MSSQLCreateDatabaseQueryFormatter(false);
 		createDatabaseQueryFormatter.setDatabaseName(dbParameters.getDatabaseName());
 
 		PreparedStatement dropDatabaseStatement = null;

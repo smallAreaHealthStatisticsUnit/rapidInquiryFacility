@@ -8,8 +8,15 @@ import rifGenericLibrary.system.RIFServiceException;
 import java.util.ArrayList;
 
 /**
- *
- *
+ * Centralises validation checks for each of denominator, numerator and
+ * covariate data sets.  Often they are checking that either a required 
+ * field exists, or that there is one or more fields that serve a specific
+ * purpose.  The validation routines are activated whenever a RIF manager
+ * tries to save the changes that are made to the way they define an 
+ * imported data set in the 
+ * {@link rifDataLoaderTool.presentationLayer.interactive.DataSetConfigurationEditorDialog}
+ * dialog.  
+ * 
  * <hr>
  * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 

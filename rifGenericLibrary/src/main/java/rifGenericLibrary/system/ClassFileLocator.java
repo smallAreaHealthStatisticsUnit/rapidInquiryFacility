@@ -97,7 +97,6 @@ public class ClassFileLocator {
 		
 		String targetClassesEntry = null;
     	for (String classPathEntry : classPathEntries) {
-    		System.out.println("CE=="+classPathEntry+"==targetPath=="+targetPath+"==");
     		if (classPathEntry.endsWith(pathToFind.toString())) {
     			targetClassesEntry = classPathEntry;
     			break;

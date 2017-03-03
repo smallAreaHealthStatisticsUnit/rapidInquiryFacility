@@ -3,7 +3,6 @@ package rifDataLoaderTool.dataStorageLayer;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.targetDBScriptGenerator.*;
 import rifDataLoaderTool.targetDBScriptGenerator.pg.PGDataLoadingScriptGenerator;
 import rifDataLoaderTool.targetDBScriptGenerator.ms.MSDataLoadingScriptGenerator;
 

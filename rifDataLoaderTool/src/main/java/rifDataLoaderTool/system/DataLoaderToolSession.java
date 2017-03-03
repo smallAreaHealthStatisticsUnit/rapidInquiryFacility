@@ -106,8 +106,8 @@ public class DataLoaderToolSession {
 	
 	public void initialiseService() 
 		throws RIFServiceException {
-
-		dataLoaderService.initialiseService(dataLoaderToolConfiguration);		
+		System.out.println("Data Loader Service 1");
+		dataLoaderService.initialiseService(dataLoaderToolConfiguration.getDatabaseConnectionConfiguration());		
 	}
 	
 	public UserInterfaceFactory getUserInterfaceFactory() {

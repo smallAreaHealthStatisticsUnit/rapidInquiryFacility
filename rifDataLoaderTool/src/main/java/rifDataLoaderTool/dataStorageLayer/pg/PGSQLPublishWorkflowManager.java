@@ -1,11 +1,9 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
@@ -150,6 +148,12 @@ final class PGSQLPublishWorkflowManager
 				if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
 					DataSetFieldConfiguration healthCodeField
 						= DataSetConfigurationUtility.getHealthCodeField(dataSetConfiguration);
+					if (healthCodeField == null) {
+						System.out.println("health code field was NULL");
+					}
+					else {
+						System.out.println("health code field was NOT NULL");						
+					}
 					queryFormatter.addQueryLine(2, healthCodeField.getConvertFieldName()+ ",");
 				}
 				queryFormatter.addQueryLine(2, "total");			

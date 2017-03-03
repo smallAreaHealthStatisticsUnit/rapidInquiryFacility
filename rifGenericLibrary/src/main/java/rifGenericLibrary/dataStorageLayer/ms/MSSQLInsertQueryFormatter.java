@@ -82,6 +82,9 @@ public final class MSSQLInsertQueryFormatter
 	/** The insert fields. */
 	private ArrayList<String> insertFields;
 
+	private ArrayList<Boolean> useQuotesForLiteral;
+
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -89,8 +92,10 @@ public final class MSSQLInsertQueryFormatter
 	/**
 	 * Instantiates a new SQL insert query formatter.
 	 */
-	public MSSQLInsertQueryFormatter() {
+	public MSSQLInsertQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		insertFields = new ArrayList<String>();
+		useQuotesForLiteral = new ArrayList<Boolean>();		
 	}
 
 	// ==========================================
@@ -119,12 +124,23 @@ public final class MSSQLInsertQueryFormatter
 		insertFields.add(insertField);
 	}
 	
+	public void addInsertField(
+		final String insertField,
+		final Boolean useQuotes) {
+				
+		insertFields.add(insertField);
+		useQuotesForLiteral.add(useQuotes);
+	}
+		
+	
 	@Override
+	
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
 		addQueryPhrase(0, "INSERT INTO ");
 		addQueryPhrase(getSchemaTableName(intoTable));
 		addQueryPhrase("(");
+		padAndFinishLine();
 
 		int numberOfInsertFields = insertFields.size();
 		for (int i = 0; i < numberOfInsertFields; i++) {
@@ -144,8 +160,57 @@ public final class MSSQLInsertQueryFormatter
 			addQueryPhrase("?");			
 		}
 
-		addQueryPhrase(")");
+		addQueryPhrase(");");
+		finishLine();
+		
+		return super.generateQuery();		
+	}
+
 	
+	public String generateQueryWithLiterals(
+		final String... literalValues) {
+		
+		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "INSERT INTO ");
+		addQueryPhrase(getSchemaTableName(intoTable));
+		addQueryPhrase("(");
+		padAndFinishLine();
+
+		int numberOfInsertFields = insertFields.size();
+		for (int i = 0; i < numberOfInsertFields; i++) {
+			if (i != 0) {
+				addQueryPhrase(",");
+				finishLine();
+			}
+			addQueryPhrase(1, insertFields.get(i).trim());			
+		}
+
+		addQueryPhrase(")");
+		padAndFinishLine();
+		addQueryPhrase(0, "VALUES (");
+		for (int i = 0; i < numberOfInsertFields; i++) {
+			if (i != 0) {
+				addQueryPhrase(",");
+			}
+			
+			if (literalValues[i] == null) {
+				addQueryPhrase("null");				
+			}
+			else {
+				if (useQuotesForLiteral.get(i) == true) {
+					addQueryPhrase("'");
+					addQueryPhrase(literalValues[i]);
+					addQueryPhrase("'");					
+				}
+				else {
+					addQueryPhrase(literalValues[i]);
+				}
+			}
+		}
+
+		addQueryPhrase(")");
+		//finishLine();
+		
 		return super.generateQuery();		
 	}
 	

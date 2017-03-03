@@ -4,16 +4,9 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 
-
-
-
-
-
-
-
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreatePrimaryKeyQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreatePrimaryKeyQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
 
 import java.util.ArrayList;
 
@@ -153,8 +146,8 @@ public class MSSQLDataTypeValidationUtility {
 		queryFormatter.addCommentLine(queryCommentLine2);
 		
 		//delete any version of the same table
-		PGSQLDeleteTableQueryFormatter deleteQueryFormatter
-			= new PGSQLDeleteTableQueryFormatter();
+		MSSQLDeleteTableQueryFormatter deleteQueryFormatter
+			= new MSSQLDeleteTableQueryFormatter(false);
 		deleteQueryFormatter.setTableToDelete(cleanValidationTableName);
 		queryFormatter.addQueryPhrase(deleteQueryFormatter.generateQuery());
 		queryFormatter.finishLine();
@@ -179,8 +172,8 @@ public class MSSQLDataTypeValidationUtility {
 		queryFormatter.addQuery(createValidationCTASQueryFormatter);
 				
 		//Add primary key statement
-		PGSQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
-			= new PGSQLCreatePrimaryKeyQueryFormatter();
+		MSSQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
+			= new MSSQLCreatePrimaryKeyQueryFormatter(false);
 		createPrimaryKeyQueryFormatter.setTable(cleanValidationTableName);
 		createPrimaryKeyQueryFormatter.setPrimaryKeyPhrase("data_set_id, row_number");
 		queryFormatter.addQuery(createPrimaryKeyQueryFormatter);
@@ -331,7 +324,7 @@ public class MSSQLDataTypeValidationUtility {
 				queryFormatter.addQueryPhrase(validationRules.get(0).getValidValue());
 				queryFormatter.addQueryPhrase("'");
 			}
-			queryFormatter.addQueryPhrase(") THEN ");
+			queryFormatter.addQueryPhrase(") = 1 THEN ");
 			queryFormatter.addQueryPhrase(loadFieldName);
 			queryFormatter.padAndFinishLine();
 				

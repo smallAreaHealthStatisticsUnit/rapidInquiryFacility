@@ -5,11 +5,11 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -100,7 +100,10 @@ final public class MSSQLDataSetManager
 		ResultSet resultSet = null;
 		PreparedStatement statement = null;
 		try {
-			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter 
+				= new MSSQLSelectQueryFormatter(false);
+			//KLG_SCHEMA
+			//queryFormatter.setDatabaseSchemaName("dbo");
 			queryFormatter.addSelectField("id");
 			queryFormatter.addFromTable("data_set_configurations");
 			queryFormatter.addWhereParameter("core_data_set_name");
@@ -138,8 +141,8 @@ final public class MSSQLDataSetManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
 		}
 	}
 
@@ -192,11 +195,13 @@ final public class MSSQLDataSetManager
 		PreparedStatement getIdentifierStatement = null;		
 		PreparedStatement addDataSetStatement = null;
 		ResultSet resultSet = null;
-		PGSQLInsertQueryFormatter addDataSetQueryFormatter
-			= new PGSQLInsertQueryFormatter();		
+		MSSQLInsertQueryFormatter addDataSetQueryFormatter
+			= new MSSQLInsertQueryFormatter(false);		
 		
 		SQLGeneralQueryFormatter getIdentifierQueryFormatter
 			= new SQLGeneralQueryFormatter();
+		//KLG_SCHEMA
+		//getIdentifierQueryFormatter.setDatabaseSchemaName("dbo");
 		
 		try {
 			addDataSetQueryFormatter.setIntoTable("data_set_configurations");
@@ -220,7 +225,7 @@ final public class MSSQLDataSetManager
 			 * SQL Server?
 			 */				
 			addDataSetStatement.executeUpdate();
-			getIdentifierQueryFormatter.addQueryPhrase(0, "SELECT CURRVAL('data_set_sequence');");
+			getIdentifierQueryFormatter.addQueryPhrase(0, "SELECT IDENT_CURRENT('dbo.data_set_configurations');");
 			getIdentifierStatement
 				= createPreparedStatement(
 					connection, 
@@ -245,9 +250,9 @@ final public class MSSQLDataSetManager
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(addDataSetStatement);			
-			PGSQLQueryUtility.close(getIdentifierStatement);			
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(addDataSetStatement);			
+			MSSQLQueryUtility.close(getIdentifierStatement);			
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		return result;
@@ -259,8 +264,10 @@ final public class MSSQLDataSetManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 	
-		PGSQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
-			= new PGSQLDeleteRowsQueryFormatter();
+		MSSQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
+			= new MSSQLDeleteRowsQueryFormatter(false);
+		//KLG_SCHEMA
+		//deleteDataSetStatementQueryFormatter.setDatabaseSchemaName("");
 		deleteDataSetStatementQueryFormatter.setFromTable("data_set_configurations");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("core_data_set_name");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("version");
@@ -297,7 +304,7 @@ final public class MSSQLDataSetManager
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(deleteDataSetConfigurationStatement);
+			MSSQLQueryUtility.close(deleteDataSetConfigurationStatement);
 		}
 		
 	}
@@ -309,8 +316,10 @@ final public class MSSQLDataSetManager
 		throws RIFServiceException {
 				
 		PreparedStatement statement = null;
-		PGSQLRecordExistsQueryFormatter queryFormatter
-			= new PGSQLRecordExistsQueryFormatter();
+		MSSQLRecordExistsQueryFormatter queryFormatter
+			= new MSSQLRecordExistsQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setFromTable("data_set_configurations");
 		queryFormatter.setLookupKeyFieldName("core_data_set_name");
 		queryFormatter.addWhereParameter("version");
@@ -355,7 +364,10 @@ final public class MSSQLDataSetManager
 		throws RIFServiceException {
 
 		//Create SQL query
-		PGSQLDeleteRowsQueryFormatter queryFormatter = new PGSQLDeleteRowsQueryFormatter();
+		MSSQLDeleteRowsQueryFormatter queryFormatter 
+			= new MSSQLDeleteRowsQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setFromTable("data_set_configurations");
 
 		PreparedStatement statement = null;
@@ -376,7 +388,7 @@ final public class MSSQLDataSetManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}		
 	}
 	

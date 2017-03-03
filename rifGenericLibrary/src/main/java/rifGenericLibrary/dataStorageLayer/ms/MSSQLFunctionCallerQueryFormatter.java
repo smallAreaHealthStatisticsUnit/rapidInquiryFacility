@@ -102,7 +102,9 @@ public final class MSSQLFunctionCallerQueryFormatter
 	/**
 	 * Instantiates a new SQL select query formatter.
 	 */
-	public MSSQLFunctionCallerQueryFormatter() {
+	public MSSQLFunctionCallerQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
+		
 		useDistinct = false;
 		selectFields = new ArrayList<String>();
 		whereConditions = new ArrayList<String>();

@@ -122,8 +122,10 @@ public final class MSSQLAggregateValueQueryFormatter
 	 * @param operationType the operation type
 	 */
 	public MSSQLAggregateValueQueryFormatter(
+		final boolean useGoCommand,
 		final OperationType operationType) {
 		
+		super(useGoCommand);
 		this.operationType = operationType;
 		whereConditions = new ArrayList<String>();
 	}

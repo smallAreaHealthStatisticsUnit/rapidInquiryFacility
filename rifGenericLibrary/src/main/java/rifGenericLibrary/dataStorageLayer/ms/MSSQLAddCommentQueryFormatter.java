@@ -70,7 +70,8 @@ public class MSSQLAddCommentQueryFormatter extends AbstractMSSQLQueryFormatter {
 	// Section Construction
 	// ==========================================
 
-	public MSSQLAddCommentQueryFormatter() {
+	public MSSQLAddCommentQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		comment = "";		
 	}
 

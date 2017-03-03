@@ -1,12 +1,19 @@
 package rifDataLoaderTool.test;
 
 import rifDataLoaderTool.dataStorageLayer.pg.TestPGDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.ms.TestMSDataLoaderService;
+
+
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
+import rifDataLoaderTool.businessConceptLayer.TestDataLoaderServiceAPI;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.ClassFileLocator;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 
 import org.junit.After;
 import org.junit.Before;
@@ -70,16 +77,16 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
 	// ==========================================
 	// Section Properties
 	// ==========================================
 	
 	private User rifManager;
-	
+	public static DatabaseType databaseType = DatabaseType.POSTGRESQL;
+		
 	private File exportDirectory;
 	
-	private TestPGDataLoaderService dataLoaderService;
+	private TestDataLoaderServiceAPI dataLoaderService;
 
 	/** The test user. */
 	private User validAdministrationUser;
@@ -94,14 +101,29 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	
 	/** The malicious user. */
 	private User maliciousAdministrationUser;
+
+	private String testFileDirectoryPath;
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
+	
 	public AbstractRIFDataLoaderTestCase() {
+		init(DatabaseType.POSTGRESQL);		
+	}
+	
+	public AbstractRIFDataLoaderTestCase(final DatabaseType databaseType) {
+		this.databaseType = databaseType;
+		init(databaseType);
+	}
 
-		exportDirectory = new File("C://rif_scratch");
+	private void init(final DatabaseType databaseType) {
+
+		testFileDirectoryPath 
+			= ClassFileLocator.getClassRootLocation("rifDataLoaderTool");
+		exportDirectory = new File(testFileDirectoryPath);
+
 		validAdministrationUser = User.newInstance("kgarwood", "11.111.11.228");
 		nonExistentAdministrationUser = User.newInstance("nobody", "11.111.11.228");
 		emptyAdministrationUser = User.newInstance(null, "11.111.11.228");
@@ -115,18 +137,43 @@ public abstract class AbstractRIFDataLoaderTestCase {
 		
 		rifManager = User.newInstance("kgarwood", "111.111.111.111");		
 	}
+	
+	protected String getTestFilePath(final String fileName) {
+		StringBuilder filePath = new StringBuilder();
+		filePath.append(testFileDirectoryPath);
+		filePath.append(File.separator);
+		filePath.append(fileName);
+		return filePath.toString();		
+	}
 
 	@Before
 	public void setUp() {
-		dataLoaderService = new TestPGDataLoaderService();
-		try {
-			DataLoaderToolConfiguration dataLoaderToolConfiguration
-				= DataLoaderToolConfiguration.newInstance();
-			dataLoaderService.initialiseService(dataLoaderToolConfiguration);	
-			dataLoaderService.clearAllDataSets(rifManager, null);
+		if (databaseType == DatabaseType.POSTGRESQL) {
+			System.out.println("Running a Postgres service");
+			dataLoaderService = new TestPGDataLoaderService();
+			try {
+				DatabaseConnectionsConfiguration connectionsConfiguration
+					= DatabaseConnectionsConfiguration.createDefaultPostgreSQL();
+				System.out.println("AbstractRIFDLTestCase databaseURL=="+ connectionsConfiguration.getDatabaseURL());
+				dataLoaderService.initialiseService(connectionsConfiguration);	
+				dataLoaderService.clearAllDataSets(rifManager, null);
+			}
+			catch(RIFServiceException rifServiceException) {
+				rifServiceException.printErrors();
+			}		
 		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
+		else {
+			System.out.println("Running an SQL Server service");
+			dataLoaderService = new TestMSDataLoaderService();
+			try {
+				DatabaseConnectionsConfiguration connectionsConfiguration
+					= DatabaseConnectionsConfiguration.createDefaultSQLServer();
+				dataLoaderService.initialiseService(connectionsConfiguration);	
+				dataLoaderService.clearAllDataSets(rifManager, null);
+			}
+			catch(RIFServiceException rifServiceException) {
+				rifServiceException.printErrors();
+			}
 		}
 	}
 
@@ -155,7 +202,7 @@ public abstract class AbstractRIFDataLoaderTestCase {
 		return rifManager;		
 	}
 	
-	protected TestPGDataLoaderService getDataLoaderService() {
+	protected TestDataLoaderServiceAPI getDataLoaderService() {
 
 		return dataLoaderService;
 	}

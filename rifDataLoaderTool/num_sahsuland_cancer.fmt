@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- MS SQL Server bulk load format files.  The insistence on quotes excludes the header row -->
+<RECORD><FIELD ID="1" xsi-type="CharTerm" TERMINATOR=',' />
+<FIELD ID="2" xsi-type="CharTerm" TERMINATOR=',' />
+<FIELD ID="3" xsi-type="CharTerm" TERMINATOR=',' />
+<FIELD ID="4" xsi-type="CharTerm" TERMINATOR=',' />
+<FIELD ID="5" xsi-type="CharTerm" TERMINATOR=',' />
+<FIELD ID="6" xsi-type="CharTerm" TERMINATOR=',' />
+<FIELD ID="7" xsi-type="CharTerm" TERMINATOR=',' />
+<FIELD ID="8" xsi-type="CharTerm" TERMINATOR=',' />
+<FIELD ID="9" xsi-type="CharTerm" TERMINATOR=',' />
+</RECORD>
+<ROW><FIELD ID="1" NAME="year" xsi-type="SQLVARYCHAR" />
+<FIELD ID="2" NAME="sex" xsi-type="SQLVARYCHAR" />
+<FIELD ID="3" NAME="age" xsi-type="SQLVARYCHAR" />
+<FIELD ID="4" NAME="SAHSU_GRD_LEVEL1" xsi-type="SQLVARYCHAR" />
+<FIELD ID="5" NAME="SAHSU_GRD_LEVEL2" xsi-type="SQLVARYCHAR" />
+<FIELD ID="6" NAME="SAHSU_GRD_LEVEL3" xsi-type="SQLVARYCHAR" />
+<FIELD ID="7" NAME="SAHSU_GRD_LEVEL4" xsi-type="SQLVARYCHAR" />
+<FIELD ID="8" NAME="icd" xsi-type="SQLVARYCHAR" />
+<FIELD ID="9" NAME="total" xsi-type="SQLVARYCHAR" />
+</ROW>

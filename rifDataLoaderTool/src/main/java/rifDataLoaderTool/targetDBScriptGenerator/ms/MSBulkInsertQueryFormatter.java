@@ -2,6 +2,8 @@ package rifDataLoaderTool.targetDBScriptGenerator.ms;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 
 import rifGenericLibrary.system.*;
 import rifGenericLibrary.dataStorageLayer.ms.AbstractMSSQLQueryFormatter;
@@ -76,7 +78,8 @@ public class MSBulkInsertQueryFormatter extends
 	// Section Construction
 	// ==========================================
 
-	public MSBulkInsertQueryFormatter() {
+	public MSBulkInsertQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		path = "$(pwd)";
 		this.setEndWithSemiColon(false);
 	}
@@ -104,17 +107,22 @@ public class MSBulkInsertQueryFormatter extends
 
 	@Override
 	public String generateQuery() {
-		addQueryPhrase(0, "BULK INSERT \'");
+		addQueryPhrase(0, "BULK INSERT ");
+		addQueryPhrase(getDatabaseSchemaName());
+		addQueryPhrase(".");
+		addQueryPhrase(tableName);
+		addQueryPhrase(" FROM '");
 		addQueryPhrase(generateCSVFilePath());
 		addQueryPhrase("'");
 		finishLine();
 		addQueryLine(0, "WITH ");
 		addQueryLine(0, "(");
-		addQueryPhrase(1, "FORMATFILE = '");
+		addQueryPhrase(1, "FORMATFILE = '$(pwd)/");
 		addQueryPhrase(generateFormatFilePath());
 		addQueryPhrase("',");
 		finishLine();
-		addQueryLine(1, "TABLOCK");
+		addQueryLine(1, "TABLOCK,");
+		addQueryLine(1, "FIRSTROW=2");
 		addQueryPhrase(0, ")");
 		
 		return super.generateQuery();
@@ -131,9 +139,14 @@ public class MSBulkInsertQueryFormatter extends
 		
 		String tableName = dataSetConfiguration.getPublishedTableName();
 		this.setTableName(tableName);
-		String formatFilePath = generateFormatFilePath();
 		
-		File formatFile = new File(formatFilePath);
+		StringBuilder formatFilePath = new StringBuilder();
+		formatFilePath.append(outputDirectory.getAbsolutePath());
+		formatFilePath.append(File.separator);
+		formatFilePath.append(generateFormatFilePath());
+
+		File formatFile = new File(formatFilePath.toString());
+		System.out.println("Format file path==" + formatFilePath + "==");
 		
 		try {		
 			writer = new BufferedWriter(new FileWriter(formatFile));
@@ -143,42 +156,29 @@ public class MSBulkInsertQueryFormatter extends
 			writer.write("<!-- MS SQL Server bulk load format files.  ");
 			writer.write("The insistence on quotes excludes the header row -->");
 			writer.newLine();
-			
+			writer.write("<BCPFORMAT xmlns=\"http://schemas.microsoft.com/sqlserver/2004/bulkload/format\" ");
+			writer.write("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
+			writer.newLine();
 			ArrayList<DataSetFieldConfiguration> fields
 				= dataSetConfiguration.getFieldConfigurations();
 			int numberOfFields = fields.size();
-
-			//Write record section
-			writer.write("<RECORD>");
-			for (int i = 0; i < numberOfFields; i++) {				
-				writer.write("<FIELD ID=\"");
-				writer.write(String.valueOf(i + 1));
-				writer.write("\" xsi-type=\"CharTerm\" TERMINATOR=',' />");
-				writer.newLine();
-			}			
-			writer.write("</RECORD>");
-			writer.newLine();
 			
-			//Write row section
-			writer.write("<ROW>");
-			for (int i = 0; i < numberOfFields; i++) {				
-				writer.write("<FIELD ID=\"");
-				writer.write(String.valueOf(i + 1));
-				writer.write("\" NAME=\"");
-				DataSetFieldConfiguration fieldConfiguration
-					= fields.get(i);				
-				String fieldName
-					= fieldConfiguration.getConvertFieldName();
-				writer.write(fieldName);
-				writer.write("\" xsi-type=\"SQLVARYCHAR\" />");
-				writer.newLine();
-			}			
-			writer.write("</ROW>");
+			RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+			if (rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA) {
+				writeDenominatorFragment(writer, dataSetConfiguration);
+			}
+			else if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+				writeNumeratorFragment(writer, dataSetConfiguration);
+			}
+			else if (rifSchemaArea == RIFSchemaArea.COVARIATE_DATA) {
+				writeCovariateFragment(writer, dataSetConfiguration);
+			}
 			writer.newLine();
-			
+			writer.write("</BCPFORMAT>");
+			writer.newLine();			
 		}
 		catch(IOException ioException) {
-			exceptionFactory.createFileWritingProblemException(formatFilePath);
+			exceptionFactory.createFileWritingProblemException(formatFilePath.toString());
 		}
 		finally {
 			try {
@@ -186,13 +186,182 @@ public class MSBulkInsertQueryFormatter extends
 				writer.close();
 			}
 			catch(IOException ioException) {
-				exceptionFactory.createFileWritingProblemException(formatFilePath);				
+				exceptionFactory.createFileWritingProblemException(formatFilePath.toString());				
 			}
 		}
 		
 		
 	}
 	
+	private void writeDenominatorFragment(
+		final BufferedWriter writer,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws IOException {
+
+
+		//Write record section
+		writer.write("<RECORD>");			
+		writer.newLine();
+
+		int index = 0;
+		writeFieldEntry(writer, ++index, ","); //year
+		writeFieldEntry(writer, ++index, ","); //age_sex_group
+		
+		ArrayList<DataSetFieldConfiguration> geographicalResolutionFields
+			= DataSetConfigurationUtility.getAllGeographicalResolutionFields(dataSetConfiguration);
+		for (DataSetFieldConfiguration geographicalResolutionField : geographicalResolutionFields) {
+			writeFieldEntry(writer, ++index, ","); //geographical resolution field				
+		}
+		writeFieldEntry(writer, ++index, "\\n"); //total
+		writer.write("</RECORD>");			
+		writer.newLine();			
+
+		writer.write("<ROW>");
+		writer.newLine();
+
+		index = 0;
+		
+		writeColumnSourceEntry(writer, ++index, "year");			
+		writeColumnSourceEntry(writer, ++index, "age_sex_group");
+
+		for (DataSetFieldConfiguration geographicalResolutionField : geographicalResolutionFields) {
+			String fieldName
+				= geographicalResolutionField.getConvertFieldName().toLowerCase();
+			writeColumnSourceEntry(writer, ++index, fieldName); //geographical resolution field				
+		}
+		writeColumnSourceEntry(writer, ++index, "total");
+		
+		writer.write("</ROW>");
+		writer.newLine();			
+	}
+
+	
+	private void writeNumeratorFragment(
+		final BufferedWriter writer,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws IOException {
+
+
+		//Write record section
+		writer.write("<RECORD>");			
+		writer.newLine();
+
+		int index = 0;
+		writeFieldEntry(writer, ++index, ","); //year
+		writeFieldEntry(writer, ++index, ","); //age_sex_group
+		
+		ArrayList<DataSetFieldConfiguration> geographicalResolutionFields
+			= DataSetConfigurationUtility.getAllGeographicalResolutionFields(dataSetConfiguration);
+		for (DataSetFieldConfiguration geographicalResolutionField : geographicalResolutionFields) {
+			writeFieldEntry(writer, ++index, ","); //geographical resolution field				
+		}
+		writeFieldEntry(writer, ++index, ","); //icd
+		writeFieldEntry(writer, ++index, "\\n"); //total
+		writer.write("</RECORD>");			
+		writer.newLine();			
+
+		writer.write("<ROW>");
+		writer.newLine();
+
+		index = 0;
+		
+		writeColumnSourceEntry(writer, ++index, "year");			
+		writeColumnSourceEntry(writer, ++index, "age_sex_group");
+
+		for (DataSetFieldConfiguration geographicalResolutionField : geographicalResolutionFields) {
+			String fieldName
+				= geographicalResolutionField.getConvertFieldName().toLowerCase();
+			writeColumnSourceEntry(writer, ++index, fieldName); //geographical resolution field				
+		}
+		writeColumnSourceEntry(writer, ++index, "icd");
+		writeColumnSourceEntry(writer, ++index, "total");
+		
+		writer.write("</ROW>");
+		writer.newLine();			
+	}
+
+	private void writeCovariateFragment(
+		final BufferedWriter writer,
+		final DataSetConfiguration dataSetConfiguration) 
+		throws IOException {
+		
+		ArrayList<DataSetFieldConfiguration> covariateFields
+			= DataSetConfigurationUtility.getCovariateFields(dataSetConfiguration);
+		DataSetFieldConfiguration geographicalResolutionField
+			= DataSetConfigurationUtility.getRequiredGeographicalResolutionField(dataSetConfiguration);
+		
+		//Write record section
+		writer.write("<RECORD>");			
+		writer.newLine();
+
+		int index = 0;
+		writeFieldEntry(writer, ++index, ","); //year
+		writeFieldEntry(writer, ++index, ","); //geographical field level
+
+		int numberOfCovariates = covariateFields.size();
+		int lastCovariateIndex = numberOfCovariates - 1;
+		
+		for (int i = 0; i < numberOfCovariates; i++) {		
+			if (i == lastCovariateIndex) {
+				writeFieldEntry(writer, ++index, "\\n"); //geographical field level
+			}
+			else {
+				writeFieldEntry(writer, ++index, ","); //geographical field level				
+			}
+		}
+		writer.write("</RECORD>");			
+		writer.newLine();			
+
+		writer.write("<ROW>");
+		writer.newLine();
+
+		index = 0;
+		
+		writeColumnSourceEntry(writer, ++index, "year");
+		
+		writeColumnSourceEntry(
+			writer, 
+			++index, 
+			geographicalResolutionField.getConvertFieldName().toLowerCase());
+		
+		for (DataSetFieldConfiguration covariateField : covariateFields) {
+			String fieldName = covariateField.getConvertFieldName().toLowerCase();
+			writeColumnSourceEntry(writer, ++index, fieldName); //geographical resolution field				
+		}
+		writer.write("</ROW>");
+		writer.newLine();			
+	}
+	
+	private void writeFieldEntry(
+		final BufferedWriter writer,
+		final int index,
+		final String terminatorCharacter) 
+		throws IOException {
+		
+		writer.write("<FIELD ID=\"");
+		writer.write(String.valueOf(index));
+		writer.write("\" xsi:type=\"CharTerm\" TERMINATOR='");
+		writer.write(terminatorCharacter);
+		writer.write("' />");
+		writer.newLine();
+		writer.flush();
+	}
+
+	private void writeColumnSourceEntry(
+		final BufferedWriter writer,
+		final int index,
+		final String fieldName) 
+		throws IOException {
+		
+		writer.write("<COLUMN SOURCE=\"");
+		writer.write(String.valueOf(index));
+		writer.write("\" NAME=\"");
+		writer.write(fieldName);
+		writer.write("\" xsi:type=\"SQLVARYCHAR\" />");
+		writer.newLine();		
+		writer.flush();
+	}	
+
 	private String generateCSVFilePath() {
 		StringBuilder filePath = new StringBuilder();
 		filePath.append("");

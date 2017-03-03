@@ -119,8 +119,8 @@ public final class MSSQLSelectQueryFormatter
 	/**
 	 * Instantiates a new SQL select query formatter.
 	 */
-	public MSSQLSelectQueryFormatter() {
-		
+	public MSSQLSelectQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		useDistinct = false;
 		orAllWhereConditions = false;
 		selectFields = new ArrayList<String>();

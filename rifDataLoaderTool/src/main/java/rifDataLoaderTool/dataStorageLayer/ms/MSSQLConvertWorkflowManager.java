@@ -6,7 +6,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 
 import java.util.ArrayList;
@@ -144,7 +144,7 @@ final public class MSSQLConvertWorkflowManager
 			
 			//Create the first part of the query used to create a converted table
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(convertedTableName);
 			queryFormatter.addQueryPhrase(" AS");
 			queryFormatter.padAndFinishLine();
@@ -170,7 +170,8 @@ final public class MSSQLConvertWorkflowManager
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryPhrase(0, "FROM");
 			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryPhrase(1, cleanedTableName);
+			queryFormatter.addQueryPhrase(1, "");//KLG_SCHEMA
+			queryFormatter.addQueryPhrase(cleanedTableName);
 			logSQLQuery(
 				logFileWriter,
 				"convert_configuration", 
@@ -212,7 +213,7 @@ final public class MSSQLConvertWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}		
 	}
 

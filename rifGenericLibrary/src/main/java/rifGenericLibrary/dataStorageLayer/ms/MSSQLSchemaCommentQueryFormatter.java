@@ -82,7 +82,8 @@ public final class MSSQLSchemaCommentQueryFormatter
 	// ==========================================
 	// Section Construction
 	// ==========================================
-	public MSSQLSchemaCommentQueryFormatter() {
+	public MSSQLSchemaCommentQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		setEndWithSemiColon(false);
 	}
 	
@@ -120,7 +121,7 @@ public final class MSSQLSchemaCommentQueryFormatter
 		addQueryPhrase(getDatabaseSchemaName());
 		addQueryPhrase("',");
 		finishLine();
-		addQueryPhrase(1, "@level1type = N'Table', @level0name='");
+		addQueryPhrase(1, "@level1type = N'Table', @level1name='");
 		addQueryPhrase(tableName.toLowerCase());
 		addQueryPhrase("'");
 		

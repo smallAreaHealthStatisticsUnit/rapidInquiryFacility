@@ -78,6 +78,77 @@ public class SampleDataGenerator {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public GeographyMetaData getSahsulandGeographyMetaData() {
+		GeographyMetaData geographyMetaData
+			= GeographyMetaData.newInstance();
+		
+		Geography sahsulandGeography = Geography.newInstance();
+		sahsulandGeography.setName("SAHSULAND");
+		
+		GeographicalResolutionLevel level1
+			= GeographicalResolutionLevel.newInstance(
+				1, 
+				"Level 1", 
+				"SAHSU_GRD_LEVEL1");
+		sahsulandGeography.addLevel(level1);
+		
+		GeographicalResolutionLevel level2
+			= GeographicalResolutionLevel.newInstance(
+				2, 
+				"Level 2", 
+				"SAHSU_GRD_LEVEL2");
+		sahsulandGeography.addLevel(level2);
+		
+		GeographicalResolutionLevel level3
+			= GeographicalResolutionLevel.newInstance(
+				3, 
+				"Level 3", 
+				"SAHSU_GRD_LEVEL3");
+		sahsulandGeography.addLevel(level3);
+		
+		GeographicalResolutionLevel level4
+			= GeographicalResolutionLevel.newInstance(
+				4, 
+				"Level 4", 
+				"SAHSU_GRD_LEVEL4");
+		sahsulandGeography.addLevel(level4);
+
+		geographyMetaData.addGeography(sahsulandGeography);
+		
+		return geographyMetaData;
+	}
+	
+	public DataLoaderToolConfiguration createSahsulandConfiguration() {
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= DataLoaderToolConfiguration.newInstance();
+		
+		GeographyMetaData geographyMetaData
+			= getSahsulandGeographyMetaData();
+		dataLoaderToolConfiguration.setGeographyMetaData(geographyMetaData);
+
+		Geography geography
+			= geographyMetaData.getGeography("SAHSULAND");
+
+		ConfigurationHints configurationHints = new ConfigurationHints();
+		dataLoaderToolConfiguration.setConfigurationHints(configurationHints);
+				
+		DataSetConfiguration denominator = createSahsulandDenominator();
+		denominator.setGeography(geography);
+		dataLoaderToolConfiguration.addDenominatorDataSetConfiguration(denominator);
+		
+		DataSetConfiguration numerator 
+			= createSahsulandNumeratorConfiguration();
+		numerator.setDependencyDataSetConfiguration(denominator);
+		numerator.setGeography(geography);
+			
+		DataSetConfiguration level3Covariate = createSahsulandLevel3Covariates();
+		level3Covariate.setGeography(geography);
+		DataSetConfiguration level4Covariate = createSahsulandLevel4Covariates();
+		level4Covariate.setGeography(geography);
+		dataLoaderToolConfiguration.addCovariateDataSetConfiguration(level4Covariate);
+		
+		return dataLoaderToolConfiguration;
+	}
 	
 	public LinearWorkflow createSahsulandNumeratorWorkflow() {
 		
@@ -95,13 +166,13 @@ public class SampleDataGenerator {
 		//The goal of this data loading activity is to produce
 		//the sahsuland_cancer table that already comes with the RIF installation
 		DataSetConfiguration myNumeratorDataToLoad
-			= createCancerNumeratorConfiguration();
+			= createSahsulandNumeratorConfiguration();
 		numeratorWorkflow.addDataSetConfiguration(myNumeratorDataToLoad);
 		
 		return numeratorWorkflow;		
 	}
 	
-	public DataSetConfiguration createCancerNumeratorConfiguration() {
+	public DataSetConfiguration createSahsulandNumeratorConfiguration() {
 
 		ConversionFunctionFactory rifConversionFactory
 			= ConversionFunctionFactory.newInstance();
@@ -127,12 +198,8 @@ public class SampleDataGenerator {
 		 * Column 6: level3
 		 * Column 7: level4
 		 * Column 8: icd
-		 * Column 9: health_provider_code [to be ignored by the RIF]
-		 * Column 10: treatment_duration [to be ignored by the RIF]
-		 * 
+		 * Column 9: total
 		 */
-		
-		
 		
 		DataSetConfiguration numeratorDataSetConfiguration
 			= DataSetConfiguration.newInstance();
@@ -170,27 +237,7 @@ public class SampleDataGenerator {
 		yearFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
 		yearFieldConfiguration.setEmptyValueAllowed(false);
 		numeratorDataSetConfiguration.addFieldConfiguration(yearFieldConfiguration);
-	
-
-		DataSetFieldConfiguration ageFieldConfiguration
-			= DataSetFieldConfiguration.newInstance(
-				"cancer_data", 
-				"age");
-		//the rif
-		ageFieldConfiguration.setRIFDataType(
-			RIFDataTypeFactory.RIF_AGE_DATA_TYPE);
-		ageFieldConfiguration.setDuplicateIdentificationField(true);
-		ageFieldConfiguration.setCoreFieldDescription("age of patient");
-		ageFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
-		//Ensuring that this field is used as input to the function
-		//convert_age_sex, which should cause a cleaned version of this data
-		//set to have its age and sex fields mapped to a single "age_sex_group"
-		//field in the converted version
-		ageFieldConfiguration.setConvertFunction(
-			rifConversionFactory.getRIFConvertFunction("convert_age_sex"));
-		ageFieldConfiguration.setEmptyValueAllowed(false);
-		numeratorDataSetConfiguration.addFieldConfiguration(ageFieldConfiguration);
-
+		
 		DataSetFieldConfiguration sexFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
 				"cancer_data", 
@@ -212,6 +259,25 @@ public class SampleDataGenerator {
 		sexFieldConfiguration.setEmptyValueAllowed(false);
 		numeratorDataSetConfiguration.addFieldConfiguration(sexFieldConfiguration);
 
+
+		DataSetFieldConfiguration ageFieldConfiguration
+			= DataSetFieldConfiguration.newInstance(
+				"cancer_data", 
+				"age");
+		//the rif
+		ageFieldConfiguration.setRIFDataType(
+			RIFDataTypeFactory.RIF_AGE_DATA_TYPE);
+		ageFieldConfiguration.setDuplicateIdentificationField(true);
+		ageFieldConfiguration.setCoreFieldDescription("age of patient");
+		ageFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
+		//Ensuring that this field is used as input to the function
+		//convert_age_sex, which should cause a cleaned version of this data
+		//set to have its age and sex fields mapped to a single "age_sex_group"
+		//field in the converted version
+		ageFieldConfiguration.setConvertFunction(
+			rifConversionFactory.getRIFConvertFunction("convert_age_sex"));
+		ageFieldConfiguration.setEmptyValueAllowed(false);
+		numeratorDataSetConfiguration.addFieldConfiguration(ageFieldConfiguration);
 
 		/*
 		 * The following field definitions describe geographical resolutions
@@ -248,7 +314,6 @@ public class SampleDataGenerator {
 		level1ResolutionFieldConfiguration.setEmptyValueAllowed(false);
 		numeratorDataSetConfiguration.addFieldConfiguration(level1ResolutionFieldConfiguration);
 		
-
 		DataSetFieldConfiguration level2ResolutionFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
 				"cancer_data", 
@@ -278,7 +343,6 @@ public class SampleDataGenerator {
 		//We will allow blank values for resolution
 		level3ResolutionFieldConfiguration.setEmptyValueAllowed(true);
 		numeratorDataSetConfiguration.addFieldConfiguration(level3ResolutionFieldConfiguration);
-		
 
 		DataSetFieldConfiguration level4ResolutionFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
@@ -310,8 +374,9 @@ public class SampleDataGenerator {
 		icdFieldConfiguration.setRIFDataType(
 			RIFDataTypeFactory.RIF_ICD_DATA_TYPE);
 		icdFieldConfiguration.setDuplicateIdentificationField(true);
-		icdFieldConfiguration.setCoreFieldDescription("eg: super output area");				
-		icdFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.EXTRA_FIELD);
+		icdFieldConfiguration.setCoreFieldDescription("eg: super output area");		
+		//remember that each numerator needs exactly one health code field
+		icdFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
 
 		//If the data set is destined to be a numerator table, then it must have 
 		//at least one health code
@@ -326,39 +391,25 @@ public class SampleDataGenerator {
 		 * RIF manager is interested in it or not. 
 		 */		
 
-		DataSetFieldConfiguration healthProviderFieldConfiguration
+		DataSetFieldConfiguration totalFieldConfiguration
 			= DataSetFieldConfiguration.newInstance(
 				"cancer_data", 
-				"health_provider_code");
-		healthProviderFieldConfiguration.setRIFDataType(
-			RIFDataTypeFactory.RIF_ICD_DATA_TYPE);
-		healthProviderFieldConfiguration.setDuplicateIdentificationField(true);
-		healthProviderFieldConfiguration.setCoreFieldDescription("code for hospital where visit was recorded");				
+				"total");
+		totalFieldConfiguration.setFieldPurpose(FieldPurpose.TOTAL_COUNT);
+		totalFieldConfiguration.setRIFDataType(
+			RIFDataTypeFactory.RIF_INTEGER_DATA_TYPE);
+		
+		totalFieldConfiguration.setDuplicateIdentificationField(false);
+		totalFieldConfiguration.setCoreFieldDescription("total number of patients having some health outcome.");				
 
 		//This is a flag that tells the data loader tool to not bother promoting the
 		//field through any workflow state beyond Load
-		healthProviderFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.IGNORE_FIELD);
+		totalFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
 
-		//By default, the purpose of this field will be "Other"
-		//healthProviderFieldConfiguration.setFieldPurpose(FieldPurpose.OTHER);
+		totalFieldConfiguration.setEmptyValueAllowed(false);
+		numeratorDataSetConfiguration.addFieldConfiguration(totalFieldConfiguration);
 		
-		//By default, the field will allow empty values
-		//healthProviderFieldConfiguration.setEmptyValueAllowed(true);
-		numeratorDataSetConfiguration.addFieldConfiguration(healthProviderFieldConfiguration);
-				
-		
-		DataSetFieldConfiguration treatmentDurationFieldConfiguration
-			= DataSetFieldConfiguration.newInstance(
-				"cancer_data", 
-				"treatment_duration");
-		treatmentDurationFieldConfiguration.setDuplicateIdentificationField(true);
-		//This is a flag that tells the data loader tool to not bother promoting the
-		//field through any workflow state beyond Load
-		treatmentDurationFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.IGNORE_FIELD);
-		numeratorDataSetConfiguration.addFieldConfiguration(treatmentDurationFieldConfiguration);	
-		
-		return numeratorDataSetConfiguration;
-		
+		return numeratorDataSetConfiguration;		
 	}
 
 	public LinearWorkflow createSahsulandCovariateWorkflow() {
@@ -385,10 +436,10 @@ public class SampleDataGenerator {
 		//We want to apply the same work flow to covariate data taken from two
 		//files, one for level4 geographic resolution and one for level3
 		DataSetConfiguration level3CovariatesConfiguration
-			= createSahsulandLevel3CovariatesCovariateConfiguration();
+			= createSahsulandLevel3Covariates();
 		covariateWorkflow.addDataSetConfiguration(level3CovariatesConfiguration);
 		DataSetConfiguration level4CovariatesConfiguration
-			= createSahsulandLevel4CovariatesCovariateConfiguration();
+			= createSahsulandLevel4Covariates();
 		covariateWorkflow.addDataSetConfiguration(level4CovariatesConfiguration);
 				
 		//This work flow will be run inside 
@@ -400,7 +451,7 @@ public class SampleDataGenerator {
 
 	
 	
-	public DataSetConfiguration createSahsulandLevel3CovariatesCovariateConfiguration() {
+	public DataSetConfiguration createSahsulandLevel3Covariates() {
 		
 		/*
 		 * Here we create a data set configuration for a CSV file that will contain
@@ -435,6 +486,7 @@ public class SampleDataGenerator {
 				"year");
 		yearFieldConfiguration.setRIFDataType(
 			RIFDataTypeFactory.RIF_YEAR_DATA_TYPE);
+		yearFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
 		yearFieldConfiguration.setDuplicateIdentificationField(true);
 		yearFieldConfiguration.setCoreFieldDescription("calendar year of covariate data");				
 		sahuslandLevel3CovariatesConfiguration.addFieldConfiguration(yearFieldConfiguration);
@@ -478,7 +530,7 @@ public class SampleDataGenerator {
 	}
 
 
-	public DataSetConfiguration createSahsulandLevel4CovariatesCovariateConfiguration() {
+	public DataSetConfiguration createSahsulandLevel4Covariates() {
 		
 		/*
 		 * Here we create a data set configuration for a CSV file that will contain
@@ -514,6 +566,8 @@ public class SampleDataGenerator {
 				"year");
 		yearFieldConfiguration.setRIFDataType(
 			RIFDataTypeFactory.RIF_YEAR_DATA_TYPE);
+		yearFieldConfiguration.setFieldRequirementLevel(FieldRequirementLevel.REQUIRED_BY_RIF);
+		
 		yearFieldConfiguration.setDuplicateIdentificationField(true);
 		yearFieldConfiguration.setCoreFieldDescription("calendar year of covariate data");				
 		sahuslandLevel4CovariatesConfiguration.addFieldConfiguration(yearFieldConfiguration);
@@ -932,8 +986,16 @@ public class SampleDataGenerator {
 				
 		return dataSetConfiguration;
 	}
-	
-	
+
+	public DataSetConfiguration createSahsulandDenominator() {
+		DataSetConfiguration denominator
+			= createSahsulandNumeratorConfiguration();
+		denominator.deleteField("icd");
+		denominator.setDescription("SAHSULAND population");
+		denominator.setRIFSchemaArea(RIFSchemaArea.POPULATION_DENOMINATOR_DATA);
+		denominator.setDependencyDataSetConfiguration(null);	
+		return denominator;
+	}
 	
 	public DataSetConfiguration createMinimalDataSetConfiguration() {
 		

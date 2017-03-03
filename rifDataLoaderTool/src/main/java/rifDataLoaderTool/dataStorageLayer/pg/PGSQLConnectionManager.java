@@ -500,9 +500,7 @@ final class PGSQLConnectionManager {
 		return connection;
 
 	}
-		
-	
-	
+
 	public Connection createConnection(
 		final String userID,
 		final String password,
@@ -513,6 +511,7 @@ final class PGSQLConnectionManager {
 		Connection connection = null;
 		try {
 			
+			System.out.println("PGSQLConnectionManager - userID=="+ userID+"==" + password + "==");
 			Properties databaseProperties = new Properties();
 			
 			if (userID != null) {
@@ -525,7 +524,7 @@ final class PGSQLConnectionManager {
 			//KLG: @TODO this introduces a porting issue
 			//int logLevel = org.postgresql.Driver.DEBUG;
 			//databaseProperties.setProperty("loglevel", String.valueOf(logLevel));
-			
+			System.out.println("PGSQLConnectionManager databaseURL=="+ databaseURL + "==");
 			connection
 				= DriverManager.getConnection(databaseURL, databaseProperties);
 			connection.setReadOnly(false);

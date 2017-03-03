@@ -12,12 +12,14 @@ import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.*;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLExportTableToCSVQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSchemaCommentQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLUpdateQueryFormatter;
+
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLExportTableToCSVQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSchemaCommentQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLUpdateQueryFormatter;
 import rifGenericLibrary.system.*;
 import rifGenericLibrary.util.RIFLogger;
 
@@ -117,8 +119,9 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		throws SQLException,
 		RIFServiceException {
 				
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
-			
+		MSSQLSelectQueryFormatter queryFormatter 
+			= new MSSQLSelectQueryFormatter(false);
+		//queryFormatter.setDatabaseSchemaName("dbo");//KLG_SCHEMA
 		//SELECT field1, field2, fields3...
 		for (String fieldName : fieldNames) {
 				
@@ -191,8 +194,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			return rifResultTable;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 				
 	}
@@ -222,7 +225,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "FROM");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(2, firstTableName);
+		queryFormatter.addQueryPhrase(2, "");//KLG_SCHEMA
+		queryFormatter.addQueryPhrase(firstTableName);
 		queryFormatter.addQueryPhrase("),");
 		queryFormatter.finishLine();
 		
@@ -234,7 +238,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "FROM");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(2, secondTableName);
+		queryFormatter.addQueryPhrase(2, "");//KLG_SCHEMA
+		queryFormatter.addQueryPhrase(secondTableName);
 		queryFormatter.addQueryPhrase(")");
 		queryFormatter.padAndFinishLine();
 		
@@ -297,8 +302,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -314,8 +319,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		PreparedStatement statement = null;
 		try {
 
-			PGSQLSchemaCommentQueryFormatter queryFormatter
-				= new PGSQLSchemaCommentQueryFormatter();
+			MSSQLSchemaCommentQueryFormatter queryFormatter
+				= new MSSQLSchemaCommentQueryFormatter(false);
 			queryFormatter.setTableComment(
 				targetTable, 
 				dataSetConfiguration.getDescription());
@@ -368,7 +373,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;			
 		}		
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 	}
 
@@ -498,8 +503,10 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			//field names we'd like to give the auto-named fields (eg: field1
 			//could become year)
 			
-			PGSQLSchemaCommentQueryFormatter queryFormatter
-				= new PGSQLSchemaCommentQueryFormatter();
+			MSSQLSchemaCommentQueryFormatter queryFormatter
+				= new MSSQLSchemaCommentQueryFormatter(false);
+			//KLG_SCHEMA
+			//queryFormatter.setDatabaseSchemaName("dbo");
 			queryFormatter.setTableColumnComment(
 				targetTable, 
 				columnName, 
@@ -517,7 +524,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			statement.executeUpdate();			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -533,7 +540,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			= new SQLGeneralQueryFormatter();
 		PreparedStatement statement = null;		
 		try {
-			queryFormatter.addQueryPhrase("ALTER TABLE ");
+			queryFormatter.addQueryPhrase("ALTER TABLE ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(targetTableName);
 			queryFormatter.addQueryPhrase(" ADD PRIMARY KEY (");
 			queryFormatter.addQueryPhrase(primaryKeyFieldPhrase);
@@ -560,7 +567,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}			
 	}
 	
@@ -611,8 +618,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 						
 		BufferedWriter writer = null;		
 		try {
-			PGSQLExportTableToCSVQueryFormatter queryFormatter
-				= new PGSQLExportTableToCSVQueryFormatter();
+			MSSQLExportTableToCSVQueryFormatter queryFormatter
+				= new MSSQLExportTableToCSVQueryFormatter(false);
 			queryFormatter.setTableToExport(tableName);
 			queryFormatter.setOutputFileName(exportFileName.toString());
 			
@@ -661,8 +668,15 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final String targetTableName) 
 		throws RIFServiceException {
 		
-		PGSQLDeleteTableQueryFormatter queryFormatter 
-			= new PGSQLDeleteTableQueryFormatter();
+		System.out.println("deleteTable 1");
+		printAnything(connection);
+		System.out.println("deleteTable 2");
+		
+		MSSQLDeleteTableQueryFormatter queryFormatter 
+			= new MSSQLDeleteTableQueryFormatter(false);
+		//KLG_SCHEMA
+		queryFormatter.setDatabaseSchemaName("dbo");
+		System.out.println("TAble name=="+ targetTableName + "==");
 		queryFormatter.setTableToDelete(targetTableName);
 		PreparedStatement statement = null;
 		try {
@@ -670,6 +684,9 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 				= createPreparedStatement(
 					connection, 
 					queryFormatter);
+			System.out.println("ZZZZZZZZZZZZZZZ BEGIN");
+			System.out.println(queryFormatter.generateQuery());
+			System.out.println("ZZZZZZZZZZZZZZZ END");
 			statement.executeUpdate();		
 		}
 		catch(SQLException sqlException) {
@@ -687,10 +704,51 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}		
 	}
 
+	private void printAnything(final Connection connection) {
+		System.out.println("Print anything");
+		PGSQLSelectQueryFormatter queryFormatter 
+			= new PGSQLSelectQueryFormatter();
+		queryFormatter.setEndWithSemiColon(true);
+		queryFormatter.addFromTable("rif_failed_val_log");
+		queryFormatter.addSelectField("data_set_id");
+		queryFormatter.addSelectField("row_number");
+		queryFormatter.addSelectField("field_name");
+		queryFormatter.addSelectField("invalid_value");
+		
+		ResultSet resultSet = null;
+		PreparedStatement statement = null;
+		
+		try {
+			System.out.println("printanything 1-1");
+			System.out.println(queryFormatter.generateQuery());
+			System.out.println("printanything 1-2");
+
+			statement
+				= connection.prepareStatement(queryFormatter.generateQuery());
+			System.out.println("printanything 2");
+			resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				System.out.println("printanything 3");
+				
+				System.out.println("DS=="+ resultSet.getInt(1) + "==");
+				System.out.println("Row=="+ resultSet.getInt(2) + "==");
+				System.out.println("Field Name=="+ resultSet.getString(3) + "==");
+				System.out.println("Invalid Field Name=="+ resultSet.getString(4) + "==");
+			}
+			System.out.println("printanything 4");
+		}
+		catch(SQLException exception) {
+			exception.printStackTrace(System.out);
+		}		
+		finally {
+			
+		}
+	}
+	
 	protected void renameTable(
 		final Connection connection,
 		final Writer logFileWriter,
@@ -701,7 +759,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		PreparedStatement statement = null;
 		try {
-			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
+			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(sourceTableName);
 			queryFormatter.addQueryPhrase(" RENAME TO ");
 			queryFormatter.addQueryPhrase(destinationTableName);
@@ -729,7 +787,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 	}
 	
@@ -743,12 +801,12 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		PreparedStatement statement = null;
 		try {
-			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
 			
 			queryFormatter.addQueryPhrase(destinationTableName);
 			queryFormatter.addQueryPhrase(" AS ");
 			queryFormatter.finishLine();
-			queryFormatter.addQueryPhrase("SELECT * FROM ");
+			queryFormatter.addQueryPhrase("SELECT * FROM ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(sourceTableName);
 			
 			statement
@@ -775,7 +833,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 
 	}
@@ -787,7 +845,10 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final WorkflowState workFlowState) 
 		throws RIFServiceException {
 				
-		PGSQLUpdateQueryFormatter queryFormatter = new PGSQLUpdateQueryFormatter();
+		MSSQLUpdateQueryFormatter queryFormatter 
+			= new MSSQLUpdateQueryFormatter(false);
+		//KLG_SCHEMA
+		//queryFormatter.setDatabaseSchemaName("dbo");
 		PreparedStatement statement = null;
 		try {
 			
@@ -834,10 +895,9 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final AbstractSQLQueryFormatter queryFormatter) 
 		throws SQLException {
 				
-		return PGSQLQueryUtility.createPreparedStatement(
+		return MSSQLQueryUtility.createPreparedStatement(
 			connection,
 			queryFormatter);
-
 	}
 		
 	protected PreparedStatement createPreparedStatement(
@@ -845,7 +905,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final String query) 
 		throws SQLException {
 				
-		return PGSQLQueryUtility.createPreparedStatement(
+		return MSSQLQueryUtility.createPreparedStatement(
 			connection,
 			query);
 	}

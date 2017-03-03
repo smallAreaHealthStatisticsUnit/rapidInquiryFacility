@@ -85,8 +85,10 @@ public final class MSSQLCreateDatabaseQueryFormatter
 	/**
 	 * Instantiates a new SQL count query formatter.
 	 */
-	public MSSQLCreateDatabaseQueryFormatter() {
+	public MSSQLCreateDatabaseQueryFormatter(
+		final boolean useGoCommand) {
 
+		super(useGoCommand);
 	}
 
 	// ==========================================

@@ -75,7 +75,6 @@ public class MSDataLoadingScriptGenerator {
 			reader.readFile(sampleConfigFile);
 			DataLoaderToolConfiguration dataLoaderToolConfiguration
 				= reader.getDataLoaderToolConfiguration();
-			System.out.println("Number of denominators==" + dataLoaderToolConfiguration.getDenominatorDataSetConfigurations().size()+"==");
 			MSDataLoadingScriptGenerator msScriptGenerator
 				= new MSDataLoadingScriptGenerator();
 			PGDataLoadingScriptGenerator pgScriptGenerator
@@ -145,8 +144,6 @@ public class MSDataLoadingScriptGenerator {
 			
 			//Part II: Pre-pend script for loading geospatial data
 
-			System.out.println("MS dl script 1");
-
 			//Part III: Load health themes
 			addSectionHeading(bufferedWriter, "Adding Health Themes");
 			ArrayList<HealthTheme> healthThemes
@@ -160,8 +157,6 @@ public class MSDataLoadingScriptGenerator {
 			}
 
 			addSectionHeading(bufferedWriter, "Adding Denominators");
-
-			System.out.println("MS dl script 2");
 			
 			//Processing Denominators
 			GeographyMetaData geographyMetaData
@@ -196,8 +191,6 @@ public class MSDataLoadingScriptGenerator {
 				bufferedWriter.newLine();
 				bufferedWriter.flush();
 			}
-
-			System.out.println("MS dl script 4");
 			
 			//Processing Covariates
 			addSectionHeading(bufferedWriter, "Adding Covariates");
@@ -215,8 +208,6 @@ public class MSDataLoadingScriptGenerator {
 				bufferedWriter.newLine();
 				bufferedWriter.flush();
 			}
-
-			System.out.println("MS dl script 5");
 			
 			addEndTransactionSection(bufferedWriter);
 	
@@ -233,14 +224,9 @@ public class MSDataLoadingScriptGenerator {
 	private void addBeginTransactionSection(
 		final BufferedWriter bufferedWriter)
 		throws IOException {
-		
-		bufferedWriter.write("\\set ECHO all");
+
 		bufferedWriter.newLine();
-		bufferedWriter.write("\\set ON_ERROR_STOP ON");
-		bufferedWriter.newLine();
-		bufferedWriter.write("\\timing");
-		bufferedWriter.newLine();
-		bufferedWriter.write("BEGIN TRANSACTION;");
+		bufferedWriter.write("BEGIN TRANSACTION DataLoading WITH MARK N'Loading data';");
 		bufferedWriter.newLine();
 	}
 	
@@ -249,7 +235,11 @@ public class MSDataLoadingScriptGenerator {
 		throws IOException {
 		
 		bufferedWriter.newLine();
-		bufferedWriter.write("COMMIT TRANSACTION;");
+		bufferedWriter.write("COMMIT TRANSACTION DataLoading;");
+		bufferedWriter.newLine();
+		bufferedWriter.write("GO");
+		bufferedWriter.newLine();
+		
 	}
 	
 	private void addSectionHeading(

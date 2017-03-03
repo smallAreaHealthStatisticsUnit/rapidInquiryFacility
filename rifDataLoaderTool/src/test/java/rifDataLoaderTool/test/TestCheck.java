@@ -1,16 +1,16 @@
 package rifDataLoaderTool.test;
 
 
-import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
-import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.dataStorageLayer.*;
+import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
-import rifDataLoaderTool.dataStorageLayer.pg.TestPGDataLoaderService;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.system.RIFServiceException;
-import static org.junit.Assert.*;
 
 import org.junit.Test;
+
+import java.io.File;
 
 /**
  *
@@ -81,35 +81,58 @@ public class TestCheck extends AbstractRIFDataLoaderTestCase {
 
 	}
 
+	private LinearWorkflowEnactor getEnactor() {
+		User rifManager = getRIFManager();
+		TestDataLoaderServiceAPI service = getDataLoaderService();
+		LinearWorkflowEnactor linearWorkflowEnactor
+			= new LinearWorkflowEnactor(rifManager, service);
+		return linearWorkflowEnactor;		
+	}
+	
+	private DataLoaderToolConfiguration getDataLoaderToolConfiguration() {
+		SampleDataGenerator sampleDataGenerator
+			= new SampleDataGenerator();
+		return sampleDataGenerator.createSahsulandConfiguration();
+	}
+	
+	private LinearWorkflow getNumeratorWorkflow(final String fileName) {
+		String numeratorFilePath
+			= getTestFilePath(fileName);	
+		SampleDataGenerator sampleDataGenerator
+			= new SampleDataGenerator();
+		DataSetConfiguration numerator
+			= sampleDataGenerator.createSahsulandNumeratorConfiguration();
+		numerator.setFilePath(numeratorFilePath);
 
+		LinearWorkflow linearWorkflow = LinearWorkflow.newInstance();
+		linearWorkflow.addDataSetConfiguration(numerator);
+		linearWorkflow.setStartWorkflowState(WorkflowState.START);
+		linearWorkflow.setStopWorkflowState(WorkflowState.STOP);
+
+		return linearWorkflow;		
+	}
+	
 	@Test
 	public void test2() {
-		/*
-			SampleDataGenerator sampleDataGenerator
-			= new SampleDataGenerator();
 
-		LinearWorkflow linearWorkflow		
-			= sampleDataGenerator.getLinearWorkflowTest4StudyID1();
-		linearWorkflow.setStopWorkflowState(WorkflowState.CLEAN);
-	
-		User rifManager = getRIFManager();
-		TestPGDataLoaderService dataLoaderService
-			= getDataLoaderService();
+		LinearWorkflow numeratorWorkflow = getNumeratorWorkflow("sahsuland_cancer.csv");
+		DataLoaderToolConfiguration dataLoaderToolConfiguration
+			= getDataLoaderToolConfiguration();
+				
+		LinearWorkflowEnactor enactor = getEnactor();
+		
+		File exportDirectory = getExportDirectory();
+		
 		try {
-
-			LinearWorkflowEnactor linearWorkflowEnactor
-				= new LinearWorkflowEnactor(rifManager, dataLoaderService);
-
-			linearWorkflowEnactor.runWorkflow(
-				getExportDirectory(),
-				linearWorkflow);
+			enactor.runWorkflow(
+				exportDirectory, 
+				dataLoaderToolConfiguration, 
+				numeratorWorkflow);
 		}
 		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();			
-			fail();
+			rifServiceException.printErrors();
+			//rifServiceException.printStackTrace();
 		}
-			*/
-
 	}
 	
 	// ==========================================

@@ -87,11 +87,13 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 	// ==========================================
 	
 	protected String createBulkCopyStatement(
+		final String databaseSchemaName,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 		
 		MSBulkInsertQueryFormatter queryFormatter
-			= new MSBulkInsertQueryFormatter();
+			= new MSBulkInsertQueryFormatter(true);
+		queryFormatter.setDatabaseSchemaName(databaseSchemaName);
 		
 		//first, write out the *.fmt file that is needed by
 		//MS Server's bulk insert command
@@ -144,13 +146,12 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 	}	
 	
 	protected String createTableCommentQuery(
-		final String databaseSchemaName,
 		final String tableName,
 		final String comment) {
 		
 		MSSQLSchemaCommentQueryFormatter queryFormatter 
-			= new MSSQLSchemaCommentQueryFormatter();
-		queryFormatter.setDatabaseSchemaName(databaseSchemaName);
+			= new MSSQLSchemaCommentQueryFormatter(true);
+		queryFormatter.setDatabaseSchemaName("rif_data");
 		
 		queryFormatter.setTableComment(
 			tableName.toUpperCase(), 
@@ -165,7 +166,8 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 		final String comment) {
 			
 		MSSQLSchemaCommentQueryFormatter queryFormatter 
-			= new MSSQLSchemaCommentQueryFormatter();
+			= new MSSQLSchemaCommentQueryFormatter(true);
+		queryFormatter.setDatabaseSchemaName("rif_data");
 		queryFormatter.setTableColumnComment(
 			tableName.toUpperCase(), 
 			columnName.toUpperCase(), 
@@ -184,16 +186,17 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "CREATE INDEX ");
 		queryFormatter.addQueryPhrase(indexName);
-		queryFormatter.addQueryPhrase(" ON ");
+		queryFormatter.addQueryPhrase(" ON rif_data.");
 		queryFormatter.addQueryPhrase(tableName.toUpperCase());		
 		queryFormatter.addQueryPhrase("(");
 		queryFormatter.addQueryPhrase(fieldName.toUpperCase());
-		queryFormatter.addQueryPhrase(")");
+		queryFormatter.addQueryPhrase(");");
+		queryFormatter.finishLine();
+		queryFormatter.addQueryLine(0,  "GO");		
 		
 		dataSetEntry.append(queryFormatter.generateQuery());
 	}
-		
-	
+
 	protected String createPermissions(
 		final DataSetConfiguration dataSetConfiguration) {
 		

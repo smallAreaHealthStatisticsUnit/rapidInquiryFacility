@@ -118,7 +118,7 @@ public class MSDenominatorScriptGenerator
 		
 		//The name the table will have in the schema 'pop'
 		String publishedDenominatorTableName
-			= denominator.getPublishedTableName().toUpperCase();		
+			= denominator.getPublishedTableName().toLowerCase();		
 		
 		//Make a create table statement 
 		PGSQLCreateTableQueryFormatter createTableQueryFormatter
@@ -127,7 +127,7 @@ public class MSDenominatorScriptGenerator
 		//Field properties that will help us construct the 
 		//create and copy into statements
 
-		createTableQueryFormatter.setDatabaseSchemaName("pop");
+		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		createTableQueryFormatter.setTableName(publishedDenominatorTableName);
 		
 		createTableQueryFormatter.addIntegerFieldDeclaration(
@@ -166,7 +166,7 @@ public class MSDenominatorScriptGenerator
 		fieldNames.add("TOTAL");
 				
 		String bulkInsertStatement
-			= createBulkCopyStatement(denominator);
+			= createBulkCopyStatement("rif_data", denominator);
 
 		denominatorEntry.append(bulkInsertStatement);
 	}
@@ -176,6 +176,7 @@ public class MSDenominatorScriptGenerator
 		final DataSetConfiguration denominator) {
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_tables (");
 		queryFormatter.addQueryLine(1, "theme,");
 		queryFormatter.addQueryLine(1, "table_name,");
@@ -207,7 +208,11 @@ public class MSDenominatorScriptGenerator
 		queryFormatter.addQueryLine(1, "'AGE_SEX_GROUP',");
 		queryFormatter.addQueryLine(1, "1");
 		queryFormatter.addQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, denominator.getPublishedTableName().toUpperCase());
+		queryFormatter.addQueryPhrase(1, "rif_data.");
+		queryFormatter.addQueryPhrase(denominator.getPublishedTableName().toUpperCase());
+		queryFormatter.addQueryPhrase(";");
+		queryFormatter.finishLine();
+		queryFormatter.addQueryLine(0, "GO");
 		String query
 			= queryFormatter.generateQuery();
 		denominatorEntry.append(query);
@@ -227,7 +232,6 @@ public class MSDenominatorScriptGenerator
 		//Add comments to table
 		denominatorEntry.append(
 			createTableCommentQuery(
-				"pop",
 				publishedCovariateTableName, 
 				denominator.getDescription()));
 

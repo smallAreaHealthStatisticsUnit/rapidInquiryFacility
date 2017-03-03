@@ -84,8 +84,8 @@ public final class MSSQLDeleteIndexQueryFormatter
 	/**
 	 * Instantiates a new SQL delete table query formatter.
 	 */
-	public MSSQLDeleteIndexQueryFormatter() {
-
+	public MSSQLDeleteIndexQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 	}
 
 	// ==========================================

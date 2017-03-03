@@ -85,7 +85,8 @@ public final class MSSQLCreatePrimaryKeyQueryFormatter
 	/**
 	 * Instantiates a new SQL delete table query formatter.
 	 */
-	public MSSQLCreatePrimaryKeyQueryFormatter() {
+	public MSSQLCreatePrimaryKeyQueryFormatter(final boolean useGoCommand) {
+		super(useGoCommand);
 		primaryKeyFieldPhrase = "";
 	}
 

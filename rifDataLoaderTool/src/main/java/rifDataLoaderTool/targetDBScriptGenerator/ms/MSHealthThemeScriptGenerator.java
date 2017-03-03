@@ -1,7 +1,7 @@
 package rifDataLoaderTool.targetDBScriptGenerator.ms;
 
 import rifDataLoaderTool.businessConceptLayer.HealthTheme;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
 
 /**
  *
@@ -76,8 +76,8 @@ public class MSHealthThemeScriptGenerator {
 	// ==========================================
 	final String generateScript(final HealthTheme healthTheme) {
 		
-		PGSQLInsertQueryFormatter queryFormatter
-			= new PGSQLInsertQueryFormatter();
+		MSSQLInsertQueryFormatter queryFormatter
+			= new MSSQLInsertQueryFormatter(true);
 		queryFormatter.addInsertField("theme", true);
 		queryFormatter.addInsertField("description", true);
 		queryFormatter.setDatabaseSchemaName("rif40");

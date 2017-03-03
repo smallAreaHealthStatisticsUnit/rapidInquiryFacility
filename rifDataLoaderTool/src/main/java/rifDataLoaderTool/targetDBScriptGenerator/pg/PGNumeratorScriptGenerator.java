@@ -105,9 +105,15 @@ public class PGNumeratorScriptGenerator
 		//addEntryToNumDenomTable(
 		//	numeratorEntry,
 		//	numerator);
+		
+		addRIF40OutcomeGroupsEntry(
+			numeratorEntry, 
+			numerator);
+		numeratorEntry.append("\n");
 		addRIF40TableOutcomesEntry(
 			numeratorEntry,
 			numerator);
+		numeratorEntry.append("\n");
 
 		return numeratorEntry.toString();
 	}
@@ -264,6 +270,30 @@ public class PGNumeratorScriptGenerator
 		String query
 			= insertQueryFormatter.generateQueryWithLiterals(literalParameterValues);
 		numeratorEntry.append(query);		
+	}
+	
+	
+	private void addRIF40OutcomeGroupsEntry(
+		final StringBuilder numeratorEntry,
+		final DataSetConfiguration numerator) {
+		
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.setEndWithSemiColon(false);
+		
+		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_outcome_groups(");
+		queryFormatter.addQueryLine(1, "outcome_type, outcome_group_name, outcome_group_description, field_name, multiple_field_count)");
+		queryFormatter.addQueryLine(0, "SELECT");
+		queryFormatter.addQueryLine(1, "'ICD' AS outcome_type,");
+		queryFormatter.addQueryLine(1, "'SAHSULAND_ICD' AS outcome_group_name,");
+		queryFormatter.addQueryLine(1, "'SAHSULAND ICD' AS outcome_group_description,");
+		queryFormatter.addQueryLine(1, "'ICD' AS field_name,");
+		queryFormatter.addQueryLine(1, "0 AS multiple_field_count");
+		queryFormatter.addQueryPhrase(0, "WHERE NOT EXISTS ");
+		queryFormatter.addQueryPhrase("(SELECT outcome_group_name FROM ");
+		queryFormatter.addQueryPhrase(" rif40.rif40_outcome_groups WHERE outcome_group_name = 'SAHSULAND_ICD');");
+		queryFormatter.finishLine();
+		queryFormatter.addQueryLine(0, "GO");
+		numeratorEntry.append(queryFormatter.generateQuery());
 	}
 	
 	private void addRIF40TableOutcomesEntry(

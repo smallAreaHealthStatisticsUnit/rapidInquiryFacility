@@ -4,8 +4,8 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreatePrimaryKeyQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreatePrimaryKeyQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
 
 import java.util.ArrayList;
 
@@ -171,8 +171,10 @@ public final class MSSQLCastingUtility {
 		queryFormatter.addCommentLine(queryCommentLine5);
 			
 		//delete any version of the same table
-		PGSQLDeleteTableQueryFormatter deleteQueryFormatter
-			= new PGSQLDeleteTableQueryFormatter();
+		MSSQLDeleteTableQueryFormatter deleteQueryFormatter
+			= new MSSQLDeleteTableQueryFormatter(false);
+		//KLG_SCHEMA
+		//deleteQueryFormatter.setDatabaseSchemaName("dbo");
 		deleteQueryFormatter.setTableToDelete(castingTableName);
 		queryFormatter.addQueryPhrase(deleteQueryFormatter.generateQuery());
 		queryFormatter.finishLine();
@@ -189,15 +191,17 @@ public final class MSSQLCastingUtility {
 		SQLGeneralQueryFormatter createCastingCTASQueryFormatter
 			= new SQLGeneralQueryFormatter();		
 		createCastingCTASStatement(
-				createCastingCTASQueryFormatter,
+			createCastingCTASQueryFormatter,
 			cleanValidationTableName,
 			castingTableName,
 			dataSetConfiguration);
 		queryFormatter.addQuery(createCastingCTASQueryFormatter);		
 				
 		//Add primary key statement
-		PGSQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
-			= new PGSQLCreatePrimaryKeyQueryFormatter();
+		MSSQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
+			= new MSSQLCreatePrimaryKeyQueryFormatter(false);
+		//KLG_SCHEMA
+		//createPrimaryKeyQueryFormatter.setDatabaseSchemaName("dbo");
 		createPrimaryKeyQueryFormatter.setTable(castingTableName);
 		createPrimaryKeyQueryFormatter.setPrimaryKeyPhrase("data_set_id, row_number");
 		queryFormatter.addQuery(createPrimaryKeyQueryFormatter);
@@ -212,7 +216,7 @@ public final class MSSQLCastingUtility {
 		final String castingTableName,
 		final DataSetConfiguration dataSetConfiguration) {
 				
-		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
 		queryFormatter.addQueryPhrase(castingTableName);
 		queryFormatter.addQueryPhrase(" AS ");		
 		queryFormatter.padAndFinishLine();		
@@ -237,7 +241,8 @@ public final class MSSQLCastingUtility {
 		}
 		queryFormatter.finishLine();
 		queryFormatter.addPaddedQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, cleanValidationTableName);
+		queryFormatter.addQueryPhrase(1, "");//KLG_SCHEMA
+		queryFormatter.addQueryPhrase(cleanValidationTableName);
 		queryFormatter.addQueryPhrase(";");
 		queryFormatter.finishLine();
 	}
