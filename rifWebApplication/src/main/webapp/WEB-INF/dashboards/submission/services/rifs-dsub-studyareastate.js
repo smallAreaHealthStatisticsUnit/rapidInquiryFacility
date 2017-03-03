@@ -43,7 +43,8 @@ angular.module("RIF")
                         studyResolution: "",
                         center: {'zoom': 1, 'lng': 0, 'lat': 0},
                         transparency: 0.7,
-                        geography: ""
+                        geography: "",
+                        type: "Disease Mapping"
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
