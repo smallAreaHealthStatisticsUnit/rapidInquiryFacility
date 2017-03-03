@@ -203,7 +203,7 @@
 								};
 								
 							if (existingRevision) {
-								this._db.remove(tileUrl, existingRevision);
+								tileLayer._db.remove(tileUrl, existingRevision);
 							}
 							tileLayer._db.put(doc).then(function (response) {
 									if (response.ok) {
