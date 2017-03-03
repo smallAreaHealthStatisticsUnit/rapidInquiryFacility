@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -92,6 +92,7 @@ angular.module("RIF")
             $scope.input.center = CompAreaStateService.getState().center;
             $scope.input.geography = CompAreaStateService.getState().geography;
             $scope.input.transparency = CompAreaStateService.getState().transparency;
+            $scope.input.showSwitch = false;
             $scope.input.bands = [1];
 
             $scope.close = function () {

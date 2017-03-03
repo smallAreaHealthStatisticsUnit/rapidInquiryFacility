@@ -132,3 +132,29 @@ md-select-label img {
 .md-select-menu-container {
     z-index: 99999999;
 }
+
+
+/* SWITCH FOR STUDY TYPE*/
+
+
+
+
+md-switch.md-checked .md-bar {
+    background-color: #337ab7 !important;
+}
+md-switch.md-default-theme .md-bar, md-switch .md-bar {
+    background-color: #337ab7;
+}
+md-switch.md-default-theme.md-checked.md-warn .md-thumb, md-switch.md-checked.md-warn .md-thumb {
+    background-color: #fff;
+}
+md-switch.md-default-theme.md-checked.md-warn .md-ink-ripple, md-switch.md-checked.md-warn .md-ink-ripple {
+    color: #fff;
+}
+md-switch span {
+    color:#848484;
+    font-size: 1.5em;
+}
+md-switch .md-container {
+    cursor: pointer;
+}

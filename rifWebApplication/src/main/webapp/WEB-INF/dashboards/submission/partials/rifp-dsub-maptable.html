@@ -41,19 +41,25 @@ Used by rifd-dsub-maptable.js
 -->
 
 <div class='modalAreaSelectionMenu'>
-    <div id='selectAtSelection' class='styleUnderline dropdowns availablesWrapper'>
+    <div id = "maptableLeft">
+        <button class="mapListButton" ng-click="openFromList()">Upload from List</button>
+    </div>
+    <div ng-show="input.showSwitch" id="maptableRight">
+        <md-switch id="studySwitch" ng-model="input.type" ng-init="input.type" aria-label="Switch 2" ng-true-value="'Disease Mapping'" 
+                   ng-false-value="'Risk Mapping'" class="md-warn" ng-change="studyTypeChanged()">
+            {{input.type}}
+        </md-switch>
+    </div>
+    <div id = "maptableDrop1">
         <select type="text" ng-model="input.studyResolution" id='selectAt' class='dropdownSelect' ng-options="l for l in geoLevelsViews"></select>
         <div class="dropDownLabel">Resolution of Results</div>
-        <div id='selectAtAvailable' class='availables'></div>
     </div>
-    <div id='resolutionSelection' class="styleUnderline dropdowns availablesWrapper">
+    <div id = "maptableDrop2">
         <select type="text" ng-model="input.selectAt" id='resolution' class='dropdownSelect' ng-options="l for l in geoLevels" ng-change="geoLevelChange()"></select>
         <div class="dropDownLabel">Selection Resolution</div>
-        <div id='resolutionAvailable' class='availables'></div>
-    </div> 
+    </div>
 </div>  
 
-<button class="mapListButton" ng-click="openFromList()">Upload from List</button>
 <div class='modalAreaSelectionContent'>
     <div ng-controller="MultiSelectCtrl">
         <div ng-if="!refresh" class="grid" ng-mouseleave="mouseleave($event)" ui-grid="gridOptions" ui-grid-selection ui-grid-resize-columns></div>

@@ -69,6 +69,7 @@ angular.module("RIF")
                                 //Attributions to open in new window
                                 map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                                 map.doubleClickZoom.disable();
+                                map.band = Math.max.apply(null, $scope.possibleBands);
                             });
                         });
                         /*
@@ -94,6 +95,7 @@ angular.module("RIF")
                         $scope.currentBand = 1; //from dropdown
                         //d3 polygon rendering, changed by slider
                         $scope.transparency = $scope.input.transparency;
+                                                                  
                         /*
                          * TOOL STRIP
                          */
@@ -146,6 +148,27 @@ angular.module("RIF")
                                     map.addLayer(centroidMarkers);
                                 }
                             });
+                        };
+
+                        /*
+                         * DISEASE MAPPING OR RISK MAPPING
+                         */                       
+                        $scope.studyTypeChanged = function () {
+                            //clear selection
+                            $scope.clear();
+                            //offer the correct number of bands
+                            if ($scope.input.type === "Risk Mapping") {
+                                $scope.possibleBands = [1, 2, 3, 4, 5, 6];
+                                leafletData.getMap("area").then(function (map) {
+                                    map.band = 6;
+                                });
+                            } else {
+                                $scope.possibleBands = [1];
+                                $scope.currentBand = 1;
+                                leafletData.getMap("area").then(function (map) {
+                                    map.band = 1;
+                                });
+                            }
                         };
 
                         /*
@@ -397,7 +420,7 @@ angular.module("RIF")
                          */
                         //Add Leaflet.Draw capabilities
                         var drawnItems;
-                        LeafletDrawService.getCircleCapability(Math.max.apply(null, $scope.possibleBands));
+                        LeafletDrawService.getCircleCapability();
                         LeafletDrawService.getPolygonCapability();
                         //Add Leaflet.Draw toolbar
                         leafletData.getMap("area").then(function (map) {

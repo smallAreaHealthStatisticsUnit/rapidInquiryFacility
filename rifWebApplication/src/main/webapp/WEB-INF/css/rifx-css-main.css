@@ -817,6 +817,29 @@ select {
     margin-left: 2%;
 }
 
+#maptableLeft {
+    float:left;
+    width:34%;
+}
+#maptableRight {
+    float:right;
+    width:22%;
+}
+#studySwitch {
+    margin-left: 20%;
+    margin-top: 5%;
+}
+#maptableDrop1 {
+    width:22%;
+    display: inline-block;
+    padding-right:2%;
+}
+#maptableDrop2 {
+    width:22%;
+    display: inline-block;
+    padding-right:2%;
+}
+
 input[type="text"].dropdownInput {
     padding: 0px;
     width: 100%;
@@ -1291,9 +1314,6 @@ textarea.description {
 }
 
 .mapListButton {
-    position: absolute;
-    left: 2%;
-    top: 2%;
     padding: 10px;
     -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
     -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;

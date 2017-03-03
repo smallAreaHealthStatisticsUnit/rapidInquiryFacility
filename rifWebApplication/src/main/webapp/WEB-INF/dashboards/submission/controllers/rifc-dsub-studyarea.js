@@ -84,6 +84,7 @@ angular.module("RIF")
                         StudyAreaStateService.getState().center = input.center;
                         StudyAreaStateService.getState().geography = input.geography;
                         StudyAreaStateService.getState().transparency = input.transparency;
+                        StudyAreaStateService.getState().type = input.type;
                     });
                 };
             }])
@@ -95,8 +96,14 @@ angular.module("RIF")
             $scope.input.studyResolution = StudyAreaStateService.getState().studyResolution;
             $scope.input.center = StudyAreaStateService.getState().center;
             $scope.input.geography = StudyAreaStateService.getState().geography;
-            $scope.input.transparency = StudyAreaStateService.getState().transparency;
-            $scope.input.bands = [1, 2, 3, 4, 5, 6];
+            $scope.input.transparency = StudyAreaStateService.getState().transparency;  
+            $scope.input.showSwitch = true;
+            $scope.input.type = StudyAreaStateService.getState().type; 
+            if ($scope.input.type === "Risk Mapping") {
+                $scope.input.bands = [1, 2, 3, 4, 5, 6];
+            } else {
+                $scope.input.bands = [1];
+            }
 
             $scope.close = function () {
                 $uibModalInstance.dismiss();

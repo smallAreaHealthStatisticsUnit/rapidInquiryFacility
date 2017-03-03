@@ -66,7 +66,7 @@ Disease submission modal investigation parameters (tree #3)
                                 </div>
                                 <div class="pbox">
                                     <div class="pboxLabel">Investigation Name</div>
-                                    <input type="text" class="pboxName" ng-model="title">
+                                    <input type="text" class="pboxName" ng-pattern-restrict="^[A-Za-z0-9]*$" ng-model="title">
                                 </div>
                                 <div class="pbox">
                                     <div class="pboxLabel">Covariates</div>

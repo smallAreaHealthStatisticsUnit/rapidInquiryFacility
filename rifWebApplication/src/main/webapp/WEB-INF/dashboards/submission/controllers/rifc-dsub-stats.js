@@ -56,7 +56,7 @@ angular.module("RIF")
                                 }
                                 myModel.push(params);
                             }
-                            StatsStateService.getState().model = myModel; //default parameters
+                            StatsStateService.getState().model = myModel; 
                             StatsStateService.getState().methods = res.data;
                         }
                     } catch (e) {
