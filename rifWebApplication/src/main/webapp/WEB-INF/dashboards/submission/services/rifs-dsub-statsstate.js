@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -52,22 +52,27 @@ angular.module("RIF")
                         },
                         getModelStats: function () {
                             if (s.checked < 0) {
-                                return {};
+                                return {
+                                    "name": "NONE",
+                                    "code_routine_name": "NONE",
+                                    "description": "No additional Bayesian Smoothing",
+                                    "parameters": {"parameter": []}
+                                };
                             }
                             var method = {
                                 "name": "",
                                 "code_routine_name": "",
                                 "description": "",
                                 "parameters": ""
-                            };                           
+                            };
                             method.name = s.methods[s.checked].codeRoutineName;
                             method.code_routine_name = s.methods[s.checked].codeRoutineName;
-                            method.description = s.methods[s.checked].description;                          
+                            method.description = s.methods[s.checked].description;
                             var tmp = [];
                             for (var i = 0; i < s.model[s.checked].length; i++) {
                                 tmp.push({"name": s.methods[s.checked].parameterProxies[i].name, "value": s.model[s.checked][i]});
-                            }                           
-                            method.parameters = {"parameter": tmp};                        
+                            }
+                            method.parameters = {"parameter": tmp};
                             return method;
                         }
                     };

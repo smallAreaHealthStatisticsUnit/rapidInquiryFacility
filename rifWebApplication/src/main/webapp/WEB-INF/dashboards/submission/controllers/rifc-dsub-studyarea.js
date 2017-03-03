@@ -99,7 +99,7 @@ angular.module("RIF")
             $scope.input.transparency = StudyAreaStateService.getState().transparency;  
             $scope.input.showSwitch = true;
             $scope.input.type = StudyAreaStateService.getState().type; 
-            if ($scope.input.type === "Risk Mapping") {
+            if ($scope.input.type === "Risk Analysis") {
                 $scope.input.bands = [1, 2, 3, 4, 5, 6];
             } else {
                 $scope.input.bands = [1];

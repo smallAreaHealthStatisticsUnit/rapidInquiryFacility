@@ -157,7 +157,7 @@ angular.module("RIF")
                             //clear selection
                             $scope.clear();
                             //offer the correct number of bands
-                            if ($scope.input.type === "Risk Mapping") {
+                            if ($scope.input.type === "Risk Analysis") {
                                 $scope.possibleBands = [1, 2, 3, 4, 5, 6];
                                 leafletData.getMap("area").then(function (map) {
                                     map.band = 6;

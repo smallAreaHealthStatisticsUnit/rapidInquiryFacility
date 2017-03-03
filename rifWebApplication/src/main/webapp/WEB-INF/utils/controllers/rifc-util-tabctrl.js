@@ -48,7 +48,7 @@ angular.module("RIF")
                 $scope.studyIds;
 
                 //In DEBUG set false to keep Tomcat console clear
-                var bPoll = true;
+                var bPoll = false;
 
                 stop = $interval(function () {
                     if (bPoll) {

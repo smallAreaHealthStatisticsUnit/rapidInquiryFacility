@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -238,17 +238,18 @@ angular.module("RIF")
                     //Statistics
                     project += '<header>Statistics</header>';
                     var statistics = modelJSON.rif_job_submission.calculation_methods.calculation_method;
-                    if (!angular.isUndefined(statistics.code_routine_name)) {
-                        project += '<section>Calculation Method:</section>' + _getAttr(statistics.code_routine_name);
-                        var statParams = "";
-                        for (var i = 0; i < statistics.parameters.parameter.length; i++) {
-                            statParams += statistics.parameters.parameter[i].name + ": " +
-                                    statistics.parameters.parameter[i].value + "; ";
-                        }
-                        statParams = statParams.substring(0, statParams.length - 2);
-                        project += '<section>Parameters:</section>' + _getAttr(statParams);
-                    }
+                    project += '<section>Calculation Method:</section>' + _getAttr(statistics.code_routine_name);
 
+                    //AT PRESENT USER DOES NOT SUPPLY ANY PARAMETERS FOR SMOOTHING SCRIPT
+                    /*
+                     var statParams = "";
+                     for (var i = 0; i < statistics.parameters.parameter.length; i++) {
+                     statParams += statistics.parameters.parameter[i].name + ": " +
+                     statistics.parameters.parameter[i].value + "; ";
+                     }
+                     statParams = statParams.substring(0, statParams.length - 2);
+                     project += '<section>Parameters:</section>' + _getAttr(statParams);
+                     */
                     //Output
                     //DEPRECIATED?
 //                    project += '<header>Output Options</header>';

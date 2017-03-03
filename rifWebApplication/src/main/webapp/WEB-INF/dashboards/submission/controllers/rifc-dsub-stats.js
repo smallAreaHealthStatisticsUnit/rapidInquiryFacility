@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -56,7 +56,7 @@ angular.module("RIF")
                                 }
                                 myModel.push(params);
                             }
-                            StatsStateService.getState().model = myModel; 
+                            StatsStateService.getState().model = myModel;
                             StatsStateService.getState().methods = res.data;
                         }
                     } catch (e) {
@@ -88,7 +88,6 @@ angular.module("RIF")
                             $scope.tree = false;
                         }
                         StatsStateService.getState().checked = input.checked;
-                        StatsStateService.getState().model = input.model;
                     });
                 };
             }])

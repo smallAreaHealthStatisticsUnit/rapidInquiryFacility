@@ -43,7 +43,7 @@ angular.module("RIF")
                         comparisonTree: false,
                         investigationTree: false,
                         statsTree: false,
-                        studyName: "MY RIF STUDY", //1
+                        studyName: "", //1
                         healthTheme: "", //2
                         geography: "SAHSU", //3
                         numerator: "", //4

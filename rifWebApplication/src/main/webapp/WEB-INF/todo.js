@@ -10,7 +10,7 @@
  * 
  * -- Get centroids from the database in study area
  * 
- * -- scoping for risk mapping
+ * -- scoping for risk analysis
  * 
  * -- bundle libraries for private network
  * 
