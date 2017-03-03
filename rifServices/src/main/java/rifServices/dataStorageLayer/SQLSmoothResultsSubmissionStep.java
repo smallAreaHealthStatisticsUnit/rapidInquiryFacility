@@ -224,6 +224,10 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 		//This just takes the first covariate of the first investigation and returns its name.  That's the one we will
 		//assume will appear in the extract table.  Note though that this needs to be changed in future because at the 
 		//moment our model accommodates multiple covariates in multiple investigations.
+		if (covariates.isEmpty()) {
+			return "NONE";
+		}
+
 		String covariateName
 			= covariates.get(0).getName();
 		return covariateName;
