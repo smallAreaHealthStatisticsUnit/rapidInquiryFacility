@@ -928,8 +928,9 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 
 #### 6th to 10th March
 
-* rif40_GetAdjacencyMatrix.sql: change ST_Touches() to ST_Intersects() to fix missing adjacencies caused by small slivers. Impact on sahsuland:
+* rif40_GetAdjacencyMatrix.sql: change ST_Touches() to ST_Intersects() to fix missing adjacencies caused by small slivers. Impact on sahsuland/USA to county level geographies:
   * Level 2:
+  
 	```  
 	 areaid | areaname | num_adjacencies | extra_intersects |              adjacency_list
 	--------+----------+-----------------+------------------+-------------------------------------------
@@ -937,7 +938,9 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 	 01.005 |          |               4 |                1 | 01.001,01.004,01.006,01.009
 	 01.008 |          |               5 |                1 | 01.003,01.004,01.007,01.009,01.011
 	```
+	
   * Level 3:
+  
 	```
 	(3 rows)
 		areaid     |   areaname    | num_adjacencies | extra_intersects |                                                                                    adjacency_list
@@ -946,8 +949,11 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 	 01.015.016200 | 01.015.016200 |              13 |                1 | 01.007.012500,01.013.016200,01.013.016800,01.014.018000,01.014.018100,01.014.018300,01.014.018500,01.014.018600,01.015.016900,01.016.017000,01.017.019000,01.018.019100,01.018.019500
 	(2 rows)
 	```
+	
   * Level 4: none
+  
   * USA at state level none:
+  
 	```
 	WITH a AS (
 		SELECT a1.areaid, 
@@ -1031,7 +1037,9 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 	| West Virginia                                |               5 |               0 | Kentucky,Maryland,Ohio,Pennsylvania,Virginia                                   |
 	| Wisconsin                                    |               4 |               0 | Illinois,Iowa,Michigan,Minnesota                                               |
 	| Wyoming                                      |               6 |               0 | Colorado,Idaho,Montana,Nebraska,South Dakota,Utah                              |
+	
    * USA County level:
+   
 	```   
 	  areaid  |   areaname   | num_adjacencies | extra_intersects |                            adjacency_list
 	----------+--------------+-----------------+------------------+-----------------------------------------------------------------------
