@@ -948,66 +948,116 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 ```
   * Level 4: none
   * USA at state level none:
+```
+WITH a AS (
+	SELECT a1.areaid, 
+	       a2.areaid AS adjacent_area_id, 
+		   ST_Touches(a1.geom, a2.geom) AS touches,
+		   ST_Intersects(a1.geom, a2.geom) AS intersects
+      FROM geometry_usa_2014_geolevel_id_2_zoomlevel_9 a1, geometry_usa_2014_geolevel_id_2_zoomlevel_9 a2 
+     WHERE ST_Touches(a1.geom, a2.geom) OR ST_Intersects(a1.geom, a2.geom)
+	   AND a1.areaid != a2.areaid
+), b AS (
+	SELECT a.*, b1.areaname, b2.areaname AS adjacent_areaname
+	  FROM a
+		LEFT OUTER JOIN lookup_cb_2014_us_state_500k b1 ON (a.areaid = b1.cb_2014_us_state_500k)
+		LEFT OUTER JOIN lookup_cb_2014_us_state_500k b2 ON (a.adjacent_area_id = b2.cb_2014_us_state_500k)
+)
+SELECT a.cb_2014_us_state_500k AS areaid, a.areaname, 
+	   COUNT(b.areaid)::INTEGER AS num_adjacencies, 
+	   SUM(COALESCE(b.intersects::INTEGER, 0)) - SUM(COALESCE(b.touches::INTEGER, 0)) AS extra_intersects, 
+	   string_agg(b.adjacent_areaname, ',' ORDER BY b.adjacent_areaname)::VARCHAR AS adjacency_list
+  FROM lookup_cb_2014_us_state_500k a 
+		LEFT OUTER JOIN b ON (a.cb_2014_us_state_500k = b.areaid)
+ GROUP BY a.cb_2014_us_state_500k, a.areaname
+ ORDER BY a.areaname;
+```  
   
-|                   areaname                   | num_adjacencies | exta_intersects |                                 adjacency_list
-+----------------------------------------------+-----------------+-----------------+--------------------------------------------------------------------------------
-| Alabama                                      |               4 |               0 | Florida,Georgia,Mississippi,Tennessee
-| Alaska                                       |               0 |               0 |
-| American Samoa                               |               0 |               0 |
-| Arizona                                      |               5 |               0 | California,Colorado,Nevada,New Mexico,Utah
-| Arkansas                                     |               6 |               0 | Louisiana,Mississippi,Missouri,Oklahoma,Tennessee,Texas
-| California                                   |               3 |               0 | Arizona,Nevada,Oregon
-| Colorado                                     |               7 |               0 | Arizona,Kansas,Nebraska,New Mexico,Oklahoma,Utah,Wyoming
-| Commonwealth of the Northern Mariana Islands |               0 |               0 |
-| Connecticut                                  |               3 |               0 | Massachusetts,New York,Rhode Island
-| Delaware                                     |               3 |               0 | Maryland,New Jersey,Pennsylvania
-| District of Columbia                         |               2 |               0 | Maryland,Virginia
-| Florida                                      |               2 |               0 | Alabama,Georgia
-| Georgia                                      |               5 |               0 | Alabama,Florida,North Carolina,South Carolina,Tennessee
-| Guam                                         |               0 |               0 |
-| Hawaii                                       |               0 |               0 |
-| Idaho                                        |               6 |               0 | Montana,Nevada,Oregon,Utah,Washington,Wyoming
-| Illinois                                     |               5 |               0 | Indiana,Iowa,Kentucky,Missouri,Wisconsin
-| Indiana                                      |               4 |               0 | Illinois,Kentucky,Michigan,Ohio
-| Iowa                                         |               6 |               0 | Illinois,Minnesota,Missouri,Nebraska,South Dakota,Wisconsin
-| Kansas                                       |               4 |               0 | Colorado,Missouri,Nebraska,Oklahoma
-| Kentucky                                     |               7 |               0 | Illinois,Indiana,Missouri,Ohio,Tennessee,Virginia,West Virginia
-| Louisiana                                    |               3 |               0 | Arkansas,Mississippi,Texas
-| Maine                                        |               1 |               0 | New Hampshire
-| Maryland                                     |               5 |               0 | Delaware,District of Columbia,Pennsylvania,Virginia,West Virginia
-| Massachusetts                                |               5 |               0 | Connecticut,New Hampshire,New York,Rhode Island,Vermont
-| Michigan                                     |               3 |               0 | Indiana,Ohio,Wisconsin
-| Minnesota                                    |               4 |               0 | Iowa,North Dakota,South Dakota,Wisconsin
-| Mississippi                                  |               4 |               0 | Alabama,Arkansas,Louisiana,Tennessee
-| Missouri                                     |               8 |               0 | Arkansas,Illinois,Iowa,Kansas,Kentucky,Nebraska,Oklahoma,Tennessee
-| Montana                                      |               4 |               0 | Idaho,North Dakota,South Dakota,Wyoming
-| Nebraska                                     |               6 |               0 | Colorado,Iowa,Kansas,Missouri,South Dakota,Wyoming
-| Nevada                                       |               5 |               0 | Arizona,California,Idaho,Oregon,Utah
-| New Hampshire                                |               3 |               0 | Maine,Massachusetts,Vermont
-| New Jersey                                   |               3 |               0 | Delaware,New York,Pennsylvania
-| New Mexico                                   |               5 |               0 | Arizona,Colorado,Oklahoma,Texas,Utah
-| New York                                     |               5 |               0 | Connecticut,Massachusetts,New Jersey,Pennsylvania,Vermont
-| North Carolina                               |               4 |               0 | Georgia,South Carolina,Tennessee,Virginia
-| North Dakota                                 |               3 |               0 | Minnesota,Montana,South Dakota
-| Ohio                                         |               5 |               0 | Indiana,Kentucky,Michigan,Pennsylvania,West Virginia
-| Oklahoma                                     |               6 |               0 | Arkansas,Colorado,Kansas,Missouri,New Mexico,Texas
-| Oregon                                       |               4 |               0 | California,Idaho,Nevada,Washington
-| Pennsylvania                                 |               6 |               0 | Delaware,Maryland,New Jersey,New York,Ohio,West Virginia
-| Puerto Rico                                  |               0 |               0 |
-| Rhode Island                                 |               2 |               0 | Connecticut,Massachusetts
-| South Carolina                               |               2 |               0 | Georgia,North Carolina
-| South Dakota                                 |               6 |               0 | Iowa,Minnesota,Montana,Nebraska,North Dakota,Wyoming
-| Tennessee                                    |               8 |               0 | Alabama,Arkansas,Georgia,Kentucky,Mississippi,Missouri,North Carolina,Virginia
-| Texas                                        |               4 |               0 | Arkansas,Louisiana,New Mexico,Oklahoma
-| United States Virgin Islands                 |               0 |               0 |
-| Utah                                         |               6 |               0 | Arizona,Colorado,Idaho,Nevada,New Mexico,Wyoming
-| Vermont                                      |               3 |               0 | Massachusetts,New Hampshire,New York
-| Virginia                                     |               6 |               0 | District of Columbia,Kentucky,Maryland,North Carolina,Tennessee,West Virginia
-| Washington                                   |               2 |               0 | Idaho,Oregon
-| West Virginia                                |               5 |               0 | Kentucky,Maryland,Ohio,Pennsylvania,Virginia
-| Wisconsin                                    |               4 |               0 | Illinois,Iowa,Michigan,Minnesota
-| Wyoming                                      |               6 |               0 | Colorado,Idaho,Montana,Nebraska,South Dakota,Utah
+|                   areaname                   | num_adjacencies | exta_intersects |                                 adjacency_list                                 |
+|----------------------------------------------|-----------------|-----------------|--------------------------------------------------------------------------------|
+| Alabama                                      |               4 |               0 | Florida,Georgia,Mississippi,Tennessee                                          |
+| Alaska                                       |               0 |               0 |                                                                                |
+| American Samoa                               |               0 |               0 |                                                                                |  
+| Arizona                                      |               5 |               0 | California,Colorado,Nevada,New Mexico,Utah                                     |
+| Arkansas                                     |               6 |               0 | Louisiana,Mississippi,Missouri,Oklahoma,Tennessee,Texas                        |
+| California                                   |               3 |               0 | Arizona,Nevada,Oregon                                                          |
+| Colorado                                     |               7 |               0 | Arizona,Kansas,Nebraska,New Mexico,Oklahoma,Utah,Wyoming                       |
+| Commonwealth of the Northern Mariana Islands |               0 |               0 |                                                                                |  
+| Connecticut                                  |               3 |               0 | Massachusetts,New York,Rhode Island                                            |
+| Delaware                                     |               3 |               0 | Maryland,New Jersey,Pennsylvania                                               |
+| District of Columbia                         |               2 |               0 | Maryland,Virginia                                                              |
+| Florida                                      |               2 |               0 | Alabama,Georgia                                                                |
+| Georgia                                      |               5 |               0 | Alabama,Florida,North Carolina,South Carolina,Tenness                          |
+| Guam                                         |               0 |               0 |                                                                                |  
+| Hawaii                                       |               0 |               0 |                                                                                |  
+| Idaho                                        |               6 |               0 | Montana,Nevada,Oregon,Utah,Washington,Wyoming                                  |
+| Illinois                                     |               5 |               0 | Indiana,Iowa,Kentucky,Missouri,Wisconsin                                       |
+| Indiana                                      |               4 |               0 | Illinois,Kentucky,Michigan,Ohio                                                |
+| Iowa                                         |               6 |               0 | Illinois,Minnesota,Missouri,Nebraska,South Dakota,Wisconsin                    |
+| Kansas                                       |               4 |               0 | Colorado,Missouri,Nebraska,Oklahoma                                            |
+| Kentucky                                     |               7 |               0 | Illinois,Indiana,Missouri,Ohio,Tennessee,Virginia,West Virginia                |
+| Louisiana                                    |               3 |               0 | Arkansas,Mississippi,Texas                                                     |
+| Maine                                        |               1 |               0 | New Hampshire                                                                  |
+| Maryland                                     |               5 |               0 | Delaware,District of Columbia,Pennsylvania,Virginia,West Virginia              |
+| Massachusetts                                |               5 |               0 | Connecticut,New Hampshire,New York,Rhode Island,Vermont                        |
+| Michigan                                     |               3 |               0 | Indiana,Ohio,Wisconsin                                                         |
+| Minnesota                                    |               4 |               0 | Iowa,North Dakota,South Dakota,Wisconsin                                       |
+| Mississippi                                  |               4 |               0 | Alabama,Arkansas,Louisiana,Tennessee                                           |
+| Missouri                                     |               8 |               0 | Arkansas,Illinois,Iowa,Kansas,Kentucky,Nebraska,Oklahoma,Tennessee             |
+| Montana                                      |               4 |               0 | Idaho,North Dakota,South Dakota,Wyoming                                        |
+| Nebraska                                     |               6 |               0 | Colorado,Iowa,Kansas,Missouri,South Dakota,Wyoming                             |
+| Nevada                                       |               5 |               0 | Arizona,California,Idaho,Oregon,Utah                                           |
+| New Hampshire                                |               3 |               0 | Maine,Massachusetts,Vermont                                                    |
+| New Jersey                                   |               3 |               0 | Delaware,New York,Pennsylvania                                                 |
+| New Mexico                                   |               5 |               0 | Arizona,Colorado,Oklahoma,Texas,Utah                                           |
+| New York                                     |               5 |               0 | Connecticut,Massachusetts,New Jersey,Pennsylvania,Vermont                      |
+| North Carolina                               |               4 |               0 | Georgia,South Carolina,Tennessee,Virginia                                      |                                              |
+| North Dakota                                 |               3 |               0 | Minnesota,Montana,South Dakota                                                 |
+| Ohio                                         |               5 |               0 | Indiana,Kentucky,Michigan,Pennsylvania,West Virginia                           |
+| Oklahoma                                     |               6 |               0 | Arkansas,Colorado,Kansas,Missouri,New Mexico,Texas                             |
+| Oregon                                       |               4 |               0 | California,Idaho,Nevada,Washington                                             |
+| Pennsylvania                                 |               6 |               0 | Delaware,Maryland,New Jersey,New York,Ohio,West Virginia                       |
+| Puerto Rico                                  |               0 |               0 |                                                                                |  
+| Rhode Island                                 |               2 |               0 | Connecticut,Massachusetts                                                      |
+| South Carolina                               |               2 |               0 | Georgia,North Carolina                                                         |
+| South Dakota                                 |               6 |               0 | Iowa,Minnesota,Montana,Nebraska,North Dakota,Wyoming                           |
+| Tennessee                                    |               8 |               0 | Alabama,Arkansas,Georgia,Kentucky,Mississippi,Missouri,North Carolina,Virginia |
+| Texas                                        |               4 |               0 | Arkansas,Louisiana,New Mexico,Oklahoma                                         |
+| United States Virgin Islands                 |               0 |               0 |                                                                                |  
+| Utah                                         |               6 |               0 | Arizona,Colorado,Idaho,Nevada,New Mexico,Wyoming                               |
+| Vermont                                      |               3 |               0 | Massachusetts,New Hampshire,New York                                           |
+| Virginia                                     |               6 |               0 | District of Columbia,Kentucky,Maryland,North Carolina,Tennessee,West Virginia  |
+| Washington                                   |               2 |               0 | Idaho,Oregon                                                                   |
+| West Virginia                                |               5 |               0 | Kentucky,Maryland,Ohio,Pennsylvania,Virginia                                   |
+| Wisconsin                                    |               4 |               0 | Illinois,Iowa,Michigan,Minnesota                                               |
+| Wyoming                                      |               6 |               0 | Colorado,Idaho,Montana,Nebraska,South Dakota,Utah                              |
+   * USA County level:
+```   
+  areaid  |   areaname   | num_adjacencies | extra_intersects |                            adjacency_list
+----------+--------------+-----------------+------------------+-----------------------------------------------------------------------
+ 01710958 | Anne Arundel |               5 |                1 | Baltimore,Baltimore,Calvert,Howard,Prince George's
+ 01702381 | Baltimore    |               2 |                1 | Anne Arundel,Baltimore
+ 01696996 | Barbour      |               6 |                2 | Harrison,Preston,Randolph,Taylor,Tucker,Upshur
+ 01448018 | Carbon       |               6 |                2 | Duchesne,Emery,Grand,Sanpete,Uintah,Utah
+ 00347456 | Coffee       |               8 |                2 | Atkinson,Bacon,Ben Hill,Berrien,Irwin,Jeff Davis,Telfair,Ware
+ 00342918 | Crawford     |               7 |                2 | Bibb,Houston,Macon,Monroe,Peach,Taylor,Upson
+ 01448021 | Duchesne     |               6 |                2 | Carbon,Daggett,Summit,Uintah,Utah,Wasatch
+ 01687999 | Jeff Davis   |               7 |                2 | Appling,Bacon,Coffee,Montgomery,Telfair,Toombs,Wheeler
+ 00558088 | Madison      |               5 |                2 | East Carroll,Franklin,Richland,Tensas,Warren
+ 01383963 | Nueces       |               4 |                1 | Aransas,Jim Wells,Kleberg,San Patricio
+ 00343153 | Peach        |               4 |                2 | Crawford,Houston,Macon,Taylor
+ 01558642 | Preston      |               7 |                2 | Barbour,Fayette,Garrett,Grant,Monongalia,Taylor,Tucker
+ 01383990 | San Patricio |               6 |                1 | Aransas,Bee,Jim Wells,Live Oak,Nueces,Refugio
+ 00344156 | Taylor       |               7 |                2 | Crawford,Macon,Marion,Peach,Schley,Talbot,Upson
+ 00356958 | Telfair      |               6 |                2 | Ben Hill,Coffee,Dodge,Jeff Davis,Wheeler,Wilcox
+ 00559509 | Tensas       |               8 |                2 | Adams,Catahoula,Claiborne,Concordia,Franklin,Jefferson,Madison,Warren
+ 01689423 | Tucker       |               4 |                2 | Barbour,Grant,Preston,Randolph
+ 01448038 | Utah         |               7 |                2 | Carbon,Duchesne,Juab,Salt Lake,Sanpete,Tooele,Wasatch
+ 00695795 | Warren       |               7 |                2 | Claiborne,East Carroll,Hinds,Issaquena,Madison,Tensas,Yazoo
+(19 rows)
+```
 
+* A pre-built ajacency table is required for performance reasons.
 * SQL Server tile-vewer setup error handling
  
 #### Current TODO list (March 2017): SQL Server Port
@@ -1026,6 +1076,7 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 #### TileViewer TODO (defferred to May?):
  
 * Get fetch views to handle zoomlevel beyond max zoomlevel (returning the usual NULL geojson)
+* Pre=built ajancency tables: ajacency_<geography>; coluimns: areaid, ajacent_areaid, geolevel
 * Add tileid to tile topoJSON/GeoJSON; include in error messages; add version number 
   (yyyymmddhh24mi) for caching (i.e. there is no need to age them out if auto compaction is running)
 * Fix blank name properties
