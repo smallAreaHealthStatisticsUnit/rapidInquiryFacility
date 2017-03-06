@@ -140,7 +140,7 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 				
 			res.write(output);
 			res.end();	
-			serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "httpErrorResponse sent; size: " + output.length + " bytes", req);	
+			serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", "httpErrorResponse sent; size: " + output.length + " bytes: \nOutput: " + output, req);	
 		}
 		else { // Do not raise errors - likewise
 			serverLog.serverLog2(__file, __line, "httpErrorResponseAddStatusCallback", 
@@ -148,8 +148,11 @@ httpErrorResponse=function(file, line, calling_function, serverLog, status, req,
 		}						
 	} // End of httpErrorResponseAddStatusCallback()	
 					
-	try {			
+	try {		
 		if (g_response) {
+			if (g_response.sqlError) {
+				l_response.sqlError=g_response.sqlError;
+			}
 			l_response.no_files = g_response.no_files;
 			l_response.field_errors = g_response.field_errors;
 			l_response.file_errors = g_response.file_errors;

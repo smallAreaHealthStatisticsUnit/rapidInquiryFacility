@@ -304,7 +304,7 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 			else if (x.status == 500) {
 				msg+="Unable to " + methodDescription + "; internal server error";
 				if (response && response.message) {
-					msg+="<p>" + response.message + "</p>";
+					msg+="<pre>" + response.message + "</pre>";
 				}	
 				else if (response) {
 					msg+="<br><pre>Response: " + JSON.stringify(response, null, 4) + "</pre>";
@@ -329,8 +329,14 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 				msg+="Unable to " + methodDescription + "; unknown error: " + x.status + "<br><pre>No reponse text</pre>";
 			}
 			
-			if (e && e.message) {
-				errorPopup(msg + "<br><pre>" + e.message + "</pre>");
+			if (response.sqlError) {
+				consoleError("SQL Error: " + JSON.stringify(response.sqlError, null, 2));
+			}
+			if (response && response.diagnostic) {
+				errorPopup(msg, "<pre>" + response.diagnostic + "</pre>");
+			}
+			else if (e && e.message) {
+				errorPopup(msg, "<pre>" + e.message + "</pre>");
 			}
 			else {
 				errorPopup(msg);

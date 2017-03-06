@@ -300,7 +300,37 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 			err=new Error("getGeographiesErrorHandler(): No error defined");
 		}
 		var msg=err.message;
-		response.message+="\n" + err.message + "\n" + err.stack;
+		response.message+="\n" + err.message + "\n\n" + err.stack;
+		if (err.sql) {
+			response.message+="\n\nError SQL> " + err.sql + ";";
+		}
+		
+		response.sqlError = {
+			message: (err.nmessage||"no error message" + JSON.stringify(err)),
+			stack:   (err.stack||"no stack"),
+			sql: 	 (err.sql||"no SQL")
+		};
+		
+		// SQL Server variables
+		if (err.state) {
+			response.sqlError.state=err.state;
+		}
+		if (err.class) {
+			response.sqlError.state=err.class;
+		}
+		if (err.number) {
+			response.sqlError.state=err.number;
+		}
+		if (err.lineNumber) {
+			response.sqlError.state=err.lineNumber;
+		}
+		if (err.serverName) {
+			response.sqlError.state=err.serverName;
+		}
+		if (err.procName) {
+			response.sqlError.state=err.procName;
+		}
+		
 		try {
 			httpErrorResponse.httpErrorResponse(__file, __line, "getGeographies", 
 				serverLog, 500, req, res, msg, undefined /* Error: do not re-throw */, response);
@@ -330,7 +360,8 @@ getGeographies = function getGeographies(response, req, res, serverLog, httpErro
 		}
 		response.connectionError = {
 			message: "Unable to connect to " + (response.fields["databaseType"]||"unknown") + " database",
-			stack:   (err.stack||"no stack")
+			stack:   (err.stack||"no stack"),
+			sql: 	 (err.sql||"no SQL")
 		};
 		var msg=err.message;
 		response.geographies=undefined;	
@@ -459,18 +490,37 @@ function dbConnect(response, dbCallback, dbErrorHandler, connectionErrorHandler)
 " WHERE user_access  = 0\n" + 
 "   AND is_read_only = 0\n" + 
 "   AND state_desc   = 'ONLINE'\n" + 
-"   AND name NOT IN ('tempdb', 'master', 'model', 'msdb')";
+"   AND has_dbaccess(name) = 1\n" +
+"   AND NOT (name IN ('tempdb', 'master', 'model', 'msdb') OR (name LIKE 'ReportServer%'))";
 				var query=dbRequest.query(sql, function getAllGeographiesTables(err, result) {
 					if (err) {
-						var nerr=new Error(response.fields["databaseType"] + " database: " + p_database + "; error: " + err.message + "\nin SQL> " + sql +";");
-						nerr.stack=err.stack;
+						var message="getAllGeographiesTables() " + response.fields["databaseType"] + " database: " + p_database + 
+							"\nError: " + err.message + "\nin SQL> " + sql +";";
+						var nerr=clone(err);
+						nerr.message=err.message;
+						nerr.sql=sql||"Not available";
+						dbErrorHandler(nerr);	
+					}
+					else if (result.length == 0) {
+						var nerr=new Error("getAllGeographiesTables() " + response.fields["databaseType"] + " database: " + p_database + 
+							"\nError: User has access to no databases with geospatial tables");
+						nerr.sql=sql||"Not available";
 						dbErrorHandler(nerr);	
 					}
 					else {
-						dbNamesList.push(result[0].default_db);
-						for (var i=0; i<result.length; i++) {
-							if (result[i].name != result[0].default_db) {
-								dbNamesList.push(result[i].name);
+						if (result[0].default_db != 'master') {
+							dbNamesList.push(result[0].default_db);
+							for (var i=0; i<result.length; i++) {
+								if (result[i].name != result[0].default_db) {
+									dbNamesList.push(result[i].name);
+								}
+							}
+						}
+						else {
+							for (var i=0; i<result.length; i++) {
+								if (result[i].name != 'master') {
+									dbNamesList.push(result[i].name);
+								}
 							}
 						}
 						dbCallback(
@@ -563,6 +613,7 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 			if (err) {
 				var nerr=new Error("Error: " + err.message + "\nin SQL> " + sql + ";");
 				nerr.stack=err.stack;
+				nerr.sql=sql||"Not available";
 				getMapTileErrorHandler(nerr);
 			}
 			else {
@@ -583,10 +634,11 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 						var nerr=new Error("Error: " + err.message + "\nJSON.parse(" + 
 							((topojson_string && topojson_string.substring(1, 30) || "Null string")) + ")");
 						nerr.stack=err.stack;
+						nerr.sql=sql||"Not available";
 						getMapTileErrorHandler(nerr);
 					}
 				}
-				response.message+="optimised_topojson: " +  result.rows[0].optimised_topojson.length;
+				response.message+="; optimised_topojson: " +  result.rows[0].optimised_topojson.length;
 				getMapTileResponse(response.result); // Replace with just geojson	
 			}		
 		} // End of pgGetMapTileFromDBQuery()
@@ -612,6 +664,7 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 			if (err) {
 				var nerr=new Error("Error: " + err.message + "\nin SQL> " + sql + ";");
 				nerr.stack=err.stack;
+				nerr.sql=sql||"Not available";
 				getMapTileErrorHandler(nerr);
 			}
 			else {
@@ -636,6 +689,7 @@ function getMapTileFromDB(databaseType, databaseName, dbRequest, getMapTileRespo
 						var nerr=new Error("Error: " + err.message + "\nJSON.parse(" + 
 							((topojson_string && topojson_string.substring(1, 30) || "Null string")) + ")");
 						nerr.stack=err.stack;
+						nerr.sql=sql||"Not available";
 						getMapTileErrorHandler(nerr);
 					}					
 				}
@@ -661,18 +715,18 @@ function getAllGeographies(databaseType, databaseNamesList, dbRequest, getAllGeo
 		dbRequest: dbRequest
 	});
 	var databaseName=databaseNamesList[0] || "Default";
-	
-	var sql="SELECT table_catalog, table_schema, table_name\n" + 
+	console.error("databaseNamesList: " + JSON.stringify(databaseNamesList));
+	var dbSql="SELECT table_catalog, table_schema, table_name\n" + 
 			"  FROM information_schema.columns\n" +
 			" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
 			"   AND column_name = 'tiletable'"; 	
 	if (databaseType == "MSSQLServer") { // May  need to check can access
-		sql="SELECT table_catalog, table_schema, table_name\n" + 
+		dbSql="SELECT table_catalog, table_schema, table_name\n" + 
 				"  FROM " + databaseNamesList[0] + ".information_schema.columns\n" +
 				" WHERE (table_name LIKE 'geography%' OR table_name = 'rif40_geographies')\n" + 
 				"   AND column_name = 'tiletable'"; 
 		for (var i=1; i<databaseNamesList.length; i++) {
-			sql+="\n" + 
+			dbSql+="\n" + 
 				"UNION\n" + 
 				"SELECT table_catalog, table_schema, table_name\n" + 
 				"  FROM " + databaseNamesList[i] + ".information_schema.columns\n" +
@@ -680,11 +734,14 @@ function getAllGeographies(databaseType, databaseNamesList, dbRequest, getAllGeo
 				"   AND column_name = 'tiletable'"; 
 		} 		
 	} 
+	var sql=dbSql;
 	
-	var query=dbRequest.query(sql, function getAllGeographiesTables(err, sqlResult) {
+	var query=dbRequest.query(sql, function getAllGeographiesTables(err, sqlResult, sql) {
 		if (err) {
-			var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
-			nerr.stack=err.stack;
+			var message="getAllGeographiesTables() " + databaseType + " database: " + databaseName + "\nError: " + err.message;
+			var nerr=clone(err);
+			nerr.message=err.message;
+			nerr.sql=sql||dbSql||"Not available";
 			getGeographiesErrorHandler(nerr);	
 		}
 		else {
@@ -737,8 +794,9 @@ function getAllGeographies(databaseType, databaseNamesList, dbRequest, getAllGeo
 	
 			var query=dbRequest.query(sql, function getAllGeographiesResult(err, sqlResult) {
 				if (err) {
-					var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
+					var nerr=new Error(databaseType + " database: " + databaseName + "\nError: " + err.message + "\nin SQL> " + sql +";");
 					nerr.stack=err.stack;
+					nerr.sql=sql||"Not available";
 					getGeographiesErrorHandler(nerr);	
 				}
 				else {
@@ -760,7 +818,7 @@ function getAllGeographies(databaseType, databaseNamesList, dbRequest, getAllGeo
 							else {
 								geolevelsTable='geolevels_' + geographies[i].geography.toLowerCase();
 							}
-							sql="SELECT geolevel_id, geolevel_name, description, areaid_count\n" + 
+							var sql="SELECT geolevel_id, geolevel_name, description, areaid_count\n" + 
 							    "  FROM " + geographies[i].table_catalog + "." + 
 									geographies[i].table_schema + "." + geolevelsTable + "\n" +
 								" WHERE geography = '" + geographies[i].geography + "'\n" +
@@ -770,6 +828,7 @@ function getAllGeographies(databaseType, databaseNamesList, dbRequest, getAllGeo
 								if (err) {
 									var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
 									nerr.stack=err.stack;
+									nerr.sql=sql||"Not available";
 									getGeographiesErrorHandler(nerr);	
 								}
 								else {
@@ -790,6 +849,7 @@ function getAllGeographies(databaseType, databaseNamesList, dbRequest, getAllGeo
 							if (err) {
 								var nerr=new Error(databaseType + " database: " + databaseName + "; error: " + err.message + "\nin SQL> " + sql +";");
 								nerr.stack=err.stack;
+								nerr.sql=sql||"Not available";
 								getGeographiesErrorHandler(nerr);
 							}
 							else {
