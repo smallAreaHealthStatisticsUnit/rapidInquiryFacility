@@ -69,6 +69,7 @@
      * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
      * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
   5. Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
+  6. rif40_GetAdjacencyMatrix.sql: change ST_Touches() to ST_Intersects() to fix missing adjacencies caused by small slivers
 
  */
 BEGIN;
@@ -139,6 +140,13 @@ COMMENT ON COLUMN "rif40_projects"."date_started" IS 'Date project started';
 COMMENT ON COLUMN "rif40_projects"."description" IS 'Project description';
 COMMENT ON COLUMN "rif40_projects"."project" IS 'Project name';
 
+--
+-- 6. rif40_GetAdjacencyMatrix.sql: change ST_Touches() to ST_Intersects() to fix missing adjacencies caused by small slivers
+--
+\i ../PLpgsql/rif40_xml_pkg/rif40_GetAdjacencyMatrix.sql
+
+SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(1) LIMIT 10;
+ 
 --
 -- Testing stop
 --

@@ -925,7 +925,91 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
   https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md
 * Fixed private browsing mode issues
 * Support database (i.e. SQL Server not present)
+
+#### 6th to 10th March
+
+* rif40_GetAdjacencyMatrix.sql: change ST_Touches() to ST_Intersects() to fix missing adjacencies caused by small slivers. Impact on sahsuland:
+  * Level 2:
+```  
+ areaid | areaname | num_adjacencies | extra_intersects |              adjacency_list
+--------+----------+-----------------+------------------+-------------------------------------------
+ 01.004 |          |               6 |                2 | 01.001,01.002,01.003,01.005,01.008,01.009
+ 01.005 |          |               4 |                1 | 01.001,01.004,01.006,01.009
+ 01.008 |          |               5 |                1 | 01.003,01.004,01.007,01.009,01.011
+```
+  * Level 3:
+```
+(3 rows)
+    areaid     |   areaname    | num_adjacencies | extra_intersects |                                                                                    adjacency_list
+---------------+---------------+-----------------+------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 01.007.012500 | 01.007.012500 |               5 |                1 | 01.007.012300,01.007.012400,01.013.016100,01.013.016200,01.015.016200
+ 01.015.016200 | 01.015.016200 |              13 |                1 | 01.007.012500,01.013.016200,01.013.016800,01.014.018000,01.014.018100,01.014.018300,01.014.018500,01.014.018600,01.015.016900,01.016.017000,01.017.019000,01.018.019100,01.018.019500
+(2 rows)
+```
+  * Level 4: none
+  * USA at state level none:
   
+|                   areaname                   | num_adjacencies | exta_intersects |                                 adjacency_list
++----------------------------------------------+-----------------+-----------------+--------------------------------------------------------------------------------
+| Alabama                                      |               4 |               0 | Florida,Georgia,Mississippi,Tennessee
+| Alaska                                       |               0 |               0 |
+| American Samoa                               |               0 |               0 |
+| Arizona                                      |               5 |               0 | California,Colorado,Nevada,New Mexico,Utah
+| Arkansas                                     |               6 |               0 | Louisiana,Mississippi,Missouri,Oklahoma,Tennessee,Texas
+| California                                   |               3 |               0 | Arizona,Nevada,Oregon
+| Colorado                                     |               7 |               0 | Arizona,Kansas,Nebraska,New Mexico,Oklahoma,Utah,Wyoming
+| Commonwealth of the Northern Mariana Islands |               0 |               0 |
+| Connecticut                                  |               3 |               0 | Massachusetts,New York,Rhode Island
+| Delaware                                     |               3 |               0 | Maryland,New Jersey,Pennsylvania
+| District of Columbia                         |               2 |               0 | Maryland,Virginia
+| Florida                                      |               2 |               0 | Alabama,Georgia
+| Georgia                                      |               5 |               0 | Alabama,Florida,North Carolina,South Carolina,Tennessee
+| Guam                                         |               0 |               0 |
+| Hawaii                                       |               0 |               0 |
+| Idaho                                        |               6 |               0 | Montana,Nevada,Oregon,Utah,Washington,Wyoming
+| Illinois                                     |               5 |               0 | Indiana,Iowa,Kentucky,Missouri,Wisconsin
+| Indiana                                      |               4 |               0 | Illinois,Kentucky,Michigan,Ohio
+| Iowa                                         |               6 |               0 | Illinois,Minnesota,Missouri,Nebraska,South Dakota,Wisconsin
+| Kansas                                       |               4 |               0 | Colorado,Missouri,Nebraska,Oklahoma
+| Kentucky                                     |               7 |               0 | Illinois,Indiana,Missouri,Ohio,Tennessee,Virginia,West Virginia
+| Louisiana                                    |               3 |               0 | Arkansas,Mississippi,Texas
+| Maine                                        |               1 |               0 | New Hampshire
+| Maryland                                     |               5 |               0 | Delaware,District of Columbia,Pennsylvania,Virginia,West Virginia
+| Massachusetts                                |               5 |               0 | Connecticut,New Hampshire,New York,Rhode Island,Vermont
+| Michigan                                     |               3 |               0 | Indiana,Ohio,Wisconsin
+| Minnesota                                    |               4 |               0 | Iowa,North Dakota,South Dakota,Wisconsin
+| Mississippi                                  |               4 |               0 | Alabama,Arkansas,Louisiana,Tennessee
+| Missouri                                     |               8 |               0 | Arkansas,Illinois,Iowa,Kansas,Kentucky,Nebraska,Oklahoma,Tennessee
+| Montana                                      |               4 |               0 | Idaho,North Dakota,South Dakota,Wyoming
+| Nebraska                                     |               6 |               0 | Colorado,Iowa,Kansas,Missouri,South Dakota,Wyoming
+| Nevada                                       |               5 |               0 | Arizona,California,Idaho,Oregon,Utah
+| New Hampshire                                |               3 |               0 | Maine,Massachusetts,Vermont
+| New Jersey                                   |               3 |               0 | Delaware,New York,Pennsylvania
+| New Mexico                                   |               5 |               0 | Arizona,Colorado,Oklahoma,Texas,Utah
+| New York                                     |               5 |               0 | Connecticut,Massachusetts,New Jersey,Pennsylvania,Vermont
+| North Carolina                               |               4 |               0 | Georgia,South Carolina,Tennessee,Virginia
+| North Dakota                                 |               3 |               0 | Minnesota,Montana,South Dakota
+| Ohio                                         |               5 |               0 | Indiana,Kentucky,Michigan,Pennsylvania,West Virginia
+| Oklahoma                                     |               6 |               0 | Arkansas,Colorado,Kansas,Missouri,New Mexico,Texas
+| Oregon                                       |               4 |               0 | California,Idaho,Nevada,Washington
+| Pennsylvania                                 |               6 |               0 | Delaware,Maryland,New Jersey,New York,Ohio,West Virginia
+| Puerto Rico                                  |               0 |               0 |
+| Rhode Island                                 |               2 |               0 | Connecticut,Massachusetts
+| South Carolina                               |               2 |               0 | Georgia,North Carolina
+| South Dakota                                 |               6 |               0 | Iowa,Minnesota,Montana,Nebraska,North Dakota,Wyoming
+| Tennessee                                    |               8 |               0 | Alabama,Arkansas,Georgia,Kentucky,Mississippi,Missouri,North Carolina,Virginia
+| Texas                                        |               4 |               0 | Arkansas,Louisiana,New Mexico,Oklahoma
+| United States Virgin Islands                 |               0 |               0 |
+| Utah                                         |               6 |               0 | Arizona,Colorado,Idaho,Nevada,New Mexico,Wyoming
+| Vermont                                      |               3 |               0 | Massachusetts,New Hampshire,New York
+| Virginia                                     |               6 |               0 | District of Columbia,Kentucky,Maryland,North Carolina,Tennessee,West Virginia
+| Washington                                   |               2 |               0 | Idaho,Oregon
+| West Virginia                                |               5 |               0 | Kentucky,Maryland,Ohio,Pennsylvania,Virginia
+| Wisconsin                                    |               4 |               0 | Illinois,Iowa,Michigan,Minnesota
+| Wyoming                                      |               6 |               0 | Colorado,Idaho,Montana,Nebraska,South Dakota,Utah
+
+* SQL Server tile-vewer setup error handling
+ 
 #### Current TODO list (March 2017): SQL Server Port
 
 * Integrate geosptial and data loader data into sahsuland_dev, sahsuland

@@ -100,7 +100,7 @@ WITH b AS (
                    COUNT(d2.area_id) OVER(PARTITION BY d1.area_id ORDER BY d2.area_id) AS num_adjacencies
           FROM c d1, c d2
          WHERE d1.area_id       != d2.area_id
-           AND ST_Touches(d1.optimised_geometry, d2.optimised_geometry)
+           AND ST_Intersects(d1.optimised_geometry, d2.optimised_geometry)
 ), e AS (
         SELECT d.area_id::VARCHAR AS area_id, 
 		       COUNT(d.area_id)::INTEGER AS num_adjacencies, 
@@ -161,6 +161,8 @@ SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(1) LIMIT 10;
 	sql_stmt 		VARCHAR;
 --
 	error_message 	VARCHAR;
+	geometry_table 	VARCHAR;  /* #ASSUME: Pre tilemaker: no geometry table */
+--	
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
 --
@@ -202,7 +204,20 @@ BEGIN
 			c1_rec.study_geolevel_name::VARCHAR	/* Geolevel view */);
 	END IF;	
 --
-	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+	BEGIN
+		IF c2_rec.geometrytable IS NOT NULL THEN
+			geometry_table:=c2_rec.geometrytable;
+		END IF;
+	EXCEPTION	
+/*
+psql:alter_scripts/v4_0_alter_9.sql:148: ERROR:  record "c1_rec" has no field "geometrytable"
+CONTEXT:  SQL statement "SELECT c1_rec.geometrytable IS NULL"
+PL/pgSQL function rif40_xml_pkg.rif40_getadjacencymatrix(integer) line 202 at IF
+*/
+		WHEN others THEN NULL;
+	END;
+--		
+	IF geometry_table IS NULL THEN  /* Pre tilemaker: no geometry table */
 		sql_stmt:='WITH b AS ( /* Pre tilemaker: no geometry table */ '||E'\n'||
 '	SELECT area_id, band_id'||E'\n'||
 '	  FROM rif40_study_areas b1'||E'\n'||
@@ -219,7 +234,7 @@ BEGIN
 '		   COUNT(d2.area_id) OVER(PARTITION BY d1.area_id ORDER BY d2.area_id) AS num_adjacencies'||E'\n'||
 '	  FROM c d1, c d2'||E'\n'||
 '	 WHERE d1.area_id       != d2.area_id'||E'\n'||
-'	   AND ST_Touches(d1.optimised_geometry, d2.optimised_geometry)'||E'\n'||
+'	   AND ST_Intersects(d1.optimised_geometry, d2.optimised_geometry)'||E'\n'||
 '), e AS ('||E'\n'||
 '	SELECT d.area_id::VARCHAR AS area_id,'||E'\n'||
 '		   COUNT(d.area_id)::INTEGER AS num_adjacencies,'||E'\n'|| 
@@ -237,7 +252,7 @@ BEGIN
 '	 WHERE b1.study_id = $1'||E'\n'||
 '), c AS ('||E'\n'||
 '	SELECT b.area_id, b.band_id, c1.geom'||E'\n'||
-'	  FROM '||quote_ident(LOWER(c2_rec.geometrytable))||' c1, b'||E'\n'||
+'	  FROM '||quote_ident(LOWER(geometry_table))||' c1, b'||E'\n'||
 '    WHERE c1.geolevel_id   = $2'||E'\n'||
 '      AND c1.areaid        = b.area_id'||E'\n'||	  
 '	   AND c1.zoomlevel     = '||c2_rec.maxzoomlevel||'   /* max zoomlevel: Partition eliminate */'||E'\n'||	  
@@ -248,7 +263,7 @@ BEGIN
 '		   COUNT(d2.area_id) OVER(PARTITION BY d1.area_id ORDER BY d2.area_id) AS num_adjacencies'||E'\n'||
 '	  FROM c d1, c d2'||E'\n'||
 '	 WHERE d1.area_id       != d2.area_id'||E'\n'||
-'	   AND ST_Touches(d1.geom, d2.geom)'||E'\n'||
+'	   AND ST_Intersects(d1.geom, d2.geom)'||E'\n'||
 '), e AS ('||E'\n'||
 '	SELECT d.area_id::VARCHAR AS area_id,'||E'\n'||
 '		   COUNT(d.area_id)::INTEGER AS num_adjacencies,'||E'\n'|| 
@@ -266,7 +281,7 @@ BEGIN
 -- Execute
 --
 	BEGIN
-		IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
+		IF geometry_table IS NULL THEN /* Pre tilemaker: no geometry table */
 			RETURN QUERY EXECUTE sql_stmt USING c1_rec.study_id, c1_rec.study_geolevel_name;
 		ELSE
 			RETURN QUERY EXECUTE sql_stmt USING c1_rec.study_id, c3_rec.geolevel_id;
@@ -311,7 +326,7 @@ WITH b AS (
                    COUNT(d2.area_id) OVER(PARTITION BY d1.area_id ORDER BY d2.area_id) AS num_adjacencies
           FROM c d1, c d2
          WHERE d1.area_id       != d2.area_id
-           AND ST_Touches(d1.optimised_geometry, d2.optimised_geometry)
+           AND ST_Intersects(d1.optimised_geometry, d2.optimised_geometry)
 ), e AS (
         SELECT d.area_id::VARCHAR AS area_id, 
 		       COUNT(d.area_id)::INTEGER AS num_adjacencies, 
