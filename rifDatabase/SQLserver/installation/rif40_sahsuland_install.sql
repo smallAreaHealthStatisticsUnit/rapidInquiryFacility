@@ -48,6 +48,18 @@
 SET QUOTED_IDENTIFIER ON;
 -- SET STATISTICS TIME ON;
 
+--
+-- Check user is an adminstrator
+--
+GO
+DECLARE @CurrentUser sysname
+SELECT @CurrentUser = user_name(); 
+IF IS_SRVROLEMEMBER('sysadmin') = 1
+	PRINT 'User: ' + @CurrentUser + ' OK';
+ELSE
+	RAISERROR('User: %s is not an administrator.', 16, 1, @CurrentUser);
+GO
+
 /*
  * Run SQL scripts originally called in order from:
  *
@@ -74,17 +86,106 @@ rif40_drop_all_data.sql
 ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
 
  */
-:r ..\sahsuland_dev\rif40\sequences\recreate_all_sequences.sql
-:r rif40_drop_all_data.sql
-:r ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
-:r ..\sahsuland_dev\rif40\functions\recreate_all_functions.sql
-:r ..\sahsuland_dev\rif40\views\recreate_all_views.sql
-:r ..\sahsuland_dev\error_handling\recreate_error_handling_sahsuland_dev.sql
-:r ..\sahsuland_dev\rif40\table_triggers\recreate_table_triggers.sql
-:r ..\sahsuland_dev\rif40\view_triggers\recreate_view_triggers.sql
-:r rif40_import_sahsuland.sql
+ 
+DECLARE @CurrentDb sysname
+SELECT @CurrentDb = db_name(); 
+IF db_name() = 'sahsuland'
+	PRINT 'Database: ' + @CurrentDb + ' OK';
+ELSE
+	RAISERROR('Database: %s is not sahsuland.', 16, 1, @CurrentDb);
+GO
 
-PRINT 'All done: RIF40 create sahsuland_dev database objects and install data.';
+:r ..\sahsuland_dev\rif40\sequences\recreate_all_sequences.sql
+ 
+DECLARE @CurrentDb sysname
+SELECT @CurrentDb = db_name(); 
+IF db_name() = 'sahsuland'
+	PRINT 'Database: ' + @CurrentDb + ' OK';
+ELSE
+	RAISERROR('Database: %s is not sahsuland.', 16, 1, @CurrentDb);
+GO
+
+:r rif40_drop_all_data.sql
+ 
+DECLARE @CurrentDb sysname
+SELECT @CurrentDb = db_name(); 
+IF db_name() = 'sahsuland'
+	PRINT 'Database: ' + @CurrentDb + ' OK';
+ELSE
+	RAISERROR('Database: %s is not sahsuland.', 16, 1, @CurrentDb);
+GO
+
+:r ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
+ 
+DECLARE @CurrentDb sysname
+SELECT @CurrentDb = db_name(); 
+IF db_name() = 'sahsuland'
+	PRINT 'Database: ' + @CurrentDb + ' OK';
+ELSE
+	RAISERROR('Database: %s is not sahsuland.', 16, 1, @CurrentDb);
+GO
+
+:r ..\sahsuland_dev\rif40\functions\recreate_all_functions.sql
+ 
+DECLARE @CurrentDb sysname
+SELECT @CurrentDb = db_name(); 
+IF db_name() = 'sahsuland'
+	PRINT 'Database: ' + @CurrentDb + ' OK';
+ELSE
+	RAISERROR('Database: %s is not sahsuland.', 16, 1, @CurrentDb);
+GO
+
+:r ..\sahsuland_dev\rif40\views\recreate_all_views.sql
+ 
+DECLARE @CurrentDb sysname
+SELECT @CurrentDb = db_name(); 
+IF db_name() = 'sahsuland'
+	PRINT 'Database: ' + @CurrentDb + ' OK';
+ELSE
+	RAISERROR('Database: %s is not sahsuland.', 16, 1, @CurrentDb);
+GO
+
+:r ..\sahsuland_dev\error_handling\recreate_error_handling.sql
+ 
+DECLARE @CurrentDb sysname
+SELECT @CurrentDb = db_name(); 
+IF db_name() = 'sahsuland'
+	PRINT 'Database: ' + @CurrentDb + ' OK';
+ELSE
+	RAISERROR('Database: %s is not sahsuland.', 16, 1, @CurrentDb);
+GO
+
+:r ..\sahsuland_dev\rif40\table_triggers\recreate_table_triggers.sql
+ 
+DECLARE @CurrentDb sysname
+SELECT @CurrentDb = db_name(); 
+IF db_name() = 'sahsuland'
+	PRINT 'Database: ' + @CurrentDb + ' OK';
+ELSE
+	RAISERROR('Database: %s is not sahsuland.', 16, 1, @CurrentDb);
+GO
+
+:r ..\sahsuland_dev\rif40\view_triggers\recreate_view_triggers.sql
+ 
+DECLARE @CurrentDb sysname
+SELECT @CurrentDb = db_name(); 
+IF db_name() = 'sahsuland'
+	PRINT 'Database: ' + @CurrentDb + ' OK';
+ELSE
+	RAISERROR('Database: %s is not sahsuland.', 16, 1, @CurrentDb);
+GO
+
+:r rif40_import_sahsuland.sql
+ 
+DECLARE @CurrentDb sysname
+SELECT @CurrentDb = db_name(); 
+IF db_name() = 'sahsuland'
+	PRINT 'Database: ' + @CurrentDb + ' OK';
+ELSE
+	RAISERROR('Database: %s is not sahsuland.', 16, 1, @CurrentDb);
+GO
+
+PRINT 'All done: RIF40 create sahsuland database objects and install data.';
 GO
 
 --

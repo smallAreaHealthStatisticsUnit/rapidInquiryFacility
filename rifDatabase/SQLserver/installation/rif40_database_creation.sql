@@ -52,6 +52,18 @@
 USE master;
 
 --
+-- Check user is an adminstrator
+--
+GO
+DECLARE @CurrentUser sysname
+SELECT @CurrentUser = user_name(); 
+IF IS_SRVROLEMEMBER('sysadmin') = 1
+	PRINT 'User: ' + @CurrentUser + ' OK';
+ELSE
+	RAISERROR('User: %s is not an administrator.', 16, 1, @CurrentUser);
+GO
+	
+--
 -- Re-create databases. This will destroy all existing users and data
 --
 IF EXISTS(SELECT * FROM sys.sysdatabases where name='sahsuland_dev')

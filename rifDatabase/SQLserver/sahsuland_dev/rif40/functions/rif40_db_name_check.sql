@@ -6,9 +6,6 @@ Description:	Check column name value obeys DB naming conventions; i.e. Oracles. 
 	(SQL Server's rules are not nearly as strict as Oracle's)
 */
 
-use sahsuland_dev
-GO
-
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_db_name_check]')

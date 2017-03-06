@@ -14,9 +14,6 @@ Description:	Startup functions - for calling from /usr/local/pgsql/etc/psqlrc
 		If no checks flag is set, no further checks or object creation carried out
 */
 
-use sahsuland_dev
-GO
-
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_startup]')

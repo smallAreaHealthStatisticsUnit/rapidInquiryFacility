@@ -8,10 +8,6 @@ grant execute to (user/role)
 grant alter on schema::rif_data to (user/role)
 grant alter on schema::rif40 to (user/role)
 */
-
-use sahsuland_dev
-GO
-
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_addorupdate_comment]')

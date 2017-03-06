@@ -40,13 +40,24 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -d sahsuland_dev -b -m-1 -e -i ..\sahsuland_dev\error_handling\recreate_error_handling.sql
---
+-- Usage: sqlcmd -d sahsuland_dev -b -m-1 -e -i ..\sahsuland_dev\error_handling\recreate_error_handling_sahsuland_dev.sql
 -- MUST BE RUN AS ADMINSTRATOR SO CAN CREATE OBJECTS OR RUN AS RIF40 (with -U rif40)
 --
 :on error exit
 SET QUOTED_IDENTIFIER ON;
 -- SET STATISTICS TIME ON;
+
+--
+-- Check user is an adminstrator
+--
+GO
+DECLARE @CurrentUser sysname
+SELECT @CurrentUser = user_name(); 
+IF IS_SRVROLEMEMBER('sysadmin') = 1
+	PRINT 'User: ' + @CurrentUser + ' OK';
+ELSE
+	RAISERROR('User: %s is not an administrator.', 16, 1, @CurrentUser);
+GO
 
 --
 -- Use a single transaction
@@ -60,8 +71,8 @@ GO
 --
 -- sahsuland_dev only
 --
--- :r ..\sahsuland_dev\error_handling\rif40_setup_custom_errors.sql
--- :r ..\sahsuland_dev\error_handling\rif40_custom_error_messages.sql
+:r ..\sahsuland_dev\error_handling\rif40_setup_custom_errors.sql
+:r ..\sahsuland_dev\error_handling\rif40_custom_error_messages.sql
 
 GO
 

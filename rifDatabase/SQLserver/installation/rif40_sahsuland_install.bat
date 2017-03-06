@@ -44,7 +44,7 @@ REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
 REM MUST BE RUN AS ADMINSTRATOR
 REM
-sqlcmd -d sahsuland -b -m-1 -e -i rif40_sahsuland_dev_install.sql -v path="%cd%\..\.." -I
+sqlcmd -d sahsuland -b -m-1 -e -i rif40_sahsuland_install.sql -v path="%cd%\..\.." -I
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 REM Does not work in github tree - SQL server needs access permissions!

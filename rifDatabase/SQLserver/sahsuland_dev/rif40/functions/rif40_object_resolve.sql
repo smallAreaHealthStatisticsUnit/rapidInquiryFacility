@@ -9,9 +9,6 @@ Description:	Is object resolvable?
 Search search path for table/view/foreign table
 */
 
-use sahsuland_dev
-GO
-
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_object_resolve]')

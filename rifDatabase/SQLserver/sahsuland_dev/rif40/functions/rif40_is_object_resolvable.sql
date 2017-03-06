@@ -1,8 +1,6 @@
 /*
 More of a quick hack instead of a proper implementation.  Function needs proper logging and error handling
 */
-use sahsuland_dev
-GO
 
 IF EXISTS (SELECT *
            FROM   sys.objects

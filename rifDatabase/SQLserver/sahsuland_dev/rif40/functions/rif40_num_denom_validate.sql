@@ -1,5 +1,3 @@
-use sahsuland_dev
-GO
 
 IF EXISTS (SELECT *
            FROM   sys.objects

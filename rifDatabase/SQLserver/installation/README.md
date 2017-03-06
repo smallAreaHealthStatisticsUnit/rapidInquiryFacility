@@ -159,6 +159,7 @@ Run the following scripts ad Administrator:
 * rif40_sahsuland_install.bat (see note 4.1 below before you run this script)
 
 **These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
+**You _must_ build sahusland_dev before sahusland**; as it loads the error messages.
 
 The indivuidual scripts can be run by batch files for sahsuland_dev only, but they must be run in this order:
 

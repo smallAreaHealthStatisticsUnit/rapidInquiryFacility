@@ -2,9 +2,6 @@
 Function returns the current value of a specified sequence (since SQL Server appears not to have a function that already does that)
 */
 
-use sahsuland_dev
-GO
-
 SELECT name, type, type_desc
   FROM sys.objects
  WHERE object_id = OBJECT_ID(N'[rif40].[rif40_sequence_current_value]')

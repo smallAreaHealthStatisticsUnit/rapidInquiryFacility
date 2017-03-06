@@ -9,10 +9,6 @@ Description:	Automatic (Able to be used in automatic RIF40_NUM_DENOM (0/1, defau
 		Cannot be applied to direct standardisation denominator) is restricted to 1 denominator per geography.
  */
 
-
-use sahsuland_dev
-GO
-
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_auto_indirect_checks]')

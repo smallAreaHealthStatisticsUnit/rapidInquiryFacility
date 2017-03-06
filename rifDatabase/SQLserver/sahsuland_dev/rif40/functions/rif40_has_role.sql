@@ -4,9 +4,6 @@ Takes username and role name and returns 1 if user has the role and 0 if user do
 Simplified equivalent to Postgres's pg_has_role function
 */
 
-use sahsuland_dev
-GO
-
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_has_role]')
