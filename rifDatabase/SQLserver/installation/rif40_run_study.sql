@@ -115,6 +115,26 @@ VALUES (
 	0 						/* min_age_group */);
 GO	
 
+SELECT [rif40].[rif40_sequence_current_value]('rif40.rif40_inv_id_seq');
+GO
+
+INSERT /* 3 */ INTO rif40.rif40_inv_conditions(
+			outcome_group_name, min_condition, max_condition, predefined_group_name, line_number)
+VALUES
+('SAHSULAND_ICD','C34',NULL,NULL, 1),
+('SAHSULAND_ICD','162','1629',NULL, 2);
+GO
+
+INSERT /* 4 */ INTO rif40.rif40_study_areas(area_id, band_id)
+SELECT DISTINCT sahsu_grd_level4, ROW_NUMBER() OVER(ORDER BY sahsu_grd_level4) AS band_id
+  FROM rif_data.hierarchy_sahsuland;
+GO
+
+INSERT /* 5 */ INTO rif40.rif40_comparison_areas(area_id)
+SELECT DISTINCT sahsu_grd_level2
+  FROM rif_data.hierarchy_sahsuland;
+GO
+
 ROLLBACK TRANSACTION;
 GO
 

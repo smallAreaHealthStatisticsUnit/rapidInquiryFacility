@@ -45,16 +45,28 @@ REM
 REM MUST BE RUN AS ADMINSTRATOR
 REM
 sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql
-if %errorlevel% neq 0 exit /b %errorlevel%
+if %errorlevel% neq 0 (
+	ECHO rif40_database_creation.sql eciting with %errorlevel%
+	exit /b 1
+)
 sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=peter
-if %errorlevel% neq 0 exit /b %errorlevel%
+if %errorlevel% neq 0  (
+	ECHO rif40_test_user.sql eciting with %errorlevel%
+	exit /b 1
+)
 rif40_sahsuland_dev_install.bat 
-if %errorlevel% neq 0 exit /b %errorlevel%
+if %errorlevel% neq 0  (
+	ECHO rif40_sahsuland_dev_install.bat exiting with %errorlevel%
+	exit /b 1
+)
 REM
 REM Does not get to here...
 REM
 rif40_sahsuland_install.bat 
-if %errorlevel% neq 0 exit /b %errorlevel%
+if %errorlevel% neq 0  (
+	ECHO rif40_sahsuland_install.bat exiting with %errorlevel%
+	exit /b 1
+)
 
 REM
 REM Eof

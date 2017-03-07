@@ -39,13 +39,11 @@ BEGIN
 --
 	DECLARE @insert_invalid_user VARCHAR(MAX) = 
 	(
-		select username, study_id, inv_id, line_number
+		select SUSER_SNAME() AS username
 		from inserted
-		where NOT (study_id=1 and inv_id=1 and SUSER_SNAME()='rif40')
-		AND ((username != SUSER_SNAME() and username is not null)
-		OR ([rif40].[rif40_has_role](username,'rif_user') = 0
-		AND [rif40].[rif40_has_role](username,'rif_manager') = 0))
-		FOR XML PATH('')
+		where NOT (username = SUSER_SNAME() OR username is null)
+		OR NOT ([rif40].[rif40_has_role](SUSER_SNAME(),'rif_user') = 1
+		AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_manager') = 1)
 	);
 
 	IF @insert_invalid_user IS NOT NULL
@@ -70,8 +68,8 @@ BEGIN
 				predefined_group_name)
 	SELECT
 				isnull(username,SUSER_SNAME()),
-				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40_study_id_seq')),
-				isnull(inv_id,[rif40].[rif40_sequence_current_value]('rif40_inv_id_seq')),
+				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40.rif40_study_id_seq')),
+				isnull(inv_id,[rif40].[rif40_sequence_current_value]('rif40.rif40_inv_id_seq')),
 				isnull(line_number,1),
 				outcome_group_name, 
 				min_condition, 

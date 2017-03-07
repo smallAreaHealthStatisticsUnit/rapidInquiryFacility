@@ -33,7 +33,7 @@ END;
 
 --first get current study_id
 DECLARE @current_study_id int;
-SET @current_study_id= [rif40].[rif40_sequence_current_value]('rif40_study_id_seq');
+SET @current_study_id= [rif40].[rif40_sequence_current_value]('rif40.rif40_study_id_seq');
 IF @current_study_id IS NULL 
 	BEGIN TRY
 		rollback;
@@ -63,18 +63,18 @@ BEGIN TRY
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_comparison_areas]';
 		THROW 51044, @err_msg2, 1;
 	END CATCH;		
-
 --are there area_ids in comparison areas that are not defined in the geographies hierarchy table?
 DECLARE @total_leftover int;
-DECLARE @area_id_check_sql VARCHAR(MAX) = 'SELECT @total_leftover=COUNT(area_id) AS total FROM ( SELECT area_id FROM t_rif40_comparison_areas WHERE study_id = '
-	+@current_study_id +' EXCEPT SELECT lower('+@current_comp_geolevel+') FROM '+@current_hierarchytable+') a';
+DECLARE @area_id_check_sql NVARCHAR(MAX) = 'SELECT @total_leftoverOUT=COUNT(area_id) FROM ( SELECT area_id FROM rif40.t_rif40_comparison_areas WHERE study_id = '
+	+CAST(@current_study_id AS NVARCHAR) +' EXCEPT SELECT '+@current_comp_geolevel+' FROM rif_data.'+@current_hierarchytable+') a';
+--EXEC [rif40].[rif40_log] 'DEBUG2', '[rif40].[tr_t_rif40_comparison_areas]', 'SQL> '+@area_id_check_sql;
 DECLARE @ParmDefinition nvarchar(500) = N'@total_leftoverOUT int OUTPUT';
 EXEC sp_executesql @area_id_check_sql, @ParmDefinition, @total_leftoverOUT=@total_leftover OUTPUT;
 
 IF @total_leftover > 0
 BEGIN TRY
 	rollback;
-		DECLARE @err_msg3_txt VARCHAR(max)= 'study_id='+@current_study_id+', hierarchytable='+@current_hierarchytable+', comp_geolevel='+@current_comp_geolevel+', total remaining='+@total_leftover;
+		DECLARE @err_msg3_txt VARCHAR(max)= 'study_id='+CAST(@current_study_id AS VARCHAR)+', hierarchytable='+@current_hierarchytable+', comp_geolevel='+@current_comp_geolevel+', total remaining='+@total_leftover;
 		DECLARE @err_msg3 VARCHAR(MAX) = formatmessage(51045, @err_msg3_txt);
 		THROW 51045, @err_msg3, 1;
 	END TRY
@@ -84,7 +84,7 @@ BEGIN TRY
 	END CATCH;		
 ELSE
 BEGIN
-	DECLARE @log_msg VARCHAR(max) = 'T_RIF40_COMPARISON_AREAS study_id: '+@current_study_id+' found all areas on hierarcy table';
+	DECLARE @log_msg VARCHAR(max) = 'T_RIF40_COMPARISON_AREAS study_id OK: '+CAST(@current_study_id AS VARCHAR)+' found all areas on hierarcy table';
 	EXEC [rif40].[rif40_log] 'DEBUG2', '[rif40].[tr_t_rif40_comparison_areas]', @log_msg;
 END;
 END;
