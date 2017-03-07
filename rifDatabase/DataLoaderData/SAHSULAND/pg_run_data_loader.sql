@@ -438,6 +438,12 @@ SELECT
 FROM 
    COVAR_SAHSULAND_COVARIATES4;
 
+GRANT SELECT ON rif_data.covar_sahsuland_covariates3 TO rif_user, rif_manager;
 
+GRANT SELECT ON rif_data.covar_sahsuland_covariates4 TO rif_user, rif_manager;
+
+GRANT SELECT ON rif_data.num_sahsuland_cancer TO rif_user, rif_manager;
+
+GRANT SELECT ON rif_data.pop_sahsuland_pop TO rif_user, rif_manager;
 
 COMMIT TRANSACTION;

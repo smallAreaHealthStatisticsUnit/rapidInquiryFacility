@@ -175,7 +175,12 @@ BEGIN
 --	ELSE
 --		error message about invalid sequence
 		
-	RETURN 0;
+	RETURN -1;
 END;
 GO
 
+GRANT EXECUTE ON [rif40].[rif40_sequence_current_value] TO rif_user, rif_manager;
+GO
+
+--
+-- EOF

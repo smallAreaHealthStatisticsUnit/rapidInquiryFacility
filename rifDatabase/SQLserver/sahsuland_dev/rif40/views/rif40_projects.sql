@@ -21,7 +21,7 @@ GO
 
 GRANT SELECT ON [rif40].[rif40_projects] TO [rif_user]
 GO
-GRANT SELECT ON [rif40].[rif40_projects] TO [rif_manager]
+GRANT SELECT, INSERT, UPDATE, DELETE ON [rif40].[rif40_projects] TO [rif_manager]
 GO
 
 

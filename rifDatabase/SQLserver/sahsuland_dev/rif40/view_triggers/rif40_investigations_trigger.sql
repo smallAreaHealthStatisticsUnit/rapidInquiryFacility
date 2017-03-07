@@ -39,13 +39,12 @@ BEGIN
 --
 	DECLARE @insert_invalid_user VARCHAR(MAX) = 
 	(
-		select username, study_id, inv_id
+		select SUSER_SNAME() AS username
 		from inserted
-		where (username != SUSER_SNAME() and username is not null)
-		OR ([rif40].[rif40_has_role](username,'rif_user') = 0
-		AND [rif40].[rif40_has_role](username,'rif_manager') = 0)
-		FOR XML PATH('')
-	);
+		where NOT (username = SUSER_SNAME() OR username is null)
+		OR NOT ([rif40].[rif40_has_role](SUSER_SNAME(),'rif_user') = 1
+		AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_manager') = 1)
+	);	
 
 	IF @insert_invalid_user IS NOT NULL
 	BEGIN TRY
@@ -58,6 +57,9 @@ BEGIN
 		THROW 51122, @err_msg1, 1;
 	END CATCH;	
 
+	DECLARE @inv_id INTEGER = (SELECT inv_id FROM inserted);
+	IF @inv_id IS NULL SET @inv_id = (NEXT VALUE FOR [rif40].[rif40_inv_id_seq]); /* default value in t_rif40_investigations will be: NEXT VALUE FOR [rif40].[rif40_inv_id_seq] */
+	
 	INSERT INTO [rif40].[t_rif40_investigations] (
 				username,
 				inv_id,
@@ -76,8 +78,8 @@ BEGIN
 				investigation_state)
 	SELECT
 				isnull(username,SUSER_SNAME()),
-				isnull(inv_id,[rif40].[rif40_sequence_current_value]('rif40_inv_id_seq')),
-				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40_study_id_seq')),
+				@inv_id,
+				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40.rif40_study_id_seq')),
 				inv_name /* no default value */,
 				year_start /* no default value */,
 				year_stop /* no default value */,

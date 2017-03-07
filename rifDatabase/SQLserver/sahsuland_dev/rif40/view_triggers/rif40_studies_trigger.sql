@@ -39,12 +39,11 @@ BEGIN
 --
 	DECLARE @insert_invalid_user VARCHAR(MAX) = 
 	(
-		select username, study_id
+		select SUSER_SNAME() AS username
 		from inserted
-		where (username != SUSER_SNAME() and username is not null)
-		OR ([rif40].[rif40_has_role](username,'rif_user') = 0
-		AND [rif40].[rif40_has_role](username,'rif_manager') = 0)
-		FOR XML PATH('')
+		where NOT (username = SUSER_SNAME() OR username is null)
+		OR NOT ([rif40].[rif40_has_role](SUSER_SNAME(),'rif_user') = 1
+		AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_manager') = 1)
 	);
 
 	IF @insert_invalid_user IS NOT NULL
@@ -58,6 +57,9 @@ BEGIN
 		THROW 51131, @err_msg1, 1;
 	END CATCH;	
 
+	DECLARE @study_id INTEGER = (SELECT study_id FROM inserted);
+	IF @study_id IS NULL SET @study_id = (NEXT VALUE FOR [rif40].[rif40_study_id_seq]); /* default value in t_rif40_studies will be: NEXT VALUE FOR [rif40].[rif40_study_id_seq] */
+	
 	INSERT INTO [rif40].[t_rif40_studies] (
 				username,
 				study_id,
@@ -85,8 +87,8 @@ BEGIN
 				project)
 	SELECT
 				isnull(username, SUSER_SNAME()),
-				study_id, /* default value in t_rif40_studies will be: NEXT VALUE FOR [rif40].[rif40_study_id_seq] */
-				extract_table /* no default value */,
+				@study_id, 
+				isnull(extract_table, 'S' + CAST(@study_id AS VARCHAR) + '_EXTRACT') /* S<study_id>_EXTRACT */,
 				study_name /* no default value */,
 				summary /* no default value */,
 				description /* no default value */,
@@ -99,7 +101,7 @@ BEGIN
 				denom_tab /* no default value */,
 				direct_stand_tab /* no default value */,
 				study_geolevel_name /* no default value */,
-				map_table /* no default value */,
+				isnull(map_table, 'S' + CAST(@study_id AS VARCHAR) + '_MAP') /* S<study_id>_MAP */,
 				suppression_value /* no default value */,
 				isnull(extract_permitted, 0),
 				isnull(transfer_permitted, 0),
@@ -227,3 +229,6 @@ END;
 
 END;
 GO
+
+--
+-- Eof
