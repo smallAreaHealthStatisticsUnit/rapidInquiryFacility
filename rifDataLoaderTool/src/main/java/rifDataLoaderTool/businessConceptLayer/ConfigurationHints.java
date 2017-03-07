@@ -279,6 +279,13 @@ public class ConfigurationHints {
 				if (fieldValidationUtility.isEmpty(hintCleanFieldValue) == false) {
 					dataSetFieldToConfigure.setCleanFieldName(hintCleanFieldValue);
 				}
+				
+				String hintConvertFieldValue
+					= dataSetFieldConfigurationHint.getConvertFieldName();
+				if (fieldValidationUtility.isEmpty(hintCleanFieldValue) == false) {
+					dataSetFieldToConfigure.setConvertFieldName(hintConvertFieldValue);
+				}
+							
 				dataSetFieldToConfigure.setCoreFieldDescription(
 					dataSetFieldConfigurationHint.getCoreFieldDescription());
 				dataSetFieldToConfigure.setFieldRequirementLevel(

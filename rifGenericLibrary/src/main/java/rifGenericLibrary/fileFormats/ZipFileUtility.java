@@ -55,29 +55,6 @@ import java.util.zip.ZipOutputStream;
  */
 
 public class ZipFileUtility {
-
-	public static void main(String[] args) {
-		
-		File destinationZipFile = new File("C:\\rif_scripts\\sample_shape_file_directory\\blah.zip");
-
-		
-		String[] filePathsToInclude = new String[4];		
-		filePathsToInclude[0] = "C:\\rif_scripts\\sample_shape_file_directory\\shp1.shp";		
-		filePathsToInclude[1] = "C:\\rif_scripts\\sample_shape_file_directory\\shp1.shx";
-		filePathsToInclude[2] = "C:\\rif_scripts\\sample_shape_file_directory\\shp1.dbf";
-		filePathsToInclude[3] = "C:\\rif_scripts\\sample_shape_file_directory\\shp1.prj";
-		
-		ZipFileUtility zipFileUtility = new ZipFileUtility();
-		
-		try {
-			zipFileUtility.writeZipFile(
-				destinationZipFile, 
-				filePathsToInclude);
-		}
-		catch(IOException ioException) {
-			ioException.printStackTrace(System.out);
-		}
-	}
 	
 	// ==========================================
 	// Section Constants

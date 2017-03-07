@@ -319,8 +319,9 @@ class CSVFileSelectionDialog
 		UserInterfaceFactory userInterfaceFactory
 			= getUserInterfaceFactory();
 		JFileChooser fileChooser
-			= userInterfaceFactory.createFileChooser();
+			= userInterfaceFactory.createFileChooser();		
 		CSVFileFilter csvFileFilter = new CSVFileFilter();
+		fileChooser.setCurrentDirectory(session.getCurrentBrowsingDirectory());
 		fileChooser.setFileFilter(csvFileFilter);
 		
 		int result = fileChooser.showOpenDialog(getDialog());
@@ -328,7 +329,8 @@ class CSVFileSelectionDialog
 			return;
 		}
 		
-		selectedCSVFile = fileChooser.getSelectedFile();		
+		selectedCSVFile = fileChooser.getSelectedFile();
+		session.setWorkingDirectoryFromSelectedFile(selectedCSVFile);
 		csvFileSelectionTextField.setText(selectedCSVFile.getAbsolutePath());
 		
 		previewCSVFileButton.setEnabled(true);

@@ -169,7 +169,7 @@ public class GeographyMetaDataLoadingPanel
 	
 	private void browse() {
 		GeographyMetaDataEditingDialog geographyMetaDataEditorDialog
-			= new GeographyMetaDataEditingDialog(userInterfaceFactory);
+			= new GeographyMetaDataEditingDialog(session);
 		geographyMetaDataEditorDialog.setData(geographyMetaData);
 		geographyMetaDataEditorDialog.show();
 		if (geographyMetaDataEditorDialog.isCancelled() == false) {

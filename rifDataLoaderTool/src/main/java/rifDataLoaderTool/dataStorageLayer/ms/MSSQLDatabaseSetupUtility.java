@@ -77,25 +77,6 @@ import java.util.ArrayList;
 
 public class MSSQLDatabaseSetupUtility {
 
-	public static void main(String[] arguments) {
-		MSSQLDatabaseSetupUtility initialiser = new MSSQLDatabaseSetupUtility();
-		File file = new File("C://rif_scratch//SampleDBCreationScript.txt");
-		DataLoaderToolSettings settings = new DataLoaderToolSettings();
-		DatabaseConnectionsConfiguration dbParameters
-			= settings.getDatabaseConnectionParameters();
-		
-		try {
-			dbParameters.setDatabaseName("tmp_sahsu_db");
-			initialiser.initialiseDB(
-				settings,
-				file,
-				"postgres", 
-				"sahsuland2014");
-		}
-		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-		}
-	}
 	// ==========================================
 	// Section Constants
 	// ==========================================

@@ -1018,6 +1018,7 @@ public class DataSetConfiguration
 				= fieldConfiguration.getFieldRequirementLevel();
 			if (fieldRequirementLevel != FieldRequirementLevel.IGNORE_FIELD && 
 				fieldConfiguration.isDuplicateIdentificationField()) {
+				System.out.println("DataSetConfiguration getFieldsForDuplicate=="+fieldConfiguration.getConvertFieldName()+"==");
 				duplicateCriteriaFieldNames.add(fieldConfiguration.getConvertFieldName());
 			}			
 		}

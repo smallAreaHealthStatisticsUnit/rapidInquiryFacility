@@ -65,29 +65,6 @@ import java.io.*;
  */
 
 public class MSDataLoadingScriptGenerator {
-
-	public static void main(String[] args) {
-		try {
-			File sampleConfigFile
-				= new File("C:\\data_loader_tool_demo\\RevisedSAHSUDemo.xml");
-			DataLoaderToolConfigurationReader reader	
-				 = new DataLoaderToolConfigurationReader();
-			reader.readFile(sampleConfigFile);
-			DataLoaderToolConfiguration dataLoaderToolConfiguration
-				= reader.getDataLoaderToolConfiguration();
-			MSDataLoadingScriptGenerator msScriptGenerator
-				= new MSDataLoadingScriptGenerator();
-			PGDataLoadingScriptGenerator pgScriptGenerator
-				= new PGDataLoadingScriptGenerator();
-			File outputDirectory
-				= new File("C:\\data_loader_tool_demo\\generated_files");
-			msScriptGenerator.writeScript(outputDirectory, dataLoaderToolConfiguration);
-			pgScriptGenerator.writeScript(outputDirectory, dataLoaderToolConfiguration);
-		}
-		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-		}
-	}
 	
 	// ==========================================
 	// Section Constants

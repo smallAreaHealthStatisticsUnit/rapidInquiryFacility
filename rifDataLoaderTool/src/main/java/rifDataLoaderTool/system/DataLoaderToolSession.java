@@ -1,13 +1,13 @@
 package rifDataLoaderTool.system;
 
 import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
-
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
 import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
 import rifGenericLibrary.system.RIFServiceException;
+
+import java.io.File;
 
 /**
  *
@@ -79,6 +79,9 @@ public class DataLoaderToolSession {
 	//GUI Components
 	private UserInterfaceFactory userInterfaceFactory;	
 	
+	private File currentBrowsingDirectory;
+	
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -90,11 +93,14 @@ public class DataLoaderToolSession {
 		
 		dataLoaderToolConfiguration = DataLoaderToolConfiguration.newInstance();
 		rifManager = User.newInstance("kgarwood", "xxx");
+		currentBrowsingDirectory = new File(".");
 	}
 
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+	
 	public DataLoaderServiceAPI getDataLoaderService() {
 		return dataLoaderService;
 	}
@@ -103,6 +109,16 @@ public class DataLoaderToolSession {
 		
 		this.dataLoaderService = dataLoaderService;
 	}
+	
+	
+	public File getCurrentBrowsingDirectory() {
+		return currentBrowsingDirectory;
+	}
+	
+	public void setCurrentBrowsingDirectory(final File currentBrowsingDirectory) {
+		this.currentBrowsingDirectory = currentBrowsingDirectory;
+	}
+	
 	
 	public void initialiseService() 
 		throws RIFServiceException {
@@ -138,6 +154,26 @@ public class DataLoaderToolSession {
 	public User getRIFManager() {
 		return rifManager;
 	}
+	
+	
+	public void setWorkingDirectoryFromSelectedFile(final File selectedFile) {
+		if (selectedFile == null) {
+			return;
+		}
+		
+		//find the last occurrence of the File separator
+		String filePath = selectedFile.getAbsolutePath();
+		int lastIndex = filePath.lastIndexOf(File.separator);
+		
+		if (lastIndex != -1) {			
+			String workingDirectoryPath
+				= filePath.substring(0, lastIndex);
+			System.out.println("Directory path==" + workingDirectoryPath + "==");
+			this.currentBrowsingDirectory = new File(workingDirectoryPath);
+		}		
+	}
+	
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

@@ -319,7 +319,7 @@ public class PGSQLDataTypeValidationUtility {
 				= rifDataType.getValidationFunctionParameterValues();	
 			queryFormatter.addQueryPhrase(validationFunctionName);
 			queryFormatter.addQueryPhrase("(");
-			queryFormatter.addQueryPhrase(loadFieldName);
+			queryFormatter.addQueryPhrase(cleanFieldName);
 			
 			if (RIFDataTypeFactory.isDateDataType(rifDataType)) {
 				//in the case of dates, we call a validation function, but
@@ -332,7 +332,7 @@ public class PGSQLDataTypeValidationUtility {
 				queryFormatter.addQueryPhrase("'");
 			}
 			queryFormatter.addQueryPhrase(") = 1 THEN ");
-			queryFormatter.addQueryPhrase(loadFieldName);
+			queryFormatter.addQueryPhrase(cleanFieldName);
 			queryFormatter.padAndFinishLine();
 				
 			queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "ELSE 'rif_error'");

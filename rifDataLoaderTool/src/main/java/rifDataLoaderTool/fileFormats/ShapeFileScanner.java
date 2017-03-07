@@ -75,21 +75,6 @@ import java.util.Iterator;
  */
 
 public class ShapeFileScanner {
-
-	public static final void main(String[] args) {
-		ShapeFileScanner scanner = new ShapeFileScanner();
-		File sampleShapeFileDirectory
-			= new File("C:/rif_scripts/sample_shape_file_directory");
-
-		ArrayList<ShapeFile> shapeFiles
-			= scanner.scanForShapeFiles(sampleShapeFileDirectory);
-
-		for (ShapeFile shapeFile : shapeFiles) {
-			shapeFile.print();
-		}
-		
-	}
-	
 	
 	// ==========================================
 	// Section Constants

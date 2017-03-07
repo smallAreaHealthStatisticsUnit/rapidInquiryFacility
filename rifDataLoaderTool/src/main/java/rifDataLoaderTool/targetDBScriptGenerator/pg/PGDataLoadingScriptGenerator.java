@@ -60,26 +60,6 @@ import java.io.*;
  */
 
 public class PGDataLoadingScriptGenerator {
-
-	public static void main(String[] args) {
-		try {
-			File sampleConfigFile
-				= new File("C:\\data_loader_tool_demo\\RevisedSAHSUDemo.xml");
-			DataLoaderToolConfigurationReader reader	
-				 = new DataLoaderToolConfigurationReader();
-			reader.readFile(sampleConfigFile);
-			DataLoaderToolConfiguration dataLoaderToolConfiguration
-				= reader.getDataLoaderToolConfiguration();
-			PGDataLoadingScriptGenerator scriptGenerator
-				= new PGDataLoadingScriptGenerator();
-			File outputDirectory
-				= new File("C:\\data_loader_tool_demo\\generated_files");
-			scriptGenerator.writeScript(outputDirectory, dataLoaderToolConfiguration);
-		}
-		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-		}
-	}
 	
 	// ==========================================
 	// Section Constants

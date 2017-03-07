@@ -79,19 +79,8 @@ import java.io.*;
 
 
 public final class DataLoaderToolConfigurationReader {
+
 	
-	public static void main(String[] args) {
-		
-		DataLoaderToolConfigurationReader reader
-			= new DataLoaderToolConfigurationReader();
-		File file = new File("C://rif_scratch//test_data_loader_tool.xml");
-		try {
-			reader.readFile(file);			
-		}
-		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-		}
-	}
 // ==========================================
 // Section Constants
 // ==========================================

@@ -186,13 +186,6 @@ public class SQLSmoothResultsSubmissionStep extends AbstractRService {
 				= createBatchFile(
 					rifStartupOptions.getExtractDirectory(), "kevTest22");
 			
-			//ProcessBuilder processBuilder = new ProcessBuilder(generateCommandLineExpression());		
-			//File logFile = new File("C://rifDemo//log.txt");
-			//processBuilder.redirectErrorStream(true);
-			//processBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile));
-			
-			//Process process = processBuilder.start();
-			
 			Process process = Runtime.getRuntime().exec(batchFile.getAbsolutePath());
 
 			int exitValue = process.waitFor();

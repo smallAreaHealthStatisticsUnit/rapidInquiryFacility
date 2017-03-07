@@ -244,9 +244,6 @@ public class DataSetPropertyEditorPanel {
 		
 			String[] healthThemeNames
 				= dataLoaderToolConfiguration.getHealthThemeNames();
-			for (String healthThemeName : healthThemeNames) {
-				System.out.println("=DSPEP health theme ==" + healthThemeName + "==");
-			}
 			healthThemesComboBox
 				= userInterfaceFactory.createComboBox(
 					dataLoaderToolConfiguration.getHealthThemeNames());

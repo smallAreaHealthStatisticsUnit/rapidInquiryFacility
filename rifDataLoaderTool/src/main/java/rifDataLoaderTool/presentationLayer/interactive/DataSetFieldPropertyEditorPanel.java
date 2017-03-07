@@ -849,10 +849,13 @@ class DataSetFieldPropertyEditorPanel
 				cleanComboBox.setModel(defaultComboBoxModel);
 				cleanComboBox.setSelectedItem(cleanField);
 				convertComboBox.setSelectedItem(cleanField);
-			}
-			
-			
-			
+			}	
+		}
+		else if (fieldPurpose == FieldPurpose.TOTAL_COUNT) {
+			//if it is meant to be the total field, then there is no choice
+			//in the clean and convert field names - they should be total as well
+			cleanComboBox.setSelectedItem("total");
+			convertComboBox.setSelectedItem("total");			
 		}
 		else {
 			//let user specify whatever clean field name they want

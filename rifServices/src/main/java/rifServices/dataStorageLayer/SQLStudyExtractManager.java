@@ -337,10 +337,6 @@ public class SQLStudyExtractManager extends AbstractSQLManager {
 			
 		}
 		
-		
-
-		
-		
 		//Add extract file to zip file
 /*		
 		StringBuilder mapTableName = new StringBuilder();

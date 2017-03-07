@@ -82,7 +82,9 @@ public class DataLoaderToolConfiguration {
 
 	private DataLoaderToolConfiguration() {	
 		databaseConnections
-			= DatabaseConnectionsConfiguration.newInstance();
+			= RIFDataLoaderToolStartupProperties.createStartupDBConfiguration();
+
+		
 		geographyMetaData = GeographyMetaData.newInstance();
 
 		healthThemes = new ArrayList<HealthTheme>();

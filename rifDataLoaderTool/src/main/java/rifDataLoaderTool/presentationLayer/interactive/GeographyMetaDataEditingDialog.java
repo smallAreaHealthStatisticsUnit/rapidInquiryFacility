@@ -1,6 +1,8 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.DataLoaderToolSession;
+
 import rifDataLoaderTool.businessConceptLayer.GeographyMetaData;
 import rifDataLoaderTool.fileFormats.GeographyMetaDataReader;
 import rifDataLoaderTool.fileFormats.GeographyMetaDataConfigurationHandler;
@@ -78,7 +80,7 @@ public class GeographyMetaDataEditingDialog extends OKCloseButtonDialog {
 	// Section Properties
 	// ==========================================
 	
-
+	private DataLoaderToolSession session;
 	private JTextField geographyFileNameTextField;
 	
 	private File selectedFile;
@@ -93,9 +95,11 @@ public class GeographyMetaDataEditingDialog extends OKCloseButtonDialog {
 	// ==========================================
 
 	public GeographyMetaDataEditingDialog(
-		final UserInterfaceFactory userInterfaceFactory) {
+		final DataLoaderToolSession session) {
 
-		super(userInterfaceFactory);
+		super(session.getUserInterfaceFactory());
+		
+		this.session = session;
 		
 		String dialogTitle
 			= RIFDataLoaderToolMessages.getMessage("geographyEditingDialog.title");
@@ -198,14 +202,19 @@ public class GeographyMetaDataEditingDialog extends OKCloseButtonDialog {
 	private void browse() {
 		UserInterfaceFactory userInterfaceFactory
 			= getUserInterfaceFactory();
+		
+		
 		JFileChooser fileChooser = userInterfaceFactory.createFileChooser();
+		fileChooser.setCurrentDirectory(session.getCurrentBrowsingDirectory());
 		int result = fileChooser.showOpenDialog(getDialog());
 		if (result != JFileChooser.APPROVE_OPTION) {
 			return;
 		}
 		
 		try {
-			File selectedFile = fileChooser.getSelectedFile();
+			File selectedFile = fileChooser.getSelectedFile();		
+			session.setWorkingDirectoryFromSelectedFile(selectedFile);
+
 			GeographyMetaDataReader geographyMetaDataReader
 				= new GeographyMetaDataReader();
 			geographyMetaDataReader.readFile(selectedFile);

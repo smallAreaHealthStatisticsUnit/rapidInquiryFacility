@@ -197,7 +197,7 @@ final class DataLoaderToolConfigurationHandler
 		throws IOException {
 			
 		XMLUtility xmlUtility = getXMLUtility();
-		xmlUtility.writeStartXML();		
+		xmlUtility.writeStartXML();
 
 		String recordType = getSingularRecordName();
 		xmlUtility.writeRecordStartTag(recordType);
@@ -358,7 +358,8 @@ final class DataLoaderToolConfigurationHandler
 						rifDataTypeConfigurationHandler.getDataTypeFactory());
 				}
 				else if (currentDelegatedHandler == configurationHintsHandler) {
-					dataLoaderToolConfiguration.setConfigurationHints(configurationHints);
+					ConfigurationHints hints = configurationHintsHandler.getConfigurationHints();				
+					dataLoaderToolConfiguration.setConfigurationHints(hints);
 				}
 				else if (currentDelegatedHandler == dataSetConfigurationHandler) {
 					ArrayList<DataSetConfiguration> denominatorDataSets
