@@ -117,7 +117,7 @@ DECLARE
 	debug_level		INTEGER;
 	study_ran_ok	BOOLEAN;
 BEGIN
-/*
+
 	OPEN c4sm;
 	FETCH c4sm INTO c4sm_rec;
 	CLOSE c4sm;
@@ -158,7 +158,7 @@ BEGIN
 			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG'||debug_level::Text);
 		END LOOP;
 	END IF;
-	*/
+	
 --
 -- Call init function is case called from main build scripts
 --

@@ -1067,6 +1067,8 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 
 * A pre-built ajacency table is required for performance reasons.
 * SQL Server tile-vewer setup error handling
+* Fixed SQL Server build directories with sahsuland_dev/master dependency issues, remaining hard coded USE sahsuland_dev; added checks for correct database and admin privileges.
+  SQL Server sahusland now builds OK.
  
 #### Current TODO list (March 2017): SQL Server Port
 
