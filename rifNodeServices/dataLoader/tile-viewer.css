@@ -46,6 +46,7 @@ body {
 	background-color: #FFF;
 	color: #555;
 	border-radius: 5px;
+    padding-top: 5px; 
     padding-left: 5px; 
     padding-right: 5px;
 	padding-bottom: 5px;
@@ -60,6 +61,14 @@ body {
 	float: left;
 	margin-right: 8px;
 	opacity: 0.7;
+}
+.leaflet-control-scale {
+	background-color: #FFF;
+	border-radius: 5px;
+    padding-top: 5px; 
+    padding-left: 5px; 
+    padding-right: 5px;
+	padding-bottom: 5px;
 }
 label { /* This needs to inherit the correct JQuery UI class style; the .css() function won't work! */
 	background: #e4f1fb url("jquery-ui-1.11.4.custom/images/ui-bg_glass_100_e4f1fb_1x400.png") 50% 50% repeat-x;
