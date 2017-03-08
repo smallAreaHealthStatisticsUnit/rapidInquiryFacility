@@ -83,6 +83,7 @@ import java.util.ArrayList;
 
 public class PGSQLDatabaseSetupUtility {
 
+	/*
 	public static void main(String[] arguments) {
 		PGSQLDatabaseSetupUtility initialiser = new PGSQLDatabaseSetupUtility();
 		DataLoaderToolSettings settings = new DataLoaderToolSettings();
@@ -101,6 +102,8 @@ public class PGSQLDatabaseSetupUtility {
 		}
 
 	}
+	*/
+	
 	// ==========================================
 	// Section Constants
 	// ==========================================

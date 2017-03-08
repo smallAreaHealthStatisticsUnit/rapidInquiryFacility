@@ -5,7 +5,6 @@ import rifDataLoaderTool.dataStorageLayer.*;
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.system.RIFServiceException;
 
 import org.junit.Test;

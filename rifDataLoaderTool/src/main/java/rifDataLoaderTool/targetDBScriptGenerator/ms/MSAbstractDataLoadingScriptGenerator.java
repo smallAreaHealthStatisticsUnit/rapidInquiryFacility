@@ -197,7 +197,9 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 		dataSetEntry.append(queryFormatter.generateQuery());
 	}
 
+	
 	protected String createPermissions(
+		final StringBuilder dataSetEntry,
 		final DataSetConfiguration dataSetConfiguration) {
 		
 		String publishedTableName
@@ -205,7 +207,13 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "GRANT SELECT ON ");
 		queryFormatter.addQueryPhrase(publishedTableName);
-		queryFormatter.addQueryPhrase(" TO PUBLIC");
+		queryFormatter.addQueryPhrase(" TO rif_user, rif_manager");
+		
+		dataSetEntry.append("\n");
+		dataSetEntry.append(queryFormatter.generateQuery());
+		dataSetEntry.append("\n\n");
+		dataSetEntry.append("GO");
+		dataSetEntry.append("\n\n");
 		
 		return queryFormatter.generateQuery();
 	}

@@ -1,6 +1,7 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
 
+import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderToolStartupProperties;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
@@ -154,10 +155,11 @@ final class PGSQLConnectionManager {
 			PropertyResourceBundle userLoginResourceBundle
 				= new PropertyResourceBundle(fileReader);
 			
-			String userID = (String) userLoginResourceBundle.getObject("userID");
-			String password = (String) userLoginResourceBundle.getObject("password");
+			String userID = RIFDataLoaderToolStartupProperties.getTestUserID();
+			String password = RIFDataLoaderToolStartupProperties.getTestUserPassword();
 			
-			
+			//String userID = (String) userLoginResourceBundle.getObject("userID");
+			//String password = (String) userLoginResourceBundle.getObject("password");
 			
 			//Establish read-only connections
 			for (int i = 0; i < MAXIMUM_DATA_LOADER_CONNECTIONS; i++) {

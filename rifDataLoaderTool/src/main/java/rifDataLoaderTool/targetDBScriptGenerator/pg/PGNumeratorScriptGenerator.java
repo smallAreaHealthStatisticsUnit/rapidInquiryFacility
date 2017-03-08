@@ -102,9 +102,6 @@ public class PGNumeratorScriptGenerator
 				numeratorEntry, 
 			numerator);	
 		numeratorEntry.append("\n");
-		//addEntryToNumDenomTable(
-		//	numeratorEntry,
-		//	numerator);
 		
 		addRIF40OutcomeGroupsEntry(
 			numeratorEntry, 
@@ -114,6 +111,10 @@ public class PGNumeratorScriptGenerator
 			numeratorEntry,
 			numerator);
 		numeratorEntry.append("\n");
+		
+		createPermissions(
+			numeratorEntry, 
+			numerator);
 
 		return numeratorEntry.toString();
 	}
@@ -292,7 +293,6 @@ public class PGNumeratorScriptGenerator
 		queryFormatter.addQueryPhrase("(SELECT outcome_group_name FROM ");
 		queryFormatter.addQueryPhrase(" rif40.rif40_outcome_groups WHERE outcome_group_name = 'SAHSULAND_ICD');");
 		queryFormatter.finishLine();
-		queryFormatter.addQueryLine(0, "GO");
 		numeratorEntry.append(queryFormatter.generateQuery());
 	}
 	

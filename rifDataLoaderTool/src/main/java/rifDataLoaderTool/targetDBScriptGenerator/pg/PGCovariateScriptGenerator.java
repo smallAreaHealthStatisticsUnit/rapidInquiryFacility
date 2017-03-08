@@ -91,7 +91,11 @@ public class PGCovariateScriptGenerator
 		addSchemaComments(
 			covariateEntry,
 			covariate);
-		createPermissions(covariate);
+		
+		
+		createPermissions(
+			covariateEntry, 
+			covariate);
 		
 		//Ensure covariate geolevel is known in t_rif50_geolevels
 		updateRIF40GeoLevels(

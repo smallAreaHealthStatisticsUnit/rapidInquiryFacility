@@ -101,6 +101,10 @@ public class MSDenominatorScriptGenerator
 			denominatorEntry, 
 			denominator);
 
+		createPermissions(
+			denominatorEntry, 
+			denominator);
+		
 		return denominatorEntry.toString();
 	}
 	

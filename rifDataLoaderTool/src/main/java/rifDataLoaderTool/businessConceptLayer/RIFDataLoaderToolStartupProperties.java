@@ -97,6 +97,14 @@ public final class RIFDataLoaderToolStartupProperties {
     // Section Accessors
     // ==========================================
 
+    public static String getTestUserID() {
+    	return getProperty("testUser.id");
+    }
+    
+    public static String getTestUserPassword() {
+    	return getProperty("testUser.password");    	
+    }
+
     public static DatabaseConnectionsConfiguration createStartupDBConfiguration() {
     	
     	DatabaseConnectionsConfiguration dbConfiguration

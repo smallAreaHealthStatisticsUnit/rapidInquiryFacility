@@ -115,6 +115,10 @@ public class MSNumeratorScriptGenerator
 			numerator);
 		numeratorEntry.append("\n");
 
+		createPermissions(
+			numeratorEntry, 
+			numerator);
+		
 		return numeratorEntry.toString();
 	}
 	

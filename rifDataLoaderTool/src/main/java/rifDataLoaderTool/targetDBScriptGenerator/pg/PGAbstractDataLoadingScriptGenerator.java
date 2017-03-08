@@ -201,7 +201,7 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		String indexName = tableName.toUpperCase() + "_" + fieldName.toUpperCase();
 			
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.setEndWithSemiColon(false);
+		queryFormatter.setEndWithSemiColon(true);
 		queryFormatter.addQueryPhrase(0, "CREATE INDEX ");
 		queryFormatter.addQueryPhrase(indexName);
 		queryFormatter.addQueryPhrase(" ON ");
@@ -215,6 +215,7 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		
 	
 	protected String createPermissions(
+		final StringBuilder dataSetEntry,
 		final DataSetConfiguration dataSetConfiguration) {
 		
 		String publishedTableName
@@ -222,7 +223,11 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "GRANT SELECT ON ");
 		queryFormatter.addQueryPhrase(publishedTableName);
-		queryFormatter.addQueryPhrase(" TO PUBLIC");
+		queryFormatter.addQueryPhrase(" TO rif_user, rif_manager");
+		
+		dataSetEntry.append("\n");
+		dataSetEntry.append(queryFormatter.generateQuery());
+		dataSetEntry.append("\n\n");
 		
 		return queryFormatter.generateQuery();
 	}

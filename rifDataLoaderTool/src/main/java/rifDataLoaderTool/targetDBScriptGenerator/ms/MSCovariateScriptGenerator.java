@@ -93,7 +93,6 @@ public class MSCovariateScriptGenerator
 		addSchemaComments(
 			covariateEntry,
 			covariate);
-		createPermissions(covariate);
 		
 		//Ensure covariate geolevel is known in t_rif50_geolevels
 		updateRIF40GeoLevels(
@@ -105,6 +104,11 @@ public class MSCovariateScriptGenerator
 		addEntryToRIF40CovariatesTable(
 			covariateEntry, 
 			covariate);	
+
+		createPermissions(
+			covariateEntry, 
+			covariate);
+		
 		return covariateEntry.toString();
 	}
 	
