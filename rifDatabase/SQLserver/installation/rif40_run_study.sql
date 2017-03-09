@@ -135,6 +135,21 @@ SELECT DISTINCT sahsu_grd_level2
   FROM rif_data.hierarchy_sahsuland;
 GO
 
+WITH a AS (
+	SELECT 'SES' AS covariate_name,
+	       'SAHSU_GRD_LEVEL4' AS study_geolevel_name,
+	       'SAHSULAND' AS geography
+)
+INSERT /* 6 */ INTO rif40.rif40_inv_covariates(geography, covariate_name, study_geolevel_name, min, max)
+SELECT a.geography, a.covariate_name, a.study_geolevel_name, b.min, b.max
+  FROM a
+	LEFT OUTER JOIN rif40.rif40_covariates b ON
+		(a.covariate_name = b.covariate_name AND a.study_geolevel_name = b.geolevel_name AND a.geography = b.geography);
+GO
+
+INSERT /* 7 */ INTO rif40.rif40_study_shares(grantee_username) VALUES (SUSER_SNAME());		
+GO
+
 ROLLBACK TRANSACTION;
 GO
 

@@ -74,7 +74,18 @@ GO
 :r ..\sahsuland_dev\rif40\table_triggers\t_rif40_study_sql_trigger.sql
 :r ..\sahsuland_dev\rif40\table_triggers\t_rif40_study_sql_log_trigger.sql
 :r ..\sahsuland_dev\rif40\table_triggers\t_rif40_studies_trigger.sql
-GO
+
+-- 
+-- Not in use.
+--
+--:r ..\sahsuland_dev\rif40\table_triggers\rif40_outcomes_trigger.sql
+
+--
+-- Done
+--
 
 COMMIT;
 GO
+
+--
+-- Eof
