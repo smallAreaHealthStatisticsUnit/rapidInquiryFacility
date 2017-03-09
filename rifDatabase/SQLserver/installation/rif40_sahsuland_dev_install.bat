@@ -44,8 +44,23 @@ REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
 REM MUST BE RUN AS ADMINSTRATOR
 REM
+
+ECHO OFF
+NET SESSION >nul 2>&1
+if %errorlevel% equ 0 (
+    ECHO Administrator PRIVILEGES Detected! 
+) else (
+    ECHO NOT AN ADMIN!
+	exit /b 1
+)
+
 sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_sahsuland_dev_install.sql -v path="%cd%\..\.." -I
-if %errorlevel% neq 0 exit /b %errorlevel%
+if %errorlevel% neq 0  (
+	ECHO rif40_sahsuland_dev_install.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif40_sahsuland_dev_install.sql built OK %errorlevel%
+)
 
 REM Does not work in github tree - SQL server needs access permissions!
 REM
@@ -61,13 +76,21 @@ REM Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
 REM Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 REM
 sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i ..\..\GeospatialData\tileMaker\rif_mssql_SAHSULAND.sql -v pwd="%cd%\..\..\GeospatialData\tileMaker"
-if %errorlevel% neq 0 exit /b %errorlevel%
+if %errorlevel% neq 0  (
+	ECHO rif_mssql_SAHSULAND.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif_mssql_SAHSULAND.sql built OK %errorlevel%
+)
 
 sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i ..\..\DataLoaderData\SAHSULAND\ms_run_data_loader.sql -v pwd="%cd%\..\..\DataLoaderData\SAHSULAND"
-if %errorlevel% neq 0 exit /b %errorlevel%
-
-REM
-REM sahsuland_dev built OK.
+if %errorlevel% neq 0  (
+	ECHO ms_run_data_loader.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO ms_run_data_loader.sql built OK %errorlevel%
+	ECHO sahsuland_dev built OK.
+)
 
 REM
 REM Eof

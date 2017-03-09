@@ -44,28 +44,55 @@ REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
 REM MUST BE RUN AS ADMINSTRATOR
 REM
+
+ECHO OFF
+NET SESSION >nul 2>&1
+if %errorlevel% equ 0 (
+    ECHO Administrator PRIVILEGES Detected! 
+) else (
+    ECHO NOT AN ADMIN!
+	exit /b 1
+)
+
+
+ECHO ####################################################################################
+ECHO #
+ECHO # WARNING! this script will the sahusland_dev database. Type control-C to abort.
+ECHO #
+ECHO ####################################################################################
+PAUSE
+
 sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql
 if %errorlevel% neq 0 (
-	ECHO rif40_database_creation.sql eciting with %errorlevel%
+	ECHO rif40_database_creation.sql exiting with %errorlevel%
 	exit /b 1
+) else (
+	ECHO rif40_database_creation.sql built OK %errorlevel%
 )
 sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=peter
 if %errorlevel% neq 0  (
-	ECHO rif40_test_user.sql eciting with %errorlevel%
+	ECHO rif40_test_user.sql exiting with %errorlevel%
 	exit /b 1
+) else (
+	ECHO rif40_test_user.sql built OK %errorlevel%
 )
-rif40_sahsuland_dev_install.bat 
+CALL rif40_sahsuland_dev_install.bat 
 if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_dev_install.bat exiting with %errorlevel%
 	exit /b 1
+) else (
+	ECHO if40_sahsuland_dev_install.bat built OK %errorlevel%
 )
 REM
 REM Does not get to here...
 REM
-rif40_sahsuland_install.bat 
+CALL rif40_sahsuland_install.bat 
 if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_install.bat exiting with %errorlevel%
 	exit /b 1
+) else (
+	ECHO rif40_sahsuland_install.bat built OK %errorlevel%
+	ECHO Both sahsuland and sahsuland_dev built OK
 )
 
 REM

@@ -55,15 +55,15 @@ BEGIN TRANSACTION;
 GO
 
 -- This script must be run from the installation directory
-:r ..\sahsuland_dev\rif_data\sahsuland_level1.sql
-:r ..\sahsuland_dev\rif_data\sahsuland_level2.sql
-:r ..\sahsuland_dev\rif_data\sahsuland_level3.sql
-:r ..\sahsuland_dev\rif_data\sahsuland_level4.sql
-:r ..\sahsuland_dev\rif_data\sahsuland_geography.sql
-:r ..\sahsuland_dev\rif_data\sahsuland_covariates_level3.sql
-:r ..\sahsuland_dev\rif_data\sahsuland_covariates_level4.sql
-:r ..\sahsuland_dev\rif_data\sahsuland_cancer.sql
-:r ..\sahsuland_dev\rif_data\sahsuland_pop.sql
+--:r ..\sahsuland_dev\rif_data\sahsuland_level1.sql
+--:r ..\sahsuland_dev\rif_data\sahsuland_level2.sql
+--:r ..\sahsuland_dev\rif_data\sahsuland_level3.sql
+--:r ..\sahsuland_dev\rif_data\sahsuland_level4.sql
+--:r ..\sahsuland_dev\rif_data\sahsuland_geography.sql
+--:r ..\sahsuland_dev\rif_data\sahsuland_covariates_level3.sql
+--:r ..\sahsuland_dev\rif_data\sahsuland_covariates_level4.sql
+--:r ..\sahsuland_dev\rif_data\sahsuland_cancer.sql
+--:r ..\sahsuland_dev\rif_data\sahsuland_pop.sql
 
 GO
 
