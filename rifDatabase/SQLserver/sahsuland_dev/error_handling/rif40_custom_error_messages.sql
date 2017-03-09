@@ -459,6 +459,10 @@ EXEC sp_addmessage 51150, 16,
 EXEC sp_addmessage 51151, 16,
 	N'Function: [rif40].[rif40_addorupdate_comment], Missing object or schema name and cannot create comment: %s';	
 
+EXEC sp_addmessage 55200, 16,
+	N'Function: [rif40].[rif40_run_study], Study ID %i not found.';	
+EXEC sp_addmessage 55201, 16,
+	N'Function: [rif40].[rif40_run_study], Study ID %i cannot be run, in state: %s, needs to be in ''V'' or ''E''.';	
 EXEC sp_addmessage 55216, 16,
 	N'Function: [rif40].[rif40_run_study], Recursion %i, rif40_run_study study %i had error.';	
 	

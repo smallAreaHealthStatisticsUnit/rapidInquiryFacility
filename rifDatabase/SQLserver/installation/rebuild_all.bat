@@ -1,3 +1,4 @@
+ECHO OFF
 REM ************************************************************************
 REM
 REM Description:
@@ -45,7 +46,6 @@ REM
 REM MUST BE RUN AS ADMINSTRATOR
 REM
 
-ECHO OFF
 NET SESSION >nul 2>&1
 if %errorlevel% equ 0 (
     ECHO Administrator PRIVILEGES Detected! 
@@ -59,13 +59,14 @@ REM CHnage this...
 REM 
 SET NEWUSER="peter"
 
-ECHO ####################################################################################
+ECHO ##########################################################################################
 ECHO #
-ECHO # WARNING! this script will the sahusland_dev database. Type control-C to abort.
+ECHO # WARNING! this script will the drop and create the sahsuland and sahusland_dev databases.
+ECHO # Type control-C to abort.
 ECHO #
 ECHO # Test user: %NEWUSER%
 ECHO #
-ECHO ####################################################################################
+ECHO ##########################################################################################
 PAUSE
 
 sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql
