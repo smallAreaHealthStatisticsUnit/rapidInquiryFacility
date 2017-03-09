@@ -52,7 +52,7 @@ Note:
   * The role *rif_user* allows users to create tables and views;
   * The role *rif_manager* allows users to additionally create procedures and functions;
   * The rif40 user can do BULK INSERT;
-  * The default database is *sahsuland_dev*;
+  * The default database is *sahsuland_dev*;* The *rif40* users password is `rif40`. Chnage it after install.
 - The application is installed in the *rif40* schema and data is installed in the *rif_data* schema; both owned by the *rif40* role;
 - Please edit the script to set *rif40*/*rifuser*/*rifmanager* passwords as they are set to their **_usernames_**, especially if 
   your SQL Server database is networked! 
@@ -120,7 +120,7 @@ sahsuland_dev
 # 3. Create Additional Users
 
 Run the optional script *rif40_test_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
-the -v newuser=<my new userr> parameter. Run as Administrator:
+the -v newuser=<my new user> parameter. Run as Administrator:
 
 ```
 sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=peter
@@ -128,10 +128,11 @@ sqlcmd -E -S Peter-PC\SQLEXPRESS -b -m-1 -e -r1 -i rif40_test_user.sql -v newuse
 ```
 
 * User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions), can do `BULK INSERT`;
-* User can use *sahsuland, sahsuland_dev and test databases;
+* User can use sahsuland, sahsuland_dev and test databases;
 * The test database is for geospatial processing and does not have the *rif_user* and *rif_manager* roles, the user can create tables, views,
 * procedures and function and do `BULK INSERT`s
 * Will fail to re-create a user if the user already has objects (tables, views etc)
+* This user's password will be the username, so change it on a networked system.
 
 Test connection and object privilges:
 ```
@@ -158,6 +159,11 @@ Run the following scripts ad Administrator:
 * rif40_sahsuland_dev_install.bat (see note 4.1 below before you run this script)
 * rif40_sahsuland_install.bat (see note 4.1 below before you run this script)
 
+An additional script is proved to build exverything and create an example study. This should be edited to set the test user variable, NEWUSER. Note that this user's password will be the 
+username, so change it on a networked system:
+
+* rebuild_all.bat (see note 4.1 below before you run this script)
+
 **These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
 **You _must_ build sahusland_dev before sahusland**; as it loads the error messages.
 
@@ -173,6 +179,11 @@ The indivuidual scripts can be run by batch files for sahsuland_dev only, but th
 * rif40_data_install_tables.bat
 * rif40_sahsuland_tiles.bat (see note 4.1 below)
 * rif40_sahsuland_data.bat (see note 4.1 below)
+
+An additional script in the installation directory can be used to create an example study, for example the *<my new user>* user create by the script *rif40_test_user.sql*:
+```
+sqlcmd -U <my new user> -P <my new user> -d sahsuland_dev -b -m-1 -e -r1 -i rif40_run_study.sql
+```
 
 ## 4.1 BULK INSERT Permission
 

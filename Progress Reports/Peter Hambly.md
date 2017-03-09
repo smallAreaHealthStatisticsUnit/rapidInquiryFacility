@@ -1069,7 +1069,11 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 * SQL Server tile-vewer setup error handling
 * Fixed SQL Server build directories with sahsuland_dev/master dependency issues, remaining hard coded USE sahsuland_dev; added checks for correct database and admin privileges.
   SQL Server sahusland now builds OK.
- 
+* Create and delete a study (i.e. fixed all the triggers used in study creation so they now work)
+* Created a rebuild_all.bat script
+* Made build scripts relaible
+* Created a dummy rif40_run_study procedure and infrastructure to run
+
 #### Current TODO list (March 2017): SQL Server Port
 
 * Integrate geosptial and data loader data into sahsuland_dev, sahsuland
