@@ -180,7 +180,7 @@ The indivuidual scripts can be run by batch files for sahsuland_dev only, but th
 * rif40_sahsuland_tiles.bat (see note 4.1 below)
 * rif40_sahsuland_data.bat (see note 4.1 below)
 
-An additional script in the installation directory can be used to create an example study, for example the *<my new user>* user create by the script *rif40_test_user.sql*:
+An additional script in the installation directory can be used to create an example study, for example the *<my new user>* user created by the script *rif40_test_user.sql*:
 ```
 sqlcmd -U <my new user> -P <my new user> -d sahsuland_dev -b -m-1 -e -r1 -i rif40_run_study.sql
 ```

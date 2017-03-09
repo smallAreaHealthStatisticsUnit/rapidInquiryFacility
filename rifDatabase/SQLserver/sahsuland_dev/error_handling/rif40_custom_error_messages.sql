@@ -459,7 +459,8 @@ EXEC sp_addmessage 51150, 16,
 EXEC sp_addmessage 51151, 16,
 	N'Function: [rif40].[rif40_addorupdate_comment], Missing object or schema name and cannot create comment: %s';	
 
-	
+EXEC sp_addmessage 55216, 16,
+	N'Function: [rif40].[rif40_run_study], Recursion %i, rif40_run_study study %i had error.';	
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
 

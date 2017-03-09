@@ -41,12 +41,12 @@
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_run_study]')
-                  AND type IN ( N'FN', N'IF', N'TF', N'FS', N'FT' ))
-	DROP FUNCTION [rif40].[rif40_run_study]
+                  AND type IN ( N'P' ))
+	DROP PROCEDURE [rif40].[rif40_run_study]
 GO 
 
-CREATE FUNCTION [rif40].[rif40_run_study](@study_id int, @debug int=0, @recursion_level int=0)
-	RETURNS int AS
+CREATE PROCEDURE [rif40].[rif40_run_study](@rval INT OUTPUT, @study_id int, @debug int=0, @recursion_level int=0)
+AS
 BEGIN
 --
 -- Defaults if set to NULL
@@ -80,8 +80,15 @@ Do update. This forces verification
 (i.e. change in study_State on rif40_studies calls rif40_sm_pkg.rif40_verify_state_change)
 Recurse until complete
  */
- 
-	RETURN 0 /* Failure */;
+	SET @rval=0 /* Failure */;
+	
+--	
+-- Error: Recursion %i, rif40_run_study study %i had error.
+--
+	DECLARE @err_msg VARCHAR(MAX) = formatmessage(55216, @recursion_level, @study_id);
+	THROW 55216, @err_msg, 1;
+		
+	RETURN @rval;
 END;
 GO
 

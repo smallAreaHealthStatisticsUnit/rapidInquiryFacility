@@ -211,17 +211,42 @@ GO
 --
 -- Now run it
 --
-DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
-DECLARE @ok INT = 
-	(SELECT rif40.rif40_run_study(@study_id /* Study_id */, 
-								  1 		/* Debug: 0/1 */, 
-								  default 	/* Recursion level: Use default */)
-	);
-DECLARE @msg VARCHAR(MAX) = 'Study ' + CAST(@study_id AS VARCHAR) + ' OK';
-IF @ok = 1 
-	PRINT @msg;
-ELSE 
-	RAISERROR('Study %i FAILED (see previous errors)', 16, 1, @study_id);
+BEGIN
+	DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+	BEGIN TRANSACTION;
+	DECLARE @rval INT;
+	DECLARE @msg VARCHAR(MAX);
+--
+	BEGIN TRY
+		 EXECUTE rif40.rif40_run_study
+				@rval		/* Result: 0/1 */, 
+				@study_id 	/* Study_id */, 
+				1 			/* Debug: 0/1 */, 
+				default 	/* Recursion level: Use default */;
+--
+	END TRY
+	BEGIN CATCH 
+		SET @rval=0;
+		SET @msg='Caught error in rif40.rif40_run_study(' + CAST(@study_id AS VARCHAR) + ')' + CHAR(10) + 
+							'Error number: ' + NULLIF(CAST(ERROR_NUMBER() AS VARCHAR), 'N/A') + CHAR(10) + 
+							'Error severity: ' + NULLIF(CAST(ERROR_SEVERITY() AS VARCHAR), 'N/A') + CHAR(10) + 
+							'Error state: ' + NULLIF(CAST(ERROR_STATE() AS VARCHAR), 'N/A') + CHAR(10) + 
+							'Error procedure: ' + NULLIF(ERROR_PROCEDURE() + CHAR(10), 'N/A') + 
+							'Error line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) + 
+							'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);
+		PRINT @msg; 
+	END CATCH;
+--	
+-- Always commit
+--
+	COMMIT TRANSACTION;
+--
+	SET @msg = 'Study ' + CAST(@study_id AS VARCHAR) + ' OK';
+	IF @rval = 1 
+		PRINT @msg;
+	ELSE 
+		RAISERROR('Study %i FAILED (see previous errors)', 16, 1, @study_id);
+END;
 GO
 
 --
