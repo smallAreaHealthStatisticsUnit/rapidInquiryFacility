@@ -163,6 +163,23 @@ An additional script is proved to build exverything and create an example study.
 username, so change it on a networked system:
 
 * rebuild_all.bat (see note 4.1 below before you run this script)
+  rebuild_all.bat can be abort using *control-C*; no other key will abort the script. You will be asked if you want to abort; 'Y' or 'y' will abort; any other keys will continue
+	```
+	C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>rebuild_all.bat
+
+	C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>ECHO OFF
+	Administrator PRIVILEGES Detected!
+	##########################################################################################
+	#
+	# WARNING! this script will the drop and create the sahsuland and sahusland_dev databases.
+	# Type control-C to abort.
+	#
+	# Test user: "peter"
+	#
+	##########################################################################################
+	Press any key to continue . . .
+	Terminate batch job (Y/N)? y
+```
 
 **These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
 **You _must_ build sahusland_dev before sahusland**; as it loads the error messages.
