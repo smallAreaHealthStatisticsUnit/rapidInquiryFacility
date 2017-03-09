@@ -150,6 +150,55 @@ GO
 INSERT /* 7 */ INTO rif40.rif40_study_shares(grantee_username) VALUES (SUSER_SNAME());		
 GO
 
+SELECT [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq') AS current_study_id,
+       [rif40].[rif40_sequence_current_value] ('rif40.rif40_inv_id_seq') AS current_inv_id;
+GO
+
+--
+-- Create SAVEPOINT
+--
+SAVE TRANSACTION test_rif40_run_study_delete;
+GO
+
+--
+-- Test delete
+--
+DELETE /* 7 */ FROM rif40.rif40_study_shares WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+DELETE /* 6 */ FROM rif40.rif40_inv_covariates WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+DELETE /* 5 */ FROM rif40.rif40_comparison_areas WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+DELETE /* 4 */ FROM rif40.rif40_study_areas WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+DELETE /* 3 */ FROM rif40.rif40_inv_conditions WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+DELETE /* 2 */ FROM rif40.rif40_investigations WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+DELETE /* 1 */ FROM rif40.rif40_studies WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+
+--
+-- Undo DELETE by rolling back to SAVEPOINT.
+--
+ROLLBACK TRANSACTION test_rif40_run_study_delete;
+GO
+
+SELECT * /* 7 */ FROM rif40.rif40_study_shares WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+SELECT * /* 6 */ FROM rif40.rif40_inv_covariates WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+SELECT TOP 5 * /* 5 */ FROM rif40.rif40_comparison_areas WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+SELECT TOP 5 * /* 4 */ FROM rif40.rif40_study_areas WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+SELECT * /* 3 */ FROM rif40.rif40_inv_conditions WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+SELECT * /* 2 */ FROM rif40.rif40_investigations WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+SELECT * /* 1 */ FROM rif40.rif40_studies WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+GO
+
 ROLLBACK TRANSACTION;
 GO
 

@@ -134,8 +134,8 @@ BEGIN
 	WHERE a.geography = b.geography
 	AND a.study_id  = @current_study_id;
 
-	DECLARE @area_id_query VARCHAR(MAX);
-	SET @area_id_query = 'select count(*) as total from (SELECT area_id FROM t_rif40_study_areas a WHERE study_id = '+@current_study_id+' AND NOT EXISTS (
+	DECLARE @area_id_query NVARCHAR(MAX);
+	SET @area_id_query = 'SELECT @totalOUT=count(*) from (SELECT area_id FROM t_rif40_study_areas a WHERE study_id = '+CAST(@current_study_id AS VARCHAR)+' AND NOT EXISTS (
 	SELECT 1
 	FROM '+@study_hierarchytable+' b WHERE b.'+@study_geolevel_name+'=a.area_id))';
 	DECLARE  @ParmDefinition nvarchar(500) = N'@totalOUT int OUTPUT', @total int;
