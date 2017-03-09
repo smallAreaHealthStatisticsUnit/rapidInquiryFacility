@@ -54,10 +54,16 @@ if %errorlevel% equ 0 (
 	exit /b 1
 )
 
+REM
+REM CHnage this...
+REM 
+SET NEWUSER="peter"
 
 ECHO ####################################################################################
 ECHO #
 ECHO # WARNING! this script will the sahusland_dev database. Type control-C to abort.
+ECHO #
+ECHO # Test user: %NEWUSER%
 ECHO #
 ECHO ####################################################################################
 PAUSE
@@ -69,7 +75,7 @@ if %errorlevel% neq 0 (
 ) else (
 	ECHO rif40_database_creation.sql built OK %errorlevel%
 )
-sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=peter
+sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=%NEWUSER%
 if %errorlevel% neq 0  (
 	ECHO rif40_test_user.sql exiting with %errorlevel%
 	exit /b 1
@@ -92,6 +98,15 @@ if %errorlevel% neq 0  (
 	exit /b 1
 ) else (
 	ECHO rif40_sahsuland_install.bat built OK %errorlevel%
+)
+
+sqlcmd -U %NEWUSER% -P %NEWUSER% -b -m-1 -e -i rif40_run_study.sql
+if %errorlevel% neq 0  (
+	ECHO Both sahsuland and sahsuland_dev built OK
+	ECHO rif40_run_study.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif40_run_study.sql ran OK %errorlevel%
 	ECHO Both sahsuland and sahsuland_dev built OK
 )
 

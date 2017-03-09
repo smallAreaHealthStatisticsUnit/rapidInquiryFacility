@@ -184,6 +184,9 @@ GO
 ROLLBACK TRANSACTION test_rif40_run_study_delete;
 GO
 
+--
+-- OK so we have the study back
+--
 SELECT * /* 7 */ FROM rif40.rif40_study_shares WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
 GO
 SELECT * /* 6 */ FROM rif40.rif40_inv_covariates WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
@@ -199,7 +202,26 @@ GO
 SELECT * /* 1 */ FROM rif40.rif40_studies WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
 GO
 
-ROLLBACK TRANSACTION;
+--
+-- SAVE it
+--
+COMMIT TRANSACTION;
+GO
+
+--
+-- Now run it
+--
+DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+DECLARE @ok INT = 
+	(SELECT rif40.rif40_run_study(@study_id /* Study_id */, 
+								  1 		/* Debug: 0/1 */, 
+								  default 	/* Recursion level: Use default */)
+	);
+DECLARE @msg VARCHAR(MAX) = 'Study ' + CAST(@study_id AS VARCHAR) + ' OK';
+IF @ok = 1 
+	PRINT @msg;
+ELSE 
+	RAISERROR('Study %i FAILED (see previous errors)', 16, 1, @study_id);
 GO
 
 --
