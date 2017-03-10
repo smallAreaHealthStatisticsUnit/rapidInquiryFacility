@@ -102,12 +102,26 @@ IF @xtype = 'U'
 BEGIN
 	DECLARE @update_not_investigation VARCHAR(MAX) = 
 	(
-		select ic.inv_id, ic.study_id
-		from inserted ic
-		WHERE NOT EXISTS (
-			select 1 
-			from [rif40].[t_rif40_investigations] iv
-			where   ic.username= iv.username AND
+		SELECT ic.inv_id, ic.study_id, NULLIF(ic.investigation_state, 'No state: PK update') AS new_state,
+			   CASE WHEN NOT (ic.username = iv.username AND
+						ic.inv_name = iv.inv_name AND
+						ic.inv_description = iv.inv_description AND
+						ic.year_start = iv.year_start AND
+						ic.year_stop = iv.year_stop AND
+						ic.max_age_group = iv.max_age_group AND
+						ic.min_age_group = iv.min_age_group AND
+						ic.genders = iv.genders AND
+						ic.numer_tab = iv.numer_tab AND
+						ic.classifier = iv.classifier AND
+						ic.classifier_bands = iv.classifier_bands AND
+						ic.mh_test_type = iv.mh_test_type) THEN 'Changing fields other than investigation_state' 
+				ELSE 'No other fields changed' END AS field_status
+		  FROM inserted ic 
+				LEFT OUTER JOIN rif40.t_rif40_investigations iv	
+					ON ( ic.inv_id = iv.inv_id AND ic.study_id = iv.study_id )
+        WHERE ic.investigation_state IS NULL	/* i.e. updating PK! */ 
+           OR 									/* Changing fields other than investigation_state */
+		   NOT (ic.username = iv.username AND
  				ic.inv_name = iv.inv_name AND
  				ic.inv_description = iv.inv_description AND
  				ic.year_start = iv.year_start AND
@@ -116,13 +130,10 @@ BEGIN
  				ic.min_age_group = iv.min_age_group AND
  				ic.genders = iv.genders AND
  				ic.numer_tab = iv.numer_tab AND
- 				ic.study_id = iv.study_id AND
- 				ic.inv_id = iv.inv_id AND
  				ic.classifier = iv.classifier AND
  				ic.classifier_bands = iv.classifier_bands AND
- 				ic.mh_test_type = iv.mh_test_type  AND
- 				ic.investigation_state <> iv.investigation_state
-		) FOR XML PATH('')
+ 				ic.mh_test_type = iv.mh_test_type)  
+		FOR XML PATH('')
 	);
 	IF @update_not_investigation IS NOT NULL
 	BEGIN TRY

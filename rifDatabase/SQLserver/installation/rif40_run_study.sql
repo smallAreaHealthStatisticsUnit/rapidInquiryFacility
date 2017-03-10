@@ -231,10 +231,11 @@ BEGIN
 							'Error number: ' + NULLIF(CAST(ERROR_NUMBER() AS VARCHAR), 'N/A') + CHAR(10) + 
 							'Error severity: ' + NULLIF(CAST(ERROR_SEVERITY() AS VARCHAR), 'N/A') + CHAR(10) + 
 							'Error state: ' + NULLIF(CAST(ERROR_STATE() AS VARCHAR), 'N/A') + CHAR(10) + 
-							'Error procedure: ' + NULLIF(ERROR_PROCEDURE() + CHAR(10), 'N/A') + 
-							'Error line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) + 
+							'Procedure with error: ' + NULLIF(ERROR_PROCEDURE() + CHAR(10), 'N/A') + 
+							'Procedure line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) + 
 							'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);
 		PRINT @msg; 
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
 	END CATCH;
 --	
 -- Always commit

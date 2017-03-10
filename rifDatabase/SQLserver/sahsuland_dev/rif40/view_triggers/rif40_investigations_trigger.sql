@@ -120,47 +120,13 @@ BEGIN
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_investigations]';
 		THROW 51123, @err_msg2, 1;
 	END CATCH;	
-	
-	DELETE FROM [rif40].[t_rif40_investigations]
-	WHERE EXISTS (
-		SELECT 1
-		FROM deleted b
-		WHERE b.inv_id=[rif40].[t_rif40_investigations].inv_id
-		AND b.study_id=[rif40].[t_rif40_investigations].study_id);
-		
-	INSERT INTO [rif40].[t_rif40_investigations] (
-				username,
-				inv_id,
-				study_id,
-				inv_name,
-				year_start,
-				year_stop,
-				max_age_group,
-				min_age_group,
-				genders,
-				numer_tab,
-				mh_test_type,
-				inv_description,
-				classifier,
-				classifier_bands,
-				investigation_state)
-	SELECT	
-				username,
-				inv_id,
-				study_id,
-				inv_name,
-				year_start,
-				year_stop,
-				max_age_group,
-				min_age_group,
-				genders,
-				numer_tab,
-				mh_test_type,
-				inv_description,
-				classifier,
-				classifier_bands,
-				investigation_state
-	FROM inserted;
+
+	UPDATE a
+	   SET /* Only update state, cannot change PK: inv_id, study_id */
+		   investigation_state=inserted.investigation_state
+	  FROM [rif40].[t_rif40_investigations] a
+	  JOIN inserted ON (inserted.study_id = a.study_id AND inserted.inv_id = a.inv_id);
+
 END;
 
 IF @XTYPE='D'

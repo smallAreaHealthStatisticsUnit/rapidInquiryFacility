@@ -464,7 +464,9 @@ EXEC sp_addmessage 55200, 16,
 EXEC sp_addmessage 55201, 16,
 	N'Function: [rif40].[rif40_run_study], Study ID %i cannot be run, in state: %s, needs to be in ''V'' or ''E''.';	
 EXEC sp_addmessage 55216, 16,
-	N'Function: [rif40].[rif40_run_study], Recursion %i, rif40_run_study study %i had error.';	
+	N'Function: [rif40].[rif40_run_study], Recursion %i, rif40_run_study study %i had error.';		
+EXEC sp_addmessage 55207, 16,
+	N'Function: [rif40].[rif40_run_study], Expecting to update %i %s(s), updated %i during state transition (%s=>%s) for study %i.';	
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
 

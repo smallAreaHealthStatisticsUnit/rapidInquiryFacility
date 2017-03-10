@@ -118,5 +118,8 @@ AS
 END
 GO
  
+GRANT EXECUTE ON [rif40].[ErrorLog_proc] TO rif_user, rif_manager;
+GO
+
 --
 -- Eof

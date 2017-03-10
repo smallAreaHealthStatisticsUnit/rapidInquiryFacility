@@ -38,6 +38,11 @@
 --
 -- Peter Hambly, SAHSU
 --
+
+-- This script must be run from the installation directory
+:r ..\sahsuland_dev\rif40\functions\rif40_create_extract.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_compute_results.sql
+
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_run_study]')
@@ -81,8 +86,11 @@ Do update. This forces verification
 Recurse until complete
  */
 	SET @rval=0 /* Failure */;
-
+--
+	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
+--
 	DECLARE @err_msg VARCHAR(MAX);
+	DECLARE @msg VARCHAR(MAX);
 --
 	DECLARE c1_runst CURSOR FOR
 		WITH b AS (
@@ -97,6 +105,9 @@ Recurse until complete
 	DECLARE @study_state VARCHAR(1);
 	DECLARE @new_study_state VARCHAR(1);
 	DECLARE @investigation_count INT;
+	DECLARE @actual_investigation_count INT;
+--
+	DECLARE @n_recursion_level INT = @recursion_level + 1;
 --
 -- Check and lock table
 --
@@ -131,52 +142,64 @@ Recurse until complete
 -- Create extract, call: rif40.rif40_create_extract()
 --
 	IF @new_study_state = 'E' BEGIN
-		PRINT 'Call: rif40.rif40_create_extract()';
+		EXECUTE rif40.rif40_create_extract
+				@rval		/* Result: 0/1 */;
+		IF @rval = 0 BEGIN
+			PRINT '[55202] WARNING! rif40.rif40_create_extract() FAILED, see previous warnings';
+			RETURN @rval;
+			END;
+		ELSE PRINT '[55203] rif40.rif40_create_extract() OK';
 		END;
 --
 -- Compute results, call: rif40.rif40_compute_results()
 --
 	ELSE IF @new_study_state = 'R' BEGIN
-		PRINT 'Call: rif40.rif40_compute_results()';
+		EXECUTE rif40.rif40_compute_results
+				@rval		/* Result: 0/1 */;
+		IF @rval = 0 BEGIN
+			PRINT '[55204] WARNING! rif40.rif40_compute_results() FAILED, see previous warnings';
+			RETURN @rval;
+			END;
+		ELSE PRINT '[55205] rif40.rif40_compute_results() OK';
 		END;
 
 --
 -- Do update. This forces verification
 -- (i.e. change in study_state on rif40_studies calls rif40.rif40_verify_state_change)
 --
-/*
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_run_study',
-		'[55206] Start state transition (%=>%) for study %',
-		c1_rec.study_state::VARCHAR,
-		new_study_state::VARCHAR,
-		c1_rec.study_id::VARCHAR);
-	UPDATE rif40_investigations a SET investigation_state = new_study_state WHERE a.study_id = c1_rec.study_id;
-	GET DIAGNOSTICS investigation_count = ROW_COUNT;
-	IF investigation_count != c1_rec.investigation_count THEN
-		PERFORM rif40_log_pkg.rif40_error(-90708, 'rif40_run_study', 
-			'[55207] Expecting to update % investigation(s), updated % during state transition (%=>%) for study %',
-			c1_rec.investigation_count::VARCHAR,
-			investigation_count::VARCHAR,
-			c1_rec.study_state::VARCHAR,
-			new_study_state::VARCHAR,
-			c1_rec.study_id::VARCHAR);
-	END IF;
+	SET @msg='[55206] Start state transition (' + @study_state + '=>' + @new_study_state + ') for study ' + CAST(@study_id AS VARCHAR);
+	PRINT @msg;
+	UPDATE rif40.rif40_investigations SET investigation_state = @new_study_state WHERE study_id = @study_id AND investigation_state = @study_state;
+	SET @actual_investigation_count = @@ROWCOUNT;
+	IF @actual_investigation_count != @investigation_count BEGIN
+--	
+-- Error: [55207] Expecting to update %i %s(s), updated %i during state transition (%s=>%s) for study %i'.
+--
+		SET @err_msg = formatmessage(55207, @investigation_count, 'investigations', @actual_investigation_count, @study_state, @new_study_state, @study_id);
+		THROW 55207, @err_msg, 1;
+		END;
 
 --
 -- MUST USE TABLE NOT VIEWS WHEN USING LOCKS/WHERE CURRENT OF
 --
-	UPDATE rif40_studies a SET study_state = new_study_state WHERE a.study_id = c1_rec.study_id;
-	GET DIAGNOSTICS study_count = ROW_COUNT;
-	etp:=clock_timestamp();
-	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study',
-		'[55208] Recurse [%] Completed state transition (%=>%) for study % with % investigation(s); time taken %',
-		n_recursion_level::VARCHAR,
-		c1_rec.study_state::VARCHAR,
-		new_study_state::VARCHAR,
-		c1_rec.study_id::VARCHAR,
-		investigation_count::VARCHAR,
-		age(etp, stp)::VARCHAR);
- 
+	UPDATE rif40.rif40_studies SET study_state = @new_study_state WHERE study_id = @study_id AND study_state = @study_state;
+	SET @actual_investigation_count = @@ROWCOUNT;
+	IF @actual_investigation_count != @investigation_count BEGIN
+--	
+-- Error: [55207] Expecting to update %i %s(s), updated %i during state transition (%s=>%s) for study %i'.
+--
+		SET @err_msg = formatmessage(55207, @investigation_count, 'studies', @actual_investigation_count, @study_state, @new_study_state, @study_id);
+		THROW 55207, @err_msg, 1;
+		END;
+	ELSE BEGIN
+		SET @etp=GETDATE();
+		SET @etime=CAST(@etp - @stp AS TIME);
+		SET @msg='[55208] Recurse [' + CAST(@n_recursion_level AS VARCHAR) + '] Completed state transition (' + @study_state + '=>' + @new_study_state + 
+			') for study ' + CAST(@study_id AS VARCHAR) + ' with ' + CAST(@investigation_count AS VARCHAR) + ' investigation(s); time taken ' +
+			CAST(@etime AS VARCHAR);
+		PRINT @msg;
+		END;
+ /*
 --
 -- Recurse until complete
 --
