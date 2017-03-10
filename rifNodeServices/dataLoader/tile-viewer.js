@@ -255,7 +255,19 @@ function cacheTabBeforeActivate() {
 			else {
 				consoleLog("cacheTabBeforeActivate(): getCacheSize() done.");
 				if (results.tableHtml) {
-					document.getElementById("cacheTab").innerHTML='<a>' + results.tableHtml + '</a>' + 
+					var toopjsonCacheStatHtml=(getTopojsonTileLayerStats() || "");
+					document.getElementById("cacheTab").innerHTML='<a>' + 
+										'<table id="cachetable" style="width:100%">\n' +
+											'  <tr>\n' +
+											'    <th>Name</th>\n' +
+											'    <th>Hits</th>\n' +
+											'    <th>Misses</th>\n' +
+											'    <th>Errors</th>\n' +
+											'    <th>Cached</th>\n' +
+											'    <th>Size</th>\n' +
+											'  </tr>' +
+						results.tableHtml + toopjsonCacheStatHtml +
+						'</table></a>' + 
 						'<a><table>' +
 						'<tr><td>Total tiles: </td><td>' + results.totalTiles + '</td></tr>' +
 						'<tr><td>Cache size: </td><td>' + (fileSize(results.cacheSize)||"N/A") + '</td></tr>' +

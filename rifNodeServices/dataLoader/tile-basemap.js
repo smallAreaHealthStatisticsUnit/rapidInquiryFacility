@@ -946,15 +946,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 										});
 										
 										var cacheRows="";
-										var tableHtml='<table id="cachetable" style="width:100%">\n' +
-											'  <tr>\n' +
-											'    <th>Name</th>\n' +
-											'    <th>Hits</th>\n' +
-											'    <th>Misses</th>\n' +
-											'    <th>Errors</th>\n' +
-											'    <th>Cached</th>\n' +
-											'    <th>Size</th>\n' +
-											'  </tr>';							
+										var tableHtml="";					
 										if (mapArrays.basemapArray) {
 											for (var i=0; i<mapArrays.basemapArray.length; i++) {
 												if (mapArrays.basemapArray[i].tileLayer && mapArrays.basemapArray[i].tileLayer.cacheStats &&
@@ -1006,7 +998,6 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 										else {
 											consoleError("getCacheSize() no overlaymapArray");
 										}
-										tableHtml+='</table>';
 										
 										consoleLog("getCacheSize(): " + mapArrays.totalTiles + " tiles; size: " + mapArrays.cacheSize + " bytes" + cacheRows);
 										if (getCacheSizeCallback) {

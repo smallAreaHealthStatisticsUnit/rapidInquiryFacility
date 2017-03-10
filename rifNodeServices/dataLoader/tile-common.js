@@ -641,13 +641,21 @@ function addTileLayer(methodFields, maxzoomlevel) {
 						onEachFeature: createPopup
 					} 
                 },
+				name: geolevel.databaseType + "." + geolevel.databaseName + "." + geolevel.tableName, 
+											// Should be unique (includes schema)
 				maxZoom: maxzoomlevel,
 				useCache: true,				// Use PouchDB caching
 				auto_compaction: autoCompaction	
 			}
 		);
 	}
-		
+	geolevel.cacheStats={
+		hits: 0,
+		misses: 0,
+		errors: 0,
+		tiles: 0,
+		size: 0
+	};	
 	topojsonTileLayer.on('tileerror', function(error, tile) {
 		var msg="";
 		if (error && error.message) {
@@ -658,6 +666,22 @@ function addTileLayer(methodFields, maxzoomlevel) {
 				(JSON.stringify(tile.coords)||"UNK"));		
 		}
 	});
+	topojsonTileLayer.on('tilecacheerror', function tileCacheErrorHandler(ev) {
+		if (geolevel && geolevel.cacheStats) {
+			geolevel.cacheStats.errors++;
+		}
+	});
+	topojsonTileLayer.on('tilecachemiss', function tileCacheErrorHandler(ev) {
+		if (geolevel && geolevel.cacheStats) {
+			geolevel.cacheStats.misses++;
+		}
+	});
+	topojsonTileLayer.on('tilecachehit', function tileCacheErrorHandler(ev) {
+		if (geolevel && geolevel.cacheStats) {
+			geolevel.cacheStats.hits++;
+		}
+	});
+	
 	topojsonTileLayer.on('load', function topojsonTileLayerLoad() {
 		consoleLog("Tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id +
 			"; zoom: " + map.getZoom() +
@@ -720,6 +744,32 @@ function addTileLayer(methodFields, maxzoomlevel) {
 	return topojsonTileLayer;
 } // End of addTileLayer()
 
+/*
+ * Function:	getTopojsonTileLayerStats()
+ * Parameters:	None
+ * Returns:		Cache rows html
+ * Description: Get topojsonTileLayer stats
+ */	
+function getTopojsonTileLayerStats() {
+	var tableHtml="";
+
+	for (var i=0; i<methodFields.geolevel.length; i++) {
+		var geolevel=methodFields.geolevel[i];
+		if (geolevel.description && geolevel.cacheStats) {
+			tableHtml+='  <tr>\n' +
+				'    <td>' + /* geolevel.table_description + ': ' + */ geolevel.description + '</td>\n' +
+				'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
+				'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
+				'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
+				'    <td>' + geolevel.cacheStats.tiles + '</td>\n' +
+				'    <td>' + (fileSize(geolevel.cacheStats.size)||'N/A') + '</td>\n' +
+				'  </tr>';		
+		}
+	}
+	
+	return tableHtml;
+ }
+ 
 /*
  * Function:	createPopup()
  * Parameters:	GeoJSON feature, layer

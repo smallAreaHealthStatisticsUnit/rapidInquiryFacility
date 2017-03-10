@@ -124,7 +124,7 @@
 								}
 							}
 						}	
-						else { // Cache miss
+						else { // Cache error
 							var err=new Error("_db.get() invalid doc: "+ JSON.stringify(doc, null, 2));
 							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 							done(err, tile);
