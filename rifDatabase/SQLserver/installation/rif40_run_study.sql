@@ -238,7 +238,8 @@ BEGIN
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
 	END CATCH;
 --	
--- Always commit
+-- Always commit, even though this may fail because trigger failure have caused a rollback:
+-- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.
 --
 	COMMIT TRANSACTION;
 --

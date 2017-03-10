@@ -136,64 +136,21 @@ BEGIN
 	BEGIN CATCH
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_studies]';
 		THROW 51132, @err_msg2, 1;
-	END CATCH;		
+	END CATCH;	
 	
-	DELETE FROM [rif40].[t_rif40_studies]
-	WHERE EXISTS (
-		SELECT 1
-		FROM deleted b
-		WHERE b.study_id=[rif40].[t_rif40_studies].study_id);
-		
-	INSERT INTO [rif40].[t_rif40_studies] (
-				username,
-				study_id,
-				extract_table,
-				study_name,
-				summary,
-				description,
-				other_notes,
-				study_date,
-				geography,
-				study_type,
-				study_state,
-				comparison_geolevel_name,
-				denom_tab,
-				direct_stand_tab,
-				study_geolevel_name,
-				map_table,
-				suppression_value,
-				extract_permitted,
-				transfer_permitted,
-				authorised_by,
-				authorised_on,
-				authorised_notes,
-				audsid,
-				project)
-	SELECT		username,
-				study_id,
-				extract_table,
-				study_name,
-				summary,
-				description,
-				other_notes,
-				study_date,
-				geography,
-				study_type,
-				study_state,
-				comparison_geolevel_name,
-				denom_tab,
-				direct_stand_tab,
-				study_geolevel_name,
-				map_table,
-				suppression_value,
-				extract_permitted,
-				transfer_permitted,
-				authorised_by,
-				authorised_on,
-				authorised_notes,
-				audsid,
-				project
-	FROM inserted;
+--
+-- IG update: extract_permitted, transfer_permitted, authorised_by, authorised_on, authorised_notes
+-- State change: study_state
+--
+	UPDATE a
+       SET extract_permitted=inserted.extract_permitted, 
+           transfer_permitted=inserted.transfer_permitted,
+           authorised_by=inserted.authorised_by, 
+           authorised_on=inserted.authorised_on, 
+           authorised_notes=inserted.authorised_notes,
+           study_state=inserted.study_state
+      FROM [rif40].[t_rif40_studies] a
+	  JOIN inserted ON (inserted.study_id = a.study_id);
 END;
 
 IF @XTYPE='D'
