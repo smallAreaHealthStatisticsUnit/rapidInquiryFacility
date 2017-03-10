@@ -3,9 +3,8 @@ package rifDataLoaderTool.dataStorageLayer.pg;
 
 import rifDataLoaderTool.businessConceptLayer.RIFDataLoaderToolStartupProperties;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
@@ -322,20 +321,28 @@ final class PGSQLConnectionManager {
 		catch(Exception exception) {
 			//Record original exception, throw sanitised, human-readable version
 			logException(exception);
+			//String errorMessage
+			//	= RIFServiceMessages.getMessage(
+			//		"sqlConnectionManager.error.unableToReclaimWriteConnection");
 			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlConnectionManager.error.unableToReclaimWriteConnection");
-
+				= RIFGenericLibraryMessages.getMessage("sqlConnectionManager.error.unableToReclaimWriteConnection");
+			
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLConnectionManager.class, 
 				errorMessage, 
 				exception);
 			
+//			RIFServiceException rifServiceException
+//				= new RIFServiceException(
+//					RIFServiceError.DATABASE_QUERY_FAILED, 
+//					errorMessage);
+
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+						errorMessage);
+			
 			throw rifServiceException;
 		}
 	
@@ -372,20 +379,31 @@ final class PGSQLConnectionManager {
 		catch(Exception exception) {
 			//Record original exception, throw sanitised, human-readable version
 			logException(exception);
+			//String errorMessage
+		//		= RIFServiceMessages.getMessage(
+			//		"sqlConnectionManager.error.unableToAssignWriteConnection");
+
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"sqlConnectionManager.error.unableToAssignWriteConnection");
 
+			
+			
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLConnectionManager.class, 
 				errorMessage, 
 				exception);
 			
+			//RIFServiceException rifServiceException
+			//	= new RIFServiceException(
+			//		RIFServiceError.DATABASE_QUERY_FAILED, 
+			//		errorMessage);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
+				RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+				errorMessage);
+			
 			throw rifServiceException;
 		}
 

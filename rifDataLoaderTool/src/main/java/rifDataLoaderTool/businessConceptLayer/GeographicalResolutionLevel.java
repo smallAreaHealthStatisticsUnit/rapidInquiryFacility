@@ -7,7 +7,6 @@ import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.businessConceptLayer.Investigation;
 
 /**
  *

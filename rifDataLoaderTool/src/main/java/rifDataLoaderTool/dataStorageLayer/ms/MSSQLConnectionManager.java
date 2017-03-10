@@ -2,9 +2,8 @@ package rifDataLoaderTool.dataStorageLayer.ms;
 
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
@@ -321,7 +320,7 @@ final class MSSQLConnectionManager {
 			//Record original exception, throw sanitised, human-readable version
 			logException(exception);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"sqlConnectionManager.error.unableToReclaimWriteConnection");
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
@@ -332,7 +331,7 @@ final class MSSQLConnectionManager {
 			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
@@ -371,7 +370,7 @@ final class MSSQLConnectionManager {
 			//Record original exception, throw sanitised, human-readable version
 			logException(exception);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= RIFGenericLibraryMessages.getMessage(
 					"sqlConnectionManager.error.unableToAssignWriteConnection");
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
@@ -382,7 +381,7 @@ final class MSSQLConnectionManager {
 			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
 		}
