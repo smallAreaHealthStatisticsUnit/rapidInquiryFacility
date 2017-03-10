@@ -14,8 +14,10 @@
   <modules>
  	<module>../rifGenericLibrary</module>
  	<module>../rifServices</module>
-	<module>../taxonomyServices</module> 	
- 	<module>../rifStudySubmissionTool</module> 	
+	<module>../taxonomyServices</module> 
+	<!--	
+ 	<module>../rifStudySubmissionTool</module> 
+ 	-->
  	<module>../rifDataLoaderTool</module>
 	<module>../rifITGovernanceTool</module> 	
   </modules>
@@ -43,6 +45,13 @@
     	<artifactId>mssql-jdbc</artifactId>
     	<version>6.1.0.jre8</version>
 	</dependency>
+
+	<dependency>
+    	<groupId>org.postgresql</groupId>
+    	<artifactId>postgresql</artifactId>
+    	<version>9.3-1102-jdbc3</version>
+	</dependency>
+		
  	
   </dependencies>
 </project>
