@@ -49,21 +49,11 @@ MAVEN=mvn
 
 all:
 	$(MAVEN) --version
-	cd rifGenericLibrary ; $(MAVEN) compile	
 	cd rifGenericLibrary; $(MAVEN) -Dmaven.test.skip=true install
-	cd rapidInquiryFacility ; $(MAVEN) compile	
-# Fails with:
-#
-# [ERROR] Failed to execute goal on project rifServices: Could not resolve dependencies for project 
-#rapidInquiryFacility:rifServices:war:0.0.1-SNAPSHOT: Failed to collect dependencies at 
-#rapidInquiryFacility:rifGenericLibrary:jar:0.0.1-SNAPSHOT: Failed to read artifact descriptor for 
-#rapidInquiryFacility:rifGenericLibrary:jar:0.0.1-SNAPSHOT: Could not find artifact 
-#rapidInquiryFacility:rifGeneral:pom:0.0.1-SNAPSHOT -> [Help 1]
-#
-	cd rifServices ; $(MAVEN) compile			
+	cd rapidInquiryFacility ; $(MAVEN) -Dmaven.test.skip=true install
+	cd rifServices ; $(MAVEN) -Dmaven.test.skip=true install		
 	
-install: all
-	cd rifServices; $(MAVEN) -Dmaven.test.skip=true install
+install: clean all
 
 clean: 
 	cd rapidInquiryFacility ; $(MAVEN) clean
