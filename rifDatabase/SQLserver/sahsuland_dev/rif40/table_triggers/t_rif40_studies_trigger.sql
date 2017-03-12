@@ -91,11 +91,28 @@ END;
 
 IF @XTYPE = 'U'
 BEGIN	
-	
-	--UPDATE not allowed except for IG admin and state changes.
-	DECLARE @is_state_change	int, @is_ig_update int;
+	DECLARE @state_change VARCHAR(MAX) = 
+	(
+		SELECT a.study_id, b.study_id AS new_study_id, a.study_state, b.study_state AS new_state
+		  FROM inserted a, deleted b
+		   FOR XML PATH(''));
+	SET @state_change = 'State change: ' + @state_change;
+	DECLARE @inserted VARCHAR(MAX) = 
+	(
+		SELECT a.*
+		  FROM inserted a
+		   FOR XML PATH('row'));
+	SET @inserted = 'Inserted: ' + REPLACE(@inserted, '><', '>'+CHAR(10)+'<');
+	DECLARE @deleted VARCHAR(MAX) = 
+	(
+		SELECT b.*
+		  FROM deleted b
+		   FOR XML PATH('row'));
+	SET @deleted = 'Deleted: ' + REPLACE(@deleted, '><', '>'+CHAR(10)+'<');
 
-	SET @is_state_change = (
+	--UPDATE not allowed except for IG admin and state changes.
+
+	DECLARE @is_state_change VARCHAR(MAX) = (
 		SELECT a.study_id 
 		FROM inserted a, deleted b
 		where a.study_state != b.study_state
@@ -110,7 +127,6 @@ BEGIN
 		and a.comparison_geolevel_name=b.comparison_geolevel_name
 		and a.study_geolevel_name=b.study_geolevel_name
 		and a.denom_tab=b.denom_tab
-		and a.direct_stand_tab=b.direct_stand_tab
 		and a.suppression_value=b.suppression_value
 		and a.extract_permitted=b.extract_permitted
 		and a.transfer_permitted=b.transfer_permitted
@@ -120,7 +136,7 @@ BEGIN
 		and a.audsid=b.audsid
 		FOR XML PATH(''));
 	
-	SET @is_ig_update = ( 
+	DECLARE @is_ig_update VARCHAR(MAX) = ( 
 		SELECT a.study_id
 		FROM inserted a, deleted b
 		where a.study_id=b.study_id
@@ -134,7 +150,6 @@ BEGIN
 		and a.comparison_geolevel_name=b.comparison_geolevel_name
 		and a.study_geolevel_name=b.study_geolevel_name
 		and a.denom_tab=b.denom_tab
-		and a.direct_stand_tab=b.direct_stand_tab
 		and a.suppression_value=b.suppression_value
 		and a.audsid=b.audsid
 		and (a.extract_permitted!=b.extract_permitted
@@ -177,7 +192,7 @@ BEGIN
 			END CATCH;
 		END;
 		ELSE	
-			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 'UPDATE state changes allowed on T-RIF40_STUDIES by user';
+			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', 'UPDATE state changes allowed on T_RIF40_STUDIES by user';
 	END;
 	
 	IF @is_ig_update IS NOT NULL
@@ -208,6 +223,11 @@ BEGIN
 	
 	IF @is_state_change IS NULL AND @is_ig_update IS NULL
 	BEGIN TRY
+
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @state_change;
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @inserted;
+		EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @deleted;
+
 		rollback;
 		DECLARE @err_msg3 VARCHAR(MAX) = formatmessage(51015, SUSER_NAME());
 		THROW 51015, @err_msg3, 1;
