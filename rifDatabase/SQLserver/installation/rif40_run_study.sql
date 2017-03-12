@@ -197,9 +197,22 @@ SELECT TOP 5 * /* 4 */ FROM rif40.rif40_study_areas WHERE study_id = [rif40].[ri
 GO
 SELECT * /* 3 */ FROM rif40.rif40_inv_conditions WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
 GO
-SELECT * /* 2 */ FROM rif40.rif40_investigations WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
-GO
-SELECT * /* 1 */ FROM rif40.rif40_studies WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+DECLARE @inv_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_inv_id_seq');
+DECLARE @rif40_investigations VARCHAR(MAX) = (
+		SELECT * /* 2 */
+		  FROM rif40.rif40_investigations WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq')
+		   FOR XML PATH('row'));
+SET @rif40_investigations = 'Investigations for study: ' + CAST(@study_id AS VARCHAR) + CHAR(10) + 
+	REPLACE(REPLACE(@rif40_investigations, '><', '>'+CHAR(10)+'  <'), '  </row>', '</row>');
+DECLARE @rif40_studies VARCHAR(MAX) = (
+		SELECT * /* 1 */
+		  FROM rif40.rif40_studies WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq')
+		   FOR XML PATH('row'));
+SET @rif40_studies = 'Study: ' + CAST(@study_id AS VARCHAR) + CHAR(10) + REPLACE(REPLACE(@rif40_studies, '><', '>'+CHAR(10)+'  <'), '  </row>', '</row>');
+--
+PRINT @rif40_investigations;
+PRINT @rif40_studies;
 GO
 
 --
