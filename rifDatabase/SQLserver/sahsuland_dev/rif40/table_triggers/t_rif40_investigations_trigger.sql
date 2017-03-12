@@ -102,7 +102,11 @@ IF @xtype = 'U'
 BEGIN
 	DECLARE @update_not_investigation VARCHAR(MAX) = 
 	(
-		SELECT ic.inv_id, ic.study_id, NULLIF(ic.investigation_state, 'No state: PK update') AS new_state,
+		SELECT ic.inv_id, ic.study_id, ic.investigation_state AS new_state,
+               CASE WHEN id.study_id IS NULL THEN 'Error: study_id update'
+			        WHEN id.inv_id IS NULL THEN 'Error:inv_id update'
+					WHEN ic.investigation_state = id.investigation_state THEN 'Error: no state change'
+					ELSE 'State/PK checks OK' END AS state_checks, 
 			   CASE WHEN NOT (ic.username = iv.username AND
 						ic.inv_name = iv.inv_name AND
 						ic.inv_description = iv.inv_description AND
@@ -117,10 +121,13 @@ BEGIN
 						ic.mh_test_type = iv.mh_test_type) THEN 'Changing fields other than investigation_state' 
 				ELSE 'No other fields changed' END AS field_status
 		  FROM inserted ic 
+				LEFT OUTER JOIN deleted id
+					ON ( ic.inv_id = id.inv_id AND ic.study_id = id.study_id )
 				LEFT OUTER JOIN rif40.t_rif40_investigations iv	
 					ON ( ic.inv_id = iv.inv_id AND ic.study_id = iv.study_id )
-        WHERE ic.investigation_state IS NULL	/* i.e. updating PK! */ 
-           OR 									/* Changing fields other than investigation_state */
+        WHERE id.study_id IS NULL OR id.inv_id IS NULL			/* i.e. updating PK! */ 
+		   OR ic.investigation_state = id.investigation_state 	/* No state change */
+           OR 													/* Changing fields other than investigation_state */
 		   NOT (ic.username = iv.username AND
  				ic.inv_name = iv.inv_name AND
  				ic.inv_description = iv.inv_description AND
