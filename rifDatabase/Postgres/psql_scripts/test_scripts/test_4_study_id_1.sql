@@ -84,7 +84,7 @@ DECLARE
 		       a.table_name, action_timing
 		 ORDER BY 1 DESC, 3;
 	c2sm CURSOR FOR 
-		SELECT array_agg(level3) AS level3_array FROM sahsuland_level3;
+		SELECT array_agg(sahsu_grd_level3) AS level3_array FROM lookup_sahsu_grd_level3;
 	c3sm CURSOR FOR /* Old studies to delete - not study 1 */
 		SELECT study_id
 		  FROM rif40_studies
@@ -186,16 +186,16 @@ BEGIN
 --
 	RAISE INFO 'test_4_study_id_1.sql: T4--10: Create new test study';
 	PERFORM rif40_sm_pkg.rif40_create_disease_mapping_example(
-		'SAHSU'::VARCHAR 			/* Geography */,
-		'LEVEL1'::VARCHAR			/* Geolevel view */,
+		'SAHSULAND'::VARCHAR 		/* Geography */,
+		'SAHSU_GRD_LEVEL1'::VARCHAR	/* Geolevel view */,
 		'01'::VARCHAR				/* Geolevel area */,
-		'LEVEL4'::VARCHAR			/* Geolevel map */,
-		'LEVEL3'::VARCHAR			/* Geolevel select */,
+		'SAHSU_GRD_LEVEL4'::VARCHAR	/* Geolevel map */,
+		'SAHSU_GRD_LEVEL3'::VARCHAR	/* Geolevel select */,
 		c2sm_rec.level3_array 		/* Geolevel selection array */,
 		'TEST'::VARCHAR 			/* project */, 
 		'SAHSULAND test 4 study_id 1 example'::VARCHAR /* study name */, 
-		'SAHSULAND_POP'::VARCHAR 	/* denominator table */, 
-		'SAHSULAND_CANCER'::VARCHAR /* numerator table */,
+		'POP_SAHSULAND_POP'::VARCHAR 	/* denominator table */, 
+		'NUM_SAHSULAND_CANCER'::VARCHAR /* numerator table */,
  		1989						/* year_start */, 
 		1996						/* year_stop */,
 		condition_array 			/* investigation ICD conditions 2 dimensional array (i.e. matrix); 4 columnsxN rows:
@@ -1132,7 +1132,7 @@ BEGIN;
 DO LANGUAGE plpgsql $$
 DECLARE
 	c2sm CURSOR FOR 
-		SELECT array_agg(level3) AS level3_array FROM sahsuland_level3;
+		SELECT array_agg(sahsu_grd_level3) AS level3_array FROM lookup_sahsu_grd_level3;
 	c2sm_rec 		RECORD;
 --
 	condition_array				VARCHAR[4][2]:='{{"SAHSULAND_ICD", "C34", NULL, NULL}, {"SAHSULAND_ICD", "162", "1629", NULL}}';	
@@ -1155,11 +1155,11 @@ BEGIN
 --
 	RAISE INFO 'test_4_study_id_1.sql: T4--10: Create 2nd test study';
 	PERFORM rif40_sm_pkg.rif40_create_disease_mapping_example(
-		'SAHSU'::VARCHAR 			/* Geography */,
-		'LEVEL1'::VARCHAR			/* Geolevel view */,
+		'SAHSULAND_'::VARCHAR 		/* Geography */,
+		'SAHSU_GRD_LEVEL1'::VARCHAR	/* Geolevel view */,
 		'01'::VARCHAR				/* Geolevel area */,
-		'LEVEL4'::VARCHAR			/* Geolevel map */,
-		'LEVEL3'::VARCHAR			/* Geolevel select */,
+		'SAHSU_GRD_LEVEL4'::VARCHAR	/* Geolevel map */,
+		'SAHSU_GRD_LEVEL3'::VARCHAR	/* Geolevel select */,
 		c2sm_rec.level3_array 		/* Geolevel selection array */,
 		'TEST'::VARCHAR 			/* project */, 
 		'SAHSULAND test 4 study_id 2 example'::VARCHAR /* study name */, 

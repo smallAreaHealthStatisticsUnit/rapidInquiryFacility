@@ -1084,6 +1084,8 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 
 #### Current TODO list (April 2017):
 
+* defaultcomparea, defaultstudyarea are wrong (defaulted to LEVEL1, not SAHSU_GRD_LEVEL1...), not set in XML config, probably using DBF field name but  
+  but should use geolevel name.
 * Assist with middleware (database fixes); SQL Server full install testing
 * Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-r8un without rebuilding the entire database
 
