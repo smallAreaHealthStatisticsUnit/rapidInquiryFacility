@@ -254,8 +254,8 @@ function cacheTabBeforeActivate() {
 			}
 			else {
 				consoleLog("cacheTabBeforeActivate(): getCacheSize() done.");
-				if (results.tableHtml) {
-					var toopjsonCacheStatHtml=(getTopojsonTileLayerStats() || "");
+				if (results.tableHtml && results.nonBasemapCacheStats) {
+					var toopjsonCacheStatHtml=(getTopojsonTileLayerStats(results.nonBasemapCacheStats) || "");
 					document.getElementById("cacheTab").innerHTML='<a>' + 
 										'<table id="cachetable" style="width:100%">\n' +
 											'  <tr>\n' +

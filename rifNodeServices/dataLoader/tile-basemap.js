@@ -919,10 +919,11 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 										
 										for (var i=0; i<result.total_rows; i++) {
 											mapArrays.cacheSize+=(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
-																						
+											result.rows[i].nameFound=false;											
 											if (mapArrays.basemapArray) {
 												for (var j=0; j<mapArrays.basemapArray.length; j++) {
 													if (mapArrays.basemapArray[j].name == result.rows[i].doc.name) {
+														result.rows[i].nameFound=true;
 														mapArrays.basemapArray[j].tileLayer.cacheStats.tiles++;
 														mapArrays.basemapArray[j].tileLayer.cacheStats.size+=
 															(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
@@ -933,6 +934,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 											if (mapArrays.overlaymapArray) {
 												for (var j=0; j<mapArrays.overlaymapArray.length; j++) {
 													if (mapArrays.overlaymapArray[j].name == result.rows[i].doc.name) {
+														result.rows[i].nameFound=true;
 														mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles++;
 														mapArrays.overlaymapArray[j].tileLayer.cacheStats.size+=
 															(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
@@ -941,6 +943,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 												}
 											}								
 										}
+										
 										$( "#progressbar" ).progressbar({
 											value: result.total_rows
 										});
@@ -998,7 +1001,30 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 										else {
 											consoleError("getCacheSize() no overlaymapArray");
 										}
+
+//
+// Process cache stats not used by basename (i.e topoJSON geolevels)
+//
+										var nonBasemapCacheStats = {};
+										for (var i=0; i<result.total_rows; i++) {
+											if (result.rows[i].nameFound == false) { // Not yet processed
+												var name=result.rows[i].doc.name;
+												if (nonBasemapCacheStats[name]) {
+													nonBasemapCacheStats[name].tiles++;
+													nonBasemapCacheStats[name].size+=
+														(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
+												}
+												else {
+													nonBasemapCacheStats[name] = {
+														found: false,
+														tiles: 1,
+														size: (result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length)										
+													}
+												}
+											}
+										}
 										
+										consoleLog("nonBasemapCacheStats() size: " + Object.keys(nonBasemapCacheStats).length);
 										consoleLog("getCacheSize(): " + mapArrays.totalTiles + " tiles; size: " + mapArrays.cacheSize + " bytes" + cacheRows);
 										if (getCacheSizeCallback) {
 											$( "#progressbar" ).progressbar({
@@ -1008,6 +1034,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 												getCacheSizeCallback(undefined /* No error */, 
 													{
 														tableHtml: 		tableHtml,
+														nonBasemapCacheStats: nonBasemapCacheStats,
 														totalTiles: 	mapArrays.totalTiles,
 														cacheSize:		mapArrays.cacheSize,
 														autoCompaction:	baseLayer.options.auto_compaction

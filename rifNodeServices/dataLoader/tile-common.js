@@ -641,8 +641,8 @@ function addTileLayer(methodFields, maxzoomlevel) {
 						onEachFeature: createPopup
 					} 
                 },
-				name: geolevel.databaseType + "." + geolevel.databaseName + "." + geolevel.tableName, 
-											// Should be unique (includes schema)
+				name: geolevel.databaseType + "." + geolevel.databaseName + "." + geolevel.tableName + "." + geolevel.geolevel_name, 
+											// Should be unique (includes schema and geolevel name)
 				maxZoom: maxzoomlevel,
 				useCache: true,				// Use PouchDB caching
 				auto_compaction: autoCompaction	
@@ -746,24 +746,70 @@ function addTileLayer(methodFields, maxzoomlevel) {
 
 /*
  * Function:	getTopojsonTileLayerStats()
- * Parameters:	None
+ * Parameters:	nonBasemapCacheStats
  * Returns:		Cache rows html
  * Description: Get topojsonTileLayer stats
  */	
-function getTopojsonTileLayerStats() {
+function getTopojsonTileLayerStats(nonBasemapCacheStats) {
 	var tableHtml="";
-
+	var keys=Object.keys(nonBasemapCacheStats);
+	
 	for (var i=0; i<methodFields.geolevel.length; i++) {
 		var geolevel=methodFields.geolevel[i];
-		if (geolevel.description && geolevel.cacheStats) {
+		if (geolevel.databaseType && geolevel.databaseName && geolevel.tableName && geolevel.cacheStats) {
+			var name=geolevel.databaseType + "." + geolevel.databaseName + "." + geolevel.tableName + "." + geolevel.geolevel_name; 
+				// Of tilelayer geolevel
+			var found=false;
+			
+			for (var j=0; j<keys.length; j++) {
+				if (name && keys[j] && name == keys[j]) {	
+					nonBasemapCacheStats[name].found=true;
+					found=true;
+					tableHtml+='  <tr>\n' +
+						'    <td>' + name + '</td>\n' +
+						'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
+						'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
+						'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
+						'    <td>' + nonBasemapCacheStats[name].tiles + '</td>\n' +
+						'    <td>' + (fileSize(nonBasemapCacheStats[name].size)||'N/A') + '</td>\n' +	
+						'  </tr>';	
+					consoleLog('[' + j + '] Found nonBasemapCacheStats[' + keys[j] + ']; name: ' + name + '; ' + 
+						JSON.stringify(nonBasemapCacheStats[name]));
+					break;					
+				}				
+				else {	
+					consoleLog('[' + j + '] Ignored nonBasemapCacheStats[' + keys[j] + ']; name: ' + name + '; ' + 
+						JSON.stringify(nonBasemapCacheStats[name]));
+				}
+			}
+		
+			if (found == false) {
+				tableHtml+='<tr>\n'+
+					'    <td>' + name + '</td>\n' +
+					'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
+					'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
+					'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
+					'    <td>N/A</td>\n' +				
+					'    <td>N/A</td>\n' +
+					'  </tr>';					
+			}			
+		}
+	}
+		
+	for (var i=0; i<keys.length; i++) {
+		if (nonBasemapCacheStats[keys[i]].found && nonBasemapCacheStats[keys[i]].found == false) {
 			tableHtml+='  <tr>\n' +
-				'    <td>' + /* geolevel.table_description + ': ' + */ geolevel.description + '</td>\n' +
-				'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
-				'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
-				'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
-				'    <td>' + geolevel.cacheStats.tiles + '</td>\n' +
-				'    <td>' + (fileSize(geolevel.cacheStats.size)||'N/A') + '</td>\n' +
-				'  </tr>';		
+			'    <td>' + keys[i] + '</td>\n' +
+			'    <td>0</td>\n' + // Hits
+			'    <td>0</td>\n' + // Misses
+			'    <td>0</td>\n' + // Errors
+			'    <td>' + nonBasemapCacheStats[keys[i]].tiles + '</td>\n' +
+			'    <td>' + (fileSize(nonBasemapCacheStats[keys[i]].size)||'N/A') + '</td>\n' +
+			'  </tr>';	
+			consoleLog('nonBasemapCacheStats[' + keys[i] + ']: ' + JSON.stringify(nonBasemapCacheStats[keys[i]]));
+		}
+		else {
+			consoleLog('Ignored nonBasemapCacheStats[' + keys[i] + ']');
 		}
 	}
 	
