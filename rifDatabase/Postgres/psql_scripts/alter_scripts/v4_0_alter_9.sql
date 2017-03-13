@@ -145,7 +145,10 @@ COMMENT ON COLUMN "rif40_projects"."project" IS 'Project name';
 --
 \i ../PLpgsql/rif40_xml_pkg/rif40_GetAdjacencyMatrix.sql
 
-SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(1) LIMIT 10;
+--
+-- Needs study 1
+--
+-- SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(1) LIMIT 10;
  
 --
 -- Testing stop

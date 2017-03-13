@@ -209,7 +209,7 @@ $$;
 -- PG psql code (geo processing)
 --
 \i ../PLpgsql/v4_0_rif40_geo_pkg.sql
-\i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
+--\i ../PLpgsql/rif40_geo_pkg/v4_0_rif40_geo_pkg_simplification.sql
 
 --
 -- PG psql code (middleware)
@@ -300,19 +300,24 @@ VALUES(
 'Parallelisation', 		 '4', 							'Level of Parallelisation. Only supported on Oracle; under development in PoatGres/PostGIS.');
 
 --
+-- Load SAHSULAND data sufficent for an empty database
+-- 
+\i ../sahsuland/v4_0_postgres_sahsuland_empty_imports.sql
+
+--
 -- Load SAHSU geospatial data
 --
-\i ../shapefiles/sahsuland_shapefiles.sql
+--\i ../shapefiles/sahsuland_shapefiles.sql
 
 --
 -- SAHSUland geolevel setup. Fully processed
 --
-\i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
+--\i ../psql_scripts/v4_0_geolevel_setup_sahsuland.sql
 
 --
 -- Load SAHSULAND data 
 -- 
-\i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
+--\i ../sahsuland/v4_0_postgres_sahsuland_imports.sql
 
 \set VERBOSITY terse
 --
@@ -339,11 +344,11 @@ $$;
 --
 -- EW01 geography test data for Kevin. It is NOT processed (i.e. no simplification, intersection etc)
 -- 
-\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
+--\i ../psql_scripts/v4_0_geolevel_setup_ew01.sql
 --
 -- UK91 geography test data for Kevin. It is NOT processed (i.e. no simplification, intersection etc)
 --
-\i ../psql_scripts/v4_0_geolevel_setup_uk91.sql
+--\i ../psql_scripts/v4_0_geolevel_setup_uk91.sql
 
 --
 -- Re-enable rif40_geog_defcomparea_fk
@@ -371,11 +376,6 @@ BEGIN
 	END LOOP;
 END;
 $$;
-
---
--- Cluster Population tables
---
-CLUSTER sahsuland_pop USING sahsuland_pop_pk;
 
 --
 -- Analyze
@@ -455,7 +455,24 @@ $$;
 --
 -- This is a modified ../postgres/rif40_geolevels_geometry.sql (creates T_RIF40_<GEOELVEL>_GEOMETRY etc)
 --
-\i ../psql_scripts/rif40_geolevels_sahsuland_geometry.sql
+--\i ../psql_scripts/rif40_geolevels_sahsuland_geometry.sql
+
+--
+-- Load new tileMaker SAHSULAND
+--
+\i ../../GeospatialData/tileMaker/rif_pg_SAHSULAND.sql
+
+--
+-- Load new dataLoader SAHSULAND
+--
+\cd ../../DataLoaderData/SAHSULAND/
+\i ../../DataLoaderData/SAHSULAND/pg_run_data_loader.sql
+\cd ../../Postgres/psql_scripts/
+
+--
+-- Cluster Population tables
+--
+-- CLUSTER pop_sahsuland_pop USING pop_sahsuland_pop_pk;
 
 --
 -- Grants
@@ -539,7 +556,7 @@ DECLARE
 		SELECT v.tablename, v.viewname
 		  FROM v
 			LEFT OUTER JOIN t ON (t.relname = v.viewname)
- 		WHERE viewname NOT IN ('rif40_num_denom', 'rif40_projects', 'rif40_geolevels', 'rif40_sahsu_maptiles') /* These views cannot be inserted into */
+ 		WHERE viewname NOT IN ('rif40_num_denom', 'rif40_projects', 'rif40_geolevels', 'tiles_sahsuland') /* These views cannot be inserted into */
  		  AND  t.trigger_name IS NULL
  		ORDER BY 1, 2;
 	c1_rec RECORD;
@@ -623,17 +640,17 @@ END;
 --
 -- Post transaction SQL
 --
-ALTER TABLE "sahsuland_level1" ALTER COLUMN name  SET NOT NULL;
-ALTER TABLE "sahsuland_level2" ALTER COLUMN name  SET NOT NULL;
-ALTER TABLE "sahsuland_level3" ALTER COLUMN name  SET NOT NULL;
-ALTER TABLE "sahsuland_level4" ALTER COLUMN name  SET NOT NULL; 
+--ALTER TABLE "sahsuland_level1" ALTER COLUMN name  SET NOT NULL;
+--ALTER TABLE "sahsuland_level2" ALTER COLUMN name  SET NOT NULL;
+--ALTER TABLE "sahsuland_level3" ALTER COLUMN name  SET NOT NULL;
+--ALTER TABLE "sahsuland_level4" ALTER COLUMN name  SET NOT NULL; 
 
 --
 -- Make columns NOT NULL - Cannot be done with PL/pgsql - causes:
 -- cannot ALTER TABLE "sahsuland_level1" because it is being used by active queries in this session
 --
 
-ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
+--ALTER TABLE "t_rif40_sahsu_geometry" ALTER COLUMN name  SET NOT NULL;
 
 --
 -- Vacuum ANALYZE all RIF40 tables

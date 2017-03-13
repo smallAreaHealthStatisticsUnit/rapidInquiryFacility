@@ -1120,6 +1120,7 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 
 ####  TODO list:
 
+* Data loader to generate primary keys. PK on pop_sahsuland_pop_pk + cluster (see: v4_0_create_sahsuland.sql)
 * Fix for T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION
 * Convert remaining use of geography:: datatype in SQL Server to geometry::. The geography:: datatype is used in the build
   to intersect tiles and will may have issues. Production SQL Server is using the geometry:: datatype. This will be parked if 

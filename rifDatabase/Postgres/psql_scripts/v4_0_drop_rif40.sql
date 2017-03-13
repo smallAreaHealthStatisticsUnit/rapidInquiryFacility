@@ -173,6 +173,22 @@ DROP TABLE IF EXISTS sahsuland_level4;
 DROP TABLE IF EXISTS sahsuland_covariates_level3;
 DROP TABLE IF EXISTS sahsuland_covariates_level4;
 
+
+DROP TABLE IF EXISTS pop_sahsuland_pop;
+DROP TABLE IF EXISTS num_sahsuland_cancer;
+DROP TABLE IF EXISTS hierarchy_sahsuland;
+DROP TABLE IF EXISTS geometry_sahsuland CASCADE;
+DROP TABLE IF EXISTS t_tiles_sahsuland CASCADE;
+DROP TABLE IF EXISTS lookup_sahsu_grd_level1;
+DROP TABLE IF EXISTS lookup_sahsu_grd_level2;
+DROP TABLE IF EXISTS lookup_sahsu_grd_level3;
+DROP TABLE IF EXISTS lookup_sahsu_grd_level4;
+DROP TABLE IF EXISTS cov_sahsu_grd_level2;
+DROP TABLE IF EXISTS cov_sahsu_grd_level3;
+DROP TABLE IF EXISTS cov_sahsu_grd_level4;
+DROP TABLE IF EXISTS covar_sahsuland_covariates3;
+DROP TABLE IF EXISTS covar_sahsuland_covariates4;
+
 DROP TABLE IF EXISTS t_rif40_num_denom;
 DROP TABLE IF EXISTS rif40_chi2;
 DROP TABLE IF EXISTS rif40_pois_distribution;
@@ -621,7 +637,7 @@ DROP TABLE IF EXISTS rif40_study_shares;
 DROP TABLE IF EXISTS t_rif40_investigations;
 DROP TABLE IF EXISTS t_rif40_studies;
 DROP TABLE IF EXISTS t_rif40_projects;
-DROP TABLE IF EXISTS t_rif40_geolevels;
+DROP TABLE IF EXISTS t_rif40_geolevels CASCADE;
 
 DROP TABLE IF EXISTS rif40_predefined_groups;
 
@@ -735,6 +751,12 @@ DROP FUNCTION IF EXISTS rif40.t_rif40_studies_insert() CASCADE;
 DROP FUNCTION IF EXISTS rif40.t_rif40_study_areas_insert() CASCADE;
 DROP FUNCTION IF EXISTS rif40.t_rif40_study_sql_insert() CASCADE;
 DROP FUNCTION IF EXISTS rif40.t_rif40_study_sql_log_insert() CASCADE;
+
+DROP FUNCTION IF EXISTS rif_data.geometry_sahsuland_insert_trigger();
+DROP FUNCTION IF EXISTS rif_data.tilemaker_tile2latitude(y integer, zoom_level integer);
+DROP FUNCTION IF EXISTS rif_data.tilemaker_longitude2tile(longitude double precision, zoom_level integer);
+DROP FUNCTION IF EXISTS rif_data.tilemaker_latitude2tile(latitude double precision, zoom_level integer);
+DROP FUNCTION IF EXISTS rif_data.tilemaker_tile2longitude(x integer, zoom_level integer);
 
 \echo Dropped all objects.
 

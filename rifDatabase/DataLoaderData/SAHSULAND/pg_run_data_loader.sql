@@ -89,7 +89,7 @@ VALUES ('cancers','cancer things');
 -- =========================================================
 
 -- Adding sahsuland_pop-1.0
-CREATE TABLE pop.POP_SAHSULAND_POP ( 
+CREATE TABLE rif_data.POP_SAHSULAND_POP ( 
    year INTEGER NOT NULL,
    age_sex_group INTEGER NOT NULL,
    sahsu_grd_level1 VARCHAR(20) NOT NULL,
@@ -117,6 +117,16 @@ COMMENT ON COLUMN POP_SAHSULAND_POP.SAHSU_GRD_LEVEL3 IS 'level 3 resolution fiel
 COMMENT ON COLUMN POP_SAHSULAND_POP.SAHSU_GRD_LEVEL4 IS 'level 4 resolution';
 
 COMMENT ON COLUMN POP_SAHSULAND_POP.TOTAL IS 'total field';
+
+-- Postgres
+--ALTER TABLE POP_SAHSULAND_POP ADD CONSTRAINT pop_sahsuland_pop_pk PRIMARY KEY(YEAR, AGE_SEX_GROUP, SAHSU_GRD_LEVEL4);
+--CLUSTER pop_sahsuland_pop USING pop_sahsuland_pop_pk;
+--
+-- Sql Server
+--ALTER TABLE rif_data.POP_SAHSULAND_POP ADD CONSTRAINT pop_sahsuland_pop_pk 
+--	PRIMARY KEY CLUSTERED(YEAR, AGE_SEX_GROUP, SAHSU_GRD_LEVEL4);
+--GO
+
 
 CREATE INDEX POP_SAHSULAND_POP_YEAR ON POP_SAHSULAND_POP(YEAR);
 
@@ -253,7 +263,6 @@ SELECT
    1
 FROM
    num_sahsuland_cancer;
-
 
 INSERT INTO rif40.rif40_table_outcomes (
    outcome_group_name,

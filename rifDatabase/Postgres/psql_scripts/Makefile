@@ -441,12 +441,12 @@ erd:
 # Now has Node, ERD integration, pg_restore allowed to fail on Postgres 9.4.1
 #
 
-db_create: db_create.rpt
+db_create: 
+	-$(MAKE) clean
+	$(MAKE) db_create.rpt PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
 
 #- db_install: Re-create empty sahsuland, sahsuland_dev; restore from production pg_dump 
-db_install: ../install/sahsuland/sahsuland.dump
-	$(MAKE) clean
-	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
+db_install: db_create ../install/sahsuland/sahsuland.dump
 	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland/sahsuland.dump
 	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland_dev -U postgres -v ../install/sahsuland/sahsuland.dump
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
