@@ -132,6 +132,10 @@ This may be added to extract creation later.
 		   AND a.relname = c.table_name
 		   AND  c.column_name != 'hash_partition_number' /* Exclude inherited columns */
 		 ORDER BY 1;
+--	c6comp CURSOR(l_geography INTEGER) FOR
+--		SELECT *
+--		  FROM rif40_geographies a
+--		 WHERE l_geography = a.geography;
 --
 -- Inherited columns failure:
 --
@@ -149,6 +153,7 @@ This may be added to extract creation later.
 	c3_rec RECORD;
 	c4_rec RECORD;
 	c5_rec RECORD;
+--	c6_rec RECORD;
 --
 	sql_stmt	VARCHAR;
 	ddl_stmts	VARCHAR[];
@@ -406,13 +411,18 @@ BEGIN
 			'[55612] SQL> %;',
 			sql_stmt::VARCHAR);
 		t_ddl:=t_ddl+1;		
-		
+--
+-- Get geographies settings
+--
+--		OPEN c6comp(c1_rec.geography);
+--		FETCH c6comp INTO c6_rec;
+--		CLOSE c6comp;
+--
 		sql_stmt:='UPDATE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' a'||E'\n'||
 			'   SET gid = ('||E'\n'||
 			'			SELECT d.gid'||E'\n'||
-			'			  FROM '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' d'||E'\n'||
-			'			 WHERE a.area_id       = d.area_id'||E'\n'||
-			'			   AND d.geolevel_name = '''||c1_rec.study_geolevel_name||''' /* Partition elimination */)';
+			'			  FROM '||quote_ident('lookup_'||LOWER(c1_rec.study_geolevel_name))||' d'||E'\n'||
+			'			 WHERE a.area_id       = d.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||')';
 		ddl_stmts[t_ddl]:=sql_stmt;
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
 			'[55613] SQL> %;',

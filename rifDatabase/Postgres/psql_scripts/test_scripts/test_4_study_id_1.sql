@@ -331,7 +331,7 @@ SELECT band_id, COUNT(area_id) AS total
 --
 /*
 \pset title 'Missing area_ids'
-SELECT level4 FROM sahsuland_level4
+SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 EXCEPT
 SELECT area_id
   FROM test_4_study_id_1_extract
@@ -342,11 +342,11 @@ SELECT area_id AS level4
   FROM test_4_study_id_1_extract
  WHERE study_or_comparison = 'S'
 EXCEPT
-SELECT level4 FROM sahsuland_level4
+SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 ORDER BY 1;
-\pset title 'sahsuland_level4 total'
-SELECT COUNT(level4) AS sahsuland_level4_total 
-  FROM sahsuland_level4;
+\pset title 'lookup_sahsu_grd_level4 total'
+SELECT COUNT(sahsu_grd_level4) AS lookup_sahsu_grd_level4_total 
+  FROM lookup_sahsu_grd_level4;
 \pset title 'test_4_study_id_1_extract total'
 SELECT COUNT(DISTINCT(area_id)) AS test_4_study_id_1_extract_area_id
   FROM test_4_study_id_1_extract
@@ -365,65 +365,65 @@ DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR /* test_4_study_id_1_extract diffs */
 		WITH a AS ( /* Missing */
-			SELECT level4 FROM sahsuland_level4
+			SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 			EXCEPT
 			SELECT area_id
   			  FROM test_4_study_id_1_extract
 			 WHERE study_or_comparison = 'S'
 		), b AS ( /* Extra */
-			SELECT area_id AS level4
+			SELECT area_id AS sahsu_grd_level4
   			  FROM test_4_study_id_1_extract
 			 WHERE study_or_comparison = 'S'
 			EXCEPT
-			SELECT level4 FROM sahsuland_level4
+			SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 		), a1 AS (
-			SELECT COUNT(level4) AS missing_level4
+			SELECT COUNT(sahsu_grd_level4) AS missing_level4
 			  FROM a
 		), b1 AS (
-			SELECT COUNT(level4) AS extra_level4
+			SELECT COUNT(sahsu_grd_level4) AS extra_level4
 			  FROM b
 		)
 		SELECT missing_level4, extra_level4
 		  FROM a1, b1;
 	c2 CURSOR FOR /* test_4_study_id_1_map diffs */
 		WITH a AS ( /* Missing */
-			SELECT level4 FROM sahsuland_level4
+			SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 			EXCEPT
 			SELECT area_id FROM test_4_study_id_1_map
 		), b AS ( /* Extra */
-			SELECT area_id AS level4 FROM test_4_study_id_1_map
+			SELECT area_id AS sahsu_grd_level4 FROM test_4_study_id_1_map
 			EXCEPT
-			SELECT level4 FROM sahsuland_level4
+			SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 		), a1 AS (
-			SELECT COUNT(level4) AS missing_level4
+			SELECT COUNT(sahsu_grd_level4) AS missing_level4
 			  FROM a
 		), b1 AS (
-			SELECT COUNT(level4) AS extra_level4
+			SELECT COUNT(sahsu_grd_level4) AS extra_level4
 			  FROM b
 		)
 		SELECT missing_level4, extra_level4
 		  FROM a1, b1;
 	c3 CURSOR FOR /* test_4_study_id_1_bands diffs */
 		WITH a AS ( /* Missing */
-			SELECT level4 FROM sahsuland_level4
+			SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 			EXCEPT
 			SELECT area_id FROM test_4_study_id_1_bands
 		), b AS ( /* Extra */
-			SELECT area_id AS level4 FROM test_4_study_id_1_bands
+			SELECT area_id AS sahsu_grd_level4 FROM test_4_study_id_1_bands
 			EXCEPT
-			SELECT level4 FROM sahsuland_level4
+			SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 		), a1 AS (
-			SELECT COUNT(level4) AS missing_level4
+			SELECT COUNT(sahsu_grd_level4) AS missing_level4
 			  FROM a
 		), b1 AS (
-			SELECT COUNT(level4) AS extra_level4
+			SELECT COUNT(sahsu_grd_level4) AS extra_level4
 			  FROM b
 		)
 		SELECT missing_level4, extra_level4
 		  FROM a1, b1;
 	c4 CURSOR FOR /* rif40_results WHERE study_id = currval('rif40_study_id_seq'::regclass) diffs */
 		WITH a AS ( /* Missing */
-			SELECT level4 FROM sahsuland_level4
+			SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 			EXCEPT
 			SELECT b.area_id
   			  FROM rif40_results a, rif40_study_areas b
@@ -431,18 +431,18 @@ DECLARE
 			   AND a.study_id = b.study_id
 			   AND a.band_id  = b.band_id
 		), b AS ( /* Extra */
-			SELECT b.area_id AS level4
+			SELECT b.area_id AS sahsu_grd_level4
   			  FROM rif40_results a, rif40_study_areas b
 			 WHERE a.study_id = currval('rif40_study_id_seq'::regclass)
 			   AND a.study_id = b.study_id
 			   AND a.band_id  = b.band_id
 			EXCEPT
-			SELECT level4 FROM sahsuland_level4
+			SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 		), a1 AS (
-			SELECT COUNT(level4) AS missing_level4
+			SELECT COUNT(sahsu_grd_level4) AS missing_level4
 			  FROM a
 		), b1 AS (
-			SELECT COUNT(level4) AS extra_level4
+			SELECT COUNT(sahsu_grd_level4) AS extra_level4
 			  FROM b
 		)
 		SELECT missing_level4, extra_level4
@@ -719,13 +719,13 @@ Test above and study extraction SQL is failing...
  */
 
  /*
-SELECT level4 FROM sahsuland_level4
+SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 EXCEPT
 SELECT area_id
   FROM test_4_study_id_1_extract
  WHERE study_or_comparison = 'S' LIMIT 20;
 -- 0
-SELECT level4 FROM sahsuland_level4
+SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4
 EXCEPT
 SELECT area_id
   FROM test_4_study_id_1_extract
@@ -735,7 +735,7 @@ DO LANGUAGE plpgsql $$
 DECLARE 
 BEGIN 
 	PERFORM rif40_sql_pkg.rif40_method4(
-'SELECT level4 FROM sahsuland_level4'||E'\n'||
+'SELECT sahsu_grd_level4 FROM lookup_sahsu_grd_level4'||E'\n'||
 'EXCEPT'||E'\n'||
 'SELECT area_id'||E'\n'||
 '  FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_extract'||E'\n'||
