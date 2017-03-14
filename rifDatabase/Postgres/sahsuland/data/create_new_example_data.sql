@@ -27,7 +27,7 @@ SELECT age, SUM(total) AS total
  GROUP BY age
  ORDER BY age; 	
 SELECT year, sex, age, level1, level2, level3, level4, total FROM pop_population_pop LIMIT 4;
-\copy (SELECT year, sex, age, level1, level2, level3, level4, total FROM pop_population_pop) TO pop_population_pop.csv WITH (HEADER true, FORMAT csv)
+\copy (SELECT year, sex, age, level1, level2, level3, level4, total FROM pop_population_pop ORDER BY year, sex, age, level4) TO pop_population_pop.csv WITH (HEADER true, FORMAT csv)
 
 
 DROP VIEW num_sahsuland_cancer;
@@ -56,5 +56,5 @@ SELECT age, SUM(total) AS total
  GROUP BY age
  ORDER BY age; 	
 SELECT year, sex, age, level1, level2, level3, level4, icd, total FROM num_sahsuland_cancer LIMIT 4;
-\copy (SELECT year, sex, age, level1, level2, level3, level4, icd, total FROM num_sahsuland_cancer) TO num_sahsuland_cancer.csv WITH (HEADER true, FORMAT csv)
+\copy (SELECT year, sex, age, level1, level2, level3, level4, icd, total FROM num_sahsuland_cancer ORDER BY year, sex, age, icd, level4) TO num_sahsuland_cancer.csv WITH (HEADER true, FORMAT csv)
 
