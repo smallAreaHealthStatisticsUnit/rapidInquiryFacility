@@ -428,7 +428,7 @@ by 3;
 			IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
 				RETURN QUERY
 					WITH a AS (
-						SELECT 't_rif40_'||LOWER(a.geography)||'_geometry' AS geometry_table,
+						SELECT 'geometry_'||LOWER(a.geography) AS geometry_table,
 							   a.description AS source_description
 						  FROM rif40_geographies a
 					), b AS (

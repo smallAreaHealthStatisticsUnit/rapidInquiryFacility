@@ -219,7 +219,7 @@ BEGIN
 -- Check map area ID exists
 		IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
 			sql_stmt:='SELECT area_id AS areaid /* pre tilemaker */'||E'\n'||
-E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' /* '||l_geography||' */'||E'\n'||
+E'\t'||'  FROM '||quote_ident('geometry_'||LOWER(l_geography))||' /* '||l_geography||' */'||E'\n'||
 E'\t'||' WHERE geolevel_name = $1 /* <Geolevel view> */'||E'\n'||
 E'\t'||'   AND area_id       = $2 /* <map area> */';
 		ELSE
@@ -322,7 +322,7 @@ E'\t'||'   AND a.zoomlevel     = '||c1_rec.maxzoomlevel||' /* <max zoomlevel> */
 	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
 		sql_stmt:='WITH a AS ( /* pre tilemaker II */'||E'\n'||
 E'\t'||'SELECT ST_Extent(optimised_geometry) AS g'||E'\n'||
-E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' /* '||l_geography||' */'||E'\n'||
+E'\t'||'  FROM '||quote_ident('geometry_'||LOWER(l_geography))||' /* '||l_geography||' */'||E'\n'||
 E'\t'||' WHERE geolevel_name = $1 /* <Geolevel view> */';	
 		IF l_map_area IS NOT NULL AND l_study_id IS NULL THEN
 			sql_stmt:=sql_stmt||E'\n'||

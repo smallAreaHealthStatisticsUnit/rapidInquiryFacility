@@ -736,7 +736,7 @@ Total runtime: 19.472 ms
 			sql_stmt:='WITH a AS ( /* Pre tilemaker */'||E'\n'||
 				'	SELECT area_id,'||E'\n'||
 				'            ST_MakeEnvelope($1 /* Xmin */, $2 /* Ymin */, $3 /* Xmax */, $4 /* YMax */, 4326) AS geom	/* Bound */'||E'\n'||
-				'	  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n'||
+				'	  FROM '||quote_ident('geometry_'||LOWER(l_geography))||E'\n'||
 				'	 WHERE ST_Intersects(optimised_geometry_3,'||E'\n'||
 				'        		ST_MakeEnvelope($1 /* Xmin */,'||E'\n'||
 				'        					 $2 	/* Ymin */,'||E'\n'||

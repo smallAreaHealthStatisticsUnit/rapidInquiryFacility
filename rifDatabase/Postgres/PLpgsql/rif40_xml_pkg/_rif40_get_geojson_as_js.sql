@@ -330,7 +330,7 @@ BEGIN
 	END IF;
 --	
 	IF c1_rec.geometrytable IS NULL THEN /* Pre tilemaker: no geometry table */
-		sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident('geometry_'||LOWER(l_geography))||E'\n';
 		sql_stmt:=sql_stmt||E'\t'||' WHERE geolevel_name = $1 /* <geolevel view> */ AND area_id IN (SELECT UNNEST($2) /* <geolevel area id list> */)'||E'\n'; 
 	ELSE
 		sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident(LOWER(c1_rec.geometrytable))||E'\n';

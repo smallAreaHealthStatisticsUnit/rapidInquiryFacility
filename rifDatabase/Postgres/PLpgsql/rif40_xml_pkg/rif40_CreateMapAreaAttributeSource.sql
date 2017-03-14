@@ -625,7 +625,7 @@ BEGIN
 		sql_stmt:='WITH a AS ('||E'\n'||
 			  E'\t'||'SELECT '||select_list||E'\n'||
 			  E'\t'||'  FROM '||quote_ident(lower(l_attribute_source))||' a,'||E'\n'||
-			  E'\t'||'       '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' g'||E'\n'||
+			  E'\t'||'       '||quote_ident('geometry_'||LOWER(l_geography))||' g'||E'\n'||
 			  E'\t'||' WHERE g.geography     = $1'||E'\n'||
 			  E'\t'||'   AND g.geolevel_name = $2 /* Partition elimination */'||E'\n'||
 			  E'\t'||'   AND g.area_id       = a.'||quote_ident(LOWER(l_geolevel_select))||' /* Link gid */'||E'\n';
@@ -633,7 +633,7 @@ BEGIN
 		sql_stmt:='WITH a AS ('||E'\n'||
 			  E'\t'||'SELECT '||select_list||E'\n'||
 			  E'\t'||'  FROM rif_studies.'||quote_ident(lower(l_attribute_source))||' /* Needs path adding */'||' a,'||E'\n'||
-			  E'\t'||'       '||quote_ident('t_rif40_'||LOWER(l_geography)||'_geometry')||' g'||E'\n'||
+			  E'\t'||'       '||quote_ident('geometry_'||LOWER(l_geography))||' g'||E'\n'||
 			  E'\t'||' WHERE g.geography     = $1'||E'\n'||
 			  E'\t'||'   AND g.geolevel_name = $2 /* Partition elimination */'||E'\n'||
 			  E'\t'||'   AND g.area_id       = a.area_id /* Link gid */'||E'\n';

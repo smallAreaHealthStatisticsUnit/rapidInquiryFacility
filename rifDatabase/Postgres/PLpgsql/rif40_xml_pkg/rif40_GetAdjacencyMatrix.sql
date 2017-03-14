@@ -224,7 +224,7 @@ PL/pgSQL function rif40_xml_pkg.rif40_getadjacencymatrix(integer) line 202 at IF
 '	 WHERE b1.study_id = $1'||E'\n'||
 '), c AS ('||E'\n'||
 '	SELECT b.area_id, b.band_id, c1.optimised_geometry'||E'\n'||
-'	  FROM '||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||' c1, b'||E'\n'||
+'	  FROM '||quote_ident('geometry_'||LOWER(c1_rec.geography))||' c1, b'||E'\n'||
 '    WHERE c1.geolevel_name = $2'||E'\n'||
 '      AND c1.area_id       = b.area_id'||E'\n'||	  
 '), d AS ('||E'\n'||

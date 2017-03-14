@@ -922,8 +922,9 @@ BEGIN
         RAISE WARNING 'test_4_study_id_1.sql: T4--32: no study 1; study list: %', c2_rec.study_list::Text;
 		RETURN;
     ELSIF c1_rec.study_name IS NULL THEN
-		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--33: Test 4.8 no study 1 found; total = %; study list: %', 
+		RAISE WARNING 'test_4_study_id_1.sql: T4--33: Test 4.8 no study 1 found; total = %; study list: %', 
 			c2_rec.total::Text, c2_rec.study_list::Text;
+		RETURN;
 	ELSIF c1_rec.study_name != 'SAHSULAND test 4 study_id 1 example' THEN
 		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--34: Test 4.9; Study: 1 name (%) is not test 4 example', 
 			c1_rec.study_name;

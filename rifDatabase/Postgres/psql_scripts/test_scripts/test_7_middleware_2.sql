@@ -133,7 +133,7 @@ SELECT b.theme, b.attribute_source, b.attribute_name, b.name_description, b.ordi
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_2' /* Temporary table */, 
-		'SAHSULAND', 'SAHSU_GRD_LEVEL2', 'health', 'sahsuland_cancer');
+		'SAHSULAND', 'SAHSU_GRD_LEVEL2', 'health', 'num_sahsuland_cancer');
 \pset title 'Demo 1. Sahsuland cancer. All defaults (i.e. all columns, fetch 1000 rows at offset 0)'
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
@@ -147,7 +147,7 @@ FETCH FORWARD 5 IN c4getallatt4theme_2;
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_1' /* Temporary table */, 
-		'SAHSULAND', 'SAHSU_GRD_LEVEL4', 'covariate', 'sahsuland_covariates_level4', ARRAY['SES', 'year']);
+		'SAHSULAND', 'SAHSU_GRD_LEVEL4', 'covariate', 'covar_sahsuland_covariates3', ARRAY['SES', 'year']);
 \pset title 'Demo 2. covariate theme; specified columns (forcing re-sort); otherwise defaults'
 SELECT * 
   FROM rif40_xml_pkg.rif40_GetMapAreaAttributeValue(
@@ -193,7 +193,7 @@ Time: 6559.317 ms
 SELECT * 
   FROM rif40_xml_pkg.rif40_CreateMapAreaAttributeSource(
 		'c4getallatt4theme_3' /* Temporary table */, 
-		'SAHSULAND', 'SAHSU_GRD_LEVEL2', 'population', 'sahsuland_pop');
+		'SAHSULAND', 'SAHSU_GRD_LEVEL2', 'population', 'pop_sahsuland_pop');
 --
 -- Create REFCURSOR
 --
