@@ -58,3 +58,5 @@ SELECT age, SUM(total) AS total
 SELECT year, sex, age, level1, level2, level3, level4, icd, total FROM num_sahsuland_cancer LIMIT 4;
 \copy (SELECT year, sex, age, level1, level2, level3, level4, icd, total FROM num_sahsuland_cancer ORDER BY year, sex, age, icd, level4) TO num_sahsuland_cancer.csv WITH (HEADER true, FORMAT csv)
 
+--
+-- Eof
