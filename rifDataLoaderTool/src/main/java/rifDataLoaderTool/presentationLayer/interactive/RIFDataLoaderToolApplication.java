@@ -440,7 +440,7 @@ public class RIFDataLoaderToolApplication
 			runWorkflow();
 		}
 		if (okCloseButtonPanel.isOKButton(button)) {
-
+			System.exit(0);
 		}
 		else if (okCloseButtonPanel.isCloseButton(button)) {
 			System.exit(0);

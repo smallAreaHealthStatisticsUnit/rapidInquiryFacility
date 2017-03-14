@@ -1,6 +1,8 @@
 package rifDataLoaderTool.targetDBScriptGenerator.pg;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSchemaCommentQueryFormatter;
@@ -214,7 +216,7 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 	}
 		
 	
-	protected String createPermissions(
+	protected void createPermissions(
 		final StringBuilder dataSetEntry,
 		final DataSetConfiguration dataSetConfiguration) {
 		
@@ -229,7 +231,64 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		dataSetEntry.append(queryFormatter.generateQuery());
 		dataSetEntry.append("\n\n");
 		
-		return queryFormatter.generateQuery();
+	}
+	
+	protected void createPrimarykey(
+		final StringBuilder dataSetEntry,
+		final DataSetConfiguration dataSetConfiguration) {
+
+		
+		String publishedTableName
+			= dataSetConfiguration.getPublishedTableName();
+		String primaryKeyName = this.getPrimaryKeyName(dataSetConfiguration);
+		
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryPhrase(0, "ALTER TABLE rif_data.");
+		queryFormatter.addQueryPhrase(publishedTableName);
+		queryFormatter.addQueryPhrase(" ADD CONSTRAINT ");
+		queryFormatter.addQueryPhrase(primaryKeyName);
+		queryFormatter.addQueryPhrase(" PRIMARY KEY(");		
+		queryFormatter.addQueryPhrase("YEAR,");
+		
+		RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
+
+		if (rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA ||
+			rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+			
+			DataSetFieldConfiguration highestResolutionField
+				= DataSetConfigurationUtility.getHighestGeographicalResolutionField(
+					dataSetConfiguration);
+			
+			//We need the age sex group and the highest resolution field
+			//along with year to make a primary key field.
+			queryFormatter.addQueryPhrase("AGE_SEX_GROUP,");
+			queryFormatter.addQueryPhrase(highestResolutionField.getConvertFieldName().toUpperCase());				
+		}
+		else if (rifSchemaArea == RIFSchemaArea.COVARIATE_DATA) {
+			//Here we only need year and highest resolution
+			
+			DataSetFieldConfiguration highestResolutionField
+				= DataSetConfigurationUtility.getHighestGeographicalResolutionField(
+					dataSetConfiguration);
+			queryFormatter.addQueryPhrase(highestResolutionField.getConvertFieldName().toUpperCase());				
+		}
+		
+		queryFormatter.addQueryPhrase(");");
+		queryFormatter.finishLine();
+		queryFormatter.addQueryPhrase(0, "CLUSTER ");
+		queryFormatter.addQueryPhrase(publishedTableName);
+		queryFormatter.addQueryPhrase(" USING ");
+		queryFormatter.addQueryPhrase(primaryKeyName);
+		
+		
+		dataSetEntry.append(queryFormatter.generateQuery());
+		dataSetEntry.append("\n\n");		
+	}	
+	
+	private String getPrimaryKeyName(final DataSetConfiguration dataSetConfiguration) {
+		String publishedTableName
+			= dataSetConfiguration.getPublishedTableName().toUpperCase();
+		return(publishedTableName.toLowerCase() + "_pk");
 	}
 	
 	// ==========================================

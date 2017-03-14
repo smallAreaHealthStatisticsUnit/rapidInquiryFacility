@@ -90,6 +90,11 @@ public class MSDenominatorScriptGenerator
 		createTableStructureAndImportCSV(
 			denominatorEntry, 
 			denominator);
+		
+		createPrimarykey(
+			denominatorEntry, 
+			denominator);
+		
 		addSchemaComments(
 			denominatorEntry,
 			denominator);

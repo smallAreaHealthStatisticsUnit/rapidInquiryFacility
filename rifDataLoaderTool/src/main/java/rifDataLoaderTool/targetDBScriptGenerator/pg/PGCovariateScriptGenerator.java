@@ -87,12 +87,19 @@ public class PGCovariateScriptGenerator
 		createTableStructureAndImportCSV(
 			covariateEntry, 
 			covariate);
-		covariateEntry.append(createIndices(covariate));	
+		
+		createPrimarykey(
+			covariateEntry,
+			covariate);	
+		
+		createIndices(
+			covariateEntry, 
+			covariate);	
+
 		addSchemaComments(
 			covariateEntry,
 			covariate);
-		
-		
+			
 		createPermissions(
 			covariateEntry, 
 			covariate);
@@ -316,7 +323,8 @@ public class PGCovariateScriptGenerator
 		covariateEntry.append(query);	
 	}
 
-	protected String createIndices(
+	protected void createIndices(
+		final StringBuilder covariateEntry,
 		final DataSetConfiguration covariate) {
 
 		String publishedTableName
@@ -343,7 +351,7 @@ public class PGCovariateScriptGenerator
 		queryFormatter.addQueryPhrase(resolutionFieldName);
 		queryFormatter.addQueryPhrase(")");
 		
-		return queryFormatter.generateQuery();	
+		covariateEntry.append(queryFormatter.generateQuery());
 	}
 	
 	// ==========================================

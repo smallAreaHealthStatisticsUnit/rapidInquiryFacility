@@ -259,6 +259,18 @@ public class DataSetConfigurationUtility {
 		return fieldsWithoutConversionFunctions;		
 	}	
 	
+	public static DataSetFieldConfiguration getHighestGeographicalResolutionField(
+		final DataSetConfiguration dataSetConfiguration) {
+		
+		ArrayList<DataSetFieldConfiguration> fieldConfigurations
+			= getAllGeographicalResolutionFields(dataSetConfiguration);
+		if (fieldConfigurations.size() == 0) {
+			return null;
+		}
+		
+		int lastIndex = fieldConfigurations.size() - 1;
+		return fieldConfigurations.get(lastIndex);
+	}
 
 	public static ArrayList<DataSetFieldConfiguration> getAllGeographicalResolutionFields(
 		final DataSetConfiguration dataSetConfiguration) {

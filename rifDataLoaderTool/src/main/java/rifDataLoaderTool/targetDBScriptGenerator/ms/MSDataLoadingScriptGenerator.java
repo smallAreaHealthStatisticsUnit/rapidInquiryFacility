@@ -97,8 +97,7 @@ public class MSDataLoadingScriptGenerator {
 	// ==========================================
 	public void writeScript(
 		final File outputDirectory,
-		final DataLoaderToolConfiguration dataLoaderToolConfiguration) 
-		throws RIFServiceException {
+		final DataLoaderToolConfiguration dataLoaderToolConfiguration) {
 
 		setOutputDirectory(outputDirectory);
 		
@@ -192,8 +191,8 @@ public class MSDataLoadingScriptGenerator {
 			bufferedWriter.close();
 			
 		}
-		catch(IOException ioException) {
-			ioException.printStackTrace(System.out);
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
 		}	
 	}
 

@@ -1,8 +1,10 @@
 package rifDataLoaderTool.targetDBScriptGenerator.pg;
 
 import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.DataLoaderToolConfigurationReader;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
+
+import rifDataLoaderTool.targetDBScriptGenerator.ms.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -60,6 +62,38 @@ import java.io.*;
  */
 
 public class PGDataLoadingScriptGenerator {
+
+	
+	/*
+	public static void main(String[] args) {
+		SampleDataGenerator testDataGenerator = new SampleDataGenerator();
+		DataLoaderToolConfiguration configuration
+			= testDataGenerator.createSahsulandConfiguration();
+		File outputDirectory = new File("C:\\rifTest");
+		
+		PGDataLoadingScriptGenerator pgScriptGenerator
+			= new PGDataLoadingScriptGenerator();
+		MSDataLoadingScriptGenerator msScriptGenerator	
+			= new MSDataLoadingScriptGenerator();
+		//try {
+
+		pgScriptGenerator.writeScript(
+			outputDirectory, 
+			configuration);
+
+		msScriptGenerator.writeScript(
+			outputDirectory, 
+			configuration);
+		
+		//}
+		//catch(RIFServiceException rifServiceException) {
+			//rifServiceException.printErrors();
+		//}
+		
+	}
+	
+	*/
+	
 	
 	// ==========================================
 	// Section Constants

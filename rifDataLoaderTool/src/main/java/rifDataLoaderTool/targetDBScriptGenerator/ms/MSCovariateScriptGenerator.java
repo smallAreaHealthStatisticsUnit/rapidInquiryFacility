@@ -89,7 +89,18 @@ public class MSCovariateScriptGenerator
 		createTableStructureAndImportCSV(
 			covariateEntry, 
 			covariate);
-		covariateEntry.append(createIndices(covariate));	
+
+		createPrimarykey(
+			covariateEntry, 
+			covariate);
+				
+		createIndices(
+			covariateEntry, 
+			covariate);
+				
+		createPrimarykey(
+			covariateEntry, 
+			covariate);
 		addSchemaComments(
 			covariateEntry,
 			covariate);
@@ -320,7 +331,8 @@ public class MSCovariateScriptGenerator
 		covariateEntry.append(query);	
 	}
 
-	protected String createIndices(
+	protected void createIndices(
+		final StringBuilder covariateEntry,
 		final DataSetConfiguration covariate) {
 
 		String publishedTableName
@@ -350,7 +362,7 @@ public class MSCovariateScriptGenerator
 		queryFormatter.finishLine();
 		queryFormatter.addQueryLine(0, "GO");
 		
-		return queryFormatter.generateQuery();	
+		covariateEntry.append(queryFormatter.generateQuery());
 	}
 	
 	// ==========================================

@@ -88,6 +88,11 @@ public class PGDenominatorScriptGenerator
 		createTableStructureAndImportCSV(
 			denominatorEntry, 
 			denominator);
+		
+		createPrimarykey(
+			denominatorEntry,
+			denominator);			
+		
 		addSchemaComments(
 			denominatorEntry,
 			denominator);
@@ -102,7 +107,7 @@ public class PGDenominatorScriptGenerator
 		createPermissions(
 			denominatorEntry, 
 			denominator);
-		
+
 		return denominatorEntry.toString();
 	}
 	
@@ -128,7 +133,7 @@ public class PGDenominatorScriptGenerator
 		//Field properties that will help us construct the 
 		//create and copy into statements
 
-		createTableQueryFormatter.setDatabaseSchemaName("pop");
+		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		createTableQueryFormatter.setTableName(publishedDenominatorTableName);
 		
 		createTableQueryFormatter.addIntegerFieldDeclaration(

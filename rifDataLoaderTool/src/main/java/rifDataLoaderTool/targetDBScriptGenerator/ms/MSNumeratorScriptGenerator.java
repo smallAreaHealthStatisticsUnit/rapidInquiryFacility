@@ -92,6 +92,12 @@ public class MSNumeratorScriptGenerator
 			numeratorEntry, 
 			geographyMetaData, 
 			numerator);
+				
+		createPrimarykey(
+			numeratorEntry, 
+			numerator);
+		
+		
 		addSchemaComments(
 			numeratorEntry, 
 			numerator);
