@@ -173,11 +173,12 @@ ifeq ($(OS),Windows_NT)
 	COPY=powershell -ExecutionPolicy ByPass -file copy.ps1 
 	PGPASS=powershell -ExecutionPolicy ByPass -file pgpass.ps1
 	# Assumes tr came with make. Force to lowercase
-	TESTUSER=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
+	CLEAN_USERNAME=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
+	TESTUSER?=$(CLEAN_USERNAME)
 	ifeq ($(TESTUSER),)
 		TESTUSER=$(USERNAME)
 	endif
-	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
+#	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
 	PGPASSFILE=$(APPDATA)\postgresql\pgpass.conf
 else
 #
@@ -321,7 +322,7 @@ sahsuland_empty: $(PLR_DIRS)
 	
 #- topojson_convert: GeoJSON to topoJSON converter
 topojson_convert:
-	$(MAKE) -C ../Node topojson_convert
+#	$(MAKE) -C ../Node topojson_convert
 # create a completed target
 	
 # Add UK gis
@@ -397,7 +398,7 @@ endif
 endif
 	$(MAKE) clean
 	$(MAKE) db_create PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
-	$(MAKE) -C ../Node install	
+#	$(MAKE) -C ../Node install	
 	$(MAKE) sahsuland_empty PGDATABASE=sahsuland_empty
 	$(MAKE) sahsuland_dev PGDATABASE=sahsuland_dev
 	$(MAKE) sahsuland_dev_dump PGDATABASE=sahsuland_dev
@@ -423,7 +424,7 @@ endif
 endif
 endif
 	$(MAKE) -C alter_scripts clean all PGDATABASE=sahsuland		
-	$(MAKE) -C ../Node topojson_convert PGDATABASE=sahsuland
+#	$(MAKE) -C ../Node topojson_convert PGDATABASE=sahsuland
 	$(MAKE) clean v4_0_vacuum_analyse_dev PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
 	$(MAKE) sahsuland_dump

@@ -253,7 +253,7 @@ forever:
 	
 #- modules: Build required Node.js modules using npm install --save to update dependencies in package.json
 modules: $(MODULES) $(MODULE_JSON) 
-	$(NPM) install JSZip@2.6.0
+	$(NPM) install jszip@2.6.0
 
 # Module dependency control	
 $(MODULE_JSON):
