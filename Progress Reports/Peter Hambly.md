@@ -1086,6 +1086,21 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 
 * defaultcomparea, defaultstudyarea are wrong (defaulted to LEVEL1, not SAHSU_GRD_LEVEL1...), not set in XML config, probably using DBF field name but  
   but should use geolevel name.
+* Dataloader row number issues: impacting test_4_study_id_1.sql (remove/put back commented out sections), retest
+* Geospatial SQL Server install issue:
+```
+	-- SQL statement 75: Remove old geolevels meta data table >>>
+	DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
+
+	Msg 547, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
+	The DELETE statement conflicted with the REFERENCE constraint "rif40_covariates_geolevel_fk". The conflict occurred in database "sah
+	suland_dev", table "rif40.rif40_covariates".
+	Msg 3621, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
+	The statement has been terminated.
+```
+* TESTUSER support
+* Test database and user account creation with db_create target. Need to keep postgres admin logged on
+* Improve documentation on SQL Server BULK LOAD file permissions
 * Assist with middleware (database fixes); SQL Server full install testing
 * Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-r8un without rebuilding the entire database
 
