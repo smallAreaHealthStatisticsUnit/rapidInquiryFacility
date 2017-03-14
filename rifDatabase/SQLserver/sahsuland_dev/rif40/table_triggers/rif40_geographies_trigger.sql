@@ -251,6 +251,8 @@ DECLARE @missing_defaultstudyarea varchar(MAX) =
 	and not exists (select 1
 		from [rif40].[t_rif40_geolevels] b
 		where a.defaultstudyarea=b.geolevel_name)
+	AND EXISTS (select 1
+		from [rif40].[t_rif40_geolevels] b) /* Table has rows */
 	FOR XML PATH('')
 );
 IF @missing_defaultstudyarea IS NOT NULL

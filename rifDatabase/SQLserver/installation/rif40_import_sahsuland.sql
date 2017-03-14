@@ -224,7 +224,7 @@ FIELDTERMINATOR = ',',
 ROWTERMINATOR = '\n'
 )
 GO
-
+/*
 BULK
 INSERT [rif40].[rif40_geographies]
 FROM '$(path)\Postgres\sahsuland\data\rif40_geographies.csv'
@@ -244,7 +244,7 @@ FIELDTERMINATOR = ',',
 ROWTERMINATOR = '\n'
 )
 GO
-
+*/
 /*
 BULK
 INSERT [rif40].[rif40_tables]
