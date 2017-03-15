@@ -2,6 +2,30 @@
 \set ON_ERROR_STOP ON
 \timing
 BEGIN TRANSACTION;
+
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(DISTINCT(a.study_id)) AS total
+		  FROM t_rif40_studies a, t_rif40_investigations b
+		 WHERE (b.numer_tab = 'NUM_SAHSULAND_CANCER' 
+    OR  a.denom_tab = 'POP_SAHSULAND_POP')
+		   AND a.geography  = 'SAHSULAND'
+		   AND A.study_id   = b.study_id;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 0 THEN
+		RAISE INFO 'Geography: SAHSULAND is not used by any studies';
+	ELSE
+		RAISE EXCEPTION 'Geography: SAHSULAND is used by: % studies', c1_rec.total;
+	END IF;
+END;
+$$;
+
 -- =========================================================
 -- Deleting data from previous run of this script
 -- =========================================================
