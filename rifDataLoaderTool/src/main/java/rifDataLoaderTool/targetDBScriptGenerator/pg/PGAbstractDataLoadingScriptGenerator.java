@@ -223,7 +223,7 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		String publishedTableName
 			= dataSetConfiguration.getPublishedTableName().toUpperCase();
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryPhrase(0, "GRANT SELECT ON ");
+		queryFormatter.addQueryPhrase(0, "GRANT SELECT ON rif_data.");
 		queryFormatter.addQueryPhrase(publishedTableName);
 		queryFormatter.addQueryPhrase(" TO rif_user, rif_manager");
 		
@@ -252,8 +252,7 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		
 		RIFSchemaArea rifSchemaArea = dataSetConfiguration.getRIFSchemaArea();
 
-		if (rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA ||
-			rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+		if (rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA) {
 			
 			DataSetFieldConfiguration highestResolutionField
 				= DataSetConfigurationUtility.getHighestGeographicalResolutionField(
@@ -263,6 +262,18 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 			//along with year to make a primary key field.
 			queryFormatter.addQueryPhrase("AGE_SEX_GROUP,");
 			queryFormatter.addQueryPhrase(highestResolutionField.getConvertFieldName().toUpperCase());				
+		}
+		else if (rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) {
+			
+			DataSetFieldConfiguration highestResolutionField
+				= DataSetConfigurationUtility.getHighestGeographicalResolutionField(
+					dataSetConfiguration);
+			
+			//We need the age sex group and the highest resolution field
+			//along with year to make a primary key field.
+			queryFormatter.addQueryPhrase("AGE_SEX_GROUP,");
+			queryFormatter.addQueryPhrase(highestResolutionField.getConvertFieldName().toUpperCase());
+			queryFormatter.addQueryPhrase(",ICD");
 		}
 		else if (rifSchemaArea == RIFSchemaArea.COVARIATE_DATA) {
 			//Here we only need year and highest resolution

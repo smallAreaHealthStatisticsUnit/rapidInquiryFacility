@@ -91,10 +91,6 @@ public class PGCovariateScriptGenerator
 		createPrimarykey(
 			covariateEntry,
 			covariate);	
-		
-		createIndices(
-			covariateEntry, 
-			covariate);	
 
 		addSchemaComments(
 			covariateEntry,
@@ -162,7 +158,7 @@ public class PGCovariateScriptGenerator
 			else {
 				assert false;
 			}
-		}		
+		}
 		covariateEntry.append(createTableQueryFormatter.generateQuery());
 		covariateEntry.append("\n");
 

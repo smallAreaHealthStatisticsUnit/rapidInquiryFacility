@@ -296,11 +296,63 @@ BEGIN
 	   RETURN -1;
 	END IF;
 	
+	IF age BETWEEN 0 AND 4 THEN
+		IF sex = 1 THEN 
+			RETURN(100 + age);
+		ELSIF sex = 2 THEN
+			RETURN(200 + age);
+		ELSE
+			RETURN(300 + age);
+		END IF;
+	END IF; 
+	
+	IF age BETWEEN 5 AND 84 THEN
+		IF sex = 1 THEN
+			RETURN(100+TRUNC(age/5) + 4);
+		ELSIF sex = 2 THEN
+			RETURN(200+TRUNC(age/5) + 4);
+		ELSE
+			RETURN(300+TRUN(age/5) + 4);
+		END IF;
+	END IF;
+	
+	IF age BETWEEN 85 AND 150 THEN
+		IF sex = 1 THEN
+			RETURN 121;
+		ELSIF sex = 2 THEN 
+			RETURN 221;
+		ELSE
+			RETURN 321;
+		END IF;
+	END IF;
+	
+	RETURN 99;
+
+END;
+$$   LANGUAGE plpgsql;
+	
+	
+/*
+CREATE OR REPLACE FUNCTION old_convert_age_sex(
+	age INT,
+	sex INT)
+	RETURNS INT AS 
+$$
+DECLARE
+	age_sex_code INT;
+BEGIN
+	
+
+	IF sex = 1 AND age BETWEEN 0 AND 4 THEN
+			RETURN(100 + age);			
+	ELSIF sex = 2 AND age BETWEEN 0 AND 4 THEN
+		
+	
 	age_sex_code := (sex * 100) + age;
 	RETURN age_sex_code;
 END;
 $$   LANGUAGE plpgsql;
-
+*/
 
 CREATE OR REPLACE FUNCTION map_age_to_rif_age_group(
 	original_age VARCHAR(30))

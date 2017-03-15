@@ -93,14 +93,7 @@ public class MSCovariateScriptGenerator
 		createPrimarykey(
 			covariateEntry, 
 			covariate);
-				
-		createIndices(
-			covariateEntry, 
-			covariate);
-				
-		createPrimarykey(
-			covariateEntry, 
-			covariate);
+
 		addSchemaComments(
 			covariateEntry,
 			covariate);
