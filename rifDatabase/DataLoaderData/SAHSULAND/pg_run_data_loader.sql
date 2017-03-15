@@ -29,13 +29,13 @@ DROP TABLE IF EXISTS rif_data.NUM_SAHSULAND_CANCER;
 
 DELETE FROM rif40.rif40_covariates 
 WHERE 
-   geolevel_name='LEVEL3' AND 
+   geolevel_name='SAHSU_GRD_LEVEL3' AND 
    covariate_name='SES';
 
 
 DELETE FROM rif40.rif40_covariates 
 WHERE 
-   geolevel_name='LEVEL3' AND 
+   geolevel_name='SAHSU_GRD_LEVEL3' AND 
    covariate_name='ETHNICITY';
 
 
@@ -44,19 +44,19 @@ DROP TABLE IF EXISTS rif_data.COVAR_SAHSULAND_COVARIATES3;
 
 DELETE FROM rif40.rif40_covariates 
 WHERE 
-   geolevel_name='LEVEL4' AND 
+   geolevel_name='SAHSU_GRD_LEVEL4' AND 
    covariate_name='SES';
 
 
 DELETE FROM rif40.rif40_covariates 
 WHERE 
-   geolevel_name='LEVEL4' AND 
+   geolevel_name='SAHSU_GRD_LEVEL4' AND 
    covariate_name='AREATRI1KM';
 
 
 DELETE FROM rif40.rif40_covariates 
 WHERE 
-   geolevel_name='LEVEL4' AND 
+   geolevel_name='SAHSU_GRD_LEVEL4' AND 
    covariate_name='NEAR_DIST';
 
 
@@ -75,7 +75,7 @@ WHERE
 INSERT INTO rif40.rif40_health_study_themes( 
    theme,
    description) 
-VALUES ('cancers','cancer things');
+VALUES ('cancers','covering various types of cancers');
 
 
 -- =========================================================
@@ -86,46 +86,34 @@ VALUES ('cancers','cancer things');
 CREATE TABLE rif_data.POP_SAHSULAND_POP ( 
    year INTEGER NOT NULL,
    age_sex_group INTEGER NOT NULL,
-   level1 VARCHAR(20) NOT NULL,
-   level2 VARCHAR(20) NOT NULL,
-   level3 VARCHAR(20) NOT NULL,
-   level4 VARCHAR(20) NOT NULL,
+   sahsu_grd_level1 VARCHAR(20) NOT NULL,
+   sahsu_grd_level2 VARCHAR(20) NOT NULL,
+   sahsu_grd_level3 VARCHAR(20) NOT NULL,
+   sahsu_grd_level4 VARCHAR(20) NOT NULL,
    total INTEGER NOT NULL);
 
 
 
-\copy POP_SAHSULAND_POP(   YEAR,   AGE_SEX_GROUP,   LEVEL1,   LEVEL2,   LEVEL3,   LEVEL4,   TOTAL) FROM 'pop_sahsuland_pop.csv' DELIMITER ',' CSV HEADER;
+\copy POP_SAHSULAND_POP(   YEAR,   AGE_SEX_GROUP,   SAHSU_GRD_LEVEL1,   SAHSU_GRD_LEVEL2,   SAHSU_GRD_LEVEL3,   SAHSU_GRD_LEVEL4,   TOTAL) FROM 'pop_sahsuland_pop.csv' DELIMITER ',' CSV HEADER;
 
-
-SELECT COUNT(*) AS total FROM pop_sahsuland_pop;
-WITH a AS (
-	SELECT year,age_sex_group,level4, COUNT(*) total
-	  FROM pop_sahsuland_pop
-	 GROUP BY year,age_sex_group,level4
-	HAVING COUNT(*) > 1
-)
-SELECT age_sex_group, SUM(total) AS total
-  FROM a
- GROUP BY age_sex_group
- ORDER BY 1
-LIMIT 50;
-  
-ALTER TABLE rif_data.pop_sahsuland_pop ADD CONSTRAINT pop_sahsuland_pop_pk PRIMARY KEY(YEAR,AGE_SEX_GROUP,LEVEL4);
+ALTER TABLE rif_data.pop_sahsuland_pop ADD CONSTRAINT pop_sahsuland_pop_pk PRIMARY KEY(YEAR,AGE_SEX_GROUP,SAHSU_GRD_LEVEL4);
 CLUSTER pop_sahsuland_pop USING pop_sahsuland_pop_pk;
 
-COMMENT ON TABLE POP_SAHSULAND_POP IS 'population data set';
+
+
+COMMENT ON TABLE POP_SAHSULAND_POP IS 'population health file';
 
 COMMENT ON COLUMN POP_SAHSULAND_POP.YEAR IS 'year field';
 
 COMMENT ON COLUMN POP_SAHSULAND_POP.AGE_SEX_GROUP IS 'An integer field which represents a combination of codes for sex and age.';
 
-COMMENT ON COLUMN POP_SAHSULAND_POP.LEVEL1 IS 'level one';
+COMMENT ON COLUMN POP_SAHSULAND_POP.SAHSU_GRD_LEVEL1 IS 'first level geographical resolution';
 
-COMMENT ON COLUMN POP_SAHSULAND_POP.LEVEL2 IS 'level 2';
+COMMENT ON COLUMN POP_SAHSULAND_POP.SAHSU_GRD_LEVEL2 IS 'second geographical resolution';
 
-COMMENT ON COLUMN POP_SAHSULAND_POP.LEVEL3 IS 'level three';
+COMMENT ON COLUMN POP_SAHSULAND_POP.SAHSU_GRD_LEVEL3 IS 'third level of geographical resolution';
 
-COMMENT ON COLUMN POP_SAHSULAND_POP.LEVEL4 IS 'level four';
+COMMENT ON COLUMN POP_SAHSULAND_POP.SAHSU_GRD_LEVEL4 IS 'fourth level geographical resolution';
 
 COMMENT ON COLUMN POP_SAHSULAND_POP.TOTAL IS 'total field';
 
@@ -133,13 +121,13 @@ CREATE INDEX POP_SAHSULAND_POP_YEAR ON POP_SAHSULAND_POP(YEAR);
 
 CREATE INDEX POP_SAHSULAND_POP_AGE_SEX_GROUP ON POP_SAHSULAND_POP(AGE_SEX_GROUP);
 
-CREATE INDEX POP_SAHSULAND_POP_LEVEL1 ON POP_SAHSULAND_POP(LEVEL1);
+CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL1 ON POP_SAHSULAND_POP(SAHSU_GRD_LEVEL1);
 
-CREATE INDEX POP_SAHSULAND_POP_LEVEL2 ON POP_SAHSULAND_POP(LEVEL2);
+CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL2 ON POP_SAHSULAND_POP(SAHSU_GRD_LEVEL2);
 
-CREATE INDEX POP_SAHSULAND_POP_LEVEL3 ON POP_SAHSULAND_POP(LEVEL3);
+CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL3 ON POP_SAHSULAND_POP(SAHSU_GRD_LEVEL3);
 
-CREATE INDEX POP_SAHSULAND_POP_LEVEL4 ON POP_SAHSULAND_POP(LEVEL4);
+CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL4 ON POP_SAHSULAND_POP(SAHSU_GRD_LEVEL4);
 
 CREATE INDEX POP_SAHSULAND_POP_TOTAL ON POP_SAHSULAND_POP(TOTAL);
 
@@ -161,7 +149,7 @@ INSERT INTO rif40.rif40_tables (
 SELECT 
    'cancers',
    'POP_SAHSULAND_POP',
-   'population data set',
+   'population health file',
    MIN(YEAR),
    MAX(YEAR),
    null,
@@ -192,50 +180,50 @@ GRANT SELECT ON POP_SAHSULAND_POP TO rif_user, rif_manager;
 CREATE TABLE rif_data.num_sahsuland_cancer ( 
    year INTEGER NOT NULL,
    age_sex_group INTEGER NOT NULL,
-   level1 VARCHAR(20) NOT NULL,
-   level2 VARCHAR(20) NOT NULL,
-   level3 VARCHAR(20) NOT NULL,
-   level4 VARCHAR(20) NOT NULL,
+   sahsu_grd_level1 VARCHAR(20) NOT NULL,
+   sahsu_grd_level2 VARCHAR(20) NOT NULL,
+   sahsu_grd_level3 VARCHAR(20) NOT NULL,
+   sahsu_grd_level4 VARCHAR(20) NOT NULL,
    icd VARCHAR NOT NULL,
    total INTEGER NOT NULL);
 
 
-\copy num_sahsuland_cancer(   year,   age_sex_group,   level1,   level2,   level3,   level4,   icd,   total) FROM 'num_sahsuland_cancer.csv' DELIMITER ',' CSV HEADER;
+\copy num_sahsuland_cancer(   year,   age_sex_group,   SAHSU_GRD_LEVEL1,   SAHSU_GRD_LEVEL2,   SAHSU_GRD_LEVEL3,   SAHSU_GRD_LEVEL4,   icd,   total) FROM 'num_sahsuland_cancer.csv' DELIMITER ',' CSV HEADER;
 
-ALTER TABLE rif_data.num_sahsuland_cancer ADD CONSTRAINT num_sahsuland_cancer_pk PRIMARY KEY(YEAR,AGE_SEX_GROUP,LEVEL4);
+ALTER TABLE rif_data.num_sahsuland_cancer ADD CONSTRAINT num_sahsuland_cancer_pk PRIMARY KEY(YEAR,AGE_SEX_GROUP,SAHSU_GRD_LEVEL4,ICD);
 CLUSTER num_sahsuland_cancer USING num_sahsuland_cancer_pk;
 
 
 
-COMMENT ON TABLE NUM_SAHSULAND_CANCER IS 'cancer data set';
+COMMENT ON TABLE NUM_SAHSULAND_CANCER IS 'cancer numerator';
 
 COMMENT ON COLUMN NUM_SAHSULAND_CANCER.YEAR IS 'year field';
 
 COMMENT ON COLUMN NUM_SAHSULAND_CANCER.AGE_SEX_GROUP IS 'An integer field which represents a combination of codes for sex and age.';
 
-COMMENT ON COLUMN NUM_SAHSULAND_CANCER.LEVEL1 IS 'level one';
+COMMENT ON COLUMN NUM_SAHSULAND_CANCER.SAHSU_GRD_LEVEL1 IS 'first level geographical resolution';
 
-COMMENT ON COLUMN NUM_SAHSULAND_CANCER.LEVEL2 IS 'level two';
+COMMENT ON COLUMN NUM_SAHSULAND_CANCER.SAHSU_GRD_LEVEL2 IS 'second geographical resolution';
 
-COMMENT ON COLUMN NUM_SAHSULAND_CANCER.LEVEL3 IS 'level three';
+COMMENT ON COLUMN NUM_SAHSULAND_CANCER.SAHSU_GRD_LEVEL3 IS 'third level of geographical resolution';
 
-COMMENT ON COLUMN NUM_SAHSULAND_CANCER.LEVEL4 IS 'level four';
+COMMENT ON COLUMN NUM_SAHSULAND_CANCER.SAHSU_GRD_LEVEL4 IS 'fourth level geographical resolution';
 
-COMMENT ON COLUMN NUM_SAHSULAND_CANCER.ICD IS 'icd';
+COMMENT ON COLUMN NUM_SAHSULAND_CANCER.ICD IS 'ICD code field';
 
-COMMENT ON COLUMN NUM_SAHSULAND_CANCER.TOTAL IS 'total';
+COMMENT ON COLUMN NUM_SAHSULAND_CANCER.TOTAL IS 'total field';
 
 CREATE INDEX NUM_SAHSULAND_CANCER_YEAR ON NUM_SAHSULAND_CANCER(YEAR);
 
 CREATE INDEX NUM_SAHSULAND_CANCER_AGE_SEX_GROUP ON NUM_SAHSULAND_CANCER(AGE_SEX_GROUP);
 
-CREATE INDEX NUM_SAHSULAND_CANCER_LEVEL1 ON NUM_SAHSULAND_CANCER(LEVEL1);
+CREATE INDEX NUM_SAHSULAND_CANCER_SAHSU_GRD_LEVEL1 ON NUM_SAHSULAND_CANCER(SAHSU_GRD_LEVEL1);
 
-CREATE INDEX NUM_SAHSULAND_CANCER_LEVEL2 ON NUM_SAHSULAND_CANCER(LEVEL2);
+CREATE INDEX NUM_SAHSULAND_CANCER_SAHSU_GRD_LEVEL2 ON NUM_SAHSULAND_CANCER(SAHSU_GRD_LEVEL2);
 
-CREATE INDEX NUM_SAHSULAND_CANCER_LEVEL3 ON NUM_SAHSULAND_CANCER(LEVEL3);
+CREATE INDEX NUM_SAHSULAND_CANCER_SAHSU_GRD_LEVEL3 ON NUM_SAHSULAND_CANCER(SAHSU_GRD_LEVEL3);
 
-CREATE INDEX NUM_SAHSULAND_CANCER_LEVEL4 ON NUM_SAHSULAND_CANCER(LEVEL4);
+CREATE INDEX NUM_SAHSULAND_CANCER_SAHSU_GRD_LEVEL4 ON NUM_SAHSULAND_CANCER(SAHSU_GRD_LEVEL4);
 
 CREATE INDEX NUM_SAHSULAND_CANCER_ICD ON NUM_SAHSULAND_CANCER(ICD);
 
@@ -260,7 +248,7 @@ INSERT INTO rif40.rif40_tables (
 SELECT 
    'cancers',
    'NUM_SAHSULAND_CANCER',
-   'cancer data set',
+   'cancer numerator',
    MIN(year),
    MAX(year),
    null,
@@ -315,25 +303,24 @@ GRANT SELECT ON NUM_SAHSULAND_CANCER TO rif_user, rif_manager;
 
 CREATE TABLE rif_data.COVAR_SAHSULAND_COVARIATES3 ( 
    year INTEGER NOT NULL,
-   level3 VARCHAR(20) NOT NULL);
+   sahsu_grd_level3 VARCHAR(20) NOT NULL,
+   ses INTEGER,
+   ethnicity INTEGER);
 
 
-\copy COVAR_SAHSULAND_COVARIATES3(   year,   level3,   ses,   ethnicity) FROM 'covar_sahsuland_covariates3.csv' DELIMITER ',' CSV HEADER;
+\copy COVAR_SAHSULAND_COVARIATES3(   year,   SAHSU_GRD_LEVEL3,   ses,   ethnicity) FROM 'covar_sahsuland_covariates3.csv' DELIMITER ',' CSV HEADER;
 
-ALTER TABLE rif_data.covar_sahsuland_covariates3 ADD CONSTRAINT covar_sahsuland_covariates3_pk PRIMARY KEY(YEAR,LEVEL3);
+ALTER TABLE rif_data.covar_sahsuland_covariates3 ADD CONSTRAINT covar_sahsuland_covariates3_pk PRIMARY KEY(YEAR,SAHSU_GRD_LEVEL3);
 CLUSTER covar_sahsuland_covariates3 USING covar_sahsuland_covariates3_pk;
 
 
-
-CREATE UNIQUE INDEX covar_sahsuland_covariates3_pk ON rif_data.covar_sahsuland_covariates3(YEAR,LEVEL3);
-
-COMMENT ON TABLE COVAR_SAHSULAND_COVARIATES3 IS 'covariate level 3';
+COMMENT ON TABLE COVAR_SAHSULAND_COVARIATES3 IS 'covariate file';
 
 COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES3.YEAR IS 'year field';
 
-COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES3.LEVEL3 IS '';
+COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES3.SAHSU_GRD_LEVEL3 IS 'third level of geographical resolution';
 
-COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES3.SES IS 'ses';
+COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES3.SES IS 'socio-economic status';
 
 COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES3.ETHNICITY IS 'ethnicity';
 
@@ -343,7 +330,7 @@ GRANT SELECT ON COVAR_SAHSULAND_COVARIATES3 TO rif_user, rif_manager;
 
 
 UPDATE t_rif40_geolevels 
-SET covariate_table = 'COVAR_SAHSULAND_COVARIATES3' WHERE geography='SAHSULAND' AND geolevel_name='LEVEL3';
+SET covariate_table = 'COVAR_SAHSULAND_COVARIATES3' WHERE geography='SAHSULAND' AND geolevel_name='SAHSU_GRD_LEVEL3';
 
 
 
@@ -356,7 +343,7 @@ INSERT INTO rif40.rif40_covariates (
    type) 
 SELECT 
    'SAHSULAND',
-   'LEVEL3',
+   'SAHSU_GRD_LEVEL3',
    'SES',
    MIN(SES),
    MAX(SES),
@@ -373,7 +360,7 @@ INSERT INTO rif40.rif40_covariates (
    type) 
 SELECT 
    'SAHSULAND',
-   'LEVEL3',
+   'SAHSU_GRD_LEVEL3',
    'ETHNICITY',
    MIN(ETHNICITY),
    MAX(ETHNICITY),
@@ -387,29 +374,28 @@ FROM
 
 CREATE TABLE rif_data.COVAR_SAHSULAND_COVARIATES4 ( 
    year INTEGER NOT NULL,
-   level4 VARCHAR(20) NOT NULL);
+   sahsu_grd_level4 VARCHAR(20) NOT NULL,
+   ses INTEGER,
+   areatri1km INTEGER,
+   near_dist DOUBLE PRECISION);
 
 
-\copy COVAR_SAHSULAND_COVARIATES4(   year,   level4,   ses,   areatri1km,   near_dist) FROM 'covar_sahsuland_covariates4.csv' DELIMITER ',' CSV HEADER;
+\copy COVAR_SAHSULAND_COVARIATES4(   year,   SAHSU_GRD_LEVEL4,   ses,   areatri1km,   near_dist) FROM 'covar_sahsuland_covariates4.csv' DELIMITER ',' CSV HEADER;
 
-ALTER TABLE rif_data.covar_sahsuland_covariates4 ADD CONSTRAINT covar_sahsuland_covariates4_pk PRIMARY KEY(YEAR,LEVEL4);
+ALTER TABLE rif_data.covar_sahsuland_covariates4 ADD CONSTRAINT covar_sahsuland_covariates4_pk PRIMARY KEY(YEAR,SAHSU_GRD_LEVEL4);
 CLUSTER covar_sahsuland_covariates4 USING covar_sahsuland_covariates4_pk;
 
+COMMENT ON TABLE COVAR_SAHSULAND_COVARIATES4 IS 'covariate file';
 
+COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.YEAR IS 'year field';
 
-CREATE UNIQUE INDEX covar_sahsuland_covariates4_pk ON rif_data.covar_sahsuland_covariates4(YEAR,LEVEL4);
+COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.SAHSU_GRD_LEVEL4 IS 'fourth level geographical resolution';
 
-COMMENT ON TABLE COVAR_SAHSULAND_COVARIATES4 IS 'covariates level 4';
+COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.SES IS 'socio-economic status';
 
-COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.YEAR IS '';
+COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.AREATRI1KM IS 'area tri 1 km covariate';
 
-COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.LEVEL4 IS 'level4';
-
-COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.SES IS 'ses';
-
-COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.AREATRI1KM IS 'areatri 1km';
-
-COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.NEAR_DIST IS 'near dist';
+COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.NEAR_DIST IS 'near distance covariate';
 
 
 GRANT SELECT ON COVAR_SAHSULAND_COVARIATES4 TO rif_user, rif_manager;
@@ -417,7 +403,7 @@ GRANT SELECT ON COVAR_SAHSULAND_COVARIATES4 TO rif_user, rif_manager;
 
 
 UPDATE t_rif40_geolevels 
-SET covariate_table = 'COVAR_SAHSULAND_COVARIATES4' WHERE geography='SAHSULAND' AND geolevel_name='LEVEL4';
+SET covariate_table = 'COVAR_SAHSULAND_COVARIATES4' WHERE geography='SAHSULAND' AND geolevel_name='SAHSU_GRD_LEVEL4';
 
 
 
@@ -430,7 +416,7 @@ INSERT INTO rif40.rif40_covariates (
    type) 
 SELECT 
    'SAHSULAND',
-   'LEVEL4',
+   'SAHSU_GRD_LEVEL4',
    'SES',
    MIN(SES),
    MAX(SES),
@@ -447,7 +433,7 @@ INSERT INTO rif40.rif40_covariates (
    type) 
 SELECT 
    'SAHSULAND',
-   'LEVEL4',
+   'SAHSU_GRD_LEVEL4',
    'AREATRI1KM',
    MIN(AREATRI1KM),
    MAX(AREATRI1KM),
@@ -464,11 +450,11 @@ INSERT INTO rif40.rif40_covariates (
    type) 
 SELECT 
    'SAHSULAND',
-   'LEVEL4',
+   'SAHSU_GRD_LEVEL4',
    'NEAR_DIST',
    MIN(NEAR_DIST),
    MAX(NEAR_DIST),
-   1
+   2
 FROM 
    COVAR_SAHSULAND_COVARIATES4;
 

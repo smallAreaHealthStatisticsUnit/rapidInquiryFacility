@@ -27,13 +27,13 @@ GO
 
 DELETE FROM rif40.rif40_covariates 
 WHERE 
-   geolevel_name='LEVEL3' AND 
+   geolevel_name='SAHSU_GRD_LEVEL3' AND 
    covariate_name='SES';
 GO
 
 DELETE FROM rif40.rif40_covariates 
 WHERE 
-   geolevel_name='LEVEL3' AND 
+   geolevel_name='SAHSU_GRD_LEVEL3' AND 
    covariate_name='ETHNICITY';
 GO
 
@@ -42,19 +42,19 @@ GO
 
 DELETE FROM rif40.rif40_covariates 
 WHERE 
-   geolevel_name='LEVEL4' AND 
+   geolevel_name='SAHSU_GRD_LEVEL4' AND 
    covariate_name='SES';
 GO
 
 DELETE FROM rif40.rif40_covariates 
 WHERE 
-   geolevel_name='LEVEL4' AND 
+   geolevel_name='SAHSU_GRD_LEVEL4' AND 
    covariate_name='AREATRI1KM';
 GO
 
 DELETE FROM rif40.rif40_covariates 
 WHERE 
-   geolevel_name='LEVEL4' AND 
+   geolevel_name='SAHSU_GRD_LEVEL4' AND 
    covariate_name='NEAR_DIST';
 GO
 
@@ -73,7 +73,7 @@ GO
 INSERT INTO rif40.rif40_health_study_themes( 
    theme,
    description) 
-VALUES ('cancers','cancer things');
+VALUES ('cancers','covering various types of cancers');
 GO
 
 -- =========================================================
@@ -84,10 +84,10 @@ GO
 CREATE TABLE rif_data.pop_sahsuland_pop ( 
    year INTEGER NOT NULL,
    age_sex_group INTEGER NOT NULL,
-   level1 VARCHAR(20) NOT NULL,
-   level2 VARCHAR(20) NOT NULL,
-   level3 VARCHAR(20) NOT NULL,
-   level4 VARCHAR(20) NOT NULL,
+   sahsu_grd_level1 VARCHAR(20) NOT NULL,
+   sahsu_grd_level2 VARCHAR(20) NOT NULL,
+   sahsu_grd_level3 VARCHAR(20) NOT NULL,
+   sahsu_grd_level4 VARCHAR(20) NOT NULL,
    total INTEGER NOT NULL);
 
 
@@ -100,7 +100,7 @@ WITH
    FIRSTROW=2
 );
 GO
-ALTER TABLE rif_data.POP_SAHSULAND_POP ADD CONSTRAINT pop_sahsuland_pop_pk PRIMARY KEY CLUSTERED(YEAR,AGE_SEX_GROUP,LEVEL4);
+ALTER TABLE rif_data.POP_SAHSULAND_POP ADD CONSTRAINT pop_sahsuland_pop_pk PRIMARY KEY CLUSTERED(YEAR,AGE_SEX_GROUP,SAHSU_GRD_LEVEL4);
 GO
 
 
@@ -108,7 +108,7 @@ GO
 
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'population data set',
+   @value = 'population health file',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='pop_sahsuland_pop';
 GO
@@ -128,31 +128,31 @@ EXECUTE sp_addextendedproperty
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'level one',
+   @value = 'first level geographical resolution',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='pop_sahsuland_pop',
-   @level2type = N'Column', @level2name='level1';
+   @level2type = N'Column', @level2name='sahsu_grd_level1';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'level 2',
+   @value = 'second geographical resolution',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='pop_sahsuland_pop',
-   @level2type = N'Column', @level2name='level2';
+   @level2type = N'Column', @level2name='sahsu_grd_level2';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'level three',
+   @value = 'third level of geographical resolution',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='pop_sahsuland_pop',
-   @level2type = N'Column', @level2name='level3';
+   @level2type = N'Column', @level2name='sahsu_grd_level3';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'level four',
+   @value = 'fourth level geographical resolution',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='pop_sahsuland_pop',
-   @level2type = N'Column', @level2name='level4';
+   @level2type = N'Column', @level2name='sahsu_grd_level4';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
@@ -169,19 +169,19 @@ CREATE INDEX POP_SAHSULAND_POP_AGE_SEX_GROUP ON rif_data.POP_SAHSULAND_POP(AGE_S
 GO
 ;
 
-CREATE INDEX POP_SAHSULAND_POP_LEVEL1 ON rif_data.POP_SAHSULAND_POP(LEVEL1);
+CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL1 ON rif_data.POP_SAHSULAND_POP(SAHSU_GRD_LEVEL1);
 GO
 ;
 
-CREATE INDEX POP_SAHSULAND_POP_LEVEL2 ON rif_data.POP_SAHSULAND_POP(LEVEL2);
+CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL2 ON rif_data.POP_SAHSULAND_POP(SAHSU_GRD_LEVEL2);
 GO
 ;
 
-CREATE INDEX POP_SAHSULAND_POP_LEVEL3 ON rif_data.POP_SAHSULAND_POP(LEVEL3);
+CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL3 ON rif_data.POP_SAHSULAND_POP(SAHSU_GRD_LEVEL3);
 GO
 ;
 
-CREATE INDEX POP_SAHSULAND_POP_LEVEL4 ON rif_data.POP_SAHSULAND_POP(LEVEL4);
+CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL4 ON rif_data.POP_SAHSULAND_POP(SAHSU_GRD_LEVEL4);
 GO
 ;
 
@@ -207,7 +207,7 @@ INSERT INTO rif40.rif40_tables (
 SELECT 
    'cancers',
    'POP_SAHSULAND_POP',
-   'population data set',
+   'population health file',
    MIN(YEAR),
    MAX(YEAR),
    null,
@@ -225,7 +225,7 @@ GO
 
 
 
-GRANT SELECT ON POP_SAHSULAND_POP TO rif_user, rif_manager;
+GRANT SELECT ON rif_data.POP_SAHSULAND_POP TO rif_user, rif_manager;
 
 
 
@@ -242,10 +242,10 @@ GO
 CREATE TABLE rif_data.num_sahsuland_cancer ( 
    year INTEGER NOT NULL,
    age_sex_group INTEGER NOT NULL,
-   level1 NVARCHAR(20) NOT NULL,
-   level2 NVARCHAR(20) NOT NULL,
-   level3 NVARCHAR(20) NOT NULL,
-   level4 NVARCHAR(20) NOT NULL,
+   sahsu_grd_level1 NVARCHAR(20) NOT NULL,
+   sahsu_grd_level2 NVARCHAR(20) NOT NULL,
+   sahsu_grd_level3 NVARCHAR(20) NOT NULL,
+   sahsu_grd_level4 NVARCHAR(20) NOT NULL,
    icd NVARCHAR(20) NOT NULL,
    total INTEGER NOT NULL);
 GO
@@ -258,7 +258,7 @@ WITH
    FIRSTROW=2
 );
 GO
-ALTER TABLE rif_data.NUM_SAHSULAND_CANCER ADD CONSTRAINT num_sahsuland_cancer_pk PRIMARY KEY CLUSTERED(YEAR,AGE_SEX_GROUP,LEVEL4);
+ALTER TABLE rif_data.NUM_SAHSULAND_CANCER ADD CONSTRAINT num_sahsuland_cancer_pk PRIMARY KEY CLUSTERED(YEAR,AGE_SEX_GROUP,SAHSU_GRD_LEVEL4,ICD);
 GO
 
 
@@ -266,7 +266,7 @@ GO
 
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'cancer data set',
+   @value = 'cancer numerator',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='num_sahsuland_cancer';
 GO
@@ -286,42 +286,42 @@ EXECUTE sp_addextendedproperty
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'level one',
+   @value = 'first level geographical resolution',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='num_sahsuland_cancer',
-   @level2type = N'Column', @level2name='level1';
+   @level2type = N'Column', @level2name='sahsu_grd_level1';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'level two',
+   @value = 'second geographical resolution',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='num_sahsuland_cancer',
-   @level2type = N'Column', @level2name='level2';
+   @level2type = N'Column', @level2name='sahsu_grd_level2';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'level three',
+   @value = 'third level of geographical resolution',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='num_sahsuland_cancer',
-   @level2type = N'Column', @level2name='level3';
+   @level2type = N'Column', @level2name='sahsu_grd_level3';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'level four',
+   @value = 'fourth level geographical resolution',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='num_sahsuland_cancer',
-   @level2type = N'Column', @level2name='level4';
+   @level2type = N'Column', @level2name='sahsu_grd_level4';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'icd',
+   @value = 'ICD code field',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='num_sahsuland_cancer',
    @level2type = N'Column', @level2name='icd';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'total',
+   @value = 'total field',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='num_sahsuland_cancer',
    @level2type = N'Column', @level2name='total';
@@ -334,19 +334,19 @@ CREATE INDEX NUM_SAHSULAND_CANCER_AGE_SEX_GROUP ON rif_data.NUM_SAHSULAND_CANCER
 GO
 ;
 
-CREATE INDEX NUM_SAHSULAND_CANCER_LEVEL1 ON rif_data.NUM_SAHSULAND_CANCER(LEVEL1);
+CREATE INDEX NUM_SAHSULAND_CANCER_SAHSU_GRD_LEVEL1 ON rif_data.NUM_SAHSULAND_CANCER(SAHSU_GRD_LEVEL1);
 GO
 ;
 
-CREATE INDEX NUM_SAHSULAND_CANCER_LEVEL2 ON rif_data.NUM_SAHSULAND_CANCER(LEVEL2);
+CREATE INDEX NUM_SAHSULAND_CANCER_SAHSU_GRD_LEVEL2 ON rif_data.NUM_SAHSULAND_CANCER(SAHSU_GRD_LEVEL2);
 GO
 ;
 
-CREATE INDEX NUM_SAHSULAND_CANCER_LEVEL3 ON rif_data.NUM_SAHSULAND_CANCER(LEVEL3);
+CREATE INDEX NUM_SAHSULAND_CANCER_SAHSU_GRD_LEVEL3 ON rif_data.NUM_SAHSULAND_CANCER(SAHSU_GRD_LEVEL3);
 GO
 ;
 
-CREATE INDEX NUM_SAHSULAND_CANCER_LEVEL4 ON rif_data.NUM_SAHSULAND_CANCER(LEVEL4);
+CREATE INDEX NUM_SAHSULAND_CANCER_SAHSU_GRD_LEVEL4 ON rif_data.NUM_SAHSULAND_CANCER(SAHSU_GRD_LEVEL4);
 GO
 ;
 
@@ -377,7 +377,7 @@ INSERT INTO rif40.rif40_tables (
 SELECT 
    'cancers',
    'NUM_SAHSULAND_CANCER',
-   'cancer data set',
+   'cancer numerator',
    MIN(year),
    MAX(year),
    null,
@@ -423,7 +423,7 @@ GO
 
 
 
-GRANT SELECT ON NUM_SAHSULAND_CANCER TO rif_user, rif_manager;
+GRANT SELECT ON rif_data.NUM_SAHSULAND_CANCER TO rif_user, rif_manager;
 
 
 
@@ -439,7 +439,9 @@ GO
 
 CREATE TABLE rif_data.covar_sahsuland_covariates3 ( 
    year INTEGER NOT NULL,
-   level3 NVARCHAR(20) NOT NULL);
+   sahsu_grd_level3 NVARCHAR(20) NOT NULL,
+   ses INTEGER,
+   ethnicity INTEGER);
 GO
 
 BULK INSERT rif_data.covar_sahsuland_covariates3 FROM '$(pwd)/covar_sahsuland_covariates3.csv'
@@ -450,25 +452,14 @@ WITH
    FIRSTROW=2
 );
 GO
-ALTER TABLE rif_data.COVAR_SAHSULAND_COVARIATES3 ADD CONSTRAINT covar_sahsuland_covariates3_pk PRIMARY KEY CLUSTERED(YEAR,LEVEL3);
+ALTER TABLE rif_data.COVAR_SAHSULAND_COVARIATES3 ADD CONSTRAINT covar_sahsuland_covariates3_pk PRIMARY KEY CLUSTERED(YEAR,SAHSU_GRD_LEVEL3);
 GO
-
-
-
-
-CREATE UNIQUE INDEX COVAR_SAHSULAND_COVARIATES3_pk ON rif_data.covar_sahsuland_covariates3(YEAR,LEVEL3);
-GO
-
-
-ALTER TABLE rif_data.COVAR_SAHSULAND_COVARIATES3 ADD CONSTRAINT covar_sahsuland_covariates3_pk PRIMARY KEY CLUSTERED(YEAR,LEVEL3);
-GO
-
 
 
 
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'covariate level 3',
+   @value = 'covariate file',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='covar_sahsuland_covariates3';
 GO
@@ -481,14 +472,14 @@ EXECUTE sp_addextendedproperty
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = '',
+   @value = 'third level of geographical resolution',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='covar_sahsuland_covariates3',
-   @level2type = N'Column', @level2name='level3';
+   @level2type = N'Column', @level2name='sahsu_grd_level3';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'ses',
+   @value = 'socio-economic status',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='covar_sahsuland_covariates3',
    @level2type = N'Column', @level2name='ses';
@@ -501,7 +492,7 @@ EXECUTE sp_addextendedproperty
    @level2type = N'Column', @level2name='ethnicity';
 GO
 UPDATE t_rif40_geolevels 
-SET covariate_table = 'COVAR_SAHSULAND_COVARIATES3' WHERE geography='SAHSULAND' AND geolevel_name='LEVEL3';
+SET covariate_table = 'COVAR_SAHSULAND_COVARIATES3' WHERE geography='SAHSULAND' AND geolevel_name='SAHSU_GRD_LEVEL3';
    GO
 
 
@@ -516,7 +507,7 @@ INSERT INTO rif40.rif40_covariates (
    type) 
 SELECT 
    'SAHSULAND',
-   'LEVEL3',
+   'SAHSU_GRD_LEVEL3',
    'SES',
    MIN(SES),
    MAX(SES),
@@ -535,7 +526,7 @@ INSERT INTO rif40.rif40_covariates (
    type) 
 SELECT 
    'SAHSULAND',
-   'LEVEL3',
+   'SAHSU_GRD_LEVEL3',
    'ETHNICITY',
    MIN(ETHNICITY),
    MAX(ETHNICITY),
@@ -546,7 +537,7 @@ GO
 
 
 
-GRANT SELECT ON COVAR_SAHSULAND_COVARIATES3 TO rif_user, rif_manager;
+GRANT SELECT ON rif_data.COVAR_SAHSULAND_COVARIATES3 TO rif_user, rif_manager;
 
 
 
@@ -558,7 +549,10 @@ GO
 
 CREATE TABLE rif_data.covar_sahsuland_covariates4 ( 
    year INTEGER NOT NULL,
-   level4 NVARCHAR(20) NOT NULL);
+   sahsu_grd_level4 NVARCHAR(20) NOT NULL,
+   ses INTEGER,
+   areatri1km INTEGER,
+   near_dist DOUBLE PRECISION);
 GO
 
 BULK INSERT rif_data.covar_sahsuland_covariates4 FROM '$(pwd)/covar_sahsuland_covariates4.csv'
@@ -569,65 +563,56 @@ WITH
    FIRSTROW=2
 );
 GO
-ALTER TABLE rif_data.COVAR_SAHSULAND_COVARIATES4 ADD CONSTRAINT covar_sahsuland_covariates4_pk PRIMARY KEY CLUSTERED(YEAR,LEVEL4);
+ALTER TABLE rif_data.COVAR_SAHSULAND_COVARIATES4 ADD CONSTRAINT covar_sahsuland_covariates4_pk PRIMARY KEY CLUSTERED(YEAR,SAHSU_GRD_LEVEL4);
 GO
 
-
-
-
-CREATE UNIQUE INDEX COVAR_SAHSULAND_COVARIATES4_pk ON rif_data.covar_sahsuland_covariates4(YEAR,LEVEL4);
-GO
-
-
-ALTER TABLE rif_data.COVAR_SAHSULAND_COVARIATES4 ADD CONSTRAINT covar_sahsuland_covariates4_pk PRIMARY KEY CLUSTERED(YEAR,LEVEL4);
-GO
 
 
 
 
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'covariates level 4',
+   @value = 'covariate file',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='covar_sahsuland_covariates4';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = '',
+   @value = 'year field',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='covar_sahsuland_covariates4',
    @level2type = N'Column', @level2name='year';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'level4',
+   @value = 'fourth level geographical resolution',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='covar_sahsuland_covariates4',
-   @level2type = N'Column', @level2name='level4';
+   @level2type = N'Column', @level2name='sahsu_grd_level4';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'ses',
+   @value = 'socio-economic status',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='covar_sahsuland_covariates4',
    @level2type = N'Column', @level2name='ses';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'areatri 1km',
+   @value = 'area tri 1 km covariate',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='covar_sahsuland_covariates4',
    @level2type = N'Column', @level2name='areatri1km';
 GO
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
-   @value = 'near dist',
+   @value = 'near distance covariate',
    @level0type = N'Schema', @level0name='rif_data',
    @level1type = N'Table', @level1name='covar_sahsuland_covariates4',
    @level2type = N'Column', @level2name='near_dist';
 GO
 UPDATE t_rif40_geolevels 
-SET covariate_table = 'COVAR_SAHSULAND_COVARIATES4' WHERE geography='SAHSULAND' AND geolevel_name='LEVEL4';
+SET covariate_table = 'COVAR_SAHSULAND_COVARIATES4' WHERE geography='SAHSULAND' AND geolevel_name='SAHSU_GRD_LEVEL4';
    GO
 
 
@@ -642,7 +627,7 @@ INSERT INTO rif40.rif40_covariates (
    type) 
 SELECT 
    'SAHSULAND',
-   'LEVEL4',
+   'SAHSU_GRD_LEVEL4',
    'SES',
    MIN(SES),
    MAX(SES),
@@ -661,7 +646,7 @@ INSERT INTO rif40.rif40_covariates (
    type) 
 SELECT 
    'SAHSULAND',
-   'LEVEL4',
+   'SAHSU_GRD_LEVEL4',
    'AREATRI1KM',
    MIN(AREATRI1KM),
    MAX(AREATRI1KM),
@@ -680,18 +665,18 @@ INSERT INTO rif40.rif40_covariates (
    type) 
 SELECT 
    'SAHSULAND',
-   'LEVEL4',
+   'SAHSU_GRD_LEVEL4',
    'NEAR_DIST',
    MIN(NEAR_DIST),
    MAX(NEAR_DIST),
-   1
+   2
 FROM 
    rif_data.COVAR_SAHSULAND_COVARIATES4;
 GO
 
 
 
-GRANT SELECT ON COVAR_SAHSULAND_COVARIATES4 TO rif_user, rif_manager;
+GRANT SELECT ON rif_data.COVAR_SAHSULAND_COVARIATES4 TO rif_user, rif_manager;
 
 
 

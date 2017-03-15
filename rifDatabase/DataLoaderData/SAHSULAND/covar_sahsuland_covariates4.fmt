@@ -6,8 +6,7 @@
 <FIELD ID="2" xsi:type="CharTerm" TERMINATOR=',' />
 <FIELD ID="3" xsi:type="CharTerm" TERMINATOR=',' />
 <FIELD ID="4" xsi:type="CharTerm" TERMINATOR=',' />
-<FIELD ID="5" xsi:type="CharTerm" TERMINATOR=',' />
-<FIELD ID="6" xsi:type="CharTerm" TERMINATOR='\n' />
+<FIELD ID="5" xsi:type="CharTerm" TERMINATOR='\n' />
 </RECORD>
 <ROW>
 <COLUMN SOURCE="1" NAME="year" xsi:type="SQLVARYCHAR" />
@@ -15,7 +14,6 @@
 <COLUMN SOURCE="3" NAME="ses" xsi:type="SQLVARYCHAR" />
 <COLUMN SOURCE="4" NAME="areatri1km" xsi:type="SQLVARYCHAR" />
 <COLUMN SOURCE="5" NAME="near_dist" xsi:type="SQLVARYCHAR" />
-<COLUMN SOURCE="6" NAME="tri_1km" xsi:type="SQLVARYCHAR" />
 </ROW>
 
 </BCPFORMAT>
