@@ -1,5 +1,6 @@
 
 BEGIN TRANSACTION DataLoading WITH MARK N'Loading data';
+GO
 
 DECLARE c1 CURSOR FOR 
 		SELECT COUNT(DISTINCT(a.study_id)) AS total
@@ -17,7 +18,7 @@ ELSE
 	RAISERROR('Geography: SAHSULAND is used by: % studies', 16, 1, @c1_total);
 CLOSE c1;
 DEALLOCATE c1;
-GO	
+GO
 
 -- =========================================================
 -- Deleting data from previous run of this script
@@ -476,6 +477,7 @@ GO
 
 
 
+
 EXECUTE sp_addextendedproperty
    @name = 'MS Description',
    @value = 'covariate file',
@@ -584,7 +586,6 @@ WITH
 GO
 ALTER TABLE rif_data.COVAR_SAHSULAND_COVARIATES4 ADD CONSTRAINT covar_sahsuland_covariates4_pk PRIMARY KEY CLUSTERED(YEAR,SAHSU_GRD_LEVEL4);
 GO
-
 
 
 
