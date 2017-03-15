@@ -189,7 +189,7 @@ FROM
    POP_SAHSULAND_POP;
 
 
-GRANT SELECT ON POP_SAHSULAND_POP TO rif_user, rif_manager;
+GRANT SELECT ON rif_data.POP_SAHSULAND_POP TO rif_user, rif_manager;
 
 
 
@@ -313,7 +313,7 @@ FROM
 
 
 
-GRANT SELECT ON NUM_SAHSULAND_CANCER TO rif_user, rif_manager;
+GRANT SELECT ON rif_data.NUM_SAHSULAND_CANCER TO rif_user, rif_manager;
 
 
 
@@ -338,6 +338,7 @@ ALTER TABLE rif_data.covar_sahsuland_covariates3 ADD CONSTRAINT covar_sahsuland_
 CLUSTER covar_sahsuland_covariates3 USING covar_sahsuland_covariates3_pk;
 
 
+
 COMMENT ON TABLE COVAR_SAHSULAND_COVARIATES3 IS 'covariate file';
 
 COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES3.YEAR IS 'year field';
@@ -349,7 +350,7 @@ COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES3.SES IS 'socio-economic status';
 COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES3.ETHNICITY IS 'ethnicity';
 
 
-GRANT SELECT ON COVAR_SAHSULAND_COVARIATES3 TO rif_user, rif_manager;
+GRANT SELECT ON rif_data.COVAR_SAHSULAND_COVARIATES3 TO rif_user, rif_manager;
 
 
 
@@ -409,6 +410,8 @@ CREATE TABLE rif_data.COVAR_SAHSULAND_COVARIATES4 (
 ALTER TABLE rif_data.covar_sahsuland_covariates4 ADD CONSTRAINT covar_sahsuland_covariates4_pk PRIMARY KEY(YEAR,SAHSU_GRD_LEVEL4);
 CLUSTER covar_sahsuland_covariates4 USING covar_sahsuland_covariates4_pk;
 
+
+
 COMMENT ON TABLE COVAR_SAHSULAND_COVARIATES4 IS 'covariate file';
 
 COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.YEAR IS 'year field';
@@ -422,7 +425,7 @@ COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.AREATRI1KM IS 'area tri 1 km covar
 COMMENT ON COLUMN COVAR_SAHSULAND_COVARIATES4.NEAR_DIST IS 'near distance covariate';
 
 
-GRANT SELECT ON COVAR_SAHSULAND_COVARIATES4 TO rif_user, rif_manager;
+GRANT SELECT ON rif_data.COVAR_SAHSULAND_COVARIATES4 TO rif_user, rif_manager;
 
 
 

@@ -715,16 +715,18 @@ test_4_study_id_1_bands are the same
 psql:test_scripts/test_4_study_id_1.sql:716: ERROR:  test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: 4 76724 missing/extra diffs c
 ompared with reference
  */
-		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
-			currval('rif40_study_id_seq'::regclass)::VARCHAR,
-			errors::VARCHAR;
---		RAISE WARNING	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
+--		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
 --			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 --			errors::VARCHAR;
+	RAISE WARNING	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
+			currval('rif40_study_id_seq'::regclass)::VARCHAR,
+			errors::VARCHAR;
 	END IF;
 END;
 $$;
 
+COMMIT;
+\q
 /*
 Should cover the whole of level4
 
