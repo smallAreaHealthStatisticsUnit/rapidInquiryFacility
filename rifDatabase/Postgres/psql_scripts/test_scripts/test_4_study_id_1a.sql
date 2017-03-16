@@ -211,18 +211,18 @@ BEGIN
 	sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS test_4_study_id_1_map';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='DROP TABLE IF EXISTS test_4_study_id_1_bands';
 --
-	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE test_4_study_id_1_extract'||E'\n'||
+	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE /* TEMPORARY */ TABLE test_4_study_id_1_extract'||E'\n'||
 'AS'||E'\n'||
 'SELECT *'||E'\n'||
 '  FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_extract'||
 ' ORDER BY study_id, study_or_comparison, year, band_id, area_id, sex, age_group, '||array_to_string(covariate_array, ',');
-	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE test_4_study_id_1_map'||E'\n'||
+	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE /* TEMPORARY */ TABLE test_4_study_id_1_map'||E'\n'||
 'AS'||E'\n'||
 'SELECT *'||E'\n'||
 '  FROM rif_studies.s'||currval('rif40_study_id_seq'::regclass)||'_map'||
 ' ORDER BY gid_rowindex';
 --' ORDER BY study_id, band_id, inv_id, genders, adjusted, direct_standardisation, gid_rowindex';
-	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE TEMPORARY TABLE test_4_study_id_1_bands'||E'\n'||
+	sql_stmt[array_length(sql_stmt, 1)+1]:='CREATE /* TEMPORARY */ TABLE test_4_study_id_1_bands'||E'\n'||
 'AS'||E'\n'||
 'SELECT *'||E'\n'||
 '  FROM rif40_study_areas'||E'\n'||
@@ -535,18 +535,22 @@ $$;
 -- Load correct test data, dump new data,  compare test with new
 --
 \echo Setup comparision...
+DROP TABLE IF EXISTS test_4_study_id_1_g_rif40_comparison_areas;
+CREATE TABLE test_4_study_id_1_g_rif40_comparison_areas AS SELECT * FROM g_rif40_comparison_areas;
+CREATE TABLE test_4_study_id_1_g_rif40_study_areas AS SELECT * FROM g_rif40_study_areas;
+
 DROP TABLE IF EXISTS v_test_4_study_id_1_extract;
 DROP TABLE IF EXISTS v_test_4_study_id_1_map;
 DROP TABLE IF EXISTS v_test_4_study_id_1_bands;
-CREATE TEMPORARY TABLE v_test_4_study_id_1_extract AS SELECT * FROM test_4_study_id_1_extract LIMIT 1;
-CREATE TEMPORARY TABLE v_test_4_study_id_1_map AS 
+CREATE /* TEMPORARY */ TABLE v_test_4_study_id_1_extract AS SELECT * FROM test_4_study_id_1_extract LIMIT 1;
+CREATE /* TEMPORARY */ TABLE v_test_4_study_id_1_map AS 
 SELECT study_id, inv_id, band_id, area_id, gid, genders, direct_standardisation, adjusted, observed, expected, lower95, upper95, relative_risk,
        smoothed_relative_risk, posterior_probability, posterior_probability_upper95, posterior_probability_lower95, residual_relative_risk,
        residual_rr_lower95, residual_rr_upper95, smoothed_smr, smoothed_smr_lower95, smoothed_smr_upper95 FROM test_4_study_id_1_map LIMIT 1;
-CREATE TEMPORARY TABLE v_test_4_study_id_1_bands AS SELECT study_id,area_id,band_id FROM test_4_study_id_1_bands LIMIT 1;
-TRUNCATE TABLE v_test_4_study_id_1_extract;
-TRUNCATE TABLE v_test_4_study_id_1_map;
-TRUNCATE TABLE v_test_4_study_id_1_bands;
+CREATE /* TEMPORARY */ TABLE v_test_4_study_id_1_bands AS SELECT study_id,area_id,band_id FROM test_4_study_id_1_bands LIMIT 1;
+--TRUNCATE TABLE v_test_4_study_id_1_extract;
+--TRUNCATE TABLE v_test_4_study_id_1_map;
+--TRUNCATE TABLE v_test_4_study_id_1_bands;
 \copy v_test_4_study_id_1_extract from ../example_data/test_4_study_id_1_extract.csv WITH (HEADER true, FORMAT csv, QUOTE '"', ESCAPE '\');
 \copy v_test_4_study_id_1_map from ../example_data/test_4_study_id_1_map.csv WITH (HEADER true, FORMAT csv, QUOTE '"', ESCAPE '\');
 \copy v_test_4_study_id_1_bands from ../example_data/test_4_study_id_1_bands.csv WITH (HEADER true, FORMAT csv, QUOTE '"', ESCAPE '\');
