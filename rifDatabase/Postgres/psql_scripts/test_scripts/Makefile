@@ -46,7 +46,7 @@
 #
 # Local overrides; copy Makefile.local.example to Makefile.local and edit Makefile.local
 #
--include Makefile.local
+-include ../Makefile.local
 #
 # Conditional environment variables - can be changed to point to sahsuland by higher maskefiles
 #
@@ -97,9 +97,10 @@ ifeq ($(OS),Windows_NT)
 	RUN=powershell -ExecutionPolicy ByPass -file ../run.ps1
 	DELETE=powershell -ExecutionPolicy ByPass -file ../delete.ps1
 	# Assumes tr came with make. Force to lowercase
-	TESTUSER=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
+	CLEAN_USERNAME=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
+	TESTUSER?=$(CLEAN_USERNAME)
 	ifeq ($(TESTUSER),)
-		TESTUSER=$(USERNAME)
+		TESTUSER?=$(USERNAME)
 	endif
 	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
 else
@@ -109,7 +110,8 @@ else
 	UNAME_S := $(shell uname -s)
 	RUN=../run.sh
 	DELETE=rm -f
-	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
+	CLEAN_USERNAME=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
+	TESTUSER?=$(CLEAN_USERNAME)
         ifeq ($(UNAME_S),Linux)
 	else
 		ifeq ($(UNAME_S),Darwin)
@@ -161,7 +163,7 @@ NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.sahsuland_rpt)
 .sql.sahsuland_rpt:
 		$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 
 #
-$(info Database is: sahsuland; targets: $(TARGETS); no_alter targets: $(NO_ALTER_TARGETS); sahsuland_empty targets: $(SAHSULAND_EMPTY_TARGETS)) 	
+$(info Database is: sahsuland; testuser: $(TESTUSER); targets: $(TARGETS); no_alter targets: $(NO_ALTER_TARGETS); sahsuland_empty targets: $(SAHSULAND_EMPTY_TARGETS)) 	
 #	
 else
 ifeq ($(PGDATABASE),sahsuland_empty)
@@ -173,7 +175,7 @@ DEV_TARGETS=
 .sql.sahsuland_empty_rpt:
 	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 	
 #
-$(info Database is: $(PGDATABASE);  targets: $(TARGETS)) 	
+$(info Database is: $(PGDATABASE); testuser: $(TESTUSER);  targets: $(TARGETS)) 	
 #
 else
 ifeq ($(PGDATABASE),sahsuland_dev)
@@ -185,7 +187,7 @@ NO_ALTER_TARGETS=$(NO_ALTER_SOURCES:.sql=.sahsuland_dev_rpt)
 .sql.sahsuland_dev_rpt:
 	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f test_scripts/$< 
 #
-$(info Database is: sahsuland_dev;  targets: $(TARGETS); no_alter targets: $(NO_ALTER_TARGETS)) 		
+$(info Database is: sahsuland_dev; testuser: $(TESTUSER);  targets: $(TARGETS); no_alter targets: $(NO_ALTER_TARGETS)) 		
 #	
 else
 $(error Unknown database: $(PGDATABASE))
