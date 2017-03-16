@@ -9,13 +9,13 @@
  		topojsonTileLayer = new L.topoJsonGridLayer(topojsonURL, 
 		// E.g. http://127.0.0.1:3000/getMapTile/?zoomlevel=1&x=0&y=0&databaseType=PostGres&table_catalog=sahsuland_dev&table_schema=peter&table_name=geography_sahsuland&geography=SAHSULAND&geolevel_id=2&tiletable=tiles_sahsuland&output=topojson
 			{
-				attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
+                            attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility">Imperial College London</a>',
                 layers: {
-					default: { // If not using a feature collection (which we are not)
-						style: style,
-						onEachFeature: createPopup // i.e. Call createPopup(feature, layer) function,
-						... more L.GeoJSON options
-					} 
+                    default: { // If not using a feature collection (which we are not)
+                            style: style,
+                            onEachFeature: createPopup // i.e. Call createPopup(feature, layer) function,
+                            ... more L.GeoJSON options
+                    } 
                 }
 			}
 		);

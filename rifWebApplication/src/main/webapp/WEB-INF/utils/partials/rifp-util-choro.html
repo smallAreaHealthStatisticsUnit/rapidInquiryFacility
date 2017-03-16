@@ -46,7 +46,7 @@ HTML partial for symbology modal
             <div class="left">
                 <div class="txt-fld">
                     <label for="colourPicker"> Colour scale:</label> 
-                    <md-select class="colourPicker" data-ng-model="input.currOption" ng-change="renderSwatch(false, false)">
+                    <md-select aria-label="swatches" class="colourPicker" data-ng-model="input.currOption" ng-change="renderSwatch(false, false)">
                         <md-select-label><img src="{{input.currOption.image}}" /></md-select-label>
                         <md-option id="swatch" data-ng-value="opt" data-ng-repeat="opt in options"><img src="{{opt.image}}" /></md-option>
                     </md-select>

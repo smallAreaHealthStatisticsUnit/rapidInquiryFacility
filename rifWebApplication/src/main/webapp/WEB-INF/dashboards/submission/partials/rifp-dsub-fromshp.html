@@ -35,17 +35,41 @@
 
 <!-- 
 HTML partial for ui-router
-Disease submission modal to run study from file
+Disease submission modal to open shapefile AOI
 -->
-<div class="msettings" ng-controller="ModalRunFileCtrl">
+<div class="msettings">
     <div class="msettings-ct">
         <div class="msettings-header">
             <h2>{{modalHeader}}</h2> 
             <a class="modal_close" ng-click="close()"></a>
         </div> 
         <div class="txt-fld">
-            <input on-read-file="showContent($fileContent)" type="file" name='open file' class='fileOpener' id="setUpFile" accept='{{accept}}' />
-        </div>    
+            <input on-read-file="screenShapeFile($fileContent)" type="file" name='open file' class='fileOpener' id="setUpFile" accept='{{accept}}' />
+            <md-progress-linear md-mode="indeterminate" ng-show="bProgress"></md-progress-linear>
+        </div>
+
+        <div class="bnd-fld">
+            <div ng-show="isPolygon"> 
+                <h3>Defined polygon extent</h3><br>
+                <input ng-model="selectionMethod" type="radio" ng-value="1" id="byBoundary" ng-change="radioChange(selectionMethod)">
+                <label for="byBoundary">By external boundary only</label><br>
+                <input ng-model="selectionMethod" type="radio" ng-value="2" id="byBand" ng-change="radioChange(selectionMethod)">
+                <label for="byBand">By band attribute in file</label><br>
+                <input ng-model="selectionMethod" type="radio" ng-value="3" id="byAttribute" ng-change="radioChange(selectionMethod)">
+                <label for="byAttribute">By exposure attribute</label><br>
+                <!-- TODO: drop-down for shp column attribute ng-show -->
+            </div>
+            <div ng-show="isPoint">
+                <h3>Circular buffer around points (metres)</h3><br>
+            </div>
+
+            <table ng-show="isTable" id="breakstable">
+                <tr ng-repeat="i in possibleBands track by $index">
+                    <td><input class="break" ng-model="bandAttr[$index]"> Band: {{possibleBands[i - 1]}}</td> 
+                </tr>
+            </table>
+        </div>
+
         <div class="save-fld">
             <input type="button" value="Apply" ng-click="submit()">
         </div>

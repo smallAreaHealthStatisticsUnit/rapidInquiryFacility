@@ -9,19 +9,15 @@
  * http://localhost:8080/rifServices/studySubmission/getStudySubmission?userID=kgarwood&studyID=280
  * 
  * -- Get centroids from the database in study area
- * 
  * -- scoping for risk analysis
- * 
  * -- bundle libraries for private network
+ * -- maptable selections all to directives
  * 
- * -- "none" or "" covariate in submission
+ * -- MAYBE IS FIXED -- Memory leak. on.destroy map.remove() angularjs-leaflet-memory-issue]
+ * -- Switch symbology swatch doesn't change on modal x
+ * -- icdClam2016ens.xml
  * 
  * 
- * 
- * BEFORE KEVIN LEAVES
- * 1) Install on a laptop - maven
- * 2) Get to open in Eclipse on a new laptop
- * 3) Format of subquery in getTileMakerTiles methos
  * 
  * 
  * 

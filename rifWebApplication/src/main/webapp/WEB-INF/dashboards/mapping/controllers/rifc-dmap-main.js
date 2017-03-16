@@ -49,6 +49,16 @@ angular.module("RIF")
                 //A flag to keep renderers if changing tabs
                 $scope.$on("$destroy", function () {
                     MappingStateService.getState().initial = true;
+
+                    //try and resolve memory leak
+                    leafletData.unresolveMap("diseasemap1");
+                    leafletData.unresolveMap("diseasemap2");
+                    leafletData.getMap("diseasemap1").then(function (map) {
+                        map.remove();
+                    });
+                    leafletData.getMap("diseasemap2").then(function (map) {
+                        map.remove();
+                    });
                 });
 
                 //Set initial map panels and events

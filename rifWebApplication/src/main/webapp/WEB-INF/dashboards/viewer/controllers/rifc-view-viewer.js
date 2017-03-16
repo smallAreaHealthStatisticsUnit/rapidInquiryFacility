@@ -45,9 +45,15 @@ angular.module("RIF")
                 //Reference the child scope
                 $scope.child = {};
 
-                //A flag to keep renderers if changing tabs
                 $scope.$on("$destroy", function () {
+                    //A flag to keep renderers if changing tabs
                     ViewerStateService.getState().initial = true;
+
+                    //Trying to stop memory leak
+                    leafletData.unresolveMap("viewermap");
+                    leafletData.getMap("viewermap").then(function (map) {
+                        map.remove();
+                    });
                 });
 
                 //Set initial map panels and events

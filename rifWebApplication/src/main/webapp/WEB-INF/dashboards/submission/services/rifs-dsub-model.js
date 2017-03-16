@@ -250,6 +250,8 @@ angular.module("RIF")
                      statParams = statParams.substring(0, statParams.length - 2);
                      project += '<section>Parameters:</section>' + _getAttr(statParams);
                      */
+                    
+                    
                     //Output
                     //DEPRECIATED?
 //                    project += '<header>Output Options</header>';

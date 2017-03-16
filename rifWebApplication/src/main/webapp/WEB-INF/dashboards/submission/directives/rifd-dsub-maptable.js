@@ -46,6 +46,14 @@ angular.module("RIF")
                     restrict: 'AE',
                     link: function ($scope) {
 
+                        $scope.$on("$destroy", function () {
+                            //Trying to stop memory leak
+                            leafletData.unresolveMap("area");
+                            leafletData.getMap("area").then(function (map) {
+                                map.remove();
+                            });
+                        });
+
                         //Reference the child scope
                         $scope.child = {};
                         var alertScope = $scope.$parent.$$childHead.$parent.$parent.$$childHead;
@@ -95,7 +103,7 @@ angular.module("RIF")
                         $scope.currentBand = 1; //from dropdown
                         //d3 polygon rendering, changed by slider
                         $scope.transparency = $scope.input.transparency;
-                                                                  
+
                         /*
                          * TOOL STRIP
                          */
@@ -108,8 +116,8 @@ angular.module("RIF")
                         //remove AOI layer
                         $scope.clearAOI = function () {
                             leafletData.getMap("area").then(function (map) {
-                                if (map.hasLayer(shpfile)) {
-                                    map.removeLayer(shpfile);
+                                if (map.hasLayer($scope.shpfile)) {
+                                    map.removeLayer($scope.shpfile);
                                 }
                             });
                         };
@@ -152,7 +160,7 @@ angular.module("RIF")
 
                         /*
                          * DISEASE MAPPING OR RISK MAPPING
-                         */                       
+                         */
                         $scope.studyTypeChanged = function () {
                             //clear selection
                             $scope.clear();
@@ -336,6 +344,10 @@ angular.module("RIF")
                         //district centres for rubberband selection
                         var latlngList = 0;
                         var centroidMarkers = new L.layerGroup();
+
+                        //shapefile AOI, used in directive
+                        $scope.shpfile = new L.layerGroup();
+
                         //Set up table (UI-grid)
                         $scope.gridOptions = ModalAreaService.getAreaTableOptions();
                         $scope.gridOptions.columnDefs = ModalAreaService.getAreaTableColumnDefs();
@@ -463,9 +475,9 @@ angular.module("RIF")
                         });
                         //selection event fired from service
                         $scope.$on('makeDrawSelection', function (event, data) {
-                            makeDrawSelection(data);
+                            $scope.makeDrawSelection(data);
                         });
-                        function makeDrawSelection(shape) {
+                        $scope.makeDrawSelection = function (shape) {
                             latlngList.forEach(function (point) {
                                 //is point in defined polygon?
                                 var test;
@@ -500,7 +512,7 @@ angular.module("RIF")
                                     $scope.currentBand++;
                                 }
                             }
-                        }
+                        };
                         //remove drawn items event fired from service
                         $scope.$on('removeDrawnItems', function (event, data) {
                             removeMapDrawItems();
@@ -513,88 +525,6 @@ angular.module("RIF")
                             $scope.input.bDrawing = false; //re-enable layer events
                         }
 
-                        /*
-                         * SELECT AREAS WITH A SHAPEFILE (AOI)
-                         */
-                        var shpfile = new L.layerGroup();
-                        $scope.addAOI = function () {
-                            $scope.modalHeader = "Upload Zipped AOI Shapefile";
-                            $scope.accept = ".zip";
-                            var modalInstance = $uibModal.open({
-                                animation: true,
-                                templateUrl: 'dashboards/submission/partials/rifp-dsub-fromfile.html',
-                                controller: 'ModalAOIShapefileInstanceCtrl',
-                                windowClass: 'stats-Modal',
-                                backdrop: 'static',
-                                scope: $scope,
-                                keyboard: false
-                            });
-                            //remove any existing AOI layer
-                            leafletData.getMap("area").then(function (map) {
-                                if (map.hasLayer(shpfile)) {
-                                    map.removeLayer(shpfile);
-                                    shpfile = new L.layerGroup();
-                                }
-                            });
-                        };
-                        $scope.uploadShapeFile = function () {
-                            //http://jsfiddle.net/ashalota/ov0p4ajh/10/
-                            //http://leaflet.calvinmetcalf.com/#3/31.88/10.63
-                            var files = document.getElementById('setUpFile').files;
-                            if (files.length === 0) {
-                                return;
-                            }
-
-                            try {
-                                var file = files[0];
-                                if (file.name.slice(-3) !== 'zip') {
-                                    //not a zip file
-                                    alertScope.showError("All parts of the Shapefile expected in one zipped file");
-                                    return;
-                                } else {
-                                    var reader = new FileReader();
-                                    reader.onload = readerLoad;
-                                    reader.readAsArrayBuffer(file);
-                                    function readerLoad() {
-                                        var poly = new L.Shapefile(this.result, {
-                                            style: function (feature) {
-                                                return {
-                                                    fillColor: 'none',
-                                                    weight: 3,
-                                                    color: 'blue'
-                                                };
-                                            },
-                                            onEachFeature: function (feature, layer) {
-                                                var polygon = L.polygon(layer.feature.geometry.coordinates[0], {});
-                                                var shape = {data: angular.copy(polygon)};
-                                                shape.circle = false;
-                                                shape.shapefile = true;
-                                                shape.band = -1;
-                                                shape.data._latlngs.length = 0;
-                                                //Shp Library inverts lat, lngs for some reason (Bug?) - switch back
-                                                for (var i = 0; i < polygon._latlngs[0].length; i++) {
-                                                    var flip = new L.latLng(polygon._latlngs[0][i].lng, polygon._latlngs[0][i].lat);
-                                                    shape.data._latlngs.push(flip);
-                                                }
-                                                makeDrawSelection(shape);
-                                            }
-                                        });
-                                        //add AOI layer to map
-                                        shpfile.addLayer(poly);
-                                        leafletData.getMap("area").then(function (map) {
-                                            try {
-                                                shpfile.addTo(map);
-                                                map.fitBounds(poly.getBounds());
-                                            } catch (err) {
-                                                alertScope.showError("Could not open Shapefile, no valid polygons");
-                                            }
-                                        });
-                                    }
-                                }
-                            } catch (err) {
-                                alertScope.showError("Could not open Shapefile: " + err.message);
-                            }
-                        };
                         /*
                          * SELECT AREAS FROM A LIST, CSV
                          */

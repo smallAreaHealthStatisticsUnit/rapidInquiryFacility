@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -49,6 +49,7 @@ angular.module("RIF")
 
                         //increment of band count, 1st band is #1, to a max of 6
                         var thisBand = 1;
+                        var bandColours = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
 
                         L.SimpleShape = {};
                         L.Draw.SimpleShape = L.Draw.Feature.extend({
@@ -219,6 +220,7 @@ angular.module("RIF")
                                 L.Draw.SimpleShape.prototype.initialize.call(this, map, options);
                             },
                             _drawShape: function (latlng) {
+                                this.options.shapeOptions.color = bandColours[thisBand - 1];
                                 if (!this._shape) {
                                     this._shape = new L.Circle(this._startLatLng, this._startLatLng.distanceTo(latlng), this.options.shapeOptions);
                                     this._map.addLayer(this._shape);
@@ -232,7 +234,7 @@ angular.module("RIF")
                                 }
                             },
                             _fireCreatedEvent: function () {
-                                var circle = new L.Circle(this._startLatLng, this._shape.getRadius(), this.options.shapeOptions);
+                                var circle = new L.Circle(this._startLatLng, this._shape.getRadius(), this.options.shapeOptions);                                                           
                                 L.Draw.SimpleShape.prototype._fireCreatedEvent.call(this, circle);
                                 //set this radius as the new minimum for new bands
                                 this.maxRadius.r = this._shape.getRadius();
@@ -248,7 +250,6 @@ angular.module("RIF")
                                     this._drawShape(latlng);
                                     // Get the new radius (rounded to 1 dp)
                                     radius = this._shape.getRadius().toFixed(1);
-
                                     this._tooltip.updateContent({
                                         text: "Left click to add band, Right click to finish",
                                         subtext: showRadius ? L.drawLocal.draw.handlers.circle.radius + ': ' +

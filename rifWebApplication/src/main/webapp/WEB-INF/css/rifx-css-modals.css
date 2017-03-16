@@ -77,6 +77,12 @@
     padding: 14px 30px;
     border-bottom: 1px solid #EEE;
 }
+.msettings .bnd-fld {
+    padding: 14px 30px;
+}
+#setUpFile{
+    width: 100%
+}
 
 .msettings .txt-fld select ,.msettings .txt-fld input[type="text"] ,input[type="password"] {
     width: 220px;
@@ -356,6 +362,15 @@
     margin: auto;
 }
 
+.shapefile-modal .modal-dialog {
+    width: 450px;
+    position: absolute;
+    overflow-y: auto;
+    max-height: 650px;
+    top:0; bottom: 0; left: 0; right: 0;
+    margin: auto;
+}
+
 .mapping-Modal .modal-dialog{
     width:800px;
     height: 650px;
@@ -509,5 +524,9 @@
 .summary-Modal .modal-body {
     height: calc(100vh - 20px);
     overflow: hidden;
+}
+
+.shapefile-modal h3 {
+    font-size: 14px;
 }
 

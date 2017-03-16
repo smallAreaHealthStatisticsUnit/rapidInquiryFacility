@@ -55,7 +55,7 @@ angular.module("RIF")
                         user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
 
                         //In development, this bypasses password)
-                        //user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                      //  user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
                     }
                 };
 
