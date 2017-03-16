@@ -104,11 +104,17 @@ public final class RIFDataLoaderToolStartupProperties {
     public static String getTestUserPassword() {
     	return getProperty("testUser.password");    	
     }
+    
+    public static String getDatabasePasswordFilePath() {
+    	return getProperty("databasePasswordFile");    	
+    }
 
     public static DatabaseConnectionsConfiguration createStartupDBConfiguration() {
     	
     	DatabaseConnectionsConfiguration dbConfiguration
     		= DatabaseConnectionsConfiguration.newInstance();
+    	
+    	dbConfiguration.setDatabasePasswordFilePath(getProperty("databasePasswordFile"));
     	
     	String databaseType = getProperty("databaseType");
     	if (databaseType.equals("pg")) {

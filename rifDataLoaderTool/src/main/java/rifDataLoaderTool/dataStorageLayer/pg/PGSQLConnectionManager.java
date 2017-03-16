@@ -114,6 +114,7 @@ final class PGSQLConnectionManager {
 	private ConnectionQueue writeConnections;
 		
 	/** The database url. */
+	private String databasePasswordFilePath;
 	private String databaseDriverClassName;
 	private final String databaseURL;
 	
@@ -132,6 +133,7 @@ final class PGSQLConnectionManager {
 	 * @param rifServiceStartupOptions the rif service startup options
 	 */
 	public PGSQLConnectionManager(
+		final String databasePasswordFilePath,
 		final String databaseDriverClassName,
 		final String databaseURL) {
 			
@@ -140,6 +142,7 @@ final class PGSQLConnectionManager {
 		userIDsToBlock = new HashSet<String>();
 		writeConnections = new ConnectionQueue();
 
+		this.databasePasswordFilePath = databasePasswordFilePath;
 		this.databaseDriverClassName = databaseDriverClassName;
 		this.databaseURL = databaseURL;		
 	}
@@ -154,16 +157,18 @@ final class PGSQLConnectionManager {
 		try {		
 			Class.forName(databaseDriverClassName);
 			
-			File userLoginDetailsFile = new File("C://rif_scripts//db//RIFDatabaseProperties.txt");
+			//File userLoginDetailsFile = new File("C://rif_scripts//db//RIFDatabaseProperties.txt");
+
+			File userLoginDetailsFile = new File(databasePasswordFilePath);
 			FileReader fileReader = new FileReader(userLoginDetailsFile);
 			PropertyResourceBundle userLoginResourceBundle
 				= new PropertyResourceBundle(fileReader);
 			
-			String userID = RIFDataLoaderToolStartupProperties.getTestUserID();
-			String password = RIFDataLoaderToolStartupProperties.getTestUserPassword();
+			//String userID = RIFDataLoaderToolStartupProperties.getTestUserID();
+			//String password = RIFDataLoaderToolStartupProperties.getTestUserPassword();
 			
-			//String userID = (String) userLoginResourceBundle.getObject("userID");
-			//String password = (String) userLoginResourceBundle.getObject("password");
+			String userID = (String) userLoginResourceBundle.getObject("userID");
+			String password = (String) userLoginResourceBundle.getObject("password");
 			
 			//Establish read-only connections
 			for (int i = 0; i < MAXIMUM_DATA_LOADER_CONNECTIONS; i++) {

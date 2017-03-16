@@ -185,11 +185,10 @@ abstract class AbstractPGSQLDataLoaderService
 		
 		sqlConnectionManager
 			= new PGSQLConnectionManager(
+				dbParameters.getDatabasePasswordFilePath(),
 				dbParameters.getDatabaseDriverClassName(),
 				dbParameters.getDatabaseURL());
-				
-		
-		
+	
 		sqlConnectionManager.initialiseConnectionQueue();
 	}
 	

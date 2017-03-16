@@ -113,7 +113,9 @@ final class MSSQLConnectionManager {
 	private ConnectionQueue writeConnections;
 		
 	/** The database url. */
+	private final String databasePasswordFilePath;
 	private final String databaseURL;
+	private final String databaseDriverClassName;
 	
 	private final HashSet<String> registeredUserIDs;
 	private final HashSet<String> userIDsToBlock;
@@ -130,12 +132,16 @@ final class MSSQLConnectionManager {
 	 * @param rifServiceStartupOptions the rif service startup options
 	 */
 	public MSSQLConnectionManager(
+		final String databasePasswordFilePath,
+		final String databaseDriverClassName,
 		final String databaseURL) {
 			
 		registeredUserIDs = new HashSet<String>();
 		userIDsToBlock = new HashSet<String>();
 		writeConnections = new ConnectionQueue();
 
+		this.databasePasswordFilePath = databasePasswordFilePath;
+		this.databaseDriverClassName = databaseDriverClassName;
 		this.databaseURL = databaseURL;		
 	}
 	
@@ -147,17 +153,18 @@ final class MSSQLConnectionManager {
 		throws RIFServiceException {
 		
 		try {		
+			Class.forName(databaseDriverClassName);
 			
-			File userLoginDetailsFile = new File("C://rif_scripts//db//RIFDatabaseProperties.txt");
+			//File userLoginDetailsFile = new File("C://rif_scripts//db//RIFDatabaseProperties.txt");
+			File userLoginDetailsFile = new File(databasePasswordFilePath);
+
 			FileReader fileReader = new FileReader(userLoginDetailsFile);
 			PropertyResourceBundle userLoginResourceBundle
 				= new PropertyResourceBundle(fileReader);
 			
 			String userID = (String) userLoginResourceBundle.getObject("userID");
 			String password = (String) userLoginResourceBundle.getObject("password");
-			
-			
-			
+
 			//Establish read-only connections
 			for (int i = 0; i < MAXIMUM_DATA_LOADER_CONNECTIONS; i++) {
 				Connection currentConnection

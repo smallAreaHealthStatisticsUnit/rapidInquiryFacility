@@ -188,6 +188,8 @@ abstract class AbstractMSSQLDataLoaderService
 
 		sqlConnectionManager
 			= new MSSQLConnectionManager(
+				dbParameters.getDatabasePasswordFilePath(),
+				dbParameters.getDatabaseDriverClassName(),
 				dbParameters.getDatabaseURL());
 		
 		sqlConnectionManager.initialiseConnectionQueue();

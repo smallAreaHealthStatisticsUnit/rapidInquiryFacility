@@ -64,6 +64,9 @@ public class DatabaseConnectionsConfiguration {
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	
+	private String databasePasswordFilePath;
+	
 	private String databaseDriverClassName;
 	private DatabaseType databaseType;
 	private String databaseDriverPrefix;
@@ -122,6 +125,14 @@ public class DatabaseConnectionsConfiguration {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+
+	public String getDatabasePasswordFilePath() {
+		return databasePasswordFilePath;
+	}
+	
+	public void setDatabasePasswordFilePath(final String databasePasswordFilePath) {
+		this.databasePasswordFilePath = databasePasswordFilePath;
+	}
 	
 	public String getDatabaseDriverClassName() {
 		return databaseDriverClassName;
