@@ -113,7 +113,8 @@ else
 	UNAME_S := $(shell uname -s)
 	RUN=../run.sh
 	DELETE=rm -f
-	TESTUSER=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
+	CLEAN_USERNAME=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
+	TESTUSER?=$(CLEAN_USERNAME)
         ifeq ($(UNAME_S),Linux)
 	else
 		ifeq ($(UNAME_S),Darwin)
@@ -168,7 +169,7 @@ DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_rpt)
 .sql.sahsuland_rpt:
 	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 
 #
-$(info Database is: $(PGDATABASE);  targets: $(TARGETS)) 	
+$(info Database is: $(PGDATABASE); testuser: $(TESTUSER);  targets: $(TARGETS)) 	
 #	
 else
 ifeq ($(PGDATABASE),sahsuland_empty)
@@ -179,7 +180,7 @@ DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_empty_rpt)
 .sql.sahsuland_empty_rpt:
 	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 	
 #
-$(info Database is: $(PGDATABASE);  targets: $(TARGETS)) 	
+$(info Database is: $(PGDATABASE); testuser: $(TESTUSER);  targets: $(TARGETS))  	
 #
 else
 ifeq ($(PGDATABASE),sahsuland_dev)
@@ -190,7 +191,7 @@ DEV_TARGETS=$(DEV_SOURCES:%.sql=%.sahsuland_dev_rpt)
 .sql.sahsuland_dev_rpt:
 	$(RUN) "$(CURDIR)/$@" "$(CURDIR)/.." $(PSQL) $(PSQL_FLAGS) -f alter_scripts/$< 	
 #
-$(info Database is: $(PGDATABASE);  targets: $(TARGETS)) 	
+$(info Database is: $(PGDATABASE); testuser: $(TESTUSER);  targets: $(TARGETS))  	
 #
 else
 $(error Unknown database: $(PGDATABASE))
