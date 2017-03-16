@@ -134,6 +134,38 @@ public class MSDeletionUtility {
 	}
 
 	
+	private void verifyDataSetsNotInUse(
+		final StringBuilder queryScriptText,
+		final DataLoaderToolConfiguration dataLoaderToolConfiguration) {
+
+		/*
+		 * For each numerator, find its denominator and geography and test
+		 * whether that combination is associated with any studies that might
+		 * already be using it.  Then just as we did in PGDeletionUtility,
+		 * use the SQLGeneralQueryFormatter class to build up the following
+		 * query.  So for each numerator produce this template:
+		 * 
+		 * DECLARE c1 CURSOR FOR 
+         * SELECT COUNT(DISTINCT(a.study_id)) AS total
+         * FROM t_rif40_studies a, t_rif40_investigations b
+         * WHERE (b.numer_tab = 'NUM_SAHSULAND_CANCER' 
+		 * OR  a.denom_tab = 'POP_SAHSULAND_POP')
+         * AND a.geography  = 'SAHSULAND'
+         * AND A.study_id   = b.study_id;
+		 * DECLARE @c1_total AS int;
+		 * OPEN c1;
+		 * FETCH NEXT FROM c1 INTO @c1_total;
+		 * IF @c1_total = 0
+ 		 * PRINT 'Geography: SAHSULAND is not used by any studies';
+		 * ELSE
+ 		 * RAISERROR('Geography: SAHSULAND is used by: % studies', 16, 1, @c1_total);
+		 * CLOSE c1;
+		 * DEALLOCATE c1;
+		 * GO     
+		 */
+		
+	}
+	
 	private void deleteHealthTheme(
 		final StringBuilder queryScriptText,
 		final HealthTheme healthTheme) {

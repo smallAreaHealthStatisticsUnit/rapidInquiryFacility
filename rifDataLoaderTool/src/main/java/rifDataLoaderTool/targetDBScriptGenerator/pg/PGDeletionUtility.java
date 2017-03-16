@@ -2,6 +2,7 @@ package rifDataLoaderTool.targetDBScriptGenerator.pg;
 
 import rifDataLoaderTool.businessConceptLayer.*;
 import rifGenericLibrary.dataStorageLayer.pg.*;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
 import java.util.ArrayList;
 
@@ -97,6 +98,12 @@ public class PGDeletionUtility {
 		
 		StringBuilder deletionScriptText = new StringBuilder();
 		
+		
+		verifyDataSetsNotInUse(
+			deletionScriptText, 
+			dataLoaderToolConfiguration);
+		
+		
 		ArrayList<DataSetConfiguration> denominators
 			= dataLoaderToolConfiguration.getDenominatorDataSetConfigurations();
 		for (DataSetConfiguration denominator : denominators) {
@@ -133,6 +140,109 @@ public class PGDeletionUtility {
 		return deletionScriptText.toString();
 	}
 
+	private void verifyDataSetsNotInUse(
+		final StringBuilder queryScriptText,
+		final DataLoaderToolConfiguration dataLoaderToolConfiguration) {
+	
+		/*
+		 * This method is meant to produce a code fragment that will throw
+		 * an exception if one of the files to be deleted is already being
+		 * referenced.  We'll use an SQLGeneralQueryFormatter because we're
+		 * assembling query fragments that don't fit with the other query
+		 * formatters that have been designed to support common SQL queries
+		 * like SELECT, INSERT, DELETE
+		 * 
+		 * Some key things to remember about these query formatter classes.
+		 * You'll probably only need a mix of addQueryLine([indent level], string),
+		 * addQueryPhrase([indent level], string), addQueryPhrase(string)
+		 * and finishLine().  Mix and match these as you find appropriate.  
+		 * I use usually use addQueryLine(...) to add lines of code that require
+		 * no parameters and addQueryPhrase(...) to help insert parameter values into
+		 * generated code.  finishLine() simply adds a "\n" character.  
+		 * 
+		 * Also be aware that you can make a call to 
+		 * queryFormatter.setEndWithSemiColon(endWithSemiColon);
+		 * 
+		 * to control whether the query should automatically append a ";" onto it.
+		 * In postgreSQL you want this but in SQL Server you probably don't because
+		 * you'll want to call "GO" after each command.
+		 *
+		 * 
+		 * Some work
+		 * could be done to improve and streamline how these commands get used but
+		 * that's future development!
+		 * 
+		 * DO LANGUAGE plpgsql $$
+		 * DECLARE
+		 *      c1 CURSOR FOR
+		 *             SELECT COUNT(DISTINCT(a.study_id)) AS total
+		 *               FROM t_rif40_studies a, t_rif40_investigations b
+		 *             WHERE (b.numer_tab = 'NUM_SAHSULAND_CANCER' 
+		 *   OR  a.denom_tab = 'POP_SAHSULAND_POP')
+		 *                AND a.geography  = 'SAHSULAND'
+		 *                AND A.study_id   = b.study_id;
+		 *      c1_rec RECORD;
+		 * BEGIN
+		 *      OPEN c1;
+		 *      FETCH c1 INTO c1_rec;
+		 *      CLOSE c1;
+		 *
+		 *      IF c1_rec.total = 0 THEN
+		 *             RAISE INFO 'Geography: SAHSULAND is not used by any studies';
+		 *      ELSE
+		 *             RAISE EXCEPTION 'Geography: SAHSULAND is used by: % studies', c1_rec.total;
+		 *      END IF;
+		 * END;
+		 * $$;
+		 */
+		
+		ArrayList<DataSetConfiguration> numerators
+			= dataLoaderToolConfiguration.getNumeratorDataSetConfigurations();
+		for (DataSetConfiguration numerator : numerators) {
+			String currentNumeratorName
+				= numerator.getPublishedTableName();
+			String currentDenominatorName
+				= numerator.getDependencyDataSetConfiguration().getPublishedTableName();
+			
+			Geography geography
+				= numerator.getGeography();
+			String geographyName = geography.getName();
+			
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryLine(0, "DO LANGUAGE plpgsql $$");
+			queryFormatter.addQueryLine(0, "DECLARE");
+			queryFormatter.addQueryLine(1, "c1 CURSOR FOR");
+			queryFormatter.addQueryLine(2, "SELECT COUNT(DISTINCT(a.study_id)) AS total");
+			queryFormatter.addQueryLine(3, "FROM t_rif40_studies a, t_rif40_investigations b");
+			queryFormatter.addQueryPhrase(3, "WHERE (b.numer_tab = 'rif_data.");
+			queryFormatter.addQueryPhrase(currentNumeratorName);
+			queryFormatter.addQueryPhrase("' OR a.denom_tab = 'rif_data.");
+			queryFormatter.addQueryPhrase(currentDenominatorName);
+			queryFormatter.addQueryPhrase("AND a.geography = '");
+			queryFormatter.addQueryPhrase("' AND a.study_id = b.study_id;");
+			queryFormatter.finishLine();
+			queryFormatter.addQueryLine(1, "c1_rec RECORD;");
+			queryFormatter.addQueryLine(0, "BEGIN");
+			queryFormatter.addQueryLine(1, "OPEN c1;");
+			queryFormatter.addQueryLine(1, "FETCH c1 INTO c1_rec;");
+			queryFormatter.addQueryLine(1, "CLOSE c1;");
+
+			queryFormatter.addQueryLine(1, "IF c1_rec.total = 0 THEN");
+			queryFormatter.addQueryLine(2, "RAISE INFO 'Geography: SAHSULAND ");
+
+			queryFormatter.addQueryLine(0, "END");
+			queryFormatter.addQueryLine(0, "$$;");
+
+			//finish the rest of the query
+			
+			//When you're confident that the fragment will be generated correctly, add it to
+			//the overall generated code that is being grown in queryScriptText
+			
+			//queryScriptText.append(queryFormatter.generateQuery());
+		}
+		
+	}
+	
 	
 	private void deleteHealthTheme(
 		final StringBuilder queryScriptText,

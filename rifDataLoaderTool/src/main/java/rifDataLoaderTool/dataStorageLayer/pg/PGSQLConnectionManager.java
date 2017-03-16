@@ -114,6 +114,7 @@ final class PGSQLConnectionManager {
 	private ConnectionQueue writeConnections;
 		
 	/** The database url. */
+	private String databaseDriverClassName;
 	private final String databaseURL;
 	
 	private final HashSet<String> registeredUserIDs;
@@ -131,12 +132,15 @@ final class PGSQLConnectionManager {
 	 * @param rifServiceStartupOptions the rif service startup options
 	 */
 	public PGSQLConnectionManager(
+		final String databaseDriverClassName,
 		final String databaseURL) {
 			
+		
 		registeredUserIDs = new HashSet<String>();
 		userIDsToBlock = new HashSet<String>();
 		writeConnections = new ConnectionQueue();
 
+		this.databaseDriverClassName = databaseDriverClassName;
 		this.databaseURL = databaseURL;		
 	}
 	
@@ -148,6 +152,7 @@ final class PGSQLConnectionManager {
 		throws RIFServiceException {
 		
 		try {		
+			Class.forName(databaseDriverClassName);
 			
 			File userLoginDetailsFile = new File("C://rif_scripts//db//RIFDatabaseProperties.txt");
 			FileReader fileReader = new FileReader(userLoginDetailsFile);
