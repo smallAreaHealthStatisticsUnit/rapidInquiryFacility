@@ -1071,23 +1071,35 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
   SQL Server sahusland now builds OK.
 * Create and delete a study (i.e. fixed all the triggers used in study creation so they now work)
 * Created a rebuild_all.bat script
-* Made build scripts relaible
+* Made build scripts reliable
 * Created a dummy rif40_run_study procedure and infrastructure to run
+* SQL Server Installer documentation
 
-#### Current TODO list (March 2017): SQL Server Port
+#### 13th to 17th March
 
 * Integrate geosptial and data loader data into sahsuland_dev, sahsuland
 * SQL Server installer
+* Swedish RIF meeting
+* Data loader integration and testing. Issues resolved:
+  * Source input data was wrong
+  * PKs added
+  * Age sex group derivation fixed
+* Geospatial integration and testing outstanding issues: 
+  * <Add from laptop>
+* TESTUSER support: TESTUSER can now be set in Postgres Makefile.overrides
+
+#### Current TODO list (March 2017): SQL Server Port, documentation
+
 * SQL Server run study port
-* Postgres data loader script integration
-* SQL Server Installer documentation
+* Review and revise Postgrees build instruction into single document with contents the same as SQL Server
 
 #### Current TODO list (April 2017):
 
 * defaultcomparea, defaultstudyarea are wrong (defaulted to LEVEL1, not SAHSU_GRD_LEVEL1...), not set in XML config, probably using DBF field name but  
   but should use geolevel name.
+* Swedish shapefile data erorr - multiple SRID's?
 * Dataloader row number issues: impacting test_4_study_id_1.sql (remove/put back commented out sections), retest
-* Geospatial SQL Server install issue:
+* Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
 	-- SQL statement 75: Remove old geolevels meta data table >>>
 	DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
@@ -1098,7 +1110,6 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 	Msg 3621, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
 	The statement has been terminated.
 ```
-* TESTUSER support
 * Test database and user account creation with db_create target. Need to keep postgres admin logged on
 * Improve documentation on SQL Server BULK LOAD file permissions
 * Assist with middleware (database fixes); SQL Server full install testing
