@@ -724,8 +724,10 @@ function addTileLayer(methodFields, maxzoomlevel) {
 				var labels=[];
 
 				for (var key in geolevel) {
-					labels.push('<tr><td id="legend_' + key + '">' + (keyTable[key]||key) + 
-						': </td><td id="legend_' + key + '_value">' + geolevel[key] + "</td></tr>");			
+					if (key != "cacheStats") {
+						labels.push('<tr><td id="legend_' + key + '">' + (keyTable[key]||key) + 
+							': </td><td id="legend_' + key + '_value">' + geolevel[key] + "</td></tr>");			
+					}
 				}
 				labels.push('<tr><td id="legend_baseLayer">' + (keyTable["baseLayer"]) + 
 					': </td><td id="legend_baseLayer_value">' + baseLayer.name + "</td></tr>");	
