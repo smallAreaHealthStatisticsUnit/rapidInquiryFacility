@@ -1085,7 +1085,20 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
   * PKs added
   * Age sex group derivation fixed
 * Geospatial integration and testing outstanding issues: 
-  * <Add from laptop>
+    * Comparision area extract:
+	```
+	SELECT study_or_comparison, area_id, COUNT(*) 
+	  FROM v_test_4_study_id_1_extract GROUP BY area_id, study_or_comparison ORDER BY study_or_comparison, area_id; -- SAVED
+	/*
+	study_or_comparison |     area_id     | count
+	--------------------+-----------------+-------
+	C                   | 01              |     1
+	C                   | 01.001          |   704 <== WRONG
+	C                   | 01.002          |  1760 ...
+
+	C                   | 01.017          |   704
+	C                   | 01.018          |  1760 <== WRONG
+	```
 * TESTUSER support: TESTUSER can now be set in Postgres Makefile.overrides
 
 #### Current TODO list (March 2017): SQL Server Port, documentation
