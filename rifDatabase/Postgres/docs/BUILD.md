@@ -4,9 +4,9 @@ RIF40 Postgres database build from Github
 # Contents
 - [1. Postgres Requirements](#1-postgres-requirements)
 - [2. Postgres Setup](#2-postgres-setup)
-- [2.1 Database development environment](#21-database-development-environment)
-- [2.2 Tool chain](#22-tool-chain)
-- [2.2.1 Pre build tests](#221-pre-build-tests)
+- [2.1 Database Development Environment](#21-database-development-environment)
+- [2.2 Tool Chain](#22-tool-chain)
+- [2.2.1 Pre build Tests](#221-pre-build-tests)
 - [2.2.1.1 Configuring make](#2211-configuring-make)
 - [2.2.2 Build control using make](#222-build-control-using-make)
 - [2.2.2.1 Principal targets](#2221-principal-targets)
@@ -39,14 +39,15 @@ Postgres is usually setup in one of three ways:
 Postgres can proxy users (see ident.conf examples in the bottom of the buuild notes. 
 Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
-## 2.1 Database development environment
+## 2.1 Database Development Environment
 
-Current two databases are used: *sahsuland* and *sahsuland_dev*. The installer database *sahsuland* is kept stable for long periods, 
+Current three databases are used: *sahsuland*, *sahsuland_dev* and *sahusland_empty*. The installer database *sahsuland* is kept stable for long periods, 
 *sahsuland_dev* is the working database. The development database *sahusland_dev* is built from psql scripts which create and 
 populate the database ojects. Then alter scripts not under development and then run and the database tested. The database is then 
 exported and then imported into *sahsuland*. The *sahsuland_dev* database can then be enhanced with the alter scripts under development.
+*sahusland_empty* is used to test data loading and contains no health data, only the *sahsuland* geography.
 
-The middleware always runs against sahusland.
+The middleware always runs against *sahsuland*.
 
 After the move from the SAHSU private network to the main 
 Imperial network the database structure is only modified by alter scripts so that the SAHSU Private network 
@@ -71,9 +72,16 @@ The directory structure is *rifDatabase\Postgres\*:
 * shapefiles      - Postgres psql SQL scripts derived from shapefiles, creation scripts
 * shapefiles\data - Shapefiles
 
-The databases *sahsuland* and *sahsuland_dev* are built using make and Node.js. 
+The *sahsuland* example data is contatined in *rifDatabase\*:
 
-## 2.2 Tool chain 
+* DataLoaderData\SAHSULAND - SAHSUland numerator, denominator and covariate data after processing by the data loader loader
+* GeospatialData\tileMaker - SAHSUland geospatial data
+
+These duretories are shared with the SQL Serer port.
+
+The databases *sahsuland*, *sahsuland_dev* and *sahusland_empty* are built using make and Node.js. 
+
+## 2.2 Tool Chain 
 
 On Windows:
 
@@ -104,7 +112,7 @@ For more information see:
 * [MACoS install from repository notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/macos_repo.md)
 * [Linux install from source notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/linux_source.md)
 
-### 2.2.1 Pre build tests
+### 2.2.1 Pre Build Tests
 
 Run up a shell/command tool, *not* in the Postgres build directory (psql_scripts). The Window sizing needs to be at least 
 132 columns wide and 50 rows high; preferably with a multi thousand line buffer. Otherwiser psql scripts may require <ENTER> 
