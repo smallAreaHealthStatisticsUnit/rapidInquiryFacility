@@ -882,12 +882,12 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			var mapArrays=this;
 			
 			if (this.pouchDB) {
-				
 				mapArrays.pouchDB.info( // convert to promises form
 					function getInfo(err, result) {			
 						if (err) {
-							consoleError("empty(): Error: " + err.message + " in _db.getInfo()");
-							getCacheSizeCallback(err);
+							var nerr=new Error("getCacheSize(): Error: " + (err.reason || JSON.stringify(err)) + " in _db.getInfo()");
+							consoleError(nerr.message);
+							getCacheSizeCallback(nerr);
 						}
 						else {
 							$( "#progressbar" ).progressbar({

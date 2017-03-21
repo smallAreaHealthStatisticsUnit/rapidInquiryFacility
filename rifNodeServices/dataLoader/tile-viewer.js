@@ -246,11 +246,12 @@ function getGeographies(data, status, xhr) {
  */	
 function cacheTabBeforeActivate() {
 	consoleLog("cacheTabBeforeActivate()");
-	if (basemaps) {
+	if (basemaps && topojsonTileLayer && topojsonTileLayer.options.useCache) { // Caching enabled
 		document.getElementById("cacheTab").innerHTML='<a>Please wait, fetching cache data...</a><div id="progressbar"></div>';
 		basemaps.getCacheSize(function getCacheSizeCallback(err, results) {
 			if (err) {
-				errorPopup(new Error("cacheTabBeforeActivate(): getCacheSize() error: " + err.message));
+				errorPopup(new Error("cacheTabBeforeActivate(): getCacheSize() error: " +  (err.message || JSON.stringify(err))));
+				document.getElementById("cacheTab").innerHTML='<a>Cache information not available</a>';
 			}
 			else {
 				consoleLog("cacheTabBeforeActivate(): getCacheSize() done.");
@@ -278,6 +279,9 @@ function cacheTabBeforeActivate() {
 				}
 			}			
 		});
+	}
+	else {
+		document.getElementById("cacheTab").innerHTML='<a>Cache information not available</a>';	
 	}
 }
 
