@@ -266,16 +266,18 @@ function isIE() {
 
 /*
  * Function: 	xhrGetMethod()
- * Parameters: 	method name, method description, method callback, method fields object
+ * Parameters: 	method name, method description, method callback, method fields object, optional error callback
  * Returns: 	Nothing
  * Description:	Generic XHR GET method
  */
-function xhrGetMethod(methodName, methodDescription, methodCallback, methodFields) {
+function xhrGetMethod(methodName, methodDescription, methodCallback, methodFields, xhrGetMethodErrorCallback) {
 	scopeChecker({
 		methodName: methodName, 
 		methodDescription: methodDescription, 
 		callback: methodCallback, 
 		methodFields: methodFields
+	}, {
+		callback: xhrGetMethodErrorCallback
 	});
 	
 	var jqXHR=$.get(methodName, methodFields, methodCallback, // callback function
@@ -340,6 +342,11 @@ function xhrGetMethod(methodName, methodDescription, methodCallback, methodField
 			}
 			else {
 				errorPopup(msg);
+			}
+			
+			if (xhrGetMethodErrorCallback) {
+				var nerr=new Error("jqXHRError(): " + msg);
+				xhrGetMethodErrorCallback(nerr);
 			}
 		} // End of jqXHRError()
 	);		

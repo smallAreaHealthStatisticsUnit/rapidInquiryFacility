@@ -57,9 +57,25 @@ var methodFields;
 function databaseSelectChange(event, ui) {
 	var db = (ui && ui.item && ui.item.value) || $( "#databaseSelect option:checked" ).val();
 
+	function xhrGetMethodErrorCallback(err) {
+		if (err) {
+			consoleError("databaseSelectChange(): for db: " + db + "; caught: " + err.message);
+			if (db == "MSSQLServer") {
+				db="PostGres";
+				$( "#databaseSelect option:checked" ).val(db);
+				if (ui && ui.item && ui.item.value) {
+					ui.item.value=db;
+				}
+				
+				xhrGetMethod("getGeographies", "xhrGetMethodErrorCallback(): get geography listing from database: " + db, 
+					getGeographies, {databaseType: db}, xhrGetMethodErrorCallback);
+			}
+		}
+	}
+	
 	consoleLog("databaseSelectChange() db: " + db + "; ui: " + ((ui == undefined) && 0 || 1));	
 	xhrGetMethod("getGeographies", "get geography listing from database: " + db, 
-		getGeographies, {databaseType: db});
+		getGeographies, {databaseType: db}, xhrGetMethodErrorCallback);
 		
 } // End of databaseSelectChange()
 
