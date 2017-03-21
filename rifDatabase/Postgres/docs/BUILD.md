@@ -8,16 +8,16 @@ RIF40 Postgres database build from Github
 - [2.2 Tool chain](#22-tool-chain)
 - [2.2.1 Pre build tests](#221-pre-build-tests)
 - [2.2.1.1 Configuring make](#2211-configuring-make)
-- [2.2.2 Build control using make](#222 Build-control-using-make)
+- [2.2.2 Build control using make](#222-build-control-using-make)
 - [2.2.2.1 Principal targets](#2221-principal-targets)
 - [2.2.2.1.1 User setup](#22211-user-setup)
-- [2.2.2.1.2 Makefile.local settings](#22212-makefile.local-settings)
-- [2.2.2.2 Porting limitations](#2.2.2.2=porting-limitations)
+- [2.2.2.1.2 Makefile.local settings](#22212-makefilelocal-settings)
+- [2.2.2.2 Porting limitations](#2.2.2.2-porting-limitations)
 - [2.2.2.3 Help](#2223-help)
 - [2.2.2.4 Configuration File Examples](#2224-configuration-file-examples)
 - [2.2.2.4.1 Postgres user password file](#22241-postgres-user-password-file)
-- [2.2.2.4.2 Authentication Setup (hba.conf)](#22242-authentication-setup-(hba.conf))
-- [2.2.2.4.3 Proxy User Setup (ident.conf)](#22243-proxy-user-setup-(ident.conf))
+- [2.2.2.4.2 Authentication Setup (hba.conf)](#22242-authentication-setup-hbaconf)
+- [2.2.2.4.3 Proxy User Setup (ident.conf)](#22243-proxy-user-setup-identconf)
 
 # 1. Postgres Requirements 
 
