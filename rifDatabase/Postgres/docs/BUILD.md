@@ -1,11 +1,32 @@
-# RIF40 Postgres database build from Github
+RIF40 Postgres database build from Github
+=========================================
 
-WARNING: The RIF requires Postgres 9.3 or 9.4 to work. 9.1 and 9.2 will not work. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which 
+# Contents
+- [1. Postgres Requirements](#1-postgres-requirements)
+- [2. Postgres Setup](#2-postgres-setup)
+- [2.1 Database development environment](#21-database-development-environment)
+- [2.2 Tool chain](#22-tool-chain)
+- [2.2.1 Pre build tests](#221-pre-build-tests)
+- [2.2.1.1 Configuring make](#2211-configuring-make)
+- [2.2.2 Build control using make](#222 Build-control-using-make)
+- [2.2.2.1 Principal targets](#2221-principal-targets)
+- [2.2.2.1.1 User setup](#22211-user-setup)
+- [2.2.2.1.2 Makefile.local settings](#22212-makefile.local-settings)
+- [2.2.2.2 Porting limitations](#2.2.2.2=porting-limitations)
+- [2.2.2.3 Help](#2223-help)
+- [2.2.2.4 Configuration File Examples](#2224-configuration-file-examples)
+- [2.2.2.4.1 Postgres user password file](#22241-postgres-user-password-file)
+- [2.2.2.4.2 Authentication Setup (hba.conf)](#22242-authentication-setup-(hba.conf))
+- [2.2.2.4.3 Proxy User Setup (ident.conf)](#22243-proxy-user-setup-(ident.conf))
+
+# 1. Postgres Requirements 
+
+WARNING: The RIF requires Postgres 9.3 or above to work. 9.1 and 9.2 will not work. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which 
 is a post 9.2 option. 
 
 The new V4.0 RIF uses either Postgres or Microsoft SQL server as a database backend.
 
-## Postgres Setup
+# 2. Postgres Setup
 
 Postgres is usually setup in one of three ways:
  
@@ -18,7 +39,7 @@ Postgres is usually setup in one of three ways:
 Postgres can proxy users (see ident.conf examples in the bottom of the buuild notes. 
 Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
-## Database development environment
+## 2.1 Database development environment
 
 Current two databases are used: *sahsuland* and *sahsuland_dev*. The installer database *sahsuland* is kept stable for long periods, 
 *sahsuland_dev* is the working database. The development database *sahusland_dev* is built from psql scripts which create and 
@@ -52,7 +73,7 @@ The directory structure is *rifDatabase\Postgres\*:
 
 The databases *sahsuland* and *sahsuland_dev* are built using make and Node.js. 
 
-## Tool chain 
+## 2.2 Tool chain 
 
 On Windows:
 
@@ -83,7 +104,7 @@ For more information see:
 * [MACoS install from repository notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/macos_repo.md)
 * [Linux install from source notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/linux_source.md)
 
-### Pre build tests
+### 2.2.1 Pre build tests
 
 Run up a shell/command tool, *not* in the Postgres build directory (psql_scripts). The Window sizing needs to be at least 
 132 columns wide and 50 rows high; preferably with a multi thousand line buffer. Otherwiser psql scripts may require <ENTER> 
@@ -95,7 +116,7 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres>make
 make: *** No targets specified and no makefile found.  Stop.
 ```
 
-#### Configuring make
+#### 2.2.1.1 Configuring make
 
 **Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may loose 
 your changes.** Instead, in the GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts build directory, 
@@ -114,12 +135,12 @@ If you enable PL/R then the directories ? and ? must exist
   **If the toposjon node.js does not run correctly then node is not properly installed**. 
 * Check R is integrated into Postgres as PLR (See the PLR build instructions).
 
-### Build control using make
+### 2.2.2 Build control using make
 
 The RIF database is built using GNU make for ease of portability. The RIF is built from the directory 
 *GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts*.
 
-#### Principal targets
+#### 2.2.2.1 Principal targets
 
 * Create sahsuland_dev and sahusland databases. This is normally used to build a new database from scratch or to re-create a database:
 ```
@@ -155,7 +176,7 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
    **Patching will be improved so that scripts are only run once; at present all patch scripts are run and 
      designed to be run multiple times**
 
-##### User setup
+##### 2.2.2.1.1 User setup
 
 For make to work it needs to be able to logon as following users:
 
@@ -228,7 +249,7 @@ file is setup correctly.
 
 **See next section for Makefile.local example**
 
-##### Makefile.local settings
+##### 2.2.2.1.2 Makefile.local settings
 
 Typical example (Makefile.local.example):
 ```
@@ -370,7 +391,7 @@ Parameters:
 * DEFAULT_USE_PLR
 * DEFAULT_CREATE_SAHSULAND_ONLY
 
-#### Porting limitations
+#### 2.2.2.2 Porting limitations
 
 Makefiles have the following limitations:
 
@@ -379,7 +400,7 @@ Makefiles have the following limitations:
 * A fully working version of Node.js that can compile is required or you will not be able to generate the 
   topoJSON tiles data.
 
-#### Help
+#### 2.2.2.3 Help
 
 The Makefile has [help](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/psql_scripts/Make%20Help.md):
 
@@ -387,9 +408,9 @@ The Makefile has [help](https://github.com/smallAreaHealthStatisticsUnit/rapidIn
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make help
 ```
  
-#### Configuration File Examples
+#### 2.2.2.4 Configuration File Examples
 
-##### Postgres user password file
+##### 2.2.2.4.1 Postgres user password file
 
 Postgres user password files are located in:
 
@@ -411,7 +432,7 @@ wpea-rif1:5432:*:postgres: XXXXXXX
 wpea-rif1:5432:*:pch: XXXXXXX
 ```
 
-##### Authentication Setup (hba.conf)
+##### 2.2.2.4.2 Authentication Setup (hba.conf)
 
 * TYPE: Connection type:
   * local: UDP
@@ -575,7 +596,7 @@ hostssl	traffic		all	 	146.179.138. xxx	255.255.255.255	sspi
 #host    replication     postgres        ::1/128                 md5
 ```
 
-##### Proxy User Setup (ident.conf)
+##### 2.2.2.4.3 Proxy User Setup (ident.conf)
 
 One line per per system user and map in the order:
 
