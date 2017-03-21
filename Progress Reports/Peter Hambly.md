@@ -1101,6 +1101,10 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 	```
 * TESTUSER support: TESTUSER can now be set in Postgres Makefile.overrides
 
+#### 20th to 24th March
+
+* Geospatial integration and testing outstanding issues: comparision area extract fixed; new data is correct
+
 #### Current TODO list (March 2017): SQL Server Port, documentation
 
 * SQL Server run study port

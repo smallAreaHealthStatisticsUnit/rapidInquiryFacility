@@ -536,6 +536,7 @@ $$;
 --
 \echo Setup comparision...
 DROP TABLE IF EXISTS test_4_study_id_1_g_rif40_comparison_areas;
+DROP TABLE IF EXISTS test_4_study_id_1_g_rif40_study_areas;
 CREATE TABLE test_4_study_id_1_g_rif40_comparison_areas AS SELECT * FROM g_rif40_comparison_areas;
 CREATE TABLE test_4_study_id_1_g_rif40_study_areas AS SELECT * FROM g_rif40_study_areas;
 
@@ -548,9 +549,9 @@ SELECT study_id, inv_id, band_id, area_id, gid, genders, direct_standardisation,
        smoothed_relative_risk, posterior_probability, posterior_probability_upper95, posterior_probability_lower95, residual_relative_risk,
        residual_rr_lower95, residual_rr_upper95, smoothed_smr, smoothed_smr_lower95, smoothed_smr_upper95 FROM test_4_study_id_1_map LIMIT 1;
 CREATE /* TEMPORARY */ TABLE v_test_4_study_id_1_bands AS SELECT study_id,area_id,band_id FROM test_4_study_id_1_bands LIMIT 1;
---TRUNCATE TABLE v_test_4_study_id_1_extract;
---TRUNCATE TABLE v_test_4_study_id_1_map;
---TRUNCATE TABLE v_test_4_study_id_1_bands;
+TRUNCATE TABLE v_test_4_study_id_1_extract;
+TRUNCATE TABLE v_test_4_study_id_1_map;
+TRUNCATE TABLE v_test_4_study_id_1_bands;
 \copy v_test_4_study_id_1_extract from ../example_data/test_4_study_id_1_extract.csv WITH (HEADER true, FORMAT csv, QUOTE '"', ESCAPE '\');
 \copy v_test_4_study_id_1_map from ../example_data/test_4_study_id_1_map.csv WITH (HEADER true, FORMAT csv, QUOTE '"', ESCAPE '\');
 \copy v_test_4_study_id_1_bands from ../example_data/test_4_study_id_1_bands.csv WITH (HEADER true, FORMAT csv, QUOTE '"', ESCAPE '\');
@@ -719,18 +720,18 @@ test_4_study_id_1_bands are the same
 psql:test_scripts/test_4_study_id_1.sql:716: ERROR:  test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: 4 76724 missing/extra diffs c
 ompared with reference
  */
---		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
+	RAISE EXCEPTION	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
+		currval('rif40_study_id_seq'::regclass)::VARCHAR,
+		errors::VARCHAR;
+--	RAISE WARNING	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
 --			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 --			errors::VARCHAR;
-	RAISE WARNING	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
-			currval('rif40_study_id_seq'::regclass)::VARCHAR,
-			errors::VARCHAR;
 	END IF;
 END;
 $$;
 
 COMMIT;
-\q
+
 /*
 Should cover the whole of level4
 
@@ -1154,9 +1155,9 @@ BEGIN
 -- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 --
---	PERFORM rif40_sql_pkg.rif40_table_diff('T4--43(s1_extract)' /* Test tag */, 's1_extract', 'v_test_4_study_id_1_extract');
---	PERFORM rif40_sql_pkg.rif40_table_diff('T4--44(s1_map)' /* Test tag */, 's1_map', 'v_test_4_study_id_1_map', 
---                   c1sm_rec.s1_map_columns, c1sm_rec.s1_map_columns);
+	PERFORM rif40_sql_pkg.rif40_table_diff('T4--43(s1_extract)' /* Test tag */, 's1_extract', 'v_test_4_study_id_1_extract');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T4--44(s1_map)' /* Test tag */, 's1_map', 'v_test_4_study_id_1_map', 
+                   c1sm_rec.s1_map_columns, c1sm_rec.s1_map_columns);
 --
 --	RAISE EXCEPTION 'TEST Abort';
 END;

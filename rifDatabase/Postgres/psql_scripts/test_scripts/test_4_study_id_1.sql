@@ -538,6 +538,7 @@ $$;
 DROP TABLE IF EXISTS v_test_4_study_id_1_extract;
 DROP TABLE IF EXISTS v_test_4_study_id_1_map;
 DROP TABLE IF EXISTS v_test_4_study_id_1_bands;
+
 CREATE TEMPORARY TABLE v_test_4_study_id_1_extract AS SELECT * FROM test_4_study_id_1_extract LIMIT 1;
 CREATE TEMPORARY TABLE v_test_4_study_id_1_map AS 
 SELECT study_id, inv_id, band_id, area_id, gid, genders, direct_standardisation, adjusted, observed, expected, lower95, upper95, relative_risk,
@@ -699,26 +700,7 @@ BEGIN
 -- 
 	IF errors > 0 THEN
 --
--- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
---
--- EXCEPTION CHANGED TO WARNING BECAUSE OF DATA LOADER: REMOVE ME
---
--- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
---
-/*
-psql:test_scripts/test_4_study_id_1.sql:716: WARNING:  test_4_study_id_1.sql: T4--24: Test 4.5; Study: 4 stest_4_study_id_1_extract/
-v_test_4_study_id_1_extract diffs; 24007 missing, 45479 extra
-psql:test_scripts/test_4_study_id_1.sql:716: WARNING:  test_4_study_id_1.sql: T4--26: Test 4.6; Study: 4 stest_4_study_id_1_map/v_te
-st_4_study_id_1_map diffs; 3619 missing, 3619 extra
-psql:test_scripts/test_4_study_id_1.sql:716: INFO:  test_4_study_id_1.sql: T4--27: Test 4.7; Study: 4 test_4_study_id_1_bands and v_
-test_4_study_id_1_bands are the same
-psql:test_scripts/test_4_study_id_1.sql:716: ERROR:  test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: 4 76724 missing/extra diffs c
-ompared with reference
- */
---		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
---			currval('rif40_study_id_seq'::regclass)::VARCHAR,
---			errors::VARCHAR;
-		RAISE WARNING	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
+		RAISE EXCEPTION	'test_4_study_id_1.sql: T4--29: Test 4.5-7; Study: % % missing/extra diffs compared with reference', 
 			currval('rif40_study_id_seq'::regclass)::VARCHAR,
 			errors::VARCHAR;
 	END IF;
@@ -1140,17 +1122,9 @@ BEGIN
 --
 -- Validate 2 sahsuland_geography tables are the same
 --
---
--- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
---
--- COMMENTED OUT BECAUSE OF DATA LOADER: REMOVE ME
---
--- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
---
---	PERFORM rif40_sql_pkg.rif40_table_diff('T4--43(s1_extract)' /* Test tag */, 's1_extract', 'v_test_4_study_id_1_extract');
---	PERFORM rif40_sql_pkg.rif40_table_diff('T4--44(s1_map)' /* Test tag */, 's1_map', 'v_test_4_study_id_1_map', 
---                   c1sm_rec.s1_map_columns, c1sm_rec.s1_map_columns);
+	PERFORM rif40_sql_pkg.rif40_table_diff('T4--43(s1_extract)' /* Test tag */, 's1_extract', 'v_test_4_study_id_1_extract');
+	PERFORM rif40_sql_pkg.rif40_table_diff('T4--44(s1_map)' /* Test tag */, 's1_map', 'v_test_4_study_id_1_map', 
+		c1sm_rec.s1_map_columns, c1sm_rec.s1_map_columns);
 --
 --	RAISE EXCEPTION 'TEST Abort';
 END;

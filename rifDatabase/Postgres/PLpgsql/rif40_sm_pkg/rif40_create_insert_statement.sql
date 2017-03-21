@@ -155,7 +155,7 @@ Description:	Create INSERT SQL statement
 	areas_table	VARCHAR:='g_rif40_study_areas';
 BEGIN
 --
--- Use different areas_table for comparision (it has no band_id)
+-- Use different areas_table for comparison (it has no band_id)
 --	
 	IF study_or_comparison = 'C' THEN
 		areas_table:='g_rif40_comparison_areas';
