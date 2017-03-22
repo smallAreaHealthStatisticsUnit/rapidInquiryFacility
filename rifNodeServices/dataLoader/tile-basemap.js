@@ -57,12 +57,16 @@ var useCache=true;
 function Basemap(basemapOptions, mapArrays) { 
 	this.name=basemapOptions.name||"UNK";
 	this.tileLayer=undefined;
+	this.useCacheDefault=false;
 	mapArrays.basemapArray.push(this);
 	
 	if (basemapOptions.tileLayerType && basemapOptions.tileLayerOptions) {
 		this.tileLayerType=basemapOptions.tileLayerType;
 		this.tileLayerURL=basemapOptions.tileLayerURL;
 		this.tileLayerOptions=basemapOptions.tileLayerOptions;
+		if (basemapOptions.tileLayerOptions.useCache) {
+			this.useCacheDefault=basemapOptions.tileLayerOptions.useCache;
+		}
 	}
 	
 } // End of Basemap() object constructor
@@ -337,51 +341,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				consoleLog("initBaseMaps(): foundDefault " + foundDefault + 
 					": " + defBaseMap.name +
 					"; options: " + JSON.stringify(defBaseMap.tileLayerOptions));
-//				if (basemap.options.useCache == false &&
-//				    basemap.options.useCache != defaultBaseMaps[foundDefault].tileLayerOptions.useCache) {
-//					consoleError("initBaseMaps(): useCache changed to false for: " + basemap.name);
-//				}
-				
-				for (var i=0; i<this.basemapArray.length; i++) { // Initialise rest
-					if (this.basemapArray[i].tileLayer == undefined) {
-						this.basemapArray[i].createBaseMap(this);
-						this.basemapArray[i].tileLayer.name=this.basemapArray[i].name;
-						layerList[this.basemapArray[i].name]=this.basemapArray[i].tileLayer;
-						if (this.pouchDB == undefined && this.basemapArray[i].tileLayer._db) {
-							this.pouchDB=this.basemapArray[i].tileLayer._db;
-						}						
-					}
-				}
-			}
-			else {
-				errorPopup(new Error("initBaseMaps(): Cannot load: " + defaultBaseMap + "; no defaultBaseMaps"));
-				return;
-			}
-
-			//Additional overlays
-			if (defaultOverlayMaps) {
-				for (var i=0; i<defaultOverlayMaps.length; i++) {
-					defaultOverlayMaps[i].tileLayerOptions.auto_compaction=this.options.auto_compaction;
-					if (this.options.useCache && defaultOverlayMaps[i].tileLayerOptions.useCache) {
-						defaultOverlayMaps[i].tileLayerOptions.useCache=this.options.useCache;
-					}
-					new Overlaymap(defaultOverlayMaps[i], this);
-				}
-			}	
-			else {
-				errorPopup(new Error("initBaseMaps(): Cannot load overlays; no defaultOverlayMaps"));
-				return;
-			}		
-				
-			var overlayList = {};
-			for (var i=0; i<this.overlaymapArray.length; i++) {
-				this.overlaymapArray[i].tileLayer.name=this.overlaymapArray[i].name;
-				overlayList[this.overlaymapArray[i].name]=this.overlaymapArray[i].tileLayer;
-			}
-			
-			if (currentBaseMap) {
-				baseLayer = currentBaseMap;
-				consoleLog("baseLayer/currentBaseMap: " + baseLayer.name);
+				var mapArray=this;
 				
 				currentBaseMap.on('load', function currentBaseMapLoad(ev) {
 					
@@ -392,6 +352,36 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 						consoleLog("initBaseMaps(): Base layer loaded: " + baseLayer.name + "; not cached" + "; default: " + defaultBaseMap);
 					}
 					
+					var ChangeUseCacheToFalse=false;
+					if (baseLayer.options && baseLayer.options.useCache == false &&
+						baseLayer.options.useCache != baseLayer.useCacheDefault) {
+						consoleLog("initBaseMaps(): useCache changed to false for: " + baseLayer.name);
+						ChangeUseCacheToFalse=true;
+					} 
+		
+					for (var i=0; i<mapArray.basemapArray.length; i++) { // Initialise rest
+						if (mapArray.basemapArray[i].tileLayer == undefined) {
+							if (ChangeUseCacheToFalse) {
+								mapArray.basemapArray[i].tileLayerOptions.useCache=baseLayer.options.useCache;
+							}
+							mapArray.basemapArray[i].createBaseMap(mapArray);
+							mapArray.basemapArray[i].tileLayer.name=mapArray.basemapArray[i].name;
+							layerList[mapArray.basemapArray[i].name]=mapArray.basemapArray[i].tileLayer;
+							if (mapArray.pouchDB == undefined && mapArray.basemapArray[i].tileLayer._db) {
+								mapArray.pouchDB=mapArray.basemapArray[i].tileLayer._db;
+							}						
+						}
+					}		
+						
+					controlLayers=L.control.layers(
+						layerList, 		// Base layers 
+						overlayList, 	// Overlays
+					{
+						position: 'topright',
+						collapsed: true
+					});	
+					controlLayers.addTo(map); 
+						
 					map.on('baselayerchange', function baselayerchangeEvent(changeEvent) {
 						baseLayer=changeEvent.layer;
 						if (changeEvent.layer.mapArrays) {	
@@ -423,21 +413,37 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 									
 					currentBaseMap.off('load');							
 				});
-
-				currentBaseMap.addTo(map);
-				map.whenReady( // Basemap is ready
-					function whenMapIsReady() { 				
-						controlLayers=L.control.layers(
-							layerList, 		// Base layers 
-							overlayList, 	// Overlays
-						{
-							position: 'topright',
-							collapsed: true
-						});	
-						controlLayers.addTo(map);
-					});				
+				
+				baseLayer = currentBaseMap;
+				currentBaseMap.addTo(map);					
 			}
 			else {
+				errorPopup(new Error("initBaseMaps(): Cannot load: " + defaultBaseMap + "; no defaultBaseMaps"));
+				return;
+			}
+
+			//Additional overlays
+			if (defaultOverlayMaps) {
+				for (var i=0; i<defaultOverlayMaps.length; i++) {
+					defaultOverlayMaps[i].tileLayerOptions.auto_compaction=this.options.auto_compaction;
+					if (this.options.useCache && defaultOverlayMaps[i].tileLayerOptions.useCache) {
+						defaultOverlayMaps[i].tileLayerOptions.useCache=this.options.useCache;
+					}
+					new Overlaymap(defaultOverlayMaps[i], this);
+				}
+			}	
+			else {
+				errorPopup(new Error("initBaseMaps(): Cannot load overlays; no defaultOverlayMaps"));
+				return;
+			}		
+				
+			var overlayList = {};
+			for (var i=0; i<this.overlaymapArray.length; i++) {
+				this.overlaymapArray[i].tileLayer.name=this.overlaymapArray[i].name;
+				overlayList[this.overlaymapArray[i].name]=this.overlaymapArray[i].tileLayer;
+			}
+			
+			if (currentBaseMap == undefined) {
 				errorPopup(new Error("initBaseMaps(): Cannot load basemap, no currentBaseMap"));
 			}
 		}, // End of initBaseMaps()
