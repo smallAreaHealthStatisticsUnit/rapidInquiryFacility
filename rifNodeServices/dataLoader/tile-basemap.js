@@ -147,8 +147,8 @@ function Basemap(basemapOptions, mapArrays) {
 			this.tileLayer.on('tilecachehit', function tileCacheHitHandler(ev) {
 				if (nBaseLayer && nBaseLayer.cacheStats) {
 					nBaseLayer.cacheStats.hits++;
-					consoleLog("tileCacheHitHandler(): Cache hit " + nBaseLayer.name + " tile: " + ev.url +
-						"; total hits: " + nBaseLayer.cacheStats.hits);
+//					consoleLog("tileCacheHitHandler(): Cache hit " + nBaseLayer.name + " tile: " + ev.url +
+//						"; total hits: " + nBaseLayer.cacheStats.hits);
 				}
 				else {
 					consoleLog("tileCacheHitHandler(): Cache hit " + nBaseLayer.name + " tile: " + ev.url + " [No stats update]");
@@ -243,7 +243,6 @@ function Overlaymap(overlaymapOptions, mapArrays) {
 		consoleError("Overlaymap() constructor: no mapArrays object for: " + this.name);
 	}
 
-	mapArrays.overlaymapArray.push(this);
 	var nOverlayLayer=this;	
 	this.tileLayer.on('tileerror', function(tile) {
 		if (nOverlayLayer && nOverlayLayer.cacheStats) {
@@ -260,8 +259,8 @@ function Overlaymap(overlaymapOptions, mapArrays) {
 	this.tileLayer.on('tilecachehit', function tileCacheHitHandler(ev) {
 		if (nOverlayLayer && nOverlayLayer.cacheStats) {
 			nOverlayLayer.cacheStats.hits++;
-			consoleLog("tileCacheHitHandler(): Cache hit " + nOverlayLayer.name + " tile: " + ev.url +
-				"; total hits: " + nOverlayLayer.cacheStats.hits);
+//			consoleLog("tileCacheHitHandler(): Cache hit " + nOverlayLayer.name + " tile: " + ev.url +
+//				"; total hits: " + nOverlayLayer.cacheStats.hits);
 		}
 		else {
 			consoleLog("tileCacheHitHandler(): Cache hit " + nOverlayLayer.name + " tile: " + ev.url + " [No stats update]");
@@ -297,8 +296,10 @@ function Overlaymap(overlaymapOptions, mapArrays) {
 			consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + nOverlayLayer.name + ": " + ev.tile + 
 				" [No stats update]");
 		}
-	});
-				
+	}); 
+
+	mapArrays.overlaymapArray.push(this);
+	
 } // End of Overlaymap() object constructor
 
 /*
@@ -753,7 +754,8 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 											for (var i=0; i<mapArrays.basemapArray.length; i++) {
 												if (mapArrays.basemapArray[i].tileLayer && 
 												    mapArrays.basemapArray[i].cacheStats &&
-													mapArrays.basemapArray[i].cacheStats.tiles > 0) {
+													(mapArrays.basemapArray[i].cacheStats.tiles > 0 ||
+													 mapArrays.basemapArray[i].cacheStats.errors > 0)) {
 													cacheRows+="\n[" + i + "] " + mapArrays.basemapArray[i].tileLayer.name + 
 														": hits: " + mapArrays.basemapArray[i].cacheStats.hits +
 														"; misses: " + mapArrays.basemapArray[i].cacheStats.misses +
@@ -791,8 +793,9 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 											consoleLog("overlaymapArray size: " + mapArrays.overlaymapArray.length);
 											for (var i=0; i<mapArrays.overlaymapArray.length; i++) {
 												if (mapArrays.overlaymapArray[i].tileLayer && 
-												    mapArrays.overlaymapArray[i].cacheStats /* &&
-													mapArrays.overlaymapArray[i].cacheStats.tiles > 0 */) {
+												    mapArrays.overlaymapArray[i].cacheStats  &&
+													(mapArrays.overlaymapArray[i].cacheStats.tiles > 0 ||
+													 mapArrays.overlaymapArray[i].cacheStats.errors > 0)) {
 													cacheRows+="\n[" + i + "] " + mapArrays.overlaymapArray[i].tileLayer.name + 
 														": hits: " + mapArrays.overlaymapArray[i].cacheStats.hits +
 														"; misses: " + mapArrays.overlaymapArray[i].cacheStats.misses +

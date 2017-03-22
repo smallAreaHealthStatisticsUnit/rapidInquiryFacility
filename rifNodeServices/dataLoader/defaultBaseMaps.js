@@ -506,7 +506,7 @@ defaultOverlayMaps.push({
 	}}); */
 				
 defaultOverlayMaps.push({
-	name: "Code-Point Open UK Postcodes", 
+	name: "Code-Point Open UK Postcodes", // Needs bounding box to avoid tile load errors
 	tileLayerType: 	"tileLayer",
 	tileLayerURL: 	'http://random.dev.openstreetmap.org/postcodes/tiles/pc-os/{z}/{x}/{y}.png',
 	tileLayerOptions: {
