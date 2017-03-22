@@ -557,7 +557,9 @@ function createMap(boundingBox, maxZoomlevel) {
 		catch (e2) {
 			consoleLog("WARNING! Unable to remove map during error recovery");
 		}		
-		throw new Error("Unable to add tile layer to map: " + e.message);
+		var nerr=new Error("Unable to add tile layer to map: " + e.message);
+		nerr.stack=e.stack;
+		throw nerr;
 	}
 } // End of createMap()
  
@@ -706,7 +708,7 @@ function addTileLayer(methodFields, maxzoomlevel) {
 	map.addLayer(topojsonTileLayer);
 	map.whenReady( // Map is ready, topojsonTileLayer still loading
 		function whenMapIsReady3() { 
-			if (baseLayer.cacheStats.errors > 0 && baseLayer.cacheStats.useCache == false) { // Detect baseLayer caching errors
+			if (baseLayer && baseLayer.cacheStats && baseLayer.cacheStats.errors > 0 && baseLayer.cacheStats.useCache == false) { // Detect baseLayer caching errors
 				topojsonTileLayer.options.useCache=false;
 			}
 			consoleLog("Adding topojson tile layer; maxZoom: " + map.getMaxZoom()+ "; cached: " + (topojsonTileLayer.options.useCache ? "true" : "false"));
@@ -747,7 +749,7 @@ function addTileLayer(methodFields, maxzoomlevel) {
 					}					
 				}
 				labels.push('<tr><td id="legend_baseLayer">' + (keyTable["baseLayer"]) + 
-					': </td><td id="legend_baseLayer_value">' + baseLayer.name + "</td></tr>");	
+					': </td><td id="legend_baseLayer_value">' + (baseLayer && baseLayer.name || "UNKNOWN") + "</td></tr>");	
 				
 				var html = '<table id="legend">' + labels.join("") + '</table>';
 		//		consoleLog("Add legend: " + html);

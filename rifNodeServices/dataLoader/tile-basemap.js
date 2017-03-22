@@ -8,7 +8,7 @@
 //
 // Description:
 //
-// Rapid Enquiry Facility (RIF) - Tile viewer code
+// Rapid Enquiry Facility (RIF) - Tile viewer basemap code
 //
 // Copyright:
 //
@@ -56,58 +56,146 @@ var useCache=true;
  */	
 function Basemap(basemapOptions, mapArrays) { 
 	this.name=basemapOptions.name||"UNK";
-	this.tileLayer=basemapOptions.tileLayer;
-	this.tileLayer.mapArrays=mapArrays; // Add pointer to container object
-	this.tileLayer.cacheStats={
-		hits: 0,
-		misses: 0,
-		errors: 0,
-		tiles: 0,
-		size: 0
-	};
-	if (this.tileLayer.mapArrays) {
-		this.mapArrays=mapArrays;
-		this.tileLayer.mapArrays.basemapArray.push(this);
-	}
-	else {
-		consoleError("Basemap() constructor: no mapArrays object");
-	}
+	this.tileLayer=undefined;
+	mapArrays.basemapArray.push(this);
 	
-	this.tileLayer.on('tileerror', function(tile) {
-		consoleError("Error: loading " + this.name + " baselayer tile: " + JSON.stringify(tile.coords)||"UNK");
-		this.cacheStats.errors++;
-	});
+	if (basemapOptions.tileLayerType && basemapOptions.tileLayerOptions) {
+		this.tileLayerType=basemapOptions.tileLayerType;
+		this.tileLayerURL=basemapOptions.tileLayerURL;
+		this.tileLayerOptions=basemapOptions.tileLayerOptions;
+	}
 	
 } // End of Basemap() object constructor
-
+	Basemap.prototype = { // Add methods
+		/*
+		 * Function: 	createBaseMap()
+		 * Parameters:	mapArrays object
+		 * Returns:		Nothing
+		 * Description:	Add basemap to basemap array
+		 */	
+		createBaseMap: function(mapArrays) {
+			if (this.tileLayerType && this.tileLayerOptions) {
+				if (this.tileLayerType == "tileLayer" && this.tileLayerOptions) {
+					this.tileLayer=L.tileLayer(this.tileLayerURL, this.tileLayerOptions);
+					if (this.tileLayer) {
+						consoleLog("Basemap() constructor: created tileLayerType: " + 
+							this.tileLayerType + " for: " + this.name);
+					}
+					else {
+						consoleError("Basemap() constructor: no tileLayer object can be created, tileLayerType: " + 
+							this.tileLayerType + " for: " + this.name);
+					}
+				}
+				else if (this.tileLayerType == "googleMutant") {
+					this.tileLayer=L.gridLayer.googleMutant(this.tileLayerOptions);
+					if (this.tileLayer) {
+						consoleLog("Basemap() constructor: created tileLayerType: " + 
+							this.tileLayerType + " for: " + this.name);
+					}
+					else {
+						consoleError("Basemap() constructor: no tileLayer object can be created, tileLayerType: " + 
+							overlaymapOptions.tileLayerType + " for: " + this.name);
+					}
+				}	
+				else {
+					this.tileLayer=undefined;
+					consoleError("Basemap() constructor: no tileLayer object can be created, invalid tileLayerType: " + 
+						this.tileLayerType + " for: " + this.name);
+				}
+			}
+			else {
+				this.tileLayer=undefined;
+				consoleError("Basemap() constructor: no tileLayer object can be created, missing tileLayerType/tileLayerURL/tileLayerOptions for: " + 
+					this.name);
+			}
+			
+			if (this.tileLayer) {	
+				this.tileLayer.mapArrays=mapArrays; // Add pointer to container object
+				this.tileLayer.cacheStats={
+					hits: 0,
+					misses: 0,
+					errors: 0,
+					tiles: 0,
+					size: 0
+				};
+			}
+			
+			if (this.tileLayer.mapArrays) {
+				this.mapArrays=mapArrays;
+			}
+			else {
+				consoleError("Basemap() constructor: no mapArrays object for: " + this.name);
+			}
+			
+			this.tileLayer.on('tileerror', function(tile) {
+				consoleError("Error: loading " + this.name + " baselayer tile: " + JSON.stringify(tile.coords)||"UNK");
+				if (this.cacheStats) {
+					this.cacheStats.errors++;
+				}
+			});
+		}
+	}
+			
 /*
  * Function: 	Overlaymap()
- * Parameters:	basemapOptions, mapArrays object
+ * Parameters:	overlaymapOptions, mapArrays object
  * Returns:		Basemap() Object
  * Description:	Create Basemap object
  */	
 function Overlaymap(overlaymapOptions, mapArrays) { 
 	this.name=overlaymapOptions.name||"UNK";
-	this.tileLayer=overlaymapOptions.tileLayer;
-	this.tileLayer.mapArrays=mapArrays; // Add pointer to container object
-	this.tileLayer.cacheStats={
-		hits: 0,
-		misses: 0,
-		errors: 0,
-		tiles: 0,
-		size: 0
-	};
+	
+	if (overlaymapOptions.tileLayerType && overlaymapOptions.tileLayerURL && overlaymapOptions.tileLayerOptions) {
+		this.tileLayerType=overlaymapOptions.tileLayerType;
+		this.tileLayerURL=overlaymapOptions.tileLayerURL;
+		this.tileLayerOptions=overlaymapOptions.tileLayerOptions;
+		if (overlaymapOptions.tileLayerType == "tileLayer" && overlaymapOptions.tileLayerOptions) {
+			this.tileLayer=L.tileLayer(overlaymapOptions.tileLayerURL, overlaymapOptions.tileLayerOptions);
+			if (this.tileLayer) {
+				consoleLog("Overlaymap() constructor: created tileLayerType: " + 
+					overlaymapOptions.tileLayerType + " for: " + this.name);
+			}
+			else {
+				consoleError("Overlaymap() constructor: no tileLayer object can be created, tileLayerType: " + 
+					overlaymapOptions.tileLayerType + " for: " + this.name);
+			}
+		}
+		else {
+			this.tileLayer=undefined;
+			consoleError("Overlaymap() constructor: no tileLayer object can be created, invalid tileLayerType: " + 
+				overlaymapOptions.tileLayerType + " for: " + this.name);
+		}
+	}
+	else {
+		this.tileLayer=undefined;
+		consoleError("Overlaymap() constructor: no tileLayer object can be created, missing tileLayerType/tileLayerURL/tileLayerOptions for: " + 
+			this.name);
+	}
+	
+	if (this.tileLayer) {	
+		this.tileLayer.mapArrays=mapArrays; // Add pointer to container object
+		this.tileLayer.cacheStats={
+			hits: 0,
+			misses: 0,
+			errors: 0,
+			tiles: 0,
+			size: 0
+		};
+	}
+	
 	if (this.tileLayer.mapArrays) {
 		this.mapArrays=mapArrays;
 		this.tileLayer.mapArrays.overlaymapArray.push(this);
 	}
 	else {
-		consoleError("Overlaymap() constructor: no mapArrays object");
+		consoleError("Overlaymap() constructor: no mapArrays object for: " + this.name);
 	}
 	
 	this.tileLayer.on('tileerror', function(tile) {
 		consoleError("Error: loading " + this.name + " overlay tile: " + JSON.stringify(tile.coords)||"UNK");
-		this.cacheStats.errors++;
+		if (this.cacheStats) {
+			this.cacheStats.errors++;
+		}
 	});
 	
 } // End of Overlaymap() object constructor
@@ -134,7 +222,12 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			this.options.useCache=options.useCache;
 		}		
 
-		this.initBaseMaps(map, defaultBaseMap, maxZoomlevel);
+		try {
+			this.initBaseMaps(map, defaultBaseMap, maxZoomlevel);
+		}
+		catch (e) {
+			consoleError("Caught error in initBaseMaps(): " + JSON.stringify(e));
+		}
 	} // End of mapArrays() object constructor
 	
 	mapArrays.prototype = { // Add methods
@@ -169,427 +262,46 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 		 * Description:	Initialise base and overlay maps
 		 */	
 		initBaseMaps: function(map, defaultBaseMap, maxZoomlevel) {
-			var basemap=new Basemap({
-				name: "OpenStreetMap Mapnik", 
-				tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',		
-					maxZoom: 18,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-				
-			new Basemap({
-				name: "OpenStreetMap BlackAndWhite", 
-				tileLayer: L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
-						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 16,
-					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
-					crossOrigin: false
-				})}, this); 
-			new Basemap({
-				name: "OpenTopoMap", 
-				tileLayer: L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { 
-					attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org" target="_blank">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org" target="_blank">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank">CC-BY-SA</a>)',
-					maxZoom: 17,
-					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
-					crossOrigin: false
-				})}, this);
-			new Basemap({
-				 name: "Humanitarian OpenStreetMap", 
-				 tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-				
-			new Basemap({
-				name: "Thunderforest OpenCycleMap", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', { // API key required
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Thunderforest Railways", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png', { // API key required
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Thunderforest Railways Dark", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/transport-dark/{z}/{x}/{y}.png', { // API key required
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Thunderforest Landscape", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png', { // API key required
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Thunderforest SpinalMap", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png', { // API key required
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Thunderforest Outdoors", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png', { // API key required
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Thunderforest Pioneer", 
-				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/pioneer/{z}/{x}/{y}.png', { // API key required
-					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-				
-			new Basemap({
-				name: "OpenMapSurfer Roads", 
-				tileLayer: L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}', {
-					attribution: 'Imagery from <a href="http://giscience.uni-hd.de/" target="_blank">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "OpenMapSurfer Grayscale", 
-				tileLayer: L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roadsg/x={x}&y={y}&z={z}', {
-					attribution: 'Imagery from <a href="http://giscience.uni-hd.de/" target="_blank">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-				
-			new Basemap({
-				name: "Hydda Full", 
-				tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
-					attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
-					crossOrigin: false
-				})}, this);
-			new Basemap({
-				name: "Hydda Base", 
-				tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png', {
-					attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 17,
-					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
-					crossOrigin: false
-				})}, this);
-				
-			new Basemap({
-				name: "Stamen Toner", 
-				tileLayer: L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.{ext}', {
-					attribution: 'Map tiles by <a href="http://stamen.com" target="_blank">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0" target="_blank">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					subdomains: 'abcd',
-					ext: 'png',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Stamen TonerBackground", 
-				tileLayer: L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-background/{z}/{x}/{y}.{ext}', {
-					attribution: 'Map tiles by <a href="http://stamen.com" target="_blank">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0" target="_blank">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					subdomains: 'abcd',
-					maxZoom: 17,
-					ext: 'png',
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Stamen TonerLite", 
-				tileLayer: L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.{ext}', {
-					attribution: 'Map tiles by <a href="http://stamen.com" target="_blank">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0" target="_blank">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					subdomains: 'abcd',
-					maxZoom: 17,
-					ext: 'png',
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Stamen Watercolor", 
-				tileLayer: L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
-					attribution: 'Map tiles by <a href="http://stamen.com" target="_blank">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0" target="_blank">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					subdomains: 'abcd',
-					ext: 'png',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);		
-				
-			new Basemap({
-				name: "Esri WorldStreetMap", 
-				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Esri DeLorme", 
-				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Specialty/DeLorme_World_Base_Map/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Copyright: &copy;2012 DeLorme',
-					maxZoom: 14,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Esri WorldTopoMap", 
-				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Esri WorldImagery", 
-				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Esri WorldTerrain", 
-				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Esri WorldShadedRelief", 
-				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Source: Esri',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Esri WorldPhysical ", 
-				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Source: US National Park Service',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Esri OceanBasemap", 
-				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Esri NatGeoWorldMap", 
-				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Esri WorldGrayCanvas", 
-				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-					attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
 
-			new Basemap({
-				name: "Google roadmap", 
-				tileLayer: L.gridLayer.googleMutant({
-					type: 'roadmap',
-					maxZoom: 21,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Google satellite", 
-				tileLayer: L.gridLayer.googleMutant({
-					type: 'satellite',
-					maxZoom: 19,
-					useCache: this.options.useCache,	// Does not work yet
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Google terrain", 
-				tileLayer: L.gridLayer.googleMutant({
-					type: 'terrain',
-					maxZoom: 19,
-					useCache: this.options.useCache,	// Does not work yet
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "Google hybrid", 
-				tileLayer: L.gridLayer.googleMutant({
-					type:'hybrid',
-					maxZoom: 19,
-					useCache: this.options.useCache,	// Does not work yet
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this); 
-	
-			new Basemap({
-				name: "CartoDB Positron", 
-				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd',
-					maxZoom: 19,
-					useCache: this.options.useCache,	
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "CartoDB PositronNoLabels", 
-				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "CartoDB PositronOnlyLabels", 
-				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "CartoDB DarkMatter", 
-				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "CartoDB DarkMatterNoLabels", 
-				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "CartoDB DarkMatterOnlyLabels", 
-				tileLayer: L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
-					subdomains: 'abcd',
-					maxZoom: 17,
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "HikeBike HikeBike", 
-				tileLayer: L.tileLayer('http://{s}.tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
-					maxZoom: 15,
-					crossOrigin: false,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "HikeBike HillShading", 
-				tileLayer: L.tileLayer('http://{s}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
-					maxZoom: 15,
-					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant
-					crossOrigin: false,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Basemap({
-				name: "NASAGIBS ViirsEarthAtNight2012", 
-				tileLayer: L.tileLayer('http://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/{time}/{tilematrixset}{maxZoom}/{z}/{y}/{x}.{format}', {
-					attribution: 'Imagery provided by services from the Global Imagery Browse Services (GIBS), operated by the NASA/GSFC/Earth Science Data and Information System (<a href="https://earthdata.nasa.gov" target="_blank">ESDIS</a>) with funding provided by NASA/HQ.',
-					bounds: [[-85.0511287776, -179.999999975], [85.0511287776, 179.999999975]],
-					minZoom: 1,
-					maxZoom: 8,
-					format: 'jpg',
-					time: '',
-					tilematrixset: 'GoogleMapsCompatible_Level',
-					useCache: this.options.useCache,
-					crossOrigin: true,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
+			var foundDefault=undefined;
+			
+			if (defaultBaseMaps) {
+				for (var i=0; i<defaultBaseMaps.length; i++) {
+					defaultBaseMaps[i].tileLayerOptions.auto_compaction=this.options.auto_compaction;
+					if (this.options.useCache && defaultBaseMaps[i].tileLayerOptions.useCache) {
+						defaultBaseMaps[i].tileLayerOptions.useCache=this.options.useCache;
+					}
+					var basemap=new Basemap(defaultBaseMaps[i], this);
+					if (basemap.name == defaultBaseMap) {
+						foundDefault=i;
+						basemap.createBaseMap(this);
+					}
+				}
+				if (foundDefault == undefined) {
+					foundDefault=0;
+					defaultBaseMaps[0].createBaseMap(this); // Use first
+				}
+				for (var i=0; i<this.basemapArray.length; i++) { // Initialise rest
+					if (this.basemapArray[i].tileLayer == undefined) {
+						this.basemapArray[i].createBaseMap(this);
+					}
+				}
+			}
+
+			consoleLog("ZZ: " + defaultBaseMaps.length);
 			//Additional overlays
-			new Overlaymap({
-				name: "OSM UK Postcodes", 
-				tileLayer: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-npe/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">OSM Postcode</a>',
-					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant,
-					maxZoom: 12,
-					crossOrigin: false,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-			new Overlaymap({
-				name: "Code-Point Open UK Postcodes", 
-				tileLayer: L.tileLayer('http://random.dev.openstreetmap.org/postcodes/tiles/pc-os/{z}/{x}/{y}.png', {
-					attribution: '&copy; <a href="http://random.dev.openstreetmap.org/postcodes/" target="_blank">Code-Point Open layers</a>',
-					useCache: false, // Not CORS (Cross-Origin Resource Sharing) compliant,
-					maxZoom: 12,
-					crossOrigin: false,
-					auto_compaction: this.options.auto_compaction
-				})}, this);
-								
+			if (defaultOverlayMaps) {
+				for (var i=0; i<defaultOverlayMaps.length; i++) {
+					defaultOverlayMaps[i].tileLayerOptions.auto_compaction=this.options.auto_compaction;
+					if (this.options.useCache && defaultOverlayMaps[i].tileLayerOptions.useCache) {
+						defaultOverlayMaps[i].tileLayerOptions.useCache=this.options.useCache;
+					}
+					new Overlaymap(defaultOverlayMaps[i], this);
+				}
+			}			
+
+			consoleLog("AA");
+			
 			var currentBaseMap;	
 			var layerList = {};
 			for (var i=0; i<this.basemapArray.length; i++) { // Add handlers
@@ -643,6 +355,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					this.pouchDB=this.basemapArray[i].tileLayer._db;
 				}
 			}
+			consoleLog("BB");
 				
 			var overlayList = {};
 			for (var i=0; i<this.overlaymapArray.length; i++) {
@@ -656,10 +369,12 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			else {
 				errorPopup(new Error("initBaseMaps(): Cannot load: " + defaultBaseMap + "; not found in basemapArray"));
 			}
+			consoleLog("CC");
 			
 			if (currentBaseMap) {
 				baseLayer = currentBaseMap;
-					
+				consoleLog("baseLayer/currentBaseMap: " + baseLayer);
+				
 				controlLayers=L.control.layers(
 					layerList, 		// Base layers 
 					overlayList, 	// Overlays
@@ -723,6 +438,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 									
 					currentBaseMap.off('load');							
 				});
+
 				currentBaseMap.addTo(map);			
 			}
 			else {
@@ -905,7 +621,9 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 						if (err) {
 							var nerr=new Error("getCacheSize(): Error: " + (err.reason || JSON.stringify(err)) + " in _db.getInfo()");
 							consoleError(nerr.message);
-							getCacheSizeCallback(nerr);
+							if (getCacheSizeCallback) {
+								getCacheSizeCallback(nerr);
+							}		
 						}
 						else {
 							$( "#progressbar" ).progressbar({
