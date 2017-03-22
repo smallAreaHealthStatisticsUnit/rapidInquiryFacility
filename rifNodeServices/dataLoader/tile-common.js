@@ -731,7 +731,7 @@ function addTileLayer(methodFields, maxzoomlevel) {
 				maxzoomlevel:		"Max zoomlevel",
 				output:				"Tile format",
 				baseLayer:			"Base layer",
-				cacheStats:			"Caching enabled"
+				BasemapCaching:		"Basemap caching enabled"
 			}
 			legend.onAdd = function onAddLegend(map) {
 				LegendDiv = L.DomUtil.create('div', 'info legend');
@@ -743,9 +743,9 @@ function addTileLayer(methodFields, maxzoomlevel) {
 							': </td><td id="legend_' + key + '_value">' + geolevel[key] + "</td></tr>");			
 					}
 					else {
-						labels.push('<tr><td id="legend_' + key + '">' + (keyTable[key]||key) + 
+						labels.push('<tr><td id="legend_' + key + '">' + (keyTable['BasemapCaching']||'BasemapCaching') + 
 							': </td><td id="legend_' + key + '_value">' + 
-							(topojsonTileLayer.options.useCache ? "true" : "false") + "</td></tr>");			
+							(baseLayer.options.useCache ? "true" : "false") + "</td></tr>");				
 					}					
 				}
 				labels.push('<tr><td id="legend_baseLayer">' + (keyTable["baseLayer"]) + 

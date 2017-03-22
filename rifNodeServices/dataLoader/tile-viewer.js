@@ -267,7 +267,7 @@ function cacheTabBeforeActivate() {
 		basemaps.getCacheSize(function getCacheSizeCallback(err, results) {
 			if (err) {
 				errorPopup(new Error("cacheTabBeforeActivate(): getCacheSize() error: " +  (err.message || JSON.stringify(err))));
-				document.getElementById("cacheTab").innerHTML='<a>Cache information not available</a>';
+				document.getElementById("cacheTab").innerHTML='<a>Cache information not available due to error</a>';
 			}
 			else {
 				consoleLog("cacheTabBeforeActivate(): getCacheSize() done.");
@@ -297,7 +297,9 @@ function cacheTabBeforeActivate() {
 		});
 	}
 	else {
-		document.getElementById("cacheTab").innerHTML='<a>Cache information not available</a>';	
+		document.getElementById("cacheTab").innerHTML='<a>Cache information not available; topojson caching enabled: ' + 
+			(topojsonTileLayer.options.useCache ? "true" : "false") + '; basemap caching enabled: ' + 
+			(baseLayer.options.useCache ? "true" : "false") + '</a>';	
 	}
 }
 
@@ -308,7 +310,9 @@ function cacheTabBeforeActivate() {
  * Description:	Empty cache
  */
 function cacheEmpty(settings) {
-	consoleLog("cacheEmpty()");	if (basemaps) {
+	consoleLog("cacheEmpty()");	
+	
+	if (basemaps && topojsonTileLayer && topojsonTileLayer.options.useCache) { // Caching enabled
 		document.getElementById("cacheTab").innerHTML='<a>Please wait, emptying cache data...</a><div id="progressbar"></div>';
 		basemaps.empty(function emptyCallback(err, results) {
 			if (err) {
