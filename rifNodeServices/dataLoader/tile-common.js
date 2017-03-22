@@ -787,7 +787,7 @@ function getTopojsonTileLayerStats(nonBasemapCacheStats) {
 					nonBasemapCacheStats[name].found=true;
 					found=true;
 					tableHtml+='  <tr>\n' +
-						'    <td>' + name + ' [CURRENT]</td>\n' +
+						'    <td>' + name + ' [Current TopoJSON]</td>\n' +
 						'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
 						'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
 						'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
