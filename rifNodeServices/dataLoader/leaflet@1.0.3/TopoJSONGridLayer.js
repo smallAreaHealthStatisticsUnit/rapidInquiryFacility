@@ -154,7 +154,7 @@
 						 */
 							tileLayer.options.useCache=false;	// Disable cache
 							tileLayer.PouchDBError = err;		// Flag error
-							consoleError("PouchDB error: " + err.reason + ", useCache disabled");	
+							consoleError("TopoJSONGridLayer PouchDB error: " + err.reason + ", useCache disabled");	
 							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 							tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
 								done(error, tile);
@@ -330,7 +330,7 @@
 		
 		// ðŸ‚option auto_compaction: true/false
 		// This turns on auto compaction, which means compact() is called after every change to the database. Defaults to false.
-		L.TileLayer.prototype.options.auto_compaction = false;		
+		L.TileLayer.prototype.options.auto_compaction = false;	
     }
 
     if (typeof define === 'function' && define.amd) {

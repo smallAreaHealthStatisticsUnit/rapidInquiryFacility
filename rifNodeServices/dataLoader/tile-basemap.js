@@ -46,6 +46,7 @@
 
 var controlLayers;
 var autoCompaction=true;
+var useCache=true;
 	
 /*
  * Function: 	Basemap()
@@ -65,6 +66,7 @@ function Basemap(basemapOptions, mapArrays) {
 		size: 0
 	};
 	if (this.tileLayer.mapArrays) {
+		this.mapArrays=mapArrays;
 		this.tileLayer.mapArrays.basemapArray.push(this);
 	}
 	else {
@@ -96,6 +98,7 @@ function Overlaymap(overlaymapOptions, mapArrays) {
 		size: 0
 	};
 	if (this.tileLayer.mapArrays) {
+		this.mapArrays=mapArrays;
 		this.tileLayer.mapArrays.overlaymapArray.push(this);
 	}
 	else {
@@ -113,7 +116,7 @@ function Overlaymap(overlaymapOptions, mapArrays) {
  * Function: 	mapArray() 
  * Parameters:  map, defaultBaseMap, maxZoomlevel
  * Returns:		mapArray() Object
- * Description: Constructot for mapArrays
+ * Description: Constructor for mapArrays
  */
 function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 		this.basemapArray=[];
@@ -126,14 +129,20 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 		if (options && options.auto_compaction) {
 			this.options.auto_compaction=options.auto_compaction;
 		}
+		this.options.useCache=true; // Default
+		if (options && options.useCache) {
+			this.options.useCache=options.useCache;
+		}		
 
 		this.initBaseMaps(map, defaultBaseMap, maxZoomlevel);
 	} // End of mapArrays() object constructor
 	
 	mapArrays.prototype = { // Add methods
 		options:	{
-			auto_compaction: autoCompaction	// option auto_compaction: true/false
+			auto_compaction: (autoCompaction||false),	// option auto_compaction: true/false
 			// This turns on auto compaction, which means compact() is called after every change to the database. Defaults to false.
+			useCache: (useCache||true)	// option useCache: true/false
+			// This turns on caching. Defaults to true. Disabled by PouchDB errors
 		},
 		/*
 		 * Function: 	addBaseMap()
@@ -160,15 +169,16 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 		 * Description:	Initialise base and overlay maps
 		 */	
 		initBaseMaps: function(map, defaultBaseMap, maxZoomlevel) {
-			new Basemap({
+			var basemap=new Basemap({
 				name: "OpenStreetMap Mapnik", 
 				tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',		
 					maxZoom: 18,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
+				
 			new Basemap({
 				name: "OpenStreetMap BlackAndWhite", 
 				tileLayer: L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
@@ -190,7 +200,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				 tileLayer: L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
 						attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -200,7 +210,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', { // API key required
 					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -209,7 +219,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png', { // API key required
 					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -218,7 +228,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/transport-dark/{z}/{x}/{y}.png', { // API key required
 					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -227,7 +237,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png', { // API key required
 					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -236,7 +246,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png', { // API key required
 					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -245,7 +255,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png', { // API key required
 					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -254,7 +264,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://{s}.tile.thunderforest.com/pioneer/{z}/{x}/{y}.png', { // API key required
 					attribution: '&copy; <a href="http://www.thunderforest.com/" target="_blank">Thunderforest</a>, &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -264,7 +274,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}', {
 					attribution: 'Imagery from <a href="http://giscience.uni-hd.de/" target="_blank">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -273,7 +283,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roadsg/x={x}&y={y}&z={z}', {
 					attribution: 'Imagery from <a href="http://giscience.uni-hd.de/" target="_blank">GIScience Research Group @ University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -302,7 +312,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					subdomains: 'abcd',
 					ext: 'png',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -313,7 +323,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					subdomains: 'abcd',
 					maxZoom: 17,
 					ext: 'png',
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -324,7 +334,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					subdomains: 'abcd',
 					maxZoom: 17,
 					ext: 'png',
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -335,7 +345,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					subdomains: 'abcd',
 					ext: 'png',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);		
@@ -345,7 +355,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
 					attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -354,7 +364,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Specialty/DeLorme_World_Base_Map/MapServer/tile/{z}/{y}/{x}', {
 					attribution: 'Tiles &copy; Esri &mdash; Copyright: &copy;2012 DeLorme',
 					maxZoom: 14,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -363,7 +373,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
 					attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -372,7 +382,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
 					attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -381,7 +391,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
 					attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -390,7 +400,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
 					attribution: 'Tiles &copy; Esri &mdash; Source: Esri',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -399,7 +409,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
 					attribution: 'Tiles &copy; Esri &mdash; Source: US National Park Service',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -408,7 +418,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
 					attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -417,7 +427,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
 					attribution: 'Tiles &copy; Esri &mdash; National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -426,7 +436,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
 					attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -436,7 +446,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.gridLayer.googleMutant({
 					type: 'roadmap',
 					maxZoom: 21,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -445,7 +455,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.gridLayer.googleMutant({
 					type: 'satellite',
 					maxZoom: 19,
-					useCache: true,	// Does not work yet
+					useCache: this.options.useCache,	// Does not work yet
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -454,7 +464,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.gridLayer.googleMutant({
 					type: 'terrain',
 					maxZoom: 19,
-					useCache: true,	// Does not work yet
+					useCache: this.options.useCache,	// Does not work yet
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -463,7 +473,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				tileLayer: L.gridLayer.googleMutant({
 					type:'hybrid',
 					maxZoom: 19,
-					useCache: true,	// Does not work yet
+					useCache: this.options.useCache,	// Does not work yet
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this); 
@@ -474,7 +484,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
 					subdomains: 'abcd',
 					maxZoom: 19,
-					useCache: true,	// Does not work yet
+					useCache: this.options.useCache,	
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -484,7 +494,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
 					subdomains: 'abcd',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -494,7 +504,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
 					subdomains: 'abcd',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -504,7 +514,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
 					subdomains: 'abcd',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -514,7 +524,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
 					subdomains: 'abcd',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -524,7 +534,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions" target="_blank">CartoDB</a>',
 					subdomains: 'abcd',
 					maxZoom: 17,
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -556,7 +566,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					format: 'jpg',
 					time: '',
 					tilematrixset: 'GoogleMapsCompatible_Level',
-					useCache: true,
+					useCache: this.options.useCache,
 					crossOrigin: true,
 					auto_compaction: this.options.auto_compaction
 				})}, this);
@@ -607,8 +617,16 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				this.basemapArray[i].tileLayer.on('tilecacheerror', function tileCacheErrorHandler(ev) {
 					if (baseLayer && baseLayer.cacheStats) {
 						baseLayer.cacheStats.errors++;
-//						consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile+
-//							"; total errors: " + baseLayer.cacheStats.errors);
+						if (this.mapArrays && this.mapArrays.options) {
+							this.options.useCache=false;
+							this.mapArrays.options.useCache=false;
+							consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile+
+								"; total errors: " + baseLayer.cacheStats.errors + "; all caching disabled");
+						}
+						else {
+							consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile+
+								"; total errors: " + baseLayer.cacheStats.errors);
+						}
 					}
 					else {
 						consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile + 

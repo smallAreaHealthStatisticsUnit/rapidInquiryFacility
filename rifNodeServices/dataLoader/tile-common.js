@@ -690,7 +690,7 @@ function addTileLayer(methodFields, maxzoomlevel) {
 	});
 	
 	topojsonTileLayer.on('load', function topojsonTileLayerLoad() {
-		consoleLog("Tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id +
+		consoleLog("Topojson tile layer " + topojsonTileLayerCount + " loaded; geolevel_id: " + methodFields.geolevel_id +
 			"; zoom: " + map.getZoom() +
 			"; map maxZoom: " + map.getMaxZoom() +
 			"; layer maxZoom: " + topojsonTileLayer.options.maxZoom);
@@ -699,13 +699,17 @@ function addTileLayer(methodFields, maxzoomlevel) {
 				errorPopup(topojsonTileLayer.PouchDBError.reason, "<pre>" + JSON.stringify(topojsonTileLayer.PouchDBError, null, 0) + "</pre>");
 			}
 			pouchDBErrors[topojsonTileLayer.PouchDBError.name]=true;
+			topojsonTileLayer.options.useCache=false;
 		}
 	});
 	
 	map.addLayer(topojsonTileLayer);
-	map.whenReady( // Msp is ready, topojsonTileLayer still loading
+	map.whenReady( // Map is ready, topojsonTileLayer still loading
 		function whenMapIsReady3() { 
-			consoleLog("Adding tile layer; maxZoom: " + map.getMaxZoom()+ "; cached: " + (topojsonTileLayer.options.useCache ? "true" : "false"));
+			if (baseLayer.cacheStats.errors > 0 && baseLayer.cacheStats.useCache == false) { // Detect baseLayer caching errors
+				topojsonTileLayer.options.useCache=false;
+			}
+			consoleLog("Adding topojson tile layer; maxZoom: " + map.getMaxZoom()+ "; cached: " + (topojsonTileLayer.options.useCache ? "true" : "false"));
 			
 			if (legend) {
 				map.removeControl(legend);
@@ -724,7 +728,8 @@ function addTileLayer(methodFields, maxzoomlevel) {
 				geography:			"Geography",
 				maxzoomlevel:		"Max zoomlevel",
 				output:				"Tile format",
-				baseLayer:			"Base layer"
+				baseLayer:			"Base layer",
+				cacheStats:			"Caching enabled"
 			}
 			legend.onAdd = function onAddLegend(map) {
 				LegendDiv = L.DomUtil.create('div', 'info legend');
@@ -735,6 +740,11 @@ function addTileLayer(methodFields, maxzoomlevel) {
 						labels.push('<tr><td id="legend_' + key + '">' + (keyTable[key]||key) + 
 							': </td><td id="legend_' + key + '_value">' + geolevel[key] + "</td></tr>");			
 					}
+					else {
+						labels.push('<tr><td id="legend_' + key + '">' + (keyTable[key]||key) + 
+							': </td><td id="legend_' + key + '_value">' + 
+							(topojsonTileLayer.options.useCache ? "true" : "false") + "</td></tr>");			
+					}					
 				}
 				labels.push('<tr><td id="legend_baseLayer">' + (keyTable["baseLayer"]) + 
 					': </td><td id="legend_baseLayer_value">' + baseLayer.name + "</td></tr>");	

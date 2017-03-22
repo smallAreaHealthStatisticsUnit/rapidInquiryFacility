@@ -9,6 +9,7 @@ L.TileLayer.addInitHook(function() {
 	}
 
 	this._db = new PouchDB('offline-tiles', {auto_compaction: this.options.auto_compaction });
+	this.PouchDBError = {};
 	this._canvas = document.createElement('canvas');
 
 	if (!(this._canvas.getContext && this._canvas.getContext('2d'))) {
@@ -66,7 +67,16 @@ L.TileLayer.include({
 		var tileUrl = this.getTileUrl(coords);
 
 		if (this.options.useCache && this._canvas) {
-			this._db.get(tileUrl, {revs_info: true}, this._onCacheLookup(tile, tileUrl, done));
+			var tileLayer=this;
+			this._db.get(tileUrl, 
+					{revs_info: true}, 
+					this._onCacheLookup(tile, tileUrl, done)).catch(
+						function (err) {			
+							tileLayer.options.useCache=false;	// Disable cache
+							tileLayer.PouchDBError = err;		// Flag error
+							console.log("TileLayer PouchDB createTile() error: " + err.reason + ", useCache disabled");	
+							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+						});
 		} else {
 			// Fall back to standard behaviour
 			tile.onload = L.bind(this._tileOnLoad, this, done, tile);
@@ -253,6 +263,13 @@ L.TileLayer.include({
 					this._saveTile(tile, url, null); //(ev)
 					this._seedOneTile(tile, remaining, seedData);
 				}.bind(this);
+// Disabled until testable
+				
+//				this.options.useCache=false;	// Disable cache
+//				this.PouchDBError = err;		// Flag error
+//				console.log("TileLayer PouchDB _seedOneTile() error: " + err.reason + ", useCache disabled");	
+//				this.fire('tilecacheerror', { tile: this, error: err });
+				
 				tile.crossOrigin = 'Anonymous';
 				tile.src = url;
 			} else {
