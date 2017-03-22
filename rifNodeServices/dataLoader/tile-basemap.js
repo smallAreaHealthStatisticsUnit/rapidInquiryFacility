@@ -198,6 +198,49 @@ function Overlaymap(overlaymapOptions, mapArrays) {
 		}
 	});
 	
+	var baseLayer=this;
+	this.tileLayer.on('tilecachehit', function tileCacheHitHandler(ev) {
+		if (baseLayer && baseLayer.cacheStats) {
+			baseLayer.cacheStats.hits++;
+//			consoleLog("tileCacheHitHandler(): Cache hit " + baseLayer.name + " tile: " + ev.url +
+//				"; total hits: " + baseLayer.cacheStats.hits);
+		}
+		else {
+			consoleLog("tileCacheHitHandler(): Cache hit " + baseLayer.name + " tile: " + ev.url + " [No stats update]");
+		}
+	});
+	
+	this.tileLayer.on('tilecachemiss', function tileCacheMissHandler(ev) {
+		if (baseLayer && baseLayer.cacheStats) {
+			baseLayer.cacheStats.misses++;
+//			consoleLog("tileCacheMissHandler(): Cache miss " + baseLayer.name + " tile: " + ev.url+
+//				"; total misses: " + baseLayer.cacheStats.misses);
+		}
+		else {
+			consoleLog("tileCacheMissHandler(): Cache miss " + baseLayer.name + " tile: " + ev.url + " [No stats update]");
+		}
+	});
+
+	this.tileLayer.on('tilecacheerror', function tileCacheErrorHandler(ev) {
+		if (baseLayer && baseLayer.cacheStats) {
+			baseLayer.cacheStats.errors++;
+			if (this.mapArrays && this.mapArrays.options) {
+				this.options.useCache=false;
+				this.mapArrays.options.useCache=false;
+				consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile+
+					"; total errors: " + baseLayer.cacheStats.errors + "; all caching disabled");
+			}
+			else {
+				consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile+
+					"; total errors: " + baseLayer.cacheStats.errors);
+			}
+		}
+		else {
+			consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile + 
+				" [No stats update]");
+		}
+	});
+				
 } // End of Overlaymap() object constructor
 
 /*
@@ -263,7 +306,9 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 		 */	
 		initBaseMaps: function(map, defaultBaseMap, maxZoomlevel) {
 
-			var foundDefault=undefined;
+			var foundDefault=undefined;		
+			var currentBaseMap;	
+			var layerList = {};
 			
 			if (defaultBaseMaps) {
 				for (var i=0; i<defaultBaseMaps.length; i++) {
@@ -282,9 +327,16 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					defaultBaseMaps[0].createBaseMap(this); // Use first
 				}
 				
+				var defBaseMap=this.basemapArray[foundDefault];
+				defBaseMap.tileLayer.name=defBaseMap.name;
+				layerList[defBaseMap.name]=defBaseMap.tileLayer;
+				if (this.pouchDB == undefined && defBaseMap.tileLayer._db) {
+					this.pouchDB=defBaseMap.tileLayer._db;
+				}
+				currentBaseMap=layerList[defBaseMap.name]
 				consoleLog("initBaseMaps(): foundDefault " + foundDefault + 
-					": " + this.basemapArray[foundDefault].name +
-					"; options: " + JSON.stringify(this.basemapArray[foundDefault].tileLayerOptions));
+					": " + defBaseMap.name +
+					"; options: " + JSON.stringify(defBaseMap.tileLayerOptions));
 //				if (basemap.options.useCache == false &&
 //				    basemap.options.useCache != defaultBaseMaps[foundDefault].tileLayerOptions.useCache) {
 //					consoleError("initBaseMaps(): useCache changed to false for: " + basemap.name);
@@ -293,11 +345,17 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				for (var i=0; i<this.basemapArray.length; i++) { // Initialise rest
 					if (this.basemapArray[i].tileLayer == undefined) {
 						this.basemapArray[i].createBaseMap(this);
+						this.basemapArray[i].tileLayer.name=this.basemapArray[i].name;
+						layerList[this.basemapArray[i].name]=this.basemapArray[i].tileLayer;
+						if (this.pouchDB == undefined && this.basemapArray[i].tileLayer._db) {
+							this.pouchDB=this.basemapArray[i].tileLayer._db;
+						}						
 					}
 				}
 			}
 			else {
 				errorPopup(new Error("initBaseMaps(): Cannot load: " + defaultBaseMap + "; no defaultBaseMaps"));
+				return;
 			}
 
 			//Additional overlays
@@ -312,61 +370,8 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			}	
 			else {
 				errorPopup(new Error("initBaseMaps(): Cannot load overlays; no defaultOverlayMaps"));
+				return;
 			}		
-			
-			var currentBaseMap;	
-			var layerList = {};
-			for (var i=0; i<this.basemapArray.length; i++) { // Add handlers
-				
-				this.basemapArray[i].tileLayer.on('tilecachehit', function tileCacheHitHandler(ev) {
-					if (baseLayer && baseLayer.cacheStats) {
-						baseLayer.cacheStats.hits++;
-//						consoleLog("tileCacheHitHandler(): Cache hit " + baseLayer.name + " tile: " + ev.url +
-//							"; total hits: " + baseLayer.cacheStats.hits);
-					}
-					else {
-						consoleLog("tileCacheHitHandler(): Cache hit " + baseLayer.name + " tile: " + ev.url + " [No stats update]");
-					}
-				});
-				this.basemapArray[i].tileLayer.on('tilecachemiss', function tileCacheMissHandler(ev) {
-					if (baseLayer && baseLayer.cacheStats) {
-						baseLayer.cacheStats.misses++;
-//						consoleLog("tileCacheMissHandler(): Cache miss " + baseLayer.name + " tile: " + ev.url+
-//							"; total misses: " + baseLayer.cacheStats.misses);
-					}
-					else {
-						consoleLog("tileCacheMissHandler(): Cache miss " + baseLayer.name + " tile: " + ev.url + " [No stats update]");
-					}
-				});
-				this.basemapArray[i].tileLayer.on('tilecacheerror', function tileCacheErrorHandler(ev) {
-					if (baseLayer && baseLayer.cacheStats) {
-						baseLayer.cacheStats.errors++;
-						if (this.mapArrays && this.mapArrays.options) {
-							this.options.useCache=false;
-							this.mapArrays.options.useCache=false;
-							consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile+
-								"; total errors: " + baseLayer.cacheStats.errors + "; all caching disabled");
-						}
-						else {
-							consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile+
-								"; total errors: " + baseLayer.cacheStats.errors);
-						}
-					}
-					else {
-						consoleLog("tileCacheErrorHandler(): Cache error: " + ev.error + "; " + baseLayer.name + ": " + ev.tile + 
-							" [No stats update]");
-					}
-				});
-				
-				this.basemapArray[i].tileLayer.name=this.basemapArray[i].name;
-				if (currentBaseMap == undefined) {
-					currentBaseMap=this.basemapArray[i].tileLayer;
-				}
-				layerList[this.basemapArray[i].name]=this.basemapArray[i].tileLayer;
-				if (this.pouchDB == undefined && this.basemapArray[i].tileLayer._db) {
-					this.pouchDB=this.basemapArray[i].tileLayer._db;
-				}
-			}
 				
 			var overlayList = {};
 			for (var i=0; i<this.overlaymapArray.length; i++) {
@@ -374,47 +379,17 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 				overlayList[this.overlaymapArray[i].name]=this.overlaymapArray[i].tileLayer;
 			}
 			
-			if (layerList[defaultBaseMap]) {			
-				currentBaseMap=layerList[defaultBaseMap];
-			}
-			else {
-				errorPopup(new Error("initBaseMaps(): Cannot load: " + defaultBaseMap + "; not found in basemapArray"));
-			}
-			
 			if (currentBaseMap) {
 				baseLayer = currentBaseMap;
 				consoleLog("baseLayer/currentBaseMap: " + baseLayer.name);
 				
-				controlLayers=L.control.layers(
-					layerList, 		// Base layers 
-					overlayList, 	// Overlays
-				{
-					position: 'topright',
-					collapsed: true
-				});	
-				controlLayers.addTo(map);
-				
-				currentBaseMap.on('load', function onBaseMapLoad(ev) {		
-					consoleLog("initBaseMaps(): Added baseLayer to map: " + baseLayer.name + "; default: " + defaultBaseMap);
-					/*
-					this.getCacheSize(
-						function getCacheSizeCallback(err) {
-							if (err) {
-								errorPopup(new Error("initBaseMaps(): getCacheSize() error: " + err.message));
-							}
-							else {
-								consoleLog("initBaseMaps(): getCacheSize() done.");
-							}
-						}); */
-					});	
-				
 				currentBaseMap.on('load', function currentBaseMapLoad(ev) {
 					
 					if (baseLayer.options && baseLayer.options.useCache) {						
-						consoleLog("currentBaseMapLoad(): Base layer loaded: " + baseLayer.name + "; cached");
+						consoleLog("initBaseMaps(): Base layer loaded: " + baseLayer.name + "; cached" + "; default: " + defaultBaseMap);
 					}
 					else {
-						consoleLog("currentBaseMapLoad(): Base layer loaded: " + baseLayer.name + "; not cached");
+						consoleLog("initBaseMaps(): Base layer loaded: " + baseLayer.name + "; not cached" + "; default: " + defaultBaseMap);
 					}
 					
 					map.on('baselayerchange', function baselayerchangeEvent(changeEvent) {
@@ -449,7 +424,18 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					currentBaseMap.off('load');							
 				});
 
-				currentBaseMap.addTo(map);			
+				currentBaseMap.addTo(map);
+				map.whenReady( // Basemap is ready
+					function whenMapIsReady() { 				
+						controlLayers=L.control.layers(
+							layerList, 		// Base layers 
+							overlayList, 	// Overlays
+						{
+							position: 'topright',
+							collapsed: true
+						});	
+						controlLayers.addTo(map);
+					});				
 			}
 			else {
 				errorPopup(new Error("initBaseMaps(): Cannot load basemap, no currentBaseMap"));
