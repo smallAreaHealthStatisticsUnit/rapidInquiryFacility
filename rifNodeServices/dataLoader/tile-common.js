@@ -787,7 +787,7 @@ function getTopojsonTileLayerStats(nonBasemapCacheStats) {
 					nonBasemapCacheStats[name].found=true;
 					found=true;
 					tableHtml+='  <tr>\n' +
-						'    <td>' + name + '</td>\n' +
+						'    <td>' + name + ' [CURRENT]</td>\n' +
 						'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
 						'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
 						'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
@@ -799,7 +799,7 @@ function getTopojsonTileLayerStats(nonBasemapCacheStats) {
 					break;					
 				}				
 				else {	
-					consoleLog('[' + j + '] Ignored nonBasemapCacheStats[' + keys[j] + ']; name: ' + name + '; ' + 
+					consoleLog('[' + j + '] Ignored previously found nonBasemapCacheStats[' + keys[j] + ']; name: ' + name + '; ' + 
 						JSON.stringify(nonBasemapCacheStats[name]));
 				}
 			}
@@ -818,7 +818,7 @@ function getTopojsonTileLayerStats(nonBasemapCacheStats) {
 	}
 		
 	for (var i=0; i<keys.length; i++) {
-		if (nonBasemapCacheStats[keys[i]].found && nonBasemapCacheStats[keys[i]].found == false) {
+		if (nonBasemapCacheStats[keys[i]].found == false) {
 			tableHtml+='  <tr>\n' +
 			'    <td>' + keys[i] + '</td>\n' +
 			'    <td>0</td>\n' + // Hits

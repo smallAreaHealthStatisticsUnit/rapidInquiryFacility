@@ -655,6 +655,8 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 											mapArrays.overlaymapArray[j].tileLayer.cacheStats.size=0;
 										}
 										
+										var tiles=0;
+										var size=0;
 										for (var i=0; i<result.total_rows; i++) {
 											mapArrays.cacheSize+=(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
 											result.rows[i].nameFound=false;											
@@ -663,9 +665,11 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 													if (mapArrays.basemapArray[j].name == result.rows[i].doc.name) {
 														result.rows[i].nameFound=true;
 														mapArrays.basemapArray[j].tileLayer.cacheStats.tiles++;
+														tiles++;
+														size+=(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
 														mapArrays.basemapArray[j].tileLayer.cacheStats.size+=
 															(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
-														break; // Out of for loop
+//														break; // Out of for loop
 													}
 												}
 											}																			
@@ -674,9 +678,11 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 													if (mapArrays.overlaymapArray[j].name == result.rows[i].doc.name) {
 														result.rows[i].nameFound=true;
 														mapArrays.overlaymapArray[j].tileLayer.cacheStats.tiles++;
+														tiles++;
+														size+=(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
 														mapArrays.overlaymapArray[j].tileLayer.cacheStats.size+=
 															(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
-														break; // Out of for loop
+//														break; // Out of for loop
 													}
 												}
 											}								
@@ -690,10 +696,8 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 										var tableHtml="";					
 										if (mapArrays.basemapArray) {
 											for (var i=0; i<mapArrays.basemapArray.length; i++) {
-												if (mapArrays.basemapArray[i].tileLayer && mapArrays.basemapArray[i].tileLayer.cacheStats &&
-													mapArrays.basemapArray[i].tileLayer.cacheStats.hits > 0 ||
-													mapArrays.basemapArray[i].tileLayer.cacheStats.misses > 0 ||
-													mapArrays.basemapArray[i].tileLayer.cacheStats.errors > 0||
+												if (mapArrays.basemapArray[i].tileLayer && 
+												    mapArrays.basemapArray[i].tileLayer.cacheStats &&
 													mapArrays.basemapArray[i].tileLayer.cacheStats.tiles > 0) {
 													cacheRows+="\n[" + i + "] " + mapArrays.basemapArray[i].tileLayer.name + 
 														": hits: " + mapArrays.basemapArray[i].tileLayer.cacheStats.hits +
@@ -717,10 +721,9 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 													
 										if (mapArrays.overlaymapArray) {
 											for (var i=0; i<mapArrays.overlaymapArray.length; i++) {
-												if (mapArrays.overlaymapArray[i].tileLayer && mapArrays.overlaymapArray[i].tileLayer.cacheStats &&
-													mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits > 0 ||
-													mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses > 0 ||
-													mapArrays.overlaymapArray[i].tileLayer.cacheStats.errors > 0) {
+												if (mapArrays.overlaymapArray[i].tileLayer && 
+												    mapArrays.overlaymapArray[i].tileLayer.cacheStats &&
+													mapArrays.overlaymapArray[i].tileLayer.cacheStats.tiles > 0) {
 													cacheRows+="\n[" + i + "] " + mapArrays.overlaymapArray[i].tileLayer.name + 
 														": hits: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.hits +
 														"; misses: " + mapArrays.overlaymapArray[i].tileLayer.cacheStats.misses +
@@ -746,7 +749,9 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 										var nonBasemapCacheStats = {};
 										for (var i=0; i<result.total_rows; i++) {
 											if (result.rows[i].nameFound == false) { // Not yet processed
-												var name=result.rows[i].doc.name;
+												var name=(result.rows[i].doc.name||"No name");
+												tiles++;
+												size+=(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
 												if (nonBasemapCacheStats[name]) {
 													nonBasemapCacheStats[name].tiles++;
 													nonBasemapCacheStats[name].size+=
@@ -762,8 +767,9 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 											}
 										}
 										
-										consoleLog("nonBasemapCacheStats() size: " + Object.keys(nonBasemapCacheStats).length);
-										consoleLog("getCacheSize(): " + mapArrays.totalTiles + " tiles; size: " + mapArrays.cacheSize + " bytes" + cacheRows);
+										consoleLog("nonBasemapCacheStats() size: " + Object.keys(nonBasemapCacheStats).length +
+											"; " + size + " bytes; tiles: " + tiles);
+										consoleLog("getCacheSize(): " + mapArrays.totalTiles + " tiles; size: " + mapArrays.cacheSize + " bytes");
 										if (getCacheSizeCallback) {
 											$( "#progressbar" ).progressbar({
 												value: result.total_rows
