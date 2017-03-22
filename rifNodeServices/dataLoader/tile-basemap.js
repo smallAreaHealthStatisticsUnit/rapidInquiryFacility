@@ -384,7 +384,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 						
 					map.on('baselayerchange', function baselayerchangeEvent(changeEvent) {
 						baseLayer=changeEvent.layer;
-						if (changeEvent.layer.mapArrays) {	
+						if (changeEvent.layer.mapArrays && baseLayer && baseLayer.options && baseLayer.options.useCache) { // Caching enabled
 							changeEvent.layer.mapArrays.getCacheSize();
 						}
 						if (changeEvent.layer._db) {	
