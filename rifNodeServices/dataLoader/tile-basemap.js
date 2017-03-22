@@ -724,7 +724,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 														size+=(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
 														mapArrays.basemapArray[j].cacheStats.size+=
 															(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
-//														break; // Out of for loop
+														break; // Out of for loop
 													}
 												}
 											}																			
@@ -737,7 +737,7 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 														size+=(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
 														mapArrays.overlaymapArray[j].cacheStats.size+=
 															(result.rows[i].doc.urlLength || result.rows[i].doc.dataUrl.length);
-//														break; // Out of for loop
+														break; // Out of for loop
 													}
 												}
 											}								
