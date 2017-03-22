@@ -786,14 +786,26 @@ function getTopojsonTileLayerStats(nonBasemapCacheStats) {
 				if (name && keys[j] && name == keys[j]) {	
 					nonBasemapCacheStats[name].found=true;
 					found=true;
-					tableHtml+='  <tr>\n' +
-						'    <td>' + name + ' [Current TopoJSON]</td>\n' +
-						'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
-						'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
-						'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
-						'    <td>' + nonBasemapCacheStats[name].tiles + '</td>\n' +
-						'    <td>' + (fileSize(nonBasemapCacheStats[name].size)||'N/A') + '</td>\n' +	
-						'  </tr>';	
+					if (topojsonTileLayer.options.name == name) {
+						tableHtml+='  <tr>\n' +
+							'    <td>' + name + ' [Current TopoJSON]</td>\n' +
+							'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
+							'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
+							'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
+							'    <td>' + nonBasemapCacheStats[name].tiles + '</td>\n' +
+							'    <td>' + (fileSize(nonBasemapCacheStats[name].size)||'N/A') + '</td>\n' +	
+							'  </tr>';	
+					}
+					else  {
+						tableHtml+='  <tr>\n' +
+							'    <td>' + name + '</td>\n' +
+							'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
+							'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
+							'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
+							'    <td>' + nonBasemapCacheStats[name].tiles + '</td>\n' +
+							'    <td>' + (fileSize(nonBasemapCacheStats[name].size)||'N/A') + '</td>\n' +	
+							'  </tr>';	
+					}
 					consoleLog('[' + j + '] Found nonBasemapCacheStats[' + keys[j] + ']; name: ' + name + '; ' + 
 						JSON.stringify(nonBasemapCacheStats[name]));
 					break;					
