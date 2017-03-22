@@ -281,14 +281,25 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					foundDefault=0;
 					defaultBaseMaps[0].createBaseMap(this); // Use first
 				}
+				
+				consoleLog("initBaseMaps(): foundDefault " + foundDefault + 
+					": " + this.basemapArray[foundDefault].name +
+					"; options: " + JSON.stringify(this.basemapArray[foundDefault].tileLayerOptions));
+//				if (basemap.options.useCache == false &&
+//				    basemap.options.useCache != defaultBaseMaps[foundDefault].tileLayerOptions.useCache) {
+//					consoleError("initBaseMaps(): useCache changed to false for: " + basemap.name);
+//				}
+				
 				for (var i=0; i<this.basemapArray.length; i++) { // Initialise rest
 					if (this.basemapArray[i].tileLayer == undefined) {
 						this.basemapArray[i].createBaseMap(this);
 					}
 				}
 			}
+			else {
+				errorPopup(new Error("initBaseMaps(): Cannot load: " + defaultBaseMap + "; no defaultBaseMaps"));
+			}
 
-			consoleLog("ZZ: " + defaultBaseMaps.length);
 			//Additional overlays
 			if (defaultOverlayMaps) {
 				for (var i=0; i<defaultOverlayMaps.length; i++) {
@@ -298,9 +309,10 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					}
 					new Overlaymap(defaultOverlayMaps[i], this);
 				}
-			}			
-
-			consoleLog("AA");
+			}	
+			else {
+				errorPopup(new Error("initBaseMaps(): Cannot load overlays; no defaultOverlayMaps"));
+			}		
 			
 			var currentBaseMap;	
 			var layerList = {};
@@ -355,7 +367,6 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 					this.pouchDB=this.basemapArray[i].tileLayer._db;
 				}
 			}
-			consoleLog("BB");
 				
 			var overlayList = {};
 			for (var i=0; i<this.overlaymapArray.length; i++) {
@@ -369,11 +380,10 @@ function mapArrays(map, defaultBaseMap, maxZoomlevel, options) {
 			else {
 				errorPopup(new Error("initBaseMaps(): Cannot load: " + defaultBaseMap + "; not found in basemapArray"));
 			}
-			consoleLog("CC");
 			
 			if (currentBaseMap) {
 				baseLayer = currentBaseMap;
-				consoleLog("baseLayer/currentBaseMap: " + baseLayer);
+				consoleLog("baseLayer/currentBaseMap: " + baseLayer.name);
 				
 				controlLayers=L.control.layers(
 					layerList, 		// Base layers 
