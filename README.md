@@ -11,23 +11,4 @@ The RIF 4.0 integrates advanced methods in statistics, exposure assessment and d
 
 
 Javascript GUI:
-
-![Log in window](rifWebPlatform/web/docs/screenshots/logIn.png?raw=true "Log in window")
-
-![ Disease submission interface ](rifWebPlatform/web/docs/screenshots/frontSubmission.png?raw=true "Disease submission interface")
-![Study area selection](rifWebPlatform/web/docs/screenshots/studyAreaShot.png?raw=true "Study area selection")
-![Investigation parameters dialog ](rifWebPlatform/web/docs/screenshots/invParameters.png?raw=true "Investigation parameters dialog")
-![Health code search](rifWebPlatform/web/docs/screenshots/invParameters2.png?raw=true "Health code search")
-![Statistical parameters dialog ](rifWebPlatform/web/docs/screenshots/statParameters.png?raw=true "Statistical parameters dialog")
-![ Run a study dialog with parameters validation message](rifWebPlatform/web/docs/screenshots/run.png?raw=true "Run a study dialog with parameters validation message")
-
-
-![ Data Viewer prototpye for Disease mapping ](rifWebPlatform/web/docs/screenshots/dm5.png?raw=true "Data Viewer prototpye for Disease mapping")
-![ Data Viewer prototpye for Disease mapping ](rifWebPlatform/web/docs/screenshots/dm1.png?raw=true "Data Viewer prototpye for Disease mapping")
-![ Data Viewer prototpye for Disease mapping  ](rifWebPlatform/web/docs/screenshots/dm2.png?raw=true "Data Viewer prototpye for Disease mapping")
-![ Data Viewer prototpye for Disease mapping  ](rifWebPlatform/web/docs/screenshots/dm3.png?raw=true "Data Viewer prototpye for Disease mapping")
-
-![Data Viewer prototpye for raw data ](rifWebPlatform/web/docs/screenshots/manager1.png?raw=true "Data Viewer prototpye for raw data")
-
-
-
+![login page](/Progress Reports/Screenshots/RIF_login.png)
