@@ -59,9 +59,9 @@ Viewer
             <div>Sex:</div>
             <select ng-change='child.updateStudy("viewermap")' id='optionsSelect' ng-model="sex['viewermap']" ng-options="s for s in  child.sexes['viewermap']"></select>
         </div>
+        <div id="studyInfo" get-study-info mapid="viewermap"></div>
     </div>
 </div>
-
 <div ng-controller="leafletLayersCtrl" ui-layout="{flow : 'column'}">
     <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
         <div ui-layout="{flow : 'row'}">

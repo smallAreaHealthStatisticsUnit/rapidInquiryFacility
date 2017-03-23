@@ -46,6 +46,26 @@ angular.module("RIF")
                 var parentScope = $scope.$parent;
                 parentScope.child = $scope;
 
+                //HACK: trying to fix memory leak
+                //TODO: is similar needed in view and dmap controllers?
+                $scope.$on("$destroy", function () {
+                    if (parentScope.myMaps[0] === "viewermap") {
+                        leafletData.unresolveMap("viewermap");
+                        leafletData.getMap("viewermap").then(function (map) {
+                            map.remove();
+                        });
+                    } else {
+                        leafletData.unresolveMap("diseasemap1");
+                        leafletData.unresolveMap("diseasemap2");
+                        leafletData.getMap("diseasemap1").then(function (map) {
+                            map.remove();
+                        });
+                        leafletData.getMap("diseasemap2").then(function (map) {
+                            map.remove();
+                        });
+                    }
+                });
+
                 //Reference the state service
                 $scope.myService = MappingStateService;
                 if (parentScope.myMaps[0] === "viewermap") {

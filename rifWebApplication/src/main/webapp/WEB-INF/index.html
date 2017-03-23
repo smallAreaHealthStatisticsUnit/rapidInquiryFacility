@@ -39,43 +39,59 @@
         <title>Rapid Inquiry Facility, RIF 4.0</title>
 
         <!--<meta charset="utf-8">-->
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="description" content="RIF, Software for Environmental Spatial Epidemiology">
         <meta name="keywords" content="Disease mapping, Spatial epidemiology, Environental exposure, Health data, GIS, Biostatistics">
 
-        <!-- Angular -->
-        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.js"></script>
-        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-animate.js"></script>
-        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-sanitize.js"></script>
-        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-aria.min.js"></script>
-        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-messages.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.18/angular-ui-router.js"></script>
-        <script src="libs/angular-simple-logger.js"></script>
+        <!-- Angular 1.5.8     -->
+        <script src="libs/standalone/angular.min.js"></script>
+        <script src="libs/standalone/angular-animate.min.js"></script>
+        <script src="libs/standalone/angular-sanitize.min.js"></script>
+        <script src="libs/standalone/angular-aria.min.js"></script>
+        <script src="libs/standalone/angular-messages.min.js"></script>
+        <script src="libs/standalone/angular-ui-router.min.js"></script>
+        <script src = "libs/angular-simple-logger.js"></script>
 
         <!-- Angular Material Library -->
-        <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
-        <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+        <script src="libs/standalone/angular-material.min.js"></script>
+        <link rel="stylesheet" href="libs/standalone/angular-material.min.css">
 
         <!-- Bootstrap -->
-        <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.3.0.js"></script>
-        <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"> 
+        <script src="libs/standalone/ui-bootstrap-tpls-2.3.0.min.js"></script>
+        <link rel="stylesheet" href="libs/standalone/bootstrap.min.css">
+
+        <!-- Leaflet 1.0.3-->
+        <link rel="stylesheet" href="libs/standalone/leaflet.css"> 
+        <script src="libs/standalone/leaflet.js"></script> 
+        <link rel="stylesheet" href="libs/standalone/leaflet.draw.css"> 
+        <script src="libs/standalone/leaflet.draw.js"></script> 
+        <script src="libs/standalone/Leaflet.fullscreen.min.js"></script> 
+        <link rel="stylesheet" href="libs/standalone/leaflet.fullscreen.css">  
+        <script src="libs/standalone/topojson.min.js"></script> 
+
+        <!-- D3  v4 and D3 export -->
+        <script src="libs/standalone/d3.v4.min.js"></script>
+        <script src="libs/standalone/canvas-toBlob.js"></script>
+        <script src="libs/standalone/FileSaver.min.js"></script> 
+
+        <!-- UI grid -->
+        <script src="libs/standalone/ui-grid.min.js"></script> 
+        <link rel="stylesheet" href="libs/standalone/ui-grid.min.css">  
+
+        <!-- UI layout grid -->
+        <link rel="stylesheet" href="libs/standalone/ui-layout.css">  
+
+        <!-- THESE ONLY EVER AS STANDALONE LIBRARIES -->
+        <!-- Angular -->
+        <script src="libs/angular-simple-logger.js"></script>
 
         <!-- Leaflet -->
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>  
-        <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.css' rel='stylesheet' />
-        <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-draw/v0.2.3/leaflet.draw.js'></script>
         <script src="libs/ui-leaflet.min.js"></script>
         <script src="libs/l.control.geosearch.js"></script>
         <script src="libs/l.geosearch.provider.openstreetmap.js"></script>
         <link rel="stylesheet" href="libs/l.geosearch.css" />
         <script src="libs/leaflet-image.js"></script>
-        <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
-        <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
-
-        <!-- tile maker -->
         <script src="libs/TopoJSONGridLayer.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.20/topojson.min.js"></script>
         <script src="libs/topoJSON.js"></script>
 
         <!-- save html2canvas -->
@@ -84,19 +100,9 @@
         <!-- Simple Statistics -->
         <script src="libs/sstatistics.js"></script>
 
-        <!-- D3 and D3 export -->
-        <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>       
-        <script src="https://cdn.rawgit.com/eligrey/canvas-toBlob.js/f1a01896135ab378aa5c0118eadd81da55e698d8/canvas-toBlob.js"></script>
-        <script src="https://cdn.rawgit.com/eligrey/FileSaver.js/e9d941381475b5df8b7d7691013401e171014e89/FileSaver.min.js"></script>
-
-        <!-- UI grid -->
-        <script src="https://cdn.rawgit.com/angular-ui/bower-ui-grid/master/ui-grid.min.js"></script>
-        <link rel="stylesheet" href="https://cdn.rawgit.com/angular-ui/bower-ui-grid/master/ui-grid.min.css"/>  
-
         <!-- UI layout grid -->
         <!--This version of ui-layout has patch for sticky mouse issue #181-->
         <script src="libs/ui-layout.js"></script>   
-        <link rel="stylesheet" href="https://rawgithub.com/angular-ui/ui-layout/master/src/ui-layout.css"> 
 
         <!-- notification -->
         <link rel="stylesheet" href="libs/ngNotificationsBar.css">
@@ -110,7 +116,7 @@
         <script src="libs/ng-pattern-restrict.min.js"></script>
 
         <!-- RIF 4.0 ANGULAR JS-->
-        <script src="modules/rifm-app.js"></script> 
+        <script src = "modules/rifm-app.js"></script> 
         <script src="dashboards/login/controllers/rifc-login-login.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-comparea.js"></script>
         <script src="dashboards/submission/controllers/rifc-dsub-params.js"></script>
@@ -149,6 +155,7 @@
         <script src="utils/controllers/rifc-util-tabctrl.js"></script>
         <script src="utils/directives/rifd-util-leafletTools.js"></script>
         <script src="utils/directives/rifd-util-savechart.js"></script>
+        <script src="utils/directives/rifd-util-info.js"></script>
         <script src="utils/directives/rifd-util-d3histBreaks.js"></script>
         <script src="utils/services/rifs-util-mapping.js"></script>
         <script src="utils/services/rifs-util-uigrid.js"></script>

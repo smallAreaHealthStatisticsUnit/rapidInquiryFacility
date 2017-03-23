@@ -366,6 +366,23 @@ body {
     float:right;
     margin-right: 10px;
 }
+#studyInfo {
+    background: transparent url("../images/information.png") no-repeat;
+    width: 16px;
+    height: 16px;
+    margin: 28px 0px 0px 5px;
+    float: left;
+    -moz-opacity: 0.7;
+    -khtml-opacity: 0.7;
+    opacity: 0.7;
+}
+#studyInfo:hover {
+    -moz-opacity: 1;
+    -khtml-opacity: 1;
+    opacity: 1;
+    cursor: pointer;
+}
+
 div.transparency {
     width: 50px !important
 }

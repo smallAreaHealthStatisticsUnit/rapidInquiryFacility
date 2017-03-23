@@ -118,6 +118,7 @@ angular.module("RIF")
                             leafletData.getMap("area").then(function (map) {
                                 if (map.hasLayer($scope.shpfile)) {
                                     map.removeLayer($scope.shpfile);
+                                    $scope.shpfile = new L.layerGroup();
                                 }
                             });
                         };

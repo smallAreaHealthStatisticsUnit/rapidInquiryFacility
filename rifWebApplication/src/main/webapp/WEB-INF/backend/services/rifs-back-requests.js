@@ -86,7 +86,7 @@ angular.module("RIF")
                     //[{"result":"true"}]
                     return $http.get(studySubmissionURL + 'isLoggedIn?userID=' + username);
                 };
-                //Taxonomy services
+                //Taxonomy services              
                 self.initialiseService = function () {
                     //http://localhost:8080/taxonomyServices/taxonomyServices/initialiseService
                     //true
@@ -96,9 +96,6 @@ angular.module("RIF")
                     //http://localhost:8080/taxonomyServices/taxonomyServices/getTaxonomyServiceProviders
                     //[{"identifier":"icd10","name":"ICD Taxonomy Service","description":"ICD 10 is a classification of diseases."}]
                     return $http.get(taxonomyServicesURL + 'getTaxonomyServiceProviders', config);
-                };
-                self.getRootTerms = function () {
-                    return $http.get(taxonomyServicesURL + 'getRootTerms?taxonomy_id=icd10', config);
                 };
                 self.getMatchingTerms = function (taxonomy, text) {
                     //http://localhost:8080/taxonomyServices/taxonomyServices/getMatchingTerms?taxonomy_id=icd10&search_text=asthma&is_case_sensitive=false

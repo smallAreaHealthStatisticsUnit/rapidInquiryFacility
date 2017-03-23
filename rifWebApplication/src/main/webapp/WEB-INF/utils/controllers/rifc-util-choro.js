@@ -57,7 +57,7 @@ angular.module("RIF")
                         scope: $scope
                     });
                     modalInstance.opened.then(function () {
-                        $scope.$$childHead.renderSwatch(true, true);
+                        $scope.$$childHead.renderSwatch(true, true);                        
                     });
                     modalInstance.result.then(function (modal) {
                         ChoroService.getMaps(map).brewerName = modal.currOption.name;
@@ -94,6 +94,9 @@ angular.module("RIF")
             } else {
                 $scope.input.selectedFeature = ChoroService.getMaps($scope.map).feature;
             }
+            
+            //Map renderer on opening
+            var onXRenderRestore = angular.copy(ChoroService.getMaps($scope.map));
 
             $scope.domain = [];
 
@@ -148,6 +151,9 @@ angular.module("RIF")
             };
 
             $scope.close = function () {
+                //reset to what was there on modal open  
+                ChoroService.getMaps($scope.map).renderer = onXRenderRestore.renderer;
+                ChoroService.getMaps($scope.map).brewerName = onXRenderRestore.brewerName;
                 $uibModalInstance.dismiss();
             };
 

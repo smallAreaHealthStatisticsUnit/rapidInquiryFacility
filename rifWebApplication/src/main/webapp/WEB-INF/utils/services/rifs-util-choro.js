@@ -89,7 +89,7 @@ angular.module("RIF")
                         if (scale && !angular.isUndefined(value)) {
                             return [scale(value), "green", 5];
                         } else {
-                            return ["constant", "green", 5];
+                            return ["#9BCD9B", "green", 5];
                         }
                     }
                     //choropleth
