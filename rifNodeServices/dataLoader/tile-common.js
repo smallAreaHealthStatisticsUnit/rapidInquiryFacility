@@ -557,7 +557,9 @@ function createMap(boundingBox, maxZoomlevel) {
 		catch (e2) {
 			consoleLog("WARNING! Unable to remove map during error recovery");
 		}		
-		throw new Error("Unable to add tile layer to map: " + e.message);
+		var nerr=new Error("Unable to add tile layer to map: " + e.message);
+		nerr.stack=e.stack;
+		throw nerr;
 	}
 } // End of createMap()
  
@@ -706,7 +708,7 @@ function addTileLayer(methodFields, maxzoomlevel) {
 	map.addLayer(topojsonTileLayer);
 	map.whenReady( // Map is ready, topojsonTileLayer still loading
 		function whenMapIsReady3() { 
-			if (baseLayer.cacheStats.errors > 0 && baseLayer.cacheStats.useCache == false) { // Detect baseLayer caching errors
+			if (baseLayer && baseLayer.cacheStats && baseLayer.cacheStats.errors > 0 && baseLayer.cacheStats.useCache == false) { // Detect baseLayer caching errors
 				topojsonTileLayer.options.useCache=false;
 			}
 			consoleLog("Adding topojson tile layer; maxZoom: " + map.getMaxZoom()+ "; cached: " + (topojsonTileLayer.options.useCache ? "true" : "false"));
@@ -729,7 +731,7 @@ function addTileLayer(methodFields, maxzoomlevel) {
 				maxzoomlevel:		"Max zoomlevel",
 				output:				"Tile format",
 				baseLayer:			"Base layer",
-				cacheStats:			"Caching enabled"
+				BasemapCaching:		"Basemap caching enabled"
 			}
 			legend.onAdd = function onAddLegend(map) {
 				LegendDiv = L.DomUtil.create('div', 'info legend');
@@ -741,13 +743,13 @@ function addTileLayer(methodFields, maxzoomlevel) {
 							': </td><td id="legend_' + key + '_value">' + geolevel[key] + "</td></tr>");			
 					}
 					else {
-						labels.push('<tr><td id="legend_' + key + '">' + (keyTable[key]||key) + 
+						labels.push('<tr><td id="legend_' + key + '">' + (keyTable['BasemapCaching']||'BasemapCaching') + 
 							': </td><td id="legend_' + key + '_value">' + 
-							(topojsonTileLayer.options.useCache ? "true" : "false") + "</td></tr>");			
+							(baseLayer.options.useCache ? "true" : "false") + "</td></tr>");				
 					}					
 				}
 				labels.push('<tr><td id="legend_baseLayer">' + (keyTable["baseLayer"]) + 
-					': </td><td id="legend_baseLayer_value">' + baseLayer.name + "</td></tr>");	
+					': </td><td id="legend_baseLayer_value">' + (baseLayer && baseLayer.name || "UNKNOWN") + "</td></tr>");	
 				
 				var html = '<table id="legend">' + labels.join("") + '</table>';
 		//		consoleLog("Add legend: " + html);
@@ -784,20 +786,32 @@ function getTopojsonTileLayerStats(nonBasemapCacheStats) {
 				if (name && keys[j] && name == keys[j]) {	
 					nonBasemapCacheStats[name].found=true;
 					found=true;
-					tableHtml+='  <tr>\n' +
-						'    <td>' + name + '</td>\n' +
-						'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
-						'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
-						'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
-						'    <td>' + nonBasemapCacheStats[name].tiles + '</td>\n' +
-						'    <td>' + (fileSize(nonBasemapCacheStats[name].size)||'N/A') + '</td>\n' +	
-						'  </tr>';	
+					if (topojsonTileLayer.options.name == name) {
+						tableHtml+='  <tr>\n' +
+							'    <td>' + name + ' [Current TopoJSON]</td>\n' +
+							'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
+							'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
+							'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
+							'    <td>' + nonBasemapCacheStats[name].tiles + '</td>\n' +
+							'    <td>' + (fileSize(nonBasemapCacheStats[name].size)||'N/A') + '</td>\n' +	
+							'  </tr>';	
+					}
+					else  {
+						tableHtml+='  <tr>\n' +
+							'    <td>' + name + '</td>\n' +
+							'    <td>' + geolevel.cacheStats.hits + '</td>\n' +
+							'    <td>' + geolevel.cacheStats.misses + '</td>\n' +
+							'    <td>' + geolevel.cacheStats.errors +  '</td>\n' +
+							'    <td>' + nonBasemapCacheStats[name].tiles + '</td>\n' +
+							'    <td>' + (fileSize(nonBasemapCacheStats[name].size)||'N/A') + '</td>\n' +	
+							'  </tr>';	
+					}
 					consoleLog('[' + j + '] Found nonBasemapCacheStats[' + keys[j] + ']; name: ' + name + '; ' + 
 						JSON.stringify(nonBasemapCacheStats[name]));
 					break;					
 				}				
 				else {	
-					consoleLog('[' + j + '] Ignored nonBasemapCacheStats[' + keys[j] + ']; name: ' + name + '; ' + 
+					consoleLog('[' + j + '] Ignored previously found nonBasemapCacheStats[' + keys[j] + ']; name: ' + name + '; ' + 
 						JSON.stringify(nonBasemapCacheStats[name]));
 				}
 			}
@@ -816,7 +830,7 @@ function getTopojsonTileLayerStats(nonBasemapCacheStats) {
 	}
 		
 	for (var i=0; i<keys.length; i++) {
-		if (nonBasemapCacheStats[keys[i]].found && nonBasemapCacheStats[keys[i]].found == false) {
+		if (nonBasemapCacheStats[keys[i]].found == false) {
 			tableHtml+='  <tr>\n' +
 			'    <td>' + keys[i] + '</td>\n' +
 			'    <td>0</td>\n' + // Hits
