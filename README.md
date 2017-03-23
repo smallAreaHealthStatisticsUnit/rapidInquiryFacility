@@ -11,4 +11,5 @@ The RIF 4.0 integrates advanced methods in statistics, exposure assessment and d
 
 
 Javascript GUI:
-![login page](/Progress Reports/Screenshots/RIF_login.png)
+
+![login](/Progress Reports/Screenshots/RIF_login.png)
