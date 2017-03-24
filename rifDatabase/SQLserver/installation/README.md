@@ -212,6 +212,10 @@ SQL Server needs access granted to `BULK INSERT` files, they are not coipied fro
 SQL Server needs access to the relative directories: *..\..\GeospatialData\tileMaker* and *..\..\\DataLoaderData\SAHSULAND*. The simplest
 way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users).
 
+*DO NOT TRY TO RUN BULK INSERT FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
+access to. Note that SQL Server *BULK LOAD* behaves dirrently if you logon using Windows authentication (where it will use your credentials 
+to access the files) to using a username and password (where it will use the Server's credentials to acces the file).
+
 ```
 BULK INSERT rif_data.lookup_sahsu_grd_level1
 FROM 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv'     -- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line

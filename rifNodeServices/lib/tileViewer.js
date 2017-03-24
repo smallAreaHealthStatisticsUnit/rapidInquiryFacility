@@ -169,6 +169,11 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
  */		
 	function getMapTileDbCallback(databaseType, databaseName, dbRequest) {	
 	
+		var tileTable=response.fields.tiletable;
+		if (response.fields.table_schema && response.fields.table_schema == "rif40") {
+			tileTable="rif_data." + response.fields.tiletable; 	// This is Ugly! I could work out where it really is and 
+																// if you have permission to access
+		}
 		getMapTileFromDB(
 			databaseType,					// Database type
 			databaseName,					// Databse name
@@ -176,7 +181,7 @@ getMapTile = function getMapTile(response, req, res, serverLog, httpErrorRespons
 			getMapTileResponse,				// Callback
 			getMapTileErrorHandler,			// Error callback
 			response, 
-			response.fields.tiletable, 
+			tileTable, 						// Schema.tile table 
 			response.fields.geolevel_id, 
 			response.fields.zoomlevel, 
 			response.fields.x, 
@@ -540,11 +545,13 @@ function dbConnect(response, dbCallback, dbErrorHandler, connectionErrorHandler)
 			else {
 				var p_hostname=process.env["SQLCMDSERVER"] || "localhost";
 				var config = {
-					driver: 'msnodesqlv8',
-					server: p_hostname,
-					database: p_database,
+					driver: 	'msnodesqlv8',
+					user: 		'peter',				// Hard coded. Will change
+					password: 	'peter',
+					server: 	p_hostname,
+					database: 	p_database,
 					options: {
-						trustedConnection: true,
+//						trustedConnection: true,		// Will be an option
 						useUTC: true,
 						appName: 'tileViewer.js'
 					}

@@ -1104,6 +1104,19 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 #### 20th to 24th March
 
 * Geospatial integration and testing outstanding issues: comparision area extract fixed; new data is correct
+* Auto disable of basemap caching on error; caching stats fixes
+* Java Developer job description
+* SQL Server bug:
+	```
+	Msg 50029, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_geography, Line 257
+	Table_name: [rif40].[rif40_geographies] , Default study area column not found in T_RIF40_GEOLEVELS: <geography>USA_2014</geography><
+	defaultstudyarea>STATENS</defaultstudyarea>
+	```
+* Switch SQL Server to use username/password in tileMaker; updated installation/README
+
+#### 27th to 31st March
+
+* RIF meeting
 
 #### Current TODO list (March 2017): SQL Server Port, documentation
 

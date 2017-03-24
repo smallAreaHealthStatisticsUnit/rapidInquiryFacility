@@ -209,7 +209,7 @@ function main() {
 //			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
 										
 		// Create Postgres client;
-		mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], argv['blocks'],
+		mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["password"], argv["pngfile"], argv['zoomlevel'], argv['blocks'],
 			tileMakerConfig, winston);	
 	});
 			
@@ -287,20 +287,29 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 	var config = {
 		driver: 'msnodesqlv8',
 		server: p_hostname,
-		database: p_database,
 		options: {
 			trustedConnection: false,
 			useUTC: true,
 			appName: 'mssqlTileMaker.js'
 		}
 	};
+	if (p_database != "") {
+		config.database=p_database;
+	}
 	if (p_user != "") {
 		config.user=p_user;
-		config.password=p_password;
+		if (p_password != "") {
+			config.password=p_password;
+		}
+		else {
+			winston.log("error", 'Could not connect to SQL server client no password specified for user: %s', p_user);
+			process.exit(1);	
+		}
 	}
 	else {
 		config.options.trustedConnection=true;
 	}
+	winston.log("info", 'About to connected to SQL server using: ' + JSON.stringify(config, null, 4));
 	
 // Connect to SQL server database
 	var client1=p_mssql.connect(config, function(err) {
