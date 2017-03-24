@@ -1106,12 +1106,21 @@ Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
 * Geospatial integration and testing outstanding issues: comparision area extract fixed; new data is correct
 * Auto disable of basemap caching on error; caching stats fixes
 * Java Developer job description
-* SQL Server bug:
+* Fixed SQL Server bug:
 	```
 	Msg 50029, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_geography, Line 257
 	Table_name: [rif40].[rif40_geographies] , Default study area column not found in T_RIF40_GEOLEVELS: <geography>USA_2014</geography><
 	defaultstudyarea>STATENS</defaultstudyarea>
 	```
+  Need to not set *defaultcomparea, defaultstudyarea* during initial INSERT into rif40_geographies; add UPDATE after t_rif40_geolevels 
+  INSERT. Also geolevel name is wrong, STATENS should be CB_2014_US_STATE_500K; so fixed geoDataLoader.xml
+``
+UPDATE rif40_geographies
+   SET defaultcomparea  = 'CB_2014_US_NATION_5M',
+       defaultstudyarea = 'CB_2014_US_STATE_500K'
+ WHERE geography = 'USA_2014';
+GO
+```
 * Switch SQL Server to use username/password in tileMaker; updated installation/README
 
 #### 27th to 31st March

@@ -2044,6 +2044,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			if (xmlConfig.dataLoader.postalPointColumn) {
 				postalPointColumn="'" + xmlConfig.dataLoader.postalPointColumn.toUpperCase() + "'";
 			}
+					
 			var sqlStmt=new Sql("Populate geography meta data table",
 				getSqlFromFile("insert_geography.sql", 
 					undefined /* Common */, 
@@ -2154,7 +2155,27 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					sqlArray, dbType);
 
 			} // End of for loop
-			
+
+			var sqlStmt=new Sql("Populate geography meta data table",
+				getSqlFromFile("update_geography.sql", 
+					undefined /* Common */,
+					"rif40_geographies"												/* table; e.g. rif40_geographies */,
+					xmlConfig.dataLoader.geographyName.toUpperCase() 				/* Geography; e.g. CB_2014_US_500K */,
+					xmlConfig.dataLoader.defaultcomparea.toUpperCase()				/* Default comparision area, e.g. GEOID */,
+					xmlConfig.dataLoader.defaultstudyarea.toUpperCase()				/* Default study area, e.g. STATENS */
+					), 
+				sqlArray, dbType);	
+				
+			var sqlStmt=new Sql("Populate geography meta data table",
+				getSqlFromFile("update_geography.sql", 
+					undefined /* Common */,
+					"rif40_geographies"												/* table; e.g. rif40_geographies */,
+					xmlConfig.dataLoader.geographyName.toUpperCase() 				/* Geography; e.g. CB_2014_US_500K */,
+					xmlConfig.dataLoader.defaultcomparea.toUpperCase()				/* Default comparision area, e.g. GEOID */,
+					xmlConfig.dataLoader.defaultstudyarea.toUpperCase()				/* Default study area, e.g. STATENS */
+					), 
+				sqlArray, dbType);	
+				
 			var sqlStmt=new Sql("Update areaid_count column in geolevels table using geometry table", 
 				getSqlFromFile("geolevels_areaid_update.sql", 
 					dbType, 
