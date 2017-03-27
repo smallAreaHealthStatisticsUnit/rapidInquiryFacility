@@ -26,6 +26,13 @@ is a post 9.2 option.
 
 The new V4.0 RIF uses either Postgres or Microsoft SQL server as a database backend.
 
+It is possible to insstall Windows Postgres RIF using pg_dump and scripts
+
+* Uses *pg_dump* and Powershell
+* Does **NOT** need *make* or *Node.js* 
+
+[See:](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows_install_from_pg_dump.md)
+
 # 2. Postgres Setup
 
 Postgres is usually setup in one of three ways:
