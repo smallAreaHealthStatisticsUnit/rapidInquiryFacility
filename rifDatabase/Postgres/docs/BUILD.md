@@ -243,7 +243,7 @@ or if local connections are not permitted by the Postgres build:
 ```
 host  all   all  127.0.0.1/32  trust
 ```
-**Remove this lines after you have changed the password using:
+**Remove these lines** after you have changed the password using:
 ```
 psql -U postgres -d postgres
 ALTER USER postgres PASSWORD <new password>;
