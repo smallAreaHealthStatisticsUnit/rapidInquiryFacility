@@ -251,6 +251,15 @@ e) Revision control view
 
 CREATE OR REPLACE VIEW peterh.rif40_user_version AS SELECT CAST('1.10' AS numeric) AS user_schema_revision;
 
+f) Study status table required by Java middleware
+
+CREATE TABLE study_status (
+  study_id 			integer NOT NULL,
+  study_state 		character varying NOT NULL,
+  creation_date 	timestamp without time zone NOT NULL,
+  ith_update 		serial NOT NULL,
+  message 			character varying(255));
+
  */
 DECLARE
 	c1start CURSOR FOR
@@ -1086,6 +1095,16 @@ E'\n'||
 		i:=i+1;
 	END IF;
 --
+-- f) Study status table required by Java middleware
+--
+	sql_stmt:='CREATE TABLE IF NOT EXISTS study_status ('||E'\n'||
+'  study_id 			integer NOT NULL,'||E'\n'||
+'  study_state 		character varying NOT NULL,'||E'\n'||
+'  creation_date 	timestamp without time zone NOT NULL,'||E'\n'||
+'  ith_update 		serial NOT NULL,'||E'\n'||
+'  message 			character varying(255))';
+	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
+--
 	IF i > 0 OR j > 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Deleted %, created % tables/views/foreign data wrapper tables', 
 			j::VARCHAR, i::VARCHAR);
@@ -1276,6 +1295,16 @@ CREATE GLOBAL TEMPORARY TABLE g_rif40_comparison_areas (
 e) Revision control view
 
 CREATE OR REPLACE VIEW peterh.rif40_user_version AS SELECT CAST(''1.10'' AS numeric) AS user_schema_revision;
+
+f) Study status table required by Java middleware
+
+CREATE TABLE study_status (
+  study_id 			integer NOT NULL,
+  study_state 		character varying NOT NULL,
+  creation_date 	timestamp without time zone NOT NULL,
+  ith_update 		serial NOT NULL,
+  message 			character varying(255));
+  
 ';
 
 \df rif40_sql_pkg.rif40_startup

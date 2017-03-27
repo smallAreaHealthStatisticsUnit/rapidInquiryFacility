@@ -162,6 +162,15 @@ GO
 SELECT * FROM sys.schemas WHERE name = N'$(NEWUSER)';
 GO
 
+CREATE TABLE [$(NEWUSER)].study_status
+(
+  study_id integer NOT NULL,
+  study_state character varying NOT NULL,
+  creation_date timestamp without time zone NOT NULL,
+  ith_update serial NOT NULL,
+  message character varying(255)
+);
+
 --
 -- Create a test object - this will not re-run
 --
