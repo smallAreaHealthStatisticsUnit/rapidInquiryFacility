@@ -45,9 +45,22 @@ REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
 REM MUST BE RUN AS ADMINSTRATOR
 REM
+NET SESSION >nul 2>&1
+if %errorlevel% equ 0 (
+    ECHO Administrator PRIVILEGES Detected! 
+) else (
+	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
+	if %errorlevel% neq 0 {
+		ECHO NOT AN ADMIN!
+		exit /b 1
+	}
+	else {
+		ECHO Power user PRIVILEGES Detected! 
+	}
+)
 
 REM
-REM CHnage this...
+REM Change this...
 REM 
 SET NEWUSER="peter"
 
