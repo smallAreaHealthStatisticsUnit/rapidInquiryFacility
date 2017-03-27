@@ -36,6 +36,7 @@ Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
 ```
 * The compatibility level should be *110* and the version *Microsoft SQL Server 2012 (SP2...*. If it is not then you have more 
   than one SQL Server database on your machine, see setting *SQLCMDSERVER* in the next section.
+* If you install SQL Server 2014+; make sure SQL Server Management Studio has been installed; [see this blog for further instructions] (https://www.hanselman.com/blog/DownloadSQLServerExpress.aspx)
 
 # 2. Create Databases and Users
 
