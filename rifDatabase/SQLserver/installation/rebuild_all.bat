@@ -46,6 +46,7 @@ REM
 REM MUST BE RUN AS ADMINSTRATOR
 REM
 
+ECHO OFF
 NET SESSION >nul 2>&1
 if %errorlevel% equ 0 (
     ECHO Administrator PRIVILEGES Detected! 
@@ -55,7 +56,7 @@ if %errorlevel% equ 0 (
 )
 
 REM
-REM CHnage this...
+REM Change this...
 REM 
 SET NEWUSER="peter"
 

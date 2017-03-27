@@ -43,7 +43,7 @@ REM Usage: rif40_install_tables.bat
 REM
 REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
-REM MUST BE RUN AS ADMINSTRATOR
+REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
 REM
 NET SESSION >nul 2>&1
 if %errorlevel% equ 0 (
