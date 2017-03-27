@@ -95,16 +95,17 @@ For more information see: [Windows install notes](https://github.com/smallAreaHe
 
 On Windows, Linux and MacOS
 
-* Install Postgres 9.3.5+ or 9.4.1+ and PostGIS 2.1.3+. Building will fail on Postgres 9.2 or 
+* Install Postgres 9.3.5+ or 9.4.1+ and PostGIS 2.1.3+ (See port specific install notes). Building will fail on Postgres 9.2 or 
   below as PL/pgsql GET STACKED DIAGNOSTICS is used; PostGIS before 2.1.3 has bugs that will cause 
-  shapefile simplification to fail.
-* Install 64 bit Node.js. The 32 bit node will run into memory limitation problems will vary large 
+  shapefile simplification to fail (both the original PostGIS version and the newer TileMaker Node.js version).
+* Install 64 bit [Node.js](https://nodejs.org/en/download/). The 32 bit node will run into memory limitation problems will vary large 
   shapefiles. node.js is required to build to geoJSON to topoJSON converter by Mike Bostock at: 
   (https://github.com/mbostock/topojson/wiki/Installation). Node.js is available from: (http://nodejs.org/)
-* Install R; integrate R into Postgres [optional R integration](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/plr.md).
-* Create the PL/R local R_library (in $PGDATA/R_Library), e.g: *C:/Program Files/PostgreSQL/9.3/data/R_library*
-* Create the Postgres etc directory (e.g. *C:\Program Files\PostgreSQL\9.3\etc*) and grant the ability to write 
-  files (full control on Windows) to the username(s) running db_setup. This is so the build can install the psqlrc file.
+* The RIF calls R directly from Java and therefore does not need PLR. If Postgres/R integration is required: 
+  install R; integrate R into Postgres [optional R integration](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/plr.md).
+   * Create the PL/R local R_library (in $PGDATA/R_Library), e.g: *C:/Program Files/PostgreSQL/9.3/data/R_library*
+   * Create the Postgres etc directory (e.g. *C:\Program Files\PostgreSQL\9.3\etc*) and grant the ability to write 
+     files (full control on Windows) to the username(s) running db_setup. This is so the build can install the psqlrc file.
   
 For more information see: 
 
@@ -133,7 +134,7 @@ of your choice of editor on especially Windows. The RIF is developed on Windows 
 you will have files with both Linux <CR> and Windows <CRLF> semantics. Windows Notepad in particular 
 does not understand Linux files.
 
-If you enable PL/R then the directories ? and ? must exist
+If you enable PL/R then the directories R_library (in $PGDATA/R_Library) and $R_HOME/share/extension must exist
 
 * Make sure psql and make run correctly on the command line (see the Windows notes). Check logon to psql with a password for:
   * postgres
@@ -141,6 +142,7 @@ If you enable PL/R then the directories ? and ? must exist
   The [Node.js install dialog]
 (https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/Node/Node%20Install.md) is provided as an example.
   **If the toposjon node.js does not run correctly then node is not properly installed**. 
+  The requirement for Node will be removed.
 * Check R is integrated into Postgres as PLR (See the PLR build instructions).
 
 ### 2.2.2 Build control using make
@@ -150,21 +152,25 @@ The RIF database is built using GNU make for ease of portability. The RIF is bui
 
 #### 2.2.2.1 Principal targets
 
-* Create sahsuland_dev and sahusland databases. This is normally used to build a new database from scratch or to re-create a database:
+* The `db_setup` target is normally used to build a new database from scratch or to re-create a database. Creates the following databases:
+  * sahsuland_empty: A empty database with the *SAHSULAND* geography and no data. For testing the data loader.
+  * sahsuland_dev: A complete database created from scripts complete with the *SAHSULAND* exmaple data.
+  * sahusland: A production database creared from a script and an export. Eventually a scriot will be create install sahsulabd from the 
+    export.
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make db_setup
 ```
    **Note that this does not apply the alter scripts under development**
    
-* To build or rebuild the sahsuland_dev developement database. This is normally used for regression testing:
+* To build or rebuild the sahsuland_dev development database. This is normally used for regression testing:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_dev
 ```
    **Note that this does not apply the alter scripts under development**
    
-* To build or rebuild sahsuland_dev:
+* To build or rebuild sahsuland_empty
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_dev
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_empty
 ```
 
 * To patch sahsuland and sahsuland_dev:
@@ -224,6 +230,23 @@ psql (9.3.5)
 Type "help" for help.
 
 postgres=#
+```
+
+**IT IS STRONGLY ADVISED TO LEAVE THIS WINDOW OPEN SO YOU CANNOT LOCK YOURSELF OUT OF THE DATABASE IF YOU SET IT UP WRONG**. This scripts 
+do check the setup is correct; but this could fail. It is possible to login to postgres as postgres without a password using the administrator or 
+root accounts. If you lock yourself out the hba.conf file will need the following line temporary added at the top of the file:
+
+```
+local  all   all   trust
+```
+or if local connections are not permitted by the Postgres build:
+```
+host  all   all  127.0.0.1/32  trust
+```
+**Remove this lines after you have changed the password using:
+```
+psql -U postgres -d postgres
+ALTER USER postgres PASSWORD <new password>;
 ```
 See the port specific instructions if you get a code page error or the shell cannot find psql.
 
