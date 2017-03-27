@@ -31,7 +31,7 @@ It is possible to insstall Windows Postgres RIF using pg_dump and scripts
 * Uses *pg_dump* and Powershell
 * Does **NOT** need *make* or *Node.js* 
 
-[See:](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows_install_from_pg_dump.md)
+See: [Windows Postgres Install using pg_dump and scripts](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows_install_from_pg_dump.md)
 
 # 2. Postgres Setup
 
