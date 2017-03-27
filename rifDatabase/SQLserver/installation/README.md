@@ -185,7 +185,7 @@ username, so change it on a networked system:
 	##########################################################################################
 	Press any key to continue . . .
 	Terminate batch job (Y/N)? y
-```
+    ```
 
 **These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
 **You _must_ build sahusland_dev before sahusland**; as it loads the error messages.
@@ -274,6 +274,7 @@ WITH
 Msg 245, Level 16, State 1, Server PETER-PC\SAHSU, Line 3
 ' to data type int.hen converting the varchar value '0
 ```
+
 * This is caused by line termination. SQL Server is expecting a Unix format file (i.e. with "\n" as a line terminator). The file is almost certainly in DOS 
   format (with \r\n as a line terminator). Convert the file to Unix format using Notetab++, Cygwin/MingW dos2unix or perl:
 ```
