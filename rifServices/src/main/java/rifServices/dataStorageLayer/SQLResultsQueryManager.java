@@ -350,27 +350,63 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 		getMapTileTableQueryFormatter.addFromTable("rif40_geographies");
 		getMapTileTableQueryFormatter.addWhereParameter("geography");
 				
-		
+		//For tile table name
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		
+		//For map tiles
+		PreparedStatement statement2 = null;
+		ResultSet resultSet2 = null;
+		
 		try {
-			//Create query
-			
+	
 			statement = connection.prepareStatement(getMapTileTableQueryFormatter.generateQuery());
-			//statement.setString(1, geography.getName().toUpperCase());
-			statement.setString(1, "SAHSULAND");
-			
-			System.out.print(statement);
-
+			statement.setString(1, geography.getName().toUpperCase());
+		
 			resultSet = statement.executeQuery();
 			resultSet.next();
-			String result = resultSet.getString(1);
+			//This is the tile table name
+			String myTileTable = resultSet.getString(1);
+					
+			//STEP 2: get the tiles
+			/*
+			SELECT 
+			   TILES_SAHSULAND.optimised_topojson 
+			FROM 
+			   TILES_SAHSULAND,
+			   rif40_geolevels 
+			WHERE 
+			   TILES_SAHSULAND.geolevel_id=rif40_geolevels.geolevel_id AND 
+			   TILES_SAHSULAND.geolevel_id=2 AND 
+			   TILES_SAHSULAND.zoomlevel=3 AND 
+			   TILES_SAHSULAND.x=3 AND 
+			   TILES_SAHSULAND.y=2
+			*/
 			
-			System.out.print(result);
-	
-			connection.commit();
+			PGSQLSelectQueryFormatter getMapTilesQueryFormatter
+				= new PGSQLSelectQueryFormatter();
+			
+			getMapTilesQueryFormatter.addSelectField(myTileTable,"optimised_topojson");
+			getMapTilesQueryFormatter.addFromTable(myTileTable);
+			getMapTilesQueryFormatter.addFromTable("rif40_geolevels");		
+			getMapTilesQueryFormatter.addWhereJoinCondition(myTileTable, "geolevel_id", "rif40_geolevels", "geolevel_id");	
+			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "geolevel_id");
+			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "zoomlevel");
+			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "x");
+			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "y");
 						
+			statement2 = connection.prepareStatement(getMapTilesQueryFormatter.generateQuery());
+			
+			statement2.setString(1, geoLevelSelect.getName().toUpperCase());
+			statement2.setInt(2, zoomlevel);
+			statement2.setInt(3, x);
+			statement2.setInt(4, y);
+			
+			resultSet2 = statement2.executeQuery();
+			resultSet2.next();
+			String result = resultSet2.getString(1);
+
+			connection.commit();				
 			return result;
 		}
 		catch(SQLException sqlException) {
@@ -391,26 +427,12 @@ final class SQLResultsQueryManager extends AbstractSQLManager {
 			//Cleanup database resources
 			PGSQLQueryUtility.close(statement);
 			PGSQLQueryUtility.close(resultSet);
-		}			
-		
-		
-
-		//STEP 2: get the tiles
-		/*
-		SELECT optimised_topojson::Text AS optimised_topojson 
-		  FROM rif40_sahsu_maptiles a, rif40_geolevels b
-		 WHERE b.geolevel_name   = 'LEVEL2'
-		   AND a.geolevel_name = b.geolevel_name
-		   AND a.zoomlevel     = 3   
-		   AND a.geography     = 'SAHSULAND'  
-		   AND a.x_tile_number = 3
-		   AND a.y_tile_number = 2;
-		*/
-		
-		
-	}
 			
-	
+			PGSQLQueryUtility.close(statement2);
+			PGSQLQueryUtility.close(resultSet2);
+		}			
+	}
+				
 	public String getTiles(
 			final Connection connection,
 			final User user,
