@@ -22,6 +22,8 @@ SQL Server Database Installation
 
 Install SQL Server 2012 SP2  (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
 
+**DO NOT INSTALL SQL Server 2008 or before**
+
 Check the version of your database:
 ```
 sqlcmd -E
