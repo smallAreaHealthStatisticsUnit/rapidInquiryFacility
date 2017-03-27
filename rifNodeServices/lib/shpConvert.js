@@ -1435,9 +1435,9 @@ This error in actually originating from the error handler function
 		
 		if (shapefileData["prj"]) {
 			shapefileData["mySrs"]=srs.parse(shapefileData["prj"]);
-			if (!shapefileData["mySrs"].srid) { // Add exceptions not spotted by srs.parse
+			if (!shapefileData["mySrs"].srid && shapefileData["mySrs"].is_geographic) { // Add exceptions not spotted by srs.parse
 				var sridList=[];
-//				console.error(shapefileData["shapeFileName"] + '; shapefileData["mySrs"].proj4: ' + shapefileData["mySrs"].proj4);
+				console.error(shapefileData["shapeFileName"] + '; shapefileData["mySrs"].proj4: ' + JSON.stringify(shapefileData["mySrs"], null, 2));
 				for (var epsg in shapefileData["crss"]) { // Search for multiple SRIDs
 /* shapefileData["crss"]= {	
 		...				
@@ -1448,30 +1448,57 @@ This error in actually originating from the error handler function
 					if (shapefileData["crss"][epsg] &&
 						addMissingCrssProjections.compareProj4(shapefileData["crss"][epsg], shapefileData["mySrs"].proj4, srid)) {
 
-//						console.error(shapefileData["shapeFileName"] + "; compareProj4 match srid: " + srid);
+						console.error(shapefileData["shapeFileName"] + "; compareProj4 match srid: " + srid +
+							"; crss[epsg]: " + shapefileData["crss"][epsg]);
 						sridList.push(srid);
 					}
 				}
+				
+//
+// Geographic specials
+//				
 				if (shapefileData["mySrs"].name.match(/British_National_Grid/)) {
 					shapefileData["mySrs"].srid="27700";
-				}
+				}				
 				else if (sridList.length == 1) { // Match (srs.parse() would have found this...)
 					shapefileData["mySrs"].srid=sridList[0];
 //					console.error(shapefileData["shapeFileName"] + "; compareProj4() match, sridList: " + JSON.stringify(sridList, null, 2));
 				}
 				else if (sridList.length > 1) { // Error
 					serverLog.serverError2(__file, __line, "readShapeFile", 
-						"ERROR! multiple SRIDs (" + sridList.join(",") + ") for projection: " + shapefileData["mySrs"].name || "(no name)" + "; data: " + shapefileData["prj"] + " in shapefile: " +
-						shapefileData["shapeFileName"] + "; projection: " + JSON.stringify(shapefileData["prj"], null, 4), 
-						shapefileData["req"], undefined /* err */, response);	
+						"Multiple SRIDs (" + sridList.length + ")", 
+						shapefileData["req"], undefined /* err */, response,
+						"\nProjection: " + (shapefileData["mySrs"].name || "(no name)") + 
+						"\nPROJ4: " + shapefileData["prj"] + " in shapefile: " +
+						shapefileData["shapeFileName"] + "; projection: " + shapefileData["mySrs"].proj4 +
+						"\nSridList (" + sridList.join(",") + ")" /* Additional info */);	
 				}
 				else { // Error
 					serverLog.serverError2(__file, __line, "readShapeFile", 
-						"ERROR! no SRID for projection: " + shapefileData["mySrs"].name || "(no name)" + "; data: " + shapefileData["prj"] + " in shapefile: " +
-						shapefileData["shapeFileName"] + "; projection: " + JSON.stringify(shapefileData["prj"], null, 4), 
-						shapefileData["req"], undefined /* err */, response);	
+						"Mo SRID for projection: " + (shapefileData["mySrs"].name || "(no name)"), 
+						shapefileData["req"], undefined /* err */, response,
+						"\nProjection: " + (shapefileData["mySrs"].name || "(no name)") + 
+						"\nPROJ4: " + shapefileData["prj"] + " in shapefile: " +
+						shapefileData["shapeFileName"] + "; projection: " + shapefileData["mySrs"].proj4 /* Additional info */);	
 //						callback();	// Not needed - serverError2() raises exception 
 				}
+			}	
+
+//
+// Non geographic specials
+//			
+			else if (!shapefileData["mySrs"].is_geographic && shapefileData["mySrs"].name.match(/SWEREF99_TM/)) {
+				shapefileData["mySrs"].srid="3006";
+			}
+			
+			else if (!shapefileData["mySrs"].is_geographic) {
+				serverLog.serverError2(__file, __line, "readShapeFile", 
+					"Non geographic projection: " + (shapefileData["mySrs"].name || "(no name)"), 
+					shapefileData["req"], undefined /* err */, response, 
+					"SRID must be defined in projection file" + 
+					"\nProjection: " + (shapefileData["mySrs"].name || "(no name)") + 
+					"\nPROJ4: " + shapefileData["prj"] + " in shapefile: " +
+					shapefileData["shapeFileName"] + "; projection: " + shapefileData["mySrs"].proj4 /* Additional info */);				
 			}
 			if (shapefileData["mySrs"].srid &&
 				!shapefileData["crss"]["EPSG:" + shapefileData["mySrs"].srid]) { // Add missing projections to table

@@ -1125,19 +1125,25 @@ GO
 
 #### 27th to 31st March
 
+* SQL Server and Postgres install on David's machine. Added Poweruser support; improved installation instructions. Added a per user 
+  STUDY_STATUS table required by Java middleware. These will be re-engineered better at a later date.
+* Review and revise Postgrees build instruction into single document with contents the same as SQL Server  
+* Fix Halland (Sweden) projection error in shapefile convertor
+* Test Halland shapefiles, need to fix:
+  * Unicode characters;
+  * Default study/comnparision areas
+  * Area tests (area_check.sql) is failing - suspect area is too small, could be projection ia wrong
 * RIF meeting
 
 #### Current TODO list (March 2017): SQL Server Port, documentation
 
 * SQL Server run study port
-* Review and revise Postgrees build instruction into single document with contents the same as SQL Server
 
 #### Current TODO list (April 2017):
 
 * defaultcomparea, defaultstudyarea are wrong (defaulted to LEVEL1, not SAHSU_GRD_LEVEL1...), not set in XML config, probably using DBF field name but  
   but should use geolevel name.
 * Swedish shapefile data erorr - multiple SRID's?
-* Dataloader row number issues: impacting test_4_study_id_1.sql (remove/put back commented out sections), retest
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
 	-- SQL statement 75: Remove old geolevels meta data table >>>
@@ -1156,6 +1162,9 @@ GO
 
 #### TileViewer TODO (defferred to May?):
  
+* Default study/comnparision areas set as LEVEL!/LEVEL2 (i.e. column name, not shapefile name)
+* Area tests (area_check.sql) is failing for Halland - suspect area is too small, could be projection ia wrong 
+* NVarchar support for areaName
 * Get fetch views to handle zoomlevel beyond max zoomlevel (returning the usual NULL geojson)
 * Pre=built ajancency tables: ajacency_<geography>; coluimns: areaid, ajacent_areaid, geolevel
 * Add tileid to tile topoJSON/GeoJSON; include in error messages; add version number 
@@ -1164,7 +1173,6 @@ GO
 * Add all properties from lookup table
 * Missing name in level2 sahsuland (caused by mixed case field names)
 * Add parent area_id, name
-* NVarchar support for areaName
 * Resize
 * Add all Shapefile DBF fields to lookup table;
 * UUID support
