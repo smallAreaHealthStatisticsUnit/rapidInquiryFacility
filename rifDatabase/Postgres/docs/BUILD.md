@@ -85,7 +85,7 @@ The databases *sahsuland*, *sahsuland_dev* and *sahusland_empty* are built using
 
 On Windows:
 
-* Install MinGW with the full development environment and add *c:\MinGW\msys\1.0\bin* to path
+* Install [MinGW](https://sourceforge.net/projects/mingw/files/latest/download?source=files) with the full development environment and add *c:\MinGW\msys\1.0\bin* to path
 * Install Python 2.7 **not Python 3.n**
 * Install a C/C++ compiler, suitable for use by Node.js. I used Microsoft Visual Studio 2012 
   under an Academic licence. The dependency on Node.js will be reduced by replacing the current 
