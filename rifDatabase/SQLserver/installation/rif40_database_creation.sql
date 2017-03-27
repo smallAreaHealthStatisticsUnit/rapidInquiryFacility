@@ -106,7 +106,7 @@ GO
 --
 -- RIF40: Schemn owner
 --
-CREATE LOGIN [rif40] WITH PASSWORD='rif40';	-- Chnage this password if your SQL Server database is networked!
+CREATE LOGIN [rif40] WITH PASSWORD='rif40', CHECK_POLICY = OFF;	-- Chnage this password if your SQL Server database is networked!
 GO
 
 --
@@ -118,13 +118,13 @@ GO
 --
 -- RIFUSER: Test user
 --
-CREATE LOGIN [rifuser] WITH PASSWORD='rifuser'; -- Chnage this password if your SQL Server database is networked!
+CREATE LOGIN [rifuser] WITH PASSWORD='rifuser', CHECK_POLICY = OFF; -- Chnage this password if your SQL Server database is networked!
 GO
 
 --
 -- RIFMANAGER: Test manager
 --
-CREATE LOGIN [rifmanager] WITH PASSWORD='rifmanager'; -- Chnage this password if your SQL Server database is networked!
+CREATE LOGIN [rifmanager] WITH PASSWORD='rifmanager', CHECK_POLICY = OFF; -- Chnage this password if your SQL Server database is networked!
 GO
 
 SELECT name FROM sys.server_principals WHERE name LIKE 'rif%';

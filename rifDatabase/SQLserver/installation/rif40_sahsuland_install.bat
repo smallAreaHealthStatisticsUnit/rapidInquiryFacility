@@ -45,15 +45,6 @@ REM
 REM MUST BE RUN AS ADMINSTRATOR
 REM
 
-ECHO OFF
-NET SESSION >nul 2>&1
-if %errorlevel% equ 0 (
-    ECHO Administrator PRIVILEGES Detected! 
-) else (
-    ECHO NOT AN ADMIN!
-	exit /b 1
-)
-
 sqlcmd -d sahsuland -b -m-1 -e -i rif40_sahsuland_install.sql -v path="%cd%\..\.." -I
 if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_install.sql exiting with %errorlevel%
