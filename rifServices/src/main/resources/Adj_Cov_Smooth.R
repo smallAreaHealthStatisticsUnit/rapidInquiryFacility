@@ -261,6 +261,8 @@ performSmoothingActivity <- function() {
   #AdjRowset<-sqlQuery(connDB, paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(1) LIMIT 10"))
   # TODO: ensure it's ok hardcode rif40_xml_pkg here rather than pass it in as a parameter
   # This SQL statement will possibly have to be changed to work with SQL
+  
+  sqlQuery(connDB, paste("SELECT rif40_sql_pkg.rif40_startup()"))
   AdjRowset<-sqlQuery(connDB, paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(", studyID, ")"))
   numberOfRows <- nrow(AdjRowset)	
   
