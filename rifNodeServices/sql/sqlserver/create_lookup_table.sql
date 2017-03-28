@@ -10,8 +10,8 @@
  * Note:				%%%% becomes %% after substitution
  */
 CREATE TABLE %3%1 (
-	%2			VARCHAR(100)  NOT NULL,
-	areaname	VARCHAR(1000),
+	%2			NVARCHAR(100)  NOT NULL,
+	areaname	NVARCHAR(1000),
 	gid			INTEGER		  NOT NULL,
 	geographic_centroid		VARCHAR(1000),
 	PRIMARY KEY (%2)

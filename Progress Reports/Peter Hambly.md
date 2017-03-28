@@ -1128,22 +1128,29 @@ GO
 * SQL Server and Postgres install on David's machine. Added Poweruser support; improved installation instructions. Added a per user 
   STUDY_STATUS table required by Java middleware. These will be re-engineered better at a later date.
 * Review and revise Postgrees build instruction into single document with contents the same as SQL Server  
+* Improved documentation on SQL Server BULK LOAD file permissions
 * Fix Halland (Sweden) projection error in shapefile convertor
+* Swedish shapefile data error - multiple SRID's?
 * Test Halland shapefiles, need to fix:
   * Unicode characters;
+    * Checked Postgres; all tables (shapefile, lookup) datatypes are OK. Windows displays them wrong (set to code page 1252); 
+	  Notetab++ understands UTF-8 and the CSV file displays OK. SQL Server; convert data type from Text to NVARCHAR(1000);
+	  corruption is occuring in both databases, probably in tileMaker SELECTs.
   * Default study/comnparision areas
-  * Area tests (area_check.sql) is failing - suspect area is too small, could be projection ia wrong
+  * Area tests (area_check.sql) is failing - suspect area is too small, could be projection ia wrong. Added max 10% of areas 
+    can be wrong, otherwise warn. Moved to end after commit for improved diagnostics
+* defaultcomparea, defaultstudyarea are wrong (defaulted to LEVEL1, not SAHSU_GRD_LEVEL1...), now set in XML config. 
+  listing/comparea/resolution all set to 1 for all geolevels
 * RIF meeting
 
 #### Current TODO list (March 2017): SQL Server Port, documentation
 
+* Relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). Currently 
+  edited by hand.
 * SQL Server run study port
 
 #### Current TODO list (April 2017):
 
-* defaultcomparea, defaultstudyarea are wrong (defaulted to LEVEL1, not SAHSU_GRD_LEVEL1...), not set in XML config, probably using DBF field name but  
-  but should use geolevel name.
-* Swedish shapefile data erorr - multiple SRID's?
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
 	-- SQL statement 75: Remove old geolevels meta data table >>>
@@ -1156,9 +1163,8 @@ GO
 	The statement has been terminated.
 ```
 * Test database and user account creation with db_create target. Need to keep postgres admin logged on
-* Improve documentation on SQL Server BULK LOAD file permissions
 * Assist with middleware (database fixes); SQL Server full install testing
-* Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-r8un without rebuilding the entire database
+* Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-run without rebuilding the entire database
 
 #### TileViewer TODO (defferred to May?):
  
@@ -1200,8 +1206,6 @@ GO
 * Convert remaining use of geography:: datatype in SQL Server to geometry::. The geography:: datatype is used in the build
   to intersect tiles and will may have issues. Production SQL Server is using the geometry:: datatype. This will be parked if 
   it is not a problem.
-* Relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). Currently 
-  edited by hand.
 * JSZip 3.0 upgrade required (forced to 2.6.0) for present
 * SQL load script generator: still todo, all can wait:
   * Add search path to user schema, check user schema exists, to Postgres version

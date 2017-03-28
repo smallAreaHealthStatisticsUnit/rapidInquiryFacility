@@ -115,8 +115,8 @@ function main() {
 	  type: "string",
       default: mssql_default("SQLCMDUSER") 
     })
-    .options("password", {
-      alias: "pw",
+    .options("P", {
+      alias: "password",
       describe: "SQL server database password",
 	  type: "string",
       default: mssql_default("SQLCMDPASSWORD") 
@@ -207,7 +207,7 @@ function main() {
 
 //		console.error("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName + "\n" +
 //			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
-										
+//		console.error("argv: " + JSON.stringify(argv, null, 4));							
 		// Create Postgres client;
 		mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["password"], argv["pngfile"], argv['zoomlevel'], argv['blocks'],
 			tileMakerConfig, winston);	
@@ -296,9 +296,10 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 	if (p_database != "") {
 		config.database=p_database;
 	}
-	if (p_user != "") {
+//	console.error("p_user: " + p_user + "; p_password: " + p_password);
+	if (p_user && p_user != "") {
 		config.user=p_user;
-		if (p_password != "") {
+		if (p_password && p_password != "") {
 			config.password=p_password;
 		}
 		else {

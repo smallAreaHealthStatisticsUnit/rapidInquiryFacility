@@ -37,6 +37,6 @@
 \timing
 
 --
--- Make the same as the Windows code pager
+-- Make the same as the CSV files
 --
-SET client_encoding='WIN1252';
+SET client_encoding='UTF-8';

@@ -944,6 +944,23 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 		} // End of createGeolevelsTable()
 
 		/*
+		 * Function: 	checkAreas()
+		 * Parameters:	Schema (rif_data.)
+		 * Description:	check Turf and DB areas agree to within 1% (Postgres)/5% (SQL server)
+		 *				Needs to be in a separate transaction (do NOT start one!)
+		 */	 	
+		function checkAreas(schema) {
+			sqlArray.push(new Sql("Check areas"));		
+			for (var i=0; i<csvFiles.length; i++) {	
+					var sqlStmt=new Sql("Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server)",
+				getSqlFromFile("area_check.sql", dbType, 
+					"geom_" + xmlConfig.dataLoader.maxZoomlevel /* 1: geometry column; e.g. geom_11 */,
+					csvFiles[i].tableName 						/* 2: table name; e.g. cb_2014_us_county_500k */), sqlArray, dbType);
+			} // End of for csvFiles loop	
+		
+		} // End of checkAreas()	
+		
+		/*
 		 * Function: 	createGeographyTable()
 		 * Parameters:	None
 		 * Description:	Create geography meta data table: geography_<geographyName> 
@@ -1105,11 +1122,19 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					}
 					else if (dbType == "MSSQLServer") {	
 						sqlStmt.sql+="\t" + pad("                               ", 
-							columnList[j].toLowerCase(), false) + "\tvarchar(1000)	NOT NULL";
+							columnList[j].toLowerCase(), false) + "\tNVARCHAR(1000)	NOT NULL";
 					}
 				}
+				else if (columnList[j].match(/wkt/i)) {
+					sqlStmt.sql+="\t" + pad("                               ", columnList[j].toLowerCase(), false) + "\ttext";	
+				}
 				else {
-					sqlStmt.sql+="\t" + pad("                               ", columnList[j].toLowerCase(), false) + "\ttext";
+					if (dbType == "PostGres") {	
+						sqlStmt.sql+="\t" + pad("                               ", columnList[j].toLowerCase(), false) + "\ttext";
+					}
+					else if (dbType == "MSSQLServer") {	
+						sqlStmt.sql+="\t" + pad("                               ", columnList[j].toLowerCase(), false) + "\tNVARCHAR(1000)";
+					}
 				}
 				
 				var fieldKey=csvFiles[i].tableName + "_" + columnList[j].toUpperCase();
@@ -1390,12 +1415,7 @@ UPDATE sahsu_grd_level1
 			}
 			
 			sqlArray.push(new Sql("Test Turf and DB areas agree to within 1%"));
-			
-			var sqlStmt=new Sql("Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server)",
-				getSqlFromFile("area_check.sql", dbType, 
-					"geom_" + xmlConfig.dataLoader.maxZoomlevel 	/* 1: geometry column; e.g. geom_11 */,
-					csvFiles[i].tableName 						/* 2: table name; e.g. cb_2014_us_county_500k */), sqlArray, dbType);
-		
+				
 			sqlArray.push(new Sql("Create spatial indexes"));
 			for (var k=xmlConfig.dataLoader.minZoomlevel; k <= xmlConfig.dataLoader.maxZoomlevel; k++) {
 				var sqlStmt=new Sql("Index geometry column for zoomlevel: " + k,
@@ -1867,6 +1887,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		commitTransaction(sqlArray, dbType);
 		
 		analyzeTables();
+		checkAreas();
 
 //
 // Write SQL statements to file
@@ -1933,7 +1954,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		/*
 		 * Function: 	analyzeTables()
 		 * Parameters:	Schema (rif_data.)
-		 * Description:	Analze and describe all tables: SQL statements
+		 * Description:	Analyze and describe all tables: SQL statements
 		 *				Needs to be in a separate transaction (do NOT start one!)
 		 */	 	
 		function analyzeTables(schema) {
@@ -1955,7 +1976,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					getSqlFromFile("vacuum_analyze_table.sql", dbType, (schema||"") + tableList[i] /* Table name */), 
 					sqlArray, dbType); 
 			} // End of for csvFiles loop			
-		} // End of analyzeTables()		 
+		} // End of analyzeTables()		 	 
 		
 		/*
 		 * Function: 	setupGeography()

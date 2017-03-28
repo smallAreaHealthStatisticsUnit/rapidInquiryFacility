@@ -814,13 +814,25 @@ REFERENCE (from shapefile) {
 		if (geojson.geometry) {
 			geojsonOK=true
 		}
-		winston.log("debug", "Block: " + row.block +
-			"; tile_id: " + row.tile_id +
-			"; areaid: " + geojson.properties.areaid +
-			"; name: " + geojson.properties.name +
-			"; geographic_centroid: " + JSON.stringify(geographic_centroid) +
-			"; wkt len: " + wkt.length +
-			"; geojsonOK: " + geojsonOK);
+		if (row.block <2) {
+			winston.log("debug", "Block: " + row.block +
+				"; tile_id: " + row.tile_id +
+				"; gid: " + geojson.properties.gid +
+				"; areaid: " + geojson.properties.areaid +
+				"; name: " + geojson.properties.name +
+				"; geographic_centroid: " + JSON.stringify(geographic_centroid) +
+				"; wkt len: " + wkt.length +
+				"; geojsonOK: " + geojsonOK);		
+		}
+		else {
+			winston.log("debug", "Block: " + row.block +
+				"; tile_id: " + row.tile_id +
+				"; gid: " + geojson.properties.gid +
+				"; name: " + geojson.properties.name +
+				"; geographic_centroid: " + JSON.stringify(geographic_centroid) +
+				"; wkt len: " + wkt.length +
+				"; geojsonOK: " + geojsonOK);
+		}
 		var tileSize=0;
 
 		if (tileArray.length == 0) { // First row in zoomlevel/geolevel combination
@@ -1006,7 +1018,16 @@ REFERENCE (from shapefile) {
 					}
 					else {
 						winston.log("info", 'Set Postgres search path to: "$user",' + currPath);
-						addUserToPathCallback();
+						sql="SET client_encoding='UTF-8'";
+						var query=client.query(sql, function setSearchPath(err, result) {
+							if (err) {
+								dbErrorHandler(err, sql);
+							}
+							else {
+								winston.log("info", sql);
+								addUserToPathCallback();
+							}
+						});
 					}					
 				});
 			});	
