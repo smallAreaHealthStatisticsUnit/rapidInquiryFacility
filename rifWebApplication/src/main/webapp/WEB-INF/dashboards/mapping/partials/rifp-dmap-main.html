@@ -62,7 +62,7 @@ HTML partial disease mapping
                 <select ng-change='child.updateStudy("diseasemap1")' id='optionsSelect' ng-model="sex['diseasemap1']" ng-options="s for s in child.sexes['diseasemap1']">
                 </select>
             </div>
-            <div id="studyInfo"></div>
+            <div id="studyInfo" get-study-info mapid="diseasemap1"></div>
         </div>
     </div>
     <div id='right'>
@@ -78,7 +78,7 @@ HTML partial disease mapping
                 <select ng-change='child.updateStudy("diseasemap2")' id='optionsSelect' ng-model="sex['diseasemap2']" ng-options="s for s in child.sexes['diseasemap2']">
                 </select>
             </div>
-            <div id="studyInfo"></div>
+            <div id="studyInfo" get-study-info mapid="diseasemap2"></div>
         </div>
     </div>        
 </div>

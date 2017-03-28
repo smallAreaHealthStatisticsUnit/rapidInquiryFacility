@@ -223,7 +223,7 @@ angular.module("RIF")
                 };
 
                 $scope.updateSex = function (mapID) {
-                    if ($scope.studyID[mapID] !== null) {
+                    if ($scope.studyID[mapID] !== null && angular.isDefined($scope.studyID[mapID])) {
                         //Store this study selection
                         $scope.myService.getState().study[mapID] = $scope.studyID[mapID];
                         //Get the sexes for this study

@@ -125,7 +125,7 @@ public final class GetTileMakerTiles
 			User validUser = cloneValidUser();
 			Geography validGeography = cloneValidGeography();
 			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			validGeoLevelSelect.setName("LEVEL2");
+			validGeoLevelSelect.setName("SAHSU_GRD_LEVEL1");
 				
 			String result
 				= rifStudyRetrievalService.getTileMakerTiles(

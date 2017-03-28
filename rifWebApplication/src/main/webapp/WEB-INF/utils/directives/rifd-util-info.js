@@ -36,18 +36,60 @@
  */
 
 angular.module("RIF")
-        .directive('getStudyInfo', function () {
-            return {
-                restrict: 'A',
-                link: function (scope, element, attr) {
-
-                    element.on('click', function (event) {
-                        var thisStudy = scope.studyID[attr.mapid].study_id;
-                        console.log(thisStudy);
-
-                    });
-
-
-                }
+        .controller('ModalInfoInstanceCtrl', function ($scope, $uibModalInstance) {
+            $scope.close = function () {
+                $uibModalInstance.dismiss();
             };
-        });
+            $scope.submit = function () {
+                $uibModalInstance.close();
+            };
+        })
+        .directive('getStudyInfo', ['$uibModal', 'user', function ($uibModal, user) {
+                return {
+                    restrict: 'A',
+                    link: function (scope, element, attr) {
+
+                        var alertScope = scope.$parent.$$childHead.$parent.$parent.$$childHead;
+
+                        scope.summary = null;
+                        scope.toggleText = "Formatted";
+                        scope.toggleJSON = function () {
+                            scope.toggleText = scope.toggleText === "JSON" ? "Formatted" : "JSON";
+                        };
+
+                        element.on('click', function (event) {
+                            var thisStudy = scope.studyID[attr.mapid].study_id;
+
+                            getModel = function (x) {
+                                //TODO: this method by KG gives incomplete information
+                                user.getStudySubmission(user.currentUser, thisStudy).then(function (res) {
+                                    scope.summary = res.data;
+                                }, function () {
+                                    alertScope.showError("Could not get study information for study: " + thisStudy);
+                                });
+                                //TODO: formatting as in rifc-dsub-summary
+                                if (x === "JSON") {
+        
+                                } else {
+
+                                }
+                            };
+
+                            var modalInstance = $uibModal.open({
+                                animation: true,
+                                templateUrl: 'utils/partials/rifp-util-info.html',
+                                controller: 'ModalInfoInstanceCtrl',
+                                windowClass: 'summary-Modal',
+                                backdrop: 'static',
+                                scope: scope,
+                                keyboard: false
+                            });
+
+                            modalInstance.opened.then(function () {
+                                scope.summary = "Retrieving";
+                                getModel(scope.toggleText);
+                            });
+                        });
+                    }
+                };
+            }]);

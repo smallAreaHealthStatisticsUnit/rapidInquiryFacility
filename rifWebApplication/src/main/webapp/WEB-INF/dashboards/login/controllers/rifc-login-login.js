@@ -43,8 +43,8 @@ angular.module("RIF")
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService,
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
 
-                $scope.username = "kgarwood";
-                $scope.password = "kgarwood";
+                $scope.username = "dwmorley";
+                $scope.password = "dwmorley";
 
                 $scope.showSpinner = false;
 
@@ -52,10 +52,10 @@ angular.module("RIF")
                     if (!$scope.showSpinner) {
                         $scope.showSpinner = true;
                         //check if already logged on
-                      //  user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
+                        user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
                       //  
                         //In development, this bypasses password)
-                        user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                       // user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
                     }
                 };
 

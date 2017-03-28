@@ -55,7 +55,6 @@ angular.module("RIF")
                             }
                         },
                         {name: 'study_name', enableHiding: false, width: 150},
-                        {name: 'study_description', enableHiding: false, width: 125},
                         {name: 'message', enableHiding: false, width: "*"},
                         {name: 'date', enableHiding: false, width: 150},
                         {name: 'study_state', enableHiding: false, width: 100}

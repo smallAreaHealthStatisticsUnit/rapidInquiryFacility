@@ -262,22 +262,22 @@ angular.module("RIF")
                                         map.fitBounds(maxbounds);
                                     }
                                     //populate the table
-                                    for (var i = 0; i < res.data.objects['1_0_0'].geometries.length; i++) {
-                                        var thisPoly = res.data.objects['1_0_0'].geometries[i];
+                                    for (var i = 0; i < res.data.objects.collection.geometries.length; i++) {
+                                        var thisPoly = res.data.objects.collection.geometries[i];
                                         var bFound = false;
                                         for (var j = 0; j < $scope.selectedPolygon.length; j++) {
                                             if ($scope.selectedPolygon[j].id === thisPoly.properties.area_id) {
-                                                res.data.objects['1_0_0'].geometries[i].properties.band = $scope.selectedPolygon[j].band;
+                                                res.data.objects.collection.geometries[i].properties.band = $scope.selectedPolygon[j].band;
                                                 bFound = true;
                                                 break;
                                             }
                                         }
                                         if (!bFound) {
-                                            res.data.objects['1_0_0'].geometries[i].properties.band = 0;
+                                            res.data.objects.collection.geometries[i].properties.band = 0;
                                         }
                                     }
                                     $scope.gridOptions.data = ModalAreaService.fillTable(res.data);
-                                    $scope.totalPolygonCount = res.data.objects['1_0_0'].geometries.length;
+                                    $scope.totalPolygonCount = res.data.objects.collection.geometries.length;
                                 });
                             });
                         };
@@ -288,6 +288,7 @@ angular.module("RIF")
                         $scope.geoLevels = [];
                         $scope.geoLevelsViews = [];
                         user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
+
                         $scope.geoLevelChange = function () {
 
                             //Clear the map
@@ -301,6 +302,7 @@ angular.module("RIF")
                             });
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
+
                         function handleGeoLevelSelect(res) {
                             $scope.geoLevels.length = 0;
                             for (var i = 0; i < res.data[0].names.length; i++) {

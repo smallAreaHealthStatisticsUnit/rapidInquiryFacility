@@ -216,4 +216,10 @@ angular.module("RIF")
                     return $http.get(studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
                             '&zoomlevel=1&x=0&y=0', config);
                 };
+                //get details of a completed study
+                //TODO: this method does not give complete information
+                self.getStudySubmission = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studySubmission/getStudySubmission?userID=kgarwood&studyID=274
+                    return $http.get(studySubmissionURL + 'getStudySubmission?userID=' + username + '&studyID=' + studyID);
+                };
             }]);

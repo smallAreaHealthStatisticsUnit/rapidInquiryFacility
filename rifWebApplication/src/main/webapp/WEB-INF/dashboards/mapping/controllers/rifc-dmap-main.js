@@ -347,13 +347,15 @@ angular.module("RIF")
 
                 //use current symbology on left map on the right map as well
                 $scope.copySymbology = function () {
-                    ChoroService.getMaps("diseasemap2").renderer = angular.copy(ChoroService.getMaps("diseasemap1").renderer);
-                    ChoroService.getMaps("diseasemap2").brewerName = angular.copy(ChoroService.getMaps("diseasemap1").brewerName);
-                    ChoroService.getMaps("diseasemap2").intervals = angular.copy(ChoroService.getMaps("diseasemap1").intervals);
-                    ChoroService.getMaps("diseasemap2").invert = angular.copy(ChoroService.getMaps("diseasemap1").invert);
-                    ChoroService.getMaps("diseasemap2").method = angular.copy(ChoroService.getMaps("diseasemap1").method);
-                    ChoroService.getMaps("diseasemap2").feature = angular.copy(ChoroService.getMaps("diseasemap1").feature);
-                    $scope.child.refresh("diseasemap2");
+                    if (angular.isDefined($scope.studyID["diseasemap1"])) {
+                        ChoroService.getMaps("diseasemap2").renderer = angular.copy(ChoroService.getMaps("diseasemap1").renderer);
+                        ChoroService.getMaps("diseasemap2").brewerName = angular.copy(ChoroService.getMaps("diseasemap1").brewerName);
+                        ChoroService.getMaps("diseasemap2").intervals = angular.copy(ChoroService.getMaps("diseasemap1").intervals);
+                        ChoroService.getMaps("diseasemap2").invert = angular.copy(ChoroService.getMaps("diseasemap1").invert);
+                        ChoroService.getMaps("diseasemap2").method = angular.copy(ChoroService.getMaps("diseasemap1").method);
+                        ChoroService.getMaps("diseasemap2").feature = angular.copy(ChoroService.getMaps("diseasemap1").feature);
+                        $scope.child.refresh("diseasemap2");
+                    }
                 };
 
                 /*

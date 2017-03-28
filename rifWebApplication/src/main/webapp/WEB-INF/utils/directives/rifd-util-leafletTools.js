@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -61,9 +61,11 @@ angular.module("RIF")
                     restrict: 'A',
                     link: function (scope, element, attr) {
                         element.on('click', function (event) {
-                            leafletData.getMap(attr.mapid).then(function (map) {
-                                map.fitBounds(scope.child.maxbounds);
-                            });
+                            if (angular.isDefined(scope.child.maxbounds)) {
+                                leafletData.getMap(attr.mapid).then(function (map) {
+                                    map.fitBounds(scope.child.maxbounds);
+                                });
+                            }
                         });
                     }
                 };
@@ -74,19 +76,21 @@ angular.module("RIF")
                     link: function (scope, element, attr) {
                         element.on('click', function (event) {
                             var studyBounds = new L.LatLngBounds();
-                            scope.geoJSON[attr.mapid]._geojsons.default.eachLayer(function (layer) {
-                                //if area ID is in the attribute table
-                                for (var i = 0; i < scope.child.tableData[attr.mapid].length; i++) {
-                                    if (scope.child.tableData[attr.mapid][i]['area_id'].indexOf(layer.feature.properties.area_id) !== -1) {
-                                        studyBounds.extend(layer.getBounds());
+                            if (angular.isDefined(scope.geoJSON[attr.mapid])) {
+                                scope.geoJSON[attr.mapid]._geojsons.default.eachLayer(function (layer) {
+                                    //if area ID is in the attribute table
+                                    for (var i = 0; i < scope.child.tableData[attr.mapid].length; i++) {
+                                        if (scope.child.tableData[attr.mapid][i]['area_id'].indexOf(layer.feature.properties.area_id) !== -1) {
+                                            studyBounds.extend(layer.getBounds());
+                                        }
                                     }
-                                }
-                            });
-                            leafletData.getMap(attr.mapid).then(function (map) {
-                                if (studyBounds.isValid()) {
-                                    map.fitBounds(studyBounds);
-                                }
-                            });
+                                });
+                                leafletData.getMap(attr.mapid).then(function (map) {
+                                    if (studyBounds.isValid()) {
+                                        map.fitBounds(studyBounds);
+                                    }
+                                });
+                            }
                         });
                     }
                 };
@@ -98,15 +102,17 @@ angular.module("RIF")
                         element.on('click', function (event) {
                             //Zoom to a single selected Polygon
                             var selbounds = null;
-                            scope.geoJSON[attr.mapid]._geojsons.default.eachLayer(function (layer) {
-                                if (layer.feature.properties.area_id === scope.thisPoly[attr.mapid]) {
-                                    selbounds = layer.getBounds();
-                                }
-                            });
-                            if (selbounds !== null) {
-                                leafletData.getMap(attr.mapid).then(function (map) {
-                                    map.fitBounds(selbounds);
+                            if (angular.isDefined(scope.geoJSON[attr.mapid])) {
+                                scope.geoJSON[attr.mapid]._geojsons.default.eachLayer(function (layer) {
+                                    if (layer.feature.properties.area_id === scope.thisPoly[attr.mapid]) {
+                                        selbounds = layer.getBounds();
+                                    }
                                 });
+                                if (selbounds !== null) {
+                                    leafletData.getMap(attr.mapid).then(function (map) {
+                                        map.fitBounds(selbounds);
+                                    });
+                                }
                             }
                         });
                     }
@@ -119,21 +125,23 @@ angular.module("RIF")
                         element.on('click', function (event) {
                             //Zoom to combined extent of selected polygons       
                             var studyBounds = new L.LatLngBounds();
-                            scope.geoJSON[attr.mapid]._geojsons.default.eachLayer(function (layer) {
-                                //if area ID is in the attribute table
-                                for (var i = 0; i < scope.child.tableData[attr.mapid].length; i++) {
-                                    if (scope.child.tableData[attr.mapid][i]['area_id'] === layer.feature.properties.area_id) {
-                                        if (scope.child.tableData[attr.mapid][i]['_selected'] === 1) {
-                                            studyBounds.extend(layer.getBounds());
+                            if (angular.isDefined(scope.geoJSON[attr.mapid])) {
+                                scope.geoJSON[attr.mapid]._geojsons.default.eachLayer(function (layer) {
+                                    //if area ID is in the attribute table
+                                    for (var i = 0; i < scope.child.tableData[attr.mapid].length; i++) {
+                                        if (scope.child.tableData[attr.mapid][i]['area_id'] === layer.feature.properties.area_id) {
+                                            if (scope.child.tableData[attr.mapid][i]['_selected'] === 1) {
+                                                studyBounds.extend(layer.getBounds());
+                                            }
                                         }
                                     }
-                                }
-                            });
-                            leafletData.getMap(attr.mapid).then(function (map) {
-                                if (studyBounds.isValid()) {
-                                    map.fitBounds(studyBounds);
-                                }
-                            });
+                                });
+                                leafletData.getMap(attr.mapid).then(function (map) {
+                                    if (studyBounds.isValid()) {
+                                        map.fitBounds(studyBounds);
+                                    }
+                                });
+                            }
                         });
                     }
                 };
@@ -146,21 +154,23 @@ angular.module("RIF")
                     restrict: 'A',
                     link: function (scope, element, attr) {
                         element.on('click', function (event) {
-                            if (angular.isArray(scope.$parent.thisPoly)) {
-                                //is an array from viewermap or study areas
-                                scope.$parent.thisPoly.length = 0;
-                                scope.refresh(attr.mapid);
-                            } else {
-                                //is an object, single selections from diseasemap
-                                var toClear = [attr.mapid];
-                                if (scope.bLockSelect) {
-                                    toClear.push(MappingService.getOtherMap(attr.mapid));
-                                }
-                                for (var i in toClear) {
-                                    scope.thisPoly[toClear[i]] = null;
-                                    scope.myService.getState().selected[toClear[i]] = null;
-                                    scope.child.infoBox2[attr.mapid].update(scope.thisPoly[toClear[i]]);
-                                    scope.updateMapSelection(null, toClear[i]);
+                            if (angular.isDefined(scope.geoJSON[attr.mapid])) {
+                                if (angular.isArray(scope.$parent.thisPoly)) {
+                                    //is an array from viewermap or study areas
+                                    scope.$parent.thisPoly.length = 0;
+                                    scope.refresh(attr.mapid);
+                                } else {
+                                    //is an object, single selections from diseasemap
+                                    var toClear = [attr.mapid];
+                                    if (scope.bLockSelect) {
+                                        toClear.push(MappingService.getOtherMap(attr.mapid));
+                                    }
+                                    for (var i in toClear) {
+                                        scope.thisPoly[toClear[i]] = null;
+                                        scope.myService.getState().selected[toClear[i]] = null;
+                                        scope.child.infoBox2[attr.mapid].update(scope.thisPoly[toClear[i]]);
+                                        scope.updateMapSelection(null, toClear[i]);
+                                    }
                                 }
                             }
                         });

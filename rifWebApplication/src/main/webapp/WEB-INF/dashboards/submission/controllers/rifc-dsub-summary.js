@@ -62,9 +62,6 @@ angular.module("RIF")
                         backdrop: 'static',
                         keyboard: false
                     });
-                    modalInstance.result.then(function () {
-                        $scope.showWarning("a warning message");
-                    });
                 };
             }])
         .controller('ModalSummaryInstanceCtrl', function ($scope, $uibModalInstance) {

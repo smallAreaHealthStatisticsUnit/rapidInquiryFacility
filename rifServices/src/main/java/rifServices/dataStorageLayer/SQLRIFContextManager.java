@@ -589,7 +589,7 @@ final class SQLRIFContextManager
 			getGeoLevelSelectValuesQueryFormatter.addSelectField("geolevel_name");
 			getGeoLevelSelectValuesQueryFormatter.addFromTable("rif40_geolevels");
 			getGeoLevelSelectValuesQueryFormatter.addWhereParameter("geography");
-			getGeoLevelSelectValuesQueryFormatter.addWhereParameter("listing");
+		//	getGeoLevelSelectValuesQueryFormatter.addWhereParameter("listing");
 			getGeoLevelSelectValuesQueryFormatter.addWhereParameterWithOperator("geolevel_id", "<=");
 			getGeoLevelSelectValuesQueryFormatter.addOrderByCondition("geolevel_id");
 		
@@ -605,9 +605,14 @@ final class SQLRIFContextManager
 					connection,
 					getGeoLevelSelectValuesQueryFormatter);
 			getGeoLevelSelectStatement.setString(1, geography.getName());
+			
+			//TODO: (DM) listable is contradictory for SAHSULAND geolevels and default areas
 			//only include those ids that are designated as 'listable'
-			getGeoLevelSelectStatement.setInt(2, 1);
-			getGeoLevelSelectStatement.setInt(3, maximumGeoLevelID);
+			//getGeoLevelSelectStatement.setInt(2, 1);
+			//getGeoLevelSelectStatement.setInt(3, maximumGeoLevelID);
+			
+			getGeoLevelSelectStatement.setInt(2, maximumGeoLevelID);
+			
 			getGeoLevelSelectResultSet = getGeoLevelSelectStatement.executeQuery();
 			connection.commit();
 			
@@ -1298,7 +1303,9 @@ final class SQLRIFContextManager
 			queryFormatter.setLookupKeyFieldName("geolevel_name");
 			queryFormatter.setFromTable("rif40_geolevels");
 			queryFormatter.addWhereParameter("geography");
-			queryFormatter.addWhereParameter("listing");
+		
+			//	TODO: (DM) listing is contradictory for SAHSULAND default values
+		//	queryFormatter.addWhereParameter("listing");
 
 			logSQLQuery(
 				"checkGeoLevelViewExistsQuery",
@@ -1314,7 +1321,7 @@ final class SQLRIFContextManager
 					queryFormatter);
 			checkGeoLevelViewExistsStatement.setString(1, geoLevelSelectName);
 			checkGeoLevelViewExistsStatement.setString(2, geographyName);
-			checkGeoLevelViewExistsStatement.setInt(3, 1);
+		//	checkGeoLevelViewExistsStatement.setInt(3, 1);
 			checkGeoLevelViewExistsResultSet 
 				= checkGeoLevelViewExistsStatement.executeQuery();
 

@@ -41,6 +41,12 @@ angular.module("RIF")
             function ($scope, $uibModal, ChoroService, ColorBrewerService) {
 
                 $scope.open = function (map) {
+                    
+                    //if there are no studies, do not show
+                    if (angular.isUndefined($scope.studyID[map])) {
+                        return;
+                    }
+                    
                     //Brewer swatches obtained from https://github.com/timothyrenner/ColorBrewer.jl
                     $scope.options = [];
                     var colorBrewerList = ColorBrewerService.getSchemeList();

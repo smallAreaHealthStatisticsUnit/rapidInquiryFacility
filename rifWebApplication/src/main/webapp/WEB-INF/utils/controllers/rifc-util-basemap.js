@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -40,19 +40,25 @@ angular.module("RIF")
             function ($scope, $uibModal, LeafletBaseMapService) {
                 //List of all layers by name for drop-down fill
                 $scope.myBaseMaps = LeafletBaseMapService.getBaseMapList();
-                
+
                 //Update selected layer from drop-down         
                 $scope.setSelected = function (option) {
                     LeafletBaseMapService.setCurrentBaseMapInUse($scope.id, option);
                 };
-                
+
                 //Using basemap?
                 $scope.setNoBaseMapCheck = function (option) {
                     LeafletBaseMapService.setNoBaseMap($scope.id, option);
                 };
-                
+
                 //Open the modal
                 $scope.open = function (id) {
+
+                    //if there are no studies, do not show
+                    if (angular.isUndefined($scope.studyID[id])) {
+                        return;
+                    }
+
                     $scope.id = id; //<leaflet id = "id">
                     var modalInstance = $uibModal.open({
                         animation: true,
