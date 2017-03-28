@@ -212,7 +212,7 @@ establishTableNames <-function(vstudyID) {
   print(paste("Study ID:", vstudyID))
   extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
   #temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_map", sep="")
-  temporarySmoothedResultsTableName <<-paste("kgarwood.tmp_s", vstudyID, "_map", sep="")
+  temporarySmoothedResultsTableName <<-paste(userID,".tmp_s", vstudyID, "_map", sep="")
   mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
 }
 
