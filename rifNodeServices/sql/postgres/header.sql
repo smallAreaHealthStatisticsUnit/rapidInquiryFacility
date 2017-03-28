@@ -35,3 +35,8 @@
 \set ECHO all
 \set ON_ERROR_STOP ON
 \timing
+
+--
+-- Make the same as the Windows code pager
+--
+SET client_encoding='WIN1252';
