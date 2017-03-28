@@ -1731,16 +1731,16 @@ This error in actually originating from the error handler function
 				ngeolevels[i].resolution=1; // Can use a map for selection at this resolution (0/1)
 				ngeolevels[i].comparea=1;	// Able to be used as a comparison area (0/1)
 				ngeolevels[i].listing=1;	// Able to be used in a disease map listing (0/1)					
-				if (ngeolevels[i].geolevel_id == 1) {		
-					ngeolevels[i].listing=0;	
-					dataLoader.defaultcomparea=response.fields[ngeolevels[i].geolevel_name.toLowerCase() + "_areaID"]; // E.g. cb_2014_us_nation_5m_areaID
-					msg+=" [Default comparison area]";
+			if (ngeolevels[i].geolevel_id == 1) {		
+//					ngeolevels[i].listing=0;	
+					dataLoader.defaultcomparea=ngeolevels[i].geolevel_name.toUpperCase(); // E.g. cb_2014_us_nation_5m
+					msg+=" [Default comparison area: " + dataLoader.defaultcomparea + "]";
 				}
 				else if (ngeolevels[i].geolevel_id == (ngeolevels.length-1)) {
-					dataLoader.defaultstudyarea=response.fields[ngeolevels[i].geolevel_name.toLowerCase() + "_areaID"]; // E.g. cb_2014_us_county_500k_areaID
-					msg+=" [Default study area]";
-					ngeolevels[i].comparea=0;
-				}
+					dataLoader.defaultstudyarea=ngeolevels[i].geolevel_name.toUpperCase(); // E.g. cb_2014_us_nation_5m
+					msg+=" [Default study area: " + dataLoader.defaultstudyarea + "]";
+//					ngeolevels[i].comparea=0;
+				} 
 				
 				var lookupTableRow = [];
 				var topojsonGeometries;
