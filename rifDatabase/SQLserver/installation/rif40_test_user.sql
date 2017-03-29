@@ -165,10 +165,10 @@ GO
 CREATE TABLE [$(NEWUSER)].study_status
 (
   study_id integer NOT NULL,
-  study_state character varying NOT NULL,
-  creation_date timestamp without time zone NOT NULL,
-  ith_update serial NOT NULL,
-  message character varying(255)
+  study_state VARCHAR(1) NOT NULL,
+  creation_date timestamp NOT NULL,
+  ith_update INTEGER NOT NULL,
+  message VARCHAR(255)
 );
 
 --
