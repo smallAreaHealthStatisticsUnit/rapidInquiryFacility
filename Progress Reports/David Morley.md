@@ -4,8 +4,8 @@ Principal Work Area: JavaScript User interface development
 
 - Started in position 1st June 2016
 
-#2016
-##June
+# 2016
+## June
 
 - Taken over the front-end code of Federico Fabbri
 - Code refactoring using AngularJS to reduce complexity, code volume and make more maintainable
@@ -22,7 +22,7 @@ Principal Work Area: JavaScript User interface development
 - Created placeholders/wrappers for all D3 charts FAO KG
 
 
-##July
+## July
 
 - Now using local version of RIF database
 - adding calls to the middleware
@@ -30,7 +30,7 @@ Principal Work Area: JavaScript User interface development
 - Choropleth mapping for a test dataset in dataviewer
 - Integrated taxonomy service into parameters modal
 
-##August
+## August
 
 - Added histogram to choropleth map break selector
 - Finished adding split-containers to dashboards
@@ -39,7 +39,7 @@ Principal Work Area: JavaScript User interface development
 - Started status report viewer
 - Continued looking at D3 library with KG
 
-##September
+## September
 
 - Added histogram of breaks to choropleth maps
 - Added capability to save a RIF submssion and load it back in
@@ -48,14 +48,14 @@ Principal Work Area: JavaScript User interface development
 - Improved look of interface CSS
 - Work with KG on D3 graphs for data viewer
 
-##October
+## October
 
 - All d3 charts added and are linked/interactive
 - All data comes from database - no hardtyping
 - Improved dialogue for disease parameters
 - UI is end-to-end study run ready
 
-##November
+## November
 
 - New disease mapper with two 'Atlas' style maps
 - Update from leaflet 0.7 to 1.0
@@ -63,7 +63,7 @@ Principal Work Area: JavaScript User interface development
 - Export as CSV option in results viewer
 - Started looking at RIF Java classes
 
-##December
+## December
 
 - Marquee style progress button for long login process
 - Added initial methods to import a AOI shapefile for disease mapping
@@ -72,8 +72,8 @@ Principal Work Area: JavaScript User interface development
 - Atlas colour scheme options for choropleth mapping
 - Study status modal linked to database
 
-#2017
-##January
+# 2017
+## January
 
 - Refactoring of mapping and ui-grid code
 - Added middle ware method to get geography info for complete study
@@ -83,11 +83,20 @@ Principal Work Area: JavaScript User interface development
 - Adding colour swatches to choropleth maps
 - UK postcode base layers
 
-##February
+## February
 
 - More refactoring
 - Browser compatibility fixes
 - Middle ware method getTileMakerTiles to get topojson by leaflet gridLayer
 - Tiled topojson now used in front end
 - Debugging of R smoothing script to work with RIF submission options
+
+## March
+
+- getTileMakerTiles middle ware method finalised for new DB schema
+- Fixing various rifService bugs with KG
+- Risk analysis methods for selecting areas from shapefiles started
+- Removal of old middleware methods
+- Migrate all CDN libraries to standalone scripts
+- Started study information recall method
 
