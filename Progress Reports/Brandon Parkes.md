@@ -39,3 +39,4 @@ Started work on documentation
 - Completed first draft of user guide
 
 ##March
+-Downloaded and prepared SEER data for the data loader.Ran SEER data in data loader.Familiarisation with Data loader java code and minor modifications to code.Familiarisation with Swedish code
