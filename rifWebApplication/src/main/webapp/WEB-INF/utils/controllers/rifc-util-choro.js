@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -41,12 +41,12 @@ angular.module("RIF")
             function ($scope, $uibModal, ChoroService, ColorBrewerService) {
 
                 $scope.open = function (map) {
-                    
+
                     //if there are no studies, do not show
                     if (angular.isUndefined($scope.studyID[map])) {
                         return;
                     }
-                    
+
                     //Brewer swatches obtained from https://github.com/timothyrenner/ColorBrewer.jl
                     $scope.options = [];
                     var colorBrewerList = ColorBrewerService.getSchemeList();
@@ -63,7 +63,7 @@ angular.module("RIF")
                         scope: $scope
                     });
                     modalInstance.opened.then(function () {
-                        $scope.$$childHead.renderSwatch(true, true);                        
+                        $scope.$$childHead.renderSwatch(true, true);
                     });
                     modalInstance.result.then(function (modal) {
                         ChoroService.getMaps(map).brewerName = modal.currOption.name;
@@ -100,7 +100,7 @@ angular.module("RIF")
             } else {
                 $scope.input.selectedFeature = ChoroService.getMaps($scope.map).feature;
             }
-            
+
             //Map renderer on opening
             var onXRenderRestore = angular.copy(ChoroService.getMaps($scope.map));
 
@@ -121,7 +121,7 @@ angular.module("RIF")
                 for (var i = 0; i < $scope.tableData[$scope.map].length; i++) {
                     $scope.domain.push(Number($scope.tableData[$scope.map][i][$scope.input.selectedFeature]));
                 }
-                
+
                 //save the selected brewer
                 ChoroService.getMaps($scope.map).brewerName = $scope.input.currOption.name;
 

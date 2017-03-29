@@ -192,7 +192,7 @@ angular.module("RIF")
                                 centroidMarkers = new L.layerGroup();
                                 var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt);
                                 $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
-                                    attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
+                                    attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
                                     layers: {
                                         default: {
                                             renderer: L.canvas(),
