@@ -1143,6 +1143,11 @@ GO
   listing/comparea/resolution all set to 1 for all geolevels
 * RIF meeting
 
+#### 3rd to 7th April
+
+* Monthly reports
+* Wellcome application
+
 #### Current TODO list (April 2017): SQL Server Port
 
 * Relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). Currently 
