@@ -175,5 +175,5 @@ Transfer development to Brandon. Integration testing with Peter.
 ### SQL Server Install - Peter
 
 * SQL Server database builder complete and rolled out; Installer (from export) to follow (and Postgres version). 
-  Requires adminstrator or Power User privilege. Created and tested installation instructions: (Building the RIF SQL Server database from Github)[https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md]  Upgraded Postgres
-  to same standard.
+  Requires adminstrator or Power User privilege. Created and tested installation instructions: (Building the RIF SQL Server database from Github) [https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md]
+* Upgraded Postgres build notes to same standard.
